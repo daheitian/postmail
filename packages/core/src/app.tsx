@@ -270,7 +270,7 @@ export function createApp(config: JantConfig = {}): App {
     if (!siteName || !name || !email || !password) {
       return sse(c, async (stream) => {
         await stream.patchElements(
-          '<div id="setup-message"><p class="text-destructive text-sm mb-4">All fields are required</p></div>',
+          '<div id="setup-message"><div class="alert-destructive mb-4"><h2>All fields are required</h2></div></div>',
         );
       });
     }
@@ -278,7 +278,7 @@ export function createApp(config: JantConfig = {}): App {
     if (password.length < 8) {
       return sse(c, async (stream) => {
         await stream.patchElements(
-          '<div id="setup-message"><p class="text-destructive text-sm mb-4">Password must be at least 8 characters</p></div>',
+          '<div id="setup-message"><div class="alert-destructive mb-4"><h2>Password must be at least 8 characters</h2></div></div>',
         );
       });
     }
@@ -286,7 +286,7 @@ export function createApp(config: JantConfig = {}): App {
     if (!c.var.auth) {
       return sse(c, async (stream) => {
         await stream.patchElements(
-          '<div id="setup-message"><p class="text-destructive text-sm mb-4">AUTH_SECRET not configured</p></div>',
+          '<div id="setup-message"><div class="alert-destructive mb-4"><h2>AUTH_SECRET not configured</h2></div></div>',
         );
       });
     }
@@ -299,7 +299,7 @@ export function createApp(config: JantConfig = {}): App {
       if (!signUpResponse || "error" in signUpResponse) {
         return sse(c, async (stream) => {
           await stream.patchElements(
-            '<div id="setup-message"><p class="text-destructive text-sm mb-4">Failed to create account</p></div>',
+            '<div id="setup-message"><div class="alert-destructive mb-4"><h2>Failed to create account</h2></div></div>',
           );
         });
       }
@@ -318,7 +318,7 @@ export function createApp(config: JantConfig = {}): App {
       console.error("Setup error:", err);
       return sse(c, async (stream) => {
         await stream.patchElements(
-          '<div id="setup-message"><p class="text-destructive text-sm mb-4">Failed to create account</p></div>',
+          '<div id="setup-message"><div class="alert-destructive mb-4"><h2>Failed to create account</h2></div></div>',
         );
       });
     }
@@ -414,7 +414,7 @@ export function createApp(config: JantConfig = {}): App {
     if (!c.var.auth) {
       return sse(c, async (stream) => {
         await stream.patchElements(
-          '<div id="signin-message"><p class="text-destructive text-sm mb-4">Auth not configured</p></div>',
+          '<div id="signin-message"><div class="alert-destructive mb-4"><h2>Auth not configured</h2></div></div>',
         );
       });
     }
@@ -437,7 +437,7 @@ export function createApp(config: JantConfig = {}): App {
       if (!response.ok) {
         return sse(c, async (stream) => {
           await stream.patchElements(
-            '<div id="signin-message"><p class="text-destructive text-sm mb-4">Invalid email or password</p></div>',
+            '<div id="signin-message"><div class="alert-destructive mb-4"><h2>Invalid email or password</h2></div></div>',
           );
         });
       }
@@ -461,7 +461,7 @@ export function createApp(config: JantConfig = {}): App {
       console.error("Signin error:", err);
       return sse(c, async (stream) => {
         await stream.patchElements(
-          '<div id="signin-message"><p class="text-destructive text-sm mb-4">Invalid email or password</p></div>',
+          '<div id="signin-message"><div class="alert-destructive mb-4"><h2>Invalid email or password</h2></div></div>',
         );
       });
     }

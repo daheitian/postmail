@@ -66,8 +66,8 @@ function SearchContent({
 
       {/* Error */}
       {error && (
-        <div class="p-4 rounded-lg bg-destructive/10 text-destructive mb-6">
-          {error}
+        <div class="alert-destructive mb-6">
+          <h2>{error}</h2>
         </div>
       )}
 

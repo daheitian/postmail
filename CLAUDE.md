@@ -35,6 +35,7 @@ This is an open source project. Code quality and maintainability are paramount.
 
 ## Important Rules
 
+- **BaseCoat 组件优先** - 所有 UI 元素必须优先使用 BaseCoat 的语义化 CSS 类（如 `.alert`, `.alert-destructive`, `.btn`, `.badge`, `.card`, `.input`, `.field` 等），而不是用 Tailwind 工具类手动拼装。Tailwind 工具类只用于布局（flex, grid, gap）、间距（p, m）、排版（text-size, font-weight）等 BaseCoat 不覆盖的场景。参考 `references/basecoat/` 查看可用组件。
 - **Node.js version: 24 (LTS)** - Always use Node 24 in CI workflows, package.json engines, and documentation. Do NOT use older versions like 20 or 22. The current LTS is 24.
 - **Always use latest versions** when installing dependencies. DO NOT use outdated versions from training data. Check npm for current versions or use `pnpm add <package>@latest`.
 - **Use mise.toml for all commands** - Wrap all development commands in mise tasks. Never require users to `cd` into directories - use the `dir` parameter instead. This keeps the workflow simple and discoverable.

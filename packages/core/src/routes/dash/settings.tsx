@@ -41,13 +41,15 @@ function SettingsContent({
       {saved && (
         <div
           id="settings-saved-toast"
-          class="mb-4 max-w-lg rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800 transition-opacity duration-300 dark:border-green-800 dark:bg-green-950 dark:text-green-200"
+          class="alert mb-4 max-w-lg transition-opacity duration-300"
           data-init={`console.log('[toast] init fired at', Date.now()); history.replaceState({}, '', '/dash/settings'); setTimeout(() => { console.log('[toast] hiding at', Date.now()); const el = document.getElementById('settings-saved-toast'); if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 300) } }, 3000)`}
         >
-          {t({
-            message: "Settings saved successfully.",
-            comment: "@context: Toast message after saving settings",
-          })}
+          <h2>
+            {t({
+              message: "Settings saved successfully.",
+              comment: "@context: Toast message after saving settings",
+            })}
+          </h2>
         </div>
       )}
 
@@ -254,7 +256,7 @@ settingsRoutes.post("/", async (c) => {
     } else {
       // No language change - show inline success message
       await stream.patchElements(
-        '<div id="settings-message"><div class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200 mb-4 transition-opacity duration-300" data-init="setTimeout(() => { el.style.opacity = \'0\'; setTimeout(() => el.remove(), 300) }, 3000)">Settings saved successfully.</div></div>',
+        '<div id="settings-message"><div class="alert mb-4 transition-opacity duration-300" data-init="setTimeout(() => { el.style.opacity = \'0\'; setTimeout(() => el.remove(), 300) }, 3000)"><h2>Settings saved successfully.</h2></div></div>',
       );
     }
   });
@@ -271,7 +273,7 @@ settingsRoutes.post("/password", async (c) => {
   if (body.newPassword !== body.confirmPassword) {
     return sse(c, async (stream) => {
       await stream.patchElements(
-        '<div id="password-message"><div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200 mb-4">Passwords do not match.</div></div>',
+        '<div id="password-message"><div class="alert-destructive mb-4"><h2>Passwords do not match.</h2></div></div>',
       );
     });
   }
@@ -288,14 +290,14 @@ settingsRoutes.post("/password", async (c) => {
   } catch {
     return sse(c, async (stream) => {
       await stream.patchElements(
-        '<div id="password-message"><div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200 mb-4">Current password is incorrect.</div></div>',
+        '<div id="password-message"><div class="alert-destructive mb-4"><h2>Current password is incorrect.</h2></div></div>',
       );
     });
   }
 
   return sse(c, async (stream) => {
     await stream.patchElements(
-      '<div id="password-message"><div class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200 mb-4">Password changed successfully.</div></div>',
+      '<div id="password-message"><div class="alert mb-4"><h2>Password changed successfully.</h2></div></div>',
     );
     await stream.patchSignals({
       currentPassword: "",
