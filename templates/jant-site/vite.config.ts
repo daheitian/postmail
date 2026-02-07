@@ -13,8 +13,8 @@ import { readFileSync, writeFileSync, readdirSync } from "fs";
 function ssrReload(): Plugin {
   return {
     name: "ssr-reload",
-    hotUpdate({ server }) {
-      if (this.environment.name !== "client") {
+    hotUpdate({ modules, server }) {
+      if (this.environment.name !== "client" && modules.length > 0) {
         server.hot.send({ type: "full-reload" });
         return [];
       }
