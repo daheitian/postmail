@@ -2,29 +2,24 @@
  * Jant Site Entry Point
  *
  * This is the main entry point for your Jant site.
- * Customize the configuration below to personalize your site.
+ *
+ * Configuration:
+ * - Site settings (name, description, language) should be configured via
+ *   environment variables in wrangler.toml or .dev.vars:
+ *   SITE_NAME, SITE_DESCRIPTION, SITE_LANGUAGE
+ * - Alternatively, you can set them in the dashboard (they will be stored in DB)
+ * - Priority: Environment Variables > Database > Defaults
  */
 
 import { createApp } from "@jant/core";
 
 export default createApp({
-  // Site configuration (optional - can also be set in dashboard)
-  // site: {
-  //   name: "My Blog",
-  //   description: "A personal blog powered by Jant",
-  //   language: "en",
-  // },
   // Theme customization (optional)
+  // Use this for UI/component overrides that need to be compiled into your build
   // theme: {
   //   components: {
   //     // Override components here
   //     // PostCard: MyPostCard,
   //   },
-  // },
-  // Feature toggles (optional)
-  // features: {
-  //   search: true,
-  //   rss: true,
-  //   sitemap: true,
   // },
 });

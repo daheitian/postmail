@@ -37,6 +37,10 @@ export interface Bindings {
   IMAGE_TRANSFORM_URL?: string;
   DEMO_EMAIL?: string;
   DEMO_PASSWORD?: string;
+  // Site configuration (optional - can be overridden in DB)
+  SITE_NAME?: string;
+  SITE_DESCRIPTION?: string;
+  SITE_LANGUAGE?: string;
 }
 
 // =============================================================================
@@ -194,41 +198,16 @@ export interface JantTheme {
 }
 
 /**
- * Site configuration
- */
-export interface SiteConfig {
-  /** Site name */
-  name?: string;
-  /** Site description */
-  description?: string;
-  /** Default language */
-  language?: string;
-  /** Site URL (usually set via env) */
-  url?: string;
-}
-
-/**
- * Feature toggles
- */
-export interface FeatureConfig {
-  /** Enable search (default: true) */
-  search?: boolean;
-  /** Enable RSS feed (default: true) */
-  rss?: boolean;
-  /** Enable sitemap (default: true) */
-  sitemap?: boolean;
-  /** Enable i18n (default: true) */
-  i18n?: boolean;
-}
-
-/**
  * Main Jant configuration
+ *
+ * Configuration Philosophy:
+ * - Use environment variables for runtime config (API keys, feature flags, site settings)
+ * - Use code config (this object) for compile-time customization (theme components)
+ *
+ * Site-level settings (name, description, language) are configured via
+ * environment variables, not here. See lib/config.ts for details.
  */
 export interface JantConfig {
-  /** Site configuration */
-  site?: SiteConfig;
-  /** Theme configuration */
+  /** Theme configuration (components, CSS overrides) */
   theme?: JantTheme;
-  /** Feature toggles */
-  features?: FeatureConfig;
 }

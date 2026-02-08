@@ -285,6 +285,52 @@ return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
 
 **Workflow**: Add `t()` → `mise run i18n-extract` → `mise run translate` (AI, optional) → `mise run i18n-compile`
 
+### Lingui + Hono JSX Integration (IMPORTANT)
+
+**Why source code uses `@lingui/react/macro` (even though we don't use React):**
+
+Jant uses **Hono JSX** (not React), but Lingui's SWC plugin only recognizes imports from `@lingui/react/macro` and `@lingui/macro`. We use a clever workaround:
+
+```typescript
+// Source code (what Lingui SWC plugin sees)
+import { useLingui } from "@lingui/react/macro";
+
+// ↓ SWC compiles and rewrites imports ↓
+
+// Runtime code (what actually executes)
+import { useLingui } from "@jant/core/i18n";
+```
+
+**How it works:**
+
+```typescript
+// vite.config.ts / .swcrc
+{
+  plugins: [
+    [
+      "@lingui/swc-plugin",
+      {
+        runtimeModules: {
+          useLingui: ["@jant/core/i18n", "useLingui"], // Rewrite import path
+          trans: ["@jant/core/i18n", "Trans"],
+        },
+      },
+    ],
+  ];
+}
+```
+
+**Vite configuration:**
+
+```typescript
+// Exclude @lingui/react from Vite's dependency scanner
+optimizeDeps: {
+  exclude: ['@lingui/react'],
+}
+```
+
+**DO NOT change `@lingui/react/macro` to `@lingui/macro`** - the SWC rewrite is intentional.
+
 See `src/i18n/README.md` for details.
 
 ## Datastar Usage
@@ -333,15 +379,85 @@ return sse(c, async (stream) => {
 - Use `throwIfNamespace: false` in SWC config for colon syntax (`data-on:click`)
 - For complex interactions (file uploads), use plain JS instead of Datastar
 
+## Configuration Strategy
+
+**Core Principle: Separate Runtime Config from Build-time Customization**
+
+Following the [12-factor app methodology](https://12factor.net/config), Jant strictly separates:
+
+### 1. Runtime Configuration (Environment Variables)
+
+Use environment variables for config that varies between deployments:
+
+- **Site settings**: `SITE_NAME`, `SITE_DESCRIPTION`, `SITE_LANGUAGE`
+- **API keys and secrets**: `AUTH_SECRET`, etc.
+- **Deployment config**: `SITE_URL`, `R2_PUBLIC_URL`, `IMAGE_TRANSFORM_URL`
+- **Runtime behavior**: Feature flags, external service URLs
+
+**Priority**: `Environment Variables > Database > Defaults`
+
+```typescript
+// Use unified config helpers (lib/config.ts)
+import { getSiteName, getSiteDescription, getSiteLanguage } from "@/lib/config";
+
+const siteName = await getSiteName(c); // ENV > DB > "Jant"
+```
+
+**Where to configure:**
+
+- **Development**: `.dev.vars` file
+- **Production**: `wrangler.toml` or Cloudflare dashboard secrets
+- **Runtime override**: Dashboard settings (stored in DB)
+
+### 2. Build-time Customization (Code Config)
+
+Use `createApp({ ... })` parameters ONLY for things that require compilation:
+
+- **Theme components**: UI component overrides
+- **CSS customization**: Theme variables and styles
+- **Build-time extensions**: Things that must be bundled
+
+```typescript
+// ✅ Correct usage
+export default createApp({
+  theme: {
+    components: {
+      PostCard: MyCustomPostCard, // Requires compilation
+    },
+  },
+});
+
+// ❌ NEVER do this
+export default createApp({
+  site: { name: "My Blog" }, // ❌ Use env vars instead
+  features: { search: false }, // ❌ Use env vars instead
+});
+```
+
+**Configuration Sources:**
+
+| Setting          | Environment Variable | Database Key       | Default            |
+| ---------------- | -------------------- | ------------------ | ------------------ |
+| Site Name        | `SITE_NAME`          | `SITE_NAME`        | `"Jant"`           |
+| Site Description | `SITE_DESCRIPTION`   | `SITE_DESCRIPTION` | `"A microblog..."` |
+| Site Language    | `SITE_LANGUAGE`      | `SITE_LANGUAGE`    | `"en"`             |
+
+**Important Rules:**
+
+1. **NEVER add feature flags to `createApp()`** - all features (search, RSS, sitemap) are enabled by default. If you need to disable features, use Cloudflare Workers routing rules or environment variables.
+2. **NEVER add site settings to `createApp()`** - they belong in environment variables or the database.
+3. **DO use `createApp()` for theme/UI customization** - components and styles need to be compiled.
+
 ## Key Conventions
 
-1. **Services**: All DB operations go through service layer
-2. **Types**: Single source of truth in `types.ts`, Zod for validation
-3. **Time**: Unix timestamps (seconds), use `lib/time.ts` utilities
-4. **IDs**: Sqids for URLs (`/p/jR3k`), integers in DB
-5. **Soft delete**: Posts use `deleted_at` field
-6. **Routes**: Use `xxxRoutes` naming convention consistently
-7. **Components**: Extract when pattern repeats 3+ times
+1. **Configuration**: Environment variables first (see Configuration Strategy above)
+2. **Services**: All DB operations go through service layer
+3. **Types**: Single source of truth in `types.ts`, Zod for validation
+4. **Time**: Unix timestamps (seconds), use `lib/time.ts` utilities
+5. **IDs**: Sqids for URLs (`/p/jR3k`), integers in DB
+6. **Soft delete**: Posts use `deleted_at` field
+7. **Routes**: Use `xxxRoutes` naming convention consistently
+8. **Components**: Extract when pattern repeats 3+ times
 
 ## Releasing
 

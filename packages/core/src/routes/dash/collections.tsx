@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Collections Routes
  */
@@ -363,7 +364,7 @@ function EditCollectionContent({ collection }: { collection: Collection }) {
 
 // List collections
 collectionsRoutes.get("/", async (c) => {
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
   const collections = await c.var.services.collections.list();
 
   return c.html(
@@ -380,7 +381,7 @@ collectionsRoutes.get("/", async (c) => {
 
 // New collection form
 collectionsRoutes.get("/new", async (c) => {
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <DashLayout
@@ -422,7 +423,7 @@ collectionsRoutes.get("/:id", async (c) => {
   if (!collection) return c.notFound();
 
   const posts = await c.var.services.collections.getPosts(id);
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <DashLayout
@@ -444,7 +445,7 @@ collectionsRoutes.get("/:id/edit", async (c) => {
   const collection = await c.var.services.collections.getById(id);
   if (!collection) return c.notFound();
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <DashLayout

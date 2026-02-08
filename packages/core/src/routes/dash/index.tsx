@@ -9,6 +9,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
+import { getSiteName } from "../../lib/config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -86,7 +87,7 @@ function DashboardContent({
 }
 
 dashIndexRoutes.get("/", async (c) => {
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   // Get some stats
   const allPosts = await c.var.services.posts.list({ limit: 1000 });

@@ -59,12 +59,15 @@ export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
  * @param config - Optional configuration
  * @returns Hono app instance
  *
+ * Site settings (name, description, language) should be configured via
+ * environment variables (SITE_NAME, SITE_DESCRIPTION, SITE_LANGUAGE).
+ * They can also be set in the dashboard, which stores them in the database.
+ *
  * @example
  * ```typescript
  * import { createApp } from "@jant/core";
  *
  * export default createApp({
- *   site: { name: "My Blog" },
  *   theme: { components: { PostCard: MyPostCard } },
  * });
  * ```
@@ -74,13 +77,20 @@ export function createApp(config: JantConfig = {}): App {
 
   // Initialize services, auth, and config middleware
   app.use("*", async (c, next) => {
-    const db = createDatabase(c.env.DB);
-    const services = createServices(db, c.env.DB);
+    // Use withSession() to enable D1 Read Replication
+    // Automatically routes read queries to the nearest replica for lower latency
+    // See: https://developers.cloudflare.com/d1/best-practices/read-replication/
+    const session = c.env.DB.withSession();
+
+    // Note: Drizzle ORM doesn't officially support D1DatabaseSession yet (issue #2226)
+    // but it works at runtime. We use type assertion as a temporary workaround.
+    const db = createDatabase(session as unknown as D1Database);
+    const services = createServices(db, session as unknown as D1Database);
     c.set("services", services);
     c.set("config", config);
 
     if (c.env.AUTH_SECRET) {
-      const auth = createAuth(c.env.DB, {
+      const auth = createAuth(session as unknown as D1Database, {
         secret: c.env.AUTH_SECRET,
         baseURL: c.env.SITE_URL,
       });

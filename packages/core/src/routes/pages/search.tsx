@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Search Page Route
  */
@@ -155,7 +156,7 @@ searchRoutes.get("/", async (c) => {
   const pageParam = c.req.query("page");
   const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   // Only search if there's a query
   let results: Awaited<ReturnType<typeof c.var.services.search.search>> = [];

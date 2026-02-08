@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Media Routes
  *
@@ -544,7 +545,7 @@ function ViewMediaContent({
 // List media
 mediaRoutes.get("/", async (c) => {
   const mediaList = await c.var.services.media.list(100);
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
 
@@ -570,7 +571,7 @@ mediaRoutes.get("/:id", async (c) => {
   const media = await c.var.services.media.getById(id);
   if (!media) return c.notFound();
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
 

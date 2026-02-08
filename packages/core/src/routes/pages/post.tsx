@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Single Post Page Route
  */
@@ -81,7 +82,7 @@ postRoutes.get("/:id", async (c) => {
     return c.notFound();
   }
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
   const title = post.title || siteName;
 
   return c.html(

@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Archive Page Route
  *
@@ -225,7 +226,7 @@ archiveRoutes.get("/", async (c) => {
   const cursorParam = c.req.query("cursor");
   const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   // Fetch one extra to check for more
   const posts = await c.var.services.posts.list({

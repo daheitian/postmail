@@ -121,6 +121,15 @@ export default defineConfig({
     port: 9019,
   },
 
+  // Exclude @lingui/react from dependency optimization
+  // Why: Source code uses `@lingui/react/macro` (for Lingui SWC plugin recognition),
+  // but SWC rewrites imports to `@jant/core/i18n` at compile time (see runtimeModules config).
+  // Vite's dependency scanner sees the source imports and warns about missing @lingui/react.
+  // This is harmless but causes multiple reloads. Excluding prevents the warning.
+  optimizeDeps: {
+    exclude: ["@lingui/react"],
+  },
+
   environments: {
     client: {
       build: {

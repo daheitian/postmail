@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Posts Routes
  */
@@ -54,7 +55,7 @@ postsRoutes.get("/", async (c) => {
   const posts = await c.var.services.posts.list({
     visibility: ["featured", "quiet", "unlisted", "draft"],
   });
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <DashLayout
@@ -70,7 +71,7 @@ postsRoutes.get("/", async (c) => {
 
 // New post form
 postsRoutes.get("/new", async (c) => {
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <DashLayout
@@ -166,7 +167,7 @@ postsRoutes.get("/:id", async (c) => {
   const post = await c.var.services.posts.getById(id);
   if (!post) return c.notFound();
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
   const pageTitle = post.title || "Post";
 
   return c.html(
@@ -189,7 +190,7 @@ postsRoutes.get("/:id/edit", async (c) => {
   const post = await c.var.services.posts.getById(id);
   if (!post) return c.notFound();
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <DashLayout

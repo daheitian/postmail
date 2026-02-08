@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Collection Page Route
  */
@@ -89,7 +90,7 @@ collectionRoutes.get("/:path", async (c) => {
   if (!collection) return c.notFound();
 
   const posts = await c.var.services.collections.getPosts(collection.id);
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <BaseLayout

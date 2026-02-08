@@ -25,8 +25,6 @@ export type {
   UpdatePost,
   JantConfig,
   JantTheme,
-  SiteConfig,
-  FeatureConfig,
   ThemeComponents,
 } from "./types.js";
 

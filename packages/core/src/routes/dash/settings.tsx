@@ -8,6 +8,11 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
 import { sse } from "../../lib/sse.js";
+import {
+  getSiteName,
+  getSiteDescription,
+  getSiteLanguage,
+} from "../../lib/config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -207,10 +212,9 @@ function SettingsContent({
 
 // Settings page
 settingsRoutes.get("/", async (c) => {
-  const all = await c.var.services.settings.getAll();
-  const siteName = all["SITE_NAME"] ?? "Jant";
-  const siteDescription = all["SITE_DESCRIPTION"] ?? "";
-  const siteLanguage = all["SITE_LANGUAGE"] ?? "en";
+  const siteName = await getSiteName(c);
+  const siteDescription = await getSiteDescription(c);
+  const siteLanguage = await getSiteLanguage(c);
   const saved = c.req.query("saved") !== undefined;
 
   return c.html(

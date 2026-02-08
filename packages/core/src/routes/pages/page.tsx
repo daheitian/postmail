@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Custom Page Route
  *
@@ -60,7 +61,7 @@ pageRoutes.get("/:path", async (c) => {
     return c.notFound();
   }
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <BaseLayout

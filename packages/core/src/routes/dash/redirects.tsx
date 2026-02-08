@@ -1,3 +1,4 @@
+import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Redirects Routes
  */
@@ -176,7 +177,7 @@ function NewRedirectContent() {
 
 // List redirects
 redirectsRoutes.get("/", async (c) => {
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
   const redirects = await c.var.services.redirects.list();
 
   return c.html(
@@ -193,7 +194,7 @@ redirectsRoutes.get("/", async (c) => {
 
 // New redirect form
 redirectsRoutes.get("/new", async (c) => {
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   return c.html(
     <DashLayout

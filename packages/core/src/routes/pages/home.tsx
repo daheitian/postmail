@@ -9,6 +9,7 @@ import type { AppVariables } from "../../app.js";
 import { BaseLayout } from "../../theme/layouts/index.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
+import { getSiteName } from "../../lib/config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -106,7 +107,7 @@ homeRoutes.get("/", async (c) => {
     return c.redirect("/setup");
   }
 
-  const siteName = (await c.var.services.settings.get("SITE_NAME")) ?? "Jant";
+  const siteName = await getSiteName(c);
 
   const posts = await c.var.services.posts.list({
     visibility: ["featured", "quiet"],
