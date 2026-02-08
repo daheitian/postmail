@@ -28,7 +28,7 @@ let currentI18n: I18n | null = null;
  *
  * @example
  * ```tsx
- * import { I18nProvider } from "@/i18n";
+ * import { I18nProvider } from "../i18n/index.js";
  *
  * return c.html(
  *   <I18nProvider c={c}>
@@ -56,7 +56,7 @@ export const I18nProvider: FC<I18nProviderProps> = ({ c, children }) => {
  * @example
  * ```tsx
  * import { t } from "@lingui/core/macro";
- * import { useLingui } from "@/i18n";
+ * import { useLingui } from "../i18n/index.js";
  *
  * function MyComponent() {
  *   const { t: _ } = useLingui();  // Use _ to avoid conflict with macro

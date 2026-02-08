@@ -9,7 +9,7 @@
  *
  * Usage:
  * ```tsx
- * import { useLingui, Trans, I18nProvider } from "@/i18n";
+ * import { useLingui, Trans, I18nProvider } from "../i18n/index.js";
  *
  * // Wrap your app in I18nProvider (automatically done by BaseLayout when c is provided)
  * c.html(

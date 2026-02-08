@@ -38,7 +38,11 @@ function injectManifest(): Plugin {
   const sentinel = '"__VITE_MANIFEST_CONTENT__"';
 
   function readManifest(): string | undefined {
-    const manifestPath = resolve(process.cwd(), clientOutDir, ".vite/manifest.json");
+    const manifestPath = resolve(
+      process.cwd(),
+      clientOutDir,
+      ".vite/manifest.json",
+    );
     try {
       return readFileSync(manifestPath, "utf-8");
     } catch {
@@ -54,7 +58,8 @@ function injectManifest(): Plugin {
     name: "inject-manifest",
     config(config) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      clientOutDir = (config as any).environments?.client?.build?.outDir ?? "dist/client";
+      clientOutDir =
+        (config as any).environments?.client?.build?.outDir ?? "dist/client";
     },
 
     // 1. Try during transform (works when previous client build exists on disk)
@@ -67,7 +72,7 @@ function injectManifest(): Plugin {
 
       const newCode = code.replace(
         /"__VITE_MANIFEST_CONTENT__"/g,
-        buildReplacement(manifestContent)
+        buildReplacement(manifestContent),
       );
 
       if (newCode !== code) {
@@ -188,8 +193,18 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      "@": "/src",
       // @monorepo-only-start
+      // Monorepo development aliases
+      // - @lingui/react/macro: Prevents Vite dependency scan error. Source code imports
+      //   from @lingui/react/macro (for SWC plugin), but we use Hono JSX. SWC rewrites
+      //   these at compile time, but Vite scans before SWC runs.
+      // - @jant/core: Points to source for HMR during development.
+      // Note: User projects don't need @lingui/react/macro alias because they use
+      //   node_modules/@jant/core/dist/ (already compiled by SWC, imports rewritten).
+      "@lingui/react/macro": resolve(
+        __dirname,
+        "../../packages/core/src/i18n/index.ts",
+      ),
       "@jant/core": resolve(__dirname, "../../packages/core/src"),
       // @monorepo-only-end
     },

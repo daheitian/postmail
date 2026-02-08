@@ -44,6 +44,64 @@ export interface Bindings {
 }
 
 // =============================================================================
+// Configuration System
+// =============================================================================
+
+/**
+ * Configuration Registry - Single Source of Truth
+ *
+ * All available configuration fields with their metadata.
+ * Add new fields here, and they'll automatically work everywhere.
+ *
+ * Priority logic:
+ * - envOnly: false → User-configurable (DB > ENV > Default)
+ * - envOnly: true → Environment-only (ENV > Default)
+ */
+export const CONFIG_FIELDS = {
+  // User-configurable (can be modified in dashboard)
+  SITE_NAME: {
+    defaultValue: "Jant",
+    envOnly: false,
+  },
+  SITE_DESCRIPTION: {
+    defaultValue: "A microblog powered by Jant",
+    envOnly: false,
+  },
+  SITE_LANGUAGE: {
+    defaultValue: "en",
+    envOnly: false,
+  },
+
+  // Environment-only (deployment/infrastructure config)
+  SITE_URL: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  AUTH_SECRET: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  R2_PUBLIC_URL: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  IMAGE_TRANSFORM_URL: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  DEMO_EMAIL: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  DEMO_PASSWORD: {
+    defaultValue: "",
+    envOnly: true,
+  },
+} as const;
+
+export type ConfigKey = keyof typeof CONFIG_FIELDS;
+
+// =============================================================================
 // Entity Types
 // =============================================================================
 

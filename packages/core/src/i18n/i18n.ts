@@ -48,7 +48,7 @@ export function createI18n(locale: Locale): I18n {
  *
  * @example
  * import { msg } from "@lingui/core/macro";
- * import { getI18n } from "@/i18n";
+ * import { getI18n } from "../i18n/index.js";
  *
  * const i18n = getI18n(c);
  * const title = i18n._(msg({ message: "Dashboard", comment: "@context: Page title" }));

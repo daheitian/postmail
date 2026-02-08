@@ -42,13 +42,14 @@ This is an open source project. Code quality and maintainability are paramount.
 - **Stop dev after debugging**: Stop background processes when done so user can restart manually.
 - **Debug port**: Use `mise run dev-debug` (port 19019) for testing, leaving 9019 free.
 - **NO auto-publishing**: Do NOT run publish commands. User handles releases via `mise run version` and `mise run release`.
+- **NEVER edit `packages/create-jant/template/` directly**: This directory is auto-generated from `templates/jant-site` during publish. Edit `templates/jant-site` and use `@monorepo-only` / `@user-project-only` markers for monorepo vs. user project differences. See Package Architecture section for details.
 
 ## Quick Reference
 
 ```bash
 # Development
-mise run dev          # Start Vite dev server (http://localhost:9019)
-mise run dev-debug    # Start Vite dev server on port 19019 (for Claude debugging)
+mise run dev          # Start Vite dev server (auto-runs migrations first)
+mise run dev-debug    # Start dev server on port 19019 (for Claude debugging)
 mise run typecheck    # Run TypeScript checks (strict mode)
 mise run lint         # Run ESLint
 mise run format       # Format code with Prettier
@@ -60,7 +61,7 @@ mise run preview      # Preview production build with Vite
 
 # Database
 mise run db-generate  # Generate Drizzle migrations
-mise run db-migrate   # Apply migrations (local D1)
+mise run db-migrate   # Apply migrations (local D1) - usually not needed, dev auto-runs this
 
 # i18n
 mise run i18n         # Extract + compile translations
@@ -78,7 +79,20 @@ mise run release:dry  # Dry run publish
 # First-time Publish (manual, before Trusted Publishing)
 mise run publish:core   # Publish @jant/core to npm
 mise run publish:create # Publish create-jant to npm
+
+# Utilities
+mise run clean          # Clean build artifacts (dist, .wrangler)
+mise run nuke           # Remove node_modules and reinstall
+mise run fresh          # Nuclear reset - delete everything and start fresh
+mise run db-clean       # Delete local D1 database (.wrangler)
+mise run db-reset       # Delete database and re-run migrations
 ```
+
+**Important Notes:**
+
+- **`mise run dev` auto-runs migrations** - You don't need to manually run `db-migrate` before starting development
+- **`mise run fresh` for fresh start** - After running this, just do `mise run dev` (migrations included)
+- **Database is auto-migrated** - Both `dev` and `dev-debug` run migrations before starting the server
 
 ## Package Architecture
 
@@ -104,7 +118,37 @@ mise run publish:create # Publish create-jant to npm
 
 ### `packages/create-jant/template` (User template)
 
-**Difference from jant-site**: No monorepo alias - imports `@jant/core` from node_modules.
+**IMPORTANT: This directory is auto-generated - DO NOT manually edit files here!**
+
+The `template/` directory is generated from `templates/jant-site` during `prepublishOnly`:
+
+1. **Copy**: `pnpm copy-template` copies `templates/jant-site` → `packages/create-jant/template`
+2. **Transform**: `pnpm prepare-template` (script) + runtime (in `src/index.ts`) transforms files:
+   - Remove `@monorepo-only-start/end` blocks
+   - Keep `@user-project-only-start/end` content (remove markers only)
+   - Merge tsconfig.json (remove extends, inline parent config)
+   - Replace `@jant/core/src/*.ts` → `@jant/core/dist/*.js`
+
+**When adding new config that differs between monorepo and user projects:**
+
+Use marker comments in `templates/jant-site`:
+
+```typescript
+// Example: vite.config.ts
+resolve: {
+  alias: {
+    // @monorepo-only-start
+    "@jant/core": resolve(__dirname, "../../packages/core/src"),
+    "@lingui/react/macro": resolve(__dirname, "../../packages/core/src/i18n/index.ts"),
+    // @monorepo-only-end
+    // @user-project-only-start
+    "@lingui/react/macro": "@jant/core/i18n",
+    // @user-project-only-end
+  }
+}
+```
+
+The `@monorepo-only` block is removed for user projects, `@user-project-only` content is kept.
 
 ## Project Structure
 
@@ -387,20 +431,76 @@ Following the [12-factor app methodology](https://12factor.net/config), Jant str
 
 ### 1. Runtime Configuration (Environment Variables)
 
-Use environment variables for config that varies between deployments:
+Jant uses a **two-tier configuration system** with different priority modes:
 
-- **Site settings**: `SITE_NAME`, `SITE_DESCRIPTION`, `SITE_LANGUAGE`
-- **API keys and secrets**: `AUTH_SECRET`, etc.
-- **Deployment config**: `SITE_URL`, `R2_PUBLIC_URL`, `IMAGE_TRANSFORM_URL`
-- **Runtime behavior**: Feature flags, external service URLs
+**Configuration Types:**
 
-**Priority**: `Environment Variables > Database > Defaults`
+1. **User-Configurable** (`envOnly: false` → **Database > Environment > Default**)
+   - `SITE_NAME`, `SITE_DESCRIPTION`, `SITE_LANGUAGE`
+   - Users can modify these in `/dash/settings`
+   - Environment variables serve as **initial/default values**
+   - Database values take precedence (user's choice is final)
+
+2. **Environment-Only** (`envOnly: true` → **Environment > Default**)
+   - `SITE_URL`, `AUTH_SECRET`, `R2_PUBLIC_URL`, `IMAGE_TRANSFORM_URL`, `DEMO_EMAIL`, `DEMO_PASSWORD`
+   - Infrastructure/deployment config and optional features
+   - Cannot be modified in dashboard
+   - Only set via environment variables or Cloudflare secrets
+
+**Configuration Registry - Single Source of Truth:**
+
+All configuration fields are defined in `CONFIG_FIELDS` (types.ts):
+
+```typescript
+export const CONFIG_FIELDS = {
+  // User-configurable (can be modified in dashboard)
+  SITE_NAME: {
+    defaultValue: "Jant",
+    envOnly: false, // DB > ENV > Default
+  },
+
+  // Environment-only (deployment/infrastructure)
+  SITE_URL: {
+    defaultValue: "",
+    envOnly: true, // ENV > Default
+  },
+  // ...
+} as const;
+
+export type ConfigKey = keyof typeof CONFIG_FIELDS;
+```
+
+**Adding New Configuration:**
+
+To add a new config field, simply add it to `CONFIG_FIELDS`:
+
+```typescript
+// Want to allow UI configuration for R2 URL?
+R2_PUBLIC_URL: {
+  defaultValue: "",
+  envOnly: false, // Change from true to false
+},
+```
+
+**Usage:**
 
 ```typescript
 // Use unified config helpers (lib/config.ts)
-import { getSiteName, getSiteDescription, getSiteLanguage } from "@/lib/config";
+import {
+  getSiteName,
+  getSiteDescription,
+  getSiteLanguage,
+  getConfig,
+} from "@/lib/config";
 
-const siteName = await getSiteName(c); // ENV > DB > "Jant"
+// For user-configurable configs:
+const siteName = await getSiteName(c); // DB > ENV > "Jant"
+
+// For environment-only configs:
+const siteUrl = c.env.SITE_URL; // ENV only
+
+// Generic getter (type-safe):
+const value = await getConfig(c, "SITE_NAME"); // ConfigKey type ensures safety
 ```
 
 **Where to configure:**
@@ -456,13 +556,15 @@ export default createApp({
 });
 ```
 
-**Configuration Sources:**
+**Configuration Priority Table:**
 
-| Setting          | Environment Variable | Database Key       | Default            |
-| ---------------- | -------------------- | ------------------ | ------------------ |
-| Site Name        | `SITE_NAME`          | `SITE_NAME`        | `"Jant"`           |
-| Site Description | `SITE_DESCRIPTION`   | `SITE_DESCRIPTION` | `"A microblog..."` |
-| Site Language    | `SITE_LANGUAGE`      | `SITE_LANGUAGE`    | `"en"`             |
+| Setting          | envOnly | Priority           | Database | Environment | Default            | Dashboard Editable |
+| ---------------- | ------- | ------------------ | -------- | ----------- | ------------------ | ------------------ |
+| Site Name        | false   | DB > ENV > Default | ✅       | ✅          | `"Jant"`           | ✅ Yes             |
+| Site Description | false   | DB > ENV > Default | ✅       | ✅          | `"A microblog..."` | ✅ Yes             |
+| Site Language    | false   | DB > ENV > Default | ✅       | ✅          | `"en"`             | ✅ Yes             |
+| Site URL         | true    | ENV > Default      | ❌       | ✅          | `""`               | ❌ No              |
+| Auth Secret      | true    | ENV > Default      | ❌       | ✅          | `""`               | ❌ No              |
 
 **Important Rules:**
 
@@ -494,3 +596,13 @@ Uses [Changesets](https://github.com/changesets/changesets) for version manageme
 Dev server on port 9019, accessible via localhost, network IP, or custom domain (Caddy reverse proxy to `local.jant.me`).
 
 **Required in `.dev.vars`**: `AUTH_SECRET=your-secret-at-least-32-chars`
+
+### Quick Start
+
+```bash
+# First time or after fresh clone
+mise run fresh          # Nuclear reset (optional, only if needed)
+mise run dev            # Start dev server (auto-runs migrations)
+```
+
+**Important**: `mise run dev` automatically runs database migrations before starting the server, so you don't need to manually run `mise run db-migrate`.

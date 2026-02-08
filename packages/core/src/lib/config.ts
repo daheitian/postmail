@@ -1,16 +1,57 @@
 /**
- * Unified Configuration Helpers
+ * Unified Configuration System
  *
- * Configuration priority: Environment Variables > Database > Default Values
+ * Provides a flexible configuration system with two priority modes:
+ * - User-configurable (envOnly: false): Database > Environment > Default
+ * - Environment-only (envOnly: true): Environment > Default
  *
- * This follows the 12-factor app methodology where configuration is stored
- * in environment variables, while allowing runtime overrides via database.
+ * All configuration fields are defined in CONFIG_FIELDS (types.ts).
  */
 
 import type { Context } from "hono";
+import { CONFIG_FIELDS, type ConfigKey } from "../types.js";
 
 /**
- * Get site name with fallback chain: ENV > DB > Default
+ * Generic configuration getter that respects priority settings
+ *
+ * @param c - Hono context
+ * @param key - Configuration key from CONFIG_FIELDS
+ * @returns Configuration value following the defined priority
+ *
+ * @example
+ * ```typescript
+ * // For user-configurable configs (SITE_NAME):
+ * // Returns: (DB: SITE_NAME) ?? c.env.SITE_NAME ?? "Jant"
+ *
+ * // For environment-only configs (SITE_URL):
+ * // Returns: c.env.SITE_URL ?? ""
+ * ```
+ */
+export async function getConfig(c: Context, key: ConfigKey): Promise<string> {
+  const field = CONFIG_FIELDS[key];
+
+  if (!field.envOnly) {
+    // User-configurable: DB > ENV > Default
+    // 1. Check database setting first
+    const dbValue = await c.var.services.settings.get(key);
+    if (dbValue) {
+      return dbValue;
+    }
+  }
+
+  // ENV > Default
+  // 2. Check environment variable
+  const envValue = c.env[key as keyof typeof c.env];
+  if (envValue && typeof envValue === "string") {
+    return envValue;
+  }
+
+  // 3. Default value
+  return field.defaultValue;
+}
+
+/**
+ * Get site name with fallback chain: DB > ENV > Default
  *
  * @param c - Hono context
  * @returns Site name
@@ -18,27 +59,15 @@ import type { Context } from "hono";
  * @example
  * ```typescript
  * const siteName = await getSiteName(c);
- * // Returns: c.env.SITE_NAME ?? (DB: SITE_NAME) ?? "Jant"
+ * // Returns: (DB: SITE_NAME) ?? c.env.SITE_NAME ?? "Jant"
  * ```
  */
 export async function getSiteName(c: Context): Promise<string> {
-  // 1. Check environment variable
-  if (c.env.SITE_NAME) {
-    return c.env.SITE_NAME;
-  }
-
-  // 2. Check database setting
-  const dbValue = await c.var.services.settings.get("SITE_NAME");
-  if (dbValue) {
-    return dbValue;
-  }
-
-  // 3. Default value
-  return "Jant";
+  return getConfig(c, "SITE_NAME");
 }
 
 /**
- * Get site description with fallback chain: ENV > DB > Default
+ * Get site description with fallback chain: DB > ENV > Default
  *
  * @param c - Hono context
  * @returns Site description
@@ -46,27 +75,15 @@ export async function getSiteName(c: Context): Promise<string> {
  * @example
  * ```typescript
  * const description = await getSiteDescription(c);
- * // Returns: c.env.SITE_DESCRIPTION ?? (DB: SITE_DESCRIPTION) ?? "A microblog powered by Jant"
+ * // Returns: (DB: SITE_DESCRIPTION) ?? c.env.SITE_DESCRIPTION ?? "A microblog powered by Jant"
  * ```
  */
 export async function getSiteDescription(c: Context): Promise<string> {
-  // 1. Check environment variable
-  if (c.env.SITE_DESCRIPTION) {
-    return c.env.SITE_DESCRIPTION;
-  }
-
-  // 2. Check database setting
-  const dbValue = await c.var.services.settings.get("SITE_DESCRIPTION");
-  if (dbValue) {
-    return dbValue;
-  }
-
-  // 3. Default value
-  return "A microblog powered by Jant";
+  return getConfig(c, "SITE_DESCRIPTION");
 }
 
 /**
- * Get site language with fallback chain: ENV > DB > Default
+ * Get site language with fallback chain: DB > ENV > Default
  *
  * @param c - Hono context
  * @returns Site language code
@@ -74,21 +91,9 @@ export async function getSiteDescription(c: Context): Promise<string> {
  * @example
  * ```typescript
  * const lang = await getSiteLanguage(c);
- * // Returns: c.env.SITE_LANGUAGE ?? (DB: SITE_LANGUAGE) ?? "en"
+ * // Returns: (DB: SITE_LANGUAGE) ?? c.env.SITE_LANGUAGE ?? "en"
  * ```
  */
 export async function getSiteLanguage(c: Context): Promise<string> {
-  // 1. Check environment variable
-  if (c.env.SITE_LANGUAGE) {
-    return c.env.SITE_LANGUAGE;
-  }
-
-  // 2. Check database setting
-  const dbValue = await c.var.services.settings.get("SITE_LANGUAGE");
-  if (dbValue) {
-    return dbValue;
-  }
-
-  // 3. Default value
-  return "en";
+  return getConfig(c, "SITE_LANGUAGE");
 }
