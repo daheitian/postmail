@@ -67,7 +67,11 @@ featured, signin, signout, setup, dash, api, feed, search, archive,
 notes, articles, links, quotes, media, pages, p, c, static, assets
 ```
 
-## Example wrangler.toml
+## Configuration Files
+
+### wrangler.toml
+
+Non-sensitive environment variables are defined in `wrangler.toml` and committed to git:
 
 ```toml
 name = "my-jant-blog"
@@ -77,6 +81,15 @@ compatibility_date = "2024-01-01"
 [vars]
 SITE_URL = "https://myblog.com"
 
+# Optional: Site configuration (can be overridden in dashboard)
+# SITE_NAME = "My Blog"
+# SITE_DESCRIPTION = "A personal blog"
+# SITE_LANGUAGE = "en"
+
+# Optional: R2 and image optimization
+# R2_PUBLIC_URL = "https://cdn.example.com"
+# IMAGE_TRANSFORM_URL = "https://myblog.com/cdn-cgi/image"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "jant-db"
@@ -85,4 +98,25 @@ database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "jant-media"
+```
+
+### .dev.vars (Local Development)
+
+Sensitive secrets are stored in `.dev.vars` (NOT committed to git):
+
+```bash
+# .dev.vars
+AUTH_SECRET=your-32-plus-character-secret-here
+```
+
+Copy from `.dev.vars.example` and fill in your actual values.
+
+### Production Secrets
+
+For production, set secrets via Cloudflare:
+
+```bash
+# Set production secret
+wrangler secret put AUTH_SECRET
+# Enter your secret when prompted
 ```

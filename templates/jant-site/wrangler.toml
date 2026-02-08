@@ -6,8 +6,36 @@ compatibility_flags = ["nodejs_compat"]
 [dev]
 port = 9019
 
+# ============================================
+# Environment Variables
+# ============================================
+# Non-sensitive configuration goes here in [vars]
+# Sensitive secrets (like AUTH_SECRET) should be:
+# - Local dev: .dev.vars file (not committed)
+# - Production: wrangler secret put AUTH_SECRET
+# See docs/configuration.md for full details
+
 [vars]
+# Required: Your site's public URL
 SITE_URL = "http://localhost:9019"
+
+# Optional: Site configuration
+# These can be overridden in dashboard settings (/dash/settings)
+# If not set, values from database settings table are used
+# SITE_NAME = "My Blog"
+# SITE_DESCRIPTION = "A personal blog powered by Jant"
+# SITE_LANGUAGE = "en"
+
+# Optional: R2 Storage (for media uploads)
+# R2_PUBLIC_URL = "https://cdn.example.com"
+
+# Optional: Cloudflare Image Transformations
+# For automatic thumbnail generation and image optimization
+# IMAGE_TRANSFORM_URL = "https://example.com/cdn-cgi/image"
+
+# Optional: Demo mode (pre-fill sign-in credentials)
+# DEMO_EMAIL = "demo@example.com"
+# DEMO_PASSWORD = "demo123"
 
 [[d1_databases]]
 binding = "DB"

@@ -170,10 +170,16 @@ To use your own domain:
 
 ## Environment Variables
 
-| Variable      | Description                               | Required             |
-| ------------- | ----------------------------------------- | -------------------- |
-| `AUTH_SECRET` | Secret key for authentication (32+ chars) | Yes                  |
-| `SITE_URL`    | Your site's public URL                    | Set in wrangler.toml |
+Core environment variables:
+
+| Variable      | Description                               | Location         |
+| ------------- | ----------------------------------------- | ---------------- |
+| `AUTH_SECRET` | Secret key for authentication (32+ chars) | `.dev.vars` file |
+| `SITE_URL`    | Your site's public URL                    | `wrangler.toml`  |
+
+For a complete list of all available environment variables (site configuration, R2 storage, image optimization, demo mode, etc.), see:
+
+**[📖 Full Configuration Guide](../../docs/configuration.md)**
 
 ## Customization
 

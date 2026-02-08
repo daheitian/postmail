@@ -82,6 +82,17 @@ run = "pnpm --filter jant-site db:migrate:local"
 description = "Run D1 migrations (remote template)"
 run = "pnpm --filter jant-site db:migrate:remote"
 
+[tasks.db-clean]
+description = "Delete local D1 database (wrangler state)"
+run = "rm -rf templates/jant-site/.wrangler"
+
+[tasks.db-reset]
+description = "Delete local database and re-run migrations"
+run = """
+rm -rf templates/jant-site/.wrangler
+pnpm --filter jant-site db:migrate:local
+"""
+
 # =============================================================================
 # i18n (Lingui)
 # =============================================================================
