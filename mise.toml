@@ -175,6 +175,11 @@ pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scr
 # =============================================================================
 # Utilities
 # =============================================================================
+[tasks.reset-password]
+description = "Generate password reset token (local D1)"
+dir = "templates/jant-site"
+run = "node scripts/reset-password.mjs"
+
 [tasks.clean]
 description = "Clean build artifacts"
 run = "rm -rf packages/*/dist packages/*/.wrangler templates/*/.wrangler"

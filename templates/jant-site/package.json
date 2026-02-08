@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
-    "jant": "jant"
+    "jant": "jant",
+    "reset-password": "node scripts/reset-password.mjs"
   },
   "dependencies": {
     "@jant/core": "workspace:*"

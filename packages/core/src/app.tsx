@@ -10,6 +10,8 @@ import { createAuth, type Auth } from "./auth.js";
 import { i18nMiddleware } from "./i18n/index.js";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, JantConfig } from "./types.js";
+import { SETTINGS_KEYS } from "./lib/constants.js";
+import { hashPassword } from "better-auth/crypto";
 
 // Routes - Pages
 import { homeRoutes } from "./routes/pages/home.js";
@@ -165,7 +167,7 @@ export function createApp(config: JantConfig = {}): App {
             </h2>
             <p>
               {t({
-                message: "Let's set up your site.",
+                message: "Create your admin account.",
                 comment: "@context: Setup page description",
               })}
             </p>
@@ -173,28 +175,10 @@ export function createApp(config: JantConfig = {}): App {
           <section>
             <div id="setup-message"></div>
             <form
-              data-signals="{siteName: '', name: '', email: '', password: ''}"
+              data-signals="{name: '', email: '', password: ''}"
               data-on:submit__prevent="@post('/setup')"
               class="flex flex-col gap-4"
             >
-              <div class="field">
-                <label class="label">
-                  {t({
-                    message: "Site Name",
-                    comment: "@context: Setup form field - site name",
-                  })}
-                </label>
-                <input
-                  type="text"
-                  data-bind="siteName"
-                  class="input"
-                  required
-                  placeholder={t({
-                    message: "My Blog",
-                    comment: "@context: Setup site name placeholder",
-                  })}
-                />
-              </div>
               <div class="field">
                 <label class="label">
                   {t({
@@ -270,14 +254,13 @@ export function createApp(config: JantConfig = {}): App {
     if (isComplete) return c.redirect("/");
 
     const body = await c.req.json<{
-      siteName: string;
       name: string;
       email: string;
       password: string;
     }>();
-    const { siteName, name, email, password } = body;
+    const { name, email, password } = body;
 
-    if (!siteName || !name || !email || !password) {
+    if (!name || !email || !password) {
       return sse(c, async (stream) => {
         await stream.patchElements(
           '<div id="setup-message"><div class="alert-destructive mb-4"><h2>All fields are required</h2></div></div>',
@@ -314,14 +297,10 @@ export function createApp(config: JantConfig = {}): App {
         });
       }
 
-      await c.var.services.settings.setMany({
-        SITE_NAME: siteName,
-        SITE_LANGUAGE: "en",
-      });
       await c.var.services.settings.completeOnboarding();
 
       return sse(c, async (stream) => {
-        await stream.redirect("/signin");
+        await stream.redirect("/signin?setup");
       });
     } catch (err) {
       // eslint-disable-next-line no-console -- Error logging is intentional
@@ -338,7 +317,8 @@ export function createApp(config: JantConfig = {}): App {
   const SigninContent: FC<{
     demoEmail?: string;
     demoPassword?: string;
-  }> = ({ demoEmail, demoPassword }) => {
+    successMessage?: string;
+  }> = ({ demoEmail, demoPassword, successMessage }) => {
     const { t } = useLingui();
     const signals = JSON.stringify({
       email: demoEmail || "",
@@ -358,6 +338,14 @@ export function createApp(config: JantConfig = {}): App {
           </header>
           <section>
             <div id="signin-message"></div>
+            {successMessage && (
+              <div
+                class="alert-success mb-4 transition-opacity duration-300"
+                data-init="history.replaceState({}, '', '/signin'); setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300) }, 3000)"
+              >
+                <h2>{successMessage}</h2>
+              </div>
+            )}
             {demoEmail && demoPassword && (
               <p class="text-muted-foreground text-sm mb-4">
                 {t({
@@ -410,11 +398,26 @@ export function createApp(config: JantConfig = {}): App {
 
   // Signin page
   app.get("/signin", async (c) => {
+    const { t } = useLingui();
+    let successMessage: string | undefined;
+    if (c.req.query("setup") !== undefined) {
+      successMessage = t({
+        message: "Account created successfully. Please sign in.",
+        comment: "@context: Success message after setup completes",
+      });
+    } else if (c.req.query("reset") !== undefined) {
+      successMessage = t({
+        message: "Password reset successfully. Please sign in.",
+        comment: "@context: Success message after password reset",
+      });
+    }
+
     return c.html(
       <BaseLayout title="Sign In - Jant" c={c}>
         <SigninContent
           demoEmail={c.env.DEMO_EMAIL}
           demoPassword={c.env.DEMO_PASSWORD}
+          successMessage={successMessage}
         />
       </BaseLayout>,
     );
@@ -486,6 +489,250 @@ export function createApp(config: JantConfig = {}): App {
       }
     }
     return c.redirect("/");
+  });
+
+  // Password reset via one-time token
+  const ResetContent: FC<{ token: string }> = ({ token }) => {
+    const { t } = useLingui();
+    const signals = JSON.stringify({
+      password: "",
+      confirmPassword: "",
+      token,
+    }).replace(/</g, "\\u003c");
+
+    return (
+      <div class="min-h-screen flex items-center justify-center">
+        <div class="card max-w-md w-full">
+          <header>
+            <h2>
+              {t({
+                message: "Reset Password",
+                comment: "@context: Password reset page heading",
+              })}
+            </h2>
+            <p>
+              {t({
+                message: "Enter your new password.",
+                comment: "@context: Password reset page description",
+              })}
+            </p>
+          </header>
+          <section>
+            <div id="reset-message"></div>
+            <form
+              data-signals={signals}
+              data-on:submit__prevent="@post('/reset')"
+              class="flex flex-col gap-4"
+            >
+              <div class="field">
+                <label class="label">
+                  {t({
+                    message: "New Password",
+                    comment: "@context: Password reset form field",
+                  })}
+                </label>
+                <input
+                  type="password"
+                  data-bind="password"
+                  class="input"
+                  required
+                  minLength={8}
+                  autocomplete="new-password"
+                />
+              </div>
+              <div class="field">
+                <label class="label">
+                  {t({
+                    message: "Confirm Password",
+                    comment: "@context: Password reset form field",
+                  })}
+                </label>
+                <input
+                  type="password"
+                  data-bind="confirmPassword"
+                  class="input"
+                  required
+                  minLength={8}
+                  autocomplete="new-password"
+                />
+              </div>
+              <button type="submit" class="btn">
+                {t({
+                  message: "Reset Password",
+                  comment: "@context: Password reset form submit button",
+                })}
+              </button>
+            </form>
+          </section>
+        </div>
+      </div>
+    );
+  };
+
+  const ResetErrorContent: FC = () => {
+    const { t } = useLingui();
+
+    return (
+      <div class="min-h-screen flex items-center justify-center">
+        <div class="card max-w-md w-full">
+          <header>
+            <h2>
+              {t({
+                message: "Invalid or Expired Link",
+                comment: "@context: Password reset error heading",
+              })}
+            </h2>
+          </header>
+          <section>
+            <p class="text-muted-foreground">
+              {t({
+                message:
+                  "This password reset link is invalid or has expired. Please generate a new one.",
+                comment: "@context: Password reset error description",
+              })}
+            </p>
+          </section>
+        </div>
+      </div>
+    );
+  };
+
+  app.get("/reset", async (c) => {
+    const token = c.req.query("token");
+    if (!token) {
+      return c.html(
+        <BaseLayout title="Reset Password - Jant" c={c}>
+          <ResetErrorContent />
+        </BaseLayout>,
+      );
+    }
+
+    const stored = await c.var.services.settings.get(
+      SETTINGS_KEYS.PASSWORD_RESET_TOKEN,
+    );
+    if (!stored) {
+      return c.html(
+        <BaseLayout title="Reset Password - Jant" c={c}>
+          <ResetErrorContent />
+        </BaseLayout>,
+      );
+    }
+
+    const separatorIndex = stored.lastIndexOf(":");
+    const storedToken = stored.substring(0, separatorIndex);
+    const expiry = parseInt(stored.substring(separatorIndex + 1), 10);
+    const now = Math.floor(Date.now() / 1000);
+
+    if (token !== storedToken || now > expiry) {
+      return c.html(
+        <BaseLayout title="Reset Password - Jant" c={c}>
+          <ResetErrorContent />
+        </BaseLayout>,
+      );
+    }
+
+    return c.html(
+      <BaseLayout title="Reset Password - Jant" c={c}>
+        <ResetContent token={token} />
+      </BaseLayout>,
+    );
+  });
+
+  app.post("/reset", async (c) => {
+    const body = await c.req.json<{
+      password: string;
+      confirmPassword: string;
+      token: string;
+    }>();
+    const { password, confirmPassword, token } = body;
+
+    // Validate token
+    const stored = await c.var.services.settings.get(
+      SETTINGS_KEYS.PASSWORD_RESET_TOKEN,
+    );
+    if (!stored) {
+      return sse(c, async (stream) => {
+        await stream.patchElements(
+          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Invalid or expired reset link.</h2></div></div>',
+        );
+      });
+    }
+
+    const separatorIndex = stored.lastIndexOf(":");
+    const storedToken = stored.substring(0, separatorIndex);
+    const expiry = parseInt(stored.substring(separatorIndex + 1), 10);
+    const now = Math.floor(Date.now() / 1000);
+
+    if (token !== storedToken || now > expiry) {
+      return sse(c, async (stream) => {
+        await stream.patchElements(
+          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Invalid or expired reset link.</h2></div></div>',
+        );
+      });
+    }
+
+    // Validate passwords
+    if (!password || password.length < 8) {
+      return sse(c, async (stream) => {
+        await stream.patchElements(
+          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Password must be at least 8 characters.</h2></div></div>',
+        );
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return sse(c, async (stream) => {
+        await stream.patchElements(
+          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Passwords do not match.</h2></div></div>',
+        );
+      });
+    }
+
+    try {
+      const hashedPassword = await hashPassword(password);
+      const db = c.env.DB.withSession() as unknown as D1Database;
+
+      // Get admin user
+      const userResult = await db
+        .prepare("SELECT id FROM user LIMIT 1")
+        .first<{ id: string }>();
+      if (!userResult) {
+        return sse(c, async (stream) => {
+          await stream.patchElements(
+            '<div id="reset-message"><div class="alert-destructive mb-4"><h2>No user account found.</h2></div></div>',
+          );
+        });
+      }
+
+      // Update password
+      await db
+        .prepare(
+          "UPDATE account SET password = ? WHERE user_id = ? AND provider_id = 'credential'",
+        )
+        .bind(hashedPassword, userResult.id)
+        .run();
+
+      // Delete all sessions
+      await db
+        .prepare("DELETE FROM session WHERE user_id = ?")
+        .bind(userResult.id)
+        .run();
+
+      // Delete the reset token
+      await c.var.services.settings.remove(SETTINGS_KEYS.PASSWORD_RESET_TOKEN);
+
+      return sse(c, async (stream) => {
+        await stream.redirect("/signin?reset");
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console -- Error logging is intentional
+      console.error("Password reset error:", err);
+      return sse(c, async (stream) => {
+        await stream.patchElements(
+          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Failed to reset password.</h2></div></div>',
+        );
+      });
+    }
   });
 
   // Dashboard routes (protected)

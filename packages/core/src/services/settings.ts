@@ -19,6 +19,7 @@ export interface SettingsService {
   getAll(): Promise<Record<string, string>>;
   set(key: SettingsKey, value: string): Promise<void>;
   setMany(entries: Partial<Record<SettingsKey, string>>): Promise<void>;
+  remove(key: SettingsKey): Promise<void>;
   isOnboardingComplete(): Promise<boolean>;
   completeOnboarding(): Promise<void>;
 }
@@ -52,6 +53,10 @@ export function createSettingsService(db: Database): SettingsService {
           target: settings.key,
           set: { value, updatedAt: timestamp },
         });
+    },
+
+    async remove(key) {
+      await db.delete(settings).where(eq(settings.key, key));
     },
 
     async setMany(entries) {

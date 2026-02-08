@@ -12,4 +12,13 @@
 
 @theme {
   --radius-default: 0.5rem;
+  --color-success: var(--success);
+}
+
+:root {
+  --success: oklch(0.518 0.16 145.071);
+}
+
+.dark {
+  --success: oklch(0.627 0.194 149.214);
 }

@@ -8,11 +8,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
 import { sse } from "../../lib/sse.js";
-import {
-  getSiteName,
-  getSiteDescription,
-  getSiteLanguage,
-} from "../../lib/config.js";
+import { getSiteLanguage, getConfigFallback } from "../../lib/config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -22,11 +18,15 @@ function SettingsContent({
   siteName,
   siteDescription,
   siteLanguage,
+  siteNameFallback,
+  siteDescriptionFallback,
   saved,
 }: {
   siteName: string;
   siteDescription: string;
   siteLanguage: string;
+  siteNameFallback: string;
+  siteDescriptionFallback: string;
   saved: boolean;
 }) {
   const { t } = useLingui();
@@ -85,7 +85,7 @@ function SettingsContent({
                   type="text"
                   data-bind="siteName"
                   class="input"
-                  required
+                  placeholder={siteNameFallback}
                 />
               </div>
 
@@ -96,7 +96,12 @@ function SettingsContent({
                     comment: "@context: Settings form field",
                   })}
                 </label>
-                <textarea data-bind="siteDescription" class="textarea" rows={3}>
+                <textarea
+                  data-bind="siteDescription"
+                  class="textarea"
+                  rows={3}
+                  placeholder={siteDescriptionFallback}
+                >
                   {siteDescription}
                 </textarea>
               </div>
@@ -212,22 +217,32 @@ function SettingsContent({
 
 // Settings page
 settingsRoutes.get("/", async (c) => {
-  const siteName = await getSiteName(c);
-  const siteDescription = await getSiteDescription(c);
+  const { settings } = c.var.services;
+
+  // Fetch raw DB values (null if not set)
+  const dbSiteName = await settings.get("SITE_NAME");
+  const dbSiteDescription = await settings.get("SITE_DESCRIPTION");
   const siteLanguage = await getSiteLanguage(c);
+
+  // Fallback values (ENV > Default) for placeholders
+  const siteNameFallback = getConfigFallback(c, "SITE_NAME");
+  const siteDescriptionFallback = getConfigFallback(c, "SITE_DESCRIPTION");
+
   const saved = c.req.query("saved") !== undefined;
 
   return c.html(
     <DashLayout
       c={c}
       title="Settings"
-      siteName={siteName}
+      siteName={dbSiteName || siteNameFallback}
       currentPath="/dash/settings"
     >
       <SettingsContent
-        siteName={siteName}
-        siteDescription={siteDescription}
+        siteName={dbSiteName || ""}
+        siteDescription={dbSiteDescription || ""}
         siteLanguage={siteLanguage}
+        siteNameFallback={siteNameFallback}
+        siteDescriptionFallback={siteDescriptionFallback}
         saved={saved}
       />
     </DashLayout>,
@@ -242,14 +257,25 @@ settingsRoutes.post("/", async (c) => {
     siteLanguage: string;
   }>();
 
-  const oldLanguage =
-    (await c.var.services.settings.get("SITE_LANGUAGE")) ?? "en";
+  const { settings } = c.var.services;
 
-  await c.var.services.settings.setMany({
-    SITE_NAME: body.siteName,
-    SITE_DESCRIPTION: body.siteDescription,
-    SITE_LANGUAGE: body.siteLanguage,
-  });
+  const oldLanguage = (await settings.get("SITE_LANGUAGE")) ?? "en";
+
+  // For text fields: empty = remove from DB (fall back to ENV > Default)
+  if (body.siteName.trim()) {
+    await settings.set("SITE_NAME", body.siteName.trim());
+  } else {
+    await settings.remove("SITE_NAME");
+  }
+
+  if (body.siteDescription.trim()) {
+    await settings.set("SITE_DESCRIPTION", body.siteDescription.trim());
+  } else {
+    await settings.remove("SITE_DESCRIPTION");
+  }
+
+  // Language always has a value from the select
+  await settings.set("SITE_LANGUAGE", body.siteLanguage);
 
   const languageChanged = oldLanguage !== body.siteLanguage;
 

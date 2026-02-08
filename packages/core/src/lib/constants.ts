@@ -21,6 +21,7 @@ export const RESERVED_PATHS = [
   "quotes",
   "media",
   "pages",
+  "reset",
   "p",
   "c",
   "static",
@@ -52,6 +53,7 @@ export const SETTINGS_KEYS = {
   SITE_DESCRIPTION: "SITE_DESCRIPTION",
   SITE_LANGUAGE: "SITE_LANGUAGE",
   THEME: "THEME",
+  PASSWORD_RESET_TOKEN: "PASSWORD_RESET_TOKEN",
 } as const;
 
 export type SettingsKey = (typeof SETTINGS_KEYS)[keyof typeof SETTINGS_KEYS];

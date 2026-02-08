@@ -12,6 +12,27 @@ import type { Context } from "hono";
 import { CONFIG_FIELDS, type ConfigKey } from "../types.js";
 
 /**
+ * Get the fallback value for a config key (ENV > Default), skipping the database.
+ * Used for placeholder values in forms where the DB value is shown separately.
+ *
+ * @param c - Hono context
+ * @param key - Configuration key from CONFIG_FIELDS
+ * @returns Fallback value from environment or default
+ *
+ * @example
+ * ```typescript
+ * const placeholder = getConfigFallback(c, "SITE_NAME");
+ * // Returns: c.env.SITE_NAME ?? "Jant"
+ * ```
+ */
+export function getConfigFallback(c: Context, key: ConfigKey): string {
+  const field = CONFIG_FIELDS[key];
+  const envValue = c.env[key as keyof typeof c.env];
+  if (envValue && typeof envValue === "string") return envValue;
+  return field.defaultValue;
+}
+
+/**
  * Generic configuration getter that respects priority settings
  *
  * @param c - Hono context

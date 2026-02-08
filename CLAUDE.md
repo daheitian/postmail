@@ -86,6 +86,7 @@ mise run nuke           # Remove node_modules and reinstall
 mise run fresh          # Nuclear reset - delete everything and start fresh
 mise run db-clean       # Delete local D1 database (.wrangler)
 mise run db-reset       # Delete database and re-run migrations
+mise run reset-password # Generate password reset link (local)
 ```
 
 **Important Notes:**
