@@ -2,47 +2,46 @@
 
 ## Development Principles
 
-**🎯 Core Principle: Simplicity and Best Practices**
+**Core Principle: Simplicity and Best Practices**
 
 This is an open source project. Code quality and maintainability are paramount.
 
 1. **Use best practices over custom solutions**
    - Prefer standard tools and patterns from the ecosystem
-   - Don't reinvent the wheel - use established libraries correctly
-   - When in doubt, follow official documentation and community standards
+   - Use established libraries correctly - don't reinvent the wheel
+   - Follow official documentation and community standards
 
 2. **Keep code simple and readable**
    - Simple code > clever code
    - Clear intent > maximum abstraction
-   - If a solution seems overly complex, rethink the approach
+   - Rethink overly complex solutions
 
 3. **Avoid unnecessary abstraction**
-   - Don't write custom scripts when standard tools work
-   - Don't bypass library features - use them as intended
-   - Question any solution that requires "working around" a tool
+   - Use standard tools instead of custom scripts
+   - Use library features as intended
+   - Question solutions that require "working around" tools
 
 4. **Reuse and compose**
-   - Extract reusable components when patterns repeat (3+ times)
+   - Extract components when patterns repeat 3+ times
    - Compose from small, focused components
    - Keep components single-purpose and well-documented
 
-5. **Use Vite for everything**
+5. **Vite for everything**
    - **Development**: `vite dev` (NOT `wrangler dev`)
-   - **Build**: `vite build` (NOT custom build scripts)
+   - **Build**: `vite build` (NOT custom scripts)
    - **Preview**: `vite preview`
-   - Vite is the single source of truth for dev, build, and preview workflows
-   - @cloudflare/vite-plugin handles Cloudflare Workers integration seamlessly
+   - @cloudflare/vite-plugin handles Cloudflare Workers integration
 
-## Important Rules
+## Critical Rules
 
-- **BaseCoat 组件优先** - 所有 UI 元素必须优先使用 BaseCoat 的语义化 CSS 类（如 `.alert`, `.alert-destructive`, `.btn`, `.badge`, `.card`, `.input`, `.field` 等），而不是用 Tailwind 工具类手动拼装。Tailwind 工具类只用于布局（flex, grid, gap）、间距（p, m）、排版（text-size, font-weight）等 BaseCoat 不覆盖的场景。参考 `references/basecoat/` 查看可用组件。
-- **Node.js version: 24 (LTS)** - Always use Node 24 in CI workflows, package.json engines, and documentation. Do NOT use older versions like 20 or 22. The current LTS is 24.
-- **Always use latest versions** when installing dependencies. DO NOT use outdated versions from training data. Check npm for current versions or use `pnpm add <package>@latest`.
-- **Use mise.toml for all commands** - Wrap all development commands in mise tasks. Never require users to `cd` into directories - use the `dir` parameter instead. This keeps the workflow simple and discoverable.
-- **All GitHub workflows need manual trigger** - Always add `workflow_dispatch:` to all GitHub Actions workflows so they can be triggered manually from the Actions tab.
-- **Stop dev processes after debugging**: When starting dev server or other background processes for testing/debugging, always stop them when done so the user can restart them manually.
-- **Use debug port for testing**: When debugging, use `mise run dev-debug` which runs on port 19019, leaving port 9019 free for the user.
-- **Do NOT publish packages**: After making changes, do NOT run publish commands. The user will handle publishing manually using `mise run version` and `mise run release-local`.
+- **BaseCoat components first**: Use BaseCoat semantic CSS classes (`.alert`, `.btn`, `.badge`, `.card`, `.input`, `.field`) instead of manually composing Tailwind utilities. Use Tailwind only for layout (flex, grid, gap), spacing (p, m), and typography (text-size, font-weight) not covered by BaseCoat. See `references/basecoat/` for available components.
+- **Node.js version: 24** - Always use Node 24 LTS. Do NOT use older versions (20, 22).
+- **Latest package versions**: Always use `@latest` when installing. Do NOT use outdated versions from training data.
+- **Use mise tasks**: Wrap all dev commands in mise. Never require `cd` - use `dir` parameter.
+- **Manual workflow triggers**: Always add `workflow_dispatch:` to GitHub Actions.
+- **Stop dev after debugging**: Stop background processes when done so user can restart manually.
+- **Debug port**: Use `mise run dev-debug` (port 19019) for testing, leaving 9019 free.
+- **NO auto-publishing**: Do NOT run publish commands. User handles releases via `mise run version` and `mise run release`.
 
 ## Quick Reference
 
@@ -83,130 +82,65 @@ mise run publish:create # Publish create-jant to npm
 
 ## Package Architecture
 
-**核心原则：`packages/core` 是纯库包，不用于直接开发或部署。**
+**Core principle: `packages/core` is a pure library - NOT for direct development or deployment.**
 
-### 包职责
+| Package                         | Purpose                                 | Has Vite/Wrangler? |
+| ------------------------------- | --------------------------------------- | ------------------ |
+| `packages/core`                 | Pure library - exports components/utils | ❌ No              |
+| `templates/jant-site`           | Development + testing + deployment      | ✅ Yes             |
+| `packages/create-jant/template` | User project starter template           | ✅ Yes             |
 
-| 包                              | 职责                            | 包含 Vite/Wrangler? |
-| ------------------------------- | ------------------------------- | ------------------- |
-| `packages/core`                 | 纯库 - 导出组件、服务、工具函数 | ❌ 否               |
-| `templates/jant-site`           | 开发 + 测试 + 部署环境          | ✅ 是               |
-| `packages/create-jant/template` | 用户项目模板                    | ✅ 是               |
+### `packages/core` (Library)
 
-### `packages/core` (库)
+**Includes**: Source (`src/`), build config (`.swcrc`, `tsconfig.build.json`), quality tools (`eslint.config.js`), DB migrations, i18n extraction.
 
-**只包含**：
+**Excludes**: ~~`vite.config.ts`~~, ~~`wrangler.toml`~~, ~~`src/style.css`~~, ~~`tailwind.config.ts`~~ (development happens in jant-site).
 
-- 源代码 (`src/`)
-- 库构建配置 (`tsconfig.build.json`, `.swcrc`)
-- 代码质量工具 (`eslint.config.js`, `.prettierrc`)
-- 迁移生成 (`drizzle.config.ts`)
-- i18n 提取 (`lingui.config.ts`)
+### `templates/jant-site` (Development environment)
 
-**不包含** (已移除)：
+**Purpose**: Develop/test `@jant/core` in monorepo, demo site, deployment to Cloudflare.
 
-- ~~`vite.config.ts`~~ - 无需 Vite，开发在 jant-site 进行
-- ~~`wrangler.toml`~~ - 无需部署，部署从 jant-site 进行
-- ~~`src/style.css`~~ - 无需 CSS 入口，用户项目自带
-- ~~`tailwind.config.ts`~~ - 无需本地 Tailwind 配置
+**Monorepo-only feature**: `vite.config.ts` has alias `"@jant/core": "../../packages/core/src"` for HMR.
 
-**构建脚本**：
+### `packages/create-jant/template` (User template)
 
-```bash
-pnpm build:lib    # swc 编译 + tsc 生成类型 → dist/
-pnpm typecheck    # 类型检查
-pnpm lint         # ESLint
-pnpm db:generate  # 生成 Drizzle 迁移
-pnpm i18n:build   # 提取 + 编译翻译
-```
-
-### `templates/jant-site` (开发环境)
-
-**用途**：
-
-1. 在 monorepo 中开发和测试 `@jant/core`
-2. 作为参考实现和演示站点
-3. 部署到 Cloudflare Workers
-
-**特殊配置** (仅 monorepo)：
-
-```typescript
-// vite.config.ts - monorepo 别名，直接使用源码实现 HMR
-resolve: {
-  alias: {
-    "@jant/core": resolve(__dirname, "../../packages/core/src"),
-  },
-},
-```
-
-### `packages/create-jant/template` (用户模板)
-
-**与 jant-site 的区别**：
-
-- ❌ 没有 monorepo 别名 (从 node_modules 导入 @jant/core)
-- ✅ 其他配置相同
+**Difference from jant-site**: No monorepo alias - imports `@jant/core` from node_modules.
 
 ## Project Structure
 
 ```
-jant/
-├── packages/core/           # 库包 (@jant/core)
-│   ├── src/
-│   │   ├── index.ts        # 库入口，exports createApp
-│   │   ├── preset.css      # CSS 预设 (basecoat + @source 自动扫描)
-│   │   ├── app.tsx         # Hono app factory
-│   │   ├── types.ts        # TypeScript types (single source of truth)
-│   │   ├── db/             # Drizzle schema & migrations
-│   │   ├── services/       # Business logic (service layer)
-│   │   ├── routes/         # Route handlers (xxxRoutes naming)
-│   │   ├── theme/          # UI layer (components, layouts)
-│   │   ├── lib/            # Utilities (100% JSDoc documented)
-│   │   ├── i18n/           # Internationalization
-│   │   └── middleware/     # Hono middleware
-│   ├── .swcrc              # SWC config (JSX + Lingui macro)
-│   ├── eslint.config.js    # ESLint config
-│   ├── drizzle.config.ts   # Drizzle config (迁移生成)
-│   └── tsconfig.build.json # 库类型生成配置
-├── templates/jant-site/     # 开发环境 + 演示站点
-│   ├── src/
-│   │   ├── style.css       # CSS 入口 (@import)
-│   │   ├── client.ts       # 客户端 JS 入口
-│   │   └── app.ts          # 应用入口
-│   ├── tailwind.config.ts  # Tailwind 配置 (使用 jantContent)
-│   ├── vite.config.ts      # Vite 配置 (含 monorepo 别名)
-│   └── wrangler.toml       # Cloudflare 配置
-├── packages/create-jant/    # CLI 脚手架
-│   └── template/           # 用户项目模板 (无 monorepo 别名)
-└── docs/                   # Documentation
+packages/core/              # Library (@jant/core)
+├── src/
+│   ├── index.ts           # Entry point (exports createApp)
+│   ├── preset.css         # CSS preset (basecoat + @source auto-scan)
+│   ├── app.tsx            # Hono app factory
+│   ├── types.ts           # Single source of truth for types
+│   ├── db/                # Drizzle schema & migrations
+│   ├── services/          # Business logic (service layer)
+│   ├── routes/            # Route handlers (xxxRoutes naming)
+│   ├── theme/             # UI (components, layouts)
+│   ├── lib/               # Utilities (100% JSDoc documented)
+│   ├── i18n/              # Internationalization
+│   └── middleware/        # Hono middleware
+
+templates/jant-site/        # Development + demo site
+├── src/
+│   ├── style.css          # CSS entry (@import)
+│   ├── client.ts          # Client JS entry
+│   └── app.ts             # App entry
+├── vite.config.ts         # Vite config (monorepo alias)
+└── wrangler.toml          # Cloudflare config
+
+packages/create-jant/       # CLI scaffolding
+└── template/              # User project template (no alias)
 ```
 
-### Reusable Components
+### Reusable Components (`src/theme/components/`)
 
-Located in `src/theme/components/`:
-
-**CRUD Components:**
-
-- `CrudPageHeader` - Page header with title + action button
-- `EmptyState` - Empty state display with optional CTA
-- `ListItemRow` - Consistent list item layout
-- `ActionButtons` - Edit/View/Delete button group
-- `DangerZone` - Destructive action section with confirmation
-
-**Badge Components:**
-
-- `TypeBadge` - Post type badge (Note/Article/Link/Quote/Image/Page)
-- `VisibilityBadge` - Visibility badge (Featured/Quiet/Unlisted/Draft)
-
-**Form Components:**
-
-- `PostForm` - Post creation/editing form
-- `PageForm` - Page creation/editing form
-
-**Display Components:**
-
-- `PostList` - Post list with filtering
-- `ThreadView` - Thread/reply chain display
-- `Pagination` - Cursor/page-based pagination
+**CRUD**: CrudPageHeader, EmptyState, ListItemRow, ActionButtons, DangerZone
+**Badges**: TypeBadge, VisibilityBadge
+**Forms**: PostForm, PageForm
+**Display**: PostList, ThreadView, Pagination
 
 ## Tech Stack
 
@@ -223,66 +157,31 @@ Located in `src/theme/components/`:
 
 ### Build Process
 
-**All workflows use Vite - no custom scripts, no wrangler build commands.**
+**All workflows use Vite - never run `wrangler dev` or custom build scripts.**
 
-**Development (`pnpm dev` / `vite dev`):**
+- **Development**: `vite dev` → port 9019, HMR, reads `.dev.vars`
+- **Build**: `vite build` → Worker code to `dist/jant/`, client assets to `dist/client/`
+- **Deploy**: `vite build && wrangler deploy`
 
-1. Vite dev server starts on port 9019
-2. @cloudflare/vite-plugin integrates with Cloudflare Workers runtime
-3. @tailwindcss/vite processes CSS as Vite plugin
-4. Hot Module Replacement (HMR) for instant updates
-5. Reads `.dev.vars` for environment variables
+### CSS Architecture
 
-**Production Build (`pnpm build` / `vite build`):**
+**Problem**: Tailwind v4 ignores `node_modules` by default.
 
-1. Vite builds both Worker code and CSS:
-   - Worker code → `dist/jant/` (server-side runtime)
-   - CSS + static assets → `dist/client/` (client assets served by Workers)
-2. **CSS with hash**: Tailwind CSS processed → `styles-[hash].css`
-3. **Asset manifest**: Custom Vite plugin generates `src/lib/assets.gen.ts` with hashed paths
-4. **SSR**: BaseLayout imports `ASSETS` from `assets.gen.ts` for dynamic injection
-5. Static files from `static/` copied to `dist/client/assets/`
-
-**Deployment (`pnpm deploy`):**
-
-1. Run `vite build` to generate production bundle
-2. Use `wrangler deploy` to upload to Cloudflare (reads `dist/jant/wrangler.json`)
-
-**Key Point:** Never run `wrangler dev` or manual build commands. Vite handles everything.
-
-### CSS Architecture: @source in Preset
-
-**问题**：Tailwind v4 默认忽略 `node_modules`，需要让它扫描 `@jant/core` 的源文件。
-
-**解决方案**：在 `preset.css` 中使用 `@source "./"` 指令。当用户 `@import "@jant/core/preset.css"` 时，`@source` 路径相对于 `preset.css` 所在目录解析，自动指向 `@jant/core/src/`。
+**Solution**: Use `@source "./"` in `@jant/core/preset.css` to auto-scan core package.
 
 ```css
 /* @jant/core/src/preset.css */
-@source "./"; /* 扫描 @jant/core/src/ 下所有文件 */
+@source "./"; /* Scans @jant/core/src/ */
 @import "basecoat-css";
-@import "./styles/components.css";
 ```
 
 ```css
-/* 用户项目 src/style.css - 只需两行 import */
+/* User's src/style.css */
 @import "tailwindcss";
-@import "@jant/core/preset.css"; /* 自动带入 @source 扫描 */
-
-:root {
-  --radius-default: 0.25rem;
-}
+@import "@jant/core/preset.css"; /* Auto-brings @source scanning */
 ```
 
-**@jant/core 导出**：
-
-- `@jant/core/preset.css` → CSS 预设 (basecoat + 组件样式 + @source 自动扫描)
-
-**关键点**：
-
-- Tailwind v4 的 `content` 配置已废弃，改用 CSS `@source` 指令
-- `@source` 路径相对于 CSS 文件自身位置解析，无论 monorepo 还是 npm 安装都能工作
-- 无需 `tailwind.config.ts`、`@config` 指令或 helper 函数
-- 使用 `@tailwindcss/vite` 作为 Vite 插件，无需 postcss/autoprefixer
+**Key**: `@source` path resolves relative to CSS file location - works in both monorepo and npm installs. No `tailwind.config.ts` needed.
 
 ## Architecture Conventions
 
@@ -374,154 +273,40 @@ export const homeroute = new Hono<Env>();
 
 ## Internationalization (i18n)
 
-**Quick Start:**
-
 ```tsx
 import { useLingui } from "@/i18n";
-
-function MyComponent() {
-  const { t } = useLingui();
-
-  return (
-    <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>
-  );
-}
+const { t } = useLingui();
+return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
 ```
 
-**Key Rules:**
+**Language Detection**: Site-wide setting from database (`settings.SITE_LANGUAGE`), defaults to "en". NOT per-user - all visitors see the same language.
 
-1. ALL user-facing strings must use `t()` function
-2. Always include `comment` with `@context:` prefix
-3. Wrap app in `<I18nProvider c={c}>` (BaseLayout does this automatically when `c` prop provided)
-4. Use `useLingui()` hook inside components
+**Rules**: All user-facing strings use `t()`, always include `comment` with `@context:` prefix.
 
-**Detailed documentation:** See `src/i18n/README.md`
+**Workflow**: Add `t()` → `mise run i18n-extract` → `mise run translate` (AI, optional) → `mise run i18n-compile`
 
-**Workflow:**
-
-1. Add translations with `t()` function
-2. Run `pnpm i18n:extract` to extract messages
-3. Run `mise run translate` for AI translation (optional)
-4. Run `pnpm i18n:compile` to compile catalogs
+See `src/i18n/README.md` for details.
 
 ## Datastar Usage
 
-**Version: Datastar v1.0.0-RC.7** (vendored in `src/vendor/datastar.js`, imported in `src/client.ts`). Reference source available at `references/datastar/`.
+**Version: v1.0.0-RC.7** (vendored in `src/vendor/datastar.js`). See `references/datastar/` for full docs.
 
-Datastar is used for client-side interactivity with SSE-powered real-time updates.
+### Core Concepts
 
-### 1. Signals (Reactive State)
+- **Signals**: `data-signals="{title: '', _loading: false}"` (use `_` prefix for private)
+- **Binding**: `data-bind="title"` for two-way form binding
+- **Actions**: `data-on:submit__prevent="@post('/url')"` for server communication
+- **Display**: `data-show="$_loading"` for conditional rendering
+- **Expressions only**: Use `x && fn()` not `if (x) fn()` in attributes
 
-Define signals on a parent element using `data-signals`. Use `_` prefix for private signals (not sent to server).
-
-```tsx
-<div data-signals="{_loading: false, _error: null, count: 0}">
-  <span data-text="$count"></span>
-  <button data-on:click="$count++">Add</button>
-</div>
-```
-
-### 2. Two-Way Form Binding
-
-Use `data-bind="signalName"` for two-way binding between form inputs and signals:
-
-```tsx
-<form data-signals="{title: '', content: ''}">
-  <input type="text" data-bind="title" class="input" />
-  <textarea data-bind="content" class="textarea" />
-</form>
-```
-
-**Note:** HTML attributes are case-insensitive, so `data-bind-fieldName` won't preserve camelCase. Always use value-based syntax: `data-bind="fieldName"`.
-
-### 3. Conditional Display
-
-```tsx
-<span data-show="!$_loading">Ready</span>
-<span data-show="$_loading">Loading...</span>
-```
-
-### 4. Dynamic Classes
-
-```tsx
-<button data-class-opacity-50="$_loading">Submit</button>
-```
-
-### 5. Actions (Server Communication)
-
-Datastar v1.0 uses `@` prefix for actions: `@get()`, `@post()`, `@put()`, `@delete()`.
-
-- `@post('/url')` sends non-private signals as JSON body with `Content-Type: application/json`
-- Pass custom payload: `@post('/url', {payload: {key: value}})`
-- On `<form>` elements, `data-on-submit` automatically calls `preventDefault()`
-
-### 6. Attribute Syntax
-
-Datastar v1.0 uses `:` (colon) to separate plugin name from key in attribute names. Modifiers use `__` (double underscore) separator:
-
-```tsx
-data-on:submit__prevent="@post('/url')"   // preventDefault
-data-on:click__stop="handler()"            // stopPropagation
-data-on:click__once="handler()"            // once
-data-on:keydown__window="handler()"        // listen on window
-```
-
-**Important:** SWC's JSX transform rejects colons (namespace syntax) by default. Set `throwIfNamespace: false` in SWC config:
-
-```json
-{ "transform": { "react": { "throwIfNamespace": false } } }
-```
-
-### 7. SSE Responses (Server → Client)
-
-Use the `sse()` helper from `lib/sse.ts` for real-time updates. Uses **Datastar v1.0 event types**:
-
-| Event Type                | Data Fields                                                      | Description             |
-| ------------------------- | ---------------------------------------------------------------- | ----------------------- |
-| `datastar-patch-signals`  | `signals`, `onlyIfMissing`                                       | Update reactive signals |
-| `datastar-patch-elements` | `elements`, `mode`, `selector`, `useViewTransition`, `namespace` | Update DOM elements     |
-
-**Note:** No native redirect event. Redirect is implemented via `datastar-patch-elements` with an injected `<script>`.
-
-```typescript
-import { sse } from "../../lib/sse.js";
-
-app.post("/api/action", (c) => {
-  return sse(c, async (stream) => {
-    // Update signals
-    await stream.patchSignals({ _loading: false });
-
-    // Update DOM (outer morph by default)
-    await stream.patchElements('<div id="result">Done!</div>');
-
-    // Prepend to list
-    await stream.patchElements("<li>New item</li>", {
-      mode: "prepend",
-      selector: "#items",
-    });
-
-    // Redirect client
-    await stream.redirect("/dash/posts");
-
-    // Remove elements
-    await stream.remove("#placeholder");
-  });
-});
-```
-
-### 8. Form Submission Pattern
-
-All dashboard forms use Datastar's `@post` action for submission instead of traditional HTML form POST. This eliminates page reloads and enables inline error/success messages.
-
-**Form (JSX):**
+### Form Pattern
 
 ```tsx
 <form
-  data-signals={JSON.stringify({ title: post?.title ?? "", content: "" })}
+  data-signals={JSON.stringify({ title: "" })}
   data-on:submit__prevent="@post('/dash/posts')"
 >
-  <input type="text" data-bind="title" class="input" />
-  <textarea data-bind="content" class="textarea" />
+  <input data-bind="title" class="input" />
   <div id="form-message"></div>
   <button type="submit" class="btn">
     Save
@@ -529,80 +314,24 @@ All dashboard forms use Datastar's `@post` action for submission instead of trad
 </form>
 ```
 
-**Handler (server):**
+### Server Response (SSE)
 
 ```typescript
-app.post("/dash/posts", async (c) => {
-  const body = await c.req.json<{ title: string; content: string }>();
+import { sse } from "@/lib/sse";
 
-  // On error: show inline message
-  if (!body.title) {
-    return sse(c, async (stream) => {
-      await stream.patchElements(
-        '<div id="form-message"><p class="text-destructive text-sm">Title is required</p></div>',
-      );
-    });
-  }
-
-  // On success: redirect
-  const post = await c.var.services.posts.create(body);
-  return sse(c, async (stream) => {
-    await stream.redirect(`/dash/posts/${sqid.encode(post.id)}`);
-  });
+return sse(c, async (stream) => {
+  await stream.patchSignals({ _loading: false });
+  await stream.patchElements('<div id="msg">Success!</div>');
+  await stream.redirect("/dash");
 });
 ```
 
-**Key rules:**
+### Key Rules
 
-- `@post` sends non-private signals as flat JSON body, parsed with `c.req.json()`
-- Use `data-bind="fieldName"` on form inputs for two-way binding
-- Use `data-on:submit__prevent` (not `method="post" action="..."`)
-- For delete buttons without forms: `data-on:click__prevent="confirm('...') && @post('/path')"`
-- For auth responses needing cookies: pass `{ headers: { 'Set-Cookie': cookie } }` as third arg to `sse()`
-
-### 9. Custom SSE Handling (File Uploads)
-
-For file uploads, manually parse SSE since Datastar doesn't handle FormData:
-
-```javascript
-const response = await fetch("/api/upload", {
-  method: "POST",
-  body: formData,
-  headers: { Accept: "text/event-stream" },
-});
-
-// Parse SSE events manually
-// Event type: datastar-patch-elements
-// Data fields: elements, mode, selector
-```
-
-### 10. Expression Rules
-
-Use **expressions**, not statements in `data-on-*`. Signals use `$` prefix, actions use `@` prefix:
-
-```tsx
-// ❌ Wrong
-data-on:click="if (x) doSomething()"
-
-// ✅ Correct
-data-on:click="x && doSomething()"
-data-on:click="$count++"
-data-on:click="@post('/api/save')"
-```
-
-### 11. Signal Scoping
-
-Define signals on a **parent element** that contains all elements needing access.
-
-### 12. Common Pitfalls
-
-**Signal not found error**: Happens when Datastar can't find a signal. Causes:
-
-- Signal defined on wrong element (child instead of parent)
-- Signal name mismatch (case-sensitive)
-- Element with `data-signals` not yet processed when child elements try to access
-
-**For complex interactions (file uploads, etc.)**, use plain JavaScript with DOM manipulation instead of Datastar signals. Datastar is best for simple reactive state, not complex async flows:
+- `@post` sends non-private signals as JSON body
+- Define signals on parent element containing all children that need access
+- Use `throwIfNamespace: false` in SWC config for colon syntax (`data-on:click`)
+- For complex interactions (file uploads), use plain JS instead of Datastar
 
 ## Key Conventions
 
@@ -614,102 +343,16 @@ Define signals on a **parent element** that contains all elements needing access
 6. **Routes**: Use `xxxRoutes` naming convention consistently
 7. **Components**: Extract when pattern repeats 3+ times
 
-## Current Status
-
-### Core Features ✅
-
-- [x] Project setup (pnpm workspace, mise, tsconfig)
-- [x] Database schema (Drizzle) + migrations (including FTS5)
-- [x] Services layer (settings, posts, redirects, media, collections, search)
-- [x] Authentication (better-auth)
-- [x] Dashboard (posts, pages, media, collections, redirects, settings)
-- [x] Frontend pages (home, post, archive, search, custom pages)
-- [x] Thread/reply chain display
-- [x] Full-text search (FTS5)
-- [x] Feed (RSS, Atom, Sitemap)
-
-### Code Quality ✅
-
-- [x] TypeScript strict mode (0 errors)
-- [x] ESLint configuration (0 errors, minimal warnings)
-- [x] Prettier auto-formatting
-- [x] Pre-commit hooks (husky + lint-staged)
-- [x] 100% JSDoc coverage for utility functions
-
-### Architecture ✅
-
-- [x] Type system unified (single source of truth)
-- [x] Route naming standardized (xxxRoutes convention)
-- [x] Component library established (7 reusable components)
-- [x] i18n custom SSR-compatible implementation
-- [x] Service layer pattern throughout
-
-### Component Library ✅
-
-- [x] CRUD components (EmptyState, ListItemRow, ActionButtons, CrudPageHeader, DangerZone)
-- [x] Badge components (TypeBadge, VisibilityBadge)
-- [x] Form components (PostForm, PageForm)
-- [x] Display components (PostList, ThreadView, Pagination)
-
-### Release System ✅
-
-- [x] Changesets for version management
-- [x] GitHub CI (lint, typecheck, build)
-- [x] Automated npm publishing via GitHub Actions
-- [x] SemVer versioning
-- [x] Auto-generated changelogs with PR links
-
 ## Releasing
 
-This project uses [Changesets](https://github.com/changesets/changesets) for version management. See [docs/RELEASING.md](docs/RELEASING.md) for full documentation.
+Uses [Changesets](https://github.com/changesets/changesets) for version management. See `docs/RELEASING.md` for details.
 
-**Quick workflow:**
+**Workflow**: Make changes → `mise run changeset` → Open PR → Merge → Auto-created Release PR publishes to npm.
 
-1. Make changes in a branch
-2. Run `mise run changeset` to create a changeset
-3. Open PR and merge to main
-4. Merge the auto-created "Release" PR to publish
-
-**Packages:**
-| Package | Description |
-|---------|-------------|
-| `@jant/core` | Core framework |
-| `create-jant` | CLI scaffolding tool |
+**Packages**: `@jant/core` (framework), `create-jant` (scaffolding CLI).
 
 ## Local Development
 
-Vite dev server listens on all network interfaces (`host: true`) and allows custom domains via `allowedHosts`.
+Dev server on port 9019, accessible via localhost, network IP, or custom domain (Caddy reverse proxy to `local.jant.me`).
 
-**Access methods:**
-
-- **Localhost**: http://localhost:9019
-- **Local domain** (via Caddy): https://local.jant.me
-- **Network IP**: http://[your-ip]:9019
-
-**Configuration in `.dev.vars`:**
-
-```
-AUTH_SECRET=your-secret-at-least-32-chars
-```
-
-**Custom domain setup:**
-The project is configured to work with Caddy reverse proxy pointing `local.jant.me` to port 9019.
-If you use a different local domain, update `server.allowedHosts` in `vite.config.ts`.
-
-When you run `pnpm dev`, Vite will show:
-
-```
-➜  Local:   http://localhost:9019/
-➜  Network: http://10.x.x.x:9019/
-```
-
-## Code Quality Metrics
-
-Current state (as of latest refactor):
-
-- **TypeScript**: 0 errors, 100% type coverage
-- **ESLint**: 0 errors, 0 warnings
-- **Build**: Clean builds in <1s
-- **Test coverage**: Services layer functional
-- **Documentation**: 100% JSDoc coverage for utilities
-- **Component reuse**: 7 shared components eliminating ~35% code duplication
+**Required in `.dev.vars`**: `AUTH_SECRET=your-secret-at-least-32-chars`
