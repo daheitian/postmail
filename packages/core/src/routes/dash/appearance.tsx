@@ -17,16 +17,24 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const appearanceRoutes = new Hono<Env>();
 
-function ThemeCard({ theme }: { theme: ColorTheme }) {
+function ThemeCard({
+  theme,
+  selected,
+}: {
+  theme: ColorTheme;
+  selected: boolean;
+}) {
   // Get the primary color for preview (use light mode value, fall back to BaseCoat default)
   const primaryColor = theme.light["--primary"] ?? "oklch(0.205 0 0)";
+  const expr = `$theme === '${theme.id}'`;
 
   return (
     <label
-      class="card cursor-pointer transition-all border-2 border-transparent hover:border-primary/30"
-      data-class:border-primary={`$theme === '${theme.id}'`}
-      data-class:ring-1={`$theme === '${theme.id}'`}
-      data-class:ring-primary={`$theme === '${theme.id}'`}
+      class={`card cursor-pointer transition-all border-2 hover:border-primary/30 ${selected ? "border-primary ring-1 ring-primary" : "border-transparent"}`}
+      data-class:border-primary={expr}
+      data-class:ring-1={expr}
+      data-class:ring-primary={expr}
+      data-class:border-transparent={`$theme !== '${theme.id}'`}
     >
       <section class="flex items-center gap-3 py-1">
         <input
@@ -43,7 +51,8 @@ function ThemeCard({ theme }: { theme: ColorTheme }) {
         <span class="font-medium text-sm">{theme.name}</span>
         <svg
           class="w-4 h-4 ml-auto text-primary"
-          data-show={`$theme === '${theme.id}'`}
+          style={selected ? undefined : "display: none"}
+          data-show={expr}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -124,7 +133,11 @@ function AppearanceContent({
 
           <div class="grid grid-cols-2 gap-3">
             {themes.map((theme) => (
-              <ThemeCard key={theme.id} theme={theme} />
+              <ThemeCard
+                key={theme.id}
+                theme={theme}
+                selected={theme.id === currentThemeId}
+              />
             ))}
           </div>
         </div>
