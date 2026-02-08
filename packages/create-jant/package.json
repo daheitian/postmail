@@ -16,8 +16,9 @@
     "dev": "tsup src/index.ts --format esm --watch",
     "typecheck": "tsc --noEmit",
     "copy-template": "rm -rf template && cp -r ../../templates/jant-site template",
+    "prepare-template": "node scripts/prepare-template.js",
     "inject-version": "node -e \"const fs=require('fs');const v=require('../core/package.json').version;const f='dist/index.js';fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('__JANT_CORE_VERSION__',v))\"",
-    "prepublishOnly": "pnpm copy-template && pnpm build && pnpm inject-version"
+    "prepublishOnly": "pnpm copy-template && pnpm prepare-template && pnpm build && pnpm inject-version"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",

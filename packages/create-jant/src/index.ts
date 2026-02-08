@@ -145,35 +145,8 @@ AUTH_SECRET=${authSecret}
     await fs.writeFile(viteConfigPath, content, "utf-8");
   }
 
-  // Merge tsconfig.json (expand parent config into standalone file)
-  const tsconfigPath = path.join(targetDir, "tsconfig.json");
-  if (await fs.pathExists(tsconfigPath)) {
-    const tsconfig = await fs.readJson(tsconfigPath);
-
-    // If tsconfig extends from parent, merge the configs
-    if (tsconfig.extends) {
-      // Read root tsconfig from template source
-      const rootTsconfigPath = path.resolve(
-        TEMPLATE_DIR,
-        "../../tsconfig.json",
-      );
-      if (await fs.pathExists(rootTsconfigPath)) {
-        const rootTsconfig = await fs.readJson(rootTsconfigPath);
-
-        // Merge: parent compilerOptions + child compilerOptions
-        const merged = {
-          compilerOptions: {
-            ...rootTsconfig.compilerOptions,
-            ...tsconfig.compilerOptions,
-          },
-          include: tsconfig.include,
-          exclude: tsconfig.exclude,
-        };
-
-        await fs.writeJson(tsconfigPath, merged, { spaces: 2 });
-      }
-    }
-  }
+  // Note: tsconfig.json is already merged during prepublishOnly (prepare-template script)
+  // No runtime merging needed - the template/ directory contains a standalone tsconfig.json
 }
 
 /**
