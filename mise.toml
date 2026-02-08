@@ -236,6 +236,14 @@ run = "pnpm --filter create-jant build"
 description = "Watch and rebuild create-jant CLI"
 run = "pnpm --filter create-jant dev"
 
+[tasks.test-template]
+description = "Integration test: scaffold a project with create-jant, then build + typecheck it"
+run = """
+pnpm --filter @jant/core build:lib
+pnpm --filter create-jant prepublishOnly
+pnpm --filter create-jant test-template
+"""
+
 # =============================================================================
 # Release & Publishing (Changesets)
 # =============================================================================
