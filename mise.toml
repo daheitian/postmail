@@ -98,7 +98,7 @@ pnpm --filter jant-site db:migrate:local
 # =============================================================================
 [tasks.i18n]
 description = "Extract, translate with AI, and compile (requires OPENAI_API_KEY)"
-depends = ["i18n-extract", "translate", "i18n-compile"]
+run = "mise run i18n-extract && mise run translate && mise run i18n-compile"
 
 [tasks.i18n-no-translate]
 description = "Extract and compile only (without translation)"
