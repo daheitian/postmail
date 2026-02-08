@@ -20,14 +20,12 @@ function SettingsContent({
   siteLanguage,
   siteNameFallback,
   siteDescriptionFallback,
-  saved,
 }: {
   siteName: string;
   siteDescription: string;
   siteLanguage: string;
   siteNameFallback: string;
   siteDescriptionFallback: string;
-  saved: boolean;
 }) {
   const { t } = useLingui();
 
@@ -43,27 +41,11 @@ function SettingsContent({
         {t({ message: "Settings", comment: "@context: Dashboard heading" })}
       </h1>
 
-      {saved && (
-        <div
-          id="settings-saved-toast"
-          class="alert mb-4 max-w-lg transition-opacity duration-300"
-          data-init={`console.log('[toast] init fired at', Date.now()); history.replaceState({}, '', '/dash/settings'); setTimeout(() => { console.log('[toast] hiding at', Date.now()); const el = document.getElementById('settings-saved-toast'); if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 300) } }, 3000)`}
-        >
-          <h2>
-            {t({
-              message: "Settings saved successfully.",
-              comment: "@context: Toast message after saving settings",
-            })}
-          </h2>
-        </div>
-      )}
-
       <div class="flex flex-col gap-6 max-w-lg">
         <form
           data-signals={generalSignals}
           data-on:submit__prevent="@post('/dash/settings')"
         >
-          <div id="settings-message"></div>
           <div class="card">
             <header>
               <h2>
@@ -140,7 +122,6 @@ function SettingsContent({
           data-signals="{currentPassword: '', newPassword: '', confirmPassword: ''}"
           data-on:submit__prevent="@post('/dash/settings/password')"
         >
-          <div id="password-message"></div>
           <div class="card">
             <header>
               <h2>
@@ -236,6 +217,7 @@ settingsRoutes.get("/", async (c) => {
       title="Settings"
       siteName={dbSiteName || siteNameFallback}
       currentPath="/dash/settings"
+      toast={saved ? { message: "Settings saved successfully." } : undefined}
     >
       <SettingsContent
         siteName={dbSiteName || ""}
@@ -243,7 +225,6 @@ settingsRoutes.get("/", async (c) => {
         siteLanguage={siteLanguage}
         siteNameFallback={siteNameFallback}
         siteDescriptionFallback={siteDescriptionFallback}
-        saved={saved}
       />
     </DashLayout>,
   );
@@ -284,10 +265,7 @@ settingsRoutes.post("/", async (c) => {
       // Language changed - full reload needed to update all UI text
       await stream.redirect("/dash/settings?saved");
     } else {
-      // No language change - show inline success message
-      await stream.patchElements(
-        '<div id="settings-message"><div class="alert mb-4 transition-opacity duration-300" data-init="setTimeout(() => { el.style.opacity = \'0\'; setTimeout(() => el.remove(), 300) }, 3000)"><h2>Settings saved successfully.</h2></div></div>',
-      );
+      await stream.toast("Settings saved successfully.");
     }
   });
 });
@@ -302,9 +280,7 @@ settingsRoutes.post("/password", async (c) => {
 
   if (body.newPassword !== body.confirmPassword) {
     return sse(c, async (stream) => {
-      await stream.patchElements(
-        '<div id="password-message"><div class="alert-destructive mb-4"><h2>Passwords do not match.</h2></div></div>',
-      );
+      await stream.toast("Passwords do not match.", "error");
     });
   }
 
@@ -319,16 +295,12 @@ settingsRoutes.post("/password", async (c) => {
     });
   } catch {
     return sse(c, async (stream) => {
-      await stream.patchElements(
-        '<div id="password-message"><div class="alert-destructive mb-4"><h2>Current password is incorrect.</h2></div></div>',
-      );
+      await stream.toast("Current password is incorrect.", "error");
     });
   }
 
   return sse(c, async (stream) => {
-    await stream.patchElements(
-      '<div id="password-message"><div class="alert mb-4"><h2>Password changed successfully.</h2></div></div>',
-    );
+    await stream.toast("Password changed successfully.");
     await stream.patchSignals({
       currentPassword: "",
       newPassword: "",

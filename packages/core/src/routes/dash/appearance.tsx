@@ -72,11 +72,9 @@ function ThemeCard({
 function AppearanceContent({
   themes,
   currentThemeId,
-  saved,
 }: {
   themes: ColorTheme[];
   currentThemeId: string;
-  saved: boolean;
 }) {
   const { t } = useLingui();
 
@@ -93,24 +91,6 @@ function AppearanceContent({
           comment: "@context: Dashboard heading for appearance settings",
         })}
       </h1>
-
-      {saved && (
-        <div
-          id="appearance-saved-toast"
-          class="alert mb-4 max-w-lg transition-opacity duration-300"
-          data-init="history.replaceState({}, '', '/dash/appearance'); setTimeout(() => { const el = document.getElementById('appearance-saved-toast'); if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 300) } }, 3000)"
-        >
-          <h2>
-            {t({
-              message: "Theme saved successfully.",
-              comment:
-                "@context: Toast message after saving appearance settings",
-            })}
-          </h2>
-        </div>
-      )}
-
-      <div id="appearance-message"></div>
 
       <form
         data-signals={signals}
@@ -167,12 +147,9 @@ appearanceRoutes.get("/", async (c) => {
       title="Appearance"
       siteName={siteName}
       currentPath="/dash/appearance"
+      toast={saved ? { message: "Theme saved successfully." } : undefined}
     >
-      <AppearanceContent
-        themes={themes}
-        currentThemeId={currentThemeId}
-        saved={saved}
-      />
+      <AppearanceContent themes={themes} currentThemeId={currentThemeId} />
     </DashLayout>,
   );
 });
@@ -187,9 +164,7 @@ appearanceRoutes.post("/", async (c) => {
   const validTheme = themes.find((t) => t.id === body.theme);
   if (!validTheme) {
     return sse(c, async (stream) => {
-      await stream.patchElements(
-        '<div id="appearance-message"><div class="alert-destructive mb-4"><h2>Invalid theme selected.</h2></div></div>',
-      );
+      await stream.toast("Invalid theme selected.", "error");
     });
   }
 

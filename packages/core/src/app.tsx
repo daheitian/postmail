@@ -188,7 +188,6 @@ export function createApp(config: JantConfig = {}): App {
             </p>
           </header>
           <section>
-            <div id="setup-message"></div>
             <form
               data-signals="{name: '', email: '', password: ''}"
               data-on:submit__prevent="@post('/setup')"
@@ -277,25 +276,19 @@ export function createApp(config: JantConfig = {}): App {
 
     if (!name || !email || !password) {
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="setup-message"><div class="alert-destructive mb-4"><h2>All fields are required</h2></div></div>',
-        );
+        await stream.toast("All fields are required", "error");
       });
     }
 
     if (password.length < 8) {
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="setup-message"><div class="alert-destructive mb-4"><h2>Password must be at least 8 characters</h2></div></div>',
-        );
+        await stream.toast("Password must be at least 8 characters", "error");
       });
     }
 
     if (!c.var.auth) {
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="setup-message"><div class="alert-destructive mb-4"><h2>AUTH_SECRET not configured</h2></div></div>',
-        );
+        await stream.toast("AUTH_SECRET not configured", "error");
       });
     }
 
@@ -306,9 +299,7 @@ export function createApp(config: JantConfig = {}): App {
 
       if (!signUpResponse || "error" in signUpResponse) {
         return sse(c, async (stream) => {
-          await stream.patchElements(
-            '<div id="setup-message"><div class="alert-destructive mb-4"><h2>Failed to create account</h2></div></div>',
-          );
+          await stream.toast("Failed to create account", "error");
         });
       }
 
@@ -321,9 +312,7 @@ export function createApp(config: JantConfig = {}): App {
       // eslint-disable-next-line no-console -- Error logging is intentional
       console.error("Setup error:", err);
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="setup-message"><div class="alert-destructive mb-4"><h2>Failed to create account</h2></div></div>',
-        );
+        await stream.toast("Failed to create account", "error");
       });
     }
   });
@@ -332,27 +321,12 @@ export function createApp(config: JantConfig = {}): App {
   const SigninContent: FC<{
     demoEmail?: string;
     demoPassword?: string;
-    showSetupSuccess?: boolean;
-    showResetSuccess?: boolean;
-  }> = ({ demoEmail, demoPassword, showSetupSuccess, showResetSuccess }) => {
+  }> = ({ demoEmail, demoPassword }) => {
     const { t } = useLingui();
     const signals = JSON.stringify({
       email: demoEmail || "",
       password: demoPassword || "",
     }).replace(/</g, "\\u003c");
-
-    let successMessage: string | undefined;
-    if (showSetupSuccess) {
-      successMessage = t({
-        message: "Account created successfully. Please sign in.",
-        comment: "@context: Success message after setup completes",
-      });
-    } else if (showResetSuccess) {
-      successMessage = t({
-        message: "Password reset successfully. Please sign in.",
-        comment: "@context: Success message after password reset",
-      });
-    }
 
     return (
       <div class="min-h-screen flex items-center justify-center">
@@ -366,15 +340,6 @@ export function createApp(config: JantConfig = {}): App {
             </h2>
           </header>
           <section>
-            <div id="signin-message"></div>
-            {successMessage && (
-              <div
-                class="alert-success mb-4 transition-opacity duration-300"
-                data-init="history.replaceState({}, '', '/signin'); setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300) }, 3000)"
-              >
-                <h2>{successMessage}</h2>
-              </div>
-            )}
             {demoEmail && demoPassword && (
               <p class="text-muted-foreground text-sm mb-4">
                 {t({
@@ -427,13 +392,20 @@ export function createApp(config: JantConfig = {}): App {
 
   // Signin page
   app.get("/signin", async (c) => {
+    const isSetup = c.req.query("setup") !== undefined;
+    const isReset = c.req.query("reset") !== undefined;
+    let toast: { message: string } | undefined;
+    if (isSetup) {
+      toast = { message: "Account created successfully. Please sign in." };
+    } else if (isReset) {
+      toast = { message: "Password reset successfully. Please sign in." };
+    }
+
     return c.html(
-      <BaseLayout title="Sign In - Jant" c={c}>
+      <BaseLayout title="Sign In - Jant" c={c} toast={toast}>
         <SigninContent
           demoEmail={c.env.DEMO_EMAIL}
           demoPassword={c.env.DEMO_PASSWORD}
-          showSetupSuccess={c.req.query("setup") !== undefined}
-          showResetSuccess={c.req.query("reset") !== undefined}
         />
       </BaseLayout>,
     );
@@ -442,9 +414,7 @@ export function createApp(config: JantConfig = {}): App {
   app.post("/signin", async (c) => {
     if (!c.var.auth) {
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="signin-message"><div class="alert-destructive mb-4"><h2>Auth not configured</h2></div></div>',
-        );
+        await stream.toast("Auth not configured", "error");
       });
     }
 
@@ -465,9 +435,7 @@ export function createApp(config: JantConfig = {}): App {
 
       if (!response.ok) {
         return sse(c, async (stream) => {
-          await stream.patchElements(
-            '<div id="signin-message"><div class="alert-destructive mb-4"><h2>Invalid email or password</h2></div></div>',
-          );
+          await stream.toast("Invalid email or password", "error");
         });
       }
 
@@ -489,9 +457,7 @@ export function createApp(config: JantConfig = {}): App {
       // eslint-disable-next-line no-console -- Error logging is intentional
       console.error("Signin error:", err);
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="signin-message"><div class="alert-destructive mb-4"><h2>Invalid email or password</h2></div></div>',
-        );
+        await stream.toast("Invalid email or password", "error");
       });
     }
   });
@@ -534,7 +500,6 @@ export function createApp(config: JantConfig = {}): App {
             </p>
           </header>
           <section>
-            <div id="reset-message"></div>
             <form
               data-signals={signals}
               data-on:submit__prevent="@post('/reset')"
@@ -668,9 +633,7 @@ export function createApp(config: JantConfig = {}): App {
     );
     if (!stored) {
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Invalid or expired reset link.</h2></div></div>',
-        );
+        await stream.toast("Invalid or expired reset link.", "error");
       });
     }
 
@@ -681,26 +644,20 @@ export function createApp(config: JantConfig = {}): App {
 
     if (token !== storedToken || now > expiry) {
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Invalid or expired reset link.</h2></div></div>',
-        );
+        await stream.toast("Invalid or expired reset link.", "error");
       });
     }
 
     // Validate passwords
     if (!password || password.length < 8) {
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Password must be at least 8 characters.</h2></div></div>',
-        );
+        await stream.toast("Password must be at least 8 characters.", "error");
       });
     }
 
     if (password !== confirmPassword) {
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Passwords do not match.</h2></div></div>',
-        );
+        await stream.toast("Passwords do not match.", "error");
       });
     }
 
@@ -714,9 +671,7 @@ export function createApp(config: JantConfig = {}): App {
         .first<{ id: string }>();
       if (!userResult) {
         return sse(c, async (stream) => {
-          await stream.patchElements(
-            '<div id="reset-message"><div class="alert-destructive mb-4"><h2>No user account found.</h2></div></div>',
-          );
+          await stream.toast("No user account found.", "error");
         });
       }
 
@@ -744,9 +699,7 @@ export function createApp(config: JantConfig = {}): App {
       // eslint-disable-next-line no-console -- Error logging is intentional
       console.error("Password reset error:", err);
       return sse(c, async (stream) => {
-        await stream.patchElements(
-          '<div id="reset-message"><div class="alert-destructive mb-4"><h2>Failed to reset password.</h2></div></div>',
-        );
+        await stream.toast("Failed to reset password.", "error");
       });
     }
   });

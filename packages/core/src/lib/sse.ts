@@ -106,6 +106,22 @@ export interface SSEStream {
    * ```
    */
   remove(selector: string): void;
+
+  /**
+   * Show a toast notification
+   *
+   * Appends a toast element to `#toast-container` with auto-dismiss after 3s.
+   *
+   * @param message - The message to display
+   * @param type - Toast type: "success" (default) or "error"
+   *
+   * @example
+   * ```ts
+   * await stream.toast("Settings saved successfully.");
+   * await stream.toast("Something went wrong.", "error");
+   * ```
+   */
+  toast(message: string, type?: "success" | "error"): void;
 }
 
 /**
@@ -214,6 +230,28 @@ export function sse(
                 `selector ${selector}`,
               ]),
             ),
+          );
+        },
+
+        toast(message, type = "success") {
+          const cls = type === "error" ? "toast-error" : "toast-success";
+          const icon =
+            type === "error"
+              ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>'
+              : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
+          const closeBtn = `<button class="toast-close" data-on:click="el.closest('.toast').classList.add('toast-out'); el.closest('.toast').addEventListener('animationend', () => el.closest('.toast').remove())"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
+          const escapedMessage = message
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+          const html = `<div class="toast ${cls}" data-init="setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)">${icon}<span>${escapedMessage}</span>${closeBtn}</div>`;
+          const dataLines: string[] = [
+            `elements ${html}`,
+            "mode append",
+            "selector #toast-container",
+          ];
+          controller.enqueue(
+            encoder.encode(formatEvent("datastar-patch-elements", dataLines)),
           );
         },
       };

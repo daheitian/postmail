@@ -7,13 +7,14 @@
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { Context } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import { BaseLayout } from "./BaseLayout.js";
+import { BaseLayout, type ToastProps } from "./BaseLayout.js";
 
 export interface DashLayoutProps {
   c: Context;
   title: string;
   siteName: string;
   currentPath?: string;
+  toast?: ToastProps;
 }
 
 function DashLayoutContent({
@@ -158,10 +159,11 @@ export const DashLayout: FC<PropsWithChildren<DashLayoutProps>> = ({
   title,
   siteName,
   currentPath,
+  toast,
   children,
 }) => {
   return (
-    <BaseLayout title={`${title} - ${siteName}`} c={c}>
+    <BaseLayout title={`${title} - ${siteName}`} c={c} toast={toast}>
       <DashLayoutContent siteName={siteName} currentPath={currentPath}>
         {children}
       </DashLayoutContent>
