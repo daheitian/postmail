@@ -199,6 +199,7 @@ export interface UpdatePost {
 // =============================================================================
 
 import type { FC, PropsWithChildren } from "hono/jsx";
+import type { ColorTheme } from "./theme/color-themes.js";
 
 /**
  * Props for overridable theme components
@@ -251,8 +252,10 @@ export interface JantTheme {
   name?: string;
   /** Component overrides */
   components?: ThemeComponents;
-  /** CSS variable overrides */
+  /** CSS variable overrides (highest priority, always applied) */
   cssVariables?: Record<string, string>;
+  /** Replace built-in color themes with a custom list */
+  colorThemes?: ColorTheme[];
 }
 
 /**

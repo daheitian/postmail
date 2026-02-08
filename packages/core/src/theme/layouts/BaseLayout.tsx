@@ -32,6 +32,9 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   // Automatically wrap with I18nProvider if Context is provided
   const content = c ? <I18nProvider c={c}>{children}</I18nProvider> : children;
 
+  // Read theme style from Hono context if available
+  const themeStyle = c ? c.get("themeStyle") : undefined;
+
   return (
     <html lang={resolvedLang}>
       <head>
@@ -41,6 +44,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         {description && <meta name="description" content={description} />}
         <ViteClient />
         <Link href="/src/style.css" rel="stylesheet" />
+        {themeStyle && <style>{themeStyle}</style>}
         <Script src="/src/client.ts" />
       </head>
       <body class="bg-background text-foreground antialiased">{content}</body>

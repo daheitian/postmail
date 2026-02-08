@@ -29,6 +29,7 @@ import { mediaRoutes as dashMediaRoutes } from "./routes/dash/media.js";
 import { settingsRoutes as dashSettingsRoutes } from "./routes/dash/settings.js";
 import { redirectsRoutes as dashRedirectsRoutes } from "./routes/dash/redirects.js";
 import { collectionsRoutes as dashCollectionsRoutes } from "./routes/dash/collections.js";
+import { appearanceRoutes as dashAppearanceRoutes } from "./routes/dash/appearance.js";
 
 // Routes - API
 import { postsApiRoutes } from "./routes/api/posts.js";
@@ -45,12 +46,14 @@ import { requireAuth } from "./middleware/auth.js";
 // Layouts for auth pages
 import { BaseLayout } from "./theme/layouts/index.js";
 import { sse } from "./lib/sse.js";
+import { getAvailableThemes, buildThemeStyle } from "./lib/theme.js";
 
 // Extend Hono's context variables
 export interface AppVariables {
   services: Services;
   auth: Auth;
   config: JantConfig;
+  themeStyle: string;
 }
 
 export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
@@ -99,6 +102,18 @@ export function createApp(config: JantConfig = {}): App {
       c.set("auth", auth);
     }
 
+    await next();
+  });
+
+  // Theme middleware - resolve active color theme and build CSS
+  app.use("*", async (c, next) => {
+    const themeId = await c.var.services.settings.get(SETTINGS_KEYS.THEME);
+    const themes = getAvailableThemes(config);
+    const activeTheme = themeId
+      ? themes.find((t) => t.id === themeId)
+      : undefined;
+    const themeStyle = buildThemeStyle(activeTheme, config.theme?.cssVariables);
+    c.set("themeStyle", themeStyle);
     await next();
   });
 
@@ -317,13 +332,27 @@ export function createApp(config: JantConfig = {}): App {
   const SigninContent: FC<{
     demoEmail?: string;
     demoPassword?: string;
-    successMessage?: string;
-  }> = ({ demoEmail, demoPassword, successMessage }) => {
+    showSetupSuccess?: boolean;
+    showResetSuccess?: boolean;
+  }> = ({ demoEmail, demoPassword, showSetupSuccess, showResetSuccess }) => {
     const { t } = useLingui();
     const signals = JSON.stringify({
       email: demoEmail || "",
       password: demoPassword || "",
     }).replace(/</g, "\\u003c");
+
+    let successMessage: string | undefined;
+    if (showSetupSuccess) {
+      successMessage = t({
+        message: "Account created successfully. Please sign in.",
+        comment: "@context: Success message after setup completes",
+      });
+    } else if (showResetSuccess) {
+      successMessage = t({
+        message: "Password reset successfully. Please sign in.",
+        comment: "@context: Success message after password reset",
+      });
+    }
 
     return (
       <div class="min-h-screen flex items-center justify-center">
@@ -398,26 +427,13 @@ export function createApp(config: JantConfig = {}): App {
 
   // Signin page
   app.get("/signin", async (c) => {
-    const { t } = useLingui();
-    let successMessage: string | undefined;
-    if (c.req.query("setup") !== undefined) {
-      successMessage = t({
-        message: "Account created successfully. Please sign in.",
-        comment: "@context: Success message after setup completes",
-      });
-    } else if (c.req.query("reset") !== undefined) {
-      successMessage = t({
-        message: "Password reset successfully. Please sign in.",
-        comment: "@context: Success message after password reset",
-      });
-    }
-
     return c.html(
       <BaseLayout title="Sign In - Jant" c={c}>
         <SigninContent
           demoEmail={c.env.DEMO_EMAIL}
           demoPassword={c.env.DEMO_PASSWORD}
-          successMessage={successMessage}
+          showSetupSuccess={c.req.query("setup") !== undefined}
+          showResetSuccess={c.req.query("reset") !== undefined}
         />
       </BaseLayout>,
     );
@@ -744,6 +760,7 @@ export function createApp(config: JantConfig = {}): App {
   app.route("/dash/settings", dashSettingsRoutes);
   app.route("/dash/redirects", dashRedirectsRoutes);
   app.route("/dash/collections", dashCollectionsRoutes);
+  app.route("/dash/appearance", dashAppearanceRoutes);
 
   // API routes
   app.route("/api/upload", uploadApiRoutes);

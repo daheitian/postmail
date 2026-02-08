@@ -134,6 +134,15 @@ function DashLayoutContent({
                 comment: "@context: Dashboard navigation - site settings",
               })}
             </a>
+            <a
+              href="/dash/appearance"
+              class={navClass("/dash/appearance", /^\/dash\/appearance/)}
+            >
+              {t({
+                message: "Appearance",
+                comment: "@context: Dashboard navigation - appearance settings",
+              })}
+            </a>
           </nav>
         </aside>
 
