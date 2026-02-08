@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d32a99d8-a262-45b7-99e4-bc81bbb6f305",
+  "id": "3d04f8ef-088d-43f4-9fe9-55ffa2d7a73f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -125,11 +125,11 @@
           "notNull": true,
           "autoincrement": true
         },
-        "slug": {
-          "name": "slug",
+        "path": {
+          "name": "path",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "title": {
@@ -162,9 +162,9 @@
         }
       },
       "indexes": {
-        "collections_slug_unique": {
-          "name": "collections_slug_unique",
-          "columns": ["slug"],
+        "collections_path_unique": {
+          "name": "collections_path_unique",
+          "columns": ["path"],
           "isUnique": true
         }
       },
@@ -178,10 +178,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "post_id": {
           "name": "post_id",

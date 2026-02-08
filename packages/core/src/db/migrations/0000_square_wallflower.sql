@@ -17,16 +17,16 @@ CREATE TABLE `account` (
 --> statement-breakpoint
 CREATE TABLE `collections` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`slug` text NOT NULL,
+	`path` text,
 	`title` text NOT NULL,
 	`description` text,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `collections_slug_unique` ON `collections` (`slug`);--> statement-breakpoint
+CREATE UNIQUE INDEX `collections_path_unique` ON `collections` (`path`);--> statement-breakpoint
 CREATE TABLE `media` (
-	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`id` text PRIMARY KEY NOT NULL,
 	`post_id` integer,
 	`filename` text NOT NULL,
 	`original_name` text NOT NULL,
