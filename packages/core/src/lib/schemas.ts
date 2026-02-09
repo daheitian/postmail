@@ -37,7 +37,7 @@ export const CreatePostSchema = z.object({
   title: z.string().optional(),
   content: z.string(),
   visibility: VisibilitySchema,
-  sourceUrl: z.string().url().optional().or(z.literal("")),
+  sourceUrl: z.url().optional().or(z.literal("")),
   sourceName: z.string().optional(),
   path: z
     .string()
