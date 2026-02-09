@@ -22,7 +22,7 @@ SITE_URL = "http://localhost:9019"
 # Optional: Site configuration
 # These can be overridden in dashboard settings (/dash/settings)
 # If not set, values from database settings table are used
-SITE_NAME = "My Blog 2"
+# SITE_NAME = "My Blog"
 # SITE_DESCRIPTION = "A personal blog powered by Jant"
 # SITE_LANGUAGE = "en"
 
