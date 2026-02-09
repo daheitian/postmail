@@ -14,7 +14,7 @@ import { DashLayout } from "../../theme/layouts/index.js";
 import { EmptyState, DangerZone } from "../../theme/components/index.js";
 import * as time from "../../lib/time.js";
 import { getMediaUrl, getImageUrl } from "../../lib/image.js";
-import { sse } from "../../lib/sse.js";
+import { dsRedirect } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -463,7 +463,5 @@ mediaRoutes.post("/:id/delete", async (c) => {
   // Delete from database
   await c.var.services.media.delete(id);
 
-  return sse(c, async (stream) => {
-    await stream.redirect("/dash/media");
-  });
+  return dsRedirect("/dash/media");
 });

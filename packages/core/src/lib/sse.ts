@@ -1,20 +1,21 @@
 /**
- * Server-Sent Events (SSE) utilities for Datastar v1.0.0-RC.7
+ * Datastar response utilities for v1.0.0-RC.7
  *
- * Generates SSE events compatible with the Datastar client's expected format.
+ * Provides both SSE (multi-event) and plain HTTP (single-event) response helpers.
+ *
+ * **Non-SSE helpers** (preferred for single operations):
+ * - `dsRedirect(url)` — redirect via text/html
+ * - `dsToast(message, type)` — toast notification via text/html
+ * - `dsSignals(signals)` — signal patch via application/json
+ *
+ * **SSE** (for multiple operations in one response):
+ * - `sse(c, handler)` — streaming SSE with full stream API
+ *
+ * Datastar auto-detects response type by Content-Type:
+ * - `text/html` → dispatches as `datastar-patch-elements`
+ * - `application/json` → dispatches as `datastar-patch-signals`
  *
  * @see https://data-star.dev/
- *
- * @example
- * ```ts
- * app.post("/api/example", (c) => {
- *   return sse(c, async (stream) => {
- *     await stream.patchSignals({ loading: false });
- *     await stream.patchElements('<div id="result">Done!</div>');
- *     await stream.redirect("/success");
- *   });
- * });
- * ```
  */
 
 import type { Context } from "hono";
@@ -124,6 +125,35 @@ export interface SSEStream {
   toast(message: string, type?: "success" | "error"): void;
 }
 
+// ---------------------------------------------------------------------------
+// Shared internal helpers (used by both SSE and non-SSE response builders)
+// ---------------------------------------------------------------------------
+
+/** Build the redirect script tag for Datastar patch-elements */
+function buildRedirectScript(url: string): string {
+  const escapedUrl = url.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  return `<script data-effect="el.remove()">window.location.href='${escapedUrl}'</script>`;
+}
+
+/** Build a toast notification HTML element */
+function buildToastHtml(message: string, type: "success" | "error"): string {
+  const cls = type === "error" ? "toast-error" : "toast-success";
+  const icon =
+    type === "error"
+      ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>'
+      : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
+  const closeBtn = `<button class="toast-close" data-on:click="el.closest('.toast').classList.add('toast-out'); el.closest('.toast').addEventListener('animationend', () => el.closest('.toast').remove())"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
+  const escapedMessage = message
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return `<div class="toast ${cls}" data-init="setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)">${icon}<span>${escapedMessage}</span>${closeBtn}</div>`;
+}
+
+// ---------------------------------------------------------------------------
+// SSE helpers
+// ---------------------------------------------------------------------------
+
 /**
  * Format a single SSE event string
  *
@@ -209,10 +239,8 @@ export function sse(
         },
 
         redirect(url) {
-          const escapedUrl = url.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-          const script = `<script data-effect="el.remove()">window.location.href='${escapedUrl}'</script>`;
           const dataLines: string[] = [
-            `elements ${script}`,
+            `elements ${buildRedirectScript(url)}`,
             "mode append",
             "selector body",
           ];
@@ -234,19 +262,8 @@ export function sse(
         },
 
         toast(message, type = "success") {
-          const cls = type === "error" ? "toast-error" : "toast-success";
-          const icon =
-            type === "error"
-              ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>'
-              : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
-          const closeBtn = `<button class="toast-close" data-on:click="el.closest('.toast').classList.add('toast-out'); el.closest('.toast').addEventListener('animationend', () => el.closest('.toast').remove())"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M18 6 6 18M6 6l12 12"/></svg></button>`;
-          const escapedMessage = message
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
-          const html = `<div class="toast ${cls}" data-init="setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)">${icon}<span>${escapedMessage}</span>${closeBtn}</div>`;
           const dataLines: string[] = [
-            `elements ${html}`,
+            `elements ${buildToastHtml(message, type)}`,
             "mode append",
             "selector #toast-container",
           ];
@@ -269,4 +286,89 @@ export function sse(
   };
 
   return new Response(body, { headers });
+}
+
+// ---------------------------------------------------------------------------
+// Non-SSE Datastar helpers (for single-operation responses)
+// ---------------------------------------------------------------------------
+
+/**
+ * Datastar redirect via text/html
+ *
+ * Returns a plain HTML response that Datastar dispatches as `datastar-patch-elements`.
+ * Use instead of `sse()` when the only action is a redirect.
+ *
+ * @param url - The URL to redirect to
+ * @param options - Optional extra headers (e.g. Set-Cookie for auth)
+ * @returns Response with text/html content-type
+ *
+ * @example
+ * ```ts
+ * return dsRedirect("/dash/posts");
+ *
+ * // With cookie forwarding (for auth)
+ * return dsRedirect("/dash", { headers: { "Set-Cookie": cookie } });
+ * ```
+ */
+export function dsRedirect(
+  url: string,
+  options?: { headers?: Record<string, string> },
+): Response {
+  return new Response(buildRedirectScript(url), {
+    headers: {
+      "Content-Type": "text/html",
+      "Datastar-Mode": "append",
+      "Datastar-Selector": "body",
+      ...options?.headers,
+    },
+  });
+}
+
+/**
+ * Datastar toast notification via text/html
+ *
+ * Returns a plain HTML response that Datastar dispatches as `datastar-patch-elements`.
+ * Use instead of `sse()` when the only action is showing a toast.
+ *
+ * @param message - The message to display
+ * @param type - Toast type: "success" (default) or "error"
+ * @returns Response with text/html content-type
+ *
+ * @example
+ * ```ts
+ * return dsToast("Settings saved successfully.");
+ * return dsToast("Something went wrong.", "error");
+ * ```
+ */
+export function dsToast(
+  message: string,
+  type: "success" | "error" = "success",
+): Response {
+  return new Response(buildToastHtml(message, type), {
+    headers: {
+      "Content-Type": "text/html",
+      "Datastar-Mode": "append",
+      "Datastar-Selector": "#toast-container",
+    },
+  });
+}
+
+/**
+ * Datastar signal patch via application/json
+ *
+ * Returns a JSON response that Datastar dispatches as `datastar-patch-signals`.
+ * Use instead of `sse()` when the only action is updating signals.
+ *
+ * @param signals - Object containing signal values to update
+ * @returns Response with application/json content-type
+ *
+ * @example
+ * ```ts
+ * return dsSignals({ _uploadError: "File too large" });
+ * ```
+ */
+export function dsSignals(signals: Record<string, unknown>): Response {
+  return new Response(JSON.stringify(signals), {
+    headers: { "Content-Type": "application/json" },
+  });
 }

@@ -7,7 +7,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
-import { sse } from "../../lib/sse.js";
+import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { getSiteName } from "../../lib/config.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { getAvailableThemes } from "../../lib/theme.js";
@@ -162,9 +162,7 @@ appearanceRoutes.post("/", async (c) => {
   // Validate theme ID
   const validTheme = themes.find((t) => t.id === body.theme);
   if (!validTheme) {
-    return sse(c, async (stream) => {
-      await stream.toast("Invalid theme selected.", "error");
-    });
+    return dsToast("Invalid theme selected.", "error");
   }
 
   if (validTheme.id === "default") {
@@ -174,7 +172,5 @@ appearanceRoutes.post("/", async (c) => {
   }
 
   // Full page reload to apply the new theme CSS
-  return sse(c, async (stream) => {
-    await stream.redirect("/dash/appearance?saved");
-  });
+  return dsRedirect("/dash/appearance?saved");
 });

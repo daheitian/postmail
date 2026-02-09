@@ -405,15 +405,35 @@ See `src/i18n/README.md` for details.
 </form>
 ```
 
-### Server Response (SSE)
+### Server Response
+
+**Default: Use non-SSE helpers** for single-operation responses (most cases):
+
+```typescript
+import { dsRedirect, dsToast, dsSignals } from "@/lib/sse";
+
+// Redirect (Datastar detects text/html → patch-elements)
+return dsRedirect("/dash/posts");
+
+// Redirect with cookie forwarding (e.g. auth)
+return dsRedirect("/dash", { headers: { "Set-Cookie": cookie } });
+
+// Toast notification
+return dsToast("Settings saved successfully.");
+return dsToast("Something went wrong.", "error");
+
+// Signal patch (Datastar detects application/json → patch-signals)
+return dsSignals({ _uploadError: "File too large" });
+```
+
+**SSE: Only when you need multiple operations** in one response:
 
 ```typescript
 import { sse } from "@/lib/sse";
 
 return sse(c, async (stream) => {
-  await stream.patchSignals({ _loading: false });
   await stream.patchElements('<div id="msg">Success!</div>');
-  await stream.redirect("/dash");
+  await stream.toast("Saved!");
 });
 ```
 
@@ -423,6 +443,7 @@ return sse(c, async (stream) => {
 - Define signals on parent element containing all children that need access
 - Use `throwIfNamespace: false` in SWC config for colon syntax (`data-on:click`)
 - For complex interactions (file uploads), use plain JS instead of Datastar
+- Prefer `dsRedirect`/`dsToast`/`dsSignals` over `sse()` for single-event responses
 
 ## Configuration Strategy
 

@@ -15,7 +15,7 @@ import {
   ActionButtons,
 } from "../../theme/components/index.js";
 import * as sqid from "../../lib/sqid.js";
-import { sse } from "../../lib/sse.js";
+import { dsRedirect } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -105,9 +105,7 @@ postsRoutes.post("/", async (c) => {
     path: body.path || undefined,
   });
 
-  return sse(c, async (stream) => {
-    await stream.redirect(`/dash/posts/${sqid.encode(post.id)}`);
-  });
+  return dsRedirect(`/dash/posts/${sqid.encode(post.id)}`);
 });
 
 function ViewPostContent({ post }: { post: Post }) {
@@ -227,9 +225,7 @@ postsRoutes.post("/:id", async (c) => {
     path: body.path || null,
   });
 
-  return sse(c, async (stream) => {
-    await stream.redirect(`/dash/posts/${sqid.encode(id)}`);
-  });
+  return dsRedirect(`/dash/posts/${sqid.encode(id)}`);
 });
 
 // Delete post
@@ -239,7 +235,5 @@ postsRoutes.post("/:id/delete", async (c) => {
 
   await c.var.services.posts.delete(id);
 
-  return sse(c, async (stream) => {
-    await stream.redirect("/dash/posts");
-  });
+  return dsRedirect("/dash/posts");
 });

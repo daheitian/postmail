@@ -14,7 +14,7 @@ import {
   ActionButtons,
   CrudPageHeader,
 } from "../../theme/components/index.js";
-import { sse } from "../../lib/sse.js";
+import { dsRedirect } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -219,9 +219,7 @@ redirectsRoutes.post("/", async (c) => {
   const type = parseInt(body.type, 10) as 301 | 302;
   await c.var.services.redirects.create(body.fromPath, body.toPath, type);
 
-  return sse(c, async (stream) => {
-    await stream.redirect("/dash/redirects");
-  });
+  return dsRedirect("/dash/redirects");
 });
 
 // Delete redirect
@@ -231,7 +229,5 @@ redirectsRoutes.post("/:id/delete", async (c) => {
     await c.var.services.redirects.delete(id);
   }
 
-  return sse(c, async (stream) => {
-    await stream.redirect("/dash/redirects");
-  });
+  return dsRedirect("/dash/redirects");
 });

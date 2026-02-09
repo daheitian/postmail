@@ -45,7 +45,7 @@ import { requireAuth } from "./middleware/auth.js";
 
 // Layouts for auth pages
 import { BaseLayout } from "./theme/layouts/index.js";
-import { sse } from "./lib/sse.js";
+import { dsRedirect, dsToast } from "./lib/sse.js";
 import { getAvailableThemes, buildThemeStyle } from "./lib/theme.js";
 
 // Extend Hono's context variables
@@ -275,21 +275,15 @@ export function createApp(config: JantConfig = {}): App {
     const { name, email, password } = body;
 
     if (!name || !email || !password) {
-      return sse(c, async (stream) => {
-        await stream.toast("All fields are required", "error");
-      });
+      return dsToast("All fields are required", "error");
     }
 
     if (password.length < 8) {
-      return sse(c, async (stream) => {
-        await stream.toast("Password must be at least 8 characters", "error");
-      });
+      return dsToast("Password must be at least 8 characters", "error");
     }
 
     if (!c.var.auth) {
-      return sse(c, async (stream) => {
-        await stream.toast("AUTH_SECRET not configured", "error");
-      });
+      return dsToast("AUTH_SECRET not configured", "error");
     }
 
     try {
@@ -298,22 +292,16 @@ export function createApp(config: JantConfig = {}): App {
       });
 
       if (!signUpResponse || "error" in signUpResponse) {
-        return sse(c, async (stream) => {
-          await stream.toast("Failed to create account", "error");
-        });
+        return dsToast("Failed to create account", "error");
       }
 
       await c.var.services.settings.completeOnboarding();
 
-      return sse(c, async (stream) => {
-        await stream.redirect("/signin?setup");
-      });
+      return dsRedirect("/signin?setup");
     } catch (err) {
       // eslint-disable-next-line no-console -- Error logging is intentional
       console.error("Setup error:", err);
-      return sse(c, async (stream) => {
-        await stream.toast("Failed to create account", "error");
-      });
+      return dsToast("Failed to create account", "error");
     }
   });
 
@@ -413,9 +401,7 @@ export function createApp(config: JantConfig = {}): App {
 
   app.post("/signin", async (c) => {
     if (!c.var.auth) {
-      return sse(c, async (stream) => {
-        await stream.toast("Auth not configured", "error");
-      });
+      return dsToast("Auth not configured", "error");
     }
 
     const body = await c.req.json<{ email: string; password: string }>();
@@ -434,9 +420,7 @@ export function createApp(config: JantConfig = {}): App {
       const response = await c.var.auth.handler(signInRequest);
 
       if (!response.ok) {
-        return sse(c, async (stream) => {
-          await stream.toast("Invalid email or password", "error");
-        });
+        return dsToast("Invalid email or password", "error");
       }
 
       // Forward Set-Cookie headers from auth response
@@ -446,19 +430,11 @@ export function createApp(config: JantConfig = {}): App {
         cookieHeaders["Set-Cookie"] = setCookie;
       }
 
-      return sse(
-        c,
-        async (stream) => {
-          await stream.redirect("/dash");
-        },
-        { headers: cookieHeaders },
-      );
+      return dsRedirect("/dash", { headers: cookieHeaders });
     } catch (err) {
       // eslint-disable-next-line no-console -- Error logging is intentional
       console.error("Signin error:", err);
-      return sse(c, async (stream) => {
-        await stream.toast("Invalid email or password", "error");
-      });
+      return dsToast("Invalid email or password", "error");
     }
   });
 
@@ -632,9 +608,7 @@ export function createApp(config: JantConfig = {}): App {
       SETTINGS_KEYS.PASSWORD_RESET_TOKEN,
     );
     if (!stored) {
-      return sse(c, async (stream) => {
-        await stream.toast("Invalid or expired reset link.", "error");
-      });
+      return dsToast("Invalid or expired reset link.", "error");
     }
 
     const separatorIndex = stored.lastIndexOf(":");
@@ -643,22 +617,16 @@ export function createApp(config: JantConfig = {}): App {
     const now = Math.floor(Date.now() / 1000);
 
     if (token !== storedToken || now > expiry) {
-      return sse(c, async (stream) => {
-        await stream.toast("Invalid or expired reset link.", "error");
-      });
+      return dsToast("Invalid or expired reset link.", "error");
     }
 
     // Validate passwords
     if (!password || password.length < 8) {
-      return sse(c, async (stream) => {
-        await stream.toast("Password must be at least 8 characters.", "error");
-      });
+      return dsToast("Password must be at least 8 characters.", "error");
     }
 
     if (password !== confirmPassword) {
-      return sse(c, async (stream) => {
-        await stream.toast("Passwords do not match.", "error");
-      });
+      return dsToast("Passwords do not match.", "error");
     }
 
     try {
@@ -670,9 +638,7 @@ export function createApp(config: JantConfig = {}): App {
         .prepare("SELECT id FROM user LIMIT 1")
         .first<{ id: string }>();
       if (!userResult) {
-        return sse(c, async (stream) => {
-          await stream.toast("No user account found.", "error");
-        });
+        return dsToast("No user account found.", "error");
       }
 
       // Update password
@@ -692,15 +658,11 @@ export function createApp(config: JantConfig = {}): App {
       // Delete the reset token
       await c.var.services.settings.remove(SETTINGS_KEYS.PASSWORD_RESET_TOKEN);
 
-      return sse(c, async (stream) => {
-        await stream.redirect("/signin?reset");
-      });
+      return dsRedirect("/signin?reset");
     } catch (err) {
       // eslint-disable-next-line no-console -- Error logging is intentional
       console.error("Password reset error:", err);
-      return sse(c, async (stream) => {
-        await stream.toast("Failed to reset password.", "error");
-      });
+      return dsToast("Failed to reset password.", "error");
     }
   });
 

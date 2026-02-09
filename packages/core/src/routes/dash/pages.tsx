@@ -21,7 +21,7 @@ import {
 } from "../../theme/components/index.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
-import { sse } from "../../lib/sse.js";
+import { dsRedirect } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -237,9 +237,7 @@ pagesRoutes.post("/", async (c) => {
     path: body.path.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
   });
 
-  return sse(c, async (stream) => {
-    await stream.redirect(`/dash/pages/${sqid.encode(page.id)}`);
-  });
+  return dsRedirect(`/dash/pages/${sqid.encode(page.id)}`);
 });
 
 // View single page
@@ -306,9 +304,7 @@ pagesRoutes.post("/:id", async (c) => {
     path: body.path.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
   });
 
-  return sse(c, async (stream) => {
-    await stream.redirect(`/dash/pages/${sqid.encode(id)}`);
-  });
+  return dsRedirect(`/dash/pages/${sqid.encode(id)}`);
 });
 
 // Delete page
@@ -318,7 +314,5 @@ pagesRoutes.post("/:id/delete", async (c) => {
 
   await c.var.services.posts.delete(id);
 
-  return sse(c, async (stream) => {
-    await stream.redirect("/dash/pages");
-  });
+  return dsRedirect("/dash/pages");
 });

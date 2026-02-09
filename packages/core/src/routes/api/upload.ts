@@ -11,7 +11,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { getMediaUrl, getImageUrl } from "../../lib/image.js";
-import { sse } from "../../lib/sse.js";
+import { sse, dsSignals } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -117,11 +117,7 @@ function wantsSSE(c: {
 uploadApiRoutes.post("/", async (c) => {
   if (!c.env.R2) {
     if (wantsSSE(c)) {
-      return sse(c, async (stream) => {
-        await stream.patchSignals({
-          _uploadError: "R2 storage not configured",
-        });
-      });
+      return dsSignals({ _uploadError: "R2 storage not configured" });
     }
     return c.json({ error: "R2 storage not configured" }, 500);
   }
@@ -131,9 +127,7 @@ uploadApiRoutes.post("/", async (c) => {
 
   if (!file) {
     if (wantsSSE(c)) {
-      return sse(c, async (stream) => {
-        await stream.patchSignals({ _uploadError: "No file provided" });
-      });
+      return dsSignals({ _uploadError: "No file provided" });
     }
     return c.json({ error: "No file provided" }, 400);
   }
@@ -148,9 +142,7 @@ uploadApiRoutes.post("/", async (c) => {
   ];
   if (!allowedTypes.includes(file.type)) {
     if (wantsSSE(c)) {
-      return sse(c, async (stream) => {
-        await stream.patchSignals({ _uploadError: "File type not allowed" });
-      });
+      return dsSignals({ _uploadError: "File type not allowed" });
     }
     return c.json({ error: "File type not allowed" }, 400);
   }
@@ -159,11 +151,7 @@ uploadApiRoutes.post("/", async (c) => {
   const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) {
     if (wantsSSE(c)) {
-      return sse(c, async (stream) => {
-        await stream.patchSignals({
-          _uploadError: "File too large (max 10MB)",
-        });
-      });
+      return dsSignals({ _uploadError: "File too large (max 10MB)" });
     }
     return c.json({ error: "File too large (max 10MB)" }, 400);
   }

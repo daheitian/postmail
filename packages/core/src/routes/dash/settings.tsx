@@ -7,7 +7,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
-import { sse } from "../../lib/sse.js";
+import { sse, dsToast } from "../../lib/sse.js";
 import { getSiteLanguage, getConfigFallback } from "../../lib/config.js";
 
 /** Escape HTML special characters for safe insertion into HTML strings */
@@ -301,9 +301,7 @@ settingsRoutes.post("/password", async (c) => {
   }>();
 
   if (body.newPassword !== body.confirmPassword) {
-    return sse(c, async (stream) => {
-      await stream.toast("Passwords do not match.", "error");
-    });
+    return dsToast("Passwords do not match.", "error");
   }
 
   try {
@@ -316,9 +314,7 @@ settingsRoutes.post("/password", async (c) => {
       headers: c.req.raw.headers,
     });
   } catch {
-    return sse(c, async (stream) => {
-      await stream.toast("Current password is incorrect.", "error");
-    });
+    return dsToast("Current password is incorrect.", "error");
   }
 
   return sse(c, async (stream) => {

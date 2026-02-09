@@ -16,7 +16,7 @@ import {
   DangerZone,
 } from "../../theme/components/index.js";
 import * as sqid from "../../lib/sqid.js";
-import { sse } from "../../lib/sse.js";
+import { dsRedirect } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -409,9 +409,7 @@ collectionsRoutes.post("/", async (c) => {
     description: body.description || undefined,
   });
 
-  return sse(c, async (stream) => {
-    await stream.redirect(`/dash/collections/${collection.id}`);
-  });
+  return dsRedirect(`/dash/collections/${collection.id}`);
 });
 
 // View single collection
@@ -476,9 +474,7 @@ collectionsRoutes.post("/:id", async (c) => {
     description: body.description || undefined,
   });
 
-  return sse(c, async (stream) => {
-    await stream.redirect(`/dash/collections/${id}`);
-  });
+  return dsRedirect(`/dash/collections/${id}`);
 });
 
 // Delete collection
@@ -488,9 +484,7 @@ collectionsRoutes.post("/:id/delete", async (c) => {
 
   await c.var.services.collections.delete(id);
 
-  return sse(c, async (stream) => {
-    await stream.redirect("/dash/collections");
-  });
+  return dsRedirect("/dash/collections");
 });
 
 // Remove post from collection
@@ -504,7 +498,5 @@ collectionsRoutes.post("/:id/remove-post", async (c) => {
     await c.var.services.collections.removePost(id, body.postId);
   }
 
-  return sse(c, async (stream) => {
-    await stream.redirect(`/dash/collections/${id}`);
-  });
+  return dsRedirect(`/dash/collections/${id}`);
 });
