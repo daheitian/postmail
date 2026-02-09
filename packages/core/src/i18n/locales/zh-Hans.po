@@ -45,13 +45,18 @@ msgstr "301（永久）"
 msgid "302 (Temporary)"
 msgstr "302（临时）"
 
+#. @context: Settings sub-navigation tab
+#: src/routes/dash/settings.tsx:63
+msgid "Account"
+msgstr "账户"
+
 #. @context: Archive filter - all types
 #: src/routes/pages/archive.tsx:115
 msgid "All"
 msgstr "所有"
 
-#. @context: Dashboard navigation - appearance settings
-#: src/theme/layouts/DashLayout.tsx:142
+#. @context: Settings sub-navigation tab
+#: src/routes/dash/settings.tsx:55
 msgid "Appearance"
 msgstr "外观"
 
@@ -77,7 +82,7 @@ msgid "Articles"
 msgstr "文章"
 
 #. @context: Button to go back to media list
-#: src/routes/dash/media.tsx:392
+#: src/routes/dash/media.tsx:245
 msgid "Back"
 msgstr "返回"
 
@@ -105,13 +110,13 @@ msgstr "取消"
 
 #. @context: Button to change password
 #. @context: Settings section heading
-#: src/routes/dash/settings.tsx:128
-#: src/routes/dash/settings.tsx:188
+#: src/routes/dash/settings.tsx:392
+#: src/routes/dash/settings.tsx:452
 msgid "Change Password"
 msgstr "更改密码"
 
 #. @context: Hint to click image for lightbox
-#: src/routes/dash/media.tsx:425
+#: src/routes/dash/media.tsx:278
 msgid "Click image to view full size"
 msgstr "点击图片查看完整尺寸"
 
@@ -123,22 +128,22 @@ msgid "Collections"
 msgstr "收藏夹"
 
 #. @context: Appearance settings heading
-#: src/routes/dash/appearance.tsx:108
+#: src/routes/dash/settings.tsx:301
 msgid "Color theme"
 msgstr "颜色主题"
 
 #. @context: Setup form submit button
-#: src/app.tsx:242
+#: src/app.tsx:245
 msgid "Complete Setup"
 msgstr "完成设置"
 
 #. @context: Password form field
-#: src/routes/dash/settings.tsx:170
+#: src/routes/dash/settings.tsx:434
 msgid "Confirm New Password"
 msgstr "确认新密码"
 
 #. @context: Password reset form field
-#: src/app.tsx:526
+#: src/app.tsx:505
 msgid "Confirm Password"
 msgstr "确认密码"
 
@@ -151,8 +156,8 @@ msgstr "内容"
 
 #. @context: Button to copy Markdown to clipboard
 #. @context: Button to copy URL to clipboard
-#: src/routes/dash/media.tsx:463
-#: src/routes/dash/media.tsx:500
+#: src/routes/dash/media.tsx:316
+#: src/routes/dash/media.tsx:353
 msgid "Copy"
 msgstr "复制"
 
@@ -172,7 +177,7 @@ msgid "Create Redirect"
 msgstr "创建重定向"
 
 #. @context: Setup page description
-#: src/app.tsx:184
+#: src/app.tsx:187
 msgid "Create your admin account."
 msgstr "创建您的管理员账户。"
 
@@ -187,7 +192,7 @@ msgid "Create your first post"
 msgstr "创建你的第一篇帖子"
 
 #. @context: Password form field
-#: src/routes/dash/settings.tsx:137
+#: src/routes/dash/settings.tsx:401
 msgid "Current Password"
 msgstr "当前密码"
 
@@ -221,7 +226,7 @@ msgid "Delete Collection"
 msgstr "删除收藏夹"
 
 #. @context: Button to delete media
-#: src/routes/dash/media.tsx:511
+#: src/routes/dash/media.tsx:364
 msgid "Delete Media"
 msgstr "删除媒体"
 
@@ -231,12 +236,12 @@ msgid "Delete Page"
 msgstr "删除页面"
 
 #. @context: Warning message before deleting media
-#: src/routes/dash/media.tsx:517
+#: src/routes/dash/media.tsx:370
 msgid "Deleting this media will remove it permanently from storage."
 msgstr "删除此媒体将永久从存储中移除。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:345
+#: src/app.tsx:336
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "演示账户已预填。只需点击登录。"
 
@@ -272,7 +277,7 @@ msgstr "草稿"
 #: src/routes/dash/collections.tsx:210
 #: src/routes/dash/pages.tsx:64
 #: src/routes/dash/pages.tsx:134
-#: src/routes/dash/posts.tsx:126
+#: src/routes/dash/posts.tsx:124
 #: src/theme/components/ActionButtons.tsx:72
 #: src/theme/components/PostList.tsx:46
 msgid "Edit"
@@ -289,19 +294,19 @@ msgid "Edit Page"
 msgstr "编辑页面"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:155
+#: src/routes/dash/posts.tsx:153
 msgid "Edit Post"
 msgstr "编辑帖子"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:213
-#: src/app.tsx:359
+#: src/app.tsx:216
+#: src/app.tsx:350
 msgid "Email"
 msgstr "电子邮件"
 
 #. @context: Password reset page description
-#: src/app.tsx:496
+#: src/app.tsx:475
 msgid "Enter your new password."
 msgstr "输入您的新密码。"
 
@@ -330,7 +335,9 @@ msgid "From Path"
 msgstr "来源路径"
 
 #. @context: Settings section heading
-#: src/routes/dash/settings.tsx:52
+#. @context: Settings sub-navigation tab
+#: src/routes/dash/settings.tsx:47
+#: src/routes/dash/settings.tsx:130
 msgid "General"
 msgstr "常规"
 
@@ -349,17 +356,17 @@ msgid "Images"
 msgstr "图片"
 
 #. @context: Media upload instructions - auto optimization
-#: src/routes/dash/media.tsx:305
+#: src/routes/dash/media.tsx:158
 msgid "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
 msgstr "图像会自动优化：调整大小至最大 1920px，转换为 WebP，并去除元数据。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:561
+#: src/app.tsx:540
 msgid "Invalid or Expired Link"
 msgstr "无效或过期的链接"
 
 #. @context: Settings form field
-#: src/routes/dash/settings.tsx:93
+#: src/routes/dash/settings.tsx:171
 msgid "Language"
 msgstr "语言"
 
@@ -388,13 +395,13 @@ msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "仅允许小写字母、数字和连字符"
 
 #. @context: Media detail section - Markdown snippet
-#: src/routes/dash/media.tsx:481
+#: src/routes/dash/media.tsx:334
 msgid "Markdown"
 msgstr "Markdown"
 
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
-#: src/routes/dash/media.tsx:285
+#: src/routes/dash/media.tsx:138
 #: src/theme/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "媒体"
@@ -403,6 +410,11 @@ msgstr "媒体"
 #: src/routes/dash/collections.tsx:123
 msgid "My Collection"
 msgstr "我的收藏"
+
+#. @context: Account settings form field
+#: src/routes/dash/settings.tsx:362
+msgid "Name"
+msgstr "姓名"
 
 #. @context: Help text with link
 #: src/routes/dash/index.tsx:78
@@ -427,8 +439,8 @@ msgstr "新页面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:510
-#: src/routes/dash/settings.tsx:153
+#: src/app.tsx:489
+#: src/routes/dash/settings.tsx:417
 msgid "New Password"
 msgstr "新密码"
 
@@ -463,7 +475,7 @@ msgid "No collections yet."
 msgstr "尚未有任何收藏。"
 
 #. @context: Empty state message when no media exists
-#: src/routes/dash/media.tsx:320
+#: src/routes/dash/media.tsx:173
 msgid "No media uploaded yet."
 msgstr "尚未上传任何媒体。"
 
@@ -550,8 +562,8 @@ msgstr "页面"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:228
-#: src/app.tsx:368
+#: src/app.tsx:231
+#: src/app.tsx:359
 msgid "Password"
 msgstr "密码"
 
@@ -568,7 +580,7 @@ msgid "Permalink"
 msgstr "永久链接"
 
 #. @context: Default post title
-#: src/routes/dash/posts.tsx:115
+#: src/routes/dash/posts.tsx:113
 msgid "Post"
 msgstr "帖子"
 
@@ -590,7 +602,7 @@ msgid "Posts in Collection ({count})"
 msgstr "集合中的帖子 ({count})"
 
 #. @context: Media detail section - preview
-#: src/routes/dash/media.tsx:404
+#: src/routes/dash/media.tsx:257
 msgid "Preview"
 msgstr "预览"
 
@@ -602,9 +614,14 @@ msgid "Previous"
 msgstr "上一页"
 
 #. @context: Upload status - processing
-#: src/routes/dash/media.tsx:107
+#: src/routes/dash/media.tsx:106
 msgid "Processing..."
 msgstr "处理中..."
+
+#. @context: Account settings section heading
+#: src/routes/dash/settings.tsx:353
+msgid "Profile"
+msgstr "个人资料"
 
 #. @context: Button to publish new post
 #: src/theme/components/PostForm.tsx:175
@@ -666,13 +683,18 @@ msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:490
-#: src/app.tsx:541
+#: src/app.tsx:469
+#: src/app.tsx:520
 msgid "Reset Password"
 msgstr "重置密码"
 
+#. @context: Button to save profile
+#: src/routes/dash/settings.tsx:378
+msgid "Save Profile"
+msgstr "保存个人资料"
+
 #. @context: Button to save settings
-#: src/routes/dash/settings.tsx:114
+#: src/routes/dash/settings.tsx:192
 msgid "Save Settings"
 msgstr "保存设置"
 
@@ -689,16 +711,20 @@ msgid "Search posts..."
 msgstr "搜索帖子..."
 
 #. @context: Dashboard heading
+#. @context: Dashboard heading
+#. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
-#: src/routes/dash/settings.tsx:41
+#: src/routes/dash/settings.tsx:118
+#: src/routes/dash/settings.tsx:290
+#: src/routes/dash/settings.tsx:341
 #: src/theme/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "设置"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:336
-#: src/app.tsx:381
+#: src/app.tsx:327
+#: src/app.tsx:372
 msgid "Sign In"
 msgstr "登录"
 
@@ -708,12 +734,12 @@ msgid "Sign Out"
 msgstr "登出"
 
 #. @context: Settings form field
-#: src/routes/dash/settings.tsx:76
+#: src/routes/dash/settings.tsx:154
 msgid "Site Description"
 msgstr "网站描述"
 
 #. @context: Settings form field
-#: src/routes/dash/settings.tsx:61
+#: src/routes/dash/settings.tsx:139
 msgid "Site Name"
 msgstr "网站名称"
 
@@ -750,12 +776,12 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此页面的 URL 路径。使用小写字母、数字和连字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:569
+#: src/app.tsx:548
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密码重置链接无效或已过期。请生成一个新的链接。"
 
 #. @context: Appearance settings description
-#: src/routes/dash/appearance.tsx:114
+#: src/routes/dash/settings.tsx:307
 msgid "This will theme both your site and your dashboard. All color themes support dark mode."
 msgstr "这将为您的网站和仪表板设置主题。所有颜色主题都支持暗黑模式。"
 
@@ -830,22 +856,22 @@ msgid "Update Page"
 msgstr "更新页面"
 
 #. @context: Button to upload media file
-#: src/routes/dash/media.tsx:115
+#: src/routes/dash/media.tsx:114
 msgid "Upload"
 msgstr "上传"
 
 #. @context: Upload error message
-#: src/routes/dash/media.tsx:119
+#: src/routes/dash/media.tsx:118
 msgid "Upload failed. Please try again."
 msgstr "上传失败。请再试一次。"
 
 #. @context: Upload status - uploading
-#: src/routes/dash/media.tsx:111
+#: src/routes/dash/media.tsx:110
 msgid "Uploading..."
 msgstr "上传中..."
 
 #. @context: Media detail section - URL
-#: src/routes/dash/media.tsx:444
+#: src/routes/dash/media.tsx:297
 msgid "URL"
 msgstr "网址"
 
@@ -855,7 +881,7 @@ msgid "URL-safe identifier (lowercase, numbers, hyphens)"
 msgstr "URL安全标识符（小写字母、数字、连字符）"
 
 #. @context: Media URL helper text
-#: src/routes/dash/media.tsx:470
+#: src/routes/dash/media.tsx:323
 msgid "Use this URL to embed the media in your posts."
 msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
 
@@ -870,7 +896,7 @@ msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
 #: src/routes/dash/collections.tsx:215
 #: src/routes/dash/pages.tsx:73
 #: src/routes/dash/pages.tsx:143
-#: src/routes/dash/posts.tsx:131
+#: src/routes/dash/posts.tsx:129
 #: src/theme/components/ActionButtons.tsx:76
 #: src/theme/components/PostList.tsx:51
 msgid "View"
@@ -892,7 +918,7 @@ msgid "Visibility"
 msgstr "可见性"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:178
+#: src/app.tsx:181
 msgid "Welcome to Jant"
 msgstr "欢迎来到Jant"
 
@@ -907,6 +933,6 @@ msgid "What's this collection about?"
 msgstr "这个系列是关于什么的？"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:198
+#: src/app.tsx:201
 msgid "Your Name"
 msgstr "您的姓名"

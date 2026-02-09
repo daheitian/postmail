@@ -10,8 +10,8 @@ pnpm = "10.28.2"
 # =============================================================================
 [tasks.ci]
 alias = "check"
-description = "Run all CI checks (lint + typecheck + test + build)"
-depends = ["lint", "typecheck", "test", "build-all"]
+description = "Run all CI checks (lint + typecheck + test + build + i18n + template)"
+depends = ["lint", "typecheck", "test", "build-all", "i18n-check", "test-template"]
 
 # =============================================================================
 # Development (uses templates/jant-site)
@@ -121,6 +121,18 @@ run = "mise run i18n-extract && mise run translate && mise run i18n-compile"
 [tasks.i18n-no-translate]
 description = "Extract and compile only (without translation)"
 run = "pnpm --filter @jant/core i18n:build"
+
+[tasks.i18n-check]
+description = "Check i18n catalogs are in sync with source"
+run = """
+pnpm --filter @jant/core i18n:build
+if ! git diff --exit-code packages/core/src/i18n/locales/; then
+  echo ""
+  echo "❌ i18n catalogs are out of sync!"
+  echo "Run 'mise run i18n-no-translate' locally and commit the changes."
+  exit 1
+fi
+"""
 
 [tasks.i18n-extract]
 alias = "extract"
