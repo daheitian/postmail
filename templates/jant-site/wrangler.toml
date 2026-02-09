@@ -1,4 +1,4 @@
-name = "jant-site"
+name = "jant-site" # @create-jant: "${name}"
 main = "src/index.ts"
 compatibility_date = "2026-01-20"
 compatibility_flags = ["nodejs_compat"]
@@ -39,10 +39,10 @@ SITE_URL = "http://localhost:9019"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "jant-site-db"
+database_name = "jant-site-db" # @create-jant: "${name}-db"
 database_id = "local"
-migrations_dir = "migrations"
+migrations_dir = "../../packages/core/src/db/migrations" # @create-jant: "node_modules/@jant/core/src/db/migrations"
 
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "jant-site-media"
+bucket_name = "jant-site-media" # @create-jant: "${name}-media"

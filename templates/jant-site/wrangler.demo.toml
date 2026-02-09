@@ -15,7 +15,7 @@ DEMO_PASSWORD = "demodemo"
 binding = "DB"
 database_name = "jant-demo-db"
 database_id = "76329154-291d-4580-af73-aa77397649f1"
-migrations_dir = "migrations"
+migrations_dir = "../../packages/core/src/db/migrations"
 
 [[r2_buckets]]
 binding = "R2"

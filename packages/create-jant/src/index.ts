@@ -100,18 +100,21 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     await fs.writeJson(pkgPath, pkg, { spaces: 2 });
   }
 
-  // Update wrangler.toml with project-specific values
+  // Update wrangler.toml: replace @create-jant markers with interpolated values
+  // e.g. `name = "jant-site" # @create-jant: "${name}-db"` becomes `name = "my-project-db"`
   const wranglerPath = path.join(targetDir, "wrangler.toml");
   if (await fs.pathExists(wranglerPath)) {
     let content = await fs.readFile(wranglerPath, "utf-8");
-    content = content.replace(/name = "jant-site"/g, `name = "${projectName}"`);
+    const vars: Record<string, string> = { name: projectName };
     content = content.replace(
-      /database_name = "jant-site-db"/g,
-      `database_name = "${projectName}-db"`,
-    );
-    content = content.replace(
-      /bucket_name = "jant-site-media"/g,
-      `bucket_name = "${projectName}-media"`,
+      /^(.+=\s*)"[^"]*"\s*#\s*@create-jant:\s*"([^"]*)"/gm,
+      (_, prefix: string, template: string) => {
+        const value = template.replace(
+          /\$\{(\w+)\}/g,
+          (__, key: string) => vars[key] ?? "",
+        );
+        return `${prefix}"${value}"`;
+      },
     );
     await fs.writeFile(wranglerPath, content, "utf-8");
   }
