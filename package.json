@@ -36,5 +36,10 @@
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "vite-ssr-components": "^0.5.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3"
+    ]
   }
 }

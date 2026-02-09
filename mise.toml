@@ -10,8 +10,8 @@ pnpm = "10.28.2"
 # =============================================================================
 [tasks.ci]
 alias = "check"
-description = "Run all CI checks (lint + typecheck + build)"
-depends = ["lint", "typecheck", "build-all"]
+description = "Run all CI checks (lint + typecheck + test + build)"
+depends = ["lint", "typecheck", "test", "build-all"]
 
 # =============================================================================
 # Development (uses templates/jant-site)
@@ -49,6 +49,24 @@ pnpm --filter create-jant build
 description = "Run TypeScript type checking (all packages)"
 depends = ["build-types"]
 run = "pnpm -r typecheck"
+
+# =============================================================================
+# Testing
+# =============================================================================
+[tasks.test]
+alias = "t"
+description = "Run all tests"
+run = "pnpm --filter @jant/core test"
+
+[tasks."test:watch"]
+alias = "tw"
+description = "Run tests in watch mode"
+run = "pnpm --filter @jant/core test:watch"
+
+[tasks."test:coverage"]
+alias = "tc"
+description = "Run tests with coverage report"
+run = "pnpm --filter @jant/core test:coverage"
 
 # =============================================================================
 # Code Quality (uses @jant/core)

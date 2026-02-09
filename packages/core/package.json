@@ -32,13 +32,16 @@
   },
   "scripts": {
     "build": "pnpm build:lib",
-    "build:lib": "swc src -d dist --strip-leading-paths && pnpm build:types",
+    "build:lib": "swc src -d dist --strip-leading-paths --ignore '**/__tests__/**' && pnpm build:types",
     "build:types": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.client.json",
     "db:generate": "drizzle-kit generate",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile --typescript",
     "i18n:build": "pnpm i18n:extract && pnpm i18n:compile",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prepublishOnly": "pnpm build:lib"
   },
   "dependencies": {
@@ -64,12 +67,15 @@
     "@lingui/swc-plugin": "^5.10.1",
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.15.11",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.1.0",
+    "better-sqlite3": "^12.6.2",
     "drizzle-kit": "^0.31.8",
     "glob": "^13.0.0",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "repository": {
     "type": "git",

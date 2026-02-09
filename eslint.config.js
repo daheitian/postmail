@@ -62,6 +62,11 @@ export default [
         TransformStream: "readonly",
         TextEncoder: "readonly",
         TextDecoder: "readonly",
+        // Timers (available in Workers, Node, and browsers)
+        setTimeout: "readonly",
+        setInterval: "readonly",
+        clearTimeout: "readonly",
+        clearInterval: "readonly",
         // Cloudflare Workers specific
         crypto: "readonly",
         caches: "readonly",

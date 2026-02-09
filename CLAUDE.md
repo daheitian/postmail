@@ -44,6 +44,7 @@ This is an open source project. Code quality and maintainability are paramount.
 - **Debug port**: Use `mise run dev-debug` (port 19019) for testing, leaving 9019 free.
 - **NO auto-publishing**: Do NOT run publish commands. User handles releases via `mise run version` and `mise run release`.
 - **NEVER edit `packages/create-jant/template/` directly**: This directory is auto-generated from `templates/jant-site` during publish. Edit `templates/jant-site` and use `@monorepo-only` / `@user-project-only` markers for monorepo vs. user project differences. See Package Architecture section for details.
+- **Tests are required**: Every new feature, bug fix, or logic change MUST include corresponding tests. Run `mise run test` before considering any task complete. See the Testing section for conventions.
 
 ## Quick Reference
 
@@ -54,6 +55,11 @@ mise run dev-debug    # Start dev server on port 19019 (for Claude debugging)
 mise run typecheck    # Run TypeScript checks (strict mode)
 mise run lint         # Run ESLint
 mise run format       # Format code with Prettier
+
+# Testing
+mise run test           # Run all tests (must pass before committing)
+mise run test:watch     # Run tests in watch mode during development
+mise run test:coverage  # Run tests with coverage report
 
 # Build & Deploy
 mise run build        # Build with Vite
@@ -301,8 +307,7 @@ export const homeroute = new Hono<Env>();
 
 ### ESLint
 
-- Zero errors policy
-- Warnings are acceptable for console.log, non-null assertions (with comments)
+- Zero warnings policy — all warnings must be resolved
 - Configuration in `eslint.config.js`
 
 ### Prettier
@@ -316,6 +321,77 @@ export const homeroute = new Hono<Env>();
 - **husky**: Git hooks management
 - **lint-staged**: Format staged files
 - Runs: ESLint --fix + Prettier --write
+
+## Testing
+
+**Core Rule: Every change must include tests. No exceptions.**
+
+When implementing a new feature, fixing a bug, or changing business logic, you MUST write tests for it. Run `mise run test` to verify all tests pass before finishing.
+
+### Test Framework
+
+- **Vitest** (v4) — configured in `packages/core/vitest.config.ts`
+- **better-sqlite3** — in-memory SQLite for service integration tests (matches D1 in production)
+
+### Test Structure (colocated `__tests__/` directories)
+
+```
+packages/core/src/
+├── lib/
+│   ├── time.ts
+│   └── __tests__/
+│       └── time.test.ts          ← unit tests next to source
+├── services/
+│   ├── post.ts
+│   └── __tests__/
+│       └── post.test.ts          ← service integration tests
+├── routes/api/
+│   ├── posts.ts
+│   └── __tests__/
+│       └── posts.test.ts         ← route handler tests
+├── middleware/
+│   ├── auth.ts
+│   └── __tests__/
+│       └── auth.test.ts          ← middleware tests
+└── __tests__/helpers/
+    ├── db.ts                     ← in-memory SQLite with migrations
+    └── app.ts                    ← test Hono app with mock services/auth
+```
+
+### What to test for each layer
+
+| Layer                 | What to test                                            | Test helper                 |
+| --------------------- | ------------------------------------------------------- | --------------------------- |
+| `lib/` pure functions | Input/output, edge cases, boundary values               | None needed                 |
+| `lib/schemas.ts` Zod  | Valid inputs, invalid inputs, error messages            | None needed                 |
+| `services/`           | CRUD operations, business logic, relationships          | `createTestDatabase()`      |
+| `routes/api/`         | HTTP status codes, request validation, auth enforcement | `createTestApp()`           |
+| `middleware/`         | Auth redirect/401 behavior, error handling              | Direct Hono `app.request()` |
+
+### Test helpers
+
+```typescript
+// In-memory SQLite database for service tests
+import { createTestDatabase } from "../../__tests__/helpers/db.js";
+const { db } = createTestDatabase(); // without FTS
+const { db } = createTestDatabase({ fts: true }); // with FTS5 for search tests
+
+// Test Hono app with real services for route tests
+import { createTestApp } from "../../__tests__/helpers/app.js";
+const { app, services } = createTestApp({ authenticated: true });
+app.route("/api/posts", postsApiRoutes);
+const res = await app.request("/api/posts");
+```
+
+### Rules
+
+1. **Every new service method** → add tests covering happy path, edge cases, and error cases
+2. **Every new API endpoint** → test status codes, validation errors, and auth enforcement
+3. **Every new lib function** → test with valid inputs, invalid inputs, and edge cases
+4. **Each test gets a fresh database** — use `beforeEach` with `createTestDatabase()` for isolation
+5. **Don't test third-party libraries** — don't write tests for better-auth internals, Drizzle ORM, etc.
+6. **Don't test JSX rendering** — no DOM testing, focus on logic
+7. **Run tests before finishing** — `mise run test` must pass
 
 ## Internationalization (i18n)
 

@@ -34,7 +34,9 @@ postsApiRoutes.get("/", async (c) => {
     })),
 
     nextCursor:
-      posts.length === limit ? sqid.encode(posts[posts.length - 1]!.id) : null,
+      posts.length === limit
+        ? sqid.encode(posts[posts.length - 1]?.id ?? 0)
+        : null,
   });
 });
 
