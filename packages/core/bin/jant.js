@@ -7,12 +7,9 @@
  *   swizzle <component> [--wrap|--eject]  - Override a theme component
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import {  writeFileSync, mkdirSync, existsSync } from "fs";
+import { resolve } from "path";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Available components that can be swizzled
 const SWIZZLABLE_COMPONENTS = {

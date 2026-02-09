@@ -84,6 +84,9 @@ importers:
       '@lingui/cli':
         specifier: ^5.9.0
         version: 5.9.0(typescript@5.9.3)
+      '@lingui/conf':
+        specifier: ^5.9.0
+        version: 5.9.0(typescript@5.9.3)
       '@lingui/format-po':
         specifier: ^5.9.0
         version: 5.9.0(typescript@5.9.3)
