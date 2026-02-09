@@ -29,7 +29,6 @@ import { mediaRoutes as dashMediaRoutes } from "./routes/dash/media.js";
 import { settingsRoutes as dashSettingsRoutes } from "./routes/dash/settings.js";
 import { redirectsRoutes as dashRedirectsRoutes } from "./routes/dash/redirects.js";
 import { collectionsRoutes as dashCollectionsRoutes } from "./routes/dash/collections.js";
-import { appearanceRoutes as dashAppearanceRoutes } from "./routes/dash/appearance.js";
 
 // Routes - API
 import { postsApiRoutes } from "./routes/api/posts.js";
@@ -675,8 +674,6 @@ export function createApp(config: JantConfig = {}): App {
   app.route("/dash/settings", dashSettingsRoutes);
   app.route("/dash/redirects", dashRedirectsRoutes);
   app.route("/dash/collections", dashCollectionsRoutes);
-  app.route("/dash/appearance", dashAppearanceRoutes);
-
   // API routes
   app.route("/api/upload", uploadApiRoutes);
   app.route("/api/search", searchApiRoutes);

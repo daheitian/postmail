@@ -1,5 +1,7 @@
 /**
  * Dashboard Settings Routes
+ *
+ * Sub-pages: General, Appearance, Account
  */
 
 import { Hono } from "hono";
@@ -7,8 +9,15 @@ import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
-import { sse, dsToast } from "../../lib/sse.js";
-import { getSiteLanguage, getConfigFallback } from "../../lib/config.js";
+import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
+import {
+  getSiteLanguage,
+  getSiteName,
+  getConfigFallback,
+} from "../../lib/config.js";
+import { SETTINGS_KEYS } from "../../lib/constants.js";
+import { getAvailableThemes } from "../../lib/theme.js";
+import type { ColorTheme } from "../../theme/color-themes.js";
 
 /** Escape HTML special characters for safe insertion into HTML strings */
 function escapeHtml(str: string): string {
@@ -23,7 +32,66 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const settingsRoutes = new Hono<Env>();
 
-function SettingsContent({
+// ---------------------------------------------------------------------------
+// Shared sub-navigation
+// ---------------------------------------------------------------------------
+
+type SettingsTab = "general" | "appearance" | "account";
+
+function SettingsNav({ currentTab }: { currentTab: SettingsTab }) {
+  const { t } = useLingui();
+
+  const tabs: { id: SettingsTab; label: string; href: string }[] = [
+    {
+      id: "general",
+      label: t({
+        message: "General",
+        comment: "@context: Settings sub-navigation tab",
+      }),
+      href: "/dash/settings",
+    },
+    {
+      id: "appearance",
+      label: t({
+        message: "Appearance",
+        comment: "@context: Settings sub-navigation tab",
+      }),
+      href: "/dash/settings/appearance",
+    },
+    {
+      id: "account",
+      label: t({
+        message: "Account",
+        comment: "@context: Settings sub-navigation tab",
+      }),
+      href: "/dash/settings/account",
+    },
+  ];
+
+  return (
+    <nav class="flex gap-1 mb-6">
+      {tabs.map((tab) => (
+        <a
+          key={tab.id}
+          href={tab.href}
+          class={`px-3 py-2 text-sm rounded-md ${
+            tab.id === currentTab
+              ? "bg-accent text-accent-foreground font-medium"
+              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          }`}
+        >
+          {tab.label}
+        </a>
+      ))}
+    </nav>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// General tab
+// ---------------------------------------------------------------------------
+
+function GeneralContent({
   siteName,
   siteDescription,
   siteLanguage,
@@ -46,9 +114,10 @@ function SettingsContent({
 
   return (
     <>
-      <h1 class="text-2xl font-semibold mb-6">
+      <h1 class="text-2xl font-semibold mb-2">
         {t({ message: "Settings", comment: "@context: Dashboard heading" })}
       </h1>
+      <SettingsNav currentTab="general" />
 
       <div class="flex flex-col gap-6 max-w-lg">
         <form
@@ -123,6 +192,192 @@ function SettingsContent({
             {t({
               message: "Save Settings",
               comment: "@context: Button to save settings",
+            })}
+          </button>
+        </form>
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Appearance tab
+// ---------------------------------------------------------------------------
+
+function ThemeCard({
+  theme,
+  selected,
+}: {
+  theme: ColorTheme;
+  selected: boolean;
+}) {
+  const expr = `$theme === '${theme.id}'`;
+  const { preview } = theme;
+
+  return (
+    <label
+      class={`block cursor-pointer rounded-lg border overflow-hidden transition-colors ${selected ? "border-primary" : "border-border"}`}
+      data-class:border-primary={expr}
+      data-class:border-border={`$theme !== '${theme.id}'`}
+    >
+      <div class="grid grid-cols-2">
+        <div
+          class="p-5"
+          style={`background-color:${preview.lightBg};color:${preview.lightText}`}
+        >
+          <input
+            type="radio"
+            name="theme"
+            value={theme.id}
+            data-bind="theme"
+            checked={selected || undefined}
+            class="mb-1"
+          />
+          <h3 class="font-bold text-lg">{theme.name}</h3>
+          <p class="text-sm mt-2 leading-relaxed">
+            This is the {theme.name} theme in light mode. Links{" "}
+            <a
+              tabIndex={-1}
+              class="underline"
+              style={`color:${preview.lightLink}`}
+            >
+              look like this
+            </a>
+            . We'll show the correct light or dark mode based on your visitor's
+            settings.
+          </p>
+        </div>
+        <div
+          class="p-5"
+          style={`background-color:${preview.darkBg};color:${preview.darkText}`}
+        >
+          <h3 class="font-bold text-lg">{theme.name}</h3>
+          <p class="text-sm mt-2 leading-relaxed">
+            This is the {theme.name} theme in dark mode. Links{" "}
+            <a
+              tabIndex={-1}
+              class="underline"
+              style={`color:${preview.darkLink}`}
+            >
+              look like this
+            </a>
+            . We'll show the correct light or dark mode based on your visitor's
+            settings.
+          </p>
+        </div>
+      </div>
+    </label>
+  );
+}
+
+function AppearanceContent({
+  themes,
+  currentThemeId,
+}: {
+  themes: ColorTheme[];
+  currentThemeId: string;
+}) {
+  const { t } = useLingui();
+
+  const signals = JSON.stringify({ theme: currentThemeId }).replace(
+    /</g,
+    "\\u003c",
+  );
+
+  return (
+    <>
+      <h1 class="text-2xl font-semibold mb-2">
+        {t({ message: "Settings", comment: "@context: Dashboard heading" })}
+      </h1>
+      <SettingsNav currentTab="appearance" />
+
+      <div
+        data-signals={signals}
+        data-on:change="@post('/dash/settings/appearance')"
+        class="max-w-3xl"
+      >
+        <fieldset>
+          <legend class="text-lg font-semibold">
+            {t({
+              message: "Color theme",
+              comment: "@context: Appearance settings heading",
+            })}
+          </legend>
+          <p class="text-sm text-muted-foreground mb-4">
+            {t({
+              message:
+                "This will theme both your site and your dashboard. All color themes support dark mode.",
+              comment: "@context: Appearance settings description",
+            })}
+          </p>
+
+          <div class="flex flex-col gap-4">
+            {themes.map((theme) => (
+              <ThemeCard
+                key={theme.id}
+                theme={theme}
+                selected={theme.id === currentThemeId}
+              />
+            ))}
+          </div>
+        </fieldset>
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Account tab
+// ---------------------------------------------------------------------------
+
+function AccountContent({ userName }: { userName: string }) {
+  const { t } = useLingui();
+
+  const profileSignals = JSON.stringify({ userName }).replace(/</g, "\\u003c");
+
+  return (
+    <>
+      <h1 class="text-2xl font-semibold mb-2">
+        {t({ message: "Settings", comment: "@context: Dashboard heading" })}
+      </h1>
+      <SettingsNav currentTab="account" />
+
+      <div class="flex flex-col gap-6 max-w-lg">
+        <form
+          data-signals={profileSignals}
+          data-on:submit__prevent="@post('/dash/settings/account')"
+        >
+          <div class="card">
+            <header>
+              <h2>
+                {t({
+                  message: "Profile",
+                  comment: "@context: Account settings section heading",
+                })}
+              </h2>
+            </header>
+            <section class="flex flex-col gap-4">
+              <div class="field">
+                <label class="label">
+                  {t({
+                    message: "Name",
+                    comment: "@context: Account settings form field",
+                  })}
+                </label>
+                <input
+                  type="text"
+                  data-bind="userName"
+                  class="input"
+                  required
+                />
+              </div>
+            </section>
+          </div>
+
+          <button type="submit" class="btn mt-4">
+            {t({
+              message: "Save Profile",
+              comment: "@context: Button to save profile",
             })}
           </button>
         </form>
@@ -205,16 +460,18 @@ function SettingsContent({
   );
 }
 
-// Settings page
+// ===========================================================================
+// Route handlers
+// ===========================================================================
+
+// General settings page
 settingsRoutes.get("/", async (c) => {
   const { settings } = c.var.services;
 
-  // Fetch raw DB values (null if not set)
   const dbSiteName = await settings.get("SITE_NAME");
   const dbSiteDescription = await settings.get("SITE_DESCRIPTION");
   const siteLanguage = await getSiteLanguage(c);
 
-  // Fallback values (ENV > Default) for placeholders
   const siteNameFallback = getConfigFallback(c, "SITE_NAME");
   const siteDescriptionFallback = getConfigFallback(c, "SITE_DESCRIPTION");
 
@@ -228,7 +485,7 @@ settingsRoutes.get("/", async (c) => {
       currentPath="/dash/settings"
       toast={saved ? { message: "Settings saved successfully." } : undefined}
     >
-      <SettingsContent
+      <GeneralContent
         siteName={dbSiteName || ""}
         siteDescription={dbSiteDescription || ""}
         siteLanguage={siteLanguage}
@@ -239,7 +496,7 @@ settingsRoutes.get("/", async (c) => {
   );
 });
 
-// Update settings
+// Save general settings
 settingsRoutes.post("/", async (c) => {
   const body = await c.req.json<{
     siteName: string;
@@ -251,7 +508,6 @@ settingsRoutes.post("/", async (c) => {
 
   const oldLanguage = (await settings.get("SITE_LANGUAGE")) ?? "en";
 
-  // For text fields: empty = remove from DB (fall back to ENV > Default)
   if (body.siteName.trim()) {
     await settings.set("SITE_NAME", body.siteName.trim());
   } else {
@@ -264,25 +520,19 @@ settingsRoutes.post("/", async (c) => {
     await settings.remove("SITE_DESCRIPTION");
   }
 
-  // Language always has a value from the select
   await settings.set("SITE_LANGUAGE", body.siteLanguage);
 
   const languageChanged = oldLanguage !== body.siteLanguage;
-
-  // Determine the effective display name after save
   const displayName = body.siteName.trim() || getConfigFallback(c, "SITE_NAME");
 
   return sse(c, async (stream) => {
     if (languageChanged) {
-      // Language changed - full reload needed to update all UI text
       await stream.redirect("/dash/settings?saved");
     } else {
       const escaped = escapeHtml(displayName);
-      // Update header site name
       await stream.patchElements(
         `<a id="site-name" href="/dash" class="font-semibold">${escaped}</a>`,
       );
-      // Update page title
       await stream.patchElements(`Settings - ${escaped}`, {
         mode: "inner",
         selector: "title",
@@ -290,6 +540,90 @@ settingsRoutes.post("/", async (c) => {
       await stream.toast("Settings saved successfully.");
     }
   });
+});
+
+// Appearance page
+settingsRoutes.get("/appearance", async (c) => {
+  const { settings } = c.var.services;
+  const siteName = await getSiteName(c);
+  const currentThemeId = (await settings.get(SETTINGS_KEYS.THEME)) ?? "default";
+  const themes = getAvailableThemes(c.var.config);
+  const saved = c.req.query("saved") !== undefined;
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Settings"
+      siteName={siteName}
+      currentPath="/dash/settings"
+      toast={saved ? { message: "Theme saved successfully." } : undefined}
+    >
+      <AppearanceContent themes={themes} currentThemeId={currentThemeId} />
+    </DashLayout>,
+  );
+});
+
+// Save theme
+settingsRoutes.post("/appearance", async (c) => {
+  const body = await c.req.json<{ theme: string }>();
+  const { settings } = c.var.services;
+  const themes = getAvailableThemes(c.var.config);
+
+  const validTheme = themes.find((t) => t.id === body.theme);
+  if (!validTheme) {
+    return dsToast("Invalid theme selected.", "error");
+  }
+
+  if (validTheme.id === "default") {
+    await settings.remove(SETTINGS_KEYS.THEME);
+  } else {
+    await settings.set(SETTINGS_KEYS.THEME, validTheme.id);
+  }
+
+  return dsRedirect("/dash/settings/appearance?saved");
+});
+
+// Account page
+settingsRoutes.get("/account", async (c) => {
+  const siteName = await getSiteName(c);
+  const session = await c.var.auth.api.getSession({
+    headers: c.req.raw.headers,
+  });
+  const userName = session?.user?.name ?? "";
+  const saved = c.req.query("saved") !== undefined;
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Settings"
+      siteName={siteName}
+      currentPath="/dash/settings"
+      toast={saved ? { message: "Profile saved successfully." } : undefined}
+    >
+      <AccountContent userName={userName} />
+    </DashLayout>,
+  );
+});
+
+// Save account profile
+settingsRoutes.post("/account", async (c) => {
+  const body = await c.req.json<{ userName: string }>();
+  const name = body.userName?.trim();
+
+  if (!name) {
+    return dsToast("Name is required.", "error");
+  }
+
+  try {
+    await c.var.auth.api.updateUser({
+      body: { name },
+      headers: c.req.raw.headers,
+    });
+  } catch {
+    return dsToast("Failed to update profile.", "error");
+  }
+
+  return dsToast("Profile saved successfully.");
 });
 
 // Change password

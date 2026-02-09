@@ -27,7 +27,6 @@ export const RESERVED_PATHS = [
   "static",
   "assets",
   "health",
-  "appearance",
 ] as const;
 
 export type ReservedPath = (typeof RESERVED_PATHS)[number];
