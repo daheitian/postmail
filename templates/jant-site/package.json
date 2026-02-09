@@ -11,7 +11,7 @@
     "deploy": "pnpm build && wrangler deploy",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "db:migrate:local": "wrangler d1 migrations apply DB --local --skip-confirmation",
+    "db:migrate:local": "yes | wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "jant": "jant",
     "reset-password": "node scripts/reset-password.mjs"

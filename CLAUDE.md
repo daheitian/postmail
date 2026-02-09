@@ -36,6 +36,7 @@ This is an open source project. Code quality and maintainability are paramount.
 
 - **BaseCoat components first**: Use BaseCoat semantic CSS classes (`.alert`, `.btn`, `.badge`, `.card`, `.input`, `.field`) instead of manually composing Tailwind utilities. Use Tailwind only for layout (flex, grid, gap), spacing (p, m), and typography (text-size, font-weight) not covered by BaseCoat. See `references/basecoat/` for available components.
 - **Node.js version: 24** - Always use Node 24 LTS. Do NOT use older versions (20, 22).
+- **Verify before changing**: Never assume CLI flags, API options, or library interfaces exist based on training data. Always run `--help`, check docs, or test the command BEFORE making changes. Training data may be outdated or incorrect.
 - **Latest package versions**: Always use `@latest` when installing. Do NOT use outdated versions from training data.
 - **Use mise tasks**: Wrap all dev commands in mise. Never require `cd` - use `dir` parameter.
 - **Manual workflow triggers**: Always add `workflow_dispatch:` to GitHub Actions.
