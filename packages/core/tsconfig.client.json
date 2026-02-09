@@ -8,5 +8,9 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src/client.ts", "src/lib/image-processor.ts"]
+  "include": [
+    "src/client.ts",
+    "src/lib/image-processor.ts",
+    "src/lib/media-upload.ts"
+  ]
 }

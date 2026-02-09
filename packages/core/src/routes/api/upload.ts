@@ -206,6 +206,7 @@ uploadApiRoutes.post("/", async (c) => {
           mode: "outer",
           selector: "#upload-placeholder",
         });
+        await stream.toast("Upload successful!");
       });
     }
 
@@ -222,7 +223,12 @@ uploadApiRoutes.post("/", async (c) => {
     // eslint-disable-next-line no-console -- Error logging is intentional
     console.error("Upload error:", err);
 
-    // Return error - client will handle updating the placeholder
+    if (wantsSSE(c)) {
+      return sse(c, async (stream) => {
+        await stream.remove("#upload-placeholder");
+        await stream.toast("Upload failed. Please try again.", "error");
+      });
+    }
     return c.json({ error: "Upload failed" }, 500);
   }
 });

@@ -10,6 +10,15 @@ import { DashLayout } from "../../theme/layouts/index.js";
 import { sse } from "../../lib/sse.js";
 import { getSiteLanguage, getConfigFallback } from "../../lib/config.js";
 
+/** Escape HTML special characters for safe insertion into HTML strings */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const settingsRoutes = new Hono<Env>();
@@ -260,11 +269,24 @@ settingsRoutes.post("/", async (c) => {
 
   const languageChanged = oldLanguage !== body.siteLanguage;
 
+  // Determine the effective display name after save
+  const displayName = body.siteName.trim() || getConfigFallback(c, "SITE_NAME");
+
   return sse(c, async (stream) => {
     if (languageChanged) {
       // Language changed - full reload needed to update all UI text
       await stream.redirect("/dash/settings?saved");
     } else {
+      const escaped = escapeHtml(displayName);
+      // Update header site name
+      await stream.patchElements(
+        `<a id="site-name" href="/dash" class="font-semibold">${escaped}</a>`,
+      );
+      // Update page title
+      await stream.patchElements(`Settings - ${escaped}`, {
+        mode: "inner",
+        selector: "title",
+      });
       await stream.toast("Settings saved successfully.");
     }
   });

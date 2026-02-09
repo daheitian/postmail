@@ -217,10 +217,3 @@ async function processToFile(
 }
 
 export const ImageProcessor = { process, processToFile };
-
-// Expose globally for inline scripts
-if (typeof window !== "undefined") {
-  (
-    window as unknown as { ImageProcessor: typeof ImageProcessor }
-  ).ImageProcessor = ImageProcessor;
-}

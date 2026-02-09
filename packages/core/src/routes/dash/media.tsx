@@ -90,8 +90,7 @@ function MediaCard({
 /**
  * Media list page content
  *
- * Uses plain JavaScript for upload state management (more reliable than Datastar signals
- * for complex async flows like file uploads with SSE responses).
+ * Upload is handled by media-upload.ts (client module) + Datastar @post for SSE.
  */
 function MediaListContent({
   mediaList,
@@ -121,163 +120,17 @@ function MediaListContent({
     comment: "@context: Upload error message",
   });
 
-  // Plain JavaScript upload handler - shows progress in the list
-  const uploadScript = `
-async function handleMediaUpload(input) {
-  if (!input.files || !input.files[0]) return;
-
-  const file = input.files[0];
-  const errorBox = document.getElementById('upload-error');
-  errorBox.classList.add('hidden');
-
-  // Ensure grid exists (remove empty state if needed)
-  let grid = document.getElementById('media-grid');
-  if (!grid) {
-    document.getElementById('empty-state')?.remove();
-    grid = document.createElement('div');
-    grid.id = 'media-grid';
-    grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4';
-    document.getElementById('media-content').appendChild(grid);
-  }
-
-  // Create placeholder card showing progress
-  const placeholder = document.createElement('div');
-  placeholder.id = 'upload-placeholder';
-  placeholder.className = 'group relative';
-  placeholder.innerHTML = \`
-    <div class="aspect-square bg-muted rounded-lg overflow-hidden border flex items-center justify-center">
-      <div class="text-center px-2">
-        <svg class="animate-spin h-6 w-6 text-muted-foreground mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <span id="upload-status" class="text-xs text-muted-foreground">${processingText}</span>
-      </div>
-    </div>
-    <div class="mt-2 text-xs truncate" title="\${file.name}">\${file.name}</div>
-    <div class="text-xs text-muted-foreground">\${formatFileSize(file.size)}</div>
-  \`;
-  grid.prepend(placeholder);
-
-  try {
-    if (typeof ImageProcessor === 'undefined') {
-      throw new Error('ImageProcessor not loaded');
-    }
-
-    // Process image client-side
-    const processed = await ImageProcessor.processToFile(file);
-    document.getElementById('upload-status').textContent = '${uploadingText}';
-
-    // Upload with SSE response
-    const fd = new FormData();
-    fd.append('file', processed);
-
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: fd,
-      headers: { 'Accept': 'text/event-stream' }
-    });
-
-    if (!response.ok) throw new Error('Upload failed: ' + response.status);
-
-    // Parse SSE stream - will replace placeholder with real card
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const events = buffer.split('\\n\\n');
-      buffer = events.pop() || '';
-
-      for (const event of events) {
-        if (!event.trim()) continue;
-        processSSEEvent(event);
-      }
-    }
-
-  } catch (err) {
-    console.error('Upload error:', err);
-    // Show error in placeholder
-    placeholder.innerHTML = \`
-      <div class="aspect-square bg-destructive/10 rounded-lg overflow-hidden border border-destructive flex items-center justify-center">
-        <div class="text-center px-2">
-          <span class="text-xs text-destructive">\${err.message || '${errorText}'}</span>
-        </div>
-      </div>
-      <div class="mt-2 text-xs truncate text-destructive">\${file.name}</div>
-      <button type="button" class="text-xs text-muted-foreground hover:underline" onclick="this.closest('.group').remove()">Remove</button>
-    \`;
-  }
-
-  input.value = '';
-}
-
-function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-function processSSEEvent(event) {
-  const lines = event.split('\\n');
-  let eventType = '';
-  const data = {};
-  let elementsLines = [];
-  let inElements = false;
-
-  for (const line of lines) {
-    if (line.startsWith('event: ')) {
-      eventType = line.slice(7);
-    } else if (line.startsWith('data: ')) {
-      const content = line.slice(6);
-      if (content.startsWith('mode ')) {
-        data.mode = content.slice(5);
-        inElements = false;
-      } else if (content.startsWith('selector ')) {
-        data.selector = content.slice(9);
-        inElements = false;
-      } else if (content.startsWith('elements ')) {
-        elementsLines = [content.slice(9)];
-        inElements = true;
-      } else if (inElements) {
-        // Continuation of elements content
-        elementsLines.push(content);
-      }
-    }
-  }
-
-  if (elementsLines.length > 0) {
-    data.elements = elementsLines.join('\\n');
-  }
-
-  if (eventType === 'datastar-patch-elements') {
-    if (data.mode === 'remove' && data.selector) {
-      document.querySelector(data.selector)?.remove();
-    } else if (data.mode === 'outer' && data.selector && data.elements) {
-      // Replace element entirely (used for placeholder -> real card)
-      const target = document.querySelector(data.selector);
-      if (target) {
-        const temp = document.createElement('div');
-        temp.innerHTML = data.elements;
-        const newElement = temp.firstElementChild;
-        if (newElement) {
-          target.replaceWith(newElement);
-          if (window.Datastar) Datastar.apply(newElement);
-        }
-      }
-    }
-  }
-}
-`.trim();
-
   return (
     <>
-      {/* Upload script */}
-      <script dangerouslySetInnerHTML={{ __html: uploadScript }}></script>
+      {/* Hidden form for Datastar-driven upload */}
+      <form
+        id="upload-form"
+        class="hidden"
+        enctype="multipart/form-data"
+        data-on:submit__prevent="@post('/api/upload', {contentType: 'form'})"
+      >
+        <input id="upload-file-input" type="file" name="file" />
+      </form>
 
       {/* Header */}
       <div class="flex items-center justify-between mb-6">
@@ -290,13 +143,13 @@ function processSSEEvent(event) {
             type="file"
             class="hidden"
             accept="image/*"
-            onchange="handleMediaUpload(this)"
+            data-media-upload
+            data-text-processing={processingText}
+            data-text-uploading={uploadingText}
+            data-text-error={errorText}
           />
         </label>
       </div>
-
-      {/* Hidden error container for global errors */}
-      <div id="upload-error" class="hidden"></div>
 
       {/* Upload instructions */}
       <div class="card mb-6">

@@ -42,7 +42,7 @@ function DashLayoutContent({
       {/* Header */}
       <header class="border-b bg-card">
         <div class="container flex h-14 items-center justify-between">
-          <a href="/dash" class="font-semibold">
+          <a id="site-name" href="/dash" class="font-semibold">
             {siteName}
           </a>
           <nav class="flex items-center gap-4">

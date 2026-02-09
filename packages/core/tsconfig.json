@@ -11,6 +11,7 @@
     "dist",
     ".lingui-build",
     "src/client.ts",
-    "src/lib/image-processor.ts"
+    "src/lib/image-processor.ts",
+    "src/lib/media-upload.ts"
   ]
 }
