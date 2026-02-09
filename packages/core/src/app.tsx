@@ -41,6 +41,7 @@ import { sitemapRoutes } from "./routes/feed/sitemap.js";
 
 // Middleware
 import { requireAuth } from "./middleware/auth.js";
+import { requireOnboarding } from "./middleware/onboarding.js";
 
 // Layouts for auth pages
 import { BaseLayout } from "./theme/layouts/index.js";
@@ -103,6 +104,9 @@ export function createApp(config: JantConfig = {}): App {
 
     await next();
   });
+
+  // Onboarding gate — redirect to /setup if not yet initialized
+  app.use("*", requireOnboarding());
 
   // Theme middleware - resolve active color theme and build CSS
   app.use("*", async (c, next) => {

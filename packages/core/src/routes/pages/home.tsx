@@ -102,11 +102,6 @@ function HomeContent({ siteName, posts }: { siteName: string; posts: Post[] }) {
 }
 
 homeRoutes.get("/", async (c) => {
-  const isComplete = await c.var.services.settings.isOnboardingComplete();
-  if (!isComplete) {
-    return c.redirect("/setup");
-  }
-
   const siteName = await getSiteName(c);
 
   const posts = await c.var.services.posts.list({
