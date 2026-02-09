@@ -164,6 +164,21 @@ run = "pnpm --filter jant-site deploy"
 # =============================================================================
 # Demo
 # =============================================================================
+[tasks.deploy-demo]
+alias = "dd"
+description = "Deploy demo site to demo.jant.me"
+dir = "templates/jant-site"
+run = """
+echo "Running remote migrations..."
+pnpm exec wrangler d1 migrations apply DB --remote --config wrangler.demo.toml
+
+echo "Building for demo environment..."
+WRANGLER_CONFIG=./wrangler.demo.toml NODE_ENV=production pnpm exec vite build
+
+echo "Deploying to Cloudflare Workers..."
+pnpm exec wrangler deploy --config dist/jant_demo/wrangler.json
+"""
+
 [tasks.demo-reset]
 description = "Reset demo.jant.me data (clear + reseed)"
 dir = "templates/jant-site"
