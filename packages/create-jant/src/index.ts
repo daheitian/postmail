@@ -69,6 +69,8 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
       if (basename === "pnpm-lock.yaml") return false;
       if (basename === "dist") return false;
       if (basename === "wrangler.demo.toml") return false;
+      if (basename === "reset.sql") return false;
+      if (basename === "seed.sql") return false;
       return true;
     },
   });

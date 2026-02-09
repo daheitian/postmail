@@ -179,7 +179,7 @@ Core environment variables:
 
 For a complete list of all available environment variables (site configuration, R2 storage, image optimization, demo mode, etc.), see:
 
-**[📖 Full Configuration Guide](../../docs/configuration.md)**
+**[📖 Full Configuration Guide](https://github.com/nicepkg/jant/blob/main/docs/configuration.md)**
 
 ## Customization
 
@@ -247,11 +247,31 @@ export default createApp({
 
 ## Updating
 
-To update Jant to the latest version:
+1. Update the `@jant/core` package:
 
 ```bash
 pnpm update @jant/core
 ```
+
+2. Apply database migrations locally (this happens automatically when you run `pnpm dev`):
+
+```bash
+pnpm dev
+```
+
+3. Before deploying to production, apply migrations to your remote D1 database:
+
+```bash
+pnpm db:migrate:remote
+```
+
+4. Deploy:
+
+```bash
+pnpm deploy
+```
+
+> **Note:** New versions of `@jant/core` may include database migrations. Always run `pnpm db:migrate:remote` before deploying after an update. Check the [release notes](https://github.com/nicepkg/jant/releases) for any breaking changes.
 
 ## Documentation
 
