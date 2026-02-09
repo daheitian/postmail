@@ -70,10 +70,10 @@ mise run preview      # Preview production build with Vite
 mise run db-generate  # Generate Drizzle migrations
 mise run db-migrate   # Apply migrations (local D1) - usually not needed, dev auto-runs this
 
-# i18n
-mise run i18n         # Extract + compile translations
-mise run i18n-extract # Extract messages from source
-mise run i18n-compile # Compile PO files to JS
+# i18n (auto-handled by pre-commit hook for extraction/compilation)
+mise run i18n         # Extract + AI translate + compile (needs OPENAI_API_KEY)
+mise run i18n-extract # Extract messages from source (manual)
+mise run i18n-compile # Compile PO files to JS (manual)
 mise run translate    # Auto-translate using AI (needs OPENAI_API_KEY)
 
 # Release (Changesets)
@@ -321,6 +321,7 @@ export const homeroute = new Hono<Env>();
 - **husky**: Git hooks management
 - **lint-staged**: Format staged files
 - Runs: ESLint --fix + Prettier --write
+- **i18n auto-sync**: When `.ts`/`.tsx` files are staged, automatically runs `i18n:build` (extract + compile) and stages the locale files. This prevents stale hash IDs from appearing in production.
 
 ## Testing
 
@@ -405,7 +406,7 @@ return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
 
 **Rules**: All user-facing strings use `t()`, always include `comment` with `@context:` prefix.
 
-**Workflow**: Add `t()` → `mise run i18n-extract` → `mise run translate` (AI, optional) → `mise run i18n-compile`
+**Workflow**: Add `t()` → commit → pre-commit hook auto-runs extract + compile and stages locale files. Manual `mise run i18n` is only needed for AI translation (`mise run translate`).
 
 ### Lingui + Hono JSX Integration (IMPORTANT)
 

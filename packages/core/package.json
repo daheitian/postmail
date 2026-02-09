@@ -42,7 +42,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "pnpm build:lib"
+    "prepublishOnly": "pnpm i18n:compile && pnpm build:lib"
   },
   "dependencies": {
     "@lingui/core": "^5.9.0",
