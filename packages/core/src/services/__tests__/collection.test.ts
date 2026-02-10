@@ -223,4 +223,106 @@ describe("CollectionService", () => {
       expect(posts).toEqual([]);
     });
   });
+
+  describe("syncPostCollections", () => {
+    it("adds collections to a post with no existing collections", async () => {
+      const col1 = await collectionService.create({ title: "Col 1" });
+      const col2 = await collectionService.create({ title: "Col 2" });
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      await collectionService.syncPostCollections(post.id, [col1.id, col2.id]);
+
+      const collections = await collectionService.getCollectionsForPost(
+        post.id,
+      );
+      expect(collections).toHaveLength(2);
+      expect(collections.map((c) => c.id).sort()).toEqual(
+        [col1.id, col2.id].sort(),
+      );
+    });
+
+    it("removes collections no longer in the list", async () => {
+      const col1 = await collectionService.create({ title: "Col 1" });
+      const col2 = await collectionService.create({ title: "Col 2" });
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      await collectionService.addPost(col1.id, post.id);
+      await collectionService.addPost(col2.id, post.id);
+
+      // Sync with only col1 — col2 should be removed
+      await collectionService.syncPostCollections(post.id, [col1.id]);
+
+      const collections = await collectionService.getCollectionsForPost(
+        post.id,
+      );
+      expect(collections).toHaveLength(1);
+      expect(collections[0]?.id).toBe(col1.id);
+    });
+
+    it("handles mixed adds and removes", async () => {
+      const col1 = await collectionService.create({ title: "Col 1" });
+      const col2 = await collectionService.create({ title: "Col 2" });
+      const col3 = await collectionService.create({ title: "Col 3" });
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      // Start with col1 and col2
+      await collectionService.addPost(col1.id, post.id);
+      await collectionService.addPost(col2.id, post.id);
+
+      // Sync to col2 and col3 (remove col1, keep col2, add col3)
+      await collectionService.syncPostCollections(post.id, [col2.id, col3.id]);
+
+      const collections = await collectionService.getCollectionsForPost(
+        post.id,
+      );
+      expect(collections).toHaveLength(2);
+      expect(collections.map((c) => c.id).sort()).toEqual(
+        [col2.id, col3.id].sort(),
+      );
+    });
+
+    it("removes all collections when synced with empty array", async () => {
+      const col1 = await collectionService.create({ title: "Col 1" });
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      await collectionService.addPost(col1.id, post.id);
+
+      await collectionService.syncPostCollections(post.id, []);
+
+      const collections = await collectionService.getCollectionsForPost(
+        post.id,
+      );
+      expect(collections).toHaveLength(0);
+    });
+
+    it("is a no-op when already in sync", async () => {
+      const col1 = await collectionService.create({ title: "Col 1" });
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      await collectionService.addPost(col1.id, post.id);
+
+      await collectionService.syncPostCollections(post.id, [col1.id]);
+
+      const collections = await collectionService.getCollectionsForPost(
+        post.id,
+      );
+      expect(collections).toHaveLength(1);
+      expect(collections[0]?.id).toBe(col1.id);
+    });
+  });
 });

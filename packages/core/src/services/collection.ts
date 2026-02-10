@@ -21,6 +21,7 @@ export interface CollectionService {
   removePost(collectionId: number, postId: number): Promise<void>;
   getPosts(collectionId: number): Promise<Post[]>;
   getCollectionsForPost(postId: number): Promise<Collection[]>;
+  syncPostCollections(postId: number, collectionIds: number[]): Promise<void>;
 }
 
 export interface CreateCollectionData {
@@ -196,6 +197,24 @@ export function createCollectionService(db: Database): CollectionService {
         .where(eq(postCollections.postId, postId));
 
       return rows.map((r) => toCollection(r.collection));
+    },
+
+    async syncPostCollections(postId, collectionIds) {
+      const current = await this.getCollectionsForPost(postId);
+      const currentIds = new Set(current.map((c) => c.id));
+      const desiredIds = new Set(collectionIds);
+
+      const toAdd = collectionIds.filter((id) => !currentIds.has(id));
+      const toRemove = current
+        .map((c) => c.id)
+        .filter((id) => !desiredIds.has(id));
+
+      for (const collectionId of toAdd) {
+        await this.addPost(collectionId, postId);
+      }
+      for (const collectionId of toRemove) {
+        await this.removePost(collectionId, postId);
+      }
     },
   };
 }

@@ -51,7 +51,7 @@ msgid "Account"
 msgstr "帳戶"
 
 #. @context: Button to open media picker
-#: src/theme/components/PostForm.tsx:173
+#: src/theme/components/PostForm.tsx:178
 msgid "Add Media"
 msgstr ""
 
@@ -76,7 +76,7 @@ msgstr "檔案館"
 #. @context: Post type label - article
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:28
-#: src/theme/components/PostForm.tsx:62
+#: src/theme/components/PostForm.tsx:67
 #: src/theme/components/TypeBadge.tsx:20
 msgid "Article"
 msgstr "文章"
@@ -87,7 +87,7 @@ msgid "Articles"
 msgstr "文章"
 
 #. @context: Hint for image post type media requirement
-#: src/theme/components/PostForm.tsx:125
+#: src/theme/components/PostForm.tsx:130
 msgid "At least 1 image required for image posts."
 msgstr ""
 
@@ -114,7 +114,7 @@ msgstr "回到首頁"
 #: src/routes/dash/collections.tsx:345
 #: src/routes/dash/redirects.tsx:167
 #: src/theme/components/PageForm.tsx:161
-#: src/theme/components/PostForm.tsx:282
+#: src/theme/components/PostForm.tsx:312
 msgid "Cancel"
 msgstr "取消"
 
@@ -136,6 +136,11 @@ msgstr "點擊圖片以查看完整大小"
 #: src/theme/layouts/DashLayout.tsx:114
 msgid "Collections"
 msgstr "收藏夾"
+
+#. @context: Post form field - assign to collections
+#: src/theme/components/PostForm.tsx:261
+msgid "Collections (optional)"
+msgstr ""
 
 #. @context: Appearance settings heading
 #: src/routes/dash/settings.tsx:301
@@ -160,7 +165,7 @@ msgstr "確認密碼"
 #. @context: Page form field label - content
 #. @context: Post form field
 #: src/theme/components/PageForm.tsx:95
-#: src/theme/components/PostForm.tsx:98
+#: src/theme/components/PostForm.tsx:103
 msgid "Content"
 msgstr "內容"
 
@@ -207,7 +212,7 @@ msgid "Current Password"
 msgstr "當前密碼"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:255
+#: src/theme/components/PostForm.tsx:285
 msgid "Custom Path (optional)"
 msgstr "自訂路徑（選填）"
 
@@ -263,7 +268,7 @@ msgid "Description (optional)"
 msgstr "描述（可選）"
 
 #. @context: Close media picker button
-#: src/theme/components/PostForm.tsx:304
+#: src/theme/components/PostForm.tsx:334
 msgid "Done"
 msgstr ""
 
@@ -271,7 +276,7 @@ msgstr ""
 #. @context: Post visibility badge - draft
 #. @context: Post visibility option
 #: src/theme/components/PageForm.tsx:132
-#: src/theme/components/PostForm.tsx:244
+#: src/theme/components/PostForm.tsx:249
 #: src/theme/components/VisibilityBadge.tsx:38
 msgid "Draft"
 msgstr "草稿"
@@ -282,7 +287,7 @@ msgid "Drafts"
 msgstr "草稿"
 
 #. @context: Source name placeholder
-#: src/theme/components/PostForm.tsx:209
+#: src/theme/components/PostForm.tsx:214
 msgid "e.g. The Verge, John Doe"
 msgstr ""
 
@@ -297,7 +302,7 @@ msgstr ""
 #: src/routes/dash/collections.tsx:210
 #: src/routes/dash/pages.tsx:64
 #: src/routes/dash/pages.tsx:134
-#: src/routes/dash/posts.tsx:132
+#: src/routes/dash/posts.tsx:142
 #: src/theme/components/ActionButtons.tsx:72
 #: src/theme/components/PostList.tsx:46
 msgid "Edit"
@@ -314,7 +319,7 @@ msgid "Edit Page"
 msgstr "編輯頁面"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:171
+#: src/routes/dash/posts.tsx:185
 msgid "Edit Post"
 msgstr "編輯文章"
 
@@ -334,7 +339,7 @@ msgstr "請輸入您的新密碼。"
 #. @context: Post visibility badge - featured
 #. @context: Post visibility option
 #: src/routes/pages/home.tsx:90
-#: src/theme/components/PostForm.tsx:232
+#: src/theme/components/PostForm.tsx:237
 #: src/theme/components/VisibilityBadge.tsx:26
 msgid "Featured"
 msgstr "精選"
@@ -365,7 +370,7 @@ msgstr "一般設定"
 #. @context: Post type label - image
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:37
-#: src/theme/components/PostForm.tsx:71
+#: src/theme/components/PostForm.tsx:76
 #: src/theme/components/TypeBadge.tsx:29
 msgid "Image"
 msgstr "圖片"
@@ -394,7 +399,7 @@ msgstr "語言"
 #. @context: Post type label - link
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:32
-#: src/theme/components/PostForm.tsx:65
+#: src/theme/components/PostForm.tsx:70
 #: src/theme/components/TypeBadge.tsx:24
 msgid "Link"
 msgstr "連結"
@@ -410,7 +415,7 @@ msgid "Load more"
 msgstr "載入更多"
 
 #. @context: Loading state for media picker
-#: src/theme/components/PostForm.tsx:315
+#: src/theme/components/PostForm.tsx:345
 msgid "Loading..."
 msgstr ""
 
@@ -428,7 +433,7 @@ msgstr "Markdown"
 #. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/routes/dash/media.tsx:138
-#: src/theme/components/PostForm.tsx:116
+#: src/theme/components/PostForm.tsx:121
 #: src/theme/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "媒體"
@@ -544,7 +549,7 @@ msgstr "未找到結果。"
 #. @context: Post type label - note
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:27
-#: src/theme/components/PostForm.tsx:59
+#: src/theme/components/PostForm.tsx:64
 #: src/theme/components/TypeBadge.tsx:19
 msgid "Note"
 msgstr "備註"
@@ -607,12 +612,12 @@ msgid "Permalink"
 msgstr "永久鏈接"
 
 #. @context: Default post title
-#: src/routes/dash/posts.tsx:121
+#: src/routes/dash/posts.tsx:131
 msgid "Post"
 msgstr "文章"
 
 #. @context: Post title placeholder
-#: src/theme/components/PostForm.tsx:88
+#: src/theme/components/PostForm.tsx:93
 msgid "Post title..."
 msgstr "文章標題..."
 
@@ -651,7 +656,7 @@ msgid "Profile"
 msgstr "個人資料"
 
 #. @context: Button to publish new post
-#: src/theme/components/PostForm.tsx:276
+#: src/theme/components/PostForm.tsx:306
 msgid "Publish"
 msgstr "發佈"
 
@@ -678,7 +683,7 @@ msgid "Quiet"
 msgstr "安靜"
 
 #. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:226
+#: src/theme/components/PostForm.tsx:231
 msgid "Quiet (normal)"
 msgstr "安靜（正常）"
 
@@ -686,7 +691,7 @@ msgstr "安靜（正常）"
 #. @context: Post type label - quote
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:33
-#: src/theme/components/PostForm.tsx:68
+#: src/theme/components/PostForm.tsx:73
 #: src/theme/components/TypeBadge.tsx:25
 msgid "Quote"
 msgstr "引用"
@@ -706,7 +711,7 @@ msgstr "重定向"
 #. @context: Button to remove post from collection
 #. @context: Remove media attachment button
 #: src/routes/dash/collections.tsx:257
-#: src/theme/components/PostForm.tsx:156
+#: src/theme/components/PostForm.tsx:161
 msgid "Remove"
 msgstr "移除"
 
@@ -740,7 +745,7 @@ msgid "Search posts..."
 msgstr "搜尋帖子..."
 
 #. @context: Media picker dialog title
-#: src/theme/components/PostForm.tsx:294
+#: src/theme/components/PostForm.tsx:324
 msgid "Select Media"
 msgstr ""
 
@@ -785,12 +790,12 @@ msgid "Slug"
 msgstr "縮略名"
 
 #. @context: Post form field - name of the source website or author
-#: src/theme/components/PostForm.tsx:199
+#: src/theme/components/PostForm.tsx:204
 msgid "Source Name (optional)"
 msgstr ""
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:183
+#: src/theme/components/PostForm.tsx:188
 msgid "Source URL (optional)"
 msgstr "來源網址（選填）"
 
@@ -849,7 +854,7 @@ msgid "Title"
 msgstr "標題"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:79
+#: src/theme/components/PostForm.tsx:84
 msgid "Title (optional)"
 msgstr "標題（選填）"
 
@@ -861,13 +866,13 @@ msgstr "到路徑"
 #. @context: Post form field - post type
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx:141
-#: src/theme/components/PostForm.tsx:52
+#: src/theme/components/PostForm.tsx:57
 msgid "Type"
 msgstr "類型"
 
 #. @context: Post visibility badge - unlisted
 #. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:238
+#: src/theme/components/PostForm.tsx:243
 #: src/theme/components/VisibilityBadge.tsx:34
 msgid "Unlisted"
 msgstr "不公開"
@@ -880,7 +885,7 @@ msgid "Untitled"
 msgstr "無標題"
 
 #. @context: Button to update existing post
-#: src/theme/components/PostForm.tsx:272
+#: src/theme/components/PostForm.tsx:302
 msgid "Update"
 msgstr "更新"
 
@@ -935,7 +940,7 @@ msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
 #: src/routes/dash/collections.tsx:215
 #: src/routes/dash/pages.tsx:73
 #: src/routes/dash/pages.tsx:143
-#: src/routes/dash/posts.tsx:137
+#: src/routes/dash/posts.tsx:147
 #: src/theme/components/ActionButtons.tsx:76
 #: src/theme/components/PostList.tsx:51
 msgid "View"
@@ -952,7 +957,7 @@ msgid "View Site"
 msgstr "查看網站"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:219
+#: src/theme/components/PostForm.tsx:224
 msgid "Visibility"
 msgstr "可見性"
 
@@ -962,7 +967,7 @@ msgid "Welcome to Jant"
 msgstr "歡迎來到 Jant"
 
 #. @context: Post content placeholder
-#: src/theme/components/PostForm.tsx:103
+#: src/theme/components/PostForm.tsx:108
 msgid "What's on your mind?"
 msgstr "你在想什麼？"
 

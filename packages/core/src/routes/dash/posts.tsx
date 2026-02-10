@@ -5,7 +5,7 @@ import { getSiteName } from "../../lib/config.js";
 
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Post, Media } from "../../types.js";
+import type { Bindings, Post, Media, Collection } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
 import {
@@ -38,14 +38,14 @@ function PostsListContent({ posts }: { posts: Post[] }) {
   );
 }
 
-function NewPostContent() {
+function NewPostContent({ collections }: { collections: Collection[] }) {
   const { t } = useLingui();
   return (
     <>
       <h1 class="text-2xl font-semibold mb-6">
         {t({ message: "New Post", comment: "@context: Page heading" })}
       </h1>
-      <PostForm action="/dash/posts" />
+      <PostForm action="/dash/posts" collections={collections} />
     </>
   );
 }
@@ -72,6 +72,7 @@ postsRoutes.get("/", async (c) => {
 // New post form
 postsRoutes.get("/new", async (c) => {
   const siteName = await getSiteName(c);
+  const collections = await c.var.services.collections.list();
 
   return c.html(
     <DashLayout
@@ -80,7 +81,7 @@ postsRoutes.get("/new", async (c) => {
       siteName={siteName}
       currentPath="/dash/posts"
     >
-      <NewPostContent />
+      <NewPostContent collections={collections} />
     </DashLayout>,
   );
 });
@@ -96,6 +97,7 @@ postsRoutes.post("/", async (c) => {
     sourceName?: string;
     path?: string;
     mediaIds?: string[];
+    collectionIds?: number[];
   }>();
 
   const post = await c.var.services.posts.create({
@@ -111,6 +113,14 @@ postsRoutes.post("/", async (c) => {
   // Attach media if provided
   if (body.mediaIds && body.mediaIds.length > 0) {
     await c.var.services.media.attachToPost(post.id, body.mediaIds);
+  }
+
+  // Sync collection associations
+  if (body.collectionIds) {
+    await c.var.services.collections.syncPostCollections(
+      post.id,
+      body.collectionIds,
+    );
   }
 
   return dsRedirect(`/dash/posts/${sqid.encode(post.id)}`);
@@ -158,11 +168,15 @@ function EditPostContent({
   mediaAttachments,
   r2PublicUrl,
   imageTransformUrl,
+  collections,
+  postCollectionIds,
 }: {
   post: Post;
   mediaAttachments: Media[];
   r2PublicUrl?: string;
   imageTransformUrl?: string;
+  collections: Collection[];
+  postCollectionIds: number[];
 }) {
   const { t } = useLingui();
   return (
@@ -176,6 +190,8 @@ function EditPostContent({
         mediaAttachments={mediaAttachments}
         r2PublicUrl={r2PublicUrl}
         imageTransformUrl={imageTransformUrl}
+        collections={collections}
+        postCollectionIds={postCollectionIds}
       />
     </>
   );
@@ -216,6 +232,10 @@ postsRoutes.get("/:id/edit", async (c) => {
   const mediaAttachments = await c.var.services.media.getByPostId(post.id);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const collections = await c.var.services.collections.list();
+  const postCollections =
+    await c.var.services.collections.getCollectionsForPost(post.id);
+  const postCollectionIds = postCollections.map((col) => col.id);
 
   return c.html(
     <DashLayout
@@ -229,6 +249,8 @@ postsRoutes.get("/:id/edit", async (c) => {
         mediaAttachments={mediaAttachments}
         r2PublicUrl={r2PublicUrl}
         imageTransformUrl={imageTransformUrl}
+        collections={collections}
+        postCollectionIds={postCollectionIds}
       />
     </DashLayout>,
   );
@@ -248,6 +270,7 @@ postsRoutes.post("/:id", async (c) => {
     sourceName?: string;
     path?: string;
     mediaIds?: string[];
+    collectionIds?: number[];
   }>();
 
   await c.var.services.posts.update(id, {
@@ -263,6 +286,14 @@ postsRoutes.post("/:id", async (c) => {
   // Update media attachments if provided
   if (body.mediaIds !== undefined) {
     await c.var.services.media.attachToPost(id, body.mediaIds);
+  }
+
+  // Sync collection associations
+  if (body.collectionIds !== undefined) {
+    await c.var.services.collections.syncPostCollections(
+      id,
+      body.collectionIds,
+    );
   }
 
   return dsRedirect(`/dash/posts/${sqid.encode(id)}`);

@@ -51,7 +51,7 @@ msgid "Account"
 msgstr "Account"
 
 #. @context: Button to open media picker
-#: src/theme/components/PostForm.tsx:173
+#: src/theme/components/PostForm.tsx:178
 msgid "Add Media"
 msgstr "Add Media"
 
@@ -76,7 +76,7 @@ msgstr "Archive"
 #. @context: Post type label - article
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:28
-#: src/theme/components/PostForm.tsx:62
+#: src/theme/components/PostForm.tsx:67
 #: src/theme/components/TypeBadge.tsx:20
 msgid "Article"
 msgstr "Article"
@@ -87,7 +87,7 @@ msgid "Articles"
 msgstr "Articles"
 
 #. @context: Hint for image post type media requirement
-#: src/theme/components/PostForm.tsx:125
+#: src/theme/components/PostForm.tsx:130
 msgid "At least 1 image required for image posts."
 msgstr "At least 1 image required for image posts."
 
@@ -114,7 +114,7 @@ msgstr "Back to home"
 #: src/routes/dash/collections.tsx:345
 #: src/routes/dash/redirects.tsx:167
 #: src/theme/components/PageForm.tsx:161
-#: src/theme/components/PostForm.tsx:282
+#: src/theme/components/PostForm.tsx:312
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -136,6 +136,11 @@ msgstr "Click image to view full size"
 #: src/theme/layouts/DashLayout.tsx:114
 msgid "Collections"
 msgstr "Collections"
+
+#. @context: Post form field - assign to collections
+#: src/theme/components/PostForm.tsx:261
+msgid "Collections (optional)"
+msgstr "Collections (optional)"
 
 #. @context: Appearance settings heading
 #: src/routes/dash/settings.tsx:301
@@ -160,7 +165,7 @@ msgstr "Confirm Password"
 #. @context: Page form field label - content
 #. @context: Post form field
 #: src/theme/components/PageForm.tsx:95
-#: src/theme/components/PostForm.tsx:98
+#: src/theme/components/PostForm.tsx:103
 msgid "Content"
 msgstr "Content"
 
@@ -207,7 +212,7 @@ msgid "Current Password"
 msgstr "Current Password"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:255
+#: src/theme/components/PostForm.tsx:285
 msgid "Custom Path (optional)"
 msgstr "Custom Path (optional)"
 
@@ -263,7 +268,7 @@ msgid "Description (optional)"
 msgstr "Description (optional)"
 
 #. @context: Close media picker button
-#: src/theme/components/PostForm.tsx:304
+#: src/theme/components/PostForm.tsx:334
 msgid "Done"
 msgstr "Done"
 
@@ -271,7 +276,7 @@ msgstr "Done"
 #. @context: Post visibility badge - draft
 #. @context: Post visibility option
 #: src/theme/components/PageForm.tsx:132
-#: src/theme/components/PostForm.tsx:244
+#: src/theme/components/PostForm.tsx:249
 #: src/theme/components/VisibilityBadge.tsx:38
 msgid "Draft"
 msgstr "Draft"
@@ -282,7 +287,7 @@ msgid "Drafts"
 msgstr "Drafts"
 
 #. @context: Source name placeholder
-#: src/theme/components/PostForm.tsx:209
+#: src/theme/components/PostForm.tsx:214
 msgid "e.g. The Verge, John Doe"
 msgstr "e.g. The Verge, John Doe"
 
@@ -297,7 +302,7 @@ msgstr "e.g. The Verge, John Doe"
 #: src/routes/dash/collections.tsx:210
 #: src/routes/dash/pages.tsx:64
 #: src/routes/dash/pages.tsx:134
-#: src/routes/dash/posts.tsx:132
+#: src/routes/dash/posts.tsx:142
 #: src/theme/components/ActionButtons.tsx:72
 #: src/theme/components/PostList.tsx:46
 msgid "Edit"
@@ -314,7 +319,7 @@ msgid "Edit Page"
 msgstr "Edit Page"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:171
+#: src/routes/dash/posts.tsx:185
 msgid "Edit Post"
 msgstr "Edit Post"
 
@@ -343,7 +348,7 @@ msgstr "Enter your new password."
 #. @context: Post visibility badge - featured
 #. @context: Post visibility option
 #: src/routes/pages/home.tsx:90
-#: src/theme/components/PostForm.tsx:232
+#: src/theme/components/PostForm.tsx:237
 #: src/theme/components/VisibilityBadge.tsx:26
 msgid "Featured"
 msgstr "Featured"
@@ -374,7 +379,7 @@ msgstr "General"
 #. @context: Post type label - image
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:37
-#: src/theme/components/PostForm.tsx:71
+#: src/theme/components/PostForm.tsx:76
 #: src/theme/components/TypeBadge.tsx:29
 msgid "Image"
 msgstr "Image"
@@ -408,7 +413,7 @@ msgstr "Language"
 #. @context: Post type label - link
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:32
-#: src/theme/components/PostForm.tsx:65
+#: src/theme/components/PostForm.tsx:70
 #: src/theme/components/TypeBadge.tsx:24
 msgid "Link"
 msgstr "Link"
@@ -424,7 +429,7 @@ msgid "Load more"
 msgstr "Load more"
 
 #. @context: Loading state for media picker
-#: src/theme/components/PostForm.tsx:315
+#: src/theme/components/PostForm.tsx:345
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -442,7 +447,7 @@ msgstr "Markdown"
 #. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/routes/dash/media.tsx:138
-#: src/theme/components/PostForm.tsx:116
+#: src/theme/components/PostForm.tsx:121
 #: src/theme/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "Media"
@@ -563,7 +568,7 @@ msgstr "No results found."
 #. @context: Post type label - note
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:27
-#: src/theme/components/PostForm.tsx:59
+#: src/theme/components/PostForm.tsx:64
 #: src/theme/components/TypeBadge.tsx:19
 msgid "Note"
 msgstr "Note"
@@ -626,12 +631,12 @@ msgid "Permalink"
 msgstr "Permalink"
 
 #. @context: Default post title
-#: src/routes/dash/posts.tsx:121
+#: src/routes/dash/posts.tsx:131
 msgid "Post"
 msgstr "Post"
 
 #. @context: Post title placeholder
-#: src/theme/components/PostForm.tsx:88
+#: src/theme/components/PostForm.tsx:93
 msgid "Post title..."
 msgstr "Post title..."
 
@@ -670,7 +675,7 @@ msgid "Profile"
 msgstr "Profile"
 
 #. @context: Button to publish new post
-#: src/theme/components/PostForm.tsx:276
+#: src/theme/components/PostForm.tsx:306
 msgid "Publish"
 msgstr "Publish"
 
@@ -697,7 +702,7 @@ msgid "Quiet"
 msgstr "Quiet"
 
 #. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:226
+#: src/theme/components/PostForm.tsx:231
 msgid "Quiet (normal)"
 msgstr "Quiet (normal)"
 
@@ -705,7 +710,7 @@ msgstr "Quiet (normal)"
 #. @context: Post type label - quote
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:33
-#: src/theme/components/PostForm.tsx:68
+#: src/theme/components/PostForm.tsx:73
 #: src/theme/components/TypeBadge.tsx:25
 msgid "Quote"
 msgstr "Quote"
@@ -725,7 +730,7 @@ msgstr "Redirects"
 #. @context: Button to remove post from collection
 #. @context: Remove media attachment button
 #: src/routes/dash/collections.tsx:257
-#: src/theme/components/PostForm.tsx:156
+#: src/theme/components/PostForm.tsx:161
 msgid "Remove"
 msgstr "Remove"
 
@@ -764,7 +769,7 @@ msgid "Search posts..."
 msgstr "Search posts..."
 
 #. @context: Media picker dialog title
-#: src/theme/components/PostForm.tsx:294
+#: src/theme/components/PostForm.tsx:324
 msgid "Select Media"
 msgstr "Select Media"
 
@@ -814,12 +819,12 @@ msgid "Slug"
 msgstr "Slug"
 
 #. @context: Post form field - name of the source website or author
-#: src/theme/components/PostForm.tsx:199
+#: src/theme/components/PostForm.tsx:204
 msgid "Source Name (optional)"
 msgstr "Source Name (optional)"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:183
+#: src/theme/components/PostForm.tsx:188
 msgid "Source URL (optional)"
 msgstr "Source URL (optional)"
 
@@ -883,7 +888,7 @@ msgid "Title"
 msgstr "Title"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:79
+#: src/theme/components/PostForm.tsx:84
 msgid "Title (optional)"
 msgstr "Title (optional)"
 
@@ -895,13 +900,13 @@ msgstr "To Path"
 #. @context: Post form field - post type
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx:141
-#: src/theme/components/PostForm.tsx:52
+#: src/theme/components/PostForm.tsx:57
 msgid "Type"
 msgstr "Type"
 
 #. @context: Post visibility badge - unlisted
 #. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:238
+#: src/theme/components/PostForm.tsx:243
 #: src/theme/components/VisibilityBadge.tsx:34
 msgid "Unlisted"
 msgstr "Unlisted"
@@ -914,7 +919,7 @@ msgid "Untitled"
 msgstr "Untitled"
 
 #. @context: Button to update existing post
-#: src/theme/components/PostForm.tsx:272
+#: src/theme/components/PostForm.tsx:302
 msgid "Update"
 msgstr "Update"
 
@@ -974,7 +979,7 @@ msgstr "Use this URL to embed the media in your posts."
 #: src/routes/dash/collections.tsx:215
 #: src/routes/dash/pages.tsx:73
 #: src/routes/dash/pages.tsx:143
-#: src/routes/dash/posts.tsx:137
+#: src/routes/dash/posts.tsx:147
 #: src/theme/components/ActionButtons.tsx:76
 #: src/theme/components/PostList.tsx:51
 msgid "View"
@@ -991,7 +996,7 @@ msgid "View Site"
 msgstr "View Site"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:219
+#: src/theme/components/PostForm.tsx:224
 msgid "Visibility"
 msgstr "Visibility"
 
@@ -1001,7 +1006,7 @@ msgid "Welcome to Jant"
 msgstr "Welcome to Jant"
 
 #. @context: Post content placeholder
-#: src/theme/components/PostForm.tsx:103
+#: src/theme/components/PostForm.tsx:108
 msgid "What's on your mind?"
 msgstr "What's on your mind?"
 

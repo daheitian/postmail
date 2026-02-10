@@ -3,7 +3,7 @@
  */
 
 import type { FC } from "hono/jsx";
-import type { Post, Media } from "../../types.js";
+import type { Post, Media, Collection } from "../../types.js";
 import { useLingui } from "@lingui/react/macro";
 import { getMediaUrl, getImageUrl } from "../../lib/image.js";
 
@@ -13,6 +13,8 @@ export interface PostFormProps {
   mediaAttachments?: Media[];
   r2PublicUrl?: string;
   imageTransformUrl?: string;
+  collections?: Collection[];
+  postCollectionIds?: number[];
 }
 
 export const PostForm: FC<PostFormProps> = ({
@@ -21,6 +23,8 @@ export const PostForm: FC<PostFormProps> = ({
   mediaAttachments,
   r2PublicUrl,
   imageTransformUrl,
+  collections,
+  postCollectionIds,
 }) => {
   const { t } = useLingui();
   const isEdit = !!post;
@@ -36,6 +40,7 @@ export const PostForm: FC<PostFormProps> = ({
     visibility: post?.visibility ?? "quiet",
     path: post?.path ?? "",
     mediaIds: existingMediaIds,
+    collectionIds: postCollectionIds ?? [],
   }).replace(/</g, "\\u003c");
 
   return (
@@ -248,6 +253,31 @@ export const PostForm: FC<PostFormProps> = ({
           </option>
         </select>
       </div>
+
+      {/* Collections */}
+      {collections && collections.length > 0 && (
+        <fieldset class="field">
+          <legend class="label">
+            {t({
+              message: "Collections (optional)",
+              comment: "@context: Post form field - assign to collections",
+            })}
+          </legend>
+          <div class="flex flex-col gap-1">
+            {collections.map((col) => (
+              <label key={col.id} class="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  class="checkbox"
+                  data-attr:checked={`$collectionIds.includes(${col.id})`}
+                  data-on:change={`$collectionIds.includes(${col.id}) ? $collectionIds = $collectionIds.filter(id => id !== ${col.id}) : $collectionIds = [...$collectionIds, ${col.id}]`}
+                />
+                {col.title}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       {/* Custom path (optional) */}
       <div class="field">
