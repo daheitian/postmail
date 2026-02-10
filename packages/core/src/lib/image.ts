@@ -129,7 +129,7 @@ export function getMediaUrl(
   publicUrl?: string,
 ): string {
   if (publicUrl) {
-    return `${publicUrl}/${storageKey}`;
+    return `${publicUrl.replace(/\/+$/, "")}/${storageKey}`;
   }
   // Extract extension from storage key
   const ext = storageKey.split(".").pop() || "bin";
