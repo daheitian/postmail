@@ -70,6 +70,11 @@ msgstr "Appearance"
 msgid "Archive"
 msgstr "Archive"
 
+#. @context: Confirmation dialog when deleting a post from the list
+#: src/theme/components/PostList.tsx:56
+msgid "Are you sure you want to delete this post? This cannot be undone."
+msgstr "Are you sure you want to delete this post? This cannot be undone."
+
 #. @context: Post type badge - article
 #. @context: Post type label - article
 #. @context: Post type option
@@ -975,7 +980,7 @@ msgstr "Unlisted"
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
 #: src/routes/dash/pages.tsx:91
-#: src/theme/components/PostList.tsx:71
+#: src/theme/components/PostList.tsx:78
 msgid "Untitled"
 msgstr "Untitled"
 

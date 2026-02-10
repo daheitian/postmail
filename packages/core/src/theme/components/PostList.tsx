@@ -52,6 +52,13 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
                 message: "View",
                 comment: "@context: Button to view post on public site",
               })}
+              deleteAction={`/dash/posts/${sqid.encode(post.id)}/delete`}
+              deleteConfirm={t({
+                message:
+                  "Are you sure you want to delete this post? This cannot be undone.",
+                comment:
+                  "@context: Confirmation dialog when deleting a post from the list",
+              })}
             />
           }
         >
