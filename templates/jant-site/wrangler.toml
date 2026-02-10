@@ -2,6 +2,7 @@ name = "jant-site" # @create-jant: "${name}"
 main = "src/index.ts"
 compatibility_date = "2026-01-20"
 compatibility_flags = ["nodejs_compat"]
+account_id = "03e7294bdb3750ed5a0d6afef6d770e4" # @create-jant: @remove
 
 [dev]
 port = 9019
@@ -28,6 +29,7 @@ SITE_URL = "http://localhost:9019"
 
 # Optional: R2 Storage (for media uploads)
 # R2_PUBLIC_URL = "https://cdn.example.com"
+R2_PUBLIC_URL = "https://demo-media.jant.me" # @create-jant: @remove
 
 # Optional: Cloudflare Image Transformations
 # For automatic thumbnail generation and image optimization
@@ -45,4 +47,5 @@ migrations_dir = "../../packages/core/src/db/migrations" # @create-jant: "node_m
 
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "jant-site-media" # @create-jant: "${name}-media"
+bucket_name = "jant-demo-media" # @create-jant: "${name}-media"
+remote = true # @create-jant: @remove

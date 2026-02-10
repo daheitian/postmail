@@ -7,6 +7,7 @@
 
 import { Hono } from "hono";
 import { html } from "hono/html";
+import { uuidv7 } from "uuidv7";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { requireAuthApi } from "../../middleware/auth.js";
@@ -156,12 +157,14 @@ uploadApiRoutes.post("/", async (c) => {
     return c.json({ error: "File too large (max 10MB)" }, 400);
   }
 
-  // Generate unique filename
+  // Generate unique filename using UUIDv7
   const ext = file.name.split(".").pop() || "bin";
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  const filename = `${timestamp}-${random}.${ext}`;
-  const r2Key = `uploads/${filename}`;
+  const id = uuidv7();
+  const date = new Date();
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const filename = `${id}.${ext}`;
+  const r2Key = `media/${year}/${month}/${filename}`;
 
   try {
     // Upload to R2
@@ -173,6 +176,7 @@ uploadApiRoutes.post("/", async (c) => {
 
     // Save to database
     const media = await c.var.services.media.create({
+      id,
       filename,
       originalName: file.name,
       mimeType: file.type,

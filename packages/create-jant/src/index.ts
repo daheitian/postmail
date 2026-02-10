@@ -105,12 +105,13 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     await fs.writeJson(pkgPath, pkg, { spaces: 2 });
   }
 
-  // Update wrangler.toml: replace @create-jant markers with interpolated values
-  // e.g. `name = "jant-site" # @create-jant: "${name}-db"` becomes `name = "my-project-db"`
+  // Update wrangler.toml: process @create-jant markers
   const wranglerPath = path.join(targetDir, "wrangler.toml");
   if (await fs.pathExists(wranglerPath)) {
     let content = await fs.readFile(wranglerPath, "utf-8");
     const vars: Record<string, string> = { name: projectName };
+
+    // Replace value markers: `name = "jant-site" # @create-jant: "${name}"` → `name = "my-project"`
     content = content.replace(
       /^(.+=\s*)"[^"]*"\s*#\s*@create-jant:\s*"([^"]*)"/gm,
       (_, prefix: string, template: string) => {
@@ -121,6 +122,10 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
         return `${prefix}"${value}"`;
       },
     );
+
+    // Remove lines marked with @create-jant: @remove (monorepo-only config)
+    content = content.replace(/^.*#\s*@create-jant:\s*@remove\s*\n?/gm, "");
+
     await fs.writeFile(wranglerPath, content, "utf-8");
   }
 

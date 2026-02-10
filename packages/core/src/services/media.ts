@@ -25,6 +25,7 @@ export interface MediaService {
 }
 
 export interface CreateMediaData {
+  id?: string;
   postId?: number;
   filename: string;
   originalName: string;
@@ -125,7 +126,7 @@ export function createMediaService(db: Database): MediaService {
     },
 
     async create(data) {
-      const id = uuidv7();
+      const id = data.id ?? uuidv7();
       const timestamp = now();
 
       const result = await db

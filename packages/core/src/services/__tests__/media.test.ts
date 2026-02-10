@@ -18,11 +18,11 @@ describe("MediaService", () => {
   });
 
   const sampleMedia = {
-    filename: "image-abc123.jpg",
+    filename: "0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
     originalName: "photo.jpg",
     mimeType: "image/jpeg",
     size: 102400,
-    r2Key: "media/image-abc123.jpg",
+    r2Key: "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
     width: 1920,
     height: 1080,
   };
@@ -32,11 +32,13 @@ describe("MediaService", () => {
       const media = await mediaService.create(sampleMedia);
 
       expect(media.id).toBeTruthy(); // UUIDv7
-      expect(media.filename).toBe("image-abc123.jpg");
+      expect(media.filename).toBe("0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg");
       expect(media.originalName).toBe("photo.jpg");
       expect(media.mimeType).toBe("image/jpeg");
       expect(media.size).toBe(102400);
-      expect(media.r2Key).toBe("media/image-abc123.jpg");
+      expect(media.r2Key).toBe(
+        "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
+      );
       expect(media.width).toBe(1920);
       expect(media.height).toBe(1080);
       expect(media.postId).toBeNull();
@@ -69,12 +71,35 @@ describe("MediaService", () => {
       const media1 = await mediaService.create(sampleMedia);
       const media2 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/other.jpg",
+        r2Key: "media/2025/01/other.jpg",
       });
 
       expect(media1.id).not.toBe(media2.id);
       // UUIDv7 should be sortable — later ID is lexicographically greater
       expect(media2.id > media1.id).toBe(true);
+    });
+
+    it("uses provided id when given", async () => {
+      const customId = "0192a9f1-a2b7-7c3d-8e4f-custom000001";
+      const media = await mediaService.create({
+        ...sampleMedia,
+        id: customId,
+      });
+
+      expect(media.id).toBe(customId);
+    });
+
+    it("auto-generates id when not provided", async () => {
+      const media = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/2025/01/auto.jpg",
+      });
+
+      expect(media.id).toBeTruthy();
+      // UUIDv7 format: 8-4-4-4-12 hex chars
+      expect(media.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+      );
     });
   });
 
@@ -84,7 +109,7 @@ describe("MediaService", () => {
 
       const found = await mediaService.getById(created.id);
       expect(found).not.toBeNull();
-      expect(found?.filename).toBe("image-abc123.jpg");
+      expect(found?.filename).toBe("0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg");
     });
 
     it("returns null for non-existent ID", async () => {
@@ -226,7 +251,9 @@ describe("MediaService", () => {
     it("returns media by R2 key", async () => {
       await mediaService.create(sampleMedia);
 
-      const found = await mediaService.getByR2Key("media/image-abc123.jpg");
+      const found = await mediaService.getByR2Key(
+        "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
+      );
       expect(found).not.toBeNull();
       expect(found?.originalName).toBe("photo.jpg");
     });

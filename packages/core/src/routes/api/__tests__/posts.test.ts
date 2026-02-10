@@ -50,7 +50,7 @@ describe("Posts API Routes", () => {
         originalName: "test.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        r2Key: "uploads/test.jpg",
+        r2Key: "media/2025/01/test.jpg",
         width: 800,
         height: 600,
       });
@@ -145,7 +145,7 @@ describe("Posts API Routes", () => {
         originalName: "test.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        r2Key: "uploads/test.jpg",
+        r2Key: "media/2025/01/test.jpg",
       });
 
       await services.media.attachToPost(post.id, [media.id]);
@@ -223,14 +223,14 @@ describe("Posts API Routes", () => {
         originalName: "a.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        r2Key: "uploads/a.jpg",
+        r2Key: "media/2025/01/a.jpg",
       });
       const m2 = await services.media.create({
         filename: "b.jpg",
         originalName: "b.jpg",
         mimeType: "image/jpeg",
         size: 2048,
-        r2Key: "uploads/b.jpg",
+        r2Key: "media/2025/01/b.jpg",
       });
 
       const res = await app.request("/api/posts", {
@@ -282,7 +282,7 @@ describe("Posts API Routes", () => {
         originalName: "a.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        r2Key: "uploads/a.jpg",
+        r2Key: "media/2025/01/a.jpg",
       });
 
       const res = await app.request("/api/posts", {
@@ -404,7 +404,7 @@ describe("Posts API Routes", () => {
         originalName: "a.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        r2Key: "uploads/a.jpg",
+        r2Key: "media/2025/01/a.jpg",
       });
 
       await services.media.attachToPost(post.id, [m1.id]);
@@ -414,7 +414,7 @@ describe("Posts API Routes", () => {
         originalName: "b.jpg",
         mimeType: "image/jpeg",
         size: 2048,
-        r2Key: "uploads/b.jpg",
+        r2Key: "media/2025/01/b.jpg",
       });
 
       const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
@@ -443,7 +443,7 @@ describe("Posts API Routes", () => {
         originalName: "a.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        r2Key: "uploads/a.jpg",
+        r2Key: "media/2025/01/a.jpg",
       });
 
       await services.media.attachToPost(post.id, [m1.id]);

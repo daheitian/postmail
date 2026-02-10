@@ -85,12 +85,12 @@ export function getImageUrl(
  * @example
  * ```ts
  * // Without R2 public URL - uses UUID with extension
- * getMediaUrl("01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f", "uploads/file.webp");
+ * getMediaUrl("01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f", "media/2025/01/01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f.webp");
  * // Returns: "/media/01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f.webp"
  *
  * // With R2 public URL - uses direct CDN
- * getMediaUrl("01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f", "uploads/file.webp", "https://cdn.example.com");
- * // Returns: "https://cdn.example.com/uploads/file.webp"
+ * getMediaUrl("01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f", "media/2025/01/01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f.webp", "https://cdn.example.com");
+ * // Returns: "https://cdn.example.com/media/2025/01/01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f.webp"
  * ```
  */
 export function getMediaUrl(

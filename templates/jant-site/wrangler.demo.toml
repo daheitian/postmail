@@ -5,6 +5,7 @@ name = "jant-demo"
 main = "src/index.ts"
 compatibility_date = "2026-01-20"
 compatibility_flags = ["nodejs_compat"]
+account_id = "03e7294bdb3750ed5a0d6afef6d770e4"
 
 [vars]
 SITE_URL = "https://demo.jant.me"

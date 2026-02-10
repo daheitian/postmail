@@ -1,21 +1,27 @@
--- Seed data for Jant demo site (demo.jant.me)
--- This data will be restored after each daily reset
+-- =============================================================================
+-- Demo seed data for Jant (demo.jant.me)
+-- Exported from remote demo D1 database via: mise run demo-backup
 -- Usage: mise run demo-reset
+-- =============================================================================
 
--- Settings
-INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES
-  ('siteName', 'Jant Demo', strftime('%s', 'now')),
-  ('siteDescription', 'A demo site for Jant - Modern microblog for Cloudflare Workers', strftime('%s', 'now')),
-  ('siteUrl', 'https://demo.jant.me', strftime('%s', 'now')),
-  ('postsPerPage', '10', strftime('%s', 'now')),
-  ('timezone', 'UTC', strftime('%s', 'now')),
-  ('language', 'en', strftime('%s', 'now'));
+-- settings
+INSERT INTO settings VALUES('ONBOARDING_STATUS','completed',1770657027);
+INSERT INTO settings VALUES('SITE_LANGUAGE','zh-Hans',1770673922);
+INSERT INTO settings VALUES('siteName','Jant Demo',1770689095);
+INSERT INTO settings VALUES('siteDescription','A demo site for Jant - Modern microblog for Cloudflare Workers',1770689095);
+INSERT INTO settings VALUES('siteUrl','https://demo.jant.me',1770689095);
+INSERT INTO settings VALUES('postsPerPage','10',1770689095);
+INSERT INTO settings VALUES('timezone','UTC',1770689095);
+INSERT INTO settings VALUES('language','en',1770689095);
 
--- Demo posts
-INSERT INTO posts (type, visibility, title, content, content_html, published_at, created_at, updated_at) VALUES
-  -- Welcome article
-  ('article', 'featured', 'Welcome to Jant',
-   '# Welcome to Jant Demo
+-- user
+INSERT INTO user VALUES('cV9uL2nAhiFTPKgJnoiKVKyesEoWBdkY','Demo User','demo@jant.me',0,NULL,'admin',1770657027,1770657027);
+
+-- account
+INSERT INTO account VALUES('ARFNGzzGCjXacVOYu9vVbq4dwL2XuecG','cV9uL2nAhiFTPKgJnoiKVKyesEoWBdkY','credential','cV9uL2nAhiFTPKgJnoiKVKyesEoWBdkY',NULL,NULL,NULL,NULL,NULL,NULL,'2f0586376d6b21415b93d39aa00b31c3:f7adf50ededaaf477b27eb095035dc38f20ed8baa349bd10762eb5a916602342f32ac21bc8e384047361d2c67d82dbd922c906cc8fa1c43da68d8fa76e414562',1770657027,1770657027);
+
+-- posts
+INSERT INTO posts VALUES(1,'article','featured','Welcome to Jant',NULL,'# Welcome to Jant Demo
 
 Jant is a modern microblog platform built for Cloudflare Workers. This demo site resets daily at 00:00 UTC.
 
@@ -36,8 +42,7 @@ pnpm install
 pnpm dev
 ```
 
-Visit the [dashboard](/dash) to create your own posts!',
-   '<h1>Welcome to Jant Demo</h1>
+Visit the [dashboard](/dash) to create your own posts!','<h1>Welcome to Jant Demo</h1>
 <p>Jant is a modern microblog platform built for Cloudflare Workers. This demo site resets daily at 00:00 UTC.</p>
 <h2>Features</h2>
 <ul>
@@ -53,49 +58,13 @@ cd my-blog
 pnpm install
 pnpm dev
 </code></pre>
-<p>Visit the <a href="/dash">dashboard</a> to create your own posts!</p>',
-   strftime('%s', 'now'), strftime('%s', 'now'), strftime('%s', 'now')),
+<p>Visit the <a href="/dash">dashboard</a> to create your own posts!</p>',NULL,NULL,NULL,NULL,NULL,NULL,1770689095,1770689095,1770689095);
+INSERT INTO posts VALUES(2,'note','quiet',NULL,NULL,'This is a demo note. Notes are short posts without titles, perfect for quick thoughts and updates.','<p>This is a demo note. Notes are short posts without titles, perfect for quick thoughts and updates.</p>',NULL,NULL,NULL,NULL,NULL,NULL,1770685495,1770685495,1770685495);
+INSERT INTO posts VALUES(3,'link','quiet','Jant on GitHub',NULL,'Check out the source code and documentation for Jant.','<p>Check out the source code and documentation for Jant.</p>','https://github.com/nicepkg/jant','GitHub','github.com',NULL,NULL,NULL,1770681895,1770681895,1770681895);
+INSERT INTO posts VALUES(4,'quote','quiet',NULL,NULL,'The best way to predict the future is to invent it.','<p>The best way to predict the future is to invent it.</p>',NULL,'Alan Kay',NULL,NULL,NULL,NULL,1770678295,1770678295,1770678295);
 
-  -- A note
-  ('note', 'quiet', NULL,
-   'This is a demo note. Notes are short posts without titles, perfect for quick thoughts and updates.',
-   '<p>This is a demo note. Notes are short posts without titles, perfect for quick thoughts and updates.</p>',
-   strftime('%s', 'now') - 3600, strftime('%s', 'now') - 3600, strftime('%s', 'now') - 3600),
+-- collections
+INSERT INTO collections VALUES(1,'getting-started','Getting Started','Resources for getting started with Jant',1770689095,1770689095);
 
-  -- A link post
-  ('link', 'quiet', 'Jant on GitHub',
-   'Check out the source code and documentation for Jant.',
-   '<p>Check out the source code and documentation for Jant.</p>',
-   strftime('%s', 'now') - 7200, strftime('%s', 'now') - 7200, strftime('%s', 'now') - 7200),
-
-  -- A quote
-  ('quote', 'quiet', NULL,
-   'The best way to predict the future is to invent it.',
-   '<p>The best way to predict the future is to invent it.</p>',
-   strftime('%s', 'now') - 10800, strftime('%s', 'now') - 10800, strftime('%s', 'now') - 10800);
-
--- Update the link post with source info
-UPDATE posts SET
-  source_url = 'https://github.com/nicepkg/jant',
-  source_name = 'GitHub',
-  source_domain = 'github.com'
-WHERE type = 'link' AND title = 'Jant on GitHub';
-
--- Update the quote with source info
-UPDATE posts SET
-  source_name = 'Alan Kay'
-WHERE type = 'quote' AND content LIKE '%predict the future%';
-
--- Demo collection
-INSERT INTO collections (path, title, description, created_at, updated_at) VALUES
-  ('getting-started', 'Getting Started', 'Resources for getting started with Jant', strftime('%s', 'now'), strftime('%s', 'now'));
-
--- Add the welcome article to the collection
-INSERT INTO post_collections (post_id, collection_id, added_at)
-SELECT p.id, c.id, strftime('%s', 'now')
-FROM posts p, collections c
-WHERE p.title = 'Welcome to Jant' AND c.path = 'getting-started';
-
--- Update FTS index
-INSERT INTO posts_fts (rowid, title, content)
-SELECT id, COALESCE(title, ''), COALESCE(content, '') FROM posts WHERE deleted_at IS NULL;
+-- post_collections
+INSERT INTO post_collections VALUES(1,1,1770689095);
