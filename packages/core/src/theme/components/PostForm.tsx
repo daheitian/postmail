@@ -20,6 +20,7 @@ export const PostForm: FC<PostFormProps> = ({ post, action }) => {
     title: post?.title ?? "",
     content: post?.content ?? "",
     sourceUrl: post?.sourceUrl ?? "",
+    sourceName: post?.sourceName ?? "",
     visibility: post?.visibility ?? "quiet",
     path: post?.path ?? "",
   }).replace(/</g, "\\u003c");
@@ -109,6 +110,26 @@ export const PostForm: FC<PostFormProps> = ({ post, action }) => {
           data-bind="sourceUrl"
           class="input"
           placeholder="https://..."
+        />
+      </div>
+
+      {/* Source Name (for link/quote types) */}
+      <div class="field">
+        <label class="label">
+          {t({
+            message: "Source Name (optional)",
+            comment:
+              "@context: Post form field - name of the source website or author",
+          })}
+        </label>
+        <input
+          type="text"
+          data-bind="sourceName"
+          class="input"
+          placeholder={t({
+            message: "e.g. The Verge, John Doe",
+            comment: "@context: Source name placeholder",
+          })}
         />
       </div>
 

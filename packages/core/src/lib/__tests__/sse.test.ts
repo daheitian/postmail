@@ -25,11 +25,23 @@ describe("dsRedirect", () => {
     expect(body).toContain("\\'");
   });
 
-  it("merges additional headers", () => {
+  it("merges additional headers from plain object", () => {
     const res = dsRedirect("/dash", {
       headers: { "Set-Cookie": "session=abc" },
     });
     expect(res.headers.get("Set-Cookie")).toBe("session=abc");
+    expect(res.headers.get("Content-Type")).toBe("text/html");
+  });
+
+  it("merges additional headers from Headers instance", () => {
+    const headers = new Headers();
+    headers.append("set-cookie", "session=abc; Path=/; HttpOnly");
+    headers.append("set-cookie", "data=xyz; Path=/; Max-Age=300");
+    const res = dsRedirect("/dash", { headers });
+    const cookies = res.headers.getSetCookie();
+    expect(cookies).toHaveLength(2);
+    expect(cookies[0]).toBe("session=abc; Path=/; HttpOnly");
+    expect(cookies[1]).toBe("data=xyz; Path=/; Max-Age=300");
     expect(res.headers.get("Content-Type")).toBe("text/html");
   });
 });

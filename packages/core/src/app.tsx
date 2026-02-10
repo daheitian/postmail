@@ -427,13 +427,7 @@ export function createApp(config: JantConfig = {}): App {
       }
 
       // Forward Set-Cookie headers from auth response
-      const cookieHeaders: Record<string, string> = {};
-      const setCookie = response.headers.get("set-cookie");
-      if (setCookie) {
-        cookieHeaders["Set-Cookie"] = setCookie;
-      }
-
-      return dsRedirect("/dash", { headers: cookieHeaders });
+      return dsRedirect("/dash", { headers: response.headers });
     } catch (err) {
       // eslint-disable-next-line no-console -- Error logging is intentional
       console.error("Signin error:", err);

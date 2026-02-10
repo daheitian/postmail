@@ -71,7 +71,7 @@ msgstr "档案馆"
 #. @context: Post type label - article
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:28
-#: src/theme/components/PostForm.tsx:48
+#: src/theme/components/PostForm.tsx:49
 #: src/theme/components/TypeBadge.tsx:20
 msgid "Article"
 msgstr "文章"
@@ -104,7 +104,7 @@ msgstr "返回首页"
 #: src/routes/dash/collections.tsx:345
 #: src/routes/dash/redirects.tsx:167
 #: src/theme/components/PageForm.tsx:161
-#: src/theme/components/PostForm.tsx:181
+#: src/theme/components/PostForm.tsx:202
 msgid "Cancel"
 msgstr "取消"
 
@@ -143,14 +143,14 @@ msgid "Confirm New Password"
 msgstr "确认新密码"
 
 #. @context: Password reset form field
-#: src/app.tsx:505
+#: src/app.tsx:499
 msgid "Confirm Password"
 msgstr "确认密码"
 
 #. @context: Page form field label - content
 #. @context: Post form field
 #: src/theme/components/PageForm.tsx:95
-#: src/theme/components/PostForm.tsx:84
+#: src/theme/components/PostForm.tsx:85
 msgid "Content"
 msgstr "内容"
 
@@ -197,7 +197,7 @@ msgid "Current Password"
 msgstr "当前密码"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:154
+#: src/theme/components/PostForm.tsx:175
 msgid "Custom Path (optional)"
 msgstr "自定义路径（可选）"
 
@@ -256,7 +256,7 @@ msgstr "描述（可选）"
 #. @context: Post visibility badge - draft
 #. @context: Post visibility option
 #: src/theme/components/PageForm.tsx:132
-#: src/theme/components/PostForm.tsx:143
+#: src/theme/components/PostForm.tsx:164
 #: src/theme/components/VisibilityBadge.tsx:38
 msgid "Draft"
 msgstr "草稿"
@@ -265,6 +265,11 @@ msgstr "草稿"
 #: src/routes/dash/index.tsx:55
 msgid "Drafts"
 msgstr "草稿"
+
+#. @context: Source name placeholder
+#: src/theme/components/PostForm.tsx:129
+msgid "e.g. The Verge, John Doe"
+msgstr ""
 
 #. @context: Button to edit collection
 #. @context: Button to edit collection
@@ -277,7 +282,7 @@ msgstr "草稿"
 #: src/routes/dash/collections.tsx:210
 #: src/routes/dash/pages.tsx:64
 #: src/routes/dash/pages.tsx:134
-#: src/routes/dash/posts.tsx:124
+#: src/routes/dash/posts.tsx:126
 #: src/theme/components/ActionButtons.tsx:72
 #: src/theme/components/PostList.tsx:46
 msgid "Edit"
@@ -294,7 +299,7 @@ msgid "Edit Page"
 msgstr "编辑页面"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:153
+#: src/routes/dash/posts.tsx:155
 msgid "Edit Post"
 msgstr "编辑帖子"
 
@@ -306,7 +311,7 @@ msgid "Email"
 msgstr "电子邮件"
 
 #. @context: Password reset page description
-#: src/app.tsx:475
+#: src/app.tsx:469
 msgid "Enter your new password."
 msgstr "输入您的新密码。"
 
@@ -314,7 +319,7 @@ msgstr "输入您的新密码。"
 #. @context: Post visibility badge - featured
 #. @context: Post visibility option
 #: src/routes/pages/home.tsx:75
-#: src/theme/components/PostForm.tsx:131
+#: src/theme/components/PostForm.tsx:152
 #: src/theme/components/VisibilityBadge.tsx:26
 msgid "Featured"
 msgstr "精选"
@@ -345,7 +350,7 @@ msgstr "常规"
 #. @context: Post type label - image
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:37
-#: src/theme/components/PostForm.tsx:57
+#: src/theme/components/PostForm.tsx:58
 #: src/theme/components/TypeBadge.tsx:29
 msgid "Image"
 msgstr "图像"
@@ -361,7 +366,7 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "图像会自动优化：调整大小至最大 1920px，转换为 WebP，并去除元数据。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:540
+#: src/app.tsx:534
 msgid "Invalid or Expired Link"
 msgstr "无效或过期的链接"
 
@@ -374,7 +379,7 @@ msgstr "语言"
 #. @context: Post type label - link
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:32
-#: src/theme/components/PostForm.tsx:51
+#: src/theme/components/PostForm.tsx:52
 #: src/theme/components/TypeBadge.tsx:24
 msgid "Link"
 msgstr "链接"
@@ -439,7 +444,7 @@ msgstr "新页面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:489
+#: src/app.tsx:483
 #: src/routes/dash/settings.tsx:417
 msgid "New Password"
 msgstr "新密码"
@@ -517,7 +522,7 @@ msgstr "未找到结果。"
 #. @context: Post type label - note
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:27
-#: src/theme/components/PostForm.tsx:45
+#: src/theme/components/PostForm.tsx:46
 #: src/theme/components/TypeBadge.tsx:19
 msgid "Note"
 msgstr "注意"
@@ -580,12 +585,12 @@ msgid "Permalink"
 msgstr "永久链接"
 
 #. @context: Default post title
-#: src/routes/dash/posts.tsx:113
+#: src/routes/dash/posts.tsx:115
 msgid "Post"
 msgstr "帖子"
 
 #. @context: Post title placeholder
-#: src/theme/components/PostForm.tsx:74
+#: src/theme/components/PostForm.tsx:75
 msgid "Post title..."
 msgstr "帖子标题..."
 
@@ -624,7 +629,7 @@ msgid "Profile"
 msgstr "个人资料"
 
 #. @context: Button to publish new post
-#: src/theme/components/PostForm.tsx:175
+#: src/theme/components/PostForm.tsx:196
 msgid "Publish"
 msgstr "发布"
 
@@ -651,7 +656,7 @@ msgid "Quiet"
 msgstr "安静"
 
 #. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:125
+#: src/theme/components/PostForm.tsx:146
 msgid "Quiet (normal)"
 msgstr "安静（正常）"
 
@@ -659,7 +664,7 @@ msgstr "安静（正常）"
 #. @context: Post type label - quote
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:33
-#: src/theme/components/PostForm.tsx:54
+#: src/theme/components/PostForm.tsx:55
 #: src/theme/components/TypeBadge.tsx:25
 msgid "Quote"
 msgstr "引用"
@@ -683,8 +688,8 @@ msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:469
-#: src/app.tsx:520
+#: src/app.tsx:463
+#: src/app.tsx:514
 msgid "Reset Password"
 msgstr "重置密码"
 
@@ -750,8 +755,13 @@ msgstr "网站名称"
 msgid "Slug"
 msgstr "缩略名"
 
+#. @context: Post form field - name of the source website or author
+#: src/theme/components/PostForm.tsx:119
+msgid "Source Name (optional)"
+msgstr ""
+
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:102
+#: src/theme/components/PostForm.tsx:103
 msgid "Source URL (optional)"
 msgstr "源网址（可选）"
 
@@ -776,7 +786,7 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此页面的 URL 路径。使用小写字母、数字和连字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:548
+#: src/app.tsx:542
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密码重置链接无效或已过期。请生成一个新的链接。"
 
@@ -810,7 +820,7 @@ msgid "Title"
 msgstr "标题"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:65
+#: src/theme/components/PostForm.tsx:66
 msgid "Title (optional)"
 msgstr "标题（可选）"
 
@@ -822,13 +832,13 @@ msgstr "到路径"
 #. @context: Post form field - post type
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx:141
-#: src/theme/components/PostForm.tsx:38
+#: src/theme/components/PostForm.tsx:39
 msgid "Type"
 msgstr "类型"
 
 #. @context: Post visibility badge - unlisted
 #. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:137
+#: src/theme/components/PostForm.tsx:158
 #: src/theme/components/VisibilityBadge.tsx:34
 msgid "Unlisted"
 msgstr "未列出"
@@ -841,7 +851,7 @@ msgid "Untitled"
 msgstr "无标题"
 
 #. @context: Button to update existing post
-#: src/theme/components/PostForm.tsx:171
+#: src/theme/components/PostForm.tsx:192
 msgid "Update"
 msgstr "更新"
 
@@ -896,7 +906,7 @@ msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
 #: src/routes/dash/collections.tsx:215
 #: src/routes/dash/pages.tsx:73
 #: src/routes/dash/pages.tsx:143
-#: src/routes/dash/posts.tsx:129
+#: src/routes/dash/posts.tsx:131
 #: src/theme/components/ActionButtons.tsx:76
 #: src/theme/components/PostList.tsx:51
 msgid "View"
@@ -913,7 +923,7 @@ msgid "View Site"
 msgstr "查看网站"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:118
+#: src/theme/components/PostForm.tsx:139
 msgid "Visibility"
 msgstr "可见性"
 
@@ -923,7 +933,7 @@ msgid "Welcome to Jant"
 msgstr "欢迎来到Jant"
 
 #. @context: Post content placeholder
-#: src/theme/components/PostForm.tsx:89
+#: src/theme/components/PostForm.tsx:90
 msgid "What's on your mind?"
 msgstr "你在想什么？"
 

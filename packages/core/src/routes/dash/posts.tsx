@@ -93,6 +93,7 @@ postsRoutes.post("/", async (c) => {
     content: string;
     visibility: string;
     sourceUrl?: string;
+    sourceName?: string;
     path?: string;
   }>();
 
@@ -102,6 +103,7 @@ postsRoutes.post("/", async (c) => {
     content: body.content,
     visibility: body.visibility as Post["visibility"],
     sourceUrl: body.sourceUrl || undefined,
+    sourceName: body.sourceName || undefined,
     path: body.path || undefined,
   });
 
@@ -213,6 +215,7 @@ postsRoutes.post("/:id", async (c) => {
     content?: string;
     visibility: string;
     sourceUrl?: string;
+    sourceName?: string;
     path?: string;
   }>();
 
@@ -222,6 +225,7 @@ postsRoutes.post("/:id", async (c) => {
     content: body.content || null,
     visibility: body.visibility as Post["visibility"],
     sourceUrl: body.sourceUrl || null,
+    sourceName: body.sourceName || null,
     path: body.path || null,
   });
 

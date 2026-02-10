@@ -299,7 +299,7 @@ export function sse(
  * Use instead of `sse()` when the only action is a redirect.
  *
  * @param url - The URL to redirect to
- * @param options - Optional extra headers (e.g. Set-Cookie for auth)
+ * @param options - Optional extra headers (accepts any `HeadersInit`)
  * @returns Response with text/html content-type
  *
  * @example
@@ -307,21 +307,20 @@ export function sse(
  * return dsRedirect("/dash/posts");
  *
  * // With cookie forwarding (for auth)
- * return dsRedirect("/dash", { headers: { "Set-Cookie": cookie } });
+ * return dsRedirect("/dash", { headers: authResponse.headers });
  * ```
  */
 export function dsRedirect(
   url: string,
-  options?: { headers?: Record<string, string> },
+  options?: { headers?: Headers | Record<string, string> | string[][] },
 ): Response {
-  return new Response(buildRedirectScript(url), {
-    headers: {
-      "Content-Type": "text/html",
-      "Datastar-Mode": "append",
-      "Datastar-Selector": "body",
-      ...options?.headers,
-    },
-  });
+  const headers = options?.headers
+    ? new Headers(options.headers)
+    : new Headers();
+  headers.set("Content-Type", "text/html");
+  headers.set("Datastar-Mode", "append");
+  headers.set("Datastar-Selector", "body");
+  return new Response(buildRedirectScript(url), { headers });
 }
 
 /**
