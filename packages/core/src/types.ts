@@ -269,6 +269,39 @@ export interface EmptyStateProps {
   actionHref?: string;
 }
 
+// =============================================================================
+// Timeline Types
+// =============================================================================
+
+/** Props for per-type timeline cards */
+export interface TimelineCardProps {
+  post: PostWithMedia;
+  compact?: boolean;
+}
+
+/** Props for thread inline preview */
+export interface ThreadPreviewProps {
+  rootPost: PostWithMedia;
+  previewReplies: PostWithMedia[];
+  totalReplyCount: number;
+}
+
+/** Data structure for a single timeline item */
+export interface TimelineItemData {
+  post: PostWithMedia;
+  threadPreview?: {
+    replies: PostWithMedia[];
+    totalReplyCount: number;
+  };
+}
+
+/** Props for the timeline feed wrapper */
+export interface TimelineFeedProps {
+  items: TimelineItemData[];
+  hasMore: boolean;
+  nextCursor?: number;
+}
+
 /**
  * Theme component overrides
  */
@@ -278,6 +311,13 @@ export interface ThemeComponents {
   PostList?: FC<PostListProps>;
   Pagination?: FC<PaginationProps>;
   EmptyState?: FC<EmptyStateProps>;
+  NoteCard?: FC<TimelineCardProps>;
+  ArticleCard?: FC<TimelineCardProps>;
+  LinkCard?: FC<TimelineCardProps>;
+  QuoteCard?: FC<TimelineCardProps>;
+  ImageCard?: FC<TimelineCardProps>;
+  ThreadPreview?: FC<ThreadPreviewProps>;
+  TimelineFeed?: FC<TimelineFeedProps>;
 }
 
 /**

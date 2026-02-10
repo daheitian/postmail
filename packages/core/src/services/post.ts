@@ -4,7 +4,16 @@
  * CRUD operations for posts with Thread support
  */
 
-import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
+import {
+  eq,
+  and,
+  isNull,
+  desc,
+  or,
+  inArray,
+  notInArray,
+  sql,
+} from "drizzle-orm";
 import type { Database } from "../db/index.js";
 import { posts } from "../db/schema.js";
 import { now } from "../lib/time.js";
@@ -20,6 +29,8 @@ import type {
 
 export interface PostFilters {
   type?: PostType;
+  /** Exclude specific post types (e.g. ["page"]) */
+  excludeTypes?: PostType[];
   visibility?: Visibility | Visibility[];
   includeDeleted?: boolean;
   threadId?: number;
@@ -40,6 +51,11 @@ export interface PostService {
   updateThreadVisibility(rootId: number, visibility: Visibility): Promise<void>;
   /** Get reply counts for multiple posts */
   getReplyCounts(postIds: number[]): Promise<Map<number, number>>;
+  /** Get preview replies for multiple thread roots */
+  getThreadPreviews(
+    rootIds: number[],
+    previewCount?: number,
+  ): Promise<Map<number, Post[]>>;
 }
 
 export function createPostService(db: Database): PostService {
@@ -99,6 +115,11 @@ export function createPostService(db: Database): PostService {
       // Type filter
       if (filters.type) {
         conditions.push(eq(posts.type, filters.type));
+      }
+
+      // Exclude types filter
+      if (filters.excludeTypes && filters.excludeTypes.length > 0) {
+        conditions.push(notInArray(posts.type, filters.excludeTypes));
       }
 
       // Thread filter
@@ -301,6 +322,32 @@ export function createPostService(db: Database): PostService {
         }
       }
       return counts;
+    },
+
+    async getThreadPreviews(rootIds, previewCount = 3) {
+      if (rootIds.length === 0) return new Map();
+
+      const rows = await db
+        .select()
+        .from(posts)
+        .where(and(inArray(posts.threadId, rootIds), isNull(posts.deletedAt)))
+        .orderBy(posts.threadId, posts.createdAt);
+
+      // Partition by threadId, take first previewCount per thread
+      const result = new Map<number, Post[]>();
+      for (const row of rows) {
+        const post = toPost(row);
+        if (post.threadId === null) continue;
+        const list = result.get(post.threadId);
+        if (list) {
+          if (list.length < previewCount) {
+            list.push(post);
+          }
+        } else {
+          result.set(post.threadId, [post]);
+        }
+      }
+      return result;
     },
   };
 }

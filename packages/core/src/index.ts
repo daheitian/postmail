@@ -28,6 +28,10 @@ export type {
   JantConfig,
   JantTheme,
   ThemeComponents,
+  TimelineCardProps,
+  ThreadPreviewProps,
+  TimelineItemData,
+  TimelineFeedProps,
 } from "./types.js";
 
 export {

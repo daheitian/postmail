@@ -1,80 +1,30 @@
 /**
- * Home Page Route
+ * Timeline API Routes
  *
- * Timeline feed with per-type card components and thread previews.
+ * Provides load-more functionality for the timeline feed via SSE.
  */
 
 import { Hono } from "hono";
-import { useLingui } from "@lingui/react/macro";
-import type { FC } from "hono/jsx";
-import type {
-  Bindings,
-  PostWithMedia,
-  TimelineItemData,
-  TimelineFeedProps,
-} from "../../types.js";
+import type { Bindings, PostWithMedia, TimelineItemData } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout } from "../../theme/layouts/index.js";
-import { getSiteName } from "../../lib/config.js";
+import { sse } from "../../lib/sse.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
-import { resolveTimelineFeed } from "../../lib/theme-components.js";
-import { TimelineFeed as DefaultTimelineFeed } from "../../theme/components/timeline/TimelineFeed.js";
+import { TimelineItem } from "../../theme/components/timeline/TimelineItem.js";
+import { ThreadPreview } from "../../theme/components/timeline/ThreadPreview.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 const PAGE_SIZE = 20;
 
-export const homeRoutes = new Hono<Env>();
+export const timelineApiRoutes = new Hono<Env>();
 
-function HomeContent({
-  siteName,
-  FeedComponent,
-  feedProps,
-}: {
-  siteName: string;
-  FeedComponent: FC<TimelineFeedProps>;
-  feedProps: TimelineFeedProps;
-}) {
-  const { t } = useLingui();
+timelineApiRoutes.get("/", async (c) => {
+  const cursorParam = c.req.query("cursor");
+  const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
 
-  return (
-    <div class="container-timeline py-8">
-      <header class="mb-8 flex items-center justify-between">
-        <h1 class="text-2xl font-semibold">{siteName}</h1>
-        <nav class="flex items-center gap-4 text-sm">
-          <a
-            href="/archive"
-            class="text-muted-foreground hover:text-foreground"
-          >
-            {t({
-              message: "Archive",
-              comment: "@context: Navigation link to archive page",
-            })}
-          </a>
-          <a href="/feed" class="text-muted-foreground hover:text-foreground">
-            RSS
-          </a>
-        </nav>
-      </header>
-
-      <main>
-        {feedProps.items.length === 0 ? (
-          <p class="text-muted-foreground">
-            {t({
-              message: "No posts yet.",
-              comment: "@context: Empty state message on home page",
-            })}
-          </p>
-        ) : (
-          <FeedComponent {...feedProps} />
-        )}
-      </main>
-    </div>
-  );
-}
-
-homeRoutes.get("/", async (c) => {
-  const siteName = await getSiteName(c);
+  if (!cursor || isNaN(cursor)) {
+    return c.json({ error: "cursor parameter required" }, 400);
+  }
 
   // Fetch one extra to determine if there are more
   const posts = await c.var.services.posts.list({
@@ -82,12 +32,19 @@ homeRoutes.get("/", async (c) => {
     excludeReplies: true,
     excludeTypes: ["page"],
     limit: PAGE_SIZE + 1,
+    cursor,
   });
 
   const hasMore = posts.length > PAGE_SIZE;
   const displayPosts = hasMore ? posts.slice(0, PAGE_SIZE) : posts;
 
-  // Batch load media attachments
+  if (displayPosts.length === 0) {
+    return sse(c, async (stream) => {
+      stream.remove("#load-more-container");
+    });
+  }
+
+  // Build media map
   const postIds = displayPosts.map((p) => p.id);
   const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
@@ -98,13 +55,13 @@ homeRoutes.get("/", async (c) => {
   const replyCounts = await c.var.services.posts.getReplyCounts(postIds);
   const threadRootIds = postIds.filter((id) => (replyCounts.get(id) ?? 0) > 0);
 
-  // Batch load thread previews
+  // Get thread previews
   const threadPreviews = await c.var.services.posts.getThreadPreviews(
     threadRootIds,
     3,
   );
 
-  // Batch load media for preview replies
+  // Load media for preview replies
   const previewReplyIds: number[] = [];
   for (const replies of threadPreviews.values()) {
     for (const reply of replies) {
@@ -146,29 +103,43 @@ homeRoutes.get("/", async (c) => {
     return { post: postWithMedia };
   });
 
+  // Render items to HTML
+  const itemsHtml = items
+    .map((item) => {
+      if (item.threadPreview) {
+        return (
+          <ThreadPreview
+            rootPost={item.post}
+            previewReplies={item.threadPreview.replies}
+            totalReplyCount={item.threadPreview.totalReplyCount}
+          />
+        );
+      }
+      return <TimelineItem item={item} />;
+    })
+    .map((jsx) => jsx.toString())
+    .join("");
+
   // Determine next cursor
   const lastPost = displayPosts[displayPosts.length - 1];
   const nextCursor = hasMore && lastPost ? lastPost.id : undefined;
 
-  // Resolve theme components
-  const Feed = resolveTimelineFeed(
-    DefaultTimelineFeed,
-    c.var.config.theme?.components,
-  );
+  // Build load-more button HTML
+  const loadMoreHtml = nextCursor
+    ? `<div id="load-more-container" class="mt-6 text-center"><button class="btn btn-outline" data-on:click="@get('/api/timeline?cursor=${nextCursor}')">Load more</button></div>`
+    : "";
 
-  const feedProps: TimelineFeedProps = {
-    items,
-    hasMore,
-    nextCursor,
-  };
-
-  return c.html(
-    <BaseLayout title={siteName} c={c}>
-      <HomeContent
-        siteName={siteName}
-        FeedComponent={Feed}
-        feedProps={feedProps}
-      />
-    </BaseLayout>,
-  );
+  return sse(c, async (stream) => {
+    // Append new items to the feed
+    stream.patchElements(itemsHtml, {
+      mode: "append",
+      selector: "#timeline-feed",
+    });
+    // Replace or remove the load-more container
+    if (loadMoreHtml) {
+      stream.patchElements(loadMoreHtml);
+    } else {
+      stream.remove("#load-more-container");
+    }
+  });
 });
