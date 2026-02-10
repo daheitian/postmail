@@ -11,7 +11,11 @@ import { uuidv7 } from "uuidv7";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { getMediaUrl, getImageUrl } from "../../lib/image.js";
+import {
+  getMediaUrl,
+  getImageUrl,
+  getPublicUrlForProvider,
+} from "../../lib/image.js";
 import { sse, dsSignals } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -27,16 +31,16 @@ uploadApiRoutes.use("*", requireAuthApi());
 function renderMediaCard(
   media: {
     id: string;
-    r2Key: string;
+    storageKey: string;
     mimeType: string;
     originalName: string;
     alt: string | null;
     size: number;
   },
-  r2PublicUrl?: string,
+  publicUrl?: string,
   imageTransformUrl?: string,
 ): string {
-  const fullUrl = getMediaUrl(media.id, media.r2Key, r2PublicUrl);
+  const fullUrl = getMediaUrl(media.id, media.storageKey, publicUrl);
   const thumbnailUrl = getImageUrl(fullUrl, imageTransformUrl, {
     width: 300,
     quality: 80,
@@ -116,11 +120,12 @@ function wantsSSE(c: {
 
 // Upload a file
 uploadApiRoutes.post("/", async (c) => {
-  if (!c.env.R2) {
+  const storage = c.var.storage;
+  if (!storage) {
     if (wantsSSE(c)) {
-      return dsSignals({ _uploadError: "R2 storage not configured" });
+      return dsSignals({ _uploadError: "Storage not configured" });
     }
-    return c.json({ error: "R2 storage not configured" }, 500);
+    return c.json({ error: "Storage not configured" }, 500);
   }
 
   const formData = await c.req.formData();
@@ -164,14 +169,12 @@ uploadApiRoutes.post("/", async (c) => {
   const year = date.getUTCFullYear();
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const filename = `${id}.${ext}`;
-  const r2Key = `media/${year}/${month}/${filename}`;
+  const storageKey = `media/${year}/${month}/${filename}`;
 
   try {
-    // Upload to R2
-    await c.env.R2.put(r2Key, file.stream(), {
-      httpMetadata: {
-        contentType: file.type,
-      },
+    // Upload to storage
+    await storage.put(storageKey, file.stream(), {
+      contentType: file.type,
     });
 
     // Save to database
@@ -181,14 +184,21 @@ uploadApiRoutes.post("/", async (c) => {
       originalName: file.name,
       mimeType: file.type,
       size: file.size,
-      r2Key,
+      storageKey,
+      provider: c.env.STORAGE_DRIVER || "r2",
     });
 
     // SSE response for Datastar
     if (wantsSSE(c)) {
+      const provider = c.env.STORAGE_DRIVER || "r2";
+      const mediaPublicUrl = getPublicUrlForProvider(
+        provider,
+        c.env.R2_PUBLIC_URL,
+        c.env.S3_PUBLIC_URL,
+      );
       const cardHtml = renderMediaCard(
         media,
-        c.env.R2_PUBLIC_URL,
+        mediaPublicUrl,
         c.env.IMAGE_TRANSFORM_URL,
       );
 
@@ -203,7 +213,13 @@ uploadApiRoutes.post("/", async (c) => {
     }
 
     // JSON response for API clients
-    const publicUrl = getMediaUrl(media.id, r2Key, c.env.R2_PUBLIC_URL);
+    const provider = c.env.STORAGE_DRIVER || "r2";
+    const mediaPublicUrl = getPublicUrlForProvider(
+      provider,
+      c.env.R2_PUBLIC_URL,
+      c.env.S3_PUBLIC_URL,
+    );
+    const publicUrl = getMediaUrl(media.id, storageKey, mediaPublicUrl);
     return c.json({
       id: media.id,
       filename: media.filename,
@@ -229,12 +245,18 @@ uploadApiRoutes.post("/", async (c) => {
 uploadApiRoutes.get("/", async (c) => {
   const limit = parseInt(c.req.query("limit") ?? "50", 10);
   const mediaList = await c.var.services.media.list(limit);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   return c.json({
     media: mediaList.map((m) => ({
       id: m.id,
       filename: m.filename,
-      url: getMediaUrl(m.id, m.r2Key, c.env.R2_PUBLIC_URL),
+      url: getMediaUrl(
+        m.id,
+        m.storageKey,
+        getPublicUrlForProvider(m.provider, r2PublicUrl, s3PublicUrl),
+      ),
       mimeType: m.mimeType,
       size: m.size,
       createdAt: m.createdAt,
@@ -250,13 +272,14 @@ uploadApiRoutes.delete("/:id", async (c) => {
     return c.json({ error: "Not found" }, 404);
   }
 
-  // Delete from R2
-  if (c.env.R2) {
+  // Delete from storage
+  const storage = c.var.storage;
+  if (storage) {
     try {
-      await c.env.R2.delete(media.r2Key);
+      await storage.delete(media.storageKey);
     } catch (err) {
       // eslint-disable-next-line no-console -- Error logging is intentional
-      console.error("R2 delete error:", err);
+      console.error("Storage delete error:", err);
     }
   }
 

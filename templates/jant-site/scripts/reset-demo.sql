@@ -14,9 +14,8 @@ DELETE FROM posts;
 DELETE FROM collections;
 DELETE FROM redirects;
 
--- Clear sessions (keep users for demo login capability)
-DELETE FROM session;
-DELETE FROM verification;
+-- Sessions, users, accounts, and settings are preserved
+-- (only content data is reset)
 
 -- Reset auto-increment counters
 DELETE FROM sqlite_sequence WHERE name IN ('posts', 'media', 'collections', 'redirects');

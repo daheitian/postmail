@@ -58,6 +58,7 @@ export function createTestApp(options: TestAppOptions = {}) {
 
     c.set("services", services as AppVariables["services"]);
     c.set("config", {});
+    c.set("storage", null);
 
     if (options.authenticated) {
       // Mock auth that always returns a session

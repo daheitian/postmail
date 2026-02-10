@@ -72,36 +72,66 @@ export function getImageUrl(
 }
 
 /**
+ * Returns the appropriate public URL base for a given storage provider.
+ *
+ * For `"s3"` provider, returns `s3PublicUrl`. For all other providers
+ * (including `"r2"`), returns `r2PublicUrl`. Falls back to `undefined`
+ * if the matching URL is not configured.
+ *
+ * @param provider - The storage provider identifier (e.g., `"r2"`, `"s3"`)
+ * @param r2PublicUrl - Optional R2 public URL
+ * @param s3PublicUrl - Optional S3 public URL
+ * @returns The public URL base for the provider, or undefined
+ *
+ * @example
+ * ```ts
+ * getPublicUrlForProvider("r2", "https://r2.example.com", "https://s3.example.com");
+ * // Returns: "https://r2.example.com"
+ *
+ * getPublicUrlForProvider("s3", "https://r2.example.com", "https://s3.example.com");
+ * // Returns: "https://s3.example.com"
+ * ```
+ */
+export function getPublicUrlForProvider(
+  provider: string,
+  r2PublicUrl?: string,
+  s3PublicUrl?: string,
+): string | undefined {
+  if (provider === "s3") return s3PublicUrl;
+  return r2PublicUrl;
+}
+
+/**
  * Generates a media URL using UUIDv7-based paths.
  *
- * Returns a public URL for a media file. If `r2PublicUrl` is set, uses that directly
- * with the r2Key. Otherwise, generates a `/media/{id}.{ext}` URL.
+ * Returns a public URL for a media file. If `publicUrl` is set, uses that directly
+ * with the storage key. Otherwise, generates a `/media/{id}.{ext}` local proxy URL.
  *
  * @param mediaId - The UUIDv7 database ID of the media
- * @param r2Key - The R2 storage key (used to extract extension)
- * @param r2PublicUrl - Optional R2 public URL for direct CDN access
+ * @param storageKey - The storage object key (used to build CDN path and extract extension)
+ * @param publicUrl - Optional public URL base for direct CDN access
  * @returns The public URL for the media file
  *
  * @example
  * ```ts
- * // Without R2 public URL - uses UUID with extension
- * getMediaUrl("01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f", "media/2025/01/01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f.webp");
- * // Returns: "/media/01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f.webp"
+ * // Without public URL - uses local proxy with UUID and extension
+ * getMediaUrl("01902a9f-1a2b-7c3d", "media/2025/01/01902a9f-1a2b-7c3d.webp");
+ * // Returns: "/media/01902a9f-1a2b-7c3d.webp"
  *
- * // With R2 public URL - uses direct CDN
- * getMediaUrl("01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f", "media/2025/01/01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f.webp", "https://cdn.example.com");
- * // Returns: "https://cdn.example.com/media/2025/01/01902a9f-1a2b-7c3d-8e4f-5a6b7c8d9e0f.webp"
+ * // With public URL - uses direct CDN
+ * getMediaUrl("01902a9f-1a2b-7c3d", "media/2025/01/01902a9f-1a2b-7c3d.webp", "https://cdn.example.com");
+ * // Returns: "https://cdn.example.com/media/2025/01/01902a9f-1a2b-7c3d.webp"
  * ```
  */
 export function getMediaUrl(
   mediaId: string,
-  r2Key: string,
-  r2PublicUrl?: string,
+  storageKey: string,
+  publicUrl?: string,
 ): string {
-  if (r2PublicUrl) {
-    return `${r2PublicUrl}/${r2Key}`;
+  if (publicUrl) {
+    return `${publicUrl}/${storageKey}`;
   }
-  // Extract extension from r2Key
-  const ext = r2Key.split(".").pop() || "bin";
+  // Extract extension from storage key
+  const ext = storageKey.split(".").pop() || "bin";
   return `/media/${mediaId}.${ext}`;
 }

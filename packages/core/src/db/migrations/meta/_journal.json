@@ -29,6 +29,13 @@
       "when": 1770746168873,
       "tag": "0003_add_navigation_links",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1770946168874,
+      "tag": "0004_add_storage_provider",
+      "breakpoints": true
     }
   ]
 }

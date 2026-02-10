@@ -70,7 +70,13 @@ homeRoutes.get("/", async (c) => {
   const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
-  const mediaMap = buildMediaMap(rawMediaMap, r2PublicUrl, imageTransformUrl);
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const mediaMap = buildMediaMap(
+    rawMediaMap,
+    r2PublicUrl,
+    imageTransformUrl,
+    s3PublicUrl,
+  );
 
   // Get reply counts to identify thread roots
   const replyCounts = await c.var.services.posts.getReplyCounts(postIds);
@@ -95,6 +101,7 @@ homeRoutes.get("/", async (c) => {
           await c.var.services.media.getByPostIds(previewReplyIds),
           r2PublicUrl,
           imageTransformUrl,
+          s3PublicUrl,
         )
       : new Map();
 

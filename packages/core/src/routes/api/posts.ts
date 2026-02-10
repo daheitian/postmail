@@ -12,7 +12,11 @@ import {
   validateMediaForPostType,
 } from "../../lib/schemas.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { getMediaUrl, getImageUrl } from "../../lib/image.js";
+import {
+  getMediaUrl,
+  getImageUrl,
+  getPublicUrlForProvider,
+} from "../../lib/image.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -25,8 +29,14 @@ function toMediaAttachment(
   m: Media,
   r2PublicUrl?: string,
   imageTransformUrl?: string,
+  s3PublicUrl?: string,
 ) {
-  const url = getMediaUrl(m.id, m.r2Key, r2PublicUrl);
+  const publicUrl = getPublicUrlForProvider(
+    m.provider,
+    r2PublicUrl,
+    s3PublicUrl,
+  );
+  const url = getMediaUrl(m.id, m.storageKey, publicUrl);
   const previewUrl = getImageUrl(url, imageTransformUrl, {
     width: 400,
     quality: 80,
@@ -66,13 +76,14 @@ postsApiRoutes.get("/", async (c) => {
   const mediaMap = await c.var.services.media.getByPostIds(postIds);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   return c.json({
     posts: posts.map((p) => ({
       ...p,
       sqid: sqid.encode(p.id),
       mediaAttachments: (mediaMap.get(p.id) ?? []).map((m) =>
-        toMediaAttachment(m, r2PublicUrl, imageTransformUrl),
+        toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
       ),
     })),
 
@@ -94,12 +105,13 @@ postsApiRoutes.get("/:id", async (c) => {
   const mediaList = await c.var.services.media.getByPostId(post.id);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   return c.json({
     ...post,
     sqid: sqid.encode(post.id),
     mediaAttachments: mediaList.map((m) =>
-      toMediaAttachment(m, r2PublicUrl, imageTransformUrl),
+      toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
     ),
   });
 });
@@ -157,13 +169,14 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   const mediaList = await c.var.services.media.getByPostId(post.id);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   return c.json(
     {
       ...post,
       sqid: sqid.encode(post.id),
       mediaAttachments: mediaList.map((m) =>
-        toMediaAttachment(m, r2PublicUrl, imageTransformUrl),
+        toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
       ),
     },
     201,
@@ -233,12 +246,13 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   const mediaList = await c.var.services.media.getByPostId(post.id);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   return c.json({
     ...post,
     sqid: sqid.encode(post.id),
     mediaAttachments: mediaList.map((m) =>
-      toMediaAttachment(m, r2PublicUrl, imageTransformUrl),
+      toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
     ),
   });
 });
