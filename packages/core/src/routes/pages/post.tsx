@@ -10,7 +10,11 @@ import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
 import { MediaGallery } from "../../theme/components/index.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
-import { getMediaUrl, getImageUrl } from "../../lib/image.js";
+import {
+  getMediaUrl,
+  getImageUrl,
+  getPublicUrlForProvider,
+} from "../../lib/image.js";
 import { getNavigationData } from "../../lib/navigation.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -87,22 +91,30 @@ postRoutes.get("/:id", async (c) => {
   const rawMedia = await c.var.services.media.getByPostId(post.id);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
-  const mediaAttachments: MediaAttachment[] = rawMedia.map((m) => ({
-    id: m.id,
-    url: getMediaUrl(m.id, m.r2Key, r2PublicUrl),
-    previewUrl: getImageUrl(
-      getMediaUrl(m.id, m.r2Key, r2PublicUrl),
-      imageTransformUrl,
-      { width: 400, quality: 80, format: "auto", fit: "cover" },
-    ),
-    alt: m.alt,
-    blurhash: m.blurhash,
-    width: m.width,
-    height: m.height,
-    position: m.position,
-    mimeType: m.mimeType,
-  }));
+  const mediaAttachments: MediaAttachment[] = rawMedia.map((m) => {
+    const publicUrl = getPublicUrlForProvider(
+      m.provider,
+      r2PublicUrl,
+      s3PublicUrl,
+    );
+    return {
+      id: m.id,
+      url: getMediaUrl(m.id, m.storageKey, publicUrl),
+      previewUrl: getImageUrl(
+        getMediaUrl(m.id, m.storageKey, publicUrl),
+        imageTransformUrl,
+        { width: 400, quality: 80, format: "auto", fit: "cover" },
+      ),
+      alt: m.alt,
+      blurhash: m.blurhash,
+      width: m.width,
+      height: m.height,
+      position: m.position,
+      mimeType: m.mimeType,
+    };
+  });
 
   const navData = await getNavigationData(c);
   const title = post.title || navData.siteName;

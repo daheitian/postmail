@@ -39,6 +39,15 @@ R2_PUBLIC_URL = "https://demo-media.jant.me" # @create-jant: @remove
 # DEMO_EMAIL = "demo@example.com"
 # DEMO_PASSWORD = "demo123"
 
+# Optional: S3-compatible storage (alternative to R2)
+# Set STORAGE_DRIVER = "s3" and configure the options below.
+# When using S3, the [[r2_buckets]] section can be removed.
+STORAGE_DRIVER = "s3"
+S3_ENDPOINT = "https://s3.us-east-005.backblazeb2.com"
+S3_BUCKET = "jant-media"
+S3_REGION = "us-east-005"
+S3_PUBLIC_URL = "https://files.owenyoung.com/file/jant-media"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "jant-site-db" # @create-jant: "${name}-db"

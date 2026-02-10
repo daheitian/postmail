@@ -1,7 +1,7 @@
 /**
  * Media Service
  *
- * Handles media upload and management with R2 storage
+ * Handles media upload and management with pluggable storage backends.
  */
 
 import { eq, desc, inArray, asc } from "drizzle-orm";
@@ -19,7 +19,7 @@ export interface MediaService {
   list(limit?: number): Promise<Media[]>;
   create(data: CreateMediaData): Promise<Media>;
   delete(id: string): Promise<boolean>;
-  getByR2Key(r2Key: string): Promise<Media | null>;
+  getByStorageKey(storageKey: string): Promise<Media | null>;
   attachToPost(postId: number, mediaIds: string[]): Promise<void>;
   detachFromPost(postId: number): Promise<void>;
 }
@@ -31,7 +31,8 @@ export interface CreateMediaData {
   originalName: string;
   mimeType: string;
   size: number;
-  r2Key: string;
+  storageKey: string;
+  provider?: string;
   width?: number;
   height?: number;
   alt?: string;
@@ -48,7 +49,8 @@ export function createMediaService(db: Database): MediaService {
       originalName: row.originalName,
       mimeType: row.mimeType,
       size: row.size,
-      r2Key: row.r2Key,
+      storageKey: row.storageKey,
+      provider: row.provider,
       width: row.width,
       height: row.height,
       alt: row.alt,
@@ -107,11 +109,11 @@ export function createMediaService(db: Database): MediaService {
       return result;
     },
 
-    async getByR2Key(r2Key) {
+    async getByStorageKey(storageKey) {
       const result = await db
         .select()
         .from(media)
-        .where(eq(media.r2Key, r2Key))
+        .where(eq(media.storageKey, storageKey))
         .limit(1);
       return result[0] ? toMedia(result[0]) : null;
     },
@@ -138,7 +140,8 @@ export function createMediaService(db: Database): MediaService {
           originalName: data.originalName,
           mimeType: data.mimeType,
           size: data.size,
-          r2Key: data.r2Key,
+          storageKey: data.storageKey,
+          provider: data.provider ?? "r2",
           width: data.width ?? null,
           height: data.height ?? null,
           alt: data.alt ?? null,

@@ -45,6 +45,7 @@
     "prepublishOnly": "pnpm i18n:compile && pnpm build:lib"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.987.0",
     "@lingui/core": "^5.9.0",
     "basecoat-css": "^0.3.10",
     "better-auth": "^1.4.18",

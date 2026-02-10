@@ -168,6 +168,7 @@ function EditPostContent({
   mediaAttachments,
   r2PublicUrl,
   imageTransformUrl,
+  s3PublicUrl,
   collections,
   postCollectionIds,
 }: {
@@ -175,6 +176,7 @@ function EditPostContent({
   mediaAttachments: Media[];
   r2PublicUrl?: string;
   imageTransformUrl?: string;
+  s3PublicUrl?: string;
   collections: Collection[];
   postCollectionIds: number[];
 }) {
@@ -190,6 +192,7 @@ function EditPostContent({
         mediaAttachments={mediaAttachments}
         r2PublicUrl={r2PublicUrl}
         imageTransformUrl={imageTransformUrl}
+        s3PublicUrl={s3PublicUrl}
         collections={collections}
         postCollectionIds={postCollectionIds}
       />
@@ -232,6 +235,7 @@ postsRoutes.get("/:id/edit", async (c) => {
   const mediaAttachments = await c.var.services.media.getByPostId(post.id);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
   const collections = await c.var.services.collections.list();
   const postCollections =
     await c.var.services.collections.getCollectionsForPost(post.id);
@@ -249,6 +253,7 @@ postsRoutes.get("/:id/edit", async (c) => {
         mediaAttachments={mediaAttachments}
         r2PublicUrl={r2PublicUrl}
         imageTransformUrl={imageTransformUrl}
+        s3PublicUrl={s3PublicUrl}
         collections={collections}
         postCollectionIds={postCollectionIds}
       />

@@ -59,9 +59,7 @@ const header = `-- =============================================================
 `;
 
 const tables = [
-  ["settings"],
-  ["user"],
-  ["account"],
+  // settings, user, account are preserved by reset-demo.sql — don't export
   ["posts", "SELECT * FROM posts WHERE deleted_at IS NULL"],
   ["collections"],
   ["post_collections"],

@@ -15,9 +15,54 @@ Set these in `wrangler.toml` or as Cloudflare secrets.
 
 ### Storage
 
-| Variable        | Description                                       |
-| --------------- | ------------------------------------------------- |
-| `R2_PUBLIC_URL` | Public URL for R2 bucket (if using custom domain) |
+Jant supports two storage backends for media uploads: **Cloudflare R2** (default) and **S3-compatible** services.
+
+#### R2 (Default)
+
+| Variable        | Where           | Description                                       |
+| --------------- | --------------- | ------------------------------------------------- |
+| `R2_PUBLIC_URL` | `wrangler.toml` | Public URL for R2 bucket (if using custom domain) |
+
+R2 uses the `[[r2_buckets]]` binding in `wrangler.toml`. No additional configuration is needed beyond creating the bucket.
+
+#### S3-Compatible Storage
+
+Use any S3-compatible service (AWS S3, Backblaze B2, MinIO, DigitalOcean Spaces, etc.) as an alternative to R2.
+
+| Variable               | Where           | Description                                                  |
+| ---------------------- | --------------- | ------------------------------------------------------------ |
+| `STORAGE_DRIVER`       | `wrangler.toml` | Set to `"s3"` to enable S3 storage                           |
+| `S3_ENDPOINT`          | `wrangler.toml` | S3 endpoint URL (e.g., `https://s3.us-east-1.amazonaws.com`) |
+| `S3_BUCKET`            | `wrangler.toml` | Bucket name                                                  |
+| `S3_REGION`            | `wrangler.toml` | Bucket region (defaults to `"auto"`)                         |
+| `S3_PUBLIC_URL`        | `wrangler.toml` | Public URL for accessing uploaded files                      |
+| `S3_ACCESS_KEY_ID`     | `.dev.vars`     | Access key ID (secret — never commit)                        |
+| `S3_SECRET_ACCESS_KEY` | `.dev.vars`     | Secret access key (secret — never commit)                    |
+
+**Setup:**
+
+1. Set environment variables in `wrangler.toml`:
+
+   ```toml
+   [vars]
+   STORAGE_DRIVER = "s3"
+   S3_ENDPOINT = "https://s3.us-east-1.amazonaws.com"
+   S3_BUCKET = "my-bucket"
+   S3_REGION = "us-east-1"
+   S3_PUBLIC_URL = "https://cdn.example.com"
+   ```
+
+2. Add secrets to `.dev.vars` (local) or `wrangler secret put` (production):
+
+   ```bash
+   # .dev.vars
+   S3_ACCESS_KEY_ID=your-access-key
+   S3_SECRET_ACCESS_KEY=your-secret-key
+   ```
+
+3. Remove the `[[r2_buckets]]` section from `wrangler.toml` — it's not needed with S3.
+
+> **Note:** When using `create-jant`, select "S3-compatible" during setup to have this configured automatically.
 
 ### Image Transformations (Optional)
 
@@ -89,6 +134,15 @@ SITE_URL = "https://myblog.com"
 # Optional: R2 and image optimization
 # R2_PUBLIC_URL = "https://cdn.example.com"
 # IMAGE_TRANSFORM_URL = "https://myblog.com/cdn-cgi/image"
+
+# Optional: S3-compatible storage (alternative to R2)
+# Set STORAGE_DRIVER = "s3" and configure the options below.
+# When using S3, the [[r2_buckets]] section can be removed.
+# STORAGE_DRIVER = "s3"
+# S3_ENDPOINT = "https://s3.us-east-1.amazonaws.com"
+# S3_BUCKET = "my-bucket"
+# S3_REGION = "us-east-1"
+# S3_PUBLIC_URL = "https://cdn.example.com"
 
 [[d1_databases]]
 binding = "DB"

@@ -22,7 +22,7 @@ describe("MediaService", () => {
     originalName: "photo.jpg",
     mimeType: "image/jpeg",
     size: 102400,
-    r2Key: "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
+    storageKey: "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
     width: 1920,
     height: 1080,
   };
@@ -36,9 +36,10 @@ describe("MediaService", () => {
       expect(media.originalName).toBe("photo.jpg");
       expect(media.mimeType).toBe("image/jpeg");
       expect(media.size).toBe(102400);
-      expect(media.r2Key).toBe(
+      expect(media.storageKey).toBe(
         "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
       );
+      expect(media.provider).toBe("r2");
       expect(media.width).toBe(1920);
       expect(media.height).toBe(1080);
       expect(media.postId).toBeNull();
@@ -56,6 +57,20 @@ describe("MediaService", () => {
       expect(media.alt).toBe("A beautiful sunset");
     });
 
+    it("defaults provider to 'r2'", async () => {
+      const media = await mediaService.create(sampleMedia);
+      expect(media.provider).toBe("r2");
+    });
+
+    it("accepts provider 's3'", async () => {
+      const media = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/2025/01/s3-upload.jpg",
+        provider: "s3",
+      });
+      expect(media.provider).toBe("s3");
+    });
+
     it("creates media with position and blurhash", async () => {
       const media = await mediaService.create({
         ...sampleMedia,
@@ -71,7 +86,7 @@ describe("MediaService", () => {
       const media1 = await mediaService.create(sampleMedia);
       const media2 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/2025/01/other.jpg",
+        storageKey: "media/2025/01/other.jpg",
       });
 
       expect(media1.id).not.toBe(media2.id);
@@ -92,7 +107,7 @@ describe("MediaService", () => {
     it("auto-generates id when not provided", async () => {
       const media = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/2025/01/auto.jpg",
+        storageKey: "media/2025/01/auto.jpg",
       });
 
       expect(media.id).toBeTruthy();
@@ -122,11 +137,11 @@ describe("MediaService", () => {
     it("returns media for valid IDs", async () => {
       const m1 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/a.jpg",
+        storageKey: "media/a.jpg",
       });
       const m2 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/b.jpg",
+        storageKey: "media/b.jpg",
       });
 
       const results = await mediaService.getByIds([m1.id, m2.id]);
@@ -157,11 +172,11 @@ describe("MediaService", () => {
 
       const m1 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/a.jpg",
+        storageKey: "media/a.jpg",
       });
       const m2 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/b.jpg",
+        storageKey: "media/b.jpg",
       });
 
       await mediaService.attachToPost(post.id, [m2.id, m1.id]);
@@ -198,15 +213,15 @@ describe("MediaService", () => {
 
       const m1 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/a.jpg",
+        storageKey: "media/a.jpg",
       });
       const m2 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/b.jpg",
+        storageKey: "media/b.jpg",
       });
       const m3 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/c.jpg",
+        storageKey: "media/c.jpg",
       });
 
       await mediaService.attachToPost(post1.id, [m1.id, m2.id]);
@@ -231,11 +246,11 @@ describe("MediaService", () => {
 
       const m1 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/a.jpg",
+        storageKey: "media/a.jpg",
       });
       const m2 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/b.jpg",
+        storageKey: "media/b.jpg",
       });
 
       await mediaService.attachToPost(post.id, [m2.id, m1.id]);
@@ -247,11 +262,11 @@ describe("MediaService", () => {
     });
   });
 
-  describe("getByR2Key", () => {
+  describe("getByStorageKey", () => {
     it("returns media by R2 key", async () => {
       await mediaService.create(sampleMedia);
 
-      const found = await mediaService.getByR2Key(
+      const found = await mediaService.getByStorageKey(
         "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
       );
       expect(found).not.toBeNull();
@@ -259,7 +274,7 @@ describe("MediaService", () => {
     });
 
     it("returns null for non-existent R2 key", async () => {
-      const found = await mediaService.getByR2Key("nonexistent");
+      const found = await mediaService.getByStorageKey("nonexistent");
       expect(found).toBeNull();
     });
   });
@@ -271,8 +286,8 @@ describe("MediaService", () => {
     });
 
     it("returns media ordered by createdAt desc", async () => {
-      await mediaService.create({ ...sampleMedia, r2Key: "a.jpg" });
-      await mediaService.create({ ...sampleMedia, r2Key: "b.jpg" });
+      await mediaService.create({ ...sampleMedia, storageKey: "a.jpg" });
+      await mediaService.create({ ...sampleMedia, storageKey: "b.jpg" });
 
       const list = await mediaService.list();
       expect(list).toHaveLength(2);
@@ -280,7 +295,10 @@ describe("MediaService", () => {
 
     it("respects limit parameter", async () => {
       for (let i = 0; i < 5; i++) {
-        await mediaService.create({ ...sampleMedia, r2Key: `img${i}.jpg` });
+        await mediaService.create({
+          ...sampleMedia,
+          storageKey: `img${i}.jpg`,
+        });
       }
 
       const list = await mediaService.list(2);
@@ -297,11 +315,11 @@ describe("MediaService", () => {
 
       const m1 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/a.jpg",
+        storageKey: "media/a.jpg",
       });
       const m2 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/b.jpg",
+        storageKey: "media/b.jpg",
       });
 
       await mediaService.attachToPost(post.id, [m1.id, m2.id]);
@@ -322,15 +340,15 @@ describe("MediaService", () => {
 
       const m1 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/a.jpg",
+        storageKey: "media/a.jpg",
       });
       const m2 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/b.jpg",
+        storageKey: "media/b.jpg",
       });
       const m3 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/c.jpg",
+        storageKey: "media/c.jpg",
       });
 
       await mediaService.attachToPost(post.id, [m1.id, m2.id]);
@@ -355,7 +373,7 @@ describe("MediaService", () => {
 
       const m1 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/a.jpg",
+        storageKey: "media/a.jpg",
       });
 
       await mediaService.attachToPost(post.id, [m1.id]);
@@ -375,7 +393,7 @@ describe("MediaService", () => {
 
       const m1 = await mediaService.create({
         ...sampleMedia,
-        r2Key: "media/a.jpg",
+        storageKey: "media/a.jpg",
       });
 
       await mediaService.attachToPost(post.id, [m1.id]);

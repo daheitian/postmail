@@ -7,7 +7,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
-import { getMediaUrl } from "../../lib/image.js";
+import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -20,6 +20,7 @@ rssRoutes.get("/", async (c) => {
   const siteDescription = all["SITE_DESCRIPTION"] ?? "";
   const siteUrl = c.env.SITE_URL;
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   const posts = await c.var.services.posts.list({
     visibility: ["featured", "quiet"],
@@ -40,7 +41,7 @@ rssRoutes.get("/", async (c) => {
       const postMedia = mediaMap.get(post.id);
       const firstMedia = postMedia?.[0];
       const enclosure = firstMedia
-        ? `\n      <enclosure url="${getMediaUrl(firstMedia.id, firstMedia.r2Key, r2PublicUrl)}" length="${firstMedia.size}" type="${firstMedia.mimeType}"/>`
+        ? `\n      <enclosure url="${getMediaUrl(firstMedia.id, firstMedia.storageKey, getPublicUrlForProvider(firstMedia.provider, r2PublicUrl, s3PublicUrl))}" length="${firstMedia.size}" type="${firstMedia.mimeType}"/>`
         : "";
 
       return `

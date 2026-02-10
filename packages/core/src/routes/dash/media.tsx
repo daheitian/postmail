@@ -13,7 +13,11 @@ import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
 import { EmptyState, DangerZone } from "../../theme/components/index.js";
 import * as time from "../../lib/time.js";
-import { getMediaUrl, getImageUrl } from "../../lib/image.js";
+import {
+  getMediaUrl,
+  getImageUrl,
+  getPublicUrlForProvider,
+} from "../../lib/image.js";
 import { dsRedirect } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -36,12 +40,19 @@ function MediaCard({
   media,
   r2PublicUrl,
   imageTransformUrl,
+  s3PublicUrl,
 }: {
   media: Media;
   r2PublicUrl?: string;
   imageTransformUrl?: string;
+  s3PublicUrl?: string;
 }) {
-  const fullUrl = getMediaUrl(media.id, media.r2Key, r2PublicUrl);
+  const publicUrl = getPublicUrlForProvider(
+    media.provider,
+    r2PublicUrl,
+    s3PublicUrl,
+  );
+  const fullUrl = getMediaUrl(media.id, media.storageKey, publicUrl);
   const thumbnailUrl = getImageUrl(fullUrl, imageTransformUrl, {
     width: 300,
     quality: 80,
@@ -96,10 +107,12 @@ function MediaListContent({
   mediaList,
   r2PublicUrl,
   imageTransformUrl,
+  s3PublicUrl,
 }: {
   mediaList: Media[];
   r2PublicUrl?: string;
   imageTransformUrl?: string;
+  s3PublicUrl?: string;
 }) {
   const { t } = useLingui();
 
@@ -187,6 +200,7 @@ function MediaListContent({
                 media={m}
                 r2PublicUrl={r2PublicUrl}
                 imageTransformUrl={imageTransformUrl}
+                s3PublicUrl={s3PublicUrl}
               />
             ))}
           </div>
@@ -217,13 +231,20 @@ function ViewMediaContent({
   media,
   r2PublicUrl,
   imageTransformUrl,
+  s3PublicUrl,
 }: {
   media: Media;
   r2PublicUrl?: string;
   imageTransformUrl?: string;
+  s3PublicUrl?: string;
 }) {
   const { t } = useLingui();
-  const url = getMediaUrl(media.id, media.r2Key, r2PublicUrl);
+  const publicUrl = getPublicUrlForProvider(
+    media.provider,
+    r2PublicUrl,
+    s3PublicUrl,
+  );
+  const url = getMediaUrl(media.id, media.storageKey, publicUrl);
   const thumbnailUrl = getImageUrl(url, imageTransformUrl, {
     width: 600,
     quality: 85,
@@ -401,6 +422,7 @@ mediaRoutes.get("/", async (c) => {
   const siteName = await getSiteName(c);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   return c.html(
     <DashLayout
@@ -413,6 +435,7 @@ mediaRoutes.get("/", async (c) => {
         mediaList={mediaList}
         r2PublicUrl={r2PublicUrl}
         imageTransformUrl={imageTransformUrl}
+        s3PublicUrl={s3PublicUrl}
       />
     </DashLayout>,
   );
@@ -424,6 +447,7 @@ mediaRoutes.get("/picker", async (c) => {
   const mediaList = await c.var.services.media.list(100);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   if (mediaList.length === 0) {
     return c.html(
@@ -438,7 +462,12 @@ mediaRoutes.get("/picker", async (c) => {
       {mediaList
         .filter((m) => m.mimeType.startsWith("image/"))
         .map((m) => {
-          const url = getMediaUrl(m.id, m.r2Key, r2PublicUrl);
+          const pUrl = getPublicUrlForProvider(
+            m.provider,
+            r2PublicUrl,
+            s3PublicUrl,
+          );
+          const url = getMediaUrl(m.id, m.storageKey, pUrl);
           const thumbUrl = getImageUrl(url, imageTransformUrl, {
             width: 150,
             quality: 80,
@@ -477,6 +506,7 @@ mediaRoutes.get("/:id", async (c) => {
   const siteName = await getSiteName(c);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   return c.html(
     <DashLayout
@@ -489,6 +519,7 @@ mediaRoutes.get("/:id", async (c) => {
         media={media}
         r2PublicUrl={r2PublicUrl}
         imageTransformUrl={imageTransformUrl}
+        s3PublicUrl={s3PublicUrl}
       />
     </DashLayout>,
   );
@@ -500,13 +531,14 @@ mediaRoutes.post("/:id/delete", async (c) => {
   const media = await c.var.services.media.getById(id);
   if (!media) return c.notFound();
 
-  // Delete from R2
-  if (c.env.R2) {
+  // Delete from storage
+  const storage = c.var.storage;
+  if (storage) {
     try {
-      await c.env.R2.delete(media.r2Key);
+      await storage.delete(media.storageKey);
     } catch (err) {
       // eslint-disable-next-line no-console -- Error logging is intentional
-      console.error("R2 delete error:", err);
+      console.error("Storage delete error:", err);
     }
   }
 

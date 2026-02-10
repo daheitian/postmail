@@ -32,6 +32,9 @@ export const POST_TYPE_MEDIA_RULES: Record<PostType, [number, number] | null> =
     page: null,
   };
 
+export const STORAGE_DRIVERS = ["r2", "s3"] as const;
+export type StorageDriver = (typeof STORAGE_DRIVERS)[number];
+
 export const VISIBILITY_LEVELS = [
   "featured",
   "quiet",
@@ -57,6 +60,14 @@ export interface Bindings {
   SITE_NAME?: string;
   SITE_DESCRIPTION?: string;
   SITE_LANGUAGE?: string;
+  // S3-compatible storage (alternative to R2)
+  STORAGE_DRIVER?: string;
+  S3_ENDPOINT?: string;
+  S3_BUCKET?: string;
+  S3_ACCESS_KEY_ID?: string;
+  S3_SECRET_ACCESS_KEY?: string;
+  S3_REGION?: string;
+  S3_PUBLIC_URL?: string;
 }
 
 // =============================================================================
@@ -113,6 +124,34 @@ export const CONFIG_FIELDS = {
     defaultValue: "",
     envOnly: true,
   },
+  STORAGE_DRIVER: {
+    defaultValue: "r2",
+    envOnly: true,
+  },
+  S3_ENDPOINT: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  S3_BUCKET: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  S3_ACCESS_KEY_ID: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  S3_SECRET_ACCESS_KEY: {
+    defaultValue: "",
+    envOnly: true,
+  },
+  S3_REGION: {
+    defaultValue: "auto",
+    envOnly: true,
+  },
+  S3_PUBLIC_URL: {
+    defaultValue: "",
+    envOnly: true,
+  },
 } as const;
 
 export type ConfigKey = keyof typeof CONFIG_FIELDS;
@@ -147,7 +186,8 @@ export interface Media {
   originalName: string;
   mimeType: string;
   size: number;
-  r2Key: string;
+  storageKey: string;
+  provider: string;
   width: number | null;
   height: number | null;
   alt: string | null;

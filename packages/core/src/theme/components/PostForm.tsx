@@ -5,7 +5,11 @@
 import type { FC } from "hono/jsx";
 import type { Post, Media, Collection } from "../../types.js";
 import { useLingui } from "@lingui/react/macro";
-import { getMediaUrl, getImageUrl } from "../../lib/image.js";
+import {
+  getMediaUrl,
+  getImageUrl,
+  getPublicUrlForProvider,
+} from "../../lib/image.js";
 
 export interface PostFormProps {
   post?: Post;
@@ -13,6 +17,7 @@ export interface PostFormProps {
   mediaAttachments?: Media[];
   r2PublicUrl?: string;
   imageTransformUrl?: string;
+  s3PublicUrl?: string;
   collections?: Collection[];
   postCollectionIds?: number[];
 }
@@ -23,6 +28,7 @@ export const PostForm: FC<PostFormProps> = ({
   mediaAttachments,
   r2PublicUrl,
   imageTransformUrl,
+  s3PublicUrl,
   collections,
   postCollectionIds,
 }) => {
@@ -135,7 +141,12 @@ export const PostForm: FC<PostFormProps> = ({
         {mediaAttachments && mediaAttachments.length > 0 && (
           <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-2">
             {mediaAttachments.map((m) => {
-              const url = getMediaUrl(m.id, m.r2Key, r2PublicUrl);
+              const pUrl = getPublicUrlForProvider(
+                m.provider,
+                r2PublicUrl,
+                s3PublicUrl,
+              );
+              const url = getMediaUrl(m.id, m.storageKey, pUrl);
               const thumbUrl = getImageUrl(url, imageTransformUrl, {
                 width: 150,
                 quality: 80,

@@ -99,6 +99,16 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     if (trimmed) sqlite.exec(trimmed);
   }
 
+  // Apply storage provider migration
+  const migration4 = readFileSync(
+    resolve(MIGRATIONS_DIR, "0004_add_storage_provider.sql"),
+    "utf-8",
+  );
+  for (const sql of migration4.split("--> statement-breakpoint")) {
+    const trimmed = sql.trim();
+    if (trimmed) sqlite.exec(trimmed);
+  }
+
   const db = drizzle(sqlite, { schema });
 
   return { db, sqlite };

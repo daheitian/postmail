@@ -49,6 +49,7 @@ import { requireOnboarding } from "./middleware/onboarding.js";
 import { BaseLayout } from "./theme/layouts/index.js";
 import { dsRedirect, dsToast } from "./lib/sse.js";
 import { getAvailableThemes, buildThemeStyle } from "./lib/theme.js";
+import { createStorageDriver, type StorageDriver } from "./lib/storage.js";
 
 // Extend Hono's context variables
 export interface AppVariables {
@@ -56,6 +57,7 @@ export interface AppVariables {
   auth: Auth;
   config: JantConfig;
   themeStyle: string;
+  storage: StorageDriver | null;
 }
 
 export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
@@ -95,6 +97,7 @@ export function createApp(config: JantConfig = {}): App {
     const services = createServices(db, session as unknown as D1Database);
     c.set("services", services);
     c.set("config", config);
+    c.set("storage", createStorageDriver(c.env));
 
     if (c.env.AUTH_SECRET) {
       const auth = createAuth(session as unknown as D1Database, {
@@ -668,9 +671,10 @@ export function createApp(config: JantConfig = {}): App {
   app.route("/api/upload", uploadApiRoutes);
   app.route("/api/search", searchApiRoutes);
 
-  // Media files from R2 (UUIDv7-based URLs with extension)
+  // Media files from storage (UUIDv7-based URLs with extension)
   app.get("/media/:idWithExt", async (c) => {
-    if (!c.env.R2) {
+    const storage = c.var.storage;
+    if (!storage) {
       return c.notFound();
     }
 
@@ -683,16 +687,13 @@ export function createApp(config: JantConfig = {}): App {
       return c.notFound();
     }
 
-    const object = await c.env.R2.get(media.r2Key);
+    const object = await storage.get(media.storageKey);
     if (!object) {
       return c.notFound();
     }
 
     const headers = new Headers();
-    headers.set(
-      "Content-Type",
-      object.httpMetadata?.contentType || media.mimeType,
-    );
+    headers.set("Content-Type", object.contentType || media.mimeType);
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
 
     return new Response(object.body, { headers });
