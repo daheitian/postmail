@@ -1,4 +1,3 @@
-import { getSiteName } from "../../lib/config.js";
 /**
  * Search Page Route
  */
@@ -8,10 +7,11 @@ import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import type { SearchResult } from "../../services/search.js";
-import { BaseLayout } from "../../theme/layouts/index.js";
+import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
 import { PagePagination } from "../../theme/components/index.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
+import { getNavigationData } from "../../lib/navigation.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -39,7 +39,7 @@ function SearchContent({
   });
 
   return (
-    <div class="container py-8 max-w-2xl">
+    <div>
       <h1 class="text-2xl font-semibold mb-6">{searchTitle}</h1>
 
       {/* Search form */}
@@ -137,16 +137,6 @@ function SearchContent({
           )}
         </div>
       )}
-
-      <nav class="mt-8 pt-6 border-t">
-        <a href="/" class="text-sm hover:underline">
-          ←{" "}
-          {t({
-            message: "Back to home",
-            comment: "@context: Navigation link back to home page",
-          })}
-        </a>
-      </nav>
     </div>
   );
 }
@@ -156,7 +146,7 @@ searchRoutes.get("/", async (c) => {
   const pageParam = c.req.query("page");
   const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
 
-  const siteName = await getSiteName(c);
+  const navData = await getNavigationData(c);
 
   // Only search if there's a query
   let results: Awaited<ReturnType<typeof c.var.services.search.search>> = [];
@@ -185,16 +175,22 @@ searchRoutes.get("/", async (c) => {
 
   return c.html(
     <BaseLayout
-      title={query ? `Search: ${query} - ${siteName}` : `Search - ${siteName}`}
+      title={
+        query
+          ? `Search: ${query} - ${navData.siteName}`
+          : `Search - ${navData.siteName}`
+      }
       c={c}
     >
-      <SearchContent
-        query={query}
-        results={results}
-        error={error}
-        hasMore={hasMore}
-        page={page}
-      />
+      <SiteLayout {...navData}>
+        <SearchContent
+          query={query}
+          results={results}
+          error={error}
+          hasMore={hasMore}
+          page={page}
+        />
+      </SiteLayout>
     </BaseLayout>,
   );
 });

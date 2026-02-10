@@ -1,4 +1,3 @@
-import { getSiteName } from "../../lib/config.js";
 /**
  * Collection Page Route
  */
@@ -7,9 +6,10 @@ import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Collection, Post } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout } from "../../theme/layouts/index.js";
+import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
+import { getNavigationData } from "../../lib/navigation.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -25,7 +25,7 @@ function CollectionContent({
   const { t } = useLingui();
 
   return (
-    <div class="container py-8">
+    <div>
       <header class="mb-8">
         <h1 class="text-2xl font-semibold">{collection.title}</h1>
         {collection.description && (
@@ -70,15 +70,6 @@ function CollectionContent({
           ))
         )}
       </main>
-
-      <nav class="mt-8">
-        <a href="/" class="text-sm hover:underline">
-          {t({
-            message: "← Back to home",
-            comment: "@context: Navigation link",
-          })}
-        </a>
-      </nav>
     </div>
   );
 }
@@ -90,15 +81,17 @@ collectionRoutes.get("/:path", async (c) => {
   if (!collection) return c.notFound();
 
   const posts = await c.var.services.collections.getPosts(collection.id);
-  const siteName = await getSiteName(c);
+  const navData = await getNavigationData(c);
 
   return c.html(
     <BaseLayout
-      title={`${collection.title} - ${siteName}`}
+      title={`${collection.title} - ${navData.siteName}`}
       description={collection.description ?? undefined}
       c={c}
     >
-      <CollectionContent collection={collection} posts={posts} />
+      <SiteLayout {...navData}>
+        <CollectionContent collection={collection} posts={posts} />
+      </SiteLayout>
     </BaseLayout>,
   );
 });

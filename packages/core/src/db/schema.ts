@@ -104,6 +104,19 @@ export const redirects = sqliteTable("redirects", {
 });
 
 // =============================================================================
+// Navigation Links
+// =============================================================================
+
+export const navigationLinks = sqliteTable("navigation_links", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  label: text("label").notNull(),
+  url: text("url").notNull(),
+  position: integer("position").notNull().default(0),
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+// =============================================================================
 // Settings (Key-Value)
 // =============================================================================
 

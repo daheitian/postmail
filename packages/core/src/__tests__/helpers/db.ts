@@ -89,6 +89,16 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     if (trimmed) sqlite.exec(trimmed);
   }
 
+  // Apply navigation links migration
+  const migration3 = readFileSync(
+    resolve(MIGRATIONS_DIR, "0003_add_navigation_links.sql"),
+    "utf-8",
+  );
+  for (const sql of migration3.split("--> statement-breakpoint")) {
+    const trimmed = sql.trim();
+    if (trimmed) sqlite.exec(trimmed);
+  }
+
   const db = drizzle(sqlite, { schema });
 
   return { db, sqlite };

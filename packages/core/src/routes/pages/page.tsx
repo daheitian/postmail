@@ -1,4 +1,3 @@
-import { getSiteName } from "../../lib/config.js";
 /**
  * Custom Page Route
  *
@@ -6,41 +5,27 @@ import { getSiteName } from "../../lib/config.js";
  */
 
 import { Hono } from "hono";
-import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Post } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout } from "../../theme/layouts/index.js";
+import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
+import { getNavigationData } from "../../lib/navigation.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const pageRoutes = new Hono<Env>();
 
 function PageContent({ page }: { page: Post }) {
-  const { t } = useLingui();
-
   return (
-    <div class="container py-8 max-w-2xl">
-      <article class="h-entry">
-        {page.title && (
-          <h1 class="p-name text-3xl font-semibold mb-6">{page.title}</h1>
-        )}
+    <article class="h-entry">
+      {page.title && (
+        <h1 class="p-name text-3xl font-semibold mb-6">{page.title}</h1>
+      )}
 
-        <div
-          class="e-content prose"
-          dangerouslySetInnerHTML={{ __html: page.contentHtml || "" }}
-        />
-      </article>
-
-      <nav class="mt-8 pt-6 border-t">
-        <a href="/" class="text-sm hover:underline">
-          ←{" "}
-          {t({
-            message: "Back to home",
-            comment: "@context: Navigation link back to home page",
-          })}
-        </a>
-      </nav>
-    </div>
+      <div
+        class="e-content prose"
+        dangerouslySetInnerHTML={{ __html: page.contentHtml || "" }}
+      />
+    </article>
   );
 }
 
@@ -61,15 +46,17 @@ pageRoutes.get("/:path", async (c) => {
     return c.notFound();
   }
 
-  const siteName = await getSiteName(c);
+  const navData = await getNavigationData(c);
 
   return c.html(
     <BaseLayout
-      title={`${page.title} - ${siteName}`}
+      title={`${page.title} - ${navData.siteName}`}
       description={page.content?.slice(0, 160)}
       c={c}
     >
-      <PageContent page={page} />
+      <SiteLayout {...navData}>
+        <PageContent page={page} />
+      </SiteLayout>
     </BaseLayout>,
   );
 });

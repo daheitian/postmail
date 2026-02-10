@@ -11,6 +11,8 @@
   "include": [
     "src/client.ts",
     "src/lib/image-processor.ts",
-    "src/lib/media-upload.ts"
+    "src/lib/media-upload.ts",
+    "src/lib/nav-reorder.ts",
+    "src/types/sortablejs.d.ts"
   ]
 }

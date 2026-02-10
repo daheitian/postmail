@@ -11,3 +11,4 @@ import "./vendor/datastar.js";
 import "basecoat-css/all";
 import "./lib/image-processor.js";
 import "./lib/media-upload.js";
+import "./lib/nav-reorder.js";

@@ -201,6 +201,15 @@ export interface Setting {
   updatedAt: number;
 }
 
+export interface NavigationLink {
+  id: number;
+  label: string;
+  url: string;
+  position: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
 // =============================================================================
 // Operation Types
 // =============================================================================
@@ -228,6 +237,18 @@ export interface UpdatePost {
   sourceName?: string | null;
   publishedAt?: number;
   mediaIds?: string[];
+}
+
+export interface CreateNavigationLink {
+  label: string;
+  url: string;
+  position?: number;
+}
+
+export interface UpdateNavigationLink {
+  label?: string;
+  url?: string;
+  position?: number;
 }
 
 // =============================================================================

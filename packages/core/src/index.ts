@@ -23,6 +23,7 @@ export type {
   PostCollection,
   Redirect,
   Setting,
+  NavigationLink,
   CreatePost,
   UpdatePost,
   JantConfig,

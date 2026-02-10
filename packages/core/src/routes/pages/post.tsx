@@ -1,4 +1,3 @@
-import { getSiteName } from "../../lib/config.js";
 /**
  * Single Post Page Route
  */
@@ -7,11 +6,12 @@ import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Post, MediaAttachment } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout } from "../../theme/layouts/index.js";
+import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
 import { MediaGallery } from "../../theme/components/index.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
 import { getMediaUrl, getImageUrl } from "../../lib/image.js";
+import { getNavigationData } from "../../lib/navigation.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -27,46 +27,35 @@ function PostContent({
   const { t } = useLingui();
 
   return (
-    <div class="container py-8">
-      <article class="h-entry">
-        {post.title && (
-          <h1 class="p-name text-2xl font-semibold mb-4">{post.title}</h1>
-        )}
+    <article class="h-entry">
+      {post.title && (
+        <h1 class="p-name text-2xl font-semibold mb-4">{post.title}</h1>
+      )}
 
-        <div
-          class="e-content prose"
-          dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
-        />
+      <div
+        class="e-content prose"
+        dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
+      />
 
-        {mediaAttachments.length > 0 && (
-          <MediaGallery attachments={mediaAttachments} />
-        )}
+      {mediaAttachments.length > 0 && (
+        <MediaGallery attachments={mediaAttachments} />
+      )}
 
-        <footer class="mt-6 pt-4 border-t text-sm text-muted-foreground">
-          <time
-            class="dt-published"
-            datetime={time.toISOString(post.publishedAt)}
-          >
-            {time.formatDate(post.publishedAt)}
-          </time>
-          <a href={`/p/${sqid.encode(post.id)}`} class="u-url ml-4">
-            {t({
-              message: "Permalink",
-              comment: "@context: Link to permanent URL of post",
-            })}
-          </a>
-        </footer>
-      </article>
-
-      <nav class="mt-8">
-        <a href="/" class="text-sm hover:underline">
+      <footer class="mt-6 pt-4 border-t text-sm text-muted-foreground">
+        <time
+          class="dt-published"
+          datetime={time.toISOString(post.publishedAt)}
+        >
+          {time.formatDate(post.publishedAt)}
+        </time>
+        <a href={`/p/${sqid.encode(post.id)}`} class="u-url ml-4">
           {t({
-            message: "← Back to home",
-            comment: "@context: Navigation link",
+            message: "Permalink",
+            comment: "@context: Link to permanent URL of post",
           })}
         </a>
-      </nav>
-    </div>
+      </footer>
+    </article>
   );
 }
 
@@ -115,12 +104,14 @@ postRoutes.get("/:id", async (c) => {
     mimeType: m.mimeType,
   }));
 
-  const siteName = await getSiteName(c);
-  const title = post.title || siteName;
+  const navData = await getNavigationData(c);
+  const title = post.title || navData.siteName;
 
   return c.html(
     <BaseLayout title={title} description={post.content?.slice(0, 160)} c={c}>
-      <PostContent post={post} mediaAttachments={mediaAttachments} />
+      <SiteLayout {...navData}>
+        <PostContent post={post} mediaAttachments={mediaAttachments} />
+      </SiteLayout>
     </BaseLayout>,
   );
 });

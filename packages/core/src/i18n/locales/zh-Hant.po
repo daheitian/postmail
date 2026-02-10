@@ -23,13 +23,6 @@ msgstr "{count} 條回覆"
 msgid "← Back to Collections"
 msgstr "← 返回收藏夾"
 
-#. @context: Navigation link
-#. @context: Navigation link
-#: src/routes/pages/collection.tsx:76
-#: src/routes/pages/post.tsx:63
-msgid "← Back to home"
-msgstr "← 返回首頁"
-
 #. @context: Archive post reply indicator - single
 #: src/routes/pages/archive.tsx:175
 msgid "1 reply"
@@ -53,7 +46,7 @@ msgstr "帳戶"
 #. @context: Button to open media picker
 #: src/theme/components/PostForm.tsx:178
 msgid "Add Media"
-msgstr ""
+msgstr "添加媒體"
 
 #. @context: Archive filter - all types
 #: src/routes/pages/archive.tsx:115
@@ -66,9 +59,7 @@ msgid "Appearance"
 msgstr "外觀"
 
 #. @context: Archive page title
-#. @context: Navigation link to archive page
 #: src/routes/pages/archive.tsx:102
-#: src/routes/pages/home.tsx:49
 msgid "Archive"
 msgstr "檔案館"
 
@@ -89,29 +80,22 @@ msgstr "文章"
 #. @context: Hint for image post type media requirement
 #: src/theme/components/PostForm.tsx:130
 msgid "At least 1 image required for image posts."
-msgstr ""
+msgstr "至少需要 1 張圖片才能發佈圖片帖子。"
 
 #. @context: Button to go back to media list
 #: src/routes/dash/media.tsx:245
 msgid "Back"
 msgstr "返回"
 
-#. @context: Navigation link back to home page
-#. @context: Navigation link back to home page
-#. @context: Navigation link back to home page
-#: src/routes/pages/archive.tsx:209
-#: src/routes/pages/page.tsx:37
-#: src/routes/pages/search.tsx:144
-msgid "Back to home"
-msgstr "回到首頁"
-
 #. @context: Button to cancel and go back
+#. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #: src/routes/dash/collections.tsx:176
 #: src/routes/dash/collections.tsx:345
+#: src/routes/dash/navigation.tsx:182
 #: src/routes/dash/redirects.tsx:167
 #: src/theme/components/PageForm.tsx:161
 #: src/theme/components/PostForm.tsx:312
@@ -140,7 +124,7 @@ msgstr "收藏夾"
 #. @context: Post form field - assign to collections
 #: src/theme/components/PostForm.tsx:261
 msgid "Collections (optional)"
-msgstr ""
+msgstr "收藏（可選）"
 
 #. @context: Appearance settings heading
 #: src/routes/dash/settings.tsx:301
@@ -148,7 +132,7 @@ msgid "Color theme"
 msgstr "顏色主題"
 
 #. @context: Setup form submit button
-#: src/app.tsx:247
+#: src/app.tsx:248
 msgid "Complete Setup"
 msgstr "完成設置"
 
@@ -158,7 +142,7 @@ msgid "Confirm New Password"
 msgstr "確認新密碼"
 
 #. @context: Password reset form field
-#: src/app.tsx:489
+#: src/app.tsx:490
 msgid "Confirm Password"
 msgstr "確認密碼"
 
@@ -181,6 +165,11 @@ msgstr "複製"
 msgid "Create Collection"
 msgstr "創建收藏夾"
 
+#. @context: Button to save new navigation link
+#: src/routes/dash/navigation.tsx:176
+msgid "Create Link"
+msgstr "建立連結"
+
 #. @context: Button to create new page
 #: src/theme/components/PageForm.tsx:155
 msgid "Create Page"
@@ -192,7 +181,7 @@ msgid "Create Redirect"
 msgstr "建立重定向"
 
 #. @context: Setup page description
-#: src/app.tsx:189
+#: src/app.tsx:190
 msgid "Create your admin account."
 msgstr "建立您的管理員帳戶。"
 
@@ -229,7 +218,9 @@ msgid "Dashboard"
 msgstr "儀表板"
 
 #. @context: Button to delete item
+#. @context: Button to delete navigation link
 #. @context: Button to delete redirect
+#: src/routes/dash/navigation.tsx:66
 #: src/routes/dash/redirects.tsx:60
 #: src/theme/components/ActionButtons.tsx:80
 msgid "Delete"
@@ -256,7 +247,7 @@ msgid "Deleting this media will remove it permanently from storage."
 msgstr "刪除此媒體將永久從存儲中移除它。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:338
+#: src/app.tsx:339
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "示範帳戶已預填。只需點擊登入。"
 
@@ -267,10 +258,15 @@ msgstr "示範帳戶已預填。只需點擊登入。"
 msgid "Description (optional)"
 msgstr "描述（可選）"
 
+#. @context: Navigation label help text
+#: src/routes/dash/navigation.tsx:139
+msgid "Display text for the link"
+msgstr "顯示連結的文字"
+
 #. @context: Close media picker button
 #: src/theme/components/PostForm.tsx:334
 msgid "Done"
-msgstr ""
+msgstr "完成"
 
 #. @context: Page status option - draft
 #. @context: Post visibility badge - draft
@@ -289,17 +285,19 @@ msgstr "草稿"
 #. @context: Source name placeholder
 #: src/theme/components/PostForm.tsx:214
 msgid "e.g. The Verge, John Doe"
-msgstr ""
+msgstr "例如：The Verge，約翰·多伊"
 
 #. @context: Button to edit collection
 #. @context: Button to edit collection
 #. @context: Button to edit item
+#. @context: Button to edit navigation link
 #. @context: Button to edit page
 #. @context: Button to edit page
 #. @context: Button to edit post
 #. @context: Button to edit post
 #: src/routes/dash/collections.tsx:66
 #: src/routes/dash/collections.tsx:210
+#: src/routes/dash/navigation.tsx:61
 #: src/routes/dash/pages.tsx:64
 #: src/routes/dash/pages.tsx:134
 #: src/routes/dash/posts.tsx:142
@@ -313,6 +311,11 @@ msgstr "編輯"
 msgid "Edit Collection"
 msgstr "編輯收藏集"
 
+#. @context: Page heading
+#: src/routes/dash/navigation.tsx:105
+msgid "Edit Link"
+msgstr "編輯連結"
+
 #. @context: Edit page main heading
 #: src/routes/dash/pages.tsx:176
 msgid "Edit Page"
@@ -325,13 +328,13 @@ msgstr "編輯文章"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:218
-#: src/app.tsx:352
+#: src/app.tsx:219
+#: src/app.tsx:353
 msgid "Email"
 msgstr "電子郵件"
 
 #. @context: Password reset page description
-#: src/app.tsx:459
+#: src/app.tsx:460
 msgid "Enter your new password."
 msgstr "請輸入您的新密碼。"
 
@@ -384,9 +387,14 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "圖片會自動優化：調整大小至最大 1920 像素，轉換為 WebP 格式，並去除元數據。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:524
+#: src/app.tsx:525
 msgid "Invalid or Expired Link"
 msgstr "無效或已過期的連結"
+
+#. @context: Navigation link form field
+#: src/routes/dash/navigation.tsx:126
+msgid "Label"
+msgstr "標籤"
 
 #. @context: Settings form field
 #: src/routes/dash/settings.tsx:171
@@ -417,7 +425,7 @@ msgstr "載入更多"
 #. @context: Loading state for media picker
 #: src/theme/components/PostForm.tsx:345
 msgid "Loading..."
-msgstr ""
+msgstr "載入中..."
 
 #. @context: Page path validation message
 #: src/theme/components/PageForm.tsx:76
@@ -448,6 +456,13 @@ msgstr "我的收藏"
 msgid "Name"
 msgstr "名稱"
 
+#. @context: Dashboard heading
+#. @context: Dashboard navigation - navigation links management
+#: src/routes/dash/navigation.tsx:29
+#: src/theme/layouts/DashLayout.tsx:133
+msgid "Navigation"
+msgstr "導航"
+
 #. @context: Help text with link
 #: src/routes/dash/index.tsx:78
 msgid "Need help? Visit the <0>documentation</0>"
@@ -462,6 +477,15 @@ msgstr "需要幫助嗎？請訪問<0>文檔</0>。"
 msgid "New Collection"
 msgstr "新收藏集"
 
+#. @context: Button to create new navigation link
+#. @context: Button to create new navigation link
+#. @context: Page heading
+#: src/routes/dash/navigation.tsx:33
+#: src/routes/dash/navigation.tsx:46
+#: src/routes/dash/navigation.tsx:106
+msgid "New Link"
+msgstr "新連結"
+
 #. @context: Button to create new page
 #. @context: New page main heading
 #: src/routes/dash/pages.tsx:37
@@ -471,7 +495,7 @@ msgstr "新頁面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:473
+#: src/app.tsx:474
 #: src/routes/dash/settings.tsx:417
 msgid "New Password"
 msgstr "新密碼"
@@ -511,6 +535,11 @@ msgstr "尚未有任何收藏。"
 msgid "No media uploaded yet."
 msgstr "尚未上傳任何媒體。"
 
+#. @context: Empty state message
+#: src/routes/dash/navigation.tsx:42
+msgid "No navigation links configured."
+msgstr "未配置導航連結。"
+
 #. @context: Empty state message when no pages exist
 #: src/routes/dash/pages.tsx:46
 msgid "No pages yet."
@@ -530,7 +559,7 @@ msgstr "此集合中沒有帖子。"
 
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
-#: src/routes/pages/home.tsx:63
+#: src/routes/pages/home.tsx:42
 #: src/theme/components/PostList.tsx:25
 msgid "No posts yet."
 msgstr "尚未有帖子。"
@@ -594,8 +623,8 @@ msgstr "頁面"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:233
-#: src/app.tsx:361
+#: src/app.tsx:234
+#: src/app.tsx:362
 msgid "Password"
 msgstr "密碼"
 
@@ -604,9 +633,14 @@ msgstr "密碼"
 msgid "Path"
 msgstr "路徑"
 
+#. @context: Navigation URL help text
+#: src/routes/dash/navigation.tsx:161
+msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
+msgstr "路徑（例如 /archive）或完整網址（例如 https://example.com）"
+
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
-#: src/routes/pages/post.tsx:53
+#: src/routes/pages/post.tsx:52
 #: src/theme/components/ThreadView.tsx:68
 msgid "Permalink"
 msgstr "永久鏈接"
@@ -717,10 +751,15 @@ msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:453
-#: src/app.tsx:504
+#: src/app.tsx:454
+#: src/app.tsx:505
 msgid "Reset Password"
 msgstr "重設密碼"
+
+#. @context: Button to save edited navigation link
+#: src/routes/dash/navigation.tsx:172
+msgid "Save Changes"
+msgstr "保存更改"
 
 #. @context: Button to save profile
 #: src/routes/dash/settings.tsx:378
@@ -747,7 +786,7 @@ msgstr "搜尋帖子..."
 #. @context: Media picker dialog title
 #: src/theme/components/PostForm.tsx:324
 msgid "Select Media"
-msgstr ""
+msgstr "選擇媒體"
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
@@ -756,7 +795,7 @@ msgstr ""
 #: src/routes/dash/settings.tsx:118
 #: src/routes/dash/settings.tsx:290
 #: src/routes/dash/settings.tsx:341
-#: src/theme/layouts/DashLayout.tsx:133
+#: src/theme/layouts/DashLayout.tsx:143
 msgid "Settings"
 msgstr "設定"
 
@@ -764,12 +803,12 @@ msgstr "設定"
 #. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
 #: src/theme/components/timeline/ThreadPreview.tsx:38
 msgid "Show {remainingCount} more {0}"
-msgstr ""
+msgstr "顯示 {remainingCount} 個更多 {0}"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:329
-#: src/app.tsx:374
+#: src/app.tsx:330
+#: src/app.tsx:375
 msgid "Sign In"
 msgstr "登入"
 
@@ -798,7 +837,7 @@ msgstr "縮略名"
 #. @context: Post form field - name of the source website or author
 #: src/theme/components/PostForm.tsx:204
 msgid "Source Name (optional)"
-msgstr ""
+msgstr "來源名稱（選填）"
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx:188
@@ -826,7 +865,7 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:532
+#: src/app.tsx:533
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密碼重設連結無效或已過期。請生成一個新的連結。"
 
@@ -921,7 +960,9 @@ msgid "Uploading..."
 msgstr "上傳中..."
 
 #. @context: Media detail section - URL
+#. @context: Navigation link form field
 #: src/routes/dash/media.tsx:297
+#: src/routes/dash/navigation.tsx:148
 msgid "URL"
 msgstr "網址"
 
@@ -952,11 +993,6 @@ msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
 msgid "View"
 msgstr "查看"
 
-#. @context: Link to view all posts on archive page
-#: src/routes/pages/home.tsx:109
-#~ msgid "View all posts →"
-#~ msgstr "查看所有文章 →"
-
 #. @context: Dashboard header link to view the public site
 #: src/theme/layouts/DashLayout.tsx:53
 msgid "View Site"
@@ -968,7 +1004,7 @@ msgid "Visibility"
 msgstr "可見性"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:183
+#: src/app.tsx:184
 msgid "Welcome to Jant"
 msgstr "歡迎來到 Jant"
 
@@ -983,6 +1019,6 @@ msgid "What's this collection about?"
 msgstr "這個收藏是關於什麼的？"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:203
+#: src/app.tsx:204
 msgid "Your Name"
 msgstr "您的姓名"

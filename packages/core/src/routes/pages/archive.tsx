@@ -1,4 +1,3 @@
-import { getSiteName } from "../../lib/config.js";
 /**
  * Archive Page Route
  *
@@ -9,11 +8,12 @@ import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Post, PostType } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout } from "../../theme/layouts/index.js";
+import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
 import { Pagination } from "../../theme/components/index.js";
 import { POST_TYPES } from "../../types.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
+import { getNavigationData } from "../../lib/navigation.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -102,7 +102,7 @@ function ArchiveContent({
     : t({ message: "Archive", comment: "@context: Archive page title" });
 
   return (
-    <div class="container py-8">
+    <div>
       <header class="mb-8">
         <h1 class="text-2xl font-semibold">{title}</h1>
 
@@ -202,16 +202,6 @@ function ArchiveContent({
         hasMore={hasMore}
         nextCursor={nextCursor}
       />
-
-      <nav class="mt-4">
-        <a href="/" class="text-sm hover:underline">
-          ←{" "}
-          {t({
-            message: "Back to home",
-            comment: "@context: Navigation link back to home page",
-          })}
-        </a>
-      </nav>
     </div>
   );
 }
@@ -226,7 +216,7 @@ archiveRoutes.get("/", async (c) => {
   const cursorParam = c.req.query("cursor");
   const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
 
-  const siteName = await getSiteName(c);
+  const navData = await getNavigationData(c);
 
   // Fetch one extra to check for more
   const posts = await c.var.services.posts.list({
@@ -264,15 +254,17 @@ archiveRoutes.get("/", async (c) => {
   }
 
   return c.html(
-    <BaseLayout title={`Archive - ${siteName}`} c={c}>
-      <ArchiveContent
-        displayPosts={displayPosts}
-        hasMore={hasMore}
-        nextCursor={nextCursor}
-        type={type}
-        grouped={grouped}
-        replyCounts={replyCounts}
-      />
+    <BaseLayout title={`Archive - ${navData.siteName}`} c={c}>
+      <SiteLayout {...navData}>
+        <ArchiveContent
+          displayPosts={displayPosts}
+          hasMore={hasMore}
+          nextCursor={nextCursor}
+          type={type}
+          grouped={grouped}
+          replyCounts={replyCounts}
+        />
+      </SiteLayout>
     </BaseLayout>,
   );
 });

@@ -14,11 +14,11 @@ import type {
   TimelineFeedProps,
 } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout } from "../../theme/layouts/index.js";
-import { getSiteName } from "../../lib/config.js";
+import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { resolveTimelineFeed } from "../../lib/theme-components.js";
 import { TimelineFeed as DefaultTimelineFeed } from "../../theme/components/timeline/TimelineFeed.js";
+import { getNavigationData } from "../../lib/navigation.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -27,54 +27,32 @@ const PAGE_SIZE = 20;
 export const homeRoutes = new Hono<Env>();
 
 function HomeContent({
-  siteName,
   FeedComponent,
   feedProps,
 }: {
-  siteName: string;
   FeedComponent: FC<TimelineFeedProps>;
   feedProps: TimelineFeedProps;
 }) {
   const { t } = useLingui();
 
   return (
-    <div class="container-timeline py-8">
-      <header class="mb-8 flex items-center justify-between">
-        <h1 class="text-2xl font-semibold">{siteName}</h1>
-        <nav class="flex items-center gap-4 text-sm">
-          <a
-            href="/archive"
-            class="text-muted-foreground hover:text-foreground"
-          >
-            {t({
-              message: "Archive",
-              comment: "@context: Navigation link to archive page",
-            })}
-          </a>
-          <a href="/feed" class="text-muted-foreground hover:text-foreground">
-            RSS
-          </a>
-        </nav>
-      </header>
-
-      <main>
-        {feedProps.items.length === 0 ? (
-          <p class="text-muted-foreground">
-            {t({
-              message: "No posts yet.",
-              comment: "@context: Empty state message on home page",
-            })}
-          </p>
-        ) : (
-          <FeedComponent {...feedProps} />
-        )}
-      </main>
-    </div>
+    <>
+      {feedProps.items.length === 0 ? (
+        <p class="text-muted-foreground">
+          {t({
+            message: "No posts yet.",
+            comment: "@context: Empty state message on home page",
+          })}
+        </p>
+      ) : (
+        <FeedComponent {...feedProps} />
+      )}
+    </>
   );
 }
 
 homeRoutes.get("/", async (c) => {
-  const siteName = await getSiteName(c);
+  const navData = await getNavigationData(c);
 
   // Fetch one extra to determine if there are more
   const posts = await c.var.services.posts.list({
@@ -163,12 +141,10 @@ homeRoutes.get("/", async (c) => {
   };
 
   return c.html(
-    <BaseLayout title={siteName} c={c}>
-      <HomeContent
-        siteName={siteName}
-        FeedComponent={Feed}
-        feedProps={feedProps}
-      />
+    <BaseLayout title={navData.siteName} c={c}>
+      <SiteLayout {...navData}>
+        <HomeContent FeedComponent={Feed} feedProps={feedProps} />
+      </SiteLayout>
     </BaseLayout>,
   );
 });
