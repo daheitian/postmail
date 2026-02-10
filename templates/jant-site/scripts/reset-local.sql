@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Reset script for local development
 -- Clears ALL data (including users) to prepare for re-seeding
--- Usage: mise run db-seed
+-- Usage: mise run db-seed (runs this then seed-local.sql)
 -- =============================================================================
 
 -- Clear FTS index first

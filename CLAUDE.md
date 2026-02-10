@@ -74,8 +74,13 @@ mise run preview      # Preview production build with Vite
 # Database
 mise run db-generate  # Generate Drizzle migrations
 mise run db-migrate   # Apply migrations (local D1) - usually not needed, dev auto-runs this
-mise run db-export    # Export current local D1 data to seed-dev.sql
+mise run db-export    # Export current local D1 data to seed-local.sql
 mise run db-seed      # Reset local database and load dev seed data
+
+# Demo
+mise run demo-backup  # Backup demo database to scripts/seed-demo.sql
+mise run demo-seed    # Push local seed data to demo (excluding media)
+mise run demo-reset   # Reset demo.jant.me data (clear + reseed)
 
 # i18n (auto-handled by pre-commit hook for extraction/compilation)
 mise run i18n         # Extract + AI translate + compile (needs OPENAI_API_KEY)

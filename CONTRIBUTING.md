@@ -161,7 +161,7 @@ mise run test:coverage    # Run tests with coverage report
 ```bash
 mise run db-generate      # Generate Drizzle migrations (from core schema)
 mise run db-migrate       # Apply migrations (local D1) — usually not needed, dev auto-runs this
-mise run db-export        # Export current local D1 data to seed-dev.sql
+mise run db-export        # Export current local D1 data to seed-local.sql
 mise run db-seed          # Reset local database and load dev seed data
 mise run db-clean         # Delete local D1 database (.wrangler)
 mise run db-reset         # Delete database and re-run migrations
@@ -369,7 +369,7 @@ The project includes a workflow for maintaining development seed data:
    mise run db-export
    ```
 
-   This saves the current local D1 data to `templates/jant-site/scripts/seed-dev.sql`.
+   This saves the current local D1 data to `templates/jant-site/scripts/seed-local.sql`.
 
 3. **Load seed data** (on a fresh clone or after reset):
 
@@ -377,7 +377,7 @@ The project includes a workflow for maintaining development seed data:
    mise run db-seed
    ```
 
-   This resets the local database, runs migrations, clears existing data, and loads `seed-dev.sql`.
+   This resets the local database, runs migrations, clears existing data, and loads `seed-local.sql`.
 
 ### Reset
 

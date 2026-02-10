@@ -1,6 +1,6 @@
 -- =============================================================================
--- Development seed data for Jant
--- Exported from local D1 database
+-- Local development seed data for Jant
+-- Exported from local D1 database via: mise run db-export
 -- Usage: mise run db-seed
 -- =============================================================================
 

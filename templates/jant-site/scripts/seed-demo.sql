@@ -1,5 +1,6 @@
--- Seed data for Jant demo site
+-- Seed data for Jant demo site (demo.jant.me)
 -- This data will be restored after each daily reset
+-- Usage: mise run demo-reset
 
 -- Settings
 INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES

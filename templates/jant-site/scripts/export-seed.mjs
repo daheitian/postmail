@@ -3,6 +3,13 @@ import { readdirSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
+// Parse flags
+const args = process.argv.slice(2);
+const noMedia = args.includes("--no-media");
+const outputIndex = args.indexOf("--output");
+const outputFile =
+  outputIndex !== -1 ? args[outputIndex + 1] : "seed-local.sql";
+
 // better-sqlite3 is installed in packages/core
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const coreRequire = createRequire(
@@ -39,7 +46,7 @@ function dumpTable(name, query) {
 }
 
 const header = `-- =============================================================================
--- Development seed data for Jant
+-- ${noMedia ? "Seed data (without media)" : "Local development seed data"} for Jant
 -- Exported from local D1 database
 -- Usage: mise run db-seed
 -- =============================================================================
@@ -49,11 +56,20 @@ const tables = [
   ["settings"],
   ["user"],
   ["account"],
-  ["posts", "SELECT * FROM posts WHERE deleted_at IS NULL"],
+  [
+    "posts",
+    noMedia
+      ? "SELECT * FROM posts WHERE deleted_at IS NULL AND type != 'image'"
+      : "SELECT * FROM posts WHERE deleted_at IS NULL",
+  ],
   ["collections"],
   ["post_collections"],
-  ["media"],
 ];
+
+// Include media table only when --no-media is not set
+if (!noMedia) {
+  tables.push(["media"]);
+}
 
 let sql = header;
 for (const [name, query] of tables) {
@@ -61,7 +77,7 @@ for (const [name, query] of tables) {
   if (data) sql += `\n-- ${name}\n${data}\n`;
 }
 
-const out = resolve(__dirname, "seed-dev.sql");
+const out = resolve(__dirname, outputFile);
 writeFileSync(out, sql);
 db.close();
-console.log("Exported to templates/jant-site/scripts/seed-dev.sql");
+console.log(`Exported to templates/jant-site/scripts/${outputFile}`);
