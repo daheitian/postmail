@@ -111,6 +111,28 @@ rm -rf templates/jant-site/.wrangler
 pnpm --filter jant-site db:migrate:local
 """
 
+[tasks.db-export]
+alias = "export"
+description = "Export current local D1 data to seed-dev.sql"
+dir = "templates/jant-site"
+run = "node scripts/export-seed.mjs"
+
+[tasks.db-seed]
+alias = "seed"
+description = "Reset local database and load dev seed data"
+dir = "templates/jant-site"
+run = """
+echo "Resetting database..."
+rm -rf .wrangler
+echo "Running migrations..."
+pnpm exec wrangler d1 migrations apply DB --local
+echo "Clearing data..."
+pnpm exec wrangler d1 execute DB --local --file=scripts/reset-dev.sql
+echo "Loading seed data..."
+pnpm exec wrangler d1 execute DB --local --file=scripts/seed-dev.sql
+echo "Done! Database has been seeded."
+"""
+
 # =============================================================================
 # i18n (Lingui)
 # =============================================================================

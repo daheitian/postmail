@@ -1,5 +1,7 @@
 # Jant - Development Guide
 
+> See CONTRIBUTING.md for the human-readable contributor guide.
+
 ## Development Principles
 
 **Core Principle: Simplicity and Best Practices**
@@ -72,6 +74,8 @@ mise run preview      # Preview production build with Vite
 # Database
 mise run db-generate  # Generate Drizzle migrations
 mise run db-migrate   # Apply migrations (local D1) - usually not needed, dev auto-runs this
+mise run db-export    # Export current local D1 data to seed-dev.sql
+mise run db-seed      # Reset local database and load dev seed data
 
 # i18n (auto-handled by pre-commit hook for extraction/compilation)
 mise run i18n         # Extract + AI translate + compile (needs OPENAI_API_KEY)
@@ -115,51 +119,20 @@ mise run reset-password # Generate password reset link (local)
 | `templates/jant-site`           | Development + testing + deployment      | ✅ Yes             |
 | `packages/create-jant/template` | User project starter template           | ✅ Yes             |
 
-### `packages/core` (Library)
+- `packages/core`: Source, build config, DB migrations, i18n. No vite.config.ts or wrangler.toml.
+- `templates/jant-site`: Monorepo dev/test environment. Has `@jant/core` alias in vite.config.ts for HMR.
+- `packages/create-jant/template`: **Auto-generated** from `templates/jant-site` during publish. NEVER edit directly.
 
-**Includes**: Source (`src/`), build config (`.swcrc`, `tsconfig.build.json`), quality tools (`eslint.config.js`), DB migrations, i18n extraction.
-
-**Excludes**: ~~`vite.config.ts`~~, ~~`wrangler.toml`~~, ~~`src/style.css`~~, ~~`tailwind.config.ts`~~ (development happens in jant-site).
-
-### `templates/jant-site` (Development environment)
-
-**Purpose**: Develop/test `@jant/core` in monorepo, demo site, deployment to Cloudflare.
-
-**Monorepo-only feature**: `vite.config.ts` has alias `"@jant/core": "../../packages/core/src"` for HMR.
-
-### `packages/create-jant/template` (User template)
-
-**IMPORTANT: This directory is auto-generated - DO NOT manually edit files here!**
-
-The `template/` directory is generated from `templates/jant-site` during `prepublishOnly`:
-
-1. **Copy**: `pnpm copy-template` copies `templates/jant-site` → `packages/create-jant/template`
-2. **Transform**: `pnpm prepare-template` (script) + runtime (in `src/index.ts`) transforms files:
-   - Remove `@monorepo-only-start/end` blocks
-   - Keep `@user-project-only-start/end` content (remove markers only)
-   - Merge tsconfig.json (remove extends, inline parent config)
-   - Replace `@jant/core/src/*.ts` → `@jant/core/dist/*.js`
-
-**When adding new config that differs between monorepo and user projects:**
-
-Use marker comments in `templates/jant-site`:
+**Monorepo vs. user project differences** — use marker comments in `templates/jant-site`:
 
 ```typescript
-// Example: vite.config.ts
-resolve: {
-  alias: {
-    // @monorepo-only-start
-    "@jant/core": resolve(__dirname, "../../packages/core/src"),
-    "@lingui/react/macro": resolve(__dirname, "../../packages/core/src/i18n/index.ts"),
-    // @monorepo-only-end
-    // @user-project-only-start
-    "@lingui/react/macro": "@jant/core/i18n",
-    // @user-project-only-end
-  }
-}
+// @monorepo-only-start
+"@jant/core": resolve(__dirname, "../../packages/core/src"),
+// @monorepo-only-end
+// @user-project-only-start
+"@lingui/react/macro": "@jant/core/i18n",
+// @user-project-only-end
 ```
-
-The `@monorepo-only` block is removed for user projects, `@user-project-only` content is kept.
 
 ## Project Structure
 
@@ -210,33 +183,11 @@ packages/create-jant/       # CLI scaffolding
 - **Code Quality**: ESLint + Prettier + husky + lint-staged
 - **Validation**: Zod
 
-### Build Process
+### Build & CSS
 
-**All workflows use Vite - never run `wrangler dev` or custom build scripts.**
-
-- **Development**: `vite dev` → port 9019, HMR, reads `.dev.vars`
-- **Build**: `vite build` → Worker code to `dist/jant/`, client assets to `dist/client/`
-- **Deploy**: `vite build && wrangler deploy`
-
-### CSS Architecture
-
-**Problem**: Tailwind v4 ignores `node_modules` by default.
-
-**Solution**: Use `@source "./"` in `@jant/core/preset.css` to auto-scan core package.
-
-```css
-/* @jant/core/src/preset.css */
-@source "./"; /* Scans @jant/core/src/ */
-@import "basecoat-css";
-```
-
-```css
-/* User's src/style.css */
-@import "tailwindcss";
-@import "@jant/core/preset.css"; /* Auto-brings @source scanning */
-```
-
-**Key**: `@source` path resolves relative to CSS file location - works in both monorepo and npm installs. No `tailwind.config.ts` needed.
+- **All workflows use Vite** — never run `wrangler dev` or custom build scripts.
+- `vite build` → Worker code to `dist/jant/`, client assets to `dist/client/`
+- **CSS**: `@jant/core/preset.css` uses `@source "./"` to auto-scan core package for Tailwind v4 (which ignores `node_modules` by default). `@source` resolves relative to CSS file location — works in both monorepo and npm installs. No `tailwind.config.ts` needed.
 
 ## Architecture Conventions
 
@@ -301,30 +252,10 @@ export const homeroute = new Hono<Env>();
 
 ## Code Quality Standards
 
-### TypeScript
-
-- Strict mode enabled
-- No `any` types (use proper types or `unknown`)
-- All exports are typed
-- 100% type coverage
-
-### ESLint
-
-- Zero warnings policy — all warnings must be resolved
-- Configuration in `eslint.config.js`
-
-### Prettier
-
-- Auto-format on save
-- Pre-commit hook formatting
-- Configuration in `.prettierrc`
-
-### Pre-commit Hooks
-
-- **husky**: Git hooks management
-- **lint-staged**: Format staged files
-- Runs: ESLint --fix + Prettier --write
-- **i18n auto-sync**: When `.ts`/`.tsx` files are staged, automatically runs `i18n:build` (extract + compile) and stages the locale files. This prevents stale hash IDs from appearing in production.
+- **TypeScript**: Strict mode, no `any` types, all exports typed
+- **ESLint**: Zero warnings policy
+- **Prettier**: Auto-format via pre-commit hook (husky + lint-staged runs ESLint --fix + Prettier --write)
+- **i18n auto-sync**: Pre-commit hook auto-runs `i18n:build` when `.ts`/`.tsx` files are staged, preventing stale hash IDs
 
 ## Testing
 
