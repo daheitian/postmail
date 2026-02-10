@@ -5,17 +5,25 @@ import { getSiteName } from "../../lib/config.js";
 
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Post } from "../../types.js";
+import type { Bindings, Post, MediaAttachment } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { BaseLayout } from "../../theme/layouts/index.js";
+import { MediaGallery } from "../../theme/components/index.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
+import { getMediaUrl, getImageUrl } from "../../lib/image.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const postRoutes = new Hono<Env>();
 
-function PostContent({ post }: { post: Post }) {
+function PostContent({
+  post,
+  mediaAttachments,
+}: {
+  post: Post;
+  mediaAttachments: MediaAttachment[];
+}) {
   const { t } = useLingui();
 
   return (
@@ -29,6 +37,10 @@ function PostContent({ post }: { post: Post }) {
           class="e-content prose"
           dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
         />
+
+        {mediaAttachments.length > 0 && (
+          <MediaGallery attachments={mediaAttachments} />
+        )}
 
         <footer class="mt-6 pt-4 border-t text-sm text-muted-foreground">
           <time
@@ -82,12 +94,33 @@ postRoutes.get("/:id", async (c) => {
     return c.notFound();
   }
 
+  // Load media attachments
+  const rawMedia = await c.var.services.media.getByPostId(post.id);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+
+  const mediaAttachments: MediaAttachment[] = rawMedia.map((m) => ({
+    id: m.id,
+    url: getMediaUrl(m.id, m.r2Key, r2PublicUrl),
+    previewUrl: getImageUrl(
+      getMediaUrl(m.id, m.r2Key, r2PublicUrl),
+      imageTransformUrl,
+      { width: 400, quality: 80, format: "auto", fit: "cover" },
+    ),
+    alt: m.alt,
+    blurhash: m.blurhash,
+    width: m.width,
+    height: m.height,
+    position: m.position,
+    mimeType: m.mimeType,
+  }));
+
   const siteName = await getSiteName(c);
   const title = post.title || siteName;
 
   return c.html(
     <BaseLayout title={title} description={post.content?.slice(0, 160)} c={c}>
-      <PostContent post={post} />
+      <PostContent post={post} mediaAttachments={mediaAttachments} />
     </BaseLayout>,
   );
 });

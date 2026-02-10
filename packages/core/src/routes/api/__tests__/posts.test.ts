@@ -35,6 +35,39 @@ describe("Posts API Routes", () => {
       expect(body.posts[0].sqid).toBeTruthy();
     });
 
+    it("includes mediaAttachments in list response", async () => {
+      const { app, services } = createTestApp();
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        type: "note",
+        content: "with media",
+        visibility: "featured",
+      });
+
+      const media = await services.media.create({
+        filename: "test.jpg",
+        originalName: "test.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        r2Key: "uploads/test.jpg",
+        width: 800,
+        height: 600,
+      });
+
+      await services.media.attachToPost(post.id, [media.id]);
+
+      const res = await app.request("/api/posts");
+      const body = await res.json();
+
+      expect(body.posts[0].mediaAttachments).toHaveLength(1);
+      expect(body.posts[0].mediaAttachments[0].id).toBe(media.id);
+      expect(body.posts[0].mediaAttachments[0].mimeType).toBe("image/jpeg");
+      expect(body.posts[0].mediaAttachments[0].url).toBeTruthy();
+      expect(body.posts[0].mediaAttachments[0].previewUrl).toBeTruthy();
+      expect(body.posts[0].mediaAttachments[0].position).toBe(0);
+    });
+
     it("filters by visibility", async () => {
       const { app, services } = createTestApp();
       app.route("/api/posts", postsApiRoutes);
@@ -97,6 +130,33 @@ describe("Posts API Routes", () => {
       expect(body.sqid).toBe(id);
     });
 
+    it("includes mediaAttachments in single post response", async () => {
+      const { app, services } = createTestApp();
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        type: "note",
+        content: "with media",
+        visibility: "featured",
+      });
+
+      const media = await services.media.create({
+        filename: "test.jpg",
+        originalName: "test.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        r2Key: "uploads/test.jpg",
+      });
+
+      await services.media.attachToPost(post.id, [media.id]);
+
+      const res = await app.request(`/api/posts/${sqid.encode(post.id)}`);
+      const body = await res.json();
+
+      expect(body.mediaAttachments).toHaveLength(1);
+      expect(body.mediaAttachments[0].id).toBe(media.id);
+    });
+
     it("returns 400 for invalid sqid", async () => {
       const { app } = createTestApp();
       app.route("/api/posts", postsApiRoutes);
@@ -151,6 +211,114 @@ describe("Posts API Routes", () => {
       const body = await res.json();
       expect(body.content).toBe("Hello from API");
       expect(body.sqid).toBeTruthy();
+      expect(body.mediaAttachments).toEqual([]);
+    });
+
+    it("creates a post with mediaIds and attaches them", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const m1 = await services.media.create({
+        filename: "a.jpg",
+        originalName: "a.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        r2Key: "uploads/a.jpg",
+      });
+      const m2 = await services.media.create({
+        filename: "b.jpg",
+        originalName: "b.jpg",
+        mimeType: "image/jpeg",
+        size: 2048,
+        r2Key: "uploads/b.jpg",
+      });
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "note",
+          content: "with images",
+          visibility: "quiet",
+          mediaIds: [m1.id, m2.id],
+        }),
+      });
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body.mediaAttachments).toHaveLength(2);
+      expect(body.mediaAttachments[0].id).toBe(m1.id);
+      expect(body.mediaAttachments[0].position).toBe(0);
+      expect(body.mediaAttachments[1].id).toBe(m2.id);
+      expect(body.mediaAttachments[1].position).toBe(1);
+    });
+
+    it("returns 400 for image type without media", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "image",
+          content: "should fail",
+          visibility: "quiet",
+          mediaIds: [],
+        }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("image posts require at least 1");
+    });
+
+    it("returns 400 for page type with media", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const m1 = await services.media.create({
+        filename: "a.jpg",
+        originalName: "a.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        r2Key: "uploads/a.jpg",
+      });
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "page",
+          content: "test",
+          visibility: "quiet",
+          mediaIds: [m1.id],
+        }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("page posts do not allow");
+    });
+
+    it("returns 400 for invalid media IDs", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "note",
+          content: "test",
+          visibility: "quiet",
+          mediaIds: ["nonexistent-id"],
+        }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("media IDs are invalid");
     });
 
     it("returns 400 for invalid body", async () => {
@@ -219,6 +387,77 @@ describe("Posts API Routes", () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.content).toBe("updated");
+      expect(body.mediaAttachments).toEqual([]);
+    });
+
+    it("updates post with mediaIds to replace attachments", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        type: "note",
+        content: "test",
+      });
+
+      const m1 = await services.media.create({
+        filename: "a.jpg",
+        originalName: "a.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        r2Key: "uploads/a.jpg",
+      });
+
+      await services.media.attachToPost(post.id, [m1.id]);
+
+      const m2 = await services.media.create({
+        filename: "b.jpg",
+        originalName: "b.jpg",
+        mimeType: "image/jpeg",
+        size: 2048,
+        r2Key: "uploads/b.jpg",
+      });
+
+      const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mediaIds: [m2.id] }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.mediaAttachments).toHaveLength(1);
+      expect(body.mediaAttachments[0].id).toBe(m2.id);
+    });
+
+    it("preserves existing attachments when mediaIds is omitted", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        type: "note",
+        content: "test",
+      });
+
+      const m1 = await services.media.create({
+        filename: "a.jpg",
+        originalName: "a.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        r2Key: "uploads/a.jpg",
+      });
+
+      await services.media.attachToPost(post.id, [m1.id]);
+
+      const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: "updated content" }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.mediaAttachments).toHaveLength(1);
+      expect(body.mediaAttachments[0].id).toBe(m1.id);
     });
 
     it("returns 404 for non-existent post", async () => {

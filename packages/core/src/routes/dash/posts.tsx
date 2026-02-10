@@ -5,7 +5,7 @@ import { getSiteName } from "../../lib/config.js";
 
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Post } from "../../types.js";
+import type { Bindings, Post, Media } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
 import {
@@ -95,6 +95,7 @@ postsRoutes.post("/", async (c) => {
     sourceUrl?: string;
     sourceName?: string;
     path?: string;
+    mediaIds?: string[];
   }>();
 
   const post = await c.var.services.posts.create({
@@ -106,6 +107,11 @@ postsRoutes.post("/", async (c) => {
     sourceName: body.sourceName || undefined,
     path: body.path || undefined,
   });
+
+  // Attach media if provided
+  if (body.mediaIds && body.mediaIds.length > 0) {
+    await c.var.services.media.attachToPost(post.id, body.mediaIds);
+  }
 
   return dsRedirect(`/dash/posts/${sqid.encode(post.id)}`);
 });
@@ -147,14 +153,30 @@ function ViewPostContent({ post }: { post: Post }) {
   );
 }
 
-function EditPostContent({ post }: { post: Post }) {
+function EditPostContent({
+  post,
+  mediaAttachments,
+  r2PublicUrl,
+  imageTransformUrl,
+}: {
+  post: Post;
+  mediaAttachments: Media[];
+  r2PublicUrl?: string;
+  imageTransformUrl?: string;
+}) {
   const { t } = useLingui();
   return (
     <>
       <h1 class="text-2xl font-semibold mb-6">
         {t({ message: "Edit Post", comment: "@context: Page heading" })}
       </h1>
-      <PostForm post={post} action={`/dash/posts/${sqid.encode(post.id)}`} />
+      <PostForm
+        post={post}
+        action={`/dash/posts/${sqid.encode(post.id)}`}
+        mediaAttachments={mediaAttachments}
+        r2PublicUrl={r2PublicUrl}
+        imageTransformUrl={imageTransformUrl}
+      />
     </>
   );
 }
@@ -191,6 +213,9 @@ postsRoutes.get("/:id/edit", async (c) => {
   if (!post) return c.notFound();
 
   const siteName = await getSiteName(c);
+  const mediaAttachments = await c.var.services.media.getByPostId(post.id);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
 
   return c.html(
     <DashLayout
@@ -199,7 +224,12 @@ postsRoutes.get("/:id/edit", async (c) => {
       siteName={siteName}
       currentPath="/dash/posts"
     >
-      <EditPostContent post={post} />
+      <EditPostContent
+        post={post}
+        mediaAttachments={mediaAttachments}
+        r2PublicUrl={r2PublicUrl}
+        imageTransformUrl={imageTransformUrl}
+      />
     </DashLayout>,
   );
 });
@@ -217,6 +247,7 @@ postsRoutes.post("/:id", async (c) => {
     sourceUrl?: string;
     sourceName?: string;
     path?: string;
+    mediaIds?: string[];
   }>();
 
   await c.var.services.posts.update(id, {
@@ -229,6 +260,11 @@ postsRoutes.post("/:id", async (c) => {
     path: body.path || null,
   });
 
+  // Update media attachments if provided
+  if (body.mediaIds !== undefined) {
+    await c.var.services.media.attachToPost(id, body.mediaIds);
+  }
+
   return dsRedirect(`/dash/posts/${sqid.encode(id)}`);
 });
 
@@ -237,6 +273,7 @@ postsRoutes.post("/:id/delete", async (c) => {
   const id = sqid.decode(c.req.param("id"));
   if (!id) return c.notFound();
 
+  await c.var.services.media.detachFromPost(id);
   await c.var.services.posts.delete(id);
 
   return dsRedirect("/dash/posts");

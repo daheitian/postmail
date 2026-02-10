@@ -79,6 +79,16 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     }
   }
 
+  // Apply media attachments migration (position + blurhash)
+  const migration2 = readFileSync(
+    resolve(MIGRATIONS_DIR, "0002_add_media_attachments.sql"),
+    "utf-8",
+  );
+  for (const sql of migration2.split("--> statement-breakpoint")) {
+    const trimmed = sql.trim();
+    if (trimmed) sqlite.exec(trimmed);
+  }
+
   const db = drizzle(sqlite, { schema });
 
   return { db, sqlite };

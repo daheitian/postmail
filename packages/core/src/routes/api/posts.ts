@@ -3,15 +3,49 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, PostType, Visibility } from "../../types.js";
+import type { Bindings, PostType, Visibility, Media } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import * as sqid from "../../lib/sqid.js";
-import { CreatePostSchema, UpdatePostSchema } from "../../lib/schemas.js";
+import {
+  CreatePostSchema,
+  UpdatePostSchema,
+  validateMediaForPostType,
+} from "../../lib/schemas.js";
 import { requireAuthApi } from "../../middleware/auth.js";
+import { getMediaUrl, getImageUrl } from "../../lib/image.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const postsApiRoutes = new Hono<Env>();
+
+/**
+ * Converts a Media record to a MediaAttachment API response shape.
+ */
+function toMediaAttachment(
+  m: Media,
+  r2PublicUrl?: string,
+  imageTransformUrl?: string,
+) {
+  const url = getMediaUrl(m.id, m.r2Key, r2PublicUrl);
+  const previewUrl = getImageUrl(url, imageTransformUrl, {
+    width: 400,
+    quality: 80,
+    format: "auto",
+    fit: "cover",
+  });
+
+  return {
+    id: m.id,
+    url,
+    previewUrl,
+    alt: m.alt,
+    blurhash: m.blurhash,
+    width: m.width,
+    height: m.height,
+    position: m.position,
+    mimeType: m.mimeType,
+  };
+}
 
 // List posts
 postsApiRoutes.get("/", async (c) => {
@@ -27,10 +61,19 @@ postsApiRoutes.get("/", async (c) => {
     limit,
   });
 
+  // Batch load media for all posts
+  const postIds = posts.map((p) => p.id);
+  const mediaMap = await c.var.services.media.getByPostIds(postIds);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+
   return c.json({
     posts: posts.map((p) => ({
       ...p,
       sqid: sqid.encode(p.id),
+      mediaAttachments: (mediaMap.get(p.id) ?? []).map((m) =>
+        toMediaAttachment(m, r2PublicUrl, imageTransformUrl),
+      ),
     })),
 
     nextCursor:
@@ -48,7 +91,17 @@ postsApiRoutes.get("/:id", async (c) => {
   const post = await c.var.services.posts.getById(id);
   if (!post) return c.json({ error: "Not found" }, 404);
 
-  return c.json({ ...post, sqid: sqid.encode(post.id) });
+  const mediaList = await c.var.services.media.getByPostId(post.id);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+
+  return c.json({
+    ...post,
+    sqid: sqid.encode(post.id),
+    mediaAttachments: mediaList.map((m) =>
+      toMediaAttachment(m, r2PublicUrl, imageTransformUrl),
+    ),
+  });
 });
 
 // Create post (requires auth)
@@ -66,6 +119,22 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
   const body = parseResult.data;
 
+  // Validate media for post type
+  if (body.mediaIds) {
+    const mediaError = validateMediaForPostType(body.type, body.mediaIds);
+    if (mediaError) {
+      return c.json({ error: mediaError }, 400);
+    }
+
+    // Verify all media IDs exist
+    if (body.mediaIds.length > 0) {
+      const existing = await c.var.services.media.getByIds(body.mediaIds);
+      if (existing.length !== body.mediaIds.length) {
+        return c.json({ error: "One or more media IDs are invalid" }, 400);
+      }
+    }
+  }
+
   const post = await c.var.services.posts.create({
     type: body.type,
     title: body.title,
@@ -80,7 +149,25 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
     publishedAt: body.publishedAt,
   });
 
-  return c.json({ ...post, sqid: sqid.encode(post.id) }, 201);
+  // Attach media
+  if (body.mediaIds && body.mediaIds.length > 0) {
+    await c.var.services.media.attachToPost(post.id, body.mediaIds);
+  }
+
+  const mediaList = await c.var.services.media.getByPostId(post.id);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+
+  return c.json(
+    {
+      ...post,
+      sqid: sqid.encode(post.id),
+      mediaAttachments: mediaList.map((m) =>
+        toMediaAttachment(m, r2PublicUrl, imageTransformUrl),
+      ),
+    },
+    201,
+  );
 });
 
 // Update post (requires auth)
@@ -101,6 +188,30 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
   const body = parseResult.data;
 
+  // Validate media for post type if mediaIds is provided
+  if (body.mediaIds !== undefined) {
+    // Need the post type — use the new type if provided, else fetch existing
+    let postType = body.type;
+    if (!postType) {
+      const existing = await c.var.services.posts.getById(id);
+      if (!existing) return c.json({ error: "Not found" }, 404);
+      postType = existing.type;
+    }
+
+    const mediaError = validateMediaForPostType(postType, body.mediaIds);
+    if (mediaError) {
+      return c.json({ error: mediaError }, 400);
+    }
+
+    // Verify all media IDs exist
+    if (body.mediaIds.length > 0) {
+      const existing = await c.var.services.media.getByIds(body.mediaIds);
+      if (existing.length !== body.mediaIds.length) {
+        return c.json({ error: "One or more media IDs are invalid" }, 400);
+      }
+    }
+  }
+
   const post = await c.var.services.posts.update(id, {
     type: body.type,
     title: body.title,
@@ -114,13 +225,31 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
   if (!post) return c.json({ error: "Not found" }, 404);
 
-  return c.json({ ...post, sqid: sqid.encode(post.id) });
+  // Update media attachments if provided (including empty array to clear)
+  if (body.mediaIds !== undefined) {
+    await c.var.services.media.attachToPost(post.id, body.mediaIds);
+  }
+
+  const mediaList = await c.var.services.media.getByPostId(post.id);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+
+  return c.json({
+    ...post,
+    sqid: sqid.encode(post.id),
+    mediaAttachments: mediaList.map((m) =>
+      toMediaAttachment(m, r2PublicUrl, imageTransformUrl),
+    ),
+  });
 });
 
 // Delete post (requires auth)
 postsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
   const id = sqid.decode(c.req.param("id"));
   if (!id) return c.json({ error: "Invalid ID" }, 400);
+
+  // Detach media before deleting
+  await c.var.services.media.detachFromPost(id);
 
   const success = await c.var.services.posts.delete(id);
   if (!success) return c.json({ error: "Not found" }, 404);

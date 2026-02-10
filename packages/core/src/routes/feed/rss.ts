@@ -7,6 +7,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
+import { getMediaUrl } from "../../lib/image.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -18,11 +19,16 @@ rssRoutes.get("/", async (c) => {
   const siteName = all["SITE_NAME"] ?? "Jant";
   const siteDescription = all["SITE_DESCRIPTION"] ?? "";
   const siteUrl = c.env.SITE_URL;
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
 
   const posts = await c.var.services.posts.list({
     visibility: ["featured", "quiet"],
     limit: 50,
   });
+
+  // Batch load media for enclosures
+  const postIds = posts.map((p) => p.id);
+  const mediaMap = await c.var.services.media.getByPostIds(postIds);
 
   const items = posts
     .map((post) => {
@@ -30,13 +36,20 @@ rssRoutes.get("/", async (c) => {
       const title = post.title || `Post #${post.id}`;
       const pubDate = new Date(post.publishedAt * 1000).toUTCString();
 
+      // Add enclosure for first media attachment
+      const postMedia = mediaMap.get(post.id);
+      const firstMedia = postMedia?.[0];
+      const enclosure = firstMedia
+        ? `\n      <enclosure url="${getMediaUrl(firstMedia.id, firstMedia.r2Key, r2PublicUrl)}" length="${firstMedia.size}" type="${firstMedia.mimeType}"/>`
+        : "";
+
       return `
     <item>
       <title><![CDATA[${escapeXml(title)}]]></title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
-      <description><![CDATA[${post.contentHtml || ""}]]></description>
+      <description><![CDATA[${post.contentHtml || ""}]]></description>${enclosure}
     </item>`;
     })
     .join("");

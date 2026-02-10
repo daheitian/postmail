@@ -4,18 +4,28 @@
 
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Post } from "../../types.js";
+import type { Bindings, Post, MediaAttachment } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { BaseLayout } from "../../theme/layouts/index.js";
+import { MediaGallery } from "../../theme/components/index.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
 import { getSiteName } from "../../lib/config.js";
+import { getMediaUrl, getImageUrl } from "../../lib/image.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const homeRoutes = new Hono<Env>();
 
-function HomeContent({ siteName, posts }: { siteName: string; posts: Post[] }) {
+function HomeContent({
+  siteName,
+  posts,
+  mediaMap,
+}: {
+  siteName: string;
+  posts: Post[];
+  mediaMap: Map<number, MediaAttachment[]>;
+}) {
   const { t } = useLingui();
 
   return (
@@ -47,40 +57,46 @@ function HomeContent({ siteName, posts }: { siteName: string; posts: Post[] }) {
             })}
           </p>
         ) : (
-          posts.map((post) => (
-            <article key={post.id} class="h-entry">
-              {post.title && (
-                <h2 class="p-name text-lg font-medium mb-2">
-                  <a
-                    href={`/p/${sqid.encode(post.id)}`}
-                    class="u-url hover:underline"
-                  >
-                    {post.title}
-                  </a>
-                </h2>
-              )}
-              <div
-                class="e-content prose prose-sm"
-                dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
-              />
-              <footer class="mt-2 text-sm text-muted-foreground">
-                <time
-                  class="dt-published"
-                  datetime={time.toISOString(post.publishedAt)}
-                >
-                  {time.formatDate(post.publishedAt)}
-                </time>
-                {post.visibility === "featured" && (
-                  <span class="ml-2 text-xs">
-                    {t({
-                      message: "Featured",
-                      comment: "@context: Post visibility badge",
-                    })}
-                  </span>
+          posts.map((post) => {
+            const attachments = mediaMap.get(post.id) ?? [];
+            return (
+              <article key={post.id} class="h-entry">
+                {post.title && (
+                  <h2 class="p-name text-lg font-medium mb-2">
+                    <a
+                      href={`/p/${sqid.encode(post.id)}`}
+                      class="u-url hover:underline"
+                    >
+                      {post.title}
+                    </a>
+                  </h2>
                 )}
-              </footer>
-            </article>
-          ))
+                <div
+                  class="e-content prose prose-sm"
+                  dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
+                />
+                {attachments.length > 0 && (
+                  <MediaGallery attachments={attachments} />
+                )}
+                <footer class="mt-2 text-sm text-muted-foreground">
+                  <time
+                    class="dt-published"
+                    datetime={time.toISOString(post.publishedAt)}
+                  >
+                    {time.formatDate(post.publishedAt)}
+                  </time>
+                  {post.visibility === "featured" && (
+                    <span class="ml-2 text-xs">
+                      {t({
+                        message: "Featured",
+                        comment: "@context: Post visibility badge",
+                      })}
+                    </span>
+                  )}
+                </footer>
+              </article>
+            );
+          })
         )}
       </main>
 
@@ -109,9 +125,37 @@ homeRoutes.get("/", async (c) => {
     limit: 20,
   });
 
+  // Batch load media attachments
+  const postIds = posts.map((p) => p.id);
+  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+
+  const mediaMap = new Map<number, MediaAttachment[]>();
+  for (const [postId, mediaList] of rawMediaMap) {
+    mediaMap.set(
+      postId,
+      mediaList.map((m) => ({
+        id: m.id,
+        url: getMediaUrl(m.id, m.r2Key, r2PublicUrl),
+        previewUrl: getImageUrl(
+          getMediaUrl(m.id, m.r2Key, r2PublicUrl),
+          imageTransformUrl,
+          { width: 400, quality: 80, format: "auto", fit: "cover" },
+        ),
+        alt: m.alt,
+        blurhash: m.blurhash,
+        width: m.width,
+        height: m.height,
+        position: m.position,
+        mimeType: m.mimeType,
+      })),
+    );
+  }
+
   return c.html(
     <BaseLayout title={siteName} c={c}>
-      <HomeContent siteName={siteName} posts={posts} />
+      <HomeContent siteName={siteName} posts={posts} mediaMap={mediaMap} />
     </BaseLayout>,
   );
 });

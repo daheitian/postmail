@@ -16,6 +16,22 @@ export const POST_TYPES = [
 ] as const;
 export type PostType = (typeof POST_TYPES)[number];
 
+export const MAX_MEDIA_ATTACHMENTS = 20;
+
+/**
+ * Media attachment rules per post type.
+ * Each entry is [min, max] or null (no media allowed).
+ */
+export const POST_TYPE_MEDIA_RULES: Record<PostType, [number, number] | null> =
+  {
+    note: [0, 20],
+    article: [0, 20],
+    image: [1, 20],
+    link: [0, 1],
+    quote: [0, 20],
+    page: null,
+  };
+
 export const VISIBILITY_LEVELS = [
   "featured",
   "quiet",
@@ -135,7 +151,25 @@ export interface Media {
   width: number | null;
   height: number | null;
   alt: string | null;
+  position: number;
+  blurhash: string | null;
   createdAt: number;
+}
+
+export interface MediaAttachment {
+  id: string;
+  url: string;
+  previewUrl: string;
+  alt: string | null;
+  blurhash: string | null;
+  width: number | null;
+  height: number | null;
+  position: number;
+  mimeType: string;
+}
+
+export interface PostWithMedia extends Post {
+  mediaAttachments: MediaAttachment[];
 }
 
 export interface Collection {
@@ -181,6 +215,7 @@ export interface CreatePost {
   sourceName?: string;
   replyToId?: number;
   publishedAt?: number;
+  mediaIds?: string[];
 }
 
 export interface UpdatePost {
@@ -192,6 +227,7 @@ export interface UpdatePost {
   sourceUrl?: string | null;
   sourceName?: string | null;
   publishedAt?: number;
+  mediaIds?: string[];
 }
 
 // =============================================================================

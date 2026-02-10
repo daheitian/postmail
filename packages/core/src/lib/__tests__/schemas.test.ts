@@ -7,9 +7,14 @@ import {
   UpdatePostSchema,
   parseFormData,
   parseFormDataOptional,
+  validateMediaForPostType,
 } from "../schemas.js";
 import { z } from "zod";
-import { POST_TYPES, VISIBILITY_LEVELS } from "../../types.js";
+import {
+  POST_TYPES,
+  VISIBILITY_LEVELS,
+  MAX_MEDIA_ATTACHMENTS,
+} from "../../types.js";
 
 describe("PostTypeSchema", () => {
   it("accepts all valid post types", () => {
@@ -145,6 +150,37 @@ describe("CreatePostSchema", () => {
     ).toThrow();
   });
 
+  it("accepts valid mediaIds", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      mediaIds: ["id-1", "id-2"],
+    });
+    expect(result.mediaIds).toEqual(["id-1", "id-2"]);
+  });
+
+  it("accepts empty mediaIds array", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      mediaIds: [],
+    });
+    expect(result.mediaIds).toEqual([]);
+  });
+
+  it("accepts omitted mediaIds", () => {
+    const result = CreatePostSchema.parse(validPost);
+    expect(result.mediaIds).toBeUndefined();
+  });
+
+  it("rejects mediaIds over MAX_MEDIA_ATTACHMENTS", () => {
+    const tooMany = Array.from(
+      { length: MAX_MEDIA_ATTACHMENTS + 1 },
+      (_, i) => `id-${i}`,
+    );
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, mediaIds: tooMany }),
+    ).toThrow();
+  });
+
   it("rejects missing required fields", () => {
     expect(() => CreatePostSchema.parse({})).toThrow();
     expect(() => CreatePostSchema.parse({ type: "note" })).toThrow();
@@ -216,5 +252,57 @@ describe("parseFormDataOptional", () => {
     const form = new FormData();
     form.set("type", "invalid");
     expect(() => parseFormDataOptional(form, "type", PostTypeSchema)).toThrow();
+  });
+});
+
+describe("validateMediaForPostType", () => {
+  it("returns null for note with no media", () => {
+    expect(validateMediaForPostType("note", [])).toBeNull();
+  });
+
+  it("returns null for note with media", () => {
+    expect(validateMediaForPostType("note", ["id-1", "id-2"])).toBeNull();
+  });
+
+  it("returns null for article with media", () => {
+    expect(validateMediaForPostType("article", ["id-1"])).toBeNull();
+  });
+
+  it("returns null for image with at least 1 media", () => {
+    expect(validateMediaForPostType("image", ["id-1"])).toBeNull();
+  });
+
+  it("returns error for image with no media", () => {
+    const error = validateMediaForPostType("image", []);
+    expect(error).toBe("image posts require at least 1 media attachment");
+  });
+
+  it("returns null for link with 0 or 1 media", () => {
+    expect(validateMediaForPostType("link", [])).toBeNull();
+    expect(validateMediaForPostType("link", ["id-1"])).toBeNull();
+  });
+
+  it("returns error for link with more than 1 media", () => {
+    const error = validateMediaForPostType("link", ["id-1", "id-2"]);
+    expect(error).toBe("link posts allow at most 1 media attachment");
+  });
+
+  it("returns error for page with any media", () => {
+    const error = validateMediaForPostType("page", ["id-1"]);
+    expect(error).toBe("page posts do not allow media attachments");
+  });
+
+  it("returns null for page with no media", () => {
+    expect(validateMediaForPostType("page", [])).toBeNull();
+  });
+
+  it("returns null for quote with media", () => {
+    expect(validateMediaForPostType("quote", ["id-1", "id-2"])).toBeNull();
+  });
+
+  it("returns error when exceeding max for note", () => {
+    const tooMany = Array.from({ length: 21 }, (_, i) => `id-${i}`);
+    const error = validateMediaForPostType("note", tooMany);
+    expect(error).toBe("note posts allow at most 20 media attachments");
   });
 });

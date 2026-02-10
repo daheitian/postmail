@@ -3,17 +3,29 @@
  */
 
 import type { FC } from "hono/jsx";
-import type { Post } from "../../types.js";
+import type { Post, Media } from "../../types.js";
 import { useLingui } from "@lingui/react/macro";
+import { getMediaUrl, getImageUrl } from "../../lib/image.js";
 
 export interface PostFormProps {
   post?: Post;
   action: string;
+  mediaAttachments?: Media[];
+  r2PublicUrl?: string;
+  imageTransformUrl?: string;
 }
 
-export const PostForm: FC<PostFormProps> = ({ post, action }) => {
+export const PostForm: FC<PostFormProps> = ({
+  post,
+  action,
+  mediaAttachments,
+  r2PublicUrl,
+  imageTransformUrl,
+}) => {
   const { t } = useLingui();
   const isEdit = !!post;
+
+  const existingMediaIds = (mediaAttachments ?? []).map((m) => m.id);
 
   const signals = JSON.stringify({
     type: post?.type ?? "note",
@@ -23,6 +35,7 @@ export const PostForm: FC<PostFormProps> = ({ post, action }) => {
     sourceName: post?.sourceName ?? "",
     visibility: post?.visibility ?? "quiet",
     path: post?.path ?? "",
+    mediaIds: existingMediaIds,
   }).replace(/</g, "\\u003c");
 
   return (
@@ -95,6 +108,73 @@ export const PostForm: FC<PostFormProps> = ({ post, action }) => {
         >
           {post?.content ?? ""}
         </textarea>
+      </div>
+
+      {/* Media attachments */}
+      <div class="field" data-show="$type !== 'page'">
+        <label class="label">
+          {t({
+            message: "Media",
+            comment: "@context: Post form field - media attachments",
+          })}
+        </label>
+        <p
+          class="text-xs text-muted-foreground mb-2"
+          data-show="$type === 'image'"
+        >
+          {t({
+            message: "At least 1 image required for image posts.",
+            comment: "@context: Hint for image post type media requirement",
+          })}
+        </p>
+        {mediaAttachments && mediaAttachments.length > 0 && (
+          <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-2">
+            {mediaAttachments.map((m) => {
+              const url = getMediaUrl(m.id, m.r2Key, r2PublicUrl);
+              const thumbUrl = getImageUrl(url, imageTransformUrl, {
+                width: 150,
+                quality: 80,
+                format: "auto",
+                fit: "cover",
+              });
+              return (
+                <div
+                  key={m.id}
+                  class="relative group aspect-square"
+                  data-show={`$mediaIds.includes('${m.id}')`}
+                >
+                  <img
+                    src={thumbUrl}
+                    alt={m.alt || m.originalName}
+                    class="w-full h-full object-cover rounded-lg border"
+                    loading="lazy"
+                  />
+                  <button
+                    type="button"
+                    class="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-black/60 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    data-on:click={`$mediaIds = $mediaIds.filter(id => id !== '${m.id}')`}
+                    title={t({
+                      message: "Remove",
+                      comment: "@context: Remove media attachment button",
+                    })}
+                  >
+                    &times;
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <button
+          type="button"
+          class="btn-outline text-sm"
+          data-on:click="document.getElementById('media-picker-dialog').showModal(); fetch('/dash/media/picker').then(r => r.text()).then(html => document.getElementById('media-picker-grid').innerHTML = html)"
+        >
+          {t({
+            message: "Add Media",
+            comment: "@context: Button to open media picker",
+          })}
+        </button>
       </div>
 
       {/* Source URL (for link/quote types) */}
@@ -202,6 +282,43 @@ export const PostForm: FC<PostFormProps> = ({ post, action }) => {
           {t({ message: "Cancel", comment: "@context: Button to cancel form" })}
         </a>
       </div>
+
+      {/* Media picker dialog */}
+      <dialog
+        id="media-picker-dialog"
+        class="p-6 rounded-lg max-w-2xl w-full backdrop:bg-black/50"
+        onclick="event.target === this && this.close()"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold">
+            {t({
+              message: "Select Media",
+              comment: "@context: Media picker dialog title",
+            })}
+          </h2>
+          <button
+            type="button"
+            class="btn-outline text-sm"
+            onclick="this.closest('dialog').close()"
+          >
+            {t({
+              message: "Done",
+              comment: "@context: Close media picker button",
+            })}
+          </button>
+        </div>
+        <div
+          id="media-picker-grid"
+          class="grid grid-cols-4 gap-2 max-h-96 overflow-y-auto"
+        >
+          <p class="text-muted-foreground text-sm col-span-4">
+            {t({
+              message: "Loading...",
+              comment: "@context: Loading state for media picker",
+            })}
+          </p>
+        </div>
+      </dialog>
     </form>
   );
 };

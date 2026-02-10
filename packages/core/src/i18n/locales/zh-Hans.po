@@ -26,7 +26,7 @@ msgstr "← 返回收藏夹"
 #. @context: Navigation link
 #. @context: Navigation link
 #: src/routes/pages/collection.tsx:76
-#: src/routes/pages/post.tsx:51
+#: src/routes/pages/post.tsx:63
 msgid "← Back to home"
 msgstr "← 返回首页"
 
@@ -50,6 +50,11 @@ msgstr "302（临时）"
 msgid "Account"
 msgstr "账户"
 
+#. @context: Button to open media picker
+#: src/theme/components/PostForm.tsx:173
+msgid "Add Media"
+msgstr ""
+
 #. @context: Archive filter - all types
 #: src/routes/pages/archive.tsx:115
 msgid "All"
@@ -63,7 +68,7 @@ msgstr "外观"
 #. @context: Archive page title
 #. @context: Navigation link to archive page
 #: src/routes/pages/archive.tsx:102
-#: src/routes/pages/home.tsx:30
+#: src/routes/pages/home.tsx:40
 msgid "Archive"
 msgstr "档案馆"
 
@@ -71,7 +76,7 @@ msgstr "档案馆"
 #. @context: Post type label - article
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:28
-#: src/theme/components/PostForm.tsx:49
+#: src/theme/components/PostForm.tsx:62
 #: src/theme/components/TypeBadge.tsx:20
 msgid "Article"
 msgstr "文章"
@@ -80,6 +85,11 @@ msgstr "文章"
 #: src/routes/pages/archive.tsx:53
 msgid "Articles"
 msgstr "文章"
+
+#. @context: Hint for image post type media requirement
+#: src/theme/components/PostForm.tsx:125
+msgid "At least 1 image required for image posts."
+msgstr ""
 
 #. @context: Button to go back to media list
 #: src/routes/dash/media.tsx:245
@@ -104,7 +114,7 @@ msgstr "返回首页"
 #: src/routes/dash/collections.tsx:345
 #: src/routes/dash/redirects.tsx:167
 #: src/theme/components/PageForm.tsx:161
-#: src/theme/components/PostForm.tsx:202
+#: src/theme/components/PostForm.tsx:282
 msgid "Cancel"
 msgstr "取消"
 
@@ -143,14 +153,14 @@ msgid "Confirm New Password"
 msgstr "确认新密码"
 
 #. @context: Password reset form field
-#: src/app.tsx:499
+#: src/app.tsx:487
 msgid "Confirm Password"
 msgstr "确认密码"
 
 #. @context: Page form field label - content
 #. @context: Post form field
 #: src/theme/components/PageForm.tsx:95
-#: src/theme/components/PostForm.tsx:85
+#: src/theme/components/PostForm.tsx:98
 msgid "Content"
 msgstr "内容"
 
@@ -197,7 +207,7 @@ msgid "Current Password"
 msgstr "当前密码"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:175
+#: src/theme/components/PostForm.tsx:255
 msgid "Custom Path (optional)"
 msgstr "自定义路径（可选）"
 
@@ -252,11 +262,16 @@ msgstr "演示账户已预填。只需点击登录。"
 msgid "Description (optional)"
 msgstr "描述（可选）"
 
+#. @context: Close media picker button
+#: src/theme/components/PostForm.tsx:304
+msgid "Done"
+msgstr ""
+
 #. @context: Page status option - draft
 #. @context: Post visibility badge - draft
 #. @context: Post visibility option
 #: src/theme/components/PageForm.tsx:132
-#: src/theme/components/PostForm.tsx:164
+#: src/theme/components/PostForm.tsx:244
 #: src/theme/components/VisibilityBadge.tsx:38
 msgid "Draft"
 msgstr "草稿"
@@ -267,7 +282,7 @@ msgid "Drafts"
 msgstr "草稿"
 
 #. @context: Source name placeholder
-#: src/theme/components/PostForm.tsx:129
+#: src/theme/components/PostForm.tsx:209
 msgid "e.g. The Verge, John Doe"
 msgstr ""
 
@@ -282,7 +297,7 @@ msgstr ""
 #: src/routes/dash/collections.tsx:210
 #: src/routes/dash/pages.tsx:64
 #: src/routes/dash/pages.tsx:134
-#: src/routes/dash/posts.tsx:126
+#: src/routes/dash/posts.tsx:132
 #: src/theme/components/ActionButtons.tsx:72
 #: src/theme/components/PostList.tsx:46
 msgid "Edit"
@@ -299,7 +314,7 @@ msgid "Edit Page"
 msgstr "编辑页面"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:155
+#: src/routes/dash/posts.tsx:171
 msgid "Edit Post"
 msgstr "编辑帖子"
 
@@ -311,15 +326,15 @@ msgid "Email"
 msgstr "电子邮件"
 
 #. @context: Password reset page description
-#: src/app.tsx:469
+#: src/app.tsx:457
 msgid "Enter your new password."
 msgstr "输入您的新密码。"
 
 #. @context: Post visibility badge
 #. @context: Post visibility badge - featured
 #. @context: Post visibility option
-#: src/routes/pages/home.tsx:75
-#: src/theme/components/PostForm.tsx:152
+#: src/routes/pages/home.tsx:90
+#: src/theme/components/PostForm.tsx:232
 #: src/theme/components/VisibilityBadge.tsx:26
 msgid "Featured"
 msgstr "精选"
@@ -350,7 +365,7 @@ msgstr "常规"
 #. @context: Post type label - image
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:37
-#: src/theme/components/PostForm.tsx:58
+#: src/theme/components/PostForm.tsx:71
 #: src/theme/components/TypeBadge.tsx:29
 msgid "Image"
 msgstr "图像"
@@ -366,7 +381,7 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "图像会自动优化：调整大小至最大 1920px，转换为 WebP，并去除元数据。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:534
+#: src/app.tsx:522
 msgid "Invalid or Expired Link"
 msgstr "无效或过期的链接"
 
@@ -379,7 +394,7 @@ msgstr "语言"
 #. @context: Post type label - link
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:32
-#: src/theme/components/PostForm.tsx:52
+#: src/theme/components/PostForm.tsx:65
 #: src/theme/components/TypeBadge.tsx:24
 msgid "Link"
 msgstr "链接"
@@ -394,6 +409,11 @@ msgstr "链接"
 msgid "Load more"
 msgstr "加载更多"
 
+#. @context: Loading state for media picker
+#: src/theme/components/PostForm.tsx:315
+msgid "Loading..."
+msgstr ""
+
 #. @context: Page path validation message
 #: src/theme/components/PageForm.tsx:76
 msgid "Lowercase letters, numbers, and hyphens only"
@@ -406,7 +426,9 @@ msgstr "Markdown"
 
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
+#. @context: Post form field - media attachments
 #: src/routes/dash/media.tsx:138
+#: src/theme/components/PostForm.tsx:116
 #: src/theme/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "媒体"
@@ -444,7 +466,7 @@ msgstr "新页面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:483
+#: src/app.tsx:471
 #: src/routes/dash/settings.tsx:417
 msgid "New Password"
 msgstr "新密码"
@@ -503,7 +525,7 @@ msgstr "此集合中没有帖子。"
 
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
-#: src/routes/pages/home.tsx:44
+#: src/routes/pages/home.tsx:54
 #: src/theme/components/PostList.tsx:25
 msgid "No posts yet."
 msgstr "还没有帖子。"
@@ -522,7 +544,7 @@ msgstr "未找到结果。"
 #. @context: Post type label - note
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:27
-#: src/theme/components/PostForm.tsx:46
+#: src/theme/components/PostForm.tsx:59
 #: src/theme/components/TypeBadge.tsx:19
 msgid "Note"
 msgstr "注意"
@@ -579,18 +601,18 @@ msgstr "路径"
 
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
-#: src/routes/pages/post.tsx:41
+#: src/routes/pages/post.tsx:53
 #: src/theme/components/ThreadView.tsx:68
 msgid "Permalink"
 msgstr "永久链接"
 
 #. @context: Default post title
-#: src/routes/dash/posts.tsx:115
+#: src/routes/dash/posts.tsx:121
 msgid "Post"
 msgstr "帖子"
 
 #. @context: Post title placeholder
-#: src/theme/components/PostForm.tsx:75
+#: src/theme/components/PostForm.tsx:88
 msgid "Post title..."
 msgstr "帖子标题..."
 
@@ -629,7 +651,7 @@ msgid "Profile"
 msgstr "个人资料"
 
 #. @context: Button to publish new post
-#: src/theme/components/PostForm.tsx:196
+#: src/theme/components/PostForm.tsx:276
 msgid "Publish"
 msgstr "发布"
 
@@ -656,7 +678,7 @@ msgid "Quiet"
 msgstr "安静"
 
 #. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:146
+#: src/theme/components/PostForm.tsx:226
 msgid "Quiet (normal)"
 msgstr "安静（正常）"
 
@@ -664,7 +686,7 @@ msgstr "安静（正常）"
 #. @context: Post type label - quote
 #. @context: Post type option
 #: src/routes/pages/archive.tsx:33
-#: src/theme/components/PostForm.tsx:55
+#: src/theme/components/PostForm.tsx:68
 #: src/theme/components/TypeBadge.tsx:25
 msgid "Quote"
 msgstr "引用"
@@ -682,14 +704,16 @@ msgid "Redirects"
 msgstr "重定向"
 
 #. @context: Button to remove post from collection
+#. @context: Remove media attachment button
 #: src/routes/dash/collections.tsx:257
+#: src/theme/components/PostForm.tsx:156
 msgid "Remove"
 msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:463
-#: src/app.tsx:514
+#: src/app.tsx:451
+#: src/app.tsx:502
 msgid "Reset Password"
 msgstr "重置密码"
 
@@ -714,6 +738,11 @@ msgstr "搜索"
 #: src/routes/pages/search.tsx:52
 msgid "Search posts..."
 msgstr "搜索帖子..."
+
+#. @context: Media picker dialog title
+#: src/theme/components/PostForm.tsx:294
+msgid "Select Media"
+msgstr ""
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
@@ -756,12 +785,12 @@ msgid "Slug"
 msgstr "缩略名"
 
 #. @context: Post form field - name of the source website or author
-#: src/theme/components/PostForm.tsx:119
+#: src/theme/components/PostForm.tsx:199
 msgid "Source Name (optional)"
 msgstr ""
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:103
+#: src/theme/components/PostForm.tsx:183
 msgid "Source URL (optional)"
 msgstr "源网址（可选）"
 
@@ -786,7 +815,7 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此页面的 URL 路径。使用小写字母、数字和连字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:542
+#: src/app.tsx:530
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密码重置链接无效或已过期。请生成一个新的链接。"
 
@@ -820,7 +849,7 @@ msgid "Title"
 msgstr "标题"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:66
+#: src/theme/components/PostForm.tsx:79
 msgid "Title (optional)"
 msgstr "标题（可选）"
 
@@ -832,13 +861,13 @@ msgstr "到路径"
 #. @context: Post form field - post type
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx:141
-#: src/theme/components/PostForm.tsx:39
+#: src/theme/components/PostForm.tsx:52
 msgid "Type"
 msgstr "类型"
 
 #. @context: Post visibility badge - unlisted
 #. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:158
+#: src/theme/components/PostForm.tsx:238
 #: src/theme/components/VisibilityBadge.tsx:34
 msgid "Unlisted"
 msgstr "未列出"
@@ -851,7 +880,7 @@ msgid "Untitled"
 msgstr "无标题"
 
 #. @context: Button to update existing post
-#: src/theme/components/PostForm.tsx:192
+#: src/theme/components/PostForm.tsx:272
 msgid "Update"
 msgstr "更新"
 
@@ -906,14 +935,14 @@ msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
 #: src/routes/dash/collections.tsx:215
 #: src/routes/dash/pages.tsx:73
 #: src/routes/dash/pages.tsx:143
-#: src/routes/dash/posts.tsx:131
+#: src/routes/dash/posts.tsx:137
 #: src/theme/components/ActionButtons.tsx:76
 #: src/theme/components/PostList.tsx:51
 msgid "View"
 msgstr "查看"
 
 #. @context: Link to view all posts on archive page
-#: src/routes/pages/home.tsx:93
+#: src/routes/pages/home.tsx:109
 msgid "View all posts →"
 msgstr "查看所有帖子 →"
 
@@ -923,7 +952,7 @@ msgid "View Site"
 msgstr "查看网站"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:139
+#: src/theme/components/PostForm.tsx:219
 msgid "Visibility"
 msgstr "可见性"
 
@@ -933,7 +962,7 @@ msgid "Welcome to Jant"
 msgstr "欢迎来到Jant"
 
 #. @context: Post content placeholder
-#: src/theme/components/PostForm.tsx:90
+#: src/theme/components/PostForm.tsx:103
 msgid "What's on your mind?"
 msgstr "你在想什么？"
 

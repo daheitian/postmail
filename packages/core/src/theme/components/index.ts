@@ -3,6 +3,7 @@ export { CrudPageHeader, type CrudPageHeaderProps } from "./CrudPageHeader.js";
 export { DangerZone, type DangerZoneProps } from "./DangerZone.js";
 export { EmptyState, type EmptyStateProps } from "./EmptyState.js";
 export { ListItemRow, type ListItemRowProps } from "./ListItemRow.js";
+export { MediaGallery, type MediaGalleryProps } from "./MediaGallery.js";
 export { PageForm, type PageFormProps } from "./PageForm.js";
 export {
   Pagination,

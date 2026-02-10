@@ -418,6 +418,56 @@ mediaRoutes.get("/", async (c) => {
   );
 });
 
+// Media picker (returns HTML fragment for PostForm dialog)
+// Must be defined before /:id to avoid "picker" matching as an ID
+mediaRoutes.get("/picker", async (c) => {
+  const mediaList = await c.var.services.media.list(100);
+  const r2PublicUrl = c.env.R2_PUBLIC_URL;
+  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
+
+  if (mediaList.length === 0) {
+    return c.html(
+      <p class="text-muted-foreground text-sm col-span-4">
+        No media uploaded yet. Upload media from the Media page first.
+      </p>,
+    );
+  }
+
+  return c.html(
+    <>
+      {mediaList
+        .filter((m) => m.mimeType.startsWith("image/"))
+        .map((m) => {
+          const url = getMediaUrl(m.id, m.r2Key, r2PublicUrl);
+          const thumbUrl = getImageUrl(url, imageTransformUrl, {
+            width: 150,
+            quality: 80,
+            format: "auto",
+            fit: "cover",
+          });
+          return (
+            <button
+              key={m.id}
+              type="button"
+              class="aspect-square rounded-lg overflow-hidden border-2 hover:border-primary cursor-pointer transition-colors"
+              data-on:click={`$mediaIds.includes('${m.id}') ? ($mediaIds = $mediaIds.filter(id => id !== '${m.id}')) : ($mediaIds = [...$mediaIds, '${m.id}'])`}
+              data-class:border-primary={`$mediaIds.includes('${m.id}')`}
+              data-class:ring-2={`$mediaIds.includes('${m.id}')`}
+              data-class:ring-primary={`$mediaIds.includes('${m.id}')`}
+            >
+              <img
+                src={thumbUrl}
+                alt={m.alt || m.originalName}
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </button>
+          );
+        })}
+    </>,
+  );
+});
+
 // View single media
 mediaRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");

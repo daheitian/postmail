@@ -49,8 +49,13 @@ export function createTestApp(options: TestAppOptions = {}) {
 
   const app = new Hono<Env>();
 
-  // Inject services middleware
+  // Inject env bindings and services middleware
   app.use("*", async (c, next) => {
+    // Provide mock env bindings so c.env.* works in route handlers
+    c.env = {
+      SITE_URL: "http://localhost:9019",
+    } as AppVariables["services"] extends never ? never : Bindings;
+
     c.set("services", services as AppVariables["services"]);
     c.set("config", {});
 

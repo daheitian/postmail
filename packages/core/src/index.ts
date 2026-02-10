@@ -17,6 +17,8 @@ export type {
   Bindings,
   Post,
   Media,
+  MediaAttachment,
+  PostWithMedia,
   Collection,
   PostCollection,
   Redirect,
@@ -28,7 +30,12 @@ export type {
   ThemeComponents,
 } from "./types.js";
 
-export { POST_TYPES, VISIBILITY_LEVELS } from "./types.js";
+export {
+  POST_TYPES,
+  VISIBILITY_LEVELS,
+  MAX_MEDIA_ATTACHMENTS,
+  POST_TYPE_MEDIA_RULES,
+} from "./types.js";
 
 // Utilities (for theme authors)
 export * as time from "./lib/time.js";

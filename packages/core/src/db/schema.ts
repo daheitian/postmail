@@ -55,6 +55,8 @@ export const media = sqliteTable("media", {
   width: integer("width"),
   height: integer("height"),
   alt: text("alt"),
+  position: integer("position").notNull().default(0),
+  blurhash: text("blurhash"),
   createdAt: integer("created_at").notNull(),
 });
 

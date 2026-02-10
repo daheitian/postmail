@@ -411,26 +411,14 @@ export function createApp(config: JantConfig = {}): App {
     const { email, password } = body;
 
     try {
-      const signInRequest = new Request(
-        `${c.env.SITE_URL}/api/auth/sign-in/email`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        },
-      );
+      const { headers } = await c.var.auth.api.signInEmail({
+        returnHeaders: true,
+        body: { email, password },
+        headers: c.req.raw.headers,
+      });
 
-      const response = await c.var.auth.handler(signInRequest);
-
-      if (!response.ok) {
-        return dsToast("Invalid email or password", "error");
-      }
-
-      // Forward Set-Cookie headers from auth response
-      return dsRedirect("/dash", { headers: response.headers });
-    } catch (err) {
-      // eslint-disable-next-line no-console -- Error logging is intentional
-      console.error("Signin error:", err);
+      return dsRedirect("/dash", { headers });
+    } catch {
       return dsToast("Invalid email or password", "error");
     }
   });

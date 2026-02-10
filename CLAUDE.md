@@ -6,10 +6,13 @@
 
 This is an open source project. Code quality and maintainability are paramount.
 
-1. **Use best practices over custom solutions**
+1. **Best practices first, not minimal changes**
+   - Always design and implement according to industry best practices, not the path of least resistance
+   - Reference how established platforms (Bluesky, Mastodon, etc.) solve similar problems
    - Prefer standard tools and patterns from the ecosystem
    - Use established libraries correctly - don't reinvent the wheel
    - Follow official documentation and community standards
+   - This project is early-stage — get the foundations right now rather than accumulating tech debt
 
 2. **Keep code simple and readable**
    - Simple code > clever code

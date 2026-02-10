@@ -1,16 +1,20 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion -- Test assertions use ! for readability */
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createMediaService } from "../media.js";
+import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
 
 describe("MediaService", () => {
   let db: Database;
   let mediaService: ReturnType<typeof createMediaService>;
+  let postService: ReturnType<typeof createPostService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
     mediaService = createMediaService(db);
+    postService = createPostService(db);
   });
 
   const sampleMedia = {
@@ -37,6 +41,8 @@ describe("MediaService", () => {
       expect(media.height).toBe(1080);
       expect(media.postId).toBeNull();
       expect(media.alt).toBeNull();
+      expect(media.position).toBe(0);
+      expect(media.blurhash).toBeNull();
     });
 
     it("creates media with optional alt text", async () => {
@@ -46,6 +52,17 @@ describe("MediaService", () => {
       });
 
       expect(media.alt).toBe("A beautiful sunset");
+    });
+
+    it("creates media with position and blurhash", async () => {
+      const media = await mediaService.create({
+        ...sampleMedia,
+        position: 3,
+        blurhash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH",
+      });
+
+      expect(media.position).toBe(3);
+      expect(media.blurhash).toBe("LKO2?U%2Tw=w]~RBVZRi};RPxuwH");
     });
 
     it("generates UUIDv7 IDs", async () => {
@@ -73,6 +90,135 @@ describe("MediaService", () => {
     it("returns null for non-existent ID", async () => {
       const found = await mediaService.getById("nonexistent-id");
       expect(found).toBeNull();
+    });
+  });
+
+  describe("getByIds", () => {
+    it("returns media for valid IDs", async () => {
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/b.jpg",
+      });
+
+      const results = await mediaService.getByIds([m1.id, m2.id]);
+      expect(results).toHaveLength(2);
+      expect(results.map((r) => r.id).sort()).toEqual([m1.id, m2.id].sort());
+    });
+
+    it("returns empty array for empty input", async () => {
+      const results = await mediaService.getByIds([]);
+      expect(results).toEqual([]);
+    });
+
+    it("ignores non-existent IDs", async () => {
+      const m1 = await mediaService.create(sampleMedia);
+
+      const results = await mediaService.getByIds([m1.id, "nonexistent"]);
+      expect(results).toHaveLength(1);
+      expect(results[0]!.id).toBe(m1.id);
+    });
+  });
+
+  describe("getByPostId", () => {
+    it("returns media ordered by position", async () => {
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/b.jpg",
+      });
+
+      await mediaService.attachToPost(post.id, [m2.id, m1.id]);
+
+      const results = await mediaService.getByPostId(post.id);
+      expect(results).toHaveLength(2);
+      expect(results[0]!.id).toBe(m2.id);
+      expect(results[0]!.position).toBe(0);
+      expect(results[1]!.id).toBe(m1.id);
+      expect(results[1]!.position).toBe(1);
+    });
+
+    it("returns empty array for post with no media", async () => {
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      const results = await mediaService.getByPostId(post.id);
+      expect(results).toEqual([]);
+    });
+  });
+
+  describe("getByPostIds", () => {
+    it("returns Map grouped by postId", async () => {
+      const post1 = await postService.create({
+        type: "note",
+        content: "post 1",
+      });
+      const post2 = await postService.create({
+        type: "note",
+        content: "post 2",
+      });
+
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/b.jpg",
+      });
+      const m3 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/c.jpg",
+      });
+
+      await mediaService.attachToPost(post1.id, [m1.id, m2.id]);
+      await mediaService.attachToPost(post2.id, [m3.id]);
+
+      const results = await mediaService.getByPostIds([post1.id, post2.id]);
+      expect(results.size).toBe(2);
+      expect(results.get(post1.id)).toHaveLength(2);
+      expect(results.get(post2.id)).toHaveLength(1);
+    });
+
+    it("returns empty Map for empty input", async () => {
+      const results = await mediaService.getByPostIds([]);
+      expect(results.size).toBe(0);
+    });
+
+    it("returns ordered by position within each post", async () => {
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/b.jpg",
+      });
+
+      await mediaService.attachToPost(post.id, [m2.id, m1.id]);
+
+      const results = await mediaService.getByPostIds([post.id]);
+      const postMedia = results.get(post.id)!;
+      expect(postMedia[0]!.id).toBe(m2.id);
+      expect(postMedia[1]!.id).toBe(m1.id);
     });
   });
 
@@ -112,6 +258,108 @@ describe("MediaService", () => {
 
       const list = await mediaService.list(2);
       expect(list).toHaveLength(2);
+    });
+  });
+
+  describe("attachToPost", () => {
+    it("sets postId and position for each media", async () => {
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/b.jpg",
+      });
+
+      await mediaService.attachToPost(post.id, [m1.id, m2.id]);
+
+      const attached = await mediaService.getByPostId(post.id);
+      expect(attached).toHaveLength(2);
+      expect(attached[0]!.id).toBe(m1.id);
+      expect(attached[0]!.position).toBe(0);
+      expect(attached[1]!.id).toBe(m2.id);
+      expect(attached[1]!.position).toBe(1);
+    });
+
+    it("replaces existing attachments", async () => {
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/b.jpg",
+      });
+      const m3 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/c.jpg",
+      });
+
+      await mediaService.attachToPost(post.id, [m1.id, m2.id]);
+      await mediaService.attachToPost(post.id, [m3.id]);
+
+      const attached = await mediaService.getByPostId(post.id);
+      expect(attached).toHaveLength(1);
+      expect(attached[0]!.id).toBe(m3.id);
+      expect(attached[0]!.position).toBe(0);
+
+      // Verify old media is detached
+      const old1 = await mediaService.getById(m1.id);
+      expect(old1!.postId).toBeNull();
+      expect(old1!.position).toBe(0);
+    });
+
+    it("handles empty array by clearing all attachments", async () => {
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/a.jpg",
+      });
+
+      await mediaService.attachToPost(post.id, [m1.id]);
+      await mediaService.attachToPost(post.id, []);
+
+      const attached = await mediaService.getByPostId(post.id);
+      expect(attached).toHaveLength(0);
+    });
+  });
+
+  describe("detachFromPost", () => {
+    it("clears postId and resets position", async () => {
+      const post = await postService.create({
+        type: "note",
+        content: "test",
+      });
+
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        r2Key: "media/a.jpg",
+      });
+
+      await mediaService.attachToPost(post.id, [m1.id]);
+      await mediaService.detachFromPost(post.id);
+
+      const attached = await mediaService.getByPostId(post.id);
+      expect(attached).toHaveLength(0);
+
+      const detached = await mediaService.getById(m1.id);
+      expect(detached!.postId).toBeNull();
+      expect(detached!.position).toBe(0);
     });
   });
 

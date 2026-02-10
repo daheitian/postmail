@@ -9,7 +9,13 @@
  */
 
 import { z } from "zod";
-import { POST_TYPES, VISIBILITY_LEVELS } from "../types.js";
+import {
+  POST_TYPES,
+  VISIBILITY_LEVELS,
+  MAX_MEDIA_ATTACHMENTS,
+  POST_TYPE_MEDIA_RULES,
+} from "../types.js";
+import type { PostType } from "../types.js";
 
 /**
  * Post type enum schema
@@ -46,6 +52,7 @@ export const CreatePostSchema = z.object({
     .or(z.literal("")),
   replyToId: z.string().optional(), // Sqid format
   publishedAt: z.number().int().positive().optional(),
+  mediaIds: z.array(z.string()).max(MAX_MEDIA_ATTACHMENTS).optional(),
 });
 
 /**
@@ -93,4 +100,43 @@ export function parseFormDataOptional<T>(
     return undefined;
   }
   return schema.parse(value);
+}
+
+/**
+ * Validates media attachment count against post type rules.
+ *
+ * @param type - The post type to validate against
+ * @param mediaIds - Array of media IDs to attach
+ * @returns null if valid, error string if invalid
+ *
+ * @example
+ * ```ts
+ * const error = validateMediaForPostType("image", []);
+ * // Returns: "image posts require at least 1 media attachment"
+ * ```
+ */
+export function validateMediaForPostType(
+  type: PostType,
+  mediaIds: string[],
+): string | null {
+  const rules = POST_TYPE_MEDIA_RULES[type];
+
+  if (rules === null) {
+    if (mediaIds.length > 0) {
+      return `${type} posts do not allow media attachments`;
+    }
+    return null;
+  }
+
+  const [min, max] = rules;
+
+  if (mediaIds.length < min) {
+    return `${type} posts require at least ${min} media attachment${min !== 1 ? "s" : ""}`;
+  }
+
+  if (mediaIds.length > max) {
+    return `${type} posts allow at most ${max} media attachment${max !== 1 ? "s" : ""}`;
+  }
+
+  return null;
 }
