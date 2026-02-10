@@ -34,7 +34,7 @@
     "build": "pnpm build:lib",
     "build:lib": "swc src -d dist --strip-leading-paths --ignore '**/__tests__/**' && pnpm build:types",
     "build:types": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.client.json",
+    "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile --typescript",

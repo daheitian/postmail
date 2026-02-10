@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".lingui-build",
+    "src/client.ts",
+    "src/lib/image-processor.ts",
+    "src/lib/media-upload.ts",
+    "src/lib/nav-reorder.ts",
+    "src/**/__tests__/**"
+  ]
+}
