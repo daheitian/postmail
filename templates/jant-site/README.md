@@ -12,7 +12,19 @@ Visit http://localhost:9019 to see your site.
 
 ## Deploy to Cloudflare
 
-### 1. Prerequisites
+### Option A: One-Click Deploy
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
+
+Click the button, name your Worker, D1 database, and R2 bucket, set `AUTH_SECRET` (32+ random characters), and you're done!
+
+After deploying, set `SITE_URL` in Cloudflare dashboard → your Worker → Settings → Variables.
+
+> If you deployed via the button, skip to [Custom Domain](#custom-domain-optional).
+
+### Option B: Manual Deployment
+
+#### 1. Prerequisites
 
 Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) and log in:
 
@@ -20,7 +32,7 @@ Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/instal
 wrangler login
 ```
 
-### 2. Create D1 Database
+#### 2. Create D1 Database
 
 Check the `database_name` in your `wrangler.toml` (defaults to `<your-project>-db`), then create it:
 
@@ -29,7 +41,7 @@ wrangler d1 create <your-project>-db
 # Copy the database_id from the output!
 ```
 
-### 3. Update Configuration
+#### 3. Update Configuration
 
 Edit `wrangler.toml`:
 
@@ -40,7 +52,7 @@ Edit `wrangler.toml`:
 >
 > **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). If you've already started local development, you'll need to go through the setup wizard again to create your admin account.
 
-### 4. Set Production Secrets
+#### 4. Set Production Secrets
 
 Generate a production secret and save it somewhere safe (you'll need it again for CI):
 
@@ -55,19 +67,16 @@ wrangler secret put AUTH_SECRET
 
 > **Important:** This is separate from the `AUTH_SECRET` in `.dev.vars` (which is for local development only). Do not change the production secret after your site is live — it will invalidate all sessions. If you get locked out, use `pnpm reset-password` to generate a password reset link.
 
-### 5. Deploy
+#### 5. Deploy
 
 ```bash
-# Apply database migrations to production
-pnpm db:migrate:remote
-
-# Build and deploy
+# Apply database migrations and deploy
 pnpm run deploy
 ```
 
 Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
 
-### 6. Custom Domain (Optional)
+### Custom Domain (Optional)
 
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Workers & Pages
 2. Select your worker → Settings → Domains & Routes
@@ -75,7 +84,7 @@ Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
 
 ## GitHub Actions (CI/CD)
 
-A workflow file is included at `.github/workflows/deploy.yml`. Complete the [manual deployment](#deploy-to-cloudflare) first, then set up CI for automatic deployments.
+A workflow file is included at `.github/workflows/deploy.yml`. Complete the [manual deployment](#option-b-manual-deployment) first, then set up CI for automatic deployments.
 
 > Runtime secrets (`AUTH_SECRET`, S3 keys, etc.) are already stored in Cloudflare from the manual deployment step. CI only needs deployment credentials.
 
@@ -148,16 +157,22 @@ jobs:
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 ```
 
+### Cloudflare Workers Builds (Alternative CI/CD)
+
+Workers Builds is auto-configured if you used the [One-Click Deploy](#option-a-one-click-deploy) button. To enable auto-deploy on push, go to Cloudflare dashboard → Workers → your worker → Settings → Builds.
+
 ## Commands
 
 | Command                  | Description                        |
 | ------------------------ | ---------------------------------- |
 | `pnpm dev`               | Start development server           |
 | `pnpm build`             | Build for production               |
-| `pnpm run deploy`        | Build and deploy to Cloudflare     |
+| `pnpm run deploy`        | Migrate, build, and deploy         |
 | `pnpm preview`           | Preview production build           |
 | `pnpm typecheck`         | Run TypeScript checks              |
 | `pnpm db:migrate:remote` | Apply database migrations (remote) |
+
+> `deploy` uses `pnpm run deploy` because `pnpm deploy` is a built-in pnpm command. All other scripts work with or without `run`.
 
 ## Environment Variables
 
@@ -241,14 +256,11 @@ pnpm add @jant/core@latest
 # Start dev server (auto-applies migrations locally)
 pnpm dev
 
-# Before deploying: apply migrations to production
-pnpm db:migrate:remote
-
-# Deploy
+# Deploy (includes remote migrations)
 pnpm run deploy
 ```
 
-> New versions of `@jant/core` may include database migrations. Always run `pnpm db:migrate:remote` before deploying after an update. Check the [release notes](https://github.com/jant-me/jant/releases) for any breaking changes.
+> New versions of `@jant/core` may include database migrations. Check the [release notes](https://github.com/jant-me/jant/releases) for any breaking changes.
 >
 > **Dev dependencies** (vite, wrangler, tailwindcss, etc.) may also need updating. Compare your `devDependencies` with the [latest template](https://github.com/jant-me/jant/blob/main/templates/jant-site/package.json) and update if needed.
 

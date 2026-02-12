@@ -35,7 +35,7 @@ The easiest way to create a new Jant site:
 ```bash
 pnpm create jant my-blog
 cd my-blog
-pnpm dev
+pnpm run dev
 ```
 
 ## Manual Setup

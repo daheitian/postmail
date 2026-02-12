@@ -23,6 +23,12 @@ Jant is a single-author microblog for people who want to share thoughts without 
 
 ## Quick Start
 
+### One-Click Deploy
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
+
+### Developer Setup
+
 ```bash
 # Create a new Jant site
 pnpm create jant my-blog
@@ -30,9 +36,6 @@ pnpm create jant my-blog
 # Start development
 cd my-blog
 pnpm dev
-
-# Deploy to Cloudflare
-pnpm run deploy
 ```
 
 ## Documentation

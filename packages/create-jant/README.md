@@ -71,16 +71,16 @@ my-site/
 ## Scripts
 
 ```bash
-pnpm dev           # Start dev server (http://localhost:9019)
-pnpm build         # Build for production
+pnpm dev               # Start dev server (http://localhost:9019)
+pnpm build             # Build for production
 pnpm run deploy        # Build + deploy to Cloudflare Workers
-pnpm typecheck     # Run TypeScript checks
-pnpm lint          # Run ESLint
-pnpm format        # Format code with Prettier
-pnpm db:generate   # Generate Drizzle migrations
-pnpm db:migrate:local   # Apply migrations (local)
-pnpm db:migrate:remote  # Apply migrations (production)
-pnpm i18n:build    # Extract + compile translations
+pnpm typecheck         # Run TypeScript checks
+pnpm lint              # Run ESLint
+pnpm format            # Format code with Prettier
+pnpm db:generate       # Generate Drizzle migrations
+pnpm db:migrate:local  # Apply migrations (local)
+pnpm db:migrate:remote # Apply migrations (production)
+pnpm i18n:build        # Extract + compile translations
 ```
 
 ## License
