@@ -2,9 +2,17 @@
 
 A personal website/blog powered by [Jant](https://github.com/jant-me/jant).
 
-## Local Development
+**Want your own site?** Deploy to Cloudflare in one click:
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
+
+> Already deployed? Your site is live with automatic CI/CD. You can clone your repo and run `pnpm dev` to customize or [update](#updating) your site locally.
+
+## Getting Started
 
 ```bash
+pnpm create jant my-site
+cd my-site
 pnpm dev
 ```
 
@@ -12,19 +20,9 @@ Visit http://localhost:9019 to see your site.
 
 ## Deploy to Cloudflare
 
-### Option A: One-Click Deploy
+Once you've run `pnpm create jant my-site`, follow these steps to deploy it.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
-
-Click the button, name your Worker, D1 database, and R2 bucket, set `AUTH_SECRET` (32+ random characters), and you're done!
-
-After deploying, set `SITE_URL` in Cloudflare dashboard → your Worker → Settings → Variables.
-
-> If you deployed via the button, skip to [Custom Domain](#custom-domain-optional).
-
-### Option B: Manual Deployment
-
-#### 1. Prerequisites
+### 1. Prerequisites
 
 Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) and log in:
 
@@ -32,7 +30,7 @@ Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/instal
 wrangler login
 ```
 
-#### 2. Create D1 Database
+### 2. Create D1 Database
 
 Check the `database_name` in your `wrangler.toml` (defaults to `<your-project>-db`), then create it:
 
@@ -41,7 +39,7 @@ wrangler d1 create <your-project>-db
 # Copy the database_id from the output!
 ```
 
-#### 3. Update Configuration
+### 3. Update Configuration
 
 Edit `wrangler.toml`:
 
@@ -52,7 +50,7 @@ Edit `wrangler.toml`:
 >
 > **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). If you've already started local development, you'll need to go through the setup wizard again to create your admin account.
 
-#### 4. Set Production Secrets
+### 4. Set Production Secrets
 
 Generate a production secret and save it somewhere safe (you'll need it again for CI):
 
@@ -67,7 +65,7 @@ wrangler secret put AUTH_SECRET
 
 > **Important:** This is separate from the `AUTH_SECRET` in `.dev.vars` (which is for local development only). Do not change the production secret after your site is live — it will invalidate all sessions. If you get locked out, use `pnpm reset-password` to generate a password reset link.
 
-#### 5. Deploy
+### 5. Deploy
 
 ```bash
 # Apply database migrations and deploy
@@ -76,7 +74,7 @@ pnpm run deploy
 
 Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
 
-### Custom Domain (Optional)
+### 6. Custom Domain (Optional)
 
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Workers & Pages
 2. Select your worker → Settings → Domains & Routes
@@ -84,7 +82,7 @@ Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
 
 ## GitHub Actions (CI/CD)
 
-A workflow file is included at `.github/workflows/deploy.yml`. Complete the [manual deployment](#option-b-manual-deployment) first, then set up CI for automatic deployments.
+A workflow file is included at `.github/workflows/deploy.yml`. Complete the [deployment](#deploy-to-cloudflare) first, then set up CI for automatic deployments.
 
 > Runtime secrets (`AUTH_SECRET`, S3 keys, etc.) are already stored in Cloudflare from the manual deployment step. CI only needs deployment credentials.
 
@@ -156,10 +154,6 @@ jobs:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 ```
-
-### Cloudflare Workers Builds (Alternative CI/CD)
-
-Workers Builds is auto-configured if you used the [One-Click Deploy](#option-a-one-click-deploy) button. To enable auto-deploy on push, go to Cloudflare dashboard → Workers → your worker → Settings → Builds.
 
 ## Commands
 
