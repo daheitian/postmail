@@ -34,7 +34,7 @@ wrangler d1 create <your-project>-db
 Edit `wrangler.toml`:
 
 - Replace `database_id = "local"` with the ID from step 2
-- Set `SITE_URL` to your production URL
+- Set `SITE_URL` to your production URL (e.g. `https://example.com`)
 
 > R2 bucket is automatically created on first deploy — no manual setup needed.
 >
@@ -86,7 +86,7 @@ Create a new repository on [GitHub](https://github.com/new), then commit and pus
 ```bash
 git add -A
 git commit -m "Initial setup"
-git remote add origin https://github.com/<your-username>/<your-repo>.git
+git remote add origin git@github.com:<your-username>/<your-repo>.git
 git push -u origin main
 ```
 
