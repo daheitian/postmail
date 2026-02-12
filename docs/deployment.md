@@ -62,7 +62,7 @@ wrangler d1 migrations apply DB
 ## Deploy
 
 ```bash
-pnpm deploy
+pnpm cf:deploy
 ```
 
 Your site is now live at `https://your-worker.workers.dev`.
@@ -96,7 +96,7 @@ Pull the latest changes and redeploy:
 
 ```bash
 git pull
-pnpm deploy
+pnpm cf:deploy
 ```
 
 Database migrations run automatically on deploy.

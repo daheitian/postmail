@@ -73,7 +73,7 @@ my-site/
 ```bash
 pnpm dev           # Start dev server (http://localhost:9019)
 pnpm build         # Build for production
-pnpm deploy        # Build + deploy to Cloudflare Workers
+pnpm cf:deploy        # Build + deploy to Cloudflare Workers
 pnpm typecheck     # Run TypeScript checks
 pnpm lint          # Run ESLint
 pnpm format        # Format code with Prettier

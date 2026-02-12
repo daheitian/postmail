@@ -10,8 +10,6 @@ pnpm dev
 
 Visit http://localhost:9019 to see your site.
 
-> Your `.dev.vars` file was automatically generated with a secure `AUTH_SECRET`. See `.dev.vars.example` for all available secret variables.
-
 ## Deploy to Cloudflare
 
 ### 1. Prerequisites
@@ -24,12 +22,12 @@ wrangler login
 
 ### 2. Create D1 Database
 
+Check the `database_name` in your `wrangler.toml` (defaults to `<your-project>-db`), then create it:
+
 ```bash
 wrangler d1 create <your-project>-db
 # Copy the database_id from the output!
 ```
-
-Replace `<your-project>` with your project name (must match `database_name` in `wrangler.toml`).
 
 ### 3. Update Configuration
 
@@ -39,14 +37,23 @@ Edit `wrangler.toml`:
 - Set `SITE_URL` to your production URL
 
 > R2 bucket is automatically created on first deploy — no manual setup needed.
+>
+> **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). This is why we recommend setting up deployment before starting local development.
 
 ### 4. Set Production Secrets
 
+Generate a production secret and save it somewhere safe (you'll need it again for CI):
+
 ```bash
+# Generate a secret
+openssl rand -base64 32
+
+# Set it in Cloudflare
 wrangler secret put AUTH_SECRET
-# Enter a random 32+ character string when prompted
-# Generate one with: openssl rand -base64 32
+# Paste the generated value when prompted
 ```
+
+> **Important:** This is separate from the `AUTH_SECRET` in `.dev.vars` (which is for local development only). Do not change the production secret after your site is live — it will invalidate all sessions. If you get locked out, use `pnpm reset-password` to generate a password reset link.
 
 ### 5. Deploy
 
@@ -55,16 +62,35 @@ wrangler secret put AUTH_SECRET
 pnpm db:migrate:remote
 
 # Build and deploy
-pnpm deploy
+pnpm cf:deploy
 ```
 
 Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
 
-### 6. GitHub Actions (CI/CD)
+### 6. Custom Domain (Optional)
 
-A workflow file is included at `.github/workflows/deploy.yml`. You just need to configure secrets.
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Workers & Pages
+2. Select your worker → Settings → Domains & Routes
+3. Click **Add -> Custom domain** and enter your domain
 
-#### Create API Token
+## GitHub Actions (CI/CD)
+
+A workflow file is included at `.github/workflows/deploy.yml`. Complete the [manual deployment](#deploy-to-cloudflare) first, then set up CI for automatic deployments.
+
+> Runtime secrets (`AUTH_SECRET`, S3 keys, etc.) are already stored in Cloudflare from the manual deployment step. CI only needs deployment credentials.
+
+### 1. Push to GitHub
+
+Create a new repository on [GitHub](https://github.com/new), then commit and push your project:
+
+```bash
+git add -A
+git commit -m "Initial setup"
+git remote add origin https://github.com/<your-username>/<your-repo>.git
+git push -u origin main
+```
+
+### 2. Create API Token
 
 1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
 2. Click **Create Token** → **Use template** next to **Edit Cloudflare Workers**
@@ -84,7 +110,7 @@ Your permissions should include:
 5. Set **Zone Resources** → **Include** → **All zones from an account** → your account
 6. **Create Token** and copy it
 
-#### Add GitHub Secrets
+### 3. Add GitHub Secrets
 
 Go to your repo → **Settings** → **Secrets and variables** → **Actions**:
 
@@ -92,31 +118,35 @@ Go to your repo → **Settings** → **Secrets and variables** → **Actions**:
 | --------------- | ------------------------------------------------------------------------ |
 | `CF_API_TOKEN`  | API token from above                                                     |
 | `CF_ACCOUNT_ID` | Your Cloudflare Account ID (found in dashboard URL or `wrangler whoami`) |
-| `AUTH_SECRET`   | Random 32+ character string (`openssl rand -base64 32`)                  |
 
-Push to `main` to trigger deployment.
+### 4. Enable Auto-Deploy
 
-#### Using Environments (Optional)
+Uncomment the push trigger in `.github/workflows/deploy.yml`:
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+```
+
+Now every push to `main` will auto-deploy.
+
+### Using Environments (Optional)
 
 For separate staging/production, update `.github/workflows/deploy.yml`:
 
 ```yaml
 jobs:
   deploy:
-    uses: jant-me/jant/.github/workflows/deploy.yml@v1
+    uses: jant-me/jant/.github/workflows/deploy.yml@main
     with:
       environment: production # Uses [env.production] in wrangler.toml
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-      AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
 ```
-
-### 7. Custom Domain (Optional)
-
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Workers & Pages
-2. Select your worker → Settings → Triggers
-3. Click **Add Custom Domain** and enter your domain
 
 ## Commands
 
@@ -124,7 +154,7 @@ jobs:
 | ------------------------ | ---------------------------------- |
 | `pnpm dev`               | Start development server           |
 | `pnpm build`             | Build for production               |
-| `pnpm deploy`            | Build and deploy to Cloudflare     |
+| `pnpm cf:deploy`         | Build and deploy to Cloudflare     |
 | `pnpm preview`           | Preview production build           |
 | `pnpm typecheck`         | Run TypeScript checks              |
 | `pnpm db:migrate:remote` | Apply database migrations (remote) |
@@ -215,7 +245,7 @@ pnpm dev
 pnpm db:migrate:remote
 
 # Deploy
-pnpm deploy
+pnpm cf:deploy
 ```
 
 > New versions of `@jant/core` may include database migrations. Always run `pnpm db:migrate:remote` before deploying after an update. Check the [release notes](https://github.com/jant-me/jant/releases) for any breaking changes.
