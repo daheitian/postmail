@@ -58,7 +58,7 @@ async function main() {
     process.exit(1);
   }
 
-  run(`node ${cliPath} test-project -y`, { cwd: testDir });
+  run(`node ${cliPath} test-project -y --no-install --no-git`, { cwd: testDir });
   console.log();
 
   // 3. Replace @jant/core dependency with local tarball

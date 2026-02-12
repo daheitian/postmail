@@ -1,6 +1,7 @@
 import { program } from "commander";
 import * as p from "@clack/prompts";
 import chalk from "chalk";
+import { execSync } from "child_process";
 import crypto from "crypto";
 import fs from "fs-extra";
 import path from "path";
@@ -20,9 +21,14 @@ const TEMPLATE_DIR = fs.existsSync(path.resolve(__dirname, "../template"))
   ? path.resolve(__dirname, "../template")
   : path.resolve(__dirname, "../../../templates/jant-site");
 
+type PackageManager = "pnpm" | "yarn" | "npm";
+
 interface ProjectConfig {
   projectName: string;
   targetDir: string;
+  packageManager: PackageManager;
+  install: boolean;
+  git: boolean;
   s3?: boolean;
 }
 
@@ -49,6 +55,52 @@ function toValidProjectName(name: string): string {
  */
 function generateAuthSecret(): string {
   return crypto.randomBytes(32).toString("base64");
+}
+
+/**
+ * Detect which package manager invoked this CLI.
+ * Checks npm_config_user_agent first, then falls back to PATH availability.
+ */
+function detectPackageManager(): PackageManager {
+  const userAgent = process.env.npm_config_user_agent;
+  if (userAgent) {
+    const name = userAgent.split("/")[0];
+    if (name === "pnpm" || name === "yarn" || name === "npm") {
+      return name;
+    }
+  }
+
+  // Fallback: check which PM is available in PATH
+  for (const pm of ["pnpm", "yarn", "npm"] as const) {
+    try {
+      execSync(`${pm} --version`, { stdio: "ignore" });
+      return pm;
+    } catch {
+      // not available
+    }
+  }
+
+  return "npm";
+}
+
+/**
+ * Format a run command for the given package manager.
+ * npm needs `run` for custom scripts, pnpm/yarn do not.
+ */
+function formatRunCmd(pm: PackageManager, script: string): string {
+  return pm === "npm" ? `npm run ${script}` : `${pm} ${script}`;
+}
+
+/**
+ * Execute a shell command silently, returning success/failure.
+ */
+function runCommand(cmd: string, cwd: string): boolean {
+  try {
+    execSync(cmd, { stdio: "ignore", cwd });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -101,7 +153,7 @@ function processMarkers(content: string, vars: Record<string, string>): string {
  * Copy template files to target directory
  */
 async function copyTemplate(config: ProjectConfig): Promise<void> {
-  const { projectName, targetDir } = config;
+  const { projectName, targetDir, packageManager } = config;
 
   // Copy all template files
   await fs.copy(TEMPLATE_DIR, targetDir, {
@@ -114,6 +166,10 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
       if (basename === ".swc") return false;
       if (basename === ".dev.vars") return false;
       if (basename === "pnpm-lock.yaml") return false;
+      if (basename === "yarn.lock") return false;
+      if (basename === "package-lock.json") return false;
+      if (basename === "bun.lockb") return false;
+      if (basename === "pnpm-workspace.yaml") return false;
       if (basename === "dist") return false;
       if (basename === "wrangler.demo.toml") return false;
       if (basename === "reset-demo.sql") return false;
@@ -154,6 +210,20 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     // Replace workspace:* with version injected at build time
     if (pkg.dependencies?.["@jant/core"] === "workspace:*") {
       pkg.dependencies["@jant/core"] = `^${CORE_VERSION}`;
+    }
+    // Adapt for non-pnpm package managers
+    if (packageManager !== "pnpm") {
+      delete pkg.packageManager;
+      if (pkg.scripts) {
+        for (const [key, value] of Object.entries(pkg.scripts)) {
+          if (typeof value === "string") {
+            pkg.scripts[key] = value.replace(
+              /pnpm (\S+)/g,
+              (_, script: string) => formatRunCmd(packageManager, script),
+            );
+          }
+        }
+      }
     }
     await fs.writeJson(pkgPath, pkg, { spaces: 2 });
   }
@@ -214,6 +284,14 @@ S3_SECRET_ACCESS_KEY=
     await fs.writeFile(viteConfigPath, content, "utf-8");
   }
 
+  // Copy pnpm-workspace.yaml only for pnpm (contains pnpm-specific onlyBuiltDependencies)
+  if (packageManager === "pnpm") {
+    const wsSource = path.join(TEMPLATE_DIR, "pnpm-workspace.yaml");
+    if (await fs.pathExists(wsSource)) {
+      await fs.copy(wsSource, path.join(targetDir, "pnpm-workspace.yaml"));
+    }
+  }
+
   // Note: tsconfig.json is already merged during prepublishOnly (prepare-template script)
   // No runtime merging needed - the template/ directory contains a standalone tsconfig.json
 }
@@ -231,10 +309,17 @@ async function main(): Promise<void> {
     .argument("[project-name]", "Name of the project")
     .option("-y, --yes", "Skip prompts and use defaults")
     .option("--s3", "Use S3-compatible storage instead of Cloudflare R2")
+    .option("--no-install", "Skip dependency installation")
+    .option("--no-git", "Skip git initialization")
     .parse();
 
   const args = program.args;
-  const opts = program.opts<{ yes?: boolean; s3?: boolean }>();
+  const opts = program.opts<{
+    yes?: boolean;
+    s3?: boolean;
+    install: boolean;
+    git: boolean;
+  }>();
 
   let projectName: string;
 
@@ -302,9 +387,14 @@ async function main(): Promise<void> {
     }
   }
 
+  const packageManager = detectPackageManager();
+
   const config: ProjectConfig = {
     projectName,
     targetDir,
+    packageManager,
+    install: opts.install,
+    git: opts.git,
     s3: opts.s3,
   };
 
@@ -320,12 +410,45 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Install dependencies
+  let installOk = false;
+  if (config.install) {
+    spinner.start("Installing dependencies...");
+    installOk = runCommand(`${packageManager} install`, targetDir);
+    if (installOk) {
+      spinner.stop("Dependencies installed.");
+    } else {
+      spinner.stop(
+        chalk.yellow(
+          `Failed to install dependencies. Run ${chalk.bold(`${packageManager} install`)} manually.`,
+        ),
+      );
+    }
+  }
+
+  // Initialize git repository
+  if (config.git) {
+    spinner.start("Initializing git repository...");
+    const gitOk =
+      runCommand("git init", targetDir) &&
+      runCommand("git add -A", targetDir) &&
+      runCommand('git commit -m "Initial commit"', targetDir);
+    if (gitOk) {
+      spinner.stop("Git repository initialized.");
+    } else {
+      spinner.stop("Skipped git initialization.");
+    }
+  }
+
   // Show next steps
+  const steps: string[] = [`cd ${projectName}`];
+  if (!config.install || !installOk) {
+    steps.push(`${packageManager} install`);
+  }
+  steps.push(formatRunCmd(packageManager, "dev"));
+
   console.log(); // eslint-disable-line no-console
-  p.note(
-    [`cd ${projectName}`, "pnpm install", "pnpm dev"].join("\n"),
-    "Next steps",
-  );
+  p.note(steps.join("\n"), "Next steps");
 
   p.outro(chalk.green("Happy coding!"));
 }
