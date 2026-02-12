@@ -20,7 +20,7 @@ This scaffolds a new Jant project with everything configured.
 ## Local Development
 
 ```bash
-pnpm dev
+pnpm run dev
 ```
 
 Open [http://localhost:8787](http://localhost:8787). You'll see the setup page on first visit.

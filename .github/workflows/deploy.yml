@@ -69,6 +69,5 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           workingDirectory: ${{ inputs.working_directory }}
-          # Use Vite-built output (dist/<worker_name>/wrangler.json) instead of source config
-          # This ensures patchWorkerAssets plugin has replaced asset placeholders
-          command: deploy --config dist/${{ inputs.environment && format('jant_{0}', inputs.environment) || 'jant_site' }}/wrangler.json
+          # wrangler auto-detects vite build output from dist/
+          command: deploy ${{ inputs.environment && format('--config wrangler.%s.toml', inputs.environment) || '' }}

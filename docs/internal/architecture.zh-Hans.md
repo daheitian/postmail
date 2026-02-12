@@ -187,7 +187,7 @@ npx @jant/cli upgrade
 ┌─────────────────────────────────────────────────────────────┐
 │ 4. 显示升级完成提示                                          │
 │    - pnpm dev    启动本地开发                                │
-│    - pnpm cf:deploy 部署到 Cloudflare                       │
+│    - pnpm run deploy 部署到 Cloudflare                      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -516,13 +516,13 @@ interface JantConfig {
 ```bash
 # 在 packages/core 开发
 cd packages/core
-pnpm dev
+pnpm run dev
 
 # 运行测试
-pnpm test
+pnpm run test
 
 # 构建发布
-pnpm build
+pnpm run build
 pnpm publish
 ```
 
@@ -532,7 +532,7 @@ pnpm publish
 # 在 templates/jant-site 测试
 cd templates/jant-site
 pnpm install
-pnpm dev
+pnpm run dev
 
 # 这里可以测试最新的 core 代码
 ```

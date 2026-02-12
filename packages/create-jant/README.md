@@ -42,7 +42,7 @@ cd my-site
 pnpm install
 cp .dev.vars.example .dev.vars
 # Edit .dev.vars with your AUTH_SECRET (32+ characters)
-pnpm dev
+pnpm run dev
 ```
 
 Visit http://localhost:9019 to see your site.
@@ -71,16 +71,16 @@ my-site/
 ## Scripts
 
 ```bash
-pnpm dev           # Start dev server (http://localhost:9019)
-pnpm build         # Build for production
-pnpm cf:deploy        # Build + deploy to Cloudflare Workers
-pnpm typecheck     # Run TypeScript checks
-pnpm lint          # Run ESLint
-pnpm format        # Format code with Prettier
-pnpm db:generate   # Generate Drizzle migrations
-pnpm db:migrate:local   # Apply migrations (local)
-pnpm db:migrate:remote  # Apply migrations (production)
-pnpm i18n:build    # Extract + compile translations
+pnpm run dev           # Start dev server (http://localhost:9019)
+pnpm run build         # Build for production
+pnpm run deploy        # Build + deploy to Cloudflare Workers
+pnpm run typecheck     # Run TypeScript checks
+pnpm run lint          # Run ESLint
+pnpm run format        # Format code with Prettier
+pnpm run db:generate   # Generate Drizzle migrations
+pnpm run db:migrate:local   # Apply migrations (local)
+pnpm run db:migrate:remote  # Apply migrations (production)
+pnpm run i18n:build    # Extract + compile translations
 ```
 
 ## License

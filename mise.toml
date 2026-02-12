@@ -211,7 +211,7 @@ run = "pnpm --filter jant-site preview"
 # =============================================================================
 [tasks.deploy]
 description = "Deploy template to Cloudflare Workers"
-run = "pnpm --filter jant-site cf:deploy"
+run = "pnpm --filter jant-site run deploy"
 
 # =============================================================================
 # Demo
@@ -228,7 +228,7 @@ echo "Building for demo environment..."
 WRANGLER_CONFIG=./wrangler.demo.toml NODE_ENV=production pnpm exec vite build
 
 echo "Deploying to Cloudflare Workers..."
-pnpm exec wrangler deploy --config dist/jant_demo/wrangler.json
+pnpm exec wrangler deploy --config wrangler.demo.toml
 """
 
 [tasks.demo-reset]
