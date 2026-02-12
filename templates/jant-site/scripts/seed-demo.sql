@@ -82,7 +82,7 @@ cd my-blog
 pnpm dev
 
 # Deploy to Cloudflare
-pnpm cf:deploy
+pnpm run deploy
 ```
 
 ## Documentation
@@ -147,7 +147,7 @@ cd my-blog
 pnpm dev
 
 # Deploy to Cloudflare
-pnpm cf:deploy
+pnpm run deploy
 </code></pre>
 <h2>Documentation</h2>
 <ul>

@@ -177,6 +177,7 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
       if (basename === "reset-local.sql") return false;
       if (basename === "seed-local.sql") return false;
       if (basename === "export-demo.mjs") return false;
+      if (basename === "export-seed.mjs") return false;
       return true;
     },
   });

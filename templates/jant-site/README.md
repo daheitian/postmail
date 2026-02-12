@@ -2,7 +2,7 @@
 
 A personal website/blog powered by [Jant](https://github.com/jant-me/jant).
 
-## Getting Started
+## Local Development
 
 ```bash
 pnpm dev
@@ -38,7 +38,7 @@ Edit `wrangler.toml`:
 
 > R2 bucket is automatically created on first deploy — no manual setup needed.
 >
-> **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). This is why we recommend setting up deployment before starting local development.
+> **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). If you've already started local development, you'll need to go through the setup wizard again to create your admin account.
 
 ### 4. Set Production Secrets
 
@@ -62,7 +62,7 @@ wrangler secret put AUTH_SECRET
 pnpm db:migrate:remote
 
 # Build and deploy
-pnpm cf:deploy
+pnpm run deploy
 ```
 
 Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
@@ -154,7 +154,7 @@ jobs:
 | ------------------------ | ---------------------------------- |
 | `pnpm dev`               | Start development server           |
 | `pnpm build`             | Build for production               |
-| `pnpm cf:deploy`         | Build and deploy to Cloudflare     |
+| `pnpm run deploy`        | Build and deploy to Cloudflare     |
 | `pnpm preview`           | Preview production build           |
 | `pnpm typecheck`         | Run TypeScript checks              |
 | `pnpm db:migrate:remote` | Apply database migrations (remote) |
@@ -235,8 +235,8 @@ export default createApp({
 ## Updating
 
 ```bash
-# Update @jant/core
-pnpm update @jant/core
+# Update @jant/core to latest version
+pnpm add @jant/core@latest
 
 # Start dev server (auto-applies migrations locally)
 pnpm dev
@@ -245,10 +245,12 @@ pnpm dev
 pnpm db:migrate:remote
 
 # Deploy
-pnpm cf:deploy
+pnpm run deploy
 ```
 
 > New versions of `@jant/core` may include database migrations. Always run `pnpm db:migrate:remote` before deploying after an update. Check the [release notes](https://github.com/jant-me/jant/releases) for any breaking changes.
+>
+> **Dev dependencies** (vite, wrangler, tailwindcss, etc.) may also need updating. Compare your `devDependencies` with the [latest template](https://github.com/jant-me/jant/blob/main/templates/jant-site/package.json) and update if needed.
 
 ## Documentation
 

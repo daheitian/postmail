@@ -32,7 +32,7 @@ cd my-blog
 pnpm dev
 
 # Deploy to Cloudflare
-pnpm cf:deploy
+pnpm run deploy
 ```
 
 ## Documentation
