@@ -21,4 +21,3 @@ jobs:
     secrets:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-      AUTH_SECRET: ${{ secrets.DEMO_AUTH_SECRET }}
