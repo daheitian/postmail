@@ -52,6 +52,52 @@ function generateAuthSecret(): string {
 }
 
 /**
+ * Process @create-jant markers in file content.
+ *
+ * Supported markers (using line comments # or //):
+ * - `@create-jant: @remove`         — remove the entire line
+ * - `@create-jant: @remove-start/end` — remove the entire block (inclusive)
+ * - `@create-jant: "${template}"`   — replace the quoted value before the comment
+ *
+ * @example
+ * // wrangler.toml
+ * name = "jant-site" # @create-jant: "${name}"
+ * account_id = "abc" # @create-jant: @remove
+ *
+ * // vite.config.ts
+ * // @create-jant: @remove-start
+ * "@jant/core": resolve(__dirname, "../../packages/core/src"),
+ * // @create-jant: @remove-end
+ */
+function processMarkers(content: string, vars: Record<string, string>): string {
+  // 1. Remove blocks between @remove-start and @remove-end
+  content = content.replace(
+    /\s*(?:\/\/|#)\s*@create-jant:\s*@remove-start[\s\S]*?(?:\/\/|#)\s*@create-jant:\s*@remove-end\n?/g,
+    "",
+  );
+
+  // 2. Remove lines with @remove
+  content = content.replace(
+    /^.*(?:\/\/|#)\s*@create-jant:\s*@remove\s*\n?/gm,
+    "",
+  );
+
+  // 3. Replace value markers: `key = "old" # @create-jant: "${name}"` → `key = "interpolated"`
+  content = content.replace(
+    /^(.+=\s*)"[^"]*"\s*(?:\/\/|#)\s*@create-jant:\s*"([^"]*)"/gm,
+    (_, prefix: string, template: string) => {
+      const value = template.replace(
+        /\$\{(\w+)\}/g,
+        (__, key: string) => vars[key] ?? "",
+      );
+      return `${prefix}"${value}"`;
+    },
+  );
+
+  return content;
+}
+
+/**
  * Copy template files to target directory
  */
 async function copyTemplate(config: ProjectConfig): Promise<void> {
@@ -112,27 +158,11 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     await fs.writeJson(pkgPath, pkg, { spaces: 2 });
   }
 
-  // Update wrangler.toml: process @create-jant markers
+  // Process @create-jant markers in wrangler.toml
   const wranglerPath = path.join(targetDir, "wrangler.toml");
   if (await fs.pathExists(wranglerPath)) {
     let content = await fs.readFile(wranglerPath, "utf-8");
-    const vars: Record<string, string> = { name: projectName };
-
-    // Replace value markers: `name = "jant-site" # @create-jant: "${name}"` → `name = "my-project"`
-    content = content.replace(
-      /^(.+=\s*)"[^"]*"\s*#\s*@create-jant:\s*"([^"]*)"/gm,
-      (_, prefix: string, template: string) => {
-        const value = template.replace(
-          /\$\{(\w+)\}/g,
-          (__, key: string) => vars[key] ?? "",
-        );
-        return `${prefix}"${value}"`;
-      },
-    );
-
-    // Remove lines marked with @create-jant: @remove (monorepo-only config)
-    content = content.replace(/^.*#\s*@create-jant:\s*@remove\s*\n?/gm, "");
-
+    content = processMarkers(content, { name: projectName });
     await fs.writeFile(wranglerPath, content, "utf-8");
   }
 
@@ -176,20 +206,11 @@ S3_SECRET_ACCESS_KEY=
     "utf-8",
   );
 
-  // Patch vite.config.ts for npm-installed @jant/core
+  // Process @create-jant markers in vite.config.ts
   const viteConfigPath = path.join(targetDir, "vite.config.ts");
   if (await fs.pathExists(viteConfigPath)) {
     let content = await fs.readFile(viteConfigPath, "utf-8");
-    // Remove monorepo-only blocks (marked with @monorepo-only-start/end)
-    content = content.replace(
-      /\s*\/\/ @monorepo-only-start[\s\S]*?\/\/ @monorepo-only-end\n?/g,
-      "",
-    );
-    // Update lingui plugin paths: src/ -> dist/, .ts -> .js
-    content = content.replace(
-      /@jant\/core\/src\/([^"']+)\.ts/g,
-      "@jant/core/dist/$1.js",
-    );
+    content = processMarkers(content, {});
     await fs.writeFile(viteConfigPath, content, "utf-8");
   }
 

@@ -193,7 +193,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      // @monorepo-only-start
+      // @create-jant: @remove-start
       // Monorepo development aliases
       // - @lingui/react/macro: Prevents Vite dependency scan error. Source code imports
       //   from @lingui/react/macro (for SWC plugin), but we use Hono JSX. SWC rewrites
@@ -206,7 +206,7 @@ export default defineConfig({
         "../../packages/core/src/i18n/index.ts",
       ),
       "@jant/core": resolve(__dirname, "../../packages/core/src"),
-      // @monorepo-only-end
+      // @create-jant: @remove-end
     },
   },
 });

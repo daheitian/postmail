@@ -48,7 +48,7 @@ This is an open source project. Code quality and maintainability are paramount.
 - **Stop dev after debugging**: Stop background processes when done so user can restart manually.
 - **Debug port**: Use `mise run dev-debug` (port 19019) for testing, leaving 9019 free.
 - **NO auto-publishing**: Do NOT run publish commands. User handles releases via `mise run version` and `mise run release`.
-- **NEVER edit `packages/create-jant/template/` directly**: This directory is auto-generated from `templates/jant-site` during publish. Edit `templates/jant-site` and use `@monorepo-only` / `@user-project-only` markers for monorepo vs. user project differences. See Package Architecture section for details.
+- **NEVER edit `packages/create-jant/template/` directly**: This directory is auto-generated from `templates/jant-site` during publish. Edit `templates/jant-site` and use `@create-jant` markers for monorepo vs. user project differences. See Package Architecture section for details.
 - **Tests are required**: Every new feature, bug fix, or logic change MUST include corresponding tests. Run `mise run test` before considering any task complete. See the Testing section for conventions.
 
 ## Quick Reference
@@ -128,15 +128,19 @@ mise run reset-password # Generate password reset link (local)
 - `templates/jant-site`: Monorepo dev/test environment. Has `@jant/core` alias in vite.config.ts for HMR.
 - `packages/create-jant/template`: **Auto-generated** from `templates/jant-site` during publish. NEVER edit directly.
 
-**Monorepo vs. user project differences** — use marker comments in `templates/jant-site`:
+**Monorepo vs. user project differences** — use `@create-jant` markers in `templates/jant-site`:
 
-```typescript
-// @monorepo-only-start
+```toml
+# Line removal
+account_id = "abc123" # @create-jant: @remove
+
+# Value replacement (with template interpolation)
+name = "jant-site" # @create-jant: "${name}"
+
+# Block removal (works with // or # comments)
+// @create-jant: @remove-start
 "@jant/core": resolve(__dirname, "../../packages/core/src"),
-// @monorepo-only-end
-// @user-project-only-start
-"@lingui/react/macro": "@jant/core/i18n",
-// @user-project-only-end
+// @create-jant: @remove-end
 ```
 
 ## Project Structure
