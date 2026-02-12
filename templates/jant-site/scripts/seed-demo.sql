@@ -44,7 +44,7 @@ pnpm dev
 </code></pre>
 <p>Visit the <a href="/dash">dashboard</a> to create your own posts!</p>',NULL,NULL,NULL,NULL,NULL,NULL,1770689095,1770689095,1770689095);
 INSERT INTO posts VALUES(2,'note','quiet',NULL,NULL,'This is a demo note. Notes are short posts without titles, perfect for quick thoughts and updates.','<p>This is a demo note. Notes are short posts without titles, perfect for quick thoughts and updates.</p>',NULL,NULL,NULL,NULL,NULL,NULL,1770685495,1770685495,1770685495);
-INSERT INTO posts VALUES(3,'link','quiet','Jant on GitHub',NULL,'Check out the source code and documentation for Jant.','<p>Check out the source code and documentation for Jant.</p>','https://github.com/nicepkg/jant','GitHub','github.com',NULL,NULL,NULL,1770681895,1770681895,1770681895);
+INSERT INTO posts VALUES(3,'link','quiet','Jant on GitHub',NULL,'Check out the source code and documentation for Jant.','<p>Check out the source code and documentation for Jant.</p>','https://github.com/jant-me/jant','GitHub','github.com',NULL,NULL,NULL,1770681895,1770681895,1770681895);
 INSERT INTO posts VALUES(4,'quote','quiet',NULL,NULL,'The best way to predict the future is to invent it.','<p>The best way to predict the future is to invent it.</p>',NULL,'Alan Kay',NULL,NULL,NULL,NULL,1770678295,1770678295,1770678295);
 INSERT INTO posts VALUES(5,'image','quiet',NULL,NULL,'Image 1','<p>Image 1</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1770758516,1770758516,1770758516);
