@@ -17,8 +17,8 @@ port = 9019
 # See docs/configuration.md for full details
 
 [vars]
-# Required: Your site's public URL
-SITE_URL = "http://localhost:9019"
+# Required: Your site's public URL (e.g. https://my-blog.example.com)
+SITE_URL = ""
 
 # Optional: Site configuration
 # These can be overridden in dashboard settings (/dash/settings)

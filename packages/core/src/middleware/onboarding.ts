@@ -1,7 +1,9 @@
 /**
  * Onboarding Middleware
  *
- * Redirects all requests to /setup if onboarding hasn't been completed.
+ * Redirects key page routes to /setup if onboarding hasn't been completed.
+ * Uses an allowlist approach: only explicitly listed page routes are redirected,
+ * so static assets, API endpoints, feeds, and other resources always pass through.
  * Caches the result in memory so the DB is only queried once per isolate lifetime.
  */
 
@@ -26,7 +28,7 @@ export function requireOnboarding(): MiddlewareHandler<Env> {
     }
 
     const path = new URL(c.req.url).pathname;
-    if (shouldBypass(path)) {
+    if (!shouldRedirect(path)) {
       return next();
     }
 
@@ -40,14 +42,16 @@ export function requireOnboarding(): MiddlewareHandler<Env> {
   };
 }
 
-function shouldBypass(path: string): boolean {
+/**
+ * Only these page routes are redirected to /setup during onboarding.
+ * Everything else (assets, API, feeds, media, etc.) passes through.
+ */
+function shouldRedirect(path: string): boolean {
   return (
-    path === "/setup" ||
-    path === "/health" ||
+    path === "/" ||
     path === "/signin" ||
-    path === "/signout" ||
     path === "/reset" ||
-    path.startsWith("/api/auth/")
+    path.startsWith("/dash")
   );
 }
 
