@@ -38,7 +38,7 @@ jobs:
 
           # Scaffold starter project using create-jant (reuses all processing logic)
           cd /tmp
-          node "$GITHUB_WORKSPACE/packages/create-jant/dist/index.js" my-site -y --no-install --no-git
+          npm_config_user_agent="npm/10.0.0" node "$GITHUB_WORKSPACE/packages/create-jant/dist/index.js" my-site -y --no-install --no-git
 
           # Remove generated .dev.vars (starter should only have .dev.vars.example)
           rm -f /tmp/my-site/.dev.vars

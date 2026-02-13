@@ -31,11 +31,11 @@ Jant is a single-author microblog for people who want to share thoughts without 
 
 ```bash
 # Create a new Jant site
-pnpm create jant my-blog
+npm create jant my-blog
 
 # Start development
 cd my-blog
-pnpm dev
+npm run dev
 ```
 
 ## Documentation

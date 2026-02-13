@@ -16,8 +16,8 @@ Your site will be live with automatic CI/CD. To develop locally:
 # Clone the repo that was created for you
 git clone git@github.com:<your-username>/<your-repo>.git
 cd <your-repo>
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 Visit http://localhost:9019. Changes pushed to `main` will auto-deploy.
@@ -29,9 +29,9 @@ Visit http://localhost:9019. Changes pushed to `main` will auto-deploy.
 Set up a new project locally, then deploy manually:
 
 ```bash
-pnpm create jant my-site
+npm create jant my-site
 cd my-site
-pnpm dev
+npm run dev
 ```
 
 Visit http://localhost:9019. When you're ready to go live, continue with [Deploy to Cloudflare](#deploy-to-cloudflare) below.
@@ -81,13 +81,13 @@ wrangler secret put AUTH_SECRET
 # Paste the generated value when prompted
 ```
 
-> **Important:** This is separate from the `AUTH_SECRET` in `.dev.vars` (which is for local development only). Do not change the production secret after your site is live — it will invalidate all sessions. If you get locked out, use `pnpm reset-password` to generate a password reset link.
+> **Important:** This is separate from the `AUTH_SECRET` in `.dev.vars` (which is for local development only). Do not change the production secret after your site is live — it will invalidate all sessions. If you get locked out, use `npm run reset-password` to generate a password reset link.
 
 ### 5. Deploy
 
 ```bash
 # Apply database migrations and deploy
-pnpm run deploy
+npm run deploy
 ```
 
 Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
@@ -177,16 +177,14 @@ jobs:
 
 ## Commands
 
-| Command                  | Description                        |
-| ------------------------ | ---------------------------------- |
-| `pnpm dev`               | Start development server           |
-| `pnpm build`             | Build for production               |
-| `pnpm run deploy`        | Migrate, build, and deploy         |
-| `pnpm preview`           | Preview production build           |
-| `pnpm typecheck`         | Run TypeScript checks              |
-| `pnpm db:migrate:remote` | Apply database migrations (remote) |
-
-> `deploy` uses `pnpm run deploy` because `pnpm deploy` is a built-in pnpm command. All other scripts work with or without `run`.
+| Command                     | Description                        |
+| --------------------------- | ---------------------------------- |
+| `npm run dev`               | Start development server           |
+| `npm run build`             | Build for production               |
+| `npm run deploy`            | Migrate, build, and deploy         |
+| `npm run preview`           | Preview production build           |
+| `npm run typecheck`         | Run TypeScript checks              |
+| `npm run db:migrate:remote` | Apply database migrations (remote) |
 
 ## Environment Variables
 
@@ -249,7 +247,7 @@ Add custom CSS in `src/theme/styles/`:
 ### Using Third-Party Themes
 
 ```bash
-pnpm add @jant-themes/minimal
+npm install @jant-themes/minimal
 ```
 
 ```typescript
@@ -265,13 +263,13 @@ export default createApp({
 
 ```bash
 # Update @jant/core to latest version
-pnpm add @jant/core@latest
+npm install @jant/core@latest
 
 # Start dev server (auto-applies migrations locally)
-pnpm dev
+npm run dev
 
 # Deploy (includes remote migrations)
-pnpm run deploy
+npm run deploy
 ```
 
 > New versions of `@jant/core` may include database migrations. Check the [release notes](https://github.com/jant-me/jant/releases) for any breaking changes.
