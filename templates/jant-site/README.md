@@ -2,13 +2,31 @@
 
 A personal website/blog powered by [Jant](https://github.com/jant-me/jant).
 
-**Want your own site?** Deploy to Cloudflare in one click:
+## Getting Started
+
+### Option A: One-Click Deploy
+
+Deploy to Cloudflare instantly — no local setup required:
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
 
-> Already deployed? Your site is live with automatic CI/CD. You can clone your repo and run `pnpm dev` to customize or [update](#updating) your site locally.
+Your site will be live with automatic CI/CD. To develop locally:
 
-## Getting Started
+```bash
+# Clone the repo that was created for you
+git clone git@github.com:<your-username>/<your-repo>.git
+cd <your-repo>
+pnpm install
+pnpm dev
+```
+
+Visit http://localhost:9019. Changes pushed to `main` will auto-deploy.
+
+> If you used this option, skip ahead to [Commands](#commands) — the deployment and CI/CD sections below don't apply to you.
+
+### Option B: Create with CLI
+
+Set up a new project locally, then deploy manually:
 
 ```bash
 pnpm create jant my-site
@@ -16,11 +34,11 @@ cd my-site
 pnpm dev
 ```
 
-Visit http://localhost:9019 to see your site.
+Visit http://localhost:9019. When you're ready to go live, continue with [Deploy to Cloudflare](#deploy-to-cloudflare) below.
 
 ## Deploy to Cloudflare
 
-Once you've run `pnpm create jant my-site`, follow these steps to deploy it.
+> This section is for **CLI-created projects** (Option B). One-click deploy users already have this set up.
 
 ### 1. Prerequisites
 
@@ -81,6 +99,8 @@ Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
 3. Click **Add -> Custom domain** and enter your domain
 
 ## GitHub Actions (CI/CD)
+
+> This section is for **CLI-created projects** (Option B). One-click deploy users already have CI/CD configured.
 
 A workflow file is included at `.github/workflows/deploy.yml`. Complete the [deployment](#deploy-to-cloudflare) first, then set up CI for automatic deployments.
 
