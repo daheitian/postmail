@@ -70,4 +70,4 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           workingDirectory: ${{ inputs.working_directory }}
           # wrangler auto-detects vite build output from dist/
-          command: deploy ${{ inputs.environment && format('--config wrangler.%s.toml', inputs.environment) || '' }}
+          command: deploy ${{ inputs.environment && format('--config wrangler.{0}.toml', inputs.environment) || '' }}
