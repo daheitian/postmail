@@ -80,6 +80,55 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Sync processed template to jant-me/jant-starter for the "Deploy to Cloudflare" button.
+      # Uses create-jant CLI to scaffold the project (same processing as end users get).
+      # Requires PAT_TOKEN to have push access to jant-me/jant-starter.
+      - name: Sync Starter Template
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          # Prepare create-jant CLI (copy template, merge tsconfig, build, inject version)
+          pnpm --filter create-jant prepublishOnly
+
+          # Scaffold starter project using create-jant (reuses all processing logic)
+          cd /tmp
+          node "$GITHUB_WORKSPACE/packages/create-jant/dist/index.js" my-site -y --no-install --no-git
+
+          # Remove generated .dev.vars (starter should only have .dev.vars.example)
+          rm -f /tmp/my-site/.dev.vars
+
+          # Read version
+          cd "$GITHUB_WORKSPACE"
+          VERSION=$(node -p "JSON.parse(require('fs').readFileSync('packages/core/package.json','utf-8')).version")
+
+          # Clone jant-starter
+          git clone "https://x-access-token:${PAT_TOKEN}@github.com/jant-me/jant-starter.git" /tmp/jant-starter
+          cd /tmp/jant-starter
+
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Remove all tracked files (keep .git)
+          git rm -rf . 2>/dev/null || true
+
+          # Copy scaffolded project
+          cp -r /tmp/my-site/. .
+
+          # Stage everything
+          git add -A
+
+          # Commit and push (only if there are changes)
+          if git diff --cached --quiet; then
+            echo "No changes to sync"
+          else
+            git commit -m "chore: sync with jant v${VERSION}"
+            git push
+            echo "Synced starter template to v${VERSION}"
+          fi
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+
       # Debug output (can remove later)
       - name: Debug changesets output
         if: always()
