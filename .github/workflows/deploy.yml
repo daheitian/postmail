@@ -69,5 +69,6 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           workingDirectory: ${{ inputs.working_directory }}
-          # wrangler auto-detects vite build output from dist/
-          command: deploy ${{ inputs.environment && format('--config wrangler.{0}.toml', inputs.environment) || '' }}
+          # @cloudflare/vite-plugin generates a deploy-ready wrangler.json in dist/
+          # wrangler auto-detects it — do NOT pass --config or wrangler re-bundles from source
+          command: deploy
