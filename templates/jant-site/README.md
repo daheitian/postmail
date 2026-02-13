@@ -2,15 +2,13 @@
 
 A personal website/blog powered by [Jant](https://github.com/jant-me/jant).
 
-## Getting Started
-
-### Option A: One-Click Deploy
+## Option A: One-Click Deploy
 
 Deploy to Cloudflare instantly — no local setup required:
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/jant-me/jant-starter)
 
-#### Deploy form fields
+### Deploy form fields
 
 | Field                      | What to do                                                                                                                                                                                                                 |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -21,14 +19,14 @@ Deploy to Cloudflare instantly — no local setup required:
 | **AUTH_SECRET**            | Used for login session encryption. Keep the pre-filled value or generate your own with `openssl rand -base64 32`.                                                                                                          |
 | **SITE_URL**               | Change this to your production URL (e.g. `https://my-blog.example.com`). If you don't have a custom domain yet, leave it empty — you can set it later in the Cloudflare dashboard after you know your `*.workers.dev` URL. |
 
-#### After deploy
+### After deploy
 
 1. Visit your site at the URL shown in the Cloudflare dashboard (e.g. `https://<project>.<account>.workers.dev`)
 2. Go to `/dash` to set up your admin account
 3. If you set `SITE_URL` to a custom domain, add it in: Cloudflare dashboard → Workers & Pages → your worker → Settings → Domains & Routes → Add Custom Domain
 4. If you left `SITE_URL` empty, set it to your `*.workers.dev` URL: Cloudflare dashboard → Workers & Pages → your worker → Settings → Variables and Secrets
 
-#### Develop locally
+### Develop locally
 
 ```bash
 # Clone the repo that was created for you
@@ -40,9 +38,7 @@ npm run dev
 
 Visit http://localhost:9019. Changes pushed to `main` will auto-deploy.
 
-> If you used this option, skip ahead to [Commands](#commands) — the deployment and CI/CD sections below don't apply to you.
-
-### Option B: Create with CLI
+## Option B: Create with CLI
 
 Set up a new project locally, then deploy manually:
 
@@ -54,11 +50,9 @@ npm run dev
 
 Visit http://localhost:9019. When you're ready to go live, continue with [Deploy to Cloudflare](#deploy-to-cloudflare) below.
 
-## Deploy to Cloudflare
+### Deploy to Cloudflare
 
-> This section is for **CLI-created projects** (Option B). One-click deploy users already have this set up.
-
-### 1. Prerequisites
+#### 1. Prerequisites
 
 Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) and log in:
 
@@ -66,7 +60,7 @@ Install [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/instal
 wrangler login
 ```
 
-### 2. Create D1 Database
+#### 2. Create D1 Database
 
 Check the `database_name` in your `wrangler.toml` (defaults to `<your-project>-db`), then create it:
 
@@ -75,7 +69,7 @@ wrangler d1 create <your-project>-db
 # Copy the database_id from the output!
 ```
 
-### 3. Update Configuration
+#### 3. Update Configuration
 
 Edit `wrangler.toml`:
 
@@ -86,7 +80,7 @@ Edit `wrangler.toml`:
 >
 > **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). If you've already started local development, you'll need to go through the setup wizard again to create your admin account.
 
-### 4. Set Production Secrets
+#### 4. Set Production Secrets
 
 Generate a production secret and save it somewhere safe (you'll need it again for CI):
 
@@ -101,7 +95,7 @@ wrangler secret put AUTH_SECRET
 
 > **Important:** This is separate from the `AUTH_SECRET` in `.dev.vars` (which is for local development only). Do not change the production secret after your site is live — it will invalidate all sessions. If you get locked out, use `npm run reset-password` to generate a password reset link.
 
-### 5. Deploy
+#### 5. Deploy
 
 ```bash
 # Apply database migrations and deploy
@@ -110,21 +104,19 @@ npm run deploy
 
 Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
 
-### 6. Custom Domain (Optional)
+#### 6. Custom Domain (Optional)
 
 1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com) → Workers & Pages
 2. Select your worker → Settings → Domains & Routes
 3. Click **Add -> Custom domain** and enter your domain
 
-## GitHub Actions (CI/CD)
-
-> This section is for **CLI-created projects** (Option B). One-click deploy users already have CI/CD configured.
+### GitHub Actions (CI/CD)
 
 A workflow file is included at `.github/workflows/deploy.yml`. Complete the [deployment](#deploy-to-cloudflare) first, then set up CI for automatic deployments.
 
 > Runtime secrets (`AUTH_SECRET`, S3 keys, etc.) are already stored in Cloudflare from the manual deployment step. CI only needs deployment credentials.
 
-### 1. Push to GitHub
+#### 1. Push to GitHub
 
 Create a new repository on [GitHub](https://github.com/new), then commit and push your project:
 
@@ -135,7 +127,7 @@ git remote add origin git@github.com:<your-username>/<your-repo>.git
 git push -u origin main
 ```
 
-### 2. Create API Token
+#### 2. Create API Token
 
 1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
 2. Click **Create Token** → **Use template** next to **Edit Cloudflare Workers**
@@ -155,7 +147,7 @@ Your permissions should include:
 5. Set **Zone Resources** → **Include** → **All zones from an account** → your account
 6. **Create Token** and copy it
 
-### 3. Add GitHub Secrets
+#### 3. Add GitHub Secrets
 
 Go to your repo → **Settings** → **Secrets and variables** → **Actions**:
 
@@ -164,7 +156,7 @@ Go to your repo → **Settings** → **Secrets and variables** → **Actions**:
 | `CF_API_TOKEN`  | API token from above                                                     |
 | `CF_ACCOUNT_ID` | Your Cloudflare Account ID (found in dashboard URL or `wrangler whoami`) |
 
-### 4. Enable Auto-Deploy
+#### 4. Enable Auto-Deploy
 
 Uncomment the push trigger in `.github/workflows/deploy.yml`:
 
@@ -178,7 +170,7 @@ on:
 
 Now every push to `main` will auto-deploy.
 
-### Using Environments (Optional)
+#### Using Environments (Optional)
 
 For separate staging/production, update `.github/workflows/deploy.yml`:
 
