@@ -219,7 +219,7 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
         for (const [key, value] of Object.entries(pkg.scripts)) {
           if (typeof value === "string") {
             pkg.scripts[key] = value.replace(
-              /pnpm (\S+)/g,
+              /pnpm run (\S+)/g,
               (_, script: string) => formatRunCmd(packageManager, script),
             );
           }
