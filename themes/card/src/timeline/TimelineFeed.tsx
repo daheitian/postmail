@@ -1,12 +1,12 @@
 /**
- * Timeline Feed Component
+ * Card Theme - Timeline Feed
  *
- * Main feed wrapper with load-more button.
+ * Main feed wrapper with gap-separated cards and load-more button.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { TimelineFeedProps } from "../../../types.js";
+import type { TimelineFeedProps } from "@jant/core";
 import { TimelineItem } from "./TimelineItem.js";
 import { ThreadPreview as DefaultThreadPreview } from "./ThreadPreview.js";
 

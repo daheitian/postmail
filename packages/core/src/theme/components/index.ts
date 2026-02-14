@@ -21,16 +21,3 @@ export {
   VisibilityBadge,
   type VisibilityBadgeProps,
 } from "./VisibilityBadge.js";
-
-// Timeline components
-export {
-  NoteCard,
-  ArticleCard,
-  LinkCard,
-  QuoteCard,
-  ImageCard,
-  ThreadPreview,
-  TimelineItem,
-  TimelineItemFromPost,
-  TimelineFeed,
-} from "./timeline/index.js";

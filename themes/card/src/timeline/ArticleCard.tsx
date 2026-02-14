@@ -1,11 +1,11 @@
 /**
- * Article Card Component
+ * Card Theme - Article Card
  *
  * Prominent title + excerpt for type="article" posts.
  */
 
 import type { FC } from "hono/jsx";
-import type { TimelineCardProps } from "../../../types.js";
+import type { TimelineCardProps } from "@jant/core";
 
 export const ArticleCard: FC<TimelineCardProps> = ({ post, compact }) => {
   return (

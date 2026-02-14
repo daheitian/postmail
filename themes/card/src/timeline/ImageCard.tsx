@@ -1,12 +1,12 @@
 /**
- * Image Card Component
+ * Card Theme - Image Card
  *
  * Image-first layout for type="image" posts.
  */
 
 import type { FC } from "hono/jsx";
-import type { TimelineCardProps } from "../../../types.js";
-import { MediaGallery } from "../MediaGallery.js";
+import type { TimelineCardProps } from "@jant/core";
+import { MediaGallery } from "@jant/core/theme";
 
 export const ImageCard: FC<TimelineCardProps> = ({ post, compact }) => {
   if (compact) {

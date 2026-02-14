@@ -1,14 +1,13 @@
 /**
- * Default Home Page Component
+ * Minimal Theme - Home Page
  *
  * Renders the timeline feed with thread previews.
- * Theme authors can replace this entirely via ThemeComponents.HomePage.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { HomePageProps } from "../../types.js";
-import { TimelineFeed as DefaultTimelineFeed } from "../components/timeline/TimelineFeed.js";
+import type { HomePageProps } from "../../../types.js";
+import { TimelineFeed as DefaultTimelineFeed } from "../timeline/TimelineFeed.js";
 
 export const HomePage: FC<HomePageProps> = ({
   items,

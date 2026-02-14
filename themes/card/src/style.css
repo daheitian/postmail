@@ -1,0 +1,62 @@
+/**
+ * jant-theme-card styles
+ *
+ * Import this in your CSS entry:
+ *   @import "jant-theme-card/style.css";
+ */
+
+/* Tell Tailwind to scan card theme source files for class usage */
+@source "./";
+
+@layer components {
+  .timeline-card {
+    @apply rounded-lg border p-4;
+    border-color: var(--color-border);
+  }
+
+  .timeline-card-link {
+    border-left-width: 4px;
+    border-left-color: var(--color-primary);
+  }
+
+  .timeline-card-quote {
+    border-left-width: 4px;
+    border-left-color: var(--color-muted-foreground);
+    background-color: var(--color-muted);
+  }
+
+  .timeline-card-image {
+    @apply p-0 overflow-hidden;
+  }
+
+  .timeline-card-image-gallery {
+    /* Remove default margin from MediaGallery inside image cards */
+    > div {
+      @apply mt-0;
+    }
+  }
+
+  .timeline-card-compact {
+    @apply p-3 text-sm;
+  }
+
+  .timeline-thread-replies {
+    @apply relative ml-5;
+  }
+
+  .timeline-thread-reply {
+    @apply relative pl-5 mt-3;
+
+    &::after {
+      content: "";
+      @apply absolute left-0 top-0 bottom-0 w-px;
+      background-color: var(--color-border);
+    }
+
+    &::before {
+      content: "";
+      @apply absolute left-0 top-4 h-px w-4;
+      background-color: var(--color-border);
+    }
+  }
+}

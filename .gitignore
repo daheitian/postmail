@@ -1,7 +1,6 @@
 # Dependencies
 node_modules/
 references
-examples/
 
 # Build outputs
 dist/
@@ -15,6 +14,9 @@ packages/core/vite.config.d.ts.map
 # Cloudflare
 .wrangler/
 .dev.vars
+
+# Generated examples (created via `mise run example:card`)
+examples/
 
 # Turbo
 .turbo/

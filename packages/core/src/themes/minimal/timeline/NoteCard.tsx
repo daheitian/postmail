@@ -1,29 +1,30 @@
 /**
- * Note Card Component
+ * Minimal Theme - Note Card
  *
- * Text-first, minimal card for type="note" posts.
+ * Borderless, content-first card for type="note" posts.
  */
 
 import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "../../../types.js";
-import { MediaGallery } from "../MediaGallery.js";
+import { MediaGallery } from "../../../theme/components/MediaGallery.js";
 
 export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
   return (
-    <article
-      class={`h-entry timeline-card${compact ? " timeline-card-compact" : ""}`}
-    >
+    <article class={`h-entry${compact ? " text-sm" : ""}`}>
       {post.contentHtml && (
         <div
-          class={`e-content prose ${compact ? "prose-sm" : "prose-sm"}`}
+          class={`e-content prose ${compact ? "prose-sm" : ""}`}
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
         />
       )}
       {!compact && post.media.length > 0 && (
         <MediaGallery attachments={post.media} />
       )}
-      <footer class="mt-2 text-xs text-muted-foreground">
-        <a href={post.permalink} class="u-url hover:underline">
+      <footer class="mt-2">
+        <a
+          href={post.permalink}
+          class="u-url text-xs text-muted-foreground hover:text-foreground"
+        >
           <time class="dt-published" datetime={post.publishedAt}>
             {post.publishedAtFormatted}
           </time>

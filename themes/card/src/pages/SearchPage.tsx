@@ -1,14 +1,13 @@
 /**
- * Default Search Page Component
+ * Card Theme - Search Page
  *
- * Renders search form and results with page-based pagination.
- * Theme authors can replace this entirely via ThemeComponents.SearchPage.
+ * Search form and results with page-based pagination.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { SearchPageProps } from "../../types.js";
-import { PagePagination as DefaultPagePagination } from "../components/Pagination.js";
+import type { SearchPageProps } from "@jant/core";
+import { PagePagination as DefaultPagePagination } from "@jant/core/theme";
 
 export const SearchPage: FC<SearchPageProps> = ({
   query,

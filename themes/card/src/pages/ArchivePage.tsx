@@ -1,15 +1,14 @@
 /**
- * Default Archive Page Component
+ * Card Theme - Archive Page
  *
- * Renders posts grouped by year-month with type filter and cursor pagination.
- * Theme authors can replace this entirely via ThemeComponents.ArchivePage.
+ * Posts grouped by year-month with type filter and cursor pagination.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { ArchivePageProps } from "../../types.js";
-import { POST_TYPES } from "../../types.js";
-import { Pagination as DefaultPagination } from "../components/Pagination.js";
+import type { ArchivePageProps } from "@jant/core";
+import { POST_TYPES } from "@jant/core";
+import { Pagination as DefaultPagination } from "@jant/core/theme";
 
 function getTypeLabel(type: string): string {
   const { t } = useLingui();

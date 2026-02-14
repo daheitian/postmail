@@ -1,11 +1,11 @@
 /**
- * Quote Card Component
+ * Card Theme - Quote Card
  *
  * Blockquote + attribution for type="quote" posts.
  */
 
 import type { FC } from "hono/jsx";
-import type { TimelineCardProps } from "../../../types.js";
+import type { TimelineCardProps } from "@jant/core";
 
 export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
   return (

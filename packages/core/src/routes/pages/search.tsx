@@ -5,7 +5,7 @@
 import { Hono } from "hono";
 import type { Bindings, SearchResult } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { SearchPage as DefaultSearchPage } from "../../theme/pages/SearchPage.js";
+import { SearchPage as DefaultSearchPage } from "../../themes/minimal/pages/SearchPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { createMediaContext, toSearchResultViews } from "../../lib/view.js";

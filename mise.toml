@@ -42,6 +42,7 @@ run = "pnpm --filter @jant/core build:types"
 description = "Build all publishable packages"
 run = """
 pnpm --filter @jant/core build
+pnpm --filter jant-theme-card build
 pnpm --filter create-jant build
 """
 
@@ -270,11 +271,11 @@ run = "node scripts/reset-password.mjs"
 
 [tasks.clean]
 description = "Clean build artifacts"
-run = "rm -rf packages/*/dist packages/*/.wrangler templates/*/.wrangler"
+run = "rm -rf packages/*/dist themes/*/dist packages/*/.wrangler templates/*/.wrangler examples/"
 
 [tasks.nuke]
 description = "Remove all node_modules and reinstall"
-run = "rm -rf node_modules packages/*/node_modules templates/*/node_modules && pnpm install"
+run = "rm -rf node_modules packages/*/node_modules templates/*/node_modules themes/*/node_modules examples/ && pnpm install"
 
 [tasks.fresh]
 alias = "reset"
@@ -283,10 +284,10 @@ run = """
 echo "🧹 Nuclear reset - deleting everything..."
 echo ""
 echo "📦 Removing node_modules..."
-rm -rf node_modules packages/*/node_modules templates/*/node_modules
+rm -rf node_modules packages/*/node_modules templates/*/node_modules themes/*/node_modules
 
 echo "🗑️  Removing build artifacts..."
-rm -rf packages/*/dist templates/*/dist packages/create-jant/template/dist
+rm -rf packages/*/dist themes/*/dist templates/*/dist packages/create-jant/template/dist
 
 echo "💾 Removing local databases and Wrangler state..."
 rm -rf packages/*/.wrangler templates/*/.wrangler packages/create-jant/template/.wrangler
@@ -296,6 +297,9 @@ rm -rf packages/*/.vite templates/*/.vite packages/create-jant/template/.vite
 
 echo "🌐 Removing i18n build cache..."
 rm -rf packages/*/.lingui-build
+
+echo "🗂️  Removing generated examples..."
+rm -rf examples/
 
 echo "🔒 Removing lock file..."
 rm -f pnpm-lock.yaml
@@ -312,6 +316,57 @@ echo "📋 Next step:"
 echo "   mise run dev    # Start development (auto-runs migrations)"
 echo ""
 """
+
+# =============================================================================
+# Examples (generated from templates/jant-site, not committed to git)
+# =============================================================================
+[tasks.new-example]
+alias = "ne"
+description = "Create a new example from templates/jant-site"
+usage = 'arg "<name>"'
+run = """
+DEST="examples/$usage_name"
+
+if [ -d "$DEST" ]; then
+  echo "Already exists: $DEST"
+  exit 1
+fi
+
+rsync -a \
+  --exclude='node_modules' --exclude='.wrangler' --exclude='.swc' \
+  --exclude='.vite' --exclude='dist' --exclude='.dev.vars' \
+  --exclude='scripts/' --exclude='wrangler.demo.toml' --exclude='README.md' \
+  --exclude='_github' --exclude='_gitignore' --exclude='_env.example' \
+  --exclude='pnpm-workspace.yaml' --exclude='.prettierrc' \
+  templates/jant-site/ "$DEST/"
+
+echo 'AUTH_SECRET=example-dev-secret-at-least-32-characters-long' > "$DEST/.dev.vars"
+pnpm install
+
+echo ""
+echo "Created: $DEST"
+echo "Next: edit $DEST/src/index.ts, then mise run example $usage_name"
+"""
+
+[tasks.seed-example]
+alias = "se"
+description = "Seed an example's local database with dev data"
+usage = 'arg "<name>"'
+run = """
+cd "examples/$usage_name"
+yes | pnpm exec wrangler d1 migrations apply DB --local
+pnpm exec wrangler d1 execute DB --local --file=../../templates/jant-site/scripts/reset-local.sql
+pnpm exec wrangler d1 execute DB --local --file=../../templates/jant-site/scripts/seed-local.sql
+"""
+
+[tasks.example]
+alias = "ex"
+description = "Run a script in an example project: mise run example <name> [script]"
+usage = """
+arg "<name>"
+arg "[script]" default="dev"
+"""
+run = 'pnpm --filter "./examples/$usage_name" "$usage_script"'
 
 # =============================================================================
 # Starter Template
@@ -371,11 +426,15 @@ run = "pnpm release"
 
 [tasks.release-local]
 description = "Build and publish all packages locally"
-run = "pnpm --filter @jant/core build:lib && pnpm -r --filter './packages/*' publish --access public --no-provenance --no-git-checks"
+run = """
+pnpm --filter @jant/core build:lib
+pnpm --filter jant-theme-card build
+pnpm -r --filter './packages/*' --filter './themes/*' publish --access public --no-provenance --no-git-checks
+"""
 
 [tasks.release-dry]
 description = "Dry run of release (no actual publish)"
-run = "pnpm build && pnpm -r --filter './packages/*' publish --dry-run --no-provenance"
+run = "pnpm build && pnpm -r --filter './packages/*' --filter './themes/*' publish --dry-run --no-provenance"
 
 [tasks.publish-core]
 description = "Build and publish @jant/core to npm"

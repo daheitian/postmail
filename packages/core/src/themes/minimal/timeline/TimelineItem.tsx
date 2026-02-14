@@ -1,8 +1,7 @@
 /**
- * Timeline Item Component
+ * Minimal Theme - Timeline Item
  *
  * Dispatches to the correct card component based on post type.
- * Resolves card overrides from theme components if provided.
  */
 
 import type { FC } from "hono/jsx";
@@ -40,9 +39,7 @@ const THEME_KEY_MAP: Record<PostType, keyof ThemeComponents> = {
 interface TimelineItemProps {
   item: TimelineItemView;
   compact?: boolean;
-  /** Override card component (for direct overrides) */
   cardOverride?: FC<TimelineCardProps>;
-  /** Theme components for cascade resolution */
   theme?: ThemeComponents;
 }
 

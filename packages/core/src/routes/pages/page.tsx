@@ -7,7 +7,7 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { SinglePage as DefaultSinglePage } from "../../theme/pages/SinglePage.js";
+import { SinglePage as DefaultSinglePage } from "../../themes/minimal/pages/SinglePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { createMediaContext, toPostViewFromPost } from "../../lib/view.js";

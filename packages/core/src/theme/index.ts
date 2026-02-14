@@ -1,28 +1,22 @@
 /**
- * Jant Theme Components
+ * Jant Theme - Shared Infrastructure
  *
- * These components can be imported for wrapping/extending:
+ * Exports shared layouts, components, and color themes used by all themes.
+ * Individual theme packages (minimal, card, etc.) import from here.
  *
  * @example
  * ```typescript
- * import { PostPage } from "@jant/core/theme";
- * import type { PostPageProps } from "@jant/core";
- *
- * export function MyPostPage(props: PostPageProps) {
- *   return (
- *     <div class="my-wrapper">
- *       <PostPage {...props} />
- *     </div>
- *   );
- * }
+ * // In a theme package:
+ * import { MediaGallery, Pagination } from "@jant/core/theme";
+ * import type { ColorTheme } from "@jant/core/theme";
  * ```
  */
 
-// Layout components
+// Layout components (BaseLayout, DashLayout)
 export * from "./layouts/index.js";
 
-// UI components
+// Shared UI components (MediaGallery, Pagination, EmptyState, etc.)
 export * from "./components/index.js";
 
-// Page components
-export * from "./pages/index.js";
+// Color themes
+export * from "./color-themes.js";

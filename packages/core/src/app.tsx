@@ -11,6 +11,7 @@ import { i18nMiddleware } from "./i18n/index.js";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, JantConfig } from "./types.js";
 import { SETTINGS_KEYS } from "./lib/constants.js";
+import { theme as minimalTheme } from "./themes/minimal/index.js";
 import { hashPassword } from "better-auth/crypto";
 
 // Routes - Pages
@@ -82,6 +83,25 @@ export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
  * ```
  */
 export function createApp(config: JantConfig = {}): App {
+  // Merge with default minimal theme
+  const defaultTheme = minimalTheme();
+  const resolvedConfig: JantConfig = {
+    ...config,
+    theme: {
+      name: config.theme?.name ?? defaultTheme.name,
+      components: {
+        ...defaultTheme.components,
+        ...config.theme?.components,
+      },
+      cssVariables: {
+        ...defaultTheme.cssVariables,
+        ...config.theme?.cssVariables,
+      },
+      colorThemes: config.theme?.colorThemes ?? defaultTheme.colorThemes,
+      feed: config.theme?.feed,
+    },
+  };
+
   const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
   // Initialize services, auth, and config middleware
@@ -96,7 +116,7 @@ export function createApp(config: JantConfig = {}): App {
     const db = createDatabase(session as unknown as D1Database);
     const services = createServices(db, session as unknown as D1Database);
     c.set("services", services);
-    c.set("config", config);
+    c.set("config", resolvedConfig);
     c.set("storage", createStorageDriver(c.env));
 
     if (c.env.AUTH_SECRET) {
@@ -117,11 +137,14 @@ export function createApp(config: JantConfig = {}): App {
   // Theme middleware - resolve active color theme and build CSS
   app.use("*", async (c, next) => {
     const themeId = await c.var.services.settings.get(SETTINGS_KEYS.THEME);
-    const themes = getAvailableThemes(config);
+    const themes = getAvailableThemes(resolvedConfig);
     const activeTheme = themeId
       ? themes.find((t) => t.id === themeId)
       : undefined;
-    const themeStyle = buildThemeStyle(activeTheme, config.theme?.cssVariables);
+    const themeStyle = buildThemeStyle(
+      activeTheme,
+      resolvedConfig.theme?.cssVariables,
+    );
     c.set("themeStyle", themeStyle);
     await next();
   });

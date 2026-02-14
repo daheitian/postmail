@@ -1,11 +1,11 @@
 /**
- * Link Card Component
+ * Card Theme - Link Card
  *
  * External link emphasis for type="link" posts.
  */
 
 import type { FC } from "hono/jsx";
-import type { TimelineCardProps } from "../../../types.js";
+import type { TimelineCardProps } from "@jant/core";
 
 export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
   return (

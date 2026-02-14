@@ -1,338 +1,195 @@
 -- =============================================================================
--- Local development seed data for Jant
--- Exported from local D1 database via: mise run db-export
--- Usage: mise run db-seed
+-- Demo seed data for Jant (demo.jant.me)
+-- Exported from remote demo D1 database via: mise run demo-backup
+-- Usage: mise run demo-reset
 -- =============================================================================
 
--- settings
-INSERT INTO settings VALUES('ONBOARDING_STATUS','completed',1770673269);
-
--- user
-INSERT INTO user VALUES('mwSiDRYsgAO87Gp39abp75kTUIpBjGLP','Test','theowenyoung@gmail.com',0,NULL,'admin',1770673269,1770673269);
-
--- account
-INSERT INTO account VALUES('wwg6ATsM2Xw8pULzhUy2uzezb8j1pq7z','mwSiDRYsgAO87Gp39abp75kTUIpBjGLP','credential','mwSiDRYsgAO87Gp39abp75kTUIpBjGLP',NULL,NULL,NULL,NULL,NULL,NULL,'3d25c01b6aa8baf102da43ac13245376:366ccf6f4b0054315ab338b4b43183a242dfe74441de38a43999b5b2b277a33360f2ac8fda535462cd6fac497beba59bb2ac34c96c0e4c2fddf16c7ae0e56e05',1770673269,1770673269);
-
 -- posts
-INSERT INTO posts VALUES(1,'note','quiet',NULL,NULL,'好的组织，是保护人“在乎”的本能。
+INSERT INTO posts VALUES(1,'article','featured','Welcome to Jant',NULL,'# Welcome to Jant Demo
 
-没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。
+Jant is a modern microblog platform built for Cloudflare Workers. This demo site resets daily at 00:00 UTC.
 
-问题在于这种原本强劲的驱动力，会被不好的组织慢慢消磨掉。当数字比价值更重要，“快点上线”比“做对”更重要。
+## Features
 
-一个好的组织要做的，其实就是：找到那些“在乎”的人，然后清理掉让“在乎”变成奢侈的障碍，让“在乎”重新成为组织的本能。
+- **Multiple post types**: Notes, articles, links, quotes, images, and pages
+- **Collections**: Organize posts into collections
+- **Full-text search**: Search across all your content
+- **Internationalization**: Built-in i18n support
+- **Fast**: Edge-deployed on Cloudflare Workers
 
-有了“在乎”，再加上手艺和品味，“对的东西”就会自然生长出来。','<p>好的组织，是保护人“在乎”的本能。</p>
-<p>没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。</p>
-<p>问题在于这种原本强劲的驱动力，会被不好的组织慢慢消磨掉。当数字比价值更重要，“快点上线”比“做对”更重要。</p>
-<p>一个好的组织要做的，其实就是：找到那些“在乎”的人，然后清理掉让“在乎”变成奢侈的障碍，让“在乎”重新成为组织的本能。</p>
-<p>有了“在乎”，再加上手艺和品味，“对的东西”就会自然生长出来。</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1770723842,1770723842,1770723842);
-INSERT INTO posts VALUES(2,'note','quiet',NULL,NULL,'每次参加内容创作者的活动（比如今天的小宇宙播客大赏）都会被感染到。看到这么多优秀的创作者都在认真地做好东西，特别受到鼓舞，也要做好东西！','<p>每次参加内容创作者的活动（比如今天的小宇宙播客大赏）都会被感染到。看到这么多优秀的创作者都在认真地做好东西，特别受到鼓舞，也要做好东西！</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1770723863,1770723863,1770723863);
-INSERT INTO posts VALUES(3,'quote','quiet',NULL,NULL,'我二十一岁时最擅长提供理财建议，可那时没人听我的。即便我站出来说出最精辟的见解，也无人正眼相看。而如今，纵使我讲出世上最愚蠢的话，总会有不少人觉得其中暗藏玄机。','<p>我二十一岁时最擅长提供理财建议，可那时没人听我的。即便我站出来说出最精辟的见解，也无人正眼相看。而如今，纵使我讲出世上最愚蠢的话，总会有不少人觉得其中暗藏玄机。</p>
-',NULL,'巴菲特',NULL,NULL,NULL,NULL,1770726749,1770726749,1770726749);
-INSERT INTO posts VALUES(4,'quote','quiet',NULL,NULL,'说到底，等你到了我这把年纪，人生的成功与否，其实取决于你渴望爱你的人中，究竟有多少人真正爱着你。 我见过许多富人，他们享有盛宴致敬，医院楼翼以他们命名。但真相是世上无人真心爱他们。若活到我这般年纪，却无人对你心怀善意——管你银行账户有多丰厚，你的人生就是场灾难。','<p>说到底，等你到了我这把年纪，人生的成功与否，其实取决于你渴望爱你的人中，究竟有多少人真正爱着你。 我见过许多富人，他们享有盛宴致敬，医院楼翼以他们命名。但真相是世上无人真心爱他们。若活到我这般年纪，却无人对你心怀善意——管你银行账户有多丰厚，你的人生就是场灾难。</p>
-',NULL,'沃伦·巴菲特',NULL,NULL,NULL,NULL,1770726782,1770726782,1770726782);
-INSERT INTO posts VALUES(5,'quote','quiet',NULL,NULL,'当你强迫才华横溢的人扮演非本色角色时，他们很快就会沦为平庸之辈。','<p>当你强迫才华横溢的人扮演非本色角色时，他们很快就会沦为平庸之辈。</p>
-','https://collabfund.com/blog/your-way-is-the-only-way/',NULL,'collabfund.com',NULL,NULL,NULL,1770726816,1770726816,1770726816);
-INSERT INTO posts VALUES(6,'link','quiet','世界运行的规律',NULL,'> 查马斯·帕利哈皮蒂亚曾指出 ，无论企业发展多快，其衰亡速度也与之相当。如今众多企业正深刻体会到这一点——它们在过去几年里坐拥廉价资金，如今却面临严峻考验。 每个企业、每个行业都存在自然增长率 ——若强行突破此界限，短期增长将以长期质量为代价，最终危及生存根基。
+## Getting Started
 
+```bash
+pnpm create jant my-blog
+cd my-blog
+pnpm install
+pnpm dev
+```
+
+Visit the [dashboard](/dash) to create your own posts!','<h1>Welcome to Jant Demo</h1>
+<p>Jant is a modern microblog platform built for Cloudflare Workers. This demo site resets daily at 00:00 UTC.</p>
+<h2>Features</h2>
+<ul>
+<li><strong>Multiple post types</strong>: Notes, articles, links, quotes, images, and pages</li>
+<li><strong>Collections</strong>: Organize posts into collections</li>
+<li><strong>Full-text search</strong>: Search across all your content</li>
+<li><strong>Internationalization</strong>: Built-in i18n support</li>
+<li><strong>Fast</strong>: Edge-deployed on Cloudflare Workers</li>
+</ul>
+<h2>Getting Started</h2>
+<pre><code class="language-bash">pnpm create jant my-blog
+cd my-blog
+pnpm install
+pnpm dev
+</code></pre>
+<p>Visit the <a href="/dash">dashboard</a> to create your own posts!</p>',NULL,NULL,NULL,NULL,NULL,NULL,1770689095,1770689095,1770689095);
+INSERT INTO posts VALUES(2,'note','quiet',NULL,NULL,'This is a demo note. Notes are short posts without titles, perfect for quick thoughts and updates.','<p>This is a demo note. Notes are short posts without titles, perfect for quick thoughts and updates.</p>',NULL,NULL,NULL,NULL,NULL,NULL,1770685495,1770685495,1770685495);
+INSERT INTO posts VALUES(3,'link','quiet','Jant on GitHub',NULL,'Check out the source code and documentation for Jant.','<p>Check out the source code and documentation for Jant.</p>','https://github.com/jant-me/jant','GitHub','github.com',NULL,NULL,NULL,1770681895,1770681895,1770681895);
+INSERT INTO posts VALUES(4,'quote','quiet',NULL,NULL,'The best way to predict the future is to invent it.','<p>The best way to predict the future is to invent it.</p>',NULL,'Alan Kay',NULL,NULL,NULL,NULL,1770678295,1770678295,1770678295);
+INSERT INTO posts VALUES(5,'image','quiet',NULL,NULL,'Image 1','<p>Image 1</p>
+',NULL,NULL,NULL,NULL,NULL,NULL,1770758516,1770758516,1770758516);
+INSERT INTO posts VALUES(6,'image','quiet',NULL,NULL,'Image 2','<p>Image 2</p>
+',NULL,NULL,NULL,NULL,NULL,NULL,1770758537,1770758537,1770759299);
+INSERT INTO posts VALUES(7,'page','unlisted','About','about','> **Work in Progress**: This project is still under active development and not yet ready for use. See the latest build at [demo.jant.me](https://demo.jant.me).
+>
+> Demo login: `demo@jant.me` / `demodemo` — Dashboard: [demo.jant.me/dash](https://demo.jant.me/dash)
+
+A personal microblogging system as smooth as <https://threads.com>.
+
+> **Jant** = Jantelagen (Law of Jante)
+> Low-key, de-socialized personal expression.
+
+## What is Jant?
+
+Jant is a single-author microblog for people who want to share thoughts without the noise of social media. No followers, no likes, no retweets—just your words.
+
+**Features**:
+
+- Multiple content types: notes, articles, links, quotes, images
+- Thread support for longer thoughts
+- Collections for curated topics
+- Beautiful, themeable design
+- Deploys to Cloudflare Workers in minutes
+
+## Quick Start
+
+```bash
+# Create a new Jant site
+pnpm create jant my-blog
+
+# Start development
+cd my-blog
+pnpm dev
+
+# Deploy to Cloudflare
+pnpm run deploy
+```
+
+## Documentation
+
+- [Getting Started](docs/getting-started.md)
+- [Deployment](docs/deployment.md)
+- [Configuration](docs/configuration.md)
+- [Theming](docs/theming.md)
+- [API Reference](docs/API.md)
+
+## Development
+
+Requires [mise](https://mise.jdx.dev/) — it manages Node.js and pnpm automatically.
+
+```bash
+# Install mise (macOS/Linux)
+curl https://mise.run | sh
+
+# Clone and setup
+git clone https://github.com/jant-me/jant.git
+cd jant
+mise install   # installs Node.js and pnpm
+pnpm install   # installs dependencies
+
+# Start development server (http://localhost:9019)
+mise run dev
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for code style, PR process, and release workflow.
+
+## Philosophy
+
+Jant is built on the idea that not everything needs to be optimized for engagement. Write for yourself. Share if you want. No metrics, no pressure.
+
+## License
+
+AGPL-3.0
 ','<blockquote>
-<p>查马斯·帕利哈皮蒂亚曾指出 ，无论企业发展多快，其衰亡速度也与之相当。如今众多企业正深刻体会到这一点——它们在过去几年里坐拥廉价资金，如今却面临严峻考验。 每个企业、每个行业都存在自然增长率 ——若强行突破此界限，短期增长将以长期质量为代价，最终危及生存根基。</p>
+<p><strong>Work in Progress</strong>: This project is still under active development and not yet ready for use. See the latest build at <a href="https://demo.jant.me">demo.jant.me</a>.</p>
+<p>Demo login: <code>demo@jant.me</code> / <code>demodemo</code> — Dashboard: <a href="https://demo.jant.me/dash">demo.jant.me/dash</a></p>
 </blockquote>
-','https://collabfund.com/blog/little-ways-the-world-works/',NULL,'collabfund.com',NULL,NULL,NULL,1770726887,1770726887,1770726887);
-INSERT INTO posts VALUES(7,'article','quiet','刷社交网络，阅读文章以及读书的区别是什么？',NULL,'之前我一直都在思考这个问题：为什么我明明在社交网络上也能学到不少东西，但为什么大家都说社交网络纯属浪费时间？那假如我在社交网络上关注的都是精心筛选过的用户，那么刷社交网络还是很浪费时间吗？
-
-阅读文章比刷社交网络要好吗？
-
-读书又比阅读文章要好吗？
-
-最近在用[遛狗的时间](@/blog/reading-while-walking-dogs.md)读一本叫《打造第二大腦》的书，读完之后，我对此有了新的想法。
-
-**首先，社交网络的确能刷出好东西**。 碎片化并不一定比长篇的文章或者图书低级，有的时候它可以是一句非常精辟的话。
-
-那么为什么我们觉得看书的感觉更好呢？
-
-因为碎片化的东西就算再精辟，那也只是很短的一段话，我们人脑更倾向于忘记这些简短，孤立的东西。所谓刷过就忘了。
-
-读书不太一样的是，每本书都有一个非常明确的主题，作者会用非常长的篇幅，抽丝剥茧地为你剖析这个主题，所以我们读完之后，大概率印象会非常深刻，可以在脑子里保鲜很长时间。
-
-阅读文章同理，它比碎片化的东西更具体，但是又比书简略的多，读完一篇文章之后，它在我们的脑子中保鲜的时间其实并不长。
-
-但是如果把时间拉长，比如 10 年，再假设你阅读文章和看书从来不做笔记，或者笔记分散在各个不同的地方，那么这三者的区别就非常小了。对，即使你很喜欢看书，但是如果你没有写下来，在第二大脑里回顾，那么这些宝贵的素材基本就算是消失了。
-
-所以重点是：**我们必须把我们在刷这些知识时筛选出来的材料记录下来**，这个记录的地方就是我们的第二大脑，它可以被方便的搜索，也可以被方便的浏览和新增笔记。
-
-只有这些写下来的东西的才是我们的，其他的一切都会随着时间的消逝逐渐被遗忘。
-
-所以仔细想一想，如果我在过去的 10 年都没有记下一些东西，那么这 10 年我是不是相当于白活了？因为所有的感受都会随着时间慢慢被冲淡，只有写下的东西，拍摄的照片才能代表我们的智识足迹。
-
-## 结论
-
-如果把时间拉长后，你会发现刷社交网络，阅读文章和读书 几乎一样了，所以这就是为什么我们把这些东西记下来，当作我们的第二大脑。
-
-同时我也推荐你也看一下《打造第二大脑》这本书，参考书中的建议建立你的第二大脑。这样我们在刷社交网络，读文章，读书的时候，就可以把所有你觉得有需要记下来的东西，都保存在第二大脑中。
-
-我的博客目前极大的充当了这个第二大脑，但是我的照片管理目前一团遭，我还在探索如何让照片保存，浏览，搜索流程上变得更流畅，等我探索出来之后，再写一篇文章分享我的经验～
-
-> 由于我阅读的是用[沉浸式翻译](https://immersivetranslate.com/)制作的双语电子书，它的英文原文相对很简单，所以我可以在遛狗的时候只看原文，并且读出来，遇到不懂的原文，再看一下译文这样，所以进度很慢，截止目前进度差不多 57%，等我读完之后，我会重新规划一下我的第二大脑运行流程，同时，本博客绝对会是一个非常重要的地方。
-','<p>之前我一直都在思考这个问题：为什么我明明在社交网络上也能学到不少东西，但为什么大家都说社交网络纯属浪费时间？那假如我在社交网络上关注的都是精心筛选过的用户，那么刷社交网络还是很浪费时间吗？</p>
-<p>阅读文章比刷社交网络要好吗？</p>
-<p>读书又比阅读文章要好吗？</p>
-<p>最近在用<a href="@/blog/reading-while-walking-dogs.md">遛狗的时间</a>读一本叫《打造第二大腦》的书，读完之后，我对此有了新的想法。</p>
-<p><strong>首先，社交网络的确能刷出好东西</strong>。 碎片化并不一定比长篇的文章或者图书低级，有的时候它可以是一句非常精辟的话。</p>
-<p>那么为什么我们觉得看书的感觉更好呢？</p>
-<p>因为碎片化的东西就算再精辟，那也只是很短的一段话，我们人脑更倾向于忘记这些简短，孤立的东西。所谓刷过就忘了。</p>
-<p>读书不太一样的是，每本书都有一个非常明确的主题，作者会用非常长的篇幅，抽丝剥茧地为你剖析这个主题，所以我们读完之后，大概率印象会非常深刻，可以在脑子里保鲜很长时间。</p>
-<p>阅读文章同理，它比碎片化的东西更具体，但是又比书简略的多，读完一篇文章之后，它在我们的脑子中保鲜的时间其实并不长。</p>
-<p>但是如果把时间拉长，比如 10 年，再假设你阅读文章和看书从来不做笔记，或者笔记分散在各个不同的地方，那么这三者的区别就非常小了。对，即使你很喜欢看书，但是如果你没有写下来，在第二大脑里回顾，那么这些宝贵的素材基本就算是消失了。</p>
-<p>所以重点是：<strong>我们必须把我们在刷这些知识时筛选出来的材料记录下来</strong>，这个记录的地方就是我们的第二大脑，它可以被方便的搜索，也可以被方便的浏览和新增笔记。</p>
-<p>只有这些写下来的东西的才是我们的，其他的一切都会随着时间的消逝逐渐被遗忘。</p>
-<p>所以仔细想一想，如果我在过去的 10 年都没有记下一些东西，那么这 10 年我是不是相当于白活了？因为所有的感受都会随着时间慢慢被冲淡，只有写下的东西，拍摄的照片才能代表我们的智识足迹。</p>
-<h2>结论</h2>
-<p>如果把时间拉长后，你会发现刷社交网络，阅读文章和读书 几乎一样了，所以这就是为什么我们把这些东西记下来，当作我们的第二大脑。</p>
-<p>同时我也推荐你也看一下《打造第二大脑》这本书，参考书中的建议建立你的第二大脑。这样我们在刷社交网络，读文章，读书的时候，就可以把所有你觉得有需要记下来的东西，都保存在第二大脑中。</p>
-<p>我的博客目前极大的充当了这个第二大脑，但是我的照片管理目前一团遭，我还在探索如何让照片保存，浏览，搜索流程上变得更流畅，等我探索出来之后，再写一篇文章分享我的经验～</p>
+<p>A personal microblogging system as smooth as <a href="https://threads.com">https://threads.com</a>.</p>
 <blockquote>
-<p>由于我阅读的是用<a href="https://immersivetranslate.com/">沉浸式翻译</a>制作的双语电子书，它的英文原文相对很简单，所以我可以在遛狗的时候只看原文，并且读出来，遇到不懂的原文，再看一下译文这样，所以进度很慢，截止目前进度差不多 57%，等我读完之后，我会重新规划一下我的第二大脑运行流程，同时，本博客绝对会是一个非常重要的地方。</p>
+<p><strong>Jant</strong> = Jantelagen (Law of Jante)<br>Low-key, de-socialized personal expression.</p>
 </blockquote>
-',NULL,NULL,NULL,NULL,NULL,NULL,1770727016,1770727016,1770734841);
-INSERT INTO posts VALUES(8,'article','featured','在遛狗的时候用 Kindle 读书',NULL,'在如今的时代里，一个人想要坚持看书其实挺困难的。我经常怀疑现代科技对人脑的刺激已经无法让人类做像读书这样需要长时间保持专注的事了，所以对于已经有读书习惯的人，我真的很羡慕他们。对我来说，尽管我非常赞同读书的意义，但即便如此，像我这种没有在小时候培养起读书习惯，后来又被互联网把眼球喂刁的人来说，要做到每天都能看书，其实还挺困难的，因为通常来说，互联网上总有更吸引我的东西。
-
-倒不是说读书是一种有用但做起来无聊的事。因为读书不像抖音的15秒短视频，第一眼就能吸引你的眼球，书的问题是：一般都需要读上那么一两章，才能进入“抖音”状态，这个时候就不需要外力强迫自己了，书籍本身的乐趣就会吸引你继续看下去（如果还是没有吸引力，那说明这本书不适合你，没必要继续看下去了），所以读书的难点从来都是能不能先耐心读完前两章。
-
-我以前的读书契机主要有以下几个：
-
-1. 看完某部电影，想看原著，于是会有机会看一本书。（通常来讲，我觉得原著都比电影精彩，也有极少部分原著和电影都非常精彩，比如《银翼杀手》，《那不勒斯四部曲》等）
-2. 坐火车或者飞机的时候。（无网络且大块时间）
-3. 在网上看到别人的强烈推荐，而我也感兴趣的时候
-
-这种看书的习惯其实只会让我读到一些我非常感兴趣的书，而那些看起来可有可无的书，比如《堂吉柯德》，《百年孤独》就不会被选中。
-
-幸运的是，我在最近一年的时间里，找到了一个稳定的时间块和稳定的工具来看书，就是利用遛狗时间和 Kindle。
-
-这个时间段很稳定，对我来说是不可抗力，无论风吹日晒，每天遛狗2次是免不了的。每次大约15-30分钟左右，不长不短，身边没有电脑，我也故意不开手机套餐的流量，这个时间段就很适合强迫自己做一些当做但是很难做的事，比如开始一本新书的阅读。
-
-Kindle 这个工具也必不可少，它有几个特点特别适合在遛狗的时候用：
-
-1. 在阳光直射下，Kindle 的屏幕异常的清晰，清晰到什么程度？就是我经常专门跑到阳光下去用 Kindle
-   ，我觉得都可以把墨水屏名字改为阳光屏，这样才更突出 Kindle 最大的特点。我遛狗的环境又刚好是户外，在这种情境下阅读 Kindle 是一种享受。
-2. Kindle 非常轻，182g，屏幕大小对我来说非常合适，我的裤兜可以装的下，在路上拿在手上看很轻松。
-3. Kindle 还有背光，晚上遛狗也能轻松应对
-4. Kindle 的离线化设计，所有东西都是离线可用的，没有任何打扰，所有东西立即可用。
-5. Kindle 的电池，依我的看书（遛狗）频率，差不多是2周左右，需要充一次电。
-6. 它可以通过电子邮件发送电子书，甚至是RSS。比如我使用
-   [Kindle4RSS](https://kindle4rss.com/)的服务，每天自动向我发送端传媒最新文章的电子书，所以我甚至可以在遛狗的时候，离线地了解一些最新时事。
-
-通常来讲，我一般能在遛狗的 20 分钟左右的时间里看完一本书里的一章，所以平均下来，十来天就能读完一本完整的大书。
-
-在这一年里，我应该已经看完了 30 多本书，这可能是我过去 10 年的读书总量。
-
-这期间还有过一个小插曲，我在遛狗的时候，看了一本书，作者应该是写深度工作的[Cal Newport](https://www.newyorker.com/contributors/cal-newport)，他建议我们每天都要安排一个无目的的漫步时间，在此期间不做任何事，就只是漫无目的的走。他的理论是这种无压力的散步会激活你脑子里的一些东西，比如说你可能会想到一些伟大的创意，或者写作的灵感。所以有一段时间，我就尝试在遛狗的时候不看
-Kindle，改为漫无目的的边走边乱想。但是施行了一段时间之后，我好像啥也没想到，所以就放弃了。不过我怀疑是因为我脑袋空空，所以没法激活脑袋里的东西，也许再过两年再尝试下会有不错的收获。
-
-我很感谢自己最终能发现 Kindle 的优点，因为在此之前由于它拙劣的翻页体验，我把它闲置了6年多。而遛狗，让这种不好的体验变得微不足道。
-','<p>在如今的时代里，一个人想要坚持看书其实挺困难的。我经常怀疑现代科技对人脑的刺激已经无法让人类做像读书这样需要长时间保持专注的事了，所以对于已经有读书习惯的人，我真的很羡慕他们。对我来说，尽管我非常赞同读书的意义，但即便如此，像我这种没有在小时候培养起读书习惯，后来又被互联网把眼球喂刁的人来说，要做到每天都能看书，其实还挺困难的，因为通常来说，互联网上总有更吸引我的东西。</p>
-<p>倒不是说读书是一种有用但做起来无聊的事。因为读书不像抖音的15秒短视频，第一眼就能吸引你的眼球，书的问题是：一般都需要读上那么一两章，才能进入“抖音”状态，这个时候就不需要外力强迫自己了，书籍本身的乐趣就会吸引你继续看下去（如果还是没有吸引力，那说明这本书不适合你，没必要继续看下去了），所以读书的难点从来都是能不能先耐心读完前两章。</p>
-<p>我以前的读书契机主要有以下几个：</p>
-<ol>
-<li>看完某部电影，想看原著，于是会有机会看一本书。（通常来讲，我觉得原著都比电影精彩，也有极少部分原著和电影都非常精彩，比如《银翼杀手》，《那不勒斯四部曲》等）</li>
-<li>坐火车或者飞机的时候。（无网络且大块时间）</li>
-<li>在网上看到别人的强烈推荐，而我也感兴趣的时候</li>
-</ol>
-<p>这种看书的习惯其实只会让我读到一些我非常感兴趣的书，而那些看起来可有可无的书，比如《堂吉柯德》，《百年孤独》就不会被选中。</p>
-<p>幸运的是，我在最近一年的时间里，找到了一个稳定的时间块和稳定的工具来看书，就是利用遛狗时间和 Kindle。</p>
-<p>这个时间段很稳定，对我来说是不可抗力，无论风吹日晒，每天遛狗2次是免不了的。每次大约15-30分钟左右，不长不短，身边没有电脑，我也故意不开手机套餐的流量，这个时间段就很适合强迫自己做一些当做但是很难做的事，比如开始一本新书的阅读。</p>
-<p>Kindle 这个工具也必不可少，它有几个特点特别适合在遛狗的时候用：</p>
-<ol>
-<li>在阳光直射下，Kindle 的屏幕异常的清晰，清晰到什么程度？就是我经常专门跑到阳光下去用 Kindle<br>，我觉得都可以把墨水屏名字改为阳光屏，这样才更突出 Kindle 最大的特点。我遛狗的环境又刚好是户外，在这种情境下阅读 Kindle 是一种享受。</li>
-<li>Kindle 非常轻，182g，屏幕大小对我来说非常合适，我的裤兜可以装的下，在路上拿在手上看很轻松。</li>
-<li>Kindle 还有背光，晚上遛狗也能轻松应对</li>
-<li>Kindle 的离线化设计，所有东西都是离线可用的，没有任何打扰，所有东西立即可用。</li>
-<li>Kindle 的电池，依我的看书（遛狗）频率，差不多是2周左右，需要充一次电。</li>
-<li>它可以通过电子邮件发送电子书，甚至是RSS。比如我使用<br><a href="https://kindle4rss.com/">Kindle4RSS</a>的服务，每天自动向我发送端传媒最新文章的电子书，所以我甚至可以在遛狗的时候，离线地了解一些最新时事。</li>
-</ol>
-<p>通常来讲，我一般能在遛狗的 20 分钟左右的时间里看完一本书里的一章，所以平均下来，十来天就能读完一本完整的大书。</p>
-<p>在这一年里，我应该已经看完了 30 多本书，这可能是我过去 10 年的读书总量。</p>
-<p>这期间还有过一个小插曲，我在遛狗的时候，看了一本书，作者应该是写深度工作的<a href="https://www.newyorker.com/contributors/cal-newport">Cal Newport</a>，他建议我们每天都要安排一个无目的的漫步时间，在此期间不做任何事，就只是漫无目的的走。他的理论是这种无压力的散步会激活你脑子里的一些东西，比如说你可能会想到一些伟大的创意，或者写作的灵感。所以有一段时间，我就尝试在遛狗的时候不看<br>Kindle，改为漫无目的的边走边乱想。但是施行了一段时间之后，我好像啥也没想到，所以就放弃了。不过我怀疑是因为我脑袋空空，所以没法激活脑袋里的东西，也许再过两年再尝试下会有不错的收获。</p>
-<p>我很感谢自己最终能发现 Kindle 的优点，因为在此之前由于它拙劣的翻页体验，我把它闲置了6年多。而遛狗，让这种不好的体验变得微不足道。</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1770727463,1770727463,1770734864);
-INSERT INTO posts VALUES(9,'link','quiet','花钱的艺术',NULL,'你花钱的方式改变了别人看你的方式，而这些改变是你不想要的。','<p>你花钱的方式改变了别人看你的方式，而这些改变是你不想要的。</p>
-','https://share.owenyoung.com/upload/ape-bee-jaguar',NULL,'share.owenyoung.com',NULL,NULL,NULL,1770727557,1770727557,1770734833);
-INSERT INTO posts VALUES(10,'page','unlisted','About','about','[Derek Sivers](https://sive.rs/)
-在[《Anything You Want》](https://sive.rs/a)中写道："我遇到的所有最酷的人，都是通过我写的东西找到我的人。"，从我有限的经验来看，我也是，所以请不要吝啬，如果你觉得我们的气质有点契合，那么
-i 人也可以先建立一种联系（因为是 i
-人，所以我们可以只建立联系而暂时不说话，但希望你在添加我的时候附上你的公开主页如博客，小红书，即刻，推特等等（还没有？快去[建立](https://pika.page/)！）
-）！
-
-## 我的生活哲学
-
-**追求注意力自由而不是财富自由。**
-
-虽然财富自由会有更大的机率获得注意力自由，但是追求注意力自由却不一定非要财富自由。
-
-如果我们能抱着一种朴素主义的生活态度，其实根本不需要那么多的财富去获取注意力自由。
-
-我们需要多少钱才能辞职过上注意力自由的生活？换句话说，需要攒多少钱，就可以 10-15
-年不用工作也没问题？
-
-在中国的语境下，维持一个健康而简朴的生活，每个人 5
-万元/年可能是一个不错的平衡。也就是说没有负债，50 万元以上的存款，即可享受 10
-年以上的注意力自由，我想称之为“穷有闲阶级”。
-
-但是注意力自由并不意味着我们完全不会收入，恰恰相反，只有注意力自由之后，我们才能发挥真正的创造力，没有边界的探索任何事情。而且，在这个过程中，我们非常有可能获得一些未知的财富。即便
-10 年过后没有获得任何财富，在经历 10
-年的闲暇时间之后，我们一定在各方面都成为了一个更好的自己，从而拥有更多的能力去做任何事情。
-
-我知道整个世界都是建立在工作伦理上的，所以我以前也会对闲暇时间感到焦虑，浪费。但是在经历过大公司，独立开发者，创业公司的阶段后，我现在可以对闲暇时间表达最强烈的赞美，如果我有公司，我会聘用那些有幸拥有过更多闲暇时间的候选者，对我自己而言，我会将注意力自由作为人生最高的追求。我有倾向认为有更多闲暇时间的人通常会更博学，而较忙的人很可能在很多事情上很无知。
-
-在这里强调我的生活哲学是因为我很遗憾没有在更早的时候看到类似的想法，这导致我以前对闲暇时间感到焦虑。我想给那些正在经历闲暇时间并感到焦虑的同学一个笃定的视角，希望我们最终都能获得注意力自由。
-
-## 找到我的方式
-
-- 我为这个博客建立的 Telegram 讨论群组：<https://t.me/+m124rcTl9FE3M2Vh>
-- 我的电子邮件：`owen#owenyoung.com` (把`#`换成`@`)
-- 推特 [@OwenYoungZh](https://twitter.com/OwenYoungZh)
-- Telegram 频道: <https://t.me/owenyoungzh>
-- Telegram 私人账户: <https://t.me/itsowenyoung>
-- 微信朋友圈（请大胆通过邮件或者 [Telegram](https://t.me/itsowenyoung)
-  联系我索要微信号，或者告诉我你的微信号，希望能同时附上你的公开主页如博客，小红书，即刻，推特等等（还没有？快去[建立](https://pika.page/)！)
-- Twitter English [@TheOwenYoung](https://twitter.com/TheOwenYoung)
-
-## 关于这个博客
-
-我喜欢用明文纯文本记录东西，因为这是最通用的格式，不会被运营商锁定，在所有平台都能开箱即用的直接编辑。该博客全部内容托管在这个[Github 的 Repo 里](https://github.com/theowenyoung/blog)，用[Zola (getzola.org)](https://www.getzola.org/)生成，最终部署在[Cloudflare Pages](https://pages.cloudflare.com/)上。
-
-和大多数的博客不一样的是，这个博客不只是文章，我把这里当成是我的数字花园，里面主要包含[6 类内容](/categories/)：
-
-- [博文](/blog/),
-  这个和传统的博客类似，当我想写点什么的时候我会把它放在这个类别下,博文主要分为：
-
-  - [技术类](/categories/dev/)，这个下面放纯技术类的文章。
-  - [通用](/categories/random/),这个下面放任何其他类的文章，我不喜欢分类，对于一篇要写的文章来说，我只能一眼判断出这篇文章是技术还是非技术，所以我只有这两个分类。
-
-- [我在阅读什么](/categories/journal/)
-  我会把定期把我最近看过的优质文章的链接，以及我的对此的简要总结放在这个分类下。
-- [笔记](/categories/notes/)，我会精心收集某个主题下相关的链接，然后把他们归类到某个主题的笔记里，比如：
-  - [探索互联网上高质量的内容](@/sources.md)
-  - [最好用的工具集合](@/tools.md)
-  - [有意思的问题收集](@/answers.md)
-  - [收集一些给人灵感的东西](@/inspires.md)
-  - [收集值得阅读的文章](@/articles.md)
-  - [收集一些有意思的社区](@/communities.md)
-  - [英语学习相关资源](@/english-learning.md)
-- [读书笔记](/categories/books/)
-  读书如果只是阅读的话，那么随着时间的流逝，总会慢慢淡忘，所以我要求自己对每本书都要写读书笔记，大多数时候是摘抄其中的一些高亮段落。
-- [短想法](/thoughts/)
-  其实就只是一篇长期更新的[普通的文章](https://github.com/theowenyoung/blog/edit/main/content/thoughts.md)，但是我在里面写我的各种短想法，相当于推特，但是不会出现在别人的时间轴上，所以我可以在里面随便写，不用担心别人的眼光。
-- [引用](/quotes/)
-  也是一篇长期更新的[普通文章](https://github.com/theowenyoung/blog/edit/main/content/quotes.md)，我在里面记录我看到的一些有意思的高亮段落。
-
-我有一个
-[Now 页面](@/pages/now.md)，这个页面是响应[Derek Sivers](https://sive.rs/)的呼吁，用[Now 页面](https://nownownow.com/about)
-`/now/` 代替 About 页面，用于记录最近在做的事，`/about/`页面是只是一个概览页面。
-[点这里查看我最近在做什么](@/pages/now.md)
-
-我还有一个[Change Log](/en/changelog/)页面，里面会存放这个博客本身的更新日志。
-
-这个网站遵循 [IndieWeb](@/blog/indieweb.en.md) 的规范，支持
-[webmention](https://indieweb.org/Webmention)，
-但是我现在有点无感了，因为现在对于这种高门槛的技术越来越失去兴趣，它没有促进交流，反而增加了很多障碍，但是我一时之间又没找到什么喜欢的替代品，很可能最后会自己再造一个轮子。
-
-这个博客加入了[Webring](https://xn--sr8hvo.ws/)，这是一个古早的互联网概念，大概是这样：加入
-Webring 的博客，需要在底部加一个如下的链接：
-
-[←](https://xn--sr8hvo.ws/%F0%9F%93%AE%F0%9F%86%99%F0%9F%93%A9/previous) An
-IndieWeb Webring 🕸💍
-[→](https://xn--sr8hvo.ws/%F0%9F%93%AE%F0%9F%86%99%F0%9F%93%A9/next)
-
-点击前后的箭头链接，会随机的跳转到另一个 Webring
-里的博客，这样就大大的增加了独立博客的可发现性，经常能发现一些很有意思的博客，比友情链接这种方式要更好。
-
-## 其他链接
-
-- Github [@theowenyoung](https://github.com/theowenyoung)
-- Github [Sponsors](https://github.com/sponsors/theowenyoung)
-- Patreon [@theowenyoung](https://www.patreon.com/theowenyoung)
-','<p><a href="https://sive.rs/">Derek Sivers</a><br>在<a href="https://sive.rs/a">《Anything You Want》</a>中写道：&quot;我遇到的所有最酷的人，都是通过我写的东西找到我的人。&quot;，从我有限的经验来看，我也是，所以请不要吝啬，如果你觉得我们的气质有点契合，那么<br>i 人也可以先建立一种联系（因为是 i<br>人，所以我们可以只建立联系而暂时不说话，但希望你在添加我的时候附上你的公开主页如博客，小红书，即刻，推特等等（还没有？快去<a href="https://pika.page/">建立</a>！）<br>）！</p>
-<h2>我的生活哲学</h2>
-<p><strong>追求注意力自由而不是财富自由。</strong></p>
-<p>虽然财富自由会有更大的机率获得注意力自由，但是追求注意力自由却不一定非要财富自由。</p>
-<p>如果我们能抱着一种朴素主义的生活态度，其实根本不需要那么多的财富去获取注意力自由。</p>
-<p>我们需要多少钱才能辞职过上注意力自由的生活？换句话说，需要攒多少钱，就可以 10-15<br>年不用工作也没问题？</p>
-<p>在中国的语境下，维持一个健康而简朴的生活，每个人 5<br>万元/年可能是一个不错的平衡。也就是说没有负债，50 万元以上的存款，即可享受 10<br>年以上的注意力自由，我想称之为“穷有闲阶级”。</p>
-<p>但是注意力自由并不意味着我们完全不会收入，恰恰相反，只有注意力自由之后，我们才能发挥真正的创造力，没有边界的探索任何事情。而且，在这个过程中，我们非常有可能获得一些未知的财富。即便<br>10 年过后没有获得任何财富，在经历 10<br>年的闲暇时间之后，我们一定在各方面都成为了一个更好的自己，从而拥有更多的能力去做任何事情。</p>
-<p>我知道整个世界都是建立在工作伦理上的，所以我以前也会对闲暇时间感到焦虑，浪费。但是在经历过大公司，独立开发者，创业公司的阶段后，我现在可以对闲暇时间表达最强烈的赞美，如果我有公司，我会聘用那些有幸拥有过更多闲暇时间的候选者，对我自己而言，我会将注意力自由作为人生最高的追求。我有倾向认为有更多闲暇时间的人通常会更博学，而较忙的人很可能在很多事情上很无知。</p>
-<p>在这里强调我的生活哲学是因为我很遗憾没有在更早的时候看到类似的想法，这导致我以前对闲暇时间感到焦虑。我想给那些正在经历闲暇时间并感到焦虑的同学一个笃定的视角，希望我们最终都能获得注意力自由。</p>
-<h2>找到我的方式</h2>
+<h2>What is Jant?</h2>
+<p>Jant is a single-author microblog for people who want to share thoughts without the noise of social media. No followers, no likes, no retweets—just your words.</p>
+<p><strong>Features</strong>:</p>
 <ul>
-<li>我为这个博客建立的 Telegram 讨论群组：<a href="https://t.me/+m124rcTl9FE3M2Vh">https://t.me/+m124rcTl9FE3M2Vh</a></li>
-<li>我的电子邮件：<code>owen#owenyoung.com</code> (把<code>#</code>换成<code>@</code>)</li>
-<li>推特 <a href="https://twitter.com/OwenYoungZh">@OwenYoungZh</a></li>
-<li>Telegram 频道: <a href="https://t.me/owenyoungzh">https://t.me/owenyoungzh</a></li>
-<li>Telegram 私人账户: <a href="https://t.me/itsowenyoung">https://t.me/itsowenyoung</a></li>
-<li>微信朋友圈（请大胆通过邮件或者 <a href="https://t.me/itsowenyoung">Telegram</a><br>联系我索要微信号，或者告诉我你的微信号，希望能同时附上你的公开主页如博客，小红书，即刻，推特等等（还没有？快去<a href="https://pika.page/">建立</a>！)</li>
-<li>Twitter English <a href="https://twitter.com/TheOwenYoung">@TheOwenYoung</a></li>
+<li>Multiple content types: notes, articles, links, quotes, images</li>
+<li>Thread support for longer thoughts</li>
+<li>Collections for curated topics</li>
+<li>Beautiful, themeable design</li>
+<li>Deploys to Cloudflare Workers in minutes</li>
 </ul>
-<h2>关于这个博客</h2>
-<p>我喜欢用明文纯文本记录东西，因为这是最通用的格式，不会被运营商锁定，在所有平台都能开箱即用的直接编辑。该博客全部内容托管在这个<a href="https://github.com/theowenyoung/blog">Github 的 Repo 里</a>，用<a href="https://www.getzola.org/">Zola (getzola.org)</a>生成，最终部署在<a href="https://pages.cloudflare.com/">Cloudflare Pages</a>上。</p>
-<p>和大多数的博客不一样的是，这个博客不只是文章，我把这里当成是我的数字花园，里面主要包含<a href="/categories/">6 类内容</a>：</p>
+<h2>Quick Start</h2>
+<pre><code class="language-bash"># Create a new Jant site
+pnpm create jant my-blog
+
+# Start development
+cd my-blog
+pnpm dev
+
+# Deploy to Cloudflare
+pnpm run deploy
+</code></pre>
+<h2>Documentation</h2>
 <ul>
-<li><p><a href="/blog/">博文</a>,<br>这个和传统的博客类似，当我想写点什么的时候我会把它放在这个类别下,博文主要分为：</p>
-<ul>
-<li><a href="/categories/dev/">技术类</a>，这个下面放纯技术类的文章。</li>
-<li><a href="/categories/random/">通用</a>,这个下面放任何其他类的文章，我不喜欢分类，对于一篇要写的文章来说，我只能一眼判断出这篇文章是技术还是非技术，所以我只有这两个分类。</li>
+<li><a href="docs/getting-started.md">Getting Started</a></li>
+<li><a href="docs/deployment.md">Deployment</a></li>
+<li><a href="docs/configuration.md">Configuration</a></li>
+<li><a href="docs/theming.md">Theming</a></li>
+<li><a href="docs/API.md">API Reference</a></li>
 </ul>
-</li>
-<li><p><a href="/categories/journal/">我在阅读什么</a><br>我会把定期把我最近看过的优质文章的链接，以及我的对此的简要总结放在这个分类下。</p>
-</li>
-<li><p><a href="/categories/notes/">笔记</a>，我会精心收集某个主题下相关的链接，然后把他们归类到某个主题的笔记里，比如：</p>
-<ul>
-<li><a href="@/sources.md">探索互联网上高质量的内容</a></li>
-<li><a href="@/tools.md">最好用的工具集合</a></li>
-<li><a href="@/answers.md">有意思的问题收集</a></li>
-<li><a href="@/inspires.md">收集一些给人灵感的东西</a></li>
-<li><a href="@/articles.md">收集值得阅读的文章</a></li>
-<li><a href="@/communities.md">收集一些有意思的社区</a></li>
-<li><a href="@/english-learning.md">英语学习相关资源</a></li>
-</ul>
-</li>
-<li><p><a href="/categories/books/">读书笔记</a><br>读书如果只是阅读的话，那么随着时间的流逝，总会慢慢淡忘，所以我要求自己对每本书都要写读书笔记，大多数时候是摘抄其中的一些高亮段落。</p>
-</li>
-<li><p><a href="/thoughts/">短想法</a><br>其实就只是一篇长期更新的<a href="https://github.com/theowenyoung/blog/edit/main/content/thoughts.md">普通的文章</a>，但是我在里面写我的各种短想法，相当于推特，但是不会出现在别人的时间轴上，所以我可以在里面随便写，不用担心别人的眼光。</p>
-</li>
-<li><p><a href="/quotes/">引用</a><br>也是一篇长期更新的<a href="https://github.com/theowenyoung/blog/edit/main/content/quotes.md">普通文章</a>，我在里面记录我看到的一些有意思的高亮段落。</p>
-</li>
-</ul>
-<p>我有一个<br><a href="@/pages/now.md">Now 页面</a>，这个页面是响应<a href="https://sive.rs/">Derek Sivers</a>的呼吁，用<a href="https://nownownow.com/about">Now 页面</a><br><code>/now/</code> 代替 About 页面，用于记录最近在做的事，<code>/about/</code>页面是只是一个概览页面。<br><a href="@/pages/now.md">点这里查看我最近在做什么</a></p>
-<p>我还有一个<a href="/en/changelog/">Change Log</a>页面，里面会存放这个博客本身的更新日志。</p>
-<p>这个网站遵循 <a href="@/blog/indieweb.en.md">IndieWeb</a> 的规范，支持<br><a href="https://indieweb.org/Webmention">webmention</a>，<br>但是我现在有点无感了，因为现在对于这种高门槛的技术越来越失去兴趣，它没有促进交流，反而增加了很多障碍，但是我一时之间又没找到什么喜欢的替代品，很可能最后会自己再造一个轮子。</p>
-<p>这个博客加入了<a href="https://xn--sr8hvo.ws/">Webring</a>，这是一个古早的互联网概念，大概是这样：加入<br>Webring 的博客，需要在底部加一个如下的链接：</p>
-<p><a href="https://xn--sr8hvo.ws/%F0%9F%93%AE%F0%9F%86%99%F0%9F%93%A9/previous">←</a> An<br>IndieWeb Webring 🕸💍<br><a href="https://xn--sr8hvo.ws/%F0%9F%93%AE%F0%9F%86%99%F0%9F%93%A9/next">→</a></p>
-<p>点击前后的箭头链接，会随机的跳转到另一个 Webring<br>里的博客，这样就大大的增加了独立博客的可发现性，经常能发现一些很有意思的博客，比友情链接这种方式要更好。</p>
-<h2>其他链接</h2>
-<ul>
-<li>Github <a href="https://github.com/theowenyoung">@theowenyoung</a></li>
-<li>Github <a href="https://github.com/sponsors/theowenyoung">Sponsors</a></li>
-<li>Patreon <a href="https://www.patreon.com/theowenyoung">@theowenyoung</a></li>
-</ul>
-',NULL,NULL,NULL,NULL,NULL,NULL,1770727612,1770727612,1770727612);
-INSERT INTO posts VALUES(11,'image','quiet',NULL,NULL,'Image 1','<p>Image 1</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1770733473,1770733473,1770733847);
-INSERT INTO posts VALUES(12,'image','quiet','Image 2',NULL,'Image 2 Desc','<p>Image 2 Desc</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1770733590,1770733590,1770734789);
+<h2>Development</h2>
+<p>Requires <a href="https://mise.jdx.dev/">mise</a> — it manages Node.js and pnpm automatically.</p>
+<pre><code class="language-bash"># Install mise (macOS/Linux)
+curl https://mise.run | sh
+
+# Clone and setup
+git clone https://github.com/jant-me/jant.git
+cd jant
+mise install   # installs Node.js and pnpm
+pnpm install   # installs dependencies
+
+# Start development server (http://localhost:9019)
+mise run dev
+</code></pre>
+<p>See <a href="CONTRIBUTING.md">CONTRIBUTING.md</a> for code style, PR process, and release workflow.</p>
+<h2>Philosophy</h2>
+<p>Jant is built on the idea that not everything needs to be optimized for engagement. Write for yourself. Share if you want. No metrics, no pressure.</p>
+<h2>License</h2>
+<p>AGPL-3.0</p>
+',NULL,NULL,NULL,NULL,NULL,NULL,1770759271,1770759271,1770759271);
 
 -- collections
-INSERT INTO collections VALUES(1,'liked-images','给人灵感的图片',NULL,1770733901,1770733901);
-INSERT INTO collections VALUES(2,'yes','发人深醒',NULL,1770734820,1770734820);
+INSERT INTO collections VALUES(1,'getting-started','Getting Started','Resources for getting started with Jant',1770689095,1770689095);
+INSERT INTO collections VALUES(2,'inspires','Inspires',NULL,1770758555,1770758555);
 
 -- post_collections
-INSERT INTO post_collections VALUES(12,1,1770734789);
-INSERT INTO post_collections VALUES(9,2,1770734833);
-INSERT INTO post_collections VALUES(7,2,1770734841);
+INSERT INTO post_collections VALUES(1,1,1770689095);
+INSERT INTO post_collections VALUES(6,2,1770758568);
 
 -- media
-INSERT INTO media VALUES('019c4797-593d-7e71-bac7-af328774e91e',11,'1770727627050-xrhl2o.webp','CleanShot 2026-02-10 at 19.37.25@2x.webp','image/webp',228300,'uploads/1770727627050-xrhl2o.webp',NULL,NULL,NULL,1770727627,0,NULL);
-INSERT INTO media VALUES('019c47f1-c288-7a78-a8b3-8979625b5176',12,'1770733552257-ztkxs7.webp','CleanShot 2026-02-10 at 20.58.33@2x.webp','image/webp',27496,'uploads/1770733552257-ztkxs7.webp',NULL,NULL,NULL,1770733552,1,NULL);
-INSERT INTO media VALUES('019c47f1-f80c-77be-b2d5-bbb0d8e82673',12,'1770733565958-xbvhb4.webp','CleanShot 2026-02-10 at 22.04.03@2x.webp','image/webp',50038,'uploads/1770733565958-xbvhb4.webp',NULL,NULL,NULL,1770733565,0,NULL);
+INSERT INTO media VALUES('019c496c-46bd-7954-bd6a-77b1b8f1d451',NULL,'019c496c-46bd-7954-bd6a-77b1b8f1d451.webp','tegan-conway-KaFfNTw8OYQ-unsplash.webp','image/webp',715364,'media/2026/02/019c496c-46bd-7954-bd6a-77b1b8f1d451.webp',NULL,NULL,NULL,1770758358,0,NULL,'r2');
+INSERT INTO media VALUES('019c496c-5e44-70d2-ac8a-c0c0bdaab65c',6,'019c496c-5e44-70d2-ac8a-c0c0bdaab65c.webp','land-o-lakes-inc-9w6Qb-dqBwE-unsplash.webp','image/webp',306042,'media/2026/02/019c496c-5e44-70d2-ac8a-c0c0bdaab65c.webp',NULL,NULL,NULL,1770758364,3,NULL,'r2');
+INSERT INTO media VALUES('019c496d-5011-7981-89a0-b4373a695d78',6,'019c496d-5011-7981-89a0-b4373a695d78.webp','land-o-lakes-inc-k71TQkbVIgI-unsplash.webp','image/webp',597680,'media/2026/02/019c496d-5011-7981-89a0-b4373a695d78.webp',NULL,NULL,NULL,1770758426,2,NULL,'r2');
+INSERT INTO media VALUES('019c496d-630c-70b4-9004-51a194746566',6,'019c496d-630c-70b4-9004-51a194746566.webp','thingsneverchange-CgHNmQ0c2w4-unsplash.webp','image/webp',358320,'media/2026/02/019c496d-630c-70b4-9004-51a194746566.webp',NULL,NULL,NULL,1770758431,1,NULL,'r2');
+INSERT INTO media VALUES('019c496d-720f-70d2-98b8-3779457de73c',6,'019c496d-720f-70d2-98b8-3779457de73c.webp','willian-justen-de-vasconcellos-7jg7Y_Mlf2Q-unsplash.webp','image/webp',478956,'media/2026/02/019c496d-720f-70d2-98b8-3779457de73c.webp',NULL,NULL,NULL,1770758435,0,NULL,'r2');
+INSERT INTO media VALUES('019c496e-6904-7f61-b14f-080035ffe23f',5,'019c496e-6904-7f61-b14f-080035ffe23f.webp','richard-stachmann-Es--yoQocSM-unsplash.webp','image/webp',381534,'media/2026/02/019c496e-6904-7f61-b14f-080035ffe23f.webp',NULL,NULL,NULL,1770758498,0,NULL,'r2');

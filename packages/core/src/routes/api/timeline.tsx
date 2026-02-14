@@ -9,8 +9,8 @@ import type { Bindings, TimelineItemView } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { sse } from "../../lib/sse.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
-import { TimelineItem } from "../../theme/components/timeline/TimelineItem.js";
-import { ThreadPreview as DefaultThreadPreview } from "../../theme/components/timeline/ThreadPreview.js";
+import { TimelineItem } from "../../themes/minimal/timeline/TimelineItem.js";
+import { ThreadPreview as DefaultThreadPreview } from "../../themes/minimal/timeline/ThreadPreview.js";
 import { createMediaContext, toPostView, toPostViews } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -140,7 +140,7 @@ timelineApiRoutes.get("/", async (c) => {
 
   // Build load-more button HTML
   const loadMoreHtml = nextCursor
-    ? `<div id="load-more-container" class="mt-6 text-center"><button class="btn btn-outline" data-on:click="@get('/api/timeline?cursor=${nextCursor}')">Load more</button></div>`
+    ? `<div id="load-more-container" class="mt-8 text-center"><button class="text-sm text-muted-foreground hover:text-foreground hover:underline" data-on:click="@get('/api/timeline?cursor=${nextCursor}')">Load more</button></div>`
     : "";
 
   return sse(c, async (stream) => {

@@ -4,11 +4,13 @@
  * @packageDocumentation
  */
 
-import { createApp as _createApp } from "./app.js";
-
 // Main app factory
 export { createApp } from "./app.js";
 export type { App, AppVariables } from "./app.js";
+
+// Default theme
+export { theme as minimalTheme } from "./themes/minimal/index.js";
+export type { ThemeOptions as MinimalThemeOptions } from "./themes/minimal/index.js";
 
 // Types
 export type {
@@ -96,6 +98,3 @@ export {
   defaultAtomRenderer,
   defaultSitemapRenderer,
 } from "./lib/feed.js";
-
-// Default export for running core directly (e.g., for development)
-export default _createApp();

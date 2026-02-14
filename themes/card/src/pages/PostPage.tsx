@@ -1,14 +1,13 @@
 /**
- * Default Post Page Component
+ * Card Theme - Post Page
  *
- * Renders a single post with media gallery.
- * Theme authors can replace this entirely via ThemeComponents.PostPage.
+ * Single post view with media gallery.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { PostPageProps } from "../../types.js";
-import { MediaGallery as DefaultMediaGallery } from "../components/MediaGallery.js";
+import type { PostPageProps } from "@jant/core";
+import { MediaGallery as DefaultMediaGallery } from "@jant/core/theme";
 
 export const PostPage: FC<PostPageProps> = ({ post, theme }) => {
   const { t } = useLingui();

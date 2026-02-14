@@ -1,18 +1,17 @@
 /**
- * Default Single Page Component
+ * Minimal Theme - Single Page
  *
- * Renders a custom page (type "page").
- * Theme authors can replace this entirely via ThemeComponents.SinglePage.
+ * Simple page content layout for type="page" posts.
  */
 
 import type { FC } from "hono/jsx";
-import type { SinglePageProps } from "../../types.js";
+import type { SinglePageProps } from "../../../types.js";
 
 export const SinglePage: FC<SinglePageProps> = ({ page }) => {
   return (
     <article class="h-entry">
       {page.title && (
-        <h1 class="p-name text-3xl font-semibold mb-6">{page.title}</h1>
+        <h1 class="p-name text-2xl font-semibold mb-6">{page.title}</h1>
       )}
 
       <div

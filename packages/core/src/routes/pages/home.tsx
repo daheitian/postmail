@@ -10,7 +10,7 @@ import type { AppVariables } from "../../app.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { HomePage as DefaultHomePage } from "../../theme/pages/HomePage.js";
+import { HomePage as DefaultHomePage } from "../../themes/minimal/pages/HomePage.js";
 import { createMediaContext, toPostView, toPostViews } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };

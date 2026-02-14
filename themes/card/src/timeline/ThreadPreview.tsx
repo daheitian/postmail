@@ -1,12 +1,12 @@
 /**
- * Thread Preview Component
+ * Card Theme - Thread Preview
  *
  * Inline thread preview: root card + compact replies + "show more" link.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { ThreadPreviewProps } from "../../../types.js";
+import type { ThreadPreviewProps } from "@jant/core";
 import { TimelineItem } from "./TimelineItem.js";
 import { TimelineItemFromPost } from "./TimelineItem.js";
 

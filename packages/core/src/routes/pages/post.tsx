@@ -5,7 +5,7 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { PostPage as DefaultPostPage } from "../../theme/pages/PostPage.js";
+import { PostPage as DefaultPostPage } from "../../themes/minimal/pages/PostPage.js";
 import * as sqid from "../../lib/sqid.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";

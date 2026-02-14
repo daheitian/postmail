@@ -1,16 +1,13 @@
 /**
- * Site Layout
+ * Card Theme - Site Layout
  *
- * Two-column layout for public pages with sidebar navigation.
+ * Two-column layout with sidebar navigation.
  * On mobile, uses a slide-out drawer menu.
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
-import type { NavLinkView, SiteLayoutProps } from "../../types.js";
+import type { NavLinkView, SiteLayoutProps } from "@jant/core";
 
-/**
- * Render navigation links with dot indicator for active state.
- */
 function NavLinks({ links }: { links: NavLinkView[] }) {
   return (
     <>
@@ -31,14 +28,16 @@ function NavLinks({ links }: { links: NavLinkView[] }) {
             class={`size-1.5 rounded-full shrink-0 ${link.isActive ? "bg-primary" : "bg-transparent"}`}
           />
           {link.label}
-          {link.isExternal && <span class="ml-1 text-xs opacity-50">↗</span>}
+          {link.isExternal && (
+            <span class="ml-1 text-xs opacity-50">&#8599;</span>
+          )}
         </a>
       ))}
     </>
   );
 }
 
-export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
+export const CardSiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   siteName,
   links,
   children,

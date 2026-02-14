@@ -8,7 +8,7 @@ import { Hono } from "hono";
 import type { Bindings, PostType } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { POST_TYPES } from "../../types.js";
-import { ArchivePage as DefaultArchivePage } from "../../theme/pages/ArchivePage.js";
+import { ArchivePage as DefaultArchivePage } from "../../themes/minimal/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { createMediaContext, toArchiveGroups } from "../../lib/view.js";

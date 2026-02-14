@@ -49,7 +49,7 @@ msgid "Add Media"
 msgstr "添加媒體"
 
 #. @context: Archive filter - all types
-#: src/theme/pages/ArchivePage.tsx:92
+#: src/themes/minimal/pages/ArchivePage.tsx:90
 msgid "All"
 msgstr "所有"
 
@@ -59,7 +59,7 @@ msgid "Appearance"
 msgstr "外觀"
 
 #. @context: Archive page title
-#: src/theme/pages/ArchivePage.tsx:77
+#: src/themes/minimal/pages/ArchivePage.tsx:76
 msgid "Archive"
 msgstr "檔案館"
 
@@ -73,12 +73,12 @@ msgstr ""
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:74
 #: src/theme/components/TypeBadge.tsx:20
-#: src/theme/pages/ArchivePage.tsx:18
+#: src/themes/minimal/pages/ArchivePage.tsx:17
 msgid "Article"
 msgstr "文章"
 
 #. @context: Post type label plural - articles
-#: src/theme/pages/ArchivePage.tsx:43
+#: src/themes/minimal/pages/ArchivePage.tsx:42
 msgid "Articles"
 msgstr "文章"
 
@@ -137,7 +137,7 @@ msgid "Color theme"
 msgstr "顏色主題"
 
 #. @context: Setup form submit button
-#: src/app.tsx:254
+#: src/app.tsx:277
 msgid "Complete Setup"
 msgstr "完成設置"
 
@@ -147,7 +147,7 @@ msgid "Confirm New Password"
 msgstr "確認新密碼"
 
 #. @context: Password reset form field
-#: src/app.tsx:515
+#: src/app.tsx:538
 msgid "Confirm Password"
 msgstr "確認密碼"
 
@@ -186,7 +186,7 @@ msgid "Create Redirect"
 msgstr "建立重定向"
 
 #. @context: Setup page description
-#: src/app.tsx:194
+#: src/app.tsx:217
 msgid "Create your admin account."
 msgstr "建立您的管理員帳戶。"
 
@@ -252,7 +252,7 @@ msgid "Deleting this media will remove it permanently from storage."
 msgstr "刪除此媒體將永久從存儲中移除它。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:353
+#: src/app.tsx:376
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "示範帳戶已預填。只需點擊登入。"
 
@@ -333,13 +333,13 @@ msgstr "編輯文章"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:224
-#: src/app.tsx:368
+#: src/app.tsx:247
+#: src/app.tsx:391
 msgid "Email"
 msgstr "電子郵件"
 
 #. @context: Password reset page description
-#: src/app.tsx:484
+#: src/app.tsx:507
 msgid "Enter your new password."
 msgstr "請輸入您的新密碼。"
 
@@ -351,12 +351,12 @@ msgid "Featured"
 msgstr "精選"
 
 #. @context: Search results count - multiple
-#: src/theme/pages/SearchPage.tsx:77
+#: src/themes/minimal/pages/SearchPage.tsx:73
 msgid "Found {count} results"
 msgstr "找到 {count} 個結果"
 
 #. @context: Search results count - single
-#: src/theme/pages/SearchPage.tsx:73
+#: src/themes/minimal/pages/SearchPage.tsx:69
 msgid "Found 1 result"
 msgstr "找到 1 個結果"
 
@@ -377,12 +377,12 @@ msgstr "一般設定"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:83
 #: src/theme/components/TypeBadge.tsx:29
-#: src/theme/pages/ArchivePage.tsx:27
+#: src/themes/minimal/pages/ArchivePage.tsx:26
 msgid "Image"
 msgstr "圖片"
 
 #. @context: Post type label plural - images
-#: src/theme/pages/ArchivePage.tsx:55
+#: src/themes/minimal/pages/ArchivePage.tsx:54
 msgid "Images"
 msgstr "圖片"
 
@@ -392,7 +392,7 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "圖片會自動優化：調整大小至最大 1920 像素，轉換為 WebP 格式，並去除元數據。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:559
+#: src/app.tsx:582
 msgid "Invalid or Expired Link"
 msgstr "無效或已過期的連結"
 
@@ -411,19 +411,19 @@ msgstr "語言"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:77
 #: src/theme/components/TypeBadge.tsx:24
-#: src/theme/pages/ArchivePage.tsx:22
+#: src/themes/minimal/pages/ArchivePage.tsx:21
 msgid "Link"
 msgstr "連結"
 
 #. @context: Post type label plural - links
-#: src/theme/pages/ArchivePage.tsx:47
+#: src/themes/minimal/pages/ArchivePage.tsx:46
 msgid "Links"
 msgstr "連結"
 
 #. @context: Button to load more posts in timeline
 #. @context: Pagination button - load more items
 #: src/theme/components/Pagination.tsx:103
-#: src/theme/components/timeline/TimelineFeed.tsx:47
+#: src/themes/minimal/timeline/TimelineFeed.tsx:48
 msgid "Load more"
 msgstr "載入更多"
 
@@ -500,7 +500,7 @@ msgstr "新頁面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:499
+#: src/app.tsx:522
 #: src/routes/dash/settings.tsx:442
 msgid "New Password"
 msgstr "新密碼"
@@ -551,21 +551,21 @@ msgid "No pages yet."
 msgstr "尚未有頁面。"
 
 #. @context: Archive empty state
-#: src/theme/pages/ArchivePage.tsx:112
+#: src/themes/minimal/pages/ArchivePage.tsx:110
 msgid "No posts found."
 msgstr "未找到任何帖子。"
 
 #. @context: Empty state message
 #. @context: Empty state message
 #: src/routes/dash/collections.tsx:243
-#: src/theme/pages/CollectionPage.tsx:30
+#: src/themes/minimal/pages/CollectionPage.tsx:29
 msgid "No posts in this collection."
 msgstr "此集合中沒有帖子。"
 
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
 #: src/theme/components/PostList.tsx:25
-#: src/theme/pages/HomePage.tsx:27
+#: src/themes/minimal/pages/HomePage.tsx:26
 msgid "No posts yet."
 msgstr "尚未有帖子。"
 
@@ -575,7 +575,7 @@ msgid "No redirects configured."
 msgstr "未配置任何重定向。"
 
 #. @context: Search empty results
-#: src/theme/pages/SearchPage.tsx:68
+#: src/themes/minimal/pages/SearchPage.tsx:64
 msgid "No results found."
 msgstr "未找到結果。"
 
@@ -584,12 +584,12 @@ msgstr "未找到結果。"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:71
 #: src/theme/components/TypeBadge.tsx:19
-#: src/theme/pages/ArchivePage.tsx:17
+#: src/themes/minimal/pages/ArchivePage.tsx:16
 msgid "Note"
 msgstr "備註"
 
 #. @context: Post type label plural - notes
-#: src/theme/pages/ArchivePage.tsx:39
+#: src/themes/minimal/pages/ArchivePage.tsx:38
 msgid "Notes"
 msgstr "筆記"
 
@@ -598,7 +598,7 @@ msgstr "筆記"
 #. @context: Post type label - page
 #: src/routes/dash/pages.tsx:125
 #: src/theme/components/TypeBadge.tsx:33
-#: src/theme/pages/ArchivePage.tsx:31
+#: src/themes/minimal/pages/ArchivePage.tsx:30
 msgid "Page"
 msgstr "頁面"
 
@@ -622,14 +622,14 @@ msgstr "頁面標題..."
 #. @context: Post type label plural - pages
 #: src/routes/dash/pages.tsx:36
 #: src/theme/layouts/DashLayout.tsx:96
-#: src/theme/pages/ArchivePage.tsx:59
+#: src/themes/minimal/pages/ArchivePage.tsx:58
 msgid "Pages"
 msgstr "頁面"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:239
-#: src/app.tsx:377
+#: src/app.tsx:262
+#: src/app.tsx:400
 msgid "Password"
 msgstr "密碼"
 
@@ -646,7 +646,7 @@ msgstr "路徑（例如 /archive）或完整網址（例如 https://example.com�
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
 #: src/theme/components/ThreadView.tsx:68
-#: src/theme/pages/PostPage.tsx:36
+#: src/themes/minimal/pages/PostPage.tsx:35
 msgid "Permalink"
 msgstr "永久鏈接"
 
@@ -697,9 +697,9 @@ msgstr "上一頁"
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/app.tsx:260
-#: src/app.tsx:397
-#: src/app.tsx:537
+#: src/app.tsx:283
+#: src/app.tsx:420
+#: src/app.tsx:560
 #: src/routes/dash/collections.tsx:178
 #: src/routes/dash/collections.tsx:357
 #: src/routes/dash/media.tsx:119
@@ -755,12 +755,12 @@ msgstr "安靜（正常）"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:80
 #: src/theme/components/TypeBadge.tsx:25
-#: src/theme/pages/ArchivePage.tsx:23
+#: src/themes/minimal/pages/ArchivePage.tsx:22
 msgid "Quote"
 msgstr "引用"
 
 #. @context: Post type label plural - quotes
-#: src/theme/pages/ArchivePage.tsx:51
+#: src/themes/minimal/pages/ArchivePage.tsx:50
 msgid "Quotes"
 msgstr "引用"
 
@@ -780,8 +780,8 @@ msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:478
-#: src/app.tsx:531
+#: src/app.tsx:501
+#: src/app.tsx:554
 msgid "Reset Password"
 msgstr "重設密碼"
 
@@ -802,13 +802,13 @@ msgstr "保存設定"
 
 #. @context: Search page title
 #. @context: Search submit button
-#: src/theme/pages/SearchPage.tsx:22
-#: src/theme/pages/SearchPage.tsx:48
+#: src/themes/minimal/pages/SearchPage.tsx:21
+#: src/themes/minimal/pages/SearchPage.tsx:46
 msgid "Search"
 msgstr "搜尋"
 
 #. @context: Search input placeholder
-#: src/theme/pages/SearchPage.tsx:40
+#: src/themes/minimal/pages/SearchPage.tsx:38
 msgid "Search posts..."
 msgstr "搜尋帖子..."
 
@@ -830,14 +830,14 @@ msgstr "設定"
 
 #. @context: Link to show remaining thread replies
 #. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
-#: src/theme/components/timeline/ThreadPreview.tsx:38
+#: src/themes/minimal/timeline/ThreadPreview.tsx:37
 msgid "Show {remainingCount} more {0}"
 msgstr "顯示 {remainingCount} 個更多 {0}"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:344
-#: src/app.tsx:391
+#: src/app.tsx:367
+#: src/app.tsx:414
 msgid "Sign In"
 msgstr "登入"
 
@@ -894,7 +894,7 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:567
+#: src/app.tsx:590
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密碼重設連結無效或已過期。請生成一個新的連結。"
 
@@ -1033,7 +1033,7 @@ msgid "Visibility"
 msgstr "可見性"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:188
+#: src/app.tsx:211
 msgid "Welcome to Jant"
 msgstr "歡迎來到 Jant"
 
@@ -1048,6 +1048,6 @@ msgid "What's this collection about?"
 msgstr "這個收藏是關於什麼的？"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:209
+#: src/app.tsx:232
 msgid "Your Name"
 msgstr "您的姓名"
