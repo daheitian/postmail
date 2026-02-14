@@ -119,6 +119,7 @@ function NavigationFormContent({
       <form
         data-signals={signals}
         data-on:submit__prevent={`@post('${action}')`}
+        data-indicator="_loading"
         class="flex flex-col gap-4 max-w-lg"
       >
         <div class="field">
@@ -167,16 +168,25 @@ function NavigationFormContent({
         </div>
 
         <div class="flex gap-2">
-          <button type="submit" class="btn">
-            {isEdit
-              ? t({
-                  message: "Save Changes",
-                  comment: "@context: Button to save edited navigation link",
-                })
-              : t({
-                  message: "Create Link",
-                  comment: "@context: Button to save new navigation link",
-                })}
+          <button type="submit" class="btn" data-attr-disabled="$_loading">
+            <span data-show="!$_loading">
+              {isEdit
+                ? t({
+                    message: "Save Changes",
+                    comment: "@context: Button to save edited navigation link",
+                  })
+                : t({
+                    message: "Create Link",
+                    comment: "@context: Button to save new navigation link",
+                  })}
+            </span>
+            <span data-show="$_loading">
+              {t({
+                message: "Processing...",
+                comment:
+                  "@context: Loading text shown on submit button while request is in progress",
+              })}
+            </span>
           </button>
           <a href="/dash/navigation" class="btn-outline">
             {t({

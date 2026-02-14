@@ -123,6 +123,7 @@ function GeneralContent({
         <form
           data-signals={generalSignals}
           data-on:submit__prevent="@post('/dash/settings')"
+          data-indicator="_loading"
         >
           <div class="card">
             <header>
@@ -188,11 +189,20 @@ function GeneralContent({
             </section>
           </div>
 
-          <button type="submit" class="btn mt-4">
-            {t({
-              message: "Save Settings",
-              comment: "@context: Button to save settings",
-            })}
+          <button type="submit" class="btn mt-4" data-attr-disabled="$_loading">
+            <span data-show="!$_loading">
+              {t({
+                message: "Save Settings",
+                comment: "@context: Button to save settings",
+              })}
+            </span>
+            <span data-show="$_loading">
+              {t({
+                message: "Processing...",
+                comment:
+                  "@context: Loading text shown on submit button while request is in progress",
+              })}
+            </span>
           </button>
         </form>
       </div>
@@ -346,6 +356,7 @@ function AccountContent({ userName }: { userName: string }) {
         <form
           data-signals={profileSignals}
           data-on:submit__prevent="@post('/dash/settings/account')"
+          data-indicator="_profileLoading"
         >
           <div class="card">
             <header>
@@ -374,17 +385,31 @@ function AccountContent({ userName }: { userName: string }) {
             </section>
           </div>
 
-          <button type="submit" class="btn mt-4">
-            {t({
-              message: "Save Profile",
-              comment: "@context: Button to save profile",
-            })}
+          <button
+            type="submit"
+            class="btn mt-4"
+            data-attr-disabled="$_profileLoading"
+          >
+            <span data-show="!$_profileLoading">
+              {t({
+                message: "Save Profile",
+                comment: "@context: Button to save profile",
+              })}
+            </span>
+            <span data-show="$_profileLoading">
+              {t({
+                message: "Processing...",
+                comment:
+                  "@context: Loading text shown on submit button while request is in progress",
+              })}
+            </span>
           </button>
         </form>
 
         <form
           data-signals="{currentPassword: '', newPassword: '', confirmPassword: ''}"
           data-on:submit__prevent="@post('/dash/settings/password')"
+          data-indicator="_passwordLoading"
         >
           <div class="card">
             <header>
@@ -448,11 +473,24 @@ function AccountContent({ userName }: { userName: string }) {
             </section>
           </div>
 
-          <button type="submit" class="btn mt-4">
-            {t({
-              message: "Change Password",
-              comment: "@context: Button to change password",
-            })}
+          <button
+            type="submit"
+            class="btn mt-4"
+            data-attr-disabled="$_passwordLoading"
+          >
+            <span data-show="!$_passwordLoading">
+              {t({
+                message: "Change Password",
+                comment: "@context: Button to change password",
+              })}
+            </span>
+            <span data-show="$_passwordLoading">
+              {t({
+                message: "Processing...",
+                comment:
+                  "@context: Loading text shown on submit button while request is in progress",
+              })}
+            </span>
           </button>
         </form>
       </div>

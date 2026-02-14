@@ -100,9 +100,10 @@ export function createApp(config: JantConfig = {}): App {
     c.set("storage", createStorageDriver(c.env));
 
     if (c.env.AUTH_SECRET) {
+      const baseURL = c.env.SITE_URL || new URL(c.req.url).origin;
       const auth = createAuth(session as unknown as D1Database, {
         secret: c.env.AUTH_SECRET,
-        baseURL: c.env.SITE_URL,
+        baseURL,
       });
       c.set("auth", auth);
     }
@@ -200,6 +201,7 @@ export function createApp(config: JantConfig = {}): App {
             <form
               data-signals="{name: '', email: '', password: ''}"
               data-on:submit__prevent="@post('/setup')"
+              data-indicator="_loading"
               class="flex flex-col gap-4"
             >
               <div class="field">
@@ -247,11 +249,20 @@ export function createApp(config: JantConfig = {}): App {
                   minLength={8}
                 />
               </div>
-              <button type="submit" class="btn">
-                {t({
-                  message: "Complete Setup",
-                  comment: "@context: Setup form submit button",
-                })}
+              <button type="submit" class="btn" data-attr-disabled="$_loading">
+                <span data-show="!$_loading">
+                  {t({
+                    message: "Complete Setup",
+                    comment: "@context: Setup form submit button",
+                  })}
+                </span>
+                <span data-show="$_loading">
+                  {t({
+                    message: "Processing...",
+                    comment:
+                      "@context: Loading text shown on submit button while request is in progress",
+                  })}
+                </span>
               </button>
             </form>
           </section>
@@ -349,6 +360,7 @@ export function createApp(config: JantConfig = {}): App {
             <form
               data-signals={signals}
               data-on:submit__prevent="@post('/signin')"
+              data-indicator="_loading"
               class="flex flex-col gap-4"
             >
               <div class="field">
@@ -374,11 +386,20 @@ export function createApp(config: JantConfig = {}): App {
                   required
                 />
               </div>
-              <button type="submit" class="btn">
-                {t({
-                  message: "Sign In",
-                  comment: "@context: Sign in form submit button",
-                })}
+              <button type="submit" class="btn" data-attr-disabled="$_loading">
+                <span data-show="!$_loading">
+                  {t({
+                    message: "Sign In",
+                    comment: "@context: Sign in form submit button",
+                  })}
+                </span>
+                <span data-show="$_loading">
+                  {t({
+                    message: "Processing...",
+                    comment:
+                      "@context: Loading text shown on submit button while request is in progress",
+                  })}
+                </span>
               </button>
             </form>
           </section>
@@ -470,6 +491,7 @@ export function createApp(config: JantConfig = {}): App {
             <form
               data-signals={signals}
               data-on:submit__prevent="@post('/reset')"
+              data-indicator="_loading"
               class="flex flex-col gap-4"
             >
               <div class="field">
@@ -504,11 +526,20 @@ export function createApp(config: JantConfig = {}): App {
                   autocomplete="new-password"
                 />
               </div>
-              <button type="submit" class="btn">
-                {t({
-                  message: "Reset Password",
-                  comment: "@context: Password reset form submit button",
-                })}
+              <button type="submit" class="btn" data-attr-disabled="$_loading">
+                <span data-show="!$_loading">
+                  {t({
+                    message: "Reset Password",
+                    comment: "@context: Password reset form submit button",
+                  })}
+                </span>
+                <span data-show="$_loading">
+                  {t({
+                    message: "Processing...",
+                    comment:
+                      "@context: Loading text shown on submit button while request is in progress",
+                  })}
+                </span>
               </button>
             </form>
           </section>

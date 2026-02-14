@@ -33,6 +33,7 @@ export const PageForm: FC<PageFormProps> = ({
     <form
       data-signals={signals}
       data-on:submit__prevent={`@post('${action}')`}
+      data-indicator="_loading"
       class="flex flex-col gap-4"
     >
       <div id="page-form-message"></div>
@@ -146,16 +147,25 @@ export const PageForm: FC<PageFormProps> = ({
 
       {/* Submit */}
       <div class="flex gap-2">
-        <button type="submit" class="btn">
-          {isEdit
-            ? t({
-                message: "Update Page",
-                comment: "@context: Button to update existing page",
-              })
-            : t({
-                message: "Create Page",
-                comment: "@context: Button to create new page",
-              })}
+        <button type="submit" class="btn" data-attr-disabled="$_loading">
+          <span data-show="!$_loading">
+            {isEdit
+              ? t({
+                  message: "Update Page",
+                  comment: "@context: Button to update existing page",
+                })
+              : t({
+                  message: "Create Page",
+                  comment: "@context: Button to create new page",
+                })}
+          </span>
+          <span data-show="$_loading">
+            {t({
+              message: "Processing...",
+              comment:
+                "@context: Loading text shown on submit button while request is in progress",
+            })}
+          </span>
         </button>
         <a href={cancelUrl} class="btn-outline">
           {t({

@@ -106,6 +106,7 @@ function NewCollectionContent() {
       <form
         data-signals="{title: '', path: '', description: ''}"
         data-on:submit__prevent="@post('/dash/collections')"
+        data-indicator="_loading"
         class="flex flex-col gap-4 max-w-lg"
       >
         <div class="field">
@@ -166,11 +167,20 @@ function NewCollectionContent() {
         </div>
 
         <div class="flex gap-2">
-          <button type="submit" class="btn">
-            {t({
-              message: "Create Collection",
-              comment: "@context: Button to save new collection",
-            })}
+          <button type="submit" class="btn" data-attr-disabled="$_loading">
+            <span data-show="!$_loading">
+              {t({
+                message: "Create Collection",
+                comment: "@context: Button to save new collection",
+              })}
+            </span>
+            <span data-show="$_loading">
+              {t({
+                message: "Processing...",
+                comment:
+                  "@context: Loading text shown on submit button while request is in progress",
+              })}
+            </span>
           </button>
           <a href="/dash/collections" class="btn-outline">
             {t({
@@ -297,6 +307,7 @@ function EditCollectionContent({ collection }: { collection: Collection }) {
       <form
         data-signals={signals}
         data-on:submit__prevent={`@post('/dash/collections/${collection.id}')`}
+        data-indicator="_loading"
         class="flex flex-col gap-4 max-w-lg"
       >
         <div class="field">
@@ -335,11 +346,20 @@ function EditCollectionContent({ collection }: { collection: Collection }) {
         </div>
 
         <div class="flex gap-2">
-          <button type="submit" class="btn">
-            {t({
-              message: "Update Collection",
-              comment: "@context: Button to save collection changes",
-            })}
+          <button type="submit" class="btn" data-attr-disabled="$_loading">
+            <span data-show="!$_loading">
+              {t({
+                message: "Update Collection",
+                comment: "@context: Button to save collection changes",
+              })}
+            </span>
+            <span data-show="$_loading">
+              {t({
+                message: "Processing...",
+                comment:
+                  "@context: Loading text shown on submit button while request is in progress",
+              })}
+            </span>
           </button>
           <a href={`/dash/collections/${collection.id}`} class="btn-outline">
             {t({
