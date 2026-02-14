@@ -340,6 +340,7 @@ rsync -a \
   --exclude='pnpm-workspace.yaml' --exclude='.prettierrc' \
   templates/jant-site/ "$DEST/"
 
+sed -i '' "s/\"name\": \"jant-site\"/\"name\": \"example-$usage_name\"/" "$DEST/package.json"
 echo 'AUTH_SECRET=example-dev-secret-at-least-32-characters-long' > "$DEST/.dev.vars"
 pnpm install
 
