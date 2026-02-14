@@ -8,14 +8,17 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { TimelineFeedProps } from "../../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
-import { ThreadPreview } from "./ThreadPreview.js";
+import { ThreadPreview as DefaultThreadPreview } from "./ThreadPreview.js";
 
 export const TimelineFeed: FC<TimelineFeedProps> = ({
   items,
   hasMore,
   nextCursor,
+  theme,
 }) => {
   const { t } = useLingui();
+
+  const ResolvedThreadPreview = theme?.ThreadPreview ?? DefaultThreadPreview;
 
   return (
     <div>
@@ -23,15 +26,16 @@ export const TimelineFeed: FC<TimelineFeedProps> = ({
         {items.map((item) => {
           if (item.threadPreview) {
             return (
-              <ThreadPreview
+              <ResolvedThreadPreview
                 key={item.post.id}
                 rootPost={item.post}
                 previewReplies={item.threadPreview.replies}
                 totalReplyCount={item.threadPreview.totalReplyCount}
+                theme={theme}
               />
             );
           }
-          return <TimelineItem key={item.post.id} item={item} />;
+          return <TimelineItem key={item.post.id} item={item} theme={theme} />;
         })}
       </div>
       {hasMore && nextCursor && (

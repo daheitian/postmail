@@ -292,6 +292,121 @@ export interface UpdateNavigationLink {
 }
 
 // =============================================================================
+// View Model Types (render-ready, for theme components)
+// =============================================================================
+
+/**
+ * Render-ready post data for theme components.
+ * All fields are pre-computed — no lib/ imports needed.
+ */
+export interface PostView {
+  // Identity
+  id: number;
+  /** Pre-computed permalink, e.g. "/p/jR3k" */
+  permalink: string;
+
+  // Content
+  title?: string;
+  /** Pre-sanitized HTML */
+  contentHtml?: string;
+  /** Pre-computed excerpt, max 160 chars */
+  excerpt?: string;
+
+  // Metadata
+  type: PostType;
+  visibility: Visibility;
+  /** Custom path for pages, e.g. "/about" */
+  path?: string;
+
+  // Time — pre-formatted
+  /** ISO 8601 string */
+  publishedAt: string;
+  /** Human-readable, e.g. "Feb 1, 2024" */
+  publishedAtFormatted: string;
+  /** ISO 8601 string */
+  updatedAt: string;
+
+  // Source (for link/quote types)
+  sourceUrl?: string;
+  sourceName?: string;
+  sourceDomain?: string;
+
+  // Media — URLs pre-computed
+  media: MediaView[];
+
+  // Thread context
+  replyToId?: number;
+  threadRootId?: number;
+
+  // Raw content (for forms/editing, not typical theme use)
+  content?: string;
+}
+
+/**
+ * Render-ready media data for theme components.
+ * URLs are pre-computed — no lib/ imports needed.
+ */
+export interface MediaView {
+  id: string;
+  /** Full-size URL, pre-computed */
+  url: string;
+  /** Thumbnail URL, pre-computed */
+  thumbnailUrl: string;
+  mimeType: string;
+  altText?: string;
+  width?: number;
+  height?: number;
+  size?: number;
+}
+
+/**
+ * Render-ready navigation link for theme components.
+ * Active/external state pre-computed.
+ */
+export interface NavLinkView {
+  id: number;
+  label: string;
+  url: string;
+  /** Pre-computed based on currentPath */
+  isActive: boolean;
+  /** Pre-computed: starts with http(s):// */
+  isExternal: boolean;
+}
+
+/**
+ * Render-ready search result for theme components.
+ */
+export interface SearchResultView {
+  post: PostView;
+  rank: number;
+  snippet?: string;
+}
+
+/**
+ * Render-ready timeline item for theme components.
+ */
+export interface TimelineItemView {
+  post: PostView;
+  threadPreview?: {
+    replies: PostView[];
+    totalReplyCount: number;
+  };
+}
+
+/**
+ * Typed archive group with pre-formatted label.
+ */
+export interface ArchiveGroup {
+  /** e.g. "2024" */
+  year: string;
+  /** e.g. "02" */
+  month: string;
+  /** Pre-formatted, e.g. "February 2024" */
+  label: string;
+  posts: PostView[];
+}
+
+// =============================================================================
 // Configuration Types
 // =============================================================================
 
@@ -299,35 +414,93 @@ import type { FC, PropsWithChildren } from "hono/jsx";
 import type { ColorTheme } from "./theme/color-themes.js";
 
 /**
- * Props for overridable theme components
+ * Search result from FTS5
  */
-export interface BaseLayoutProps extends PropsWithChildren {
-  title?: string;
-  description?: string;
-}
-
-export interface PostCardProps {
+export interface SearchResult {
   post: Post;
-  showExcerpt?: boolean;
-  showDate?: boolean;
+  /** FTS5 rank score (lower is better) */
+  rank: number;
+  /** Highlighted snippet from content */
+  snippet?: string;
 }
 
-export interface PostListProps {
-  posts: Post[];
-  emptyMessage?: string;
+// =============================================================================
+// Site Layout Props
+// =============================================================================
+
+export interface SiteLayoutProps {
+  siteName: string;
+  links: NavLinkView[];
+  currentPath: string;
 }
 
-export interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  basePath: string;
+// =============================================================================
+// Page-Level Props
+// =============================================================================
+
+/** Props for the home page component */
+export interface HomePageProps {
+  items: TimelineItemView[];
+  hasMore: boolean;
+  nextCursor?: number;
+  theme?: ThemeComponents;
 }
 
-export interface EmptyStateProps {
-  title: string;
-  description?: string;
-  actionLabel?: string;
-  actionHref?: string;
+/** Props for the single post page component */
+export interface PostPageProps {
+  post: PostView;
+  theme?: ThemeComponents;
+}
+
+/** Props for the custom page component */
+export interface SinglePageProps {
+  page: PostView;
+  theme?: ThemeComponents;
+}
+
+/** Props for the archive page component */
+export interface ArchivePageProps {
+  groups: ArchiveGroup[];
+  hasMore: boolean;
+  nextCursor?: number;
+  type?: PostType;
+  theme?: ThemeComponents;
+}
+
+/** Props for the search page component */
+export interface SearchPageProps {
+  query: string;
+  results: SearchResultView[];
+  error?: string;
+  hasMore: boolean;
+  page: number;
+  theme?: ThemeComponents;
+}
+
+/** Props for the collection page component */
+export interface CollectionPageProps {
+  collection: Collection;
+  posts: PostView[];
+  theme?: ThemeComponents;
+}
+
+// =============================================================================
+// Feed Data Types
+// =============================================================================
+
+/** Data passed to RSS/Atom feed renderers */
+export interface FeedData {
+  siteName: string;
+  siteDescription: string;
+  siteUrl: string;
+  siteLanguage: string;
+  posts: PostView[];
+}
+
+/** Data passed to sitemap renderers */
+export interface SitemapData {
+  siteUrl: string;
+  posts: PostView[];
 }
 
 // =============================================================================
@@ -336,42 +509,42 @@ export interface EmptyStateProps {
 
 /** Props for per-type timeline cards */
 export interface TimelineCardProps {
-  post: PostWithMedia;
+  post: PostView;
   compact?: boolean;
 }
 
 /** Props for thread inline preview */
 export interface ThreadPreviewProps {
-  rootPost: PostWithMedia;
-  previewReplies: PostWithMedia[];
+  rootPost: PostView;
+  previewReplies: PostView[];
   totalReplyCount: number;
-}
-
-/** Data structure for a single timeline item */
-export interface TimelineItemData {
-  post: PostWithMedia;
-  threadPreview?: {
-    replies: PostWithMedia[];
-    totalReplyCount: number;
-  };
+  theme?: ThemeComponents;
 }
 
 /** Props for the timeline feed wrapper */
 export interface TimelineFeedProps {
-  items: TimelineItemData[];
+  items: TimelineItemView[];
   hasMore: boolean;
   nextCursor?: number;
+  theme?: ThemeComponents;
 }
 
 /**
  * Theme component overrides
  */
 export interface ThemeComponents {
-  BaseLayout?: FC<BaseLayoutProps>;
-  PostCard?: FC<PostCardProps>;
-  PostList?: FC<PostListProps>;
-  Pagination?: FC<PaginationProps>;
-  EmptyState?: FC<EmptyStateProps>;
+  // Layout
+  SiteLayout?: FC<PropsWithChildren<SiteLayoutProps>>;
+
+  // Pages
+  HomePage?: FC<HomePageProps>;
+  PostPage?: FC<PostPageProps>;
+  SinglePage?: FC<SinglePageProps>;
+  ArchivePage?: FC<ArchivePageProps>;
+  SearchPage?: FC<SearchPageProps>;
+  CollectionPage?: FC<CollectionPageProps>;
+
+  // Timeline sub-components
   NoteCard?: FC<TimelineCardProps>;
   ArticleCard?: FC<TimelineCardProps>;
   LinkCard?: FC<TimelineCardProps>;
@@ -379,6 +552,48 @@ export interface ThemeComponents {
   ImageCard?: FC<TimelineCardProps>;
   ThreadPreview?: FC<ThreadPreviewProps>;
   TimelineFeed?: FC<TimelineFeedProps>;
+
+  // Shared sub-components (re-exported real prop types from component files)
+  Pagination?: FC<PaginationComponentProps>;
+  PagePagination?: FC<PagePaginationComponentProps>;
+  EmptyState?: FC<EmptyStateComponentProps>;
+  MediaGallery?: FC<MediaGalleryComponentProps>;
+}
+
+/**
+ * Real component prop types (re-exported from component files via index.ts).
+ * These are provided here as aliases to avoid circular imports in types.ts.
+ * The canonical definitions live in the component files.
+ */
+
+/** @see Pagination component in theme/components/Pagination.tsx */
+export interface PaginationComponentProps {
+  baseUrl: string;
+  hasMore: boolean;
+  nextCursor?: number | string;
+  prevCursor?: number | string;
+  cursorParam?: string;
+}
+
+/** @see PagePagination component in theme/components/Pagination.tsx */
+export interface PagePaginationComponentProps {
+  baseUrl: string;
+  currentPage: number;
+  hasMore: boolean;
+  pageParam?: string;
+}
+
+/** @see EmptyState component in theme/components/EmptyState.tsx */
+export interface EmptyStateComponentProps {
+  message: string;
+  ctaText?: string;
+  ctaHref?: string;
+  centered?: boolean;
+}
+
+/** @see MediaGallery component in theme/components/MediaGallery.tsx */
+export interface MediaGalleryComponentProps {
+  attachments: MediaView[];
 }
 
 /**
@@ -389,6 +604,15 @@ export interface JantTheme {
   name?: string;
   /** Component overrides */
   components?: ThemeComponents;
+  /** Feed renderer overrides (RSS, Atom, Sitemap) */
+  feed?: {
+    /** Custom RSS 2.0 renderer — returns XML string */
+    rss?: (data: FeedData) => string;
+    /** Custom Atom renderer — returns XML string */
+    atom?: (data: FeedData) => string;
+    /** Custom Sitemap renderer — returns XML string */
+    sitemap?: (data: SitemapData) => string;
+  };
   /** CSS variable overrides (highest priority, always applied) */
   cssVariables?: Record<string, string>;
   /** Replace built-in color themes with a custom list */

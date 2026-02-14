@@ -5,12 +5,13 @@
  *
  * @example
  * ```typescript
- * import { PostCard } from "@jant/core/theme";
+ * import { PostPage } from "@jant/core/theme";
+ * import type { PostPageProps } from "@jant/core";
  *
- * export function MyPostCard(props) {
+ * export function MyPostPage(props: PostPageProps) {
  *   return (
  *     <div class="my-wrapper">
- *       <PostCard {...props} />
+ *       <PostPage {...props} />
  *     </div>
  *   );
  * }
@@ -22,3 +23,6 @@ export * from "./layouts/index.js";
 
 // UI components
 export * from "./components/index.js";
+
+// Page components
+export * from "./pages/index.js";

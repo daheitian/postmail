@@ -14,9 +14,9 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. @context: Archive post reply indicator - plural
-#: src/routes/pages/archive.tsx:180
-msgid "{count} replies"
-msgstr "{count} 条回复"
+#: src/theme/pages/ArchivePage.tsx:168
+#~ msgid "{count} replies"
+#~ msgstr "{count} 条回复"
 
 #. @context: Navigation link
 #: src/routes/dash/collections.tsx:282
@@ -24,9 +24,9 @@ msgid "← Back to Collections"
 msgstr "← 返回收藏夹"
 
 #. @context: Archive post reply indicator - single
-#: src/routes/pages/archive.tsx:175
-msgid "1 reply"
-msgstr "1 条回复"
+#: src/theme/pages/ArchivePage.tsx:163
+#~ msgid "1 reply"
+#~ msgstr "1 条回复"
 
 #. @context: Redirect type option
 #: src/routes/dash/redirects.tsx:146
@@ -49,7 +49,7 @@ msgid "Add Media"
 msgstr "添加媒体"
 
 #. @context: Archive filter - all types
-#: src/routes/pages/archive.tsx:115
+#: src/theme/pages/ArchivePage.tsx:92
 msgid "All"
 msgstr "所有"
 
@@ -59,7 +59,7 @@ msgid "Appearance"
 msgstr "外观"
 
 #. @context: Archive page title
-#: src/routes/pages/archive.tsx:102
+#: src/theme/pages/ArchivePage.tsx:77
 msgid "Archive"
 msgstr "档案馆"
 
@@ -71,14 +71,14 @@ msgstr ""
 #. @context: Post type badge - article
 #. @context: Post type label - article
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:28
 #: src/theme/components/PostForm.tsx:74
 #: src/theme/components/TypeBadge.tsx:20
+#: src/theme/pages/ArchivePage.tsx:18
 msgid "Article"
 msgstr "文章"
 
 #. @context: Post type label plural - articles
-#: src/routes/pages/archive.tsx:53
+#: src/theme/pages/ArchivePage.tsx:43
 msgid "Articles"
 msgstr "文章"
 
@@ -351,12 +351,12 @@ msgid "Featured"
 msgstr "精选"
 
 #. @context: Search results count - multiple
-#: src/routes/pages/search.tsx:89
+#: src/theme/pages/SearchPage.tsx:77
 msgid "Found {count} results"
 msgstr "找到 {count} 个结果"
 
 #. @context: Search results count - single
-#: src/routes/pages/search.tsx:85
+#: src/theme/pages/SearchPage.tsx:73
 msgid "Found 1 result"
 msgstr "找到 1 个结果"
 
@@ -375,14 +375,14 @@ msgstr "常规"
 #. @context: Post type badge - image
 #. @context: Post type label - image
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:37
 #: src/theme/components/PostForm.tsx:83
 #: src/theme/components/TypeBadge.tsx:29
+#: src/theme/pages/ArchivePage.tsx:27
 msgid "Image"
 msgstr "图像"
 
 #. @context: Post type label plural - images
-#: src/routes/pages/archive.tsx:65
+#: src/theme/pages/ArchivePage.tsx:55
 msgid "Images"
 msgstr "图片"
 
@@ -409,21 +409,21 @@ msgstr "语言"
 #. @context: Post type badge - link
 #. @context: Post type label - link
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:32
 #: src/theme/components/PostForm.tsx:77
 #: src/theme/components/TypeBadge.tsx:24
+#: src/theme/pages/ArchivePage.tsx:22
 msgid "Link"
 msgstr "链接"
 
 #. @context: Post type label plural - links
-#: src/routes/pages/archive.tsx:57
+#: src/theme/pages/ArchivePage.tsx:47
 msgid "Links"
 msgstr "链接"
 
 #. @context: Button to load more posts in timeline
 #. @context: Pagination button - load more items
 #: src/theme/components/Pagination.tsx:103
-#: src/theme/components/timeline/TimelineFeed.tsx:43
+#: src/theme/components/timeline/TimelineFeed.tsx:47
 msgid "Load more"
 msgstr "加载更多"
 
@@ -551,21 +551,21 @@ msgid "No pages yet."
 msgstr "还没有页面。"
 
 #. @context: Archive empty state
-#: src/routes/pages/archive.tsx:135
+#: src/theme/pages/ArchivePage.tsx:112
 msgid "No posts found."
 msgstr "未找到帖子。"
 
 #. @context: Empty state message
 #. @context: Empty state message
 #: src/routes/dash/collections.tsx:243
-#: src/routes/pages/collection.tsx:39
+#: src/theme/pages/CollectionPage.tsx:30
 msgid "No posts in this collection."
 msgstr "此集合中没有帖子。"
 
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
-#: src/routes/pages/home.tsx:42
 #: src/theme/components/PostList.tsx:25
+#: src/theme/pages/HomePage.tsx:27
 msgid "No posts yet."
 msgstr "还没有帖子。"
 
@@ -575,21 +575,21 @@ msgid "No redirects configured."
 msgstr "未配置重定向。"
 
 #. @context: Search empty results
-#: src/routes/pages/search.tsx:80
+#: src/theme/pages/SearchPage.tsx:68
 msgid "No results found."
 msgstr "未找到结果。"
 
 #. @context: Post type badge - note
 #. @context: Post type label - note
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:27
 #: src/theme/components/PostForm.tsx:71
 #: src/theme/components/TypeBadge.tsx:19
+#: src/theme/pages/ArchivePage.tsx:17
 msgid "Note"
 msgstr "注意"
 
 #. @context: Post type label plural - notes
-#: src/routes/pages/archive.tsx:49
+#: src/theme/pages/ArchivePage.tsx:39
 msgid "Notes"
 msgstr "笔记"
 
@@ -597,8 +597,8 @@ msgstr "笔记"
 #. @context: Post type badge - page
 #. @context: Post type label - page
 #: src/routes/dash/pages.tsx:125
-#: src/routes/pages/archive.tsx:41
 #: src/theme/components/TypeBadge.tsx:33
+#: src/theme/pages/ArchivePage.tsx:31
 msgid "Page"
 msgstr "页面"
 
@@ -621,8 +621,8 @@ msgstr "页面标题..."
 #. @context: Pages main heading
 #. @context: Post type label plural - pages
 #: src/routes/dash/pages.tsx:36
-#: src/routes/pages/archive.tsx:69
 #: src/theme/layouts/DashLayout.tsx:96
+#: src/theme/pages/ArchivePage.tsx:59
 msgid "Pages"
 msgstr "页面"
 
@@ -645,8 +645,8 @@ msgstr "路径（例如 /archive）或完整 URL（例如 https://example.com）
 
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
-#: src/routes/pages/post.tsx:56
 #: src/theme/components/ThreadView.tsx:68
+#: src/theme/pages/PostPage.tsx:36
 msgid "Permalink"
 msgstr "永久链接"
 
@@ -753,14 +753,14 @@ msgstr "安静（正常）"
 #. @context: Post type badge - quote
 #. @context: Post type label - quote
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:33
 #: src/theme/components/PostForm.tsx:80
 #: src/theme/components/TypeBadge.tsx:25
+#: src/theme/pages/ArchivePage.tsx:23
 msgid "Quote"
 msgstr "引用"
 
 #. @context: Post type label plural - quotes
-#: src/routes/pages/archive.tsx:61
+#: src/theme/pages/ArchivePage.tsx:51
 msgid "Quotes"
 msgstr "引用"
 
@@ -802,13 +802,13 @@ msgstr "保存设置"
 
 #. @context: Search page title
 #. @context: Search submit button
-#: src/routes/pages/search.tsx:36
-#: src/routes/pages/search.tsx:60
+#: src/theme/pages/SearchPage.tsx:22
+#: src/theme/pages/SearchPage.tsx:48
 msgid "Search"
 msgstr "搜索"
 
 #. @context: Search input placeholder
-#: src/routes/pages/search.tsx:52
+#: src/theme/pages/SearchPage.tsx:40
 msgid "Search posts..."
 msgstr "搜索帖子..."
 

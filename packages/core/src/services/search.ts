@@ -4,15 +4,9 @@
  * Full-text search using FTS5
  */
 
-import type { Post, Visibility } from "../types.js";
+import type { Post, Visibility, SearchResult } from "../types.js";
 
-export interface SearchResult {
-  post: Post;
-  /** FTS5 rank score (lower is better) */
-  rank: number;
-  /** Highlighted snippet from content */
-  snippet?: string;
-}
+export type { SearchResult };
 
 export interface SearchOptions {
   /** Limit number of results */

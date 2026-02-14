@@ -14,9 +14,9 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. @context: Archive post reply indicator - plural
-#: src/routes/pages/archive.tsx:180
-msgid "{count} replies"
-msgstr "{count} replies"
+#: src/theme/pages/ArchivePage.tsx:168
+#~ msgid "{count} replies"
+#~ msgstr "{count} replies"
 
 #. @context: Navigation link
 #: src/routes/dash/collections.tsx:282
@@ -31,9 +31,9 @@ msgstr "← Back to Collections"
 #~ msgstr "← Back to home"
 
 #. @context: Archive post reply indicator - single
-#: src/routes/pages/archive.tsx:175
-msgid "1 reply"
-msgstr "1 reply"
+#: src/theme/pages/ArchivePage.tsx:163
+#~ msgid "1 reply"
+#~ msgstr "1 reply"
 
 #. @context: Redirect type option
 #: src/routes/dash/redirects.tsx:146
@@ -56,7 +56,7 @@ msgid "Add Media"
 msgstr "Add Media"
 
 #. @context: Archive filter - all types
-#: src/routes/pages/archive.tsx:115
+#: src/theme/pages/ArchivePage.tsx:92
 msgid "All"
 msgstr "All"
 
@@ -66,7 +66,7 @@ msgid "Appearance"
 msgstr "Appearance"
 
 #. @context: Archive page title
-#: src/routes/pages/archive.tsx:102
+#: src/theme/pages/ArchivePage.tsx:77
 msgid "Archive"
 msgstr "Archive"
 
@@ -78,14 +78,14 @@ msgstr "Are you sure you want to delete this post? This cannot be undone."
 #. @context: Post type badge - article
 #. @context: Post type label - article
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:28
 #: src/theme/components/PostForm.tsx:74
 #: src/theme/components/TypeBadge.tsx:20
+#: src/theme/pages/ArchivePage.tsx:18
 msgid "Article"
 msgstr "Article"
 
 #. @context: Post type label plural - articles
-#: src/routes/pages/archive.tsx:53
+#: src/theme/pages/ArchivePage.tsx:43
 msgid "Articles"
 msgstr "Articles"
 
@@ -376,12 +376,12 @@ msgid "Featured"
 msgstr "Featured"
 
 #. @context: Search results count - multiple
-#: src/routes/pages/search.tsx:89
+#: src/theme/pages/SearchPage.tsx:77
 msgid "Found {count} results"
 msgstr "Found {count} results"
 
 #. @context: Search results count - single
-#: src/routes/pages/search.tsx:85
+#: src/theme/pages/SearchPage.tsx:73
 msgid "Found 1 result"
 msgstr "Found 1 result"
 
@@ -400,14 +400,14 @@ msgstr "General"
 #. @context: Post type badge - image
 #. @context: Post type label - image
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:37
 #: src/theme/components/PostForm.tsx:83
 #: src/theme/components/TypeBadge.tsx:29
+#: src/theme/pages/ArchivePage.tsx:27
 msgid "Image"
 msgstr "Image"
 
 #. @context: Post type label plural - images
-#: src/routes/pages/archive.tsx:65
+#: src/theme/pages/ArchivePage.tsx:55
 msgid "Images"
 msgstr "Images"
 
@@ -439,21 +439,21 @@ msgstr "Language"
 #. @context: Post type badge - link
 #. @context: Post type label - link
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:32
 #: src/theme/components/PostForm.tsx:77
 #: src/theme/components/TypeBadge.tsx:24
+#: src/theme/pages/ArchivePage.tsx:22
 msgid "Link"
 msgstr "Link"
 
 #. @context: Post type label plural - links
-#: src/routes/pages/archive.tsx:57
+#: src/theme/pages/ArchivePage.tsx:47
 msgid "Links"
 msgstr "Links"
 
 #. @context: Button to load more posts in timeline
 #. @context: Pagination button - load more items
 #: src/theme/components/Pagination.tsx:103
-#: src/theme/components/timeline/TimelineFeed.tsx:43
+#: src/theme/components/timeline/TimelineFeed.tsx:47
 msgid "Load more"
 msgstr "Load more"
 
@@ -586,21 +586,21 @@ msgid "No pages yet."
 msgstr "No pages yet."
 
 #. @context: Archive empty state
-#: src/routes/pages/archive.tsx:135
+#: src/theme/pages/ArchivePage.tsx:112
 msgid "No posts found."
 msgstr "No posts found."
 
 #. @context: Empty state message
 #. @context: Empty state message
 #: src/routes/dash/collections.tsx:243
-#: src/routes/pages/collection.tsx:39
+#: src/theme/pages/CollectionPage.tsx:30
 msgid "No posts in this collection."
 msgstr "No posts in this collection."
 
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
-#: src/routes/pages/home.tsx:42
 #: src/theme/components/PostList.tsx:25
+#: src/theme/pages/HomePage.tsx:27
 msgid "No posts yet."
 msgstr "No posts yet."
 
@@ -610,21 +610,21 @@ msgid "No redirects configured."
 msgstr "No redirects configured."
 
 #. @context: Search empty results
-#: src/routes/pages/search.tsx:80
+#: src/theme/pages/SearchPage.tsx:68
 msgid "No results found."
 msgstr "No results found."
 
 #. @context: Post type badge - note
 #. @context: Post type label - note
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:27
 #: src/theme/components/PostForm.tsx:71
 #: src/theme/components/TypeBadge.tsx:19
+#: src/theme/pages/ArchivePage.tsx:17
 msgid "Note"
 msgstr "Note"
 
 #. @context: Post type label plural - notes
-#: src/routes/pages/archive.tsx:49
+#: src/theme/pages/ArchivePage.tsx:39
 msgid "Notes"
 msgstr "Notes"
 
@@ -632,8 +632,8 @@ msgstr "Notes"
 #. @context: Post type badge - page
 #. @context: Post type label - page
 #: src/routes/dash/pages.tsx:125
-#: src/routes/pages/archive.tsx:41
 #: src/theme/components/TypeBadge.tsx:33
+#: src/theme/pages/ArchivePage.tsx:31
 msgid "Page"
 msgstr "Page"
 
@@ -656,8 +656,8 @@ msgstr "Page title..."
 #. @context: Pages main heading
 #. @context: Post type label plural - pages
 #: src/routes/dash/pages.tsx:36
-#: src/routes/pages/archive.tsx:69
 #: src/theme/layouts/DashLayout.tsx:96
+#: src/theme/pages/ArchivePage.tsx:59
 msgid "Pages"
 msgstr "Pages"
 
@@ -680,8 +680,8 @@ msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
-#: src/routes/pages/post.tsx:56
 #: src/theme/components/ThreadView.tsx:68
+#: src/theme/pages/PostPage.tsx:36
 msgid "Permalink"
 msgstr "Permalink"
 
@@ -788,14 +788,14 @@ msgstr "Quiet (normal)"
 #. @context: Post type badge - quote
 #. @context: Post type label - quote
 #. @context: Post type option
-#: src/routes/pages/archive.tsx:33
 #: src/theme/components/PostForm.tsx:80
 #: src/theme/components/TypeBadge.tsx:25
+#: src/theme/pages/ArchivePage.tsx:23
 msgid "Quote"
 msgstr "Quote"
 
 #. @context: Post type label plural - quotes
-#: src/routes/pages/archive.tsx:61
+#: src/theme/pages/ArchivePage.tsx:51
 msgid "Quotes"
 msgstr "Quotes"
 
@@ -837,8 +837,8 @@ msgstr "Save Settings"
 
 #. @context: Search page title
 #. @context: Search submit button
-#: src/routes/pages/search.tsx:36
-#: src/routes/pages/search.tsx:60
+#: src/theme/pages/SearchPage.tsx:22
+#: src/theme/pages/SearchPage.tsx:48
 msgid "Search"
 msgstr "Search"
 
@@ -848,7 +848,7 @@ msgstr "Search"
 #~ msgstr "Search failed. Please try again."
 
 #. @context: Search input placeholder
-#: src/routes/pages/search.tsx:52
+#: src/theme/pages/SearchPage.tsx:40
 msgid "Search posts..."
 msgstr "Search posts..."
 

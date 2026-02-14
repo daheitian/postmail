@@ -7,12 +7,8 @@
 import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "../../../types.js";
 import { MediaGallery } from "../MediaGallery.js";
-import * as sqid from "../../../lib/sqid.js";
-import * as time from "../../../lib/time.js";
 
 export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
-  const permalink = `/p/${sqid.encode(post.id)}`;
-
   return (
     <article
       class={`h-entry timeline-card${compact ? " timeline-card-compact" : ""}`}
@@ -23,16 +19,13 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
         />
       )}
-      {!compact && post.mediaAttachments.length > 0 && (
-        <MediaGallery attachments={post.mediaAttachments} />
+      {!compact && post.media.length > 0 && (
+        <MediaGallery attachments={post.media} />
       )}
       <footer class="mt-2 text-xs text-muted-foreground">
-        <a href={permalink} class="u-url hover:underline">
-          <time
-            class="dt-published"
-            datetime={time.toISOString(post.publishedAt)}
-          >
-            {time.formatDate(post.publishedAt)}
+        <a href={post.permalink} class="u-url hover:underline">
+          <time class="dt-published" datetime={post.publishedAt}>
+            {post.publishedAtFormatted}
           </time>
         </a>
       </footer>

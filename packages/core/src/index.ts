@@ -10,7 +10,7 @@ import { createApp as _createApp } from "./app.js";
 export { createApp } from "./app.js";
 export type { App, AppVariables } from "./app.js";
 
-// Types (excluding component props to avoid conflicts with theme exports)
+// Types
 export type {
   PostType,
   Visibility,
@@ -29,10 +29,31 @@ export type {
   JantConfig,
   JantTheme,
   ThemeComponents,
+  // View Model types (for theme authors)
+  PostView,
+  MediaView,
+  NavLinkView,
+  SearchResultView,
+  TimelineItemView,
+  ArchiveGroup,
+  // Timeline types
   TimelineCardProps,
   ThreadPreviewProps,
-  TimelineItemData,
   TimelineFeedProps,
+  // Site layout
+  SiteLayoutProps,
+  // Page-level props (for theme authors)
+  HomePageProps,
+  PostPageProps,
+  SinglePageProps,
+  ArchivePageProps,
+  SearchPageProps,
+  CollectionPageProps,
+  // Feed types (for theme authors)
+  FeedData,
+  SitemapData,
+  // Search
+  SearchResult,
 } from "./types.js";
 
 export {
@@ -47,6 +68,34 @@ export * as time from "./lib/time.js";
 export * as sqid from "./lib/sqid.js";
 export * as url from "./lib/url.js";
 export * as markdown from "./lib/markdown.js";
+
+// View Model conversion utilities (for advanced theme use)
+export {
+  createMediaContext,
+  toPostView,
+  toPostViews,
+  toMediaView,
+  toNavLinkView,
+  toNavLinkViews,
+  toSearchResultView,
+  toArchiveGroups,
+} from "./lib/view.js";
+export type { MediaContext } from "./lib/view.js";
+
+// Render helper (for theme authors adding custom routes)
+export { renderPublicPage } from "./lib/render.js";
+export type { RenderPublicPageOptions } from "./lib/render.js";
+
+// Navigation helper (for theme authors)
+export { getNavigationData } from "./lib/navigation.js";
+export type { NavigationData } from "./lib/navigation.js";
+
+// Default feed renderers (for theme authors to extend)
+export {
+  defaultRssRenderer,
+  defaultAtomRenderer,
+  defaultSitemapRenderer,
+} from "./lib/feed.js";
 
 // Default export for running core directly (e.g., for development)
 export default _createApp();

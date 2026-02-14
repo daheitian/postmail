@@ -6,87 +6,41 @@
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
-import type { NavigationLink } from "../../types.js";
-
-export interface SiteLayoutProps {
-  siteName: string;
-  navigationLinks: NavigationLink[];
-  currentPath: string;
-}
-
-/**
- * Determine if a navigation link is active based on the current path.
- *
- * @param linkUrl - The link's URL
- * @param currentPath - The current page path
- * @returns Whether the link should be shown as active
- */
-function isLinkActive(linkUrl: string, currentPath: string): boolean {
-  // External links are never active
-  if (linkUrl.startsWith("http://") || linkUrl.startsWith("https://")) {
-    return false;
-  }
-
-  // Exact match for home
-  if (linkUrl === "/") {
-    return currentPath === "/";
-  }
-
-  // Prefix match for other internal links
-  return currentPath === linkUrl || currentPath.startsWith(linkUrl + "/");
-}
-
-/**
- * Check if a URL is external
- */
-function isExternalUrl(url: string): boolean {
-  return url.startsWith("http://") || url.startsWith("https://");
-}
+import type { NavLinkView, SiteLayoutProps } from "../../types.js";
 
 /**
  * Render navigation links with dot indicator for active state.
  */
-function NavLinks({
-  navigationLinks,
-  currentPath,
-}: {
-  navigationLinks: NavigationLink[];
-  currentPath: string;
-}) {
+function NavLinks({ links }: { links: NavLinkView[] }) {
   return (
     <>
-      {navigationLinks.map((link) => {
-        const active = isLinkActive(link.url, currentPath);
-        const external = isExternalUrl(link.url);
-        return (
-          <a
-            key={link.id}
-            href={link.url}
-            class={`text-sm flex items-center gap-2 py-0.5 ${
-              active
-                ? "text-primary font-medium"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            {...(external
-              ? { target: "_blank", rel: "noopener noreferrer" }
-              : {})}
-          >
-            <span
-              class={`size-1.5 rounded-full shrink-0 ${active ? "bg-primary" : "bg-transparent"}`}
-            />
-            {link.label}
-            {external && <span class="ml-1 text-xs opacity-50">↗</span>}
-          </a>
-        );
-      })}
+      {links.map((link) => (
+        <a
+          key={link.id}
+          href={link.url}
+          class={`text-sm flex items-center gap-2 py-0.5 ${
+            link.isActive
+              ? "text-primary font-medium"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          {...(link.isExternal
+            ? { target: "_blank", rel: "noopener noreferrer" }
+            : {})}
+        >
+          <span
+            class={`size-1.5 rounded-full shrink-0 ${link.isActive ? "bg-primary" : "bg-transparent"}`}
+          />
+          {link.label}
+          {link.isExternal && <span class="ml-1 text-xs opacity-50">↗</span>}
+        </a>
+      ))}
     </>
   );
 }
 
 export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   siteName,
-  navigationLinks,
-  currentPath,
+  links,
   children,
 }) => {
   return (
@@ -157,10 +111,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           </button>
         </div>
         <nav class="flex flex-col gap-0.5">
-          <NavLinks
-            navigationLinks={navigationLinks}
-            currentPath={currentPath}
-          />
+          <NavLinks links={links} />
         </nav>
       </aside>
 
@@ -170,10 +121,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           {siteName}
         </a>
         <nav class="flex flex-col gap-0.5">
-          <NavLinks
-            navigationLinks={navigationLinks}
-            currentPath={currentPath}
-          />
+          <NavLinks links={links} />
         </nav>
       </aside>
 

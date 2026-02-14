@@ -6,13 +6,14 @@
 
 import type { Context } from "hono";
 import { getSiteName } from "./config.js";
-import type { NavigationLink } from "../types.js";
+import type { NavLinkView } from "../types.js";
+import { toNavLinkViews } from "./view.js";
 
 /**
  * Navigation data needed by SiteLayout
  */
 export interface NavigationData {
-  navigationLinks: NavigationLink[];
+  links: NavLinkView[];
   currentPath: string;
   siteName: string;
 }
@@ -21,7 +22,7 @@ export interface NavigationData {
  * Fetch navigation data for public pages.
  *
  * Ensures default links exist (Home, Archive, RSS) and returns
- * the current path and site name alongside the links.
+ * NavLinkView[] with pre-computed isActive/isExternal state.
  *
  * @param c - Hono context
  * @returns Navigation data for SiteLayout
@@ -29,18 +30,17 @@ export interface NavigationData {
  * @example
  * ```typescript
  * const navData = await getNavigationData(c);
- * return c.html(
- *   <BaseLayout c={c}>
- *     <SiteLayout {...navData}>
- *       <MyContent />
- *     </SiteLayout>
- *   </BaseLayout>
- * );
+ * return renderPublicPage(c, {
+ *   title: "My Page",
+ *   navData,
+ *   content: <MyContent />,
+ * });
  * ```
  */
 export async function getNavigationData(c: Context): Promise<NavigationData> {
   const navigationLinks = await c.var.services.navigationLinks.ensureDefaults();
   const currentPath = new URL(c.req.url).pathname;
   const siteName = await getSiteName(c);
-  return { navigationLinks, currentPath, siteName };
+  const links = toNavLinkViews(navigationLinks, currentPath);
+  return { links, currentPath, siteName };
 }

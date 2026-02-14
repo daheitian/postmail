@@ -77,7 +77,7 @@ export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
  * import { createApp } from "@jant/core";
  *
  * export default createApp({
- *   theme: { components: { PostCard: MyPostCard } },
+ *   theme: { components: { PostPage: MyPostPage } },
  * });
  * ```
  */

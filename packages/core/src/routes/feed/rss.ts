@@ -3,24 +3,27 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings } from "../../types.js";
+import type { Context } from "hono";
+import type { Bindings, FeedData } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import * as sqid from "../../lib/sqid.js";
-import * as time from "../../lib/time.js";
-import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
+import { defaultRssRenderer, defaultAtomRenderer } from "../../lib/feed.js";
+import { getSiteLanguage } from "../../lib/config.js";
+import { buildMediaMap } from "../../lib/media-helpers.js";
+import { createMediaContext, toPostViews } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const rssRoutes = new Hono<Env>();
 
-// RSS 2.0 Feed - main feed at /feed
-rssRoutes.get("/", async (c) => {
+/**
+ * Build FeedData from the Hono context.
+ */
+async function buildFeedData(c: Context<Env>): Promise<FeedData> {
   const all = await c.var.services.settings.getAll();
   const siteName = all["SITE_NAME"] ?? "Jant";
   const siteDescription = all["SITE_DESCRIPTION"] ?? "";
   const siteUrl = c.env.SITE_URL;
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const siteLanguage = await getSiteLanguage(c);
 
   const posts = await c.var.services.posts.list({
     visibility: ["featured", "quiet"],
@@ -29,45 +32,41 @@ rssRoutes.get("/", async (c) => {
 
   // Batch load media for enclosures
   const postIds = posts.map((p) => p.id);
-  const mediaMap = await c.var.services.media.getByPostIds(postIds);
+  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
+  const mediaCtx = createMediaContext(c);
+  const mediaMap = buildMediaMap(
+    rawMediaMap,
+    mediaCtx.r2PublicUrl,
+    mediaCtx.imageTransformUrl,
+    mediaCtx.s3PublicUrl,
+  );
 
-  const items = posts
-    .map((post) => {
-      const link = `${siteUrl}/p/${sqid.encode(post.id)}`;
-      const title = post.title || `Post #${post.id}`;
-      const pubDate = new Date(post.publishedAt * 1000).toUTCString();
+  // Transform to PostView[] with media
+  const postViews = toPostViews(
+    posts.map((p) => ({
+      ...p,
+      mediaAttachments: mediaMap.get(p.id) ?? [],
+    })),
+    mediaCtx,
+  );
 
-      // Add enclosure for first media attachment
-      const postMedia = mediaMap.get(post.id);
-      const firstMedia = postMedia?.[0];
-      const enclosure = firstMedia
-        ? `\n      <enclosure url="${getMediaUrl(firstMedia.id, firstMedia.storageKey, getPublicUrlForProvider(firstMedia.provider, r2PublicUrl, s3PublicUrl))}" length="${firstMedia.size}" type="${firstMedia.mimeType}"/>`
-        : "";
+  return {
+    siteName,
+    siteDescription,
+    siteUrl,
+    siteLanguage,
+    posts: postViews,
+  };
+}
 
-      return `
-    <item>
-      <title><![CDATA[${escapeXml(title)}]]></title>
-      <link>${link}</link>
-      <guid isPermaLink="true">${link}</guid>
-      <pubDate>${pubDate}</pubDate>
-      <description><![CDATA[${post.contentHtml || ""}]]></description>${enclosure}
-    </item>`;
-    })
-    .join("");
+// RSS 2.0 Feed - main feed at /feed
+rssRoutes.get("/", async (c) => {
+  const feedData = await buildFeedData(c);
 
-  const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>${escapeXml(siteName)}</title>
-    <link>${siteUrl}</link>
-    <description>${escapeXml(siteDescription)}</description>
-    <language>en</language>
-    <atom:link href="${siteUrl}/feed" rel="self" type="application/rss+xml"/>
-    ${items}
-  </channel>
-</rss>`;
+  const renderer = c.var.config.theme?.feed?.rss ?? defaultRssRenderer;
+  const xml = renderer(feedData);
 
-  return new Response(rss, {
+  return new Response(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
     },
@@ -76,60 +75,14 @@ rssRoutes.get("/", async (c) => {
 
 // Atom Feed
 rssRoutes.get("/atom.xml", async (c) => {
-  const all = await c.var.services.settings.getAll();
-  const siteName = all["SITE_NAME"] ?? "Jant";
-  const siteDescription = all["SITE_DESCRIPTION"] ?? "";
-  const siteUrl = c.env.SITE_URL;
+  const feedData = await buildFeedData(c);
 
-  const posts = await c.var.services.posts.list({
-    visibility: ["featured", "quiet"],
-    limit: 50,
-  });
+  const renderer = c.var.config.theme?.feed?.atom ?? defaultAtomRenderer;
+  const xml = renderer(feedData);
 
-  const entries = posts
-    .map((post) => {
-      const link = `${siteUrl}/p/${sqid.encode(post.id)}`;
-      const title = post.title || `Post #${post.id}`;
-      const updated = time.toISOString(post.updatedAt);
-      const published = time.toISOString(post.publishedAt);
-
-      return `
-  <entry>
-    <title>${escapeXml(title)}</title>
-    <link href="${link}" rel="alternate"/>
-    <id>${link}</id>
-    <published>${published}</published>
-    <updated>${updated}</updated>
-    <content type="html"><![CDATA[${post.contentHtml || ""}]]></content>
-  </entry>`;
-    })
-    .join("");
-
-  const now = time.toISOString(time.now());
-
-  const atom = `<?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
-  <title>${escapeXml(siteName)}</title>
-  <subtitle>${escapeXml(siteDescription)}</subtitle>
-  <link href="${siteUrl}" rel="alternate"/>
-  <link href="${siteUrl}/feed/atom.xml" rel="self"/>
-  <id>${siteUrl}/</id>
-  <updated>${now}</updated>
-  ${entries}
-</feed>`;
-
-  return new Response(atom, {
+  return new Response(xml, {
     headers: {
       "Content-Type": "application/atom+xml; charset=utf-8",
     },
   });
 });
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}

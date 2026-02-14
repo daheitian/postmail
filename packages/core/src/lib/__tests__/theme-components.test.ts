@@ -1,15 +1,12 @@
 import { describe, it, expect } from "vitest";
-import {
-  resolveCardComponent,
-  resolveThreadPreview,
-  resolveTimelineFeed,
-} from "../theme-components.js";
+import { resolveCardComponent, resolveComponent } from "../theme-components.js";
 import type {
   ThemeComponents,
   TimelineCardProps,
   ThreadPreviewProps,
   TimelineFeedProps,
   PostType,
+  HomePageProps,
 } from "../../types.js";
 import type { FC } from "hono/jsx";
 
@@ -21,6 +18,7 @@ const MockQuoteCard: FC<TimelineCardProps> = () => null;
 const MockImageCard: FC<TimelineCardProps> = () => null;
 const MockThreadPreview: FC<ThreadPreviewProps> = () => null;
 const MockTimelineFeed: FC<TimelineFeedProps> = () => null;
+const MockHomePage: FC<HomePageProps> = () => null;
 
 const DEFAULT_CARD_MAP: Record<PostType, FC<TimelineCardProps>> = {
   note: MockNoteCard,
@@ -79,29 +77,50 @@ describe("theme-components", () => {
     });
   });
 
-  describe("resolveThreadPreview", () => {
+  describe("resolveComponent", () => {
     it("returns default ThreadPreview when no override", () => {
-      expect(resolveThreadPreview(MockThreadPreview)).toBe(MockThreadPreview);
+      expect(resolveComponent("ThreadPreview", MockThreadPreview)).toBe(
+        MockThreadPreview,
+      );
     });
 
-    it("returns theme override when provided", () => {
+    it("returns theme override for ThreadPreview when provided", () => {
       const Custom: FC<ThreadPreviewProps> = () => null;
       expect(
-        resolveThreadPreview(MockThreadPreview, { ThreadPreview: Custom }),
+        resolveComponent("ThreadPreview", MockThreadPreview, {
+          ThreadPreview: Custom,
+        }),
       ).toBe(Custom);
     });
-  });
 
-  describe("resolveTimelineFeed", () => {
     it("returns default TimelineFeed when no override", () => {
-      expect(resolveTimelineFeed(MockTimelineFeed)).toBe(MockTimelineFeed);
+      expect(resolveComponent("TimelineFeed", MockTimelineFeed)).toBe(
+        MockTimelineFeed,
+      );
     });
 
-    it("returns theme override when provided", () => {
+    it("returns theme override for TimelineFeed when provided", () => {
       const Custom: FC<TimelineFeedProps> = () => null;
       expect(
-        resolveTimelineFeed(MockTimelineFeed, { TimelineFeed: Custom }),
+        resolveComponent("TimelineFeed", MockTimelineFeed, {
+          TimelineFeed: Custom,
+        }),
       ).toBe(Custom);
+    });
+
+    it("returns default HomePage when no override", () => {
+      expect(resolveComponent("HomePage", MockHomePage)).toBe(MockHomePage);
+    });
+
+    it("returns theme override for HomePage when provided", () => {
+      const Custom: FC<HomePageProps> = () => null;
+      expect(
+        resolveComponent("HomePage", MockHomePage, { HomePage: Custom }),
+      ).toBe(Custom);
+    });
+
+    it("returns default when theme has empty overrides", () => {
+      expect(resolveComponent("HomePage", MockHomePage, {})).toBe(MockHomePage);
     });
   });
 });
