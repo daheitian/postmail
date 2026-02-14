@@ -12,12 +12,14 @@
  */
 
 import { createApp } from "@jant/core";
-import { MyQuoteCard } from "./MyQuoteCard.js";
 
 export default createApp({
-  theme: {
-    components: {
-      QuoteCard: MyQuoteCard,
-    },
-  },
+  // Theme customization (optional)
+  // Use this for UI/component overrides that need to be compiled into your build
+  // theme: {
+  //   components: {
+  //     // Override components here
+  //     // PostCard: MyPostCard,
+  //   },
+  // },
 });
