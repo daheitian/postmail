@@ -6,13 +6,7 @@
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
-import type { NavigationLink } from "../../types.js";
-
-export interface SiteLayoutProps {
-  siteName: string;
-  navigationLinks: NavigationLink[];
-  currentPath: string;
-}
+import type { NavigationLink, SiteLayoutProps } from "../../types.js";
 
 /**
  * Determine if a navigation link is active based on the current path.

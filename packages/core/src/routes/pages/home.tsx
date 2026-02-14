@@ -5,51 +5,18 @@
  */
 
 import { Hono } from "hono";
-import { useLingui } from "@lingui/react/macro";
-import type { FC } from "hono/jsx";
-import type {
-  Bindings,
-  PostWithMedia,
-  TimelineItemData,
-  TimelineFeedProps,
-} from "../../types.js";
+import type { Bindings, PostWithMedia, TimelineItemData } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
-import { resolveTimelineFeed } from "../../lib/theme-components.js";
-import { TimelineFeed as DefaultTimelineFeed } from "../../theme/components/timeline/TimelineFeed.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { renderPublicPage } from "../../lib/render.js";
+import { HomePage as DefaultHomePage } from "../../theme/pages/HomePage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 const PAGE_SIZE = 20;
 
 export const homeRoutes = new Hono<Env>();
-
-function HomeContent({
-  FeedComponent,
-  feedProps,
-}: {
-  FeedComponent: FC<TimelineFeedProps>;
-  feedProps: TimelineFeedProps;
-}) {
-  const { t } = useLingui();
-
-  return (
-    <>
-      {feedProps.items.length === 0 ? (
-        <p class="text-muted-foreground">
-          {t({
-            message: "No posts yet.",
-            comment: "@context: Empty state message on home page",
-          })}
-        </p>
-      ) : (
-        <FeedComponent {...feedProps} />
-      )}
-    </>
-  );
-}
 
 homeRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
@@ -135,23 +102,20 @@ homeRoutes.get("/", async (c) => {
   const lastPost = displayPosts[displayPosts.length - 1];
   const nextCursor = hasMore && lastPost ? lastPost.id : undefined;
 
-  // Resolve theme components
-  const Feed = resolveTimelineFeed(
-    DefaultTimelineFeed,
-    c.var.config.theme?.components,
-  );
+  // Resolve page component
+  const components = c.var.config.theme?.components;
+  const Page = components?.HomePage ?? DefaultHomePage;
 
-  const feedProps: TimelineFeedProps = {
-    items,
-    hasMore,
-    nextCursor,
-  };
-
-  return c.html(
-    <BaseLayout title={navData.siteName} c={c}>
-      <SiteLayout {...navData}>
-        <HomeContent FeedComponent={Feed} feedProps={feedProps} />
-      </SiteLayout>
-    </BaseLayout>,
-  );
+  return renderPublicPage(c, {
+    title: navData.siteName,
+    navData,
+    content: (
+      <Page
+        items={items}
+        hasMore={hasMore}
+        nextCursor={nextCursor}
+        theme={components}
+      />
+    ),
+  });
 });

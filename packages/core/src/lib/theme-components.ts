@@ -5,13 +5,7 @@
  */
 
 import type { FC } from "hono/jsx";
-import type {
-  PostType,
-  ThemeComponents,
-  TimelineCardProps,
-  ThreadPreviewProps,
-  TimelineFeedProps,
-} from "../types.js";
+import type { PostType, ThemeComponents, TimelineCardProps } from "../types.js";
 
 const THEME_KEY_MAP: Record<PostType, keyof ThemeComponents> = {
   note: "NoteCard",
@@ -21,6 +15,32 @@ const THEME_KEY_MAP: Record<PostType, keyof ThemeComponents> = {
   image: "ImageCard",
   page: "NoteCard",
 };
+
+/**
+ * Generic component resolver.
+ *
+ * Looks up a component by key in `ThemeComponents` and falls back to the
+ * provided default component.
+ *
+ * @param key - ThemeComponents key to look up
+ * @param defaultComponent - Fallback component
+ * @param themeComponents - Optional theme component overrides
+ * @returns The resolved component
+ *
+ * @example
+ * ```ts
+ * const Gallery = resolveComponent("MediaGallery", DefaultMediaGallery, theme);
+ * ```
+ */
+export function resolveComponent<K extends keyof ThemeComponents>(
+  key: K,
+  defaultComponent: NonNullable<ThemeComponents[K]>,
+  themeComponents?: ThemeComponents,
+): NonNullable<ThemeComponents[K]> {
+  return (themeComponents?.[key] ?? defaultComponent) as NonNullable<
+    ThemeComponents[K]
+  >;
+}
 
 /**
  * Resolves the card component for a given post type.
@@ -45,32 +65,4 @@ export function resolveCardComponent(
   const key = THEME_KEY_MAP[type];
   const override = themeComponents?.[key] as FC<TimelineCardProps> | undefined;
   return override ?? defaults[type];
-}
-
-/**
- * Resolves the ThreadPreview component.
- *
- * @param defaultComponent - The default ThreadPreview component
- * @param themeComponents - Optional theme component overrides
- * @returns The resolved ThreadPreview component
- */
-export function resolveThreadPreview(
-  defaultComponent: FC<ThreadPreviewProps>,
-  themeComponents?: ThemeComponents,
-): FC<ThreadPreviewProps> {
-  return themeComponents?.ThreadPreview ?? defaultComponent;
-}
-
-/**
- * Resolves the TimelineFeed component.
- *
- * @param defaultComponent - The default TimelineFeed component
- * @param themeComponents - Optional theme component overrides
- * @returns The resolved TimelineFeed component
- */
-export function resolveTimelineFeed(
-  defaultComponent: FC<TimelineFeedProps>,
-  themeComponents?: ThemeComponents,
-): FC<TimelineFeedProps> {
-  return themeComponents?.TimelineFeed ?? defaultComponent;
 }

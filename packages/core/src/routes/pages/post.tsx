@@ -3,65 +3,21 @@
  */
 
 import { Hono } from "hono";
-import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Post, MediaAttachment } from "../../types.js";
+import type { Bindings, MediaAttachment } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
-import { MediaGallery } from "../../theme/components/index.js";
+import { PostPage as DefaultPostPage } from "../../theme/pages/PostPage.js";
 import * as sqid from "../../lib/sqid.js";
-import * as time from "../../lib/time.js";
 import {
   getMediaUrl,
   getImageUrl,
   getPublicUrlForProvider,
 } from "../../lib/image.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { renderPublicPage } from "../../lib/render.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const postRoutes = new Hono<Env>();
-
-function PostContent({
-  post,
-  mediaAttachments,
-}: {
-  post: Post;
-  mediaAttachments: MediaAttachment[];
-}) {
-  const { t } = useLingui();
-
-  return (
-    <article class="h-entry">
-      {post.title && (
-        <h1 class="p-name text-2xl font-semibold mb-4">{post.title}</h1>
-      )}
-
-      <div
-        class="e-content prose"
-        dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
-      />
-
-      {mediaAttachments.length > 0 && (
-        <MediaGallery attachments={mediaAttachments} />
-      )}
-
-      <footer class="mt-6 pt-4 border-t text-sm text-muted-foreground">
-        <time
-          class="dt-published"
-          datetime={time.toISOString(post.publishedAt)}
-        >
-          {time.formatDate(post.publishedAt)}
-        </time>
-        <a href={`/p/${sqid.encode(post.id)}`} class="u-url ml-4">
-          {t({
-            message: "Permalink",
-            comment: "@context: Link to permanent URL of post",
-          })}
-        </a>
-      </footer>
-    </article>
-  );
-}
 
 postRoutes.get("/:id", async (c) => {
   const paramId = c.req.param("id");
@@ -119,11 +75,19 @@ postRoutes.get("/:id", async (c) => {
   const navData = await getNavigationData(c);
   const title = post.title || navData.siteName;
 
-  return c.html(
-    <BaseLayout title={title} description={post.content?.slice(0, 160)} c={c}>
-      <SiteLayout {...navData}>
-        <PostContent post={post} mediaAttachments={mediaAttachments} />
-      </SiteLayout>
-    </BaseLayout>,
-  );
+  const components = c.var.config.theme?.components;
+  const Page = components?.PostPage ?? DefaultPostPage;
+
+  return renderPublicPage(c, {
+    title,
+    description: post.content?.slice(0, 160),
+    navData,
+    content: (
+      <Page
+        post={post}
+        mediaAttachments={mediaAttachments}
+        theme={components}
+      />
+    ),
+  });
 });

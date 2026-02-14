@@ -10,7 +10,7 @@ import type { AppVariables } from "../../app.js";
 import { sse } from "../../lib/sse.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { TimelineItem } from "../../theme/components/timeline/TimelineItem.js";
-import { ThreadPreview } from "../../theme/components/timeline/ThreadPreview.js";
+import { ThreadPreview as DefaultThreadPreview } from "../../theme/components/timeline/ThreadPreview.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -110,19 +110,24 @@ timelineApiRoutes.get("/", async (c) => {
     return { post: postWithMedia };
   });
 
+  // Resolve theme components for card rendering
+  const theme = c.var.config.theme?.components;
+  const ResolvedThreadPreview = theme?.ThreadPreview ?? DefaultThreadPreview;
+
   // Render items to HTML
   const itemsHtml = items
     .map((item) => {
       if (item.threadPreview) {
         return (
-          <ThreadPreview
+          <ResolvedThreadPreview
             rootPost={item.post}
             previewReplies={item.threadPreview.replies}
             totalReplyCount={item.threadPreview.totalReplyCount}
+            theme={theme}
           />
         );
       }
-      return <TimelineItem item={item} />;
+      return <TimelineItem item={item} theme={theme} />;
     })
     .map((jsx) => jsx.toString())
     .join("");

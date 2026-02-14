@@ -2,10 +2,15 @@
  * Timeline Item Component
  *
  * Dispatches to the correct card component based on post type.
+ * Resolves card overrides from theme components if provided.
  */
 
 import type { FC } from "hono/jsx";
-import type { TimelineItemData, TimelineCardProps } from "../../../types.js";
+import type {
+  TimelineItemData,
+  TimelineCardProps,
+  ThemeComponents,
+} from "../../../types.js";
 import { NoteCard } from "./NoteCard.js";
 import { ArticleCard } from "./ArticleCard.js";
 import { LinkCard } from "./LinkCard.js";
@@ -22,18 +27,32 @@ const CARD_MAP: Record<PostType, FC<TimelineCardProps>> = {
   page: NoteCard,
 };
 
+const THEME_KEY_MAP: Record<PostType, keyof ThemeComponents> = {
+  note: "NoteCard",
+  article: "ArticleCard",
+  link: "LinkCard",
+  quote: "QuoteCard",
+  image: "ImageCard",
+  page: "NoteCard",
+};
+
 interface TimelineItemProps {
   item: TimelineItemData;
   compact?: boolean;
-  /** Override card component (for theme overrides) */
+  /** Override card component (for direct overrides) */
   cardOverride?: FC<TimelineCardProps>;
+  /** Theme components for cascade resolution */
+  theme?: ThemeComponents;
 }
 
 export const TimelineItem: FC<TimelineItemProps> = ({
   item,
   compact,
   cardOverride,
+  theme,
 }) => {
-  const Card = cardOverride ?? CARD_MAP[item.post.type];
+  const themeKey = THEME_KEY_MAP[item.post.type];
+  const themeCard = theme?.[themeKey] as FC<TimelineCardProps> | undefined;
+  const Card = cardOverride ?? themeCard ?? CARD_MAP[item.post.type];
   return <Card post={item.post} compact={compact} />;
 };

@@ -5,29 +5,15 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, Post } from "../../types.js";
+import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { BaseLayout, SiteLayout } from "../../theme/layouts/index.js";
+import { SinglePage as DefaultSinglePage } from "../../theme/pages/SinglePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { renderPublicPage } from "../../lib/render.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const pageRoutes = new Hono<Env>();
-
-function PageContent({ page }: { page: Post }) {
-  return (
-    <article class="h-entry">
-      {page.title && (
-        <h1 class="p-name text-3xl font-semibold mb-6">{page.title}</h1>
-      )}
-
-      <div
-        class="e-content prose"
-        dangerouslySetInnerHTML={{ __html: page.contentHtml || "" }}
-      />
-    </article>
-  );
-}
 
 // Catch-all for custom page paths
 pageRoutes.get("/:path", async (c) => {
@@ -48,15 +34,13 @@ pageRoutes.get("/:path", async (c) => {
 
   const navData = await getNavigationData(c);
 
-  return c.html(
-    <BaseLayout
-      title={`${page.title} - ${navData.siteName}`}
-      description={page.content?.slice(0, 160)}
-      c={c}
-    >
-      <SiteLayout {...navData}>
-        <PageContent page={page} />
-      </SiteLayout>
-    </BaseLayout>,
-  );
+  const components = c.var.config.theme?.components;
+  const Page = components?.SinglePage ?? DefaultSinglePage;
+
+  return renderPublicPage(c, {
+    title: `${page.title} - ${navData.siteName}`,
+    description: page.content?.slice(0, 160),
+    navData,
+    content: <Page page={page} theme={components} />,
+  });
 });

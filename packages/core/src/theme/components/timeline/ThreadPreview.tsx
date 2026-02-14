@@ -14,6 +14,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
   rootPost,
   previewReplies,
   totalReplyCount,
+  theme,
 }) => {
   const { t } = useLingui();
   const permalink = `/p/${sqid.encode(rootPost.id)}`;
@@ -21,12 +22,12 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
 
   return (
     <div class="timeline-thread">
-      <TimelineItem item={{ post: rootPost }} />
+      <TimelineItem item={{ post: rootPost }} theme={theme} />
       {previewReplies.length > 0 && (
         <div class="timeline-thread-replies">
           {previewReplies.map((reply) => (
             <div key={reply.id} class="timeline-thread-reply">
-              <TimelineItem item={{ post: reply }} compact />
+              <TimelineItem item={{ post: reply }} compact theme={theme} />
             </div>
           ))}
           {remainingCount > 0 && (

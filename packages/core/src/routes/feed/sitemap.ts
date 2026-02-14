@@ -3,10 +3,9 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings } from "../../types.js";
+import type { Bindings, SitemapData } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import * as sqid from "../../lib/sqid.js";
-import * as time from "../../lib/time.js";
+import { defaultSitemapRenderer } from "../../lib/feed.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -21,36 +20,12 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
     limit: 1000,
   });
 
-  const urls = posts
-    .map((post) => {
-      const loc = `${siteUrl}/p/${sqid.encode(post.id)}`;
-      const lastmod = time.toISOString(post.updatedAt).split("T")[0];
-      const priority = post.visibility === "featured" ? "0.8" : "0.6";
+  const sitemapData: SitemapData = { siteUrl, posts };
 
-      return `
-  <url>
-    <loc>${loc}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <priority>${priority}</priority>
-  </url>`;
-    })
-    .join("");
+  const renderer = c.var.config.theme?.feed?.sitemap ?? defaultSitemapRenderer;
+  const xml = renderer(sitemapData);
 
-  // Add homepage
-  const homepageUrl = `
-  <url>
-    <loc>${siteUrl}/</loc>
-    <priority>1.0</priority>
-    <changefreq>daily</changefreq>
-  </url>`;
-
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  ${homepageUrl}
-  ${urls}
-</urlset>`;
-
-  return new Response(sitemap, {
+  return new Response(xml, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
     },

@@ -299,35 +299,102 @@ import type { FC, PropsWithChildren } from "hono/jsx";
 import type { ColorTheme } from "./theme/color-themes.js";
 
 /**
- * Props for overridable theme components
+ * Search result from FTS5
  */
-export interface BaseLayoutProps extends PropsWithChildren {
-  title?: string;
-  description?: string;
-}
-
-export interface PostCardProps {
+export interface SearchResult {
   post: Post;
-  showExcerpt?: boolean;
-  showDate?: boolean;
+  /** FTS5 rank score (lower is better) */
+  rank: number;
+  /** Highlighted snippet from content */
+  snippet?: string;
 }
 
-export interface PostListProps {
+// =============================================================================
+// Site Layout Props
+// =============================================================================
+
+export interface SiteLayoutProps {
+  siteName: string;
+  navigationLinks: NavigationLink[];
+  currentPath: string;
+}
+
+// =============================================================================
+// Page-Level Props
+// =============================================================================
+
+/** Props for the home page component */
+export interface HomePageProps {
+  items: TimelineItemData[];
+  hasMore: boolean;
+  nextCursor?: number;
+  theme?: ThemeComponents;
+}
+
+/** Props for the single post page component */
+export interface PostPageProps {
+  post: Post;
+  mediaAttachments: MediaAttachment[];
+  theme?: ThemeComponents;
+}
+
+/** Props for the custom page component */
+export interface SinglePageProps {
+  page: Post;
+  theme?: ThemeComponents;
+}
+
+/** Props for the archive page component */
+export interface ArchivePageProps {
   posts: Post[];
-  emptyMessage?: string;
+  hasMore: boolean;
+  nextCursor?: number;
+  type?: string;
+  grouped: Map<string, Post[]>;
+  replyCounts: Map<number, number>;
+  theme?: ThemeComponents;
 }
 
-export interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  basePath: string;
+/** Props for the search page component */
+export interface SearchPageProps {
+  query: string;
+  results: SearchResult[];
+  error: string | null;
+  hasMore: boolean;
+  page: number;
+  theme?: ThemeComponents;
 }
 
-export interface EmptyStateProps {
-  title: string;
-  description?: string;
-  actionLabel?: string;
-  actionHref?: string;
+/** Props for the collection page component */
+export interface CollectionPageProps {
+  collection: Collection;
+  posts: Post[];
+  theme?: ThemeComponents;
+}
+
+// =============================================================================
+// Feed Data Types
+// =============================================================================
+
+/** Data passed to RSS/Atom feed renderers */
+export interface FeedData {
+  siteName: string;
+  siteDescription: string;
+  siteUrl: string;
+  siteLanguage: string;
+  posts: Post[];
+  /** Map of post ID to raw media records (for enclosures) */
+  mediaMap: Map<number, Media[]>;
+  /** R2 public URL for media enclosures */
+  r2PublicUrl?: string;
+  /** S3 public URL for media enclosures */
+  s3PublicUrl?: string;
+}
+
+/** Data passed to sitemap renderers */
+export interface SitemapData {
+  siteUrl: string;
+  posts: Post[];
 }
 
 // =============================================================================
@@ -345,6 +412,7 @@ export interface ThreadPreviewProps {
   rootPost: PostWithMedia;
   previewReplies: PostWithMedia[];
   totalReplyCount: number;
+  theme?: ThemeComponents;
 }
 
 /** Data structure for a single timeline item */
@@ -361,17 +429,25 @@ export interface TimelineFeedProps {
   items: TimelineItemData[];
   hasMore: boolean;
   nextCursor?: number;
+  theme?: ThemeComponents;
 }
 
 /**
  * Theme component overrides
  */
 export interface ThemeComponents {
-  BaseLayout?: FC<BaseLayoutProps>;
-  PostCard?: FC<PostCardProps>;
-  PostList?: FC<PostListProps>;
-  Pagination?: FC<PaginationProps>;
-  EmptyState?: FC<EmptyStateProps>;
+  // Layout
+  SiteLayout?: FC<PropsWithChildren<SiteLayoutProps>>;
+
+  // Pages
+  HomePage?: FC<HomePageProps>;
+  PostPage?: FC<PostPageProps>;
+  SinglePage?: FC<SinglePageProps>;
+  ArchivePage?: FC<ArchivePageProps>;
+  SearchPage?: FC<SearchPageProps>;
+  CollectionPage?: FC<CollectionPageProps>;
+
+  // Timeline sub-components
   NoteCard?: FC<TimelineCardProps>;
   ArticleCard?: FC<TimelineCardProps>;
   LinkCard?: FC<TimelineCardProps>;
@@ -379,6 +455,48 @@ export interface ThemeComponents {
   ImageCard?: FC<TimelineCardProps>;
   ThreadPreview?: FC<ThreadPreviewProps>;
   TimelineFeed?: FC<TimelineFeedProps>;
+
+  // Shared sub-components (re-exported real prop types from component files)
+  Pagination?: FC<PaginationComponentProps>;
+  PagePagination?: FC<PagePaginationComponentProps>;
+  EmptyState?: FC<EmptyStateComponentProps>;
+  MediaGallery?: FC<MediaGalleryComponentProps>;
+}
+
+/**
+ * Real component prop types (re-exported from component files via index.ts).
+ * These are provided here as aliases to avoid circular imports in types.ts.
+ * The canonical definitions live in the component files.
+ */
+
+/** @see Pagination component in theme/components/Pagination.tsx */
+export interface PaginationComponentProps {
+  baseUrl: string;
+  hasMore: boolean;
+  nextCursor?: number | string;
+  prevCursor?: number | string;
+  cursorParam?: string;
+}
+
+/** @see PagePagination component in theme/components/Pagination.tsx */
+export interface PagePaginationComponentProps {
+  baseUrl: string;
+  currentPage: number;
+  hasMore: boolean;
+  pageParam?: string;
+}
+
+/** @see EmptyState component in theme/components/EmptyState.tsx */
+export interface EmptyStateComponentProps {
+  message: string;
+  ctaText?: string;
+  ctaHref?: string;
+  centered?: boolean;
+}
+
+/** @see MediaGallery component in theme/components/MediaGallery.tsx */
+export interface MediaGalleryComponentProps {
+  attachments: MediaAttachment[];
 }
 
 /**
@@ -389,6 +507,15 @@ export interface JantTheme {
   name?: string;
   /** Component overrides */
   components?: ThemeComponents;
+  /** Feed renderer overrides (RSS, Atom, Sitemap) */
+  feed?: {
+    /** Custom RSS 2.0 renderer — returns XML string */
+    rss?: (data: FeedData) => string;
+    /** Custom Atom renderer — returns XML string */
+    atom?: (data: FeedData) => string;
+    /** Custom Sitemap renderer — returns XML string */
+    sitemap?: (data: SitemapData) => string;
+  };
   /** CSS variable overrides (highest priority, always applied) */
   cssVariables?: Record<string, string>;
   /** Replace built-in color themes with a custom list */
