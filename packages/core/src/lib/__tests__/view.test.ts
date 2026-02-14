@@ -194,8 +194,8 @@ describe("toPostViews", () => {
     const posts = [makePostWithMedia({ id: 1 }), makePostWithMedia({ id: 2 })];
     const views = toPostViews(posts, EMPTY_CTX);
     expect(views).toHaveLength(2);
-    expect(views[0]!.id).toBe(1);
-    expect(views[1]!.id).toBe(2);
+    expect(views[0]).toHaveProperty("id", 1);
+    expect(views[1]).toHaveProperty("id", 2);
   });
 });
 
@@ -305,9 +305,9 @@ describe("toNavLinkViews", () => {
     ];
     const views = toNavLinkViews(links, "/archive");
     expect(views).toHaveLength(3);
-    expect(views[0]!.isActive).toBe(false);
-    expect(views[1]!.isActive).toBe(true);
-    expect(views[2]!.isExternal).toBe(true);
+    expect(views[0]).toHaveProperty("isActive", false);
+    expect(views[1]).toHaveProperty("isActive", true);
+    expect(views[2]).toHaveProperty("isExternal", true);
   });
 });
 
@@ -347,15 +347,16 @@ describe("toArchiveGroups", () => {
     const groups = toArchiveGroups(grouped, EMPTY_CTX);
     expect(groups).toHaveLength(2);
 
-    expect(groups[0]!.year).toBe("2024");
-    expect(groups[0]!.month).toBe("02");
-    expect(groups[0]!.label).toBe("February 2024");
-    expect(groups[0]!.posts).toHaveLength(2);
+    expect(groups[0]).toHaveProperty("year", "2024");
+    expect(groups[0]).toHaveProperty("month", "02");
+    expect(groups[0]).toHaveProperty("label", "February 2024");
+    expect(groups[0]).toHaveProperty("posts");
+    expect(groups[0]?.posts).toHaveLength(2);
 
-    expect(groups[1]!.year).toBe("2024");
-    expect(groups[1]!.month).toBe("01");
-    expect(groups[1]!.label).toBe("January 2024");
-    expect(groups[1]!.posts).toHaveLength(1);
+    expect(groups[1]).toHaveProperty("year", "2024");
+    expect(groups[1]).toHaveProperty("month", "01");
+    expect(groups[1]).toHaveProperty("label", "January 2024");
+    expect(groups[1]?.posts).toHaveLength(1);
   });
 
   it("converts posts to PostView within groups", () => {
@@ -363,9 +364,10 @@ describe("toArchiveGroups", () => {
     grouped.set("2024-02", [makePost({ id: 1 })]);
 
     const groups = toArchiveGroups(grouped, EMPTY_CTX);
-    const post = groups[0]!.posts[0]!;
-    expect(post.permalink).toBeDefined();
-    expect(post.publishedAtFormatted).toBeDefined();
+    const post = groups[0]?.posts[0];
+    expect(post).toBeDefined();
+    expect(post?.permalink).toBeDefined();
+    expect(post?.publishedAtFormatted).toBeDefined();
   });
 
   it("handles empty map", () => {

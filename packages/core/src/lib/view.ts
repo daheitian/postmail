@@ -109,7 +109,7 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
  * const postView = toPostView({ ...post, mediaAttachments: [...] }, mediaCtx);
  * ```
  */
-export function toPostView(post: PostWithMedia, ctx: MediaContext): PostView {
+export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
   const permalink = `/p/${encode(post.id)}`;
 
   // Pre-compute excerpt from raw content
