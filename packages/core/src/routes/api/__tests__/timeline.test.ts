@@ -13,7 +13,7 @@ import { createPostService } from "../../../services/post.js";
 import { createMediaService } from "../../../services/media.js";
 import { buildMediaMap } from "../../../lib/media-helpers.js";
 import type { Database } from "../../../db/index.js";
-import type { PostWithMedia, TimelineItemData } from "../../../types.js";
+import type { PostWithMedia } from "../../../types.js";
 
 describe("Timeline data assembly", () => {
   let db: Database;
@@ -50,7 +50,7 @@ describe("Timeline data assembly", () => {
     const mediaMap = buildMediaMap(rawMediaMap);
 
     // Assemble items
-    const items: TimelineItemData[] = posts.map((p) => ({
+    const items = posts.map((p) => ({
       post: { ...p, mediaAttachments: mediaMap.get(p.id) ?? [] },
     }));
 
@@ -102,7 +102,7 @@ describe("Timeline data assembly", () => {
     const rawMediaMap = await mediaService.getByPostIds(postIds);
     const mediaMap = buildMediaMap(rawMediaMap);
 
-    const items: TimelineItemData[] = posts.map((post) => {
+    const items = posts.map((post) => {
       const postWithMedia: PostWithMedia = {
         ...post,
         mediaAttachments: mediaMap.get(post.id) ?? [],

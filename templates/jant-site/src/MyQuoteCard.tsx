@@ -1,10 +1,7 @@
 import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "@jant/core";
-import { time, sqid } from "@jant/core";
 
 export const MyQuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
-  const permalink = `/p/${sqid.encode(post.id)}`;
-
   return (
     <article
       class={`h-entry${compact ? " py-2" : " py-4"}`}
@@ -12,7 +9,7 @@ export const MyQuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
     >
       {post.contentHtml && (
         <blockquote
-          class={`e-content ${compact ? "text-sm" : "text-lg"} font-serif italic`}
+          class={`e-content text-red-500 ${compact ? "text-sm" : "text-lg"} font-serif italic`}
         >
           <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
         </blockquote>
@@ -38,12 +35,9 @@ export const MyQuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
         </div>
       )}
       <footer class="mt-2 text-xs text-muted-foreground">
-        <a href={permalink} class="u-url hover:underline">
-          <time
-            class="dt-published"
-            datetime={time.toISOString(post.publishedAt)}
-          >
-            {time.formatDate(post.publishedAt)}
+        <a href={post.permalink} class="u-url hover:underline">
+          <time class="dt-published" datetime={post.publishedAt}>
+            {post.publishedAtFormatted}
           </time>
         </a>
       </footer>

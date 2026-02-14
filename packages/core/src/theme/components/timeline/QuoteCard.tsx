@@ -6,12 +6,8 @@
 
 import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "../../../types.js";
-import * as sqid from "../../../lib/sqid.js";
-import * as time from "../../../lib/time.js";
 
 export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
-  const permalink = `/p/${sqid.encode(post.id)}`;
-
   return (
     <article
       class={`h-entry timeline-card timeline-card-quote${compact ? " timeline-card-compact" : ""}`}
@@ -41,12 +37,9 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
         </div>
       )}
       <footer class="mt-2 text-xs text-muted-foreground">
-        <a href={permalink} class="u-url hover:underline">
-          <time
-            class="dt-published"
-            datetime={time.toISOString(post.publishedAt)}
-          >
-            {time.formatDate(post.publishedAt)}
+        <a href={post.permalink} class="u-url hover:underline">
+          <time class="dt-published" datetime={post.publishedAt}>
+            {post.publishedAtFormatted}
           </time>
         </a>
       </footer>

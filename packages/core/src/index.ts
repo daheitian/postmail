@@ -29,10 +29,16 @@ export type {
   JantConfig,
   JantTheme,
   ThemeComponents,
+  // View Model types (for theme authors)
+  PostView,
+  MediaView,
+  NavLinkView,
+  SearchResultView,
+  TimelineItemView,
+  ArchiveGroup,
   // Timeline types
   TimelineCardProps,
   ThreadPreviewProps,
-  TimelineItemData,
   TimelineFeedProps,
   // Site layout
   SiteLayoutProps,
@@ -62,6 +68,19 @@ export * as time from "./lib/time.js";
 export * as sqid from "./lib/sqid.js";
 export * as url from "./lib/url.js";
 export * as markdown from "./lib/markdown.js";
+
+// View Model conversion utilities (for advanced theme use)
+export {
+  createMediaContext,
+  toPostView,
+  toPostViews,
+  toMediaView,
+  toNavLinkView,
+  toNavLinkViews,
+  toSearchResultView,
+  toArchiveGroups,
+} from "./lib/view.js";
+export type { MediaContext } from "./lib/view.js";
 
 // Render helper (for theme authors adding custom routes)
 export { renderPublicPage } from "./lib/render.js";

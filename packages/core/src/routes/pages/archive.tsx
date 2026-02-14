@@ -11,6 +11,7 @@ import { POST_TYPES } from "../../types.js";
 import { ArchivePage as DefaultArchivePage } from "../../theme/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
+import { createMediaContext, toArchiveGroups } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -42,10 +43,6 @@ archiveRoutes.get("/", async (c) => {
   const hasMore = posts.length > PAGE_SIZE;
   const displayPosts = hasMore ? posts.slice(0, PAGE_SIZE) : posts;
 
-  // Get reply counts for thread indicators
-  const postIds = displayPosts.map((p) => p.id);
-  const replyCounts = await c.var.services.posts.getReplyCounts(postIds);
-
   // Get next cursor
   const nextCursor =
     hasMore && displayPosts.length > 0
@@ -65,6 +62,10 @@ archiveRoutes.get("/", async (c) => {
     grouped.get(key)!.push(post);
   }
 
+  // Transform to View Models
+  const mediaCtx = createMediaContext(c);
+  const groups = toArchiveGroups(grouped, mediaCtx);
+
   const components = c.var.config.theme?.components;
   const Page = components?.ArchivePage ?? DefaultArchivePage;
 
@@ -73,12 +74,10 @@ archiveRoutes.get("/", async (c) => {
     navData,
     content: (
       <Page
-        posts={displayPosts}
+        groups={groups}
         hasMore={hasMore}
         nextCursor={nextCursor}
         type={type}
-        grouped={grouped}
-        replyCounts={replyCounts}
         theme={components}
       />
     ),

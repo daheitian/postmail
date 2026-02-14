@@ -9,14 +9,8 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { PostPageProps } from "../../types.js";
 import { MediaGallery as DefaultMediaGallery } from "../components/MediaGallery.js";
-import * as sqid from "../../lib/sqid.js";
-import * as time from "../../lib/time.js";
 
-export const PostPage: FC<PostPageProps> = ({
-  post,
-  mediaAttachments,
-  theme,
-}) => {
+export const PostPage: FC<PostPageProps> = ({ post, theme }) => {
   const { t } = useLingui();
 
   const Gallery = theme?.MediaGallery ?? DefaultMediaGallery;
@@ -32,18 +26,13 @@ export const PostPage: FC<PostPageProps> = ({
         dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
       />
 
-      {mediaAttachments.length > 0 && (
-        <Gallery attachments={mediaAttachments} />
-      )}
+      {post.media.length > 0 && <Gallery attachments={post.media} />}
 
       <footer class="mt-6 pt-4 border-t text-sm text-muted-foreground">
-        <time
-          class="dt-published"
-          datetime={time.toISOString(post.publishedAt)}
-        >
-          {time.formatDate(post.publishedAt)}
+        <time class="dt-published" datetime={post.publishedAt}>
+          {post.publishedAtFormatted}
         </time>
-        <a href={`/p/${sqid.encode(post.id)}`} class="u-url ml-4">
+        <a href={post.permalink} class="u-url ml-4">
           {t({
             message: "Permalink",
             comment: "@context: Link to permanent URL of post",

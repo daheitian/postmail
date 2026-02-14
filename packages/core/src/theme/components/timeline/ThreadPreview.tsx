@@ -8,7 +8,7 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { ThreadPreviewProps } from "../../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
-import * as sqid from "../../../lib/sqid.js";
+import { TimelineItemFromPost } from "./TimelineItem.js";
 
 export const ThreadPreview: FC<ThreadPreviewProps> = ({
   rootPost,
@@ -17,7 +17,6 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
   theme,
 }) => {
   const { t } = useLingui();
-  const permalink = `/p/${sqid.encode(rootPost.id)}`;
   const remainingCount = totalReplyCount - previewReplies.length;
 
   return (
@@ -27,13 +26,13 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
         <div class="timeline-thread-replies">
           {previewReplies.map((reply) => (
             <div key={reply.id} class="timeline-thread-reply">
-              <TimelineItem item={{ post: reply }} compact theme={theme} />
+              <TimelineItemFromPost post={reply} compact theme={theme} />
             </div>
           ))}
           {remainingCount > 0 && (
             <div class="timeline-thread-reply">
               <a
-                href={permalink}
+                href={rootPost.permalink}
                 class="text-sm text-muted-foreground hover:text-foreground hover:underline"
               >
                 {t({

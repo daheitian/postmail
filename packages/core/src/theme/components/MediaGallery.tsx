@@ -6,10 +6,10 @@
  */
 
 import type { FC } from "hono/jsx";
-import type { MediaAttachment } from "../../types.js";
+import type { MediaView } from "../../types.js";
 
 export interface MediaGalleryProps {
-  attachments: MediaAttachment[];
+  attachments: MediaView[];
 }
 
 export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
@@ -23,8 +23,8 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
       <div class="mt-3">
         <a href={img.url} target="_blank" rel="noopener noreferrer">
           <img
-            src={img.previewUrl}
-            alt={img.alt || ""}
+            src={img.thumbnailUrl}
+            alt={img.altText || ""}
             width={img.width ?? undefined}
             height={img.height ?? undefined}
             class="rounded-lg max-w-full h-auto"
@@ -47,8 +47,8 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
             class="aspect-square"
           >
             <img
-              src={img.previewUrl}
-              alt={img.alt || ""}
+              src={img.thumbnailUrl}
+              alt={img.altText || ""}
               class="w-full h-full object-cover"
               loading="lazy"
             />
@@ -70,8 +70,8 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
           class="row-span-2"
         >
           <img
-            src={first.previewUrl}
-            alt={first.alt || ""}
+            src={first.thumbnailUrl}
+            alt={first.altText || ""}
             class="w-full h-full object-cover"
             loading="lazy"
           />
@@ -85,8 +85,8 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
             class="aspect-square"
           >
             <img
-              src={img.previewUrl}
-              alt={img.alt || ""}
+              src={img.thumbnailUrl}
+              alt={img.altText || ""}
               class="w-full h-full object-cover"
               loading="lazy"
             />
@@ -111,8 +111,8 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
           class="relative aspect-square"
         >
           <img
-            src={img.previewUrl}
-            alt={img.alt || ""}
+            src={img.thumbnailUrl}
+            alt={img.altText || ""}
             class="w-full h-full object-cover"
             loading="lazy"
           />

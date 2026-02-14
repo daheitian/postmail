@@ -8,6 +8,7 @@ import type { AppVariables } from "../../app.js";
 import { CollectionPage as DefaultCollectionPage } from "../../theme/pages/CollectionPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
+import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -22,6 +23,10 @@ collectionRoutes.get("/:path", async (c) => {
   const posts = await c.var.services.collections.getPosts(collection.id);
   const navData = await getNavigationData(c);
 
+  // Transform to View Models
+  const mediaCtx = createMediaContext(c);
+  const postViews = toPostViewsFromPosts(posts, mediaCtx);
+
   const components = c.var.config.theme?.components;
   const Page = components?.CollectionPage ?? DefaultCollectionPage;
 
@@ -29,6 +34,8 @@ collectionRoutes.get("/:path", async (c) => {
     title: `${collection.title} - ${navData.siteName}`,
     description: collection.description ?? undefined,
     navData,
-    content: <Page collection={collection} posts={posts} theme={components} />,
+    content: (
+      <Page collection={collection} posts={postViews} theme={components} />
+    ),
   });
 });

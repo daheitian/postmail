@@ -8,8 +8,6 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionPageProps } from "../../types.js";
-import * as sqid from "../../lib/sqid.js";
-import * as time from "../../lib/time.js";
 
 export const CollectionPage: FC<CollectionPageProps> = ({
   collection,
@@ -39,10 +37,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
             <article key={post.id} class="h-entry">
               {post.title && (
                 <h2 class="p-name text-lg font-medium mb-2">
-                  <a
-                    href={`/p/${sqid.encode(post.id)}`}
-                    class="u-url hover:underline"
-                  >
+                  <a href={post.permalink} class="u-url hover:underline">
                     {post.title}
                   </a>
                 </h2>
@@ -52,11 +47,8 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
               />
               <footer class="mt-2 text-sm text-muted-foreground">
-                <time
-                  class="dt-published"
-                  datetime={time.toISOString(post.publishedAt)}
-                >
-                  {time.formatDate(post.publishedAt)}
+                <time class="dt-published" datetime={post.publishedAt}>
+                  {post.publishedAtFormatted}
                 </time>
               </footer>
             </article>

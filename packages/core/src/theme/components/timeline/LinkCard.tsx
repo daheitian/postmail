@@ -6,12 +6,8 @@
 
 import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "../../../types.js";
-import * as sqid from "../../../lib/sqid.js";
-import * as time from "../../../lib/time.js";
 
 export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
-  const permalink = `/p/${sqid.encode(post.id)}`;
-
   return (
     <article
       class={`h-entry timeline-card timeline-card-link${compact ? " timeline-card-compact" : ""}`}
@@ -36,7 +32,7 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
           class={`p-name font-semibold ${compact ? "text-sm" : "text-base"} mb-1`}
         >
           <a
-            href={post.sourceUrl || permalink}
+            href={post.sourceUrl || post.permalink}
             class="u-url hover:underline"
             target={post.sourceUrl ? "_blank" : undefined}
             rel={post.sourceUrl ? "noopener noreferrer" : undefined}
@@ -52,12 +48,9 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
         />
       )}
       <footer class="mt-2 text-xs text-muted-foreground">
-        <a href={permalink} class="hover:underline">
-          <time
-            class="dt-published"
-            datetime={time.toISOString(post.publishedAt)}
-          >
-            {time.formatDate(post.publishedAt)}
+        <a href={post.permalink} class="hover:underline">
+          <time class="dt-published" datetime={post.publishedAt}>
+            {post.publishedAtFormatted}
           </time>
         </a>
       </footer>

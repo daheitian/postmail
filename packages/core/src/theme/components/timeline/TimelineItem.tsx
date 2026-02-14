@@ -7,9 +7,10 @@
 
 import type { FC } from "hono/jsx";
 import type {
-  TimelineItemData,
+  TimelineItemView,
   TimelineCardProps,
   ThemeComponents,
+  PostView,
 } from "../../../types.js";
 import { NoteCard } from "./NoteCard.js";
 import { ArticleCard } from "./ArticleCard.js";
@@ -37,11 +38,18 @@ const THEME_KEY_MAP: Record<PostType, keyof ThemeComponents> = {
 };
 
 interface TimelineItemProps {
-  item: TimelineItemData;
+  item: TimelineItemView;
   compact?: boolean;
   /** Override card component (for direct overrides) */
   cardOverride?: FC<TimelineCardProps>;
   /** Theme components for cascade resolution */
+  theme?: ThemeComponents;
+}
+
+interface TimelineItemFromPostProps {
+  post: PostView;
+  compact?: boolean;
+  cardOverride?: FC<TimelineCardProps>;
   theme?: ThemeComponents;
 }
 
@@ -55,4 +63,16 @@ export const TimelineItem: FC<TimelineItemProps> = ({
   const themeCard = theme?.[themeKey] as FC<TimelineCardProps> | undefined;
   const Card = cardOverride ?? themeCard ?? CARD_MAP[item.post.type];
   return <Card post={item.post} compact={compact} />;
+};
+
+export const TimelineItemFromPost: FC<TimelineItemFromPostProps> = ({
+  post,
+  compact,
+  cardOverride,
+  theme,
+}) => {
+  const themeKey = THEME_KEY_MAP[post.type];
+  const themeCard = theme?.[themeKey] as FC<TimelineCardProps> | undefined;
+  const Card = cardOverride ?? themeCard ?? CARD_MAP[post.type];
+  return <Card post={post} compact={compact} />;
 };

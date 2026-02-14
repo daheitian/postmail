@@ -11,9 +11,6 @@
  */
 
 import type { FeedData, SitemapData } from "../types.js";
-import * as sqid from "./sqid.js";
-import * as time from "./time.js";
-import { getMediaUrl, getPublicUrlForProvider } from "./image.js";
 
 /**
  * Escape special XML characters.
@@ -30,32 +27,22 @@ function escapeXml(str: string): string {
 /**
  * Default RSS 2.0 renderer.
  *
- * @param data - Feed data including posts and media
+ * @param data - Feed data with PostView[] (pre-computed URLs)
  * @returns RSS 2.0 XML string
  */
 export function defaultRssRenderer(data: FeedData): string {
-  const {
-    siteName,
-    siteDescription,
-    siteUrl,
-    siteLanguage,
-    posts,
-    mediaMap,
-    r2PublicUrl,
-    s3PublicUrl,
-  } = data;
+  const { siteName, siteDescription, siteUrl, siteLanguage, posts } = data;
 
   const items = posts
     .map((post) => {
-      const link = `${siteUrl}/p/${sqid.encode(post.id)}`;
+      const link = `${siteUrl}${post.permalink}`;
       const title = post.title || `Post #${post.id}`;
-      const pubDate = new Date(post.publishedAt * 1000).toUTCString();
+      const pubDate = new Date(post.publishedAt).toUTCString();
 
       // Add enclosure for first media attachment
-      const postMedia = mediaMap.get(post.id);
-      const firstMedia = postMedia?.[0];
+      const firstMedia = post.media[0];
       const enclosure = firstMedia
-        ? `\n      <enclosure url="${getMediaUrl(firstMedia.id, firstMedia.storageKey, getPublicUrlForProvider(firstMedia.provider, r2PublicUrl, s3PublicUrl))}" length="${firstMedia.size}" type="${firstMedia.mimeType}"/>`
+        ? `\n      <enclosure url="${firstMedia.url}" type="${firstMedia.mimeType}"${firstMedia.size ? ` length="${firstMedia.size}"` : ""}/>`
         : "";
 
       return `
@@ -85,7 +72,7 @@ export function defaultRssRenderer(data: FeedData): string {
 /**
  * Default Atom renderer.
  *
- * @param data - Feed data including posts and media
+ * @param data - Feed data with PostView[] (pre-computed URLs)
  * @returns Atom XML string
  */
 export function defaultAtomRenderer(data: FeedData): string {
@@ -93,24 +80,22 @@ export function defaultAtomRenderer(data: FeedData): string {
 
   const entries = posts
     .map((post) => {
-      const link = `${siteUrl}/p/${sqid.encode(post.id)}`;
+      const link = `${siteUrl}${post.permalink}`;
       const title = post.title || `Post #${post.id}`;
-      const updated = time.toISOString(post.updatedAt);
-      const published = time.toISOString(post.publishedAt);
 
       return `
   <entry>
     <title>${escapeXml(title)}</title>
     <link href="${link}" rel="alternate"/>
     <id>${link}</id>
-    <published>${published}</published>
-    <updated>${updated}</updated>
+    <published>${post.publishedAt}</published>
+    <updated>${post.updatedAt}</updated>
     <content type="html"><![CDATA[${post.contentHtml || ""}]]></content>
   </entry>`;
     })
     .join("");
 
-  const now = time.toISOString(time.now());
+  const now = new Date().toISOString();
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -127,7 +112,7 @@ export function defaultAtomRenderer(data: FeedData): string {
 /**
  * Default Sitemap renderer.
  *
- * @param data - Sitemap data including posts
+ * @param data - Sitemap data with PostView[] (pre-computed URLs)
  * @returns Sitemap XML string
  */
 export function defaultSitemapRenderer(data: SitemapData): string {
@@ -135,8 +120,8 @@ export function defaultSitemapRenderer(data: SitemapData): string {
 
   const urls = posts
     .map((post) => {
-      const loc = `${siteUrl}/p/${sqid.encode(post.id)}`;
-      const lastmod = time.toISOString(post.updatedAt).split("T")[0];
+      const loc = `${siteUrl}${post.permalink}`;
+      const lastmod = post.updatedAt.split("T")[0];
       const priority = post.visibility === "featured" ? "0.8" : "0.6";
 
       return `

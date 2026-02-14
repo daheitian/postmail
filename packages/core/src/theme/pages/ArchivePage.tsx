@@ -10,8 +10,6 @@ import { useLingui } from "@lingui/react/macro";
 import type { ArchivePageProps } from "../../types.js";
 import { POST_TYPES } from "../../types.js";
 import { Pagination as DefaultPagination } from "../components/Pagination.js";
-import * as sqid from "../../lib/sqid.js";
-import * as time from "../../lib/time.js";
 
 function getTypeLabel(type: string): string {
   const { t } = useLingui();
@@ -66,20 +64,11 @@ function getTypeLabelPlural(type: string): string {
   return labels[type] ?? `${type}s`;
 }
 
-function formatYearMonth(yearMonth: string): string {
-  const [year, month] = yearMonth.split("-");
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- yearMonth format YYYY-MM guarantees both year and month exist
-  const date = new Date(parseInt(year!, 10), parseInt(month!, 10) - 1);
-  return date.toLocaleDateString("en-US", { year: "numeric", month: "long" });
-}
-
 export const ArchivePage: FC<ArchivePageProps> = ({
-  posts,
+  groups,
   hasMore,
   nextCursor,
   type,
-  grouped,
-  replyCounts,
   theme,
 }) => {
   const { t } = useLingui();
@@ -118,7 +107,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
       </header>
 
       <main>
-        {posts.length === 0 ? (
+        {groups.length === 0 ? (
           <p class="text-muted-foreground">
             {t({
               message: "No posts found.",
@@ -126,58 +115,34 @@ export const ArchivePage: FC<ArchivePageProps> = ({
             })}
           </p>
         ) : (
-          Array.from(grouped.entries()).map(([yearMonth, monthPosts]) => (
-            <section key={yearMonth} class="mb-8">
+          groups.map((group) => (
+            <section key={`${group.year}-${group.month}`} class="mb-8">
               <h2 class="text-lg font-medium mb-4 text-muted-foreground">
-                {formatYearMonth(yearMonth)}
+                {group.label}
               </h2>
               <div class="flex flex-col gap-3">
-                {monthPosts.map((post) => {
-                  const replyCount = replyCounts.get(post.id);
-                  return (
-                    <article key={post.id} class="flex items-baseline gap-4">
-                      <time
-                        class="text-sm text-muted-foreground w-12 shrink-0"
-                        datetime={time.toISOString(post.publishedAt)}
-                      >
-                        {new Date(post.publishedAt * 1000).getDate()}
-                      </time>
-                      <div class="flex-1 min-w-0">
-                        <a
-                          href={`/p/${sqid.encode(post.id)}`}
-                          class="hover:underline"
-                        >
-                          {post.title ||
-                            post.content?.slice(0, 80) ||
-                            `Post #${post.id}`}
-                        </a>
-                        {!type && (
-                          <span class="ml-2 badge-outline text-xs">
-                            {getTypeLabel(post.type)}
-                          </span>
-                        )}
-                        {replyCount && replyCount > 0 && (
-                          <span class="ml-2 text-xs text-muted-foreground">
-                            (
-                            {replyCount === 1
-                              ? t({
-                                  message: "1 reply",
-                                  comment:
-                                    "@context: Archive post reply indicator - single",
-                                })
-                              : t({
-                                  message: "{count} replies",
-                                  comment:
-                                    "@context: Archive post reply indicator - plural",
-                                  values: { count: String(replyCount) },
-                                })}
-                            )
-                          </span>
-                        )}
-                      </div>
-                    </article>
-                  );
-                })}
+                {group.posts.map((post) => (
+                  <article key={post.id} class="flex items-baseline gap-4">
+                    <time
+                      class="text-sm text-muted-foreground w-12 shrink-0"
+                      datetime={post.publishedAt}
+                    >
+                      {new Date(post.publishedAt).getUTCDate()}
+                    </time>
+                    <div class="flex-1 min-w-0">
+                      <a href={post.permalink} class="hover:underline">
+                        {post.title ||
+                          post.content?.slice(0, 80) ||
+                          `Post #${post.id}`}
+                      </a>
+                      {!type && (
+                        <span class="ml-2 badge-outline text-xs">
+                          {getTypeLabel(post.type)}
+                        </span>
+                      )}
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
           ))

@@ -3,17 +3,14 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, MediaAttachment } from "../../types.js";
+import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { PostPage as DefaultPostPage } from "../../theme/pages/PostPage.js";
 import * as sqid from "../../lib/sqid.js";
-import {
-  getMediaUrl,
-  getImageUrl,
-  getPublicUrlForProvider,
-} from "../../lib/image.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
+import { buildMediaMap } from "../../lib/media-helpers.js";
+import { createMediaContext, toPostView } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -43,34 +40,21 @@ postRoutes.get("/:id", async (c) => {
     return c.notFound();
   }
 
-  // Load media attachments
-  const rawMedia = await c.var.services.media.getByPostId(post.id);
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  // Batch load media attachments
+  const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
+  const mediaCtx = createMediaContext(c);
+  const mediaMap = buildMediaMap(
+    rawMediaMap,
+    mediaCtx.r2PublicUrl,
+    mediaCtx.imageTransformUrl,
+    mediaCtx.s3PublicUrl,
+  );
 
-  const mediaAttachments: MediaAttachment[] = rawMedia.map((m) => {
-    const publicUrl = getPublicUrlForProvider(
-      m.provider,
-      r2PublicUrl,
-      s3PublicUrl,
-    );
-    return {
-      id: m.id,
-      url: getMediaUrl(m.id, m.storageKey, publicUrl),
-      previewUrl: getImageUrl(
-        getMediaUrl(m.id, m.storageKey, publicUrl),
-        imageTransformUrl,
-        { width: 400, quality: 80, format: "auto", fit: "cover" },
-      ),
-      alt: m.alt,
-      blurhash: m.blurhash,
-      width: m.width,
-      height: m.height,
-      position: m.position,
-      mimeType: m.mimeType,
-    };
-  });
+  // Transform to View Model
+  const postView = toPostView(
+    { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
+    mediaCtx,
+  );
 
   const navData = await getNavigationData(c);
   const title = post.title || navData.siteName;
@@ -82,12 +66,6 @@ postRoutes.get("/:id", async (c) => {
     title,
     description: post.content?.slice(0, 160),
     navData,
-    content: (
-      <Page
-        post={post}
-        mediaAttachments={mediaAttachments}
-        theme={components}
-      />
-    ),
+    content: <Page post={postView} theme={components} />,
   });
 });

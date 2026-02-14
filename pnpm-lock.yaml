@@ -189,6 +189,9 @@ importers:
       '@types/node':
         specifier: ^22.15.4
         version: 22.19.10
+      hono:
+        specifier: ^4.11.9
+        version: 4.11.9
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18

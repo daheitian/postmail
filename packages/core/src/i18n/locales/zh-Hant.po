@@ -15,8 +15,8 @@ msgstr ""
 
 #. @context: Archive post reply indicator - plural
 #: src/theme/pages/ArchivePage.tsx:168
-msgid "{count} replies"
-msgstr "{count} 條回覆"
+#~ msgid "{count} replies"
+#~ msgstr "{count} 條回覆"
 
 #. @context: Navigation link
 #: src/routes/dash/collections.tsx:282
@@ -25,8 +25,8 @@ msgstr "← 返回收藏夾"
 
 #. @context: Archive post reply indicator - single
 #: src/theme/pages/ArchivePage.tsx:163
-msgid "1 reply"
-msgstr "1 條回覆"
+#~ msgid "1 reply"
+#~ msgstr "1 條回覆"
 
 #. @context: Redirect type option
 #: src/routes/dash/redirects.tsx:146
@@ -49,7 +49,7 @@ msgid "Add Media"
 msgstr "添加媒體"
 
 #. @context: Archive filter - all types
-#: src/theme/pages/ArchivePage.tsx:103
+#: src/theme/pages/ArchivePage.tsx:92
 msgid "All"
 msgstr "所有"
 
@@ -59,7 +59,7 @@ msgid "Appearance"
 msgstr "外觀"
 
 #. @context: Archive page title
-#: src/theme/pages/ArchivePage.tsx:88
+#: src/theme/pages/ArchivePage.tsx:77
 msgid "Archive"
 msgstr "檔案館"
 
@@ -73,12 +73,12 @@ msgstr ""
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:74
 #: src/theme/components/TypeBadge.tsx:20
-#: src/theme/pages/ArchivePage.tsx:20
+#: src/theme/pages/ArchivePage.tsx:18
 msgid "Article"
 msgstr "文章"
 
 #. @context: Post type label plural - articles
-#: src/theme/pages/ArchivePage.tsx:45
+#: src/theme/pages/ArchivePage.tsx:43
 msgid "Articles"
 msgstr "文章"
 
@@ -351,12 +351,12 @@ msgid "Featured"
 msgstr "精選"
 
 #. @context: Search results count - multiple
-#: src/theme/pages/SearchPage.tsx:79
+#: src/theme/pages/SearchPage.tsx:77
 msgid "Found {count} results"
 msgstr "找到 {count} 個結果"
 
 #. @context: Search results count - single
-#: src/theme/pages/SearchPage.tsx:75
+#: src/theme/pages/SearchPage.tsx:73
 msgid "Found 1 result"
 msgstr "找到 1 個結果"
 
@@ -377,12 +377,12 @@ msgstr "一般設定"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:83
 #: src/theme/components/TypeBadge.tsx:29
-#: src/theme/pages/ArchivePage.tsx:29
+#: src/theme/pages/ArchivePage.tsx:27
 msgid "Image"
 msgstr "圖片"
 
 #. @context: Post type label plural - images
-#: src/theme/pages/ArchivePage.tsx:57
+#: src/theme/pages/ArchivePage.tsx:55
 msgid "Images"
 msgstr "圖片"
 
@@ -411,12 +411,12 @@ msgstr "語言"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:77
 #: src/theme/components/TypeBadge.tsx:24
-#: src/theme/pages/ArchivePage.tsx:24
+#: src/theme/pages/ArchivePage.tsx:22
 msgid "Link"
 msgstr "連結"
 
 #. @context: Post type label plural - links
-#: src/theme/pages/ArchivePage.tsx:49
+#: src/theme/pages/ArchivePage.tsx:47
 msgid "Links"
 msgstr "連結"
 
@@ -551,14 +551,14 @@ msgid "No pages yet."
 msgstr "尚未有頁面。"
 
 #. @context: Archive empty state
-#: src/theme/pages/ArchivePage.tsx:123
+#: src/theme/pages/ArchivePage.tsx:112
 msgid "No posts found."
 msgstr "未找到任何帖子。"
 
 #. @context: Empty state message
 #. @context: Empty state message
 #: src/routes/dash/collections.tsx:243
-#: src/theme/pages/CollectionPage.tsx:32
+#: src/theme/pages/CollectionPage.tsx:30
 msgid "No posts in this collection."
 msgstr "此集合中沒有帖子。"
 
@@ -575,7 +575,7 @@ msgid "No redirects configured."
 msgstr "未配置任何重定向。"
 
 #. @context: Search empty results
-#: src/theme/pages/SearchPage.tsx:70
+#: src/theme/pages/SearchPage.tsx:68
 msgid "No results found."
 msgstr "未找到結果。"
 
@@ -584,12 +584,12 @@ msgstr "未找到結果。"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:71
 #: src/theme/components/TypeBadge.tsx:19
-#: src/theme/pages/ArchivePage.tsx:19
+#: src/theme/pages/ArchivePage.tsx:17
 msgid "Note"
 msgstr "備註"
 
 #. @context: Post type label plural - notes
-#: src/theme/pages/ArchivePage.tsx:41
+#: src/theme/pages/ArchivePage.tsx:39
 msgid "Notes"
 msgstr "筆記"
 
@@ -598,7 +598,7 @@ msgstr "筆記"
 #. @context: Post type label - page
 #: src/routes/dash/pages.tsx:125
 #: src/theme/components/TypeBadge.tsx:33
-#: src/theme/pages/ArchivePage.tsx:33
+#: src/theme/pages/ArchivePage.tsx:31
 msgid "Page"
 msgstr "頁面"
 
@@ -622,7 +622,7 @@ msgstr "頁面標題..."
 #. @context: Post type label plural - pages
 #: src/routes/dash/pages.tsx:36
 #: src/theme/layouts/DashLayout.tsx:96
-#: src/theme/pages/ArchivePage.tsx:61
+#: src/theme/pages/ArchivePage.tsx:59
 msgid "Pages"
 msgstr "頁面"
 
@@ -646,7 +646,7 @@ msgstr "路徑（例如 /archive）或完整網址（例如 https://example.com�
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
 #: src/theme/components/ThreadView.tsx:68
-#: src/theme/pages/PostPage.tsx:47
+#: src/theme/pages/PostPage.tsx:36
 msgid "Permalink"
 msgstr "永久鏈接"
 
@@ -755,12 +755,12 @@ msgstr "安靜（正常）"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:80
 #: src/theme/components/TypeBadge.tsx:25
-#: src/theme/pages/ArchivePage.tsx:25
+#: src/theme/pages/ArchivePage.tsx:23
 msgid "Quote"
 msgstr "引用"
 
 #. @context: Post type label plural - quotes
-#: src/theme/pages/ArchivePage.tsx:53
+#: src/theme/pages/ArchivePage.tsx:51
 msgid "Quotes"
 msgstr "引用"
 
@@ -802,13 +802,13 @@ msgstr "保存設定"
 
 #. @context: Search page title
 #. @context: Search submit button
-#: src/theme/pages/SearchPage.tsx:24
-#: src/theme/pages/SearchPage.tsx:50
+#: src/theme/pages/SearchPage.tsx:22
+#: src/theme/pages/SearchPage.tsx:48
 msgid "Search"
 msgstr "搜尋"
 
 #. @context: Search input placeholder
-#: src/theme/pages/SearchPage.tsx:42
+#: src/theme/pages/SearchPage.tsx:40
 msgid "Search posts..."
 msgstr "搜尋帖子..."
 
@@ -830,7 +830,7 @@ msgstr "設定"
 
 #. @context: Link to show remaining thread replies
 #. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
-#: src/theme/components/timeline/ThreadPreview.tsx:39
+#: src/theme/components/timeline/ThreadPreview.tsx:38
 msgid "Show {remainingCount} more {0}"
 msgstr "顯示 {remainingCount} 個更多 {0}"
 

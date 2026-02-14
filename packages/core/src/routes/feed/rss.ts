@@ -8,6 +8,8 @@ import type { Bindings, FeedData } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { defaultRssRenderer, defaultAtomRenderer } from "../../lib/feed.js";
 import { getSiteLanguage } from "../../lib/config.js";
+import { buildMediaMap } from "../../lib/media-helpers.js";
+import { createMediaContext, toPostViews } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -22,8 +24,6 @@ async function buildFeedData(c: Context<Env>): Promise<FeedData> {
   const siteDescription = all["SITE_DESCRIPTION"] ?? "";
   const siteUrl = c.env.SITE_URL;
   const siteLanguage = await getSiteLanguage(c);
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
 
   const posts = await c.var.services.posts.list({
     visibility: ["featured", "quiet"],
@@ -32,17 +32,30 @@ async function buildFeedData(c: Context<Env>): Promise<FeedData> {
 
   // Batch load media for enclosures
   const postIds = posts.map((p) => p.id);
-  const mediaMap = await c.var.services.media.getByPostIds(postIds);
+  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
+  const mediaCtx = createMediaContext(c);
+  const mediaMap = buildMediaMap(
+    rawMediaMap,
+    mediaCtx.r2PublicUrl,
+    mediaCtx.imageTransformUrl,
+    mediaCtx.s3PublicUrl,
+  );
+
+  // Transform to PostView[] with media
+  const postViews = toPostViews(
+    posts.map((p) => ({
+      ...p,
+      mediaAttachments: mediaMap.get(p.id) ?? [],
+    })),
+    mediaCtx,
+  );
 
   return {
     siteName,
     siteDescription,
     siteUrl,
     siteLanguage,
-    posts,
-    mediaMap,
-    r2PublicUrl,
-    s3PublicUrl,
+    posts: postViews,
   };
 }
 

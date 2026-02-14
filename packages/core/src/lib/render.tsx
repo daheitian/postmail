@@ -55,7 +55,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
 
   const layoutProps: SiteLayoutProps = {
     siteName: navData.siteName,
-    navigationLinks: navData.navigationLinks,
+    links: navData.links,
     currentPath: navData.currentPath,
   };
 

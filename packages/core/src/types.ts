@@ -292,6 +292,121 @@ export interface UpdateNavigationLink {
 }
 
 // =============================================================================
+// View Model Types (render-ready, for theme components)
+// =============================================================================
+
+/**
+ * Render-ready post data for theme components.
+ * All fields are pre-computed — no lib/ imports needed.
+ */
+export interface PostView {
+  // Identity
+  id: number;
+  /** Pre-computed permalink, e.g. "/p/jR3k" */
+  permalink: string;
+
+  // Content
+  title?: string;
+  /** Pre-sanitized HTML */
+  contentHtml?: string;
+  /** Pre-computed excerpt, max 160 chars */
+  excerpt?: string;
+
+  // Metadata
+  type: PostType;
+  visibility: Visibility;
+  /** Custom path for pages, e.g. "/about" */
+  path?: string;
+
+  // Time — pre-formatted
+  /** ISO 8601 string */
+  publishedAt: string;
+  /** Human-readable, e.g. "Feb 1, 2024" */
+  publishedAtFormatted: string;
+  /** ISO 8601 string */
+  updatedAt: string;
+
+  // Source (for link/quote types)
+  sourceUrl?: string;
+  sourceName?: string;
+  sourceDomain?: string;
+
+  // Media — URLs pre-computed
+  media: MediaView[];
+
+  // Thread context
+  replyToId?: number;
+  threadRootId?: number;
+
+  // Raw content (for forms/editing, not typical theme use)
+  content?: string;
+}
+
+/**
+ * Render-ready media data for theme components.
+ * URLs are pre-computed — no lib/ imports needed.
+ */
+export interface MediaView {
+  id: string;
+  /** Full-size URL, pre-computed */
+  url: string;
+  /** Thumbnail URL, pre-computed */
+  thumbnailUrl: string;
+  mimeType: string;
+  altText?: string;
+  width?: number;
+  height?: number;
+  size?: number;
+}
+
+/**
+ * Render-ready navigation link for theme components.
+ * Active/external state pre-computed.
+ */
+export interface NavLinkView {
+  id: number;
+  label: string;
+  url: string;
+  /** Pre-computed based on currentPath */
+  isActive: boolean;
+  /** Pre-computed: starts with http(s):// */
+  isExternal: boolean;
+}
+
+/**
+ * Render-ready search result for theme components.
+ */
+export interface SearchResultView {
+  post: PostView;
+  rank: number;
+  snippet?: string;
+}
+
+/**
+ * Render-ready timeline item for theme components.
+ */
+export interface TimelineItemView {
+  post: PostView;
+  threadPreview?: {
+    replies: PostView[];
+    totalReplyCount: number;
+  };
+}
+
+/**
+ * Typed archive group with pre-formatted label.
+ */
+export interface ArchiveGroup {
+  /** e.g. "2024" */
+  year: string;
+  /** e.g. "02" */
+  month: string;
+  /** Pre-formatted, e.g. "February 2024" */
+  label: string;
+  posts: PostView[];
+}
+
+// =============================================================================
 // Configuration Types
 // =============================================================================
 
@@ -315,7 +430,7 @@ export interface SearchResult {
 
 export interface SiteLayoutProps {
   siteName: string;
-  navigationLinks: NavigationLink[];
+  links: NavLinkView[];
   currentPath: string;
 }
 
@@ -325,7 +440,7 @@ export interface SiteLayoutProps {
 
 /** Props for the home page component */
 export interface HomePageProps {
-  items: TimelineItemData[];
+  items: TimelineItemView[];
   hasMore: boolean;
   nextCursor?: number;
   theme?: ThemeComponents;
@@ -333,33 +448,30 @@ export interface HomePageProps {
 
 /** Props for the single post page component */
 export interface PostPageProps {
-  post: Post;
-  mediaAttachments: MediaAttachment[];
+  post: PostView;
   theme?: ThemeComponents;
 }
 
 /** Props for the custom page component */
 export interface SinglePageProps {
-  page: Post;
+  page: PostView;
   theme?: ThemeComponents;
 }
 
 /** Props for the archive page component */
 export interface ArchivePageProps {
-  posts: Post[];
+  groups: ArchiveGroup[];
   hasMore: boolean;
   nextCursor?: number;
-  type?: string;
-  grouped: Map<string, Post[]>;
-  replyCounts: Map<number, number>;
+  type?: PostType;
   theme?: ThemeComponents;
 }
 
 /** Props for the search page component */
 export interface SearchPageProps {
   query: string;
-  results: SearchResult[];
-  error: string | null;
+  results: SearchResultView[];
+  error?: string;
   hasMore: boolean;
   page: number;
   theme?: ThemeComponents;
@@ -368,7 +480,7 @@ export interface SearchPageProps {
 /** Props for the collection page component */
 export interface CollectionPageProps {
   collection: Collection;
-  posts: Post[];
+  posts: PostView[];
   theme?: ThemeComponents;
 }
 
@@ -382,19 +494,13 @@ export interface FeedData {
   siteDescription: string;
   siteUrl: string;
   siteLanguage: string;
-  posts: Post[];
-  /** Map of post ID to raw media records (for enclosures) */
-  mediaMap: Map<number, Media[]>;
-  /** R2 public URL for media enclosures */
-  r2PublicUrl?: string;
-  /** S3 public URL for media enclosures */
-  s3PublicUrl?: string;
+  posts: PostView[];
 }
 
 /** Data passed to sitemap renderers */
 export interface SitemapData {
   siteUrl: string;
-  posts: Post[];
+  posts: PostView[];
 }
 
 // =============================================================================
@@ -403,30 +509,21 @@ export interface SitemapData {
 
 /** Props for per-type timeline cards */
 export interface TimelineCardProps {
-  post: PostWithMedia;
+  post: PostView;
   compact?: boolean;
 }
 
 /** Props for thread inline preview */
 export interface ThreadPreviewProps {
-  rootPost: PostWithMedia;
-  previewReplies: PostWithMedia[];
+  rootPost: PostView;
+  previewReplies: PostView[];
   totalReplyCount: number;
   theme?: ThemeComponents;
 }
 
-/** Data structure for a single timeline item */
-export interface TimelineItemData {
-  post: PostWithMedia;
-  threadPreview?: {
-    replies: PostWithMedia[];
-    totalReplyCount: number;
-  };
-}
-
 /** Props for the timeline feed wrapper */
 export interface TimelineFeedProps {
-  items: TimelineItemData[];
+  items: TimelineItemView[];
   hasMore: boolean;
   nextCursor?: number;
   theme?: ThemeComponents;
@@ -496,7 +593,7 @@ export interface EmptyStateComponentProps {
 
 /** @see MediaGallery component in theme/components/MediaGallery.tsx */
 export interface MediaGalleryComponentProps {
-  attachments: MediaAttachment[];
+  attachments: MediaView[];
 }
 
 /**

@@ -3,9 +3,10 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, SitemapData } from "../../types.js";
+import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { defaultSitemapRenderer } from "../../lib/feed.js";
+import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -20,10 +21,12 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
     limit: 1000,
   });
 
-  const sitemapData: SitemapData = { siteUrl, posts };
+  // Transform to PostView[]
+  const mediaCtx = createMediaContext(c);
+  const postViews = toPostViewsFromPosts(posts, mediaCtx);
 
   const renderer = c.var.config.theme?.feed?.sitemap ?? defaultSitemapRenderer;
-  const xml = renderer(sitemapData);
+  const xml = renderer({ siteUrl, posts: postViews });
 
   return new Response(xml, {
     headers: {

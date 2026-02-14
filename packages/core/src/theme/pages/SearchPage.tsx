@@ -9,8 +9,6 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { SearchPageProps } from "../../types.js";
 import { PagePagination as DefaultPagePagination } from "../components/Pagination.js";
-import * as sqid from "../../lib/sqid.js";
-import * as time from "../../lib/time.js";
 
 export const SearchPage: FC<SearchPageProps> = ({
   query,
@@ -91,7 +89,7 @@ export const SearchPage: FC<SearchPageProps> = ({
                     key={result.post.id}
                     class="p-4 rounded-lg border hover:border-primary"
                   >
-                    <a href={`/p/${sqid.encode(result.post.id)}`} class="block">
+                    <a href={result.post.permalink} class="block">
                       <h2 class="font-medium hover:underline">
                         {result.post.title ||
                           result.post.content?.slice(0, 60) ||
@@ -107,10 +105,8 @@ export const SearchPage: FC<SearchPageProps> = ({
 
                       <footer class="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                         <span class="badge-outline">{result.post.type}</span>
-                        <time
-                          datetime={time.toISOString(result.post.publishedAt)}
-                        >
-                          {time.formatDate(result.post.publishedAt)}
+                        <time datetime={result.post.publishedAt}>
+                          {result.post.publishedAtFormatted}
                         </time>
                       </footer>
                     </a>

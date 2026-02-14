@@ -8,6 +8,7 @@ import type { AppVariables } from "../../app.js";
 import { SearchPage as DefaultSearchPage } from "../../theme/pages/SearchPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
+import { createMediaContext, toSearchResultViews } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -24,7 +25,7 @@ searchRoutes.get("/", async (c) => {
 
   // Only search if there's a query
   let results: SearchResult[] = [];
-  let error: string | null = null;
+  let error: string | undefined;
   let hasMore = false;
 
   if (query.trim()) {
@@ -47,6 +48,10 @@ searchRoutes.get("/", async (c) => {
     }
   }
 
+  // Transform to View Models
+  const mediaCtx = createMediaContext(c);
+  const resultViews = toSearchResultViews(results, mediaCtx);
+
   const components = c.var.config.theme?.components;
   const Page = components?.SearchPage ?? DefaultSearchPage;
 
@@ -58,7 +63,7 @@ searchRoutes.get("/", async (c) => {
     content: (
       <Page
         query={query}
-        results={results}
+        results={resultViews}
         error={error}
         hasMore={hasMore}
         page={page}

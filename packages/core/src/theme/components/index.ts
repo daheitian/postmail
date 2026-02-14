@@ -31,5 +31,6 @@ export {
   ImageCard,
   ThreadPreview,
   TimelineItem,
+  TimelineItemFromPost,
   TimelineFeed,
 } from "./timeline/index.js";
