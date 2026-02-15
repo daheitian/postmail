@@ -1,19 +1,19 @@
 /**
- * Timeline API Tests
+ * Timeline Data Assembly Tests
  *
  * Tests the timeline data assembly logic via the service layer.
  * The actual route handler renders JSX components which require the Lingui SWC
  * plugin (not available in vitest). We test the underlying service operations
- * that power the timeline API instead.
+ * that power the timeline instead.
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../../__tests__/helpers/db.js";
-import { createPostService } from "../../../services/post.js";
-import { createMediaService } from "../../../services/media.js";
-import { buildMediaMap } from "../../../lib/media-helpers.js";
-import type { Database } from "../../../db/index.js";
-import type { PostWithMedia } from "../../../types.js";
+import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import { createPostService } from "../../services/post.js";
+import { createMediaService } from "../../services/media.js";
+import { buildMediaMap } from "../media-helpers.js";
+import type { Database } from "../../db/index.js";
+import type { PostWithMedia } from "../../types.js";
 
 describe("Timeline data assembly", () => {
   let db: Database;

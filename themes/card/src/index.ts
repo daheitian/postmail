@@ -42,6 +42,7 @@ import { QuoteCard } from "./timeline/QuoteCard.js";
 import { ImageCard } from "./timeline/ImageCard.js";
 import { ThreadPreview } from "./timeline/ThreadPreview.js";
 import { TimelineFeed } from "./timeline/TimelineFeed.js";
+import { TimelineLoadMore } from "./timeline/TimelineLoadMore.js";
 
 export interface ThemeOptions {
   /** Override individual components */
@@ -76,6 +77,7 @@ export function theme(options?: ThemeOptions): JantTheme {
       ImageCard,
       ThreadPreview,
       TimelineFeed,
+      TimelineLoadMore,
       ...options?.components,
     },
     cssVariables: {
@@ -100,4 +102,5 @@ export { QuoteCard } from "./timeline/QuoteCard.js";
 export { ImageCard } from "./timeline/ImageCard.js";
 export { ThreadPreview } from "./timeline/ThreadPreview.js";
 export { TimelineFeed } from "./timeline/TimelineFeed.js";
+export { TimelineLoadMore } from "./timeline/TimelineLoadMore.js";
 export { TimelineItem, TimelineItemFromPost } from "./timeline/TimelineItem.js";

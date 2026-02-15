@@ -53,7 +53,7 @@ function dumpTable(name, query) {
 
 const header = `-- =============================================================================
 -- Demo seed data for Jant (demo.jant.me)
--- Exported from remote demo D1 database via: mise run demo-backup
+-- Exported from remote demo D1 database via: mise run demo-export
 -- Usage: mise run demo-reset
 -- =============================================================================
 `;

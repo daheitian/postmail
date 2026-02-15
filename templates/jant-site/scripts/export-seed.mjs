@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 // Parse flags
 const args = process.argv.slice(2);
 const noMedia = args.includes("--no-media");
+const noAuth = args.includes("--no-auth");
 const outputIndex = args.indexOf("--output");
 const outputFile =
   outputIndex !== -1 ? args[outputIndex + 1] : "seed-local.sql";
@@ -53,9 +54,7 @@ const header = `-- =============================================================
 `;
 
 const tables = [
-  ["settings"],
-  ["user"],
-  ["account"],
+  ...(!noAuth ? [["settings"], ["user"], ["account"]] : []),
   [
     "posts",
     noMedia

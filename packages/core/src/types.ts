@@ -56,6 +56,8 @@ export interface Bindings {
   IMAGE_TRANSFORM_URL?: string;
   DEMO_EMAIL?: string;
   DEMO_PASSWORD?: string;
+  // Timeline
+  PAGE_SIZE?: string;
   // Site configuration (optional - can be overridden in DB)
   SITE_NAME?: string;
   SITE_DESCRIPTION?: string;
@@ -122,6 +124,10 @@ export const CONFIG_FIELDS = {
   },
   DEMO_PASSWORD: {
     defaultValue: "",
+    envOnly: true,
+  },
+  PAGE_SIZE: {
+    defaultValue: "20",
     envOnly: true,
   },
   STORAGE_DRIVER: {
@@ -529,6 +535,12 @@ export interface TimelineFeedProps {
   theme?: ThemeComponents;
 }
 
+/** Props for the timeline load-more button */
+export interface TimelineLoadMoreProps {
+  nextCursor: number;
+  theme?: ThemeComponents;
+}
+
 /**
  * Theme component overrides
  */
@@ -552,6 +564,7 @@ export interface ThemeComponents {
   ImageCard?: FC<TimelineCardProps>;
   ThreadPreview?: FC<ThreadPreviewProps>;
   TimelineFeed?: FC<TimelineFeedProps>;
+  TimelineLoadMore?: FC<TimelineLoadMoreProps>;
 
   // Shared sub-components (re-exported real prop types from component files)
   Pagination?: FC<PaginationComponentProps>;

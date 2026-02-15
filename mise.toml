@@ -216,7 +216,7 @@ run = "pnpm --filter jant-site run deploy"
 # =============================================================================
 # Demo
 # =============================================================================
-[tasks.deploy-demo]
+[tasks.demo-deploy]
 alias = "dd"
 description = "Deploy demo site to demo.jant.me"
 dir = "templates/jant-site"
@@ -239,8 +239,8 @@ pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scr
 pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/seed-demo.sql
 """
 
-[tasks.demo-backup]
-description = "Backup demo database to scripts/seed-demo.sql"
+[tasks.demo-export]
+description = "Export demo database to scripts/seed-demo.sql"
 dir = "templates/jant-site"
 run = "node scripts/export-demo.mjs"
 
@@ -249,7 +249,7 @@ description = "Push local seed data to demo (excluding media)"
 dir = "templates/jant-site"
 run = """
 echo "Exporting local data (without media)..."
-node scripts/export-seed.mjs --no-media --output seed-demo-upload.sql
+node scripts/export-seed.mjs --no-media --no-auth --output seed-demo-upload.sql
 echo "Resetting demo content..."
 pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/reset-demo.sql
 echo "Loading seed data to demo..."
@@ -317,7 +317,7 @@ echo ""
 # =============================================================================
 # Examples (generated from templates/jant-site, not committed to git)
 # =============================================================================
-[tasks.new-example]
+[tasks.example-new]
 alias = "ne"
 description = "Create a new example from templates/jant-site"
 usage = 'arg "<name>"'
@@ -346,7 +346,7 @@ echo "Created: $DEST"
 echo "Next: edit $DEST/src/index.ts, then mise run example $usage_name"
 """
 
-[tasks.seed-example]
+[tasks.example-seed]
 alias = "se"
 description = "Seed an example's local database with dev data"
 usage = 'arg "<name>"'

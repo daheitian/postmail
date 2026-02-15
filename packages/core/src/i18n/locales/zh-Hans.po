@@ -137,7 +137,7 @@ msgid "Color theme"
 msgstr "颜色主题"
 
 #. @context: Setup form submit button
-#: src/app.tsx:277
+#: src/app.tsx:274
 msgid "Complete Setup"
 msgstr "完成设置"
 
@@ -147,7 +147,7 @@ msgid "Confirm New Password"
 msgstr "确认新密码"
 
 #. @context: Password reset form field
-#: src/app.tsx:538
+#: src/app.tsx:535
 msgid "Confirm Password"
 msgstr "确认密码"
 
@@ -186,7 +186,7 @@ msgid "Create Redirect"
 msgstr "创建重定向"
 
 #. @context: Setup page description
-#: src/app.tsx:217
+#: src/app.tsx:214
 msgid "Create your admin account."
 msgstr "创建您的管理员账户。"
 
@@ -252,7 +252,7 @@ msgid "Deleting this media will remove it permanently from storage."
 msgstr "删除此媒体将永久从存储中移除。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:376
+#: src/app.tsx:373
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "演示账户已预填。只需点击登录。"
 
@@ -333,13 +333,13 @@ msgstr "编辑帖子"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:247
-#: src/app.tsx:391
+#: src/app.tsx:244
+#: src/app.tsx:388
 msgid "Email"
 msgstr "电子邮件"
 
 #. @context: Password reset page description
-#: src/app.tsx:507
+#: src/app.tsx:504
 msgid "Enter your new password."
 msgstr "输入您的新密码。"
 
@@ -392,7 +392,7 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "图像会自动优化：调整大小至最大 1920px，转换为 WebP，并去除元数据。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:582
+#: src/app.tsx:579
 msgid "Invalid or Expired Link"
 msgstr "无效或过期的链接"
 
@@ -423,7 +423,7 @@ msgstr "链接"
 #. @context: Button to load more posts in timeline
 #. @context: Pagination button - load more items
 #: src/theme/components/Pagination.tsx:103
-#: src/themes/minimal/timeline/TimelineFeed.tsx:48
+#: src/themes/minimal/timeline/TimelineLoadMore.tsx:20
 msgid "Load more"
 msgstr "加载更多"
 
@@ -500,7 +500,7 @@ msgstr "新页面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:522
+#: src/app.tsx:519
 #: src/routes/dash/settings.tsx:442
 msgid "New Password"
 msgstr "新密码"
@@ -628,8 +628,8 @@ msgstr "页面"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:262
-#: src/app.tsx:400
+#: src/app.tsx:259
+#: src/app.tsx:397
 msgid "Password"
 msgstr "密码"
 
@@ -697,9 +697,9 @@ msgstr "上一页"
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/app.tsx:283
-#: src/app.tsx:420
-#: src/app.tsx:560
+#: src/app.tsx:280
+#: src/app.tsx:417
+#: src/app.tsx:557
 #: src/routes/dash/collections.tsx:178
 #: src/routes/dash/collections.tsx:357
 #: src/routes/dash/media.tsx:119
@@ -780,8 +780,8 @@ msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:501
-#: src/app.tsx:554
+#: src/app.tsx:498
+#: src/app.tsx:551
 msgid "Reset Password"
 msgstr "重置密码"
 
@@ -836,8 +836,8 @@ msgstr "显示 {remainingCount} 个更多 {0}"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:367
-#: src/app.tsx:414
+#: src/app.tsx:364
+#: src/app.tsx:411
 msgid "Sign In"
 msgstr "登录"
 
@@ -894,7 +894,7 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此页面的 URL 路径。使用小写字母、数字和连字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:590
+#: src/app.tsx:587
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密码重置链接无效或已过期。请生成一个新的链接。"
 
@@ -1033,7 +1033,7 @@ msgid "Visibility"
 msgstr "可见性"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:211
+#: src/app.tsx:208
 msgid "Welcome to Jant"
 msgstr "欢迎来到Jant"
 
@@ -1048,6 +1048,6 @@ msgid "What's this collection about?"
 msgstr "这个系列是关于什么的？"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:232
+#: src/app.tsx:229
 msgid "Your Name"
 msgstr "您的姓名"

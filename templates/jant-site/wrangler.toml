@@ -27,6 +27,9 @@ SITE_URL = ""
 # SITE_DESCRIPTION = "A personal blog powered by Jant"
 # SITE_LANGUAGE = "en"
 
+# Optional: Timeline page size (default: 20)
+# PAGE_SIZE = "5"
+
 # Optional: R2 Storage (for media uploads)
 # R2_PUBLIC_URL = "https://cdn.example.com"
 R2_PUBLIC_URL = "https://demo-media.jant.me" # @create-jant: @remove

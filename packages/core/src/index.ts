@@ -42,6 +42,7 @@ export type {
   TimelineCardProps,
   ThreadPreviewProps,
   TimelineFeedProps,
+  TimelineLoadMoreProps,
   // Site layout
   SiteLayoutProps,
   // Page-level props (for theme authors)

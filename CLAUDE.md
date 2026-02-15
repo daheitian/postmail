@@ -78,7 +78,7 @@ mise run db-export    # Export current local D1 data to seed-local.sql
 mise run db-seed      # Reset local database and load dev seed data
 
 # Demo
-mise run demo-backup  # Backup demo database to scripts/seed-demo.sql
+mise run demo-export  # Export demo database to scripts/seed-demo.sql
 mise run demo-seed    # Push local seed data to demo (excluding media)
 mise run demo-reset   # Reset demo.jant.me data (clear + reseed)
 

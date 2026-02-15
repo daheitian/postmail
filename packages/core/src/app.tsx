@@ -36,8 +36,6 @@ import { navigationRoutes as dashNavigationRoutes } from "./routes/dash/navigati
 import { postsApiRoutes } from "./routes/api/posts.js";
 import { uploadApiRoutes } from "./routes/api/upload.js";
 import { searchApiRoutes } from "./routes/api/search.js";
-import { timelineApiRoutes } from "./routes/api/timeline.js";
-
 // Routes - Feed
 import { rssRoutes } from "./routes/feed/rss.js";
 import { sitemapRoutes } from "./routes/feed/sitemap.js";
@@ -197,7 +195,6 @@ export function createApp(config: JantConfig = {}): App {
 
   // API Routes
   app.route("/api/posts", postsApiRoutes);
-  app.route("/api/timeline", timelineApiRoutes);
 
   // Setup page component
   const SetupContent: FC = () => {

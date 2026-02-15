@@ -1,5 +1,5 @@
 -- Reset script for Jant demo site (demo.jant.me)
--- Clears all user-created data while preserving users/schema
+-- Clears content data while preserving users/settings/schema
 -- Usage: mise run demo-reset (runs this then seed-demo.sql)
 
 -- Clear FTS index first (to avoid foreign key issues)
@@ -15,10 +15,7 @@ DELETE FROM collections;
 DELETE FROM redirects;
 
 -- Sessions, users, accounts, and settings are preserved
--- (only content data is reset)
+-- (seed-demo.sql only contains content data)
 
 -- Reset auto-increment counters
 DELETE FROM sqlite_sequence WHERE name IN ('posts', 'media', 'collections', 'redirects');
-
--- Note: Settings and users are preserved
--- Seed data will be re-inserted by seed-demo.sql

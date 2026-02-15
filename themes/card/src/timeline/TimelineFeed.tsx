@@ -5,10 +5,10 @@
  */
 
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
 import type { TimelineFeedProps } from "@jant/core";
 import { TimelineItem } from "./TimelineItem.js";
 import { ThreadPreview as DefaultThreadPreview } from "./ThreadPreview.js";
+import { TimelineLoadMore as DefaultTimelineLoadMore } from "./TimelineLoadMore.js";
 
 export const TimelineFeed: FC<TimelineFeedProps> = ({
   items,
@@ -16,9 +16,8 @@ export const TimelineFeed: FC<TimelineFeedProps> = ({
   nextCursor,
   theme,
 }) => {
-  const { t } = useLingui();
-
   const ResolvedThreadPreview = theme?.ThreadPreview ?? DefaultThreadPreview;
+  const ResolvedLoadMore = theme?.TimelineLoadMore ?? DefaultTimelineLoadMore;
 
   return (
     <div>
@@ -39,17 +38,7 @@ export const TimelineFeed: FC<TimelineFeedProps> = ({
         })}
       </div>
       {hasMore && nextCursor && (
-        <div id="load-more-container" class="mt-6 text-center">
-          <button
-            class="btn btn-outline"
-            data-on:click={`@get('/api/timeline?cursor=${nextCursor}')`}
-          >
-            {t({
-              message: "Load more",
-              comment: "@context: Button to load more posts in timeline",
-            })}
-          </button>
-        </div>
+        <ResolvedLoadMore nextCursor={nextCursor} theme={theme} />
       )}
     </div>
   );
