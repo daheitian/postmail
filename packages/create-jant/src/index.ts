@@ -92,6 +92,14 @@ function formatRunCmd(pm: PackageManager, script: string): string {
 }
 
 /**
+ * Format a package add command for the given package manager.
+ * npm uses `install`, pnpm/yarn use `add`.
+ */
+function formatAddCmd(pm: PackageManager, pkg: string): string {
+  return pm === "npm" ? `npm install ${pkg}` : `${pm} add ${pkg}`;
+}
+
+/**
  * Execute a shell command silently, returning success/failure.
  */
 function runCommand(cmd: string, cwd: string): boolean {
@@ -286,6 +294,25 @@ S3_SECRET_ACCESS_KEY=
     let content = await fs.readFile(viteConfigPath, "utf-8");
     content = processMarkers(content, {});
     await fs.writeFile(viteConfigPath, content, "utf-8");
+  }
+
+  // Adapt README.md commands for the detected package manager
+  const readmePath = path.join(targetDir, "README.md");
+  if (packageManager !== "npm" && (await fs.pathExists(readmePath))) {
+    let readme = await fs.readFile(readmePath, "utf-8");
+    // Replace `npm install <pkg>` → add command (must run before standalone `npm install`)
+    readme = readme.replace(/npm install (\S+)/g, (_, pkg: string) =>
+      formatAddCmd(packageManager, pkg),
+    );
+    // Replace standalone `npm install` → install command
+    readme = readme.replace(/npm install/g, `${packageManager} install`);
+    // Replace `npm run <script>` → run command
+    readme = readme.replace(/npm run (\S+)/g, (_, script: string) =>
+      formatRunCmd(packageManager, script),
+    );
+    // Replace `npm create` → create command
+    readme = readme.replace(/npm create/g, `${packageManager} create`);
+    await fs.writeFile(readmePath, readme, "utf-8");
   }
 
   // Copy pnpm-workspace.yaml only for pnpm (contains pnpm-specific onlyBuiltDependencies)
