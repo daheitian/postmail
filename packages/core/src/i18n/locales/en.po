@@ -450,15 +450,15 @@ msgstr "Link"
 msgid "Links"
 msgstr "Links"
 
-#. @context: Button to load more posts in timeline
 #. @context: Pagination button - load more items
 #: src/theme/components/Pagination.tsx:103
-#: src/themes/minimal/timeline/TimelineLoadMore.tsx:26
 msgid "Load more"
 msgstr "Load more"
 
+#. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
 #: src/theme/components/PostForm.tsx:366
+#: src/themes/minimal/timeline/TimelineLoadMore.tsx:27
 msgid "Loading..."
 msgstr "Loading..."
 

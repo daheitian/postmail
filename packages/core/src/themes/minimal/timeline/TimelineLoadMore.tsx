@@ -1,7 +1,7 @@
 /**
  * Minimal Theme - Timeline Load More
  *
- * Text link style load-more button for the minimal theme.
+ * Auto-loads more posts when scrolled into view using intersection observer.
  */
 
 import type { FC } from "hono/jsx";
@@ -18,16 +18,17 @@ export const TimelineLoadMore: FC<TimelineLoadMoreProps> = ({
     : `/?cursor=${nextCursor}`;
 
   return (
-    <div id="load-more-container" class="mt-8 text-center">
-      <button
-        class="text-sm text-muted-foreground hover:text-foreground hover:underline"
-        data-on:click={`@get('${url}')`}
-      >
+    <div
+      id="load-more-container"
+      class="mt-8 text-center"
+      data-on-intersect__once={`@get('${url}')`}
+    >
+      <span class="text-sm text-muted-foreground">
         {t({
-          message: "Load more",
-          comment: "@context: Button to load more posts in timeline",
+          message: "Loading...",
+          comment: "@context: Loading indicator while fetching more posts",
         })}
-      </button>
+      </span>
     </div>
   );
 };

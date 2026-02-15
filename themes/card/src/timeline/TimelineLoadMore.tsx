@@ -1,7 +1,7 @@
 /**
  * Card Theme - Timeline Load More
  *
- * Outlined button style load-more for the card theme.
+ * Auto-loads more posts when scrolled into view using intersection observer.
  */
 
 import type { FC } from "hono/jsx";
@@ -12,13 +12,17 @@ export const TimelineLoadMore: FC<TimelineLoadMoreProps> = ({ nextCursor }) => {
   const { t } = useLingui();
 
   return (
-    <div id="load-more-container" class="mt-6 text-center">
-      <button class="btn" data-on:click={`@get('/?cursor=${nextCursor}')`}>
+    <div
+      id="load-more-container"
+      class="mt-6 text-center"
+      data-on-intersect__once={`@get('/?cursor=${nextCursor}')`}
+    >
+      <span class="text-sm text-muted-foreground">
         {t({
-          message: "Load more",
-          comment: "@context: Button to load more posts in timeline",
+          message: "Loading...",
+          comment: "@context: Loading indicator while fetching more posts",
         })}
-      </button>
+      </span>
     </div>
   );
 };

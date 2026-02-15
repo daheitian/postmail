@@ -420,15 +420,15 @@ msgstr "連結"
 msgid "Links"
 msgstr "連結"
 
-#. @context: Button to load more posts in timeline
 #. @context: Pagination button - load more items
 #: src/theme/components/Pagination.tsx:103
-#: src/themes/minimal/timeline/TimelineLoadMore.tsx:26
 msgid "Load more"
 msgstr "載入更多"
 
+#. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
 #: src/theme/components/PostForm.tsx:366
+#: src/themes/minimal/timeline/TimelineLoadMore.tsx:27
 msgid "Loading..."
 msgstr "載入中..."
 
