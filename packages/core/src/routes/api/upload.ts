@@ -5,7 +5,7 @@
  * Supports both JSON and SSE (Datastar) responses.
  */
 
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { html } from "hono/html";
 import { uuidv7 } from "uuidv7";
 import type { Bindings } from "../../types.js";
@@ -16,7 +16,7 @@ import {
   getImageUrl,
   getPublicUrlForProvider,
 } from "../../lib/image.js";
-import { sse, dsSignals } from "../../lib/sse.js";
+import { sse } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -118,12 +118,22 @@ function wantsSSE(c: {
   return accept.includes("text/event-stream");
 }
 
+/**
+ * Return an SSE error response that removes the upload placeholder and shows a toast
+ */
+function sseUploadError(c: Context<Env>, message: string): Response {
+  return sse(c, async (stream) => {
+    await stream.remove("#upload-placeholder");
+    await stream.toast(message, "error");
+  });
+}
+
 // Upload a file
 uploadApiRoutes.post("/", async (c) => {
   const storage = c.var.storage;
   if (!storage) {
     if (wantsSSE(c)) {
-      return dsSignals({ _uploadError: "Storage not configured" });
+      return sseUploadError(c, "Storage not configured");
     }
     return c.json({ error: "Storage not configured" }, 500);
   }
@@ -133,7 +143,7 @@ uploadApiRoutes.post("/", async (c) => {
 
   if (!file) {
     if (wantsSSE(c)) {
-      return dsSignals({ _uploadError: "No file provided" });
+      return sseUploadError(c, "No file provided");
     }
     return c.json({ error: "No file provided" }, 400);
   }
@@ -148,7 +158,7 @@ uploadApiRoutes.post("/", async (c) => {
   ];
   if (!allowedTypes.includes(file.type)) {
     if (wantsSSE(c)) {
-      return dsSignals({ _uploadError: "File type not allowed" });
+      return sseUploadError(c, "File type not allowed");
     }
     return c.json({ error: "File type not allowed" }, 400);
   }
@@ -157,7 +167,7 @@ uploadApiRoutes.post("/", async (c) => {
   const maxSize = 10 * 1024 * 1024;
   if (file.size > maxSize) {
     if (wantsSSE(c)) {
-      return dsSignals({ _uploadError: "File too large (max 10MB)" });
+      return sseUploadError(c, "File too large (max 10MB)");
     }
     return c.json({ error: "File too large (max 10MB)" }, 400);
   }

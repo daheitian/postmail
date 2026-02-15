@@ -50,13 +50,6 @@ R2_PUBLIC_URL = "https://demo-media.jant.me" # @create-jant: @remove
 # S3_BUCKET = "my-bucket"
 # S3_REGION = "us-east-1"
 # S3_PUBLIC_URL = "https://cdn.example.com"
-# @create-jant: @remove-start
-STORAGE_DRIVER = "s3"
-S3_ENDPOINT = "https://s3.us-east-005.backblazeb2.com"
-S3_BUCKET = "jant-media"
-S3_REGION = "us-east-005"
-S3_PUBLIC_URL = "https://files.owenyoung.com/file/jant-media"
-# @create-jant: @remove-end
 
 [[d1_databases]]
 binding = "DB"

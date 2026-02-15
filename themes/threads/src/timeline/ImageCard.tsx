@@ -1,12 +1,12 @@
 /**
  * Threads Theme - Image Card
  *
- * Full-width images with rounded corners — date is shown at the feed level.
+ * Full-width images with horizontal scrolling carousel — matches Threads.net style.
+ * All images sit in a single row regardless of count.
  */
 
 import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "@jant/core";
-import { MediaGallery } from "@jant/core/theme";
 
 export const ImageCard: FC<TimelineCardProps> = ({ post, compact }) => {
   if (compact) {
@@ -29,11 +29,43 @@ export const ImageCard: FC<TimelineCardProps> = ({ post, compact }) => {
     );
   }
 
+  const images = post.media.filter((a) => a.mimeType.startsWith("image/"));
+
   return (
     <article class="h-entry">
-      {post.media.length > 0 && (
-        <div class="threads-media">
-          <MediaGallery attachments={post.media} />
+      {images.length > 0 && (
+        <div class="threads-media threads-carousel">
+          {images.length === 1 ? (
+            <a href={images[0]!.url} target="_blank" rel="noopener noreferrer">
+              <img
+                src={images[0]!.thumbnailUrl}
+                alt={images[0]!.altText || ""}
+                width={images[0]!.width ?? undefined}
+                height={images[0]!.height ?? undefined}
+                class="rounded-lg max-w-full h-auto"
+                loading="lazy"
+              />
+            </a>
+          ) : (
+            <div class="threads-carousel-track">
+              {images.map((img) => (
+                <a
+                  key={img.id}
+                  href={img.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="threads-carousel-item"
+                >
+                  <img
+                    src={img.thumbnailUrl}
+                    alt={img.altText || ""}
+                    class="threads-carousel-img"
+                    loading="lazy"
+                  />
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
       {post.title && (
