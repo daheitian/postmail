@@ -1,5 +1,5 @@
 import { createRequire } from "module";
-import { readdirSync, writeFileSync } from "fs";
+import { readFileSync, readdirSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -71,6 +71,14 @@ if (!noMedia) {
 }
 
 let sql = header;
+
+// When --no-auth, embed reset statements so everything runs in a single D1 import
+if (noAuth) {
+  const resetSql = readFileSync(resolve(__dirname, "reset-demo.sql"), "utf-8");
+  sql += "\n-- Reset (clear existing content)\n";
+  sql += resetSql.replace(/^--.*\n/gm, "").trim() + "\n";
+}
+
 for (const [name, query] of tables) {
   const data = dumpTable(name, query);
   if (data) sql += `\n-- ${name}\n${data}\n`;

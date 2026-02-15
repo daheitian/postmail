@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -58,6 +58,9 @@ const header = `-- =============================================================
 -- =============================================================================
 `;
 
+// Read reset-demo.sql and include it at the top
+const resetSql = readFileSync(resolve(__dirname, "reset-demo.sql"), "utf-8");
+
 const tables = [
   // settings, user, account are preserved by reset-demo.sql — don't export
   ["posts", "SELECT * FROM posts WHERE deleted_at IS NULL"],
@@ -67,6 +70,9 @@ const tables = [
 ];
 
 let sql = header;
+sql += "\n-- Reset (clear existing content)\n";
+sql += resetSql.replace(/^--.*\n/gm, "").trim() + "\n";
+
 for (const [name, query] of tables) {
   const data = dumpTable(name, query);
   if (data) sql += `\n-- ${name}\n${data}\n`;

@@ -234,10 +234,7 @@ pnpm exec wrangler deploy --config wrangler.demo.toml
 [tasks.demo-reset]
 description = "Reset demo.jant.me data (clear + reseed)"
 dir = "templates/jant-site"
-run = """
-pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/reset-demo.sql
-pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/seed-demo.sql
-"""
+run = "pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/seed-demo.sql"
 
 [tasks.demo-export]
 description = "Export demo database to scripts/seed-demo.sql"
@@ -250,9 +247,7 @@ dir = "templates/jant-site"
 run = """
 echo "Exporting local data (without media)..."
 node scripts/export-seed.mjs --no-media --no-auth --output seed-demo-upload.sql
-echo "Resetting demo content..."
-pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/reset-demo.sql
-echo "Loading seed data to demo..."
+echo "Loading seed data to demo (includes reset)..."
 pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/seed-demo-upload.sql
 rm scripts/seed-demo-upload.sql
 echo "Done! Demo has been seeded from local data."
