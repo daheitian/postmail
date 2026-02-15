@@ -30,6 +30,7 @@ import { ImageCard } from "./timeline/ImageCard.js";
 import { ThreadPreview } from "./timeline/ThreadPreview.js";
 import { TimelineFeed } from "./timeline/TimelineFeed.js";
 import { TimelineLoadMore } from "./timeline/TimelineLoadMore.js";
+import { timelineMore } from "./timeline/timelineMore.js";
 
 export interface ThemeOptions {
   /** Override individual components */
@@ -77,6 +78,7 @@ export function theme(options?: ThemeOptions): JantTheme {
       TimelineLoadMore,
       ...options?.components,
     },
+    timelineMore,
     cssVariables: {
       ...options?.cssVariables,
     },

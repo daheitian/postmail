@@ -250,17 +250,6 @@
     color: var(--threads-text-secondary);
   }
 
-  /* SSE load-more date headers: hide divider lines, center the date text */
-  .threads-content #timeline-feed > div > .flex.items-center {
-    justify-content: center;
-    font-size: 13px;
-    color: var(--threads-text-secondary);
-  }
-
-  .threads-content #timeline-feed > div > .flex.items-center > .h-px {
-    display: none;
-  }
-
   /* Post divider — full-width 0.5px line matching Threads.
    * Targets the <hr class="border-border my-5"> used by both
    * TimelineFeed (initial render) and the SSE load-more handler. */

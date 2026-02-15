@@ -3,40 +3,14 @@
  *
  * Date-grouped posts separated by thin dividers.
  * A centered date header appears above each group.
- *
- * IMPORTANT: The item structure (`<div>` + `<hr class="border-border my-5">`)
- * must match the SSE load-more handler in core's home.tsx so that dynamically
- * loaded items are visually consistent with the initial render.
  */
 
 import type { FC } from "hono/jsx";
-import type { TimelineFeedProps, TimelineItemView } from "@jant/core";
+import type { TimelineFeedProps } from "@jant/core";
 import { TimelineItem } from "./TimelineItem.js";
 import { ThreadPreview as DefaultThreadPreview } from "./ThreadPreview.js";
 import { TimelineLoadMore as DefaultTimelineLoadMore } from "./TimelineLoadMore.js";
-
-interface DateGroup {
-  dateKey: string;
-  label: string;
-  items: TimelineItemView[];
-}
-
-/** Groups timeline items by their publication date (YYYY-MM-DD). */
-function groupByDate(items: TimelineItemView[]): DateGroup[] {
-  const groups: DateGroup[] = [];
-  let current: DateGroup | null = null;
-
-  for (const item of items) {
-    const dateKey = item.post.publishedAt.slice(0, 10);
-    if (!current || current.dateKey !== dateKey) {
-      current = { dateKey, label: item.post.publishedAtFormatted, items: [] };
-      groups.push(current);
-    }
-    current.items.push(item);
-  }
-
-  return groups;
-}
+import { groupByDate } from "./groupByDate.js";
 
 export const TimelineFeed: FC<TimelineFeedProps> = ({
   items,

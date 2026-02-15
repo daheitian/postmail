@@ -43,6 +43,9 @@ export type {
   ThreadPreviewProps,
   TimelineFeedProps,
   TimelineLoadMoreProps,
+  DateGroup,
+  TimelinePatch,
+  TimelineMoreProps,
   // Site layout
   SiteLayoutProps,
   // Page-level props (for theme authors)

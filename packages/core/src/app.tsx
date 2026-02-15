@@ -91,6 +91,7 @@ export function createApp(config: JantConfig = {}): App {
         ...defaultTheme.components,
         ...config.theme?.components,
       },
+      timelineMore: config.theme?.timelineMore ?? defaultTheme.timelineMore,
       cssVariables: {
         ...defaultTheme.cssVariables,
         ...config.theme?.cssVariables,

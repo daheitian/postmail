@@ -7,39 +7,11 @@
  */
 
 import type { FC } from "hono/jsx";
-import type { TimelineFeedProps, TimelineItemView } from "../../../types.js";
+import type { TimelineFeedProps } from "../../../types.js";
+import { groupByDate } from "../../../lib/timeline.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { ThreadPreview as DefaultThreadPreview } from "./ThreadPreview.js";
 import { TimelineLoadMore as DefaultTimelineLoadMore } from "./TimelineLoadMore.js";
-
-interface DateGroup {
-  dateKey: string;
-  label: string;
-  items: TimelineItemView[];
-}
-
-/**
- * Groups timeline items by their publication date (YYYY-MM-DD).
- */
-function groupByDate(items: TimelineItemView[]): DateGroup[] {
-  const groups: DateGroup[] = [];
-  let current: DateGroup | null = null;
-
-  for (const item of items) {
-    const dateKey = item.post.publishedAt.slice(0, 10);
-    if (!current || current.dateKey !== dateKey) {
-      current = {
-        dateKey,
-        label: item.post.publishedAtFormatted,
-        items: [],
-      };
-      groups.push(current);
-    }
-    current.items.push(item);
-  }
-
-  return groups;
-}
 
 export const TimelineFeed: FC<TimelineFeedProps> = ({
   items,

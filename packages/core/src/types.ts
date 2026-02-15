@@ -417,6 +417,40 @@ export interface ArchiveGroup {
 }
 
 // =============================================================================
+// Timeline Load-More Types
+// =============================================================================
+
+/** A date-based group of timeline items (shared utility type) */
+export interface DateGroup {
+  dateKey: string;
+  label: string;
+  items: TimelineItemView[];
+}
+
+/** A single SSE DOM patch instruction returned by timelineMore */
+export interface TimelinePatch {
+  selector: string;
+  content: string;
+  mode?:
+    | "append"
+    | "prepend"
+    | "inner"
+    | "outer"
+    | "before"
+    | "after"
+    | "remove";
+}
+
+/** Props passed to the theme's timelineMore renderer */
+export interface TimelineMoreProps {
+  items: TimelineItemView[];
+  lastDate?: string;
+  hasMore: boolean;
+  nextCursor?: number;
+  theme?: ThemeComponents;
+}
+
+// =============================================================================
 // Configuration Types
 // =============================================================================
 
@@ -632,6 +666,8 @@ export interface JantTheme {
     /** Custom Sitemap renderer — returns XML string */
     sitemap?: (data: SitemapData) => string;
   };
+  /** Renders SSE patches for timeline load-more responses */
+  timelineMore?: (props: TimelineMoreProps) => TimelinePatch[];
   /** CSS variable overrides (highest priority, always applied) */
   cssVariables?: Record<string, string>;
   /** Replace built-in color themes with a custom list */
