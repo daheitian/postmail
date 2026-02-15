@@ -5,6 +5,7 @@ import {
   toISOString,
   formatDate,
   formatTime,
+  formatRelativeTime,
   formatYearMonth,
 } from "../time.js";
 
@@ -111,6 +112,44 @@ describe("formatTime", () => {
   it("formats single-digit hour with padding", () => {
     // 2024-02-01T09:07:00Z = 1706778420
     expect(formatTime(1706778420)).toBe("09:07");
+  });
+});
+
+describe("formatRelativeTime", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("returns '1m' for timestamps less than 60 seconds ago", () => {
+    expect(formatRelativeTime(now() - 10)).toBe("1m");
+    expect(formatRelativeTime(now() - 59)).toBe("1m");
+  });
+
+  it("returns minutes for timestamps under 1 hour", () => {
+    expect(formatRelativeTime(now() - 60)).toBe("1m");
+    expect(formatRelativeTime(now() - 300)).toBe("5m");
+    expect(formatRelativeTime(now() - 3540)).toBe("59m");
+  });
+
+  it("returns hours for timestamps under 24 hours", () => {
+    expect(formatRelativeTime(now() - 3600)).toBe("1h");
+    expect(formatRelativeTime(now() - 7200)).toBe("2h");
+    expect(formatRelativeTime(now() - 82800)).toBe("23h");
+  });
+
+  it("returns days for timestamps up to 7 days", () => {
+    expect(formatRelativeTime(now() - 86400)).toBe("1d");
+    expect(formatRelativeTime(now() - 3 * 86400)).toBe("3d");
+    expect(formatRelativeTime(now() - 7 * 86400)).toBe("7d");
+  });
+
+  it("returns 'MMM D' for timestamps older than 7 days", () => {
+    // Use a fixed timestamp to get a predictable date
+    // Feb 1, 2024 00:00:00 UTC
+    const feb1 = 1706745600;
+    // Mock now() to return Feb 16, 2024
+    vi.spyOn(Date, "now").mockReturnValue((feb1 + 15 * 86400) * 1000);
+    expect(formatRelativeTime(feb1)).toBe("Feb 1");
   });
 });
 

@@ -19,7 +19,12 @@ import type {
   ArchiveGroup,
 } from "../types.js";
 import { encode } from "./sqid.js";
-import { toISOString, formatDate, formatTime } from "./time.js";
+import {
+  toISOString,
+  formatDate,
+  formatTime,
+  formatRelativeTime,
+} from "./time.js";
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
 
 // =============================================================================
@@ -144,6 +149,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     publishedAt: toISOString(post.publishedAt),
     publishedAtFormatted: formatDate(post.publishedAt),
     publishedAtTime: formatTime(post.publishedAt),
+    publishedAtRelative: formatRelativeTime(post.publishedAt),
     updatedAt: toISOString(post.updatedAt),
     sourceUrl: post.sourceUrl ?? undefined,
     sourceName: post.sourceName ?? undefined,

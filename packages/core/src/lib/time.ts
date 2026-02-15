@@ -131,6 +131,48 @@ export function formatTime(timestamp: number): string {
   return `${hours}:${minutes}`;
 }
 
+/**
+ * Formats a Unix timestamp as a short relative time string.
+ *
+ * Returns compact labels like "1m", "5h", "3d" for recent timestamps,
+ * and falls back to "MMM D" (e.g. "Feb 1") for anything older than 7 days.
+ *
+ * @param timestamp - Unix timestamp in seconds
+ * @returns Short relative time string
+ *
+ * @example
+ * ```ts
+ * // Assuming current time is Feb 16, 2026
+ * formatRelativeTime(now() - 30);       // "1m"  (30 seconds → rounds up)
+ * formatRelativeTime(now() - 3600);     // "1h"
+ * formatRelativeTime(now() - 86400);    // "1d"
+ * formatRelativeTime(now() - 604800);   // "7d"
+ * formatRelativeTime(now() - 864000);   // "Feb 6"
+ * ```
+ */
+export function formatRelativeTime(timestamp: number): string {
+  const seconds = now() - timestamp;
+
+  if (seconds < 60) return "1m";
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m`;
+
+  const hours = Math.floor(seconds / 3600);
+  if (hours < 24) return `${hours}h`;
+
+  const days = Math.floor(seconds / 86400);
+  if (days <= 7) return `${days}d`;
+
+  // Older than 7 days: show "MMM D" (e.g. "Feb 1")
+  const date = new Date(timestamp * 1000);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
 export function formatYearMonth(timestamp: number): string {
   const date = new Date(timestamp * 1000);
   const year = date.getUTCFullYear();

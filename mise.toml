@@ -43,6 +43,7 @@ description = "Build all publishable packages"
 run = """
 pnpm --filter @jant/core build
 pnpm --filter jant-theme-card build
+pnpm --filter jant-theme-threads build
 pnpm --filter create-jant build
 """
 
@@ -422,6 +423,7 @@ description = "Build and publish all packages locally"
 run = """
 pnpm --filter @jant/core build:lib
 pnpm --filter jant-theme-card build
+pnpm --filter jant-theme-threads build
 pnpm -r --filter './packages/*' --filter './themes/*' publish --access public --no-provenance --no-git-checks
 """
 

@@ -331,6 +331,8 @@ export interface PostView {
   publishedAtFormatted: string;
   /** 24-hour time, e.g. "23:05" */
   publishedAtTime: string;
+  /** Short relative time, e.g. "5m", "3h", "2d", "Feb 1" */
+  publishedAtRelative: string;
   /** ISO 8601 string */
   updatedAt: string;
 
