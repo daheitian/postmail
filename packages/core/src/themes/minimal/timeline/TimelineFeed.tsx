@@ -56,33 +56,34 @@ export const TimelineFeed: FC<TimelineFeedProps> = ({
       <div id="timeline-feed">
         {groups.map((group, groupIndex) => (
           <div key={group.dateKey}>
-            {groupIndex > 0 && <div class="mt-2 mb-6 h-px bg-border" />}
-            <div>
+            <div
+              class={`flex items-center gap-4 ${groupIndex === 0 ? "mb-5" : "my-5"}`}
+            >
+              <div class="h-px flex-1 bg-border" />
               <time
-                class="block text-sm font-semibold text-foreground mb-4"
+                class="text-xs text-muted-foreground shrink-0"
                 datetime={group.dateKey}
               >
                 {group.label}
               </time>
-              <div
-                id={`date-items-${group.dateKey}`}
-                class="flex flex-col gap-5"
-              >
-                {group.items.map((item) => (
-                  <div key={item.post.id}>
-                    {item.threadPreview ? (
-                      <ResolvedThreadPreview
-                        rootPost={item.post}
-                        previewReplies={item.threadPreview.replies}
-                        totalReplyCount={item.threadPreview.totalReplyCount}
-                        theme={theme}
-                      />
-                    ) : (
-                      <TimelineItem item={item} theme={theme} />
-                    )}
-                  </div>
-                ))}
-              </div>
+              <div class="h-px flex-1 bg-border" />
+            </div>
+            <div id={`date-items-${group.dateKey}`} class="flex flex-col">
+              {group.items.map((item, itemIndex) => (
+                <div key={item.post.id}>
+                  {itemIndex > 0 && <hr class="border-border my-5" />}
+                  {item.threadPreview ? (
+                    <ResolvedThreadPreview
+                      rootPost={item.post}
+                      previewReplies={item.threadPreview.replies}
+                      totalReplyCount={item.threadPreview.totalReplyCount}
+                      theme={theme}
+                    />
+                  ) : (
+                    <TimelineItem item={item} theme={theme} />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         ))}

@@ -65,25 +65,48 @@ homeRoutes.get("/", async (c) => {
     const isContinuation = lastDate === firstGroup.dateKey;
 
     function renderGroupItems(groupItems: typeof items) {
-      return groupItems
-        .map((item) =>
-          item.threadPreview ? (
-            <ResolvedThreadPreview
-              rootPost={item.post}
-              previewReplies={item.threadPreview.replies}
-              totalReplyCount={item.threadPreview.totalReplyCount}
-              theme={theme}
-            />
-          ) : (
-            <TimelineItem item={item} theme={theme} />
-          ),
-        )
-        .map((content, i) => <div key={i}>{content}</div>);
+      return groupItems.map((item, i) => {
+        const content = item.threadPreview ? (
+          <ResolvedThreadPreview
+            rootPost={item.post}
+            previewReplies={item.threadPreview.replies}
+            totalReplyCount={item.threadPreview.totalReplyCount}
+            theme={theme}
+          />
+        ) : (
+          <TimelineItem item={item} theme={theme} />
+        );
+        return (
+          <div key={i}>
+            {i > 0 && <hr class="border-border my-5" />}
+            {content}
+          </div>
+        );
+      });
     }
 
     // Continuation items append into the existing date group's container
+    // Prepend a divider since these follow existing items in the group
     const continuationHtml = isContinuation
-      ? renderGroupItems(firstGroup.items)
+      ? firstGroup.items
+          .map((item, i) => {
+            const content = item.threadPreview ? (
+              <ResolvedThreadPreview
+                rootPost={item.post}
+                previewReplies={item.threadPreview.replies}
+                totalReplyCount={item.threadPreview.totalReplyCount}
+                theme={theme}
+              />
+            ) : (
+              <TimelineItem item={item} theme={theme} />
+            );
+            return (
+              <div key={i}>
+                <hr class="border-border my-5" />
+                {content}
+              </div>
+            );
+          })
           .map((jsx) => jsx.toString())
           .join("")
       : "";
@@ -93,17 +116,18 @@ homeRoutes.get("/", async (c) => {
     const newGroupsHtml = newGroups
       .map((group) => (
         <div>
-          <div class="mt-2 mb-6 h-px bg-border" />
-          <div>
+          <div class="flex items-center gap-4 my-5">
+            <div class="h-px flex-1 bg-border" />
             <time
-              class="block text-sm font-semibold text-foreground mb-4"
+              class="text-xs text-muted-foreground shrink-0"
               datetime={group.dateKey}
             >
               {group.label}
             </time>
-            <div id={`date-items-${group.dateKey}`} class="flex flex-col gap-5">
-              {renderGroupItems(group.items)}
-            </div>
+            <div class="h-px flex-1 bg-border" />
+          </div>
+          <div id={`date-items-${group.dateKey}`} class="flex flex-col">
+            {renderGroupItems(group.items)}
           </div>
         </div>
       ))
