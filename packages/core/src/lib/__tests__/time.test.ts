@@ -4,6 +4,7 @@ import {
   isWithinMonth,
   toISOString,
   formatDate,
+  formatTime,
   formatYearMonth,
 } from "../time.js";
 
@@ -88,6 +89,28 @@ describe("formatDate", () => {
     // Dec 31, 2023 23:59:59 UTC
     const timestamp = 1704067199;
     expect(formatDate(timestamp)).toBe("Dec 31, 2023");
+  });
+});
+
+describe("formatTime", () => {
+  it("formats as HH:MM in 24-hour format", () => {
+    // 2024-01-15T12:30:00Z = 1705321800
+    expect(formatTime(1705321800)).toBe("12:30");
+  });
+
+  it("zero-pads hours and minutes", () => {
+    // 2024-02-01T00:00:00Z = 1706745600
+    expect(formatTime(1706745600)).toBe("00:00");
+  });
+
+  it("formats evening time correctly", () => {
+    // 2024-02-01T23:05:00Z = 1706828700
+    expect(formatTime(1706828700)).toBe("23:05");
+  });
+
+  it("formats single-digit hour with padding", () => {
+    // 2024-02-01T09:07:00Z = 1706778420
+    expect(formatTime(1706778420)).toBe("09:07");
   });
 });
 

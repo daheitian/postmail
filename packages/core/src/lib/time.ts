@@ -109,6 +109,28 @@ export function formatDate(timestamp: number): string {
  * // Returns: "2024-02"
  * ```
  */
+/**
+ * Formats a Unix timestamp as a 24-hour time string (HH:MM).
+ *
+ * Converts a Unix timestamp (in seconds) to a zero-padded time string in
+ * 24-hour format. Always uses UTC timezone for consistency.
+ *
+ * @param timestamp - Unix timestamp in seconds to format
+ * @returns Formatted time string in "HH:MM" format
+ *
+ * @example
+ * ```ts
+ * const time = formatTime(1706745600);
+ * // Returns: "00:00"
+ * ```
+ */
+export function formatTime(timestamp: number): string {
+  const date = new Date(timestamp * 1000);
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
 export function formatYearMonth(timestamp: number): string {
   const date = new Date(timestamp * 1000);
   const year = date.getUTCFullYear();

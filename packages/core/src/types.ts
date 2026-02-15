@@ -329,6 +329,8 @@ export interface PostView {
   publishedAt: string;
   /** Human-readable, e.g. "Feb 1, 2024" */
   publishedAtFormatted: string;
+  /** 24-hour time, e.g. "23:05" */
+  publishedAtTime: string;
   /** ISO 8601 string */
   updatedAt: string;
 
@@ -538,6 +540,8 @@ export interface TimelineFeedProps {
 /** Props for the timeline load-more button */
 export interface TimelineLoadMoreProps {
   nextCursor: number;
+  /** Last visible date key (YYYY-MM-DD) for merging groups across pages */
+  lastDate?: string;
   theme?: ThemeComponents;
 }
 

@@ -24,6 +24,7 @@ export const homeRoutes = new Hono<Env>();
 homeRoutes.get("/", async (c) => {
   const cursorParam = c.req.query("cursor");
   const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
+  const lastDate = c.req.query("lastDate");
 
   const { items, hasMore, nextCursor } = await assembleTimeline(c, {
     cursor: cursor && !isNaN(cursor) ? cursor : undefined,
@@ -42,39 +43,98 @@ homeRoutes.get("/", async (c) => {
     const ResolvedThreadPreview = theme?.ThreadPreview ?? DefaultThreadPreview;
     const ResolvedLoadMore = theme?.TimelineLoadMore ?? DefaultTimelineLoadMore;
 
-    // Render items to HTML
-    const itemsHtml = items
-      .map((item) => {
-        const content = item.threadPreview ? (
-          <ResolvedThreadPreview
-            rootPost={item.post}
-            previewReplies={item.threadPreview.replies}
-            totalReplyCount={item.threadPreview.totalReplyCount}
-            theme={theme}
-          />
-        ) : (
-          <TimelineItem item={item} theme={theme} />
-        );
-        return (
+    // Group items by date and render to HTML
+    const groups: { dateKey: string; label: string; items: typeof items }[] =
+      [];
+    let currentGroup: (typeof groups)[number] | null = null;
+    for (const item of items) {
+      const dateKey = item.post.publishedAt.slice(0, 10);
+      if (!currentGroup || currentGroup.dateKey !== dateKey) {
+        currentGroup = {
+          dateKey,
+          label: item.post.publishedAtFormatted,
+          items: [],
+        };
+        groups.push(currentGroup);
+      }
+      currentGroup.items.push(item);
+    }
+
+    // Split first group if it continues the previous page's last date
+    const firstGroup = groups[0]!;
+    const isContinuation = lastDate === firstGroup.dateKey;
+
+    function renderGroupItems(groupItems: typeof items) {
+      return groupItems
+        .map((item) =>
+          item.threadPreview ? (
+            <ResolvedThreadPreview
+              rootPost={item.post}
+              previewReplies={item.threadPreview.replies}
+              totalReplyCount={item.threadPreview.totalReplyCount}
+              theme={theme}
+            />
+          ) : (
+            <TimelineItem item={item} theme={theme} />
+          ),
+        )
+        .map((content, i) => <div key={i}>{content}</div>);
+    }
+
+    // Continuation items append into the existing date group's container
+    const continuationHtml = isContinuation
+      ? renderGroupItems(firstGroup.items)
+          .map((jsx) => jsx.toString())
+          .join("")
+      : "";
+
+    // New date groups append to #timeline-feed
+    const newGroups = isContinuation ? groups.slice(1) : groups;
+    const newGroupsHtml = newGroups
+      .map((group) => (
+        <div>
+          <div class="mt-2 mb-6 h-px bg-border" />
           <div>
-            <hr class="border-border" />
-            <div class="py-6">{content}</div>
+            <time
+              class="block text-sm font-semibold text-foreground mb-4"
+              datetime={group.dateKey}
+            >
+              {group.label}
+            </time>
+            <div id={`date-items-${group.dateKey}`} class="flex flex-col gap-5">
+              {renderGroupItems(group.items)}
+            </div>
           </div>
-        );
-      })
+        </div>
+      ))
       .map((jsx) => jsx.toString())
       .join("");
 
     // Build load-more button HTML
+    const lastGroupDate = groups.at(-1)?.dateKey;
     const loadMoreHtml = nextCursor
-      ? (<ResolvedLoadMore nextCursor={nextCursor} theme={theme} />).toString()
+      ? (
+          <ResolvedLoadMore
+            nextCursor={nextCursor}
+            lastDate={lastGroupDate}
+            theme={theme}
+          />
+        ).toString()
       : "";
 
     return sse(c, async (stream) => {
-      stream.patchElements(itemsHtml, {
-        mode: "append",
-        selector: "#timeline-feed",
-      });
+      if (continuationHtml) {
+        stream.patchElements(continuationHtml, {
+          mode: "append",
+          selector: `#date-items-${lastDate}`,
+        });
+      }
+      if (newGroupsHtml) {
+        stream.patchElements(newGroupsHtml, {
+          mode: "append",
+          selector: "#timeline-feed",
+        });
+      }
       if (loadMoreHtml) {
         stream.patchElements(loadMoreHtml);
       } else {

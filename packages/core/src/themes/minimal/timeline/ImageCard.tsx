@@ -28,10 +28,10 @@ export const ImageCard: FC<TimelineCardProps> = ({ post, compact }) => {
         <footer class="mt-1">
           <a
             href={post.permalink}
-            class="u-url text-xs text-muted-foreground hover:text-foreground"
+            class="u-url text-xs text-muted-foreground/60 hover:text-foreground tabular-nums"
           >
             <time class="dt-published" datetime={post.publishedAt}>
-              {post.publishedAtFormatted}
+              {post.publishedAtTime}
             </time>
           </a>
         </footer>
@@ -51,10 +51,10 @@ export const ImageCard: FC<TimelineCardProps> = ({ post, compact }) => {
       <footer class="mt-2">
         <a
           href={post.permalink}
-          class="u-url text-xs text-muted-foreground hover:text-foreground"
+          class="u-url text-xs text-muted-foreground/60 hover:text-foreground tabular-nums"
         >
           <time class="dt-published" datetime={post.publishedAt}>
-            {post.publishedAtFormatted}
+            {post.publishedAtTime}
           </time>
         </a>
       </footer>

@@ -423,7 +423,7 @@ msgstr "链接"
 #. @context: Button to load more posts in timeline
 #. @context: Pagination button - load more items
 #: src/theme/components/Pagination.tsx:103
-#: src/themes/minimal/timeline/TimelineLoadMore.tsx:20
+#: src/themes/minimal/timeline/TimelineLoadMore.tsx:26
 msgid "Load more"
 msgstr "加载更多"
 
