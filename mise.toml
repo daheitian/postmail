@@ -113,7 +113,6 @@ pnpm --filter jant-site db:migrate:local
 """
 
 [tasks.db-export]
-alias = "export"
 description = "Export current local D1 data to seed-local.sql"
 dir = "templates/jant-site"
 run = "node scripts/export-seed.mjs"
@@ -241,13 +240,11 @@ pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scr
 """
 
 [tasks.demo-backup]
-alias = "db"
 description = "Backup demo database to scripts/seed-demo.sql"
 dir = "templates/jant-site"
 run = "node scripts/export-demo.mjs"
 
 [tasks.demo-seed]
-alias = "ds"
 description = "Push local seed data to demo (excluding media)"
 dir = "templates/jant-site"
 run = """
