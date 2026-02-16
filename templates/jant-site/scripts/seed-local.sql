@@ -13,6 +13,14 @@ INSERT INTO user VALUES('xCkM3BgGOkgQnec6l8EF3f4q2VnG6AoU','test','theowenyoung@
 -- account
 INSERT INTO account VALUES('jC56rT53Pe9aXkrv4YtlCBuPQACWoOuY','xCkM3BgGOkgQnec6l8EF3f4q2VnG6AoU','credential','xCkM3BgGOkgQnec6l8EF3f4q2VnG6AoU',NULL,NULL,NULL,NULL,NULL,NULL,'3d915508e712a5b481109e907ae99cc2:5303d92b81403b2a77a1a65d58586c781d896e8ba71c02ea19207f94e2e9d9ebf82a2e9fd1f1a61556aee6cd7dcdf07c70cb64f6fe42d30e05870b2f7b90c27c',1770761877,1770761877);
 
+-- pages
+INSERT INTO pages VALUES(1,'about','About','
+Yes about','<p>Yes about</p>
+','published',1771272645,1771273719);
+
+-- collections
+INSERT INTO collections VALUES(1,'best-quotes','发人深省',NULL,NULL,'newest',0,0,1771273707,1771273707);
+
 -- posts
 INSERT INTO posts VALUES(1,'note','published',0,0,NULL,'really?',NULL,'is this works?','<p>is this works?</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771089786,1771089786,1771089786);
@@ -22,7 +30,7 @@ INSERT INTO posts VALUES(3,'note','published',0,0,NULL,'greate image',NULL,'grea
 INSERT INTO posts VALUES(4,'note','published',0,0,NULL,NULL,NULL,'没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。','<p>没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771114861,1771114861,1771114861);
 INSERT INTO posts VALUES(5,'note','published',0,0,NULL,NULL,NULL,'新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。"。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。','<p>新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。&quot;。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771114906,1771114906,1771114906);
+',NULL,NULL,1,NULL,NULL,NULL,1771114906,1771114906,1771273733);
 INSERT INTO posts VALUES(6,'link','published',0,0,NULL,'Forty News','https://forty.news/','40年前今日的新闻...','<p>40年前今日的新闻...</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771114955,1771114955,1771114955);
 INSERT INTO posts VALUES(7,'note','published',0,0,NULL,'我从 Hacker News 中学到了什么？',NULL,'昨天看到 Hacker News 的创始人 Paul Graham 在 2009
@@ -172,6 +180,12 @@ INSERT INTO posts VALUES(10,'link','published',0,0,NULL,'Some pics','https://som
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771115271,1771115271,1771115271);
 INSERT INTO posts VALUES(11,'note','published',0,0,NULL,NULL,NULL,'From splash','<p>From splash</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771268320,1771268320,1771268958);
+
+-- nav_items
+INSERT INTO nav_items VALUES(1,'link','Featured','/featured',NULL,1,1771272664,1771273781);
+INSERT INTO nav_items VALUES(2,'link','Collections','/collections',NULL,2,1771272682,1771273781);
+INSERT INTO nav_items VALUES(4,'page','About','/about',1,3,1771272722,1771273781);
+INSERT INTO nav_items VALUES(5,'link','Home','/',NULL,0,1771273779,1771273781);
 
 -- media
 INSERT INTO media VALUES('019c676d-1fcd-7c11-9737-5aebd10c1087',3,'019c676d-1fcd-7c11-9737-5aebd10c1087.webp','ansis-kancs-XGxp1rvTVag-unsplash.webp','image/webp',202748,'media/2026/02/019c676d-1fcd-7c11-9737-5aebd10c1087.webp',NULL,NULL,NULL,1771261731,0,NULL,'r2');

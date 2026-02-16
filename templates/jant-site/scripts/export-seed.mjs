@@ -55,12 +55,12 @@ const header = `-- =============================================================
 
 const tables = [
   ...(!noAuth ? [["settings"], ["user"], ["account"]] : []),
+  ["pages"],
+  ["collections"],
   [
     "posts",
     "SELECT * FROM posts WHERE deleted_at IS NULL",
   ],
-  ["pages"],
-  ["collections"],
   ["nav_items"],
 ];
 

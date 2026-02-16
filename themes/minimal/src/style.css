@@ -124,12 +124,13 @@
    * Timeline & Post Components
    * ========================================================================= */
 
-  /* Date group header — centered, muted label at top of each group */
+  /* Date group header — left-aligned, styled as a section heading */
   .minimal-date-header {
-    padding: 16px 0 8px;
-    text-align: center;
-    font-size: 13px;
-    color: var(--minimal-text-secondary);
+    padding: 24px 0 12px;
+    text-align: left;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--minimal-text-primary);
   }
 
   /* Post divider — full-width line between posts */
