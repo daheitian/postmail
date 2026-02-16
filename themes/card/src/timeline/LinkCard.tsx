@@ -1,18 +1,36 @@
 /**
  * Card Theme - Link Card
  *
- * External link emphasis for type="link" posts.
+ * External link emphasis for format="link" posts.
+ *
+ * v2 fields:
+ * - url: the external link
+ * - title: link title
+ * - bodyHtml: commentary
  */
 
 import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "@jant/core";
 
+/**
+ * Extract domain from URL for display.
+ */
+function getDomain(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
 export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
+  const domain = post.url ? getDomain(post.url) : null;
+
   return (
     <article
       class={`h-entry timeline-card timeline-card-link${compact ? " timeline-card-compact" : ""}`}
     >
-      {post.sourceDomain && (
+      {domain && (
         <div class="text-xs text-muted-foreground mb-1 flex items-center gap-1">
           <svg
             class="size-3"
@@ -24,7 +42,7 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
           >
             <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
           </svg>
-          <span>{post.sourceDomain}</span>
+          <span>{domain}</span>
         </div>
       )}
       {post.title && (
@@ -32,19 +50,19 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
           class={`p-name font-semibold ${compact ? "text-sm" : "text-base"} mb-1`}
         >
           <a
-            href={post.sourceUrl || post.permalink}
+            href={post.url || post.permalink}
             class="u-url hover:underline"
-            target={post.sourceUrl ? "_blank" : undefined}
-            rel={post.sourceUrl ? "noopener noreferrer" : undefined}
+            target={post.url ? "_blank" : undefined}
+            rel={post.url ? "noopener noreferrer" : undefined}
           >
             {post.title}
           </a>
         </h2>
       )}
-      {!compact && post.contentHtml && (
+      {!compact && post.bodyHtml && (
         <div
-          class="e-content prose prose-sm text-muted-foreground"
-          dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+          class="e-content prose text-muted-foreground"
+          dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />
       )}
       <footer class="mt-2 text-xs text-muted-foreground">

@@ -29,19 +29,19 @@ searchApiRoutes.get("/", async (c) => {
   try {
     const results = await c.var.services.search.search(query, {
       limit,
-      visibility: ["featured", "quiet"],
+      status: ["published"],
     });
 
     return c.json({
       query,
       results: results.map((r) => ({
         id: sqid.encode(r.post.id),
-        type: r.post.type,
+        format: r.post.format,
         title: r.post.title,
-        path: r.post.path,
+        slug: r.post.slug,
         snippet: r.snippet,
         publishedAt: r.post.publishedAt,
-        url: `/p/${sqid.encode(r.post.id)}`,
+        url: r.post.slug ? `/${r.post.slug}` : `/p/${sqid.encode(r.post.id)}`,
       })),
       count: results.length,
     });

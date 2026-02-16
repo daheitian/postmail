@@ -1,10 +1,10 @@
 /**
- * Search Service
+ * Search Service (v2)
  *
  * Full-text search using FTS5
  */
 
-import type { Post, Visibility, SearchResult } from "../types.js";
+import type { Post, Status, Format, SearchResult } from "../types.js";
 
 export type { SearchResult };
 
@@ -13,8 +13,10 @@ export interface SearchOptions {
   limit?: number;
   /** Offset for pagination */
   offset?: number;
-  /** Filter by visibility */
-  visibility?: Visibility[];
+  /** Filter by status */
+  status?: Status[];
+  /** Filter by format */
+  format?: Format;
 }
 
 export interface SearchService {
@@ -23,15 +25,18 @@ export interface SearchService {
 
 interface RawSearchRow {
   id: number;
-  type: string;
-  visibility: string;
+  format: string;
+  status: string;
+  featured: number;
+  pinned: number;
+  slug: string | null;
   title: string | null;
-  path: string | null;
-  content: string | null;
-  content_html: string | null;
-  source_url: string | null;
-  source_name: string | null;
-  source_domain: string | null;
+  url: string | null;
+  body: string | null;
+  body_html: string | null;
+  quote_text: string | null;
+  rating: number | null;
+  collection_id: number | null;
   reply_to_id: number | null;
   thread_id: number | null;
   deleted_at: number | null;
@@ -47,10 +52,9 @@ export function createSearchService(d1: D1Database): SearchService {
     async search(query, options = {}) {
       const limit = options.limit ?? 20;
       const offset = options.offset ?? 0;
-      const visibility = options.visibility ?? ["featured", "quiet"];
+      const status = options.status ?? ["published"];
 
       // Escape and prepare the query for FTS5
-      // FTS5 uses * for prefix matching
       const ftsQuery = query
         .trim()
         .split(/\s+/)
@@ -62,10 +66,13 @@ export function createSearchService(d1: D1Database): SearchService {
         return [];
       }
 
-      // Build visibility placeholders
-      const visibilityPlaceholders = visibility.map(() => "?").join(", ");
+      // Build status placeholders
+      const statusPlaceholders = status.map(() => "?").join(", ");
 
-      // Query FTS5 table and join with posts using raw D1 query
+      // Build format filter
+      const formatFilter = options.format ? "AND posts.format = ?" : "";
+      const formatParams = options.format ? [options.format] : [];
+
       const stmt = d1.prepare(`
         SELECT
           posts.*,
@@ -75,27 +82,31 @@ export function createSearchService(d1: D1Database): SearchService {
         JOIN posts ON posts.id = posts_fts.rowid
         WHERE posts_fts MATCH ?
           AND posts.deleted_at IS NULL
-          AND posts.visibility IN (${visibilityPlaceholders})
+          AND posts.status IN (${statusPlaceholders})
+          ${formatFilter}
         ORDER BY posts_fts.rank
         LIMIT ? OFFSET ?
       `);
 
       const { results } = await stmt
-        .bind(ftsQuery, ...visibility, limit, offset)
+        .bind(ftsQuery, ...status, ...formatParams, limit, offset)
         .all<RawSearchRow>();
 
       return (results || []).map((row) => ({
         post: {
           id: row.id,
-          type: row.type as Post["type"],
-          visibility: row.visibility as Post["visibility"],
+          format: row.format as Post["format"],
+          status: row.status as Post["status"],
+          featured: row.featured,
+          pinned: row.pinned,
+          slug: row.slug,
           title: row.title,
-          path: row.path,
-          content: row.content,
-          contentHtml: row.content_html,
-          sourceUrl: row.source_url,
-          sourceName: row.source_name,
-          sourceDomain: row.source_domain,
+          url: row.url,
+          body: row.body,
+          bodyHtml: row.body_html,
+          quoteText: row.quote_text,
+          rating: row.rating,
+          collectionId: row.collection_id,
           replyToId: row.reply_to_id,
           threadId: row.thread_id,
           deletedAt: row.deleted_at,

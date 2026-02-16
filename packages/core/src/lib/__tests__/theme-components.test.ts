@@ -5,40 +5,29 @@ import type {
   TimelineCardProps,
   ThreadPreviewProps,
   TimelineFeedProps,
-  PostType,
+  Format,
   HomePageProps,
 } from "../../types.js";
 import type { FC } from "hono/jsx";
 
 // Create simple mock components for testing (avoids importing .tsx files with i18n)
 const MockNoteCard: FC<TimelineCardProps> = () => null;
-const MockArticleCard: FC<TimelineCardProps> = () => null;
 const MockLinkCard: FC<TimelineCardProps> = () => null;
 const MockQuoteCard: FC<TimelineCardProps> = () => null;
-const MockImageCard: FC<TimelineCardProps> = () => null;
 const MockThreadPreview: FC<ThreadPreviewProps> = () => null;
 const MockTimelineFeed: FC<TimelineFeedProps> = () => null;
 const MockHomePage: FC<HomePageProps> = () => null;
 
-const DEFAULT_CARD_MAP: Record<PostType, FC<TimelineCardProps>> = {
+const DEFAULT_CARD_MAP: Record<Format, FC<TimelineCardProps>> = {
   note: MockNoteCard,
-  article: MockArticleCard,
   link: MockLinkCard,
   quote: MockQuoteCard,
-  image: MockImageCard,
-  page: MockNoteCard,
 };
 
 describe("theme-components", () => {
   describe("resolveCardComponent", () => {
     it("returns default NoteCard for note type", () => {
       expect(resolveCardComponent("note", DEFAULT_CARD_MAP)).toBe(MockNoteCard);
-    });
-
-    it("returns default ArticleCard for article type", () => {
-      expect(resolveCardComponent("article", DEFAULT_CARD_MAP)).toBe(
-        MockArticleCard,
-      );
     });
 
     it("returns default LinkCard for link type", () => {
@@ -51,16 +40,6 @@ describe("theme-components", () => {
       );
     });
 
-    it("returns default ImageCard for image type", () => {
-      expect(resolveCardComponent("image", DEFAULT_CARD_MAP)).toBe(
-        MockImageCard,
-      );
-    });
-
-    it("returns NoteCard as fallback for page type", () => {
-      expect(resolveCardComponent("page", DEFAULT_CARD_MAP)).toBe(MockNoteCard);
-    });
-
     it("returns theme override when provided", () => {
       const CustomNote: FC<TimelineCardProps> = () => null;
       const overrides: ThemeComponents = { NoteCard: CustomNote };
@@ -71,8 +50,8 @@ describe("theme-components", () => {
 
     it("returns default when theme has no override for type", () => {
       const overrides: ThemeComponents = {};
-      expect(resolveCardComponent("article", DEFAULT_CARD_MAP, overrides)).toBe(
-        MockArticleCard,
+      expect(resolveCardComponent("link", DEFAULT_CARD_MAP, overrides)).toBe(
+        MockLinkCard,
       );
     });
   });

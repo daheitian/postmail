@@ -57,12 +57,11 @@ const tables = [
   ...(!noAuth ? [["settings"], ["user"], ["account"]] : []),
   [
     "posts",
-    noMedia
-      ? "SELECT * FROM posts WHERE deleted_at IS NULL AND type != 'image'"
-      : "SELECT * FROM posts WHERE deleted_at IS NULL",
+    "SELECT * FROM posts WHERE deleted_at IS NULL",
   ],
+  ["pages"],
   ["collections"],
-  ["post_collections"],
+  ["nav_items"],
 ];
 
 // Include media table only when --no-media is not set

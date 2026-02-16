@@ -91,7 +91,7 @@ export const SearchPage: FC<SearchPageProps> = ({
                     <a href={result.post.permalink} class="block">
                       <h2 class="font-medium hover:underline">
                         {result.post.title ||
-                          result.post.content?.slice(0, 60) ||
+                          result.post.excerpt ||
                           `Post #${result.post.id}`}
                       </h2>
 
@@ -103,7 +103,7 @@ export const SearchPage: FC<SearchPageProps> = ({
                       )}
 
                       <footer class="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                        <span class="badge-outline">{result.post.type}</span>
+                        <span class="badge-outline">{result.post.format}</span>
                         <time datetime={result.post.publishedAt}>
                           {result.post.publishedAtFormatted}
                         </time>

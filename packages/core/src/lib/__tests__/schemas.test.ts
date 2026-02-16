@@ -1,45 +1,41 @@
 import { describe, it, expect } from "vitest";
 import {
-  PostTypeSchema,
-  VisibilitySchema,
+  FormatSchema,
+  StatusSchema,
   RedirectTypeSchema,
   CreatePostSchema,
   UpdatePostSchema,
   parseFormData,
   parseFormDataOptional,
-  validateMediaForPostType,
+  validateMediaCount,
 } from "../schemas.js";
 import { z } from "zod";
-import {
-  POST_TYPES,
-  VISIBILITY_LEVELS,
-  MAX_MEDIA_ATTACHMENTS,
-} from "../../types.js";
+import { FORMATS, STATUSES, MAX_MEDIA_ATTACHMENTS } from "../../types.js";
 
-describe("PostTypeSchema", () => {
-  it("accepts all valid post types", () => {
-    for (const type of POST_TYPES) {
-      expect(PostTypeSchema.parse(type)).toBe(type);
+describe("FormatSchema", () => {
+  it("accepts all valid formats", () => {
+    for (const format of FORMATS) {
+      expect(FormatSchema.parse(format)).toBe(format);
     }
   });
 
-  it("rejects invalid post types", () => {
-    expect(() => PostTypeSchema.parse("invalid")).toThrow();
-    expect(() => PostTypeSchema.parse("")).toThrow();
-    expect(() => PostTypeSchema.parse(123)).toThrow();
+  it("rejects invalid formats", () => {
+    expect(() => FormatSchema.parse("invalid")).toThrow();
+    expect(() => FormatSchema.parse("")).toThrow();
+    expect(() => FormatSchema.parse(123)).toThrow();
   });
 });
 
-describe("VisibilitySchema", () => {
-  it("accepts all valid visibility levels", () => {
-    for (const level of VISIBILITY_LEVELS) {
-      expect(VisibilitySchema.parse(level)).toBe(level);
+describe("StatusSchema", () => {
+  it("accepts all valid statuses", () => {
+    for (const status of STATUSES) {
+      expect(StatusSchema.parse(status)).toBe(status);
     }
   });
 
-  it("rejects invalid visibility levels", () => {
-    expect(() => VisibilitySchema.parse("public")).toThrow();
-    expect(() => VisibilitySchema.parse("private")).toThrow();
+  it("rejects invalid statuses", () => {
+    expect(() => StatusSchema.parse("public")).toThrow();
+    expect(() => StatusSchema.parse("private")).toThrow();
   });
 });
 
@@ -58,22 +54,22 @@ describe("RedirectTypeSchema", () => {
 
 describe("CreatePostSchema", () => {
   const validPost = {
-    type: "note",
-    content: "Hello world",
-    visibility: "quiet",
+    format: "note",
+    body: "Hello world",
+    status: "published",
   };
 
   it("accepts a valid post with required fields", () => {
     const result = CreatePostSchema.parse(validPost);
-    expect(result.type).toBe("note");
-    expect(result.content).toBe("Hello world");
-    expect(result.visibility).toBe("quiet");
+    expect(result.format).toBe("note");
+    expect(result.body).toBe("Hello world");
+    expect(result.status).toBe("published");
   });
 
-  it("accepts all post types", () => {
-    for (const type of POST_TYPES) {
+  it("accepts all formats", () => {
+    for (const format of FORMATS) {
       expect(() =>
-        CreatePostSchema.parse({ ...validPost, type }),
+        CreatePostSchema.parse({ ...validPost, format }),
       ).not.toThrow();
     }
   });
@@ -86,47 +82,67 @@ describe("CreatePostSchema", () => {
     expect(result.title).toBe("My Post");
   });
 
-  it("accepts valid path format", () => {
+  it("accepts valid slug format", () => {
     const result = CreatePostSchema.parse({
       ...validPost,
-      path: "my-post-slug",
+      slug: "my-post-slug",
     });
-    expect(result.path).toBe("my-post-slug");
+    expect(result.slug).toBe("my-post-slug");
   });
 
-  it("accepts empty path", () => {
-    const result = CreatePostSchema.parse({ ...validPost, path: "" });
-    expect(result.path).toBe("");
+  it("accepts single-character slug", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      slug: "a",
+    });
+    expect(result.slug).toBe("a");
   });
 
-  it("rejects invalid path format (uppercase)", () => {
+  it("accepts empty slug (transforms to undefined)", () => {
+    const result = CreatePostSchema.parse({ ...validPost, slug: "" });
+    expect(result.slug).toBeUndefined();
+  });
+
+  it("rejects invalid slug format (uppercase)", () => {
     expect(() =>
-      CreatePostSchema.parse({ ...validPost, path: "MyPost" }),
+      CreatePostSchema.parse({ ...validPost, slug: "MyPost" }),
     ).toThrow();
   });
 
-  it("rejects invalid path format (special chars)", () => {
+  it("rejects invalid slug format (special chars)", () => {
     expect(() =>
-      CreatePostSchema.parse({ ...validPost, path: "my post!" }),
+      CreatePostSchema.parse({ ...validPost, slug: "my post!" }),
     ).toThrow();
   });
 
-  it("accepts valid source URL", () => {
+  it("rejects slug starting with hyphen", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, slug: "-my-post" }),
+    ).toThrow();
+  });
+
+  it("rejects slug ending with hyphen", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, slug: "my-post-" }),
+    ).toThrow();
+  });
+
+  it("accepts valid url", () => {
     const result = CreatePostSchema.parse({
       ...validPost,
-      sourceUrl: "https://example.com",
+      url: "https://example.com",
     });
-    expect(result.sourceUrl).toBe("https://example.com");
+    expect(result.url).toBe("https://example.com");
   });
 
-  it("accepts empty source URL", () => {
-    const result = CreatePostSchema.parse({ ...validPost, sourceUrl: "" });
-    expect(result.sourceUrl).toBe("");
+  it("accepts empty url", () => {
+    const result = CreatePostSchema.parse({ ...validPost, url: "" });
+    expect(result.url).toBe("");
   });
 
-  it("rejects invalid source URL", () => {
+  it("rejects invalid url", () => {
     expect(() =>
-      CreatePostSchema.parse({ ...validPost, sourceUrl: "not-a-url" }),
+      CreatePostSchema.parse({ ...validPost, url: "not-a-url" }),
     ).toThrow();
   });
 
@@ -181,10 +197,77 @@ describe("CreatePostSchema", () => {
     ).toThrow();
   });
 
-  it("rejects missing required fields", () => {
+  it("accepts featured as boolean", () => {
+    const result = CreatePostSchema.parse({ ...validPost, featured: true });
+    expect(result.featured).toBe(true);
+  });
+
+  it("accepts featured as 'on' (transforms to true)", () => {
+    const result = CreatePostSchema.parse({ ...validPost, featured: "on" });
+    expect(result.featured).toBe(true);
+  });
+
+  it("accepts pinned as boolean", () => {
+    const result = CreatePostSchema.parse({ ...validPost, pinned: true });
+    expect(result.pinned).toBe(true);
+  });
+
+  it("accepts pinned as 'on' (transforms to true)", () => {
+    const result = CreatePostSchema.parse({ ...validPost, pinned: "on" });
+    expect(result.pinned).toBe(true);
+  });
+
+  it("accepts optional quoteText", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      quoteText: "A wise person once said...",
+    });
+    expect(result.quoteText).toBe("A wise person once said...");
+  });
+
+  it("accepts optional rating (1-5)", () => {
+    for (const rating of [1, 2, 3, 4, 5]) {
+      const result = CreatePostSchema.parse({ ...validPost, rating });
+      expect(result.rating).toBe(rating);
+    }
+  });
+
+  it("rejects rating outside 1-5 range", () => {
+    expect(() => CreatePostSchema.parse({ ...validPost, rating: 0 })).toThrow();
+    expect(() => CreatePostSchema.parse({ ...validPost, rating: 6 })).toThrow();
+  });
+
+  it("accepts empty string rating (transforms to undefined)", () => {
+    const result = CreatePostSchema.parse({ ...validPost, rating: "" });
+    expect(result.rating).toBeUndefined();
+  });
+
+  it("accepts optional collectionId as positive integer", () => {
+    const result = CreatePostSchema.parse({ ...validPost, collectionId: 42 });
+    expect(result.collectionId).toBe(42);
+  });
+
+  it("accepts empty string collectionId (transforms to undefined)", () => {
+    const result = CreatePostSchema.parse({ ...validPost, collectionId: "" });
+    expect(result.collectionId).toBeUndefined();
+  });
+
+  it("accepts optional replyToId", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      replyToId: "abc123",
+    });
+    expect(result.replyToId).toBe("abc123");
+  });
+
+  it("only requires format field", () => {
+    const result = CreatePostSchema.parse({ format: "note" });
+    expect(result.format).toBe("note");
+  });
+
+  it("rejects missing format", () => {
     expect(() => CreatePostSchema.parse({})).toThrow();
-    expect(() => CreatePostSchema.parse({ type: "note" })).toThrow();
-    expect(() => CreatePostSchema.parse({ content: "hello" })).toThrow();
+    expect(() => CreatePostSchema.parse({ body: "hello" })).toThrow();
   });
 });
 
@@ -199,13 +282,13 @@ describe("UpdatePostSchema", () => {
     expect(result.title).toBe("New Title");
   });
 
-  it("accepts only type", () => {
-    const result = UpdatePostSchema.parse({ type: "article" });
-    expect(result.type).toBe("article");
+  it("accepts only format", () => {
+    const result = UpdatePostSchema.parse({ format: "link" });
+    expect(result.format).toBe("link");
   });
 
   it("still validates field types", () => {
-    expect(() => UpdatePostSchema.parse({ type: "invalid" })).toThrow();
+    expect(() => UpdatePostSchema.parse({ format: "invalid" })).toThrow();
   });
 });
 
@@ -225,8 +308,8 @@ describe("parseFormData", () => {
 
   it("throws for invalid value", () => {
     const form = new FormData();
-    form.set("type", "invalid-type");
-    expect(() => parseFormData(form, "type", PostTypeSchema)).toThrow();
+    form.set("format", "invalid-format");
+    expect(() => parseFormData(form, "format", FormatSchema)).toThrow();
   });
 });
 
@@ -250,59 +333,37 @@ describe("parseFormDataOptional", () => {
 
   it("throws for invalid value", () => {
     const form = new FormData();
-    form.set("type", "invalid");
-    expect(() => parseFormDataOptional(form, "type", PostTypeSchema)).toThrow();
+    form.set("format", "invalid");
+    expect(() => parseFormDataOptional(form, "format", FormatSchema)).toThrow();
   });
 });
 
-describe("validateMediaForPostType", () => {
-  it("returns null for note with no media", () => {
-    expect(validateMediaForPostType("note", [])).toBeNull();
+describe("validateMediaCount", () => {
+  it("returns null for empty media array", () => {
+    expect(validateMediaCount([])).toBeNull();
   });
 
-  it("returns null for note with media", () => {
-    expect(validateMediaForPostType("note", ["id-1", "id-2"])).toBeNull();
+  it("returns null for media within limit", () => {
+    const media = Array.from({ length: 5 }, (_, i) => `id-${i}`);
+    expect(validateMediaCount(media)).toBeNull();
   });
 
-  it("returns null for article with media", () => {
-    expect(validateMediaForPostType("article", ["id-1"])).toBeNull();
+  it("returns null for exactly MAX_MEDIA_ATTACHMENTS", () => {
+    const media = Array.from(
+      { length: MAX_MEDIA_ATTACHMENTS },
+      (_, i) => `id-${i}`,
+    );
+    expect(validateMediaCount(media)).toBeNull();
   });
 
-  it("returns null for image with at least 1 media", () => {
-    expect(validateMediaForPostType("image", ["id-1"])).toBeNull();
-  });
-
-  it("returns error for image with no media", () => {
-    const error = validateMediaForPostType("image", []);
-    expect(error).toBe("image posts require at least 1 media attachment");
-  });
-
-  it("returns null for link with 0 or 1 media", () => {
-    expect(validateMediaForPostType("link", [])).toBeNull();
-    expect(validateMediaForPostType("link", ["id-1"])).toBeNull();
-  });
-
-  it("returns error for link with more than 1 media", () => {
-    const error = validateMediaForPostType("link", ["id-1", "id-2"]);
-    expect(error).toBe("link posts allow at most 1 media attachment");
-  });
-
-  it("returns error for page with any media", () => {
-    const error = validateMediaForPostType("page", ["id-1"]);
-    expect(error).toBe("page posts do not allow media attachments");
-  });
-
-  it("returns null for page with no media", () => {
-    expect(validateMediaForPostType("page", [])).toBeNull();
-  });
-
-  it("returns null for quote with media", () => {
-    expect(validateMediaForPostType("quote", ["id-1", "id-2"])).toBeNull();
-  });
-
-  it("returns error when exceeding max for note", () => {
-    const tooMany = Array.from({ length: 21 }, (_, i) => `id-${i}`);
-    const error = validateMediaForPostType("note", tooMany);
-    expect(error).toBe("note posts allow at most 20 media attachments");
+  it("returns error when exceeding MAX_MEDIA_ATTACHMENTS", () => {
+    const tooMany = Array.from(
+      { length: MAX_MEDIA_ATTACHMENTS + 1 },
+      (_, i) => `id-${i}`,
+    );
+    const error = validateMediaCount(tooMany);
+    expect(error).toBe(
+      `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} media attachments`,
+    );
   });
 });

@@ -1,45 +1,62 @@
 /**
- * Visibility Badge Component
+ * Status Badge Component
  *
- * Displays a badge indicating the visibility level of a post
+ * Displays badges for post status, featured, and pinned state.
+ * Named VisibilityBadge for backward compatibility with theme overrides.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { Visibility } from "../../types.js";
+import type { Status } from "../../types.js";
 
 export interface VisibilityBadgeProps {
-  visibility: Visibility;
+  status: Status;
+  featured?: boolean;
+  pinned?: boolean;
 }
 
-export const VisibilityBadge: FC<VisibilityBadgeProps> = ({ visibility }) => {
+export const VisibilityBadge: FC<VisibilityBadgeProps> = ({
+  status,
+  featured,
+  pinned,
+}) => {
   const { t } = useLingui();
 
-  const variants: Record<Visibility, string> = {
-    featured: "badge-primary",
-    quiet: "badge-secondary",
-    unlisted: "badge-outline",
+  const statusVariants: Record<Status, string> = {
+    published: "badge-secondary",
     draft: "badge-outline",
   };
 
-  const labels: Record<Visibility, string> = {
-    featured: t({
-      message: "Featured",
-      comment: "@context: Post visibility badge - featured",
-    }),
-    quiet: t({
-      message: "Quiet",
-      comment: "@context: Post visibility badge - normal",
-    }),
-    unlisted: t({
-      message: "Unlisted",
-      comment: "@context: Post visibility badge - unlisted",
+  const statusLabels: Record<Status, string> = {
+    published: t({
+      message: "Published",
+      comment: "@context: Post status badge - published",
     }),
     draft: t({
       message: "Draft",
-      comment: "@context: Post visibility badge - draft",
+      comment: "@context: Post status badge - draft",
     }),
   };
 
-  return <span class={variants[visibility]}>{labels[visibility]}</span>;
+  return (
+    <span class="flex items-center gap-1">
+      <span class={statusVariants[status]}>{statusLabels[status]}</span>
+      {featured && (
+        <span class="badge-primary">
+          {t({
+            message: "Featured",
+            comment: "@context: Post badge - featured",
+          })}
+        </span>
+      )}
+      {pinned && (
+        <span class="badge-outline">
+          {t({
+            message: "Pinned",
+            comment: "@context: Post badge - pinned",
+          })}
+        </span>
+      )}
+    </span>
+  );
 };

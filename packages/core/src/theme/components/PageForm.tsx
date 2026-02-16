@@ -1,15 +1,15 @@
 /**
  * Page Creation/Edit Form
  *
- * For managing custom pages (posts with type="page")
+ * For managing standalone pages (about, now, etc.)
  */
 
 import type { FC } from "hono/jsx";
-import type { Post } from "../../types.js";
+import type { Page } from "../../types.js";
 import { useLingui } from "@lingui/react/macro";
 
 export interface PageFormProps {
-  page?: Post;
+  page?: Page;
   action: string;
   cancelUrl?: string;
 }
@@ -24,9 +24,9 @@ export const PageForm: FC<PageFormProps> = ({
 
   const signals = JSON.stringify({
     title: page?.title ?? "",
-    path: page?.path ?? "",
-    content: page?.content ?? "",
-    visibility: page?.visibility ?? "unlisted",
+    slug: page?.slug ?? "",
+    body: page?.body ?? "",
+    status: page?.status ?? "published",
   }).replace(/</g, "\\u003c");
 
   return (
@@ -58,25 +58,25 @@ export const PageForm: FC<PageFormProps> = ({
         />
       </div>
 
-      {/* Path */}
+      {/* Slug */}
       <div class="field">
         <label class="label">
           {t({
-            message: "Path",
-            comment: "@context: Page form field label - URL path",
+            message: "Slug",
+            comment: "@context: Page form field label - URL slug",
           })}
         </label>
         <div class="flex items-center gap-2">
           <span class="text-muted-foreground">/</span>
           <input
             type="text"
-            data-bind="path"
+            data-bind="slug"
             class="input flex-1"
             placeholder="about"
             pattern="[a-z0-9\-]+"
             title={t({
               message: "Lowercase letters, numbers, and hyphens only",
-              comment: "@context: Page path validation message",
+              comment: "@context: Page slug validation message",
             })}
             required
           />
@@ -85,12 +85,12 @@ export const PageForm: FC<PageFormProps> = ({
           {t({
             message:
               "The URL path for this page. Use lowercase letters, numbers, and hyphens.",
-            comment: "@context: Page path helper text",
+            comment: "@context: Page slug helper text",
           })}
         </p>
       </div>
 
-      {/* Content */}
+      {/* Body */}
       <div class="field">
         <label class="label">
           {t({
@@ -99,7 +99,7 @@ export const PageForm: FC<PageFormProps> = ({
           })}
         </label>
         <textarea
-          data-bind="content"
+          data-bind="body"
           class="textarea min-h-48"
           placeholder={t({
             message: "Page content (Markdown supported)...",
@@ -107,11 +107,11 @@ export const PageForm: FC<PageFormProps> = ({
           })}
           required
         >
-          {page?.content ?? ""}
+          {page?.body ?? ""}
         </textarea>
       </div>
 
-      {/* Visibility */}
+      {/* Status */}
       <div class="field">
         <label class="label">
           {t({
@@ -119,17 +119,17 @@ export const PageForm: FC<PageFormProps> = ({
             comment: "@context: Page form field label - publish status",
           })}
         </label>
-        <select data-bind="visibility" class="select">
+        <select data-bind="status" class="select">
           <option
-            value="unlisted"
-            selected={page?.visibility === "unlisted" || !page}
+            value="published"
+            selected={page?.status === "published" || !page}
           >
             {t({
               message: "Published",
               comment: "@context: Page status option - published",
             })}
           </option>
-          <option value="draft" selected={page?.visibility === "draft"}>
+          <option value="draft" selected={page?.status === "draft"}>
             {t({
               message: "Draft",
               comment: "@context: Page status option - draft",
@@ -139,7 +139,7 @@ export const PageForm: FC<PageFormProps> = ({
         <p class="text-xs text-muted-foreground mt-1">
           {t({
             message:
-              "Published pages are accessible via their path. Drafts are not visible.",
+              "Published pages are accessible via their slug. Drafts are not visible.",
             comment: "@context: Page status helper text",
           })}
         </p>

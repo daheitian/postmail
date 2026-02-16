@@ -34,7 +34,10 @@ const ThreadPost: FC<{
     >
       {post.title && (
         <h2 class="p-name text-lg font-medium mb-2">
-          <a href={`/p/${sqid.encode(post.id)}`} class="u-url hover:underline">
+          <a
+            href={`${post.slug ? `/${post.slug}` : `/p/${sqid.encode(post.id)}`}`}
+            class="u-url hover:underline"
+          >
             {post.title}
           </a>
         </h2>
@@ -42,7 +45,7 @@ const ThreadPost: FC<{
 
       <div
         class="e-content prose prose-sm"
-        dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
+        dangerouslySetInnerHTML={{ __html: post.bodyHtml || "" }}
       />
 
       <footer class="mt-3 flex items-center gap-3 text-sm text-muted-foreground">
@@ -62,7 +65,7 @@ const ThreadPost: FC<{
         )}
         {!isCurrent && (
           <a
-            href={`/p/${sqid.encode(post.id)}`}
+            href={`${post.slug ? `/${post.slug}` : `/p/${sqid.encode(post.id)}`}`}
             class="text-xs hover:underline"
           >
             {t({

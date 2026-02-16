@@ -6,9 +6,9 @@
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
-import type { NavLinkView, SiteLayoutProps } from "@jant/core";
+import type { NavItemView, SiteLayoutProps } from "@jant/core";
 
-function NavLinks({ links }: { links: NavLinkView[] }) {
+function NavLinks({ links }: { links: NavItemView[] }) {
   return (
     <>
       {links.map((link) => (

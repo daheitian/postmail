@@ -1,7 +1,7 @@
 /**
  * Threads Theme - Timeline Item
  *
- * Dispatches to the correct card component based on post type.
+ * Dispatches to the correct card component based on post format.
  */
 
 import type { FC } from "hono/jsx";
@@ -10,30 +10,22 @@ import type {
   TimelineCardProps,
   ThemeComponents,
   PostView,
-  PostType,
+  Format,
 } from "../../../types.js";
 import { NoteCard } from "./NoteCard.js";
-import { ArticleCard } from "./ArticleCard.js";
 import { LinkCard } from "./LinkCard.js";
 import { QuoteCard } from "./QuoteCard.js";
-import { ImageCard } from "./ImageCard.js";
 
-const CARD_MAP: Record<PostType, FC<TimelineCardProps>> = {
+const CARD_MAP: Record<Format, FC<TimelineCardProps>> = {
   note: NoteCard,
-  article: ArticleCard,
   link: LinkCard,
   quote: QuoteCard,
-  image: ImageCard,
-  page: NoteCard,
 };
 
-const THEME_KEY_MAP: Record<PostType, keyof ThemeComponents> = {
+const THEME_KEY_MAP: Record<Format, keyof ThemeComponents> = {
   note: "NoteCard",
-  article: "ArticleCard",
   link: "LinkCard",
   quote: "QuoteCard",
-  image: "ImageCard",
-  page: "NoteCard",
 };
 
 interface TimelineItemProps {
@@ -56,9 +48,9 @@ export const TimelineItem: FC<TimelineItemProps> = ({
   cardOverride,
   theme,
 }) => {
-  const themeKey = THEME_KEY_MAP[item.post.type];
+  const themeKey = THEME_KEY_MAP[item.post.format];
   const themeCard = theme?.[themeKey] as FC<TimelineCardProps> | undefined;
-  const Card = cardOverride ?? themeCard ?? CARD_MAP[item.post.type];
+  const Card = cardOverride ?? themeCard ?? CARD_MAP[item.post.format];
   return <Card post={item.post} compact={compact} />;
 };
 
@@ -68,8 +60,8 @@ export const TimelineItemFromPost: FC<TimelineItemFromPostProps> = ({
   cardOverride,
   theme,
 }) => {
-  const themeKey = THEME_KEY_MAP[post.type];
+  const themeKey = THEME_KEY_MAP[post.format];
   const themeCard = theme?.[themeKey] as FC<TimelineCardProps> | undefined;
-  const Card = cardOverride ?? themeCard ?? CARD_MAP[post.type];
+  const Card = cardOverride ?? themeCard ?? CARD_MAP[post.format];
   return <Card post={post} compact={compact} />;
 };

@@ -54,14 +54,12 @@ describe("SearchService", () => {
 
   it("finds posts by content", async () => {
     await postService.create({
-      type: "note",
-      content: "Hello world from jant",
-      visibility: "featured",
+      format: "note",
+      body: "Hello world from jant",
     });
     await postService.create({
-      type: "note",
-      content: "Another post entirely",
-      visibility: "featured",
+      format: "note",
+      body: "Another post entirely",
     });
 
     const d1 = createMockD1(sqlite);
@@ -69,15 +67,14 @@ describe("SearchService", () => {
 
     const results = await searchService.search("jant");
     expect(results.length).toBeGreaterThanOrEqual(1);
-    expect(results[0]?.post.content).toContain("jant");
+    expect(results[0]?.post.body).toContain("jant");
   });
 
   it("finds posts by title", async () => {
     await postService.create({
-      type: "article",
+      format: "note",
       title: "Introduction to TypeScript",
-      content: "Some article body",
-      visibility: "quiet",
+      body: "Some article body",
     });
 
     const d1 = createMockD1(sqlite);
@@ -88,33 +85,31 @@ describe("SearchService", () => {
     expect(results[0]?.post.title).toContain("TypeScript");
   });
 
-  it("respects visibility filter", async () => {
+  it("respects status filter", async () => {
     await postService.create({
-      type: "note",
-      content: "visible post about testing",
-      visibility: "featured",
+      format: "note",
+      body: "published post about testing",
     });
     await postService.create({
-      type: "note",
-      content: "draft post about testing",
-      visibility: "draft",
+      format: "note",
+      body: "draft post about testing",
+      status: "draft",
     });
 
     const d1 = createMockD1(sqlite);
     const searchService = createSearchService(d1);
 
     const results = await searchService.search("testing", {
-      visibility: ["featured"],
+      status: ["published"],
     });
 
-    expect(results.every((r) => r.post.visibility === "featured")).toBe(true);
+    expect(results.every((r) => r.post.status === "published")).toBe(true);
   });
 
   it("excludes deleted posts", async () => {
     const post = await postService.create({
-      type: "note",
-      content: "deleted post with unique search term xyzzy",
-      visibility: "featured",
+      format: "note",
+      body: "deleted post with unique search term xyzzy",
     });
     await postService.delete(post.id);
 
@@ -128,9 +123,8 @@ describe("SearchService", () => {
   it("supports limit and offset", async () => {
     for (let i = 0; i < 5; i++) {
       await postService.create({
-        type: "note",
-        content: `searchable post number ${i}`,
-        visibility: "featured",
+        format: "note",
+        body: `searchable post number ${i}`,
       });
     }
 

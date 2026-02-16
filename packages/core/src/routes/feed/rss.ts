@@ -26,7 +26,8 @@ async function buildFeedData(c: Context<Env>): Promise<FeedData> {
   const siteLanguage = await getSiteLanguage(c);
 
   const posts = await c.var.services.posts.list({
-    visibility: ["featured", "quiet"],
+    status: "published",
+    excludeReplies: true,
     limit: 50,
   });
 

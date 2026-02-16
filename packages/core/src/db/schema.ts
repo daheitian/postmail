@@ -1,15 +1,10 @@
 /**
  * Drizzle Schema
  *
- * Database schema for Jant
+ * Database schema for Jant v2
  */
 
-import {
-  sqliteTable,
-  text,
-  integer,
-  primaryKey,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
 // =============================================================================
 // Posts
@@ -17,25 +12,49 @@ import {
 
 export const posts = sqliteTable("posts", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  type: text("type", {
-    enum: ["note", "article", "link", "quote", "image", "page"],
+  format: text("format", {
+    enum: ["note", "link", "quote"],
   }).notNull(),
-  visibility: text("visibility", {
-    enum: ["featured", "quiet", "unlisted", "draft"],
+  status: text("status", {
+    enum: ["draft", "published"],
   })
     .notNull()
-    .default("quiet"),
+    .default("published"),
+  featured: integer("featured").notNull().default(0),
+  pinned: integer("pinned").notNull().default(0),
+  slug: text("slug").unique(),
   title: text("title"),
-  path: text("path"),
-  content: text("content"),
-  contentHtml: text("content_html"),
-  sourceUrl: text("source_url"),
-  sourceName: text("source_name"),
-  sourceDomain: text("source_domain"),
+  url: text("url"),
+  body: text("body"),
+  bodyHtml: text("body_html"),
+  quoteText: text("quote_text"),
+  rating: integer("rating"),
+  collectionId: integer("collection_id").references(() => collections.id, {
+    onDelete: "set null",
+  }),
   replyToId: integer("reply_to_id"),
   threadId: integer("thread_id"),
   deletedAt: integer("deleted_at"),
   publishedAt: integer("published_at").notNull(),
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+// =============================================================================
+// Pages
+// =============================================================================
+
+export const pages = sqliteTable("pages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  slug: text("slug").notNull().unique(),
+  title: text("title"),
+  body: text("body"),
+  bodyHtml: text("body_html"),
+  status: text("status", {
+    enum: ["draft", "published"],
+  })
+    .notNull()
+    .default("published"),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
@@ -67,30 +86,41 @@ export const media = sqliteTable("media", {
 
 export const collections = sqliteTable("collections", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  path: text("path").unique(),
+  slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
   description: text("description"),
+  icon: text("icon"),
+  sortOrder: text("sort_order", {
+    enum: ["newest", "oldest", "rating_desc", "rating_asc"],
+  })
+    .notNull()
+    .default("newest"),
+  position: integer("position").notNull().default(0),
+  showDivider: integer("show_divider").notNull().default(0),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
 
 // =============================================================================
-// Post-Collections (Many-to-Many)
+// Navigation Items
 // =============================================================================
 
-export const postCollections = sqliteTable(
-  "post_collections",
-  {
-    postId: integer("post_id")
-      .notNull()
-      .references(() => posts.id),
-    collectionId: integer("collection_id")
-      .notNull()
-      .references(() => collections.id),
-    addedAt: integer("added_at").notNull(),
-  },
-  (table) => [primaryKey({ columns: [table.postId, table.collectionId] })],
-);
+export const navItems = sqliteTable("nav_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  type: text("type", {
+    enum: ["page", "link"],
+  })
+    .notNull()
+    .default("link"),
+  label: text("label").notNull(),
+  url: text("url").notNull(),
+  pageId: integer("page_id").references(() => pages.id, {
+    onDelete: "cascade",
+  }),
+  position: integer("position").notNull().default(0),
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
 
 // =============================================================================
 // Redirects
@@ -102,19 +132,6 @@ export const redirects = sqliteTable("redirects", {
   toPath: text("to_path").notNull(),
   type: integer("type", { mode: "number" }).notNull().default(301),
   createdAt: integer("created_at").notNull(),
-});
-
-// =============================================================================
-// Navigation Links
-// =============================================================================
-
-export const navigationLinks = sqliteTable("navigation_links", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  label: text("label").notNull(),
-  url: text("url").notNull(),
-  position: integer("position").notNull().default(0),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
 });
 
 // =============================================================================

@@ -19,7 +19,7 @@ msgstr ""
 #~ msgstr "{count} replies"
 
 #. @context: Navigation link
-#: src/routes/dash/collections.tsx:282
+#: src/routes/dash/collections.tsx:271
 msgid "← Back to Collections"
 msgstr "← Back to Collections"
 
@@ -51,12 +51,12 @@ msgid "Account"
 msgstr "Account"
 
 #. @context: Button to open media picker
-#: src/theme/components/PostForm.tsx:190
+#: src/theme/components/PostForm.tsx:212
 msgid "Add Media"
 msgstr "Add Media"
 
-#. @context: Archive filter - all types
-#: src/themes/threads/pages/ArchivePage.tsx:91
+#. @context: Archive filter - all formats
+#: src/themes/threads/pages/ArchivePage.tsx:71
 msgid "All"
 msgstr "All"
 
@@ -66,12 +66,12 @@ msgid "Appearance"
 msgstr "Appearance"
 
 #. @context: Archive page title
-#: src/themes/threads/pages/ArchivePage.tsx:76
+#: src/themes/threads/pages/ArchivePage.tsx:56
 msgid "Archive"
 msgstr "Archive"
 
 #. @context: Confirmation dialog when deleting a post from the list
-#: src/theme/components/PostList.tsx:56
+#: src/theme/components/PostList.tsx:60
 msgid "Are you sure you want to delete this post? This cannot be undone."
 msgstr "Are you sure you want to delete this post? This cannot be undone."
 
@@ -81,18 +81,18 @@ msgstr "Are you sure you want to delete this post? This cannot be undone."
 #: src/theme/components/PostForm.tsx:74
 #: src/theme/components/TypeBadge.tsx:20
 #: src/themes/threads/pages/ArchivePage.tsx:17
-msgid "Article"
-msgstr "Article"
+#~ msgid "Article"
+#~ msgstr "Article"
 
 #. @context: Post type label plural - articles
 #: src/themes/threads/pages/ArchivePage.tsx:42
-msgid "Articles"
-msgstr "Articles"
+#~ msgid "Articles"
+#~ msgstr "Articles"
 
 #. @context: Hint for image post type media requirement
 #: src/theme/components/PostForm.tsx:137
-msgid "At least 1 image required for image posts."
-msgstr "At least 1 image required for image posts."
+#~ msgid "At least 1 image required for image posts."
+#~ msgstr "At least 1 image required for image posts."
 
 #. @context: Button to go back to media list
 #: src/routes/dash/media.tsx:266
@@ -115,11 +115,11 @@ msgstr "Back"
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #: src/routes/dash/collections.tsx:186
-#: src/routes/dash/collections.tsx:365
+#: src/routes/dash/collections.tsx:354
 #: src/routes/dash/navigation.tsx:192
 #: src/routes/dash/redirects.tsx:177
 #: src/theme/components/PageForm.tsx:171
-#: src/theme/components/PostForm.tsx:333
+#: src/theme/components/PostForm.tsx:337
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -135,6 +135,11 @@ msgstr "Change Password"
 msgid "Click image to view full size"
 msgstr "Click image to view full size"
 
+#. @context: Post form field - assign to collection
+#: src/theme/components/PostForm.tsx:265
+msgid "Collection (optional)"
+msgstr "Collection (optional)"
+
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #: src/routes/dash/collections.tsx:35
@@ -144,8 +149,8 @@ msgstr "Collections"
 
 #. @context: Post form field - assign to collections
 #: src/theme/components/PostForm.tsx:273
-msgid "Collections (optional)"
-msgstr "Collections (optional)"
+#~ msgid "Collections (optional)"
+#~ msgstr "Collections (optional)"
 
 #. @context: Appearance settings heading
 #: src/routes/dash/settings.tsx:311
@@ -170,7 +175,7 @@ msgstr "Confirm Password"
 #. @context: Page form field label - content
 #. @context: Post form field
 #: src/theme/components/PageForm.tsx:96
-#: src/theme/components/PostForm.tsx:110
+#: src/theme/components/PostForm.tsx:105
 msgid "Content"
 msgstr "Content"
 
@@ -207,7 +212,7 @@ msgid "Create your admin account."
 msgstr "Create your admin account."
 
 #. @context: Button in empty state to create first page
-#: src/routes/dash/pages.tsx:50
+#: src/routes/dash/pages.tsx:48
 msgid "Create your first page"
 msgstr "Create your first page"
 
@@ -223,8 +228,18 @@ msgstr "Current Password"
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx:297
-msgid "Custom Path (optional)"
-msgstr "Custom Path (optional)"
+#~ msgid "Custom Path (optional)"
+#~ msgstr "Custom Path (optional)"
+
+#. @context: Post form field
+#: src/theme/components/PostForm.tsx:293
+msgid "Custom Slug (optional)"
+msgstr "Custom Slug (optional)"
+
+#. @context: Slug help text
+#: src/theme/components/PostForm.tsx:306
+msgid "Custom URL path. Leave empty to use default /p/ID format."
+msgstr "Custom URL path. Leave empty to use default /p/ID format."
 
 #. @context: Section heading for dangerous/destructive actions
 #: src/theme/components/DangerZone.tsx:55
@@ -248,7 +263,7 @@ msgid "Delete"
 msgstr "Delete"
 
 #. @context: Button to delete collection
-#: src/routes/dash/collections.tsx:374
+#: src/routes/dash/collections.tsx:363
 msgid "Delete Collection"
 msgstr "Delete Collection"
 
@@ -258,7 +273,7 @@ msgid "Delete Media"
 msgstr "Delete Media"
 
 #. @context: Button to delete page
-#: src/routes/dash/pages.tsx:160
+#: src/routes/dash/pages.tsx:151
 msgid "Delete Page"
 msgstr "Delete Page"
 
@@ -275,7 +290,7 @@ msgstr "Demo account pre-filled. Just click Sign In."
 #. @context: Collection form field
 #. @context: Collection form field
 #: src/routes/dash/collections.tsx:153
-#: src/routes/dash/collections.tsx:338
+#: src/routes/dash/collections.tsx:327
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
@@ -285,16 +300,16 @@ msgid "Display text for the link"
 msgstr "Display text for the link"
 
 #. @context: Close media picker button
-#: src/theme/components/PostForm.tsx:355
+#: src/theme/components/PostForm.tsx:359
 msgid "Done"
 msgstr "Done"
 
 #. @context: Page status option - draft
-#. @context: Post visibility badge - draft
-#. @context: Post visibility option
+#. @context: Post status badge - draft
+#. @context: Post status option
 #: src/theme/components/PageForm.tsx:133
-#: src/theme/components/PostForm.tsx:261
-#: src/theme/components/VisibilityBadge.tsx:38
+#: src/theme/components/PostForm.tsx:235
+#: src/theme/components/VisibilityBadge.tsx:35
 msgid "Draft"
 msgstr "Draft"
 
@@ -305,8 +320,8 @@ msgstr "Drafts"
 
 #. @context: Source name placeholder
 #: src/theme/components/PostForm.tsx:226
-msgid "e.g. The Verge, John Doe"
-msgstr "e.g. The Verge, John Doe"
+#~ msgid "e.g. The Verge, John Doe"
+#~ msgstr "e.g. The Verge, John Doe"
 
 #. @context: Button to edit collection
 #. @context: Button to edit collection
@@ -319,16 +334,16 @@ msgstr "e.g. The Verge, John Doe"
 #: src/routes/dash/collections.tsx:66
 #: src/routes/dash/collections.tsx:220
 #: src/routes/dash/navigation.tsx:61
-#: src/routes/dash/pages.tsx:64
-#: src/routes/dash/pages.tsx:134
+#: src/routes/dash/pages.tsx:62
+#: src/routes/dash/pages.tsx:129
 #: src/routes/dash/posts.tsx:142
 #: src/theme/components/ActionButtons.tsx:72
-#: src/theme/components/PostList.tsx:46
+#: src/theme/components/PostList.tsx:50
 msgid "Edit"
 msgstr "Edit"
 
 #. @context: Page heading
-#: src/routes/dash/collections.tsx:304
+#: src/routes/dash/collections.tsx:293
 msgid "Edit Collection"
 msgstr "Edit Collection"
 
@@ -338,12 +353,12 @@ msgid "Edit Link"
 msgstr "Edit Link"
 
 #. @context: Edit page main heading
-#: src/routes/dash/pages.tsx:176
+#: src/routes/dash/pages.tsx:167
 msgid "Edit Page"
 msgstr "Edit Page"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:187
+#: src/routes/dash/posts.tsx:185
 msgid "Edit Post"
 msgstr "Edit Post"
 
@@ -368,12 +383,19 @@ msgstr "Email"
 msgid "Enter your new password."
 msgstr "Enter your new password."
 
-#. @context: Post visibility badge - featured
-#. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:249
-#: src/theme/components/VisibilityBadge.tsx:26
+#. @context: Archive filter - featured posts
+#. @context: Post badge - featured
+#. @context: Post form checkbox - mark as featured
+#: src/theme/components/PostForm.tsx:247
+#: src/theme/components/VisibilityBadge.tsx:46
+#: src/themes/threads/pages/ArchivePage.tsx:89
 msgid "Featured"
 msgstr "Featured"
+
+#. @context: Post form field - post format
+#: src/theme/components/PostForm.tsx:65
+msgid "Format"
+msgstr "Format"
 
 #. @context: Search results count - multiple
 #: src/themes/threads/pages/SearchPage.tsx:76
@@ -403,13 +425,13 @@ msgstr "General"
 #: src/theme/components/PostForm.tsx:83
 #: src/theme/components/TypeBadge.tsx:29
 #: src/themes/threads/pages/ArchivePage.tsx:26
-msgid "Image"
-msgstr "Image"
+#~ msgid "Image"
+#~ msgstr "Image"
 
 #. @context: Post type label plural - images
 #: src/themes/threads/pages/ArchivePage.tsx:54
-msgid "Images"
-msgstr "Images"
+#~ msgid "Images"
+#~ msgstr "Images"
 
 #. @context: Media upload instructions - auto optimization
 #: src/routes/dash/media.tsx:171
@@ -436,17 +458,17 @@ msgstr "Language"
 #~ msgid "Let's set up your site."
 #~ msgstr "Let's set up your site."
 
-#. @context: Post type badge - link
-#. @context: Post type label - link
-#. @context: Post type option
-#: src/theme/components/PostForm.tsx:77
-#: src/theme/components/TypeBadge.tsx:24
-#: src/themes/threads/pages/ArchivePage.tsx:21
+#. @context: Post format badge - link
+#. @context: Post format label - link
+#. @context: Post format option
+#: src/theme/components/PostForm.tsx:75
+#: src/theme/components/TypeBadge.tsx:21
+#: src/themes/threads/pages/ArchivePage.tsx:17
 msgid "Link"
 msgstr "Link"
 
-#. @context: Post type label plural - links
-#: src/themes/threads/pages/ArchivePage.tsx:46
+#. @context: Post format label plural - links
+#: src/themes/threads/pages/ArchivePage.tsx:33
 msgid "Links"
 msgstr "Links"
 
@@ -457,12 +479,12 @@ msgstr "Load more"
 
 #. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
-#: src/theme/components/PostForm.tsx:366
+#: src/theme/components/PostForm.tsx:370
 #: src/themes/threads/timeline/TimelineLoadMore.tsx:28
 msgid "Loading..."
 msgstr "Loading..."
 
-#. @context: Page path validation message
+#. @context: Page slug validation message
 #: src/theme/components/PageForm.tsx:77
 msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "Lowercase letters, numbers, and hyphens only"
@@ -476,7 +498,7 @@ msgstr "Markdown"
 #. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/routes/dash/media.tsx:151
-#: src/theme/components/PostForm.tsx:128
+#: src/theme/components/PostForm.tsx:159
 #: src/theme/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "Media"
@@ -528,8 +550,8 @@ msgstr "New Link"
 
 #. @context: Button to create new page
 #. @context: New page main heading
-#: src/routes/dash/pages.tsx:37
-#: src/routes/dash/pages.tsx:110
+#: src/routes/dash/pages.tsx:35
+#: src/routes/dash/pages.tsx:105
 msgid "New Page"
 msgstr "New Page"
 
@@ -581,12 +603,12 @@ msgid "No navigation links configured."
 msgstr "No navigation links configured."
 
 #. @context: Empty state message when no pages exist
-#: src/routes/dash/pages.tsx:46
+#: src/routes/dash/pages.tsx:44
 msgid "No pages yet."
 msgstr "No pages yet."
 
 #. @context: Archive empty state
-#: src/themes/threads/pages/ArchivePage.tsx:111
+#: src/themes/threads/pages/ArchivePage.tsx:100
 msgid "No posts found."
 msgstr "No posts found."
 
@@ -614,26 +636,27 @@ msgstr "No redirects configured."
 msgid "No results found."
 msgstr "No results found."
 
-#. @context: Post type badge - note
-#. @context: Post type label - note
-#. @context: Post type option
-#: src/theme/components/PostForm.tsx:71
-#: src/theme/components/TypeBadge.tsx:19
+#. @context: No collection selected
+#: src/theme/components/PostForm.tsx:272
+msgid "None"
+msgstr "None"
+
+#. @context: Post format badge - note
+#. @context: Post format label - note
+#. @context: Post format option
+#: src/theme/components/PostForm.tsx:72
+#: src/theme/components/TypeBadge.tsx:20
 #: src/themes/threads/pages/ArchivePage.tsx:16
 msgid "Note"
 msgstr "Note"
 
-#. @context: Post type label plural - notes
-#: src/themes/threads/pages/ArchivePage.tsx:38
+#. @context: Post format label plural - notes
+#: src/themes/threads/pages/ArchivePage.tsx:29
 msgid "Notes"
 msgstr "Notes"
 
 #. @context: Default page heading when untitled
-#. @context: Post type badge - page
-#. @context: Post type label - page
-#: src/routes/dash/pages.tsx:125
-#: src/theme/components/TypeBadge.tsx:33
-#: src/themes/threads/pages/ArchivePage.tsx:30
+#: src/routes/dash/pages.tsx:120
 msgid "Page"
 msgstr "Page"
 
@@ -654,10 +677,8 @@ msgstr "Page title..."
 
 #. @context: Dashboard navigation - pages management
 #. @context: Pages main heading
-#. @context: Post type label plural - pages
-#: src/routes/dash/pages.tsx:36
+#: src/routes/dash/pages.tsx:34
 #: src/theme/layouts/DashLayout.tsx:96
-#: src/themes/threads/pages/ArchivePage.tsx:58
 msgid "Pages"
 msgstr "Pages"
 
@@ -670,8 +691,8 @@ msgstr "Password"
 
 #. @context: Page form field label - URL path
 #: src/theme/components/PageForm.tsx:64
-msgid "Path"
-msgstr "Path"
+#~ msgid "Path"
+#~ msgstr "Path"
 
 #. @context: Navigation URL help text
 #: src/routes/dash/navigation.tsx:162
@@ -680,18 +701,25 @@ msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
-#: src/theme/components/ThreadView.tsx:68
+#: src/theme/components/ThreadView.tsx:71
 #: src/themes/threads/pages/PostPage.tsx:39
 msgid "Permalink"
 msgstr "Permalink"
 
+#. @context: Post badge - pinned
+#. @context: Post form checkbox - pin to top
+#: src/theme/components/PostForm.tsx:254
+#: src/theme/components/VisibilityBadge.tsx:54
+msgid "Pinned"
+msgstr "Pinned"
+
 #. @context: Default post title
-#: src/routes/dash/posts.tsx:131
+#: src/routes/dash/posts.tsx:130
 msgid "Post"
 msgstr "Post"
 
 #. @context: Post title placeholder
-#: src/theme/components/PostForm.tsx:100
+#: src/theme/components/PostForm.tsx:95
 msgid "Post title..."
 msgstr "Post title..."
 
@@ -736,7 +764,7 @@ msgstr "Previous"
 #: src/app.tsx:418
 #: src/app.tsx:558
 #: src/routes/dash/collections.tsx:178
-#: src/routes/dash/collections.tsx:357
+#: src/routes/dash/collections.tsx:346
 #: src/routes/dash/media.tsx:119
 #: src/routes/dash/navigation.tsx:184
 #: src/routes/dash/redirects.tsx:169
@@ -744,7 +772,7 @@ msgstr "Previous"
 #: src/routes/dash/settings.tsx:400
 #: src/routes/dash/settings.tsx:488
 #: src/theme/components/PageForm.tsx:163
-#: src/theme/components/PostForm.tsx:325
+#: src/theme/components/PostForm.tsx:329
 msgid "Processing..."
 msgstr "Processing..."
 
@@ -754,21 +782,30 @@ msgid "Profile"
 msgstr "Profile"
 
 #. @context: Button to publish new post
-#: src/theme/components/PostForm.tsx:319
+#: src/theme/components/PostForm.tsx:323
 msgid "Publish"
 msgstr "Publish"
 
 #. @context: Page status option - published
+#. @context: Post status badge - published
 #. @context: Post status label
+#. @context: Post status option
 #: src/routes/dash/index.tsx:45
 #: src/theme/components/PageForm.tsx:127
+#: src/theme/components/PostForm.tsx:229
+#: src/theme/components/VisibilityBadge.tsx:31
 msgid "Published"
 msgstr "Published"
 
 #. @context: Page status helper text
 #: src/theme/components/PageForm.tsx:140
-msgid "Published pages are accessible via their path. Drafts are not visible."
-msgstr "Published pages are accessible via their path. Drafts are not visible."
+#~ msgid "Published pages are accessible via their path. Drafts are not visible."
+#~ msgstr "Published pages are accessible via their path. Drafts are not visible."
+
+#. @context: Page status helper text
+#: src/theme/components/PageForm.tsx:140
+msgid "Published pages are accessible via their slug. Drafts are not visible."
+msgstr "Published pages are accessible via their slug. Drafts are not visible."
 
 #. @context: Dashboard section title
 #: src/routes/dash/index.tsx:62
@@ -777,25 +814,30 @@ msgstr "Quick Actions"
 
 #. @context: Post visibility badge - normal
 #: src/theme/components/VisibilityBadge.tsx:30
-msgid "Quiet"
-msgstr "Quiet"
+#~ msgid "Quiet"
+#~ msgstr "Quiet"
 
 #. @context: Post visibility option
 #: src/theme/components/PostForm.tsx:243
-msgid "Quiet (normal)"
-msgstr "Quiet (normal)"
+#~ msgid "Quiet (normal)"
+#~ msgstr "Quiet (normal)"
 
-#. @context: Post type badge - quote
-#. @context: Post type label - quote
-#. @context: Post type option
-#: src/theme/components/PostForm.tsx:80
-#: src/theme/components/TypeBadge.tsx:25
-#: src/themes/threads/pages/ArchivePage.tsx:22
+#. @context: Post format badge - quote
+#. @context: Post format label - quote
+#. @context: Post format option
+#: src/theme/components/PostForm.tsx:78
+#: src/theme/components/TypeBadge.tsx:22
+#: src/themes/threads/pages/ArchivePage.tsx:18
 msgid "Quote"
 msgstr "Quote"
 
-#. @context: Post type label plural - quotes
-#: src/themes/threads/pages/ArchivePage.tsx:50
+#. @context: Post form field - quoted text
+#: src/theme/components/PostForm.tsx:138
+msgid "Quote Text"
+msgstr "Quote Text"
+
+#. @context: Post format label plural - quotes
+#: src/themes/threads/pages/ArchivePage.tsx:37
 msgid "Quotes"
 msgstr "Quotes"
 
@@ -806,10 +848,8 @@ msgstr "Quotes"
 msgid "Redirects"
 msgstr "Redirects"
 
-#. @context: Button to remove post from collection
 #. @context: Remove media attachment button
-#: src/routes/dash/collections.tsx:267
-#: src/theme/components/PostForm.tsx:173
+#: src/theme/components/PostForm.tsx:195
 msgid "Remove"
 msgstr "Remove"
 
@@ -853,7 +893,7 @@ msgid "Search posts..."
 msgstr "Search posts..."
 
 #. @context: Media picker dialog title
-#: src/theme/components/PostForm.tsx:345
+#: src/theme/components/PostForm.tsx:349
 msgid "Select Media"
 msgstr "Select Media"
 
@@ -903,23 +943,27 @@ msgstr "Site Name"
 
 #. @context: Collection form field
 #. @context: Collection form field
+#. @context: Page form field label - URL slug
 #: src/routes/dash/collections.tsx:133
-#: src/routes/dash/collections.tsx:325
+#: src/routes/dash/collections.tsx:314
+#: src/theme/components/PageForm.tsx:64
 msgid "Slug"
 msgstr "Slug"
 
 #. @context: Post form field - name of the source website or author
 #: src/theme/components/PostForm.tsx:216
-msgid "Source Name (optional)"
-msgstr "Source Name (optional)"
+#~ msgid "Source Name (optional)"
+#~ msgstr "Source Name (optional)"
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx:200
-msgid "Source URL (optional)"
-msgstr "Source URL (optional)"
+#~ msgid "Source URL (optional)"
+#~ msgstr "Source URL (optional)"
 
 #. @context: Page form field label - publish status
+#. @context: Post form field
 #: src/theme/components/PageForm.tsx:117
+#: src/theme/components/PostForm.tsx:222
 msgid "Status"
 msgstr "Status"
 
@@ -938,7 +982,12 @@ msgstr "The destination path or URL"
 msgid "The path to redirect from"
 msgstr "The path to redirect from"
 
-#. @context: Page path helper text
+#. @context: Quote text placeholder
+#: src/theme/components/PostForm.tsx:146
+msgid "The text being quoted..."
+msgstr "The text being quoted..."
+
+#. @context: Page slug helper text
 #: src/theme/components/PageForm.tsx:85
 msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens."
@@ -954,17 +1003,17 @@ msgid "This will theme both your site and your dashboard. All color themes suppo
 msgstr "This will theme both your site and your dashboard. All color themes support dark mode."
 
 #. @context: Thread view indicator - first post in thread
-#: src/theme/components/ThreadView.tsx:57
+#: src/theme/components/ThreadView.tsx:60
 msgid "Thread start"
 msgstr "Thread start"
 
 #. @context: Thread view header - multiple posts
-#: src/theme/components/ThreadView.tsx:102
+#: src/theme/components/ThreadView.tsx:105
 msgid "Thread with {count} posts"
 msgstr "Thread with {count} posts"
 
 #. @context: Thread view header - single post
-#: src/theme/components/ThreadView.tsx:98
+#: src/theme/components/ThreadView.tsx:101
 msgid "Thread with 1 post"
 msgstr "Thread with 1 post"
 
@@ -972,13 +1021,13 @@ msgstr "Thread with 1 post"
 #. @context: Collection form field
 #. @context: Page form field label - title
 #: src/routes/dash/collections.tsx:114
-#: src/routes/dash/collections.tsx:315
+#: src/routes/dash/collections.tsx:304
 #: src/theme/components/PageForm.tsx:44
 msgid "Title"
 msgstr "Title"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:91
+#: src/theme/components/PostForm.tsx:86
 msgid "Title (optional)"
 msgstr "Title (optional)"
 
@@ -987,10 +1036,8 @@ msgstr "Title (optional)"
 msgid "To Path"
 msgstr "To Path"
 
-#. @context: Post form field - post type
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx:142
-#: src/theme/components/PostForm.tsx:64
 msgid "Type"
 msgstr "Type"
 
@@ -998,23 +1045,23 @@ msgstr "Type"
 #. @context: Post visibility option
 #: src/theme/components/PostForm.tsx:255
 #: src/theme/components/VisibilityBadge.tsx:34
-msgid "Unlisted"
-msgstr "Unlisted"
+#~ msgid "Unlisted"
+#~ msgstr "Unlisted"
 
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
-#: src/routes/dash/pages.tsx:91
-#: src/theme/components/PostList.tsx:78
+#: src/routes/dash/pages.tsx:86
+#: src/theme/components/PostList.tsx:86
 msgid "Untitled"
 msgstr "Untitled"
 
 #. @context: Button to update existing post
-#: src/theme/components/PostForm.tsx:315
+#: src/theme/components/PostForm.tsx:319
 msgid "Update"
 msgstr "Update"
 
 #. @context: Button to save collection changes
-#: src/routes/dash/collections.tsx:351
+#: src/routes/dash/collections.tsx:340
 msgid "Update Collection"
 msgstr "Update Collection"
 
@@ -1050,6 +1097,11 @@ msgstr "Uploading..."
 msgid "URL"
 msgstr "URL"
 
+#. @context: Post form field - source URL
+#: src/theme/components/PostForm.tsx:122
+msgid "URL (optional)"
+msgstr "URL (optional)"
+
 #. @context: Collection path help text
 #: src/routes/dash/collections.tsx:144
 msgid "URL-safe identifier (lowercase, numbers, hyphens)"
@@ -1069,11 +1121,11 @@ msgstr "Use this URL to embed the media in your posts."
 #. @context: Button to view post on public site
 #: src/routes/dash/collections.tsx:71
 #: src/routes/dash/collections.tsx:225
-#: src/routes/dash/pages.tsx:73
-#: src/routes/dash/pages.tsx:143
+#: src/routes/dash/pages.tsx:69
+#: src/routes/dash/pages.tsx:134
 #: src/routes/dash/posts.tsx:147
 #: src/theme/components/ActionButtons.tsx:76
-#: src/theme/components/PostList.tsx:51
+#: src/theme/components/PostList.tsx:55
 msgid "View"
 msgstr "View"
 
@@ -1089,8 +1141,8 @@ msgstr "View Site"
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx:236
-msgid "Visibility"
-msgstr "Visibility"
+#~ msgid "Visibility"
+#~ msgstr "Visibility"
 
 #. @context: Setup page welcome heading
 #: src/app.tsx:209
@@ -1098,7 +1150,7 @@ msgid "Welcome to Jant"
 msgstr "Welcome to Jant"
 
 #. @context: Post content placeholder
-#: src/theme/components/PostForm.tsx:115
+#: src/theme/components/PostForm.tsx:110
 msgid "What's on your mind?"
 msgstr "What's on your mind?"
 

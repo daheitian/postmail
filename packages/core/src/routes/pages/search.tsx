@@ -34,7 +34,7 @@ searchRoutes.get("/", async (c) => {
       results = await c.var.services.search.search(query, {
         limit: PAGE_SIZE + 1,
         offset: (page - 1) * PAGE_SIZE,
-        visibility: ["featured", "quiet"],
+        status: ["published"],
       });
 
       hasMore = results.length > PAGE_SIZE;

@@ -37,56 +37,65 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
 
   return (
     <div class="flex flex-col divide-y">
-      {posts.map((post) => (
-        <ListItemRow
-          key={post.id}
-          actions={
-            <ActionButtons
-              editHref={`/dash/posts/${sqid.encode(post.id)}/edit`}
-              editLabel={t({
-                message: "Edit",
-                comment: "@context: Button to edit post",
-              })}
-              viewHref={`/p/${sqid.encode(post.id)}`}
-              viewLabel={t({
-                message: "View",
-                comment: "@context: Button to view post on public site",
-              })}
-              deleteAction={`/dash/posts/${sqid.encode(post.id)}/delete`}
-              deleteConfirm={t({
-                message:
-                  "Are you sure you want to delete this post? This cannot be undone.",
-                comment:
-                  "@context: Confirmation dialog when deleting a post from the list",
-              })}
-            />
-          }
-        >
-          <div class="flex items-center gap-2 mb-1">
-            <TypeBadge type={post.type} />
-            <VisibilityBadge visibility={post.visibility} />
-            <span class="text-xs text-muted-foreground">
-              {time.formatDate(post.publishedAt)}
-            </span>
-          </div>
-          <a
-            href={`/dash/posts/${sqid.encode(post.id)}`}
-            class="font-medium hover:underline"
+      {posts.map((post) => {
+        const permalink = post.slug
+          ? `/${post.slug}`
+          : `/p/${sqid.encode(post.id)}`;
+        return (
+          <ListItemRow
+            key={post.id}
+            actions={
+              <ActionButtons
+                editHref={`/dash/posts/${sqid.encode(post.id)}/edit`}
+                editLabel={t({
+                  message: "Edit",
+                  comment: "@context: Button to edit post",
+                })}
+                viewHref={permalink}
+                viewLabel={t({
+                  message: "View",
+                  comment: "@context: Button to view post on public site",
+                })}
+                deleteAction={`/dash/posts/${sqid.encode(post.id)}/delete`}
+                deleteConfirm={t({
+                  message:
+                    "Are you sure you want to delete this post? This cannot be undone.",
+                  comment:
+                    "@context: Confirmation dialog when deleting a post from the list",
+                })}
+              />
+            }
           >
-            {post.title ||
-              post.content?.slice(0, 60) ||
-              t({
-                message: "Untitled",
-                comment: "@context: Default title for untitled post",
-              })}
-          </a>
-          {post.content && !post.title && (
-            <p class="text-sm text-muted-foreground mt-1 line-clamp-2">
-              {post.content.slice(0, 120)}
-            </p>
-          )}
-        </ListItemRow>
-      ))}
+            <div class="flex items-center gap-2 mb-1">
+              <TypeBadge type={post.format} />
+              <VisibilityBadge
+                status={post.status}
+                featured={post.featured === 1}
+                pinned={post.pinned === 1}
+              />
+              <span class="text-xs text-muted-foreground">
+                {time.formatDate(post.publishedAt)}
+              </span>
+            </div>
+            <a
+              href={`/dash/posts/${sqid.encode(post.id)}`}
+              class="font-medium hover:underline"
+            >
+              {post.title ||
+                post.body?.slice(0, 60) ||
+                t({
+                  message: "Untitled",
+                  comment: "@context: Default title for untitled post",
+                })}
+            </a>
+            {post.body && !post.title && (
+              <p class="text-sm text-muted-foreground mt-1 line-clamp-2">
+                {post.body.slice(0, 120)}
+              </p>
+            )}
+          </ListItemRow>
+        );
+      })}
     </div>
   );
 };

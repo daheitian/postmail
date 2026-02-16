@@ -14,13 +14,19 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const collectionRoutes = new Hono<Env>();
 
-collectionRoutes.get("/:path", async (c) => {
-  const path = c.req.param("path");
+collectionRoutes.get("/:slug", async (c) => {
+  const slug = c.req.param("slug");
 
-  const collection = await c.var.services.collections.getByPath(path);
+  const collection = await c.var.services.collections.getBySlug(slug);
   if (!collection) return c.notFound();
 
-  const posts = await c.var.services.collections.getPosts(collection.id);
+  // Fetch posts in this collection
+  const posts = await c.var.services.posts.list({
+    collectionId: collection.id,
+    status: "published",
+    excludeReplies: true,
+  });
+
   const navData = await getNavigationData(c);
 
   // Transform to View Models
@@ -35,7 +41,12 @@ collectionRoutes.get("/:path", async (c) => {
     description: collection.description ?? undefined,
     navData,
     content: (
-      <Page collection={collection} posts={postViews} theme={components} />
+      <Page
+        collection={collection}
+        posts={postViews}
+        hasMore={false}
+        theme={components}
+      />
     ),
   });
 });

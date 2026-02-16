@@ -1,78 +1,58 @@
 /**
  * Threads Theme - Archive Page
  *
- * Posts grouped by year-month with type filter and cursor pagination.
+ * Posts grouped by year-month with format filter and cursor pagination.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { ArchivePageProps } from "../../../types.js";
-import { POST_TYPES } from "../../../types.js";
+import { FORMATS } from "../../../types.js";
 import { Pagination as DefaultPagination } from "../../../theme/index.js";
 
-function getTypeLabel(type: string): string {
+function getFormatLabel(format: string): string {
   const { t } = useLingui();
   const labels: Record<string, string> = {
-    note: t({ message: "Note", comment: "@context: Post type label - note" }),
-    article: t({
-      message: "Article",
-      comment: "@context: Post type label - article",
-    }),
-    link: t({ message: "Link", comment: "@context: Post type label - link" }),
+    note: t({ message: "Note", comment: "@context: Post format label - note" }),
+    link: t({ message: "Link", comment: "@context: Post format label - link" }),
     quote: t({
       message: "Quote",
-      comment: "@context: Post type label - quote",
+      comment: "@context: Post format label - quote",
     }),
-    image: t({
-      message: "Image",
-      comment: "@context: Post type label - image",
-    }),
-    page: t({ message: "Page", comment: "@context: Post type label - page" }),
   };
-  return labels[type] ?? type;
+  return labels[format] ?? format;
 }
 
-function getTypeLabelPlural(type: string): string {
+function getFormatLabelPlural(format: string): string {
   const { t } = useLingui();
   const labels: Record<string, string> = {
     note: t({
       message: "Notes",
-      comment: "@context: Post type label plural - notes",
-    }),
-    article: t({
-      message: "Articles",
-      comment: "@context: Post type label plural - articles",
+      comment: "@context: Post format label plural - notes",
     }),
     link: t({
       message: "Links",
-      comment: "@context: Post type label plural - links",
+      comment: "@context: Post format label plural - links",
     }),
     quote: t({
       message: "Quotes",
-      comment: "@context: Post type label plural - quotes",
-    }),
-    image: t({
-      message: "Images",
-      comment: "@context: Post type label plural - images",
-    }),
-    page: t({
-      message: "Pages",
-      comment: "@context: Post type label plural - pages",
+      comment: "@context: Post format label plural - quotes",
     }),
   };
-  return labels[type] ?? `${type}s`;
+  return labels[format] ?? `${format}s`;
 }
 
 export const ArchivePage: FC<ArchivePageProps> = ({
   groups,
   hasMore,
   nextCursor,
-  type,
+  format,
+  featured,
   theme,
 }) => {
   const { t } = useLingui();
-  const title = type
-    ? getTypeLabelPlural(type)
+  const title = format
+    ? getFormatLabelPlural(format)
     : t({ message: "Archive", comment: "@context: Archive page title" });
 
   const PaginationComponent = theme?.Pagination ?? DefaultPagination;
@@ -82,26 +62,35 @@ export const ArchivePage: FC<ArchivePageProps> = ({
       <header class="mb-8">
         <h1 class="text-2xl font-semibold">{title}</h1>
 
-        {/* Type filter */}
+        {/* Format filter */}
         <nav class="flex flex-wrap gap-2 mt-4">
           <a
             href="/archive"
-            class={`badge ${!type ? "badge-primary" : "badge-outline"}`}
+            class={`badge ${!format && !featured ? "badge-primary" : "badge-outline"}`}
           >
             {t({
               message: "All",
-              comment: "@context: Archive filter - all types",
+              comment: "@context: Archive filter - all formats",
             })}
           </a>
-          {POST_TYPES.filter((t) => t !== "page").map((typeKey) => (
+          {FORMATS.map((formatKey) => (
             <a
-              key={typeKey}
-              href={`/archive?type=${typeKey}`}
-              class={`badge ${type === typeKey ? "badge-primary" : "badge-outline"}`}
+              key={formatKey}
+              href={`/archive?format=${formatKey}`}
+              class={`badge ${format === formatKey ? "badge-primary" : "badge-outline"}`}
             >
-              {getTypeLabelPlural(typeKey)}
+              {getFormatLabelPlural(formatKey)}
             </a>
           ))}
+          <a
+            href="/archive?featured=true"
+            class={`badge ${featured ? "badge-primary" : "badge-outline"}`}
+          >
+            {t({
+              message: "Featured",
+              comment: "@context: Archive filter - featured posts",
+            })}
+          </a>
         </nav>
       </header>
 
@@ -134,12 +123,12 @@ export const ArchivePage: FC<ArchivePageProps> = ({
                     <div class="flex-1 min-w-0">
                       <a href={post.permalink} class="hover:underline">
                         {post.title ||
-                          post.content?.slice(0, 80) ||
+                          post.excerpt?.slice(0, 80) ||
                           `Post #${post.id}`}
                       </a>
-                      {!type && (
+                      {!format && (
                         <span class="ml-2 badge-outline text-xs">
-                          {getTypeLabel(post.type)}
+                          {getFormatLabel(post.format)}
                         </span>
                       )}
                     </div>
@@ -153,7 +142,13 @@ export const ArchivePage: FC<ArchivePageProps> = ({
 
       {/* Pagination */}
       <PaginationComponent
-        baseUrl={type ? `/archive?type=${type}` : "/archive"}
+        baseUrl={
+          format
+            ? `/archive?format=${format}`
+            : featured
+              ? "/archive?featured=true"
+              : "/archive"
+        }
         hasMore={hasMore}
         nextCursor={nextCursor}
       />

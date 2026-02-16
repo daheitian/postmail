@@ -9,11 +9,13 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { createTestDatabase } from "./db.js";
 import { createPostService } from "../../services/post.js";
+import { createPageService } from "../../services/page.js";
 import { createSettingsService } from "../../services/settings.js";
 import { createRedirectService } from "../../services/redirect.js";
 import { createMediaService } from "../../services/media.js";
 import { createCollectionService } from "../../services/collection.js";
 import { createSearchService } from "../../services/search.js";
+import { createNavItemService } from "../../services/navigation.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 
@@ -40,11 +42,13 @@ export function createTestApp(options: TestAppOptions = {}) {
 
   const services = {
     posts: createPostService(db),
+    pages: createPageService(db),
     settings: createSettingsService(db),
     redirects: createRedirectService(db),
     media: createMediaService(db),
     collections: createCollectionService(db),
     search: createSearchService(mockD1),
+    navItems: createNavItemService(db),
   };
 
   const app = new Hono<Env>();

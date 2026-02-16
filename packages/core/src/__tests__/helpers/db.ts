@@ -1,7 +1,7 @@
 /**
  * Test Database Helper
  *
- * Creates an in-memory SQLite database with all migrations applied.
+ * Creates an in-memory SQLite database with all migrations applied (up to v2).
  * Used for service integration tests.
  */
 
@@ -14,10 +14,21 @@ import { resolve } from "path";
 const MIGRATIONS_DIR = resolve(import.meta.dirname, "../../db/migrations");
 
 /**
+ * Applies a migration file, splitting on Drizzle statement breakpoints.
+ */
+function applyMigration(sqlite: Database.Database, filename: string) {
+  const migration = readFileSync(resolve(MIGRATIONS_DIR, filename), "utf-8");
+  for (const sql of migration.split("--> statement-breakpoint")) {
+    const trimmed = sql.trim();
+    if (trimmed) sqlite.exec(trimmed);
+  }
+}
+
+/**
  * Creates a fresh in-memory SQLite database with all migrations applied.
  * Each call returns an isolated database instance for test isolation.
  *
- * @param options.fts - Whether to apply FTS5 migration (default: false).
+ * @param options.fts - Whether to enable FTS5 for search tests (default: false).
  *   The trigram tokenizer used in production may not be available in all
  *   better-sqlite3 builds, so FTS is opt-in for tests that need it.
  */
@@ -28,85 +39,51 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
 
-  // Apply base schema migration
-  const migration0 = readFileSync(
-    resolve(MIGRATIONS_DIR, "0000_square_wallflower.sql"),
+  // Apply v1 base migrations (0000-0004)
+  applyMigration(sqlite, "0000_square_wallflower.sql");
+  // Skip 0001 (FTS) — v2 migration will create updated FTS if needed
+  applyMigration(sqlite, "0002_add_media_attachments.sql");
+  applyMigration(sqlite, "0003_add_navigation_links.sql");
+  applyMigration(sqlite, "0004_add_storage_provider.sql");
+
+  // Apply v2 schema migration (0005)
+  // Split FTS-related statements so we can handle them separately
+  const v2Migration = readFileSync(
+    resolve(MIGRATIONS_DIR, "0005_v2_schema_migration.sql"),
     "utf-8",
   );
 
-  // Drizzle migrations use --> statement-breakpoint as separator
-  for (const sql of migration0.split("--> statement-breakpoint")) {
-    const trimmed = sql.trim();
-    if (trimmed) sqlite.exec(trimmed);
-  }
+  for (const stmt of v2Migration.split("--> statement-breakpoint")) {
+    const trimmed = stmt.trim();
+    if (!trimmed) continue;
 
-  // Optionally apply FTS5 migration (with fallback tokenizer)
-  if (options?.fts) {
+    // Skip FTS-related statements if FTS not requested
+    const isFts = trimmed.includes("posts_fts");
+    if (!options?.fts && isFts) continue;
+
     try {
-      const migration1 = readFileSync(
-        resolve(MIGRATIONS_DIR, "0001_add_search_fts.sql"),
-        "utf-8",
-      );
-      sqlite.exec(migration1);
+      sqlite.exec(trimmed);
     } catch {
-      // Fallback: create FTS table with default tokenizer if trigram not available
-      sqlite.exec(`
-        CREATE VIRTUAL TABLE IF NOT EXISTS posts_fts USING fts5(
-          title,
-          content,
-          content='posts',
-          content_rowid='id'
-        );
-
-        CREATE TRIGGER IF NOT EXISTS posts_fts_insert AFTER INSERT ON posts
-        WHEN NEW.deleted_at IS NULL
-        BEGIN
-          INSERT INTO posts_fts(rowid, title, content)
-          VALUES (NEW.id, COALESCE(NEW.title, ''), COALESCE(NEW.content, ''));
-        END;
-
-        CREATE TRIGGER IF NOT EXISTS posts_fts_update AFTER UPDATE ON posts BEGIN
-          DELETE FROM posts_fts WHERE rowid = OLD.id;
-          INSERT INTO posts_fts(rowid, title, content)
-          SELECT NEW.id, COALESCE(NEW.title, ''), COALESCE(NEW.content, '')
-          WHERE NEW.deleted_at IS NULL;
-        END;
-
-        CREATE TRIGGER IF NOT EXISTS posts_fts_delete AFTER DELETE ON posts BEGIN
-          DELETE FROM posts_fts WHERE rowid = OLD.id;
-        END;
-      `);
+      // Handle trigram tokenizer failure for FTS virtual table
+      if (options?.fts && trimmed.includes("CREATE VIRTUAL TABLE")) {
+        sqlite.exec(`
+          CREATE VIRTUAL TABLE IF NOT EXISTS posts_fts USING fts5(
+            title,
+            body,
+            quote_text,
+            content='posts',
+            content_rowid='id'
+          );
+        `);
+      }
+      // Ignore DROP TRIGGER/TABLE IF EXISTS failures silently
+      else if (
+        !trimmed.startsWith("DROP TRIGGER") &&
+        !trimmed.startsWith("DROP TABLE")
+      ) {
+        throw new Error(`Migration statement failed: ${trimmed.slice(0, 100)}`);
+      }
     }
-  }
-
-  // Apply media attachments migration (position + blurhash)
-  const migration2 = readFileSync(
-    resolve(MIGRATIONS_DIR, "0002_add_media_attachments.sql"),
-    "utf-8",
-  );
-  for (const sql of migration2.split("--> statement-breakpoint")) {
-    const trimmed = sql.trim();
-    if (trimmed) sqlite.exec(trimmed);
-  }
-
-  // Apply navigation links migration
-  const migration3 = readFileSync(
-    resolve(MIGRATIONS_DIR, "0003_add_navigation_links.sql"),
-    "utf-8",
-  );
-  for (const sql of migration3.split("--> statement-breakpoint")) {
-    const trimmed = sql.trim();
-    if (trimmed) sqlite.exec(trimmed);
-  }
-
-  // Apply storage provider migration
-  const migration4 = readFileSync(
-    resolve(MIGRATIONS_DIR, "0004_add_storage_provider.sql"),
-    "utf-8",
-  );
-  for (const sql of migration4.split("--> statement-breakpoint")) {
-    const trimmed = sql.trim();
-    if (trimmed) sqlite.exec(trimmed);
   }
 
   const db = drizzle(sqlite, { schema });

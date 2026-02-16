@@ -14,27 +14,36 @@ export type { ThemeOptions as ThreadsThemeOptions } from "./themes/threads/index
 
 // Types
 export type {
-  PostType,
-  Visibility,
+  Format,
+  Status,
+  SortOrder,
+  NavItemType,
   Bindings,
   Post,
+  Page,
   Media,
   MediaAttachment,
   PostWithMedia,
   Collection,
-  PostCollection,
+  NavItem,
   Redirect,
   Setting,
-  NavigationLink,
   CreatePost,
   UpdatePost,
+  CreatePage,
+  UpdatePage,
+  CreateNavItem,
+  UpdateNavItem,
+  CreateCollection,
+  UpdateCollection,
   JantConfig,
   JantTheme,
   ThemeComponents,
   // View Model types (for theme authors)
   PostView,
+  PageView,
   MediaView,
-  NavLinkView,
+  NavItemView,
   SearchResultView,
   TimelineItemView,
   ArchiveGroup,
@@ -63,10 +72,12 @@ export type {
 } from "./types.js";
 
 export {
-  POST_TYPES,
-  VISIBILITY_LEVELS,
+  FORMATS,
+  STATUSES,
+  SORT_ORDERS,
+  NAV_ITEM_TYPES,
   MAX_MEDIA_ATTACHMENTS,
-  POST_TYPE_MEDIA_RULES,
+  MAX_PINNED_POSTS,
 } from "./types.js";
 
 // Utilities (for theme authors)
@@ -81,8 +92,9 @@ export {
   toPostView,
   toPostViews,
   toMediaView,
-  toNavLinkView,
-  toNavLinkViews,
+  toPageView,
+  toNavItemView,
+  toNavItemViews,
   toSearchResultView,
   toArchiveGroups,
 } from "./lib/view.js";

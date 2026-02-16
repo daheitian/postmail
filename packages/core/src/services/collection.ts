@@ -1,69 +1,43 @@
 /**
- * Collection Service
+ * Collection Service (v2)
  *
- * Manages collections and post-collection relationships
+ * Manages collections. Posts belong to collections via posts.collection_id (1:M).
  */
 
-import { eq, desc, and } from "drizzle-orm";
+import { eq, asc, sql, desc } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { collections, postCollections, posts } from "../db/schema.js";
+import { collections, posts } from "../db/schema.js";
 import { now } from "../lib/time.js";
-import type { Collection, Post } from "../types.js";
+import type {
+  Collection,
+  CreateCollection,
+  UpdateCollection,
+  SortOrder,
+} from "../types.js";
 
 export interface CollectionService {
   getById(id: number): Promise<Collection | null>;
-  getByPath(path: string): Promise<Collection | null>;
+  getBySlug(slug: string): Promise<Collection | null>;
   list(): Promise<Collection[]>;
-  create(data: CreateCollectionData): Promise<Collection>;
-  update(id: number, data: UpdateCollectionData): Promise<Collection | null>;
+  create(data: CreateCollection): Promise<Collection>;
+  update(id: number, data: UpdateCollection): Promise<Collection | null>;
   delete(id: number): Promise<boolean>;
-  addPost(collectionId: number, postId: number): Promise<void>;
-  removePost(collectionId: number, postId: number): Promise<void>;
-  getPosts(collectionId: number): Promise<Post[]>;
-  getCollectionsForPost(postId: number): Promise<Collection[]>;
-  syncPostCollections(postId: number, collectionIds: number[]): Promise<void>;
-}
-
-export interface CreateCollectionData {
-  title: string;
-  path?: string;
-  description?: string;
-}
-
-export interface UpdateCollectionData {
-  title?: string;
-  path?: string | null;
-  description?: string;
+  reorder(ids: number[]): Promise<void>;
+  /** Get post count per collection */
+  getPostCounts(): Promise<Map<number, number>>;
 }
 
 export function createCollectionService(db: Database): CollectionService {
   function toCollection(row: typeof collections.$inferSelect): Collection {
     return {
       id: row.id,
+      slug: row.slug,
       title: row.title,
-      path: row.path,
       description: row.description,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
-  }
-
-  function toPost(row: typeof posts.$inferSelect): Post {
-    return {
-      id: row.id,
-      type: row.type as Post["type"],
-      visibility: row.visibility as Post["visibility"],
-      title: row.title,
-      path: row.path,
-      content: row.content,
-      contentHtml: row.contentHtml,
-      sourceUrl: row.sourceUrl,
-      sourceName: row.sourceName,
-      sourceDomain: row.sourceDomain,
-      replyToId: row.replyToId,
-      threadId: row.threadId,
-      deletedAt: row.deletedAt,
-      publishedAt: row.publishedAt,
+      icon: row.icon,
+      sortOrder: row.sortOrder as SortOrder,
+      position: row.position,
+      showDivider: row.showDivider,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -79,11 +53,11 @@ export function createCollectionService(db: Database): CollectionService {
       return result[0] ? toCollection(result[0]) : null;
     },
 
-    async getByPath(path) {
+    async getBySlug(slug) {
       const result = await db
         .select()
         .from(collections)
-        .where(eq(collections.path, path))
+        .where(eq(collections.slug, slug))
         .limit(1);
       return result[0] ? toCollection(result[0]) : null;
     },
@@ -92,19 +66,32 @@ export function createCollectionService(db: Database): CollectionService {
       const rows = await db
         .select()
         .from(collections)
-        .orderBy(desc(collections.createdAt));
+        .orderBy(asc(collections.position), desc(collections.createdAt));
       return rows.map(toCollection);
     },
 
     async create(data) {
       const timestamp = now();
 
+      let position = data.position;
+      if (position === undefined) {
+        const maxResult = await db
+          .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
+          .from(collections);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- aggregate always returns one row
+        position = maxResult[0]!.maxPos + 1;
+      }
+
       const result = await db
         .insert(collections)
         .values({
+          slug: data.slug,
           title: data.title,
-          path: data.path || null,
           description: data.description ?? null,
+          icon: data.icon ?? null,
+          sortOrder: data.sortOrder ?? "newest",
+          position,
+          showDivider: data.showDivider ? 1 : 0,
           createdAt: timestamp,
           updatedAt: timestamp,
         })
@@ -124,9 +111,14 @@ export function createCollectionService(db: Database): CollectionService {
       };
 
       if (data.title !== undefined) updates.title = data.title;
-      if (data.path !== undefined) updates.path = data.path;
+      if (data.slug !== undefined) updates.slug = data.slug;
       if (data.description !== undefined)
         updates.description = data.description;
+      if (data.icon !== undefined) updates.icon = data.icon;
+      if (data.sortOrder !== undefined) updates.sortOrder = data.sortOrder;
+      if (data.position !== undefined) updates.position = data.position;
+      if (data.showDivider !== undefined)
+        updates.showDivider = data.showDivider ? 1 : 0;
 
       const result = await db
         .update(collections)
@@ -138,10 +130,11 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async delete(id) {
-      // Delete all post-collection relationships first
+      // Clear collection_id on posts that belong to this collection
       await db
-        .delete(postCollections)
-        .where(eq(postCollections.collectionId, id));
+        .update(posts)
+        .set({ collectionId: null })
+        .where(eq(posts.collectionId, id));
 
       const result = await db
         .delete(collections)
@@ -150,71 +143,36 @@ export function createCollectionService(db: Database): CollectionService {
       return result.length > 0;
     },
 
-    async addPost(collectionId, postId) {
+    async reorder(ids) {
       const timestamp = now();
+      for (let i = 0; i < ids.length; i++) {
+        await db
+          .update(collections)
+          .set({ position: i, updatedAt: timestamp })
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- loop index guarantees element exists
+          .where(eq(collections.id, ids[i]!));
+      }
+    },
 
-      // Upsert the relationship
-      await db
-        .insert(postCollections)
-        .values({
-          postId,
-          collectionId,
-          addedAt: timestamp,
+    async getPostCounts() {
+      const rows = await db
+        .select({
+          collectionId: posts.collectionId,
+          count: sql<number>`count(*)`.as("count"),
         })
-        .onConflictDoNothing();
-    },
-
-    async removePost(collectionId, postId) {
-      await db
-        .delete(postCollections)
+        .from(posts)
         .where(
-          and(
-            eq(postCollections.collectionId, collectionId),
-            eq(postCollections.postId, postId),
-          ),
-        );
-    },
-
-    async getPosts(collectionId) {
-      const rows = await db
-        .select({ post: posts })
-        .from(postCollections)
-        .innerJoin(posts, eq(postCollections.postId, posts.id))
-        .where(eq(postCollections.collectionId, collectionId))
-        .orderBy(desc(postCollections.addedAt));
-
-      return rows.map((r) => toPost(r.post));
-    },
-
-    async getCollectionsForPost(postId) {
-      const rows = await db
-        .select({ collection: collections })
-        .from(postCollections)
-        .innerJoin(
-          collections,
-          eq(postCollections.collectionId, collections.id),
+          sql`${posts.collectionId} IS NOT NULL AND ${posts.deletedAt} IS NULL`,
         )
-        .where(eq(postCollections.postId, postId));
+        .groupBy(posts.collectionId);
 
-      return rows.map((r) => toCollection(r.collection));
-    },
-
-    async syncPostCollections(postId, collectionIds) {
-      const current = await this.getCollectionsForPost(postId);
-      const currentIds = new Set(current.map((c) => c.id));
-      const desiredIds = new Set(collectionIds);
-
-      const toAdd = collectionIds.filter((id) => !currentIds.has(id));
-      const toRemove = current
-        .map((c) => c.id)
-        .filter((id) => !desiredIds.has(id));
-
-      for (const collectionId of toAdd) {
-        await this.addPost(collectionId, postId);
+      const counts = new Map<number, number>();
+      for (const row of rows) {
+        if (row.collectionId !== null) {
+          counts.set(row.collectionId, row.count);
+        }
       }
-      for (const collectionId of toRemove) {
-        await this.removePost(collectionId, postId);
-      }
+      return counts;
     },
   };
 }

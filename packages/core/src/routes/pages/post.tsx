@@ -19,24 +19,15 @@ export const postRoutes = new Hono<Env>();
 postRoutes.get("/:id", async (c) => {
   const paramId = c.req.param("id");
 
-  // Try to decode as sqid first
-  let id = sqid.decode(paramId);
-
-  // If not a valid sqid, try to find by path
-  if (!id) {
-    const post = await c.var.services.posts.getByPath(paramId);
-    if (post) {
-      id = post.id;
-    }
-  }
-
+  // Decode sqid to numeric ID
+  const id = sqid.decode(paramId);
   if (!id) return c.notFound();
 
   const post = await c.var.services.posts.getById(id);
   if (!post) return c.notFound();
 
   // Don't show drafts on public site
-  if (post.visibility === "draft") {
+  if (post.status === "draft") {
     return c.notFound();
   }
 
@@ -64,7 +55,7 @@ postRoutes.get("/:id", async (c) => {
 
   return renderPublicPage(c, {
     title,
-    description: post.content?.slice(0, 160),
+    description: post.body?.slice(0, 160),
     navData,
     content: <Page post={postView} theme={components} />,
   });

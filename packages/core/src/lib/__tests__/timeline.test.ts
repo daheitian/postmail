@@ -30,15 +30,13 @@ describe("Timeline data assembly", () => {
 
   it("assembles timeline items with media attachments", async () => {
     const post = await postService.create({
-      type: "note",
-      content: "Hello",
-      visibility: "featured",
+      format: "note",
+      body: "Hello",
     });
 
     const posts = await postService.list({
-      visibility: ["featured", "quiet"],
+      status: "published",
       excludeReplies: true,
-      excludeTypes: ["page"],
       limit: 21,
     });
 
@@ -61,25 +59,23 @@ describe("Timeline data assembly", () => {
 
   it("identifies thread roots and builds thread previews", async () => {
     const root = await postService.create({
-      type: "note",
-      content: "Thread root",
-      visibility: "featured",
+      format: "note",
+      body: "Thread root",
     });
     await postService.create({
-      type: "note",
-      content: "Reply 1",
+      format: "note",
+      body: "Reply 1",
       replyToId: root.id,
     });
     await postService.create({
-      type: "note",
-      content: "Reply 2",
+      format: "note",
+      body: "Reply 2",
       replyToId: root.id,
     });
 
     const posts = await postService.list({
-      visibility: ["featured", "quiet"],
+      status: "published",
       excludeReplies: true,
-      excludeTypes: ["page"],
       limit: 21,
     });
 
@@ -97,7 +93,7 @@ describe("Timeline data assembly", () => {
     const threadPreviews = await postService.getThreadPreviews(threadRootIds);
     const replies = threadPreviews.get(root.id);
     expect(replies).toHaveLength(2);
-    expect(replies?.[0]?.content).toBe("Reply 1");
+    expect(replies?.[0]?.body).toBe("Reply 1");
 
     // Assemble items
     const rawMediaMap = await mediaService.getByPostIds(postIds);
@@ -134,50 +130,25 @@ describe("Timeline data assembly", () => {
     expect(items[0]?.threadPreview?.totalReplyCount).toBe(2);
   });
 
-  it("excludes pages from timeline", async () => {
-    await postService.create({
-      type: "note",
-      content: "A note",
-      visibility: "quiet",
-    });
-    await postService.create({
-      type: "page",
-      content: "A page",
-      visibility: "quiet",
-    });
-
-    const posts = await postService.list({
-      visibility: ["featured", "quiet"],
-      excludeReplies: true,
-      excludeTypes: ["page"],
-      limit: 21,
-    });
-
-    expect(posts).toHaveLength(1);
-    expect(posts[0]?.type).toBe("note");
-  });
-
   it("excludes replies from top-level list", async () => {
     const root = await postService.create({
-      type: "note",
-      content: "Root",
-      visibility: "quiet",
+      format: "note",
+      body: "Root",
     });
     await postService.create({
-      type: "note",
-      content: "Reply",
+      format: "note",
+      body: "Reply",
       replyToId: root.id,
     });
 
     const posts = await postService.list({
-      visibility: ["featured", "quiet"],
+      status: "published",
       excludeReplies: true,
-      excludeTypes: ["page"],
       limit: 21,
     });
 
     expect(posts).toHaveLength(1);
-    expect(posts[0]?.content).toBe("Root");
+    expect(posts[0]?.body).toBe("Root");
   });
 
   it("supports cursor pagination for load more", async () => {
@@ -185,9 +156,8 @@ describe("Timeline data assembly", () => {
     for (let i = 0; i < 5; i++) {
       posts.push(
         await postService.create({
-          type: "note",
-          content: `Post ${i}`,
-          visibility: "quiet",
+          format: "note",
+          body: `Post ${i}`,
           publishedAt: 1000 + i,
         }),
       );
@@ -195,9 +165,8 @@ describe("Timeline data assembly", () => {
 
     // First page
     const page1 = await postService.list({
-      visibility: ["featured", "quiet"],
+      status: "published",
       excludeReplies: true,
-      excludeTypes: ["page"],
       limit: 3,
     });
     expect(page1).toHaveLength(3);
@@ -206,9 +175,8 @@ describe("Timeline data assembly", () => {
     const lastPost = page1[page1.length - 1];
     expect(lastPost).toBeDefined();
     const page2 = await postService.list({
-      visibility: ["featured", "quiet"],
+      status: "published",
       excludeReplies: true,
-      excludeTypes: ["page"],
       limit: 3,
       cursor: lastPost?.id,
     });
@@ -219,18 +187,16 @@ describe("Timeline data assembly", () => {
   it("correctly determines hasMore flag", async () => {
     for (let i = 0; i < 3; i++) {
       await postService.create({
-        type: "note",
-        content: `Post ${i}`,
-        visibility: "quiet",
+        format: "note",
+        body: `Post ${i}`,
       });
     }
 
     // Request limit + 1 to check for more
     const pageSize = 2;
     const posts = await postService.list({
-      visibility: ["featured", "quiet"],
+      status: "published",
       excludeReplies: true,
-      excludeTypes: ["page"],
       limit: pageSize + 1,
     });
 
@@ -248,8 +214,10 @@ describe("groupByDate", () => {
       post: {
         id: 1,
         permalink: "/p/1",
-        type: "note",
-        visibility: "featured",
+        format: "note",
+        status: "published",
+        featured: true,
+        pinned: false,
         publishedAt: `${dateStr}T12:00:00.000Z`,
         publishedAtFormatted: formatted,
         publishedAtTime: "12:00",

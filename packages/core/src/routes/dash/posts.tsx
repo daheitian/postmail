@@ -53,7 +53,7 @@ function NewPostContent({ collections }: { collections: Collection[] }) {
 // List posts
 postsRoutes.get("/", async (c) => {
   const posts = await c.var.services.posts.list({
-    visibility: ["featured", "quiet", "unlisted", "draft"],
+    excludeReplies: true,
   });
   const siteName = await getSiteName(c);
 
@@ -89,38 +89,37 @@ postsRoutes.get("/new", async (c) => {
 // Create post
 postsRoutes.post("/", async (c) => {
   const body = await c.req.json<{
-    type: string;
+    format: string;
     title?: string;
-    content: string;
-    visibility: string;
-    sourceUrl?: string;
-    sourceName?: string;
-    path?: string;
+    body: string;
+    status: string;
+    featured?: boolean;
+    pinned?: boolean;
+    slug?: string;
+    url?: string;
+    quoteText?: string;
+    rating?: number;
+    collectionId?: number;
     mediaIds?: string[];
-    collectionIds?: number[];
   }>();
 
   const post = await c.var.services.posts.create({
-    type: body.type as Post["type"],
+    format: body.format as Post["format"],
     title: body.title || undefined,
-    content: body.content,
-    visibility: body.visibility as Post["visibility"],
-    sourceUrl: body.sourceUrl || undefined,
-    sourceName: body.sourceName || undefined,
-    path: body.path || undefined,
+    body: body.body,
+    status: body.status as Post["status"],
+    featured: body.featured,
+    pinned: body.pinned,
+    slug: body.slug || undefined,
+    url: body.url || undefined,
+    quoteText: body.quoteText || undefined,
+    rating: body.rating || undefined,
+    collectionId: body.collectionId || undefined,
   });
 
   // Attach media if provided
   if (body.mediaIds && body.mediaIds.length > 0) {
     await c.var.services.media.attachToPost(post.id, body.mediaIds);
-  }
-
-  // Sync collection associations
-  if (body.collectionIds) {
-    await c.var.services.collections.syncPostCollections(
-      post.id,
-      body.collectionIds,
-    );
   }
 
   return dsRedirect(`/dash/posts/${sqid.encode(post.id)}`);
@@ -132,6 +131,7 @@ function ViewPostContent({ post }: { post: Post }) {
     message: "Post",
     comment: "@context: Default post title",
   });
+  const permalink = post.slug ? `/${post.slug}` : `/p/${sqid.encode(post.id)}`;
 
   return (
     <>
@@ -143,7 +143,7 @@ function ViewPostContent({ post }: { post: Post }) {
             message: "Edit",
             comment: "@context: Button to edit post",
           })}
-          viewHref={`/p/${sqid.encode(post.id)}`}
+          viewHref={permalink}
           viewLabel={t({
             message: "View",
             comment: "@context: Button to view post",
@@ -155,7 +155,7 @@ function ViewPostContent({ post }: { post: Post }) {
         <section>
           <div
             class="prose"
-            dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
+            dangerouslySetInnerHTML={{ __html: post.bodyHtml || "" }}
           />
         </section>
       </div>
@@ -170,7 +170,6 @@ function EditPostContent({
   imageTransformUrl,
   s3PublicUrl,
   collections,
-  postCollectionIds,
 }: {
   post: Post;
   mediaAttachments: Media[];
@@ -178,7 +177,6 @@ function EditPostContent({
   imageTransformUrl?: string;
   s3PublicUrl?: string;
   collections: Collection[];
-  postCollectionIds: number[];
 }) {
   const { t } = useLingui();
   return (
@@ -194,7 +192,6 @@ function EditPostContent({
         imageTransformUrl={imageTransformUrl}
         s3PublicUrl={s3PublicUrl}
         collections={collections}
-        postCollectionIds={postCollectionIds}
       />
     </>
   );
@@ -237,9 +234,6 @@ postsRoutes.get("/:id/edit", async (c) => {
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
   const s3PublicUrl = c.env.S3_PUBLIC_URL;
   const collections = await c.var.services.collections.list();
-  const postCollections =
-    await c.var.services.collections.getCollectionsForPost(post.id);
-  const postCollectionIds = postCollections.map((col) => col.id);
 
   return c.html(
     <DashLayout
@@ -255,7 +249,6 @@ postsRoutes.get("/:id/edit", async (c) => {
         imageTransformUrl={imageTransformUrl}
         s3PublicUrl={s3PublicUrl}
         collections={collections}
-        postCollectionIds={postCollectionIds}
       />
     </DashLayout>,
   );
@@ -267,38 +260,37 @@ postsRoutes.post("/:id", async (c) => {
   if (!id) return c.notFound();
 
   const body = await c.req.json<{
-    type: string;
+    format: string;
     title?: string;
-    content?: string;
-    visibility: string;
-    sourceUrl?: string;
-    sourceName?: string;
-    path?: string;
+    body?: string;
+    status: string;
+    featured?: boolean;
+    pinned?: boolean;
+    slug?: string;
+    url?: string;
+    quoteText?: string;
+    rating?: number;
+    collectionId?: number;
     mediaIds?: string[];
-    collectionIds?: number[];
   }>();
 
   await c.var.services.posts.update(id, {
-    type: body.type as Post["type"],
+    format: body.format as Post["format"],
     title: body.title || null,
-    content: body.content || null,
-    visibility: body.visibility as Post["visibility"],
-    sourceUrl: body.sourceUrl || null,
-    sourceName: body.sourceName || null,
-    path: body.path || null,
+    body: body.body || null,
+    status: body.status as Post["status"],
+    featured: body.featured,
+    pinned: body.pinned,
+    slug: body.slug || null,
+    url: body.url || null,
+    quoteText: body.quoteText || null,
+    rating: body.rating || null,
+    collectionId: body.collectionId || null,
   });
 
   // Update media attachments if provided
   if (body.mediaIds !== undefined) {
     await c.var.services.media.attachToPost(id, body.mediaIds);
-  }
-
-  // Sync collection associations
-  if (body.collectionIds !== undefined) {
-    await c.var.services.collections.syncPostCollections(
-      id,
-      body.collectionIds,
-    );
   }
 
   return dsRedirect(`/dash/posts/${sqid.encode(id)}`);

@@ -7,6 +7,7 @@
  */
 export const RESERVED_PATHS = [
   "featured",
+  "collections",
   "signin",
   "signout",
   "setup",
@@ -15,10 +16,6 @@ export const RESERVED_PATHS = [
   "feed",
   "search",
   "archive",
-  "notes",
-  "articles",
-  "links",
-  "quotes",
   "media",
   "pages",
   "reset",

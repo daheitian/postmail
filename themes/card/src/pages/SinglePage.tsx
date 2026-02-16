@@ -16,7 +16,7 @@ export const SinglePage: FC<SinglePageProps> = ({ page }) => {
 
       <div
         class="e-content prose"
-        dangerouslySetInnerHTML={{ __html: page.contentHtml || "" }}
+        dangerouslySetInnerHTML={{ __html: page.bodyHtml || "" }}
       />
     </article>
   );

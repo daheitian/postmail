@@ -7,7 +7,7 @@
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
-import type { NavLinkView, SiteLayoutProps } from "../../types.js";
+import type { NavItemView, SiteLayoutProps } from "../../types.js";
 
 /** Map known URL paths to SVG icons. Size 26x26 matching Threads' nav icons. */
 function NavIcon({ url, isActive }: { url: string; isActive: boolean }) {
@@ -128,7 +128,7 @@ function NavIcon({ url, isActive }: { url: string; isActive: boolean }) {
   );
 }
 
-function SidebarLink({ link }: { link: NavLinkView }) {
+function SidebarLink({ link }: { link: NavItemView }) {
   return (
     <a
       href={link.url}
@@ -143,7 +143,7 @@ function SidebarLink({ link }: { link: NavLinkView }) {
   );
 }
 
-function MobileTabLink({ link }: { link: NavLinkView }) {
+function MobileTabLink({ link }: { link: NavItemView }) {
   return (
     <a
       href={link.url}

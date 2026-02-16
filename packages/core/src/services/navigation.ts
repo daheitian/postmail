@@ -1,42 +1,37 @@
 /**
- * Navigation Link Service
+ * Nav Item Service (v2)
  *
- * Manages navigation links displayed on public pages
+ * Manages navigation items (page links and external links)
  */
 
 import { eq, asc, sql } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { navigationLinks } from "../db/schema.js";
+import { navItems } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type {
-  NavigationLink,
-  CreateNavigationLink,
-  UpdateNavigationLink,
+  NavItem,
+  NavItemType,
+  CreateNavItem,
+  UpdateNavItem,
 } from "../types.js";
 
-export interface NavigationLinkService {
-  list(): Promise<NavigationLink[]>;
-  getById(id: number): Promise<NavigationLink | null>;
-  create(data: CreateNavigationLink): Promise<NavigationLink>;
-  update(
-    id: number,
-    data: UpdateNavigationLink,
-  ): Promise<NavigationLink | null>;
+export interface NavItemService {
+  list(): Promise<NavItem[]>;
+  getById(id: number): Promise<NavItem | null>;
+  create(data: CreateNavItem): Promise<NavItem>;
+  update(id: number, data: UpdateNavItem): Promise<NavItem | null>;
   delete(id: number): Promise<boolean>;
   reorder(ids: number[]): Promise<void>;
-  ensureDefaults(): Promise<NavigationLink[]>;
 }
 
-export function createNavigationLinkService(
-  db: Database,
-): NavigationLinkService {
-  function toNavigationLink(
-    row: typeof navigationLinks.$inferSelect,
-  ): NavigationLink {
+export function createNavItemService(db: Database): NavItemService {
+  function toNavItem(row: typeof navItems.$inferSelect): NavItem {
     return {
       id: row.id,
+      type: row.type as NavItemType,
       label: row.label,
       url: row.url,
+      pageId: row.pageId,
       position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -47,18 +42,18 @@ export function createNavigationLinkService(
     async list() {
       const rows = await db
         .select()
-        .from(navigationLinks)
-        .orderBy(asc(navigationLinks.position));
-      return rows.map(toNavigationLink);
+        .from(navItems)
+        .orderBy(asc(navItems.position));
+      return rows.map(toNavItem);
     },
 
     async getById(id) {
       const result = await db
         .select()
-        .from(navigationLinks)
-        .where(eq(navigationLinks.id, id))
+        .from(navItems)
+        .where(eq(navItems.id, id))
         .limit(1);
-      return result[0] ? toNavigationLink(result[0]) : null;
+      return result[0] ? toNavItem(result[0]) : null;
     },
 
     async create(data) {
@@ -68,16 +63,18 @@ export function createNavigationLinkService(
       if (position === undefined) {
         const maxResult = await db
           .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
-          .from(navigationLinks);
+          .from(navItems);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- aggregate always returns one row
         position = maxResult[0]!.maxPos + 1;
       }
 
       const result = await db
-        .insert(navigationLinks)
+        .insert(navItems)
         .values({
+          type: data.type,
           label: data.label,
           url: data.url,
+          pageId: data.pageId ?? null,
           position,
           createdAt: timestamp,
           updatedAt: timestamp,
@@ -85,36 +82,38 @@ export function createNavigationLinkService(
         .returning();
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toNavigationLink(result[0]!);
+      return toNavItem(result[0]!);
     },
 
     async update(id, data) {
       const existing = await db
         .select()
-        .from(navigationLinks)
-        .where(eq(navigationLinks.id, id))
+        .from(navItems)
+        .where(eq(navItems.id, id))
         .limit(1);
       if (!existing[0]) return null;
 
       const timestamp = now();
       const result = await db
-        .update(navigationLinks)
+        .update(navItems)
         .set({
+          ...(data.type !== undefined && { type: data.type }),
           ...(data.label !== undefined && { label: data.label }),
           ...(data.url !== undefined && { url: data.url }),
+          ...(data.pageId !== undefined && { pageId: data.pageId }),
           ...(data.position !== undefined && { position: data.position }),
           updatedAt: timestamp,
         })
-        .where(eq(navigationLinks.id, id))
+        .where(eq(navItems.id, id))
         .returning();
 
-      return result[0] ? toNavigationLink(result[0]) : null;
+      return result[0] ? toNavItem(result[0]) : null;
     },
 
     async delete(id) {
       const result = await db
-        .delete(navigationLinks)
-        .where(eq(navigationLinks.id, id))
+        .delete(navItems)
+        .where(eq(navItems.id, id))
         .returning();
       return result.length > 0;
     },
@@ -123,43 +122,11 @@ export function createNavigationLinkService(
       const timestamp = now();
       for (let i = 0; i < ids.length; i++) {
         await db
-          .update(navigationLinks)
+          .update(navItems)
           .set({ position: i, updatedAt: timestamp })
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- loop index guarantees element exists
-          .where(eq(navigationLinks.id, ids[i]!));
+          .where(eq(navItems.id, ids[i]!));
       }
-    },
-
-    async ensureDefaults() {
-      const existing = await db.select().from(navigationLinks).limit(1);
-      if (existing.length > 0) {
-        const rows = await db
-          .select()
-          .from(navigationLinks)
-          .orderBy(asc(navigationLinks.position));
-        return rows.map(toNavigationLink);
-      }
-
-      const timestamp = now();
-      const defaults = [
-        { label: "Home", url: "/", position: 0 },
-        { label: "Archive", url: "/archive", position: 1 },
-        { label: "RSS", url: "/feed", position: 2 },
-      ];
-
-      for (const link of defaults) {
-        await db.insert(navigationLinks).values({
-          ...link,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-        });
-      }
-
-      const rows = await db
-        .select()
-        .from(navigationLinks)
-        .orderBy(asc(navigationLinks.position));
-      return rows.map(toNavigationLink);
     },
   };
 }

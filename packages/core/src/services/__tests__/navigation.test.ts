@@ -1,34 +1,61 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
-import { createNavigationLinkService } from "../navigation.js";
+import { createNavItemService } from "../navigation.js";
+import { createPageService } from "../page.js";
 import type { Database } from "../../db/index.js";
 
-describe("NavigationLinkService", () => {
+describe("NavItemService", () => {
   let db: Database;
-  let navigationService: ReturnType<typeof createNavigationLinkService>;
+  let navItemService: ReturnType<typeof createNavItemService>;
+  let pageService: ReturnType<typeof createPageService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    navigationService = createNavigationLinkService(db);
+    navItemService = createNavItemService(db);
+    pageService = createPageService(db);
   });
 
   describe("create", () => {
-    it("creates a navigation link with auto-assigned position", async () => {
-      const link = await navigationService.create({
+    it("creates a nav item with auto-assigned position", async () => {
+      const item = await navItemService.create({
+        type: "link",
         label: "Home",
         url: "/",
       });
 
-      expect(link.label).toBe("Home");
-      expect(link.url).toBe("/");
-      expect(link.position).toBe(0);
-      expect(link.id).toBe(1);
+      expect(item.type).toBe("link");
+      expect(item.label).toBe("Home");
+      expect(item.url).toBe("/");
+      expect(item.pageId).toBeNull();
+      expect(item.position).toBe(0);
+      expect(item.id).toBe(1);
     });
 
-    it("auto-increments position for subsequent links", async () => {
-      await navigationService.create({ label: "Home", url: "/" });
-      const second = await navigationService.create({
+    it("creates a page-type nav item with pageId", async () => {
+      const page = await pageService.create({ slug: "about", title: "About" });
+
+      const item = await navItemService.create({
+        type: "page",
+        label: "About",
+        url: "/about",
+        pageId: page.id,
+      });
+
+      expect(item.type).toBe("page");
+      expect(item.label).toBe("About");
+      expect(item.url).toBe("/about");
+      expect(item.pageId).toBe(page.id);
+    });
+
+    it("auto-increments position for subsequent items", async () => {
+      await navItemService.create({
+        type: "link",
+        label: "Home",
+        url: "/",
+      });
+      const second = await navItemService.create({
+        type: "link",
         label: "Archive",
         url: "/archive",
       });
@@ -37,87 +64,130 @@ describe("NavigationLinkService", () => {
     });
 
     it("uses provided position when specified", async () => {
-      const link = await navigationService.create({
+      const item = await navItemService.create({
+        type: "link",
         label: "Home",
         url: "/",
         position: 5,
       });
 
-      expect(link.position).toBe(5);
+      expect(item.position).toBe(5);
     });
-  });
 
-  describe("getById", () => {
-    it("returns a link by ID", async () => {
-      const created = await navigationService.create({
+    it("sets createdAt and updatedAt timestamps", async () => {
+      const item = await navItemService.create({
+        type: "link",
         label: "Home",
         url: "/",
       });
 
-      const found = await navigationService.getById(created.id);
+      expect(item.createdAt).toBeGreaterThan(0);
+      expect(item.updatedAt).toBeGreaterThan(0);
+      expect(item.createdAt).toBe(item.updatedAt);
+    });
+  });
+
+  describe("getById", () => {
+    it("returns a nav item by ID", async () => {
+      const created = await navItemService.create({
+        type: "link",
+        label: "Home",
+        url: "/",
+      });
+
+      const found = await navItemService.getById(created.id);
       expect(found).not.toBeNull();
       expect(found?.label).toBe("Home");
+      expect(found?.type).toBe("link");
     });
 
     it("returns null for non-existent ID", async () => {
-      const found = await navigationService.getById(9999);
+      const found = await navItemService.getById(9999);
       expect(found).toBeNull();
     });
   });
 
   describe("list", () => {
-    it("returns empty array when no links exist", async () => {
-      const links = await navigationService.list();
-      expect(links).toEqual([]);
+    it("returns empty array when no items exist", async () => {
+      const items = await navItemService.list();
+      expect(items).toEqual([]);
     });
 
-    it("returns links ordered by position", async () => {
-      await navigationService.create({
+    it("returns items ordered by position", async () => {
+      await navItemService.create({
+        type: "link",
         label: "C",
         url: "/c",
         position: 2,
       });
-      await navigationService.create({
+      await navItemService.create({
+        type: "link",
         label: "A",
         url: "/a",
         position: 0,
       });
-      await navigationService.create({
+      await navItemService.create({
+        type: "page",
         label: "B",
         url: "/b",
         position: 1,
       });
 
-      const links = await navigationService.list();
-      expect(links).toHaveLength(3);
-      expect(links[0]?.label).toBe("A");
-      expect(links[1]?.label).toBe("B");
-      expect(links[2]?.label).toBe("C");
+      const items = await navItemService.list();
+      expect(items).toHaveLength(3);
+      expect(items[0]?.label).toBe("A");
+      expect(items[1]?.label).toBe("B");
+      expect(items[2]?.label).toBe("C");
+    });
+
+    it("returns items with correct types", async () => {
+      const page = await pageService.create({ slug: "about", title: "About" });
+
+      await navItemService.create({
+        type: "link",
+        label: "External",
+        url: "https://example.com",
+      });
+      await navItemService.create({
+        type: "page",
+        label: "About",
+        url: "/about",
+        pageId: page.id,
+      });
+
+      const items = await navItemService.list();
+      expect(items).toHaveLength(2);
+      expect(items[0]?.type).toBe("link");
+      expect(items[1]?.type).toBe("page");
+      expect(items[1]?.pageId).toBe(page.id);
     });
   });
 
   describe("update", () => {
-    it("updates a link's label", async () => {
-      const created = await navigationService.create({
+    it("updates a nav item's label", async () => {
+      const created = await navItemService.create({
+        type: "link",
         label: "Home",
         url: "/",
       });
 
-      const updated = await navigationService.update(created.id, {
+      const updated = await navItemService.update(created.id, {
         label: "Main Page",
       });
 
       expect(updated?.label).toBe("Main Page");
       expect(updated?.url).toBe("/");
+      expect(updated?.type).toBe("link");
     });
 
-    it("updates a link's url", async () => {
-      const created = await navigationService.create({
+    it("updates a nav item's url", async () => {
+      const created = await navItemService.create({
+        type: "link",
         label: "Blog",
         url: "/blog",
       });
 
-      const updated = await navigationService.update(created.id, {
+      const updated = await navItemService.update(created.id, {
         url: "/posts",
       });
 
@@ -125,89 +195,93 @@ describe("NavigationLinkService", () => {
       expect(updated?.label).toBe("Blog");
     });
 
+    it("updates a nav item's type", async () => {
+      const page = await pageService.create({ slug: "about", title: "About" });
+
+      const created = await navItemService.create({
+        type: "link",
+        label: "About",
+        url: "/about",
+      });
+
+      const updated = await navItemService.update(created.id, {
+        type: "page",
+        pageId: page.id,
+      });
+
+      expect(updated?.type).toBe("page");
+      expect(updated?.pageId).toBe(page.id);
+    });
+
+    it("updates updatedAt timestamp", async () => {
+      const created = await navItemService.create({
+        type: "link",
+        label: "Home",
+        url: "/",
+      });
+
+      const updated = await navItemService.update(created.id, {
+        label: "Updated",
+      });
+
+      expect(updated?.updatedAt).toBeGreaterThanOrEqual(created.updatedAt);
+    });
+
     it("returns null for non-existent ID", async () => {
-      const result = await navigationService.update(9999, { label: "Nope" });
+      const result = await navItemService.update(9999, { label: "Nope" });
       expect(result).toBeNull();
     });
   });
 
   describe("delete", () => {
-    it("deletes a link by ID", async () => {
-      const link = await navigationService.create({
+    it("deletes a nav item by ID", async () => {
+      const item = await navItemService.create({
+        type: "link",
         label: "Home",
         url: "/",
       });
-      const result = await navigationService.delete(link.id);
+      const result = await navItemService.delete(item.id);
 
       expect(result).toBe(true);
 
-      const found = await navigationService.getById(link.id);
+      const found = await navItemService.getById(item.id);
       expect(found).toBeNull();
     });
 
     it("returns false for non-existent ID", async () => {
-      const result = await navigationService.delete(9999);
+      const result = await navItemService.delete(9999);
       expect(result).toBe(false);
     });
   });
 
   describe("reorder", () => {
     it("updates positions to match array order", async () => {
-      const a = await navigationService.create({
+      const a = await navItemService.create({
+        type: "link",
         label: "A",
         url: "/a",
       });
-      const b = await navigationService.create({
+      const b = await navItemService.create({
+        type: "link",
         label: "B",
         url: "/b",
       });
-      const c = await navigationService.create({
+      const c = await navItemService.create({
+        type: "link",
         label: "C",
         url: "/c",
       });
 
       // Reverse the order
-      await navigationService.reorder([c.id, b.id, a.id]);
+      await navItemService.reorder([c.id, b.id, a.id]);
 
-      const links = await navigationService.list();
-      expect(links[0]?.label).toBe("C");
-      expect(links[0]?.position).toBe(0);
-      expect(links[1]?.label).toBe("B");
-      expect(links[1]?.position).toBe(1);
-      expect(links[2]?.label).toBe("A");
-      expect(links[2]?.position).toBe(2);
-    });
-  });
-
-  describe("ensureDefaults", () => {
-    it("creates default links when table is empty", async () => {
-      const links = await navigationService.ensureDefaults();
-
-      expect(links).toHaveLength(3);
-      expect(links[0]?.label).toBe("Home");
-      expect(links[0]?.url).toBe("/");
-      expect(links[1]?.label).toBe("Archive");
-      expect(links[1]?.url).toBe("/archive");
-      expect(links[2]?.label).toBe("RSS");
-      expect(links[2]?.url).toBe("/feed");
-    });
-
-    it("returns existing links without creating new ones", async () => {
-      await navigationService.create({ label: "Custom", url: "/custom" });
-
-      const links = await navigationService.ensureDefaults();
-
-      expect(links).toHaveLength(1);
-      expect(links[0]?.label).toBe("Custom");
-    });
-
-    it("is idempotent - calling twice returns same result", async () => {
-      const first = await navigationService.ensureDefaults();
-      const second = await navigationService.ensureDefaults();
-
-      expect(first).toHaveLength(3);
-      expect(second).toHaveLength(3);
-      expect(first[0]?.id).toBe(second[0]?.id);
+      const items = await navItemService.list();
+      expect(items[0]?.label).toBe("C");
+      expect(items[0]?.position).toBe(0);
+      expect(items[1]?.label).toBe("B");
+      expect(items[1]?.position).toBe(1);
+      expect(items[2]?.label).toBe("A");
+      expect(items[2]?.position).toBe(2);
     });
   });
 });

@@ -50,9 +50,8 @@ export async function assembleTimeline(
 
   // Fetch one extra to determine if there are more
   const posts = await c.var.services.posts.list({
-    visibility: ["featured", "quiet"],
+    status: "published",
     excludeReplies: true,
-    excludeTypes: ["page"],
     limit: pageSize + 1,
     cursor: options?.cursor,
   });

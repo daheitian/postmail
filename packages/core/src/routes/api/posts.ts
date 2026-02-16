@@ -3,13 +3,13 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, PostType, Visibility, Media } from "../../types.js";
+import type { Bindings, Format, Status, Media } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import * as sqid from "../../lib/sqid.js";
 import {
   CreatePostSchema,
   UpdatePostSchema,
-  validateMediaForPostType,
+  validateMediaCount,
 } from "../../lib/schemas.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import {
@@ -59,14 +59,14 @@ function toMediaAttachment(
 
 // List posts
 postsApiRoutes.get("/", async (c) => {
-  const type = c.req.query("type") as PostType | undefined;
-  const visibility = c.req.query("visibility") as Visibility | undefined;
+  const format = c.req.query("format") as Format | undefined;
+  const status = c.req.query("status") as Status | undefined;
   const cursor = c.req.query("cursor");
   const limit = parseInt(c.req.query("limit") ?? "100", 10);
 
   const posts = await c.var.services.posts.list({
-    type,
-    visibility: visibility ? [visibility] : ["featured", "quiet"],
+    format,
+    status: status ?? "published",
     cursor: cursor ? (sqid.decode(cursor) ?? undefined) : undefined,
     limit,
   });
@@ -131,9 +131,9 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
   const body = parseResult.data;
 
-  // Validate media for post type
+  // Validate media count
   if (body.mediaIds) {
-    const mediaError = validateMediaForPostType(body.type, body.mediaIds);
+    const mediaError = validateMediaCount(body.mediaIds);
     if (mediaError) {
       return c.json({ error: mediaError }, 400);
     }
@@ -148,13 +148,17 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   }
 
   const post = await c.var.services.posts.create({
-    type: body.type,
+    format: body.format,
     title: body.title,
-    content: body.content,
-    visibility: body.visibility,
-    sourceUrl: body.sourceUrl || undefined,
-    sourceName: body.sourceName,
-    path: body.path || undefined,
+    body: body.body,
+    slug: body.slug || undefined,
+    status: body.status,
+    featured: body.featured,
+    pinned: body.pinned,
+    url: body.url || undefined,
+    quoteText: body.quoteText,
+    rating: body.rating || undefined,
+    collectionId: body.collectionId || undefined,
     replyToId: body.replyToId
       ? (sqid.decode(body.replyToId) ?? undefined)
       : undefined,
@@ -201,17 +205,9 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
   const body = parseResult.data;
 
-  // Validate media for post type if mediaIds is provided
+  // Validate media count if mediaIds is provided
   if (body.mediaIds !== undefined) {
-    // Need the post type — use the new type if provided, else fetch existing
-    let postType = body.type;
-    if (!postType) {
-      const existing = await c.var.services.posts.getById(id);
-      if (!existing) return c.json({ error: "Not found" }, 404);
-      postType = existing.type;
-    }
-
-    const mediaError = validateMediaForPostType(postType, body.mediaIds);
+    const mediaError = validateMediaCount(body.mediaIds);
     if (mediaError) {
       return c.json({ error: mediaError }, 400);
     }
@@ -226,13 +222,17 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   }
 
   const post = await c.var.services.posts.update(id, {
-    type: body.type,
+    format: body.format,
     title: body.title,
-    content: body.content,
-    visibility: body.visibility,
-    sourceUrl: body.sourceUrl,
-    sourceName: body.sourceName,
-    path: body.path,
+    body: body.body,
+    slug: body.slug,
+    status: body.status,
+    featured: body.featured,
+    pinned: body.pinned,
+    url: body.url,
+    quoteText: body.quoteText,
+    rating: body.rating || undefined,
+    collectionId: body.collectionId || undefined,
     publishedAt: body.publishedAt,
   });
 

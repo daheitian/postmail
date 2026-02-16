@@ -51,7 +51,7 @@ export function defaultRssRenderer(data: FeedData): string {
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
-      <description><![CDATA[${post.contentHtml || ""}]]></description>${enclosure}
+      <description><![CDATA[${post.bodyHtml || ""}]]></description>${enclosure}
     </item>`;
     })
     .join("");
@@ -90,7 +90,7 @@ export function defaultAtomRenderer(data: FeedData): string {
     <id>${link}</id>
     <published>${post.publishedAt}</published>
     <updated>${post.updatedAt}</updated>
-    <content type="html"><![CDATA[${post.contentHtml || ""}]]></content>
+    <content type="html"><![CDATA[${post.bodyHtml || ""}]]></content>
   </entry>`;
     })
     .join("");
@@ -112,23 +112,37 @@ export function defaultAtomRenderer(data: FeedData): string {
 /**
  * Default Sitemap renderer.
  *
- * @param data - Sitemap data with PostView[] (pre-computed URLs)
+ * @param data - Sitemap data with PostView[] and PageView[]
  * @returns Sitemap XML string
  */
 export function defaultSitemapRenderer(data: SitemapData): string {
-  const { siteUrl, posts } = data;
+  const { siteUrl, posts, pages } = data;
 
-  const urls = posts
+  const postUrls = posts
     .map((post) => {
       const loc = `${siteUrl}${post.permalink}`;
       const lastmod = post.updatedAt.split("T")[0];
-      const priority = post.visibility === "featured" ? "0.8" : "0.6";
+      const priority = post.featured ? "0.8" : "0.6";
 
       return `
   <url>
     <loc>${loc}</loc>
     <lastmod>${lastmod}</lastmod>
     <priority>${priority}</priority>
+  </url>`;
+    })
+    .join("");
+
+  const pageUrls = pages
+    .map((page) => {
+      const loc = `${siteUrl}/${page.slug}`;
+      const lastmod = page.updatedAt.split("T")[0];
+
+      return `
+  <url>
+    <loc>${loc}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <priority>0.7</priority>
   </url>`;
     })
     .join("");
@@ -143,6 +157,7 @@ export function defaultSitemapRenderer(data: SitemapData): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${homepageUrl}
-  ${urls}
+  ${postUrls}
+  ${pageUrls}
 </urlset>`;
 }

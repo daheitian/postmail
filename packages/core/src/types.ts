@@ -1,47 +1,33 @@
 /**
- * Jant Type Definitions
+ * Jant Type Definitions (v2)
  */
 
 // =============================================================================
 // Content Types
 // =============================================================================
 
-export const POST_TYPES = [
-  "note",
-  "article",
-  "link",
-  "quote",
-  "image",
-  "page",
+export const FORMATS = ["note", "link", "quote"] as const;
+export type Format = (typeof FORMATS)[number];
+
+export const STATUSES = ["draft", "published"] as const;
+export type Status = (typeof STATUSES)[number];
+
+export const SORT_ORDERS = [
+  "newest",
+  "oldest",
+  "rating_desc",
+  "rating_asc",
 ] as const;
-export type PostType = (typeof POST_TYPES)[number];
+export type SortOrder = (typeof SORT_ORDERS)[number];
+
+export const NAV_ITEM_TYPES = ["page", "link"] as const;
+export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
 
 export const MAX_MEDIA_ATTACHMENTS = 20;
-
-/**
- * Media attachment rules per post type.
- * Each entry is [min, max] or null (no media allowed).
- */
-export const POST_TYPE_MEDIA_RULES: Record<PostType, [number, number] | null> =
-  {
-    note: [0, 20],
-    article: [0, 20],
-    image: [1, 20],
-    link: [0, 1],
-    quote: [0, 20],
-    page: null,
-  };
+export const MAX_PINNED_POSTS = 3;
 
 export const STORAGE_DRIVERS = ["r2", "s3"] as const;
 export type StorageDriver = (typeof STORAGE_DRIVERS)[number];
-
-export const VISIBILITY_LEVELS = [
-  "featured",
-  "quiet",
-  "unlisted",
-  "draft",
-] as const;
-export type Visibility = (typeof VISIBILITY_LEVELS)[number];
 
 // =============================================================================
 // Cloudflare Bindings
@@ -83,8 +69,8 @@ export interface Bindings {
  * Add new fields here, and they'll automatically work everywhere.
  *
  * Priority logic:
- * - envOnly: false → User-configurable (DB > ENV > Default)
- * - envOnly: true → Environment-only (ENV > Default)
+ * - envOnly: false -> User-configurable (DB > ENV > Default)
+ * - envOnly: true -> Environment-only (ENV > Default)
  */
 export const CONFIG_FIELDS = {
   // User-configurable (can be modified in dashboard)
@@ -168,19 +154,33 @@ export type ConfigKey = keyof typeof CONFIG_FIELDS;
 
 export interface Post {
   id: number;
-  type: PostType;
-  visibility: Visibility;
+  format: Format;
+  status: Status;
+  featured: number; // 0 | 1
+  pinned: number; // 0 | 1
+  slug: string | null;
   title: string | null;
-  path: string | null;
-  content: string | null;
-  contentHtml: string | null;
-  sourceUrl: string | null;
-  sourceName: string | null;
-  sourceDomain: string | null;
+  url: string | null;
+  body: string | null;
+  bodyHtml: string | null;
+  quoteText: string | null;
+  rating: number | null;
+  collectionId: number | null;
   replyToId: number | null;
   threadId: number | null;
   deletedAt: number | null;
   publishedAt: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface Page {
+  id: number;
+  slug: string;
+  title: string | null;
+  body: string | null;
+  bodyHtml: string | null;
+  status: Status;
   createdAt: number;
   updatedAt: number;
 }
@@ -220,17 +220,26 @@ export interface PostWithMedia extends Post {
 
 export interface Collection {
   id: number;
+  slug: string;
   title: string;
-  path: string | null;
   description: string | null;
+  icon: string | null;
+  sortOrder: SortOrder;
+  position: number;
+  showDivider: number; // 0 | 1
   createdAt: number;
   updatedAt: number;
 }
 
-export interface PostCollection {
-  postId: number;
-  collectionId: number;
-  addedAt: number;
+export interface NavItem {
+  id: number;
+  type: NavItemType;
+  label: string;
+  url: string;
+  pageId: number | null;
+  position: number;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface Redirect {
@@ -247,54 +256,91 @@ export interface Setting {
   updatedAt: number;
 }
 
-export interface NavigationLink {
-  id: number;
-  label: string;
-  url: string;
-  position: number;
-  createdAt: number;
-  updatedAt: number;
-}
-
 // =============================================================================
 // Operation Types
 // =============================================================================
 
 export interface CreatePost {
-  type: PostType;
-  visibility?: Visibility;
+  format: Format;
+  status?: Status;
+  featured?: boolean;
+  pinned?: boolean;
+  slug?: string;
   title?: string;
-  path?: string;
-  content?: string;
-  sourceUrl?: string;
-  sourceName?: string;
+  url?: string;
+  body?: string;
+  quoteText?: string;
+  rating?: number;
+  collectionId?: number;
   replyToId?: number;
   publishedAt?: number;
   mediaIds?: string[];
 }
 
 export interface UpdatePost {
-  type?: PostType;
-  visibility?: Visibility;
+  format?: Format;
+  status?: Status;
+  featured?: boolean;
+  pinned?: boolean;
+  slug?: string | null;
   title?: string | null;
-  path?: string | null;
-  content?: string | null;
-  sourceUrl?: string | null;
-  sourceName?: string | null;
+  url?: string | null;
+  body?: string | null;
+  quoteText?: string | null;
+  rating?: number | null;
+  collectionId?: number | null;
   publishedAt?: number;
   mediaIds?: string[];
 }
 
-export interface CreateNavigationLink {
+export interface CreatePage {
+  slug: string;
+  title?: string;
+  body?: string;
+  status?: Status;
+}
+
+export interface UpdatePage {
+  slug?: string;
+  title?: string | null;
+  body?: string | null;
+  status?: Status;
+}
+
+export interface CreateNavItem {
+  type: NavItemType;
   label: string;
   url: string;
+  pageId?: number;
   position?: number;
 }
 
-export interface UpdateNavigationLink {
+export interface UpdateNavItem {
+  type?: NavItemType;
   label?: string;
   url?: string;
+  pageId?: number | null;
   position?: number;
+}
+
+export interface CreateCollection {
+  slug: string;
+  title: string;
+  description?: string;
+  icon?: string;
+  sortOrder?: SortOrder;
+  position?: number;
+  showDivider?: boolean;
+}
+
+export interface UpdateCollection {
+  slug?: string;
+  title?: string;
+  description?: string | null;
+  icon?: string | null;
+  sortOrder?: SortOrder;
+  position?: number;
+  showDivider?: boolean;
 }
 
 // =============================================================================
@@ -303,28 +349,42 @@ export interface UpdateNavigationLink {
 
 /**
  * Render-ready post data for theme components.
- * All fields are pre-computed — no lib/ imports needed.
+ * All fields are pre-computed -- no lib/ imports needed.
  */
 export interface PostView {
   // Identity
   id: number;
-  /** Pre-computed permalink, e.g. "/p/jR3k" */
+  /** Pre-computed permalink: "/{slug}" if slug set, otherwise "/p/{sqid}" */
   permalink: string;
+  /** Custom URL slug, if set */
+  slug?: string;
 
   // Content
   title?: string;
   /** Pre-sanitized HTML */
-  contentHtml?: string;
+  bodyHtml?: string;
   /** Pre-computed excerpt, max 160 chars */
   excerpt?: string;
+  /** HTML excerpt for article previews (paragraph-aware, ~500 chars) */
+  summaryHtml?: string;
+  /** Whether summaryHtml was truncated (content continues beyond excerpt) */
+  summaryHasMore?: boolean;
+  /** URL for link/quote formats */
+  url?: string;
+  /** Quoted text for quote format */
+  quoteText?: string;
 
   // Metadata
-  type: PostType;
-  visibility: Visibility;
-  /** Custom path for pages, e.g. "/about" */
-  path?: string;
+  format: Format;
+  status: Status;
+  featured: boolean;
+  pinned: boolean;
+  rating?: number;
 
-  // Time — pre-formatted
+  // Collection
+  collectionId?: number;
+
+  // Time -- pre-formatted
   /** ISO 8601 string */
   publishedAt: string;
   /** Human-readable, e.g. "Feb 1, 2024" */
@@ -336,12 +396,7 @@ export interface PostView {
   /** ISO 8601 string */
   updatedAt: string;
 
-  // Source (for link/quote types)
-  sourceUrl?: string;
-  sourceName?: string;
-  sourceDomain?: string;
-
-  // Media — URLs pre-computed
+  // Media -- URLs pre-computed
   media: MediaView[];
 
   // Thread context
@@ -349,12 +404,25 @@ export interface PostView {
   threadRootId?: number;
 
   // Raw content (for forms/editing, not typical theme use)
-  content?: string;
+  body?: string;
+}
+
+/**
+ * Render-ready page data for theme components.
+ */
+export interface PageView {
+  id: number;
+  slug: string;
+  title?: string;
+  bodyHtml?: string;
+  status: Status;
+  createdAt: string;
+  updatedAt: string;
 }
 
 /**
  * Render-ready media data for theme components.
- * URLs are pre-computed — no lib/ imports needed.
+ * URLs are pre-computed -- no lib/ imports needed.
  */
 export interface MediaView {
   id: string;
@@ -370,13 +438,15 @@ export interface MediaView {
 }
 
 /**
- * Render-ready navigation link for theme components.
+ * Render-ready navigation item for theme components.
  * Active/external state pre-computed.
  */
-export interface NavLinkView {
+export interface NavItemView {
   id: number;
+  type: NavItemType;
   label: string;
   url: string;
+  pageId?: number;
   /** Pre-computed based on currentPath */
   isActive: boolean;
   /** Pre-computed: starts with http(s):// */
@@ -474,7 +544,7 @@ export interface SearchResult {
 
 export interface SiteLayoutProps {
   siteName: string;
-  links: NavLinkView[];
+  links: NavItemView[];
   currentPath: string;
 }
 
@@ -485,6 +555,7 @@ export interface SiteLayoutProps {
 /** Props for the home page component */
 export interface HomePageProps {
   items: TimelineItemView[];
+  pinnedItems: PostView[];
   hasMore: boolean;
   nextCursor?: number;
   theme?: ThemeComponents;
@@ -498,7 +569,15 @@ export interface PostPageProps {
 
 /** Props for the custom page component */
 export interface SinglePageProps {
-  page: PostView;
+  page: PageView;
+  theme?: ThemeComponents;
+}
+
+/** Props for the featured page component */
+export interface FeaturedPageProps {
+  items: TimelineItemView[];
+  hasMore: boolean;
+  nextCursor?: number;
   theme?: ThemeComponents;
 }
 
@@ -507,7 +586,8 @@ export interface ArchivePageProps {
   groups: ArchiveGroup[];
   hasMore: boolean;
   nextCursor?: number;
-  type?: PostType;
+  format?: Format;
+  featured?: boolean;
   theme?: ThemeComponents;
 }
 
@@ -521,10 +601,18 @@ export interface SearchPageProps {
   theme?: ThemeComponents;
 }
 
-/** Props for the collection page component */
+/** Props for the single collection page component */
 export interface CollectionPageProps {
   collection: Collection;
   posts: PostView[];
+  hasMore: boolean;
+  nextCursor?: number;
+  theme?: ThemeComponents;
+}
+
+/** Props for the collections list page component */
+export interface CollectionsPageProps {
+  collections: (Collection & { postCount: number })[];
   theme?: ThemeComponents;
 }
 
@@ -545,6 +633,7 @@ export interface FeedData {
 export interface SitemapData {
   siteUrl: string;
   posts: PostView[];
+  pages: PageView[];
 }
 
 // =============================================================================
@@ -592,21 +681,21 @@ export interface ThemeComponents {
   HomePage?: FC<HomePageProps>;
   PostPage?: FC<PostPageProps>;
   SinglePage?: FC<SinglePageProps>;
+  FeaturedPage?: FC<FeaturedPageProps>;
   ArchivePage?: FC<ArchivePageProps>;
   SearchPage?: FC<SearchPageProps>;
   CollectionPage?: FC<CollectionPageProps>;
+  CollectionsPage?: FC<CollectionsPageProps>;
 
-  // Timeline sub-components
+  // Timeline sub-components (by format)
   NoteCard?: FC<TimelineCardProps>;
-  ArticleCard?: FC<TimelineCardProps>;
   LinkCard?: FC<TimelineCardProps>;
   QuoteCard?: FC<TimelineCardProps>;
-  ImageCard?: FC<TimelineCardProps>;
   ThreadPreview?: FC<ThreadPreviewProps>;
   TimelineFeed?: FC<TimelineFeedProps>;
   TimelineLoadMore?: FC<TimelineLoadMoreProps>;
 
-  // Shared sub-components (re-exported real prop types from component files)
+  // Shared sub-components
   Pagination?: FC<PaginationComponentProps>;
   PagePagination?: FC<PagePaginationComponentProps>;
   EmptyState?: FC<EmptyStateComponentProps>;
@@ -659,11 +748,11 @@ export interface JantTheme {
   components?: ThemeComponents;
   /** Feed renderer overrides (RSS, Atom, Sitemap) */
   feed?: {
-    /** Custom RSS 2.0 renderer — returns XML string */
+    /** Custom RSS 2.0 renderer -- returns XML string */
     rss?: (data: FeedData) => string;
-    /** Custom Atom renderer — returns XML string */
+    /** Custom Atom renderer -- returns XML string */
     atom?: (data: FeedData) => string;
-    /** Custom Sitemap renderer — returns XML string */
+    /** Custom Sitemap renderer -- returns XML string */
     sitemap?: (data: SitemapData) => string;
   };
   /** Renders SSE patches for timeline load-more responses */

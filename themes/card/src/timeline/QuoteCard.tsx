@@ -1,7 +1,13 @@
 /**
  * Card Theme - Quote Card
  *
- * Blockquote + attribution for type="quote" posts.
+ * Blockquote + attribution for format="quote" posts.
+ *
+ * v2 fields:
+ * - quoteText: the quoted text
+ * - title: attribution (who said it)
+ * - url: source link
+ * - bodyHtml: commentary
  */
 
 import type { FC } from "hono/jsx";
@@ -12,29 +18,35 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
     <article
       class={`h-entry timeline-card timeline-card-quote${compact ? " timeline-card-compact" : ""}`}
     >
-      {post.contentHtml && (
+      {post.quoteText && (
         <blockquote
           class={`e-content italic ${compact ? "text-sm" : "text-base"} leading-relaxed`}
         >
-          <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+          <div>{post.quoteText}</div>
         </blockquote>
       )}
-      {!compact && (post.sourceName || post.sourceUrl) && (
+      {!compact && (post.title || post.url) && (
         <div class="mt-2 text-sm text-muted-foreground">
           &mdash;{" "}
-          {post.sourceUrl ? (
+          {post.url ? (
             <a
-              href={post.sourceUrl}
+              href={post.url}
               class="hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {post.sourceName || post.sourceDomain || "Source"}
+              {post.title || "Source"}
             </a>
           ) : (
-            <span>{post.sourceName}</span>
+            <span>{post.title}</span>
           )}
         </div>
+      )}
+      {!compact && post.bodyHtml && (
+        <div
+          class="mt-3 prose text-muted-foreground"
+          dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
+        />
       )}
       <footer class="mt-2 text-xs text-muted-foreground">
         <a href={post.permalink} class="u-url hover:underline">

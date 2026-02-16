@@ -5,15 +5,12 @@
  */
 
 import type { FC } from "hono/jsx";
-import type { PostType, ThemeComponents, TimelineCardProps } from "../types.js";
+import type { Format, ThemeComponents, TimelineCardProps } from "../types.js";
 
-const THEME_KEY_MAP: Record<PostType, keyof ThemeComponents> = {
+const THEME_KEY_MAP: Record<Format, keyof ThemeComponents> = {
   note: "NoteCard",
-  article: "ArticleCard",
   link: "LinkCard",
   quote: "QuoteCard",
-  image: "ImageCard",
-  page: "NoteCard",
 };
 
 /**
@@ -43,26 +40,26 @@ export function resolveComponent<K extends keyof ThemeComponents>(
 }
 
 /**
- * Resolves the card component for a given post type.
+ * Resolves the card component for a given post format.
  *
  * Checks theme overrides first, then falls back to the provided default card component.
  *
- * @param type - The post type to resolve a card for
- * @param defaults - Map of post type to default card component
+ * @param format - The post format to resolve a card for
+ * @param defaults - Map of format to default card component
  * @param themeComponents - Optional theme component overrides
  * @returns The resolved card component
  *
  * @example
  * ```ts
- * const Card = resolveCardComponent("article", DEFAULT_CARD_MAP, c.var.config.theme?.components);
+ * const Card = resolveCardComponent("note", DEFAULT_CARD_MAP, c.var.config.theme?.components);
  * ```
  */
 export function resolveCardComponent(
-  type: PostType,
-  defaults: Record<PostType, FC<TimelineCardProps>>,
+  format: Format,
+  defaults: Record<Format, FC<TimelineCardProps>>,
   themeComponents?: ThemeComponents,
 ): FC<TimelineCardProps> {
-  const key = THEME_KEY_MAP[type];
+  const key = THEME_KEY_MAP[format];
   const override = themeComponents?.[key] as FC<TimelineCardProps> | undefined;
-  return override ?? defaults[type];
+  return override ?? defaults[format];
 }

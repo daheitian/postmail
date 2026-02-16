@@ -2,6 +2,12 @@
  * Threads Theme - Quote Card
  *
  * Left-border accent blockquote — date is shown at the feed level as a group header.
+ *
+ * v2 fields:
+ * - quoteText: the quoted text
+ * - title: attribution (who said it)
+ * - url: source link
+ * - bodyHtml: commentary
  */
 
 import type { FC } from "hono/jsx";
@@ -10,30 +16,37 @@ import type { TimelineCardProps } from "../../../types.js";
 export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
   return (
     <article class={`h-entry${compact ? " threads-compact" : ""}`}>
-      {post.contentHtml && (
+      {post.quoteText && (
         <blockquote class="threads-quote">
           <div
             class={`e-content ${compact ? "text-sm" : "text-base"} leading-relaxed`}
-            dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-          />
+          >
+            {post.quoteText}
+          </div>
         </blockquote>
       )}
-      {!compact && (post.sourceName || post.sourceUrl) && (
+      {!compact && (post.title || post.url) && (
         <div class="mt-2 text-sm text-muted-foreground">
           &mdash;{" "}
-          {post.sourceUrl ? (
+          {post.url ? (
             <a
-              href={post.sourceUrl}
+              href={post.url}
               class="hover:underline"
               target="_blank"
               rel="noopener noreferrer"
             >
-              {post.sourceName || post.sourceDomain || "Source"}
+              {post.title || "Source"}
             </a>
           ) : (
-            <span>{post.sourceName}</span>
+            <span>{post.title}</span>
           )}
         </div>
+      )}
+      {!compact && post.bodyHtml && (
+        <div
+          class="mt-3 prose text-muted-foreground"
+          dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
+        />
       )}
       <footer class="mt-2">
         <a

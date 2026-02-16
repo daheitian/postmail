@@ -2,24 +2,22 @@ import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Pages Routes
  *
- * Management for custom pages (posts with type="page")
+ * Management for standalone pages (about, now, etc.)
  */
 
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Post } from "../../types.js";
+import type { Bindings, Page } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
 import {
   PageForm,
-  VisibilityBadge,
   EmptyState,
   ListItemRow,
   ActionButtons,
   CrudPageHeader,
   DangerZone,
 } from "../../theme/components/index.js";
-import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
 import { dsRedirect } from "../../lib/sse.js";
 
@@ -27,7 +25,7 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const pagesRoutes = new Hono<Env>();
 
-function PagesListContent({ pages }: { pages: Post[] }) {
+function PagesListContent({ pages }: { pages: Page[] }) {
   const { t } = useLingui();
 
   return (
@@ -60,15 +58,13 @@ function PagesListContent({ pages }: { pages: Post[] }) {
               key={page.id}
               actions={
                 <ActionButtons
-                  editHref={`/dash/pages/${sqid.encode(page.id)}/edit`}
+                  editHref={`/dash/pages/${page.id}/edit`}
                   editLabel={t({
                     message: "Edit",
                     comment: "@context: Button to edit page",
                   })}
                   viewHref={
-                    page.visibility !== "draft" && page.path
-                      ? `/${page.path}`
-                      : undefined
+                    page.status !== "draft" ? `/${page.slug}` : undefined
                   }
                   viewLabel={t({
                     message: "View",
@@ -78,13 +74,12 @@ function PagesListContent({ pages }: { pages: Post[] }) {
               }
             >
               <div class="flex items-center gap-2 mb-1">
-                <VisibilityBadge visibility={page.visibility} />
                 <span class="text-xs text-muted-foreground">
                   {time.formatDate(page.updatedAt)}
                 </span>
               </div>
               <a
-                href={`/dash/pages/${sqid.encode(page.id)}`}
+                href={`/dash/pages/${page.id}`}
                 class="font-medium hover:underline"
               >
                 {page.title ||
@@ -93,7 +88,7 @@ function PagesListContent({ pages }: { pages: Post[] }) {
                     comment: "@context: Default title for untitled page",
                   })}
               </a>
-              <p class="text-sm text-muted-foreground mt-1">/{page.path}</p>
+              <p class="text-sm text-muted-foreground mt-1">/{page.slug}</p>
             </ListItemRow>
           ))}
         </div>
@@ -114,7 +109,7 @@ function NewPageContent() {
   );
 }
 
-function ViewPageContent({ page }: { page: Post }) {
+function ViewPageContent({ page }: { page: Page }) {
   const { t } = useLingui();
   return (
     <>
@@ -127,19 +122,15 @@ function ViewPageContent({ page }: { page: Post }) {
                 comment: "@context: Default page heading when untitled",
               })}
           </h1>
-          {page.path && <p class="text-muted-foreground mt-1">/{page.path}</p>}
+          <p class="text-muted-foreground mt-1">/{page.slug}</p>
         </div>
         <ActionButtons
-          editHref={`/dash/pages/${sqid.encode(page.id)}/edit`}
+          editHref={`/dash/pages/${page.id}/edit`}
           editLabel={t({
             message: "Edit",
             comment: "@context: Button to edit page",
           })}
-          viewHref={
-            page.visibility !== "draft" && page.path
-              ? `/${page.path}`
-              : undefined
-          }
+          viewHref={page.status !== "draft" ? `/${page.slug}` : undefined}
           viewLabel={t({
             message: "View",
             comment: "@context: Button to view page on public site",
@@ -151,7 +142,7 @@ function ViewPageContent({ page }: { page: Post }) {
         <section>
           <div
             class="prose"
-            dangerouslySetInnerHTML={{ __html: page.contentHtml || "" }}
+            dangerouslySetInnerHTML={{ __html: page.bodyHtml || "" }}
           />
         </section>
       </div>
@@ -161,14 +152,14 @@ function ViewPageContent({ page }: { page: Post }) {
           message: "Delete Page",
           comment: "@context: Button to delete page",
         })}
-        formAction={`/dash/pages/${sqid.encode(page.id)}/delete`}
+        formAction={`/dash/pages/${page.id}/delete`}
         confirmMessage="Are you sure you want to delete this page?"
       />
     </>
   );
 }
 
-function EditPageContent({ page }: { page: Post }) {
+function EditPageContent({ page }: { page: Page }) {
   const { t } = useLingui();
   return (
     <>
@@ -178,18 +169,14 @@ function EditPageContent({ page }: { page: Post }) {
           comment: "@context: Edit page main heading",
         })}
       </h1>
-      <PageForm page={page} action={`/dash/pages/${sqid.encode(page.id)}`} />
+      <PageForm page={page} action={`/dash/pages/${page.id}`} />
     </>
   );
 }
 
 // List pages
 pagesRoutes.get("/", async (c) => {
-  const pages = await c.var.services.posts.list({
-    type: "page",
-    visibility: ["unlisted", "draft"],
-    limit: 100,
-  });
+  const pages = await c.var.services.pages.list();
   const siteName = await getSiteName(c);
 
   return c.html(
@@ -224,29 +211,28 @@ pagesRoutes.get("/new", async (c) => {
 pagesRoutes.post("/", async (c) => {
   const body = await c.req.json<{
     title: string;
-    content: string;
-    visibility: string;
-    path: string;
+    body: string;
+    status: string;
+    slug: string;
   }>();
 
-  const page = await c.var.services.posts.create({
-    type: "page",
+  const page = await c.var.services.pages.create({
     title: body.title,
-    content: body.content,
-    visibility: body.visibility as Post["visibility"],
-    path: body.path.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+    body: body.body,
+    status: body.status as Page["status"],
+    slug: body.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
   });
 
-  return dsRedirect(`/dash/pages/${sqid.encode(page.id)}`);
+  return dsRedirect(`/dash/pages/${page.id}`);
 });
 
 // View single page
 pagesRoutes.get("/:id", async (c) => {
-  const id = sqid.decode(c.req.param("id"));
-  if (!id) return c.notFound();
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.notFound();
 
-  const page = await c.var.services.posts.getById(id);
-  if (!page || page.type !== "page") return c.notFound();
+  const page = await c.var.services.pages.getById(id);
+  if (!page) return c.notFound();
 
   const siteName = await getSiteName(c);
 
@@ -264,11 +250,11 @@ pagesRoutes.get("/:id", async (c) => {
 
 // Edit page form
 pagesRoutes.get("/:id/edit", async (c) => {
-  const id = sqid.decode(c.req.param("id"));
-  if (!id) return c.notFound();
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.notFound();
 
-  const page = await c.var.services.posts.getById(id);
-  if (!page || page.type !== "page") return c.notFound();
+  const page = await c.var.services.pages.getById(id);
+  if (!page) return c.notFound();
 
   const siteName = await getSiteName(c);
 
@@ -286,33 +272,32 @@ pagesRoutes.get("/:id/edit", async (c) => {
 
 // Update page
 pagesRoutes.post("/:id", async (c) => {
-  const id = sqid.decode(c.req.param("id"));
-  if (!id) return c.notFound();
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.notFound();
 
   const body = await c.req.json<{
     title: string;
-    content: string;
-    visibility: string;
-    path: string;
+    body: string;
+    status: string;
+    slug: string;
   }>();
 
-  await c.var.services.posts.update(id, {
-    type: "page",
+  await c.var.services.pages.update(id, {
     title: body.title,
-    content: body.content,
-    visibility: body.visibility as Post["visibility"],
-    path: body.path.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+    body: body.body,
+    status: body.status as Page["status"],
+    slug: body.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
   });
 
-  return dsRedirect(`/dash/pages/${sqid.encode(id)}`);
+  return dsRedirect(`/dash/pages/${id}`);
 });
 
 // Delete page
 pagesRoutes.post("/:id/delete", async (c) => {
-  const id = sqid.decode(c.req.param("id"));
-  if (!id) return c.notFound();
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.notFound();
 
-  await c.var.services.posts.delete(id);
+  await c.var.services.pages.delete(id);
 
   return dsRedirect("/dash/pages");
 });

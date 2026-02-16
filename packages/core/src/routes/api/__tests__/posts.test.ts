@@ -22,16 +22,15 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       await services.posts.create({
-        type: "note",
-        content: "Hello world",
-        visibility: "featured",
+        format: "note",
+        body: "Hello world",
       });
 
       const res = await app.request("/api/posts");
       const body = await res.json();
 
       expect(body.posts).toHaveLength(1);
-      expect(body.posts[0].content).toBe("Hello world");
+      expect(body.posts[0].body).toBe("Hello world");
       expect(body.posts[0].sqid).toBeTruthy();
     });
 
@@ -40,9 +39,8 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "with media",
-        visibility: "featured",
+        format: "note",
+        body: "with media",
       });
 
       const media = await services.media.create({
@@ -68,26 +66,25 @@ describe("Posts API Routes", () => {
       expect(body.posts[0].mediaAttachments[0].position).toBe(0);
     });
 
-    it("filters by visibility", async () => {
+    it("filters by status", async () => {
       const { app, services } = createTestApp();
       app.route("/api/posts", postsApiRoutes);
 
       await services.posts.create({
-        type: "note",
-        content: "featured",
-        visibility: "featured",
+        format: "note",
+        body: "published post",
       });
       await services.posts.create({
-        type: "note",
-        content: "draft",
-        visibility: "draft",
+        format: "note",
+        body: "draft post",
+        status: "draft",
       });
 
-      const res = await app.request("/api/posts?visibility=draft");
+      const res = await app.request("/api/posts?status=draft");
       const body = await res.json();
 
       expect(body.posts).toHaveLength(1);
-      expect(body.posts[0].visibility).toBe("draft");
+      expect(body.posts[0].status).toBe("draft");
     });
 
     it("supports limit parameter", async () => {
@@ -96,9 +93,8 @@ describe("Posts API Routes", () => {
 
       for (let i = 0; i < 5; i++) {
         await services.posts.create({
-          type: "note",
-          content: `post ${i}`,
-          visibility: "featured",
+          format: "note",
+          body: `post ${i}`,
         });
       }
 
@@ -116,9 +112,8 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "test post",
-        visibility: "featured",
+        format: "note",
+        body: "test post",
       });
       const id = sqid.encode(post.id);
 
@@ -126,7 +121,7 @@ describe("Posts API Routes", () => {
       expect(res.status).toBe(200);
 
       const body = await res.json();
-      expect(body.content).toBe("test post");
+      expect(body.body).toBe("test post");
       expect(body.sqid).toBe(id);
     });
 
@@ -135,9 +130,8 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "with media",
-        visibility: "featured",
+        format: "note",
+        body: "with media",
       });
 
       const media = await services.media.create({
@@ -183,9 +177,8 @@ describe("Posts API Routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "note",
-          content: "test",
-          visibility: "quiet",
+          format: "note",
+          body: "test",
         }),
       });
 
@@ -200,16 +193,15 @@ describe("Posts API Routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "note",
-          content: "Hello from API",
-          visibility: "quiet",
+          format: "note",
+          body: "Hello from API",
         }),
       });
 
       expect(res.status).toBe(201);
 
       const body = await res.json();
-      expect(body.content).toBe("Hello from API");
+      expect(body.body).toBe("Hello from API");
       expect(body.sqid).toBeTruthy();
       expect(body.mediaAttachments).toEqual([]);
     });
@@ -237,9 +229,8 @@ describe("Posts API Routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "note",
-          content: "with images",
-          visibility: "quiet",
+          format: "note",
+          body: "with images",
           mediaIds: [m1.id, m2.id],
         }),
       });
@@ -253,54 +244,6 @@ describe("Posts API Routes", () => {
       expect(body.mediaAttachments[1].position).toBe(1);
     });
 
-    it("returns 400 for image type without media", async () => {
-      const { app } = createTestApp({ authenticated: true });
-      app.route("/api/posts", postsApiRoutes);
-
-      const res = await app.request("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "image",
-          content: "should fail",
-          visibility: "quiet",
-          mediaIds: [],
-        }),
-      });
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.error).toContain("image posts require at least 1");
-    });
-
-    it("returns 400 for page type with media", async () => {
-      const { app, services } = createTestApp({ authenticated: true });
-      app.route("/api/posts", postsApiRoutes);
-
-      const m1 = await services.media.create({
-        filename: "a.jpg",
-        originalName: "a.jpg",
-        mimeType: "image/jpeg",
-        size: 1024,
-        storageKey: "media/2025/01/a.jpg",
-      });
-
-      const res = await app.request("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "page",
-          content: "test",
-          visibility: "quiet",
-          mediaIds: [m1.id],
-        }),
-      });
-
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.error).toContain("page posts do not allow");
-    });
-
     it("returns 400 for invalid media IDs", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
@@ -309,9 +252,8 @@ describe("Posts API Routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type: "note",
-          content: "test",
-          visibility: "quiet",
+          format: "note",
+          body: "test",
           mediaIds: ["nonexistent-id"],
         }),
       });
@@ -328,7 +270,7 @@ describe("Posts API Routes", () => {
       const res = await app.request("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "invalid-type" }),
+        body: JSON.stringify({ format: "invalid-type" }),
       });
 
       expect(res.status).toBe(400);
@@ -356,14 +298,14 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "original",
+        format: "note",
+        body: "original",
       });
 
       const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: "updated" }),
+        body: JSON.stringify({ body: "updated" }),
       });
 
       expect(res.status).toBe(401);
@@ -374,19 +316,19 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "original",
+        format: "note",
+        body: "original",
       });
 
       const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: "updated" }),
+        body: JSON.stringify({ body: "updated" }),
       });
 
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.content).toBe("updated");
+      expect(body.body).toBe("updated");
       expect(body.mediaAttachments).toEqual([]);
     });
 
@@ -395,8 +337,8 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const m1 = await services.media.create({
@@ -434,8 +376,8 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const m1 = await services.media.create({
@@ -451,7 +393,7 @@ describe("Posts API Routes", () => {
       const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: "updated content" }),
+        body: JSON.stringify({ body: "updated content" }),
       });
 
       expect(res.status).toBe(200);
@@ -467,7 +409,7 @@ describe("Posts API Routes", () => {
       const res = await app.request(`/api/posts/${sqid.encode(9999)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: "test" }),
+        body: JSON.stringify({ body: "test" }),
       });
 
       expect(res.status).toBe(404);
@@ -478,14 +420,14 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "invalid-type" }),
+        body: JSON.stringify({ format: "invalid-type" }),
       });
 
       expect(res.status).toBe(400);
@@ -498,8 +440,8 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
@@ -514,8 +456,8 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
-        type: "note",
-        content: "to be deleted",
+        format: "note",
+        body: "to be deleted",
       });
 
       const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {

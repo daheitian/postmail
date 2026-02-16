@@ -14,19 +14,18 @@ INSERT INTO user VALUES('xCkM3BgGOkgQnec6l8EF3f4q2VnG6AoU','test','theowenyoung@
 INSERT INTO account VALUES('jC56rT53Pe9aXkrv4YtlCBuPQACWoOuY','xCkM3BgGOkgQnec6l8EF3f4q2VnG6AoU','credential','xCkM3BgGOkgQnec6l8EF3f4q2VnG6AoU',NULL,NULL,NULL,NULL,NULL,NULL,'3d915508e712a5b481109e907ae99cc2:5303d92b81403b2a77a1a65d58586c781d896e8ba71c02ea19207f94e2e9d9ebf82a2e9fd1f1a61556aee6cd7dcdf07c70cb64f6fe42d30e05870b2f7b90c27c',1770761877,1770761877);
 
 -- posts
-INSERT INTO posts VALUES(1,'note','quiet','really?',NULL,'is this works?','<p>is this works?</p>
+INSERT INTO posts VALUES(1,'note','published',0,0,NULL,'really?',NULL,'is this works?','<p>is this works?</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771089786,1771089786,1771089786);
-INSERT INTO posts VALUES(2,'quote','quiet',NULL,NULL,'worked?','<p>worked?</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771089808,1771089808,1771089808);
-INSERT INTO posts VALUES(3,'image','quiet','greate image',NULL,'great','<p>great</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771092931,1771092931,1771092931);
-INSERT INTO posts VALUES(4,'note','quiet',NULL,NULL,'没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。','<p>没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。</p>
+INSERT INTO posts VALUES(2,'quote','published',0,0,NULL,NULL,NULL,NULL,NULL,'worked?',NULL,NULL,NULL,NULL,NULL,1771089808,1771089808,1771089808);
+INSERT INTO posts VALUES(3,'note','published',0,0,NULL,'greate image',NULL,'great','<p>great</p>
+',NULL,NULL,NULL,NULL,NULL,NULL,1771092931,1771092931,1771268464);
+INSERT INTO posts VALUES(4,'note','published',0,0,NULL,NULL,NULL,'没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。','<p>没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771114861,1771114861,1771114861);
-INSERT INTO posts VALUES(5,'note','quiet',NULL,NULL,'新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。"。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。','<p>新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。&quot;。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。</p>
+INSERT INTO posts VALUES(5,'note','published',0,0,NULL,NULL,NULL,'新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。"。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。','<p>新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。&quot;。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771114906,1771114906,1771114906);
-INSERT INTO posts VALUES(6,'link','quiet','Forty News',NULL,'40年前今日的新闻...','<p>40年前今日的新闻...</p>
-','https://forty.news/',NULL,'forty.news',NULL,NULL,NULL,1771114955,1771114955,1771114955);
-INSERT INTO posts VALUES(7,'article','quiet','我从 Hacker News 中学到了什么？',NULL,'昨天看到 Hacker News 的创始人 Paul Graham 在 2009
+INSERT INTO posts VALUES(6,'link','published',0,0,NULL,'Forty News','https://forty.news/','40年前今日的新闻...','<p>40年前今日的新闻...</p>
+',NULL,NULL,NULL,NULL,NULL,NULL,1771114955,1771114955,1771114955);
+INSERT INTO posts VALUES(7,'note','published',0,0,NULL,'我从 Hacker News 中学到了什么？',NULL,'昨天看到 Hacker News 的创始人 Paul Graham 在 2009
 年写的一篇文章[《我从 Hacker News 中学到了什么》](http://www.paulgraham.com/hackernews.html),
 作者提到：
 
@@ -91,7 +90,7 @@ RSS。没有使用任何框架，就几句简单的 deno
 2 篇文章，而现在[HN 首页](https://hackernews.buzzing.cc/)可以放 20 多篇，效率直接提升 10 倍啊有木有。
 
 很快，我发现按照这样布局的话，阅读效率高了太多了，已有的这些时间流，已经不够我看了，所以索性单独为我自己生成一个[HN 时间流](https://myfeed.owenyoung.com/)，里面包含了
-hn 上前 100 位用户提交的任何帖子。
+ hn 上前 100 位用户提交的任何帖子。
 
 几天之后我就发现，之前只看 HN 的热门帖子损失有多大，HN
 上有太多优秀的内容没有被顶上去了。热门真的很随机，所以我们也要万分警惕大公司的算法机制。基于此，我又做了一个变化，直接抓取 HN 上最新的提交（我去掉了 Ask
@@ -111,7 +110,7 @@ HN 上所有最新的文章了。即使是全部文章，由于是母语阅读�
 
 比如我读了上面推荐的[《深度工作》](https://d.buzzing.cc/post/1)，作者提到：
 
-> “如果在你全部的清醒时间，都能给自己的大脑找到有意义的事情去做，而不是放任自己在迷糊的状态下漫无目的地浏览几个小时网页，那么在一天结束时，你会觉得更加充实，第二天开始时更加轻松。
+> "如果在你全部的清醒时间，都能给自己的大脑找到有意义的事情去做，而不是放任自己在迷糊的状态下漫无目的地浏览几个小时网页，那么在一天结束时，你会觉得更加充实，第二天开始时更加轻松。
 > – 卡尔·纽波特《深度工作》
 
 从我沉迷 HN
@@ -158,24 +157,27 @@ HN 上所有最新的文章了。即使是全部文章，由于是母语阅读�
 </ul>
 <p>比如我读了上面推荐的<a href="https://d.buzzing.cc/post/1">《深度工作》</a>，作者提到：</p>
 <blockquote>
-<p>“如果在你全部的清醒时间，都能给自己的大脑找到有意义的事情去做，而不是放任自己在迷糊的状态下漫无目的地浏览几个小时网页，那么在一天结束时，你会觉得更加充实，第二天开始时更加轻松。<br>– 卡尔·纽波特《深度工作》</p>
+<p>"如果在你全部的清醒时间，都能给自己的大脑找到有意义的事情去做，而不是放任自己在迷糊的状态下漫无目的地浏览几个小时网页，那么在一天结束时，你会觉得更加充实，第二天开始时更加轻松。<br>– 卡尔·纽波特《深度工作》</p>
 </blockquote>
 <p>从我沉迷 HN<br>的例子里就能看出，网络已经剥夺了我保持专注和沉思的能力，但是真正值得探索和学习的知识都需要我拥有这种能力。如果我没有在某一个特定时段给自己安排任务，那么这些网站总是会更有诱惑力。所以如果我想抵御社交网络对我时间和精力的诱惑，那么必须要给大脑找一些高质量的替代活动，所以我基于开源<br><a href="https://lemmy.ml/">Lemmy</a> 搭建了一个类似 Reddit<br>的社区，叫<a href="https://d.buzzing.cc/"><strong>如何度过每一天</strong></a>,希望能在社区里分享有意义的事，不虚度光阴的事，可以是阅读某本书，学习某项技能，看某部纪录片等等等等。社区有投票的功能，某项活动被投票的次数越多，说明认为这项活动有意义的更多。</p>
 <p>目前其实就只有少数几个用户在用，网站依然是部署在我的一个 廉价 VPS 上，没有盈利的打算，目前加载也有点慢，但是够用。</p>
 <p>以上是我在 Hacker News 上学到的一些东西。</p>
 ',NULL,NULL,NULL,NULL,NULL,NULL,1771115051,1771115051,1771115051);
-INSERT INTO posts VALUES(8,'quote','quiet',NULL,NULL,'拥有五万个从不打开邮件的订阅者名单，其价值远不及五百个逐字阅读并偶尔给予深度回复的读者。后者会购买你的著作，向朋友推荐你，并长久陪伴你。前者不过是你在那些无聊的数字炫耀派对上能拿出来吹嘘的数字而已。','<p>拥有五万个从不打开邮件的订阅者名单，其价值远不及五百个逐字阅读并偶尔给予深度回复的读者。后者会购买你的著作，向朋友推荐你，并长久陪伴你。前者不过是你在那些无聊的数字炫耀派对上能拿出来吹嘘的数字而已。</p>
-','https://www.joanwestenberg.com/why-my-newsletter-costs-2-50/',NULL,'www.joanwestenberg.com',NULL,NULL,NULL,1771115103,1771115103,1771115103);
-INSERT INTO posts VALUES(9,'quote','featured',NULL,NULL,'弗吉尼亚·伍尔夫曾论述拥有独立空间的重要性：那是供人进行创作的物理场所，不受干扰与控制。博客便是网络世界中的独立空间。在这里，你自主决定书写内容与表达方式，无需屈从于平台算法的任性摆布——那些平台只顾榨取你的参与度，却不关心这种参与究竟是否让你或他人变得更聪明。
+INSERT INTO posts VALUES(8,'quote','published',0,0,NULL,NULL,'https://www.joanwestenberg.com/why-my-newsletter-costs-2-50/',NULL,NULL,'拥有五万个从不打开邮件的订阅者名单，其价值远不及五百个逐字阅读并偶尔给予深度回复的读者。后者会购买你的著作，向朋友推荐你，并长久陪伴你。前者不过是你在那些无聊的数字炫耀派对上能拿出来吹嘘的数字而已。',NULL,NULL,NULL,NULL,NULL,1771115103,1771115103,1771115103);
+INSERT INTO posts VALUES(9,'quote','published',1,0,NULL,'JA Westenberg','https://www.joanwestenberg.com/the-case-for-blogging-in-the-ruins/',NULL,NULL,'弗吉尼亚·伍尔夫曾论述拥有独立空间的重要性：那是供人进行创作的物理场所，不受干扰与控制。博客便是网络世界中的独立空间。在这里，你自主决定书写内容与表达方式，无需屈从于平台算法的任性摆布——那些平台只顾榨取你的参与度，却不关心这种参与究竟是否让你或他人变得更聪明。
 
-我们不会通过等待平台减少剥削来获得更好的互联网。我们需要亲手构建它——维护自己的空间，相互链接，打造独立网站的互联网络，让博客圈重现昔日的辉煌。','<p>弗吉尼亚·伍尔夫曾论述拥有独立空间的重要性：那是供人进行创作的物理场所，不受干扰与控制。博客便是网络世界中的独立空间。在这里，你自主决定书写内容与表达方式，无需屈从于平台算法的任性摆布——那些平台只顾榨取你的参与度，却不关心这种参与究竟是否让你或他人变得更聪明。</p>
-<p>我们不会通过等待平台减少剥削来获得更好的互联网。我们需要亲手构建它——维护自己的空间，相互链接，打造独立网站的互联网络，让博客圈重现昔日的辉煌。</p>
-','https://www.joanwestenberg.com/the-case-for-blogging-in-the-ruins/','JA Westenberg','www.joanwestenberg.com',NULL,NULL,NULL,1771115159,1771115159,1771115177);
-INSERT INTO posts VALUES(10,'link','quiet','Some pics',NULL,'一个干净的图片流网站
+我们不会通过等待平台减少剥削来获得更好的互联网。我们需要亲手构建它——维护自己的空间，相互链接，打造独立网站的互联网络，让博客圈重现昔日的辉煌。',NULL,NULL,NULL,NULL,NULL,1771115159,1771115159,1771115177);
+INSERT INTO posts VALUES(10,'link','published',0,0,NULL,'Some pics','https://some.pics/','一个干净的图片流网站
 ','<p>一个干净的图片流网站</p>
-','https://some.pics/',NULL,'some.pics',NULL,NULL,NULL,1771115271,1771115271,1771115271);
+',NULL,NULL,NULL,NULL,NULL,NULL,1771115271,1771115271,1771115271);
+INSERT INTO posts VALUES(11,'note','published',0,0,NULL,NULL,NULL,'From splash','<p>From splash</p>
+',NULL,NULL,NULL,NULL,NULL,NULL,1771268320,1771268320,1771268958);
 
 -- media
-INSERT INTO media VALUES('019c49a2-140e-7a4b-ae91-d2c7cffe45a2',3,'019c49a2-140e-7a4b-ae91-d2c7cffe45a2.webp','alex-safareli-BU4Zv7usvI8-unsplash.webp','image/webp',267514,'media/2026/02/019c49a2-140e-7a4b-ae91-d2c7cffe45a2.webp',NULL,NULL,NULL,1770761886,0,NULL,'s3');
-INSERT INTO media VALUES('019c49a3-83a3-75e8-99ad-795cf0a641ce',3,'019c49a3-83a3-75e8-99ad-795cf0a641ce.webp','land-o-lakes-inc-k71TQkbVIgI-unsplash.webp','image/webp',597680,'media/2026/02/019c49a3-83a3-75e8-99ad-795cf0a641ce.webp',NULL,NULL,NULL,1770761981,1,NULL,'s3');
-INSERT INTO media VALUES('019c5d2d-93e0-719f-a439-913202fa226b',NULL,'019c5d2d-93e0-719f-a439-913202fa226b.webp','brianna-parks-frXRtKYPqXk-unsplash.webp','image/webp',264554,'media/2026/02/019c5d2d-93e0-719f-a439-913202fa226b.webp',NULL,NULL,NULL,1771089796,0,NULL,'s3');
+INSERT INTO media VALUES('019c676d-1fcd-7c11-9737-5aebd10c1087',3,'019c676d-1fcd-7c11-9737-5aebd10c1087.webp','ansis-kancs-XGxp1rvTVag-unsplash.webp','image/webp',202748,'media/2026/02/019c676d-1fcd-7c11-9737-5aebd10c1087.webp',NULL,NULL,NULL,1771261731,0,NULL,'r2');
+INSERT INTO media VALUES('019c679e-98f9-73ba-bd57-ab6ebf94fe05',3,'019c679e-98f9-73ba-bd57-ab6ebf94fe05.webp','dan-begel-pbfkmEL3QaU-unsplash.webp','image/webp',229392,'media/2026/02/019c679e-98f9-73ba-bd57-ab6ebf94fe05.webp',NULL,NULL,NULL,1771264973,1,NULL,'r2');
+INSERT INTO media VALUES('019c679e-a8ce-7d49-9c21-8d75a1551198',3,'019c679e-a8ce-7d49-9c21-8d75a1551198.webp','willian-justen-de-vasconcellos--pKhrem8YpE-unsplash.webp','image/webp',324826,'media/2026/02/019c679e-a8ce-7d49-9c21-8d75a1551198.webp',NULL,NULL,NULL,1771264977,2,NULL,'r2');
+INSERT INTO media VALUES('019c679e-c351-76dc-9569-2a716b4384b5',NULL,'019c679e-c351-76dc-9569-2a716b4384b5.webp','brianna-parks-frXRtKYPqXk-unsplash.webp','image/webp',264554,'media/2026/02/019c679e-c351-76dc-9569-2a716b4384b5.webp',NULL,NULL,NULL,1771264984,0,NULL,'r2');
+INSERT INTO media VALUES('019c67d5-1022-7efd-9ae8-0454325cba78',NULL,'019c67d5-1022-7efd-9ae8-0454325cba78.webp','takashi-sakamoto-J9nW9Tc1HVc-unsplash.webp','image/webp',505172,'media/2026/02/019c67d5-1022-7efd-9ae8-0454325cba78.webp',NULL,NULL,NULL,1771268543,0,NULL,'r2');
+INSERT INTO media VALUES('019c67d5-28b8-7ec3-ae2e-83d9eb1b096b',NULL,'019c67d5-28b8-7ec3-ae2e-83d9eb1b096b.webp','museum-of-new-zealand-te-papa-tongarewa-1C7oRRwUkgU-unsplash.webp','image/webp',322656,'media/2026/02/019c67d5-28b8-7ec3-ae2e-83d9eb1b096b.webp',NULL,NULL,NULL,1771268549,0,NULL,'r2');
+INSERT INTO media VALUES('019c67d5-39c9-7723-8b0c-4c8a50076dc3',11,'019c67d5-39c9-7723-8b0c-4c8a50076dc3.webp','land-o-lakes-inc-peEOQ4_dqOo-unsplash.webp','image/webp',470774,'media/2026/02/019c67d5-39c9-7723-8b0c-4c8a50076dc3.webp',NULL,NULL,NULL,1771268554,0,NULL,'r2');

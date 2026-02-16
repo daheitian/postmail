@@ -22,7 +22,7 @@ export const PostPage: FC<PostPageProps> = ({ post, theme }) => {
 
       <div
         class="e-content prose"
-        dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
+        dangerouslySetInnerHTML={{ __html: post.bodyHtml || "" }}
       />
 
       {post.media.length > 0 && (

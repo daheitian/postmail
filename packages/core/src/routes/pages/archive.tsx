@@ -1,13 +1,13 @@
 /**
  * Archive Page Route
  *
- * Shows all posts, optionally filtered by type
+ * Shows all posts, optionally filtered by format or featured status
  */
 
 import { Hono } from "hono";
-import type { Bindings, PostType } from "../../types.js";
+import type { Bindings, Format } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { POST_TYPES } from "../../types.js";
+import { FORMATS } from "../../types.js";
 import { ArchivePage as DefaultArchivePage } from "../../themes/threads/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
@@ -21,9 +21,11 @@ export const archiveRoutes = new Hono<Env>();
 
 // Archive page - all posts
 archiveRoutes.get("/", async (c) => {
-  const typeParam = c.req.query("type") as PostType | undefined;
-  const type =
-    typeParam && POST_TYPES.includes(typeParam) ? typeParam : undefined;
+  const formatParam = c.req.query("format") as Format | undefined;
+  const format =
+    formatParam && FORMATS.includes(formatParam) ? formatParam : undefined;
+  const featuredParam = c.req.query("featured");
+  const featured = featuredParam === "true" ? true : undefined;
 
   // Parse cursor
   const cursorParam = c.req.query("cursor");
@@ -33,8 +35,9 @@ archiveRoutes.get("/", async (c) => {
 
   // Fetch one extra to check for more
   const posts = await c.var.services.posts.list({
-    type,
-    visibility: ["featured", "quiet"],
+    format,
+    status: "published",
+    featured,
     excludeReplies: true,
     cursor,
     limit: PAGE_SIZE + 1,
@@ -77,7 +80,8 @@ archiveRoutes.get("/", async (c) => {
         groups={groups}
         hasMore={hasMore}
         nextCursor={nextCursor}
-        type={type}
+        format={format}
+        featured={featured}
         theme={components}
       />
     ),

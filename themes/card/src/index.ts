@@ -36,10 +36,8 @@ import { CollectionPage } from "./pages/CollectionPage.js";
 
 // Timeline
 import { NoteCard } from "./timeline/NoteCard.js";
-import { ArticleCard } from "./timeline/ArticleCard.js";
 import { LinkCard } from "./timeline/LinkCard.js";
 import { QuoteCard } from "./timeline/QuoteCard.js";
-import { ImageCard } from "./timeline/ImageCard.js";
 import { ThreadPreview } from "./timeline/ThreadPreview.js";
 import { TimelineFeed } from "./timeline/TimelineFeed.js";
 import { TimelineLoadMore } from "./timeline/TimelineLoadMore.js";
@@ -72,10 +70,8 @@ export function theme(options?: ThemeOptions): JantTheme {
       SearchPage,
       CollectionPage,
       NoteCard,
-      ArticleCard,
       LinkCard,
       QuoteCard,
-      ImageCard,
       ThreadPreview,
       TimelineFeed,
       TimelineLoadMore,
@@ -98,10 +94,8 @@ export { ArchivePage } from "./pages/ArchivePage.js";
 export { SearchPage } from "./pages/SearchPage.js";
 export { CollectionPage } from "./pages/CollectionPage.js";
 export { NoteCard } from "./timeline/NoteCard.js";
-export { ArticleCard } from "./timeline/ArticleCard.js";
 export { LinkCard } from "./timeline/LinkCard.js";
 export { QuoteCard } from "./timeline/QuoteCard.js";
-export { ImageCard } from "./timeline/ImageCard.js";
 export { ThreadPreview } from "./timeline/ThreadPreview.js";
 export { TimelineFeed } from "./timeline/TimelineFeed.js";
 export { TimelineLoadMore } from "./timeline/TimelineLoadMore.js";

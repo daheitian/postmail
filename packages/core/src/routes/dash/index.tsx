@@ -91,8 +91,8 @@ dashIndexRoutes.get("/", async (c) => {
 
   // Get some stats
   const allPosts = await c.var.services.posts.list({ limit: 1000 });
-  const publishedPosts = allPosts.filter((p) => p.visibility !== "draft");
-  const draftPosts = allPosts.filter((p) => p.visibility === "draft");
+  const publishedPosts = allPosts.filter((p) => p.status !== "draft");
+  const draftPosts = allPosts.filter((p) => p.status === "draft");
 
   return c.html(
     <DashLayout c={c} title="Dashboard" siteName={siteName} currentPath="/dash">

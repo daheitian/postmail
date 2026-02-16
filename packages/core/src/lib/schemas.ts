@@ -1,5 +1,5 @@
 /**
- * Shared Zod schemas for validation
+ * Shared Zod schemas for validation (v2)
  *
  * These schemas ensure type-safe validation of user input
  * from forms, API requests, and other external sources.
@@ -10,24 +10,34 @@
 
 import { z } from "zod";
 import {
-  POST_TYPES,
-  VISIBILITY_LEVELS,
+  FORMATS,
+  STATUSES,
+  SORT_ORDERS,
+  NAV_ITEM_TYPES,
   MAX_MEDIA_ATTACHMENTS,
-  POST_TYPE_MEDIA_RULES,
 } from "../types.js";
-import type { PostType } from "../types.js";
 
 /**
- * Post type enum schema
- * Based on POST_TYPES from types.ts
+ * Post format enum schema
+ * Based on FORMATS from types.ts
  */
-export const PostTypeSchema = z.enum(POST_TYPES);
+export const FormatSchema = z.enum(FORMATS);
 
 /**
- * Visibility enum schema
- * Based on VISIBILITY_LEVELS from types.ts
+ * Post status enum schema
+ * Based on STATUSES from types.ts
  */
-export const VisibilitySchema = z.enum(VISIBILITY_LEVELS);
+export const StatusSchema = z.enum(STATUSES);
+
+/**
+ * Collection sort order enum schema
+ */
+export const SortOrderSchema = z.enum(SORT_ORDERS);
+
+/**
+ * Navigation item type enum schema
+ */
+export const NavItemTypeSchema = z.enum(NAV_ITEM_TYPES);
 
 /**
  * Redirect type enum schema
@@ -36,20 +46,44 @@ export const VisibilitySchema = z.enum(VISIBILITY_LEVELS);
 export const RedirectTypeSchema = z.enum(["301", "302"]);
 
 /**
+ * Rating schema (1-5 integer)
+ */
+export const RatingSchema = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(5)
+  .optional()
+  .or(z.literal("").transform(() => undefined));
+
+/**
  * API request body schema for creating a post
  */
 export const CreatePostSchema = z.object({
-  type: PostTypeSchema,
-  title: z.string().optional(),
-  content: z.string(),
-  visibility: VisibilitySchema,
-  sourceUrl: z.url().optional().or(z.literal("")),
-  sourceName: z.string().optional(),
-  path: z
+  format: FormatSchema,
+  slug: z
     .string()
-    .regex(/^[a-z0-9-]*$/)
+    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/)
     .optional()
-    .or(z.literal("")),
+    .or(z.literal("").transform(() => undefined)),
+  title: z.string().optional(),
+  body: z.string().optional(),
+  status: StatusSchema.optional(),
+  featured: z
+    .union([z.boolean(), z.literal("on").transform(() => true)])
+    .optional(),
+  pinned: z
+    .union([z.boolean(), z.literal("on").transform(() => true)])
+    .optional(),
+  url: z.url().optional().or(z.literal("")),
+  quoteText: z.string().optional(),
+  rating: RatingSchema,
+  collectionId: z.coerce
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   replyToId: z.string().optional(), // Sqid format
   publishedAt: z.number().int().positive().optional(),
   mediaIds: z.array(z.string()).max(MAX_MEDIA_ATTACHMENTS).optional(),
@@ -61,12 +95,69 @@ export const CreatePostSchema = z.object({
 export const UpdatePostSchema = CreatePostSchema.partial();
 
 /**
+ * API request body schema for creating a page
+ */
+export const CreatePageSchema = z.object({
+  slug: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+  title: z.string().optional(),
+  body: z.string().optional(),
+  status: StatusSchema.optional(),
+});
+
+/**
+ * API request body schema for updating a page
+ */
+export const UpdatePageSchema = CreatePageSchema.partial();
+
+/**
+ * API request body schema for creating a navigation item
+ */
+export const CreateNavItemSchema = z.object({
+  type: NavItemTypeSchema,
+  label: z.string().min(1),
+  url: z.string().min(1),
+  pageId: z.coerce.number().int().positive().optional(),
+  position: z.coerce.number().int().min(0).optional(),
+});
+
+/**
+ * API request body schema for updating a navigation item
+ */
+export const UpdateNavItemSchema = CreateNavItemSchema.partial();
+
+/**
+ * API request body schema for creating a collection
+ */
+export const CreateCollectionSchema = z.object({
+  slug: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  icon: z.string().optional(),
+  sortOrder: SortOrderSchema.optional(),
+  position: z.coerce.number().int().min(0).optional(),
+  showDivider: z
+    .union([z.boolean(), z.literal("on").transform(() => true)])
+    .optional(),
+});
+
+/**
+ * API request body schema for updating a collection
+ */
+export const UpdateCollectionSchema = CreateCollectionSchema.partial();
+
+/**
  * Form data helper: safely parse a FormData value with a schema
  *
  * @example
  * ```ts
- * const type = parseFormData(formData, "type", PostTypeSchema);
- * // type is PostType, throws if invalid
+ * const format = parseFormData(formData, "format", FormatSchema);
+ * // format is Format, throws if invalid
  * ```
  */
 export function parseFormData<T>(
@@ -103,40 +194,15 @@ export function parseFormDataOptional<T>(
 }
 
 /**
- * Validates media attachment count against post type rules.
+ * Validates media attachment count for a post.
+ * All formats allow 0-20 media attachments.
  *
- * @param type - The post type to validate against
  * @param mediaIds - Array of media IDs to attach
  * @returns null if valid, error string if invalid
- *
- * @example
- * ```ts
- * const error = validateMediaForPostType("image", []);
- * // Returns: "image posts require at least 1 media attachment"
- * ```
  */
-export function validateMediaForPostType(
-  type: PostType,
-  mediaIds: string[],
-): string | null {
-  const rules = POST_TYPE_MEDIA_RULES[type];
-
-  if (rules === null) {
-    if (mediaIds.length > 0) {
-      return `${type} posts do not allow media attachments`;
-    }
-    return null;
+export function validateMediaCount(mediaIds: string[]): string | null {
+  if (mediaIds.length > MAX_MEDIA_ATTACHMENTS) {
+    return `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} media attachments`;
   }
-
-  const [min, max] = rules;
-
-  if (mediaIds.length < min) {
-    return `${type} posts require at least ${min} media attachment${min !== 1 ? "s" : ""}`;
-  }
-
-  if (mediaIds.length > max) {
-    return `${type} posts allow at most ${max} media attachment${max !== 1 ? "s" : ""}`;
-  }
-
   return null;
 }

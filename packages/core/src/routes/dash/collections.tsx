@@ -67,7 +67,7 @@ function CollectionsListContent({
                     message: "Edit",
                     comment: "@context: Button to edit collection",
                   })}
-                  viewHref={`/c/${col.path}`}
+                  viewHref={`/c/${col.slug}`}
                   viewLabel={t({
                     message: "View",
                     comment: "@context: Button to view collection",
@@ -81,7 +81,7 @@ function CollectionsListContent({
               >
                 {col.title}
               </a>
-              <p class="text-sm text-muted-foreground">/{col.path}</p>
+              <p class="text-sm text-muted-foreground">/{col.slug}</p>
               {col.description && (
                 <p class="text-sm text-muted-foreground mt-1">
                   {col.description}
@@ -104,7 +104,7 @@ function NewCollectionContent() {
       </h1>
 
       <form
-        data-signals="{title: '', path: '', description: ''}"
+        data-signals="{title: '', slug: '', description: ''}"
         data-on:submit__prevent="@post('/dash/collections')"
         data-indicator="_loading"
         class="flex flex-col gap-4 max-w-lg"
@@ -134,7 +134,7 @@ function NewCollectionContent() {
           </label>
           <input
             type="text"
-            data-bind="path"
+            data-bind="slug"
             class="input"
             required
             placeholder="my-collection"
@@ -213,7 +213,7 @@ function ViewCollectionContent({
       <div class="flex items-center justify-between mb-6">
         <div>
           <h1 class="text-2xl font-semibold">{collection.title}</h1>
-          <p class="text-sm text-muted-foreground">/{collection.path}</p>
+          <p class="text-sm text-muted-foreground">/{collection.slug}</p>
         </div>
         <ActionButtons
           editHref={`/dash/collections/${collection.id}/edit`}
@@ -221,7 +221,7 @@ function ViewCollectionContent({
             message: "Edit",
             comment: "@context: Button to edit collection",
           })}
-          viewHref={`/c/${collection.path}`}
+          viewHref={`/c/${collection.slug}`}
           viewLabel={t({
             message: "View",
             comment: "@context: Button to view collection",
@@ -255,21 +255,10 @@ function ViewCollectionContent({
                       class="font-medium hover:underline"
                     >
                       {post.title ||
-                        post.content?.slice(0, 50) ||
+                        post.body?.slice(0, 50) ||
                         `Post #${post.id}`}
                     </a>
                   </div>
-                  <button
-                    type="button"
-                    class="btn-sm-ghost text-destructive"
-                    data-on:click__prevent={`@post('/dash/collections/${collection.id}/remove-post', {payload: {postId: ${post.id}}})`}
-                  >
-                    {t({
-                      message: "Remove",
-                      comment:
-                        "@context: Button to remove post from collection",
-                    })}
-                  </button>
                 </div>
               ))}
             </div>
@@ -280,7 +269,7 @@ function ViewCollectionContent({
       <div class="mt-6">
         <a href="/dash/collections" class="text-sm hover:underline">
           {t({
-            message: "← Back to Collections",
+            message: "\u2190 Back to Collections",
             comment: "@context: Navigation link",
           })}
         </a>
@@ -294,7 +283,7 @@ function EditCollectionContent({ collection }: { collection: Collection }) {
 
   const signals = JSON.stringify({
     title: collection.title,
-    path: collection.path ?? "",
+    slug: collection.slug ?? "",
     description: collection.description ?? "",
   }).replace(/</g, "\\u003c");
 
@@ -326,7 +315,7 @@ function EditCollectionContent({ collection }: { collection: Collection }) {
           </label>
           <input
             type="text"
-            data-bind="path"
+            data-bind="slug"
             class="input"
             required
             pattern="[a-z0-9-]+"
@@ -419,13 +408,13 @@ collectionsRoutes.get("/new", async (c) => {
 collectionsRoutes.post("/", async (c) => {
   const body = await c.req.json<{
     title: string;
-    path: string;
+    slug: string;
     description?: string;
   }>();
 
   const collection = await c.var.services.collections.create({
     title: body.title,
-    path: body.path,
+    slug: body.slug,
     description: body.description || undefined,
   });
 
@@ -440,7 +429,10 @@ collectionsRoutes.get("/:id", async (c) => {
   const collection = await c.var.services.collections.getById(id);
   if (!collection) return c.notFound();
 
-  const posts = await c.var.services.collections.getPosts(id);
+  // Fetch posts in this collection via post service
+  const posts = await c.var.services.posts.list({
+    collectionId: id,
+  });
   const siteName = await getSiteName(c);
 
   return c.html(
@@ -484,13 +476,13 @@ collectionsRoutes.post("/:id", async (c) => {
 
   const body = await c.req.json<{
     title: string;
-    path: string;
+    slug: string;
     description?: string;
   }>();
 
   await c.var.services.collections.update(id, {
     title: body.title,
-    path: body.path,
+    slug: body.slug,
     description: body.description || undefined,
   });
 
@@ -505,18 +497,4 @@ collectionsRoutes.post("/:id/delete", async (c) => {
   await c.var.services.collections.delete(id);
 
   return dsRedirect("/dash/collections");
-});
-
-// Remove post from collection
-collectionsRoutes.post("/:id/remove-post", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.notFound();
-
-  const body = await c.req.json<{ postId: number }>();
-
-  if (body.postId) {
-    await c.var.services.collections.removePost(id, body.postId);
-  }
-
-  return dsRedirect(`/dash/collections/${id}`);
 });

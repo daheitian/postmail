@@ -12,6 +12,7 @@ import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
 import { sse } from "../../lib/sse.js";
+import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 import { HomePage as DefaultHomePage } from "../../themes/threads/pages/HomePage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -68,6 +69,16 @@ homeRoutes.get("/", async (c) => {
 
   // Full page render
   const navData = await getNavigationData(c);
+
+  // Fetch pinned posts
+  const pinnedPosts = await c.var.services.posts.list({
+    pinned: true,
+    status: "published",
+    excludeReplies: true,
+  });
+  const mediaCtx = createMediaContext(c);
+  const pinnedItems = toPostViewsFromPosts(pinnedPosts, mediaCtx);
+
   const components = c.var.config.theme?.components;
   const Page = components?.HomePage ?? DefaultHomePage;
 
@@ -77,6 +88,7 @@ homeRoutes.get("/", async (c) => {
     content: (
       <Page
         items={items}
+        pinnedItems={pinnedItems}
         hasMore={hasMore}
         nextCursor={nextCursor}
         theme={components}

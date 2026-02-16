@@ -64,3 +64,6 @@ Thumbs.db
 *.tgz
 *.pid
 *.seed
+
+# Temporary seed files
+templates/jant-site/scripts/seed-demo-upload.sql

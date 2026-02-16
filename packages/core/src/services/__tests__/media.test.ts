@@ -166,8 +166,8 @@ describe("MediaService", () => {
   describe("getByPostId", () => {
     it("returns media ordered by position", async () => {
       const post = await postService.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const m1 = await mediaService.create({
@@ -191,8 +191,8 @@ describe("MediaService", () => {
 
     it("returns empty array for post with no media", async () => {
       const post = await postService.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const results = await mediaService.getByPostId(post.id);
@@ -203,12 +203,12 @@ describe("MediaService", () => {
   describe("getByPostIds", () => {
     it("returns Map grouped by postId", async () => {
       const post1 = await postService.create({
-        type: "note",
-        content: "post 1",
+        format: "note",
+        body: "post 1",
       });
       const post2 = await postService.create({
-        type: "note",
-        content: "post 2",
+        format: "note",
+        body: "post 2",
       });
 
       const m1 = await mediaService.create({
@@ -240,8 +240,8 @@ describe("MediaService", () => {
 
     it("returns ordered by position within each post", async () => {
       const post = await postService.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const m1 = await mediaService.create({
@@ -309,8 +309,8 @@ describe("MediaService", () => {
   describe("attachToPost", () => {
     it("sets postId and position for each media", async () => {
       const post = await postService.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const m1 = await mediaService.create({
@@ -334,8 +334,8 @@ describe("MediaService", () => {
 
     it("replaces existing attachments", async () => {
       const post = await postService.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const m1 = await mediaService.create({
@@ -367,8 +367,8 @@ describe("MediaService", () => {
 
     it("handles empty array by clearing all attachments", async () => {
       const post = await postService.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const m1 = await mediaService.create({
@@ -387,8 +387,8 @@ describe("MediaService", () => {
   describe("detachFromPost", () => {
     it("clears postId and resets position", async () => {
       const post = await postService.create({
-        type: "note",
-        content: "test",
+        format: "note",
+        body: "test",
       });
 
       const m1 = await mediaService.create({

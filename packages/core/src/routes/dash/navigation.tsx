@@ -1,11 +1,11 @@
 import { getSiteName } from "../../lib/config.js";
 /**
- * Dashboard Navigation Links Routes
+ * Dashboard Navigation Items Routes
  */
 
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import type { Bindings, NavigationLink } from "../../types.js";
+import type { Bindings, NavItem } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../theme/layouts/index.js";
 import {
@@ -20,7 +20,7 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const navigationRoutes = new Hono<Env>();
 
-function NavigationListContent({ links }: { links: NavigationLink[] }) {
+function NavigationListContent({ items }: { items: NavItem[] }) {
   const { t } = useLingui();
 
   return (
@@ -37,7 +37,7 @@ function NavigationListContent({ links }: { links: NavigationLink[] }) {
         ctaHref="/dash/navigation/new"
       />
 
-      {links.length === 0 ? (
+      {items.length === 0 ? (
         <EmptyState
           message={t({
             message: "No navigation links configured.",
@@ -52,17 +52,17 @@ function NavigationListContent({ links }: { links: NavigationLink[] }) {
       ) : (
         <>
           <div id="nav-links-list" class="flex flex-col divide-y">
-            {links.map((link) => (
+            {items.map((item) => (
               <ListItemRow
-                key={link.id}
+                key={item.id}
                 actions={
                   <ActionButtons
-                    editHref={`/dash/navigation/${link.id}/edit`}
+                    editHref={`/dash/navigation/${item.id}/edit`}
                     editLabel={t({
                       message: "Edit",
                       comment: "@context: Button to edit navigation link",
                     })}
-                    deleteAction={`/dash/navigation/${link.id}/delete`}
+                    deleteAction={`/dash/navigation/${item.id}/delete`}
                     deleteLabel={t({
                       message: "Delete",
                       comment: "@context: Button to delete navigation link",
@@ -72,13 +72,13 @@ function NavigationListContent({ links }: { links: NavigationLink[] }) {
               >
                 <div
                   class="flex items-center gap-3 cursor-grab"
-                  data-id={link.id}
+                  data-id={item.id}
                 >
                   <span class="text-muted-foreground select-none">⠿</span>
                   <div class="flex items-center gap-2">
-                    <span class="font-medium">{link.label}</span>
+                    <span class="font-medium">{item.label}</span>
                     <code class="text-sm text-muted-foreground bg-muted px-1 rounded">
-                      {link.url}
+                      {item.url}
                     </code>
                   </div>
                 </div>
@@ -94,10 +94,10 @@ function NavigationListContent({ links }: { links: NavigationLink[] }) {
 }
 
 function NavigationFormContent({
-  link,
+  item,
   isEdit,
 }: {
-  link?: NavigationLink;
+  item?: NavItem;
   isEdit?: boolean;
 }) {
   const { t } = useLingui();
@@ -106,11 +106,11 @@ function NavigationFormContent({
     : t({ message: "New Link", comment: "@context: Page heading" });
 
   const signals = JSON.stringify({
-    label: link?.label ?? "",
-    url: link?.url ?? "",
+    label: item?.label ?? "",
+    url: item?.url ?? "",
   }).replace(/</g, "\\u003c");
 
-  const action = isEdit ? `/dash/navigation/${link?.id}` : "/dash/navigation";
+  const action = isEdit ? `/dash/navigation/${item?.id}` : "/dash/navigation";
 
   return (
     <>
@@ -200,10 +200,10 @@ function NavigationFormContent({
   );
 }
 
-// List navigation links
+// List navigation items
 navigationRoutes.get("/", async (c) => {
   const siteName = await getSiteName(c);
-  const links = await c.var.services.navigationLinks.list();
+  const items = await c.var.services.navItems.list();
 
   return c.html(
     <DashLayout
@@ -212,7 +212,7 @@ navigationRoutes.get("/", async (c) => {
       siteName={siteName}
       currentPath="/dash/navigation"
     >
-      <NavigationListContent links={links} />
+      <NavigationListContent items={items} />
     </DashLayout>,
   );
 });
@@ -241,7 +241,8 @@ navigationRoutes.post("/", async (c) => {
     return dsToast("Label and URL are required", "error");
   }
 
-  await c.var.services.navigationLinks.create({
+  await c.var.services.navItems.create({
+    type: "link",
     label: body.label,
     url: body.url,
   });
@@ -257,7 +258,7 @@ navigationRoutes.post("/reorder", async (c) => {
     return dsToast("Invalid request", "error");
   }
 
-  await c.var.services.navigationLinks.reorder(body.ids);
+  await c.var.services.navItems.reorder(body.ids);
 
   return dsToast("Order saved");
 });
@@ -267,8 +268,8 @@ navigationRoutes.get("/:id/edit", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
 
-  const link = await c.var.services.navigationLinks.getById(id);
-  if (!link) return c.notFound();
+  const item = await c.var.services.navItems.getById(id);
+  if (!item) return c.notFound();
 
   const siteName = await getSiteName(c);
 
@@ -279,7 +280,7 @@ navigationRoutes.get("/:id/edit", async (c) => {
       siteName={siteName}
       currentPath="/dash/navigation"
     >
-      <NavigationFormContent link={link} isEdit />
+      <NavigationFormContent item={item} isEdit />
     </DashLayout>,
   );
 });
@@ -295,7 +296,7 @@ navigationRoutes.post("/:id", async (c) => {
     return dsToast("Label and URL are required", "error");
   }
 
-  const updated = await c.var.services.navigationLinks.update(id, {
+  const updated = await c.var.services.navItems.update(id, {
     label: body.label,
     url: body.url,
   });
@@ -309,7 +310,7 @@ navigationRoutes.post("/:id", async (c) => {
 navigationRoutes.post("/:id/delete", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (!isNaN(id)) {
-    await c.var.services.navigationLinks.delete(id);
+    await c.var.services.navItems.delete(id);
   }
 
   return dsRedirect("/dash/navigation");

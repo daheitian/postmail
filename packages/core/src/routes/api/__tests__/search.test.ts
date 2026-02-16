@@ -39,9 +39,8 @@ describe("Search API Routes", () => {
     app.route("/api/search", searchApiRoutes);
 
     await services.posts.create({
-      type: "note",
-      content: "Testing search functionality in jant",
-      visibility: "featured",
+      format: "note",
+      body: "Testing search functionality in jant",
     });
 
     const res = await app.request("/api/search?q=jant");

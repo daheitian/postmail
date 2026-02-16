@@ -1,22 +1,27 @@
 /**
- * View Model Conversions
+ * View Model Conversions (v2)
  *
  * Transforms raw database models into render-ready View types.
- * Theme components receive only View types — no lib/ imports needed.
+ * Theme components receive only View types -- no lib/ imports needed.
  */
 
 import type { Context } from "hono";
 import type {
   Post,
   PostWithMedia,
+  Page,
   Media,
   MediaView,
   PostView,
-  NavLinkView,
-  NavigationLink,
+  PageView,
+  NavItemView,
+  NavItem,
   SearchResult,
   SearchResultView,
   ArchiveGroup,
+  Format,
+  Status,
+  NavItemType,
 } from "../types.js";
 import { encode } from "./sqid.js";
 import {
@@ -26,13 +31,14 @@ import {
   formatRelativeTime,
 } from "./time.js";
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
+import { getHtmlExcerpt } from "./excerpt.js";
 
 // =============================================================================
 // Media Context
 // =============================================================================
 
 /**
- * Central media config — extracted once per request from env.
+ * Central media config -- extracted once per request from env.
  */
 export interface MediaContext {
   r2PublicUrl?: string;
@@ -45,12 +51,6 @@ export interface MediaContext {
  *
  * @param c - Hono context
  * @returns MediaContext with env values
- *
- * @example
- * ```ts
- * const mediaCtx = createMediaContext(c);
- * const postView = toPostView(post, mediaCtx);
- * ```
  */
 export function createMediaContext(c: Context): MediaContext {
   return {
@@ -105,25 +105,26 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
  * Converts a PostWithMedia to a render-ready PostView.
  *
  * @param post - Post with media attachments from database
- * @param ctx - Media context with URL configuration
+ * @param _ctx - Media context with URL configuration
  * @returns Render-ready PostView with pre-computed fields
- *
- * @example
- * ```ts
- * const mediaCtx = createMediaContext(c);
- * const postView = toPostView({ ...post, mediaAttachments: [...] }, mediaCtx);
- * ```
  */
 export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
-  const permalink = `/p/${encode(post.id)}`;
+  const permalink = post.slug ? `/${post.slug}` : `/p/${encode(post.id)}`;
 
-  // Pre-compute excerpt from raw content
+  // Pre-compute excerpt from raw body
   let excerpt: string | undefined;
-  if (post.content) {
+  if (post.body) {
     excerpt =
-      post.content.length > 160
-        ? post.content.slice(0, 160) + "..."
-        : post.content;
+      post.body.length > 160 ? post.body.slice(0, 160) + "..." : post.body;
+  }
+
+  // Pre-compute HTML summary for article-style posts (with title)
+  let summaryHtml: string | undefined;
+  let summaryHasMore: boolean | undefined;
+  if (post.title && post.bodyHtml) {
+    const result = getHtmlExcerpt(post.bodyHtml);
+    summaryHtml = result.excerpt;
+    summaryHasMore = result.hasMore;
   }
 
   // Convert media attachments
@@ -140,33 +141,34 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
   return {
     id: post.id,
     permalink,
+    slug: post.slug ?? undefined,
     title: post.title ?? undefined,
-    contentHtml: post.contentHtml ?? undefined,
+    bodyHtml: post.bodyHtml ?? undefined,
     excerpt,
-    type: post.type,
-    visibility: post.visibility,
-    path: post.path ?? undefined,
+    summaryHtml,
+    summaryHasMore,
+    url: post.url ?? undefined,
+    quoteText: post.quoteText ?? undefined,
+    format: post.format as Format,
+    status: post.status as Status,
+    featured: post.featured === 1,
+    pinned: post.pinned === 1,
+    rating: post.rating ?? undefined,
+    collectionId: post.collectionId ?? undefined,
     publishedAt: toISOString(post.publishedAt),
     publishedAtFormatted: formatDate(post.publishedAt),
     publishedAtTime: formatTime(post.publishedAt),
     publishedAtRelative: formatRelativeTime(post.publishedAt),
     updatedAt: toISOString(post.updatedAt),
-    sourceUrl: post.sourceUrl ?? undefined,
-    sourceName: post.sourceName ?? undefined,
-    sourceDomain: post.sourceDomain ?? undefined,
     media,
     replyToId: post.replyToId ?? undefined,
     threadRootId: post.threadId ?? undefined,
-    content: post.content ?? undefined,
+    body: post.body ?? undefined,
   };
 }
 
 /**
  * Batch converts PostWithMedia[] to PostView[].
- *
- * @param posts - Array of posts with media
- * @param ctx - Media context
- * @returns Array of PostView
  */
 export function toPostViews(
   posts: PostWithMedia[],
@@ -177,10 +179,6 @@ export function toPostViews(
 
 /**
  * Converts a bare Post (no media) to a PostView with empty media array.
- *
- * @param post - Post without media
- * @param ctx - Media context (unused but kept for consistency)
- * @returns PostView with empty media
  */
 export function toPostViewFromPost(post: Post, ctx: MediaContext): PostView {
   return toPostView({ ...post, mediaAttachments: [] }, ctx);
@@ -188,10 +186,6 @@ export function toPostViewFromPost(post: Post, ctx: MediaContext): PostView {
 
 /**
  * Batch converts Post[] (no media) to PostView[].
- *
- * @param posts - Array of posts without media
- * @param ctx - Media context
- * @returns Array of PostView
  */
 export function toPostViewsFromPosts(
   posts: Post[],
@@ -201,54 +195,64 @@ export function toPostViewsFromPosts(
 }
 
 // =============================================================================
+// Page Conversions
+// =============================================================================
+
+/**
+ * Converts a Page to a render-ready PageView.
+ */
+export function toPageView(page: Page): PageView {
+  return {
+    id: page.id,
+    slug: page.slug,
+    title: page.title ?? undefined,
+    bodyHtml: page.bodyHtml ?? undefined,
+    status: page.status as Status,
+    createdAt: toISOString(page.createdAt),
+    updatedAt: toISOString(page.updatedAt),
+  };
+}
+
+// =============================================================================
 // Navigation Conversions
 // =============================================================================
 
 /**
- * Converts a NavigationLink to a NavLinkView with pre-computed state.
- *
- * @param link - Raw navigation link from database
- * @param currentPath - Current page path for active state computation
- * @returns NavLinkView with isActive and isExternal pre-computed
+ * Converts a NavItem to a NavItemView with pre-computed state.
  */
-export function toNavLinkView(
-  link: NavigationLink,
-  currentPath: string,
-): NavLinkView {
+export function toNavItemView(item: NavItem, currentPath: string): NavItemView {
   const isExternal =
-    link.url.startsWith("http://") || link.url.startsWith("https://");
+    item.url.startsWith("http://") || item.url.startsWith("https://");
 
   let isActive = false;
   if (!isExternal) {
-    if (link.url === "/") {
+    if (item.url === "/") {
       isActive = currentPath === "/";
     } else {
       isActive =
-        currentPath === link.url || currentPath.startsWith(link.url + "/");
+        currentPath === item.url || currentPath.startsWith(item.url + "/");
     }
   }
 
   return {
-    id: link.id,
-    label: link.label,
-    url: link.url,
+    id: item.id,
+    type: item.type as NavItemType,
+    label: item.label,
+    url: item.url,
+    pageId: item.pageId ?? undefined,
     isActive,
     isExternal,
   };
 }
 
 /**
- * Batch converts NavigationLink[] to NavLinkView[].
- *
- * @param links - Raw navigation links
- * @param currentPath - Current page path
- * @returns Array of NavLinkView
+ * Batch converts NavItem[] to NavItemView[].
  */
-export function toNavLinkViews(
-  links: NavigationLink[],
+export function toNavItemViews(
+  items: NavItem[],
   currentPath: string,
-): NavLinkView[] {
-  return links.map((l) => toNavLinkView(l, currentPath));
+): NavItemView[] {
+  return items.map((item) => toNavItemView(item, currentPath));
 }
 
 // =============================================================================
@@ -257,10 +261,6 @@ export function toNavLinkViews(
 
 /**
  * Converts a SearchResult to a SearchResultView with PostView.
- *
- * @param result - Raw search result
- * @param ctx - Media context
- * @returns SearchResultView with PostView
  */
 export function toSearchResultView(
   result: SearchResult,
@@ -275,10 +275,6 @@ export function toSearchResultView(
 
 /**
  * Batch converts SearchResult[] to SearchResultView[].
- *
- * @param results - Raw search results
- * @param ctx - Media context
- * @returns Array of SearchResultView
  */
 export function toSearchResultViews(
   results: SearchResult[],
@@ -293,10 +289,6 @@ export function toSearchResultViews(
 
 /**
  * Converts a grouped post map to typed ArchiveGroup[].
- *
- * @param grouped - Map of "YYYY-MM" keys to Post arrays
- * @param ctx - Media context
- * @returns Array of ArchiveGroup with pre-formatted labels
  */
 export function toArchiveGroups(
   grouped: Map<string, Post[]>,
@@ -307,7 +299,6 @@ export function toArchiveGroups(
     const [year, month] = yearMonth.split("-");
     if (!year || !month) continue;
 
-    // Format label like "February 2024"
     const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1);
     const label = date.toLocaleDateString("en-US", {
       year: "numeric",

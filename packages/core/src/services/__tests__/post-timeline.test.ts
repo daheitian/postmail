@@ -13,76 +13,50 @@ describe("PostService - Timeline features", () => {
     postService = createPostService(db);
   });
 
-  describe("excludeTypes filter", () => {
-    it("excludes posts of specified types", async () => {
-      await postService.create({ type: "note", content: "a note" });
-      await postService.create({ type: "page", content: "a page" });
+  describe("format filter", () => {
+    it("filters by format", async () => {
+      await postService.create({ format: "note", body: "a note" });
       await postService.create({
-        type: "article",
-        content: "an article",
-        title: "Article",
+        format: "link",
+        body: "a link",
+        url: "https://example.com",
+      });
+      await postService.create({
+        format: "quote",
+        body: "a quote",
+        quoteText: "something wise",
       });
 
-      const posts = await postService.list({ excludeTypes: ["page"] });
-      expect(posts).toHaveLength(2);
-      expect(posts.every((p) => p.type !== "page")).toBe(true);
+      const posts = await postService.list({ format: "note" });
+      expect(posts).toHaveLength(1);
+      expect(posts[0]?.format).toBe("note");
     });
 
-    it("excludes multiple types", async () => {
-      await postService.create({ type: "note", content: "a note" });
-      await postService.create({ type: "page", content: "a page" });
+    it("combines format and status filters", async () => {
       await postService.create({
-        type: "article",
-        content: "an article",
-        title: "Article",
+        format: "note",
+        body: "published note",
+        status: "published",
       });
       await postService.create({
-        type: "link",
-        content: "a link",
-        sourceUrl: "https://example.com",
+        format: "note",
+        body: "draft note",
+        status: "draft",
+      });
+      await postService.create({
+        format: "link",
+        body: "published link",
+        status: "published",
+        url: "https://example.com",
       });
 
       const posts = await postService.list({
-        excludeTypes: ["page", "link"],
-      });
-      expect(posts).toHaveLength(2);
-      expect(posts.every((p) => p.type !== "page" && p.type !== "link")).toBe(
-        true,
-      );
-    });
-
-    it("returns all posts when excludeTypes is empty", async () => {
-      await postService.create({ type: "note", content: "a note" });
-      await postService.create({ type: "page", content: "a page" });
-
-      const posts = await postService.list({ excludeTypes: [] });
-      expect(posts).toHaveLength(2);
-    });
-
-    it("works combined with other filters", async () => {
-      await postService.create({
-        type: "note",
-        content: "featured note",
-        visibility: "featured",
-      });
-      await postService.create({
-        type: "page",
-        content: "featured page",
-        visibility: "featured",
-      });
-      await postService.create({
-        type: "note",
-        content: "draft note",
-        visibility: "draft",
-      });
-
-      const posts = await postService.list({
-        excludeTypes: ["page"],
-        visibility: "featured",
+        format: "note",
+        status: "published",
       });
       expect(posts).toHaveLength(1);
-      expect(posts[0]?.type).toBe("note");
-      expect(posts[0]?.visibility).toBe("featured");
+      expect(posts[0]?.format).toBe("note");
+      expect(posts[0]?.status).toBe("published");
     });
   });
 
@@ -94,17 +68,17 @@ describe("PostService - Timeline features", () => {
 
     it("returns preview replies for a thread root", async () => {
       const root = await postService.create({
-        type: "note",
-        content: "root",
+        format: "note",
+        body: "root",
       });
       await postService.create({
-        type: "note",
-        content: "reply 1",
+        format: "note",
+        body: "reply 1",
         replyToId: root.id,
       });
       await postService.create({
-        type: "note",
-        content: "reply 2",
+        format: "note",
+        body: "reply 2",
         replyToId: root.id,
       });
 
@@ -112,19 +86,19 @@ describe("PostService - Timeline features", () => {
       const replies = previews.get(root.id);
       expect(replies).toBeDefined();
       expect(replies).toHaveLength(2);
-      expect(replies?.[0]?.content).toBe("reply 1");
-      expect(replies?.[1]?.content).toBe("reply 2");
+      expect(replies?.[0]?.body).toBe("reply 1");
+      expect(replies?.[1]?.body).toBe("reply 2");
     });
 
     it("limits preview replies to previewCount", async () => {
       const root = await postService.create({
-        type: "note",
-        content: "root",
+        format: "note",
+        body: "root",
       });
       for (let i = 0; i < 5; i++) {
         await postService.create({
-          type: "note",
-          content: `reply ${i}`,
+          format: "note",
+          body: `reply ${i}`,
           replyToId: root.id,
         });
       }
@@ -132,19 +106,19 @@ describe("PostService - Timeline features", () => {
       const previews = await postService.getThreadPreviews([root.id], 2);
       const replies = previews.get(root.id);
       expect(replies).toHaveLength(2);
-      expect(replies?.[0]?.content).toBe("reply 0");
-      expect(replies?.[1]?.content).toBe("reply 1");
+      expect(replies?.[0]?.body).toBe("reply 0");
+      expect(replies?.[1]?.body).toBe("reply 1");
     });
 
     it("defaults to 3 preview replies", async () => {
       const root = await postService.create({
-        type: "note",
-        content: "root",
+        format: "note",
+        body: "root",
       });
       for (let i = 0; i < 5; i++) {
         await postService.create({
-          type: "note",
-          content: `reply ${i}`,
+          format: "note",
+          body: `reply ${i}`,
           replyToId: root.id,
         });
       }
@@ -156,21 +130,21 @@ describe("PostService - Timeline features", () => {
 
     it("handles multiple thread roots", async () => {
       const root1 = await postService.create({
-        type: "note",
-        content: "root 1",
+        format: "note",
+        body: "root 1",
       });
       const root2 = await postService.create({
-        type: "note",
-        content: "root 2",
+        format: "note",
+        body: "root 2",
       });
       await postService.create({
-        type: "note",
-        content: "reply to root 1",
+        format: "note",
+        body: "reply to root 1",
         replyToId: root1.id,
       });
       await postService.create({
-        type: "note",
-        content: "reply to root 2",
+        format: "note",
+        body: "reply to root 2",
         replyToId: root2.id,
       });
 
@@ -185,17 +159,17 @@ describe("PostService - Timeline features", () => {
 
     it("excludes deleted replies", async () => {
       const root = await postService.create({
-        type: "note",
-        content: "root",
+        format: "note",
+        body: "root",
       });
       const reply1 = await postService.create({
-        type: "note",
-        content: "reply 1",
+        format: "note",
+        body: "reply 1",
         replyToId: root.id,
       });
       await postService.create({
-        type: "note",
-        content: "reply 2",
+        format: "note",
+        body: "reply 2",
         replyToId: root.id,
       });
 
@@ -204,17 +178,47 @@ describe("PostService - Timeline features", () => {
       const previews = await postService.getThreadPreviews([root.id]);
       const replies = previews.get(root.id);
       expect(replies).toHaveLength(1);
-      expect(replies?.[0]?.content).toBe("reply 2");
+      expect(replies?.[0]?.body).toBe("reply 2");
     });
 
     it("returns empty for roots with no replies", async () => {
       const root = await postService.create({
-        type: "note",
-        content: "root with no replies",
+        format: "note",
+        body: "root with no replies",
       });
 
       const previews = await postService.getThreadPreviews([root.id]);
       expect(previews.get(root.id)).toBeUndefined();
+    });
+  });
+
+  describe("timeline assembly", () => {
+    it("fetches published non-reply posts for the timeline", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "a published note",
+        status: "published",
+      });
+      await postService.create({
+        format: "note",
+        body: "a reply",
+        status: "published",
+        replyToId: root.id,
+      });
+      await postService.create({
+        format: "note",
+        body: "a draft",
+        status: "draft",
+      });
+
+      const posts = await postService.list({
+        status: "published",
+        excludeReplies: true,
+        limit: 21,
+      });
+
+      expect(posts).toHaveLength(1);
+      expect(posts[0]?.body).toBe("a published note");
     });
   });
 });

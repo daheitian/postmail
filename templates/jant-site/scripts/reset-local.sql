@@ -1,16 +1,15 @@
--- Reset script for Jant local development
+-- Reset script for Jant local development (v2 schema)
 -- Clears all data so seed-local.sql can re-insert everything
 -- Usage: mise run db-seed (runs this then seed-local.sql)
 
--- Clear FTS index first (to avoid foreign key issues)
+-- Clear FTS index first (to avoid trigger issues)
 DELETE FROM posts_fts;
 
--- Clear join tables
-DELETE FROM post_collections;
-
--- Clear main tables
+-- Clear main tables (order matters for FK constraints)
+DELETE FROM nav_items;
 DELETE FROM media;
 DELETE FROM posts;
+DELETE FROM pages;
 DELETE FROM collections;
 DELETE FROM redirects;
 
@@ -23,4 +22,4 @@ DELETE FROM user;
 DELETE FROM settings;
 
 -- Reset auto-increment counters
-DELETE FROM sqlite_sequence WHERE name IN ('posts', 'media', 'collections', 'redirects');
+DELETE FROM sqlite_sequence WHERE name IN ('posts', 'pages', 'collections', 'nav_items', 'redirects');

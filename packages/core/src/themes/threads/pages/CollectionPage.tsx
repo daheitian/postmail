@@ -44,7 +44,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 )}
                 <div
                   class="e-content prose prose-sm"
-                  dangerouslySetInnerHTML={{ __html: post.contentHtml || "" }}
+                  dangerouslySetInnerHTML={{ __html: post.bodyHtml || "" }}
                 />
                 <footer class="mt-2 text-sm text-muted-foreground">
                   <time class="dt-published" datetime={post.publishedAt}>

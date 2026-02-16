@@ -7,8 +7,8 @@ import {
   toPostView,
   toPostViews,
   toMediaView,
-  toNavLinkView,
-  toNavLinkViews,
+  toNavItemView,
+  toNavItemViews,
   toSearchResultView,
   toArchiveGroups,
 } from "../view.js";
@@ -16,7 +16,7 @@ import type { MediaContext } from "../view.js";
 import type {
   PostWithMedia,
   Media,
-  NavigationLink,
+  NavItem,
   SearchResult,
   Post,
 } from "../../types.js";
@@ -30,15 +30,18 @@ const CTX_WITH_URLS: MediaContext = {
 function makePost(overrides: Partial<Post> = {}): Post {
   return {
     id: 1,
-    type: "note",
-    visibility: "featured",
+    format: "note",
+    status: "published",
+    featured: 0,
+    pinned: 0,
+    slug: null,
     title: null,
-    path: null,
-    content: "Hello world",
-    contentHtml: "<p>Hello world</p>",
-    sourceUrl: null,
-    sourceName: null,
-    sourceDomain: null,
+    url: null,
+    body: "Hello world",
+    bodyHtml: "<p>Hello world</p>",
+    quoteText: null,
+    rating: null,
+    collectionId: null,
     replyToId: null,
     threadId: null,
     deletedAt: null,
@@ -78,11 +81,13 @@ function makeMedia(overrides: Partial<Media> = {}): Media {
   };
 }
 
-function makeNavLink(overrides: Partial<NavigationLink> = {}): NavigationLink {
+function makeNavItem(overrides: Partial<NavItem> = {}): NavItem {
   return {
     id: 1,
+    type: "link",
     label: "Home",
     url: "/",
+    pageId: null,
     position: 0,
     createdAt: 1706745600,
     updatedAt: 1706745600,
@@ -95,11 +100,17 @@ function makeNavLink(overrides: Partial<NavigationLink> = {}): NavigationLink {
 // =============================================================================
 
 describe("toPostView", () => {
-  it("generates permalink from post id", () => {
-    const post = makePostWithMedia({ id: 123 });
+  it("generates permalink from post id when no slug", () => {
+    const post = makePostWithMedia({ id: 123, slug: null });
     const view = toPostView(post, EMPTY_CTX);
     expect(view.permalink).toMatch(/^\/p\/.+$/);
     expect(view.permalink.length).toBeGreaterThan(3);
+  });
+
+  it("generates permalink from slug when slug is set", () => {
+    const post = makePostWithMedia({ id: 123, slug: "my-post" });
+    const view = toPostView(post, EMPTY_CTX);
+    expect(view.permalink).toBe("/my-post");
   });
 
   it("formats dates correctly", () => {
@@ -109,52 +120,156 @@ describe("toPostView", () => {
     expect(view.publishedAtFormatted).toBe("Feb 1, 2024");
   });
 
-  it("generates excerpt from content", () => {
-    const shortContent = "Short text";
-    const longContent = "A".repeat(200);
+  it("generates excerpt from body", () => {
+    const shortBody = "Short text";
+    const longBody = "A".repeat(200);
 
     const shortView = toPostView(
-      makePostWithMedia({ content: shortContent }),
+      makePostWithMedia({ body: shortBody }),
       EMPTY_CTX,
     );
     expect(shortView.excerpt).toBe("Short text");
 
     const longView = toPostView(
-      makePostWithMedia({ content: longContent }),
+      makePostWithMedia({ body: longBody }),
       EMPTY_CTX,
     );
     expect(longView.excerpt).toBe("A".repeat(160) + "...");
   });
 
-  it("handles null content gracefully", () => {
-    const view = toPostView(makePostWithMedia({ content: null }), EMPTY_CTX);
+  it("computes summaryHtml for posts with title and bodyHtml", () => {
+    const view = toPostView(
+      makePostWithMedia({
+        title: "My Article",
+        body: "Short article body",
+        bodyHtml: "<p>Short article body</p>",
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.summaryHtml).toBe("<p>Short article body</p>");
+    expect(view.summaryHasMore).toBe(false);
+  });
+
+  it("truncates summaryHtml for long articles", () => {
+    const p1 = `<p>${"A".repeat(300)}</p>`;
+    const p2 = `<p>${"B".repeat(300)}</p>`;
+    const view = toPostView(
+      makePostWithMedia({
+        title: "Long Article",
+        body: "A".repeat(300) + "B".repeat(300),
+        bodyHtml: p1 + p2,
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.summaryHtml).toBe(p1);
+    expect(view.summaryHasMore).toBe(true);
+  });
+
+  it("does not compute summaryHtml for posts without title", () => {
+    const view = toPostView(
+      makePostWithMedia({
+        title: null,
+        bodyHtml: "<p>Just a note</p>",
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.summaryHtml).toBeUndefined();
+    expect(view.summaryHasMore).toBeUndefined();
+  });
+
+  it("does not compute summaryHtml for posts without bodyHtml", () => {
+    const view = toPostView(
+      makePostWithMedia({
+        title: "Title Only",
+        bodyHtml: null,
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.summaryHtml).toBeUndefined();
+    expect(view.summaryHasMore).toBeUndefined();
+  });
+
+  it("handles null body gracefully", () => {
+    const view = toPostView(
+      makePostWithMedia({ body: null, bodyHtml: null }),
+      EMPTY_CTX,
+    );
     expect(view.excerpt).toBeUndefined();
-    expect(view.content).toBeUndefined();
+    expect(view.bodyHtml).toBeUndefined();
+    expect(view.body).toBeUndefined();
   });
 
   it("converts null fields to undefined", () => {
     const view = toPostView(makePostWithMedia(), EMPTY_CTX);
     expect(view.title).toBeUndefined();
-    expect(view.path).toBeUndefined();
-    expect(view.sourceUrl).toBeUndefined();
-    expect(view.sourceName).toBeUndefined();
-    expect(view.sourceDomain).toBeUndefined();
+    expect(view.slug).toBeUndefined();
+    expect(view.url).toBeUndefined();
+    expect(view.quoteText).toBeUndefined();
+    expect(view.rating).toBeUndefined();
+    expect(view.collectionId).toBeUndefined();
     expect(view.replyToId).toBeUndefined();
     expect(view.threadRootId).toBeUndefined();
   });
 
-  it("preserves non-null source fields", () => {
+  it("preserves non-null url field", () => {
     const view = toPostView(
       makePostWithMedia({
-        sourceUrl: "https://example.com",
-        sourceName: "Example",
-        sourceDomain: "example.com",
+        url: "https://example.com",
       }),
       EMPTY_CTX,
     );
-    expect(view.sourceUrl).toBe("https://example.com");
-    expect(view.sourceName).toBe("Example");
-    expect(view.sourceDomain).toBe("example.com");
+    expect(view.url).toBe("https://example.com");
+  });
+
+  it("preserves non-null quoteText field", () => {
+    const view = toPostView(
+      makePostWithMedia({
+        format: "quote",
+        quoteText: "Something wise",
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.quoteText).toBe("Something wise");
+  });
+
+  it("maps format, status, featured, and pinned correctly", () => {
+    const view = toPostView(
+      makePostWithMedia({
+        format: "link",
+        status: "draft",
+        featured: 1,
+        pinned: 1,
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.format).toBe("link");
+    expect(view.status).toBe("draft");
+    expect(view.featured).toBe(true);
+    expect(view.pinned).toBe(true);
+  });
+
+  it("converts featured=0 and pinned=0 to false", () => {
+    const view = toPostView(
+      makePostWithMedia({
+        featured: 0,
+        pinned: 0,
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.featured).toBe(false);
+    expect(view.pinned).toBe(false);
+  });
+
+  it("preserves rating and collectionId when set", () => {
+    const view = toPostView(
+      makePostWithMedia({
+        rating: 5,
+        collectionId: 42,
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.rating).toBe(5);
+    expect(view.collectionId).toBe(42);
   });
 
   it("converts media attachments to MediaView", () => {
@@ -249,40 +364,40 @@ describe("toMediaView", () => {
 });
 
 // =============================================================================
-// toNavLinkView
+// toNavItemView
 // =============================================================================
 
-describe("toNavLinkView", () => {
+describe("toNavItemView", () => {
   it("marks home link active on exact / match", () => {
-    const view = toNavLinkView(makeNavLink({ url: "/" }), "/");
+    const view = toNavItemView(makeNavItem({ url: "/" }), "/");
     expect(view.isActive).toBe(true);
     expect(view.isExternal).toBe(false);
   });
 
   it("marks home link inactive on other paths", () => {
-    const view = toNavLinkView(makeNavLink({ url: "/" }), "/archive");
+    const view = toNavItemView(makeNavItem({ url: "/" }), "/archive");
     expect(view.isActive).toBe(false);
   });
 
   it("matches prefix for non-root links", () => {
-    const view = toNavLinkView(makeNavLink({ url: "/archive" }), "/archive");
+    const view = toNavItemView(makeNavItem({ url: "/archive" }), "/archive");
     expect(view.isActive).toBe(true);
 
-    const viewSub = toNavLinkView(
-      makeNavLink({ url: "/archive" }),
+    const viewSub = toNavItemView(
+      makeNavItem({ url: "/archive" }),
       "/archive/2024",
     );
     expect(viewSub.isActive).toBe(true);
   });
 
   it("does not false-match similar prefixes", () => {
-    const view = toNavLinkView(makeNavLink({ url: "/arch" }), "/archive");
+    const view = toNavItemView(makeNavItem({ url: "/arch" }), "/archive");
     expect(view.isActive).toBe(false);
   });
 
   it("marks external links as external and never active", () => {
-    const view = toNavLinkView(
-      makeNavLink({ url: "https://example.com" }),
+    const view = toNavItemView(
+      makeNavItem({ url: "https://example.com" }),
       "/",
     );
     expect(view.isExternal).toBe(true);
@@ -290,20 +405,31 @@ describe("toNavLinkView", () => {
   });
 
   it("handles http:// links", () => {
-    const view = toNavLinkView(makeNavLink({ url: "http://example.com" }), "/");
+    const view = toNavItemView(makeNavItem({ url: "http://example.com" }), "/");
     expect(view.isExternal).toBe(true);
     expect(view.isActive).toBe(false);
   });
+
+  it("includes type and pageId in view", () => {
+    const view = toNavItemView(makeNavItem({ type: "page", pageId: 5 }), "/");
+    expect(view.type).toBe("page");
+    expect(view.pageId).toBe(5);
+  });
+
+  it("converts null pageId to undefined", () => {
+    const view = toNavItemView(makeNavItem({ pageId: null }), "/");
+    expect(view.pageId).toBeUndefined();
+  });
 });
 
-describe("toNavLinkViews", () => {
-  it("converts multiple links", () => {
-    const links = [
-      makeNavLink({ id: 1, url: "/" }),
-      makeNavLink({ id: 2, url: "/archive" }),
-      makeNavLink({ id: 3, url: "https://github.com" }),
+describe("toNavItemViews", () => {
+  it("converts multiple items", () => {
+    const items = [
+      makeNavItem({ id: 1, url: "/" }),
+      makeNavItem({ id: 2, url: "/archive" }),
+      makeNavItem({ id: 3, url: "https://github.com" }),
     ];
-    const views = toNavLinkViews(links, "/archive");
+    const views = toNavItemViews(items, "/archive");
     expect(views).toHaveLength(3);
     expect(views[0]).toHaveProperty("isActive", false);
     expect(views[1]).toHaveProperty("isActive", true);
@@ -328,6 +454,28 @@ describe("toSearchResultView", () => {
     expect(view.post.permalink).toBeDefined();
     expect(view.rank).toBe(1.5);
     expect(view.snippet).toBe("...matching <b>text</b>...");
+  });
+
+  it("uses new post fields in search result view", () => {
+    const result: SearchResult = {
+      post: makePost({
+        id: 10,
+        format: "link",
+        status: "published",
+        featured: 1,
+        pinned: 0,
+        url: "https://example.com",
+        slug: "my-link",
+      }),
+      rank: 0.8,
+    };
+    const view = toSearchResultView(result, EMPTY_CTX);
+    expect(view.post.format).toBe("link");
+    expect(view.post.status).toBe("published");
+    expect(view.post.featured).toBe(true);
+    expect(view.post.pinned).toBe(false);
+    expect(view.post.url).toBe("https://example.com");
+    expect(view.post.permalink).toBe("/my-link");
   });
 });
 

@@ -19,7 +19,6 @@ export interface PostFormProps {
   imageTransformUrl?: string;
   s3PublicUrl?: string;
   collections?: Collection[];
-  postCollectionIds?: number[];
 }
 
 export const PostForm: FC<PostFormProps> = ({
@@ -30,7 +29,6 @@ export const PostForm: FC<PostFormProps> = ({
   imageTransformUrl,
   s3PublicUrl,
   collections,
-  postCollectionIds,
 }) => {
   const { t } = useLingui();
   const isEdit = !!post;
@@ -38,15 +36,18 @@ export const PostForm: FC<PostFormProps> = ({
   const existingMediaIds = (mediaAttachments ?? []).map((m) => m.id);
 
   const signals = JSON.stringify({
-    type: post?.type ?? "note",
+    format: post?.format ?? "note",
     title: post?.title ?? "",
-    content: post?.content ?? "",
-    sourceUrl: post?.sourceUrl ?? "",
-    sourceName: post?.sourceName ?? "",
-    visibility: post?.visibility ?? "quiet",
-    path: post?.path ?? "",
+    body: post?.body ?? "",
+    url: post?.url ?? "",
+    quoteText: post?.quoteText ?? "",
+    slug: post?.slug ?? "",
+    status: post?.status ?? "published",
+    featured: post?.featured === 1,
+    pinned: post?.pinned === 1,
+    rating: post?.rating ?? 0,
+    collectionId: post?.collectionId ?? 0,
     mediaIds: existingMediaIds,
-    collectionIds: postCollectionIds ?? [],
   }).replace(/</g, "\\u003c");
 
   return (
@@ -58,29 +59,23 @@ export const PostForm: FC<PostFormProps> = ({
     >
       <div id="post-form-message"></div>
 
-      {/* Type selector */}
+      {/* Format selector */}
       <div class="field">
         <label class="label">
           {t({
-            message: "Type",
-            comment: "@context: Post form field - post type",
+            message: "Format",
+            comment: "@context: Post form field - post format",
           })}
         </label>
-        <select data-bind="type" class="select" required>
-          <option value="note" selected={post?.type === "note"}>
-            {t({ message: "Note", comment: "@context: Post type option" })}
+        <select data-bind="format" class="select" required>
+          <option value="note" selected={post?.format === "note" || !post}>
+            {t({ message: "Note", comment: "@context: Post format option" })}
           </option>
-          <option value="article" selected={post?.type === "article"}>
-            {t({ message: "Article", comment: "@context: Post type option" })}
+          <option value="link" selected={post?.format === "link"}>
+            {t({ message: "Link", comment: "@context: Post format option" })}
           </option>
-          <option value="link" selected={post?.type === "link"}>
-            {t({ message: "Link", comment: "@context: Post type option" })}
-          </option>
-          <option value="quote" selected={post?.type === "quote"}>
-            {t({ message: "Quote", comment: "@context: Post type option" })}
-          </option>
-          <option value="image" selected={post?.type === "image"}>
-            {t({ message: "Image", comment: "@context: Post type option" })}
+          <option value="quote" selected={post?.format === "quote"}>
+            {t({ message: "Quote", comment: "@context: Post format option" })}
           </option>
         </select>
       </div>
@@ -104,41 +99,68 @@ export const PostForm: FC<PostFormProps> = ({
         />
       </div>
 
-      {/* Content */}
+      {/* Body */}
       <div class="field">
         <label class="label">
           {t({ message: "Content", comment: "@context: Post form field" })}
         </label>
         <textarea
-          data-bind="content"
+          data-bind="body"
           class="textarea min-h-32"
           placeholder={t({
             message: "What's on your mind?",
             comment: "@context: Post content placeholder",
           })}
-          required
         >
-          {post?.content ?? ""}
+          {post?.body ?? ""}
+        </textarea>
+      </div>
+
+      {/* URL (for link/quote formats) */}
+      <div class="field">
+        <label class="label">
+          {t({
+            message: "URL (optional)",
+            comment: "@context: Post form field - source URL",
+          })}
+        </label>
+        <input
+          type="url"
+          data-bind="url"
+          class="input"
+          placeholder="https://..."
+        />
+      </div>
+
+      {/* Quote Text (for quote format) */}
+      <div class="field" data-show="$format === 'quote'">
+        <label class="label">
+          {t({
+            message: "Quote Text",
+            comment: "@context: Post form field - quoted text",
+          })}
+        </label>
+        <textarea
+          data-bind="quoteText"
+          class="textarea"
+          placeholder={t({
+            message: "The text being quoted...",
+            comment: "@context: Quote text placeholder",
+          })}
+          rows={3}
+        >
+          {post?.quoteText ?? ""}
         </textarea>
       </div>
 
       {/* Media attachments */}
-      <div class="field" data-show="$type !== 'page'">
+      <div class="field">
         <label class="label">
           {t({
             message: "Media",
             comment: "@context: Post form field - media attachments",
           })}
         </label>
-        <p
-          class="text-xs text-muted-foreground mb-2"
-          data-show="$type === 'image'"
-        >
-          {t({
-            message: "At least 1 image required for image posts.",
-            comment: "@context: Hint for image post type media requirement",
-          })}
-        </p>
         {mediaAttachments && mediaAttachments.length > 0 && (
           <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-2">
             {mediaAttachments.map((m) => {
@@ -147,8 +169,8 @@ export const PostForm: FC<PostFormProps> = ({
                 r2PublicUrl,
                 s3PublicUrl,
               );
-              const url = getMediaUrl(m.id, m.storageKey, pUrl);
-              const thumbUrl = getImageUrl(url, imageTransformUrl, {
+              const mUrl = getMediaUrl(m.id, m.storageKey, pUrl);
+              const thumbUrl = getImageUrl(mUrl, imageTransformUrl, {
                 width: 150,
                 quality: 80,
                 format: "auto",
@@ -194,117 +216,99 @@ export const PostForm: FC<PostFormProps> = ({
         </button>
       </div>
 
-      {/* Source URL (for link/quote types) */}
+      {/* Status */}
       <div class="field">
         <label class="label">
-          {t({
-            message: "Source URL (optional)",
-            comment: "@context: Post form field",
-          })}
+          {t({ message: "Status", comment: "@context: Post form field" })}
         </label>
-        <input
-          type="url"
-          data-bind="sourceUrl"
-          class="input"
-          placeholder="https://..."
-        />
-      </div>
-
-      {/* Source Name (for link/quote types) */}
-      <div class="field">
-        <label class="label">
-          {t({
-            message: "Source Name (optional)",
-            comment:
-              "@context: Post form field - name of the source website or author",
-          })}
-        </label>
-        <input
-          type="text"
-          data-bind="sourceName"
-          class="input"
-          placeholder={t({
-            message: "e.g. The Verge, John Doe",
-            comment: "@context: Source name placeholder",
-          })}
-        />
-      </div>
-
-      {/* Visibility */}
-      <div class="field">
-        <label class="label">
-          {t({ message: "Visibility", comment: "@context: Post form field" })}
-        </label>
-        <select data-bind="visibility" class="select">
+        <select data-bind="status" class="select">
           <option
-            value="quiet"
-            selected={post?.visibility === "quiet" || !post}
+            value="published"
+            selected={post?.status === "published" || !post}
           >
             {t({
-              message: "Quiet (normal)",
-              comment: "@context: Post visibility option",
+              message: "Published",
+              comment: "@context: Post status option",
             })}
           </option>
-          <option value="featured" selected={post?.visibility === "featured"}>
-            {t({
-              message: "Featured",
-              comment: "@context: Post visibility option",
-            })}
-          </option>
-          <option value="unlisted" selected={post?.visibility === "unlisted"}>
-            {t({
-              message: "Unlisted",
-              comment: "@context: Post visibility option",
-            })}
-          </option>
-          <option value="draft" selected={post?.visibility === "draft"}>
+          <option value="draft" selected={post?.status === "draft"}>
             {t({
               message: "Draft",
-              comment: "@context: Post visibility option",
+              comment: "@context: Post status option",
             })}
           </option>
         </select>
       </div>
 
-      {/* Collections */}
+      {/* Featured & Pinned */}
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" class="checkbox" data-bind="featured" />
+          {t({
+            message: "Featured",
+            comment: "@context: Post form checkbox - mark as featured",
+          })}
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" class="checkbox" data-bind="pinned" />
+          {t({
+            message: "Pinned",
+            comment: "@context: Post form checkbox - pin to top",
+          })}
+        </label>
+      </div>
+
+      {/* Collection */}
       {collections && collections.length > 0 && (
-        <fieldset class="field">
-          <legend class="label">
+        <div class="field">
+          <label class="label">
             {t({
-              message: "Collections (optional)",
-              comment: "@context: Post form field - assign to collections",
+              message: "Collection (optional)",
+              comment: "@context: Post form field - assign to collection",
             })}
-          </legend>
-          <div class="flex flex-col gap-1">
+          </label>
+          <select data-bind="collectionId" class="select">
+            <option value="0">
+              {t({
+                message: "None",
+                comment: "@context: No collection selected",
+              })}
+            </option>
             {collections.map((col) => (
-              <label key={col.id} class="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  class="checkbox"
-                  data-attr:checked={`$collectionIds.includes(${col.id})`}
-                  data-on:change={`$collectionIds.includes(${col.id}) ? $collectionIds = $collectionIds.filter(id => id !== ${col.id}) : $collectionIds = [...$collectionIds, ${col.id}]`}
-                />
+              <option
+                key={col.id}
+                value={col.id}
+                selected={post?.collectionId === col.id}
+              >
                 {col.title}
-              </label>
+              </option>
             ))}
-          </div>
-        </fieldset>
+          </select>
+        </div>
       )}
 
-      {/* Custom path (optional) */}
+      {/* Custom slug (optional) */}
       <div class="field">
         <label class="label">
           {t({
-            message: "Custom Path (optional)",
+            message: "Custom Slug (optional)",
             comment: "@context: Post form field",
           })}
         </label>
         <input
           type="text"
-          data-bind="path"
+          data-bind="slug"
           class="input"
           placeholder="my-custom-url"
+          pattern="[a-z0-9-]*"
         />
+        <p class="text-xs text-muted-foreground mt-1">
+          {t({
+            message:
+              "Custom URL path. Leave empty to use default /p/ID format.",
+            comment: "@context: Slug help text",
+          })}
+        </p>
       </div>
 
       {/* Submit */}
