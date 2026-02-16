@@ -3,7 +3,6 @@
  *
  * Design tokens extracted from threads.com source CSS.
  * Key variables from Threads' --barcelona-* system:
- *   --barcelona-side-navigation-width: 76px
  *   --barcelona-column-layout-max-width: 640px
  *   --barcelona-columns-item-horizontal-padding: 24px
  *   --barcelona-primary-column-outline: rgb(213,213,213) / rgb(45,45,45)
@@ -21,19 +20,15 @@
 
 :root {
   /* Layout tokens — theme-specific, not affected by color themes */
-  --threads-sidebar-width: 76px;
   --threads-column-max-width: 640px;
   --threads-column-padding: 24px;
   --threads-container-radius: 24px;
-  --threads-mobile-header-height: 60px;
 
   /* Color tokens — derived from BaseCoat variables so color themes apply automatically */
   --threads-column-outline: var(--border);
   --threads-threadline: var(--border);
   --threads-page-bg: var(--background);
   --threads-elevated-bg: var(--card);
-  --threads-nav-icon: var(--muted-foreground);
-  --threads-nav-icon-active: var(--foreground);
   --threads-nav-hover-bg: var(--accent);
   --threads-text-primary: var(--foreground);
   --threads-text-secondary: var(--muted-foreground);
@@ -52,70 +47,62 @@
     background-color: var(--threads-page-bg);
   }
 
-  /* --- Left sidebar (desktop only) ---------------------------------------- */
+  /* --- Top header --------------------------------------------------------- */
 
-  .threads-sidebar {
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 30;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    width: var(--threads-sidebar-width);
-    padding: 12px 0;
-    background-color: var(--threads-page-bg);
+  .threads-header {
+    max-width: var(--threads-column-max-width);
+    margin: 0 auto;
+    padding: 20px var(--threads-column-padding) 12px;
   }
 
   @media (min-width: 700px) {
-    .threads-sidebar {
-      display: flex;
+    .threads-header {
+      padding: 24px var(--threads-column-padding) 16px;
     }
   }
 
-  .threads-logo {
+  .threads-header-inner {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    margin-bottom: 4px;
-    color: var(--threads-nav-icon-active);
+    justify-content: space-between;
   }
 
-  .threads-sidebar-link {
+  .threads-logo {
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: var(--threads-text-primary);
+    text-decoration: none;
+    line-height: 1;
+  }
+
+  .threads-header-nav {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    color: var(--threads-nav-icon);
+    gap: 4px;
+  }
+
+  .threads-header-link {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--threads-text-secondary);
+    text-decoration: none;
     transition:
       background-color 0.15s,
       color 0.15s;
   }
 
-  .threads-sidebar-link:hover {
-    color: var(--threads-nav-icon-active);
+  .threads-header-link:hover {
+    color: var(--threads-text-primary);
     background-color: var(--threads-nav-hover-bg);
   }
 
-  .threads-sidebar-link-active {
-    color: var(--threads-nav-icon-active);
+  .threads-header-link-active {
+    color: var(--threads-text-primary);
+    font-weight: 600;
   }
 
   /* --- Main content area -------------------------------------------------- */
-
-  .threads-main {
-    padding-bottom: var(--threads-mobile-header-height);
-  }
-
-  @media (min-width: 700px) {
-    .threads-main {
-      padding-bottom: 0;
-      padding-left: var(--threads-sidebar-width);
-    }
-  }
 
   .threads-container {
     max-width: var(--threads-column-max-width);
@@ -175,37 +162,6 @@
       border-radius: var(--threads-container-radius);
       border: 0.5px solid var(--threads-column-outline);
     }
-  }
-
-  /* --- Mobile bottom tab bar ---------------------------------------------- */
-
-  .threads-mobile-tabs {
-    position: fixed;
-    inset: auto 0 0 0;
-    z-index: 30;
-    display: flex;
-    height: var(--threads-mobile-header-height);
-    background-color: var(--threads-elevated-bg);
-    border-top: 0.5px solid var(--threads-column-outline);
-  }
-
-  @media (min-width: 700px) {
-    .threads-mobile-tabs {
-      display: none;
-    }
-  }
-
-  .threads-mobile-tab {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    color: var(--threads-nav-icon);
-    transition: color 0.15s;
-  }
-
-  .threads-mobile-tab-active {
-    color: var(--threads-nav-icon-active);
   }
 
   /* =========================================================================
