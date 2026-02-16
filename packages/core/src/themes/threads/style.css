@@ -20,52 +20,25 @@
  * ========================================================================= */
 
 :root {
+  /* Layout tokens — theme-specific, not affected by color themes */
   --threads-sidebar-width: 76px;
   --threads-column-max-width: 640px;
   --threads-column-padding: 24px;
-  --threads-column-outline: rgb(213, 213, 213);
-  --threads-threadline: rgb(229, 229, 229);
-  --threads-page-bg: rgb(250, 250, 250);
-  --threads-elevated-bg: rgb(255, 255, 255);
-  --threads-nav-icon: rgb(77, 77, 77);
-  --threads-nav-icon-active: rgb(0, 0, 0);
-  --threads-nav-hover-bg: rgba(0, 0, 0, 0.035);
-  --threads-text-primary: rgb(0, 0, 0);
-  --threads-text-secondary: rgb(119, 119, 119);
-  --threads-media-outline: rgba(0, 0, 0, 0.15);
-  --threads-divider: rgba(0, 0, 0, 0.15);
   --threads-container-radius: 24px;
   --threads-mobile-header-height: 60px;
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --threads-column-outline: rgb(45, 45, 45);
-    --threads-threadline: rgb(51, 54, 56);
-    --threads-page-bg: rgb(10, 10, 10);
-    --threads-elevated-bg: rgb(24, 24, 24);
-    --threads-nav-icon: rgb(184, 184, 184);
-    --threads-nav-icon-active: rgb(243, 245, 247);
-    --threads-nav-hover-bg: rgba(255, 255, 255, 0.08);
-    --threads-text-primary: rgb(243, 245, 247);
-    --threads-text-secondary: rgb(153, 153, 153);
-    --threads-media-outline: rgba(243, 245, 247, 0.2);
-    --threads-divider: rgba(255, 255, 255, 0.15);
-  }
-}
-
-.dark {
-  --threads-column-outline: rgb(45, 45, 45);
-  --threads-threadline: rgb(51, 54, 56);
-  --threads-page-bg: rgb(10, 10, 10);
-  --threads-elevated-bg: rgb(24, 24, 24);
-  --threads-nav-icon: rgb(184, 184, 184);
-  --threads-nav-icon-active: rgb(243, 245, 247);
-  --threads-nav-hover-bg: rgba(255, 255, 255, 0.08);
-  --threads-text-primary: rgb(243, 245, 247);
-  --threads-text-secondary: rgb(153, 153, 153);
-  --threads-media-outline: rgba(243, 245, 247, 0.2);
-  --threads-divider: rgba(255, 255, 255, 0.15);
+  /* Color tokens — derived from BaseCoat variables so color themes apply automatically */
+  --threads-column-outline: var(--border);
+  --threads-threadline: var(--border);
+  --threads-page-bg: var(--background);
+  --threads-elevated-bg: var(--card);
+  --threads-nav-icon: var(--muted-foreground);
+  --threads-nav-icon-active: var(--foreground);
+  --threads-nav-hover-bg: var(--accent);
+  --threads-text-primary: var(--foreground);
+  --threads-text-secondary: var(--muted-foreground);
+  --threads-media-outline: var(--border);
+  --threads-divider: var(--border);
 }
 
 @layer components {

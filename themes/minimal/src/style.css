@@ -13,37 +13,18 @@
  * ========================================================================= */
 
 :root {
+  /* Layout tokens — theme-specific, not affected by color themes */
   --minimal-column-max-width: 640px;
   --minimal-column-padding: 24px;
-  --minimal-threadline: rgb(229, 229, 229);
-  --minimal-page-bg: rgb(255, 255, 255);
-  --minimal-nav-link: var(--color-primary, rgb(140, 100, 60));
-  --minimal-text-primary: rgb(0, 0, 0);
-  --minimal-text-secondary: rgb(119, 119, 119);
-  --minimal-media-outline: rgba(0, 0, 0, 0.15);
-  --minimal-divider: rgba(0, 0, 0, 0.15);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --minimal-threadline: rgb(51, 54, 56);
-    --minimal-page-bg: rgb(10, 10, 10);
-    --minimal-nav-link: var(--color-primary, rgb(180, 140, 100));
-    --minimal-text-primary: rgb(243, 245, 247);
-    --minimal-text-secondary: rgb(153, 153, 153);
-    --minimal-media-outline: rgba(243, 245, 247, 0.2);
-    --minimal-divider: rgba(255, 255, 255, 0.15);
-  }
-}
-
-.dark {
-  --minimal-threadline: rgb(51, 54, 56);
-  --minimal-page-bg: rgb(10, 10, 10);
-  --minimal-nav-link: var(--color-primary, rgb(180, 140, 100));
-  --minimal-text-primary: rgb(243, 245, 247);
-  --minimal-text-secondary: rgb(153, 153, 153);
-  --minimal-media-outline: rgba(243, 245, 247, 0.2);
-  --minimal-divider: rgba(255, 255, 255, 0.15);
+  /* Color tokens — derived from BaseCoat variables so color themes apply automatically */
+  --minimal-page-bg: var(--background);
+  --minimal-text-primary: var(--foreground);
+  --minimal-text-secondary: var(--muted-foreground);
+  --minimal-nav-link: var(--primary);
+  --minimal-threadline: var(--border);
+  --minimal-media-outline: var(--border);
+  --minimal-divider: var(--border);
 }
 
 @layer components {
