@@ -9,8 +9,8 @@ export { createApp } from "./app.js";
 export type { App, AppVariables } from "./app.js";
 
 // Default theme
-export { theme as minimalTheme } from "./themes/minimal/index.js";
-export type { ThemeOptions as MinimalThemeOptions } from "./themes/minimal/index.js";
+export { theme as threadsTheme } from "./themes/threads/index.js";
+export type { ThemeOptions as ThreadsThemeOptions } from "./themes/threads/index.js";
 
 // Types
 export type {

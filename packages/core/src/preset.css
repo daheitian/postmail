@@ -9,6 +9,7 @@
 
 @import "basecoat-css";
 @import "./styles/components.css";
+@import "./themes/threads/style.css";
 
 @theme {
   --radius-default: 0.5rem;

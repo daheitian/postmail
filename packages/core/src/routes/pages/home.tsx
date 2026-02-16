@@ -12,7 +12,7 @@ import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
 import { sse } from "../../lib/sse.js";
-import { HomePage as DefaultHomePage } from "../../themes/minimal/pages/HomePage.js";
+import { HomePage as DefaultHomePage } from "../../themes/threads/pages/HomePage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 

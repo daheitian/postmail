@@ -2,7 +2,7 @@
  * Jant Site Entry Point
  *
  * This is the main entry point for your Jant site.
- * The minimal theme is used by default. To customize, pass options to createApp().
+ * The threads theme is used by default. To customize, pass options to createApp().
  *
  * Configuration:
  * - Site settings (name, description, language) should be configured via

@@ -12,7 +12,7 @@ import type { Context } from "hono";
 import type { Child } from "hono/jsx";
 import type { ThemeComponents, SiteLayoutProps } from "../types.js";
 import { BaseLayout } from "../theme/layouts/BaseLayout.js";
-import { SiteLayout as DefaultSiteLayout } from "../themes/minimal/MinimalSiteLayout.js";
+import { ThreadsSiteLayout as DefaultSiteLayout } from "../themes/threads/ThreadsSiteLayout.js";
 import type { NavigationData } from "./navigation.js";
 
 export interface RenderPublicPageOptions {

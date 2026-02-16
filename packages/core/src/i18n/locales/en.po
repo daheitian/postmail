@@ -56,7 +56,7 @@ msgid "Add Media"
 msgstr "Add Media"
 
 #. @context: Archive filter - all types
-#: src/themes/minimal/pages/ArchivePage.tsx:90
+#: src/themes/threads/pages/ArchivePage.tsx:91
 msgid "All"
 msgstr "All"
 
@@ -66,7 +66,7 @@ msgid "Appearance"
 msgstr "Appearance"
 
 #. @context: Archive page title
-#: src/themes/minimal/pages/ArchivePage.tsx:76
+#: src/themes/threads/pages/ArchivePage.tsx:76
 msgid "Archive"
 msgstr "Archive"
 
@@ -80,12 +80,12 @@ msgstr "Are you sure you want to delete this post? This cannot be undone."
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:74
 #: src/theme/components/TypeBadge.tsx:20
-#: src/themes/minimal/pages/ArchivePage.tsx:17
+#: src/themes/threads/pages/ArchivePage.tsx:17
 msgid "Article"
 msgstr "Article"
 
 #. @context: Post type label plural - articles
-#: src/themes/minimal/pages/ArchivePage.tsx:42
+#: src/themes/threads/pages/ArchivePage.tsx:42
 msgid "Articles"
 msgstr "Articles"
 
@@ -376,12 +376,12 @@ msgid "Featured"
 msgstr "Featured"
 
 #. @context: Search results count - multiple
-#: src/themes/minimal/pages/SearchPage.tsx:73
+#: src/themes/threads/pages/SearchPage.tsx:76
 msgid "Found {count} results"
 msgstr "Found {count} results"
 
 #. @context: Search results count - single
-#: src/themes/minimal/pages/SearchPage.tsx:69
+#: src/themes/threads/pages/SearchPage.tsx:72
 msgid "Found 1 result"
 msgstr "Found 1 result"
 
@@ -402,12 +402,12 @@ msgstr "General"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:83
 #: src/theme/components/TypeBadge.tsx:29
-#: src/themes/minimal/pages/ArchivePage.tsx:26
+#: src/themes/threads/pages/ArchivePage.tsx:26
 msgid "Image"
 msgstr "Image"
 
 #. @context: Post type label plural - images
-#: src/themes/minimal/pages/ArchivePage.tsx:54
+#: src/themes/threads/pages/ArchivePage.tsx:54
 msgid "Images"
 msgstr "Images"
 
@@ -441,12 +441,12 @@ msgstr "Language"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:77
 #: src/theme/components/TypeBadge.tsx:24
-#: src/themes/minimal/pages/ArchivePage.tsx:21
+#: src/themes/threads/pages/ArchivePage.tsx:21
 msgid "Link"
 msgstr "Link"
 
 #. @context: Post type label plural - links
-#: src/themes/minimal/pages/ArchivePage.tsx:46
+#: src/themes/threads/pages/ArchivePage.tsx:46
 msgid "Links"
 msgstr "Links"
 
@@ -458,7 +458,7 @@ msgstr "Load more"
 #. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
 #: src/theme/components/PostForm.tsx:366
-#: src/themes/minimal/timeline/TimelineLoadMore.tsx:27
+#: src/themes/threads/timeline/TimelineLoadMore.tsx:28
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -586,21 +586,21 @@ msgid "No pages yet."
 msgstr "No pages yet."
 
 #. @context: Archive empty state
-#: src/themes/minimal/pages/ArchivePage.tsx:110
+#: src/themes/threads/pages/ArchivePage.tsx:111
 msgid "No posts found."
 msgstr "No posts found."
 
 #. @context: Empty state message
 #. @context: Empty state message
 #: src/routes/dash/collections.tsx:243
-#: src/themes/minimal/pages/CollectionPage.tsx:29
+#: src/themes/threads/pages/CollectionPage.tsx:29
 msgid "No posts in this collection."
 msgstr "No posts in this collection."
 
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
 #: src/theme/components/PostList.tsx:25
-#: src/themes/minimal/pages/HomePage.tsx:26
+#: src/themes/threads/pages/HomePage.tsx:26
 msgid "No posts yet."
 msgstr "No posts yet."
 
@@ -610,7 +610,7 @@ msgid "No redirects configured."
 msgstr "No redirects configured."
 
 #. @context: Search empty results
-#: src/themes/minimal/pages/SearchPage.tsx:64
+#: src/themes/threads/pages/SearchPage.tsx:67
 msgid "No results found."
 msgstr "No results found."
 
@@ -619,12 +619,12 @@ msgstr "No results found."
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:71
 #: src/theme/components/TypeBadge.tsx:19
-#: src/themes/minimal/pages/ArchivePage.tsx:16
+#: src/themes/threads/pages/ArchivePage.tsx:16
 msgid "Note"
 msgstr "Note"
 
 #. @context: Post type label plural - notes
-#: src/themes/minimal/pages/ArchivePage.tsx:38
+#: src/themes/threads/pages/ArchivePage.tsx:38
 msgid "Notes"
 msgstr "Notes"
 
@@ -633,7 +633,7 @@ msgstr "Notes"
 #. @context: Post type label - page
 #: src/routes/dash/pages.tsx:125
 #: src/theme/components/TypeBadge.tsx:33
-#: src/themes/minimal/pages/ArchivePage.tsx:30
+#: src/themes/threads/pages/ArchivePage.tsx:30
 msgid "Page"
 msgstr "Page"
 
@@ -657,7 +657,7 @@ msgstr "Page title..."
 #. @context: Post type label plural - pages
 #: src/routes/dash/pages.tsx:36
 #: src/theme/layouts/DashLayout.tsx:96
-#: src/themes/minimal/pages/ArchivePage.tsx:58
+#: src/themes/threads/pages/ArchivePage.tsx:58
 msgid "Pages"
 msgstr "Pages"
 
@@ -681,7 +681,7 @@ msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
 #: src/theme/components/ThreadView.tsx:68
-#: src/themes/minimal/pages/PostPage.tsx:35
+#: src/themes/threads/pages/PostPage.tsx:39
 msgid "Permalink"
 msgstr "Permalink"
 
@@ -790,12 +790,12 @@ msgstr "Quiet (normal)"
 #. @context: Post type option
 #: src/theme/components/PostForm.tsx:80
 #: src/theme/components/TypeBadge.tsx:25
-#: src/themes/minimal/pages/ArchivePage.tsx:22
+#: src/themes/threads/pages/ArchivePage.tsx:22
 msgid "Quote"
 msgstr "Quote"
 
 #. @context: Post type label plural - quotes
-#: src/themes/minimal/pages/ArchivePage.tsx:50
+#: src/themes/threads/pages/ArchivePage.tsx:50
 msgid "Quotes"
 msgstr "Quotes"
 
@@ -837,8 +837,8 @@ msgstr "Save Settings"
 
 #. @context: Search page title
 #. @context: Search submit button
-#: src/themes/minimal/pages/SearchPage.tsx:21
-#: src/themes/minimal/pages/SearchPage.tsx:46
+#: src/themes/threads/pages/SearchPage.tsx:21
+#: src/themes/threads/pages/SearchPage.tsx:47
 msgid "Search"
 msgstr "Search"
 
@@ -848,7 +848,7 @@ msgstr "Search"
 #~ msgstr "Search failed. Please try again."
 
 #. @context: Search input placeholder
-#: src/themes/minimal/pages/SearchPage.tsx:38
+#: src/themes/threads/pages/SearchPage.tsx:39
 msgid "Search posts..."
 msgstr "Search posts..."
 
@@ -875,7 +875,7 @@ msgstr "Settings"
 
 #. @context: Link to show remaining thread replies
 #. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
-#: src/themes/minimal/timeline/ThreadPreview.tsx:37
+#: src/themes/threads/timeline/ThreadPreview.tsx:38
 msgid "Show {remainingCount} more {0}"
 msgstr "Show {remainingCount} more {0}"
 

@@ -5,7 +5,7 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { CollectionPage as DefaultCollectionPage } from "../../themes/minimal/pages/CollectionPage.js";
+import { CollectionPage as DefaultCollectionPage } from "../../themes/threads/pages/CollectionPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";

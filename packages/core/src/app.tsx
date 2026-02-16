@@ -11,7 +11,7 @@ import { i18nMiddleware } from "./i18n/index.js";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, JantConfig } from "./types.js";
 import { SETTINGS_KEYS } from "./lib/constants.js";
-import { theme as minimalTheme } from "./themes/minimal/index.js";
+import { theme as threadsTheme } from "./themes/threads/index.js";
 import { hashPassword } from "better-auth/crypto";
 
 // Routes - Pages
@@ -81,8 +81,8 @@ export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
  * ```
  */
 export function createApp(config: JantConfig = {}): App {
-  // Merge with default minimal theme
-  const defaultTheme = minimalTheme();
+  // Merge with default threads theme
+  const defaultTheme = threadsTheme();
   const resolvedConfig: JantConfig = {
     ...config,
     theme: {

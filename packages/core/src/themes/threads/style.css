@@ -1,0 +1,336 @@
+/**
+ * Threads theme styles
+ *
+ * Design tokens extracted from threads.com source CSS.
+ * Key variables from Threads' --barcelona-* system:
+ *   --barcelona-side-navigation-width: 76px
+ *   --barcelona-column-layout-max-width: 640px
+ *   --barcelona-columns-item-horizontal-padding: 24px
+ *   --barcelona-primary-column-outline: rgb(213,213,213) / rgb(45,45,45)
+ *   --barcelona-threadline: rgb(229,229,229) / rgb(51,54,56)
+ *   --barcelona-navigation-icon: rgb(77,77,77) / rgb(184,184,184)
+ *   --barcelona-navigation-item-hover-background: rgba(0,0,0,0.035)
+ */
+
+/* Tell Tailwind to scan threads theme source files for class usage */
+@source "./";
+
+/* =========================================================================
+ * Threads Design Tokens (as CSS custom properties)
+ * ========================================================================= */
+
+:root {
+  --threads-sidebar-width: 76px;
+  --threads-column-max-width: 640px;
+  --threads-column-padding: 24px;
+  --threads-column-outline: rgb(213, 213, 213);
+  --threads-threadline: rgb(229, 229, 229);
+  --threads-page-bg: rgb(250, 250, 250);
+  --threads-elevated-bg: rgb(255, 255, 255);
+  --threads-nav-icon: rgb(77, 77, 77);
+  --threads-nav-icon-active: rgb(0, 0, 0);
+  --threads-nav-hover-bg: rgba(0, 0, 0, 0.035);
+  --threads-text-primary: rgb(0, 0, 0);
+  --threads-text-secondary: rgb(119, 119, 119);
+  --threads-media-outline: rgba(0, 0, 0, 0.15);
+  --threads-divider: rgba(0, 0, 0, 0.15);
+  --threads-container-radius: 24px;
+  --threads-mobile-header-height: 60px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --threads-column-outline: rgb(45, 45, 45);
+    --threads-threadline: rgb(51, 54, 56);
+    --threads-page-bg: rgb(10, 10, 10);
+    --threads-elevated-bg: rgb(24, 24, 24);
+    --threads-nav-icon: rgb(184, 184, 184);
+    --threads-nav-icon-active: rgb(243, 245, 247);
+    --threads-nav-hover-bg: rgba(255, 255, 255, 0.08);
+    --threads-text-primary: rgb(243, 245, 247);
+    --threads-text-secondary: rgb(153, 153, 153);
+    --threads-media-outline: rgba(243, 245, 247, 0.2);
+    --threads-divider: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.dark {
+  --threads-column-outline: rgb(45, 45, 45);
+  --threads-threadline: rgb(51, 54, 56);
+  --threads-page-bg: rgb(10, 10, 10);
+  --threads-elevated-bg: rgb(24, 24, 24);
+  --threads-nav-icon: rgb(184, 184, 184);
+  --threads-nav-icon-active: rgb(243, 245, 247);
+  --threads-nav-hover-bg: rgba(255, 255, 255, 0.08);
+  --threads-text-primary: rgb(243, 245, 247);
+  --threads-text-secondary: rgb(153, 153, 153);
+  --threads-media-outline: rgba(243, 245, 247, 0.2);
+  --threads-divider: rgba(255, 255, 255, 0.15);
+}
+
+@layer components {
+  /* =========================================================================
+   * Page Layout
+   * ========================================================================= */
+
+  .threads-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--threads-page-bg);
+  }
+
+  /* --- Left sidebar (desktop only) ---------------------------------------- */
+
+  .threads-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 30;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: var(--threads-sidebar-width);
+    padding: 12px 0;
+    background-color: var(--threads-page-bg);
+  }
+
+  @media (min-width: 700px) {
+    .threads-sidebar {
+      display: flex;
+    }
+  }
+
+  .threads-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 4px;
+    color: var(--threads-nav-icon-active);
+  }
+
+  .threads-sidebar-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    color: var(--threads-nav-icon);
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+  }
+
+  .threads-sidebar-link:hover {
+    color: var(--threads-nav-icon-active);
+    background-color: var(--threads-nav-hover-bg);
+  }
+
+  .threads-sidebar-link-active {
+    color: var(--threads-nav-icon-active);
+  }
+
+  /* --- Main content area -------------------------------------------------- */
+
+  .threads-main {
+    padding-bottom: var(--threads-mobile-header-height);
+  }
+
+  @media (min-width: 700px) {
+    .threads-main {
+      padding-bottom: 0;
+      padding-left: var(--threads-sidebar-width);
+    }
+  }
+
+  .threads-container {
+    max-width: var(--threads-column-max-width);
+    margin: 0 auto;
+  }
+
+  /* Mobile: full-bleed white, no border-radius */
+  .threads-content {
+    background-color: var(--threads-elevated-bg);
+    padding: 0 var(--threads-column-padding);
+  }
+
+  /* Desktop: rounded white card on gray background */
+  @media (min-width: 700px) {
+    .threads-container {
+      padding: 16px 24px 0;
+    }
+
+    .threads-content {
+      border-radius: var(--threads-container-radius);
+      border: 0.5px solid var(--threads-column-outline);
+      padding: 0 var(--threads-column-padding);
+      min-height: calc(100vh - 32px);
+    }
+  }
+
+  /* --- Home page: each date group as its own card ------------------------ */
+
+  .threads-content:has(#timeline-feed) {
+    background-color: transparent;
+    padding: 0;
+  }
+
+  .threads-content #timeline-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .threads-content #timeline-feed > div {
+    background-color: var(--threads-elevated-bg);
+    padding: 0 var(--threads-column-padding) 16px;
+  }
+
+  @media (min-width: 700px) {
+    .threads-content:has(#timeline-feed) {
+      border: none;
+      border-radius: 0;
+      min-height: auto;
+    }
+
+    .threads-content #timeline-feed {
+      gap: 16px;
+    }
+
+    .threads-content #timeline-feed > div {
+      border-radius: var(--threads-container-radius);
+      border: 0.5px solid var(--threads-column-outline);
+    }
+  }
+
+  /* --- Mobile bottom tab bar ---------------------------------------------- */
+
+  .threads-mobile-tabs {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    display: flex;
+    height: var(--threads-mobile-header-height);
+    background-color: var(--threads-elevated-bg);
+    border-top: 0.5px solid var(--threads-column-outline);
+  }
+
+  @media (min-width: 700px) {
+    .threads-mobile-tabs {
+      display: none;
+    }
+  }
+
+  .threads-mobile-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: var(--threads-nav-icon);
+    transition: color 0.15s;
+  }
+
+  .threads-mobile-tab-active {
+    color: var(--threads-nav-icon-active);
+  }
+
+  /* =========================================================================
+   * Timeline & Post Components
+   * ========================================================================= */
+
+  /* Date group header — centered, muted label at top of each card */
+  .threads-date-header {
+    padding: 16px 0 8px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--threads-text-secondary);
+  }
+
+  /* Post divider — full-width 0.5px line matching Threads.
+   * Targets the <hr class="border-border my-5"> used by both
+   * TimelineFeed (initial render) and the SSE load-more handler. */
+  .threads-content hr.border-border {
+    border: none;
+    border-top: 0.5px solid var(--threads-divider);
+    margin-left: calc(-1 * var(--threads-column-padding));
+    margin-right: calc(-1 * var(--threads-column-padding));
+  }
+
+  /* Thread reply container with vertical connector line */
+  .threads-replies {
+    position: relative;
+    margin-left: 16px;
+    padding-left: 16px;
+    margin-top: 8px;
+  }
+
+  .threads-replies::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--threads-threadline);
+  }
+
+  /* Individual reply in thread */
+  .threads-reply {
+    padding: 12px 0;
+  }
+
+  .threads-reply + .threads-reply {
+    border-top: 0.5px solid var(--threads-divider);
+  }
+
+  /* Compact text for thread replies */
+  .threads-compact {
+    @apply text-sm;
+  }
+
+  /* Media — rounded corners + subtle outline like Threads */
+  .threads-media img {
+    border-radius: 8px;
+    outline: 1px solid var(--threads-media-outline);
+    outline-offset: -1px;
+  }
+
+  /* Image carousel — horizontal scroll like Threads.net */
+  .threads-carousel-track {
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+    margin-inline: calc(-1 * var(--threads-column-padding));
+    padding-inline: var(--threads-column-padding);
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  .threads-carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  .threads-carousel-item {
+    flex: 0 0 auto;
+    width: 224px;
+    height: 280px;
+  }
+  .threads-carousel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Link preview styling */
+  .threads-link-preview {
+    border-radius: 12px;
+    border: 0.5px solid var(--threads-column-outline);
+    padding: 12px 16px;
+    margin-top: 8px;
+  }
+
+  /* Quote block styling */
+  .threads-quote {
+    padding-left: 12px;
+    border-left: 2px solid var(--threads-text-secondary);
+  }
+}
