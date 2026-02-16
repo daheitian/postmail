@@ -249,7 +249,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 > URL 是产品的一部分。应该简洁、美观、有意义。
 
-帖子使用短 ID（如 `/p/jR3k`），不支持自定义 path。Page 和 Collection 由用户自定义 slug。
+帖子默认使用短 ID（如 `/p/jR3k`），也支持可选的自定义 `path`（仅通过 API 设置，支持多级路径如 `2024/01/my-post`，用于博客迁移场景）。Page 和 Collection 由用户自定义 slug。
 
 ### 5.2 前台路由
 
@@ -259,6 +259,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `/featured`      | 仅精选帖子                                |
 | `/p/{id}`        | 单条帖子                                  |
 | `/{slug}`        | 独立页面（最低优先级）                    |
+| `/{path}`        | 帖子自定义路径（支持多级，API 设置）      |
 | `/c/{slug}`      | Collection                                |
 | `/c/{a}+{b}`     | Collection 组合查看                       |
 | `/collections`   | Collection 列表页                         |
@@ -380,7 +381,7 @@ Archive 页面筛选后可展示对应的 RSS 订阅链接。
 - 新增 `rating` 通用字段（1-5 整数），任何帖子可评分，不需要 review 类型
 - 新增 `pinned` 字段（布尔值），支持置顶，最多 3 条
 - 媒体支持混合上传（图片 + 视频 + 音频），不再按类型限制数量
-- Post 取消自定义 path/slug，统一用 `/p/{id}`
+- Post 支持可选 `path` 字段（仅 API 可用），支持多级路径（如 `2024/01/my-post`），用于博客迁移
 - Page 仅支持单级 slug，不支持多级路径
 
 ### 可见性系统重构
@@ -438,7 +439,7 @@ Archive 页面筛选后可展示对应的 RSS 订阅链接。
 | 新增     | `/c/{a}+{b}`                 | Collection 组合语法               |
 | 新增     | `/feed/all?format=`          | Feed 支持 format 筛选             |
 | 新增     | `/archive?format=&featured=` | Archive 支持 query parameter 筛选 |
-| 取消     | `/p/{slug}`                  | 帖子不再支持自定义 path           |
+| 变更     | `/p/{slug}` → `/{path}`      | 帖子支持可选多级路径（仅 API）    |
 | 取消     | `/dash/navigation`           | 合并到 `/dash/pages`              |
 | 变更     | `/{path}` → `/{slug}`        | Page 仅支持单级 slug              |
 | 变更     | `/dash/pages`                | 整合导航管理                      |

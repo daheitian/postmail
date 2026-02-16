@@ -35,7 +35,7 @@ const ThreadPost: FC<{
       {post.title && (
         <h2 class="p-name text-lg font-medium mb-2">
           <a
-            href={`${post.slug ? `/${post.slug}` : `/p/${sqid.encode(post.id)}`}`}
+            href={`${post.path ? `/${post.path}` : `/p/${sqid.encode(post.id)}`}`}
             class="u-url hover:underline"
           >
             {post.title}
@@ -65,7 +65,7 @@ const ThreadPost: FC<{
         )}
         {!isCurrent && (
           <a
-            href={`${post.slug ? `/${post.slug}` : `/p/${sqid.encode(post.id)}`}`}
+            href={`${post.path ? `/${post.path}` : `/p/${sqid.encode(post.id)}`}`}
             class="text-xs hover:underline"
           >
             {t({

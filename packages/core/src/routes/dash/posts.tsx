@@ -95,7 +95,6 @@ postsRoutes.post("/", async (c) => {
     status: string;
     featured?: boolean;
     pinned?: boolean;
-    slug?: string;
     url?: string;
     quoteText?: string;
     rating?: number;
@@ -110,7 +109,6 @@ postsRoutes.post("/", async (c) => {
     status: body.status as Post["status"],
     featured: body.featured,
     pinned: body.pinned,
-    slug: body.slug || undefined,
     url: body.url || undefined,
     quoteText: body.quoteText || undefined,
     rating: body.rating || undefined,
@@ -131,7 +129,7 @@ function ViewPostContent({ post }: { post: Post }) {
     message: "Post",
     comment: "@context: Default post title",
   });
-  const permalink = post.slug ? `/${post.slug}` : `/p/${sqid.encode(post.id)}`;
+  const permalink = post.path ? `/${post.path}` : `/p/${sqid.encode(post.id)}`;
 
   return (
     <>
@@ -266,7 +264,6 @@ postsRoutes.post("/:id", async (c) => {
     status: string;
     featured?: boolean;
     pinned?: boolean;
-    slug?: string;
     url?: string;
     quoteText?: string;
     rating?: number;
@@ -281,7 +278,6 @@ postsRoutes.post("/:id", async (c) => {
     status: body.status as Post["status"],
     featured: body.featured,
     pinned: body.pinned,
-    slug: body.slug || null,
     url: body.url || null,
     quoteText: body.quoteText || null,
     rating: body.rating || null,

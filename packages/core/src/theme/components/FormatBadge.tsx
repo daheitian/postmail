@@ -2,18 +2,17 @@
  * Format Badge Component
  *
  * Displays a badge indicating the format of a post (note, link, quote).
- * Named TypeBadge for backward compatibility with theme overrides.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { Format } from "../../types.js";
 
-export interface TypeBadgeProps {
+export interface FormatBadgeProps {
   type: Format;
 }
 
-export const TypeBadge: FC<TypeBadgeProps> = ({ type }) => {
+export const FormatBadge: FC<FormatBadgeProps> = ({ type }) => {
   const { t } = useLingui();
 
   const labels: Record<Format, string> = {

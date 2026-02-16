@@ -38,7 +38,7 @@ describe("PostService", () => {
         status: "published",
         featured: true,
         pinned: true,
-        slug: "my-link",
+        path: "my-link",
         url: "https://example.com/source",
         quoteText: "A notable quote",
         rating: 5,
@@ -49,7 +49,7 @@ describe("PostService", () => {
       expect(post.status).toBe("published");
       expect(post.featured).toBe(1);
       expect(post.pinned).toBe(1);
-      expect(post.slug).toBe("my-link");
+      expect(post.path).toBe("my-link");
       expect(post.url).toBe("https://example.com/source");
       expect(post.quoteText).toBe("A notable quote");
       expect(post.rating).toBe(5);
@@ -154,21 +154,21 @@ describe("PostService", () => {
     });
   });
 
-  describe("getBySlug", () => {
-    it("returns a post by slug", async () => {
+  describe("getByPath", () => {
+    it("returns a post by path", async () => {
       await postService.create({
         format: "note",
         body: "About page",
-        slug: "about",
+        path: "about",
       });
 
-      const found = await postService.getBySlug("about");
+      const found = await postService.getByPath("about");
       expect(found).not.toBeNull();
-      expect(found?.slug).toBe("about");
+      expect(found?.path).toBe("about");
     });
 
-    it("returns null for non-existent slug", async () => {
-      const found = await postService.getBySlug("nonexistent");
+    it("returns null for non-existent path", async () => {
+      const found = await postService.getByPath("nonexistent");
       expect(found).toBeNull();
     });
 
@@ -176,12 +176,24 @@ describe("PostService", () => {
       const post = await postService.create({
         format: "note",
         body: "test",
-        slug: "test-page",
+        path: "test-page",
       });
       await postService.delete(post.id);
 
-      const found = await postService.getBySlug("test-page");
+      const found = await postService.getByPath("test-page");
       expect(found).toBeNull();
+    });
+
+    it("finds a post with a multi-level path", async () => {
+      await postService.create({
+        format: "note",
+        body: "Blog migration",
+        path: "2024/01/my-post",
+      });
+
+      const found = await postService.getByPath("2024/01/my-post");
+      expect(found).not.toBeNull();
+      expect(found?.path).toBe("2024/01/my-post");
     });
   });
 
@@ -471,18 +483,18 @@ describe("PostService", () => {
       expect(updated?.pinned).toBe(1);
     });
 
-    it("updates slug", async () => {
+    it("updates path", async () => {
       const post = await postService.create({
         format: "note",
         body: "test",
-        slug: "old-slug",
+        path: "old-path",
       });
 
       const updated = await postService.update(post.id, {
-        slug: "new-slug",
+        path: "new-path",
       });
 
-      expect(updated?.slug).toBe("new-slug");
+      expect(updated?.path).toBe("new-path");
     });
 
     it("updates quoteText and rating", async () => {

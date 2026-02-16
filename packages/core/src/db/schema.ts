@@ -22,7 +22,7 @@ export const posts = sqliteTable("posts", {
     .default("published"),
   featured: integer("featured").notNull().default(0),
   pinned: integer("pinned").notNull().default(0),
-  slug: text("slug").unique(),
+  path: text("path").unique(),
   title: text("title"),
   url: text("url"),
   body: text("body"),

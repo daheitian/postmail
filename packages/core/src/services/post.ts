@@ -29,7 +29,7 @@ export interface PostFilters {
 
 export interface PostService {
   getById(id: number): Promise<Post | null>;
-  getBySlug(slug: string): Promise<Post | null>;
+  getByPath(path: string): Promise<Post | null>;
   list(filters?: PostFilters): Promise<Post[]>;
   create(data: CreatePost): Promise<Post>;
   update(id: number, data: UpdatePost): Promise<Post | null>;
@@ -57,7 +57,7 @@ export function createPostService(db: Database): PostService {
       status: row.status as Status,
       featured: row.featured,
       pinned: row.pinned,
-      slug: row.slug,
+      path: row.path,
       title: row.title,
       url: row.url,
       body: row.body,
@@ -84,11 +84,11 @@ export function createPostService(db: Database): PostService {
       return result[0] ? toPost(result[0]) : null;
     },
 
-    async getBySlug(slug) {
+    async getByPath(path) {
       const result = await db
         .select()
         .from(posts)
-        .where(and(eq(posts.slug, slug), isNull(posts.deletedAt)))
+        .where(and(eq(posts.path, path), isNull(posts.deletedAt)))
         .limit(1);
       return result[0] ? toPost(result[0]) : null;
     },
@@ -175,7 +175,7 @@ export function createPostService(db: Database): PostService {
           status,
           featured: featured ? 1 : 0,
           pinned: data.pinned ? 1 : 0,
-          slug: data.slug ?? null,
+          path: data.path ?? null,
           title: data.title ?? null,
           url: data.url ?? null,
           body: data.body ?? null,
@@ -205,7 +205,7 @@ export function createPostService(db: Database): PostService {
       };
 
       if (data.format !== undefined) updates.format = data.format;
-      if (data.slug !== undefined) updates.slug = data.slug;
+      if (data.path !== undefined) updates.path = data.path;
       if (data.title !== undefined) updates.title = data.title;
       if (data.url !== undefined) updates.url = data.url;
       if (data.quoteText !== undefined) updates.quoteText = data.quoteText;

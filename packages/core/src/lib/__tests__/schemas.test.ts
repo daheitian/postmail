@@ -82,48 +82,82 @@ describe("CreatePostSchema", () => {
     expect(result.title).toBe("My Post");
   });
 
-  it("accepts valid slug format", () => {
+  it("accepts valid path format", () => {
     const result = CreatePostSchema.parse({
       ...validPost,
-      slug: "my-post-slug",
+      path: "my-post-path",
     });
-    expect(result.slug).toBe("my-post-slug");
+    expect(result.path).toBe("my-post-path");
   });
 
-  it("accepts single-character slug", () => {
+  it("accepts single-character path", () => {
     const result = CreatePostSchema.parse({
       ...validPost,
-      slug: "a",
+      path: "a",
     });
-    expect(result.slug).toBe("a");
+    expect(result.path).toBe("a");
   });
 
-  it("accepts empty slug (transforms to undefined)", () => {
-    const result = CreatePostSchema.parse({ ...validPost, slug: "" });
-    expect(result.slug).toBeUndefined();
+  it("accepts empty path (transforms to undefined)", () => {
+    const result = CreatePostSchema.parse({ ...validPost, path: "" });
+    expect(result.path).toBeUndefined();
   });
 
-  it("rejects invalid slug format (uppercase)", () => {
+  it("accepts multi-level path", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      path: "2024/my-post",
+    });
+    expect(result.path).toBe("2024/my-post");
+  });
+
+  it("accepts deeply nested path", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      path: "2024/01/my-post",
+    });
+    expect(result.path).toBe("2024/01/my-post");
+  });
+
+  it("rejects invalid path format (uppercase)", () => {
     expect(() =>
-      CreatePostSchema.parse({ ...validPost, slug: "MyPost" }),
+      CreatePostSchema.parse({ ...validPost, path: "MyPost" }),
     ).toThrow();
   });
 
-  it("rejects invalid slug format (special chars)", () => {
+  it("rejects invalid path format (special chars)", () => {
     expect(() =>
-      CreatePostSchema.parse({ ...validPost, slug: "my post!" }),
+      CreatePostSchema.parse({ ...validPost, path: "my post!" }),
     ).toThrow();
   });
 
-  it("rejects slug starting with hyphen", () => {
+  it("rejects path starting with hyphen", () => {
     expect(() =>
-      CreatePostSchema.parse({ ...validPost, slug: "-my-post" }),
+      CreatePostSchema.parse({ ...validPost, path: "-my-post" }),
     ).toThrow();
   });
 
-  it("rejects slug ending with hyphen", () => {
+  it("rejects path ending with hyphen", () => {
     expect(() =>
-      CreatePostSchema.parse({ ...validPost, slug: "my-post-" }),
+      CreatePostSchema.parse({ ...validPost, path: "my-post-" }),
+    ).toThrow();
+  });
+
+  it("rejects path with leading slash", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, path: "/my-post" }),
+    ).toThrow();
+  });
+
+  it("rejects path with trailing slash", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, path: "my-post/" }),
+    ).toThrow();
+  });
+
+  it("rejects path with consecutive slashes", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, path: "2024//my-post" }),
     ).toThrow();
   });
 

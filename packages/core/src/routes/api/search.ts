@@ -38,10 +38,10 @@ searchApiRoutes.get("/", async (c) => {
         id: sqid.encode(r.post.id),
         format: r.post.format,
         title: r.post.title,
-        slug: r.post.slug,
+        path: r.post.path,
         snippet: r.snippet,
         publishedAt: r.post.publishedAt,
-        url: r.post.slug ? `/${r.post.slug}` : `/p/${sqid.encode(r.post.id)}`,
+        url: r.post.path ? `/${r.post.path}` : `/p/${sqid.encode(r.post.id)}`,
       })),
       count: results.length,
     });

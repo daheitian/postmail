@@ -7,8 +7,8 @@ import { useLingui } from "@lingui/react/macro";
 import type { Post } from "../../types.js";
 import * as sqid from "../../lib/sqid.js";
 import * as time from "../../lib/time.js";
-import { VisibilityBadge } from "./VisibilityBadge.js";
-import { TypeBadge } from "./TypeBadge.js";
+import { StatusBadge } from "./StatusBadge.js";
+import { FormatBadge } from "./FormatBadge.js";
 import { EmptyState } from "./EmptyState.js";
 import { ListItemRow } from "./ListItemRow.js";
 import { ActionButtons } from "./ActionButtons.js";
@@ -38,8 +38,8 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
   return (
     <div class="flex flex-col divide-y">
       {posts.map((post) => {
-        const permalink = post.slug
-          ? `/${post.slug}`
+        const permalink = post.path
+          ? `/${post.path}`
           : `/p/${sqid.encode(post.id)}`;
         return (
           <ListItemRow
@@ -67,8 +67,8 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
             }
           >
             <div class="flex items-center gap-2 mb-1">
-              <TypeBadge type={post.format} />
-              <VisibilityBadge
+              <FormatBadge type={post.format} />
+              <StatusBadge
                 status={post.status}
                 featured={post.featured === 1}
                 pinned={post.pinned === 1}

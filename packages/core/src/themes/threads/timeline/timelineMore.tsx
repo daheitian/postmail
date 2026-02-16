@@ -44,9 +44,8 @@ export function timelineMore(props: TimelineMoreProps): TimelinePatch[] {
   const patches: TimelinePatch[] = [];
   const groups = groupByDate(items);
 
-  if (groups.length === 0) return patches;
-
-  const firstGroup = groups[0]!;
+  const [firstGroup] = groups;
+  if (!firstGroup) return patches;
   const isContinuation = lastDate === firstGroup.dateKey;
 
   // Continuation items: append into the existing date group's container

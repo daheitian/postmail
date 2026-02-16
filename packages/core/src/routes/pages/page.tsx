@@ -1,8 +1,9 @@
 /**
  * Custom Page Route
  *
- * Serves pages from the pages table and posts with custom slugs.
+ * Serves pages from the pages table and posts with custom paths.
  * This is a catch-all route mounted at "/" - must be registered last.
+ * Supports multi-level paths (e.g. /2024/my-post) for posts.
  */
 
 import { Hono } from "hono";
@@ -19,38 +20,41 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const pageRoutes = new Hono<Env>();
 
-// Catch-all for custom page paths and post slugs
-pageRoutes.get("/:slug", async (c) => {
-  const slug = c.req.param("slug");
+// Catch-all for custom page slugs and post paths (including multi-level)
+pageRoutes.get("/*", async (c) => {
+  const fullPath = c.req.path.slice(1); // Remove leading /
+  if (!fullPath) return c.notFound();
 
-  // First, try to find a page by slug
-  const page = await c.var.services.pages.getBySlug(slug);
+  const isMultiSegment = fullPath.includes("/");
 
-  if (page) {
-    // Don't show draft pages
-    if (page.status === "draft") {
-      return c.notFound();
+  // Pages only have single-level slugs; skip page lookup for multi-segment paths
+  if (!isMultiSegment) {
+    const page = await c.var.services.pages.getBySlug(fullPath);
+
+    if (page) {
+      if (page.status === "draft") {
+        return c.notFound();
+      }
+
+      const navData = await getNavigationData(c);
+      const pageView = toPageView(page);
+
+      const components = c.var.config.theme?.components;
+      const Page = components?.SinglePage ?? DefaultSinglePage;
+
+      return renderPublicPage(c, {
+        title: `${page.title || fullPath} - ${navData.siteName}`,
+        description: page.body?.slice(0, 160),
+        navData,
+        content: <Page page={pageView} theme={components} />,
+      });
     }
-
-    const navData = await getNavigationData(c);
-    const pageView = toPageView(page);
-
-    const components = c.var.config.theme?.components;
-    const Page = components?.SinglePage ?? DefaultSinglePage;
-
-    return renderPublicPage(c, {
-      title: `${page.title || slug} - ${navData.siteName}`,
-      description: page.body?.slice(0, 160),
-      navData,
-      content: <Page page={pageView} theme={components} />,
-    });
   }
 
-  // Then, try to find a post by slug
-  const post = await c.var.services.posts.getBySlug(slug);
+  // Posts support multi-level paths
+  const post = await c.var.services.posts.getByPath(fullPath);
 
   if (post) {
-    // Don't show draft posts
     if (post.status === "draft") {
       return c.notFound();
     }

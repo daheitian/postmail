@@ -61,9 +61,9 @@ export const RatingSchema = z.coerce
  */
 export const CreatePostSchema = z.object({
   format: FormatSchema,
-  slug: z
+  path: z
     .string()
-    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/)
+    .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\/[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/)
     .optional()
     .or(z.literal("").transform(() => undefined)),
   title: z.string().optional(),

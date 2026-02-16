@@ -43,6 +43,13 @@
       "when": 1771346168875,
       "tag": "0005_v2_schema_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1771746168876,
+      "tag": "0006_rename_slug_to_path",
+      "breakpoints": true
     }
   ]
 }

@@ -2,20 +2,19 @@
  * Status Badge Component
  *
  * Displays badges for post status, featured, and pinned state.
- * Named VisibilityBadge for backward compatibility with theme overrides.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { Status } from "../../types.js";
 
-export interface VisibilityBadgeProps {
+export interface StatusBadgeProps {
   status: Status;
   featured?: boolean;
   pinned?: boolean;
 }
 
-export const VisibilityBadge: FC<VisibilityBadgeProps> = ({
+export const StatusBadge: FC<StatusBadgeProps> = ({
   status,
   featured,
   pinned,

@@ -29,7 +29,7 @@ interface RawSearchRow {
   status: string;
   featured: number;
   pinned: number;
-  slug: string | null;
+  path: string | null;
   title: string | null;
   url: string | null;
   body: string | null;
@@ -99,7 +99,7 @@ export function createSearchService(d1: D1Database): SearchService {
           status: row.status as Post["status"],
           featured: row.featured,
           pinned: row.pinned,
-          slug: row.slug,
+          path: row.path,
           title: row.title,
           url: row.url,
           body: row.body,

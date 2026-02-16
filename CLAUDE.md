@@ -175,7 +175,7 @@ packages/create-jant/       # CLI scaffolding
 ### Reusable Components (`src/theme/components/`)
 
 **CRUD**: CrudPageHeader, EmptyState, ListItemRow, ActionButtons, DangerZone
-**Badges**: TypeBadge, VisibilityBadge
+**Badges**: FormatBadge, StatusBadge
 **Forms**: PostForm, PageForm
 **Display**: PostList, ThreadView, Pagination
 

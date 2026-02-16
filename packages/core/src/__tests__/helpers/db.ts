@@ -86,6 +86,9 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     }
   }
 
+  // Apply 0006: rename slug to path on posts
+  applyMigration(sqlite, "0006_rename_slug_to_path.sql");
+
   const db = drizzle(sqlite, { schema });
 
   return { db, sqlite };

@@ -35,6 +35,10 @@ import { collectionsRoutes as dashCollectionsRoutes } from "./routes/dash/collec
 
 // Routes - API
 import { postsApiRoutes } from "./routes/api/posts.js";
+import { pagesApiRoutes } from "./routes/api/pages.js";
+import { navItemsApiRoutes } from "./routes/api/nav-items.js";
+import { collectionsApiRoutes } from "./routes/api/collections.js";
+import { settingsApiRoutes } from "./routes/api/settings.js";
 import { uploadApiRoutes } from "./routes/api/upload.js";
 import { searchApiRoutes } from "./routes/api/search.js";
 // Routes - Feed
@@ -197,6 +201,10 @@ export function createApp(config: JantConfig = {}): App {
 
   // API Routes
   app.route("/api/posts", postsApiRoutes);
+  app.route("/api/pages", pagesApiRoutes);
+  app.route("/api/nav-items", navItemsApiRoutes);
+  app.route("/api/collections", collectionsApiRoutes);
+  app.route("/api/settings", settingsApiRoutes);
 
   // Setup page component
   const SetupContent: FC = () => {

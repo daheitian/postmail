@@ -41,7 +41,6 @@ export const PostForm: FC<PostFormProps> = ({
     body: post?.body ?? "",
     url: post?.url ?? "",
     quoteText: post?.quoteText ?? "",
-    slug: post?.slug ?? "",
     status: post?.status ?? "published",
     featured: post?.featured === 1,
     pinned: post?.pinned === 1,
@@ -286,30 +285,6 @@ export const PostForm: FC<PostFormProps> = ({
           </select>
         </div>
       )}
-
-      {/* Custom slug (optional) */}
-      <div class="field">
-        <label class="label">
-          {t({
-            message: "Custom Slug (optional)",
-            comment: "@context: Post form field",
-          })}
-        </label>
-        <input
-          type="text"
-          data-bind="slug"
-          class="input"
-          placeholder="my-custom-url"
-          pattern="[a-z0-9-]*"
-        />
-        <p class="text-xs text-muted-foreground mt-1">
-          {t({
-            message:
-              "Custom URL path. Leave empty to use default /p/ID format.",
-            comment: "@context: Slug help text",
-          })}
-        </p>
-      </div>
 
       {/* Submit */}
       <div class="flex gap-2">

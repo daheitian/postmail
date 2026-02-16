@@ -34,7 +34,7 @@ function makePost(overrides: Partial<Post> = {}): Post {
     status: "published",
     featured: 0,
     pinned: 0,
-    slug: null,
+    path: null,
     title: null,
     url: null,
     body: "Hello world",
@@ -100,17 +100,23 @@ function makeNavItem(overrides: Partial<NavItem> = {}): NavItem {
 // =============================================================================
 
 describe("toPostView", () => {
-  it("generates permalink from post id when no slug", () => {
-    const post = makePostWithMedia({ id: 123, slug: null });
+  it("generates permalink from post id when no path", () => {
+    const post = makePostWithMedia({ id: 123, path: null });
     const view = toPostView(post, EMPTY_CTX);
     expect(view.permalink).toMatch(/^\/p\/.+$/);
     expect(view.permalink.length).toBeGreaterThan(3);
   });
 
-  it("generates permalink from slug when slug is set", () => {
-    const post = makePostWithMedia({ id: 123, slug: "my-post" });
+  it("generates permalink from path when path is set", () => {
+    const post = makePostWithMedia({ id: 123, path: "my-post" });
     const view = toPostView(post, EMPTY_CTX);
     expect(view.permalink).toBe("/my-post");
+  });
+
+  it("generates permalink from multi-level path", () => {
+    const post = makePostWithMedia({ id: 123, path: "2024/01/my-post" });
+    const view = toPostView(post, EMPTY_CTX);
+    expect(view.permalink).toBe("/2024/01/my-post");
   });
 
   it("formats dates correctly", () => {
@@ -202,7 +208,7 @@ describe("toPostView", () => {
   it("converts null fields to undefined", () => {
     const view = toPostView(makePostWithMedia(), EMPTY_CTX);
     expect(view.title).toBeUndefined();
-    expect(view.slug).toBeUndefined();
+    expect(view.path).toBeUndefined();
     expect(view.url).toBeUndefined();
     expect(view.quoteText).toBeUndefined();
     expect(view.rating).toBeUndefined();
@@ -465,7 +471,7 @@ describe("toSearchResultView", () => {
         featured: 1,
         pinned: 0,
         url: "https://example.com",
-        slug: "my-link",
+        path: "my-link",
       }),
       rank: 0.8,
     };

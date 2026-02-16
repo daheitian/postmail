@@ -158,7 +158,7 @@ export interface Post {
   status: Status;
   featured: number; // 0 | 1
   pinned: number; // 0 | 1
-  slug: string | null;
+  path: string | null;
   title: string | null;
   url: string | null;
   body: string | null;
@@ -265,7 +265,7 @@ export interface CreatePost {
   status?: Status;
   featured?: boolean;
   pinned?: boolean;
-  slug?: string;
+  path?: string;
   title?: string;
   url?: string;
   body?: string;
@@ -282,7 +282,7 @@ export interface UpdatePost {
   status?: Status;
   featured?: boolean;
   pinned?: boolean;
-  slug?: string | null;
+  path?: string | null;
   title?: string | null;
   url?: string | null;
   body?: string | null;
@@ -354,10 +354,10 @@ export interface UpdateCollection {
 export interface PostView {
   // Identity
   id: number;
-  /** Pre-computed permalink: "/{slug}" if slug set, otherwise "/p/{sqid}" */
+  /** Pre-computed permalink: "/{path}" if path set, otherwise "/p/{sqid}" */
   permalink: string;
-  /** Custom URL slug, if set */
-  slug?: string;
+  /** Custom URL path, if set. Supports multi-level paths (e.g. "2024/my-post") */
+  path?: string;
 
   // Content
   title?: string;

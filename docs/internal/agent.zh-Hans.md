@@ -245,7 +245,7 @@ jant/
 ### 4.9 ID 与 URL 方案
 
 - 数据库使用自增 integer
-- 帖子 URL 统一用 Sqids 短码：`/p/jR3k`（不支持自定义 path）
+- 帖子 URL 默认用 Sqids 短码：`/p/jR3k`，支持可选 `path` 字段（多级路径如 `2024/01/my-post`，仅 API 可设置）
 - Page URL 由用户定义 slug：`/{slug}`（仅单级）
 - Collection URL：`/c/{slug}`
 
@@ -303,6 +303,7 @@ GET  /feed/all            RSS（所有 published，支持 ?format= 筛选）
 GET  /c/:slug/feed        Collection RSS
 GET  /sitemap.xml         自动生成站点地图
 GET  /:slug               独立页面（最低优先级，单级 slug）
+GET  /*                   帖子自定义路径（支持多级，如 /2024/01/my-post）
 ```
 
 **分页**：Cursor-based + 无限滚动，默认每页 20 项（可配置）
@@ -340,6 +341,7 @@ DELETE /api/posts/:id             [auth] 删除帖子
 
 # 页面
 GET    /api/pages                 页面列表
+GET    /api/pages/:id             单个页面
 POST   /api/pages                 [auth] 创建页面
 PUT    /api/pages/:id             [auth] 更新页面
 DELETE /api/pages/:id             [auth] 删除页面
@@ -347,16 +349,17 @@ DELETE /api/pages/:id             [auth] 删除页面
 # 导航
 GET    /api/nav-items             导航项列表
 POST   /api/nav-items             [auth] 创建导航项
+PUT    /api/nav-items/reorder     [auth] 重新排序
 PUT    /api/nav-items/:id         [auth] 更新导航项
 DELETE /api/nav-items/:id         [auth] 删除导航项
-POST   /api/nav-items/reorder     [auth] 重新排序
 
 # Collection
-GET    /api/collections           Collection 列表
+GET    /api/collections           Collection 列表（含帖子数量）
+GET    /api/collections/:id       单个 Collection
 POST   /api/collections           [auth] 创建
+PUT    /api/collections/reorder   [auth] 重新排序
 PUT    /api/collections/:id       [auth] 更新
 DELETE /api/collections/:id       [auth] 删除
-POST   /api/collections/reorder   [auth] 重新排序
 
 # 其他
 POST   /api/upload                [auth] 媒体上传

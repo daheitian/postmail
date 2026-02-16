@@ -49,7 +49,7 @@ msgid "Add Link"
 msgstr ""
 
 #. @context: Button to open media picker
-#: src/theme/components/PostForm.tsx:212
+#: src/theme/components/PostForm.tsx:211
 msgid "Add Media"
 msgstr "添加媒體"
 
@@ -118,7 +118,7 @@ msgstr "返回"
 #: src/routes/dash/pages.tsx:400
 #: src/routes/dash/redirects.tsx:177
 #: src/theme/components/PageForm.tsx:171
-#: src/theme/components/PostForm.tsx:337
+#: src/theme/components/PostForm.tsx:312
 msgid "Cancel"
 msgstr "取消"
 
@@ -135,7 +135,7 @@ msgid "Click image to view full size"
 msgstr "點擊圖片以查看完整大小"
 
 #. @context: Post form field - assign to collection
-#: src/theme/components/PostForm.tsx:265
+#: src/theme/components/PostForm.tsx:264
 msgid "Collection (optional)"
 msgstr ""
 
@@ -159,7 +159,7 @@ msgid "Color theme"
 msgstr "顏色主題"
 
 #. @context: Setup form submit button
-#: src/app.tsx:276
+#: src/app.tsx:284
 msgid "Complete Setup"
 msgstr "完成設置"
 
@@ -169,14 +169,14 @@ msgid "Confirm New Password"
 msgstr "確認新密碼"
 
 #. @context: Password reset form field
-#: src/app.tsx:549
+#: src/app.tsx:557
 msgid "Confirm Password"
 msgstr "確認密碼"
 
 #. @context: Page form field label - content
 #. @context: Post form field
 #: src/theme/components/PageForm.tsx:96
-#: src/theme/components/PostForm.tsx:105
+#: src/theme/components/PostForm.tsx:104
 msgid "Content"
 msgstr "內容"
 
@@ -208,7 +208,7 @@ msgid "Create Redirect"
 msgstr "建立重定向"
 
 #. @context: Setup page description
-#: src/app.tsx:216
+#: src/app.tsx:224
 msgid "Create your admin account."
 msgstr "建立您的管理員帳戶。"
 
@@ -234,13 +234,13 @@ msgstr "當前密碼"
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx:293
-msgid "Custom Slug (optional)"
-msgstr ""
+#~ msgid "Custom Slug (optional)"
+#~ msgstr ""
 
 #. @context: Slug help text
 #: src/theme/components/PostForm.tsx:306
-msgid "Custom URL path. Leave empty to use default /p/ID format."
-msgstr ""
+#~ msgid "Custom URL path. Leave empty to use default /p/ID format."
+#~ msgstr ""
 
 #. @context: Section heading for dangerous/destructive actions
 #: src/theme/components/DangerZone.tsx:55
@@ -284,7 +284,7 @@ msgid "Deleting this media will remove it permanently from storage."
 msgstr "刪除此媒體將永久從存儲中移除它。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:387
+#: src/app.tsx:395
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "示範帳戶已預填。只需點擊登入。"
 
@@ -301,7 +301,7 @@ msgid "Display text for the link"
 msgstr "顯示連結的文字"
 
 #. @context: Close media picker button
-#: src/theme/components/PostForm.tsx:359
+#: src/theme/components/PostForm.tsx:334
 msgid "Done"
 msgstr "完成"
 
@@ -309,8 +309,8 @@ msgstr "完成"
 #. @context: Post status badge - draft
 #. @context: Post status option
 #: src/theme/components/PageForm.tsx:133
-#: src/theme/components/PostForm.tsx:235
-#: src/theme/components/VisibilityBadge.tsx:35
+#: src/theme/components/PostForm.tsx:234
+#: src/theme/components/StatusBadge.tsx:34
 msgid "Draft"
 msgstr "草稿"
 
@@ -339,7 +339,7 @@ msgstr "草稿"
 #: src/routes/dash/pages.tsx:115
 #: src/routes/dash/pages.tsx:192
 #: src/routes/dash/pages.tsx:256
-#: src/routes/dash/posts.tsx:142
+#: src/routes/dash/posts.tsx:140
 #: src/theme/components/ActionButtons.tsx:72
 #: src/theme/components/PostList.tsx:50
 msgid "Edit"
@@ -361,19 +361,19 @@ msgid "Edit Page"
 msgstr "編輯頁面"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:185
+#: src/routes/dash/posts.tsx:183
 msgid "Edit Post"
 msgstr "編輯文章"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:246
-#: src/app.tsx:402
+#: src/app.tsx:254
+#: src/app.tsx:410
 msgid "Email"
 msgstr "電子郵件"
 
 #. @context: Password reset page description
-#: src/app.tsx:518
+#: src/app.tsx:526
 msgid "Enter your new password."
 msgstr "請輸入您的新密碼。"
 
@@ -381,15 +381,15 @@ msgstr "請輸入您的新密碼。"
 #. @context: Featured page heading
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
-#: src/theme/components/PostForm.tsx:247
-#: src/theme/components/VisibilityBadge.tsx:46
+#: src/theme/components/PostForm.tsx:246
+#: src/theme/components/StatusBadge.tsx:45
 #: src/themes/threads/pages/ArchivePage.tsx:89
 #: src/themes/threads/pages/FeaturedPage.tsx:26
 msgid "Featured"
 msgstr "精選"
 
 #. @context: Post form field - post format
-#: src/theme/components/PostForm.tsx:65
+#: src/theme/components/PostForm.tsx:64
 msgid "Format"
 msgstr ""
 
@@ -435,7 +435,7 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "圖片會自動優化：調整大小至最大 1920 像素，轉換為 WebP 格式，並去除元數據。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:593
+#: src/app.tsx:601
 msgid "Invalid or Expired Link"
 msgstr "無效或已過期的連結"
 
@@ -457,8 +457,8 @@ msgstr ""
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/theme/components/PostForm.tsx:75
-#: src/theme/components/TypeBadge.tsx:21
+#: src/theme/components/FormatBadge.tsx:20
+#: src/theme/components/PostForm.tsx:74
 #: src/themes/threads/pages/ArchivePage.tsx:17
 msgid "Link"
 msgstr "連結"
@@ -475,7 +475,7 @@ msgstr "載入更多"
 
 #. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
-#: src/theme/components/PostForm.tsx:370
+#: src/theme/components/PostForm.tsx:345
 #: src/themes/threads/timeline/TimelineLoadMore.tsx:28
 msgid "Loading..."
 msgstr "載入中..."
@@ -494,7 +494,7 @@ msgstr "Markdown"
 #. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/routes/dash/media.tsx:151
-#: src/theme/components/PostForm.tsx:159
+#: src/theme/components/PostForm.tsx:158
 #: src/theme/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "媒體"
@@ -544,7 +544,7 @@ msgstr "新頁面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:533
+#: src/app.tsx:541
 #: src/routes/dash/settings.tsx:442
 msgid "New Password"
 msgstr "新密碼"
@@ -636,15 +636,15 @@ msgid "No results found."
 msgstr "未找到結果。"
 
 #. @context: No collection selected
-#: src/theme/components/PostForm.tsx:272
+#: src/theme/components/PostForm.tsx:271
 msgid "None"
 msgstr ""
 
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/theme/components/PostForm.tsx:72
-#: src/theme/components/TypeBadge.tsx:20
+#: src/theme/components/FormatBadge.tsx:19
+#: src/theme/components/PostForm.tsx:71
 #: src/themes/threads/pages/ArchivePage.tsx:16
 msgid "Note"
 msgstr "備註"
@@ -693,8 +693,8 @@ msgstr "頁面"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:261
-#: src/app.tsx:411
+#: src/app.tsx:269
+#: src/app.tsx:419
 msgid "Password"
 msgstr "密碼"
 
@@ -717,8 +717,8 @@ msgstr "永久鏈接"
 
 #. @context: Post badge - pinned
 #. @context: Post form checkbox - pin to top
-#: src/theme/components/PostForm.tsx:254
-#: src/theme/components/VisibilityBadge.tsx:54
+#: src/theme/components/PostForm.tsx:253
+#: src/theme/components/StatusBadge.tsx:53
 msgid "Pinned"
 msgstr ""
 
@@ -728,12 +728,12 @@ msgid "post"
 msgstr ""
 
 #. @context: Default post title
-#: src/routes/dash/posts.tsx:130
+#: src/routes/dash/posts.tsx:128
 msgid "Post"
 msgstr "文章"
 
 #. @context: Post title placeholder
-#: src/theme/components/PostForm.tsx:95
+#: src/theme/components/PostForm.tsx:94
 msgid "Post title..."
 msgstr "文章標題..."
 
@@ -779,9 +779,9 @@ msgstr "上一頁"
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/app.tsx:282
-#: src/app.tsx:431
-#: src/app.tsx:571
+#: src/app.tsx:290
+#: src/app.tsx:439
+#: src/app.tsx:579
 #: src/routes/dash/collections.tsx:178
 #: src/routes/dash/collections.tsx:346
 #: src/routes/dash/media.tsx:119
@@ -791,7 +791,7 @@ msgstr "上一頁"
 #: src/routes/dash/settings.tsx:400
 #: src/routes/dash/settings.tsx:488
 #: src/theme/components/PageForm.tsx:163
-#: src/theme/components/PostForm.tsx:329
+#: src/theme/components/PostForm.tsx:304
 msgid "Processing..."
 msgstr "處理中..."
 
@@ -801,7 +801,7 @@ msgid "Profile"
 msgstr "個人資料"
 
 #. @context: Button to publish new post
-#: src/theme/components/PostForm.tsx:323
+#: src/theme/components/PostForm.tsx:298
 msgid "Publish"
 msgstr "發佈"
 
@@ -811,8 +811,8 @@ msgstr "發佈"
 #. @context: Post status option
 #: src/routes/dash/index.tsx:45
 #: src/theme/components/PageForm.tsx:127
-#: src/theme/components/PostForm.tsx:229
-#: src/theme/components/VisibilityBadge.tsx:31
+#: src/theme/components/PostForm.tsx:228
+#: src/theme/components/StatusBadge.tsx:30
 msgid "Published"
 msgstr "已發佈"
 
@@ -844,14 +844,14 @@ msgstr "快速操作"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/theme/components/PostForm.tsx:78
-#: src/theme/components/TypeBadge.tsx:22
+#: src/theme/components/FormatBadge.tsx:21
+#: src/theme/components/PostForm.tsx:77
 #: src/themes/threads/pages/ArchivePage.tsx:18
 msgid "Quote"
 msgstr "引用"
 
 #. @context: Post form field - quoted text
-#: src/theme/components/PostForm.tsx:138
+#: src/theme/components/PostForm.tsx:137
 msgid "Quote Text"
 msgstr ""
 
@@ -868,14 +868,14 @@ msgid "Redirects"
 msgstr "重定向"
 
 #. @context: Remove media attachment button
-#: src/theme/components/PostForm.tsx:195
+#: src/theme/components/PostForm.tsx:194
 msgid "Remove"
 msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:512
-#: src/app.tsx:565
+#: src/app.tsx:520
+#: src/app.tsx:573
 msgid "Reset Password"
 msgstr "重設密碼"
 
@@ -907,7 +907,7 @@ msgid "Search posts..."
 msgstr "搜尋帖子..."
 
 #. @context: Media picker dialog title
-#: src/theme/components/PostForm.tsx:349
+#: src/theme/components/PostForm.tsx:324
 msgid "Select Media"
 msgstr "選擇媒體"
 
@@ -930,8 +930,8 @@ msgstr "顯示 {remainingCount} 個更多 {0}"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:378
-#: src/app.tsx:425
+#: src/app.tsx:386
+#: src/app.tsx:433
 msgid "Sign In"
 msgstr "登入"
 
@@ -972,7 +972,7 @@ msgstr "縮略名"
 #. @context: Page form field label - publish status
 #. @context: Post form field
 #: src/theme/components/PageForm.tsx:117
-#: src/theme/components/PostForm.tsx:222
+#: src/theme/components/PostForm.tsx:221
 msgid "Status"
 msgstr "狀態"
 
@@ -987,7 +987,7 @@ msgid "The path to redirect from"
 msgstr "重定向來源的路徑"
 
 #. @context: Quote text placeholder
-#: src/theme/components/PostForm.tsx:146
+#: src/theme/components/PostForm.tsx:145
 msgid "The text being quoted..."
 msgstr ""
 
@@ -997,7 +997,7 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:601
+#: src/app.tsx:609
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密碼重設連結無效或已過期。請生成一個新的連結。"
 
@@ -1031,7 +1031,7 @@ msgid "Title"
 msgstr "標題"
 
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:86
+#: src/theme/components/PostForm.tsx:85
 msgid "Title (optional)"
 msgstr "標題（選填）"
 
@@ -1065,7 +1065,7 @@ msgid "Untitled"
 msgstr "無標題"
 
 #. @context: Button to update existing post
-#: src/theme/components/PostForm.tsx:319
+#: src/theme/components/PostForm.tsx:294
 msgid "Update"
 msgstr "更新"
 
@@ -1102,7 +1102,7 @@ msgid "URL"
 msgstr "網址"
 
 #. @context: Post form field - source URL
-#: src/theme/components/PostForm.tsx:122
+#: src/theme/components/PostForm.tsx:121
 msgid "URL (optional)"
 msgstr ""
 
@@ -1127,7 +1127,7 @@ msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
 #: src/routes/dash/collections.tsx:225
 #: src/routes/dash/pages.tsx:199
 #: src/routes/dash/pages.tsx:261
-#: src/routes/dash/posts.tsx:147
+#: src/routes/dash/posts.tsx:145
 #: src/theme/components/ActionButtons.tsx:76
 #: src/theme/components/PostList.tsx:55
 msgid "View"
@@ -1144,12 +1144,12 @@ msgstr "查看網站"
 #~ msgstr "可見性"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:210
+#: src/app.tsx:218
 msgid "Welcome to Jant"
 msgstr "歡迎來到 Jant"
 
 #. @context: Post content placeholder
-#: src/theme/components/PostForm.tsx:110
+#: src/theme/components/PostForm.tsx:109
 msgid "What's on your mind?"
 msgstr "你在想什麼？"
 
@@ -1159,7 +1159,7 @@ msgid "What's this collection about?"
 msgstr "這個收藏是關於什麼的？"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:231
+#: src/app.tsx:239
 msgid "Your Name"
 msgstr "您的姓名"
 
