@@ -16,7 +16,7 @@ if (list) {
       const ids = [...list.querySelectorAll<HTMLElement>("[data-id]")].map(
         (el) => Number(el.dataset.id),
       );
-      fetch("/dash/navigation/reorder", {
+      fetch("/dash/pages/reorder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids }),

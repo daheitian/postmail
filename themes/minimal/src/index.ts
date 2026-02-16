@@ -1,17 +1,30 @@
 /**
- * Threads Theme
+ * Minimal Theme for Jant
  *
- * A clean, centered timeline theme inspired by Threads.net.
- * Posts separated by thin dividers, no cards, with thread connector lines.
+ * A clean, header-based theme with centered content column.
+ * Site name, horizontal navigation links, optional markdown description.
  *
- * This is the default theme for Jant.
+ * @example
+ * ```typescript
+ * import { createApp } from "@jant/core";
+ * import { theme } from "jant-theme-minimal";
+ *
+ * export default createApp({
+ *   theme: theme(),
+ * });
+ * ```
+ *
+ * CSS: Import the minimal-specific styles in your CSS entry:
+ * ```css
+ * @import "jant-theme-minimal/style.css";
+ * ```
  */
 
-import type { JantTheme, ThemeComponents } from "../../types.js";
-import type { ColorTheme } from "../../theme/color-themes.js";
+import type { JantTheme, ThemeComponents } from "@jant/core";
+import type { ColorTheme } from "@jant/core/theme";
 
 // Layout
-import { ThreadsSiteLayout } from "./ThreadsSiteLayout.js";
+import { MinimalSiteLayout } from "./MinimalSiteLayout.js";
 
 // Pages
 import { HomePage } from "./pages/HomePage.js";
@@ -42,26 +55,16 @@ export interface ThemeOptions {
 }
 
 /**
- * Create the threads theme configuration.
+ * Create the minimal theme configuration.
  *
  * @param options - Optional overrides for components, CSS variables, or color themes
  * @returns A JantTheme configuration object
- *
- * @example
- * ```typescript
- * import { createApp } from "@jant/core";
- * import { threadsTheme } from "@jant/core";
- *
- * export default createApp({
- *   theme: threadsTheme(),
- * });
- * ```
  */
 export function theme(options?: ThemeOptions): JantTheme {
   return {
-    name: "threads",
+    name: "minimal",
     components: {
-      SiteLayout: ThreadsSiteLayout,
+      SiteLayout: MinimalSiteLayout,
       HomePage,
       PostPage,
       SinglePage,
@@ -87,7 +90,7 @@ export function theme(options?: ThemeOptions): JantTheme {
 }
 
 // Re-export individual components for wrapping/extending
-export { ThreadsSiteLayout } from "./ThreadsSiteLayout.js";
+export { MinimalSiteLayout } from "./MinimalSiteLayout.js";
 export { HomePage } from "./pages/HomePage.js";
 export { PostPage } from "./pages/PostPage.js";
 export { SinglePage } from "./pages/SinglePage.js";

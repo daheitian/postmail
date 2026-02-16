@@ -21,6 +21,8 @@ import { pageRoutes } from "./routes/pages/page.js";
 import { collectionRoutes } from "./routes/pages/collection.js";
 import { archiveRoutes } from "./routes/pages/archive.js";
 import { searchRoutes } from "./routes/pages/search.js";
+import { featuredRoutes } from "./routes/pages/featured.js";
+import { collectionsPageRoutes } from "./routes/pages/collections.js";
 
 // Routes - Dashboard
 import { dashIndexRoutes } from "./routes/dash/index.js";
@@ -30,7 +32,6 @@ import { mediaRoutes as dashMediaRoutes } from "./routes/dash/media.js";
 import { settingsRoutes as dashSettingsRoutes } from "./routes/dash/settings.js";
 import { redirectsRoutes as dashRedirectsRoutes } from "./routes/dash/redirects.js";
 import { collectionsRoutes as dashCollectionsRoutes } from "./routes/dash/collections.js";
-import { navigationRoutes as dashNavigationRoutes } from "./routes/dash/navigation.js";
 
 // Routes - API
 import { postsApiRoutes } from "./routes/api/posts.js";
@@ -337,6 +338,18 @@ export function createApp(config: JantConfig = {}): App {
       }
 
       await c.var.services.settings.completeOnboarding();
+
+      // Seed default navigation items
+      await c.var.services.navItems.create({
+        type: "link",
+        label: "Featured",
+        url: "/featured",
+      });
+      await c.var.services.navItems.create({
+        type: "link",
+        label: "Collections",
+        url: "/collections",
+      });
 
       return dsRedirect("/signin?setup");
     } catch (err) {
@@ -718,7 +731,6 @@ export function createApp(config: JantConfig = {}): App {
   app.route("/dash/settings", dashSettingsRoutes);
   app.route("/dash/redirects", dashRedirectsRoutes);
   app.route("/dash/collections", dashCollectionsRoutes);
-  app.route("/dash/navigation", dashNavigationRoutes);
   // API routes
   app.route("/api/upload", uploadApiRoutes);
   app.route("/api/search", searchApiRoutes);
@@ -758,6 +770,8 @@ export function createApp(config: JantConfig = {}): App {
   // Frontend routes
   app.route("/search", searchRoutes);
   app.route("/archive", archiveRoutes);
+  app.route("/featured", featuredRoutes);
+  app.route("/collections", collectionsPageRoutes);
   app.route("/c", collectionRoutes);
   app.route("/p", postRoutes);
   app.route("/", homeRoutes);

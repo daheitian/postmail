@@ -1,0 +1,234 @@
+/**
+ * Minimal theme styles
+ *
+ * Header-based layout with centered content column.
+ * Site name, horizontal navigation links, optional description.
+ */
+
+/* Tell Tailwind to scan minimal theme source files for class usage */
+@source "./";
+
+/* =========================================================================
+ * Minimal Design Tokens (as CSS custom properties)
+ * ========================================================================= */
+
+:root {
+  --minimal-column-max-width: 640px;
+  --minimal-column-padding: 24px;
+  --minimal-threadline: rgb(229, 229, 229);
+  --minimal-page-bg: rgb(255, 255, 255);
+  --minimal-nav-link: var(--color-primary, rgb(140, 100, 60));
+  --minimal-text-primary: rgb(0, 0, 0);
+  --minimal-text-secondary: rgb(119, 119, 119);
+  --minimal-media-outline: rgba(0, 0, 0, 0.15);
+  --minimal-divider: rgba(0, 0, 0, 0.15);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --minimal-threadline: rgb(51, 54, 56);
+    --minimal-page-bg: rgb(10, 10, 10);
+    --minimal-nav-link: var(--color-primary, rgb(180, 140, 100));
+    --minimal-text-primary: rgb(243, 245, 247);
+    --minimal-text-secondary: rgb(153, 153, 153);
+    --minimal-media-outline: rgba(243, 245, 247, 0.2);
+    --minimal-divider: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.dark {
+  --minimal-threadline: rgb(51, 54, 56);
+  --minimal-page-bg: rgb(10, 10, 10);
+  --minimal-nav-link: var(--color-primary, rgb(180, 140, 100));
+  --minimal-text-primary: rgb(243, 245, 247);
+  --minimal-text-secondary: rgb(153, 153, 153);
+  --minimal-media-outline: rgba(243, 245, 247, 0.2);
+  --minimal-divider: rgba(255, 255, 255, 0.15);
+}
+
+@layer components {
+  /* =========================================================================
+   * Page Layout
+   * ========================================================================= */
+
+  .minimal-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--minimal-page-bg);
+  }
+
+  /* --- Main content area -------------------------------------------------- */
+
+  .minimal-main {
+    padding: 0;
+  }
+
+  .minimal-container {
+    max-width: var(--minimal-column-max-width);
+    margin: 0 auto;
+    padding: 0 var(--minimal-column-padding);
+  }
+
+  /* --- Header ------------------------------------------------------------ */
+
+  .minimal-header {
+    padding-top: 32px;
+    padding-bottom: 0;
+  }
+
+  .minimal-site-name {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--minimal-text-primary);
+    text-decoration: none;
+  }
+
+  .minimal-site-name:hover {
+    text-decoration: none;
+  }
+
+  .minimal-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 4px;
+  }
+
+  .minimal-nav-link {
+    font-size: 0.875rem;
+    color: var(--minimal-nav-link);
+    text-decoration: none;
+  }
+
+  .minimal-nav-link:hover {
+    text-decoration: underline;
+  }
+
+  .minimal-nav-link-active {
+    text-decoration: underline;
+  }
+
+  .minimal-description {
+    margin-top: 12px;
+    color: var(--minimal-text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .minimal-description p {
+    margin: 0;
+  }
+
+  .minimal-description p + p {
+    margin-top: 0.5em;
+  }
+
+  .minimal-header-divider {
+    border: none;
+    border-top: 1px solid var(--minimal-divider);
+    margin-top: 16px;
+    margin-bottom: 0;
+  }
+
+  /* --- Content ----------------------------------------------------------- */
+
+  .minimal-content {
+    background-color: transparent;
+    padding: 0;
+  }
+
+  /* =========================================================================
+   * Timeline & Post Components
+   * ========================================================================= */
+
+  /* Date group header — centered, muted label at top of each group */
+  .minimal-date-header {
+    padding: 16px 0 8px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--minimal-text-secondary);
+  }
+
+  /* Post divider — full-width line between posts */
+  .minimal-content hr.border-border {
+    border: none;
+    border-top: 0.5px solid var(--minimal-divider);
+  }
+
+  /* Thread reply container with vertical connector line */
+  .minimal-replies {
+    position: relative;
+    margin-left: 16px;
+    padding-left: 16px;
+    margin-top: 8px;
+  }
+
+  .minimal-replies::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--minimal-threadline);
+  }
+
+  /* Individual reply in thread */
+  .minimal-reply {
+    padding: 12px 0;
+  }
+
+  .minimal-reply + .minimal-reply {
+    border-top: 0.5px solid var(--minimal-divider);
+  }
+
+  /* Compact text for thread replies */
+  .minimal-compact {
+    @apply text-sm;
+  }
+
+  /* Media — rounded corners + subtle outline */
+  .minimal-media img {
+    border-radius: 8px;
+    outline: 1px solid var(--minimal-media-outline);
+    outline-offset: -1px;
+  }
+
+  /* Image carousel — horizontal scroll */
+  .minimal-carousel-track {
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  .minimal-carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  .minimal-carousel-item {
+    flex: 0 0 auto;
+    width: 224px;
+    height: 280px;
+  }
+  .minimal-carousel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Link preview styling */
+  .minimal-link-preview {
+    border-radius: 12px;
+    border: 0.5px solid var(--minimal-divider);
+    padding: 12px 16px;
+    margin-top: 8px;
+  }
+
+  /* Quote block styling */
+  .minimal-quote {
+    padding-left: 12px;
+    border-left: 2px solid var(--minimal-text-secondary);
+  }
+}

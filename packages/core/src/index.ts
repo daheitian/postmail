@@ -64,6 +64,8 @@ export type {
   ArchivePageProps,
   SearchPageProps,
   CollectionPageProps,
+  FeaturedPageProps,
+  CollectionsPageProps,
   // Feed types (for theme authors)
   FeedData,
   SitemapData,

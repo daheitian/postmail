@@ -544,6 +544,7 @@ export interface SearchResult {
 
 export interface SiteLayoutProps {
   siteName: string;
+  siteDescription?: string;
   links: NavItemView[];
   currentPath: string;
 }

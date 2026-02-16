@@ -50,15 +50,30 @@ msgstr "302 (Temporary)"
 msgid "Account"
 msgstr "Account"
 
+#. @context: Button to add a navigation link
+#: src/routes/dash/pages.tsx:50
+msgid "Add Link"
+msgstr "Add Link"
+
 #. @context: Button to open media picker
 #: src/theme/components/PostForm.tsx:212
 msgid "Add Media"
 msgstr "Add Media"
 
+#. @context: Button to add page to navigation
+#: src/routes/dash/pages.tsx:185
+msgid "Add to nav"
+msgstr "Add to nav"
+
 #. @context: Archive filter - all formats
 #: src/themes/threads/pages/ArchivePage.tsx:71
 msgid "All"
 msgstr "All"
+
+#. @context: Empty state when all pages are in nav
+#: src/routes/dash/pages.tsx:168
+msgid "All pages are in your navigation."
+msgstr "All pages are in your navigation."
 
 #. @context: Settings sub-navigation tab
 #: src/routes/dash/settings.tsx:55
@@ -116,7 +131,7 @@ msgstr "Back"
 #. @context: Button to cancel form
 #: src/routes/dash/collections.tsx:186
 #: src/routes/dash/collections.tsx:354
-#: src/routes/dash/navigation.tsx:192
+#: src/routes/dash/pages.tsx:400
 #: src/routes/dash/redirects.tsx:177
 #: src/theme/components/PageForm.tsx:171
 #: src/theme/components/PostForm.tsx:337
@@ -140,10 +155,12 @@ msgstr "Click image to view full size"
 msgid "Collection (optional)"
 msgstr "Collection (optional)"
 
+#. @context: Collections page heading
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #: src/routes/dash/collections.tsx:35
 #: src/theme/layouts/DashLayout.tsx:114
+#: src/themes/threads/pages/CollectionsPage.tsx:18
 msgid "Collections"
 msgstr "Collections"
 
@@ -158,7 +175,7 @@ msgid "Color theme"
 msgstr "Color theme"
 
 #. @context: Setup form submit button
-#: src/app.tsx:275
+#: src/app.tsx:276
 msgid "Complete Setup"
 msgstr "Complete Setup"
 
@@ -168,7 +185,7 @@ msgid "Confirm New Password"
 msgstr "Confirm New Password"
 
 #. @context: Password reset form field
-#: src/app.tsx:536
+#: src/app.tsx:549
 msgid "Confirm Password"
 msgstr "Confirm Password"
 
@@ -192,7 +209,7 @@ msgid "Create Collection"
 msgstr "Create Collection"
 
 #. @context: Button to save new navigation link
-#: src/routes/dash/navigation.tsx:178
+#: src/routes/dash/pages.tsx:386
 msgid "Create Link"
 msgstr "Create Link"
 
@@ -207,14 +224,14 @@ msgid "Create Redirect"
 msgstr "Create Redirect"
 
 #. @context: Setup page description
-#: src/app.tsx:215
+#: src/app.tsx:216
 msgid "Create your admin account."
 msgstr "Create your admin account."
 
 #. @context: Button in empty state to create first page
 #: src/routes/dash/pages.tsx:48
-msgid "Create your first page"
-msgstr "Create your first page"
+#~ msgid "Create your first page"
+#~ msgstr "Create your first page"
 
 #. @context: Button in empty state to create first post
 #: src/theme/components/PostList.tsx:29
@@ -254,9 +271,9 @@ msgid "Dashboard"
 msgstr "Dashboard"
 
 #. @context: Button to delete item
-#. @context: Button to delete navigation link
+#. @context: Button to delete link
 #. @context: Button to delete redirect
-#: src/routes/dash/navigation.tsx:66
+#: src/routes/dash/pages.tsx:120
 #: src/routes/dash/redirects.tsx:60
 #: src/theme/components/ActionButtons.tsx:80
 msgid "Delete"
@@ -273,7 +290,7 @@ msgid "Delete Media"
 msgstr "Delete Media"
 
 #. @context: Button to delete page
-#: src/routes/dash/pages.tsx:151
+#: src/routes/dash/pages.tsx:278
 msgid "Delete Page"
 msgstr "Delete Page"
 
@@ -283,7 +300,7 @@ msgid "Deleting this media will remove it permanently from storage."
 msgstr "Deleting this media will remove it permanently from storage."
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:374
+#: src/app.tsx:387
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "Demo account pre-filled. Just click Sign In."
 
@@ -295,7 +312,7 @@ msgid "Description (optional)"
 msgstr "Description (optional)"
 
 #. @context: Navigation label help text
-#: src/routes/dash/navigation.tsx:140
+#: src/routes/dash/pages.tsx:348
 msgid "Display text for the link"
 msgstr "Display text for the link"
 
@@ -326,16 +343,18 @@ msgstr "Drafts"
 #. @context: Button to edit collection
 #. @context: Button to edit collection
 #. @context: Button to edit item
-#. @context: Button to edit navigation link
+#. @context: Button to edit link
+#. @context: Button to edit page
 #. @context: Button to edit page
 #. @context: Button to edit page
 #. @context: Button to edit post
 #. @context: Button to edit post
 #: src/routes/dash/collections.tsx:66
 #: src/routes/dash/collections.tsx:220
-#: src/routes/dash/navigation.tsx:61
-#: src/routes/dash/pages.tsx:62
-#: src/routes/dash/pages.tsx:129
+#: src/routes/dash/pages.tsx:94
+#: src/routes/dash/pages.tsx:115
+#: src/routes/dash/pages.tsx:192
+#: src/routes/dash/pages.tsx:256
 #: src/routes/dash/posts.tsx:142
 #: src/theme/components/ActionButtons.tsx:72
 #: src/theme/components/PostList.tsx:50
@@ -348,12 +367,12 @@ msgid "Edit Collection"
 msgstr "Edit Collection"
 
 #. @context: Page heading
-#: src/routes/dash/navigation.tsx:105
+#: src/routes/dash/pages.tsx:313
 msgid "Edit Link"
 msgstr "Edit Link"
 
 #. @context: Edit page main heading
-#: src/routes/dash/pages.tsx:167
+#: src/routes/dash/pages.tsx:294
 msgid "Edit Page"
 msgstr "Edit Page"
 
@@ -373,22 +392,24 @@ msgstr "Edit Post"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:245
-#: src/app.tsx:389
+#: src/app.tsx:246
+#: src/app.tsx:402
 msgid "Email"
 msgstr "Email"
 
 #. @context: Password reset page description
-#: src/app.tsx:505
+#: src/app.tsx:518
 msgid "Enter your new password."
 msgstr "Enter your new password."
 
 #. @context: Archive filter - featured posts
+#. @context: Featured page heading
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
 #: src/theme/components/PostForm.tsx:247
 #: src/theme/components/VisibilityBadge.tsx:46
 #: src/themes/threads/pages/ArchivePage.tsx:89
+#: src/themes/threads/pages/FeaturedPage.tsx:26
 msgid "Featured"
 msgstr "Featured"
 
@@ -439,12 +460,12 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
 
 #. @context: Password reset error heading
-#: src/app.tsx:580
+#: src/app.tsx:593
 msgid "Invalid or Expired Link"
 msgstr "Invalid or Expired Link"
 
 #. @context: Navigation link form field
-#: src/routes/dash/navigation.tsx:127
+#: src/routes/dash/pages.tsx:335
 msgid "Label"
 msgstr "Label"
 
@@ -457,6 +478,11 @@ msgstr "Language"
 #: src/app.tsx:130
 #~ msgid "Let's set up your site."
 #~ msgstr "Let's set up your site."
+
+#. @context: Nav item type badge
+#: src/routes/dash/pages.tsx:145
+msgid "link"
+msgstr "link"
 
 #. @context: Post format badge - link
 #. @context: Post format label - link
@@ -522,8 +548,8 @@ msgstr "Name"
 #. @context: Dashboard navigation - navigation links management
 #: src/routes/dash/navigation.tsx:29
 #: src/theme/layouts/DashLayout.tsx:133
-msgid "Navigation"
-msgstr "Navigation"
+#~ msgid "Navigation"
+#~ msgstr "Navigation"
 
 #. @context: Help text with link
 #: src/routes/dash/index.tsx:78
@@ -539,25 +565,21 @@ msgstr "Need help? Visit the <0>documentation</0>"
 msgid "New Collection"
 msgstr "New Collection"
 
-#. @context: Button to create new navigation link
-#. @context: Button to create new navigation link
 #. @context: Page heading
-#: src/routes/dash/navigation.tsx:33
-#: src/routes/dash/navigation.tsx:46
-#: src/routes/dash/navigation.tsx:106
+#: src/routes/dash/pages.tsx:314
 msgid "New Link"
 msgstr "New Link"
 
 #. @context: Button to create new page
 #. @context: New page main heading
-#: src/routes/dash/pages.tsx:35
-#: src/routes/dash/pages.tsx:105
+#: src/routes/dash/pages.tsx:56
+#: src/routes/dash/pages.tsx:232
 msgid "New Page"
 msgstr "New Page"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:520
+#: src/app.tsx:533
 #: src/routes/dash/settings.tsx:442
 msgid "New Password"
 msgstr "New Password"
@@ -588,9 +610,16 @@ msgid "Next"
 msgstr "Next"
 
 #. @context: Empty state message
+#. @context: Empty state message on collections page
 #: src/routes/dash/collections.tsx:48
+#: src/themes/threads/pages/CollectionsPage.tsx:28
 msgid "No collections yet."
 msgstr "No collections yet."
+
+#. @context: Empty state message on featured page
+#: src/themes/threads/pages/FeaturedPage.tsx:36
+msgid "No featured posts yet."
+msgstr "No featured posts yet."
 
 #. @context: Empty state message when no media exists
 #: src/routes/dash/media.tsx:186
@@ -599,13 +628,18 @@ msgstr "No media uploaded yet."
 
 #. @context: Empty state message
 #: src/routes/dash/navigation.tsx:42
-msgid "No navigation links configured."
-msgstr "No navigation links configured."
+#~ msgid "No navigation links configured."
+#~ msgstr "No navigation links configured."
+
+#. @context: Empty state for navigation section
+#: src/routes/dash/pages.tsx:74
+msgid "No navigation links yet. Add pages to navigation or create links."
+msgstr "No navigation links yet. Add pages to navigation or create links."
 
 #. @context: Empty state message when no pages exist
 #: src/routes/dash/pages.tsx:44
-msgid "No pages yet."
-msgstr "No pages yet."
+#~ msgid "No pages yet."
+#~ msgstr "No pages yet."
 
 #. @context: Archive empty state
 #: src/themes/threads/pages/ArchivePage.tsx:100
@@ -655,8 +689,18 @@ msgstr "Note"
 msgid "Notes"
 msgstr "Notes"
 
+#. @context: Section heading for pages not in navigation
+#: src/routes/dash/pages.tsx:161
+msgid "Other pages"
+msgstr "Other pages"
+
+#. @context: Nav item type badge
+#: src/routes/dash/pages.tsx:141
+msgid "page"
+msgstr "page"
+
 #. @context: Default page heading when untitled
-#: src/routes/dash/pages.tsx:120
+#: src/routes/dash/pages.tsx:247
 msgid "Page"
 msgstr "Page"
 
@@ -677,15 +721,15 @@ msgstr "Page title..."
 
 #. @context: Dashboard navigation - pages management
 #. @context: Pages main heading
-#: src/routes/dash/pages.tsx:34
+#: src/routes/dash/pages.tsx:43
 #: src/theme/layouts/DashLayout.tsx:96
 msgid "Pages"
 msgstr "Pages"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:260
-#: src/app.tsx:398
+#: src/app.tsx:261
+#: src/app.tsx:411
 msgid "Password"
 msgstr "Password"
 
@@ -695,7 +739,7 @@ msgstr "Password"
 #~ msgstr "Path"
 
 #. @context: Navigation URL help text
-#: src/routes/dash/navigation.tsx:162
+#: src/routes/dash/pages.tsx:370
 msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 
@@ -713,6 +757,11 @@ msgstr "Permalink"
 msgid "Pinned"
 msgstr "Pinned"
 
+#. @context: Singular post count label
+#: src/themes/threads/pages/CollectionsPage.tsx:56
+msgid "post"
+msgstr "post"
+
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:130
 msgid "Post"
@@ -722,6 +771,11 @@ msgstr "Post"
 #: src/theme/components/PostForm.tsx:95
 msgid "Post title..."
 msgstr "Post title..."
+
+#. @context: Plural post count label
+#: src/themes/threads/pages/CollectionsPage.tsx:60
+msgid "posts"
+msgstr "posts"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - posts management
@@ -760,13 +814,13 @@ msgstr "Previous"
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/app.tsx:281
-#: src/app.tsx:418
-#: src/app.tsx:558
+#: src/app.tsx:282
+#: src/app.tsx:431
+#: src/app.tsx:571
 #: src/routes/dash/collections.tsx:178
 #: src/routes/dash/collections.tsx:346
 #: src/routes/dash/media.tsx:119
-#: src/routes/dash/navigation.tsx:184
+#: src/routes/dash/pages.tsx:392
 #: src/routes/dash/redirects.tsx:169
 #: src/routes/dash/settings.tsx:200
 #: src/routes/dash/settings.tsx:400
@@ -855,13 +909,13 @@ msgstr "Remove"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:499
-#: src/app.tsx:552
+#: src/app.tsx:512
+#: src/app.tsx:565
 msgid "Reset Password"
 msgstr "Reset Password"
 
 #. @context: Button to save edited navigation link
-#: src/routes/dash/navigation.tsx:174
+#: src/routes/dash/pages.tsx:382
 msgid "Save Changes"
 msgstr "Save Changes"
 
@@ -904,7 +958,7 @@ msgstr "Select Media"
 #: src/routes/dash/settings.tsx:118
 #: src/routes/dash/settings.tsx:300
 #: src/routes/dash/settings.tsx:351
-#: src/theme/layouts/DashLayout.tsx:143
+#: src/theme/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "Settings"
 
@@ -921,8 +975,8 @@ msgstr "Show {remainingCount} more {0}"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:365
-#: src/app.tsx:412
+#: src/app.tsx:378
+#: src/app.tsx:425
 msgid "Sign In"
 msgstr "Sign In"
 
@@ -993,7 +1047,7 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 
 #. @context: Password reset error description
-#: src/app.tsx:588
+#: src/app.tsx:601
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "This password reset link is invalid or has expired. Please generate a new one."
 
@@ -1041,6 +1095,11 @@ msgstr "To Path"
 msgid "Type"
 msgstr "Type"
 
+#. @context: Button to remove page from navigation
+#: src/routes/dash/pages.tsx:104
+msgid "Un-nav"
+msgstr "Un-nav"
+
 #. @context: Post visibility badge - unlisted
 #. @context: Post visibility option
 #: src/theme/components/PostForm.tsx:255
@@ -1050,7 +1109,7 @@ msgstr "Type"
 
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
-#: src/routes/dash/pages.tsx:86
+#: src/routes/dash/pages.tsx:212
 #: src/theme/components/PostList.tsx:86
 msgid "Untitled"
 msgstr "Untitled"
@@ -1093,7 +1152,7 @@ msgstr "Uploading..."
 #. @context: Media detail section - URL
 #. @context: Navigation link form field
 #: src/routes/dash/media.tsx:318
-#: src/routes/dash/navigation.tsx:149
+#: src/routes/dash/pages.tsx:357
 msgid "URL"
 msgstr "URL"
 
@@ -1121,8 +1180,8 @@ msgstr "Use this URL to embed the media in your posts."
 #. @context: Button to view post on public site
 #: src/routes/dash/collections.tsx:71
 #: src/routes/dash/collections.tsx:225
-#: src/routes/dash/pages.tsx:69
-#: src/routes/dash/pages.tsx:134
+#: src/routes/dash/pages.tsx:199
+#: src/routes/dash/pages.tsx:261
 #: src/routes/dash/posts.tsx:147
 #: src/theme/components/ActionButtons.tsx:76
 #: src/theme/components/PostList.tsx:55
@@ -1145,7 +1204,7 @@ msgstr "View Site"
 #~ msgstr "Visibility"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:209
+#: src/app.tsx:210
 msgid "Welcome to Jant"
 msgstr "Welcome to Jant"
 
@@ -1160,6 +1219,11 @@ msgid "What's this collection about?"
 msgstr "What's this collection about?"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:230
+#: src/app.tsx:231
 msgid "Your Name"
 msgstr "Your Name"
+
+#. @context: Section heading for navigation items
+#: src/routes/dash/pages.tsx:67
+msgid "Your site navigation"
+msgstr "Your site navigation"

@@ -4,7 +4,7 @@
  * CRUD operations for standalone pages (about, now, etc.)
  */
 
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import type { Database } from "../db/index.js";
 import { pages, navItems } from "../db/schema.js";
 import { now } from "../lib/time.js";
@@ -15,6 +15,7 @@ export interface PageService {
   getById(id: number): Promise<Page | null>;
   getBySlug(slug: string): Promise<Page | null>;
   list(): Promise<Page[]>;
+  listNotInNav(): Promise<Page[]>;
   create(data: CreatePage): Promise<Page>;
   update(id: number, data: UpdatePage): Promise<Page | null>;
   delete(id: number): Promise<boolean>;
@@ -55,6 +56,17 @@ export function createPageService(db: Database): PageService {
 
     async list() {
       const rows = await db.select().from(pages).orderBy(desc(pages.createdAt));
+      return rows.map(toPage);
+    },
+
+    async listNotInNav() {
+      const rows = await db
+        .select()
+        .from(pages)
+        .where(
+          sql`${pages.id} NOT IN (SELECT ${navItems.pageId} FROM ${navItems} WHERE ${navItems.pageId} IS NOT NULL)`,
+        )
+        .orderBy(desc(pages.createdAt));
       return rows.map(toPage);
     },
 

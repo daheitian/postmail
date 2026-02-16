@@ -127,16 +127,6 @@ function DashLayoutContent({
               })}
             </a>
             <a
-              href="/dash/navigation"
-              class={navClass("/dash/navigation", /^\/dash\/navigation/)}
-            >
-              {t({
-                message: "Navigation",
-                comment:
-                  "@context: Dashboard navigation - navigation links management",
-              })}
-            </a>
-            <a
               href="/dash/settings"
               class={navClass("/dash/settings", /^\/dash\/settings/)}
             >

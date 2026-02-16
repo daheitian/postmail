@@ -16,6 +16,7 @@ export interface NavigationData {
   links: NavItemView[];
   currentPath: string;
   siteName: string;
+  siteDescription: string;
 }
 
 /**
@@ -40,6 +41,13 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   const items = await c.var.services.navItems.list();
   const currentPath = new URL(c.req.url).pathname;
   const siteName = await getSiteName(c);
+
+  // Only include description if explicitly set (DB or env), not the default
+  const dbDescription = await c.var.services.settings.get("SITE_DESCRIPTION");
+  const envDescription = c.env.SITE_DESCRIPTION;
+  const siteDescription =
+    dbDescription || (typeof envDescription === "string" ? envDescription : "");
+
   const links = toNavItemViews(items, currentPath);
-  return { links, currentPath, siteName };
+  return { links, currentPath, siteName, siteDescription };
 }
