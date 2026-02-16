@@ -243,11 +243,11 @@ dir = "templates/jant-site"
 run = "node scripts/export-demo.mjs"
 
 [tasks.demo-seed]
-description = "Push local seed data to demo (excluding media)"
+description = "Push local seed data to demo"
 dir = "templates/jant-site"
 run = """
-echo "Exporting local data (without media)..."
-node scripts/export-seed.mjs --no-media --no-auth --output seed-demo-upload.sql
+echo "Exporting local data..."
+node scripts/export-seed.mjs --no-auth --output seed-demo-upload.sql
 echo "Loading seed data to demo (includes reset)..."
 pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/seed-demo-upload.sql
 rm scripts/seed-demo-upload.sql
