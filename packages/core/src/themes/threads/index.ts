@@ -104,3 +104,5 @@ export { TimelineFeed } from "./timeline/TimelineFeed.js";
 export { TimelineLoadMore } from "./timeline/TimelineLoadMore.js";
 export { TimelineItem, TimelineItemFromPost } from "./timeline/TimelineItem.js";
 export { timelineMore } from "./timeline/timelineMore.js";
+export { ComposeDialog } from "./components/ComposeDialog.js";
+export { ComposePrompt } from "./components/ComposePrompt.js";

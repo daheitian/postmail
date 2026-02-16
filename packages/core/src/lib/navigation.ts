@@ -6,7 +6,7 @@
 
 import type { Context } from "hono";
 import { getSiteName } from "./config.js";
-import type { NavItemView } from "../types.js";
+import type { Collection, NavItemView } from "../types.js";
 import { toNavItemViews } from "./view.js";
 
 /**
@@ -17,12 +17,15 @@ export interface NavigationData {
   currentPath: string;
   siteName: string;
   siteDescription: string;
+  isAuthenticated: boolean;
+  collections: Collection[];
 }
 
 /**
  * Fetch navigation data for public pages.
  *
  * Returns NavItemView[] with pre-computed isActive/isExternal state.
+ * Also checks authentication status and loads collections for authenticated users.
  *
  * @param c - Hono context
  * @returns Navigation data for SiteLayout
@@ -49,5 +52,32 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
     dbDescription || (typeof envDescription === "string" ? envDescription : "");
 
   const links = toNavItemViews(items, currentPath);
-  return { links, currentPath, siteName, siteDescription };
+
+  // Check auth status for compose button
+  let isAuthenticated = false;
+  let collections: Collection[] = [];
+  if (c.var.auth) {
+    try {
+      const session = await c.var.auth.api.getSession({
+        headers: c.req.raw.headers,
+      });
+      isAuthenticated = !!session?.user;
+    } catch {
+      // Not authenticated
+    }
+  }
+
+  // Only load collections when authenticated (for compose dialog)
+  if (isAuthenticated) {
+    collections = await c.var.services.collections.list();
+  }
+
+  return {
+    links,
+    currentPath,
+    siteName,
+    siteDescription,
+    isAuthenticated,
+    collections,
+  };
 }

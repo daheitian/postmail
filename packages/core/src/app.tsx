@@ -41,6 +41,9 @@ import { collectionsApiRoutes } from "./routes/api/collections.js";
 import { settingsApiRoutes } from "./routes/api/settings.js";
 import { uploadApiRoutes } from "./routes/api/upload.js";
 import { searchApiRoutes } from "./routes/api/search.js";
+// Routes - Compose
+import { composeRoutes } from "./routes/compose.js";
+
 // Routes - Feed
 import { rssRoutes } from "./routes/feed/rss.js";
 import { sitemapRoutes } from "./routes/feed/sitemap.js";
@@ -770,6 +773,9 @@ export function createApp(config: JantConfig = {}): App {
 
     return new Response(object.body, { headers });
   });
+
+  // Compose route (auth enforced in route middleware)
+  app.route("/compose", composeRoutes);
 
   // Feed routes
   app.route("/feed", rssRoutes);

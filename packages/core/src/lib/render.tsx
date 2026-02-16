@@ -58,6 +58,8 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     siteDescription: navData.siteDescription,
     links: navData.links,
     currentPath: navData.currentPath,
+    isAuthenticated: navData.isAuthenticated,
+    collections: navData.collections,
   };
 
   return c.html(

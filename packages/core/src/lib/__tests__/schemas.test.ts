@@ -266,9 +266,16 @@ describe("CreatePostSchema", () => {
     }
   });
 
-  it("rejects rating outside 1-5 range", () => {
-    expect(() => CreatePostSchema.parse({ ...validPost, rating: 0 })).toThrow();
+  it("rejects rating outside 0-5 range", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, rating: -1 }),
+    ).toThrow();
     expect(() => CreatePostSchema.parse({ ...validPost, rating: 6 })).toThrow();
+  });
+
+  it("accepts rating 0 (transforms to undefined)", () => {
+    const result = CreatePostSchema.parse({ ...validPost, rating: 0 });
+    expect(result.rating).toBeUndefined();
   });
 
   it("accepts empty string rating (transforms to undefined)", () => {

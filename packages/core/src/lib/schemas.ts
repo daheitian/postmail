@@ -51,10 +51,11 @@ export const RedirectTypeSchema = z.enum(["301", "302"]);
 export const RatingSchema = z.coerce
   .number()
   .int()
-  .min(1)
+  .min(0)
   .max(5)
   .optional()
-  .or(z.literal("").transform(() => undefined));
+  .or(z.literal("").transform(() => undefined))
+  .transform((v) => (v === 0 ? undefined : v));
 
 /**
  * API request body schema for creating a post
@@ -81,9 +82,10 @@ export const CreatePostSchema = z.object({
   collectionId: z.coerce
     .number()
     .int()
-    .positive()
+    .min(0)
     .optional()
-    .or(z.literal("").transform(() => undefined)),
+    .or(z.literal("").transform(() => undefined))
+    .transform((v) => (v === 0 ? undefined : v)),
   replyToId: z.string().optional(), // Sqid format
   publishedAt: z.number().int().positive().optional(),
   mediaIds: z.array(z.string()).max(MAX_MEDIA_ATTACHMENTS).optional(),

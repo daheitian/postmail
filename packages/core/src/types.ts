@@ -547,6 +547,8 @@ export interface SiteLayoutProps {
   siteDescription?: string;
   links: NavItemView[];
   currentPath: string;
+  isAuthenticated?: boolean;
+  collections?: Collection[];
 }
 
 // =============================================================================

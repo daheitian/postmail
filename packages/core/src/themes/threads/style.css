@@ -262,4 +262,251 @@
     padding-left: 12px;
     border-left: 2px solid var(--threads-text-secondary);
   }
+
+  /* =========================================================================
+   * Compose Prompt Bar (Threads-style "What's new?" at top of content)
+   * ========================================================================= */
+
+  .compose-prompt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 0.5px solid var(--threads-divider);
+  }
+
+  .compose-prompt-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .compose-prompt-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--threads-column-outline);
+    color: var(--threads-text-secondary);
+  }
+
+  .compose-prompt-text {
+    font-size: 0.9375rem;
+    color: var(--threads-text-secondary);
+  }
+
+  .compose-prompt-post-btn {
+    flex-shrink: 0;
+    padding: 6px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--threads-column-outline);
+    background: none;
+    color: var(--threads-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
+  }
+
+  .compose-prompt-post-btn:hover {
+    color: var(--threads-text-primary);
+    border-color: var(--threads-text-secondary);
+  }
+
+  /* On timeline pages the prompt needs its own card wrapper */
+  .threads-content:has(#timeline-feed) > .compose-prompt {
+    background-color: var(--threads-elevated-bg);
+    padding: 12px var(--threads-column-padding);
+    border-bottom: none;
+    margin-bottom: 4px;
+  }
+
+  @media (min-width: 700px) {
+    .threads-content:has(#timeline-feed) > .compose-prompt {
+      border-radius: var(--threads-container-radius);
+      border: 0.5px solid var(--threads-column-outline);
+      margin-bottom: 16px;
+    }
+  }
+
+  /* =========================================================================
+   * Compose Dialog
+   * ========================================================================= */
+
+  /* Dialog — positioned near top of viewport (close to the prompt bar) */
+  .compose-dialog {
+    padding: 0;
+    border: none;
+    border-radius: 16px;
+    max-width: 560px;
+    width: calc(100% - 32px);
+    max-height: calc(100dvh - 64px);
+    margin: max(80px, 10vh) auto auto;
+    background-color: var(--threads-elevated-bg);
+    color: var(--threads-text-primary);
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px var(--threads-column-outline);
+  }
+
+  .compose-dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .compose-dialog-inner {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 64px);
+  }
+
+  .compose-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 0.5px solid var(--threads-divider);
+  }
+
+  .compose-dialog-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .compose-dialog-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    color: var(--threads-text-secondary);
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+
+  .compose-dialog-close:hover {
+    background-color: var(--threads-nav-hover-bg);
+  }
+
+  .compose-dialog-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .compose-dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 0.5px solid var(--threads-divider);
+  }
+
+  /* Format tabs — inline pill buttons */
+  .compose-format-tabs {
+    display: flex;
+    gap: 4px;
+    padding-bottom: 8px;
+  }
+
+  .compose-format-tab {
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--threads-column-outline);
+    background: none;
+    color: var(--threads-text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s,
+      border-color 0.15s;
+  }
+
+  .compose-format-tab:hover {
+    color: var(--threads-text-primary);
+    border-color: var(--threads-text-secondary);
+  }
+
+  .compose-format-tab-active {
+    color: var(--threads-text-primary);
+    background-color: var(--threads-nav-hover-bg);
+    border-color: var(--threads-text-primary);
+    font-weight: 500;
+  }
+
+  /* Borderless title input */
+  .compose-title-input {
+    width: 100%;
+    padding: 4px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--threads-text-primary);
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+
+  .compose-title-input::placeholder {
+    color: var(--threads-text-secondary);
+    font-weight: 400;
+  }
+
+  /* Borderless body textarea */
+  .compose-body-input {
+    width: 100%;
+    padding: 4px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--threads-text-primary);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  .compose-body-input::placeholder {
+    color: var(--threads-text-secondary);
+  }
+
+  /* Bottom toolbar */
+  .compose-toolbar {
+    padding: 8px 0;
+  }
+
+  .compose-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: var(--threads-text-secondary);
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+  }
+
+  .compose-toolbar-btn:hover {
+    color: var(--threads-text-primary);
+    background-color: var(--threads-nav-hover-bg);
+  }
 }

@@ -8,6 +8,8 @@
 
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { NavItemView, SiteLayoutProps } from "../../types.js";
+import { ComposeDialog } from "./components/ComposeDialog.js";
+import { ComposePrompt } from "./components/ComposePrompt.js";
 
 function HeaderLink({ link }: { link: NavItemView }) {
   return (
@@ -26,6 +28,8 @@ function HeaderLink({ link }: { link: NavItemView }) {
 export const ThreadsSiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   siteName,
   links,
+  isAuthenticated,
+  collections,
   children,
 }) => {
   return (
@@ -47,9 +51,15 @@ export const ThreadsSiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       {/* Main content — white rounded container on gray background */}
       <main class="threads-main">
         <div class="threads-container">
-          <div class="threads-content">{children}</div>
+          <div class="threads-content">
+            {isAuthenticated && <ComposePrompt />}
+            {children}
+          </div>
         </div>
       </main>
+
+      {/* Compose dialog for authenticated users */}
+      {isAuthenticated && <ComposeDialog collections={collections} />}
     </div>
   );
 };
