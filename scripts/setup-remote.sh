@@ -15,6 +15,9 @@ curl -fsSL https://raw.githubusercontent.com/jdx/mise/main/install.sh | sh
 # Install entire (use raw GitHub URL — entire.io is not in the remote allowlist)
 curl -fsSL https://raw.githubusercontent.com/entireio/cli/main/scripts/install.sh | bash
 
+# Trust the project mise.toml so mise doesn't error on untrusted config
+mise trust
+
 # Install Node.js and pnpm via mise
 mise install
 

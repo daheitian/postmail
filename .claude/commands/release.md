@@ -5,7 +5,7 @@ Create a changeset and prepare a release commit for `@jant/core` and `create-jan
 ## Steps
 
 1. Run `mise run changeset-status` to check if there are already pending changesets.
-2. Ask the user what kind of version bump this release is: **patch**, **minor**, or **major**. Show them a summary of unreleased changes (commits since last tag) using `git log $(git describe --tags --abbrev=0)..HEAD --oneline` to help them decide.
+2. Show the user a summary of unreleased changes (commits since last tag) using `git log $(git describe --tags --abbrev=0)..HEAD --oneline`. Ask what kind of version bump: **patch** (default), **minor**, or **major**. If the user doesn't specify, use **patch**.
 3. Run `mise run changeset` — this is interactive. When prompted:
    - Select **both** packages (`@jant/core` and `create-jant`)
    - Use the bump type the user chose
