@@ -33,6 +33,6 @@ featuredRoutes.get("/", async (c) => {
   return renderPublicPage(c, {
     title: `Featured - ${navData.siteName}`,
     navData,
-    content: <FeaturedPage items={items} hasMore={false} />,
+    content: <FeaturedPage items={items} />,
   });
 });

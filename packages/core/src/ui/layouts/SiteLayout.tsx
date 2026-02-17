@@ -51,20 +51,20 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         comment: "@context: Browse filter for featured posts",
       }),
     },
-    {
-      href: "/collections",
-      label: t({
-        message: "Collections",
-        comment: "@context: Browse filter for collections",
-      }),
-    },
-    {
-      href: "/archive",
-      label: t({
-        message: "Archive",
-        comment: "@context: Browse filter for archive",
-      }),
-    },
+    // {
+    //   href: "/collections",
+    //   label: t({
+    //     message: "Collections",
+    //     comment: "@context: Browse filter for collections",
+    //   }),
+    // },
+    // {
+    //   href: "/archive",
+    //   label: t({
+    //     message: "Archive",
+    //     comment: "@context: Browse filter for archive",
+    //   }),
+    // },
   ];
 
   const searchLabel = t({
@@ -72,41 +72,29 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     comment: "@context: Search icon link in browse nav",
   });
 
+  const isHomePage = currentPath === "/" || currentPath === "/featured";
+
   return (
     <div class="site-page">
       <header class="site-header">
         <div class="site-header-inner">
-          <a href="/" class="site-logo">
-            {siteName}
-          </a>
-          {links.length > 0 && (
-            <nav class="site-header-nav">
-              {links.map((link) => (
-                <HeaderLink key={link.id} link={link} />
-              ))}
-            </nav>
-          )}
-          {siteDescription && <p class="site-description">{siteDescription}</p>}
-        </div>
-      </header>
-
-      <main class="site-main">
-        <div class="site-container">
-          <div class="site-content">
-            {isAuthenticated && <ComposePrompt />}
-            <nav class="site-browse-nav">
-              {browseLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  class={`site-browse-link ${currentPath === link.href ? "site-browse-link-active" : ""}`}
-                >
-                  {link.label}
-                </a>
-              ))}
+          <div
+            class={`site-header-top ${!isHomePage ? "site-header-top-bordered" : ""}`}
+          >
+            <a href="/" class="site-logo">
+              {siteName}
+            </a>
+            <div class="site-header-right">
+              {links.length > 0 && (
+                <nav class="site-header-nav">
+                  {links.map((link) => (
+                    <HeaderLink key={link.id} link={link} />
+                  ))}
+                </nav>
+              )}
               <a
                 href="/search"
-                class={`site-browse-search ${currentPath === "/search" ? "site-browse-search-active" : ""}`}
+                class={`site-header-search ${currentPath === "/search" ? "site-header-search-active" : ""}`}
                 aria-label={searchLabel}
                 title={searchLabel}
               >
@@ -125,7 +113,34 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                   <path d="m21 21-4.35-4.35" />
                 </svg>
               </a>
-            </nav>
+            </div>
+          </div>
+          {isHomePage && siteDescription && (
+            <p class="site-description">{siteDescription}</p>
+          )}
+        </div>
+      </header>
+
+      <main class="site-main">
+        <div class="site-container">
+          <div class="site-content">
+            {isHomePage && isAuthenticated && <ComposePrompt />}
+            {isHomePage && (
+              <nav class="site-browse-nav">
+                {browseLinks.map((link, i) => (
+                  <>
+                    {i > 0 && <span class="site-browse-sep">/</span>}
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      class={`site-browse-link ${currentPath === link.href ? "site-browse-link-active" : ""}`}
+                    >
+                      {link.label}
+                    </a>
+                  </>
+                ))}
+              </nav>
+            )}
             {children}
           </div>
         </div>

@@ -25,12 +25,15 @@ export interface PostFilters {
   threadId?: number;
   limit?: number;
   cursor?: number; // post id for cursor pagination
+  offset?: number; // offset for page-based pagination
 }
 
 export interface PostService {
   getById(id: number): Promise<Post | null>;
   getByPath(path: string): Promise<Post | null>;
   list(filters?: PostFilters): Promise<Post[]>;
+  /** Count posts matching filters (ignores cursor, offset, limit) */
+  count(filters?: PostFilters): Promise<number>;
   create(data: CreatePost): Promise<Post>;
   update(id: number, data: UpdatePost): Promise<Post | null>;
   delete(id: number): Promise<boolean>;
@@ -132,15 +135,62 @@ export function createPostService(db: Database): PostService {
         conditions.push(sql`${posts.id} < ${filters.cursor}`);
       }
 
-      const query = db
+      let query = db
         .select()
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(posts.publishedAt), desc(posts.id))
         .limit(filters.limit ?? 100);
 
+      if (filters.offset !== undefined) {
+        query = query.offset(filters.offset) as typeof query;
+      }
+
       const rows = await query;
       return rows.map(toPost);
+    },
+
+    async count(filters = {}) {
+      const conditions = [];
+
+      if (filters.status) {
+        conditions.push(eq(posts.status, filters.status));
+      }
+
+      if (filters.featured !== undefined) {
+        conditions.push(eq(posts.featured, filters.featured ? 1 : 0));
+      }
+
+      if (filters.pinned !== undefined) {
+        conditions.push(eq(posts.pinned, filters.pinned ? 1 : 0));
+      }
+
+      if (filters.format) {
+        conditions.push(eq(posts.format, filters.format));
+      }
+
+      if (filters.collectionId !== undefined) {
+        conditions.push(eq(posts.collectionId, filters.collectionId));
+      }
+
+      if (filters.threadId) {
+        conditions.push(eq(posts.threadId, filters.threadId));
+      }
+
+      if (filters.excludeReplies) {
+        conditions.push(isNull(posts.threadId));
+      }
+
+      if (!filters.includeDeleted) {
+        conditions.push(isNull(posts.deletedAt));
+      }
+
+      const result = await db
+        .select({ count: sql<number>`count(*)`.as("count") })
+        .from(posts)
+        .where(conditions.length > 0 ? and(...conditions) : undefined);
+
+      return result[0]?.count ?? 0;
     },
 
     async create(data) {

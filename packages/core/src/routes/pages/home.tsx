@@ -2,7 +2,7 @@
  * Home Page Route
  *
  * Timeline feed with per-type card components and thread previews.
- * Handles both full-page rendering and load-more SSE responses.
+ * Uses page-based pagination.
  */
 
 import { Hono } from "hono";
@@ -11,52 +11,21 @@ import type { AppVariables } from "../../app.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
-import { sse } from "../../lib/sse.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
-import { timelineMore } from "../../ui/feed/timelineMore.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const homeRoutes = new Hono<Env>();
 
 homeRoutes.get("/", async (c) => {
-  const cursorParam = c.req.query("cursor");
-  const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
+  const pageParam = c.req.query("page");
+  const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
 
-  const { items, hasMore, nextCursor } = await assembleTimeline(c, {
-    cursor: cursor && !isNaN(cursor) ? cursor : undefined,
+  const { items, currentPage, totalPages } = await assembleTimeline(c, {
+    page,
   });
 
-  // SSE load-more response
-  if (cursor && !isNaN(cursor)) {
-    if (items.length === 0) {
-      return sse(c, async (stream) => {
-        stream.remove("#load-more-container");
-      });
-    }
-
-    const patches = timelineMore({
-      items,
-      hasMore,
-      nextCursor,
-    });
-
-    return sse(c, async (stream) => {
-      for (const patch of patches) {
-        if (patch.mode === "remove") {
-          stream.remove(patch.selector);
-        } else {
-          stream.patchElements(patch.content, {
-            mode: patch.mode,
-            selector: patch.selector,
-          });
-        }
-      }
-    });
-  }
-
-  // Full page render
   const navData = await getNavigationData(c);
 
   // Fetch pinned posts
@@ -75,8 +44,8 @@ homeRoutes.get("/", async (c) => {
       <HomePage
         items={items}
         pinnedItems={pinnedItems}
-        hasMore={hasMore}
-        nextCursor={nextCursor}
+        currentPage={currentPage}
+        totalPages={totalPages}
       />
     ),
   });

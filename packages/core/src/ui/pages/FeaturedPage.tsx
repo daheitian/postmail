@@ -9,11 +9,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { FeaturedPageProps } from "../../types.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
 
-export const FeaturedPage: FC<FeaturedPageProps> = ({
-  items,
-  hasMore,
-  nextCursor,
-}) => {
+export const FeaturedPage: FC<FeaturedPageProps> = ({ items }) => {
   const { t } = useLingui();
 
   return (
@@ -36,11 +32,7 @@ export const FeaturedPage: FC<FeaturedPageProps> = ({
             })}
           </p>
         ) : (
-          <TimelineFeed
-            items={items}
-            hasMore={hasMore}
-            nextCursor={nextCursor}
-          />
+          <TimelineFeed items={items} />
         )}
       </main>
     </div>

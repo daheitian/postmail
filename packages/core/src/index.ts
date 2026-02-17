@@ -41,7 +41,6 @@ export type {
   SearchResultView,
   TimelineItemView,
   ArchiveGroup,
-  TimelinePatch,
   // Feed types
   FeedData,
   SitemapData,

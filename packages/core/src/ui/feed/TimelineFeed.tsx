@@ -8,12 +8,12 @@ import type { FC } from "hono/jsx";
 import type { TimelineFeedProps } from "../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { ThreadPreview } from "./ThreadPreview.js";
-import { TimelineLoadMore } from "./TimelineLoadMore.js";
+import { PagePagination } from "../shared/Pagination.js";
 
 export const TimelineFeed: FC<TimelineFeedProps> = ({
   items,
-  hasMore,
-  nextCursor,
+  currentPage,
+  totalPages,
 }) => {
   return (
     <div data-feed>
@@ -35,7 +35,15 @@ export const TimelineFeed: FC<TimelineFeedProps> = ({
           ))}
         </div>
       </div>
-      {hasMore && nextCursor && <TimelineLoadMore nextCursor={nextCursor} />}
+      {currentPage !== undefined &&
+        totalPages !== undefined &&
+        totalPages > 1 && (
+          <PagePagination
+            baseUrl="/"
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
+        )}
     </div>
   );
 };

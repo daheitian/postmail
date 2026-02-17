@@ -9,7 +9,11 @@ import { useLingui } from "@lingui/react/macro";
 import type { HomePageProps } from "../../types.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
 
-export const HomePage: FC<HomePageProps> = ({ items, hasMore, nextCursor }) => {
+export const HomePage: FC<HomePageProps> = ({
+  items,
+  currentPage,
+  totalPages,
+}) => {
   const { t } = useLingui();
 
   return (
@@ -22,7 +26,11 @@ export const HomePage: FC<HomePageProps> = ({ items, hasMore, nextCursor }) => {
           })}
         </p>
       ) : (
-        <TimelineFeed items={items} hasMore={hasMore} nextCursor={nextCursor} />
+        <TimelineFeed
+          items={items}
+          currentPage={currentPage}
+          totalPages={totalPages}
+        />
       )}
     </div>
   );

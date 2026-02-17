@@ -370,6 +370,93 @@ describe("PostService", () => {
       expect(posts).toHaveLength(1);
       expect(posts[0]?.body).toBe("root post");
     });
+
+    it("supports offset pagination", async () => {
+      for (let i = 0; i < 5; i++) {
+        await postService.create({
+          format: "note",
+          body: `post ${i}`,
+          publishedAt: 1000 + i,
+        });
+      }
+
+      // Skip the first 2 posts (newest), get 2 more
+      const posts = await postService.list({ limit: 2, offset: 2 });
+      expect(posts).toHaveLength(2);
+      expect(posts[0]?.body).toBe("post 2");
+      expect(posts[1]?.body).toBe("post 1");
+    });
+  });
+
+  describe("count", () => {
+    it("returns 0 when no posts exist", async () => {
+      const count = await postService.count();
+      expect(count).toBe(0);
+    });
+
+    it("counts all non-deleted posts", async () => {
+      await postService.create({ format: "note", body: "first" });
+      await postService.create({ format: "note", body: "second" });
+      await postService.create({ format: "note", body: "third" });
+
+      const count = await postService.count();
+      expect(count).toBe(3);
+    });
+
+    it("filters by status", async () => {
+      await postService.create({
+        format: "note",
+        body: "published",
+        status: "published",
+      });
+      await postService.create({
+        format: "note",
+        body: "draft",
+        status: "draft",
+      });
+
+      const count = await postService.count({ status: "published" });
+      expect(count).toBe(1);
+    });
+
+    it("filters by featured", async () => {
+      await postService.create({
+        format: "note",
+        body: "featured",
+        featured: true,
+      });
+      await postService.create({ format: "note", body: "normal" });
+
+      const count = await postService.count({ featured: true });
+      expect(count).toBe(1);
+    });
+
+    it("excludes deleted posts by default", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: "to delete",
+      });
+      await postService.create({ format: "note", body: "keep" });
+      await postService.delete(post.id);
+
+      const count = await postService.count();
+      expect(count).toBe(1);
+    });
+
+    it("excludes replies when requested", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+      });
+      await postService.create({
+        format: "note",
+        body: "reply",
+        replyToId: root.id,
+      });
+
+      const count = await postService.count({ excludeReplies: true });
+      expect(count).toBe(1);
+    });
   });
 
   describe("update", () => {

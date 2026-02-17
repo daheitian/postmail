@@ -487,29 +487,8 @@ export interface ArchiveGroup {
 }
 
 // =============================================================================
-// Timeline Load-More Types
+// Page-Based Pagination Types
 // =============================================================================
-
-/** A single SSE DOM patch instruction returned by timelineMore */
-export interface TimelinePatch {
-  selector: string;
-  content: string;
-  mode?:
-    | "append"
-    | "prepend"
-    | "inner"
-    | "outer"
-    | "before"
-    | "after"
-    | "remove";
-}
-
-/** Props passed to the timelineMore renderer */
-export interface TimelineMoreProps {
-  items: TimelineItemView[];
-  hasMore: boolean;
-  nextCursor?: number;
-}
 
 // =============================================================================
 // Configuration Types
@@ -549,8 +528,8 @@ export interface SiteLayoutProps {
 export interface HomePageProps {
   items: TimelineItemView[];
   pinnedItems: PostView[];
-  hasMore: boolean;
-  nextCursor?: number;
+  currentPage: number;
+  totalPages: number;
 }
 
 /** Props for the single post page component */
@@ -566,8 +545,6 @@ export interface SinglePageProps {
 /** Props for the featured page component */
 export interface FeaturedPageProps {
   items: TimelineItemView[];
-  hasMore: boolean;
-  nextCursor?: number;
 }
 
 /** Props for the archive page component */
@@ -641,13 +618,8 @@ export interface ThreadPreviewProps {
 /** Props for the timeline feed wrapper */
 export interface TimelineFeedProps {
   items: TimelineItemView[];
-  hasMore: boolean;
-  nextCursor?: number;
-}
-
-/** Props for the timeline load-more button */
-export interface TimelineLoadMoreProps {
-  nextCursor: number;
+  currentPage?: number;
+  totalPages?: number;
 }
 
 /**

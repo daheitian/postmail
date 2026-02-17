@@ -183,26 +183,66 @@ describe("Timeline data assembly", () => {
     expect(page2.every((p) => p.id < (lastPost?.id ?? 0))).toBe(true);
   });
 
-  it("correctly determines hasMore flag", async () => {
-    for (let i = 0; i < 3; i++) {
+  it("supports offset-based pagination for page navigation", async () => {
+    for (let i = 0; i < 5; i++) {
+      await postService.create({
+        format: "note",
+        body: `Post ${i}`,
+        publishedAt: 1000 + i,
+      });
+    }
+
+    const pageSize = 2;
+
+    // Page 1
+    const page1 = await postService.list({
+      status: "published",
+      excludeReplies: true,
+      limit: pageSize,
+      offset: 0,
+    });
+    expect(page1).toHaveLength(2);
+    expect(page1[0]?.body).toBe("Post 4");
+    expect(page1[1]?.body).toBe("Post 3");
+
+    // Page 2
+    const page2 = await postService.list({
+      status: "published",
+      excludeReplies: true,
+      limit: pageSize,
+      offset: 2,
+    });
+    expect(page2).toHaveLength(2);
+    expect(page2[0]?.body).toBe("Post 2");
+    expect(page2[1]?.body).toBe("Post 1");
+
+    // Page 3 (partial)
+    const page3 = await postService.list({
+      status: "published",
+      excludeReplies: true,
+      limit: pageSize,
+      offset: 4,
+    });
+    expect(page3).toHaveLength(1);
+    expect(page3[0]?.body).toBe("Post 0");
+  });
+
+  it("computes total pages from count", async () => {
+    for (let i = 0; i < 5; i++) {
       await postService.create({
         format: "note",
         body: `Post ${i}`,
       });
     }
 
-    // Request limit + 1 to check for more
     const pageSize = 2;
-    const posts = await postService.list({
+    const totalCount = await postService.count({
       status: "published",
       excludeReplies: true,
-      limit: pageSize + 1,
     });
 
-    const hasMore = posts.length > pageSize;
-    expect(hasMore).toBe(true);
-
-    const displayPosts = posts.slice(0, pageSize);
-    expect(displayPosts).toHaveLength(2);
+    expect(totalCount).toBe(5);
+    const totalPages = Math.ceil(totalCount / pageSize);
+    expect(totalPages).toBe(3);
   });
 });

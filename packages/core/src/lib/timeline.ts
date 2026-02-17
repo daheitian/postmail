@@ -2,7 +2,7 @@
  * Timeline Data Assembly
  *
  * Shared helper for assembling timeline items with media and thread previews.
- * Used by both full-page rendering and load-more SSE responses.
+ * Used by page rendering with page-based pagination.
  */
 
 import type { Context } from "hono";
@@ -20,51 +20,58 @@ const DEFAULT_PAGE_SIZE = 20;
  */
 export interface TimelineResult {
   items: TimelineItemView[];
-  hasMore: boolean;
-  nextCursor?: number;
+  currentPage: number;
+  totalPages: number;
 }
 
 /**
  * Assembles a page of timeline items with media attachments and thread previews.
  *
- * Fetches posts, batch-loads media, identifies threads, and returns
- * render-ready `TimelineItemView[]` with pagination info.
+ * Fetches posts using offset-based pagination, batch-loads media, identifies
+ * threads, and returns render-ready `TimelineItemView[]` with page info.
  *
  * @param c - Hono context (provides services + env)
- * @param options - Optional cursor for pagination
+ * @param options - Optional page number (1-indexed, defaults to 1)
  * @returns Assembled timeline items with pagination info
  *
  * @example
  * ```ts
- * const { items, hasMore, nextCursor } = await assembleTimeline(c);
- * const { items, hasMore, nextCursor } = await assembleTimeline(c, { cursor: 42 });
+ * const { items, currentPage, totalPages } = await assembleTimeline(c);
+ * const { items, currentPage, totalPages } = await assembleTimeline(c, { page: 2 });
  * ```
  */
 export async function assembleTimeline(
   c: Context<Env>,
-  options?: { cursor?: number },
+  options?: { page?: number },
 ): Promise<TimelineResult> {
   const pageSize =
     parseInt(c.env.PAGE_SIZE ?? String(DEFAULT_PAGE_SIZE), 10) ||
     DEFAULT_PAGE_SIZE;
 
-  // Fetch one extra to determine if there are more
+  const page = Math.max(1, options?.page ?? 1);
+  const offset = (page - 1) * pageSize;
+
+  // Get total count for pagination
+  const totalCount = await c.var.services.posts.count({
+    status: "published",
+    excludeReplies: true,
+  });
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  // Fetch posts for the current page
   const posts = await c.var.services.posts.list({
     status: "published",
     excludeReplies: true,
-    limit: pageSize + 1,
-    cursor: options?.cursor,
+    limit: pageSize,
+    offset,
   });
 
-  const hasMore = posts.length > pageSize;
-  const displayPosts = hasMore ? posts.slice(0, pageSize) : posts;
-
-  if (displayPosts.length === 0) {
-    return { items: [], hasMore: false };
+  if (posts.length === 0) {
+    return { items: [], currentPage: page, totalPages };
   }
 
   // Batch load media attachments
-  const postIds = displayPosts.map((p) => p.id);
+  const postIds = posts.map((p) => p.id);
   const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
   const mediaCtx = createMediaContext(c);
   const mediaMap = buildMediaMap(
@@ -102,7 +109,7 @@ export async function assembleTimeline(
       : new Map();
 
   // Assemble timeline items with View Models
-  const items: TimelineItemView[] = displayPosts.map((post) => {
+  const items: TimelineItemView[] = posts.map((post) => {
     const postView = toPostView(
       { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
       mediaCtx,
@@ -130,9 +137,5 @@ export async function assembleTimeline(
     return { post: postView };
   });
 
-  // Determine next cursor
-  const lastPost = displayPosts[displayPosts.length - 1];
-  const nextCursor = hasMore && lastPost ? lastPost.id : undefined;
-
-  return { items, hasMore, nextCursor };
+  return { items, currentPage: page, totalPages };
 }

@@ -86,8 +86,6 @@ msgid "Appearance"
 msgstr "外觀"
 
 #. @context: Archive page title
-#. @context: Browse filter for archive
-#: src/ui/layouts/SiteLayout.tsx:63
 #: src/ui/pages/ArchivePage.tsx:55
 msgid "Archive"
 msgstr "檔案館"
@@ -160,13 +158,11 @@ msgstr ""
 msgid "Collection (optional)"
 msgstr ""
 
-#. @context: Browse filter for collections
 #. @context: Collections page heading
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #: src/routes/dash/collections.tsx:35
 #: src/ui/layouts/DashLayout.tsx:114
-#: src/ui/layouts/SiteLayout.tsx:56
 #: src/ui/pages/CollectionsPage.tsx:18
 msgid "Collections"
 msgstr "收藏夾"
@@ -420,7 +416,7 @@ msgstr "請輸入您的新密碼。"
 #: src/ui/dash/StatusBadge.tsx:45
 #: src/ui/layouts/SiteLayout.tsx:49
 #: src/ui/pages/ArchivePage.tsx:92
-#: src/ui/pages/FeaturedPage.tsx:23
+#: src/ui/pages/FeaturedPage.tsx:19
 msgid "Featured"
 msgstr "精選"
 
@@ -512,16 +508,14 @@ msgid "Links"
 msgstr "連結"
 
 #. @context: Pagination button - load more items
-#: src/ui/shared/Pagination.tsx:103
+#: src/ui/shared/Pagination.tsx:104
 msgid "Load more"
 msgstr "載入更多"
 
-#. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
 #: src/ui/compose/ComposeDialog.tsx:386
 #: src/ui/dash/PostForm.tsx:345
-#: src/ui/feed/TimelineLoadMore.tsx:22
 msgid "Loading..."
 msgstr "載入中..."
 
@@ -616,8 +610,8 @@ msgstr "新重定向"
 
 #. @context: Pagination button - next page
 #. @context: Pagination button - next page
-#: src/ui/shared/Pagination.tsx:49
-#: src/ui/shared/Pagination.tsx:160
+#: src/ui/shared/Pagination.tsx:50
+#: src/ui/shared/Pagination.tsx:167
 msgid "Next"
 msgstr "下一頁"
 
@@ -629,7 +623,7 @@ msgid "No collections yet."
 msgstr "尚未有任何收藏。"
 
 #. @context: Empty state message on featured page
-#: src/ui/pages/FeaturedPage.tsx:33
+#: src/ui/pages/FeaturedPage.tsx:29
 msgid "No featured posts yet."
 msgstr ""
 
@@ -668,7 +662,7 @@ msgstr "此集合中沒有帖子。"
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
 #: src/ui/dash/PostList.tsx:25
-#: src/ui/pages/HomePage.tsx:19
+#: src/ui/pages/HomePage.tsx:23
 msgid "No posts yet."
 msgstr "尚未有帖子。"
 
@@ -723,7 +717,7 @@ msgid "Page"
 msgstr "頁面"
 
 #. @context: Pagination - current page indicator
-#: src/ui/shared/Pagination.tsx:164
+#: src/ui/shared/Pagination.tsx:227
 msgid "Page {page}"
 msgstr "頁面 {page}"
 
@@ -825,8 +819,8 @@ msgstr "預覽"
 
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
-#: src/ui/shared/Pagination.tsx:45
-#: src/ui/shared/Pagination.tsx:156
+#: src/ui/shared/Pagination.tsx:46
+#: src/ui/shared/Pagination.tsx:163
 msgid "Previous"
 msgstr "上一頁"
 

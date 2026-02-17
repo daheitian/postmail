@@ -93,8 +93,6 @@ msgid "Appearance"
 msgstr "Appearance"
 
 #. @context: Archive page title
-#. @context: Browse filter for archive
-#: src/ui/layouts/SiteLayout.tsx:63
 #: src/ui/pages/ArchivePage.tsx:55
 msgid "Archive"
 msgstr "Archive"
@@ -176,13 +174,11 @@ msgstr "Collection"
 msgid "Collection (optional)"
 msgstr "Collection (optional)"
 
-#. @context: Browse filter for collections
 #. @context: Collections page heading
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #: src/routes/dash/collections.tsx:35
 #: src/ui/layouts/DashLayout.tsx:114
-#: src/ui/layouts/SiteLayout.tsx:56
 #: src/ui/pages/CollectionsPage.tsx:18
 msgid "Collections"
 msgstr "Collections"
@@ -445,7 +441,7 @@ msgstr "Enter your new password."
 #: src/ui/dash/StatusBadge.tsx:45
 #: src/ui/layouts/SiteLayout.tsx:49
 #: src/ui/pages/ArchivePage.tsx:92
-#: src/ui/pages/FeaturedPage.tsx:23
+#: src/ui/pages/FeaturedPage.tsx:19
 msgid "Featured"
 msgstr "Featured"
 
@@ -542,16 +538,14 @@ msgid "Links"
 msgstr "Links"
 
 #. @context: Pagination button - load more items
-#: src/ui/shared/Pagination.tsx:103
+#: src/ui/shared/Pagination.tsx:104
 msgid "Load more"
 msgstr "Load more"
 
-#. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
 #: src/ui/compose/ComposeDialog.tsx:386
 #: src/ui/dash/PostForm.tsx:345
-#: src/ui/feed/TimelineLoadMore.tsx:22
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -651,8 +645,8 @@ msgstr "New Redirect"
 
 #. @context: Pagination button - next page
 #. @context: Pagination button - next page
-#: src/ui/shared/Pagination.tsx:49
-#: src/ui/shared/Pagination.tsx:160
+#: src/ui/shared/Pagination.tsx:50
+#: src/ui/shared/Pagination.tsx:167
 msgid "Next"
 msgstr "Next"
 
@@ -664,7 +658,7 @@ msgid "No collections yet."
 msgstr "No collections yet."
 
 #. @context: Empty state message on featured page
-#: src/ui/pages/FeaturedPage.tsx:33
+#: src/ui/pages/FeaturedPage.tsx:29
 msgid "No featured posts yet."
 msgstr "No featured posts yet."
 
@@ -703,7 +697,7 @@ msgstr "No posts in this collection."
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
 #: src/ui/dash/PostList.tsx:25
-#: src/ui/pages/HomePage.tsx:19
+#: src/ui/pages/HomePage.tsx:23
 msgid "No posts yet."
 msgstr "No posts yet."
 
@@ -758,7 +752,7 @@ msgid "Page"
 msgstr "Page"
 
 #. @context: Pagination - current page indicator
-#: src/ui/shared/Pagination.tsx:164
+#: src/ui/shared/Pagination.tsx:227
 msgid "Page {page}"
 msgstr "Page {page}"
 
@@ -860,8 +854,8 @@ msgstr "Preview"
 
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
-#: src/ui/shared/Pagination.tsx:45
-#: src/ui/shared/Pagination.tsx:156
+#: src/ui/shared/Pagination.tsx:46
+#: src/ui/shared/Pagination.tsx:163
 msgid "Previous"
 msgstr "Previous"
 
