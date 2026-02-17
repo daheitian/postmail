@@ -78,29 +78,59 @@
     line-height: var(--leading);
   }
 
-  /* --- Browse filter nav (below compose prompt) --------------------------- */
+  /* --- Browse filter tabs ------------------------------------------------- */
 
   .site-browse-nav {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 4px;
     margin-bottom: var(--space-xl);
   }
 
   .site-browse-link {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     color: var(--site-text-secondary);
     text-decoration: none;
-    transition: color 0.15s;
+    padding: 5px 12px;
+    border-radius: 999px;
+    transition:
+      color 0.15s,
+      background-color 0.15s;
   }
 
   .site-browse-link:hover {
     color: var(--site-text-primary);
+    background-color: var(--site-nav-hover-bg);
   }
 
   .site-browse-link-active {
     color: var(--site-text-primary);
-    font-weight: 600;
+    background-color: var(--site-nav-hover-bg);
+    font-weight: 500;
+  }
+
+  .site-browse-search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    color: var(--site-text-secondary);
+    transition:
+      color 0.15s,
+      background-color 0.15s;
+  }
+
+  .site-browse-search:hover {
+    color: var(--site-text-primary);
+    background-color: var(--site-nav-hover-bg);
+  }
+
+  .site-browse-search-active {
+    color: var(--site-text-primary);
+    background-color: var(--site-nav-hover-bg);
   }
 
   /* --- Main content area -------------------------------------------------- */
@@ -216,7 +246,6 @@
     align-items: center;
     gap: 12px;
     padding: 12px 0;
-    margin-bottom: var(--space-xl);
   }
 
   .compose-prompt-trigger {

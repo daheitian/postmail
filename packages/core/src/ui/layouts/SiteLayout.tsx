@@ -1,9 +1,8 @@
 /**
  * Site Layout
  *
- * Vertical header: site name on top, nav links below, description under nav.
- * Clean flat content area. Includes compose prompt/dialog for authenticated users.
- * Hardcoded browse links (Featured, Archive, Search) below compose prompt.
+ * Vertical header: site name on top, custom nav links below, description under nav.
+ * Content area with browse filter tabs and compose prompt/dialog for authenticated users.
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
@@ -41,8 +40,8 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     {
       href: "/",
       label: t({
-        message: "All",
-        comment: "@context: Browse filter for all posts",
+        message: "Latest",
+        comment: "@context: Browse filter for latest posts",
       }),
     },
     {
@@ -53,20 +52,25 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       }),
     },
     {
+      href: "/collections",
+      label: t({
+        message: "Collections",
+        comment: "@context: Browse filter for collections",
+      }),
+    },
+    {
       href: "/archive",
       label: t({
         message: "Archive",
         comment: "@context: Browse filter for archive",
       }),
     },
-    {
-      href: "/search",
-      label: t({
-        message: "Search",
-        comment: "@context: Browse filter for search",
-      }),
-    },
   ];
+
+  const searchLabel = t({
+    message: "Search",
+    comment: "@context: Search icon link in browse nav",
+  });
 
   return (
     <div class="site-page">
@@ -100,6 +104,27 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                   {link.label}
                 </a>
               ))}
+              <a
+                href="/search"
+                class={`site-browse-search ${currentPath === "/search" ? "site-browse-search-active" : ""}`}
+                aria-label={searchLabel}
+                title={searchLabel}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              </a>
             </nav>
             {children}
           </div>

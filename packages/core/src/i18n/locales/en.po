@@ -78,8 +78,6 @@ msgid "Add to nav"
 msgstr "Add to nav"
 
 #. @context: Archive filter - all formats
-#. @context: Browse filter for all posts
-#: src/ui/layouts/SiteLayout.tsx:43
 #: src/ui/pages/ArchivePage.tsx:71
 msgid "All"
 msgstr "All"
@@ -96,7 +94,7 @@ msgstr "Appearance"
 
 #. @context: Archive page title
 #. @context: Browse filter for archive
-#: src/ui/layouts/SiteLayout.tsx:57
+#: src/ui/layouts/SiteLayout.tsx:63
 #: src/ui/pages/ArchivePage.tsx:55
 msgid "Archive"
 msgstr "Archive"
@@ -178,11 +176,13 @@ msgstr "Collection"
 msgid "Collection (optional)"
 msgstr "Collection (optional)"
 
+#. @context: Browse filter for collections
 #. @context: Collections page heading
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #: src/routes/dash/collections.tsx:35
 #: src/ui/layouts/DashLayout.tsx:114
+#: src/ui/layouts/SiteLayout.tsx:56
 #: src/ui/pages/CollectionsPage.tsx:18
 msgid "Collections"
 msgstr "Collections"
@@ -443,7 +443,7 @@ msgstr "Enter your new password."
 #: src/ui/compose/ComposeDialog.tsx:305
 #: src/ui/dash/PostForm.tsx:246
 #: src/ui/dash/StatusBadge.tsx:45
-#: src/ui/layouts/SiteLayout.tsx:50
+#: src/ui/layouts/SiteLayout.tsx:49
 #: src/ui/pages/ArchivePage.tsx:92
 #: src/ui/pages/FeaturedPage.tsx:23
 msgid "Featured"
@@ -509,6 +509,11 @@ msgstr "Label"
 #: src/routes/dash/settings.tsx:172
 msgid "Language"
 msgstr "Language"
+
+#. @context: Browse filter for latest posts
+#: src/ui/layouts/SiteLayout.tsx:42
+msgid "Latest"
+msgstr "Latest"
 
 #. @context: Setup page description
 #: src/app.tsx:130
@@ -1004,10 +1009,10 @@ msgstr "Save Profile"
 msgid "Save Settings"
 msgstr "Save Settings"
 
-#. @context: Browse filter for search
+#. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
-#: src/ui/layouts/SiteLayout.tsx:64
+#: src/ui/layouts/SiteLayout.tsx:70
 #: src/ui/pages/SearchPage.tsx:20
 #: src/ui/pages/SearchPage.tsx:44
 msgid "Search"
