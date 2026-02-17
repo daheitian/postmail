@@ -16,7 +16,9 @@ packages/core/vite.config.d.ts.map
 .dev.vars
 
 # Generated examples (created via `mise run example:card`)
-examples/
+# Keep examples/basic/ as placeholder for changesets
+examples/*
+!examples/basic/
 
 # Turbo
 .turbo/
