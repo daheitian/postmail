@@ -10,7 +10,10 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createMediaService } from "../../../services/media.js";
-import { arrayBufferToBase64, base64ToUint8Array } from "../../../lib/favicon.js";
+import {
+  arrayBufferToBase64,
+  base64ToUint8Array,
+} from "../../../lib/favicon.js";
 import type { Database } from "../../../db/index.js";
 
 describe("Dashboard Settings - Avatar Upload Logic", () => {
@@ -26,25 +29,22 @@ describe("Dashboard Settings - Avatar Upload Logic", () => {
   });
 
   describe("avatar upload with favicon variants in DB", () => {
-    it("stores avatar media and sets SITE_AVATAR setting", async () => {
-      const media = await mediaService.create({
+    it("stores avatar media and sets SITE_AVATAR to storageKey", async () => {
+      const storageKey = "media/2026/02/test-avatar-id.png";
+      await mediaService.create({
         id: "test-avatar-id",
         filename: "test-avatar-id.png",
         originalName: "logo.png",
         mimeType: "image/png",
         size: 5000,
-        storageKey: "media/2026/02/test-avatar-id.png",
+        storageKey,
         provider: "r2",
       });
 
-      await settingsService.set("SITE_AVATAR", media.id);
+      await settingsService.set("SITE_AVATAR", storageKey);
 
-      const avatarId = await settingsService.get("SITE_AVATAR");
-      expect(avatarId).toBe("test-avatar-id");
-
-      const stored = await mediaService.getById(avatarId!);
-      expect(stored).not.toBeNull();
-      expect(stored!.mimeType).toBe("image/png");
+      const avatarKey = await settingsService.get("SITE_AVATAR");
+      expect(avatarKey).toBe(storageKey);
     });
 
     it("stores favicon ICO as base64 in settings", async () => {
@@ -72,7 +72,7 @@ describe("Dashboard Settings - Avatar Upload Logic", () => {
 
   describe("avatar removal cleans up favicon settings", () => {
     it("removes all favicon-related settings", async () => {
-      await settingsService.set("SITE_AVATAR", "some-id");
+      await settingsService.set("SITE_AVATAR", "media/2026/02/some-id.png");
       await settingsService.set("SITE_FAVICON_ICO", "base64data");
       await settingsService.set("SITE_FAVICON_APPLE_TOUCH", "base64data");
 

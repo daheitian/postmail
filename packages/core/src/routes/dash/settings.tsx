@@ -45,21 +45,19 @@ export const settingsRoutes = new Hono<Env>();
 // General settings
 // ===========================================================================
 
-/** Resolve the avatar media ID to a URL */
+/** Resolve the avatar storage key to a URL */
 async function resolveAvatarUrl(c: {
   var: { services: AppVariables["services"] };
   env: Bindings;
 }): Promise<string> {
-  const avatarMediaId = await c.var.services.settings.get("SITE_AVATAR");
-  if (!avatarMediaId) return "";
-  const media = await c.var.services.media.getById(avatarMediaId);
-  if (!media) return "";
+  const avatarKey = await c.var.services.settings.get("SITE_AVATAR");
+  if (!avatarKey) return "";
   const publicUrl = getPublicUrlForProvider(
-    media.provider,
+    c.env.STORAGE_DRIVER || "r2",
     c.env.R2_PUBLIC_URL,
     c.env.S3_PUBLIC_URL,
   );
-  return getMediaUrl(media.id, media.storageKey, publicUrl);
+  return getMediaUrl(avatarKey, publicUrl);
 }
 
 settingsRoutes.get("/", async (c) => {
@@ -277,7 +275,7 @@ settingsRoutes.post("/avatar", async (c) => {
       provider: c.env.STORAGE_DRIVER || "r2",
     });
 
-    await c.var.services.settings.set("SITE_AVATAR", id);
+    await c.var.services.settings.set("SITE_AVATAR", storageKey);
 
     // Store favicon variants as base64 in settings (small files, accessed every page load)
     const faviconFile = formData.get("favicon") as File | null;

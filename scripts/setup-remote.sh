@@ -9,11 +9,11 @@ export PATH="$HOME/.local/bin:$PATH"
 grep -qxF 'export PATH="$HOME/.local/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null \
   || echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
 
-# Install mise
-curl -fsSL https://mise.run | sh
+# Install mise (use raw GitHub URL — mise.run is not in the remote allowlist)
+curl -fsSL https://raw.githubusercontent.com/jdx/mise/main/install.sh | sh
 
-# Install entire
-curl -fsSL https://entire.io/install.sh | bash
+# Install entire (use raw GitHub URL — entire.io is not in the remote allowlist)
+curl -fsSL https://raw.githubusercontent.com/entireio/cli/main/scripts/install.sh | bash
 
 # Install Node.js and pnpm via mise
 mise install

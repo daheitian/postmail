@@ -136,7 +136,7 @@ export function createApp(config: JantConfig = {}): App {
 
   // Theme middleware - resolve active color theme, font theme, custom CSS, and auth state
   app.use("*", async (c, next) => {
-    const [themeId, fontThemeId, customCSS, noindexValue, avatarMediaId] =
+    const [themeId, fontThemeId, customCSS, noindexValue, avatarKey] =
       await Promise.all([
         c.var.services.settings.get(SETTINGS_KEYS.THEME),
         c.var.services.settings.get("FONT_THEME"),
@@ -168,17 +168,14 @@ export function createApp(config: JantConfig = {}): App {
     // Noindex
     c.set("noindex", noindexValue === "true");
 
-    // Resolve favicon from avatar media
-    if (avatarMediaId) {
-      const media = await c.var.services.media.getById(avatarMediaId);
-      if (media) {
-        const publicUrl = getPublicUrlForProvider(
-          media.provider,
-          c.env.R2_PUBLIC_URL,
-          c.env.S3_PUBLIC_URL,
-        );
-        c.set("faviconUrl", getMediaUrl(media.id, media.storageKey, publicUrl));
-      }
+    // Resolve favicon from avatar storage key
+    if (avatarKey) {
+      const publicUrl = getPublicUrlForProvider(
+        c.env.STORAGE_DRIVER || "r2",
+        c.env.R2_PUBLIC_URL,
+        c.env.S3_PUBLIC_URL,
+      );
+      c.set("faviconUrl", getMediaUrl(avatarKey, publicUrl));
     }
 
     // Check auth state for data-authenticated attribute on <body>
@@ -294,29 +291,25 @@ export function createApp(config: JantConfig = {}): App {
   app.route("/api/upload", uploadApiRoutes);
   app.route("/api/search", searchApiRoutes);
 
-  // Media files from storage (UUIDv7-based URLs with extension)
-  app.get("/media/:idWithExt", async (c) => {
+  // Media files from storage (path matches storage key: media/YYYY/MM/uuid.ext)
+  app.get("/media/*", async (c) => {
     const storage = c.var.storage;
     if (!storage) {
       return c.notFound();
     }
 
-    // Extract ID from "uuid.ext" format
-    const idWithExt = c.req.param("idWithExt");
-    const mediaId = idWithExt.replace(/\.[^.]+$/, "");
-
-    const media = await c.var.services.media.getById(mediaId);
-    if (!media) {
-      return c.notFound();
-    }
-
-    const object = await storage.get(media.storageKey);
+    // The storage key is the full path without the leading "/"
+    const storageKey = c.req.path.slice(1);
+    const object = await storage.get(storageKey);
     if (!object) {
       return c.notFound();
     }
 
     const headers = new Headers();
-    headers.set("Content-Type", object.contentType || media.mimeType);
+    headers.set(
+      "Content-Type",
+      object.contentType || "application/octet-stream",
+    );
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
 
     return new Response(object.body, { headers });
