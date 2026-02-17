@@ -312,6 +312,145 @@ echo ""
 """
 
 # =============================================================================
+# Workspace (git worktree workflow)
+# =============================================================================
+[tasks.draft]
+alias = ["n", "new"]
+description = "Create a new feature worktree: mise run draft feat/login [base-branch]"
+usage = """
+arg "<name>"
+arg "[base]" default="main"
+"""
+run = """
+# Normalize branch name for directory: feat/login → feat-login
+DIR_NAME=$(echo "$usage_name" | tr '/' '-')
+WORKTREE_PATH="../$DIR_NAME"
+
+if [ -d "$WORKTREE_PATH" ]; then
+  echo "Worktree already exists: $WORKTREE_PATH"
+  exit 1
+fi
+
+# Check if branch already exists
+if git show-ref --verify --quiet "refs/heads/$usage_name"; then
+  echo "Branch '$usage_name' already exists, reusing it..."
+  git worktree add "$WORKTREE_PATH" "$usage_name"
+else
+  echo "Creating worktree from '$usage_base'..."
+  git worktree add -b "$usage_name" "$WORKTREE_PATH" "$usage_base"
+fi
+
+# Copy secrets file if it exists
+if [ -f "templates/jant-site/.dev.vars" ]; then
+  cp templates/jant-site/.dev.vars "$WORKTREE_PATH/templates/jant-site/.dev.vars"
+  echo "Copied .dev.vars"
+fi
+
+# Install dependencies (worktrees don't share node_modules)
+echo "Installing dependencies..."
+(cd "$WORKTREE_PATH" && pnpm install)
+
+echo ""
+echo "Worktree ready: $WORKTREE_PATH"
+echo "  cd $WORKTREE_PATH && mise run dev"
+"""
+
+[tasks.review]
+alias = "rv"
+description = "Create a review worktree from a remote branch: mise run review feat/login"
+usage = 'arg "<branch>"'
+run = """
+# Fetch latest from remote
+git fetch origin
+
+# Check if remote branch exists
+if ! git show-ref --verify --quiet "refs/remotes/origin/$usage_branch"; then
+  echo "Remote branch 'origin/$usage_branch' not found."
+  echo ""
+  echo "Available remote branches:"
+  git branch -r --list 'origin/*' | grep -v HEAD | sed 's|origin/||' | sort
+  exit 1
+fi
+
+DIR_NAME="review-$(echo "$usage_branch" | tr '/' '-')"
+WORKTREE_PATH="../$DIR_NAME"
+
+if [ -d "$WORKTREE_PATH" ]; then
+  echo "Review worktree already exists: $WORKTREE_PATH"
+  exit 1
+fi
+
+git worktree add "$WORKTREE_PATH" "origin/$usage_branch"
+
+# Copy secrets file if it exists
+if [ -f "templates/jant-site/.dev.vars" ]; then
+  cp templates/jant-site/.dev.vars "$WORKTREE_PATH/templates/jant-site/.dev.vars"
+  echo "Copied .dev.vars"
+fi
+
+# Install dependencies
+echo "Installing dependencies..."
+(cd "$WORKTREE_PATH" && pnpm install)
+
+echo ""
+echo "Review worktree ready: $WORKTREE_PATH"
+echo "  cd $WORKTREE_PATH && mise run dev"
+"""
+
+[tasks.trash]
+alias = "rm"
+description = "Remove a worktree directory (keeps branch): mise run trash feat-login"
+usage = 'arg "<name>"'
+run = """
+WORKTREE_PATH="../$usage_name"
+
+# Safety: prevent deleting the main worktree
+CURRENT_DIR=$(basename "$(pwd)")
+if [ "$usage_name" = "$CURRENT_DIR" ]; then
+  echo "Cannot remove the current worktree. Run this from a different worktree."
+  exit 1
+fi
+
+if [ ! -d "$WORKTREE_PATH" ]; then
+  echo "Worktree not found: $WORKTREE_PATH"
+  echo ""
+  echo "Available worktrees:"
+  git worktree list
+  exit 1
+fi
+
+echo "Removing worktree: $WORKTREE_PATH"
+git worktree remove "$WORKTREE_PATH" --force
+echo "Done. Branch is still available (use 'git branch -d <name>' to delete it)."
+"""
+
+[tasks.wt-list]
+alias = "wl"
+description = "List all git worktrees"
+run = "git worktree list"
+
+[tasks.import]
+description = "Move a project from ~/Inbox/ into the workspace: mise run import my-project"
+usage = 'arg "<name>"'
+run = """
+SOURCE="$HOME/Inbox/$usage_name"
+DEST="../$usage_name"
+
+if [ ! -d "$SOURCE" ]; then
+  echo "Not found: $SOURCE"
+  exit 1
+fi
+
+if [ -d "$DEST" ]; then
+  echo "Already exists: $DEST"
+  exit 1
+fi
+
+mv "$SOURCE" "$DEST"
+echo "Moved: $SOURCE → $DEST"
+"""
+
+# =============================================================================
 # Examples (generated from templates/jant-site, not committed to git)
 # =============================================================================
 [tasks.example-new]

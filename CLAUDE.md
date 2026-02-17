@@ -67,6 +67,13 @@ mise run clean
 mise run nuke               # Remove node_modules and reinstall
 mise run fresh              # Nuclear reset - delete everything and start fresh
 mise run reset-password
+
+# Worktrees
+mise run draft feat/name    # Create feature worktree (../feat-name/)
+mise run review feat/name   # Create review worktree from remote branch
+mise run trash feat-name    # Remove worktree directory (keeps branch)
+mise run wt-list            # List all worktrees
+mise run import name        # Move project from ~/Inbox/ into workspace
 ```
 
 ## Project Structure
@@ -130,6 +137,10 @@ name = "jant-site" # @create-jant: "${name}"
 "@jant/core": resolve(__dirname, "../../packages/core/src"),
 // @create-jant: @remove-end
 ```
+
+### Worktrees
+
+The project uses git worktrees for parallel development. Each worktree is a sibling directory of `main/` (e.g., `../feat-login/`, `../fix-auth/`). Worktrees share the same git history but have independent working directories and `node_modules`. Use `mise run draft` to create, `mise run trash` to remove.
 
 ### Code Quality
 

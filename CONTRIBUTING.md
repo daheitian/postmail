@@ -244,6 +244,52 @@ mise run ci               # Run all CI checks (lint + typecheck + test + build +
 
 The pre-commit hook automatically runs ESLint, Prettier, and i18n extraction/compilation on staged files.
 
+### Worktree Workflow (Optional)
+
+Instead of switching branches, you can use git worktrees to work on multiple features simultaneously. Each worktree is a sibling directory of `main/`:
+
+```
+/Users/you/project/jant/
+├── main/              # Main worktree (main branch)
+├── feat-login/        # Feature worktree
+├── fix-auth/          # Bugfix worktree
+└── review-feat-login/ # Review worktree
+```
+
+#### Creating a Feature Worktree
+
+```bash
+mise run draft feat/login         # Creates ../feat-login/ on feat/login branch
+mise run draft fix/auth develop   # Creates ../fix-auth/ branched from develop
+```
+
+This creates the worktree, copies `.dev.vars`, and runs `pnpm install`.
+
+#### Reviewing a Remote Branch
+
+```bash
+mise run review feat/login        # Creates ../review-feat-login/ from origin/feat/login
+```
+
+Fetches the latest remote state, creates a worktree, and installs dependencies.
+
+#### Listing Worktrees
+
+```bash
+mise run wt-list                  # Lists all git worktrees
+```
+
+#### Cleaning Up
+
+```bash
+mise run trash feat-login         # Removes ../feat-login/ worktree (keeps the branch)
+git branch -d feat/login          # Optionally delete the branch too
+```
+
+#### Port Conflicts
+
+Each worktree is a full copy of the project. If you run `mise run dev` in multiple worktrees, you'll get port conflicts. Use `mise run dev-debug` (port 19019) in one of them, or stop one before starting another.
+
 ## Testing
 
 Every new feature, bug fix, or logic change must include tests. Run `mise run test` to verify all tests pass.
