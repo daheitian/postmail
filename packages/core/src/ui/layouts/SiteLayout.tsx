@@ -40,22 +40,26 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   const latestHref = homeDefaultView === "featured" ? "/latest" : "/";
   const featuredHref = homeDefaultView === "featured" ? "/" : "/featured";
 
-  const browseLinks = [
-    {
-      href: latestHref,
-      label: t({
-        message: "Latest",
-        comment: "@context: Browse filter for latest posts",
-      }),
-    },
-    {
-      href: featuredHref,
-      label: t({
-        message: "Featured",
-        comment: "@context: Browse filter for featured posts",
-      }),
-    },
-  ];
+  const latestLink = {
+    href: latestHref,
+    label: t({
+      message: "Latest",
+      comment: "@context: Browse filter for latest posts",
+    }),
+  };
+  const featuredLink = {
+    href: featuredHref,
+    label: t({
+      message: "Featured",
+      comment: "@context: Browse filter for featured posts",
+    }),
+  };
+
+  // Default view tab comes first
+  const browseLinks =
+    homeDefaultView === "featured"
+      ? [featuredLink, latestLink]
+      : [latestLink, featuredLink];
 
   const searchLabel = t({
     message: "Search",

@@ -441,7 +441,7 @@ msgstr "Enter your new password."
 #: src/ui/dash/PostForm.tsx:246
 #: src/ui/dash/settings/GeneralContent.tsx:129
 #: src/ui/dash/StatusBadge.tsx:45
-#: src/ui/layouts/SiteLayout.tsx:53
+#: src/ui/layouts/SiteLayout.tsx:52
 #: src/ui/pages/ArchivePage.tsx:92
 msgid "Featured"
 msgstr "Featured"
@@ -510,7 +510,7 @@ msgstr "Language"
 #. @context: Browse filter for latest posts
 #. @context: Homepage view option - show latest posts
 #: src/ui/dash/settings/GeneralContent.tsx:119
-#: src/ui/layouts/SiteLayout.tsx:46
+#: src/ui/layouts/SiteLayout.tsx:45
 msgid "Latest"
 msgstr "Latest"
 
@@ -1007,7 +1007,7 @@ msgstr "Save Settings"
 #. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
-#: src/ui/layouts/SiteLayout.tsx:60
+#: src/ui/layouts/SiteLayout.tsx:64
 #: src/ui/pages/SearchPage.tsx:20
 #: src/ui/pages/SearchPage.tsx:44
 msgid "Search"
