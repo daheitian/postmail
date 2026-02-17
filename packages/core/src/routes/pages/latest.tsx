@@ -1,11 +1,10 @@
 /**
- * Home Page Route
+ * Latest Page Route
  *
- * Timeline feed with per-type card components and thread previews.
- * Uses page-based pagination.
- *
- * When HOME_DEFAULT_VIEW is "featured", the homepage shows featured posts
- * instead of latest. The /latest route always shows latest posts explicitly.
+ * Explicit /latest URL that always shows the latest posts timeline.
+ * When HOME_DEFAULT_VIEW is "latest" (default), this redirects to /
+ * to avoid duplicate content. When it's "featured", this serves as
+ * the explicit latest view.
  */
 
 import { Hono } from "hono";
@@ -16,34 +15,19 @@ import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
-import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-export const homeRoutes = new Hono<Env>();
+export const latestRoutes = new Hono<Env>();
 
-homeRoutes.get("/", async (c) => {
+latestRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
 
-  if (navData.homeDefaultView === "featured") {
-    // Show featured posts on homepage
-    const posts = await c.var.services.posts.list({
-      featured: true,
-      status: "published",
-      excludeReplies: true,
-    });
-    const mediaCtx = createMediaContext(c);
-    const postViews = toPostViewsFromPosts(posts, mediaCtx);
-    const items = postViews.map((post) => ({ post }));
-
-    return renderPublicPage(c, {
-      title: navData.siteName,
-      navData,
-      content: <FeaturedPage items={items} />,
-    });
+  // When homepage already shows latest, redirect to avoid duplicate content
+  if (navData.homeDefaultView !== "featured") {
+    return c.redirect("/", 302);
   }
 
-  // Default: show latest posts
   const pageParam = c.req.query("page");
   const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
 
@@ -61,7 +45,7 @@ homeRoutes.get("/", async (c) => {
   const pinnedItems = toPostViewsFromPosts(pinnedPosts, mediaCtx);
 
   return renderPublicPage(c, {
-    title: navData.siteName,
+    title: `Latest - ${navData.siteName}`,
     navData,
     content: (
       <HomePage

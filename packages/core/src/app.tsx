@@ -21,6 +21,7 @@ import { collectionRoutes } from "./routes/pages/collection.js";
 import { archiveRoutes } from "./routes/pages/archive.js";
 import { searchRoutes } from "./routes/pages/search.js";
 import { featuredRoutes } from "./routes/pages/featured.js";
+import { latestRoutes } from "./routes/pages/latest.js";
 import { collectionsPageRoutes } from "./routes/pages/collections.js";
 
 // Routes - Dashboard
@@ -787,6 +788,7 @@ export function createApp(config: JantConfig = {}): App {
   app.route("/search", searchRoutes);
   app.route("/archive", archiveRoutes);
   app.route("/featured", featuredRoutes);
+  app.route("/latest", latestRoutes);
   app.route("/collections", collectionsPageRoutes);
   app.route("/c", collectionRoutes);
   app.route("/p", postRoutes);

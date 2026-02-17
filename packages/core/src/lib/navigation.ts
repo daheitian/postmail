@@ -5,7 +5,7 @@
  */
 
 import type { Context } from "hono";
-import { getSiteName } from "./config.js";
+import { getSiteName, getHomeDefaultView } from "./config.js";
 import type { Collection, NavItemView } from "../types.js";
 import { toNavItemViews } from "./view.js";
 
@@ -19,6 +19,7 @@ export interface NavigationData {
   siteDescription: string;
   isAuthenticated: boolean;
   collections: Collection[];
+  homeDefaultView: string;
 }
 
 /**
@@ -43,7 +44,10 @@ export interface NavigationData {
 export async function getNavigationData(c: Context): Promise<NavigationData> {
   const items = await c.var.services.navItems.list();
   const currentPath = new URL(c.req.url).pathname;
-  const siteName = await getSiteName(c);
+  const [siteName, homeDefaultView] = await Promise.all([
+    getSiteName(c),
+    getHomeDefaultView(c),
+  ]);
 
   // Only include description if explicitly set (DB or env), not the default
   const dbDescription = await c.var.services.settings.get("SITE_DESCRIPTION");
@@ -79,5 +83,6 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
     siteDescription,
     isAuthenticated,
     collections,
+    homeDefaultView,
   };
 }

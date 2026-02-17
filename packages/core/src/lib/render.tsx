@@ -50,6 +50,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     currentPath: navData.currentPath,
     isAuthenticated: navData.isAuthenticated,
     collections: navData.collections,
+    homeDefaultView: navData.homeDefaultView,
   };
 
   return c.html(

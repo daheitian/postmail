@@ -19,7 +19,7 @@ msgstr ""
 #~ msgstr "{count} 条回复"
 
 #. @context: Custom CSS textarea placeholder
-#: src/routes/dash/settings.tsx:364
+#: src/routes/dash/settings.tsx:399
 msgid "/* Your custom CSS here */"
 msgstr ""
 
@@ -44,12 +44,12 @@ msgid "302 (Temporary)"
 msgstr "302（临时）"
 
 #. @context: Settings sub-navigation tab
-#: src/routes/dash/settings.tsx:63
+#: src/routes/dash/settings.tsx:64
 msgid "Account"
 msgstr "账户"
 
 #. @context: Custom CSS settings description
-#: src/routes/dash/settings.tsx:354
+#: src/routes/dash/settings.tsx:389
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr ""
 
@@ -81,7 +81,7 @@ msgid "All pages are in your navigation."
 msgstr ""
 
 #. @context: Settings sub-navigation tab
-#: src/routes/dash/settings.tsx:55
+#: src/routes/dash/settings.tsx:56
 msgid "Appearance"
 msgstr "外观"
 
@@ -136,8 +136,8 @@ msgstr "取消"
 
 #. @context: Button to change password
 #. @context: Settings section heading
-#: src/routes/dash/settings.tsx:474
-#: src/routes/dash/settings.tsx:539
+#: src/routes/dash/settings.tsx:509
+#: src/routes/dash/settings.tsx:574
 msgid "Change Password"
 msgstr "更改密码"
 
@@ -173,22 +173,22 @@ msgstr "收藏夹"
 #~ msgstr "集合（可选）"
 
 #. @context: Appearance settings heading
-#: src/routes/dash/settings.tsx:315
+#: src/routes/dash/settings.tsx:350
 msgid "Color theme"
 msgstr "颜色主题"
 
 #. @context: Setup form submit button
-#: src/app.tsx:289
+#: src/app.tsx:290
 msgid "Complete Setup"
 msgstr "完成设置"
 
 #. @context: Password form field
-#: src/routes/dash/settings.tsx:516
+#: src/routes/dash/settings.tsx:551
 msgid "Confirm New Password"
 msgstr "确认新密码"
 
 #. @context: Password reset form field
-#: src/app.tsx:562
+#: src/app.tsx:563
 msgid "Confirm Password"
 msgstr "确认密码"
 
@@ -227,7 +227,7 @@ msgid "Create Redirect"
 msgstr "创建重定向"
 
 #. @context: Setup page description
-#: src/app.tsx:229
+#: src/app.tsx:230
 msgid "Create your admin account."
 msgstr "创建您的管理员账户。"
 
@@ -242,12 +242,12 @@ msgid "Create your first post"
 msgstr "创建你的第一篇帖子"
 
 #. @context: Password form field
-#: src/routes/dash/settings.tsx:483
+#: src/routes/dash/settings.tsx:518
 msgid "Current Password"
 msgstr "当前密码"
 
 #. @context: Appearance settings heading for custom CSS
-#: src/routes/dash/settings.tsx:348
+#: src/routes/dash/settings.tsx:383
 msgid "Custom CSS"
 msgstr ""
 
@@ -277,6 +277,11 @@ msgstr "危险区域"
 #: src/ui/layouts/DashLayout.tsx:78
 msgid "Dashboard"
 msgstr "仪表板"
+
+#. @context: Settings form field
+#: src/routes/dash/settings.tsx:196
+msgid "Default Homepage View"
+msgstr ""
 
 #. @context: Button to delete item
 #. @context: Button to delete link
@@ -308,7 +313,7 @@ msgid "Deleting this media will remove it permanently from storage."
 msgstr "删除此媒体将永久从存储中移除。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:400
+#: src/app.tsx:401
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "演示账户已预填。只需点击登录。"
 
@@ -395,25 +400,27 @@ msgstr "编辑帖子"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:259
-#: src/app.tsx:415
+#: src/app.tsx:260
+#: src/app.tsx:416
 msgid "Email"
 msgstr "电子邮件"
 
 #. @context: Password reset page description
-#: src/app.tsx:531
+#: src/app.tsx:532
 msgid "Enter your new password."
 msgstr "输入您的新密码。"
 
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
 #. @context: Compose checkbox - mark as featured
+#. @context: Homepage view option - show featured posts
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
+#: src/routes/dash/settings.tsx:216
 #: src/ui/compose/ComposeDialog.tsx:305
 #: src/ui/dash/PostForm.tsx:246
 #: src/ui/dash/StatusBadge.tsx:45
-#: src/ui/layouts/SiteLayout.tsx:49
+#: src/ui/layouts/SiteLayout.tsx:53
 #: src/ui/pages/ArchivePage.tsx:92
 msgid "Featured"
 msgstr "精选"
@@ -440,8 +447,8 @@ msgstr "来源路径"
 
 #. @context: Settings section heading
 #. @context: Settings sub-navigation tab
-#: src/routes/dash/settings.tsx:47
-#: src/routes/dash/settings.tsx:131
+#: src/routes/dash/settings.tsx:48
+#: src/routes/dash/settings.tsx:135
 msgid "General"
 msgstr "常规"
 
@@ -465,7 +472,7 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "图像会自动优化：调整大小至最大 1920px，转换为 WebP，并去除元数据。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:606
+#: src/app.tsx:607
 msgid "Invalid or Expired Link"
 msgstr "无效或过期的链接"
 
@@ -475,12 +482,14 @@ msgid "Label"
 msgstr "标签"
 
 #. @context: Settings form field
-#: src/routes/dash/settings.tsx:172
+#: src/routes/dash/settings.tsx:176
 msgid "Language"
 msgstr "语言"
 
 #. @context: Browse filter for latest posts
-#: src/ui/layouts/SiteLayout.tsx:42
+#. @context: Homepage view option - show latest posts
+#: src/routes/dash/settings.tsx:206
+#: src/ui/layouts/SiteLayout.tsx:46
 msgid "Latest"
 msgstr ""
 
@@ -542,7 +551,7 @@ msgid "My Collection"
 msgstr "我的收藏"
 
 #. @context: Account settings form field
-#: src/routes/dash/settings.tsx:430
+#: src/routes/dash/settings.tsx:465
 msgid "Name"
 msgstr "姓名"
 
@@ -581,8 +590,8 @@ msgstr "新页面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:546
-#: src/routes/dash/settings.tsx:499
+#: src/app.tsx:547
+#: src/routes/dash/settings.tsx:534
 msgid "New Password"
 msgstr "新密码"
 
@@ -738,8 +747,8 @@ msgstr "页面"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:274
-#: src/app.tsx:424
+#: src/app.tsx:275
+#: src/app.tsx:425
 msgid "Password"
 msgstr "密码"
 
@@ -836,25 +845,25 @@ msgstr "上一页"
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/app.tsx:295
-#: src/app.tsx:444
-#: src/app.tsx:584
+#: src/app.tsx:296
+#: src/app.tsx:445
+#: src/app.tsx:585
 #: src/routes/dash/collections.tsx:178
 #: src/routes/dash/collections.tsx:346
 #: src/routes/dash/media.tsx:119
 #: src/routes/dash/pages.tsx:392
 #: src/routes/dash/redirects.tsx:169
-#: src/routes/dash/settings.tsx:200
-#: src/routes/dash/settings.tsx:384
-#: src/routes/dash/settings.tsx:457
-#: src/routes/dash/settings.tsx:545
+#: src/routes/dash/settings.tsx:235
+#: src/routes/dash/settings.tsx:419
+#: src/routes/dash/settings.tsx:492
+#: src/routes/dash/settings.tsx:580
 #: src/ui/dash/PageForm.tsx:163
 #: src/ui/dash/PostForm.tsx:304
 msgid "Processing..."
 msgstr "处理中..."
 
 #. @context: Account settings section heading
-#: src/routes/dash/settings.tsx:421
+#: src/routes/dash/settings.tsx:456
 msgid "Profile"
 msgstr "个人资料"
 
@@ -941,8 +950,8 @@ msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:525
-#: src/app.tsx:578
+#: src/app.tsx:526
+#: src/app.tsx:579
 msgid "Reset Password"
 msgstr "重置密码"
 
@@ -952,24 +961,24 @@ msgid "Save Changes"
 msgstr "保存更改"
 
 #. @context: Button to save custom CSS
-#: src/routes/dash/settings.tsx:378
+#: src/routes/dash/settings.tsx:413
 msgid "Save CSS"
 msgstr ""
 
 #. @context: Button to save profile
-#: src/routes/dash/settings.tsx:451
+#: src/routes/dash/settings.tsx:486
 msgid "Save Profile"
 msgstr "保存个人资料"
 
 #. @context: Button to save settings
-#: src/routes/dash/settings.tsx:194
+#: src/routes/dash/settings.tsx:229
 msgid "Save Settings"
 msgstr "保存设置"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
-#: src/ui/layouts/SiteLayout.tsx:70
+#: src/ui/layouts/SiteLayout.tsx:60
 #: src/ui/pages/SearchPage.tsx:20
 #: src/ui/pages/SearchPage.tsx:44
 msgid "Search"
@@ -991,9 +1000,9 @@ msgstr "选择媒体"
 #. @context: Dashboard heading
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
-#: src/routes/dash/settings.tsx:118
-#: src/routes/dash/settings.tsx:304
-#: src/routes/dash/settings.tsx:408
+#: src/routes/dash/settings.tsx:122
+#: src/routes/dash/settings.tsx:339
+#: src/routes/dash/settings.tsx:443
 #: src/ui/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "设置"
@@ -1006,8 +1015,8 @@ msgstr "显示 {remainingCount} 个更多 {0}"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:391
-#: src/app.tsx:438
+#: src/app.tsx:392
+#: src/app.tsx:439
 msgid "Sign In"
 msgstr "登录"
 
@@ -1017,12 +1026,12 @@ msgid "Sign Out"
 msgstr "登出"
 
 #. @context: Settings form field
-#: src/routes/dash/settings.tsx:155
+#: src/routes/dash/settings.tsx:159
 msgid "Site Description"
 msgstr "网站描述"
 
 #. @context: Settings form field
-#: src/routes/dash/settings.tsx:140
+#: src/routes/dash/settings.tsx:144
 msgid "Site Name"
 msgstr "网站名称"
 
@@ -1075,12 +1084,12 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此页面的 URL 路径。使用小写字母、数字和连字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:614
+#: src/app.tsx:615
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密码重置链接无效或已过期。请生成一个新的链接。"
 
 #. @context: Appearance settings description
-#: src/routes/dash/settings.tsx:321
+#: src/routes/dash/settings.tsx:356
 msgid "This will theme both your site and your dashboard. All color themes support dark mode."
 msgstr "这将为您的网站和仪表板设置主题。所有颜色主题都支持暗黑模式。"
 
@@ -1224,7 +1233,7 @@ msgstr "查看网站"
 #~ msgstr "可见性"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:223
+#: src/app.tsx:224
 msgid "Welcome to Jant"
 msgstr "欢迎来到Jant"
 
@@ -1246,7 +1255,7 @@ msgid "What's this collection about?"
 msgstr "这个系列是关于什么的？"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:244
+#: src/app.tsx:245
 msgid "Your Name"
 msgstr "您的姓名"
 

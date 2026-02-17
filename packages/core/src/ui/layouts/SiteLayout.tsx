@@ -32,39 +32,29 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   currentPath,
   isAuthenticated,
   collections,
+  homeDefaultView,
   children,
 }) => {
   const { t } = useLingui();
 
+  const latestHref = homeDefaultView === "featured" ? "/latest" : "/";
+  const featuredHref = homeDefaultView === "featured" ? "/" : "/featured";
+
   const browseLinks = [
     {
-      href: "/",
+      href: latestHref,
       label: t({
         message: "Latest",
         comment: "@context: Browse filter for latest posts",
       }),
     },
     {
-      href: "/featured",
+      href: featuredHref,
       label: t({
         message: "Featured",
         comment: "@context: Browse filter for featured posts",
       }),
     },
-    // {
-    //   href: "/collections",
-    //   label: t({
-    //     message: "Collections",
-    //     comment: "@context: Browse filter for collections",
-    //   }),
-    // },
-    // {
-    //   href: "/archive",
-    //   label: t({
-    //     message: "Archive",
-    //     comment: "@context: Browse filter for archive",
-    //   }),
-    // },
   ];
 
   const searchLabel = t({
@@ -72,7 +62,10 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     comment: "@context: Search icon link in browse nav",
   });
 
-  const isHomePage = currentPath === "/" || currentPath === "/featured";
+  const isHomePage =
+    currentPath === "/" ||
+    currentPath === "/featured" ||
+    currentPath === "/latest";
 
   return (
     <div class="site-page">

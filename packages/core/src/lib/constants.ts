@@ -7,6 +7,7 @@
  */
 export const RESERVED_PATHS = [
   "featured",
+  "latest",
   "collections",
   "signin",
   "signout",
@@ -49,6 +50,7 @@ export const SETTINGS_KEYS = {
   SITE_NAME: "SITE_NAME",
   SITE_DESCRIPTION: "SITE_DESCRIPTION",
   SITE_LANGUAGE: "SITE_LANGUAGE",
+  HOME_DEFAULT_VIEW: "HOME_DEFAULT_VIEW",
   THEME: "THEME",
   CUSTOM_CSS: "CUSTOM_CSS",
   PASSWORD_RESET_TOKEN: "PASSWORD_RESET_TOKEN",

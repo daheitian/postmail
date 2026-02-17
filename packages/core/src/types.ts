@@ -86,6 +86,10 @@ export const CONFIG_FIELDS = {
     defaultValue: "en",
     envOnly: false,
   },
+  HOME_DEFAULT_VIEW: {
+    defaultValue: "latest",
+    envOnly: false,
+  },
 
   // Environment-only (deployment/infrastructure config)
   SITE_URL: {
@@ -518,6 +522,7 @@ export interface SiteLayoutProps {
   currentPath: string;
   isAuthenticated?: boolean;
   collections?: Collection[];
+  homeDefaultView?: string;
 }
 
 // =============================================================================

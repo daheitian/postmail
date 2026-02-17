@@ -118,3 +118,19 @@ export async function getSiteDescription(c: Context): Promise<string> {
 export async function getSiteLanguage(c: Context): Promise<string> {
   return getConfig(c, "SITE_LANGUAGE");
 }
+
+/**
+ * Get home default view with fallback chain: DB > ENV > Default
+ *
+ * @param c - Hono context
+ * @returns Home default view ("latest" or "featured")
+ *
+ * @example
+ * ```typescript
+ * const view = await getHomeDefaultView(c);
+ * // Returns: (DB: HOME_DEFAULT_VIEW) ?? "latest"
+ * ```
+ */
+export async function getHomeDefaultView(c: Context): Promise<string> {
+  return getConfig(c, "HOME_DEFAULT_VIEW");
+}

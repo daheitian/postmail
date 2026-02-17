@@ -13,6 +13,7 @@ import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
 import {
   getSiteLanguage,
   getSiteName,
+  getHomeDefaultView,
   getConfigFallback,
 } from "../../lib/config.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
@@ -95,12 +96,14 @@ function GeneralContent({
   siteName,
   siteDescription,
   siteLanguage,
+  homeDefaultView,
   siteNameFallback,
   siteDescriptionFallback,
 }: {
   siteName: string;
   siteDescription: string;
   siteLanguage: string;
+  homeDefaultView: string;
   siteNameFallback: string;
   siteDescriptionFallback: string;
 }) {
@@ -110,6 +113,7 @@ function GeneralContent({
     siteName,
     siteDescription,
     siteLanguage,
+    homeDefaultView,
   }).replace(/</g, "\\u003c");
 
   return (
@@ -183,6 +187,37 @@ function GeneralContent({
                   </option>
                   <option value="zh-Hant" selected={siteLanguage === "zh-Hant"}>
                     繁體中文
+                  </option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label class="label">
+                  {t({
+                    message: "Default Homepage View",
+                    comment: "@context: Settings form field",
+                  })}
+                </label>
+                <select data-bind="homeDefaultView" class="select">
+                  <option
+                    value="latest"
+                    selected={homeDefaultView === "latest"}
+                  >
+                    {t({
+                      message: "Latest",
+                      comment:
+                        "@context: Homepage view option - show latest posts",
+                    })}
+                  </option>
+                  <option
+                    value="featured"
+                    selected={homeDefaultView === "featured"}
+                  >
+                    {t({
+                      message: "Featured",
+                      comment:
+                        "@context: Homepage view option - show featured posts",
+                    })}
                   </option>
                 </select>
               </div>
@@ -565,7 +600,10 @@ settingsRoutes.get("/", async (c) => {
 
   const dbSiteName = await settings.get("SITE_NAME");
   const dbSiteDescription = await settings.get("SITE_DESCRIPTION");
-  const siteLanguage = await getSiteLanguage(c);
+  const [siteLanguage, homeDefaultView] = await Promise.all([
+    getSiteLanguage(c),
+    getHomeDefaultView(c),
+  ]);
 
   const siteNameFallback = getConfigFallback(c, "SITE_NAME");
   const siteDescriptionFallback = getConfigFallback(c, "SITE_DESCRIPTION");
@@ -584,6 +622,7 @@ settingsRoutes.get("/", async (c) => {
         siteName={dbSiteName || ""}
         siteDescription={dbSiteDescription || ""}
         siteLanguage={siteLanguage}
+        homeDefaultView={homeDefaultView}
         siteNameFallback={siteNameFallback}
         siteDescriptionFallback={siteDescriptionFallback}
       />
@@ -597,6 +636,7 @@ settingsRoutes.post("/", async (c) => {
     siteName: string;
     siteDescription: string;
     siteLanguage: string;
+    homeDefaultView: string;
   }>();
 
   const { settings } = c.var.services;
@@ -616,6 +656,13 @@ settingsRoutes.post("/", async (c) => {
   }
 
   await settings.set("SITE_LANGUAGE", body.siteLanguage);
+
+  // Save homepage default view (only store if non-default)
+  if (body.homeDefaultView === "featured") {
+    await settings.set("HOME_DEFAULT_VIEW", body.homeDefaultView);
+  } else {
+    await settings.remove("HOME_DEFAULT_VIEW");
+  }
 
   const languageChanged = oldLanguage !== body.siteLanguage;
   const displayName = body.siteName.trim() || getConfigFallback(c, "SITE_NAME");

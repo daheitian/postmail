@@ -17,13 +17,19 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const featuredRoutes = new Hono<Env>();
 
 featuredRoutes.get("/", async (c) => {
+  const navData = await getNavigationData(c);
+
+  // When homepage already shows featured, redirect to avoid duplicate content
+  if (navData.homeDefaultView === "featured") {
+    return c.redirect("/", 302);
+  }
+
   const posts = await c.var.services.posts.list({
     featured: true,
     status: "published",
     excludeReplies: true,
   });
 
-  const navData = await getNavigationData(c);
   const mediaCtx = createMediaContext(c);
   const postViews = toPostViewsFromPosts(posts, mediaCtx);
 
