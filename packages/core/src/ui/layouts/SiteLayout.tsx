@@ -78,9 +78,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     <div class="site-page">
       <header class="site-header">
         <div class="site-header-inner">
-          <div
-            class={`site-header-top ${!isHomePage ? "site-header-top-bordered" : ""}`}
-          >
+          <div class="site-header-top site-header-top-bordered">
             <a href="/" class="site-logo">
               {siteName}
             </a>
@@ -124,7 +122,6 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       <main class="site-main">
         <div class="site-container">
           <div class="site-content">
-            {isHomePage && isAuthenticated && <ComposePrompt />}
             {isHomePage && (
               <nav class="site-browse-nav">
                 {browseLinks.map((link, i) => (
@@ -141,6 +138,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                 ))}
               </nav>
             )}
+            {isHomePage && isAuthenticated && <ComposePrompt />}
             {children}
           </div>
         </div>

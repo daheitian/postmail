@@ -24,12 +24,12 @@
   .site-header {
     max-width: var(--site-width);
     margin: 0 auto;
-    padding: 20px var(--site-padding) 12px;
+    padding: 20px var(--site-padding) 0;
   }
 
   @media (min-width: 700px) {
     .site-header {
-      padding: 24px var(--site-padding) 16px;
+      padding: 24px var(--site-padding) 0;
     }
   }
 
@@ -129,7 +129,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: var(--space-xl);
+    padding: 16px 0 var(--space-xl);
   }
 
   .site-browse-sep {
@@ -266,9 +266,8 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 0;
-    margin-top: 4px;
-    margin-bottom: 12px;
+    padding: 16px 0;
+    margin: -20px 0 12px;
   }
 
   .compose-prompt-trigger {

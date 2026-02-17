@@ -13,7 +13,7 @@ export const FeaturedPage: FC<FeaturedPageProps> = ({ items }) => {
   const { t } = useLingui();
 
   return (
-    <div class="py-6" data-page="featured">
+    <div data-page="featured">
       <main>
         {items.length === 0 ? (
           <p class="text-muted-foreground">
