@@ -545,6 +545,23 @@ alias = "cs"
 description = "Create a new changeset for your changes"
 run = "pnpm changeset"
 
+[tasks.changeset-add]
+alias = "cs-add"
+description = "Create a changeset non-interactively: mise run changeset-add <patch|minor|major> <summary>"
+usage = """
+arg "<bump>"
+arg "<summary>"
+"""
+run = """
+node -e "
+const write = require(require.resolve('@changesets/write', { paths: [require.resolve('@changesets/cli')] }));
+write.default(
+  { summary: process.argv[2], releases: [{ name: '@jant/core', type: process.argv[1] }, { name: 'create-jant', type: process.argv[1] }] },
+  process.cwd()
+).then(id => console.log('Created changeset:', id));
+" "$usage_bump" "$usage_summary"
+"""
+
 [tasks.changeset-status]
 alias = "cs-status"
 description = "Show pending changesets and version bumps"
