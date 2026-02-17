@@ -51,10 +51,23 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     isAuthenticated: navData.isAuthenticated,
     collections: navData.collections,
     homeDefaultView: navData.homeDefaultView,
+    siteAvatarUrl: navData.siteAvatarUrl,
+    showHeaderAvatar: navData.showHeaderAvatar,
+    siteFooterHtml: navData.siteFooterHtml,
   };
 
+  // Read favicon and noindex from context (set by theme middleware)
+  const faviconUrl = c.get("faviconUrl") as string | undefined;
+  const noindex = c.get("noindex") as boolean | undefined;
+
   return c.html(
-    <BaseLayout title={title} description={description} c={c}>
+    <BaseLayout
+      title={title}
+      description={description}
+      c={c}
+      faviconUrl={faviconUrl}
+      noindex={noindex}
+    >
       <SiteLayout {...layoutProps}>{content}</SiteLayout>
     </BaseLayout>,
   );

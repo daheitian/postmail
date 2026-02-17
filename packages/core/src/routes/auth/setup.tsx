@@ -12,6 +12,7 @@ import type { AppVariables } from "../../app.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SetupSchema } from "../../lib/schemas.js";
+import { mapIanaToTimezone } from "../../lib/timezones.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -37,7 +38,8 @@ const SetupContent: FC = () => {
         </header>
         <section>
           <form
-            data-signals="{name: '', email: '', password: ''}"
+            data-signals="{name: '', email: '', password: '', _timezone: ''}"
+            data-init="$_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''"
             data-on:submit__prevent="@post('/setup')"
             data-indicator="_loading"
             class="flex flex-col gap-4"
@@ -87,20 +89,26 @@ const SetupContent: FC = () => {
                 minLength={8}
               />
             </div>
-            <button type="submit" class="btn" data-attr-disabled="$_loading">
-              <span data-show="!$_loading">
-                {t({
-                  message: "Complete Setup",
-                  comment: "@context: Setup form submit button",
-                })}
-              </span>
-              <span data-show="$_loading">
-                {t({
-                  message: "Processing...",
-                  comment:
-                    "@context: Loading text shown on submit button while request is in progress",
-                })}
-              </span>
+            <button type="submit" class="btn" data-attr:disabled="$_loading">
+              <svg
+                data-show="$_loading"
+                style="display:none"
+                class="animate-spin size-4"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                role="status"
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+              {t({
+                message: "Complete Setup",
+                comment: "@context: Setup form submit button",
+              })}
             </button>
           </form>
         </section>
@@ -126,8 +134,9 @@ setupRoutes.post("/setup", async (c) => {
   const isComplete = await c.var.services.settings.isOnboardingComplete();
   if (isComplete) return c.redirect("/");
 
-  const body = await c.req.json();
+  const body = await c.req.json<Record<string, string>>();
   const parsed = SetupSchema.safeParse(body);
+  const browserTimezone = body._timezone;
 
   if (!parsed.success) {
     const msg = parsed.error.errors[0]?.message ?? "Invalid input";
@@ -150,6 +159,14 @@ setupRoutes.post("/setup", async (c) => {
     }
 
     await c.var.services.settings.completeOnboarding();
+
+    // Save auto-detected timezone
+    if (browserTimezone) {
+      const tz = mapIanaToTimezone(browserTimezone);
+      if (tz !== "UTC") {
+        await c.var.services.settings.set("TIME_ZONE", tz);
+      }
+    }
 
     // Seed default navigation items
     await c.var.services.navItems.create({

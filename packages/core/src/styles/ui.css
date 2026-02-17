@@ -82,12 +82,22 @@
   }
 
   .site-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 1.125rem;
     font-weight: 800;
     font-family: var(--font-heading);
     color: var(--site-text-primary);
     text-decoration: none;
     line-height: 1;
+  }
+
+  .site-logo-avatar {
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    border-radius: var(--avatar-radius);
+    object-fit: cover;
   }
 
   .site-header-nav {
@@ -448,5 +458,18 @@
   .compose-toolbar-btn:hover {
     color: var(--site-text-primary);
     background-color: var(--site-nav-hover-bg);
+  }
+
+  /* =========================================================================
+   * Site Footer
+   * ========================================================================= */
+
+  .site-footer {
+    max-width: var(--site-width);
+    margin: var(--space-xl) auto 0;
+    padding: var(--content-gap) var(--site-padding) var(--space-xl);
+    border-top: 0.5px solid var(--site-divider);
+    color: var(--site-text-secondary);
+    font-size: var(--text-sm);
   }
 }

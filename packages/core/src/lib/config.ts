@@ -134,3 +134,34 @@ export async function getSiteLanguage(c: Context): Promise<string> {
 export async function getHomeDefaultView(c: Context): Promise<string> {
   return getConfig(c, "HOME_DEFAULT_VIEW");
 }
+
+/**
+ * Get timezone with fallback chain: DB > ENV > Default
+ *
+ * @param c - Hono context
+ * @returns Timezone string (e.g. "Beijing", "UTC")
+ */
+export async function getTimeZone(c: Context): Promise<string> {
+  return getConfig(c, "TIME_ZONE");
+}
+
+/**
+ * Get site footer markdown with fallback chain: DB > ENV > Default
+ *
+ * @param c - Hono context
+ * @returns Footer markdown string (empty string if not set)
+ */
+export async function getSiteFooter(c: Context): Promise<string> {
+  return getConfig(c, "SITE_FOOTER");
+}
+
+/**
+ * Check if search engine indexing is disabled
+ *
+ * @param c - Hono context
+ * @returns true if NOINDEX is set to "true"
+ */
+export async function isNoIndex(c: Context): Promise<boolean> {
+  const value = await getConfig(c, "NOINDEX");
+  return value === "true";
+}

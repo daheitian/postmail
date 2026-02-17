@@ -4,6 +4,7 @@
 
 import { useLingui } from "@lingui/react/macro";
 import type { ColorTheme } from "../../color-themes.js";
+import type { FontTheme } from "../../font-themes.js";
 import { SettingsNav } from "./SettingsNav.js";
 
 function ThemeCard({
@@ -75,10 +76,14 @@ function ThemeCard({
 export function AppearanceContent({
   themes,
   currentThemeId,
+  fontThemes,
+  currentFontThemeId,
   customCSS,
 }: {
   themes: ColorTheme[];
   currentThemeId: string;
+  fontThemes: FontTheme[];
+  currentFontThemeId: string;
   customCSS: string;
 }) {
   const { t } = useLingui();
@@ -96,6 +101,63 @@ export function AppearanceContent({
         {t({ message: "Settings", comment: "@context: Dashboard heading" })}
       </h1>
       <SettingsNav currentTab="appearance" />
+
+      <div
+        data-signals={JSON.stringify({ fontTheme: currentFontThemeId }).replace(
+          /</g,
+          "\\u003c",
+        )}
+        data-on:change="@post('/dash/settings/font-theme')"
+        class="max-w-3xl mb-8"
+      >
+        <fieldset>
+          <legend class="text-lg font-semibold">
+            {t({
+              message: "Font theme",
+              comment: "@context: Appearance settings heading for font theme",
+            })}
+          </legend>
+          <p class="text-sm text-muted-foreground mb-4">
+            {t({
+              message:
+                "Choose a font for your site. All options use system fonts for fast loading.",
+              comment: "@context: Font theme settings description",
+            })}
+          </p>
+          <div class="flex flex-col gap-2">
+            {fontThemes.map((ft) => (
+              <label
+                key={ft.id}
+                class={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${ft.id === currentFontThemeId ? "border-primary" : "border-border"}`}
+                data-class:border-primary={`$fontTheme === '${ft.id}'`}
+                data-class:border-border={`$fontTheme !== '${ft.id}'`}
+              >
+                <input
+                  type="radio"
+                  name="fontTheme"
+                  value={ft.id}
+                  data-bind="fontTheme"
+                  checked={ft.id === currentFontThemeId || undefined}
+                  class="mt-1"
+                />
+                <div>
+                  <div class="font-medium">{ft.name}</div>
+                  <div class="text-sm text-muted-foreground">
+                    {ft.description}
+                  </div>
+                  <div
+                    class="mt-1 text-sm"
+                    style={`font-family:${ft.fontFamily}`}
+                  >
+                    The quick brown fox jumps over the lazy dog.{" "}
+                    敏捷的棕色狐狸跳过了懒狗。
+                  </div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </div>
 
       <div
         data-signals={themeSignals}
@@ -164,21 +226,27 @@ export function AppearanceContent({
         <button
           type="submit"
           class="btn mt-4"
-          data-attr-disabled="$_cssLoading"
+          data-attr:disabled="$_cssLoading"
         >
-          <span data-show="!$_cssLoading">
-            {t({
-              message: "Save CSS",
-              comment: "@context: Button to save custom CSS",
-            })}
-          </span>
-          <span data-show="$_cssLoading">
-            {t({
-              message: "Processing...",
-              comment:
-                "@context: Loading text shown on submit button while request is in progress",
-            })}
-          </span>
+          <svg
+            data-show="$_cssLoading"
+            style="display:none"
+            class="animate-spin size-4"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            role="status"
+          >
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+          {t({
+            message: "Save CSS",
+            comment: "@context: Button to save custom CSS",
+          })}
         </button>
       </form>
     </>

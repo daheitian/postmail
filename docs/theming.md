@@ -68,12 +68,38 @@ Create your own theme by adding CSS to your project:
 
 Then set `THEME=my-theme` in settings.
 
+## Data Attributes (Public API)
+
+Data attributes on HTML elements are a **stable, versioned public API** for CSS targeting. They MUST NOT be renamed or removed without a major version bump.
+
+| Attribute            | Element        | Purpose                       |
+| -------------------- | -------------- | ----------------------------- |
+| `data-authenticated` | `<body>`       | Auth state for CSS            |
+| `data-page`          | page wrapper   | Page type identifier          |
+| `data-post`          | `<article>`    | Post marker                   |
+| `data-format`        | `<article>`    | Post format (note/link/quote) |
+| `data-post-body`     | content div    | Target post body              |
+| `data-post-meta`     | meta div       | Target post metadata          |
+| `data-post-media`    | media div      | Target post media             |
+| `data-feed`          | feed container | Target feed                   |
+
+Users can inject arbitrary CSS via Dashboard > Settings > Appearance. Stored in database, injected in `<head>` with highest priority.
+
+## CSS Priority (lowest to highest)
+
+1. BaseCoat defaults (`:root`)
+2. Design tokens (`styles/tokens.css`)
+3. Component styles (`styles/ui.css`)
+4. Selected color theme (`:root:root` specificity)
+5. `cssVariables` from `createApp()` config
+6. Custom CSS injection from dashboard
+
 ## Component Styling
 
 Jant uses [BaseCoat](https://github.com/hunvreus/basecoat) for UI components. Style components using its class names:
 
 ```html
-<button class="btn btn-primary">Post</button>
+<button class="btn">Post</button>
 <input class="input" placeholder="What's on your mind?" />
 <div class="card">...</div>
 ```

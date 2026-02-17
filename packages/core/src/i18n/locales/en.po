@@ -19,7 +19,7 @@ msgstr ""
 #~ msgstr "{count} replies"
 
 #. @context: Custom CSS textarea placeholder
-#: src/ui/dash/settings/AppearanceContent.tsx:156
+#: src/ui/dash/settings/AppearanceContent.tsx:218
 msgid "/* Your custom CSS here */"
 msgstr "/* Your custom CSS here */"
 
@@ -50,13 +50,18 @@ msgstr "301 (Permanent)"
 msgid "302 (Temporary)"
 msgstr "302 (Temporary)"
 
+#. @context: Settings form field for site description
+#: src/ui/dash/settings/GeneralContent.tsx:308
+msgid "About this blog"
+msgstr "About this blog"
+
 #. @context: Settings sub-navigation tab
 #: src/ui/dash/settings/SettingsNav.tsx:31
 msgid "Account"
 msgstr "Account"
 
 #. @context: Custom CSS settings description
-#: src/ui/dash/settings/AppearanceContent.tsx:146
+#: src/ui/dash/settings/AppearanceContent.tsx:208
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 
@@ -135,25 +140,37 @@ msgstr "Back"
 #~ msgid "Back to home"
 #~ msgstr "Back to home"
 
+#. @context: Settings section heading for avatar
+#: src/ui/dash/settings/GeneralContent.tsx:160
+msgid "Blog Avatar"
+msgstr "Blog Avatar"
+
 #. @context: Button to cancel and go back
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
-#: src/routes/dash/redirects.tsx:177
-#: src/ui/dash/collections/CollectionForm.tsx:136
-#: src/ui/dash/PageForm.tsx:171
-#: src/ui/dash/pages/LinkFormContent.tsx:104
-#: src/ui/dash/PostForm.tsx:312
+#. @context: Button to cancel unsaved changes and revert to original values
+#: src/routes/dash/redirects.tsx:183
+#: src/ui/dash/collections/CollectionForm.tsx:144
+#: src/ui/dash/PageForm.tsx:177
+#: src/ui/dash/pages/LinkFormContent.tsx:110
+#: src/ui/dash/PostForm.tsx:318
+#: src/ui/dash/settings/GeneralContent.tsx:86
 msgid "Cancel"
 msgstr "Cancel"
 
 #. @context: Button to change password
 #. @context: Settings section heading
-#: src/ui/dash/settings/AccountContent.tsx:82
-#: src/ui/dash/settings/AccountContent.tsx:147
+#: src/ui/dash/settings/AccountContent.tsx:88
+#: src/ui/dash/settings/AccountContent.tsx:167
 msgid "Change Password"
 msgstr "Change Password"
+
+#. @context: Font theme settings description
+#: src/ui/dash/settings/AppearanceContent.tsx:121
+msgid "Choose a font for your site. All options use system fonts for fast loading."
+msgstr "Choose a font for your site. All options use system fonts for fast loading."
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx:90
@@ -187,17 +204,17 @@ msgstr "Collections"
 #~ msgstr "Collections (optional)"
 
 #. @context: Appearance settings heading
-#: src/ui/dash/settings/AppearanceContent.tsx:107
+#: src/ui/dash/settings/AppearanceContent.tsx:169
 msgid "Color theme"
 msgstr "Color theme"
 
 #. @context: Setup form submit button
-#: src/routes/auth/setup.tsx:92
+#: src/routes/auth/setup.tsx:108
 msgid "Complete Setup"
 msgstr "Complete Setup"
 
 #. @context: Password form field
-#: src/ui/dash/settings/AccountContent.tsx:124
+#: src/ui/dash/settings/AccountContent.tsx:130
 msgid "Confirm New Password"
 msgstr "Confirm New Password"
 
@@ -226,22 +243,22 @@ msgid "Create Collection"
 msgstr "Create Collection"
 
 #. @context: Button to save new navigation link
-#: src/ui/dash/pages/LinkFormContent.tsx:90
+#: src/ui/dash/pages/LinkFormContent.tsx:104
 msgid "Create Link"
 msgstr "Create Link"
 
 #. @context: Button to create new page
-#: src/ui/dash/PageForm.tsx:157
+#: src/ui/dash/PageForm.tsx:171
 msgid "Create Page"
 msgstr "Create Page"
 
 #. @context: Button to save new redirect
-#: src/routes/dash/redirects.tsx:163
+#: src/routes/dash/redirects.tsx:177
 msgid "Create Redirect"
 msgstr "Create Redirect"
 
 #. @context: Setup page description
-#: src/routes/auth/setup.tsx:32
+#: src/routes/auth/setup.tsx:33
 msgid "Create your admin account."
 msgstr "Create your admin account."
 
@@ -256,12 +273,12 @@ msgid "Create your first post"
 msgstr "Create your first post"
 
 #. @context: Password form field
-#: src/ui/dash/settings/AccountContent.tsx:91
+#: src/ui/dash/settings/AccountContent.tsx:97
 msgid "Current Password"
 msgstr "Current Password"
 
 #. @context: Appearance settings heading for custom CSS
-#: src/ui/dash/settings/AppearanceContent.tsx:140
+#: src/ui/dash/settings/AppearanceContent.tsx:202
 msgid "Custom CSS"
 msgstr "Custom CSS"
 
@@ -293,7 +310,7 @@ msgid "Dashboard"
 msgstr "Dashboard"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:109
+#: src/ui/dash/settings/GeneralContent.tsx:358
 msgid "Default Homepage View"
 msgstr "Default Homepage View"
 
@@ -336,6 +353,11 @@ msgstr "Demo account pre-filled. Just click Sign In."
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
+#. @context: Checkbox to show avatar in the site header
+#: src/ui/dash/settings/GeneralContent.tsx:258
+msgid "Display avatar in my site header"
+msgstr "Display avatar in my site header"
+
 #. @context: Navigation label help text
 #: src/ui/dash/pages/LinkFormContent.tsx:52
 msgid "Display text for the link"
@@ -343,8 +365,8 @@ msgstr "Display text for the link"
 
 #. @context: Close media picker button
 #. @context: Close media picker button
-#: src/ui/compose/ComposeDialog.tsx:375
-#: src/ui/dash/PostForm.tsx:334
+#: src/ui/compose/ComposeDialog.tsx:394
+#: src/ui/dash/PostForm.tsx:340
 msgid "Done"
 msgstr "Done"
 
@@ -352,7 +374,7 @@ msgstr "Done"
 #. @context: Page status option - draft
 #. @context: Post status badge - draft
 #. @context: Post status option
-#: src/ui/compose/ComposeDialog.tsx:326
+#: src/ui/compose/ComposeDialog.tsx:340
 #: src/ui/dash/PageForm.tsx:133
 #: src/ui/dash/PostForm.tsx:234
 #: src/ui/dash/StatusBadge.tsx:34
@@ -421,7 +443,7 @@ msgstr "Edit Post"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/routes/auth/setup.tsx:62
+#: src/routes/auth/setup.tsx:64
 #: src/routes/auth/signin.tsx:55
 msgid "Email"
 msgstr "Email"
@@ -439,12 +461,17 @@ msgstr "Enter your new password."
 #. @context: Post form checkbox - mark as featured
 #: src/ui/compose/ComposeDialog.tsx:305
 #: src/ui/dash/PostForm.tsx:246
-#: src/ui/dash/settings/GeneralContent.tsx:129
+#: src/ui/dash/settings/GeneralContent.tsx:382
 #: src/ui/dash/StatusBadge.tsx:45
-#: src/ui/layouts/SiteLayout.tsx:52
+#: src/ui/layouts/SiteLayout.tsx:55
 #: src/ui/pages/ArchivePage.tsx:92
 msgid "Featured"
 msgstr "Featured"
+
+#. @context: Appearance settings heading for font theme
+#: src/ui/dash/settings/AppearanceContent.tsx:115
+msgid "Font theme"
+msgstr "Font theme"
 
 #. @context: Post form field - post format
 #: src/ui/dash/PostForm.tsx:64
@@ -468,7 +495,7 @@ msgstr "From Path"
 
 #. @context: Settings section heading
 #. @context: Settings sub-navigation tab
-#: src/ui/dash/settings/GeneralContent.tsx:48
+#: src/ui/dash/settings/GeneralContent.tsx:283
 #: src/ui/dash/settings/SettingsNav.tsx:15
 msgid "General"
 msgstr "General"
@@ -493,9 +520,14 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
 
 #. @context: Password reset error heading
-#: src/routes/auth/reset.tsx:114
+#: src/routes/auth/reset.tsx:120
 msgid "Invalid or Expired Link"
 msgstr "Invalid or Expired Link"
+
+#. @context: Checkbox for allowing search engine indexing
+#: src/ui/dash/settings/GeneralContent.tsx:499
+msgid "It's OK for search engines to index my site"
+msgstr "It's OK for search engines to index my site"
 
 #. @context: Navigation link form field
 #: src/ui/dash/pages/LinkFormContent.tsx:39
@@ -503,14 +535,14 @@ msgid "Label"
 msgstr "Label"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:89
+#: src/ui/dash/settings/GeneralContent.tsx:334
 msgid "Language"
 msgstr "Language"
 
 #. @context: Browse filter for latest posts
 #. @context: Homepage view option - show latest posts
-#: src/ui/dash/settings/GeneralContent.tsx:119
-#: src/ui/layouts/SiteLayout.tsx:45
+#: src/ui/dash/settings/GeneralContent.tsx:372
+#: src/ui/layouts/SiteLayout.tsx:48
 msgid "Latest"
 msgstr "Latest"
 
@@ -547,8 +579,8 @@ msgstr "Load more"
 
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx:386
-#: src/ui/dash/PostForm.tsx:345
+#: src/ui/compose/ComposeDialog.tsx:405
+#: src/ui/dash/PostForm.tsx:351
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -561,6 +593,11 @@ msgstr "Lowercase letters, numbers, and hyphens only"
 #: src/ui/dash/media/ViewMediaContent.tsx:146
 msgid "Markdown"
 msgstr "Markdown"
+
+#. @context: Placeholder for footer textarea
+#: src/ui/dash/settings/GeneralContent.tsx:450
+msgid "Markdown supported"
+msgstr "Markdown supported"
 
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
@@ -622,7 +659,7 @@ msgstr "New Page"
 #. @context: Password form field
 #. @context: Password reset form field
 #: src/routes/auth/reset.tsx:54
-#: src/ui/dash/settings/AccountContent.tsx:107
+#: src/ui/dash/settings/AccountContent.tsx:113
 msgid "New Password"
 msgstr "New Password"
 
@@ -778,7 +815,7 @@ msgstr "Pages"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/routes/auth/setup.tsx:77
+#: src/routes/auth/setup.tsx:79
 #: src/routes/auth/signin.tsx:64
 msgid "Password"
 msgstr "Password"
@@ -818,7 +855,7 @@ msgstr "post"
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/ui/compose/ComposeDialog.tsx:339
+#: src/ui/compose/ComposeDialog.tsx:365
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "Post"
@@ -830,8 +867,8 @@ msgstr "Post title..."
 
 #. @context: Compose loading text while posting
 #: src/ui/compose/ComposeDialog.tsx:345
-msgid "Posting..."
-msgstr "Posting..."
+#~ msgid "Posting..."
+#~ msgstr "Posting..."
 
 #. @context: Plural post count label
 #: src/ui/pages/CollectionsPage.tsx:60
@@ -862,32 +899,8 @@ msgstr "Preview"
 msgid "Previous"
 msgstr "Previous"
 
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/routes/auth/reset.tsx:92
-#: src/routes/auth/setup.tsx:98
-#: src/routes/auth/signin.tsx:84
-#: src/routes/dash/redirects.tsx:169
-#: src/ui/dash/collections/CollectionForm.tsx:128
 #: src/ui/dash/media/MediaListContent.tsx:95
-#: src/ui/dash/PageForm.tsx:163
-#: src/ui/dash/pages/LinkFormContent.tsx:96
-#: src/ui/dash/PostForm.tsx:304
-#: src/ui/dash/settings/AccountContent.tsx:65
-#: src/ui/dash/settings/AccountContent.tsx:153
-#: src/ui/dash/settings/AppearanceContent.tsx:176
-#: src/ui/dash/settings/GeneralContent.tsx:148
 msgid "Processing..."
 msgstr "Processing..."
 
@@ -897,7 +910,7 @@ msgid "Profile"
 msgstr "Profile"
 
 #. @context: Button to publish new post
-#: src/ui/dash/PostForm.tsx:298
+#: src/ui/dash/PostForm.tsx:312
 msgid "Publish"
 msgstr "Publish"
 
@@ -972,42 +985,49 @@ msgstr "Rating"
 msgid "Redirects"
 msgstr "Redirects"
 
+#. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
 #: src/ui/dash/PostForm.tsx:194
+#: src/ui/dash/settings/GeneralContent.tsx:228
 msgid "Remove"
 msgstr "Remove"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
 #: src/routes/auth/reset.tsx:33
-#: src/routes/auth/reset.tsx:86
+#: src/routes/auth/reset.tsx:100
 msgid "Reset Password"
 msgstr "Reset Password"
 
+#. @context: Button to save settings
+#: src/ui/dash/settings/GeneralContent.tsx:74
+msgid "Save"
+msgstr "Save"
+
 #. @context: Button to save edited navigation link
-#: src/ui/dash/pages/LinkFormContent.tsx:86
+#: src/ui/dash/pages/LinkFormContent.tsx:100
 msgid "Save Changes"
 msgstr "Save Changes"
 
 #. @context: Button to save custom CSS
-#: src/ui/dash/settings/AppearanceContent.tsx:170
+#: src/ui/dash/settings/AppearanceContent.tsx:246
 msgid "Save CSS"
 msgstr "Save CSS"
 
 #. @context: Button to save profile
-#: src/ui/dash/settings/AccountContent.tsx:59
+#: src/ui/dash/settings/AccountContent.tsx:73
 msgid "Save Profile"
 msgstr "Save Profile"
 
 #. @context: Button to save settings
 #: src/ui/dash/settings/GeneralContent.tsx:142
-msgid "Save Settings"
-msgstr "Save Settings"
+#~ msgid "Save Settings"
+#~ msgstr "Save Settings"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
-#: src/ui/layouts/SiteLayout.tsx:64
+#: src/ui/layouts/SiteLayout.tsx:67
 #: src/ui/pages/SearchPage.tsx:20
 #: src/ui/pages/SearchPage.tsx:44
 msgid "Search"
@@ -1025,18 +1045,23 @@ msgstr "Search posts..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx:365
-#: src/ui/dash/PostForm.tsx:324
+#: src/ui/compose/ComposeDialog.tsx:384
+#: src/ui/dash/PostForm.tsx:330
 msgid "Select Media"
 msgstr "Select Media"
+
+#. @context: Settings section heading for SEO
+#: src/ui/dash/settings/GeneralContent.tsx:482
+msgid "SEO"
+msgstr "SEO"
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
 #: src/ui/dash/settings/AccountContent.tsx:16
-#: src/ui/dash/settings/AppearanceContent.tsx:96
-#: src/ui/dash/settings/GeneralContent.tsx:35
+#: src/ui/dash/settings/AppearanceContent.tsx:101
+#: src/ui/dash/settings/GeneralContent.tsx:151
 #: src/ui/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "Settings"
@@ -1055,7 +1080,7 @@ msgstr "Show {remainingCount} more {0}"
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
 #: src/routes/auth/signin.tsx:31
-#: src/routes/auth/signin.tsx:78
+#: src/routes/auth/signin.tsx:92
 msgid "Sign In"
 msgstr "Sign In"
 
@@ -1066,11 +1091,16 @@ msgstr "Sign Out"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx:72
-msgid "Site Description"
-msgstr "Site Description"
+#~ msgid "Site Description"
+#~ msgstr "Site Description"
+
+#. @context: Settings section heading for site footer
+#: src/ui/dash/settings/GeneralContent.tsx:438
+msgid "Site Footer"
+msgstr "Site Footer"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:57
+#: src/ui/dash/settings/GeneralContent.tsx:292
 msgid "Site Name"
 msgstr "Site Name"
 
@@ -1125,13 +1155,28 @@ msgstr "The text being quoted..."
 msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 
+#. @context: Help text for site description field
+#: src/ui/dash/settings/GeneralContent.tsx:324
+msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
+msgstr "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
+
+#. @context: Help text for site footer field
+#: src/ui/dash/settings/GeneralContent.tsx:458
+msgid "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
+msgstr "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
+
+#. @context: Help text for avatar upload
+#: src/ui/dash/settings/GeneralContent.tsx:238
+msgid "This is used for your favicon."
+msgstr "This is used for your favicon."
+
 #. @context: Password reset error description
-#: src/routes/auth/reset.tsx:122
+#: src/routes/auth/reset.tsx:128
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "This password reset link is invalid or has expired. Please generate a new one."
 
 #. @context: Appearance settings description
-#: src/ui/dash/settings/AppearanceContent.tsx:113
+#: src/ui/dash/settings/AppearanceContent.tsx:175
 msgid "This will theme both your site and your dashboard. All color themes support dark mode."
 msgstr "This will theme both your site and your dashboard. All color themes support dark mode."
 
@@ -1149,6 +1194,11 @@ msgstr "Thread with {count} posts"
 #: src/ui/shared/ThreadView.tsx:101
 msgid "Thread with 1 post"
 msgstr "Thread with 1 post"
+
+#. @context: Settings form field
+#: src/ui/dash/settings/GeneralContent.tsx:393
+msgid "Time Zone"
+msgstr "Time Zone"
 
 #. @context: Collection form field
 #. @context: Page form field label - title
@@ -1194,7 +1244,7 @@ msgid "Untitled"
 msgstr "Untitled"
 
 #. @context: Button to update existing post
-#: src/ui/dash/PostForm.tsx:294
+#: src/ui/dash/PostForm.tsx:308
 msgid "Update"
 msgstr "Update"
 
@@ -1204,7 +1254,7 @@ msgid "Update Collection"
 msgstr "Update Collection"
 
 #. @context: Button to update existing page
-#: src/ui/dash/PageForm.tsx:153
+#: src/ui/dash/PageForm.tsx:167
 msgid "Update Page"
 msgstr "Update Page"
 
@@ -1212,6 +1262,11 @@ msgstr "Update Page"
 #: src/ui/dash/media/MediaListContent.tsx:103
 msgid "Upload"
 msgstr "Upload"
+
+#. @context: Button to upload avatar image
+#: src/ui/dash/settings/GeneralContent.tsx:206
+msgid "Upload Avatar"
+msgstr "Upload Avatar"
 
 #. @context: Upload error message
 #: src/ui/dash/media/MediaListContent.tsx:107
@@ -1283,7 +1338,7 @@ msgstr "View Site"
 #~ msgstr "Visibility"
 
 #. @context: Setup page welcome heading
-#: src/routes/auth/setup.tsx:26
+#: src/routes/auth/setup.tsx:27
 msgid "Welcome to Jant"
 msgstr "Welcome to Jant"
 
@@ -1305,7 +1360,7 @@ msgid "What's this collection about?"
 msgstr "What's this collection about?"
 
 #. @context: Setup form field - user name
-#: src/routes/auth/setup.tsx:47
+#: src/routes/auth/setup.tsx:49
 msgid "Your Name"
 msgstr "Your Name"
 

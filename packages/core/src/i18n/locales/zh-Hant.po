@@ -19,7 +19,7 @@ msgstr ""
 #~ msgstr "{count} 條回覆"
 
 #. @context: Custom CSS textarea placeholder
-#: src/ui/dash/settings/AppearanceContent.tsx:156
+#: src/ui/dash/settings/AppearanceContent.tsx:218
 msgid "/* Your custom CSS here */"
 msgstr ""
 
@@ -43,13 +43,18 @@ msgstr "301（永久）"
 msgid "302 (Temporary)"
 msgstr "302（臨時）"
 
+#. @context: Settings form field for site description
+#: src/ui/dash/settings/GeneralContent.tsx:308
+msgid "About this blog"
+msgstr ""
+
 #. @context: Settings sub-navigation tab
 #: src/ui/dash/settings/SettingsNav.tsx:31
 msgid "Account"
 msgstr "帳戶"
 
 #. @context: Custom CSS settings description
-#: src/ui/dash/settings/AppearanceContent.tsx:146
+#: src/ui/dash/settings/AppearanceContent.tsx:208
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr ""
 
@@ -119,25 +124,37 @@ msgstr ""
 msgid "Back"
 msgstr "返回"
 
+#. @context: Settings section heading for avatar
+#: src/ui/dash/settings/GeneralContent.tsx:160
+msgid "Blog Avatar"
+msgstr ""
+
 #. @context: Button to cancel and go back
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
-#: src/routes/dash/redirects.tsx:177
-#: src/ui/dash/collections/CollectionForm.tsx:136
-#: src/ui/dash/PageForm.tsx:171
-#: src/ui/dash/pages/LinkFormContent.tsx:104
-#: src/ui/dash/PostForm.tsx:312
+#. @context: Button to cancel unsaved changes and revert to original values
+#: src/routes/dash/redirects.tsx:183
+#: src/ui/dash/collections/CollectionForm.tsx:144
+#: src/ui/dash/PageForm.tsx:177
+#: src/ui/dash/pages/LinkFormContent.tsx:110
+#: src/ui/dash/PostForm.tsx:318
+#: src/ui/dash/settings/GeneralContent.tsx:86
 msgid "Cancel"
 msgstr "取消"
 
 #. @context: Button to change password
 #. @context: Settings section heading
-#: src/ui/dash/settings/AccountContent.tsx:82
-#: src/ui/dash/settings/AccountContent.tsx:147
+#: src/ui/dash/settings/AccountContent.tsx:88
+#: src/ui/dash/settings/AccountContent.tsx:167
 msgid "Change Password"
 msgstr "更改密碼"
+
+#. @context: Font theme settings description
+#: src/ui/dash/settings/AppearanceContent.tsx:121
+msgid "Choose a font for your site. All options use system fonts for fast loading."
+msgstr ""
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx:90
@@ -171,17 +188,17 @@ msgstr "收藏夾"
 #~ msgstr "收藏（可選）"
 
 #. @context: Appearance settings heading
-#: src/ui/dash/settings/AppearanceContent.tsx:107
+#: src/ui/dash/settings/AppearanceContent.tsx:169
 msgid "Color theme"
 msgstr "顏色主題"
 
 #. @context: Setup form submit button
-#: src/routes/auth/setup.tsx:92
+#: src/routes/auth/setup.tsx:108
 msgid "Complete Setup"
 msgstr "完成設置"
 
 #. @context: Password form field
-#: src/ui/dash/settings/AccountContent.tsx:124
+#: src/ui/dash/settings/AccountContent.tsx:130
 msgid "Confirm New Password"
 msgstr "確認新密碼"
 
@@ -210,22 +227,22 @@ msgid "Create Collection"
 msgstr "創建收藏夾"
 
 #. @context: Button to save new navigation link
-#: src/ui/dash/pages/LinkFormContent.tsx:90
+#: src/ui/dash/pages/LinkFormContent.tsx:104
 msgid "Create Link"
 msgstr "建立連結"
 
 #. @context: Button to create new page
-#: src/ui/dash/PageForm.tsx:157
+#: src/ui/dash/PageForm.tsx:171
 msgid "Create Page"
 msgstr "創建頁面"
 
 #. @context: Button to save new redirect
-#: src/routes/dash/redirects.tsx:163
+#: src/routes/dash/redirects.tsx:177
 msgid "Create Redirect"
 msgstr "建立重定向"
 
 #. @context: Setup page description
-#: src/routes/auth/setup.tsx:32
+#: src/routes/auth/setup.tsx:33
 msgid "Create your admin account."
 msgstr "建立您的管理員帳戶。"
 
@@ -240,12 +257,12 @@ msgid "Create your first post"
 msgstr "創建你的第一篇帖子"
 
 #. @context: Password form field
-#: src/ui/dash/settings/AccountContent.tsx:91
+#: src/ui/dash/settings/AccountContent.tsx:97
 msgid "Current Password"
 msgstr "當前密碼"
 
 #. @context: Appearance settings heading for custom CSS
-#: src/ui/dash/settings/AppearanceContent.tsx:140
+#: src/ui/dash/settings/AppearanceContent.tsx:202
 msgid "Custom CSS"
 msgstr ""
 
@@ -277,7 +294,7 @@ msgid "Dashboard"
 msgstr "儀表板"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:109
+#: src/ui/dash/settings/GeneralContent.tsx:358
 msgid "Default Homepage View"
 msgstr ""
 
@@ -320,6 +337,11 @@ msgstr "示範帳戶已預填。只需點擊登入。"
 msgid "Description (optional)"
 msgstr "描述（可選）"
 
+#. @context: Checkbox to show avatar in the site header
+#: src/ui/dash/settings/GeneralContent.tsx:258
+msgid "Display avatar in my site header"
+msgstr ""
+
 #. @context: Navigation label help text
 #: src/ui/dash/pages/LinkFormContent.tsx:52
 msgid "Display text for the link"
@@ -327,8 +349,8 @@ msgstr "顯示連結的文字"
 
 #. @context: Close media picker button
 #. @context: Close media picker button
-#: src/ui/compose/ComposeDialog.tsx:375
-#: src/ui/dash/PostForm.tsx:334
+#: src/ui/compose/ComposeDialog.tsx:394
+#: src/ui/dash/PostForm.tsx:340
 msgid "Done"
 msgstr "完成"
 
@@ -336,7 +358,7 @@ msgstr "完成"
 #. @context: Page status option - draft
 #. @context: Post status badge - draft
 #. @context: Post status option
-#: src/ui/compose/ComposeDialog.tsx:326
+#: src/ui/compose/ComposeDialog.tsx:340
 #: src/ui/dash/PageForm.tsx:133
 #: src/ui/dash/PostForm.tsx:234
 #: src/ui/dash/StatusBadge.tsx:34
@@ -396,7 +418,7 @@ msgstr "編輯文章"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/routes/auth/setup.tsx:62
+#: src/routes/auth/setup.tsx:64
 #: src/routes/auth/signin.tsx:55
 msgid "Email"
 msgstr "電子郵件"
@@ -414,12 +436,17 @@ msgstr "請輸入您的新密碼。"
 #. @context: Post form checkbox - mark as featured
 #: src/ui/compose/ComposeDialog.tsx:305
 #: src/ui/dash/PostForm.tsx:246
-#: src/ui/dash/settings/GeneralContent.tsx:129
+#: src/ui/dash/settings/GeneralContent.tsx:382
 #: src/ui/dash/StatusBadge.tsx:45
-#: src/ui/layouts/SiteLayout.tsx:52
+#: src/ui/layouts/SiteLayout.tsx:55
 #: src/ui/pages/ArchivePage.tsx:92
 msgid "Featured"
 msgstr "精選"
+
+#. @context: Appearance settings heading for font theme
+#: src/ui/dash/settings/AppearanceContent.tsx:115
+msgid "Font theme"
+msgstr ""
 
 #. @context: Post form field - post format
 #: src/ui/dash/PostForm.tsx:64
@@ -443,7 +470,7 @@ msgstr "來源路徑"
 
 #. @context: Settings section heading
 #. @context: Settings sub-navigation tab
-#: src/ui/dash/settings/GeneralContent.tsx:48
+#: src/ui/dash/settings/GeneralContent.tsx:283
 #: src/ui/dash/settings/SettingsNav.tsx:15
 msgid "General"
 msgstr "一般設定"
@@ -468,9 +495,14 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "圖片會自動優化：調整大小至最大 1920 像素，轉換為 WebP 格式，並去除元數據。"
 
 #. @context: Password reset error heading
-#: src/routes/auth/reset.tsx:114
+#: src/routes/auth/reset.tsx:120
 msgid "Invalid or Expired Link"
 msgstr "無效或已過期的連結"
+
+#. @context: Checkbox for allowing search engine indexing
+#: src/ui/dash/settings/GeneralContent.tsx:499
+msgid "It's OK for search engines to index my site"
+msgstr ""
 
 #. @context: Navigation link form field
 #: src/ui/dash/pages/LinkFormContent.tsx:39
@@ -478,14 +510,14 @@ msgid "Label"
 msgstr "標籤"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:89
+#: src/ui/dash/settings/GeneralContent.tsx:334
 msgid "Language"
 msgstr "語言"
 
 #. @context: Browse filter for latest posts
 #. @context: Homepage view option - show latest posts
-#: src/ui/dash/settings/GeneralContent.tsx:119
-#: src/ui/layouts/SiteLayout.tsx:45
+#: src/ui/dash/settings/GeneralContent.tsx:372
+#: src/ui/layouts/SiteLayout.tsx:48
 msgid "Latest"
 msgstr ""
 
@@ -517,8 +549,8 @@ msgstr "載入更多"
 
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx:386
-#: src/ui/dash/PostForm.tsx:345
+#: src/ui/compose/ComposeDialog.tsx:405
+#: src/ui/dash/PostForm.tsx:351
 msgid "Loading..."
 msgstr "載入中..."
 
@@ -531,6 +563,11 @@ msgstr "僅限小寫字母、數字和連字符"
 #: src/ui/dash/media/ViewMediaContent.tsx:146
 msgid "Markdown"
 msgstr "Markdown"
+
+#. @context: Placeholder for footer textarea
+#: src/ui/dash/settings/GeneralContent.tsx:450
+msgid "Markdown supported"
+msgstr ""
 
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
@@ -587,7 +624,7 @@ msgstr "新頁面"
 #. @context: Password form field
 #. @context: Password reset form field
 #: src/routes/auth/reset.tsx:54
-#: src/ui/dash/settings/AccountContent.tsx:107
+#: src/ui/dash/settings/AccountContent.tsx:113
 msgid "New Password"
 msgstr "新密碼"
 
@@ -743,7 +780,7 @@ msgstr "頁面"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/routes/auth/setup.tsx:77
+#: src/routes/auth/setup.tsx:79
 #: src/routes/auth/signin.tsx:64
 msgid "Password"
 msgstr "密碼"
@@ -783,7 +820,7 @@ msgstr ""
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/ui/compose/ComposeDialog.tsx:339
+#: src/ui/compose/ComposeDialog.tsx:365
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "文章"
@@ -795,8 +832,8 @@ msgstr "文章標題..."
 
 #. @context: Compose loading text while posting
 #: src/ui/compose/ComposeDialog.tsx:345
-msgid "Posting..."
-msgstr ""
+#~ msgid "Posting..."
+#~ msgstr ""
 
 #. @context: Plural post count label
 #: src/ui/pages/CollectionsPage.tsx:60
@@ -827,32 +864,8 @@ msgstr "預覽"
 msgid "Previous"
 msgstr "上一頁"
 
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
-#. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/routes/auth/reset.tsx:92
-#: src/routes/auth/setup.tsx:98
-#: src/routes/auth/signin.tsx:84
-#: src/routes/dash/redirects.tsx:169
-#: src/ui/dash/collections/CollectionForm.tsx:128
 #: src/ui/dash/media/MediaListContent.tsx:95
-#: src/ui/dash/PageForm.tsx:163
-#: src/ui/dash/pages/LinkFormContent.tsx:96
-#: src/ui/dash/PostForm.tsx:304
-#: src/ui/dash/settings/AccountContent.tsx:65
-#: src/ui/dash/settings/AccountContent.tsx:153
-#: src/ui/dash/settings/AppearanceContent.tsx:176
-#: src/ui/dash/settings/GeneralContent.tsx:148
 msgid "Processing..."
 msgstr "處理中..."
 
@@ -862,7 +875,7 @@ msgid "Profile"
 msgstr "個人資料"
 
 #. @context: Button to publish new post
-#: src/ui/dash/PostForm.tsx:298
+#: src/ui/dash/PostForm.tsx:312
 msgid "Publish"
 msgstr "發佈"
 
@@ -937,42 +950,49 @@ msgstr ""
 msgid "Redirects"
 msgstr "重定向"
 
+#. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
 #: src/ui/dash/PostForm.tsx:194
+#: src/ui/dash/settings/GeneralContent.tsx:228
 msgid "Remove"
 msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
 #: src/routes/auth/reset.tsx:33
-#: src/routes/auth/reset.tsx:86
+#: src/routes/auth/reset.tsx:100
 msgid "Reset Password"
 msgstr "重設密碼"
 
+#. @context: Button to save settings
+#: src/ui/dash/settings/GeneralContent.tsx:74
+msgid "Save"
+msgstr ""
+
 #. @context: Button to save edited navigation link
-#: src/ui/dash/pages/LinkFormContent.tsx:86
+#: src/ui/dash/pages/LinkFormContent.tsx:100
 msgid "Save Changes"
 msgstr "保存更改"
 
 #. @context: Button to save custom CSS
-#: src/ui/dash/settings/AppearanceContent.tsx:170
+#: src/ui/dash/settings/AppearanceContent.tsx:246
 msgid "Save CSS"
 msgstr ""
 
 #. @context: Button to save profile
-#: src/ui/dash/settings/AccountContent.tsx:59
+#: src/ui/dash/settings/AccountContent.tsx:73
 msgid "Save Profile"
 msgstr "保存個人資料"
 
 #. @context: Button to save settings
 #: src/ui/dash/settings/GeneralContent.tsx:142
-msgid "Save Settings"
-msgstr "保存設定"
+#~ msgid "Save Settings"
+#~ msgstr "保存設定"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
-#: src/ui/layouts/SiteLayout.tsx:64
+#: src/ui/layouts/SiteLayout.tsx:67
 #: src/ui/pages/SearchPage.tsx:20
 #: src/ui/pages/SearchPage.tsx:44
 msgid "Search"
@@ -985,18 +1005,23 @@ msgstr "搜尋帖子..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx:365
-#: src/ui/dash/PostForm.tsx:324
+#: src/ui/compose/ComposeDialog.tsx:384
+#: src/ui/dash/PostForm.tsx:330
 msgid "Select Media"
 msgstr "選擇媒體"
+
+#. @context: Settings section heading for SEO
+#: src/ui/dash/settings/GeneralContent.tsx:482
+msgid "SEO"
+msgstr ""
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
 #: src/ui/dash/settings/AccountContent.tsx:16
-#: src/ui/dash/settings/AppearanceContent.tsx:96
-#: src/ui/dash/settings/GeneralContent.tsx:35
+#: src/ui/dash/settings/AppearanceContent.tsx:101
+#: src/ui/dash/settings/GeneralContent.tsx:151
 #: src/ui/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "設定"
@@ -1010,7 +1035,7 @@ msgstr "顯示 {remainingCount} 個更多 {0}"
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
 #: src/routes/auth/signin.tsx:31
-#: src/routes/auth/signin.tsx:78
+#: src/routes/auth/signin.tsx:92
 msgid "Sign In"
 msgstr "登入"
 
@@ -1021,11 +1046,16 @@ msgstr "登出"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx:72
-msgid "Site Description"
-msgstr "網站描述"
+#~ msgid "Site Description"
+#~ msgstr "網站描述"
+
+#. @context: Settings section heading for site footer
+#: src/ui/dash/settings/GeneralContent.tsx:438
+msgid "Site Footer"
+msgstr ""
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:57
+#: src/ui/dash/settings/GeneralContent.tsx:292
 msgid "Site Name"
 msgstr "網站名稱"
 
@@ -1075,13 +1105,28 @@ msgstr ""
 msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
 
+#. @context: Help text for site description field
+#: src/ui/dash/settings/GeneralContent.tsx:324
+msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
+msgstr ""
+
+#. @context: Help text for site footer field
+#: src/ui/dash/settings/GeneralContent.tsx:458
+msgid "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
+msgstr ""
+
+#. @context: Help text for avatar upload
+#: src/ui/dash/settings/GeneralContent.tsx:238
+msgid "This is used for your favicon."
+msgstr ""
+
 #. @context: Password reset error description
-#: src/routes/auth/reset.tsx:122
+#: src/routes/auth/reset.tsx:128
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密碼重設連結無效或已過期。請生成一個新的連結。"
 
 #. @context: Appearance settings description
-#: src/ui/dash/settings/AppearanceContent.tsx:113
+#: src/ui/dash/settings/AppearanceContent.tsx:175
 msgid "This will theme both your site and your dashboard. All color themes support dark mode."
 msgstr "這將為您的網站和儀表板設置主題。所有顏色主題都支持深色模式。"
 
@@ -1099,6 +1144,11 @@ msgstr "包含 {count} 則帖子的主題"
 #: src/ui/shared/ThreadView.tsx:101
 msgid "Thread with 1 post"
 msgstr "包含 1 則貼文的主題"
+
+#. @context: Settings form field
+#: src/ui/dash/settings/GeneralContent.tsx:393
+msgid "Time Zone"
+msgstr ""
 
 #. @context: Collection form field
 #. @context: Page form field label - title
@@ -1144,7 +1194,7 @@ msgid "Untitled"
 msgstr "無標題"
 
 #. @context: Button to update existing post
-#: src/ui/dash/PostForm.tsx:294
+#: src/ui/dash/PostForm.tsx:308
 msgid "Update"
 msgstr "更新"
 
@@ -1154,7 +1204,7 @@ msgid "Update Collection"
 msgstr "更新收藏集"
 
 #. @context: Button to update existing page
-#: src/ui/dash/PageForm.tsx:153
+#: src/ui/dash/PageForm.tsx:167
 msgid "Update Page"
 msgstr "更新頁面"
 
@@ -1162,6 +1212,11 @@ msgstr "更新頁面"
 #: src/ui/dash/media/MediaListContent.tsx:103
 msgid "Upload"
 msgstr "上傳"
+
+#. @context: Button to upload avatar image
+#: src/ui/dash/settings/GeneralContent.tsx:206
+msgid "Upload Avatar"
+msgstr ""
 
 #. @context: Upload error message
 #: src/ui/dash/media/MediaListContent.tsx:107
@@ -1223,7 +1278,7 @@ msgstr "查看網站"
 #~ msgstr "可見性"
 
 #. @context: Setup page welcome heading
-#: src/routes/auth/setup.tsx:26
+#: src/routes/auth/setup.tsx:27
 msgid "Welcome to Jant"
 msgstr "歡迎來到 Jant"
 
@@ -1245,7 +1300,7 @@ msgid "What's this collection about?"
 msgstr "這個收藏是關於什麼的？"
 
 #. @context: Setup form field - user name
-#: src/routes/auth/setup.tsx:47
+#: src/routes/auth/setup.tsx:49
 msgid "Your Name"
 msgstr "您的姓名"
 

@@ -105,6 +105,33 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  SITE_AVATAR: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  SHOW_HEADER_AVATAR: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  FONT_THEME: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
+  TIME_ZONE: {
+    defaultValue: "UTC",
+    envOnly: false,
+  },
+  SITE_FOOTER: {
+    defaultValue: "",
+    envOnly: false,
+  },
+  NOINDEX: {
+    defaultValue: "",
+    envOnly: false,
+  },
   ONBOARDING_STATUS: {
     defaultValue: "pending",
     envOnly: false,

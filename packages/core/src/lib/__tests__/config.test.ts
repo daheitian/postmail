@@ -2,7 +2,14 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createSettingsService } from "../../services/settings.js";
 import type { Database } from "../../db/index.js";
-import { getConfig, getHomeDefaultView, getConfigFallback } from "../config.js";
+import {
+  getConfig,
+  getHomeDefaultView,
+  getConfigFallback,
+  getTimeZone,
+  getSiteFooter,
+  isNoIndex,
+} from "../config.js";
 import type { Context } from "hono";
 
 function createMockContext(
@@ -83,6 +90,85 @@ describe("getHomeDefaultView", () => {
     const c = createMockContext({ settings: settingsService });
     const result = await getHomeDefaultView(c);
     expect(result).toBe("featured");
+  });
+});
+
+describe("getTimeZone", () => {
+  let db: Database;
+  let settingsService: ReturnType<typeof createSettingsService>;
+
+  beforeEach(() => {
+    const testDb = createTestDatabase();
+    db = testDb.db as unknown as Database;
+    settingsService = createSettingsService(db);
+  });
+
+  it("returns 'UTC' by default", async () => {
+    const c = createMockContext({ settings: settingsService });
+    const result = await getTimeZone(c);
+    expect(result).toBe("UTC");
+  });
+
+  it("returns DB value when set", async () => {
+    await settingsService.set("TIME_ZONE", "Beijing");
+    const c = createMockContext({ settings: settingsService });
+    const result = await getTimeZone(c);
+    expect(result).toBe("Beijing");
+  });
+});
+
+describe("getSiteFooter", () => {
+  let db: Database;
+  let settingsService: ReturnType<typeof createSettingsService>;
+
+  beforeEach(() => {
+    const testDb = createTestDatabase();
+    db = testDb.db as unknown as Database;
+    settingsService = createSettingsService(db);
+  });
+
+  it("returns empty string by default", async () => {
+    const c = createMockContext({ settings: settingsService });
+    const result = await getSiteFooter(c);
+    expect(result).toBe("");
+  });
+
+  it("returns DB value when set", async () => {
+    await settingsService.set("SITE_FOOTER", "**Footer text**");
+    const c = createMockContext({ settings: settingsService });
+    const result = await getSiteFooter(c);
+    expect(result).toBe("**Footer text**");
+  });
+});
+
+describe("isNoIndex", () => {
+  let db: Database;
+  let settingsService: ReturnType<typeof createSettingsService>;
+
+  beforeEach(() => {
+    const testDb = createTestDatabase();
+    db = testDb.db as unknown as Database;
+    settingsService = createSettingsService(db);
+  });
+
+  it("returns false by default", async () => {
+    const c = createMockContext({ settings: settingsService });
+    const result = await isNoIndex(c);
+    expect(result).toBe(false);
+  });
+
+  it("returns true when NOINDEX is set to 'true'", async () => {
+    await settingsService.set("NOINDEX", "true");
+    const c = createMockContext({ settings: settingsService });
+    const result = await isNoIndex(c);
+    expect(result).toBe(true);
+  });
+
+  it("returns false when NOINDEX is set to other value", async () => {
+    await settingsService.set("NOINDEX", "false");
+    const c = createMockContext({ settings: settingsService });
+    const result = await isNoIndex(c);
+    expect(result).toBe(false);
   });
 });
 

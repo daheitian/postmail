@@ -13,10 +13,16 @@ import {
   getSiteLanguage,
   getSiteName,
   getHomeDefaultView,
+  getTimeZone,
+  getSiteFooter,
+  isNoIndex,
   getConfigFallback,
 } from "../../lib/config.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { getAvailableThemes } from "../../lib/theme.js";
+import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
+import { TIMEZONES } from "../../lib/timezones.js";
+import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
 import { GeneralContent } from "../../ui/dash/settings/GeneralContent.js";
 import { AppearanceContent } from "../../ui/dash/settings/AppearanceContent.js";
 import { AccountContent } from "../../ui/dash/settings/AccountContent.js";
@@ -38,18 +44,43 @@ export const settingsRoutes = new Hono<Env>();
 // General settings
 // ===========================================================================
 
+/** Resolve the avatar media ID to a URL */
+async function resolveAvatarUrl(c: {
+  var: { services: AppVariables["services"] };
+  env: Bindings;
+}): Promise<string> {
+  const avatarMediaId = await c.var.services.settings.get("SITE_AVATAR");
+  if (!avatarMediaId) return "";
+  const media = await c.var.services.media.getById(avatarMediaId);
+  if (!media) return "";
+  const publicUrl = getPublicUrlForProvider(
+    media.provider,
+    c.env.R2_PUBLIC_URL,
+    c.env.S3_PUBLIC_URL,
+  );
+  return getMediaUrl(media.id, media.storageKey, publicUrl);
+}
+
 settingsRoutes.get("/", async (c) => {
   const { settings } = c.var.services;
 
   const dbSiteName = await settings.get("SITE_NAME");
   const dbSiteDescription = await settings.get("SITE_DESCRIPTION");
-  const [siteLanguage, homeDefaultView] = await Promise.all([
-    getSiteLanguage(c),
-    getHomeDefaultView(c),
-  ]);
+  const [siteLanguage, homeDefaultView, timeZone, siteFooter, noindex] =
+    await Promise.all([
+      getSiteLanguage(c),
+      getHomeDefaultView(c),
+      getTimeZone(c),
+      getSiteFooter(c),
+      isNoIndex(c),
+    ]);
 
   const siteNameFallback = getConfigFallback(c, "SITE_NAME");
   const siteDescriptionFallback = getConfigFallback(c, "SITE_DESCRIPTION");
+
+  const siteAvatarUrl = await resolveAvatarUrl(c);
+  const showHeaderAvatar =
+    (await settings.get("SHOW_HEADER_AVATAR")) === "true";
 
   const saved = c.req.query("saved") !== undefined;
 
@@ -68,6 +99,12 @@ settingsRoutes.get("/", async (c) => {
         homeDefaultView={homeDefaultView}
         siteNameFallback={siteNameFallback}
         siteDescriptionFallback={siteDescriptionFallback}
+        siteAvatarUrl={siteAvatarUrl}
+        showHeaderAvatar={showHeaderAvatar}
+        timeZone={timeZone}
+        siteFooter={siteFooter}
+        noindex={noindex}
+        timezones={TIMEZONES}
       />
     </DashLayout>,
   );
@@ -79,6 +116,7 @@ settingsRoutes.post("/", async (c) => {
     siteDescription: string;
     siteLanguage: string;
     homeDefaultView: string;
+    timeZone: string;
   }>();
 
   const { settings } = c.var.services;
@@ -106,6 +144,13 @@ settingsRoutes.post("/", async (c) => {
     await settings.remove("HOME_DEFAULT_VIEW");
   }
 
+  // Timezone
+  if (body.timeZone && body.timeZone !== "UTC") {
+    await settings.set("TIME_ZONE", body.timeZone);
+  } else {
+    await settings.remove("TIME_ZONE");
+  }
+
   const languageChanged = oldLanguage !== body.siteLanguage;
   const displayName = body.siteName.trim() || getConfigFallback(c, "SITE_NAME");
 
@@ -122,7 +167,144 @@ settingsRoutes.post("/", async (c) => {
         selector: "title",
       });
       await stream.toast("Settings saved successfully.");
+      await stream.patchSignals({
+        _orig_siteName: body.siteName,
+        _orig_siteDescription: body.siteDescription,
+        _orig_siteLanguage: body.siteLanguage,
+        _orig_homeDefaultView: body.homeDefaultView,
+        _orig_timeZone: body.timeZone,
+        _generalDirty: false,
+      });
     }
+  });
+});
+
+settingsRoutes.post("/footer", async (c) => {
+  const body = await c.req.json<{ siteFooter: string }>();
+  const { settings } = c.var.services;
+
+  if (body.siteFooter?.trim()) {
+    await settings.set("SITE_FOOTER", body.siteFooter.trim());
+  } else {
+    await settings.remove("SITE_FOOTER");
+  }
+
+  return sse(c, async (stream) => {
+    await stream.toast("Footer saved successfully.");
+    await stream.patchSignals({
+      _orig_siteFooter: body.siteFooter,
+      _footerDirty: false,
+    });
+  });
+});
+
+settingsRoutes.post("/seo", async (c) => {
+  const body = await c.req.json<{ noindex: string }>();
+  const { settings } = c.var.services;
+
+  // Checkbox "noindex" is the allow-indexing signal:
+  // checked (value "true") = indexing allowed -> remove NOINDEX
+  // unchecked (value "") = indexing blocked -> set NOINDEX=true
+  if (body.noindex === "true") {
+    await settings.remove("NOINDEX");
+  } else {
+    await settings.set("NOINDEX", "true");
+  }
+
+  return sse(c, async (stream) => {
+    await stream.toast("SEO settings saved successfully.");
+    await stream.patchSignals({
+      _orig_noindex: body.noindex,
+      _seoDirty: false,
+    });
+  });
+});
+
+// ===========================================================================
+// Avatar upload & removal
+// ===========================================================================
+
+settingsRoutes.post("/avatar", async (c) => {
+  const storage = c.var.storage;
+  if (!storage) {
+    return dsToast("Storage not configured.", "error");
+  }
+
+  const formData = await c.req.formData();
+  const file = formData.get("file") as File | null;
+  if (!file) {
+    return dsToast("No file provided.", "error");
+  }
+
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+  ];
+  if (!allowedTypes.includes(file.type)) {
+    return dsToast("File type not allowed.", "error");
+  }
+
+  const maxSize = 10 * 1024 * 1024;
+  if (file.size > maxSize) {
+    return dsToast("File too large (max 10MB).", "error");
+  }
+
+  const { uuidv7 } = await import("uuidv7");
+  const ext = file.name.split(".").pop() || "bin";
+  const id = uuidv7();
+  const date = new Date();
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const filename = `${id}.${ext}`;
+  const storageKey = `media/${year}/${month}/${filename}`;
+
+  try {
+    await storage.put(storageKey, file.stream(), {
+      contentType: file.type,
+    });
+
+    await c.var.services.media.create({
+      id,
+      filename,
+      originalName: file.name,
+      mimeType: file.type,
+      size: file.size,
+      storageKey,
+      provider: c.env.STORAGE_DRIVER || "r2",
+    });
+
+    await c.var.services.settings.set("SITE_AVATAR", id);
+
+    return dsRedirect("/dash/settings?saved");
+  } catch {
+    return dsToast("Upload failed. Please try again.", "error");
+  }
+});
+
+settingsRoutes.post("/avatar/remove", async (c) => {
+  await c.var.services.settings.remove("SITE_AVATAR");
+  return dsRedirect("/dash/settings?saved");
+});
+
+settingsRoutes.post("/avatar/display", async (c) => {
+  const body = await c.req.json<{ showHeaderAvatar: string }>();
+  const { settings } = c.var.services;
+
+  if (body.showHeaderAvatar === "true") {
+    await settings.set("SHOW_HEADER_AVATAR", "true");
+  } else {
+    await settings.remove("SHOW_HEADER_AVATAR");
+  }
+
+  return sse(c, async (stream) => {
+    await stream.toast("Avatar display setting saved successfully.");
+    await stream.patchSignals({
+      _orig_showHeaderAvatar: body.showHeaderAvatar,
+      _avatarDisplayDirty: false,
+    });
   });
 });
 
@@ -134,6 +316,7 @@ settingsRoutes.get("/appearance", async (c) => {
   const { settings } = c.var.services;
   const siteName = await getSiteName(c);
   const currentThemeId = (await settings.get(SETTINGS_KEYS.THEME)) ?? "default";
+  const currentFontThemeId = (await settings.get("FONT_THEME")) ?? "default";
   const customCSS = (await settings.get(SETTINGS_KEYS.CUSTOM_CSS)) ?? "";
   const themes = getAvailableThemes(c.var.config);
   const saved = c.req.query("saved") !== undefined;
@@ -149,6 +332,8 @@ settingsRoutes.get("/appearance", async (c) => {
       <AppearanceContent
         themes={themes}
         currentThemeId={currentThemeId}
+        fontThemes={BUILTIN_FONT_THEMES}
+        currentFontThemeId={currentFontThemeId}
         customCSS={customCSS}
       />
     </DashLayout>,
@@ -169,6 +354,24 @@ settingsRoutes.post("/appearance", async (c) => {
     await settings.remove(SETTINGS_KEYS.THEME);
   } else {
     await settings.set(SETTINGS_KEYS.THEME, validTheme.id);
+  }
+
+  return dsRedirect("/dash/settings/appearance?saved");
+});
+
+settingsRoutes.post("/font-theme", async (c) => {
+  const body = await c.req.json<{ fontTheme: string }>();
+  const { settings } = c.var.services;
+
+  const validFont = BUILTIN_FONT_THEMES.find((f) => f.id === body.fontTheme);
+  if (!validFont) {
+    return dsToast("Invalid font theme selected.", "error");
+  }
+
+  if (validFont.id === "default") {
+    await settings.remove("FONT_THEME");
+  } else {
+    await settings.set("FONT_THEME", validFont.id);
   }
 
   return dsRedirect("/dash/settings/appearance?saved");

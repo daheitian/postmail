@@ -5,9 +5,11 @@
  */
 
 import type { Context } from "hono";
-import { getSiteName, getHomeDefaultView } from "./config.js";
+import { getSiteName, getHomeDefaultView, getSiteFooter } from "./config.js";
 import type { Collection, NavItemView } from "../types.js";
 import { toNavItemViews } from "./view.js";
+import { getMediaUrl, getPublicUrlForProvider } from "./image.js";
+import { render as renderMarkdown } from "./markdown.js";
 
 /**
  * Navigation data needed by SiteLayout
@@ -20,6 +22,9 @@ export interface NavigationData {
   isAuthenticated: boolean;
   collections: Collection[];
   homeDefaultView: string;
+  siteAvatarUrl?: string;
+  showHeaderAvatar?: boolean;
+  siteFooterHtml?: string;
 }
 
 /**
@@ -44,9 +49,10 @@ export interface NavigationData {
 export async function getNavigationData(c: Context): Promise<NavigationData> {
   const items = await c.var.services.navItems.list();
   const currentPath = new URL(c.req.url).pathname;
-  const [siteName, homeDefaultView] = await Promise.all([
+  const [siteName, homeDefaultView, siteFooter] = await Promise.all([
     getSiteName(c),
     getHomeDefaultView(c),
+    getSiteFooter(c),
   ]);
 
   // Only include description if explicitly set (DB or env), not the default
@@ -54,6 +60,26 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   const envDescription = c.env.SITE_DESCRIPTION;
   const siteDescription =
     dbDescription || (typeof envDescription === "string" ? envDescription : "");
+
+  // Resolve avatar URL
+  const avatarMediaId = await c.var.services.settings.get("SITE_AVATAR");
+  const showHeaderAvatar =
+    (await c.var.services.settings.get("SHOW_HEADER_AVATAR")) === "true";
+  let siteAvatarUrl: string | undefined;
+  if (avatarMediaId) {
+    const media = await c.var.services.media.getById(avatarMediaId);
+    if (media) {
+      const publicUrl = getPublicUrlForProvider(
+        media.provider,
+        c.env.R2_PUBLIC_URL,
+        c.env.S3_PUBLIC_URL,
+      );
+      siteAvatarUrl = getMediaUrl(media.id, media.storageKey, publicUrl);
+    }
+  }
+
+  // Render footer markdown
+  const siteFooterHtml = siteFooter ? renderMarkdown(siteFooter) : undefined;
 
   const links = toNavItemViews(items, currentPath);
 
@@ -84,5 +110,8 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
     isAuthenticated,
     collections,
     homeDefaultView,
+    siteAvatarUrl,
+    showHeaderAvatar: showHeaderAvatar && !!siteAvatarUrl,
+    siteFooterHtml,
   };
 }

@@ -319,34 +319,53 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
                 <button
                   type="button"
                   class="btn-outline text-sm"
-                  data-attr-disabled="$_composeLoading"
+                  data-attr:disabled="$_composeLoading"
                   data-on:click="$status = 'draft'; document.querySelector('#compose-dialog form').requestSubmit()"
                 >
-                  <span data-show="!$_composeLoading">
-                    {t({
-                      message: "Draft",
-                      comment: "@context: Compose button - save as draft",
-                    })}
-                  </span>
-                  <span data-show="$_composeLoading">...</span>
+                  <svg
+                    data-show="$_composeLoading"
+                    style="display:none"
+                    class="animate-spin size-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    role="status"
+                  >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                  {t({
+                    message: "Draft",
+                    comment: "@context: Compose button - save as draft",
+                  })}
                 </button>
                 <button
                   type="submit"
                   class="btn text-sm"
-                  data-attr-disabled="$_composeLoading"
+                  data-attr:disabled="$_composeLoading"
                 >
-                  <span data-show="!$_composeLoading">
-                    {t({
-                      message: "Post",
-                      comment: "@context: Compose button - publish post",
-                    })}
-                  </span>
-                  <span data-show="$_composeLoading">
-                    {t({
-                      message: "Posting...",
-                      comment: "@context: Compose loading text while posting",
-                    })}
-                  </span>
+                  <svg
+                    data-show="$_composeLoading"
+                    style="display:none"
+                    class="animate-spin size-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    role="status"
+                  >
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                  {t({
+                    message: "Post",
+                    comment: "@context: Compose button - publish post",
+                  })}
                 </button>
               </div>
             </div>

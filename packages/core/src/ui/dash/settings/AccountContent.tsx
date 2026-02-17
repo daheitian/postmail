@@ -53,21 +53,27 @@ export function AccountContent({ userName }: { userName: string }) {
           <button
             type="submit"
             class="btn mt-4"
-            data-attr-disabled="$_profileLoading"
+            data-attr:disabled="$_profileLoading"
           >
-            <span data-show="!$_profileLoading">
-              {t({
-                message: "Save Profile",
-                comment: "@context: Button to save profile",
-              })}
-            </span>
-            <span data-show="$_profileLoading">
-              {t({
-                message: "Processing...",
-                comment:
-                  "@context: Loading text shown on submit button while request is in progress",
-              })}
-            </span>
+            <svg
+              data-show="$_profileLoading"
+              style="display:none"
+              class="animate-spin size-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              role="status"
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+            {t({
+              message: "Save Profile",
+              comment: "@context: Button to save profile",
+            })}
           </button>
         </form>
 
@@ -141,21 +147,27 @@ export function AccountContent({ userName }: { userName: string }) {
           <button
             type="submit"
             class="btn mt-4"
-            data-attr-disabled="$_passwordLoading"
+            data-attr:disabled="$_passwordLoading"
           >
-            <span data-show="!$_passwordLoading">
-              {t({
-                message: "Change Password",
-                comment: "@context: Button to change password",
-              })}
-            </span>
-            <span data-show="$_passwordLoading">
-              {t({
-                message: "Processing...",
-                comment:
-                  "@context: Loading text shown on submit button while request is in progress",
-              })}
-            </span>
+            <svg
+              data-show="$_passwordLoading"
+              style="display:none"
+              class="animate-spin size-4"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              role="status"
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+            {t({
+              message: "Change Password",
+              comment: "@context: Button to change password",
+            })}
           </button>
         </form>
       </div>

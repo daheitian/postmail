@@ -56,6 +56,8 @@ import { requireOnboarding } from "./middleware/onboarding.js";
 
 import { getAvailableThemes, buildThemeStyle } from "./lib/theme.js";
 import { createStorageDriver, type StorageDriver } from "./lib/storage.js";
+import { BUILTIN_FONT_THEMES } from "./ui/font-themes.js";
+import { getMediaUrl, getPublicUrlForProvider } from "./lib/image.js";
 
 // Extend Hono's context variables
 export interface AppVariables {
@@ -66,6 +68,8 @@ export interface AppVariables {
   customCSS: string;
   isAuthenticated: boolean;
   storage: StorageDriver | null;
+  faviconUrl?: string;
+  noindex?: boolean;
 }
 
 export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
@@ -129,22 +133,52 @@ export function createApp(config: JantConfig = {}): App {
   // Onboarding gate — redirect to /setup if not yet initialized
   app.use("*", requireOnboarding());
 
-  // Theme middleware - resolve active color theme, custom CSS, and auth state
+  // Theme middleware - resolve active color theme, font theme, custom CSS, and auth state
   app.use("*", async (c, next) => {
-    const [themeId, customCSS] = await Promise.all([
-      c.var.services.settings.get(SETTINGS_KEYS.THEME),
-      c.var.services.settings.get(SETTINGS_KEYS.CUSTOM_CSS),
-    ]);
+    const [themeId, fontThemeId, customCSS, noindexValue, avatarMediaId] =
+      await Promise.all([
+        c.var.services.settings.get(SETTINGS_KEYS.THEME),
+        c.var.services.settings.get("FONT_THEME"),
+        c.var.services.settings.get(SETTINGS_KEYS.CUSTOM_CSS),
+        c.var.services.settings.get("NOINDEX"),
+        c.var.services.settings.get("SITE_AVATAR"),
+      ]);
     const themes = getAvailableThemes(resolvedConfig);
     const activeTheme = themeId
       ? themes.find((t) => t.id === themeId)
       : undefined;
-    const themeStyle = buildThemeStyle(
-      activeTheme,
-      resolvedConfig.cssVariables,
-    );
+
+    // Build font override CSS variables
+    const fontTheme = fontThemeId
+      ? BUILTIN_FONT_THEMES.find((f) => f.id === fontThemeId)
+      : undefined;
+    const fontOverrides: Record<string, string> = {};
+    if (fontTheme) {
+      fontOverrides["--font-body"] = fontTheme.fontFamily;
+    }
+
+    const themeStyle = buildThemeStyle(activeTheme, {
+      ...resolvedConfig.cssVariables,
+      ...fontOverrides,
+    });
     c.set("themeStyle", themeStyle);
     c.set("customCSS", customCSS ?? "");
+
+    // Noindex
+    c.set("noindex", noindexValue === "true");
+
+    // Resolve favicon from avatar media
+    if (avatarMediaId) {
+      const media = await c.var.services.media.getById(avatarMediaId);
+      if (media) {
+        const publicUrl = getPublicUrlForProvider(
+          media.provider,
+          c.env.R2_PUBLIC_URL,
+          c.env.S3_PUBLIC_URL,
+        );
+        c.set("faviconUrl", getMediaUrl(media.id, media.storageKey, publicUrl));
+      }
+    }
 
     // Check auth state for data-authenticated attribute on <body>
     let isAuthenticated = false;

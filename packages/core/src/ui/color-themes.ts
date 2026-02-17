@@ -232,7 +232,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     preview: {
       lightBg: "#f9f2e3",
       lightText: "#352200",
-      lightLink: "#cc5500",
+      lightLink: "#b84400",
       darkBg: "#1e1000",
       darkText: "#dfc390",
       darkLink: "#ff8c00",
@@ -240,7 +240,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.97 0.015 75)",
       fg: "oklch(0.25 0.04 55)",
-      primary: "oklch(0.6 0.2 50)",
+      primary: "oklch(0.47 0.17 50)",
       primaryFg: "oklch(0.98 0.01 75)",
       muted: "oklch(0.93 0.02 75)",
       mutedFg: "oklch(0.5 0.025 55)",
@@ -294,7 +294,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     preview: {
       lightBg: "#f7eef5",
       lightText: "#2e1e2c",
-      lightLink: "#9845c8",
+      lightLink: "#7a30a8",
       darkBg: "#1d1428",
       darkText: "#d4c2d0",
       darkLink: "#c080fc",
@@ -302,7 +302,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.97 0.012 325)",
       fg: "oklch(0.25 0.02 310)",
-      primary: "oklch(0.55 0.2 300)",
+      primary: "oklch(0.45 0.2 300)",
       primaryFg: "oklch(0.98 0.008 325)",
       muted: "oklch(0.93 0.016 325)",
       mutedFg: "oklch(0.52 0.015 310)",

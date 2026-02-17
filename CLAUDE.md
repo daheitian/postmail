@@ -1,324 +1,154 @@
 # Jant - Development Guide
 
-> See CONTRIBUTING.md for the human-readable contributor guide.
-
-## Development Principles
-
-**Core Principle: Simplicity and Best Practices**
-
-This is an open source project. Code quality and maintainability are paramount.
-
-1. **Best practices first, not minimal changes**
-   - Always design and implement according to industry best practices, not the path of least resistance
-   - Reference how established platforms (Bluesky, Mastodon, etc.) solve similar problems
-   - Prefer standard tools and patterns from the ecosystem
-   - Use established libraries correctly - don't reinvent the wheel
-   - Follow official documentation and community standards
-   - This project is early-stage — get the foundations right now rather than accumulating tech debt
-
-2. **Keep code simple and readable**
-   - Simple code > clever code
-   - Clear intent > maximum abstraction
-   - Rethink overly complex solutions
-
-3. **Avoid unnecessary abstraction**
-   - Use standard tools instead of custom scripts
-   - Use library features as intended
-   - Question solutions that require "working around" tools
-
-4. **Reuse and compose**
-   - Extract components when patterns repeat 3+ times
-   - Compose from small, focused components
-   - Keep components single-purpose and well-documented
-
-5. **Vite for everything**
-   - **Development**: `vite dev` (NOT `wrangler dev`)
-   - **Build**: `vite build` (NOT custom scripts)
-   - **Preview**: `vite preview`
-   - @cloudflare/vite-plugin handles Cloudflare Workers integration
-
 ## Critical Rules
 
 - **BaseCoat components first**: Use BaseCoat semantic CSS classes (`.alert`, `.btn`, `.badge`, `.card`, `.input`, `.field`) instead of manually composing Tailwind utilities. Use Tailwind only for layout (flex, grid, gap), spacing (p, m), and typography (text-size, font-weight) not covered by BaseCoat. See `references/basecoat/` for available components.
+- **BaseCoat button variants are standalone classes**: Each variant (`.btn-outline`, `.btn-secondary`, `.btn-ghost`, `.btn-destructive`, `.btn-link`) is a complete, self-contained class. NEVER combine them with `.btn` (e.g., `class="btn btn-outline"` is WRONG). Use `class="btn-outline"` directly. The `.btn` class alone means the primary variant.
 - **Node.js version: 24** - Always use Node 24 LTS. Do NOT use older versions (20, 22).
-- **Verify before changing**: Never assume CLI flags, API options, or library interfaces exist based on training data. Always run `--help`, check docs, or test the command BEFORE making changes. Training data may be outdated or incorrect.
+- **Tests are required**: Every new feature, bug fix, or logic change MUST include corresponding tests. Run `mise run test` before considering any task complete.
+- **Verify before changing**: Never assume CLI flags, API options, or library interfaces exist based on training data. Always run `--help`, check docs, or test the command BEFORE making changes.
 - **Latest package versions**: Always use `@latest` when installing. Do NOT use outdated versions from training data.
+- **Vite for everything**: Use `vite dev` / `vite build` / `vite preview`. NEVER run `wrangler dev` or custom build scripts. @cloudflare/vite-plugin handles Workers integration.
 - **Use mise tasks**: Wrap all dev commands in mise. Never require `cd` - use `dir` parameter.
-- **Manual workflow triggers**: Always add `workflow_dispatch:` to GitHub Actions.
-- **Stop dev after debugging**: Stop background processes when done so user can restart manually.
-- **Debug port**: Use `mise run dev-debug` (port 19019) for testing, leaving 9019 free.
+- **NEVER edit `packages/create-jant/template/` directly**: Auto-generated from `templates/jant-site` during publish. Use `@create-jant` markers for monorepo vs. user project differences.
 - **NO auto-publishing**: Do NOT run publish commands. User handles releases via `mise run version` and `mise run release`.
-- **NEVER edit `packages/create-jant/template/` directly**: This directory is auto-generated from `templates/jant-site` during publish. Edit `templates/jant-site` and use `@create-jant` markers for monorepo vs. user project differences. See Package Architecture section for details.
-- **Tests are required**: Every new feature, bug fix, or logic change MUST include corresponding tests. Run `mise run test` before considering any task complete. See the Testing section for conventions.
+- **Debug port**: Use `mise run dev-debug` (port 19019) for testing, leaving 9019 free.
+- **Stop dev after debugging**: Stop background processes when done so user can restart manually.
+- **Manual workflow triggers**: Always add `workflow_dispatch:` to GitHub Actions.
 
-## Quick Reference
+## Commands
 
 ```bash
 # Development
-mise run dev          # Start Vite dev server (auto-runs migrations first)
-mise run dev-debug    # Start dev server on port 19019 (for Claude debugging)
-mise run typecheck    # Run TypeScript checks (strict mode)
-mise run lint         # Run ESLint
-mise run format       # Format code with Prettier
+mise run dev                # Start dev server (auto-runs migrations)
+mise run dev-debug          # Dev server on port 19019 (for Claude debugging)
+mise run typecheck
+mise run lint
+mise run format
 
 # Testing
-mise run test           # Run all tests (must pass before committing)
-mise run test:watch     # Run tests in watch mode during development
-mise run test:coverage  # Run tests with coverage report
+mise run test
+mise run test:watch
+mise run test:coverage
 
 # Build & Deploy
-mise run build        # Build with Vite
-mise run deploy       # Build + deploy to Cloudflare Workers
-mise run preview      # Preview production build with Vite
+mise run build
+mise run deploy
+mise run preview
 
 # Database
-mise run db-generate  # Generate Drizzle migrations
-mise run db-migrate   # Apply migrations (local D1) - usually not needed, dev auto-runs this
-mise run db-export    # Export current local D1 data to seed-local.sql
-mise run db-seed      # Reset local database and load dev seed data
+mise run db-generate        # Generate Drizzle migrations
+mise run db-migrate         # Apply migrations (dev auto-runs this)
+mise run db-export
+mise run db-seed
+mise run db-clean
+mise run db-reset
 
 # Demo
-mise run demo-export  # Export demo database to scripts/seed-demo.sql
-mise run demo-seed    # Push local seed data to demo (excluding media)
-mise run demo-reset   # Reset demo.jant.me data (clear + reseed)
+mise run demo-export
+mise run demo-seed
+mise run demo-reset
 
-# i18n (auto-handled by pre-commit hook for extraction/compilation)
-mise run i18n         # Extract + AI translate + compile (needs OPENAI_API_KEY)
-mise run i18n-extract # Extract messages from source (manual)
-mise run i18n-compile # Compile PO files to JS (manual)
-mise run translate    # Auto-translate using AI (needs OPENAI_API_KEY)
+# i18n (pre-commit hook auto-handles extraction/compilation)
+mise run i18n               # Extract + AI translate + compile
+mise run i18n-extract
+mise run i18n-compile
+mise run translate          # AI translate (needs OPENAI_API_KEY)
 
-# Release (Changesets)
-mise run changeset    # Create a changeset for your changes
-mise run cs:status    # Check pending changesets
-mise run version      # Apply changesets (bump versions)
-mise run release      # Publish packages to npm
-mise run release:dry  # Dry run publish
-
-# First-time Publish (manual, before Trusted Publishing)
-mise run publish:core   # Publish @jant/core to npm
-mise run publish:create # Publish create-jant to npm
+# Release (Changesets) - see docs/RELEASING.md
+mise run changeset
+mise run cs:status
+mise run version
+mise run release
+mise run release:dry
 
 # Utilities
-mise run clean          # Clean build artifacts (dist, .wrangler)
-mise run nuke           # Remove node_modules and reinstall
-mise run fresh          # Nuclear reset - delete everything and start fresh
-mise run db-clean       # Delete local D1 database (.wrangler)
-mise run db-reset       # Delete database and re-run migrations
-mise run reset-password # Generate password reset link (local)
-```
-
-**Important Notes:**
-
-- **`mise run dev` auto-runs migrations** - You don't need to manually run `db-migrate` before starting development
-- **`mise run fresh` for fresh start** - After running this, just do `mise run dev` (migrations included)
-- **Database is auto-migrated** - Both `dev` and `dev-debug` run migrations before starting the server
-
-## Package Architecture
-
-**Core principle: `packages/core` is a pure library - NOT for direct development or deployment.**
-
-| Package                         | Purpose                                 | Has Vite/Wrangler? |
-| ------------------------------- | --------------------------------------- | ------------------ |
-| `packages/core`                 | Pure library - exports components/utils | ❌ No              |
-| `templates/jant-site`           | Development + testing + deployment      | ✅ Yes             |
-| `packages/create-jant/template` | User project starter template           | ✅ Yes             |
-
-- `packages/core`: Source, build config, DB migrations, i18n. No vite.config.ts or wrangler.toml.
-- `templates/jant-site`: Monorepo dev/test environment. Has `@jant/core` alias in vite.config.ts for HMR.
-- `packages/create-jant/template`: **Auto-generated** from `templates/jant-site` during publish. NEVER edit directly.
-
-**Monorepo vs. user project differences** — use `@create-jant` markers in `templates/jant-site`:
-
-```toml
-# Line removal
-account_id = "abc123" # @create-jant: @remove
-
-# Value replacement (with template interpolation)
-name = "jant-site" # @create-jant: "${name}"
-
-# Block removal (works with // or # comments)
-// @create-jant: @remove-start
-"@jant/core": resolve(__dirname, "../../packages/core/src"),
-// @create-jant: @remove-end
+mise run clean
+mise run nuke               # Remove node_modules and reinstall
+mise run fresh              # Nuclear reset - delete everything and start fresh
+mise run reset-password
 ```
 
 ## Project Structure
 
 ```
-packages/core/              # Library (@jant/core)
+packages/core/              # Library (@jant/core) - pure library, no vite/wrangler config
 ├── src/
-│   ├── index.ts           # Entry point (exports createApp)
-│   ├── preset.css         # CSS preset (basecoat + @source auto-scan)
-│   ├── app.tsx            # Hono app factory
-│   ├── types.ts           # Single source of truth for types
-│   ├── db/                # Drizzle schema & migrations
-│   ├── services/          # Business logic (service layer)
-│   ├── routes/            # Route handlers (xxxRoutes naming)
-│   ├── ui/                # UI (components, layouts, pages, feed)
-│   │   ├── layouts/       # BaseLayout, SiteLayout, DashLayout
-│   │   ├── pages/         # Public page components (Home, Post, Archive, etc.)
-│   │   ├── feed/          # Timeline feed components (NoteCard, LinkCard, etc.)
-│   │   ├── compose/       # Compose dialog + prompt
-│   │   ├── dash/          # Dashboard components (forms, lists, badges)
-│   │   ├── shared/        # Cross-cutting (Pagination, EmptyState, etc.)
-│   │   └── color-themes.ts
-│   ├── styles/            # CSS design tokens + component styles
-│   │   ├── tokens.css     # Design tokens (CSS custom properties)
-│   │   └── ui.css         # Component styles
-│   ├── lib/               # Utilities (100% JSDoc documented)
-│   ├── i18n/              # Internationalization
-│   └── middleware/        # Hono middleware
+│   ├── index.ts            # Entry point (exports createApp)
+│   ├── app.tsx             # Hono app factory
+│   ├── types.ts            # Single source of truth for types
+│   ├── db/                 # Drizzle schema & migrations
+│   ├── services/           # Business logic (service layer)
+│   ├── routes/             # Route handlers (xxxRoutes naming)
+│   ├── ui/                 # Components, layouts, pages, feed
+│   ├── styles/             # CSS tokens (tokens.css) + component styles (ui.css)
+│   ├── lib/                # Utilities (100% JSDoc documented)
+│   ├── i18n/               # Internationalization
+│   └── middleware/         # Hono middleware
 
-templates/jant-site/        # Development + demo site
-├── src/
-│   ├── style.css          # CSS entry (@import)
-│   ├── client.ts          # Client JS entry
-│   └── index.ts           # App entry
-├── vite.config.ts         # Vite config (monorepo alias)
-└── wrangler.toml          # Cloudflare config
-
-packages/create-jant/       # CLI scaffolding
-└── template/              # User project template (no alias)
+templates/jant-site/        # Development + demo site (has vite.config.ts + wrangler.toml)
+packages/create-jant/       # CLI scaffolding (template/ is auto-generated, never edit)
 ```
 
 ## Tech Stack
 
-- **Runtime**: Cloudflare Workers
-- **Framework**: Hono (v4)
-- **Build**: Vite + SWC + @cloudflare/vite-plugin
-- **CSS**: Tailwind CSS v4 (@tailwindcss/vite) + BaseCoat
-- **Database**: D1 + Drizzle ORM
-- **Auth**: better-auth
-- **i18n**: @lingui/core + @lingui/swc-plugin (macros)
-- **Interactions**: Datastar v1.0.0-RC.7 (vendored in `src/vendor/datastar.js`)
-- **Code Quality**: ESLint + Prettier + husky + lint-staged
-- **Validation**: Zod
+- **Runtime**: Cloudflare Workers | **Framework**: Hono (v4) | **Build**: Vite + SWC + @cloudflare/vite-plugin
+- **CSS**: Tailwind CSS v4 + BaseCoat | **Database**: D1 + Drizzle ORM | **Auth**: better-auth
+- **i18n**: @lingui/core + @lingui/swc-plugin | **Interactions**: Datastar v1.0.0-RC.7 (vendored)
+- **Validation**: Zod | **Code Quality**: ESLint + Prettier + husky + lint-staged
 
-### Build & CSS
+## Architecture
 
-- **All workflows use Vite** — never run `wrangler dev` or custom build scripts.
-- `vite build` → Worker code to `dist/jant/`, client assets to `dist/client/`
-- **CSS**: `@jant/core/preset.css` uses `@source "./"` to auto-scan core package for Tailwind v4 (which ignores `node_modules` by default). `@source` resolves relative to CSS file location — works in both monorepo and npm installs. No `tailwind.config.ts` needed.
+### Type System
 
-## Architecture Conventions
-
-### 1. Type System
-
-**Single Source of Truth: `types.ts`**
-
-- All type definitions live in `types.ts`
+- All type definitions live in `types.ts` (single source of truth)
 - Use `const` assertions for enums: `POST_TYPES = [...] as const`
 - Export derived types: `type PostType = (typeof POST_TYPES)[number]`
+- Zod schemas in `lib/schemas.ts` import constants from `types.ts` for runtime validation
 
-**Validation: `lib/schemas.ts`**
+### Routes
 
-- Zod schemas import constants from `types.ts`
-- Used only for runtime validation (forms, API requests)
-- Example: `PostTypeSchema = z.enum(POST_TYPES)`
+- Use `xxxRoutes` suffix: `postsRoutes`, `homeRoutes`, `dashIndexRoutes`
 
-### 2. Route Naming
+### Service Layer
 
-**Convention: Use `xxxRoutes` suffix consistently**
+- All database operations go through `src/services/`
+- Services are stateless and accept database connection
 
-```typescript
-// ✅ Correct
-export const postsRoutes = new Hono<Env>();
-export const homeRoutes = new Hono<Env>();
-export const dashIndexRoutes = new Hono<Env>();
+### Package Architecture
 
-// ❌ Incorrect (inconsistent)
-export const postRoute = new Hono<Env>();
-export const homeroute = new Hono<Env>();
+- `packages/core`: Pure library - NOT for direct development or deployment
+- `templates/jant-site`: Monorepo dev/test environment with `@jant/core` alias for HMR
+- `packages/create-jant/template`: Auto-generated from `templates/jant-site` during publish
+
+**`@create-jant` markers** in `templates/jant-site`:
+
+```toml
+account_id = "abc123" # @create-jant: @remove
+name = "jant-site" # @create-jant: "${name}"
+// @create-jant: @remove-start
+"@jant/core": resolve(__dirname, "../../packages/core/src"),
+// @create-jant: @remove-end
 ```
 
-### 3. Service Layer
-
-- All database operations go through services
-- Services are stateless and accept database connection
-- Located in `src/services/`
-- Export both service functions and types
-
-### 4. Component Reuse
-
-**When to extract a component:**
-
-- Pattern repeats 3+ times across files
-- Component has single, clear responsibility
-- Benefits code consistency and maintenance
-
-**Component guidelines:**
-
-- Use TypeScript interfaces for props
-- Add JSDoc comments for complex components
-- Export both component and prop types
-- Keep components focused and composable
-
-### 5. Utility Functions
-
-- Located in `src/lib/`
-- **100% JSDoc documentation coverage**
-- Include `@param`, `@returns`, and `@example` tags
-- Pure functions when possible
-- Thorough TypeScript typing
-
-## Code Quality Standards
+### Code Quality
 
 - **TypeScript**: Strict mode, no `any` types, all exports typed
 - **ESLint**: Zero warnings policy
-- **Prettier**: Auto-format via pre-commit hook (husky + lint-staged runs ESLint --fix + Prettier --write)
-- **i18n auto-sync**: Pre-commit hook auto-runs `i18n:build` when `.ts`/`.tsx` files are staged, preventing stale hash IDs
+- **Prettier**: Auto-format via pre-commit hook
+- **i18n auto-sync**: Pre-commit hook auto-runs `i18n:build` when `.ts`/`.tsx` files are staged
 
 ## Testing
 
-**Core Rule: Every change must include tests. No exceptions.**
+**Every change must include tests. No exceptions.**
 
-When implementing a new feature, fixing a bug, or changing business logic, you MUST write tests for it. Run `mise run test` to verify all tests pass before finishing.
+### Framework & Helpers
 
-### Test Framework
-
-- **Vitest** (v4) — configured in `packages/core/vitest.config.ts`
-- **better-sqlite3** — in-memory SQLite for service integration tests (matches D1 in production)
-
-### Test Structure (colocated `__tests__/` directories)
-
-```
-packages/core/src/
-├── lib/
-│   ├── time.ts
-│   └── __tests__/
-│       └── time.test.ts          ← unit tests next to source
-├── services/
-│   ├── post.ts
-│   └── __tests__/
-│       └── post.test.ts          ← service integration tests
-├── routes/api/
-│   ├── posts.ts
-│   └── __tests__/
-│       └── posts.test.ts         ← route handler tests
-├── middleware/
-│   ├── auth.ts
-│   └── __tests__/
-│       └── auth.test.ts          ← middleware tests
-└── __tests__/helpers/
-    ├── db.ts                     ← in-memory SQLite with migrations
-    └── app.ts                    ← test Hono app with mock services/auth
-```
-
-### What to test for each layer
-
-| Layer                 | What to test                                            | Test helper                 |
-| --------------------- | ------------------------------------------------------- | --------------------------- |
-| `lib/` pure functions | Input/output, edge cases, boundary values               | None needed                 |
-| `lib/schemas.ts` Zod  | Valid inputs, invalid inputs, error messages            | None needed                 |
-| `services/`           | CRUD operations, business logic, relationships          | `createTestDatabase()`      |
-| `routes/api/`         | HTTP status codes, request validation, auth enforcement | `createTestApp()`           |
-| `middleware/`         | Auth redirect/401 behavior, error handling              | Direct Hono `app.request()` |
-
-### Test helpers
+- **Vitest** (v4) - configured in `packages/core/vitest.config.ts`
+- **better-sqlite3** - in-memory SQLite for service integration tests
 
 ```typescript
-// In-memory SQLite database for service tests
+// In-memory database for service tests
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 const { db } = createTestDatabase(); // without FTS
 const { db } = createTestDatabase({ fts: true }); // with FTS5 for search tests
@@ -330,15 +160,21 @@ app.route("/api/posts", postsApiRoutes);
 const res = await app.request("/api/posts");
 ```
 
+### What to Test
+
+- **`lib/` functions**: Input/output, edge cases, boundary values
+- **`services/`**: CRUD operations, business logic, relationships (use `createTestDatabase()`)
+- **`routes/api/`**: HTTP status codes, request validation, auth enforcement (use `createTestApp()`)
+- **`middleware/`**: Auth redirect/401 behavior, error handling
+
 ### Rules
 
-1. **Every new service method** → add tests covering happy path, edge cases, and error cases
-2. **Every new API endpoint** → test status codes, validation errors, and auth enforcement
-3. **Every new lib function** → test with valid inputs, invalid inputs, and edge cases
-4. **Each test gets a fresh database** — use `beforeEach` with `createTestDatabase()` for isolation
-5. **Don't test third-party libraries** — don't write tests for better-auth internals, Drizzle ORM, etc.
-6. **Don't test JSX rendering** — no DOM testing, focus on logic
-7. **Run tests before finishing** — `mise run test` must pass
+1. Each test gets a fresh database - use `beforeEach` with `createTestDatabase()` for isolation
+2. Don't test third-party libraries (better-auth internals, Drizzle ORM, etc.)
+3. Don't test JSX rendering - no DOM testing, focus on logic
+4. Tests are colocated in `__tests__/` directories next to source files
+5. Shared test helpers live in `src/__tests__/helpers/`
+6. Run `mise run test` before finishing any task
 
 ## Internationalization (i18n)
 
@@ -348,367 +184,72 @@ const { t } = useLingui();
 return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
 ```
 
-**Language Detection**: Site-wide setting from database (`settings.SITE_LANGUAGE`), defaults to "en". NOT per-user - all visitors see the same language.
+- All user-facing strings use `t()`, always include `comment` with `@context:` prefix
+- Site-wide language setting from database (`settings.SITE_LANGUAGE`), defaults to "en" - NOT per-user
+- **Workflow**: Add `t()` -> commit -> pre-commit hook auto-runs extract + compile. Manual `mise run i18n` only needed for AI translation.
+- **DO NOT change `@lingui/react/macro` to `@lingui/macro`** in source - the SWC plugin rewrites `@lingui/react/macro` imports to `@jant/core/i18n` at build time. This is intentional because Lingui's SWC plugin only recognizes `@lingui/react/macro`. See `src/i18n/README.md` for details.
 
-**Rules**: All user-facing strings use `t()`, always include `comment` with `@context:` prefix.
+## Datastar
 
-**Workflow**: Add `t()` → commit → pre-commit hook auto-runs extract + compile and stages locale files. Manual `mise run i18n` is only needed for AI translation (`mise run translate`).
-
-### Lingui + Hono JSX Integration (IMPORTANT)
-
-**Why source code uses `@lingui/react/macro` (even though we don't use React):**
-
-Jant uses **Hono JSX** (not React), but Lingui's SWC plugin only recognizes imports from `@lingui/react/macro` and `@lingui/macro`. We use a clever workaround:
-
-```typescript
-// Source code (what Lingui SWC plugin sees)
-import { useLingui } from "@lingui/react/macro";
-
-// ↓ SWC compiles and rewrites imports ↓
-
-// Runtime code (what actually executes)
-import { useLingui } from "@jant/core/i18n";
-```
-
-**How it works:**
-
-```typescript
-// vite.config.ts / .swcrc
-{
-  plugins: [
-    [
-      "@lingui/swc-plugin",
-      {
-        runtimeModules: {
-          useLingui: ["@jant/core/i18n", "useLingui"], // Rewrite import path
-          trans: ["@jant/core/i18n", "Trans"],
-        },
-      },
-    ],
-  ];
-}
-```
-
-**Vite configuration:**
-
-```typescript
-// Exclude @lingui/react from Vite's dependency scanner
-optimizeDeps: {
-  exclude: ['@lingui/react'],
-}
-```
-
-**DO NOT change `@lingui/react/macro` to `@lingui/macro`** - the SWC rewrite is intentional.
-
-See `src/i18n/README.md` for details.
-
-## Datastar Usage
-
-**Version: v1.0.0-RC.7** (vendored in `src/vendor/datastar.js`). See `references/datastar/` for full docs.
-
-### Core Concepts
-
-- **Signals**: `data-signals="{title: '', _loading: false}"` (use `_` prefix for private)
-- **Binding**: `data-bind="title"` for two-way form binding
-- **Actions**: `data-on:submit__prevent="@post('/url')"` for server communication
-- **Display**: `data-show="$_loading"` for conditional rendering
-- **Expressions only**: Use `x && fn()` not `if (x) fn()` in attributes
-
-### Form Pattern
-
-**Every form with `@post`/`@put`/`@patch`/`@delete` MUST have a loading state.** Use Datastar's built-in `data-indicator` to automatically track request state:
-
-```tsx
-<form
-  data-signals={JSON.stringify({ title: "" })}
-  data-on:submit__prevent="@post('/dash/posts')"
-  data-indicator="_loading"
-  class="flex flex-col gap-4"
->
-  <input data-bind="title" class="input" />
-  <div id="form-message"></div>
-  <button type="submit" class="btn" data-attr-disabled="$_loading">
-    <span data-show="!$_loading">Save</span>
-    <span data-show="$_loading">Processing...</span>
-  </button>
-</form>
-```
-
-**How it works:**
-
-- `data-indicator="_loading"` on the form: automatically sets `_loading` to `true` when `@post` starts, `false` when finished
-- `data-attr-disabled="$_loading"` on the button: prevents double-submission
-- Two `<span>` with `data-show`: toggles between normal label and loading text
-- Use `_` prefix so the loading signal is private (not sent to server)
-
-**Multiple forms on same page:** Use unique signal names to avoid conflicts (e.g., `_profileLoading`, `_passwordLoading`).
-
-### Server Response
-
-**Default: Use non-SSE helpers** for single-operation responses (most cases):
-
-```typescript
-import { dsRedirect, dsToast, dsSignals } from "@/lib/sse";
-
-// Redirect (Datastar detects text/html → patch-elements)
-return dsRedirect("/dash/posts");
-
-// Redirect with cookie forwarding (e.g. auth)
-return dsRedirect("/dash", { headers: { "Set-Cookie": cookie } });
-
-// Toast notification
-return dsToast("Settings saved successfully.");
-return dsToast("Something went wrong.", "error");
-
-// Signal patch (Datastar detects application/json → patch-signals)
-return dsSignals({ _uploadError: "File too large" });
-```
-
-**SSE: Only when you need multiple operations** in one response:
-
-```typescript
-import { sse } from "@/lib/sse";
-
-return sse(c, async (stream) => {
-  await stream.patchElements('<div id="msg">Success!</div>');
-  await stream.toast("Saved!");
-});
-```
+**Version: v1.0.0-RC.7** (vendored in `src/vendor/datastar.js`). See `references/datastar/` for full API docs, `docs/datastar.md` for patterns.
 
 ### Key Rules
 
-- **Loading states required**: Every form with `@post`/`@put`/`@patch`/`@delete` must use `data-indicator` + `data-attr-disabled` on the submit button. No exceptions.
-- `@post` sends non-private signals as JSON body
+- **Loading states required**: Every form with `@post`/`@put`/`@patch`/`@delete` MUST use `data-indicator` + `data-attr-disabled` on the submit button
+- `@post` sends non-private signals as JSON body; use `_` prefix for private signals (not sent to server)
 - Define signals on parent element containing all children that need access
 - Use `throwIfNamespace: false` in SWC config for colon syntax (`data-on:click`)
 - For complex interactions (file uploads), use plain JS instead of Datastar
 - Prefer `dsRedirect`/`dsToast`/`dsSignals` over `sse()` for single-event responses
+- Use `sse()` only when you need multiple operations in one response
 
-## Configuration Strategy
-
-**Core Principle: Separate Runtime Config from Build-time Customization**
-
-Following the [12-factor app methodology](https://12factor.net/config), Jant strictly separates:
-
-### 1. Runtime Configuration (Environment Variables)
-
-Jant uses a **two-tier configuration system** with different priority modes:
-
-**Configuration Types:**
-
-1. **User-Configurable** (`envOnly: false` → **Database > Environment > Default**)
-   - `SITE_NAME`, `SITE_DESCRIPTION`, `SITE_LANGUAGE`
-   - Users can modify these in `/dash/settings`
-   - Environment variables serve as **initial/default values**
-   - Database values take precedence (user's choice is final)
-
-2. **Environment-Only** (`envOnly: true` → **Environment > Default**)
-   - `SITE_URL`, `AUTH_SECRET`, `R2_PUBLIC_URL`, `IMAGE_TRANSFORM_URL`, `DEMO_EMAIL`, `DEMO_PASSWORD`
-   - Infrastructure/deployment config and optional features
-   - Cannot be modified in dashboard
-   - Only set via environment variables or Cloudflare secrets
-
-**Configuration Registry - Single Source of Truth:**
-
-All configuration fields are defined in `CONFIG_FIELDS` (types.ts):
+### Server Response Helpers
 
 ```typescript
-export const CONFIG_FIELDS = {
-  // User-configurable (can be modified in dashboard)
-  SITE_NAME: {
-    defaultValue: "Jant",
-    envOnly: false, // DB > ENV > Default
-  },
+import { dsRedirect, dsToast, dsSignals } from "@/lib/sse";
 
-  // Environment-only (deployment/infrastructure)
-  SITE_URL: {
-    defaultValue: "",
-    envOnly: true, // ENV > Default
-  },
-  // ...
-} as const;
-
-export type ConfigKey = keyof typeof CONFIG_FIELDS;
+return dsRedirect("/dash/posts"); // redirect
+return dsToast("Settings saved."); // success toast
+return dsToast("Something went wrong.", "error"); // error toast
+return dsSignals({ _uploadError: "File too large" }); // signal patch
 ```
 
-**Adding New Configuration:**
+## Configuration
 
-To add a new config field, simply add it to `CONFIG_FIELDS`:
+**Two-tier system**: user-configurable settings (DB > ENV > Default) and environment-only settings (ENV > Default). All fields defined in `CONFIG_FIELDS` (`types.ts`).
 
-```typescript
-// Want to allow UI configuration for R2 URL?
-R2_PUBLIC_URL: {
-  defaultValue: "",
-  envOnly: false, // Change from true to false
-},
-```
-
-**Usage:**
+- **User-configurable** (`envOnly: false`): `SITE_NAME`, `SITE_DESCRIPTION`, `SITE_LANGUAGE` - editable in `/dash/settings`
+- **Environment-only** (`envOnly: true`): `SITE_URL`, `AUTH_SECRET`, `R2_PUBLIC_URL`, etc.
 
 ```typescript
-// Use unified config helpers (lib/config.ts)
-import {
-  getSiteName,
-  getSiteDescription,
-  getSiteLanguage,
-  getConfig,
-} from "@/lib/config";
-
-// For user-configurable configs:
+import { getSiteName, getConfig } from "@/lib/config";
 const siteName = await getSiteName(c); // DB > ENV > "Jant"
-
-// For environment-only configs:
-const siteUrl = c.env.SITE_URL; // ENV only
-
-// Generic getter (type-safe):
-const value = await getConfig(c, "SITE_NAME"); // ConfigKey type ensures safety
+const value = await getConfig(c, "SITE_NAME"); // generic type-safe getter
 ```
 
-**Where to configure:**
+- **NEVER add feature flags or site settings to `createApp()`** - use env vars or database
+- **DO use `createApp()` for**: CSS variable overrides, custom color themes, custom feed renderers
 
-- **Non-sensitive values**: `wrangler.toml` `[vars]` section (committed to git)
-- **Secrets (sensitive)**: `.dev.vars` file (local, not committed) or `wrangler secret put` (production)
-- **Runtime override**: Dashboard settings (stored in DB)
+See `docs/configuration.md` for full details on configuration files, priority, and best practices.
 
-**Configuration File Principles:**
+## CSS & Theming
 
-Following Cloudflare Workers best practices:
+- One built-in UI; customization is CSS-only via design tokens (`styles/tokens.css`)
+- Data attributes (`data-page`, `data-post`, `data-format`, etc.) are a **stable public API** for CSS targeting - do not rename/remove without a major version bump
+- Users can inject custom CSS via Dashboard > Settings > Appearance
+- Never hardcode colors, fonts, spacing, or radii - always use tokens
 
-1. **`wrangler.toml [vars]`** - Non-sensitive environment variables (committed to git)
-   - Public configuration values that differ per deployment
-   - Example: `SITE_URL`, `SITE_NAME`, `R2_PUBLIC_URL`, `IMAGE_TRANSFORM_URL`
-   - Should include all optional variables as commented examples for discoverability
-
-2. **`.dev.vars.example`** - Only sensitive secrets template (committed to git)
-   - Template for secrets that should NEVER be committed
-   - Example: `AUTH_SECRET`
-   - Users copy to `.dev.vars` and fill in actual values
-
-3. **`.dev.vars`** - Actual secrets for local development (NOT committed, in .gitignore)
-   - Contains real secret values
-   - Auto-generated by `create-jant` CLI with secure random values
-
-4. **Production secrets** - Set via `wrangler secret put` or Cloudflare dashboard
-   - Never stored in version control or configuration files
-   - Managed through Cloudflare's secret management system
-
-### 2. Build-time Customization (Code Config)
-
-Use `createApp({ ... })` parameters ONLY for things that require compilation:
-
-- **CSS variable overrides**: Override design tokens at build time
-- **Custom color themes**: Replace built-in color theme list
-- **Custom feed renderers**: Override RSS/Atom/Sitemap output
-
-```typescript
-// ✅ Correct usage
-export default createApp({
-  cssVariables: {
-    "--site-width": "720px",
-    "--card-radius": "0.5rem",
-  },
-});
-
-// ❌ NEVER do this
-export default createApp({
-  site: { name: "My Blog" }, // ❌ Use env vars instead
-  features: { search: false }, // ❌ Use env vars instead
-});
-```
-
-**Configuration Priority Table:**
-
-| Setting          | envOnly | Priority           | Database | Environment | Default            | Dashboard Editable |
-| ---------------- | ------- | ------------------ | -------- | ----------- | ------------------ | ------------------ |
-| Site Name        | false   | DB > ENV > Default | ✅       | ✅          | `"Jant"`           | ✅ Yes             |
-| Site Description | false   | DB > ENV > Default | ✅       | ✅          | `"A microblog..."` | ✅ Yes             |
-| Site Language    | false   | DB > ENV > Default | ✅       | ✅          | `"en"`             | ✅ Yes             |
-| Site URL         | true    | ENV > Default      | ❌       | ✅          | `""`               | ❌ No              |
-| Auth Secret      | true    | ENV > Default      | ❌       | ✅          | `""`               | ❌ No              |
-
-**Important Rules:**
-
-1. **NEVER add feature flags to `createApp()`** - all features (search, RSS, sitemap) are enabled by default. If you need to disable features, use Cloudflare Workers routing rules or environment variables.
-2. **NEVER add site settings to `createApp()`** - they belong in environment variables or the database.
-3. **DO use `createApp()` for CSS variable overrides and custom color themes** - these need to be available at build/deploy time.
-
-## CSS Customization Architecture
-
-**No component-level themes.** Jant has one built-in UI. Customization is CSS-only.
-
-### Three-Layer Customization API
-
-| Layer    | For whom        | Mechanism                                              |
-| -------- | --------------- | ------------------------------------------------------ |
-| Settings | All users       | Color theme picker in dashboard                        |
-| CSS      | CSS-savvy users | Design tokens + data attributes + custom CSS injection |
-| Code     | Fork developers | Well-separated file structure in `src/ui/`             |
-
-### Design Tokens (`styles/tokens.css`)
-
-All visual properties reference CSS custom properties. Never hardcode colors, fonts, spacing, or radii in components — always use tokens.
-
-### Data Attributes (Public API)
-
-Data attributes on HTML elements are a **stable, versioned public API** for CSS targeting. They MUST NOT be renamed or removed without a major version bump.
-
-| Attribute            | Element        | Purpose                       |
-| -------------------- | -------------- | ----------------------------- |
-| `data-authenticated` | `<body>`       | Auth state for CSS            |
-| `data-page`          | page wrapper   | Page type identifier          |
-| `data-post`          | `<article>`    | Post marker                   |
-| `data-format`        | `<article>`    | Post format (note/link/quote) |
-| `data-post-body`     | content div    | Target post body              |
-| `data-post-meta`     | meta div       | Target post metadata          |
-| `data-post-media`    | media div      | Target post media             |
-| `data-feed`          | feed container | Target feed                   |
-
-When adding new interactive features, always add appropriate data attributes.
-
-### Custom CSS Injection
-
-Users can inject arbitrary CSS via Dashboard > Settings > Appearance. Stored in database, injected in `<head>` with highest priority.
-
-### CSS Priority (lowest → highest)
-
-1. BaseCoat defaults (`:root`)
-2. Design tokens (`styles/tokens.css`)
-3. Component styles (`styles/ui.css`)
-4. Selected color theme (`:root:root` specificity)
-5. `cssVariables` from `createApp()` config
-6. Custom CSS injection from dashboard
+See `docs/theming.md` for the full customization architecture, data attributes reference, and CSS priority chain.
 
 ## Key Conventions
 
-1. **Configuration**: Environment variables first (see Configuration Strategy above)
+1. **Configuration**: Environment variables first (see Configuration section)
 2. **Services**: All DB operations go through service layer
 3. **Types**: Single source of truth in `types.ts`, Zod for validation
 4. **Time**: Unix timestamps (seconds), use `lib/time.ts` utilities
 5. **IDs**: Sqids for URLs (`/p/jR3k`), integers in DB
 6. **Soft delete**: Posts use `deleted_at` field
-7. **Routes**: Use `xxxRoutes` naming convention consistently
+7. **Routes**: Use `xxxRoutes` naming convention
 8. **Components**: Extract when pattern repeats 3+ times
-
-## Releasing
-
-Uses [Changesets](https://github.com/changesets/changesets) for version management. See `docs/RELEASING.md` for details.
-
-**Workflow**: Make changes → `mise run changeset` → Open PR → Merge → Auto-created Release PR publishes to npm.
-
-**Packages**: `@jant/core` (framework), `create-jant` (scaffolding CLI).
-
-## Local Development
-
-Dev server on port 9019, accessible via localhost, network IP, or custom domain (Caddy reverse proxy to `local.jant.me`).
-
-**Required in `.dev.vars`**: `AUTH_SECRET=your-secret-at-least-32-chars`
-
-### Quick Start
-
-```bash
-# First time or after fresh clone
-mise run fresh          # Nuclear reset (optional, only if needed)
-mise run dev            # Start dev server (auto-runs migrations)
-```
-
-**Important**: `mise run dev` automatically runs database migrations before starting the server, so you don't need to manually run `mise run db-migrate`.
+9. **Lib functions**: 100% JSDoc with `@param`, `@returns`, `@example`
+10. **Releasing**: Changesets workflow - see `docs/RELEASING.md`

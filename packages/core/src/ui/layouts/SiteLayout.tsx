@@ -33,6 +33,9 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   isAuthenticated,
   collections,
   homeDefaultView,
+  siteAvatarUrl,
+  showHeaderAvatar,
+  siteFooterHtml,
   children,
 }) => {
   const { t } = useLingui();
@@ -77,6 +80,9 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         <div class="site-header-inner">
           <div class="site-header-top site-header-top-bordered">
             <a href="/" class="site-logo">
+              {showHeaderAvatar && siteAvatarUrl && (
+                <img src={siteAvatarUrl} class="site-logo-avatar" alt="" />
+              )}
               {siteName}
             </a>
             <div class="site-header-right">
@@ -140,6 +146,17 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           </div>
         </div>
       </main>
+
+      {siteFooterHtml && (
+        <footer class="site-footer" data-footer>
+          <div class="site-container">
+            <div
+              class="prose"
+              dangerouslySetInnerHTML={{ __html: siteFooterHtml }}
+            />
+          </div>
+        </footer>
+      )}
 
       {isAuthenticated && <ComposeDialog collections={collections} />}
     </div>
