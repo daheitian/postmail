@@ -11,7 +11,14 @@ pnpm = "10.28.2"
 [tasks.ci]
 alias = "check"
 description = "Run all CI checks (lint + typecheck + test + build + i18n + template)"
-depends = ["lint", "typecheck", "test", "build-all", "i18n-check", "test-template"]
+run = """
+mise run lint
+mise run typecheck
+mise run test
+mise run build-all
+mise run i18n-check
+mise run test-template
+"""
 
 # =============================================================================
 # Development (uses templates/jant-site)
