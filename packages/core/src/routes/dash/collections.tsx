@@ -1,375 +1,22 @@
-import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Collections Routes
  */
 
 import { Hono } from "hono";
-import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Collection, Post } from "../../types.js";
+import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
-import {
-  EmptyState,
-  ListItemRow,
-  ActionButtons,
-  CrudPageHeader,
-  DangerZone,
-} from "../../ui/dash/index.js";
-import * as sqid from "../../lib/sqid.js";
+import { DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
+import { getSiteName } from "../../lib/config.js";
+import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
+import { CollectionsListContent } from "../../ui/dash/collections/CollectionsListContent.js";
+import { CollectionForm } from "../../ui/dash/collections/CollectionForm.js";
+import { ViewCollectionContent } from "../../ui/dash/collections/ViewCollectionContent.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const collectionsRoutes = new Hono<Env>();
-
-function CollectionsListContent({
-  collections,
-}: {
-  collections: Collection[];
-}) {
-  const { t } = useLingui();
-
-  return (
-    <>
-      <CrudPageHeader
-        title={t({
-          message: "Collections",
-          comment: "@context: Dashboard heading",
-        })}
-        ctaLabel={t({
-          message: "New Collection",
-          comment: "@context: Button to create new collection",
-        })}
-        ctaHref="/dash/collections/new"
-      />
-
-      {collections.length === 0 ? (
-        <EmptyState
-          message={t({
-            message: "No collections yet.",
-            comment: "@context: Empty state message",
-          })}
-          ctaText={t({
-            message: "New Collection",
-            comment: "@context: Button to create new collection",
-          })}
-          ctaHref="/dash/collections/new"
-        />
-      ) : (
-        <div class="flex flex-col divide-y">
-          {collections.map((col) => (
-            <ListItemRow
-              key={col.id}
-              actions={
-                <ActionButtons
-                  editHref={`/dash/collections/${col.id}/edit`}
-                  editLabel={t({
-                    message: "Edit",
-                    comment: "@context: Button to edit collection",
-                  })}
-                  viewHref={`/c/${col.slug}`}
-                  viewLabel={t({
-                    message: "View",
-                    comment: "@context: Button to view collection",
-                  })}
-                />
-              }
-            >
-              <a
-                href={`/dash/collections/${col.id}`}
-                class="font-medium hover:underline"
-              >
-                {col.title}
-              </a>
-              <p class="text-sm text-muted-foreground">/{col.slug}</p>
-              {col.description && (
-                <p class="text-sm text-muted-foreground mt-1">
-                  {col.description}
-                </p>
-              )}
-            </ListItemRow>
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-
-function NewCollectionContent() {
-  const { t } = useLingui();
-  return (
-    <>
-      <h1 class="text-2xl font-semibold mb-6">
-        {t({ message: "New Collection", comment: "@context: Page heading" })}
-      </h1>
-
-      <form
-        data-signals="{title: '', slug: '', description: ''}"
-        data-on:submit__prevent="@post('/dash/collections')"
-        data-indicator="_loading"
-        class="flex flex-col gap-4 max-w-lg"
-      >
-        <div class="field">
-          <label class="label">
-            {t({
-              message: "Title",
-              comment: "@context: Collection form field",
-            })}
-          </label>
-          <input
-            type="text"
-            data-bind="title"
-            class="input"
-            required
-            placeholder={t({
-              message: "My Collection",
-              comment: "@context: Collection title placeholder",
-            })}
-          />
-        </div>
-
-        <div class="field">
-          <label class="label">
-            {t({ message: "Slug", comment: "@context: Collection form field" })}
-          </label>
-          <input
-            type="text"
-            data-bind="slug"
-            class="input"
-            required
-            placeholder="my-collection"
-            pattern="[a-z0-9-]+"
-          />
-          <p class="text-xs text-muted-foreground mt-1">
-            {t({
-              message: "URL-safe identifier (lowercase, numbers, hyphens)",
-              comment: "@context: Collection path help text",
-            })}
-          </p>
-        </div>
-
-        <div class="field">
-          <label class="label">
-            {t({
-              message: "Description (optional)",
-              comment: "@context: Collection form field",
-            })}
-          </label>
-          <textarea
-            data-bind="description"
-            class="textarea"
-            rows={3}
-            placeholder={t({
-              message: "What's this collection about?",
-              comment: "@context: Collection description placeholder",
-            })}
-          />
-        </div>
-
-        <div class="flex gap-2">
-          <button type="submit" class="btn" data-attr-disabled="$_loading">
-            <span data-show="!$_loading">
-              {t({
-                message: "Create Collection",
-                comment: "@context: Button to save new collection",
-              })}
-            </span>
-            <span data-show="$_loading">
-              {t({
-                message: "Processing...",
-                comment:
-                  "@context: Loading text shown on submit button while request is in progress",
-              })}
-            </span>
-          </button>
-          <a href="/dash/collections" class="btn-outline">
-            {t({
-              message: "Cancel",
-              comment: "@context: Button to cancel form",
-            })}
-          </a>
-        </div>
-      </form>
-    </>
-  );
-}
-
-function ViewCollectionContent({
-  collection,
-  posts,
-}: {
-  collection: Collection;
-  posts: Post[];
-}) {
-  const { t } = useLingui();
-  const postsHeader = t({
-    message: "Posts in Collection ({count})",
-    comment: "@context: Collection posts section heading",
-    values: { count: String(posts.length) },
-  });
-
-  return (
-    <>
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-semibold">{collection.title}</h1>
-          <p class="text-sm text-muted-foreground">/{collection.slug}</p>
-        </div>
-        <ActionButtons
-          editHref={`/dash/collections/${collection.id}/edit`}
-          editLabel={t({
-            message: "Edit",
-            comment: "@context: Button to edit collection",
-          })}
-          viewHref={`/c/${collection.slug}`}
-          viewLabel={t({
-            message: "View",
-            comment: "@context: Button to view collection",
-          })}
-        />
-      </div>
-
-      {collection.description && (
-        <p class="text-muted-foreground mb-6">{collection.description}</p>
-      )}
-
-      <div class="card">
-        <header>
-          <h2>{postsHeader}</h2>
-        </header>
-        <section>
-          {posts.length === 0 ? (
-            <p class="text-muted-foreground">
-              {t({
-                message: "No posts in this collection.",
-                comment: "@context: Empty state message",
-              })}
-            </p>
-          ) : (
-            <div class="flex flex-col divide-y">
-              {posts.map((post) => (
-                <div key={post.id} class="py-3 flex items-center gap-4">
-                  <div class="flex-1 min-w-0">
-                    <a
-                      href={`/dash/posts/${sqid.encode(post.id)}`}
-                      class="font-medium hover:underline"
-                    >
-                      {post.title ||
-                        post.body?.slice(0, 50) ||
-                        `Post #${post.id}`}
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
-
-      <div class="mt-6">
-        <a href="/dash/collections" class="text-sm hover:underline">
-          {t({
-            message: "\u2190 Back to Collections",
-            comment: "@context: Navigation link",
-          })}
-        </a>
-      </div>
-    </>
-  );
-}
-
-function EditCollectionContent({ collection }: { collection: Collection }) {
-  const { t } = useLingui();
-
-  const signals = JSON.stringify({
-    title: collection.title,
-    slug: collection.slug ?? "",
-    description: collection.description ?? "",
-  }).replace(/</g, "\\u003c");
-
-  return (
-    <>
-      <h1 class="text-2xl font-semibold mb-6">
-        {t({ message: "Edit Collection", comment: "@context: Page heading" })}
-      </h1>
-
-      <form
-        data-signals={signals}
-        data-on:submit__prevent={`@post('/dash/collections/${collection.id}')`}
-        data-indicator="_loading"
-        class="flex flex-col gap-4 max-w-lg"
-      >
-        <div class="field">
-          <label class="label">
-            {t({
-              message: "Title",
-              comment: "@context: Collection form field",
-            })}
-          </label>
-          <input type="text" data-bind="title" class="input" required />
-        </div>
-
-        <div class="field">
-          <label class="label">
-            {t({ message: "Slug", comment: "@context: Collection form field" })}
-          </label>
-          <input
-            type="text"
-            data-bind="slug"
-            class="input"
-            required
-            pattern="[a-z0-9-]+"
-          />
-        </div>
-
-        <div class="field">
-          <label class="label">
-            {t({
-              message: "Description (optional)",
-              comment: "@context: Collection form field",
-            })}
-          </label>
-          <textarea data-bind="description" class="textarea" rows={3}>
-            {collection.description ?? ""}
-          </textarea>
-        </div>
-
-        <div class="flex gap-2">
-          <button type="submit" class="btn" data-attr-disabled="$_loading">
-            <span data-show="!$_loading">
-              {t({
-                message: "Update Collection",
-                comment: "@context: Button to save collection changes",
-              })}
-            </span>
-            <span data-show="$_loading">
-              {t({
-                message: "Processing...",
-                comment:
-                  "@context: Loading text shown on submit button while request is in progress",
-              })}
-            </span>
-          </button>
-          <a href={`/dash/collections/${collection.id}`} class="btn-outline">
-            {t({
-              message: "Cancel",
-              comment: "@context: Button to cancel form",
-            })}
-          </a>
-        </div>
-      </form>
-
-      <DangerZone
-        actionLabel={t({
-          message: "Delete Collection",
-          comment: "@context: Button to delete collection",
-        })}
-        formAction={`/dash/collections/${collection.id}/delete`}
-        confirmMessage="Are you sure you want to delete this collection?"
-      />
-    </>
-  );
-}
 
 // List collections
 collectionsRoutes.get("/", async (c) => {
@@ -399,7 +46,7 @@ collectionsRoutes.get("/new", async (c) => {
       siteName={siteName}
       currentPath="/dash/collections"
     >
-      <NewCollectionContent />
+      <CollectionForm />
     </DashLayout>,
   );
 });
@@ -429,10 +76,9 @@ collectionsRoutes.get("/:id", async (c) => {
   const collection = await c.var.services.collections.getById(id);
   if (!collection) return c.notFound();
 
-  // Fetch posts in this collection via post service
-  const posts = await c.var.services.posts.list({
-    collectionId: id,
-  });
+  const rawPosts = await c.var.services.posts.list({ collectionId: id });
+  const ctx = createMediaContext(c);
+  const posts = toPostViewsFromPosts(rawPosts, ctx);
   const siteName = await getSiteName(c);
 
   return c.html(
@@ -464,7 +110,12 @@ collectionsRoutes.get("/:id/edit", async (c) => {
       siteName={siteName}
       currentPath="/dash/collections"
     >
-      <EditCollectionContent collection={collection} />
+      <CollectionForm collection={collection} isEdit />
+      <DangerZone
+        actionLabel="Delete Collection"
+        formAction={`/dash/collections/${collection.id}/delete`}
+        confirmMessage="Are you sure you want to delete this collection?"
+      />
     </DashLayout>,
   );
 });

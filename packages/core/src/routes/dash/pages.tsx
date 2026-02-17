@@ -1,228 +1,27 @@
-import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Pages & Navigation Routes
  *
- * Unified management for pages and navigation items (pika.page style).
- * Two sections: "Your site navigation" (draggable) and "Other pages".
+ * Unified management for pages and navigation items.
  */
 
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Page, NavItem } from "../../types.js";
+import type { Bindings, Page } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
-import {
-  PageForm,
-  ListItemRow,
-  ActionButtons,
-  CrudPageHeader,
-  DangerZone,
-} from "../../ui/dash/index.js";
+import { PageForm, ActionButtons, DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
+import { getSiteName } from "../../lib/config.js";
+import { UnifiedPagesContent } from "../../ui/dash/pages/UnifiedPagesContent.js";
+import { LinkFormContent } from "../../ui/dash/pages/LinkFormContent.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const pagesRoutes = new Hono<Env>();
 
 // =============================================================================
-// Components
+// Inline components (small, tightly coupled to route params)
 // =============================================================================
-
-function UnifiedPagesContent({
-  navItems,
-  otherPages,
-}: {
-  navItems: NavItem[];
-  otherPages: Page[];
-}) {
-  const { t } = useLingui();
-
-  return (
-    <>
-      <CrudPageHeader
-        title={t({
-          message: "Pages",
-          comment: "@context: Pages main heading",
-        })}
-      >
-        <div class="flex gap-2">
-          <a href="/dash/pages/links/new" class="btn-outline">
-            {t({
-              message: "Add Link",
-              comment: "@context: Button to add a navigation link",
-            })}
-          </a>
-          <a href="/dash/pages/new" class="btn">
-            {t({
-              message: "New Page",
-              comment: "@context: Button to create new page",
-            })}
-          </a>
-        </div>
-      </CrudPageHeader>
-
-      {/* Navigation section */}
-      <section class="mb-8">
-        <h2 class="text-lg font-medium mb-3">
-          {t({
-            message: "Your site navigation",
-            comment: "@context: Section heading for navigation items",
-          })}
-        </h2>
-        {navItems.length === 0 ? (
-          <p class="text-sm text-muted-foreground py-4">
-            {t({
-              message:
-                "No navigation links yet. Add pages to navigation or create links.",
-              comment: "@context: Empty state for navigation section",
-            })}
-          </p>
-        ) : (
-          <div id="nav-links-list" class="flex flex-col divide-y">
-            {navItems.map((item) => (
-              <ListItemRow
-                key={item.id}
-                actions={
-                  item.type === "page" ? (
-                    <>
-                      <ActionButtons
-                        editHref={
-                          item.pageId
-                            ? `/dash/pages/${item.pageId}/edit`
-                            : undefined
-                        }
-                        editLabel={t({
-                          message: "Edit",
-                          comment: "@context: Button to edit page",
-                        })}
-                      />
-                      <button
-                        type="button"
-                        class="btn-sm-ghost"
-                        data-on:click__prevent={`@post('/dash/pages/${item.pageId}/remove-from-nav')`}
-                      >
-                        {t({
-                          message: "Un-nav",
-                          comment:
-                            "@context: Button to remove page from navigation",
-                        })}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <ActionButtons
-                        editHref={`/dash/pages/links/${item.id}/edit`}
-                        editLabel={t({
-                          message: "Edit",
-                          comment: "@context: Button to edit link",
-                        })}
-                        deleteAction={`/dash/pages/links/${item.id}/delete`}
-                        deleteLabel={t({
-                          message: "Delete",
-                          comment: "@context: Button to delete link",
-                        })}
-                      />
-                    </>
-                  )
-                }
-              >
-                <div
-                  class="flex items-center gap-3 cursor-grab"
-                  data-id={item.id}
-                >
-                  <span class="text-muted-foreground select-none">⠿</span>
-                  <div class="flex items-center gap-2">
-                    <span class="font-medium">{item.label}</span>
-                    <code class="text-sm text-muted-foreground bg-muted px-1 rounded">
-                      {item.url}
-                    </code>
-                    <span class="badge badge-sm">
-                      {item.type === "page"
-                        ? t({
-                            message: "page",
-                            comment: "@context: Nav item type badge",
-                          })
-                        : t({
-                            message: "link",
-                            comment: "@context: Nav item type badge",
-                          })}
-                    </span>
-                  </div>
-                </div>
-              </ListItemRow>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Other pages section */}
-      <section>
-        <h2 class="text-lg font-medium mb-3">
-          {t({
-            message: "Other pages",
-            comment: "@context: Section heading for pages not in navigation",
-          })}
-        </h2>
-        {otherPages.length === 0 ? (
-          <p class="text-sm text-muted-foreground py-4">
-            {t({
-              message: "All pages are in your navigation.",
-              comment: "@context: Empty state when all pages are in nav",
-            })}
-          </p>
-        ) : (
-          <div class="flex flex-col divide-y">
-            {otherPages.map((page) => (
-              <ListItemRow
-                key={page.id}
-                actions={
-                  <>
-                    <button
-                      type="button"
-                      class="btn-sm-outline"
-                      data-on:click__prevent={`@post('/dash/pages/${page.id}/add-to-nav')`}
-                    >
-                      {t({
-                        message: "Add to nav",
-                        comment: "@context: Button to add page to navigation",
-                      })}
-                    </button>
-                    <ActionButtons
-                      editHref={`/dash/pages/${page.id}/edit`}
-                      editLabel={t({
-                        message: "Edit",
-                        comment: "@context: Button to edit page",
-                      })}
-                      viewHref={
-                        page.status !== "draft" ? `/${page.slug}` : undefined
-                      }
-                      viewLabel={t({
-                        message: "View",
-                        comment: "@context: Button to view page on public site",
-                      })}
-                    />
-                  </>
-                }
-              >
-                <a
-                  href={`/dash/pages/${page.id}`}
-                  class="font-medium hover:underline"
-                >
-                  {page.title ||
-                    t({
-                      message: "Untitled",
-                      comment: "@context: Default title for untitled page",
-                    })}
-                </a>
-                <p class="text-sm text-muted-foreground mt-1">/{page.slug}</p>
-              </ListItemRow>
-            ))}
-          </div>
-        )}
-      </section>
-    </>
-  );
-}
 
 function NewPageContent() {
   const { t } = useLingui();
@@ -301,118 +100,10 @@ function EditPageContent({ page }: { page: Page }) {
   );
 }
 
-function LinkFormContent({
-  item,
-  isEdit,
-}: {
-  item?: NavItem;
-  isEdit?: boolean;
-}) {
-  const { t } = useLingui();
-  const title = isEdit
-    ? t({ message: "Edit Link", comment: "@context: Page heading" })
-    : t({ message: "New Link", comment: "@context: Page heading" });
-
-  const signals = JSON.stringify({
-    label: item?.label ?? "",
-    url: item?.url ?? "",
-  }).replace(/</g, "\\u003c");
-
-  const action = isEdit ? `/dash/pages/links/${item?.id}` : "/dash/pages/links";
-
-  return (
-    <>
-      <h1 class="text-2xl font-semibold mb-6">{title}</h1>
-
-      <form
-        data-signals={signals}
-        data-on:submit__prevent={`@post('${action}')`}
-        data-indicator="_loading"
-        class="flex flex-col gap-4 max-w-lg"
-      >
-        <div class="field">
-          <label class="label">
-            {t({
-              message: "Label",
-              comment: "@context: Navigation link form field",
-            })}
-          </label>
-          <input
-            type="text"
-            data-bind="label"
-            class="input"
-            placeholder="Home"
-            required
-          />
-          <p class="text-xs text-muted-foreground mt-1">
-            {t({
-              message: "Display text for the link",
-              comment: "@context: Navigation label help text",
-            })}
-          </p>
-        </div>
-
-        <div class="field">
-          <label class="label">
-            {t({
-              message: "URL",
-              comment: "@context: Navigation link form field",
-            })}
-          </label>
-          <input
-            type="text"
-            data-bind="url"
-            class="input"
-            placeholder="/archive or https://..."
-            required
-          />
-          <p class="text-xs text-muted-foreground mt-1">
-            {t({
-              message:
-                "Path (e.g. /archive) or full URL (e.g. https://example.com)",
-              comment: "@context: Navigation URL help text",
-            })}
-          </p>
-        </div>
-
-        <div class="flex gap-2">
-          <button type="submit" class="btn" data-attr-disabled="$_loading">
-            <span data-show="!$_loading">
-              {isEdit
-                ? t({
-                    message: "Save Changes",
-                    comment: "@context: Button to save edited navigation link",
-                  })
-                : t({
-                    message: "Create Link",
-                    comment: "@context: Button to save new navigation link",
-                  })}
-            </span>
-            <span data-show="$_loading">
-              {t({
-                message: "Processing...",
-                comment:
-                  "@context: Loading text shown on submit button while request is in progress",
-              })}
-            </span>
-          </button>
-          <a href="/dash/pages" class="btn-outline">
-            {t({
-              message: "Cancel",
-              comment: "@context: Button to cancel form",
-            })}
-          </a>
-        </div>
-      </form>
-    </>
-  );
-}
-
 // =============================================================================
-// Page Routes
+// Route handlers
 // =============================================================================
 
-// List pages (unified view)
 pagesRoutes.get("/", async (c) => {
   const [navItems, otherPages] = await Promise.all([
     c.var.services.navItems.list(),
@@ -432,10 +123,8 @@ pagesRoutes.get("/", async (c) => {
   );
 });
 
-// New page form
 pagesRoutes.get("/new", async (c) => {
   const siteName = await getSiteName(c);
-
   return c.html(
     <DashLayout
       c={c}
@@ -448,10 +137,8 @@ pagesRoutes.get("/new", async (c) => {
   );
 });
 
-// New link form
 pagesRoutes.get("/links/new", async (c) => {
   const siteName = await getSiteName(c);
-
   return c.html(
     <DashLayout
       c={c}
@@ -464,10 +151,8 @@ pagesRoutes.get("/links/new", async (c) => {
   );
 });
 
-// Create link
 pagesRoutes.post("/links", async (c) => {
   const body = await c.req.json<{ label: string; url: string }>();
-
   if (!body.label || !body.url) {
     return dsToast("Label and URL are required", "error");
   }
@@ -477,24 +162,18 @@ pagesRoutes.post("/links", async (c) => {
     label: body.label,
     url: body.url,
   });
-
   return dsRedirect("/dash/pages");
 });
 
-// Reorder nav items (must be before /:id to avoid matching)
 pagesRoutes.post("/reorder", async (c) => {
   const body = await c.req.json<{ ids: number[] }>();
-
   if (!Array.isArray(body.ids)) {
     return dsToast("Invalid request", "error");
   }
-
   await c.var.services.navItems.reorder(body.ids);
-
   return dsToast("Order saved");
 });
 
-// Edit link form
 pagesRoutes.get("/links/:id/edit", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
@@ -503,7 +182,6 @@ pagesRoutes.get("/links/:id/edit", async (c) => {
   if (!item) return c.notFound();
 
   const siteName = await getSiteName(c);
-
   return c.html(
     <DashLayout
       c={c}
@@ -516,13 +194,11 @@ pagesRoutes.get("/links/:id/edit", async (c) => {
   );
 });
 
-// Update link
 pagesRoutes.post("/links/:id", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
 
   const body = await c.req.json<{ label: string; url: string }>();
-
   if (!body.label || !body.url) {
     return dsToast("Label and URL are required", "error");
   }
@@ -531,23 +207,19 @@ pagesRoutes.post("/links/:id", async (c) => {
     label: body.label,
     url: body.url,
   });
-
   if (!updated) return c.notFound();
 
   return dsRedirect("/dash/pages");
 });
 
-// Delete link
 pagesRoutes.post("/links/:id/delete", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (!isNaN(id)) {
     await c.var.services.navItems.delete(id);
   }
-
   return dsRedirect("/dash/pages");
 });
 
-// Create page
 pagesRoutes.post("/", async (c) => {
   const body = await c.req.json<{
     title: string;
@@ -566,7 +238,6 @@ pagesRoutes.post("/", async (c) => {
   return dsRedirect(`/dash/pages/${page.id}`);
 });
 
-// Add page to navigation
 pagesRoutes.post("/:id/add-to-nav", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
@@ -580,26 +251,21 @@ pagesRoutes.post("/:id/add-to-nav", async (c) => {
     url: `/${page.slug}`,
     pageId: page.id,
   });
-
   return dsRedirect("/dash/pages");
 });
 
-// Remove page from navigation (keeps the page, deletes the nav item)
 pagesRoutes.post("/:id/remove-from-nav", async (c) => {
   const pageId = parseInt(c.req.param("id"), 10);
   if (isNaN(pageId)) return c.notFound();
 
-  // Find nav item by pageId
   const navItems = await c.var.services.navItems.list();
   const navItem = navItems.find((item) => item.pageId === pageId);
   if (navItem) {
     await c.var.services.navItems.delete(navItem.id);
   }
-
   return dsRedirect("/dash/pages");
 });
 
-// View single page
 pagesRoutes.get("/:id", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
@@ -608,7 +274,6 @@ pagesRoutes.get("/:id", async (c) => {
   if (!page) return c.notFound();
 
   const siteName = await getSiteName(c);
-
   return c.html(
     <DashLayout
       c={c}
@@ -621,7 +286,6 @@ pagesRoutes.get("/:id", async (c) => {
   );
 });
 
-// Edit page form
 pagesRoutes.get("/:id/edit", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
@@ -630,7 +294,6 @@ pagesRoutes.get("/:id/edit", async (c) => {
   if (!page) return c.notFound();
 
   const siteName = await getSiteName(c);
-
   return c.html(
     <DashLayout
       c={c}
@@ -643,7 +306,6 @@ pagesRoutes.get("/:id/edit", async (c) => {
   );
 });
 
-// Update page
 pagesRoutes.post("/:id", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
@@ -665,12 +327,10 @@ pagesRoutes.post("/:id", async (c) => {
   return dsRedirect(`/dash/pages/${id}`);
 });
 
-// Delete page
 pagesRoutes.post("/:id/delete", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
 
   await c.var.services.pages.delete(id);
-
   return dsRedirect("/dash/pages");
 });

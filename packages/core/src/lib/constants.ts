@@ -43,20 +43,26 @@ export function isReservedPath(path: string): boolean {
 export const DEFAULT_PAGE_SIZE = 100;
 
 /**
- * Settings keys (match environment variable naming)
+ * Settings keys - derived from CONFIG_FIELDS (Single Source of Truth)
+ *
+ * Only non-envOnly fields and internal fields are stored in DB settings.
+ * Environment-only fields (SITE_URL, AUTH_SECRET, etc.) are never in the DB.
  */
-export const SETTINGS_KEYS = {
-  ONBOARDING_STATUS: "ONBOARDING_STATUS",
-  SITE_NAME: "SITE_NAME",
-  SITE_DESCRIPTION: "SITE_DESCRIPTION",
-  SITE_LANGUAGE: "SITE_LANGUAGE",
-  HOME_DEFAULT_VIEW: "HOME_DEFAULT_VIEW",
-  THEME: "THEME",
-  CUSTOM_CSS: "CUSTOM_CSS",
-  PASSWORD_RESET_TOKEN: "PASSWORD_RESET_TOKEN",
-} as const;
+import { CONFIG_FIELDS, type ConfigKey } from "../types.js";
 
-export type SettingsKey = (typeof SETTINGS_KEYS)[keyof typeof SETTINGS_KEYS];
+type SettingsFieldKey = {
+  [K in ConfigKey]: (typeof CONFIG_FIELDS)[K] extends { envOnly: false }
+    ? K
+    : never;
+}[ConfigKey];
+
+export const SETTINGS_KEYS = Object.fromEntries(
+  Object.entries(CONFIG_FIELDS)
+    .filter(([, field]) => !field.envOnly || "internal" in field)
+    .map(([key]) => [key, key]),
+) as { [K in SettingsFieldKey]: K };
+
+export type SettingsKey = SettingsFieldKey;
 
 /**
  * Onboarding status values

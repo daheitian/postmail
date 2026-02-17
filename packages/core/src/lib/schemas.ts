@@ -153,6 +153,45 @@ export const CreateCollectionSchema = z.object({
  */
 export const UpdateCollectionSchema = CreateCollectionSchema.partial();
 
+// =============================================================================
+// Auth Schemas
+// =============================================================================
+
+/**
+ * Setup form validation schema
+ */
+export const SetupSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+/**
+ * Sign-in form validation schema
+ */
+export const SigninSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+/**
+ * Password reset form validation schema
+ */
+export const ResetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(1),
+    token: z.string().min(1),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+// =============================================================================
+// Form Data Helpers
+// =============================================================================
+
 /**
  * Form data helper: safely parse a FormData value with a schema
  *

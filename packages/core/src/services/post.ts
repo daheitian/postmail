@@ -53,6 +53,38 @@ export interface PostService {
 }
 
 export function createPostService(db: Database): PostService {
+  /** Build WHERE conditions from filters (shared by list and count) */
+  function buildFilterConditions(filters: PostFilters) {
+    const conditions = [];
+
+    if (filters.status) {
+      conditions.push(eq(posts.status, filters.status));
+    }
+    if (filters.featured !== undefined) {
+      conditions.push(eq(posts.featured, filters.featured ? 1 : 0));
+    }
+    if (filters.pinned !== undefined) {
+      conditions.push(eq(posts.pinned, filters.pinned ? 1 : 0));
+    }
+    if (filters.format) {
+      conditions.push(eq(posts.format, filters.format));
+    }
+    if (filters.collectionId !== undefined) {
+      conditions.push(eq(posts.collectionId, filters.collectionId));
+    }
+    if (filters.threadId) {
+      conditions.push(eq(posts.threadId, filters.threadId));
+    }
+    if (filters.excludeReplies) {
+      conditions.push(isNull(posts.threadId));
+    }
+    if (!filters.includeDeleted) {
+      conditions.push(isNull(posts.deletedAt));
+    }
+
+    return conditions;
+  }
+
   function toPost(row: typeof posts.$inferSelect): Post {
     return {
       id: row.id,
@@ -97,39 +129,7 @@ export function createPostService(db: Database): PostService {
     },
 
     async list(filters = {}) {
-      const conditions = [];
-
-      if (filters.status) {
-        conditions.push(eq(posts.status, filters.status));
-      }
-
-      if (filters.featured !== undefined) {
-        conditions.push(eq(posts.featured, filters.featured ? 1 : 0));
-      }
-
-      if (filters.pinned !== undefined) {
-        conditions.push(eq(posts.pinned, filters.pinned ? 1 : 0));
-      }
-
-      if (filters.format) {
-        conditions.push(eq(posts.format, filters.format));
-      }
-
-      if (filters.collectionId !== undefined) {
-        conditions.push(eq(posts.collectionId, filters.collectionId));
-      }
-
-      if (filters.threadId) {
-        conditions.push(eq(posts.threadId, filters.threadId));
-      }
-
-      if (filters.excludeReplies) {
-        conditions.push(isNull(posts.threadId));
-      }
-
-      if (!filters.includeDeleted) {
-        conditions.push(isNull(posts.deletedAt));
-      }
+      const conditions = buildFilterConditions(filters);
 
       if (filters.cursor) {
         conditions.push(sql`${posts.id} < ${filters.cursor}`);
@@ -151,39 +151,7 @@ export function createPostService(db: Database): PostService {
     },
 
     async count(filters = {}) {
-      const conditions = [];
-
-      if (filters.status) {
-        conditions.push(eq(posts.status, filters.status));
-      }
-
-      if (filters.featured !== undefined) {
-        conditions.push(eq(posts.featured, filters.featured ? 1 : 0));
-      }
-
-      if (filters.pinned !== undefined) {
-        conditions.push(eq(posts.pinned, filters.pinned ? 1 : 0));
-      }
-
-      if (filters.format) {
-        conditions.push(eq(posts.format, filters.format));
-      }
-
-      if (filters.collectionId !== undefined) {
-        conditions.push(eq(posts.collectionId, filters.collectionId));
-      }
-
-      if (filters.threadId) {
-        conditions.push(eq(posts.threadId, filters.threadId));
-      }
-
-      if (filters.excludeReplies) {
-        conditions.push(isNull(posts.threadId));
-      }
-
-      if (!filters.includeDeleted) {
-        conditions.push(isNull(posts.deletedAt));
-      }
+      const conditions = buildFilterConditions(filters);
 
       const result = await db
         .select({ count: sql<number>`count(*)`.as("count") })

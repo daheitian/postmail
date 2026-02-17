@@ -662,8 +662,6 @@ Data attributes on HTML elements are a **stable, versioned public API** for CSS 
 | `data-post-meta`     | meta div       | Target post metadata          |
 | `data-post-media`    | media div      | Target post media             |
 | `data-feed`          | feed container | Target feed                   |
-| `data-feed-group`    | date group     | Target date groups            |
-| `data-date`          | date group     | Date value (YYYY-MM-DD)       |
 
 When adding new interactive features, always add appropriate data attributes.
 

@@ -213,45 +213,6 @@
     @apply text-sm;
   }
 
-  /* Media — rounded corners + subtle outline */
-  .feed-media img {
-    border-radius: var(--media-radius);
-    outline: 1px solid var(--site-media-outline);
-    outline-offset: -1px;
-  }
-
-  /* Image carousel — horizontal scroll */
-  .feed-carousel-track {
-    display: flex;
-    overflow-x: auto;
-    gap: 4px;
-    margin-inline: calc(-1 * var(--site-padding));
-    padding-inline: var(--site-padding);
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-  }
-  .feed-carousel-track::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-  }
-  .feed-carousel-item {
-    flex: 0 0 auto;
-    width: 224px;
-    height: 280px;
-  }
-  .feed-carousel-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* Link preview styling */
-  .feed-link-preview {
-    border-radius: 12px;
-    border: var(--card-border-width) solid var(--site-column-outline);
-    padding: 12px 16px;
-    margin-top: 8px;
-  }
-
   /* Quote block styling */
   .feed-quote {
     padding-left: 12px;
