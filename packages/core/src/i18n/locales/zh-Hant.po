@@ -408,7 +408,6 @@ msgstr "請輸入您的新密碼。"
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
 #. @context: Compose checkbox - mark as featured
-#. @context: Featured page heading
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
 #: src/ui/compose/ComposeDialog.tsx:305
@@ -416,7 +415,6 @@ msgstr "請輸入您的新密碼。"
 #: src/ui/dash/StatusBadge.tsx:45
 #: src/ui/layouts/SiteLayout.tsx:49
 #: src/ui/pages/ArchivePage.tsx:92
-#: src/ui/pages/FeaturedPage.tsx:19
 msgid "Featured"
 msgstr "精選"
 
@@ -623,7 +621,7 @@ msgid "No collections yet."
 msgstr "尚未有任何收藏。"
 
 #. @context: Empty state message on featured page
-#: src/ui/pages/FeaturedPage.tsx:29
+#: src/ui/pages/FeaturedPage.tsx:20
 msgid "No featured posts yet."
 msgstr ""
 

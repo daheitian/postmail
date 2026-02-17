@@ -14,15 +14,6 @@ export const FeaturedPage: FC<FeaturedPageProps> = ({ items }) => {
 
   return (
     <div class="py-6" data-page="featured">
-      <header class="mb-8">
-        <h1 class="text-2xl font-semibold">
-          {t({
-            message: "Featured",
-            comment: "@context: Featured page heading",
-          })}
-        </h1>
-      </header>
-
       <main>
         {items.length === 0 ? (
           <p class="text-muted-foreground">
