@@ -9,6 +9,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
+import { arrayBufferToBase64 } from "../../lib/favicon.js";
 import {
   getSiteLanguage,
   getSiteName,
@@ -278,6 +279,20 @@ settingsRoutes.post("/avatar", async (c) => {
 
     await c.var.services.settings.set("SITE_AVATAR", id);
 
+    // Store favicon variants as base64 in settings (small files, accessed every page load)
+    const faviconFile = formData.get("favicon") as File | null;
+    const appleTouchFile = formData.get("appleTouch") as File | null;
+
+    if (faviconFile) {
+      const b64 = arrayBufferToBase64(await faviconFile.arrayBuffer());
+      await c.var.services.settings.set("SITE_FAVICON_ICO", b64);
+    }
+
+    if (appleTouchFile) {
+      const b64 = arrayBufferToBase64(await appleTouchFile.arrayBuffer());
+      await c.var.services.settings.set("SITE_FAVICON_APPLE_TOUCH", b64);
+    }
+
     return dsRedirect("/dash/settings?saved");
   } catch {
     return dsToast("Upload failed. Please try again.", "error");
@@ -286,6 +301,8 @@ settingsRoutes.post("/avatar", async (c) => {
 
 settingsRoutes.post("/avatar/remove", async (c) => {
   await c.var.services.settings.remove("SITE_AVATAR");
+  await c.var.services.settings.remove("SITE_FAVICON_ICO");
+  await c.var.services.settings.remove("SITE_FAVICON_APPLE_TOUCH");
   return dsRedirect("/dash/settings?saved");
 });
 
