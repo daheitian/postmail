@@ -11,7 +11,7 @@
 - **Vite only**: NEVER run `wrangler dev`. Use mise tasks (`mise run dev` / `mise run build`).
 - **Use mise tasks**: All dev commands via mise. Run `mise tasks` to see available commands.
 - **NEVER edit `packages/create-jant/template/`**: Auto-generated from `templates/jant-site`.
-- **NO auto-publishing**: Never run publish/release commands.
+- **Releasing**: Only publish via the `/release` command. Never run publish/release commands ad-hoc.
 - **Debug port**: Use `mise run dev-debug` (port 19019), not `mise run dev`.
 - **Stop dev after debugging**: Stop background processes when done.
 - **GitHub Actions**: Always add `workflow_dispatch:` trigger.
