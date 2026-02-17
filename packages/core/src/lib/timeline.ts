@@ -6,7 +6,7 @@
  */
 
 import type { Context } from "hono";
-import type { Bindings, TimelineItemView, DateGroup } from "../types.js";
+import type { Bindings, TimelineItemView } from "../types.js";
 import type { AppVariables } from "../app.js";
 import { buildMediaMap } from "./media-helpers.js";
 import { createMediaContext, toPostView, toPostViews } from "./view.js";
@@ -135,36 +135,4 @@ export async function assembleTimeline(
   const nextCursor = hasMore && lastPost ? lastPost.id : undefined;
 
   return { items, hasMore, nextCursor };
-}
-
-/**
- * Groups timeline items by their publication date (YYYY-MM-DD).
- *
- * @param items - Timeline items to group
- * @returns Array of date groups, each containing items published on the same day
- *
- * @example
- * ```ts
- * const groups = groupByDate(items);
- * // [{ dateKey: "2024-02-01", label: "Feb 1, 2024", items: [...] }, ...]
- * ```
- */
-export function groupByDate(items: TimelineItemView[]): DateGroup[] {
-  const groups: DateGroup[] = [];
-  let current: DateGroup | null = null;
-
-  for (const item of items) {
-    const dateKey = item.post.publishedAt.slice(0, 10);
-    if (!current || current.dateKey !== dateKey) {
-      current = {
-        dateKey,
-        label: item.post.publishedAtFormatted,
-        items: [],
-      };
-      groups.push(current);
-    }
-    current.items.push(item);
-  }
-
-  return groups;
 }

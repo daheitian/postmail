@@ -9,7 +9,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { CollectionsPage as DefaultCollectionsPage } from "../../themes/threads/pages/CollectionsPage.js";
+import { CollectionsPage } from "../../ui/pages/CollectionsPage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -28,12 +28,9 @@ collectionsPageRoutes.get("/", async (c) => {
 
   const navData = await getNavigationData(c);
 
-  const components = c.var.config.theme?.components;
-  const Page = components?.CollectionsPage ?? DefaultCollectionsPage;
-
   return renderPublicPage(c, {
     title: `Collections - ${navData.siteName}`,
     navData,
-    content: <Page collections={collections} theme={components} />,
+    content: <CollectionsPage collections={collections} />,
   });
 });

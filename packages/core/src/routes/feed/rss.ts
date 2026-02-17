@@ -64,7 +64,7 @@ async function buildFeedData(c: Context<Env>): Promise<FeedData> {
 rssRoutes.get("/", async (c) => {
   const feedData = await buildFeedData(c);
 
-  const renderer = c.var.config.theme?.feed?.rss ?? defaultRssRenderer;
+  const renderer = c.var.config.feed?.rss ?? defaultRssRenderer;
   const xml = renderer(feedData);
 
   return new Response(xml, {
@@ -78,7 +78,7 @@ rssRoutes.get("/", async (c) => {
 rssRoutes.get("/atom.xml", async (c) => {
   const feedData = await buildFeedData(c);
 
-  const renderer = c.var.config.theme?.feed?.atom ?? defaultAtomRenderer;
+  const renderer = c.var.config.feed?.atom ?? defaultAtomRenderer;
   const xml = renderer(feedData);
 
   return new Response(xml, {

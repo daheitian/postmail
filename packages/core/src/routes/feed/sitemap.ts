@@ -35,7 +35,7 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
   const postViews = toPostViewsFromPosts(posts, mediaCtx);
   const pageViews = publishedPages.map(toPageView);
 
-  const renderer = c.var.config.theme?.feed?.sitemap ?? defaultSitemapRenderer;
+  const renderer = c.var.config.feed?.sitemap ?? defaultSitemapRenderer;
   const xml = renderer({ siteUrl, posts: postViews, pages: pageViews });
 
   return new Response(xml, {

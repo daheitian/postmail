@@ -3,16 +3,13 @@
  *
  * Provides a single entry point for rendering public pages with the
  * correct layout stack: BaseLayout > SiteLayout > content.
- *
- * BaseLayout is always the built-in implementation (handles Vite assets,
- * I18nProvider, toast). SiteLayout is resolved from theme components.
  */
 
 import type { Context } from "hono";
 import type { Child } from "hono/jsx";
-import type { ThemeComponents, SiteLayoutProps } from "../types.js";
-import { BaseLayout } from "../theme/layouts/BaseLayout.js";
-import { ThreadsSiteLayout as DefaultSiteLayout } from "../themes/threads/ThreadsSiteLayout.js";
+import type { SiteLayoutProps } from "../types.js";
+import { BaseLayout } from "../ui/layouts/BaseLayout.js";
+import { SiteLayout } from "../ui/layouts/SiteLayout.js";
 import type { NavigationData } from "./navigation.js";
 
 export interface RenderPublicPageOptions {
@@ -28,8 +25,6 @@ export interface RenderPublicPageOptions {
 
 /**
  * Render a public page with the standard layout stack.
- *
- * Always uses the built-in BaseLayout, resolves SiteLayout from theme config.
  *
  * @param c - Hono context
  * @param options - Page rendering options
@@ -48,11 +43,6 @@ export interface RenderPublicPageOptions {
 export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
   const { title, description, navData, content } = options;
 
-  const components = c.var.config?.theme?.components as
-    | ThemeComponents
-    | undefined;
-  const Layout = components?.SiteLayout ?? DefaultSiteLayout;
-
   const layoutProps: SiteLayoutProps = {
     siteName: navData.siteName,
     siteDescription: navData.siteDescription,
@@ -64,7 +54,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
 
   return c.html(
     <BaseLayout title={title} description={description} c={c}>
-      <Layout {...layoutProps}>{content}</Layout>
+      <SiteLayout {...layoutProps}>{content}</SiteLayout>
     </BaseLayout>,
   );
 }

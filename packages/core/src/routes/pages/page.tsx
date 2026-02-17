@@ -9,8 +9,8 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { SinglePage as DefaultSinglePage } from "../../themes/threads/pages/SinglePage.js";
-import { PostPage as DefaultPostPage } from "../../themes/threads/pages/PostPage.js";
+import { SinglePage } from "../../ui/pages/SinglePage.js";
+import { PostPage } from "../../ui/pages/PostPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
@@ -39,14 +39,11 @@ pageRoutes.get("/*", async (c) => {
       const navData = await getNavigationData(c);
       const pageView = toPageView(page);
 
-      const components = c.var.config.theme?.components;
-      const Page = components?.SinglePage ?? DefaultSinglePage;
-
       return renderPublicPage(c, {
         title: `${page.title || fullPath} - ${navData.siteName}`,
         description: page.body?.slice(0, 160),
         navData,
-        content: <Page page={pageView} theme={components} />,
+        content: <SinglePage page={pageView} />,
       });
     }
   }
@@ -77,14 +74,11 @@ pageRoutes.get("/*", async (c) => {
     const navData = await getNavigationData(c);
     const title = post.title || navData.siteName;
 
-    const components = c.var.config.theme?.components;
-    const PostPage = components?.PostPage ?? DefaultPostPage;
-
     return renderPublicPage(c, {
       title,
       description: post.body?.slice(0, 160),
       navData,
-      content: <PostPage post={postView} theme={components} />,
+      content: <PostPage post={postView} />,
     });
   }
 

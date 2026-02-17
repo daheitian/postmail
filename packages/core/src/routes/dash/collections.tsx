@@ -7,14 +7,14 @@ import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Collection, Post } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { DashLayout } from "../../theme/layouts/index.js";
+import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import {
   EmptyState,
   ListItemRow,
   ActionButtons,
   CrudPageHeader,
   DangerZone,
-} from "../../theme/components/index.js";
+} from "../../ui/dash/index.js";
 import * as sqid from "../../lib/sqid.js";
 import { dsRedirect } from "../../lib/sse.js";
 

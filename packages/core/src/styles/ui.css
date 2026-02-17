@@ -1,0 +1,440 @@
+/**
+ * UI Component Styles
+ *
+ * All styles reference design tokens from tokens.css.
+ * Class names are the stable public API — DO NOT rename without a major version bump.
+ */
+
+/* Tell Tailwind to scan ui/ source files for class usage */
+@source "../ui/";
+
+@layer components {
+  /* =========================================================================
+   * Page Layout
+   * ========================================================================= */
+
+  .site-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background-color: var(--site-page-bg);
+  }
+
+  /* --- Top header --------------------------------------------------------- */
+
+  .site-header {
+    max-width: var(--site-width);
+    margin: 0 auto;
+    padding: 20px var(--site-padding) 12px;
+  }
+
+  @media (min-width: 700px) {
+    .site-header {
+      padding: 24px var(--site-padding) 16px;
+    }
+  }
+
+  .site-header-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .site-logo {
+    font-size: 1.125rem;
+    font-weight: 800;
+    font-family: var(--font-heading);
+    color: var(--site-text-primary);
+    text-decoration: none;
+    line-height: 1;
+  }
+
+  .site-header-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .site-header-link {
+    font-size: 0.875rem;
+    color: var(--site-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .site-header-link:hover {
+    color: var(--site-text-primary);
+  }
+
+  .site-header-link-active {
+    color: var(--site-text-primary);
+    font-weight: 600;
+  }
+
+  .site-description {
+    font-size: var(--text-sm);
+    color: var(--site-text-secondary);
+    margin: 2px 0 0;
+    line-height: var(--leading);
+  }
+
+  /* --- Browse filter nav (below compose prompt) --------------------------- */
+
+  .site-browse-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--space-xl);
+  }
+
+  .site-browse-link {
+    font-size: 0.875rem;
+    color: var(--site-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .site-browse-link:hover {
+    color: var(--site-text-primary);
+  }
+
+  .site-browse-link-active {
+    color: var(--site-text-primary);
+    font-weight: 600;
+  }
+
+  /* --- Main content area -------------------------------------------------- */
+
+  .site-container {
+    max-width: var(--site-width);
+    margin: 0 auto;
+  }
+
+  .site-content {
+    background-color: var(--site-elevated-bg);
+    padding: 0 var(--site-padding);
+  }
+
+  /* =========================================================================
+   * Timeline & Post Components
+   * ========================================================================= */
+
+  /* Post divider */
+  .site-content hr.feed-divider {
+    border: none;
+    height: 10px;
+    width: 32px;
+    margin: 3rem auto;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='%23ccc' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='%23ccc' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='%23ccc' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  /* Thread reply container with vertical connector line */
+  .feed-replies {
+    position: relative;
+    margin-left: 16px;
+    padding-left: 16px;
+    margin-top: 8px;
+  }
+
+  .feed-replies::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--site-threadline);
+  }
+
+  /* Individual reply in thread */
+  .feed-reply {
+    padding: 12px 0;
+  }
+
+  .feed-reply + .feed-reply {
+    border-top: var(--card-border-width) solid var(--site-divider);
+  }
+
+  /* Compact text for thread replies */
+  .feed-compact {
+    @apply text-sm;
+  }
+
+  /* Media — rounded corners + subtle outline */
+  .feed-media img {
+    border-radius: var(--media-radius);
+    outline: 1px solid var(--site-media-outline);
+    outline-offset: -1px;
+  }
+
+  /* Image carousel — horizontal scroll */
+  .feed-carousel-track {
+    display: flex;
+    overflow-x: auto;
+    gap: 4px;
+    margin-inline: calc(-1 * var(--site-padding));
+    padding-inline: var(--site-padding);
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  .feed-carousel-track::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  .feed-carousel-item {
+    flex: 0 0 auto;
+    width: 224px;
+    height: 280px;
+  }
+  .feed-carousel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Link preview styling */
+  .feed-link-preview {
+    border-radius: 12px;
+    border: var(--card-border-width) solid var(--site-column-outline);
+    padding: 12px 16px;
+    margin-top: 8px;
+  }
+
+  /* Quote block styling */
+  .feed-quote {
+    padding-left: 12px;
+    border-left: 2px solid var(--site-text-secondary);
+  }
+
+  /* =========================================================================
+   * Compose Prompt Bar ("What's new?" at top of content)
+   * ========================================================================= */
+
+  .compose-prompt {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    margin-bottom: var(--space-xl);
+  }
+
+  .compose-prompt-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .compose-prompt-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    flex-shrink: 0;
+    border-radius: var(--avatar-radius);
+    border: 1.5px solid var(--site-column-outline);
+    color: var(--site-text-secondary);
+  }
+
+  .compose-prompt-text {
+    font-size: var(--text-base);
+    color: var(--site-text-secondary);
+  }
+
+  .compose-prompt-post-btn {
+    flex-shrink: 0;
+    padding: 6px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--site-column-outline);
+    background: none;
+    color: var(--site-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      color 0.15s;
+  }
+
+  .compose-prompt-post-btn:hover {
+    color: var(--site-text-primary);
+    border-color: var(--site-text-secondary);
+  }
+
+  /* =========================================================================
+   * Compose Dialog
+   * ========================================================================= */
+
+  /* Dialog — positioned near top of viewport */
+  .compose-dialog {
+    padding: 0;
+    border: none;
+    border-radius: 16px;
+    max-width: 560px;
+    width: calc(100% - 32px);
+    max-height: calc(100dvh - 64px);
+    margin: max(80px, 10vh) auto auto;
+    background-color: var(--site-elevated-bg);
+    color: var(--site-text-primary);
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.25),
+      0 0 0 1px var(--site-column-outline);
+  }
+
+  .compose-dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .compose-dialog-inner {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 64px);
+  }
+
+  .compose-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: var(--card-border-width) solid var(--site-divider);
+  }
+
+  .compose-dialog-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .compose-dialog-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: none;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    transition: background-color 0.15s;
+  }
+
+  .compose-dialog-close:hover {
+    background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-dialog-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .compose-dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: var(--card-border-width) solid var(--site-divider);
+  }
+
+  /* Format tabs — inline pill buttons */
+  .compose-format-tabs {
+    display: flex;
+    gap: 4px;
+    padding-bottom: 8px;
+  }
+
+  .compose-format-tab {
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--site-column-outline);
+    background: none;
+    color: var(--site-text-secondary);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s,
+      border-color 0.15s;
+  }
+
+  .compose-format-tab:hover {
+    color: var(--site-text-primary);
+    border-color: var(--site-text-secondary);
+  }
+
+  .compose-format-tab-active {
+    color: var(--site-text-primary);
+    background-color: var(--site-nav-hover-bg);
+    border-color: var(--site-text-primary);
+    font-weight: 500;
+  }
+
+  /* Borderless title input */
+  .compose-title-input {
+    width: 100%;
+    padding: 4px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--site-text-primary);
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+
+  .compose-title-input::placeholder {
+    color: var(--site-text-secondary);
+    font-weight: 400;
+  }
+
+  /* Borderless body textarea */
+  .compose-body-input {
+    width: 100%;
+    padding: 4px 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--site-text-primary);
+    font-size: var(--text-base);
+    line-height: var(--leading);
+    resize: vertical;
+  }
+
+  .compose-body-input::placeholder {
+    color: var(--site-text-secondary);
+  }
+
+  /* Bottom toolbar */
+  .compose-toolbar {
+    padding: 8px 0;
+  }
+
+  .compose-toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+  }
+
+  .compose-toolbar-btn:hover {
+    color: var(--site-text-primary);
+    background-color: var(--site-nav-hover-bg);
+  }
+}

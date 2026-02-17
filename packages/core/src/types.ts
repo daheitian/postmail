@@ -490,13 +490,6 @@ export interface ArchiveGroup {
 // Timeline Load-More Types
 // =============================================================================
 
-/** A date-based group of timeline items (shared utility type) */
-export interface DateGroup {
-  dateKey: string;
-  label: string;
-  items: TimelineItemView[];
-}
-
 /** A single SSE DOM patch instruction returned by timelineMore */
 export interface TimelinePatch {
   selector: string;
@@ -511,21 +504,18 @@ export interface TimelinePatch {
     | "remove";
 }
 
-/** Props passed to the theme's timelineMore renderer */
+/** Props passed to the timelineMore renderer */
 export interface TimelineMoreProps {
   items: TimelineItemView[];
-  lastDate?: string;
   hasMore: boolean;
   nextCursor?: number;
-  theme?: ThemeComponents;
 }
 
 // =============================================================================
 // Configuration Types
 // =============================================================================
 
-import type { FC, PropsWithChildren } from "hono/jsx";
-import type { ColorTheme } from "./theme/color-themes.js";
+import type { ColorTheme } from "./ui/color-themes.js";
 
 /**
  * Search result from FTS5
@@ -561,19 +551,16 @@ export interface HomePageProps {
   pinnedItems: PostView[];
   hasMore: boolean;
   nextCursor?: number;
-  theme?: ThemeComponents;
 }
 
 /** Props for the single post page component */
 export interface PostPageProps {
   post: PostView;
-  theme?: ThemeComponents;
 }
 
 /** Props for the custom page component */
 export interface SinglePageProps {
   page: PageView;
-  theme?: ThemeComponents;
 }
 
 /** Props for the featured page component */
@@ -581,7 +568,6 @@ export interface FeaturedPageProps {
   items: TimelineItemView[];
   hasMore: boolean;
   nextCursor?: number;
-  theme?: ThemeComponents;
 }
 
 /** Props for the archive page component */
@@ -591,7 +577,6 @@ export interface ArchivePageProps {
   nextCursor?: number;
   format?: Format;
   featured?: boolean;
-  theme?: ThemeComponents;
 }
 
 /** Props for the search page component */
@@ -601,7 +586,6 @@ export interface SearchPageProps {
   error?: string;
   hasMore: boolean;
   page: number;
-  theme?: ThemeComponents;
 }
 
 /** Props for the single collection page component */
@@ -610,13 +594,11 @@ export interface CollectionPageProps {
   posts: PostView[];
   hasMore: boolean;
   nextCursor?: number;
-  theme?: ThemeComponents;
 }
 
 /** Props for the collections list page component */
 export interface CollectionsPageProps {
   collections: (Collection & { postCount: number })[];
-  theme?: ThemeComponents;
 }
 
 // =============================================================================
@@ -654,7 +636,6 @@ export interface ThreadPreviewProps {
   rootPost: PostView;
   previewReplies: PostView[];
   totalReplyCount: number;
-  theme?: ThemeComponents;
 }
 
 /** Props for the timeline feed wrapper */
@@ -662,94 +643,29 @@ export interface TimelineFeedProps {
   items: TimelineItemView[];
   hasMore: boolean;
   nextCursor?: number;
-  theme?: ThemeComponents;
 }
 
 /** Props for the timeline load-more button */
 export interface TimelineLoadMoreProps {
   nextCursor: number;
-  /** Last visible date key (YYYY-MM-DD) for merging groups across pages */
-  lastDate?: string;
-  theme?: ThemeComponents;
 }
 
 /**
- * Theme component overrides
+ * Main Jant configuration
+ *
+ * Configuration Philosophy:
+ * - Use environment variables for runtime config (API keys, feature flags, site settings)
+ * - Use code config (this object) for CSS customization and feed overrides
+ *
+ * Site-level settings (name, description, language) are configured via
+ * environment variables, not here. See lib/config.ts for details.
  */
-export interface ThemeComponents {
-  // Layout
-  SiteLayout?: FC<PropsWithChildren<SiteLayoutProps>>;
-
-  // Pages
-  HomePage?: FC<HomePageProps>;
-  PostPage?: FC<PostPageProps>;
-  SinglePage?: FC<SinglePageProps>;
-  FeaturedPage?: FC<FeaturedPageProps>;
-  ArchivePage?: FC<ArchivePageProps>;
-  SearchPage?: FC<SearchPageProps>;
-  CollectionPage?: FC<CollectionPageProps>;
-  CollectionsPage?: FC<CollectionsPageProps>;
-
-  // Timeline sub-components (by format)
-  NoteCard?: FC<TimelineCardProps>;
-  LinkCard?: FC<TimelineCardProps>;
-  QuoteCard?: FC<TimelineCardProps>;
-  ThreadPreview?: FC<ThreadPreviewProps>;
-  TimelineFeed?: FC<TimelineFeedProps>;
-  TimelineLoadMore?: FC<TimelineLoadMoreProps>;
-
-  // Shared sub-components
-  Pagination?: FC<PaginationComponentProps>;
-  PagePagination?: FC<PagePaginationComponentProps>;
-  EmptyState?: FC<EmptyStateComponentProps>;
-  MediaGallery?: FC<MediaGalleryComponentProps>;
-}
-
-/**
- * Real component prop types (re-exported from component files via index.ts).
- * These are provided here as aliases to avoid circular imports in types.ts.
- * The canonical definitions live in the component files.
- */
-
-/** @see Pagination component in theme/components/Pagination.tsx */
-export interface PaginationComponentProps {
-  baseUrl: string;
-  hasMore: boolean;
-  nextCursor?: number | string;
-  prevCursor?: number | string;
-  cursorParam?: string;
-}
-
-/** @see PagePagination component in theme/components/Pagination.tsx */
-export interface PagePaginationComponentProps {
-  baseUrl: string;
-  currentPage: number;
-  hasMore: boolean;
-  pageParam?: string;
-}
-
-/** @see EmptyState component in theme/components/EmptyState.tsx */
-export interface EmptyStateComponentProps {
-  message: string;
-  ctaText?: string;
-  ctaHref?: string;
-  centered?: boolean;
-}
-
-/** @see MediaGallery component in theme/components/MediaGallery.tsx */
-export interface MediaGalleryComponentProps {
-  attachments: MediaView[];
-}
-
-/**
- * Theme configuration
- */
-export interface JantTheme {
-  /** Theme name */
-  name?: string;
-  /** Component overrides */
-  components?: ThemeComponents;
-  /** Feed renderer overrides (RSS, Atom, Sitemap) */
+export interface JantConfig {
+  /** CSS variable overrides (highest priority after custom CSS) */
+  cssVariables?: Record<string, string>;
+  /** Replace built-in color themes with custom list */
+  colorThemes?: ColorTheme[];
+  /** Custom feed renderers */
   feed?: {
     /** Custom RSS 2.0 renderer -- returns XML string */
     rss?: (data: FeedData) => string;
@@ -758,25 +674,4 @@ export interface JantTheme {
     /** Custom Sitemap renderer -- returns XML string */
     sitemap?: (data: SitemapData) => string;
   };
-  /** Renders SSE patches for timeline load-more responses */
-  timelineMore?: (props: TimelineMoreProps) => TimelinePatch[];
-  /** CSS variable overrides (highest priority, always applied) */
-  cssVariables?: Record<string, string>;
-  /** Replace built-in color themes with a custom list */
-  colorThemes?: ColorTheme[];
-}
-
-/**
- * Main Jant configuration
- *
- * Configuration Philosophy:
- * - Use environment variables for runtime config (API keys, feature flags, site settings)
- * - Use code config (this object) for compile-time customization (theme components)
- *
- * Site-level settings (name, description, language) are configured via
- * environment variables, not here. See lib/config.ts for details.
- */
-export interface JantConfig {
-  /** Theme configuration (components, CSS overrides) */
-  theme?: JantTheme;
 }

@@ -1,0 +1,55 @@
+/**
+ * Compose Prompt
+ *
+ * "What's new?" prompt bar at the top of the content area.
+ * Clicking it opens the compose dialog.
+ */
+
+import type { FC } from "hono/jsx";
+import { useLingui } from "@lingui/react/macro";
+
+export const ComposePrompt: FC = () => {
+  const { t } = useLingui();
+
+  return (
+    <div class="compose-prompt">
+      <button
+        type="button"
+        class="compose-prompt-trigger"
+        onclick="document.getElementById('compose-dialog').showModal()"
+      >
+        <span class="compose-prompt-avatar">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 1 1 3.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </span>
+        <span class="compose-prompt-text">
+          {t({
+            message: "What's new?",
+            comment: "@context: Compose prompt placeholder text",
+          })}
+        </span>
+      </button>
+      <button
+        type="button"
+        class="compose-prompt-post-btn"
+        onclick="document.getElementById('compose-dialog').showModal()"
+      >
+        {t({
+          message: "Post",
+          comment: "@context: Compose prompt post button",
+        })}
+      </button>
+    </div>
+  );
+};

@@ -5,7 +5,7 @@
 import { Hono } from "hono";
 import type { Bindings, SearchResult } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { SearchPage as DefaultSearchPage } from "../../themes/threads/pages/SearchPage.js";
+import { SearchPage } from "../../ui/pages/SearchPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { createMediaContext, toSearchResultViews } from "../../lib/view.js";
@@ -52,22 +52,18 @@ searchRoutes.get("/", async (c) => {
   const mediaCtx = createMediaContext(c);
   const resultViews = toSearchResultViews(results, mediaCtx);
 
-  const components = c.var.config.theme?.components;
-  const Page = components?.SearchPage ?? DefaultSearchPage;
-
   return renderPublicPage(c, {
     title: query
       ? `Search: ${query} - ${navData.siteName}`
       : `Search - ${navData.siteName}`,
     navData,
     content: (
-      <Page
+      <SearchPage
         query={query}
         results={resultViews}
         error={error}
         hasMore={hasMore}
         page={page}
-        theme={components}
       />
     ),
   });

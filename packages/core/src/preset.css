@@ -10,7 +10,8 @@
 @import "basecoat-css";
 @plugin "@tailwindcss/typography";
 @import "./styles/components.css";
-@import "./themes/threads/style.css";
+@import "./styles/tokens.css";
+@import "./styles/ui.css";
 
 @theme {
   --radius-default: 0.5rem;

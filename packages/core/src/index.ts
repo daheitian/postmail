@@ -8,10 +8,6 @@
 export { createApp } from "./app.js";
 export type { App, AppVariables } from "./app.js";
 
-// Default theme
-export { theme as threadsTheme } from "./themes/threads/index.js";
-export type { ThemeOptions as ThreadsThemeOptions } from "./themes/threads/index.js";
-
 // Types
 export type {
   Format,
@@ -37,9 +33,7 @@ export type {
   CreateCollection,
   UpdateCollection,
   JantConfig,
-  JantTheme,
-  ThemeComponents,
-  // View Model types (for theme authors)
+  // View Model types
   PostView,
   PageView,
   MediaView,
@@ -47,31 +41,15 @@ export type {
   SearchResultView,
   TimelineItemView,
   ArchiveGroup,
-  // Timeline types
-  TimelineCardProps,
-  ThreadPreviewProps,
-  TimelineFeedProps,
-  TimelineLoadMoreProps,
-  DateGroup,
   TimelinePatch,
-  TimelineMoreProps,
-  // Site layout
-  SiteLayoutProps,
-  // Page-level props (for theme authors)
-  HomePageProps,
-  PostPageProps,
-  SinglePageProps,
-  ArchivePageProps,
-  SearchPageProps,
-  CollectionPageProps,
-  FeaturedPageProps,
-  CollectionsPageProps,
-  // Feed types (for theme authors)
+  // Feed types
   FeedData,
   SitemapData,
   // Search
   SearchResult,
 } from "./types.js";
+
+export type { ColorTheme } from "./ui/color-themes.js";
 
 export {
   FORMATS,
@@ -82,13 +60,13 @@ export {
   MAX_PINNED_POSTS,
 } from "./types.js";
 
-// Utilities (for theme authors)
+// Utilities
 export * as time from "./lib/time.js";
 export * as sqid from "./lib/sqid.js";
 export * as url from "./lib/url.js";
 export * as markdown from "./lib/markdown.js";
 
-// View Model conversion utilities (for advanced theme use)
+// View Model conversion utilities
 export {
   createMediaContext,
   toPostView,
@@ -102,15 +80,7 @@ export {
 } from "./lib/view.js";
 export type { MediaContext } from "./lib/view.js";
 
-// Render helper (for theme authors adding custom routes)
-export { renderPublicPage } from "./lib/render.js";
-export type { RenderPublicPageOptions } from "./lib/render.js";
-
-// Navigation helper (for theme authors)
-export { getNavigationData } from "./lib/navigation.js";
-export type { NavigationData } from "./lib/navigation.js";
-
-// Default feed renderers (for theme authors to extend)
+// Default feed renderers (for custom feed implementations)
 export {
   defaultRssRenderer,
   defaultAtomRenderer,

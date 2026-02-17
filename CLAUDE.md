@@ -155,7 +155,17 @@ packages/core/              # Library (@jant/core)
 │   ├── db/                # Drizzle schema & migrations
 │   ├── services/          # Business logic (service layer)
 │   ├── routes/            # Route handlers (xxxRoutes naming)
-│   ├── theme/             # UI (components, layouts)
+│   ├── ui/                # UI (components, layouts, pages, feed)
+│   │   ├── layouts/       # BaseLayout, SiteLayout, DashLayout
+│   │   ├── pages/         # Public page components (Home, Post, Archive, etc.)
+│   │   ├── feed/          # Timeline feed components (NoteCard, LinkCard, etc.)
+│   │   ├── compose/       # Compose dialog + prompt
+│   │   ├── dash/          # Dashboard components (forms, lists, badges)
+│   │   ├── shared/        # Cross-cutting (Pagination, EmptyState, etc.)
+│   │   └── color-themes.ts
+│   ├── styles/            # CSS design tokens + component styles
+│   │   ├── tokens.css     # Design tokens (CSS custom properties)
+│   │   └── ui.css         # Component styles
 │   ├── lib/               # Utilities (100% JSDoc documented)
 │   ├── i18n/              # Internationalization
 │   └── middleware/        # Hono middleware
@@ -164,20 +174,13 @@ templates/jant-site/        # Development + demo site
 ├── src/
 │   ├── style.css          # CSS entry (@import)
 │   ├── client.ts          # Client JS entry
-│   └── app.ts             # App entry
+│   └── index.ts           # App entry
 ├── vite.config.ts         # Vite config (monorepo alias)
 └── wrangler.toml          # Cloudflare config
 
 packages/create-jant/       # CLI scaffolding
 └── template/              # User project template (no alias)
 ```
-
-### Reusable Components (`src/theme/components/`)
-
-**CRUD**: CrudPageHeader, EmptyState, ListItemRow, ActionButtons, DangerZone
-**Badges**: FormatBadge, StatusBadge
-**Forms**: PostForm, PageForm
-**Display**: PostList, ThreadView, Pagination
 
 ## Tech Stack
 
@@ -593,17 +596,16 @@ Following Cloudflare Workers best practices:
 
 Use `createApp({ ... })` parameters ONLY for things that require compilation:
 
-- **Theme components**: UI component overrides
-- **CSS customization**: Theme variables and styles
-- **Build-time extensions**: Things that must be bundled
+- **CSS variable overrides**: Override design tokens at build time
+- **Custom color themes**: Replace built-in color theme list
+- **Custom feed renderers**: Override RSS/Atom/Sitemap output
 
 ```typescript
 // ✅ Correct usage
 export default createApp({
-  theme: {
-    components: {
-      PostCard: MyCustomPostCard, // Requires compilation
-    },
+  cssVariables: {
+    "--site-width": "720px",
+    "--card-radius": "0.5rem",
   },
 });
 
@@ -628,7 +630,55 @@ export default createApp({
 
 1. **NEVER add feature flags to `createApp()`** - all features (search, RSS, sitemap) are enabled by default. If you need to disable features, use Cloudflare Workers routing rules or environment variables.
 2. **NEVER add site settings to `createApp()`** - they belong in environment variables or the database.
-3. **DO use `createApp()` for theme/UI customization** - components and styles need to be compiled.
+3. **DO use `createApp()` for CSS variable overrides and custom color themes** - these need to be available at build/deploy time.
+
+## CSS Customization Architecture
+
+**No component-level themes.** Jant has one built-in UI. Customization is CSS-only.
+
+### Three-Layer Customization API
+
+| Layer    | For whom        | Mechanism                                              |
+| -------- | --------------- | ------------------------------------------------------ |
+| Settings | All users       | Color theme picker in dashboard                        |
+| CSS      | CSS-savvy users | Design tokens + data attributes + custom CSS injection |
+| Code     | Fork developers | Well-separated file structure in `src/ui/`             |
+
+### Design Tokens (`styles/tokens.css`)
+
+All visual properties reference CSS custom properties. Never hardcode colors, fonts, spacing, or radii in components — always use tokens.
+
+### Data Attributes (Public API)
+
+Data attributes on HTML elements are a **stable, versioned public API** for CSS targeting. They MUST NOT be renamed or removed without a major version bump.
+
+| Attribute            | Element        | Purpose                       |
+| -------------------- | -------------- | ----------------------------- |
+| `data-authenticated` | `<body>`       | Auth state for CSS            |
+| `data-page`          | page wrapper   | Page type identifier          |
+| `data-post`          | `<article>`    | Post marker                   |
+| `data-format`        | `<article>`    | Post format (note/link/quote) |
+| `data-post-body`     | content div    | Target post body              |
+| `data-post-meta`     | meta div       | Target post metadata          |
+| `data-post-media`    | media div      | Target post media             |
+| `data-feed`          | feed container | Target feed                   |
+| `data-feed-group`    | date group     | Target date groups            |
+| `data-date`          | date group     | Date value (YYYY-MM-DD)       |
+
+When adding new interactive features, always add appropriate data attributes.
+
+### Custom CSS Injection
+
+Users can inject arbitrary CSS via Dashboard > Settings > Appearance. Stored in database, injected in `<head>` with highest priority.
+
+### CSS Priority (lowest → highest)
+
+1. BaseCoat defaults (`:root`)
+2. Design tokens (`styles/tokens.css`)
+3. Component styles (`styles/ui.css`)
+4. Selected color theme (`:root:root` specificity)
+5. `cssVariables` from `createApp()` config
+6. Custom CSS injection from dashboard
 
 ## Key Conventions
 

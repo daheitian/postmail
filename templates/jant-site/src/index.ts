@@ -2,7 +2,7 @@
  * Jant Site Entry Point
  *
  * This is the main entry point for your Jant site.
- * The threads theme is used by default. To customize, pass options to createApp().
+ * Customize with CSS variables, color themes, or custom CSS in the dashboard.
  *
  * Configuration:
  * - Site settings (name, description, language) should be configured via

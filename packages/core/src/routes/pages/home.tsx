@@ -13,7 +13,8 @@ import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
 import { sse } from "../../lib/sse.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
-import { HomePage as DefaultHomePage } from "../../themes/threads/pages/HomePage.js";
+import { HomePage } from "../../ui/pages/HomePage.js";
+import { timelineMore } from "../../ui/feed/timelineMore.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -22,7 +23,6 @@ export const homeRoutes = new Hono<Env>();
 homeRoutes.get("/", async (c) => {
   const cursorParam = c.req.query("cursor");
   const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
-  const lastDate = c.req.query("lastDate");
 
   const { items, hasMore, nextCursor } = await assembleTimeline(c, {
     cursor: cursor && !isNaN(cursor) ? cursor : undefined,
@@ -36,21 +36,10 @@ homeRoutes.get("/", async (c) => {
       });
     }
 
-    const themeConfig = c.var.config.theme;
-    const renderMore = themeConfig?.timelineMore;
-    if (!renderMore) {
-      // Should never happen — default theme always provides timelineMore
-      return sse(c, async (stream) => {
-        stream.remove("#load-more-container");
-      });
-    }
-
-    const patches = renderMore({
+    const patches = timelineMore({
       items,
-      lastDate: lastDate ?? undefined,
       hasMore,
       nextCursor,
-      theme: themeConfig?.components,
     });
 
     return sse(c, async (stream) => {
@@ -79,19 +68,15 @@ homeRoutes.get("/", async (c) => {
   const mediaCtx = createMediaContext(c);
   const pinnedItems = toPostViewsFromPosts(pinnedPosts, mediaCtx);
 
-  const components = c.var.config.theme?.components;
-  const Page = components?.HomePage ?? DefaultHomePage;
-
   return renderPublicPage(c, {
     title: navData.siteName,
     navData,
     content: (
-      <Page
+      <HomePage
         items={items}
         pinnedItems={pinnedItems}
         hasMore={hasMore}
         nextCursor={nextCursor}
-        theme={components}
       />
     ),
   });

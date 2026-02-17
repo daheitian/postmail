@@ -11,7 +11,6 @@ import { i18nMiddleware } from "./i18n/index.js";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, JantConfig } from "./types.js";
 import { SETTINGS_KEYS } from "./lib/constants.js";
-import { theme as threadsTheme } from "./themes/threads/index.js";
 import { hashPassword } from "better-auth/crypto";
 
 // Routes - Pages
@@ -53,7 +52,7 @@ import { requireAuth } from "./middleware/auth.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
 
 // Layouts for auth pages
-import { BaseLayout } from "./theme/layouts/index.js";
+import { BaseLayout } from "./ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "./lib/sse.js";
 import { getAvailableThemes, buildThemeStyle } from "./lib/theme.js";
 import { createStorageDriver, type StorageDriver } from "./lib/storage.js";
@@ -64,6 +63,8 @@ export interface AppVariables {
   auth: Auth;
   config: JantConfig;
   themeStyle: string;
+  customCSS: string;
+  isAuthenticated: boolean;
   storage: StorageDriver | null;
 }
 
@@ -84,30 +85,12 @@ export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
  * import { createApp } from "@jant/core";
  *
  * export default createApp({
- *   theme: { components: { PostPage: MyPostPage } },
+ *   cssVariables: { "--card-radius": "0" },
  * });
  * ```
  */
 export function createApp(config: JantConfig = {}): App {
-  // Merge with default threads theme
-  const defaultTheme = threadsTheme();
-  const resolvedConfig: JantConfig = {
-    ...config,
-    theme: {
-      name: config.theme?.name ?? defaultTheme.name,
-      components: {
-        ...defaultTheme.components,
-        ...config.theme?.components,
-      },
-      timelineMore: config.theme?.timelineMore ?? defaultTheme.timelineMore,
-      cssVariables: {
-        ...defaultTheme.cssVariables,
-        ...config.theme?.cssVariables,
-      },
-      colorThemes: config.theme?.colorThemes ?? defaultTheme.colorThemes,
-      feed: config.theme?.feed,
-    },
-  };
+  const resolvedConfig: JantConfig = { ...config };
 
   const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
@@ -141,18 +124,37 @@ export function createApp(config: JantConfig = {}): App {
   // Onboarding gate — redirect to /setup if not yet initialized
   app.use("*", requireOnboarding());
 
-  // Theme middleware - resolve active color theme and build CSS
+  // Theme middleware - resolve active color theme, custom CSS, and auth state
   app.use("*", async (c, next) => {
-    const themeId = await c.var.services.settings.get(SETTINGS_KEYS.THEME);
+    const [themeId, customCSS] = await Promise.all([
+      c.var.services.settings.get(SETTINGS_KEYS.THEME),
+      c.var.services.settings.get(SETTINGS_KEYS.CUSTOM_CSS),
+    ]);
     const themes = getAvailableThemes(resolvedConfig);
     const activeTheme = themeId
       ? themes.find((t) => t.id === themeId)
       : undefined;
     const themeStyle = buildThemeStyle(
       activeTheme,
-      resolvedConfig.theme?.cssVariables,
+      resolvedConfig.cssVariables,
     );
     c.set("themeStyle", themeStyle);
+    c.set("customCSS", customCSS ?? "");
+
+    // Check auth state for data-authenticated attribute on <body>
+    let isAuthenticated = false;
+    if (c.var.auth) {
+      try {
+        const session = await c.var.auth.api.getSession({
+          headers: c.req.raw.headers,
+        });
+        isAuthenticated = !!session;
+      } catch {
+        // Not authenticated
+      }
+    }
+    c.set("isAuthenticated", isAuthenticated);
+
     await next();
   });
 

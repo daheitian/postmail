@@ -8,7 +8,7 @@ import { Hono } from "hono";
 import type { Bindings, Format } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { FORMATS } from "../../types.js";
-import { ArchivePage as DefaultArchivePage } from "../../themes/threads/pages/ArchivePage.js";
+import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { createMediaContext, toArchiveGroups } from "../../lib/view.js";
@@ -69,20 +69,16 @@ archiveRoutes.get("/", async (c) => {
   const mediaCtx = createMediaContext(c);
   const groups = toArchiveGroups(grouped, mediaCtx);
 
-  const components = c.var.config.theme?.components;
-  const Page = components?.ArchivePage ?? DefaultArchivePage;
-
   return renderPublicPage(c, {
     title: `Archive - ${navData.siteName}`,
     navData,
     content: (
-      <Page
+      <ArchivePage
         groups={groups}
         hasMore={hasMore}
         nextCursor={nextCursor}
         format={format}
         featured={featured}
-        theme={components}
       />
     ),
   });

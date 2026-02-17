@@ -10,8 +10,8 @@ import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Media } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { DashLayout } from "../../theme/layouts/index.js";
-import { EmptyState, DangerZone } from "../../theme/components/index.js";
+import { DashLayout } from "../../ui/layouts/DashLayout.js";
+import { EmptyState, DangerZone } from "../../ui/dash/index.js";
 import * as time from "../../lib/time.js";
 import {
   getMediaUrl,

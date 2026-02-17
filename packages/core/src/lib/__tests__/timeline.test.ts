@@ -12,9 +12,8 @@ import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPostService } from "../../services/post.js";
 import { createMediaService } from "../../services/media.js";
 import { buildMediaMap } from "../media-helpers.js";
-import { groupByDate } from "../timeline.js";
 import type { Database } from "../../db/index.js";
-import type { PostWithMedia, TimelineItemView } from "../../types.js";
+import type { PostWithMedia } from "../../types.js";
 
 describe("Timeline data assembly", () => {
   let db: Database;
@@ -205,80 +204,5 @@ describe("Timeline data assembly", () => {
 
     const displayPosts = posts.slice(0, pageSize);
     expect(displayPosts).toHaveLength(2);
-  });
-});
-
-describe("groupByDate", () => {
-  function makeItem(dateStr: string, formatted: string): TimelineItemView {
-    return {
-      post: {
-        id: 1,
-        permalink: "/p/1",
-        format: "note",
-        status: "published",
-        featured: true,
-        pinned: false,
-        publishedAt: `${dateStr}T12:00:00.000Z`,
-        publishedAtFormatted: formatted,
-        publishedAtTime: "12:00",
-        publishedAtRelative: "1d",
-        updatedAt: `${dateStr}T12:00:00.000Z`,
-        media: [],
-      },
-    };
-  }
-
-  it("returns empty array for empty input", () => {
-    expect(groupByDate([])).toEqual([]);
-  });
-
-  it("groups items by YYYY-MM-DD date key", () => {
-    const items = [
-      makeItem("2024-02-01", "Feb 1, 2024"),
-      makeItem("2024-02-01", "Feb 1, 2024"),
-      makeItem("2024-02-02", "Feb 2, 2024"),
-    ];
-
-    const groups = groupByDate(items);
-    expect(groups).toHaveLength(2);
-    expect(groups[0]?.dateKey).toBe("2024-02-01");
-    expect(groups[0]?.label).toBe("Feb 1, 2024");
-    expect(groups[0]?.items).toHaveLength(2);
-    expect(groups[1]?.dateKey).toBe("2024-02-02");
-    expect(groups[1]?.items).toHaveLength(1);
-  });
-
-  it("creates separate groups for non-contiguous same dates", () => {
-    const items = [
-      makeItem("2024-02-01", "Feb 1, 2024"),
-      makeItem("2024-02-02", "Feb 2, 2024"),
-      makeItem("2024-02-01", "Feb 1, 2024"),
-    ];
-
-    const groups = groupByDate(items);
-    expect(groups).toHaveLength(3);
-    expect(groups[0]?.dateKey).toBe("2024-02-01");
-    expect(groups[1]?.dateKey).toBe("2024-02-02");
-    expect(groups[2]?.dateKey).toBe("2024-02-01");
-  });
-
-  it("handles a single item", () => {
-    const items = [makeItem("2024-06-15", "Jun 15, 2024")];
-    const groups = groupByDate(items);
-    expect(groups).toHaveLength(1);
-    expect(groups[0]?.dateKey).toBe("2024-06-15");
-    expect(groups[0]?.items).toHaveLength(1);
-  });
-
-  it("uses the first item's formatted date as the group label", () => {
-    const items = [
-      makeItem("2024-03-10", "Mar 10, 2024"),
-      makeItem("2024-03-10", "March 10"),
-    ];
-
-    const groups = groupByDate(items);
-    expect(groups).toHaveLength(1);
-    // Label comes from first item in the group
-    expect(groups[0]?.label).toBe("Mar 10, 2024");
   });
 });

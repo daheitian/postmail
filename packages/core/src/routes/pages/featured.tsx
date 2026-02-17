@@ -10,7 +10,7 @@ import type { AppVariables } from "../../app.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
-import { FeaturedPage as DefaultFeaturedPage } from "../../themes/threads/pages/FeaturedPage.js";
+import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -30,12 +30,9 @@ featuredRoutes.get("/", async (c) => {
   // Convert to timeline items (simple — no thread previews)
   const items = postViews.map((post) => ({ post }));
 
-  const components = c.var.config.theme?.components;
-  const Page = components?.FeaturedPage ?? DefaultFeaturedPage;
-
   return renderPublicPage(c, {
     title: `Featured - ${navData.siteName}`,
     navData,
-    content: <Page items={items} hasMore={false} theme={components} />,
+    content: <FeaturedPage items={items} hasMore={false} />,
   });
 });

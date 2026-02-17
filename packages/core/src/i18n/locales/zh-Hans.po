@@ -18,6 +18,11 @@ msgstr ""
 #~ msgid "{count} replies"
 #~ msgstr "{count} 条回复"
 
+#. @context: Custom CSS textarea placeholder
+#: src/routes/dash/settings.tsx:364
+msgid "/* Your custom CSS here */"
+msgstr ""
+
 #. @context: Navigation link
 #: src/routes/dash/collections.tsx:271
 msgid "← Back to Collections"
@@ -43,6 +48,11 @@ msgstr "302（临时）"
 msgid "Account"
 msgstr "账户"
 
+#. @context: Custom CSS settings description
+#: src/routes/dash/settings.tsx:354
+msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
+msgstr ""
+
 #. @context: Button to add a navigation link
 #: src/routes/dash/pages.tsx:50
 msgid "Add Link"
@@ -50,8 +60,8 @@ msgstr ""
 
 #. @context: Button to open media picker
 #. @context: Compose toolbar - add media
-#: src/theme/components/PostForm.tsx:211
-#: src/themes/threads/components/ComposeDialog.tsx:219
+#: src/ui/compose/ComposeDialog.tsx:219
+#: src/ui/dash/PostForm.tsx:211
 msgid "Add Media"
 msgstr "添加媒体"
 
@@ -61,7 +71,9 @@ msgid "Add to nav"
 msgstr ""
 
 #. @context: Archive filter - all formats
-#: src/themes/threads/pages/ArchivePage.tsx:71
+#. @context: Browse filter for all posts
+#: src/ui/layouts/SiteLayout.tsx:43
+#: src/ui/pages/ArchivePage.tsx:71
 msgid "All"
 msgstr "所有"
 
@@ -76,12 +88,14 @@ msgid "Appearance"
 msgstr "外观"
 
 #. @context: Archive page title
-#: src/themes/threads/pages/ArchivePage.tsx:56
+#. @context: Browse filter for archive
+#: src/ui/layouts/SiteLayout.tsx:57
+#: src/ui/pages/ArchivePage.tsx:55
 msgid "Archive"
 msgstr "档案馆"
 
 #. @context: Confirmation dialog when deleting a post from the list
-#: src/theme/components/PostList.tsx:60
+#: src/ui/dash/PostList.tsx:60
 msgid "Are you sure you want to delete this post? This cannot be undone."
 msgstr ""
 
@@ -119,15 +133,15 @@ msgstr "返回"
 #: src/routes/dash/collections.tsx:354
 #: src/routes/dash/pages.tsx:400
 #: src/routes/dash/redirects.tsx:177
-#: src/theme/components/PageForm.tsx:171
-#: src/theme/components/PostForm.tsx:312
+#: src/ui/dash/PageForm.tsx:171
+#: src/ui/dash/PostForm.tsx:312
 msgid "Cancel"
 msgstr "取消"
 
 #. @context: Button to change password
 #. @context: Settings section heading
-#: src/routes/dash/settings.tsx:417
-#: src/routes/dash/settings.tsx:482
+#: src/routes/dash/settings.tsx:474
+#: src/routes/dash/settings.tsx:539
 msgid "Change Password"
 msgstr "更改密码"
 
@@ -138,13 +152,13 @@ msgstr "点击图片查看完整尺寸"
 
 #. @context: Compose collection field
 #. @context: Compose toolbar - toggle collection
-#: src/themes/threads/components/ComposeDialog.tsx:191
-#: src/themes/threads/components/ComposeDialog.tsx:272
+#: src/ui/compose/ComposeDialog.tsx:191
+#: src/ui/compose/ComposeDialog.tsx:272
 msgid "Collection"
 msgstr ""
 
 #. @context: Post form field - assign to collection
-#: src/theme/components/PostForm.tsx:264
+#: src/ui/dash/PostForm.tsx:264
 msgid "Collection (optional)"
 msgstr ""
 
@@ -152,8 +166,8 @@ msgstr ""
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #: src/routes/dash/collections.tsx:35
-#: src/theme/layouts/DashLayout.tsx:114
-#: src/themes/threads/pages/CollectionsPage.tsx:18
+#: src/ui/layouts/DashLayout.tsx:114
+#: src/ui/pages/CollectionsPage.tsx:18
 msgid "Collections"
 msgstr "收藏夹"
 
@@ -163,29 +177,29 @@ msgstr "收藏夹"
 #~ msgstr "集合（可选）"
 
 #. @context: Appearance settings heading
-#: src/routes/dash/settings.tsx:311
+#: src/routes/dash/settings.tsx:315
 msgid "Color theme"
 msgstr "颜色主题"
 
 #. @context: Setup form submit button
-#: src/app.tsx:287
+#: src/app.tsx:289
 msgid "Complete Setup"
 msgstr "完成设置"
 
 #. @context: Password form field
-#: src/routes/dash/settings.tsx:459
+#: src/routes/dash/settings.tsx:516
 msgid "Confirm New Password"
 msgstr "确认新密码"
 
 #. @context: Password reset form field
-#: src/app.tsx:560
+#: src/app.tsx:562
 msgid "Confirm Password"
 msgstr "确认密码"
 
 #. @context: Page form field label - content
 #. @context: Post form field
-#: src/theme/components/PageForm.tsx:96
-#: src/theme/components/PostForm.tsx:104
+#: src/ui/dash/PageForm.tsx:96
+#: src/ui/dash/PostForm.tsx:104
 msgid "Content"
 msgstr "内容"
 
@@ -207,7 +221,7 @@ msgid "Create Link"
 msgstr "创建链接"
 
 #. @context: Button to create new page
-#: src/theme/components/PageForm.tsx:157
+#: src/ui/dash/PageForm.tsx:157
 msgid "Create Page"
 msgstr "创建页面"
 
@@ -217,7 +231,7 @@ msgid "Create Redirect"
 msgstr "创建重定向"
 
 #. @context: Setup page description
-#: src/app.tsx:227
+#: src/app.tsx:229
 msgid "Create your admin account."
 msgstr "创建您的管理员账户。"
 
@@ -227,14 +241,19 @@ msgstr "创建您的管理员账户。"
 #~ msgstr "创建您的第一页"
 
 #. @context: Button in empty state to create first post
-#: src/theme/components/PostList.tsx:29
+#: src/ui/dash/PostList.tsx:29
 msgid "Create your first post"
 msgstr "创建你的第一篇帖子"
 
 #. @context: Password form field
-#: src/routes/dash/settings.tsx:426
+#: src/routes/dash/settings.tsx:483
 msgid "Current Password"
 msgstr "当前密码"
+
+#. @context: Appearance settings heading for custom CSS
+#: src/routes/dash/settings.tsx:348
+msgid "Custom CSS"
+msgstr ""
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx:297
@@ -252,14 +271,14 @@ msgstr "当前密码"
 #~ msgstr ""
 
 #. @context: Section heading for dangerous/destructive actions
-#: src/theme/components/DangerZone.tsx:55
+#: src/ui/dash/DangerZone.tsx:55
 msgid "Danger Zone"
 msgstr "危险区域"
 
 #. @context: Dashboard main heading
 #. @context: Dashboard navigation - main dashboard page
 #: src/routes/dash/index.tsx:36
-#: src/theme/layouts/DashLayout.tsx:78
+#: src/ui/layouts/DashLayout.tsx:78
 msgid "Dashboard"
 msgstr "仪表板"
 
@@ -268,7 +287,7 @@ msgstr "仪表板"
 #. @context: Button to delete redirect
 #: src/routes/dash/pages.tsx:120
 #: src/routes/dash/redirects.tsx:60
-#: src/theme/components/ActionButtons.tsx:80
+#: src/ui/dash/ActionButtons.tsx:80
 msgid "Delete"
 msgstr "删除"
 
@@ -293,7 +312,7 @@ msgid "Deleting this media will remove it permanently from storage."
 msgstr "删除此媒体将永久从存储中移除。"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:398
+#: src/app.tsx:400
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "演示账户已预填。只需点击登录。"
 
@@ -311,8 +330,8 @@ msgstr "链接的显示文本"
 
 #. @context: Close media picker button
 #. @context: Close media picker button
-#: src/theme/components/PostForm.tsx:334
-#: src/themes/threads/components/ComposeDialog.tsx:375
+#: src/ui/compose/ComposeDialog.tsx:375
+#: src/ui/dash/PostForm.tsx:334
 msgid "Done"
 msgstr "完成"
 
@@ -320,10 +339,10 @@ msgstr "完成"
 #. @context: Page status option - draft
 #. @context: Post status badge - draft
 #. @context: Post status option
-#: src/theme/components/PageForm.tsx:133
-#: src/theme/components/PostForm.tsx:234
-#: src/theme/components/StatusBadge.tsx:34
-#: src/themes/threads/components/ComposeDialog.tsx:326
+#: src/ui/compose/ComposeDialog.tsx:326
+#: src/ui/dash/PageForm.tsx:133
+#: src/ui/dash/PostForm.tsx:234
+#: src/ui/dash/StatusBadge.tsx:34
 msgid "Draft"
 msgstr "草稿"
 
@@ -353,8 +372,8 @@ msgstr "草稿"
 #: src/routes/dash/pages.tsx:192
 #: src/routes/dash/pages.tsx:256
 #: src/routes/dash/posts.tsx:140
-#: src/theme/components/ActionButtons.tsx:72
-#: src/theme/components/PostList.tsx:50
+#: src/ui/dash/ActionButtons.tsx:72
+#: src/ui/dash/PostList.tsx:50
 msgid "Edit"
 msgstr "编辑"
 
@@ -380,41 +399,43 @@ msgstr "编辑帖子"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:257
-#: src/app.tsx:413
+#: src/app.tsx:259
+#: src/app.tsx:415
 msgid "Email"
 msgstr "电子邮件"
 
 #. @context: Password reset page description
-#: src/app.tsx:529
+#: src/app.tsx:531
 msgid "Enter your new password."
 msgstr "输入您的新密码。"
 
 #. @context: Archive filter - featured posts
+#. @context: Browse filter for featured posts
 #. @context: Compose checkbox - mark as featured
 #. @context: Featured page heading
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
-#: src/theme/components/PostForm.tsx:246
-#: src/theme/components/StatusBadge.tsx:45
-#: src/themes/threads/components/ComposeDialog.tsx:305
-#: src/themes/threads/pages/ArchivePage.tsx:89
-#: src/themes/threads/pages/FeaturedPage.tsx:26
+#: src/ui/compose/ComposeDialog.tsx:305
+#: src/ui/dash/PostForm.tsx:246
+#: src/ui/dash/StatusBadge.tsx:45
+#: src/ui/layouts/SiteLayout.tsx:50
+#: src/ui/pages/ArchivePage.tsx:92
+#: src/ui/pages/FeaturedPage.tsx:23
 msgid "Featured"
 msgstr "精选"
 
 #. @context: Post form field - post format
-#: src/theme/components/PostForm.tsx:64
+#: src/ui/dash/PostForm.tsx:64
 msgid "Format"
 msgstr ""
 
 #. @context: Search results count - multiple
-#: src/themes/threads/pages/SearchPage.tsx:76
+#: src/ui/pages/SearchPage.tsx:73
 msgid "Found {count} results"
 msgstr "找到 {count} 个结果"
 
 #. @context: Search results count - single
-#: src/themes/threads/pages/SearchPage.tsx:72
+#: src/ui/pages/SearchPage.tsx:69
 msgid "Found 1 result"
 msgstr "找到 1 个结果"
 
@@ -450,7 +471,7 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "图像会自动优化：调整大小至最大 1920px，转换为 WebP，并去除元数据。"
 
 #. @context: Password reset error heading
-#: src/app.tsx:604
+#: src/app.tsx:606
 msgid "Invalid or Expired Link"
 msgstr "无效或过期的链接"
 
@@ -473,34 +494,34 @@ msgstr ""
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/theme/components/FormatBadge.tsx:20
-#: src/theme/components/PostForm.tsx:74
-#: src/themes/threads/components/ComposeDialog.tsx:101
-#: src/themes/threads/pages/ArchivePage.tsx:17
+#: src/ui/compose/ComposeDialog.tsx:101
+#: src/ui/dash/FormatBadge.tsx:20
+#: src/ui/dash/PostForm.tsx:74
+#: src/ui/pages/ArchivePage.tsx:17
 msgid "Link"
 msgstr "链接"
 
 #. @context: Post format label plural - links
-#: src/themes/threads/pages/ArchivePage.tsx:33
+#: src/ui/pages/ArchivePage.tsx:33
 msgid "Links"
 msgstr "链接"
 
 #. @context: Pagination button - load more items
-#: src/theme/components/Pagination.tsx:103
+#: src/ui/shared/Pagination.tsx:103
 msgid "Load more"
 msgstr "加载更多"
 
 #. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/theme/components/PostForm.tsx:345
-#: src/themes/threads/components/ComposeDialog.tsx:386
-#: src/themes/threads/timeline/TimelineLoadMore.tsx:28
+#: src/ui/compose/ComposeDialog.tsx:386
+#: src/ui/dash/PostForm.tsx:345
+#: src/ui/feed/TimelineLoadMore.tsx:22
 msgid "Loading..."
 msgstr "加载中..."
 
 #. @context: Page slug validation message
-#: src/theme/components/PageForm.tsx:77
+#: src/ui/dash/PageForm.tsx:77
 msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "仅允许小写字母、数字和连字符"
 
@@ -513,8 +534,8 @@ msgstr "Markdown"
 #. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/routes/dash/media.tsx:151
-#: src/theme/components/PostForm.tsx:158
-#: src/theme/layouts/DashLayout.tsx:105
+#: src/ui/dash/PostForm.tsx:158
+#: src/ui/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "媒体"
 
@@ -524,7 +545,7 @@ msgid "My Collection"
 msgstr "我的收藏"
 
 #. @context: Account settings form field
-#: src/routes/dash/settings.tsx:373
+#: src/routes/dash/settings.tsx:430
 msgid "Name"
 msgstr "姓名"
 
@@ -563,8 +584,8 @@ msgstr "新页面"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:544
-#: src/routes/dash/settings.tsx:442
+#: src/app.tsx:546
+#: src/routes/dash/settings.tsx:499
 msgid "New Password"
 msgstr "新密码"
 
@@ -575,7 +596,7 @@ msgstr "新密码"
 #: src/routes/dash/index.tsx:68
 #: src/routes/dash/posts.tsx:30
 #: src/routes/dash/posts.tsx:46
-#: src/themes/threads/components/ComposeDialog.tsx:66
+#: src/ui/compose/ComposeDialog.tsx:66
 msgid "New Post"
 msgstr "新帖子"
 
@@ -590,20 +611,20 @@ msgstr "新重定向"
 
 #. @context: Pagination button - next page
 #. @context: Pagination button - next page
-#: src/theme/components/Pagination.tsx:49
-#: src/theme/components/Pagination.tsx:160
+#: src/ui/shared/Pagination.tsx:49
+#: src/ui/shared/Pagination.tsx:160
 msgid "Next"
 msgstr "下一页"
 
 #. @context: Empty state message
 #. @context: Empty state message on collections page
 #: src/routes/dash/collections.tsx:48
-#: src/themes/threads/pages/CollectionsPage.tsx:28
+#: src/ui/pages/CollectionsPage.tsx:28
 msgid "No collections yet."
 msgstr "尚未有任何收藏。"
 
 #. @context: Empty state message on featured page
-#: src/themes/threads/pages/FeaturedPage.tsx:36
+#: src/ui/pages/FeaturedPage.tsx:33
 msgid "No featured posts yet."
 msgstr ""
 
@@ -628,21 +649,21 @@ msgstr ""
 #~ msgstr "还没有页面。"
 
 #. @context: Archive empty state
-#: src/themes/threads/pages/ArchivePage.tsx:100
+#: src/ui/pages/ArchivePage.tsx:103
 msgid "No posts found."
 msgstr "未找到帖子。"
 
 #. @context: Empty state message
 #. @context: Empty state message
 #: src/routes/dash/collections.tsx:243
-#: src/themes/threads/pages/CollectionPage.tsx:29
+#: src/ui/pages/CollectionPage.tsx:29
 msgid "No posts in this collection."
 msgstr "此集合中没有帖子。"
 
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
-#: src/theme/components/PostList.tsx:25
-#: src/themes/threads/pages/HomePage.tsx:26
+#: src/ui/dash/PostList.tsx:25
+#: src/ui/pages/HomePage.tsx:19
 msgid "No posts yet."
 msgstr "还没有帖子。"
 
@@ -652,16 +673,16 @@ msgid "No redirects configured."
 msgstr "未配置重定向。"
 
 #. @context: Search empty results
-#: src/themes/threads/pages/SearchPage.tsx:67
+#: src/ui/pages/SearchPage.tsx:64
 msgid "No results found."
 msgstr "未找到结果。"
 
 #. @context: No collection selected
 #. @context: No collection selected
 #. @context: No rating selected
-#: src/theme/components/PostForm.tsx:271
-#: src/themes/threads/components/ComposeDialog.tsx:174
-#: src/themes/threads/components/ComposeDialog.tsx:198
+#: src/ui/compose/ComposeDialog.tsx:174
+#: src/ui/compose/ComposeDialog.tsx:198
+#: src/ui/dash/PostForm.tsx:271
 msgid "None"
 msgstr ""
 
@@ -669,15 +690,15 @@ msgstr ""
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/theme/components/FormatBadge.tsx:19
-#: src/theme/components/PostForm.tsx:71
-#: src/themes/threads/components/ComposeDialog.tsx:90
-#: src/themes/threads/pages/ArchivePage.tsx:16
+#: src/ui/compose/ComposeDialog.tsx:90
+#: src/ui/dash/FormatBadge.tsx:19
+#: src/ui/dash/PostForm.tsx:71
+#: src/ui/pages/ArchivePage.tsx:16
 msgid "Note"
 msgstr "注意"
 
 #. @context: Post format label plural - notes
-#: src/themes/threads/pages/ArchivePage.tsx:29
+#: src/ui/pages/ArchivePage.tsx:29
 msgid "Notes"
 msgstr "笔记"
 
@@ -697,31 +718,31 @@ msgid "Page"
 msgstr "页面"
 
 #. @context: Pagination - current page indicator
-#: src/theme/components/Pagination.tsx:164
+#: src/ui/shared/Pagination.tsx:164
 msgid "Page {page}"
 msgstr "页面 {page}"
 
 #. @context: Page content placeholder
-#: src/theme/components/PageForm.tsx:104
+#: src/ui/dash/PageForm.tsx:104
 msgid "Page content (Markdown supported)..."
 msgstr "页面内容（支持Markdown）..."
 
 #. @context: Page title placeholder
-#: src/theme/components/PageForm.tsx:53
+#: src/ui/dash/PageForm.tsx:53
 msgid "Page title..."
 msgstr "页面标题..."
 
 #. @context: Dashboard navigation - pages management
 #. @context: Pages main heading
 #: src/routes/dash/pages.tsx:43
-#: src/theme/layouts/DashLayout.tsx:96
+#: src/ui/layouts/DashLayout.tsx:96
 msgid "Pages"
 msgstr "页面"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:272
-#: src/app.tsx:422
+#: src/app.tsx:274
+#: src/app.tsx:424
 msgid "Password"
 msgstr "密码"
 
@@ -737,22 +758,22 @@ msgstr "路径（例如 /archive）或完整 URL（例如 https://example.com）
 
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
-#: src/theme/components/ThreadView.tsx:71
-#: src/themes/threads/pages/PostPage.tsx:39
+#: src/ui/pages/PostPage.tsx:48
+#: src/ui/shared/ThreadView.tsx:71
 msgid "Permalink"
 msgstr "永久链接"
 
 #. @context: Compose checkbox - pin to top
 #. @context: Post badge - pinned
 #. @context: Post form checkbox - pin to top
-#: src/theme/components/PostForm.tsx:253
-#: src/theme/components/StatusBadge.tsx:53
-#: src/themes/threads/components/ComposeDialog.tsx:312
+#: src/ui/compose/ComposeDialog.tsx:312
+#: src/ui/dash/PostForm.tsx:253
+#: src/ui/dash/StatusBadge.tsx:53
 msgid "Pinned"
 msgstr ""
 
 #. @context: Singular post count label
-#: src/themes/threads/pages/CollectionsPage.tsx:56
+#: src/ui/pages/CollectionsPage.tsx:56
 msgid "post"
 msgstr ""
 
@@ -760,30 +781,30 @@ msgstr ""
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/themes/threads/components/ComposeDialog.tsx:339
-#: src/themes/threads/components/ComposePrompt.tsx:48
+#: src/ui/compose/ComposeDialog.tsx:339
+#: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "帖子"
 
 #. @context: Post title placeholder
-#: src/theme/components/PostForm.tsx:94
+#: src/ui/dash/PostForm.tsx:94
 msgid "Post title..."
 msgstr "帖子标题..."
 
 #. @context: Compose loading text while posting
-#: src/themes/threads/components/ComposeDialog.tsx:345
+#: src/ui/compose/ComposeDialog.tsx:345
 msgid "Posting..."
 msgstr ""
 
 #. @context: Plural post count label
-#: src/themes/threads/pages/CollectionsPage.tsx:60
+#: src/ui/pages/CollectionsPage.tsx:60
 msgid "posts"
 msgstr ""
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - posts management
 #: src/routes/dash/posts.tsx:29
-#: src/theme/layouts/DashLayout.tsx:87
+#: src/ui/layouts/DashLayout.tsx:87
 msgid "Posts"
 msgstr "帖子"
 
@@ -799,8 +820,8 @@ msgstr "预览"
 
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
-#: src/theme/components/Pagination.tsx:45
-#: src/theme/components/Pagination.tsx:156
+#: src/ui/shared/Pagination.tsx:45
+#: src/ui/shared/Pagination.tsx:156
 msgid "Previous"
 msgstr "上一页"
 
@@ -816,30 +837,32 @@ msgstr "上一页"
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
+#. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/app.tsx:293
-#: src/app.tsx:442
-#: src/app.tsx:582
+#: src/app.tsx:295
+#: src/app.tsx:444
+#: src/app.tsx:584
 #: src/routes/dash/collections.tsx:178
 #: src/routes/dash/collections.tsx:346
 #: src/routes/dash/media.tsx:119
 #: src/routes/dash/pages.tsx:392
 #: src/routes/dash/redirects.tsx:169
 #: src/routes/dash/settings.tsx:200
-#: src/routes/dash/settings.tsx:400
-#: src/routes/dash/settings.tsx:488
-#: src/theme/components/PageForm.tsx:163
-#: src/theme/components/PostForm.tsx:304
+#: src/routes/dash/settings.tsx:384
+#: src/routes/dash/settings.tsx:457
+#: src/routes/dash/settings.tsx:545
+#: src/ui/dash/PageForm.tsx:163
+#: src/ui/dash/PostForm.tsx:304
 msgid "Processing..."
 msgstr "处理中..."
 
 #. @context: Account settings section heading
-#: src/routes/dash/settings.tsx:364
+#: src/routes/dash/settings.tsx:421
 msgid "Profile"
 msgstr "个人资料"
 
 #. @context: Button to publish new post
-#: src/theme/components/PostForm.tsx:298
+#: src/ui/dash/PostForm.tsx:298
 msgid "Publish"
 msgstr "发布"
 
@@ -848,9 +871,9 @@ msgstr "发布"
 #. @context: Post status label
 #. @context: Post status option
 #: src/routes/dash/index.tsx:45
-#: src/theme/components/PageForm.tsx:127
-#: src/theme/components/PostForm.tsx:228
-#: src/theme/components/StatusBadge.tsx:30
+#: src/ui/dash/PageForm.tsx:127
+#: src/ui/dash/PostForm.tsx:228
+#: src/ui/dash/StatusBadge.tsx:30
 msgid "Published"
 msgstr "已发布"
 
@@ -860,7 +883,7 @@ msgstr "已发布"
 #~ msgstr "已发布的页面可以通过其路径访问。草稿不可见。"
 
 #. @context: Page status helper text
-#: src/theme/components/PageForm.tsx:140
+#: src/ui/dash/PageForm.tsx:140
 msgid "Published pages are accessible via their slug. Drafts are not visible."
 msgstr ""
 
@@ -883,46 +906,46 @@ msgstr "快速操作"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/theme/components/FormatBadge.tsx:21
-#: src/theme/components/PostForm.tsx:77
-#: src/themes/threads/components/ComposeDialog.tsx:112
-#: src/themes/threads/pages/ArchivePage.tsx:18
+#: src/ui/compose/ComposeDialog.tsx:112
+#: src/ui/dash/FormatBadge.tsx:21
+#: src/ui/dash/PostForm.tsx:77
+#: src/ui/pages/ArchivePage.tsx:18
 msgid "Quote"
 msgstr "引用"
 
 #. @context: Post form field - quoted text
-#: src/theme/components/PostForm.tsx:137
+#: src/ui/dash/PostForm.tsx:137
 msgid "Quote Text"
 msgstr ""
 
 #. @context: Post format label plural - quotes
-#: src/themes/threads/pages/ArchivePage.tsx:37
+#: src/ui/pages/ArchivePage.tsx:37
 msgid "Quotes"
 msgstr "引用"
 
 #. @context: Compose rating field
 #. @context: Compose toolbar - toggle rating
-#: src/themes/threads/components/ComposeDialog.tsx:167
-#: src/themes/threads/components/ComposeDialog.tsx:246
+#: src/ui/compose/ComposeDialog.tsx:167
+#: src/ui/compose/ComposeDialog.tsx:246
 msgid "Rating"
 msgstr ""
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - URL redirects
 #: src/routes/dash/redirects.tsx:29
-#: src/theme/layouts/DashLayout.tsx:124
+#: src/ui/layouts/DashLayout.tsx:124
 msgid "Redirects"
 msgstr "重定向"
 
 #. @context: Remove media attachment button
-#: src/theme/components/PostForm.tsx:194
+#: src/ui/dash/PostForm.tsx:194
 msgid "Remove"
 msgstr "移除"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:523
-#: src/app.tsx:576
+#: src/app.tsx:525
+#: src/app.tsx:578
 msgid "Reset Password"
 msgstr "重置密码"
 
@@ -931,8 +954,13 @@ msgstr "重置密码"
 msgid "Save Changes"
 msgstr "保存更改"
 
+#. @context: Button to save custom CSS
+#: src/routes/dash/settings.tsx:378
+msgid "Save CSS"
+msgstr ""
+
 #. @context: Button to save profile
-#: src/routes/dash/settings.tsx:394
+#: src/routes/dash/settings.tsx:451
 msgid "Save Profile"
 msgstr "保存个人资料"
 
@@ -941,22 +969,24 @@ msgstr "保存个人资料"
 msgid "Save Settings"
 msgstr "保存设置"
 
+#. @context: Browse filter for search
 #. @context: Search page title
 #. @context: Search submit button
-#: src/themes/threads/pages/SearchPage.tsx:21
-#: src/themes/threads/pages/SearchPage.tsx:47
+#: src/ui/layouts/SiteLayout.tsx:64
+#: src/ui/pages/SearchPage.tsx:20
+#: src/ui/pages/SearchPage.tsx:44
 msgid "Search"
 msgstr "搜索"
 
 #. @context: Search input placeholder
-#: src/themes/threads/pages/SearchPage.tsx:39
+#: src/ui/pages/SearchPage.tsx:36
 msgid "Search posts..."
 msgstr "搜索帖子..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/theme/components/PostForm.tsx:324
-#: src/themes/threads/components/ComposeDialog.tsx:365
+#: src/ui/compose/ComposeDialog.tsx:365
+#: src/ui/dash/PostForm.tsx:324
 msgid "Select Media"
 msgstr "选择媒体"
 
@@ -965,27 +995,27 @@ msgstr "选择媒体"
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
 #: src/routes/dash/settings.tsx:118
-#: src/routes/dash/settings.tsx:300
-#: src/routes/dash/settings.tsx:351
-#: src/theme/layouts/DashLayout.tsx:133
+#: src/routes/dash/settings.tsx:304
+#: src/routes/dash/settings.tsx:408
+#: src/ui/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "设置"
 
 #. @context: Link to show remaining thread replies
 #. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
-#: src/themes/threads/timeline/ThreadPreview.tsx:38
+#: src/ui/feed/ThreadPreview.tsx:37
 msgid "Show {remainingCount} more {0}"
 msgstr "显示 {remainingCount} 个更多 {0}"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:389
-#: src/app.tsx:436
+#: src/app.tsx:391
+#: src/app.tsx:438
 msgid "Sign In"
 msgstr "登录"
 
 #. @context: Dashboard header link to sign out
-#: src/theme/layouts/DashLayout.tsx:63
+#: src/ui/layouts/DashLayout.tsx:63
 msgid "Sign Out"
 msgstr "登出"
 
@@ -1004,7 +1034,7 @@ msgstr "网站名称"
 #. @context: Page form field label - URL slug
 #: src/routes/dash/collections.tsx:133
 #: src/routes/dash/collections.tsx:314
-#: src/theme/components/PageForm.tsx:64
+#: src/ui/dash/PageForm.tsx:64
 msgid "Slug"
 msgstr "缩略名"
 
@@ -1020,8 +1050,8 @@ msgstr "缩略名"
 
 #. @context: Page form field label - publish status
 #. @context: Post form field
-#: src/theme/components/PageForm.tsx:117
-#: src/theme/components/PostForm.tsx:221
+#: src/ui/dash/PageForm.tsx:117
+#: src/ui/dash/PostForm.tsx:221
 msgid "Status"
 msgstr "状态"
 
@@ -1037,38 +1067,38 @@ msgstr "重定向的路径"
 
 #. @context: Compose quote text placeholder
 #. @context: Quote text placeholder
-#: src/theme/components/PostForm.tsx:145
-#: src/themes/threads/components/ComposeDialog.tsx:156
+#: src/ui/compose/ComposeDialog.tsx:156
+#: src/ui/dash/PostForm.tsx:145
 msgid "The text being quoted..."
 msgstr ""
 
 #. @context: Page slug helper text
-#: src/theme/components/PageForm.tsx:85
+#: src/ui/dash/PageForm.tsx:85
 msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此页面的 URL 路径。使用小写字母、数字和连字符。"
 
 #. @context: Password reset error description
-#: src/app.tsx:612
+#: src/app.tsx:614
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "此密码重置链接无效或已过期。请生成一个新的链接。"
 
 #. @context: Appearance settings description
-#: src/routes/dash/settings.tsx:317
+#: src/routes/dash/settings.tsx:321
 msgid "This will theme both your site and your dashboard. All color themes support dark mode."
 msgstr "这将为您的网站和仪表板设置主题。所有颜色主题都支持暗黑模式。"
 
 #. @context: Thread view indicator - first post in thread
-#: src/theme/components/ThreadView.tsx:60
+#: src/ui/shared/ThreadView.tsx:60
 msgid "Thread start"
 msgstr "线程开始"
 
 #. @context: Thread view header - multiple posts
-#: src/theme/components/ThreadView.tsx:105
+#: src/ui/shared/ThreadView.tsx:105
 msgid "Thread with {count} posts"
 msgstr "包含 {count} 条帖子的话题"
 
 #. @context: Thread view header - single post
-#: src/theme/components/ThreadView.tsx:101
+#: src/ui/shared/ThreadView.tsx:101
 msgid "Thread with 1 post"
 msgstr "包含 1 条帖子的话题"
 
@@ -1077,14 +1107,14 @@ msgstr "包含 1 条帖子的话题"
 #. @context: Page form field label - title
 #: src/routes/dash/collections.tsx:114
 #: src/routes/dash/collections.tsx:304
-#: src/theme/components/PageForm.tsx:44
+#: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "标题"
 
 #. @context: Compose title placeholder
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:85
-#: src/themes/threads/components/ComposeDialog.tsx:124
+#: src/ui/compose/ComposeDialog.tsx:124
+#: src/ui/dash/PostForm.tsx:85
 msgid "Title (optional)"
 msgstr "标题（可选）"
 
@@ -1113,12 +1143,12 @@ msgstr ""
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
 #: src/routes/dash/pages.tsx:212
-#: src/theme/components/PostList.tsx:86
+#: src/ui/dash/PostList.tsx:86
 msgid "Untitled"
 msgstr "无标题"
 
 #. @context: Button to update existing post
-#: src/theme/components/PostForm.tsx:294
+#: src/ui/dash/PostForm.tsx:294
 msgid "Update"
 msgstr "更新"
 
@@ -1128,7 +1158,7 @@ msgid "Update Collection"
 msgstr "更新收藏夹"
 
 #. @context: Button to update existing page
-#: src/theme/components/PageForm.tsx:153
+#: src/ui/dash/PageForm.tsx:153
 msgid "Update Page"
 msgstr "更新页面"
 
@@ -1155,7 +1185,7 @@ msgid "URL"
 msgstr "网址"
 
 #. @context: Post form field - source URL
-#: src/theme/components/PostForm.tsx:121
+#: src/ui/dash/PostForm.tsx:121
 msgid "URL (optional)"
 msgstr ""
 
@@ -1181,13 +1211,13 @@ msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
 #: src/routes/dash/pages.tsx:199
 #: src/routes/dash/pages.tsx:261
 #: src/routes/dash/posts.tsx:145
-#: src/theme/components/ActionButtons.tsx:76
-#: src/theme/components/PostList.tsx:55
+#: src/ui/dash/ActionButtons.tsx:76
+#: src/ui/dash/PostList.tsx:55
 msgid "View"
 msgstr "查看"
 
 #. @context: Dashboard header link to view the public site
-#: src/theme/layouts/DashLayout.tsx:53
+#: src/ui/layouts/DashLayout.tsx:53
 msgid "View Site"
 msgstr "查看网站"
 
@@ -1197,19 +1227,19 @@ msgstr "查看网站"
 #~ msgstr "可见性"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:221
+#: src/app.tsx:223
 msgid "Welcome to Jant"
 msgstr "欢迎来到Jant"
 
 #. @context: Compose prompt placeholder text
-#: src/themes/threads/components/ComposePrompt.tsx:37
+#: src/ui/compose/ComposePrompt.tsx:37
 msgid "What's new?"
 msgstr ""
 
 #. @context: Compose body placeholder
 #. @context: Post content placeholder
-#: src/theme/components/PostForm.tsx:109
-#: src/themes/threads/components/ComposeDialog.tsx:134
+#: src/ui/compose/ComposeDialog.tsx:134
+#: src/ui/dash/PostForm.tsx:109
 msgid "What's on your mind?"
 msgstr "你在想什么？"
 
@@ -1219,7 +1249,7 @@ msgid "What's this collection about?"
 msgstr "这个系列是关于什么的？"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:242
+#: src/app.tsx:244
 msgid "Your Name"
 msgstr "您的姓名"
 

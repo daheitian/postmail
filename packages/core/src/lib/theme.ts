@@ -4,14 +4,14 @@
  * Resolves the active color theme and builds CSS for injection into `<head>`.
  */
 
-import type { ColorTheme } from "../theme/color-themes.js";
-import { BUILTIN_COLOR_THEMES } from "../theme/color-themes.js";
+import type { ColorTheme } from "../ui/color-themes.js";
+import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
 import type { JantConfig } from "../types.js";
 
 /**
  * Get the list of available color themes.
  *
- * Returns `config.theme.colorThemes` if provided, otherwise the built-in list.
+ * Returns `config.colorThemes` if provided, otherwise the built-in list.
  *
  * @param config - The Jant configuration
  * @returns Array of available color themes
@@ -22,7 +22,7 @@ import type { JantConfig } from "../types.js";
  * ```
  */
 export function getAvailableThemes(config: JantConfig): ColorTheme[] {
-  return config.theme?.colorThemes ?? BUILTIN_COLOR_THEMES;
+  return config.colorThemes ?? BUILTIN_COLOR_THEMES;
 }
 
 /**
@@ -32,7 +32,7 @@ export function getAvailableThemes(config: JantConfig): ColorTheme[] {
  *   BaseCoat defaults → selected theme → cssVariables
  *
  * @param theme - The active color theme (undefined = no theme overrides)
- * @param cssVariables - Extra CSS variable overrides from `createApp({ theme: { cssVariables } })`
+ * @param cssVariables - Extra CSS variable overrides from `createApp({ cssVariables })`
  * @returns CSS string to inject in `<head>`, or empty string if nothing to inject
  *
  * Uses `:root:root` and `:root.dark` selectors for higher specificity than

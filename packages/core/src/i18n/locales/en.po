@@ -18,6 +18,11 @@ msgstr ""
 #~ msgid "{count} replies"
 #~ msgstr "{count} replies"
 
+#. @context: Custom CSS textarea placeholder
+#: src/routes/dash/settings.tsx:364
+msgid "/* Your custom CSS here */"
+msgstr "/* Your custom CSS here */"
+
 #. @context: Navigation link
 #: src/routes/dash/collections.tsx:271
 msgid "← Back to Collections"
@@ -50,6 +55,11 @@ msgstr "302 (Temporary)"
 msgid "Account"
 msgstr "Account"
 
+#. @context: Custom CSS settings description
+#: src/routes/dash/settings.tsx:354
+msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
+msgstr "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
+
 #. @context: Button to add a navigation link
 #: src/routes/dash/pages.tsx:50
 msgid "Add Link"
@@ -57,8 +67,8 @@ msgstr "Add Link"
 
 #. @context: Button to open media picker
 #. @context: Compose toolbar - add media
-#: src/theme/components/PostForm.tsx:211
-#: src/themes/threads/components/ComposeDialog.tsx:219
+#: src/ui/compose/ComposeDialog.tsx:219
+#: src/ui/dash/PostForm.tsx:211
 msgid "Add Media"
 msgstr "Add Media"
 
@@ -68,7 +78,9 @@ msgid "Add to nav"
 msgstr "Add to nav"
 
 #. @context: Archive filter - all formats
-#: src/themes/threads/pages/ArchivePage.tsx:71
+#. @context: Browse filter for all posts
+#: src/ui/layouts/SiteLayout.tsx:43
+#: src/ui/pages/ArchivePage.tsx:71
 msgid "All"
 msgstr "All"
 
@@ -83,12 +95,14 @@ msgid "Appearance"
 msgstr "Appearance"
 
 #. @context: Archive page title
-#: src/themes/threads/pages/ArchivePage.tsx:56
+#. @context: Browse filter for archive
+#: src/ui/layouts/SiteLayout.tsx:57
+#: src/ui/pages/ArchivePage.tsx:55
 msgid "Archive"
 msgstr "Archive"
 
 #. @context: Confirmation dialog when deleting a post from the list
-#: src/theme/components/PostList.tsx:60
+#: src/ui/dash/PostList.tsx:60
 msgid "Are you sure you want to delete this post? This cannot be undone."
 msgstr "Are you sure you want to delete this post? This cannot be undone."
 
@@ -135,15 +149,15 @@ msgstr "Back"
 #: src/routes/dash/collections.tsx:354
 #: src/routes/dash/pages.tsx:400
 #: src/routes/dash/redirects.tsx:177
-#: src/theme/components/PageForm.tsx:171
-#: src/theme/components/PostForm.tsx:312
+#: src/ui/dash/PageForm.tsx:171
+#: src/ui/dash/PostForm.tsx:312
 msgid "Cancel"
 msgstr "Cancel"
 
 #. @context: Button to change password
 #. @context: Settings section heading
-#: src/routes/dash/settings.tsx:417
-#: src/routes/dash/settings.tsx:482
+#: src/routes/dash/settings.tsx:474
+#: src/routes/dash/settings.tsx:539
 msgid "Change Password"
 msgstr "Change Password"
 
@@ -154,13 +168,13 @@ msgstr "Click image to view full size"
 
 #. @context: Compose collection field
 #. @context: Compose toolbar - toggle collection
-#: src/themes/threads/components/ComposeDialog.tsx:191
-#: src/themes/threads/components/ComposeDialog.tsx:272
+#: src/ui/compose/ComposeDialog.tsx:191
+#: src/ui/compose/ComposeDialog.tsx:272
 msgid "Collection"
 msgstr "Collection"
 
 #. @context: Post form field - assign to collection
-#: src/theme/components/PostForm.tsx:264
+#: src/ui/dash/PostForm.tsx:264
 msgid "Collection (optional)"
 msgstr "Collection (optional)"
 
@@ -168,8 +182,8 @@ msgstr "Collection (optional)"
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #: src/routes/dash/collections.tsx:35
-#: src/theme/layouts/DashLayout.tsx:114
-#: src/themes/threads/pages/CollectionsPage.tsx:18
+#: src/ui/layouts/DashLayout.tsx:114
+#: src/ui/pages/CollectionsPage.tsx:18
 msgid "Collections"
 msgstr "Collections"
 
@@ -179,29 +193,29 @@ msgstr "Collections"
 #~ msgstr "Collections (optional)"
 
 #. @context: Appearance settings heading
-#: src/routes/dash/settings.tsx:311
+#: src/routes/dash/settings.tsx:315
 msgid "Color theme"
 msgstr "Color theme"
 
 #. @context: Setup form submit button
-#: src/app.tsx:287
+#: src/app.tsx:289
 msgid "Complete Setup"
 msgstr "Complete Setup"
 
 #. @context: Password form field
-#: src/routes/dash/settings.tsx:459
+#: src/routes/dash/settings.tsx:516
 msgid "Confirm New Password"
 msgstr "Confirm New Password"
 
 #. @context: Password reset form field
-#: src/app.tsx:560
+#: src/app.tsx:562
 msgid "Confirm Password"
 msgstr "Confirm Password"
 
 #. @context: Page form field label - content
 #. @context: Post form field
-#: src/theme/components/PageForm.tsx:96
-#: src/theme/components/PostForm.tsx:104
+#: src/ui/dash/PageForm.tsx:96
+#: src/ui/dash/PostForm.tsx:104
 msgid "Content"
 msgstr "Content"
 
@@ -223,7 +237,7 @@ msgid "Create Link"
 msgstr "Create Link"
 
 #. @context: Button to create new page
-#: src/theme/components/PageForm.tsx:157
+#: src/ui/dash/PageForm.tsx:157
 msgid "Create Page"
 msgstr "Create Page"
 
@@ -233,7 +247,7 @@ msgid "Create Redirect"
 msgstr "Create Redirect"
 
 #. @context: Setup page description
-#: src/app.tsx:227
+#: src/app.tsx:229
 msgid "Create your admin account."
 msgstr "Create your admin account."
 
@@ -243,14 +257,19 @@ msgstr "Create your admin account."
 #~ msgstr "Create your first page"
 
 #. @context: Button in empty state to create first post
-#: src/theme/components/PostList.tsx:29
+#: src/ui/dash/PostList.tsx:29
 msgid "Create your first post"
 msgstr "Create your first post"
 
 #. @context: Password form field
-#: src/routes/dash/settings.tsx:426
+#: src/routes/dash/settings.tsx:483
 msgid "Current Password"
 msgstr "Current Password"
+
+#. @context: Appearance settings heading for custom CSS
+#: src/routes/dash/settings.tsx:348
+msgid "Custom CSS"
+msgstr "Custom CSS"
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx:297
@@ -268,14 +287,14 @@ msgstr "Current Password"
 #~ msgstr "Custom URL path. Leave empty to use default /p/ID format."
 
 #. @context: Section heading for dangerous/destructive actions
-#: src/theme/components/DangerZone.tsx:55
+#: src/ui/dash/DangerZone.tsx:55
 msgid "Danger Zone"
 msgstr "Danger Zone"
 
 #. @context: Dashboard main heading
 #. @context: Dashboard navigation - main dashboard page
 #: src/routes/dash/index.tsx:36
-#: src/theme/layouts/DashLayout.tsx:78
+#: src/ui/layouts/DashLayout.tsx:78
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -284,7 +303,7 @@ msgstr "Dashboard"
 #. @context: Button to delete redirect
 #: src/routes/dash/pages.tsx:120
 #: src/routes/dash/redirects.tsx:60
-#: src/theme/components/ActionButtons.tsx:80
+#: src/ui/dash/ActionButtons.tsx:80
 msgid "Delete"
 msgstr "Delete"
 
@@ -309,7 +328,7 @@ msgid "Deleting this media will remove it permanently from storage."
 msgstr "Deleting this media will remove it permanently from storage."
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/app.tsx:398
+#: src/app.tsx:400
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "Demo account pre-filled. Just click Sign In."
 
@@ -327,8 +346,8 @@ msgstr "Display text for the link"
 
 #. @context: Close media picker button
 #. @context: Close media picker button
-#: src/theme/components/PostForm.tsx:334
-#: src/themes/threads/components/ComposeDialog.tsx:375
+#: src/ui/compose/ComposeDialog.tsx:375
+#: src/ui/dash/PostForm.tsx:334
 msgid "Done"
 msgstr "Done"
 
@@ -336,10 +355,10 @@ msgstr "Done"
 #. @context: Page status option - draft
 #. @context: Post status badge - draft
 #. @context: Post status option
-#: src/theme/components/PageForm.tsx:133
-#: src/theme/components/PostForm.tsx:234
-#: src/theme/components/StatusBadge.tsx:34
-#: src/themes/threads/components/ComposeDialog.tsx:326
+#: src/ui/compose/ComposeDialog.tsx:326
+#: src/ui/dash/PageForm.tsx:133
+#: src/ui/dash/PostForm.tsx:234
+#: src/ui/dash/StatusBadge.tsx:34
 msgid "Draft"
 msgstr "Draft"
 
@@ -369,8 +388,8 @@ msgstr "Drafts"
 #: src/routes/dash/pages.tsx:192
 #: src/routes/dash/pages.tsx:256
 #: src/routes/dash/posts.tsx:140
-#: src/theme/components/ActionButtons.tsx:72
-#: src/theme/components/PostList.tsx:50
+#: src/ui/dash/ActionButtons.tsx:72
+#: src/ui/dash/PostList.tsx:50
 msgid "Edit"
 msgstr "Edit"
 
@@ -405,41 +424,43 @@ msgstr "Edit Post"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
-#: src/app.tsx:257
-#: src/app.tsx:413
+#: src/app.tsx:259
+#: src/app.tsx:415
 msgid "Email"
 msgstr "Email"
 
 #. @context: Password reset page description
-#: src/app.tsx:529
+#: src/app.tsx:531
 msgid "Enter your new password."
 msgstr "Enter your new password."
 
 #. @context: Archive filter - featured posts
+#. @context: Browse filter for featured posts
 #. @context: Compose checkbox - mark as featured
 #. @context: Featured page heading
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
-#: src/theme/components/PostForm.tsx:246
-#: src/theme/components/StatusBadge.tsx:45
-#: src/themes/threads/components/ComposeDialog.tsx:305
-#: src/themes/threads/pages/ArchivePage.tsx:89
-#: src/themes/threads/pages/FeaturedPage.tsx:26
+#: src/ui/compose/ComposeDialog.tsx:305
+#: src/ui/dash/PostForm.tsx:246
+#: src/ui/dash/StatusBadge.tsx:45
+#: src/ui/layouts/SiteLayout.tsx:50
+#: src/ui/pages/ArchivePage.tsx:92
+#: src/ui/pages/FeaturedPage.tsx:23
 msgid "Featured"
 msgstr "Featured"
 
 #. @context: Post form field - post format
-#: src/theme/components/PostForm.tsx:64
+#: src/ui/dash/PostForm.tsx:64
 msgid "Format"
 msgstr "Format"
 
 #. @context: Search results count - multiple
-#: src/themes/threads/pages/SearchPage.tsx:76
+#: src/ui/pages/SearchPage.tsx:73
 msgid "Found {count} results"
 msgstr "Found {count} results"
 
 #. @context: Search results count - single
-#: src/themes/threads/pages/SearchPage.tsx:72
+#: src/ui/pages/SearchPage.tsx:69
 msgid "Found 1 result"
 msgstr "Found 1 result"
 
@@ -475,7 +496,7 @@ msgid "Images are automatically optimized: resized to max 1920px, converted to W
 msgstr "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
 
 #. @context: Password reset error heading
-#: src/app.tsx:604
+#: src/app.tsx:606
 msgid "Invalid or Expired Link"
 msgstr "Invalid or Expired Link"
 
@@ -503,34 +524,34 @@ msgstr "link"
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/theme/components/FormatBadge.tsx:20
-#: src/theme/components/PostForm.tsx:74
-#: src/themes/threads/components/ComposeDialog.tsx:101
-#: src/themes/threads/pages/ArchivePage.tsx:17
+#: src/ui/compose/ComposeDialog.tsx:101
+#: src/ui/dash/FormatBadge.tsx:20
+#: src/ui/dash/PostForm.tsx:74
+#: src/ui/pages/ArchivePage.tsx:17
 msgid "Link"
 msgstr "Link"
 
 #. @context: Post format label plural - links
-#: src/themes/threads/pages/ArchivePage.tsx:33
+#: src/ui/pages/ArchivePage.tsx:33
 msgid "Links"
 msgstr "Links"
 
 #. @context: Pagination button - load more items
-#: src/theme/components/Pagination.tsx:103
+#: src/ui/shared/Pagination.tsx:103
 msgid "Load more"
 msgstr "Load more"
 
 #. @context: Loading indicator while fetching more posts
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/theme/components/PostForm.tsx:345
-#: src/themes/threads/components/ComposeDialog.tsx:386
-#: src/themes/threads/timeline/TimelineLoadMore.tsx:28
+#: src/ui/compose/ComposeDialog.tsx:386
+#: src/ui/dash/PostForm.tsx:345
+#: src/ui/feed/TimelineLoadMore.tsx:22
 msgid "Loading..."
 msgstr "Loading..."
 
 #. @context: Page slug validation message
-#: src/theme/components/PageForm.tsx:77
+#: src/ui/dash/PageForm.tsx:77
 msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "Lowercase letters, numbers, and hyphens only"
 
@@ -543,8 +564,8 @@ msgstr "Markdown"
 #. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/routes/dash/media.tsx:151
-#: src/theme/components/PostForm.tsx:158
-#: src/theme/layouts/DashLayout.tsx:105
+#: src/ui/dash/PostForm.tsx:158
+#: src/ui/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "Media"
 
@@ -559,7 +580,7 @@ msgid "My Collection"
 msgstr "My Collection"
 
 #. @context: Account settings form field
-#: src/routes/dash/settings.tsx:373
+#: src/routes/dash/settings.tsx:430
 msgid "Name"
 msgstr "Name"
 
@@ -598,8 +619,8 @@ msgstr "New Page"
 
 #. @context: Password form field
 #. @context: Password reset form field
-#: src/app.tsx:544
-#: src/routes/dash/settings.tsx:442
+#: src/app.tsx:546
+#: src/routes/dash/settings.tsx:499
 msgid "New Password"
 msgstr "New Password"
 
@@ -610,7 +631,7 @@ msgstr "New Password"
 #: src/routes/dash/index.tsx:68
 #: src/routes/dash/posts.tsx:30
 #: src/routes/dash/posts.tsx:46
-#: src/themes/threads/components/ComposeDialog.tsx:66
+#: src/ui/compose/ComposeDialog.tsx:66
 msgid "New Post"
 msgstr "New Post"
 
@@ -625,20 +646,20 @@ msgstr "New Redirect"
 
 #. @context: Pagination button - next page
 #. @context: Pagination button - next page
-#: src/theme/components/Pagination.tsx:49
-#: src/theme/components/Pagination.tsx:160
+#: src/ui/shared/Pagination.tsx:49
+#: src/ui/shared/Pagination.tsx:160
 msgid "Next"
 msgstr "Next"
 
 #. @context: Empty state message
 #. @context: Empty state message on collections page
 #: src/routes/dash/collections.tsx:48
-#: src/themes/threads/pages/CollectionsPage.tsx:28
+#: src/ui/pages/CollectionsPage.tsx:28
 msgid "No collections yet."
 msgstr "No collections yet."
 
 #. @context: Empty state message on featured page
-#: src/themes/threads/pages/FeaturedPage.tsx:36
+#: src/ui/pages/FeaturedPage.tsx:33
 msgid "No featured posts yet."
 msgstr "No featured posts yet."
 
@@ -663,21 +684,21 @@ msgstr "No navigation links yet. Add pages to navigation or create links."
 #~ msgstr "No pages yet."
 
 #. @context: Archive empty state
-#: src/themes/threads/pages/ArchivePage.tsx:100
+#: src/ui/pages/ArchivePage.tsx:103
 msgid "No posts found."
 msgstr "No posts found."
 
 #. @context: Empty state message
 #. @context: Empty state message
 #: src/routes/dash/collections.tsx:243
-#: src/themes/threads/pages/CollectionPage.tsx:29
+#: src/ui/pages/CollectionPage.tsx:29
 msgid "No posts in this collection."
 msgstr "No posts in this collection."
 
 #. @context: Empty state message on home page
 #. @context: Empty state message when no posts exist
-#: src/theme/components/PostList.tsx:25
-#: src/themes/threads/pages/HomePage.tsx:26
+#: src/ui/dash/PostList.tsx:25
+#: src/ui/pages/HomePage.tsx:19
 msgid "No posts yet."
 msgstr "No posts yet."
 
@@ -687,16 +708,16 @@ msgid "No redirects configured."
 msgstr "No redirects configured."
 
 #. @context: Search empty results
-#: src/themes/threads/pages/SearchPage.tsx:67
+#: src/ui/pages/SearchPage.tsx:64
 msgid "No results found."
 msgstr "No results found."
 
 #. @context: No collection selected
 #. @context: No collection selected
 #. @context: No rating selected
-#: src/theme/components/PostForm.tsx:271
-#: src/themes/threads/components/ComposeDialog.tsx:174
-#: src/themes/threads/components/ComposeDialog.tsx:198
+#: src/ui/compose/ComposeDialog.tsx:174
+#: src/ui/compose/ComposeDialog.tsx:198
+#: src/ui/dash/PostForm.tsx:271
 msgid "None"
 msgstr "None"
 
@@ -704,15 +725,15 @@ msgstr "None"
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/theme/components/FormatBadge.tsx:19
-#: src/theme/components/PostForm.tsx:71
-#: src/themes/threads/components/ComposeDialog.tsx:90
-#: src/themes/threads/pages/ArchivePage.tsx:16
+#: src/ui/compose/ComposeDialog.tsx:90
+#: src/ui/dash/FormatBadge.tsx:19
+#: src/ui/dash/PostForm.tsx:71
+#: src/ui/pages/ArchivePage.tsx:16
 msgid "Note"
 msgstr "Note"
 
 #. @context: Post format label plural - notes
-#: src/themes/threads/pages/ArchivePage.tsx:29
+#: src/ui/pages/ArchivePage.tsx:29
 msgid "Notes"
 msgstr "Notes"
 
@@ -732,31 +753,31 @@ msgid "Page"
 msgstr "Page"
 
 #. @context: Pagination - current page indicator
-#: src/theme/components/Pagination.tsx:164
+#: src/ui/shared/Pagination.tsx:164
 msgid "Page {page}"
 msgstr "Page {page}"
 
 #. @context: Page content placeholder
-#: src/theme/components/PageForm.tsx:104
+#: src/ui/dash/PageForm.tsx:104
 msgid "Page content (Markdown supported)..."
 msgstr "Page content (Markdown supported)..."
 
 #. @context: Page title placeholder
-#: src/theme/components/PageForm.tsx:53
+#: src/ui/dash/PageForm.tsx:53
 msgid "Page title..."
 msgstr "Page title..."
 
 #. @context: Dashboard navigation - pages management
 #. @context: Pages main heading
 #: src/routes/dash/pages.tsx:43
-#: src/theme/layouts/DashLayout.tsx:96
+#: src/ui/layouts/DashLayout.tsx:96
 msgid "Pages"
 msgstr "Pages"
 
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
-#: src/app.tsx:272
-#: src/app.tsx:422
+#: src/app.tsx:274
+#: src/app.tsx:424
 msgid "Password"
 msgstr "Password"
 
@@ -772,22 +793,22 @@ msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
-#: src/theme/components/ThreadView.tsx:71
-#: src/themes/threads/pages/PostPage.tsx:39
+#: src/ui/pages/PostPage.tsx:48
+#: src/ui/shared/ThreadView.tsx:71
 msgid "Permalink"
 msgstr "Permalink"
 
 #. @context: Compose checkbox - pin to top
 #. @context: Post badge - pinned
 #. @context: Post form checkbox - pin to top
-#: src/theme/components/PostForm.tsx:253
-#: src/theme/components/StatusBadge.tsx:53
-#: src/themes/threads/components/ComposeDialog.tsx:312
+#: src/ui/compose/ComposeDialog.tsx:312
+#: src/ui/dash/PostForm.tsx:253
+#: src/ui/dash/StatusBadge.tsx:53
 msgid "Pinned"
 msgstr "Pinned"
 
 #. @context: Singular post count label
-#: src/themes/threads/pages/CollectionsPage.tsx:56
+#: src/ui/pages/CollectionsPage.tsx:56
 msgid "post"
 msgstr "post"
 
@@ -795,30 +816,30 @@ msgstr "post"
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/themes/threads/components/ComposeDialog.tsx:339
-#: src/themes/threads/components/ComposePrompt.tsx:48
+#: src/ui/compose/ComposeDialog.tsx:339
+#: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "Post"
 
 #. @context: Post title placeholder
-#: src/theme/components/PostForm.tsx:94
+#: src/ui/dash/PostForm.tsx:94
 msgid "Post title..."
 msgstr "Post title..."
 
 #. @context: Compose loading text while posting
-#: src/themes/threads/components/ComposeDialog.tsx:345
+#: src/ui/compose/ComposeDialog.tsx:345
 msgid "Posting..."
 msgstr "Posting..."
 
 #. @context: Plural post count label
-#: src/themes/threads/pages/CollectionsPage.tsx:60
+#: src/ui/pages/CollectionsPage.tsx:60
 msgid "posts"
 msgstr "posts"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - posts management
 #: src/routes/dash/posts.tsx:29
-#: src/theme/layouts/DashLayout.tsx:87
+#: src/ui/layouts/DashLayout.tsx:87
 msgid "Posts"
 msgstr "Posts"
 
@@ -834,8 +855,8 @@ msgstr "Preview"
 
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
-#: src/theme/components/Pagination.tsx:45
-#: src/theme/components/Pagination.tsx:156
+#: src/ui/shared/Pagination.tsx:45
+#: src/ui/shared/Pagination.tsx:156
 msgid "Previous"
 msgstr "Previous"
 
@@ -851,30 +872,32 @@ msgstr "Previous"
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
 #. @context: Loading text shown on submit button while request is in progress
+#. @context: Loading text shown on submit button while request is in progress
 #. @context: Upload status - processing
-#: src/app.tsx:293
-#: src/app.tsx:442
-#: src/app.tsx:582
+#: src/app.tsx:295
+#: src/app.tsx:444
+#: src/app.tsx:584
 #: src/routes/dash/collections.tsx:178
 #: src/routes/dash/collections.tsx:346
 #: src/routes/dash/media.tsx:119
 #: src/routes/dash/pages.tsx:392
 #: src/routes/dash/redirects.tsx:169
 #: src/routes/dash/settings.tsx:200
-#: src/routes/dash/settings.tsx:400
-#: src/routes/dash/settings.tsx:488
-#: src/theme/components/PageForm.tsx:163
-#: src/theme/components/PostForm.tsx:304
+#: src/routes/dash/settings.tsx:384
+#: src/routes/dash/settings.tsx:457
+#: src/routes/dash/settings.tsx:545
+#: src/ui/dash/PageForm.tsx:163
+#: src/ui/dash/PostForm.tsx:304
 msgid "Processing..."
 msgstr "Processing..."
 
 #. @context: Account settings section heading
-#: src/routes/dash/settings.tsx:364
+#: src/routes/dash/settings.tsx:421
 msgid "Profile"
 msgstr "Profile"
 
 #. @context: Button to publish new post
-#: src/theme/components/PostForm.tsx:298
+#: src/ui/dash/PostForm.tsx:298
 msgid "Publish"
 msgstr "Publish"
 
@@ -883,9 +906,9 @@ msgstr "Publish"
 #. @context: Post status label
 #. @context: Post status option
 #: src/routes/dash/index.tsx:45
-#: src/theme/components/PageForm.tsx:127
-#: src/theme/components/PostForm.tsx:228
-#: src/theme/components/StatusBadge.tsx:30
+#: src/ui/dash/PageForm.tsx:127
+#: src/ui/dash/PostForm.tsx:228
+#: src/ui/dash/StatusBadge.tsx:30
 msgid "Published"
 msgstr "Published"
 
@@ -895,7 +918,7 @@ msgstr "Published"
 #~ msgstr "Published pages are accessible via their path. Drafts are not visible."
 
 #. @context: Page status helper text
-#: src/theme/components/PageForm.tsx:140
+#: src/ui/dash/PageForm.tsx:140
 msgid "Published pages are accessible via their slug. Drafts are not visible."
 msgstr "Published pages are accessible via their slug. Drafts are not visible."
 
@@ -918,46 +941,46 @@ msgstr "Quick Actions"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/theme/components/FormatBadge.tsx:21
-#: src/theme/components/PostForm.tsx:77
-#: src/themes/threads/components/ComposeDialog.tsx:112
-#: src/themes/threads/pages/ArchivePage.tsx:18
+#: src/ui/compose/ComposeDialog.tsx:112
+#: src/ui/dash/FormatBadge.tsx:21
+#: src/ui/dash/PostForm.tsx:77
+#: src/ui/pages/ArchivePage.tsx:18
 msgid "Quote"
 msgstr "Quote"
 
 #. @context: Post form field - quoted text
-#: src/theme/components/PostForm.tsx:137
+#: src/ui/dash/PostForm.tsx:137
 msgid "Quote Text"
 msgstr "Quote Text"
 
 #. @context: Post format label plural - quotes
-#: src/themes/threads/pages/ArchivePage.tsx:37
+#: src/ui/pages/ArchivePage.tsx:37
 msgid "Quotes"
 msgstr "Quotes"
 
 #. @context: Compose rating field
 #. @context: Compose toolbar - toggle rating
-#: src/themes/threads/components/ComposeDialog.tsx:167
-#: src/themes/threads/components/ComposeDialog.tsx:246
+#: src/ui/compose/ComposeDialog.tsx:167
+#: src/ui/compose/ComposeDialog.tsx:246
 msgid "Rating"
 msgstr "Rating"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - URL redirects
 #: src/routes/dash/redirects.tsx:29
-#: src/theme/layouts/DashLayout.tsx:124
+#: src/ui/layouts/DashLayout.tsx:124
 msgid "Redirects"
 msgstr "Redirects"
 
 #. @context: Remove media attachment button
-#: src/theme/components/PostForm.tsx:194
+#: src/ui/dash/PostForm.tsx:194
 msgid "Remove"
 msgstr "Remove"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
-#: src/app.tsx:523
-#: src/app.tsx:576
+#: src/app.tsx:525
+#: src/app.tsx:578
 msgid "Reset Password"
 msgstr "Reset Password"
 
@@ -966,8 +989,13 @@ msgstr "Reset Password"
 msgid "Save Changes"
 msgstr "Save Changes"
 
+#. @context: Button to save custom CSS
+#: src/routes/dash/settings.tsx:378
+msgid "Save CSS"
+msgstr "Save CSS"
+
 #. @context: Button to save profile
-#: src/routes/dash/settings.tsx:394
+#: src/routes/dash/settings.tsx:451
 msgid "Save Profile"
 msgstr "Save Profile"
 
@@ -976,10 +1004,12 @@ msgstr "Save Profile"
 msgid "Save Settings"
 msgstr "Save Settings"
 
+#. @context: Browse filter for search
 #. @context: Search page title
 #. @context: Search submit button
-#: src/themes/threads/pages/SearchPage.tsx:21
-#: src/themes/threads/pages/SearchPage.tsx:47
+#: src/ui/layouts/SiteLayout.tsx:64
+#: src/ui/pages/SearchPage.tsx:20
+#: src/ui/pages/SearchPage.tsx:44
 msgid "Search"
 msgstr "Search"
 
@@ -989,14 +1019,14 @@ msgstr "Search"
 #~ msgstr "Search failed. Please try again."
 
 #. @context: Search input placeholder
-#: src/themes/threads/pages/SearchPage.tsx:39
+#: src/ui/pages/SearchPage.tsx:36
 msgid "Search posts..."
 msgstr "Search posts..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/theme/components/PostForm.tsx:324
-#: src/themes/threads/components/ComposeDialog.tsx:365
+#: src/ui/compose/ComposeDialog.tsx:365
+#: src/ui/dash/PostForm.tsx:324
 msgid "Select Media"
 msgstr "Select Media"
 
@@ -1005,9 +1035,9 @@ msgstr "Select Media"
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
 #: src/routes/dash/settings.tsx:118
-#: src/routes/dash/settings.tsx:300
-#: src/routes/dash/settings.tsx:351
-#: src/theme/layouts/DashLayout.tsx:133
+#: src/routes/dash/settings.tsx:304
+#: src/routes/dash/settings.tsx:408
+#: src/ui/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "Settings"
 
@@ -1018,19 +1048,19 @@ msgstr "Settings"
 
 #. @context: Link to show remaining thread replies
 #. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
-#: src/themes/threads/timeline/ThreadPreview.tsx:38
+#: src/ui/feed/ThreadPreview.tsx:37
 msgid "Show {remainingCount} more {0}"
 msgstr "Show {remainingCount} more {0}"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
-#: src/app.tsx:389
-#: src/app.tsx:436
+#: src/app.tsx:391
+#: src/app.tsx:438
 msgid "Sign In"
 msgstr "Sign In"
 
 #. @context: Dashboard header link to sign out
-#: src/theme/layouts/DashLayout.tsx:63
+#: src/ui/layouts/DashLayout.tsx:63
 msgid "Sign Out"
 msgstr "Sign Out"
 
@@ -1049,7 +1079,7 @@ msgstr "Site Name"
 #. @context: Page form field label - URL slug
 #: src/routes/dash/collections.tsx:133
 #: src/routes/dash/collections.tsx:314
-#: src/theme/components/PageForm.tsx:64
+#: src/ui/dash/PageForm.tsx:64
 msgid "Slug"
 msgstr "Slug"
 
@@ -1065,8 +1095,8 @@ msgstr "Slug"
 
 #. @context: Page form field label - publish status
 #. @context: Post form field
-#: src/theme/components/PageForm.tsx:117
-#: src/theme/components/PostForm.tsx:221
+#: src/ui/dash/PageForm.tsx:117
+#: src/ui/dash/PostForm.tsx:221
 msgid "Status"
 msgstr "Status"
 
@@ -1087,38 +1117,38 @@ msgstr "The path to redirect from"
 
 #. @context: Compose quote text placeholder
 #. @context: Quote text placeholder
-#: src/theme/components/PostForm.tsx:145
-#: src/themes/threads/components/ComposeDialog.tsx:156
+#: src/ui/compose/ComposeDialog.tsx:156
+#: src/ui/dash/PostForm.tsx:145
 msgid "The text being quoted..."
 msgstr "The text being quoted..."
 
 #. @context: Page slug helper text
-#: src/theme/components/PageForm.tsx:85
+#: src/ui/dash/PageForm.tsx:85
 msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 
 #. @context: Password reset error description
-#: src/app.tsx:612
+#: src/app.tsx:614
 msgid "This password reset link is invalid or has expired. Please generate a new one."
 msgstr "This password reset link is invalid or has expired. Please generate a new one."
 
 #. @context: Appearance settings description
-#: src/routes/dash/settings.tsx:317
+#: src/routes/dash/settings.tsx:321
 msgid "This will theme both your site and your dashboard. All color themes support dark mode."
 msgstr "This will theme both your site and your dashboard. All color themes support dark mode."
 
 #. @context: Thread view indicator - first post in thread
-#: src/theme/components/ThreadView.tsx:60
+#: src/ui/shared/ThreadView.tsx:60
 msgid "Thread start"
 msgstr "Thread start"
 
 #. @context: Thread view header - multiple posts
-#: src/theme/components/ThreadView.tsx:105
+#: src/ui/shared/ThreadView.tsx:105
 msgid "Thread with {count} posts"
 msgstr "Thread with {count} posts"
 
 #. @context: Thread view header - single post
-#: src/theme/components/ThreadView.tsx:101
+#: src/ui/shared/ThreadView.tsx:101
 msgid "Thread with 1 post"
 msgstr "Thread with 1 post"
 
@@ -1127,14 +1157,14 @@ msgstr "Thread with 1 post"
 #. @context: Page form field label - title
 #: src/routes/dash/collections.tsx:114
 #: src/routes/dash/collections.tsx:304
-#: src/theme/components/PageForm.tsx:44
+#: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "Title"
 
 #. @context: Compose title placeholder
 #. @context: Post form field
-#: src/theme/components/PostForm.tsx:85
-#: src/themes/threads/components/ComposeDialog.tsx:124
+#: src/ui/compose/ComposeDialog.tsx:124
+#: src/ui/dash/PostForm.tsx:85
 msgid "Title (optional)"
 msgstr "Title (optional)"
 
@@ -1163,12 +1193,12 @@ msgstr "Un-nav"
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
 #: src/routes/dash/pages.tsx:212
-#: src/theme/components/PostList.tsx:86
+#: src/ui/dash/PostList.tsx:86
 msgid "Untitled"
 msgstr "Untitled"
 
 #. @context: Button to update existing post
-#: src/theme/components/PostForm.tsx:294
+#: src/ui/dash/PostForm.tsx:294
 msgid "Update"
 msgstr "Update"
 
@@ -1178,7 +1208,7 @@ msgid "Update Collection"
 msgstr "Update Collection"
 
 #. @context: Button to update existing page
-#: src/theme/components/PageForm.tsx:153
+#: src/ui/dash/PageForm.tsx:153
 msgid "Update Page"
 msgstr "Update Page"
 
@@ -1210,7 +1240,7 @@ msgid "URL"
 msgstr "URL"
 
 #. @context: Post form field - source URL
-#: src/theme/components/PostForm.tsx:121
+#: src/ui/dash/PostForm.tsx:121
 msgid "URL (optional)"
 msgstr "URL (optional)"
 
@@ -1236,8 +1266,8 @@ msgstr "Use this URL to embed the media in your posts."
 #: src/routes/dash/pages.tsx:199
 #: src/routes/dash/pages.tsx:261
 #: src/routes/dash/posts.tsx:145
-#: src/theme/components/ActionButtons.tsx:76
-#: src/theme/components/PostList.tsx:55
+#: src/ui/dash/ActionButtons.tsx:76
+#: src/ui/dash/PostList.tsx:55
 msgid "View"
 msgstr "View"
 
@@ -1247,7 +1277,7 @@ msgstr "View"
 #~ msgstr "View all posts →"
 
 #. @context: Dashboard header link to view the public site
-#: src/theme/layouts/DashLayout.tsx:53
+#: src/ui/layouts/DashLayout.tsx:53
 msgid "View Site"
 msgstr "View Site"
 
@@ -1257,19 +1287,19 @@ msgstr "View Site"
 #~ msgstr "Visibility"
 
 #. @context: Setup page welcome heading
-#: src/app.tsx:221
+#: src/app.tsx:223
 msgid "Welcome to Jant"
 msgstr "Welcome to Jant"
 
 #. @context: Compose prompt placeholder text
-#: src/themes/threads/components/ComposePrompt.tsx:37
+#: src/ui/compose/ComposePrompt.tsx:37
 msgid "What's new?"
 msgstr "What's new?"
 
 #. @context: Compose body placeholder
 #. @context: Post content placeholder
-#: src/theme/components/PostForm.tsx:109
-#: src/themes/threads/components/ComposeDialog.tsx:134
+#: src/ui/compose/ComposeDialog.tsx:134
+#: src/ui/dash/PostForm.tsx:109
 msgid "What's on your mind?"
 msgstr "What's on your mind?"
 
@@ -1279,7 +1309,7 @@ msgid "What's this collection about?"
 msgstr "What's this collection about?"
 
 #. @context: Setup form field - user name
-#: src/app.tsx:242
+#: src/app.tsx:244
 msgid "Your Name"
 msgstr "Your Name"
 

@@ -8,7 +8,7 @@ import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../app.js";
-import { DashLayout } from "../../theme/layouts/index.js";
+import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
 import {
   getSiteLanguage,
@@ -17,7 +17,7 @@ import {
 } from "../../lib/config.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { getAvailableThemes } from "../../lib/theme.js";
-import type { ColorTheme } from "../../theme/color-themes.js";
+import type { ColorTheme } from "../../ui/color-themes.js";
 
 /** Escape HTML special characters for safe insertion into HTML strings */
 function escapeHtml(str: string): string {
@@ -283,16 +283,20 @@ function ThemeCard({
 function AppearanceContent({
   themes,
   currentThemeId,
+  customCSS,
 }: {
   themes: ColorTheme[];
   currentThemeId: string;
+  customCSS: string;
 }) {
   const { t } = useLingui();
 
-  const signals = JSON.stringify({ theme: currentThemeId }).replace(
+  const themeSignals = JSON.stringify({ theme: currentThemeId }).replace(
     /</g,
     "\\u003c",
   );
+
+  const cssSignals = JSON.stringify({ customCSS }).replace(/</g, "\\u003c");
 
   return (
     <>
@@ -302,7 +306,7 @@ function AppearanceContent({
       <SettingsNav currentTab="appearance" />
 
       <div
-        data-signals={signals}
+        data-signals={themeSignals}
         data-on:change="@post('/dash/settings/appearance')"
         class="max-w-3xl"
       >
@@ -332,6 +336,59 @@ function AppearanceContent({
           </div>
         </fieldset>
       </div>
+
+      <form
+        data-signals={cssSignals}
+        data-on:submit__prevent="@post('/dash/settings/custom-css')"
+        data-indicator="_cssLoading"
+        class="max-w-3xl mt-8"
+      >
+        <fieldset>
+          <legend class="text-lg font-semibold">
+            {t({
+              message: "Custom CSS",
+              comment: "@context: Appearance settings heading for custom CSS",
+            })}
+          </legend>
+          <p class="text-sm text-muted-foreground mb-4">
+            {t({
+              message:
+                "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements.",
+              comment: "@context: Custom CSS settings description",
+            })}
+          </p>
+          <textarea
+            data-bind="customCSS"
+            class="textarea font-mono text-sm min-h-32"
+            rows={8}
+            placeholder={t({
+              message: "/* Your custom CSS here */",
+              comment: "@context: Custom CSS textarea placeholder",
+            })}
+          >
+            {customCSS}
+          </textarea>
+        </fieldset>
+        <button
+          type="submit"
+          class="btn mt-4"
+          data-attr-disabled="$_cssLoading"
+        >
+          <span data-show="!$_cssLoading">
+            {t({
+              message: "Save CSS",
+              comment: "@context: Button to save custom CSS",
+            })}
+          </span>
+          <span data-show="$_cssLoading">
+            {t({
+              message: "Processing...",
+              comment:
+                "@context: Loading text shown on submit button while request is in progress",
+            })}
+          </span>
+        </button>
+      </form>
     </>
   );
 }
@@ -585,6 +642,7 @@ settingsRoutes.get("/appearance", async (c) => {
   const { settings } = c.var.services;
   const siteName = await getSiteName(c);
   const currentThemeId = (await settings.get(SETTINGS_KEYS.THEME)) ?? "default";
+  const customCSS = (await settings.get(SETTINGS_KEYS.CUSTOM_CSS)) ?? "";
   const themes = getAvailableThemes(c.var.config);
   const saved = c.req.query("saved") !== undefined;
 
@@ -596,7 +654,11 @@ settingsRoutes.get("/appearance", async (c) => {
       currentPath="/dash/settings"
       toast={saved ? { message: "Theme saved successfully." } : undefined}
     >
-      <AppearanceContent themes={themes} currentThemeId={currentThemeId} />
+      <AppearanceContent
+        themes={themes}
+        currentThemeId={currentThemeId}
+        customCSS={customCSS}
+      />
     </DashLayout>,
   );
 });
@@ -619,6 +681,22 @@ settingsRoutes.post("/appearance", async (c) => {
   }
 
   return dsRedirect("/dash/settings/appearance?saved");
+});
+
+// Save custom CSS
+settingsRoutes.post("/custom-css", async (c) => {
+  const body = await c.req.json<{ customCSS: string }>();
+  const { settings } = c.var.services;
+
+  const css = body.customCSS?.trim() ?? "";
+
+  if (css) {
+    await settings.set(SETTINGS_KEYS.CUSTOM_CSS, css);
+  } else {
+    await settings.remove(SETTINGS_KEYS.CUSTOM_CSS);
+  }
+
+  return dsToast("Custom CSS saved successfully.");
 });
 
 // Account page

@@ -207,65 +207,60 @@ For all available variables (site name, language, R2 storage, image optimization
 
 ## Customization
 
-### Theme Components
+### Color Themes
 
-Override theme components by creating files in `src/theme/components/`:
+Pick a color theme from the dashboard: **Settings > Appearance**.
 
-```typescript
-// src/theme/components/PostCard.tsx
-import type { PostCardProps } from "@jant/core";
-import { PostCard as OriginalPostCard } from "@jant/core/theme";
+### Custom CSS
 
-export function PostCard(props: PostCardProps) {
-  return (
-    <div class="my-wrapper">
-      <OriginalPostCard {...props} />
-    </div>
-  );
-}
-```
+Inject custom CSS from the dashboard: **Settings > Appearance > Custom CSS**. This CSS is applied with the highest priority, so you can override any built-in styles.
 
-Then register it in `src/index.ts`:
+### CSS Design Tokens
 
-```typescript
-import { createApp } from "@jant/core";
-import { PostCard } from "./theme/components/PostCard";
-
-export default createApp({
-  theme: {
-    components: {
-      PostCard,
-    },
-  },
-});
-```
-
-### Custom Styles
-
-Add custom CSS in `src/theme/styles/`:
+Override design tokens in your custom CSS to change the look and feel:
 
 ```css
-/* src/theme/styles/custom.css */
-@import "@jant/core/theme/styles/main.css";
-
-/* Your custom styles */
-.my-custom-class {
-  /* ... */
+:root {
+  --site-width: 720px;
+  --card-radius: 0.5rem;
+  --font-body: "Inter", system-ui, sans-serif;
+  --avatar-size: 42px;
 }
 ```
 
-### Using Third-Party Themes
+### Data Attributes
 
-```bash
-npm install @jant-themes/minimal
+Target specific elements with stable data attributes:
+
+```css
+/* Style only note-format posts */
+[data-format="note"] {
+  border-left: 3px solid var(--primary);
+}
+
+/* Style the home page differently */
+[data-page="home"] {
+  background: var(--muted);
+}
+
+/* Hide compose prompt for unauthenticated visitors */
+body:not([data-authenticated]) .compose-prompt {
+  display: none;
+}
 ```
+
+### Code-Level Customization
+
+Pass CSS variable overrides or custom color themes via `createApp()`:
 
 ```typescript
 import { createApp } from "@jant/core";
-import { theme as MinimalTheme } from "@jant-themes/minimal";
 
 export default createApp({
-  theme: MinimalTheme,
+  cssVariables: {
+    "--site-width": "720px",
+    "--card-radius": "0.5rem",
+  },
 });
 ```
 
