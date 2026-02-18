@@ -78,10 +78,6 @@ All user-facing strings use `t()` with `comment` including `@context:` prefix. P
 
 This project uses git worktrees for parallel development. Each worktree is a sibling directory (e.g., `../feat-login/`). Use `mise run draft feat/name` to create, `mise run trash feat-name` to remove, `mise run wt-list` to list.
 
-## Demo Workflow
-
-Use Showboat and Rodney for visual proof of work. Run `/demo` command when a task is complete.
-
 ## Reference Docs
 
 - Datastar patterns & API: `docs/datastar.md`, `references/datastar/`
