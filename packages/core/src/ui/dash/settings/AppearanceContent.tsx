@@ -152,7 +152,7 @@ export function AppearanceContent({
           <p class="text-sm text-muted-foreground mb-4">
             {t({
               message:
-                "Choose a font for your site. All options use system fonts for fast loading.",
+                "Choose a font pairing for your site. All options use system fonts for fast loading.",
               comment: "@context: Font theme settings description",
             })}
           </p>
@@ -177,12 +177,27 @@ export function AppearanceContent({
                   <div class="text-sm text-muted-foreground">
                     {t(ft.description)}
                   </div>
-                  <div
-                    class="mt-1 text-sm leading-relaxed"
-                    style={`font-family:${ft.fontFamily}`}
-                  >
-                    <div>The quick brown fox jumps over the lazy dog.</div>
-                    <div>敏捷的棕色狐狸跳过了懒惰的狗。</div>
+                  <div class="mt-1 text-sm leading-relaxed">
+                    <div
+                      class="font-semibold"
+                      style={`font-family:${ft.headingFontFamily}`}
+                    >
+                      {t({
+                        message: "The quick brown fox jumps over the lazy dog.",
+                        comment:
+                          "@context: Font theme preview sentence for headings",
+                      })}
+                    </div>
+                    <div
+                      class="mt-2"
+                      style={`font-family:${ft.bodyFontFamily}`}
+                    >
+                      {t({
+                        message: "The quick brown fox jumps over the lazy dog.",
+                        comment:
+                          "@context: Font theme preview sentence for body text",
+                      })}
+                    </div>
                   </div>
                 </div>
               </label>
