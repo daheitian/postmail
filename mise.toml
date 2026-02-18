@@ -423,7 +423,7 @@ echo "Installing dependencies..."
 
 echo ""
 echo "Review worktree ready: $WORKTREE_PATH"
-echo "  cd $WORKTREE_PATH && mise run dev"
+echo "  cd $WORKTREE_PATH"
 """
 
 [tasks.trash]
