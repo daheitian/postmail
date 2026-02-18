@@ -147,11 +147,6 @@ pnpm exec wrangler d1 execute DB --local --file=scripts/seed-local.sql
 echo "Done! Database has been seeded."
 """
 
-[tasks.dev-password]
-description = "Set dev login credentials: mise run dev-password <password>"
-dir = "templates/jant-site"
-run = "node scripts/set-dev-password.mjs {{arg(name=\"password\")}}"
-
 # =============================================================================
 # i18n (Lingui)
 # =============================================================================
@@ -414,7 +409,7 @@ if [ -d "$WORKTREE_PATH" ]; then
   exit 1
 fi
 
-git worktree add "$WORKTREE_PATH" "origin/$usage_branch"
+git worktree add -b "$usage_branch" "$WORKTREE_PATH" "origin/$usage_branch"
 
 # Copy secrets file if it exists
 if [ -f "templates/jant-site/.dev.vars" ]; then
@@ -630,3 +625,4 @@ run = "pnpm --filter @jant/core build:lib && cd packages/core && npm publish --a
 [tasks.publish-create]
 description = "Build and publish create-jant to npm"
 run = "pnpm --filter create-jant build && cd packages/create-jant && npm publish --access public --no-provenance --no-git-checks"
+
