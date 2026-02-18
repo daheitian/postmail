@@ -1,5 +1,41 @@
 # Theming
 
+## Design Philosophy: Organic Minimalism
+
+Jant follows an **Organic Minimalism** (Soft UI) design language. Every UI decision should reflect these principles:
+
+### Core Principles
+
+- **Soft over sharp**: Prefer rounded corners, gentle gradients, and subtle shadows over hard edges and flat surfaces. Elements should feel approachable, not mechanical.
+- **Breathe**: Generous whitespace is a feature, not waste. Content needs room to exist comfortably. Never crowd elements.
+- **Quiet depth**: Use soft shadows and layering to create subtle spatial hierarchy. Avoid heavy drop shadows or stark elevation changes.
+- **Natural palette**: Colors should feel muted, warm, and organic. Avoid saturated neon or high-contrast clashes. Think sun-bleached linen, stone, warm fog.
+- **Minimal noise**: Remove anything that doesn't serve the content. No decorative borders, unnecessary dividers, or visual clutter. When in doubt, leave it out.
+- **Gentle motion**: Transitions should be smooth and understated — ease-out curves, short durations. Animation supports comprehension, never demands attention.
+- **Typography-driven hierarchy**: Let font size, weight, and spacing do the work. Avoid relying on color or decoration to establish hierarchy.
+
+### Practical Guidelines
+
+| Aspect      | Do                                                   | Don't                           |
+| ----------- | ---------------------------------------------------- | ------------------------------- |
+| Corners     | Soft radius (`0.5rem`–`1rem`)                        | Sharp 0 or overly pill-shaped   |
+| Shadows     | Diffused, low-opacity (`0 2px 8px rgba(0,0,0,0.06)`) | Hard, high-contrast box shadows |
+| Backgrounds | Subtle off-whites, warm grays                        | Pure `#fff` / `#000`            |
+| Borders     | Thin (`1px`), low-contrast, or omit entirely         | Thick or high-contrast borders  |
+| Spacing     | Generous padding and margins                         | Tight/cramped layouts           |
+| Feedback    | Soft color shifts, gentle scale                      | Flash, shake, or bounce         |
+| Icons       | Thin stroke, rounded joins                           | Heavy/filled, angular           |
+| Text color  | Muted foreground, never pure black                   | `#000` on `#fff`                |
+
+### Anti-Patterns to Avoid
+
+- **Neumorphism excess**: A hint of inner/outer shadow for depth is fine; full neumorphic buttons with dual shadows are too heavy.
+- **Gradient overuse**: Subtle background gradients are welcome; rainbow or multi-stop gradients on UI elements are not.
+- **Over-decoration**: Ornamental lines, badges, or illustrations that don't serve function.
+- **Contrast starvation**: Soft does not mean invisible. Maintain WCAG AA contrast ratios for text readability.
+
+---
+
 Jant uses CSS variables for theming, making it easy to customize colors while maintaining consistency.
 
 ## Built-in Themes

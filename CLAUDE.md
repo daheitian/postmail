@@ -19,6 +19,7 @@
 - **NEVER add feature flags or site settings to `createApp()`** - use env vars or database.
 - **Data attributes are stable public API**: Don't rename/remove `data-page`, `data-post`, `data-format`, etc. without major version bump.
 - **CSS tokens**: Never hardcode colors, fonts, spacing, or radii - use tokens in `styles/tokens.css`.
+- **Organic Minimalism**: All UI must follow the Soft UI design language — soft corners, gentle shadows, generous whitespace, muted colors, minimal noise. See `docs/theming.md` for full guidelines.
 
 ## Tech Stack
 
