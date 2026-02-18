@@ -1,18 +1,21 @@
 # Generate a visual demo proving the current work
 
 Create a Showboat demo document with Rodney screenshots to demonstrate
-that the feature or fix you just built actually works.
+that the feature or fix you just built actually works. The document is
+streamed in real-time to a remote datasette-showboat instance via the
+`SHOWBOAT_REMOTE_URL` environment variable.
 
 ## Steps
 
 1. Run `uvx showboat --help` and `uvx rodney --help` to learn current usage.
-2. Create `/tmp/demos/` directory if it doesn't exist.
+2. Verify `SHOWBOAT_REMOTE_URL` is set. If not, stop and ask the user to configure it.
 3. Determine the demo filename from the current branch name (e.g., `feat-login` → `/tmp/demos/feat-login.md`).
-4. Use `showboat init` to create (overwrite) the demo file.
-5. Start rodney, navigate to the relevant pages, interact with the feature, and take screenshots to `/tmp/`.
-6. Use showboat commands (`note`, `exec`, `image`) to assemble the demo. Do NOT edit the .md file directly.
-7. Stop rodney when done.
-8. Report: "Demo generated: `/tmp/demos/{name}.md`"
+4. Create `/tmp/demos/` directory if it doesn't exist.
+5. Use `showboat init` to create (overwrite) the demo file. This assigns a UUID and streams the title to the remote instance.
+6. Start rodney, navigate to the relevant pages, interact with the feature, and take screenshots to `/tmp/`.
+7. Use showboat commands (`note`, `exec`, `image`) to assemble the demo. Each command automatically streams to the remote instance. Do NOT edit the .md file directly.
+8. Stop rodney and the dev server when done.
+9. Report the remote viewer URL so the user can open it in a browser. The URL format is `{SHOWBOAT_REMOTE_URL_origin}/-/showboat/{showboat-id}` (extract the UUID from the `<!-- showboat-id: ... -->` line in the demo file).
 
 ## Rules
 
