@@ -30,9 +30,8 @@ function DashboardContent({
   const { t } = useLingui();
 
   return (
-    <div class="container py-8">
+    <>
       <h1 class="text-2xl font-semibold mb-6">
-        {/* ✅ No more nesting! */}
         {t({
           message: "Dashboard",
           comment: "@context: Dashboard main heading",
@@ -73,7 +72,6 @@ function DashboardContent({
         </div>
       </div>
 
-      {/* ✅ Trans component with embedded JSX! */}
       <p>
         <Trans comment="@context: Help text with link">
           Need help? Visit the{" "}
@@ -82,7 +80,7 @@ function DashboardContent({
           </a>
         </Trans>
       </p>
-    </div>
+    </>
   );
 }
 

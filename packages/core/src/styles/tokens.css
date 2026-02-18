@@ -22,6 +22,10 @@
   --content-gap: 1rem;
   --space-xl: 2rem;
 
+  /* Sidebar layout (dashboard + site sidebar pages) */
+  --sidebar-width: 12rem;
+  --sidebar-gap: 2rem;
+
   /* Surfaces */
   --card-bg: var(--card);
   --card-radius: 0;

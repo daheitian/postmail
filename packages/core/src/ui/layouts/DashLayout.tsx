@@ -41,7 +41,7 @@ function DashLayoutContent({
     <div class="min-h-screen">
       {/* Header */}
       <header class="border-b bg-card">
-        <div class="container flex h-14 items-center justify-between">
+        <div class="container-sidebar flex h-14 items-center justify-between">
           <a id="site-name" href="/dash" class="font-semibold">
             {siteName}
           </a>
@@ -70,9 +70,9 @@ function DashLayoutContent({
       </header>
 
       {/* Sidebar + Main */}
-      <div class="container flex gap-8 py-8">
+      <div class="container-sidebar sidebar-layout py-8">
         {/* Sidebar */}
-        <aside class="w-48 shrink-0">
+        <aside class="sidebar-nav">
           <nav class="flex flex-col gap-1">
             <a href="/dash" class={navClass("/dash", /^\/dash$/)}>
               {t({
@@ -139,7 +139,7 @@ function DashLayoutContent({
         </aside>
 
         {/* Main content */}
-        <main class="flex-1 min-w-0">{children}</main>
+        <main class="sidebar-main">{children}</main>
       </div>
     </div>
   );

@@ -180,6 +180,48 @@
     padding: 0 var(--site-padding);
   }
 
+  /* --- Sidebar layout (shared by dashboard and site sidebar pages) ------- */
+
+  .sidebar-layout {
+    display: flex;
+    gap: var(--sidebar-gap);
+  }
+
+  .sidebar-nav {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+  }
+
+  .sidebar-main {
+    flex: 1;
+    min-width: 0;
+    max-width: var(--site-width);
+  }
+
+  @media (max-width: 959px) {
+    .sidebar-layout {
+      display: block;
+    }
+    .sidebar-nav {
+      display: none;
+    }
+    .sidebar-main {
+      max-width: none;
+    }
+  }
+
+  .site-header-sidebar {
+    max-width: calc(
+      var(--sidebar-width) + var(--sidebar-gap) + var(--site-width)
+    );
+  }
+
+  .site-footer-sidebar {
+    max-width: calc(
+      var(--sidebar-width) + var(--sidebar-gap) + var(--site-width)
+    );
+  }
+
   /* =========================================================================
    * Timeline & Post Components
    * ========================================================================= */

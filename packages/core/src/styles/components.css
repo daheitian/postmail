@@ -8,7 +8,21 @@
 /* Custom utilities */
 @layer utilities {
   .container {
-    @apply mx-auto max-w-2xl px-4;
+    max-width: var(--site-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--site-padding);
+    padding-right: var(--site-padding);
+  }
+
+  .container-sidebar {
+    max-width: calc(
+      var(--sidebar-width) + var(--sidebar-gap) + var(--site-width)
+    );
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--site-padding);
+    padding-right: var(--site-padding);
   }
 }
 

@@ -311,7 +311,7 @@ msgstr "Danger Zone"
 
 #. @context: Dashboard main heading
 #. @context: Dashboard navigation - main dashboard page
-#: src/routes/dash/index.tsx:36
+#: src/routes/dash/index.tsx:35
 #: src/ui/layouts/DashLayout.tsx:78
 msgid "Dashboard"
 msgstr "Dashboard"
@@ -387,7 +387,7 @@ msgid "Draft"
 msgstr "Draft"
 
 #. @context: Post status label
-#: src/routes/dash/index.tsx:55
+#: src/routes/dash/index.tsx:54
 msgid "Drafts"
 msgstr "Drafts"
 
@@ -659,7 +659,7 @@ msgstr "Name"
 #~ msgstr "Navigation"
 
 #. @context: Help text with link
-#: src/routes/dash/index.tsx:78
+#: src/routes/dash/index.tsx:76
 msgid "Need help? Visit the <0>documentation</0>"
 msgstr "Need help? Visit the <0>documentation</0>"
 
@@ -695,7 +695,7 @@ msgstr "New Password"
 #. @context: Button to create new post
 #. @context: Compose dialog title
 #. @context: Page heading
-#: src/routes/dash/index.tsx:68
+#: src/routes/dash/index.tsx:67
 #: src/routes/dash/posts.tsx:30
 #: src/routes/dash/posts.tsx:46
 #: src/ui/compose/ComposeDialog.tsx:54
@@ -952,7 +952,7 @@ msgstr "Publish"
 #. @context: Post status badge - published
 #. @context: Post status label
 #. @context: Post status option
-#: src/routes/dash/index.tsx:45
+#: src/routes/dash/index.tsx:44
 #: src/ui/dash/PageForm.tsx:127
 #: src/ui/dash/PostForm.tsx:230
 #: src/ui/dash/StatusBadge.tsx:30
@@ -970,7 +970,7 @@ msgid "Published pages are accessible via their slug. Drafts are not visible."
 msgstr "Published pages are accessible via their slug. Drafts are not visible."
 
 #. @context: Dashboard section title
-#: src/routes/dash/index.tsx:62
+#: src/routes/dash/index.tsx:61
 msgid "Quick Actions"
 msgstr "Quick Actions"
 
