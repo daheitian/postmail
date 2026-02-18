@@ -8,6 +8,7 @@ DELETE FROM posts_fts;
 -- Clear main tables (order matters for FK constraints)
 DELETE FROM nav_items;
 DELETE FROM media;
+DELETE FROM post_collections;
 DELETE FROM posts;
 DELETE FROM pages;
 DELETE FROM collections;

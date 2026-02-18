@@ -73,7 +73,7 @@ msgstr "Add Link"
 #. @context: Button to open media picker
 #. @context: Compose toolbar - add media
 #: src/ui/compose/ComposeDialog.tsx:219
-#: src/ui/dash/PostForm.tsx:211
+#: src/ui/dash/PostForm.tsx:213
 msgid "Add Media"
 msgstr "Add Media"
 
@@ -152,10 +152,10 @@ msgstr "Blog Avatar"
 #. @context: Button to cancel form
 #. @context: Button to cancel unsaved changes and revert to original values
 #: src/routes/dash/redirects.tsx:183
-#: src/ui/dash/collections/CollectionForm.tsx:144
+#: src/ui/dash/collections/CollectionForm.tsx:219
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
-#: src/ui/dash/PostForm.tsx:318
+#: src/ui/dash/PostForm.tsx:316
 #: src/ui/dash/settings/GeneralContent.tsx:86
 msgid "Cancel"
 msgstr "Cancel"
@@ -182,31 +182,31 @@ msgstr "Choose a font pairing for your site. All options use system fonts for fa
 msgid "Click image to view full size"
 msgstr "Click image to view full size"
 
-#. @context: Compose collection field
 #. @context: Compose toolbar - toggle collection
-#: src/ui/compose/ComposeDialog.tsx:191
 #: src/ui/compose/ComposeDialog.tsx:272
 msgid "Collection"
 msgstr "Collection"
 
 #. @context: Post form field - assign to collection
 #: src/ui/dash/PostForm.tsx:264
-msgid "Collection (optional)"
-msgstr "Collection (optional)"
+#~ msgid "Collection (optional)"
+#~ msgstr "Collection (optional)"
 
 #. @context: Collections page heading
+#. @context: Compose collection field
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
-#: src/ui/dash/collections/CollectionsListContent.tsx:24
+#: src/ui/compose/ComposeDialog.tsx:191
+#: src/ui/dash/collections/CollectionsListContent.tsx:26
 #: src/ui/layouts/DashLayout.tsx:114
 #: src/ui/pages/CollectionsPage.tsx:18
 msgid "Collections"
 msgstr "Collections"
 
 #. @context: Post form field - assign to collections
-#: src/theme/components/PostForm.tsx:273
-#~ msgid "Collections (optional)"
-#~ msgstr "Collections (optional)"
+#: src/ui/dash/PostForm.tsx:266
+msgid "Collections (optional)"
+msgstr "Collections (optional)"
 
 #. @context: Appearance settings heading
 #: src/ui/dash/settings/AppearanceContent.tsx:112
@@ -231,7 +231,7 @@ msgstr "Confirm Password"
 #. @context: Page form field label - content
 #. @context: Post form field
 #: src/ui/dash/PageForm.tsx:96
-#: src/ui/dash/PostForm.tsx:104
+#: src/ui/dash/PostForm.tsx:106
 msgid "Content"
 msgstr "Content"
 
@@ -243,7 +243,7 @@ msgid "Copy"
 msgstr "Copy"
 
 #. @context: Button to save new collection
-#: src/ui/dash/collections/CollectionForm.tsx:36
+#: src/ui/dash/collections/CollectionForm.tsx:38
 msgid "Create Collection"
 msgstr "Create Collection"
 
@@ -354,7 +354,7 @@ msgid "Demo account pre-filled. Just click Sign In."
 msgstr "Demo account pre-filled. Just click Sign In."
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:102
+#: src/ui/dash/collections/CollectionForm.tsx:110
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
@@ -371,7 +371,7 @@ msgstr "Display text for the link"
 #. @context: Close media picker button
 #. @context: Close media picker button
 #: src/ui/compose/ComposeDialog.tsx:394
-#: src/ui/dash/PostForm.tsx:340
+#: src/ui/dash/PostForm.tsx:338
 msgid "Done"
 msgstr "Done"
 
@@ -381,7 +381,7 @@ msgstr "Done"
 #. @context: Post status option
 #: src/ui/compose/ComposeDialog.tsx:340
 #: src/ui/dash/PageForm.tsx:133
-#: src/ui/dash/PostForm.tsx:234
+#: src/ui/dash/PostForm.tsx:236
 #: src/ui/dash/StatusBadge.tsx:34
 msgid "Draft"
 msgstr "Draft"
@@ -408,7 +408,7 @@ msgstr "Drafts"
 #: src/routes/dash/pages.tsx:55
 #: src/routes/dash/posts.tsx:140
 #: src/ui/dash/ActionButtons.tsx:72
-#: src/ui/dash/collections/CollectionsListContent.tsx:55
+#: src/ui/dash/collections/CollectionsListContent.tsx:65
 #: src/ui/dash/collections/ViewCollectionContent.tsx:33
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:72
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:93
@@ -418,7 +418,7 @@ msgid "Edit"
 msgstr "Edit"
 
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:28
+#: src/ui/dash/collections/CollectionForm.tsx:30
 msgid "Edit Collection"
 msgstr "Edit Collection"
 
@@ -433,7 +433,7 @@ msgid "Edit Page"
 msgstr "Edit Page"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:183
+#: src/routes/dash/posts.tsx:185
 msgid "Edit Post"
 msgstr "Edit Post"
 
@@ -453,6 +453,11 @@ msgstr "Edit Post"
 msgid "Email"
 msgstr "Email"
 
+#. @context: Collection icon placeholder
+#: src/ui/dash/collections/CollectionForm.tsx:143
+msgid "Emoji or icon name"
+msgstr "Emoji or icon name"
+
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx:39
 msgid "Enter your new password."
@@ -465,7 +470,7 @@ msgstr "Enter your new password."
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
 #: src/ui/compose/ComposeDialog.tsx:305
-#: src/ui/dash/PostForm.tsx:246
+#: src/ui/dash/PostForm.tsx:248
 #: src/ui/dash/settings/GeneralContent.tsx:398
 #: src/ui/dash/StatusBadge.tsx:45
 #: src/ui/layouts/SiteLayout.tsx:55
@@ -479,7 +484,7 @@ msgid "Font theme"
 msgstr "Font theme"
 
 #. @context: Post form field - post format
-#: src/ui/dash/PostForm.tsx:64
+#: src/ui/dash/PostForm.tsx:66
 msgid "Format"
 msgstr "Format"
 
@@ -504,6 +509,16 @@ msgstr "From Path"
 #: src/ui/dash/settings/SettingsNav.tsx:15
 msgid "General"
 msgstr "General"
+
+#. @context: Collection sort order option
+#: src/ui/dash/collections/CollectionForm.tsx:182
+msgid "Highest rated"
+msgstr "Highest rated"
+
+#. @context: Collection form field
+#: src/ui/dash/collections/CollectionForm.tsx:134
+msgid "Icon (optional)"
+msgstr "Icon (optional)"
 
 #. @context: Post type badge - image
 #. @context: Post type label - image
@@ -567,7 +582,7 @@ msgstr "link"
 #. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx:101
 #: src/ui/dash/FormatBadge.tsx:20
-#: src/ui/dash/PostForm.tsx:74
+#: src/ui/dash/PostForm.tsx:76
 #: src/ui/pages/ArchivePage.tsx:17
 msgid "Link"
 msgstr "Link"
@@ -585,7 +600,7 @@ msgstr "Load more"
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
 #: src/ui/compose/ComposeDialog.tsx:405
-#: src/ui/dash/PostForm.tsx:351
+#: src/ui/dash/PostForm.tsx:349
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -593,6 +608,11 @@ msgstr "Loading..."
 #: src/ui/dash/PageForm.tsx:77
 msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "Lowercase letters, numbers, and hyphens only"
+
+#. @context: Collection sort order option
+#: src/ui/dash/collections/CollectionForm.tsx:191
+msgid "Lowest rated"
+msgstr "Lowest rated"
 
 #. @context: Media detail section - Markdown snippet
 #: src/ui/dash/media/ViewMediaContent.tsx:146
@@ -608,7 +628,7 @@ msgstr "Markdown supported"
 #. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/ui/dash/media/MediaListContent.tsx:127
-#: src/ui/dash/PostForm.tsx:158
+#: src/ui/dash/PostForm.tsx:160
 #: src/ui/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "Media"
@@ -619,7 +639,7 @@ msgstr "Media"
 #~ msgstr "My Blog"
 
 #. @context: Collection title placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:70
+#: src/ui/dash/collections/CollectionForm.tsx:72
 msgid "My Collection"
 msgstr "My Collection"
 
@@ -643,9 +663,9 @@ msgstr "Need help? Visit the <0>documentation</0>"
 #. @context: Button to create new collection
 #. @context: Button to create new collection
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:29
-#: src/ui/dash/collections/CollectionsListContent.tsx:28
-#: src/ui/dash/collections/CollectionsListContent.tsx:41
+#: src/ui/dash/collections/CollectionForm.tsx:31
+#: src/ui/dash/collections/CollectionsListContent.tsx:30
+#: src/ui/dash/collections/CollectionsListContent.tsx:43
 msgid "New Collection"
 msgstr "New Collection"
 
@@ -688,6 +708,11 @@ msgstr "New Post"
 msgid "New Redirect"
 msgstr "New Redirect"
 
+#. @context: Collection sort order option
+#: src/ui/dash/collections/CollectionForm.tsx:164
+msgid "Newest first"
+msgstr "Newest first"
+
 #. @context: Pagination button - next page
 #. @context: Pagination button - next page
 #: src/ui/shared/Pagination.tsx:50
@@ -697,7 +722,7 @@ msgstr "Next"
 
 #. @context: Empty state message
 #. @context: Empty state message on collections page
-#: src/ui/dash/collections/CollectionsListContent.tsx:37
+#: src/ui/dash/collections/CollectionsListContent.tsx:39
 #: src/ui/pages/CollectionsPage.tsx:28
 msgid "No collections yet."
 msgstr "No collections yet."
@@ -756,12 +781,8 @@ msgstr "No redirects configured."
 msgid "No results found."
 msgstr "No results found."
 
-#. @context: No collection selected
-#. @context: No collection selected
 #. @context: No rating selected
 #: src/ui/compose/ComposeDialog.tsx:174
-#: src/ui/compose/ComposeDialog.tsx:198
-#: src/ui/dash/PostForm.tsx:271
 msgid "None"
 msgstr "None"
 
@@ -771,7 +792,7 @@ msgstr "None"
 #. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx:90
 #: src/ui/dash/FormatBadge.tsx:19
-#: src/ui/dash/PostForm.tsx:71
+#: src/ui/dash/PostForm.tsx:73
 #: src/ui/pages/ArchivePage.tsx:16
 msgid "Note"
 msgstr "Note"
@@ -780,6 +801,11 @@ msgstr "Note"
 #: src/ui/pages/ArchivePage.tsx:29
 msgid "Notes"
 msgstr "Notes"
+
+#. @context: Collection sort order option
+#: src/ui/dash/collections/CollectionForm.tsx:173
+msgid "Oldest first"
+msgstr "Oldest first"
 
 #. @context: Section heading for pages not in navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:139
@@ -846,7 +872,7 @@ msgstr "Permalink"
 #. @context: Post badge - pinned
 #. @context: Post form checkbox - pin to top
 #: src/ui/compose/ComposeDialog.tsx:312
-#: src/ui/dash/PostForm.tsx:253
+#: src/ui/dash/PostForm.tsx:255
 #: src/ui/dash/StatusBadge.tsx:53
 msgid "Pinned"
 msgstr "Pinned"
@@ -866,7 +892,7 @@ msgid "Post"
 msgstr "Post"
 
 #. @context: Post title placeholder
-#: src/ui/dash/PostForm.tsx:94
+#: src/ui/dash/PostForm.tsx:96
 msgid "Post title..."
 msgstr "Post title..."
 
@@ -917,7 +943,7 @@ msgid "Profile"
 msgstr "Profile"
 
 #. @context: Button to publish new post
-#: src/ui/dash/PostForm.tsx:312
+#: src/ui/dash/PostForm.tsx:310
 msgid "Publish"
 msgstr "Publish"
 
@@ -927,7 +953,7 @@ msgstr "Publish"
 #. @context: Post status option
 #: src/routes/dash/index.tsx:45
 #: src/ui/dash/PageForm.tsx:127
-#: src/ui/dash/PostForm.tsx:228
+#: src/ui/dash/PostForm.tsx:230
 #: src/ui/dash/StatusBadge.tsx:30
 msgid "Published"
 msgstr "Published"
@@ -963,13 +989,13 @@ msgstr "Quick Actions"
 #. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx:112
 #: src/ui/dash/FormatBadge.tsx:21
-#: src/ui/dash/PostForm.tsx:77
+#: src/ui/dash/PostForm.tsx:79
 #: src/ui/pages/ArchivePage.tsx:18
 msgid "Quote"
 msgstr "Quote"
 
 #. @context: Post form field - quoted text
-#: src/ui/dash/PostForm.tsx:137
+#: src/ui/dash/PostForm.tsx:139
 msgid "Quote Text"
 msgstr "Quote Text"
 
@@ -994,7 +1020,7 @@ msgstr "Redirects"
 
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
-#: src/ui/dash/PostForm.tsx:194
+#: src/ui/dash/PostForm.tsx:196
 #: src/ui/dash/settings/GeneralContent.tsx:243
 msgid "Remove"
 msgstr "Remove"
@@ -1053,7 +1079,7 @@ msgstr "Search posts..."
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
 #: src/ui/compose/ComposeDialog.tsx:384
-#: src/ui/dash/PostForm.tsx:330
+#: src/ui/dash/PostForm.tsx:328
 msgid "Select Media"
 msgstr "Select Media"
 
@@ -1113,10 +1139,15 @@ msgstr "Site Name"
 
 #. @context: Collection form field
 #. @context: Page form field label - URL slug
-#: src/ui/dash/collections/CollectionForm.tsx:80
+#: src/ui/dash/collections/CollectionForm.tsx:87
 #: src/ui/dash/PageForm.tsx:64
 msgid "Slug"
 msgstr "Slug"
+
+#. @context: Collection form field
+#: src/ui/dash/collections/CollectionForm.tsx:152
+msgid "Sort Order"
+msgstr "Sort Order"
 
 #. @context: Post form field - name of the source website or author
 #: src/theme/components/PostForm.tsx:216
@@ -1131,7 +1162,7 @@ msgstr "Slug"
 #. @context: Page form field label - publish status
 #. @context: Post form field
 #: src/ui/dash/PageForm.tsx:117
-#: src/ui/dash/PostForm.tsx:221
+#: src/ui/dash/PostForm.tsx:223
 msgid "Status"
 msgstr "Status"
 
@@ -1160,7 +1191,7 @@ msgstr "The quick brown fox jumps over the lazy dog."
 #. @context: Compose quote text placeholder
 #. @context: Quote text placeholder
 #: src/ui/compose/ComposeDialog.tsx:156
-#: src/ui/dash/PostForm.tsx:145
+#: src/ui/dash/PostForm.tsx:147
 msgid "The text being quoted..."
 msgstr "The text being quoted..."
 
@@ -1221,7 +1252,7 @@ msgstr "Time Zone"
 
 #. @context: Collection form field
 #. @context: Page form field label - title
-#: src/ui/dash/collections/CollectionForm.tsx:57
+#: src/ui/dash/collections/CollectionForm.tsx:59
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "Title"
@@ -1229,7 +1260,7 @@ msgstr "Title"
 #. @context: Compose title placeholder
 #. @context: Post form field
 #: src/ui/compose/ComposeDialog.tsx:124
-#: src/ui/dash/PostForm.tsx:85
+#: src/ui/dash/PostForm.tsx:87
 msgid "Title (optional)"
 msgstr "Title (optional)"
 
@@ -1263,12 +1294,12 @@ msgid "Untitled"
 msgstr "Untitled"
 
 #. @context: Button to update existing post
-#: src/ui/dash/PostForm.tsx:308
+#: src/ui/dash/PostForm.tsx:306
 msgid "Update"
 msgstr "Update"
 
 #. @context: Button to save collection changes
-#: src/ui/dash/collections/CollectionForm.tsx:32
+#: src/ui/dash/collections/CollectionForm.tsx:34
 msgid "Update Collection"
 msgstr "Update Collection"
 
@@ -1314,14 +1345,19 @@ msgid "URL"
 msgstr "URL"
 
 #. @context: Post form field - source URL
-#: src/ui/dash/PostForm.tsx:121
+#: src/ui/dash/PostForm.tsx:123
 msgid "URL (optional)"
 msgstr "URL (optional)"
 
 #. @context: Collection path help text
 #: src/ui/dash/collections/CollectionForm.tsx:92
-msgid "URL-safe identifier (lowercase, numbers, hyphens)"
-msgstr "URL-safe identifier (lowercase, numbers, hyphens)"
+#~ msgid "URL-safe identifier (lowercase, numbers, hyphens)"
+#~ msgstr "URL-safe identifier (lowercase, numbers, hyphens)"
+
+#. @context: Collection path help text
+#: src/ui/dash/collections/CollectionForm.tsx:99
+msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
+msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 
 #. @context: Media URL helper text
 #: src/ui/dash/media/ViewMediaContent.tsx:135
@@ -1338,7 +1374,7 @@ msgstr "Use this URL to embed the media in your posts."
 #: src/routes/dash/pages.tsx:60
 #: src/routes/dash/posts.tsx:145
 #: src/ui/dash/ActionButtons.tsx:76
-#: src/ui/dash/collections/CollectionsListContent.tsx:60
+#: src/ui/dash/collections/CollectionsListContent.tsx:70
 #: src/ui/dash/collections/ViewCollectionContent.tsx:38
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:177
 #: src/ui/dash/PostList.tsx:55
@@ -1373,12 +1409,12 @@ msgstr "What's new?"
 #. @context: Compose body placeholder
 #. @context: Post content placeholder
 #: src/ui/compose/ComposeDialog.tsx:134
-#: src/ui/dash/PostForm.tsx:109
+#: src/ui/dash/PostForm.tsx:111
 msgid "What's on your mind?"
 msgstr "What's on your mind?"
 
 #. @context: Collection description placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:114
+#: src/ui/dash/collections/CollectionForm.tsx:122
 msgid "What's this collection about?"
 msgstr "What's this collection about?"
 

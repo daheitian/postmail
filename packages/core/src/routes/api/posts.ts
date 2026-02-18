@@ -158,7 +158,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
     url: body.url || undefined,
     quoteText: body.quoteText,
     rating: body.rating || undefined,
-    collectionId: body.collectionId || undefined,
+    collectionIds: body.collectionIds?.length ? body.collectionIds : undefined,
     replyToId: body.replyToId
       ? (sqid.decode(body.replyToId) ?? undefined)
       : undefined,
@@ -232,7 +232,7 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
     url: body.url,
     quoteText: body.quoteText,
     rating: body.rating || undefined,
-    collectionId: body.collectionId || undefined,
+    collectionIds: body.collectionIds?.length ? body.collectionIds : undefined,
     publishedAt: body.publishedAt,
   });
 

@@ -18,6 +18,8 @@ export function CollectionForm({
     title: collection?.title ?? "",
     slug: collection?.slug ?? "",
     description: collection?.description ?? "",
+    sortOrder: collection?.sortOrder ?? "newest",
+    icon: collection?.icon ?? "",
   }).replace(/</g, "\\u003c");
 
   const action = isEdit
@@ -72,6 +74,11 @@ export function CollectionForm({
                     comment: "@context: Collection title placeholder",
                   })
             }
+            data-on:input={
+              !isEdit
+                ? "$slug = $title.toLowerCase().trim().replace(/[^\\w\\s-]/g, '').replace(/[\\s_-]+/g, '-').replace(/^-+|-+$/g, '')"
+                : undefined
+            }
           />
         </div>
 
@@ -90,7 +97,8 @@ export function CollectionForm({
           {!isEdit && (
             <p class="text-xs text-muted-foreground mt-1">
               {t({
-                message: "URL-safe identifier (lowercase, numbers, hyphens)",
+                message:
+                  "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server.",
                 comment: "@context: Collection path help text",
               })}
             </p>
@@ -119,6 +127,73 @@ export function CollectionForm({
           >
             {collection?.description ?? ""}
           </textarea>
+        </div>
+
+        <div class="field">
+          <label class="label">
+            {t({
+              message: "Icon (optional)",
+              comment: "@context: Collection form field",
+            })}
+          </label>
+          <input
+            type="text"
+            data-bind="icon"
+            class="input"
+            placeholder={t({
+              message: "Emoji or icon name",
+              comment: "@context: Collection icon placeholder",
+            })}
+          />
+        </div>
+
+        <div class="field">
+          <label class="label">
+            {t({
+              message: "Sort Order",
+              comment: "@context: Collection form field",
+            })}
+          </label>
+          <select data-bind="sortOrder" class="select">
+            <option
+              value="newest"
+              selected={
+                collection?.sortOrder === "newest" || !collection?.sortOrder
+              }
+            >
+              {t({
+                message: "Newest first",
+                comment: "@context: Collection sort order option",
+              })}
+            </option>
+            <option
+              value="oldest"
+              selected={collection?.sortOrder === "oldest"}
+            >
+              {t({
+                message: "Oldest first",
+                comment: "@context: Collection sort order option",
+              })}
+            </option>
+            <option
+              value="rating_desc"
+              selected={collection?.sortOrder === "rating_desc"}
+            >
+              {t({
+                message: "Highest rated",
+                comment: "@context: Collection sort order option",
+              })}
+            </option>
+            <option
+              value="rating_asc"
+              selected={collection?.sortOrder === "rating_asc"}
+            >
+              {t({
+                message: "Lowest rated",
+                comment: "@context: Collection sort order option",
+              })}
+            </option>
+          </select>
         </div>
 
         <div class="flex gap-2">

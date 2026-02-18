@@ -49,7 +49,7 @@ composeRoutes.post("/", async (c) => {
     url: data.url || undefined,
     quoteText: data.quoteText || undefined,
     rating: data.rating || undefined,
-    collectionId: data.collectionId || undefined,
+    collectionIds: data.collectionIds?.length ? data.collectionIds : undefined,
   });
 
   // Attach media if provided

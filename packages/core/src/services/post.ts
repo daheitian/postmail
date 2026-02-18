@@ -8,7 +8,7 @@
 
 import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { posts } from "../db/schema.js";
+import { posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
 import type { Format, Status, Post, CreatePost, UpdatePost } from "../types.js";
@@ -70,7 +70,10 @@ export function createPostService(db: Database): PostService {
       conditions.push(eq(posts.format, filters.format));
     }
     if (filters.collectionId !== undefined) {
-      conditions.push(eq(posts.collectionId, filters.collectionId));
+      // Filter by collection via junction table
+      conditions.push(
+        sql`${posts.id} IN (SELECT post_id FROM post_collections WHERE collection_id = ${filters.collectionId})`,
+      );
     }
     if (filters.threadId) {
       conditions.push(eq(posts.threadId, filters.threadId));
@@ -99,7 +102,6 @@ export function createPostService(db: Database): PostService {
       bodyHtml: row.bodyHtml,
       quoteText: row.quoteText,
       rating: row.rating,
-      collectionId: row.collectionId,
       replyToId: row.replyToId,
       threadId: row.threadId,
       deletedAt: row.deletedAt,
@@ -200,7 +202,6 @@ export function createPostService(db: Database): PostService {
           bodyHtml,
           quoteText: data.quoteText ?? null,
           rating: data.rating ?? null,
-          collectionId: data.collectionId ?? null,
           replyToId: data.replyToId ?? null,
           threadId,
           publishedAt: data.publishedAt ?? timestamp,
@@ -210,7 +211,19 @@ export function createPostService(db: Database): PostService {
         .returning();
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toPost(result[0]!);
+      const post = toPost(result[0]!);
+
+      // Sync collection memberships if provided
+      if (data.collectionIds && data.collectionIds.length > 0) {
+        await db.insert(postCollections).values(
+          data.collectionIds.map((collectionId) => ({
+            postId: post.id,
+            collectionId,
+          })),
+        );
+      }
+
+      return post;
     },
 
     async update(id, data) {
@@ -228,8 +241,6 @@ export function createPostService(db: Database): PostService {
       if (data.url !== undefined) updates.url = data.url;
       if (data.quoteText !== undefined) updates.quoteText = data.quoteText;
       if (data.rating !== undefined) updates.rating = data.rating;
-      if (data.collectionId !== undefined)
-        updates.collectionId = data.collectionId;
       if (data.publishedAt !== undefined)
         updates.publishedAt = data.publishedAt;
       if (data.pinned !== undefined) updates.pinned = data.pinned ? 1 : 0;
@@ -263,6 +274,19 @@ export function createPostService(db: Database): PostService {
         .set(updates)
         .where(eq(posts.id, id))
         .returning();
+
+      // Sync collection memberships if provided
+      if (data.collectionIds !== undefined) {
+        await db.delete(postCollections).where(eq(postCollections.postId, id));
+        if (data.collectionIds.length > 0) {
+          await db.insert(postCollections).values(
+            data.collectionIds.map((collectionId) => ({
+              postId: id,
+              collectionId,
+            })),
+          );
+        }
+      }
 
       return result[0] ? toPost(result[0]) : null;
     },

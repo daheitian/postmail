@@ -1,12 +1,12 @@
 /**
  * Collection Service (v2)
  *
- * Manages collections. Posts belong to collections via posts.collection_id (1:M).
+ * Manages collections. Posts belong to collections via post_collections junction table (M:N).
  */
 
-import { eq, asc, sql, desc } from "drizzle-orm";
+import { eq, asc, sql, desc, and } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { collections, posts } from "../db/schema.js";
+import { collections, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type {
   Collection,
@@ -25,6 +25,16 @@ export interface CollectionService {
   reorder(ids: number[]): Promise<void>;
   /** Get post count per collection */
   getPostCounts(): Promise<Map<number, number>>;
+  /** Add a post to a collection */
+  addPost(collectionId: number, postId: number): Promise<void>;
+  /** Remove a post from a collection */
+  removePost(collectionId: number, postId: number): Promise<void>;
+  /** Get all collections a post belongs to */
+  getCollectionsByPostId(postId: number): Promise<Collection[]>;
+  /** Get all post IDs in a collection */
+  getPostIds(collectionId: number): Promise<number[]>;
+  /** Sync a post's collection memberships (replace all with given IDs) */
+  syncPostCollections(postId: number, collectionIds: number[]): Promise<void>;
 }
 
 export function createCollectionService(db: Database): CollectionService {
@@ -130,12 +140,7 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async delete(id) {
-      // Clear collection_id on posts that belong to this collection
-      await db
-        .update(posts)
-        .set({ collectionId: null })
-        .where(eq(posts.collectionId, id));
-
+      // Junction table entries are cleaned up by ON DELETE CASCADE
       const result = await db
         .delete(collections)
         .where(eq(collections.id, id))
@@ -157,22 +162,78 @@ export function createCollectionService(db: Database): CollectionService {
     async getPostCounts() {
       const rows = await db
         .select({
-          collectionId: posts.collectionId,
+          collectionId: postCollections.collectionId,
           count: sql<number>`count(*)`.as("count"),
         })
-        .from(posts)
-        .where(
-          sql`${posts.collectionId} IS NOT NULL AND ${posts.deletedAt} IS NULL`,
+        .from(postCollections)
+        .innerJoin(
+          sql`posts`,
+          sql`posts.id = ${postCollections.postId} AND posts.deleted_at IS NULL`,
         )
-        .groupBy(posts.collectionId);
+        .groupBy(postCollections.collectionId);
 
       const counts = new Map<number, number>();
       for (const row of rows) {
-        if (row.collectionId !== null) {
-          counts.set(row.collectionId, row.count);
-        }
+        counts.set(row.collectionId, row.count);
       }
       return counts;
+    },
+
+    async addPost(collectionId, postId) {
+      await db
+        .insert(postCollections)
+        .values({ postId, collectionId })
+        .onConflictDoNothing();
+    },
+
+    async removePost(collectionId, postId) {
+      await db
+        .delete(postCollections)
+        .where(
+          and(
+            eq(postCollections.postId, postId),
+            eq(postCollections.collectionId, collectionId),
+          ),
+        );
+    },
+
+    async getCollectionsByPostId(postId) {
+      const rows = await db
+        .select({ collection: collections })
+        .from(postCollections)
+        .innerJoin(
+          collections,
+          eq(postCollections.collectionId, collections.id),
+        )
+        .where(eq(postCollections.postId, postId))
+        .orderBy(asc(collections.position));
+
+      return rows.map((r) => toCollection(r.collection));
+    },
+
+    async getPostIds(collectionId) {
+      const rows = await db
+        .select({ postId: postCollections.postId })
+        .from(postCollections)
+        .where(eq(postCollections.collectionId, collectionId));
+
+      return rows.map((r) => r.postId);
+    },
+
+    async syncPostCollections(postId, collectionIds) {
+      // Remove all existing associations
+      await db
+        .delete(postCollections)
+        .where(eq(postCollections.postId, postId));
+
+      // Insert new associations
+      if (collectionIds.length > 0) {
+        await db
+          .insert(postCollections)
+          .values(
+            collectionIds.map((collectionId) => ({ postId, collectionId })),
+          );
+      }
     },
   };
 }

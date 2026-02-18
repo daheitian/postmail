@@ -41,7 +41,6 @@ function makePost(overrides: Partial<Post> = {}): Post {
     bodyHtml: "<p>Hello world</p>",
     quoteText: null,
     rating: null,
-    collectionId: null,
     replyToId: null,
     threadId: null,
     deletedAt: null,
@@ -212,7 +211,6 @@ describe("toPostView", () => {
     expect(view.url).toBeUndefined();
     expect(view.quoteText).toBeUndefined();
     expect(view.rating).toBeUndefined();
-    expect(view.collectionId).toBeUndefined();
     expect(view.replyToId).toBeUndefined();
     expect(view.threadRootId).toBeUndefined();
   });
@@ -266,16 +264,14 @@ describe("toPostView", () => {
     expect(view.pinned).toBe(false);
   });
 
-  it("preserves rating and collectionId when set", () => {
+  it("preserves rating when set", () => {
     const view = toPostView(
       makePostWithMedia({
         rating: 5,
-        collectionId: 42,
       }),
       EMPTY_CTX,
     );
     expect(view.rating).toBe(5);
-    expect(view.collectionId).toBe(42);
   });
 
   it("converts media attachments to MediaView", () => {

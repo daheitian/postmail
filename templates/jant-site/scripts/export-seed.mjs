@@ -61,6 +61,7 @@ const tables = [
     "posts",
     "SELECT * FROM posts WHERE deleted_at IS NULL",
   ],
+  ["post_collections"],
   ["nav_items"],
 ];
 

@@ -19,6 +19,7 @@ export interface PostFormProps {
   imageTransformUrl?: string;
   s3PublicUrl?: string;
   collections?: Collection[];
+  postCollectionIds?: number[];
 }
 
 export const PostForm: FC<PostFormProps> = ({
@@ -29,6 +30,7 @@ export const PostForm: FC<PostFormProps> = ({
   imageTransformUrl,
   s3PublicUrl,
   collections,
+  postCollectionIds,
 }) => {
   const { t } = useLingui();
   const isEdit = !!post;
@@ -45,7 +47,7 @@ export const PostForm: FC<PostFormProps> = ({
     featured: post?.featured === 1,
     pinned: post?.pinned === 1,
     rating: post?.rating ?? 0,
-    collectionId: post?.collectionId ?? 0,
+    collectionIds: postCollectionIds ?? [],
     mediaIds: existingMediaIds,
   }).replace(/</g, "\\u003c");
 
@@ -257,32 +259,28 @@ export const PostForm: FC<PostFormProps> = ({
         </label>
       </div>
 
-      {/* Collection */}
+      {/* Collections */}
       {collections && collections.length > 0 && (
         <div class="field">
           <label class="label">
             {t({
-              message: "Collection (optional)",
-              comment: "@context: Post form field - assign to collection",
+              message: "Collections (optional)",
+              comment: "@context: Post form field - assign to collections",
             })}
           </label>
-          <select data-bind="collectionId" class="select">
-            <option value="0">
-              {t({
-                message: "None",
-                comment: "@context: No collection selected",
-              })}
-            </option>
+          <div class="flex flex-col gap-1">
             {collections.map((col) => (
-              <option
-                key={col.id}
-                value={col.id}
-                selected={post?.collectionId === col.id}
-              >
-                {col.title}
-              </option>
+              <label key={col.id} class="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  class="checkbox"
+                  data-on:change={`$collectionIds.includes(${col.id}) ? $collectionIds = $collectionIds.filter(id => id !== ${col.id}) : $collectionIds = [...$collectionIds, ${col.id}]`}
+                  data-attr:checked={`$collectionIds.includes(${col.id})`}
+                />
+                {col.icon ? `${col.icon} ${col.title}` : col.title}
+              </label>
             ))}
-          </select>
+          </div>
         </div>
       )}
 

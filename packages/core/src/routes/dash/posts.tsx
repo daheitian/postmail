@@ -98,7 +98,7 @@ postsRoutes.post("/", async (c) => {
     url?: string;
     quoteText?: string;
     rating?: number;
-    collectionId?: number;
+    collectionIds?: number[];
     mediaIds?: string[];
   }>();
 
@@ -112,7 +112,7 @@ postsRoutes.post("/", async (c) => {
     url: body.url || undefined,
     quoteText: body.quoteText || undefined,
     rating: body.rating || undefined,
-    collectionId: body.collectionId || undefined,
+    collectionIds: body.collectionIds?.length ? body.collectionIds : undefined,
   });
 
   // Attach media if provided
@@ -168,6 +168,7 @@ function EditPostContent({
   imageTransformUrl,
   s3PublicUrl,
   collections,
+  postCollectionIds,
 }: {
   post: Post;
   mediaAttachments: Media[];
@@ -175,6 +176,7 @@ function EditPostContent({
   imageTransformUrl?: string;
   s3PublicUrl?: string;
   collections: Collection[];
+  postCollectionIds: number[];
 }) {
   const { t } = useLingui();
   return (
@@ -190,6 +192,7 @@ function EditPostContent({
         imageTransformUrl={imageTransformUrl}
         s3PublicUrl={s3PublicUrl}
         collections={collections}
+        postCollectionIds={postCollectionIds}
       />
     </>
   );
@@ -231,7 +234,11 @@ postsRoutes.get("/:id/edit", async (c) => {
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
   const s3PublicUrl = c.env.S3_PUBLIC_URL;
-  const collections = await c.var.services.collections.list();
+  const [collections, postCollections] = await Promise.all([
+    c.var.services.collections.list(),
+    c.var.services.collections.getCollectionsByPostId(post.id),
+  ]);
+  const postCollectionIds = postCollections.map((c) => c.id);
 
   return c.html(
     <DashLayout
@@ -247,6 +254,7 @@ postsRoutes.get("/:id/edit", async (c) => {
         imageTransformUrl={imageTransformUrl}
         s3PublicUrl={s3PublicUrl}
         collections={collections}
+        postCollectionIds={postCollectionIds}
       />
     </DashLayout>,
   );
@@ -267,7 +275,7 @@ postsRoutes.post("/:id", async (c) => {
     url?: string;
     quoteText?: string;
     rating?: number;
-    collectionId?: number;
+    collectionIds?: number[];
     mediaIds?: string[];
   }>();
 
@@ -281,7 +289,7 @@ postsRoutes.post("/:id", async (c) => {
     url: body.url || null,
     quoteText: body.quoteText || null,
     rating: body.rating || null,
-    collectionId: body.collectionId || null,
+    collectionIds: body.collectionIds ?? [],
   });
 
   // Update media attachments if provided

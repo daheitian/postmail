@@ -29,9 +29,6 @@ export const posts = sqliteTable("posts", {
   bodyHtml: text("body_html"),
   quoteText: text("quote_text"),
   rating: integer("rating"),
-  collectionId: integer("collection_id").references(() => collections.id, {
-    onDelete: "set null",
-  }),
   replyToId: integer("reply_to_id"),
   threadId: integer("thread_id"),
   deletedAt: integer("deleted_at"),
@@ -99,6 +96,19 @@ export const collections = sqliteTable("collections", {
   showDivider: integer("show_divider").notNull().default(0),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
+});
+
+// =============================================================================
+// Post-Collection Junction Table (M:N)
+// =============================================================================
+
+export const postCollections = sqliteTable("post_collections", {
+  postId: integer("post_id")
+    .notNull()
+    .references(() => posts.id, { onDelete: "cascade" }),
+  collectionId: integer("collection_id")
+    .notNull()
+    .references(() => collections.id, { onDelete: "cascade" }),
 });
 
 // =============================================================================

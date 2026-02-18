@@ -23,11 +23,11 @@ describe("Collections API Routes", () => {
         slug: "tech",
         title: "Tech",
       });
-      await services.posts.create({
+      const post = await services.posts.create({
         format: "note",
         body: "tech post",
-        collectionId: col.id,
       });
+      await services.collections.addPost(col.id, post.id);
 
       const res = await app.request("/api/collections");
       const body = await res.json();
@@ -244,6 +244,97 @@ describe("Collections API Routes", () => {
       });
 
       expect(res.status).toBe(404);
+    });
+  });
+
+  describe("POST /api/collections/:id/posts", () => {
+    it("adds a post to a collection", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const col = await services.collections.create({
+        slug: "tech",
+        title: "Tech",
+      });
+      const post = await services.posts.create({
+        format: "note",
+        body: "test",
+      });
+
+      const res = await app.request(`/api/collections/${col.id}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id }),
+      });
+
+      expect(res.status).toBe(201);
+
+      const postIds = await services.collections.getPostIds(col.id);
+      expect(postIds).toContain(post.id);
+    });
+
+    it("returns 404 for non-existent collection", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "note",
+        body: "test",
+      });
+
+      const res = await app.request("/api/collections/9999/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id }),
+      });
+
+      expect(res.status).toBe(404);
+    });
+
+    it("returns 401 when not authenticated", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const col = await services.collections.create({
+        slug: "tech",
+        title: "Tech",
+      });
+
+      const res = await app.request(`/api/collections/${col.id}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: 1 }),
+      });
+
+      expect(res.status).toBe(401);
+    });
+  });
+
+  describe("DELETE /api/collections/:id/posts/:postId", () => {
+    it("removes a post from a collection", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const col = await services.collections.create({
+        slug: "tech",
+        title: "Tech",
+      });
+      const post = await services.posts.create({
+        format: "note",
+        body: "test",
+      });
+
+      await services.collections.addPost(col.id, post.id);
+
+      const res = await app.request(
+        `/api/collections/${col.id}/posts/${post.id}`,
+        { method: "DELETE" },
+      );
+
+      expect(res.status).toBe(200);
+
+      const postIds = await services.collections.getPostIds(col.id);
+      expect(postIds).not.toContain(post.id);
     });
   });
 });

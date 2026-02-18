@@ -39,9 +39,6 @@ export interface PostView {
   pinned: boolean;
   rating?: number;
 
-  // Collection
-  collectionId?: number;
-
   // Time -- pre-formatted
   /** ISO 8601 string */
   publishedAt: string;

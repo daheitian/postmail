@@ -154,7 +154,6 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     featured: post.featured === 1,
     pinned: post.pinned === 1,
     rating: post.rating ?? undefined,
-    collectionId: post.collectionId ?? undefined,
     publishedAt: toISOString(post.publishedAt),
     publishedAtFormatted: formatDate(post.publishedAt),
     publishedAtTime: formatTime(post.publishedAt),

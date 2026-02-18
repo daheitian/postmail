@@ -2,6 +2,8 @@
  * URL Utilities
  */
 
+import { pinyin } from "pinyin-pro";
+
 /**
  * Extracts the hostname (domain) from a URL string.
  *
@@ -98,7 +100,13 @@ export function isFullUrl(str: string): boolean {
  * ```
  */
 export function slugify(text: string): string {
-  return text
+  // Replace CJK characters with their pinyin equivalents, preserving non-CJK text
+  const converted = text.replace(
+    /[\u4e00-\u9fff\u3400-\u4dbf]+/g,
+    (match) => ` ${pinyin(match, { toneType: "none", separator: " " })} `,
+  );
+
+  return converted
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, "")

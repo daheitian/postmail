@@ -15,7 +15,7 @@ export interface CreatePost {
   body?: string;
   quoteText?: string;
   rating?: number;
-  collectionId?: number;
+  collectionIds?: number[];
   replyToId?: number;
   publishedAt?: number;
   mediaIds?: string[];
@@ -32,7 +32,7 @@ export interface UpdatePost {
   body?: string | null;
   quoteText?: string | null;
   rating?: number | null;
-  collectionId?: number | null;
+  collectionIds?: number[];
   publishedAt?: number;
   mediaIds?: string[];
 }

@@ -283,14 +283,20 @@ describe("CreatePostSchema", () => {
     expect(result.rating).toBeUndefined();
   });
 
-  it("accepts optional collectionId as positive integer", () => {
-    const result = CreatePostSchema.parse({ ...validPost, collectionId: 42 });
-    expect(result.collectionId).toBe(42);
+  it("accepts optional collectionIds as array of positive integers", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      collectionIds: [1, 2, 3],
+    });
+    expect(result.collectionIds).toEqual([1, 2, 3]);
   });
 
-  it("accepts empty string collectionId (transforms to undefined)", () => {
-    const result = CreatePostSchema.parse({ ...validPost, collectionId: "" });
-    expect(result.collectionId).toBeUndefined();
+  it("accepts empty string collectionIds (transforms to undefined)", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      collectionIds: "",
+    });
+    expect(result.collectionIds).toBeUndefined();
   });
 
   it("accepts optional replyToId", () => {

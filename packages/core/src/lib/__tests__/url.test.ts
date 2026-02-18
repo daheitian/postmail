@@ -135,4 +135,16 @@ describe("slugify", () => {
   it("removes non-word characters", () => {
     expect(slugify("café & résumé")).toBe("caf-rsum");
   });
+
+  it("converts Chinese characters to pinyin", () => {
+    expect(slugify("书评")).toBe("shu-ping");
+  });
+
+  it("handles mixed Chinese and English text", () => {
+    expect(slugify("我的 Blog")).toBe("wo-de-blog");
+  });
+
+  it("handles CJK characters with spaces", () => {
+    expect(slugify("电影 评论")).toBe("dian-ying-ping-lun");
+  });
 });
