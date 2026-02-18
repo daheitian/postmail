@@ -51,13 +51,10 @@ function resizeToSquarePng(img: HTMLImageElement, size: number): Promise<Blob> {
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) resolve(blob);
-        else reject(new Error("Failed to create PNG blob"));
-      },
-      "image/png",
-    );
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("Failed to create PNG blob"));
+    }, "image/png");
   });
 }
 
@@ -84,7 +81,18 @@ async function handleAvatarUpload(
     // Load the image
     const img = await loadImage(file);
 
-    // Generate variants in parallel
+    // Resize avatar to 512x512 PNG (skip for SVG — scalable and already small)
+    let avatarFile: File | Blob = file;
+    let avatarFilename = file.name;
+    if (file.type !== "image/svg+xml") {
+      const png512 = await resizeToSquarePng(img, 512);
+      avatarFile = new File([png512], file.name.replace(/\.[^.]+$/, ".png"), {
+        type: "image/png",
+      });
+      avatarFilename = (avatarFile as File).name;
+    }
+
+    // Generate favicon variants in parallel
     const [png16, png32, png180] = await Promise.all([
       resizeToSquarePng(img, 16),
       resizeToSquarePng(img, 32),
@@ -105,9 +113,9 @@ async function handleAvatarUpload(
     if (label)
       label.textContent = input.dataset.textUploading || "Uploading...";
 
-    // Build FormData with original + variants
+    // Build FormData with resized avatar + variants
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", avatarFile, avatarFilename);
     formData.append("favicon", icoBlob, "favicon.ico");
     formData.append("appleTouch", png180, "apple-touch-icon.png");
 

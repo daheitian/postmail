@@ -70,6 +70,7 @@ export interface AppVariables {
   isAuthenticated: boolean;
   storage: StorageDriver | null;
   faviconUrl?: string;
+  faviconVersion?: string;
   noindex?: boolean;
 }
 
@@ -138,17 +139,26 @@ export function createApp(config: JantConfig = {}): App {
 
   // Theme middleware - resolve active color theme, font theme, custom CSS, and auth state
   app.use("*", async (c, next) => {
-    const [themeId, fontThemeId, customCSS, noindexValue, avatarKey] =
-      await Promise.all([
-        c.var.services.settings.get(SETTINGS_KEYS.THEME),
-        c.var.services.settings.get("FONT_THEME"),
-        c.var.services.settings.get(SETTINGS_KEYS.CUSTOM_CSS),
-        c.var.services.settings.get("NOINDEX"),
-        c.var.services.settings.get("SITE_AVATAR"),
-      ]);
+    const [
+      themeId,
+      fontThemeId,
+      customCSS,
+      noindexValue,
+      avatarKey,
+      faviconVersion,
+    ] = await Promise.all([
+      c.var.services.settings.get(SETTINGS_KEYS.THEME),
+      c.var.services.settings.get("FONT_THEME"),
+      c.var.services.settings.get(SETTINGS_KEYS.CUSTOM_CSS),
+      c.var.services.settings.get("NOINDEX"),
+      c.var.services.settings.get("SITE_AVATAR"),
+      c.var.services.settings.get("SITE_FAVICON_VERSION"),
+    ]);
     const themes = getAvailableThemes(resolvedConfig);
     const defaultThemeId = c.env.DEFAULT_THEME || "halloween";
-    const activeTheme = themes.find((t) => t.id === (themeId ?? defaultThemeId));
+    const activeTheme = themes.find(
+      (t) => t.id === (themeId ?? defaultThemeId),
+    );
 
     // Build font override CSS variables
     const fontTheme = fontThemeId
@@ -178,6 +188,11 @@ export function createApp(config: JantConfig = {}): App {
         c.env.S3_PUBLIC_URL,
       );
       c.set("faviconUrl", getMediaUrl(avatarKey, publicUrl));
+    }
+
+    // Favicon version for cache-busting
+    if (faviconVersion) {
+      c.set("faviconVersion", faviconVersion);
     }
 
     // Check auth state for data-authenticated attribute on <body>
@@ -249,10 +264,16 @@ export function createApp(config: JantConfig = {}): App {
   });
 
   app.get("/apple-touch-icon.png", async (c) => {
-    const data = await c.var.services.settings.get("SITE_FAVICON_APPLE_TOUCH");
-    if (!data) return c.notFound();
+    const storage = c.var.storage;
+    const storageKey = await c.var.services.settings.get(
+      "SITE_FAVICON_APPLE_TOUCH",
+    );
+    if (!storage || !storageKey) return c.notFound();
 
-    return new Response(base64ToUint8Array(data), {
+    const object = await storage.get(storageKey);
+    if (!object) return c.notFound();
+
+    return new Response(object.body, {
       headers: {
         "Content-Type": "image/png",
         "Cache-Control": "public, max-age=86400",

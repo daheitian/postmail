@@ -1,5 +1,5 @@
 /**
- * Collections list view
+ * Collections list view with drag-and-drop reordering
  */
 
 import { useLingui } from "@lingui/react/macro";
@@ -13,8 +13,10 @@ import {
 
 export function CollectionsListContent({
   collections,
+  postCounts,
 }: {
   collections: Collection[];
+  postCounts: Map<number, number>;
 }) {
   const { t } = useLingui();
 
@@ -45,39 +47,56 @@ export function CollectionsListContent({
           ctaHref="/dash/collections/new"
         />
       ) : (
-        <div class="flex flex-col divide-y">
-          {collections.map((col) => (
-            <ListItemRow
-              key={col.id}
-              actions={
-                <ActionButtons
-                  editHref={`/dash/collections/${col.id}/edit`}
-                  editLabel={t({
-                    message: "Edit",
-                    comment: "@context: Button to edit collection",
-                  })}
-                  viewHref={`/c/${col.slug}`}
-                  viewLabel={t({
-                    message: "View",
-                    comment: "@context: Button to view collection",
-                  })}
-                />
-              }
-            >
-              <a
-                href={`/dash/collections/${col.id}`}
-                class="font-medium hover:underline"
-              >
-                {col.title}
-              </a>
-              <p class="text-sm text-muted-foreground">/{col.slug}</p>
-              {col.description && (
-                <p class="text-sm text-muted-foreground mt-1">
-                  {col.description}
-                </p>
-              )}
-            </ListItemRow>
-          ))}
+        <div id="collections-list" class="flex flex-col divide-y">
+          {collections.map((col) => {
+            const count = postCounts.get(col.id) ?? 0;
+            return (
+              <>
+                {col.showDivider === 1 && (
+                  <div class="py-2">
+                    <hr class="border-border" />
+                  </div>
+                )}
+                <ListItemRow
+                  key={col.id}
+                  actions={
+                    <ActionButtons
+                      editHref={`/dash/collections/${col.id}/edit`}
+                      editLabel={t({
+                        message: "Edit",
+                        comment: "@context: Button to edit collection",
+                      })}
+                      viewHref={`/c/${col.slug}`}
+                      viewLabel={t({
+                        message: "View",
+                        comment: "@context: Button to view collection",
+                      })}
+                    />
+                  }
+                >
+                  <div
+                    class="flex items-center gap-3 cursor-grab"
+                    data-id={col.id}
+                  >
+                    <span class="text-muted-foreground select-none">⠿</span>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        {col.icon && <span>{col.icon}</span>}
+                        <a
+                          href={`/dash/collections/${col.id}`}
+                          class="font-medium hover:underline"
+                        >
+                          {col.title}
+                        </a>
+                        <span class="badge-secondary">{count}</span>
+                      </div>
+                      <p class="text-sm text-muted-foreground">/c/{col.slug}</p>
+                    </div>
+                  </div>
+                </ListItemRow>
+              </>
+            );
+          })}
         </div>
       )}
     </>

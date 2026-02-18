@@ -34,17 +34,17 @@ describe("Collections Listing Page - Data Logic", () => {
       title: "Travel",
     });
 
-    // Add posts to recipes collection
-    await postService.create({
+    // Add posts to recipes collection via junction table
+    const p1 = await postService.create({
       format: "note",
       body: "Recipe 1",
-      collectionId: recipes.id,
     });
-    await postService.create({
+    const p2 = await postService.create({
       format: "note",
       body: "Recipe 2",
-      collectionId: recipes.id,
     });
+    await collectionService.addPost(recipes.id, p1.id);
+    await collectionService.addPost(recipes.id, p2.id);
 
     // Simulate route handler logic
     const [allCollections, postCounts] = await Promise.all([
@@ -78,13 +78,14 @@ describe("Collections Listing Page - Data Logic", () => {
     const post = await postService.create({
       format: "note",
       body: "Will be deleted",
-      collectionId: col.id,
     });
-    await postService.create({
+    const post2 = await postService.create({
       format: "note",
       body: "Will remain",
-      collectionId: col.id,
     });
+
+    await collectionService.addPost(col.id, post.id);
+    await collectionService.addPost(col.id, post2.id);
 
     await postService.delete(post.id);
 

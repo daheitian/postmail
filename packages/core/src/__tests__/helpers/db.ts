@@ -89,6 +89,27 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0006: rename slug to path on posts
   applyMigration(sqlite, "0006_rename_slug_to_path.sql");
 
+  // Apply 0007: post_collections M:N junction table
+  const m7 = readFileSync(
+    resolve(MIGRATIONS_DIR, "0007_post_collections_m2m.sql"),
+    "utf-8",
+  );
+  for (const stmt of m7.split("--> statement-breakpoint")) {
+    const trimmed = stmt.trim();
+    if (!trimmed) continue;
+    // Skip FTS trigger statements if FTS not requested
+    const isFts = trimmed.includes("posts_fts");
+    if (!options?.fts && isFts) continue;
+    try {
+      sqlite.exec(trimmed);
+    } catch {
+      // Ignore DROP TRIGGER failures silently
+      if (!trimmed.startsWith("DROP TRIGGER")) {
+        throw new Error(`Migration 0007 failed: ${trimmed.slice(0, 100)}`);
+      }
+    }
+  }
+
   const db = drizzle(sqlite, { schema });
 
   return { db, sqlite };

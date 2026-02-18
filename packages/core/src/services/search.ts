@@ -106,7 +106,6 @@ export function createSearchService(d1: D1Database): SearchService {
           bodyHtml: row.body_html,
           quoteText: row.quote_text,
           rating: row.rating,
-          collectionId: row.collection_id,
           replyToId: row.reply_to_id,
           threadId: row.thread_id,
           deletedAt: row.deleted_at,

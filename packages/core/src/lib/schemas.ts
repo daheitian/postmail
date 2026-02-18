@@ -79,13 +79,10 @@ export const CreatePostSchema = z.object({
   url: z.url().optional().or(z.literal("")),
   quoteText: z.string().optional(),
   rating: RatingSchema,
-  collectionId: z.coerce
-    .number()
-    .int()
-    .min(0)
+  collectionIds: z
+    .array(z.coerce.number().int().positive())
     .optional()
-    .or(z.literal("").transform(() => undefined))
-    .transform((v) => (v === 0 ? undefined : v)),
+    .or(z.literal("").transform(() => undefined)),
   replyToId: z.string().optional(), // Sqid format
   publishedAt: z.number().int().positive().optional(),
   mediaIds: z.array(z.string()).max(MAX_MEDIA_ATTACHMENTS).optional(),

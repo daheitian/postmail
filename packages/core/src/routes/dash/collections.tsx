@@ -3,13 +3,14 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings } from "../../types.js";
+import type { Bindings, SortOrder } from "../../types.js";
 import type { AppVariables } from "../../app.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
 import { getSiteName } from "../../lib/config.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
+import { slugify } from "../../lib/url.js";
 import { CollectionsListContent } from "../../ui/dash/collections/CollectionsListContent.js";
 import { CollectionForm } from "../../ui/dash/collections/CollectionForm.js";
 import { ViewCollectionContent } from "../../ui/dash/collections/ViewCollectionContent.js";
@@ -21,7 +22,10 @@ export const collectionsRoutes = new Hono<Env>();
 // List collections
 collectionsRoutes.get("/", async (c) => {
   const siteName = await getSiteName(c);
-  const collections = await c.var.services.collections.list();
+  const [collections, postCounts] = await Promise.all([
+    c.var.services.collections.list(),
+    c.var.services.collections.getPostCounts(),
+  ]);
 
   return c.html(
     <DashLayout
@@ -30,7 +34,10 @@ collectionsRoutes.get("/", async (c) => {
       siteName={siteName}
       currentPath="/dash/collections"
     >
-      <CollectionsListContent collections={collections} />
+      <CollectionsListContent
+        collections={collections}
+        postCounts={postCounts}
+      />
     </DashLayout>,
   );
 });
@@ -57,15 +64,29 @@ collectionsRoutes.post("/", async (c) => {
     title: string;
     slug: string;
     description?: string;
+    icon?: string;
+    sortOrder?: string;
   }>();
+
+  // Auto-generate slug from title if empty
+  const slug = body.slug || slugify(body.title);
 
   const collection = await c.var.services.collections.create({
     title: body.title,
-    slug: body.slug,
+    slug,
     description: body.description || undefined,
+    icon: body.icon || undefined,
+    sortOrder: (body.sortOrder as SortOrder) || undefined,
   });
 
   return dsRedirect(`/dash/collections/${collection.id}`);
+});
+
+// Reorder collections
+collectionsRoutes.post("/reorder", async (c) => {
+  const body = await c.req.json<{ ids: number[] }>();
+  await c.var.services.collections.reorder(body.ids);
+  return c.json({ success: true });
 });
 
 // View single collection
@@ -129,12 +150,16 @@ collectionsRoutes.post("/:id", async (c) => {
     title: string;
     slug: string;
     description?: string;
+    icon?: string;
+    sortOrder?: string;
   }>();
 
   await c.var.services.collections.update(id, {
     title: body.title,
     slug: body.slug,
-    description: body.description || undefined,
+    description: body.description || null,
+    icon: body.icon || null,
+    sortOrder: (body.sortOrder as SortOrder) || undefined,
   });
 
   return dsRedirect(`/dash/collections/${id}`);

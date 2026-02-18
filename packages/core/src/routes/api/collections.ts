@@ -39,6 +39,10 @@ const ReorderSchema = z.object({
   ids: z.array(z.number().int().positive()),
 });
 
+const PostAssignSchema = z.object({
+  postId: z.number().int().positive(),
+});
+
 // List collections (includes post counts)
 collectionsApiRoutes.get("/", async (c) => {
   const collections = await c.var.services.collections.list();
@@ -141,3 +145,43 @@ collectionsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
 
   return c.json({ success: true });
 });
+
+// Add a post to a collection (requires auth)
+collectionsApiRoutes.post("/:id/posts", requireAuthApi(), async (c) => {
+  const id = parseInt(c.req.param("id"), 10);
+  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+
+  const collection = await c.var.services.collections.getById(id);
+  if (!collection) return c.json({ error: "Collection not found" }, 404);
+
+  const rawBody = await c.req.json();
+  const parseResult = PostAssignSchema.safeParse(rawBody);
+  if (!parseResult.success) {
+    return c.json(
+      { error: "Validation failed", details: parseResult.error.flatten() },
+      400,
+    );
+  }
+
+  const post = await c.var.services.posts.getById(parseResult.data.postId);
+  if (!post) return c.json({ error: "Post not found" }, 404);
+
+  await c.var.services.collections.addPost(id, parseResult.data.postId);
+
+  return c.json({ success: true }, 201);
+});
+
+// Remove a post from a collection (requires auth)
+collectionsApiRoutes.delete(
+  "/:id/posts/:postId",
+  requireAuthApi(),
+  async (c) => {
+    const id = parseInt(c.req.param("id"), 10);
+    const postId = parseInt(c.req.param("postId"), 10);
+    if (isNaN(id) || isNaN(postId)) return c.json({ error: "Invalid ID" }, 400);
+
+    await c.var.services.collections.removePost(id, postId);
+
+    return c.json({ success: true });
+  },
+);

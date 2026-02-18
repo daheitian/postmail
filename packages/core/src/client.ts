@@ -13,3 +13,4 @@ import "./lib/image-processor.js";
 import "./lib/media-upload.js";
 import "./lib/avatar-upload.js";
 import "./lib/nav-reorder.js";
+import "./lib/collections-reorder.js";

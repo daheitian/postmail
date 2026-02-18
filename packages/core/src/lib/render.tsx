@@ -56,8 +56,9 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     siteFooterHtml: navData.siteFooterHtml,
   };
 
-  // Read favicon and noindex from context (set by theme middleware)
+  // Read favicon, version, and noindex from context (set by theme middleware)
   const faviconUrl = c.get("faviconUrl") as string | undefined;
+  const faviconVersion = c.get("faviconVersion") as string | undefined;
   const noindex = c.get("noindex") as boolean | undefined;
 
   return c.html(
@@ -66,6 +67,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
       description={description}
       c={c}
       faviconUrl={faviconUrl}
+      faviconVersion={faviconVersion}
       noindex={noindex}
     >
       <SiteLayout {...layoutProps}>{content}</SiteLayout>

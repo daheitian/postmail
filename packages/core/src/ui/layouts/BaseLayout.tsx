@@ -24,6 +24,7 @@ export interface BaseLayoutProps {
   c?: Context;
   toast?: ToastProps;
   faviconUrl?: string;
+  faviconVersion?: string;
   noindex?: boolean;
 }
 
@@ -34,6 +35,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   c,
   toast,
   faviconUrl,
+  faviconVersion,
   noindex,
   children,
 }) => {
@@ -43,6 +45,10 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   // Read faviconUrl from context when not provided as prop (fixes dashboard favicon)
   const resolvedFaviconUrl =
     faviconUrl ?? (c ? c.get("faviconUrl") : undefined);
+
+  // Read faviconVersion from context when not provided as prop
+  const resolvedFaviconVersion =
+    faviconVersion ?? (c ? c.get("faviconVersion") : undefined);
 
   // Read noindex from context when not provided as prop
   const resolvedNoindex = noindex ?? (c ? c.get("noindex") : undefined);
@@ -69,10 +75,22 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         {resolvedNoindex && <meta name="robots" content="noindex, nofollow" />}
         {resolvedFaviconUrl && (
           <>
-            <link rel="icon" href="/favicon.ico" sizes="16x16 32x32" />
+            <link
+              rel="icon"
+              href={
+                resolvedFaviconVersion
+                  ? `/favicon.ico?v=${resolvedFaviconVersion}`
+                  : "/favicon.ico"
+              }
+              sizes="16x16 32x32"
+            />
             <link
               rel="apple-touch-icon"
-              href="/apple-touch-icon.png"
+              href={
+                resolvedFaviconVersion
+                  ? `/apple-touch-icon.png?v=${resolvedFaviconVersion}`
+                  : "/apple-touch-icon.png"
+              }
               sizes="180x180"
             />
           </>

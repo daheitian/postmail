@@ -24,7 +24,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
     quoteText: "",
     status: "published",
     rating: 0,
-    collectionId: 0,
+    collectionIds: [],
     mediaIds: [],
     _composeLoading: false,
     _showRating: false,
@@ -228,23 +228,23 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
               <div data-show="$_showCollection" class="field">
                 <label class="label text-sm">
                   {t({
-                    message: "Collection",
+                    message: "Collections",
                     comment: "@context: Compose collection field",
                   })}
                 </label>
-                <select data-bind="collectionId" class="select text-sm">
-                  <option value="0">
-                    {t({
-                      message: "None",
-                      comment: "@context: No collection selected",
-                    })}
-                  </option>
+                <div class="flex flex-col gap-1">
                   {collections.map((col) => (
-                    <option key={col.id} value={col.id}>
-                      {col.title}
-                    </option>
+                    <label key={col.id} class="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        class="checkbox"
+                        data-on:change={`$collectionIds.includes(${col.id}) ? $collectionIds = $collectionIds.filter(id => id !== ${col.id}) : $collectionIds = [...$collectionIds, ${col.id}]`}
+                        data-attr:checked={`$collectionIds.includes(${col.id})`}
+                      />
+                      {col.icon ? `${col.icon} ${col.title}` : col.title}
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
             )}
 

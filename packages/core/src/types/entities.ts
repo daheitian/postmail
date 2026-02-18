@@ -17,7 +17,6 @@ export interface Post {
   bodyHtml: string | null;
   quoteText: string | null;
   rating: number | null;
-  collectionId: number | null;
   replyToId: number | null;
   threadId: number | null;
   deletedAt: number | null;
@@ -81,6 +80,11 @@ export interface Collection {
   showDivider: number; // 0 | 1
   createdAt: number;
   updatedAt: number;
+}
+
+export interface PostCollection {
+  postId: number;
+  collectionId: number;
 }
 
 export interface NavItem {

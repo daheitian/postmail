@@ -266,7 +266,7 @@ describe("CollectionService", () => {
       expect(found).toBeNull();
     });
 
-    it("clears collectionId on related posts", async () => {
+    it("removes junction table entries on cascade", async () => {
       const collection = await collectionService.create({
         slug: "test",
         title: "Test",
@@ -274,15 +274,23 @@ describe("CollectionService", () => {
       const post = await postService.create({
         format: "note",
         body: "test post",
-        collectionId: collection.id,
       });
+
+      await collectionService.addPost(collection.id, post.id);
+
+      // Verify association exists
+      const before = await collectionService.getCollectionsByPostId(post.id);
+      expect(before).toHaveLength(1);
 
       await collectionService.delete(collection.id);
 
-      // Post itself should still exist but with null collectionId
+      // Post should still exist
       const found = await postService.getById(post.id);
       expect(found).not.toBeNull();
-      expect(found?.collectionId).toBeNull();
+
+      // Association should be gone (cascade delete)
+      const after = await collectionService.getCollectionsByPostId(post.id);
+      expect(after).toHaveLength(0);
     });
 
     it("returns false for non-existent collection", async () => {
@@ -358,21 +366,13 @@ describe("CollectionService", () => {
         title: "Col 2",
       });
 
-      await postService.create({
-        format: "note",
-        body: "post 1",
-        collectionId: col1.id,
-      });
-      await postService.create({
-        format: "note",
-        body: "post 2",
-        collectionId: col1.id,
-      });
-      await postService.create({
-        format: "note",
-        body: "post 3",
-        collectionId: col2.id,
-      });
+      const p1 = await postService.create({ format: "note", body: "post 1" });
+      const p2 = await postService.create({ format: "note", body: "post 2" });
+      const p3 = await postService.create({ format: "note", body: "post 3" });
+
+      await collectionService.addPost(col1.id, p1.id);
+      await collectionService.addPost(col1.id, p2.id);
+      await collectionService.addPost(col2.id, p3.id);
 
       const counts = await collectionService.getPostCounts();
       expect(counts.get(col1.id)).toBe(2);
@@ -385,15 +385,13 @@ describe("CollectionService", () => {
         title: "Col",
       });
 
-      await postService.create({
+      const p1 = await postService.create({
         format: "note",
         body: "with collection",
-        collectionId: col.id,
       });
-      await postService.create({
-        format: "note",
-        body: "no collection",
-      });
+      await postService.create({ format: "note", body: "no collection" });
+
+      await collectionService.addPost(col.id, p1.id);
 
       const counts = await collectionService.getPostCounts();
       expect(counts.get(col.id)).toBe(1);
@@ -409,19 +407,195 @@ describe("CollectionService", () => {
       const post = await postService.create({
         format: "note",
         body: "will be deleted",
-        collectionId: col.id,
       });
-      await postService.create({
+      const post2 = await postService.create({
         format: "note",
         body: "still alive",
-        collectionId: col.id,
       });
+
+      await collectionService.addPost(col.id, post.id);
+      await collectionService.addPost(col.id, post2.id);
 
       // Soft-delete one post
       await postService.delete(post.id);
 
       const counts = await collectionService.getPostCounts();
       expect(counts.get(col.id)).toBe(1);
+    });
+  });
+
+  describe("addPost / removePost", () => {
+    it("adds a post to a collection", async () => {
+      const col = await collectionService.create({
+        slug: "test",
+        title: "Test",
+      });
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      await collectionService.addPost(col.id, post.id);
+
+      const collections = await collectionService.getCollectionsByPostId(
+        post.id,
+      );
+      expect(collections).toHaveLength(1);
+      expect(collections[0]?.id).toBe(col.id);
+    });
+
+    it("does not duplicate on re-add", async () => {
+      const col = await collectionService.create({
+        slug: "test",
+        title: "Test",
+      });
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      await collectionService.addPost(col.id, post.id);
+      await collectionService.addPost(col.id, post.id); // duplicate
+
+      const postIds = await collectionService.getPostIds(col.id);
+      expect(postIds).toHaveLength(1);
+    });
+
+    it("removes a post from a collection", async () => {
+      const col = await collectionService.create({
+        slug: "test",
+        title: "Test",
+      });
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      await collectionService.addPost(col.id, post.id);
+      await collectionService.removePost(col.id, post.id);
+
+      const collections = await collectionService.getCollectionsByPostId(
+        post.id,
+      );
+      expect(collections).toHaveLength(0);
+    });
+  });
+
+  describe("getCollectionsByPostId", () => {
+    it("returns all collections a post belongs to", async () => {
+      const col1 = await collectionService.create({
+        slug: "col1",
+        title: "Col 1",
+        position: 0,
+      });
+      const col2 = await collectionService.create({
+        slug: "col2",
+        title: "Col 2",
+        position: 1,
+      });
+
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      await collectionService.addPost(col1.id, post.id);
+      await collectionService.addPost(col2.id, post.id);
+
+      const collections = await collectionService.getCollectionsByPostId(
+        post.id,
+      );
+      expect(collections).toHaveLength(2);
+      expect(collections[0]?.slug).toBe("col1");
+      expect(collections[1]?.slug).toBe("col2");
+    });
+
+    it("returns empty array for post with no collections", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      const collections = await collectionService.getCollectionsByPostId(
+        post.id,
+      );
+      expect(collections).toHaveLength(0);
+    });
+  });
+
+  describe("getPostIds", () => {
+    it("returns all post IDs in a collection", async () => {
+      const col = await collectionService.create({
+        slug: "test",
+        title: "Test",
+      });
+      const p1 = await postService.create({ format: "note", body: "one" });
+      const p2 = await postService.create({ format: "note", body: "two" });
+
+      await collectionService.addPost(col.id, p1.id);
+      await collectionService.addPost(col.id, p2.id);
+
+      const ids = await collectionService.getPostIds(col.id);
+      expect(ids).toHaveLength(2);
+      expect(ids).toContain(p1.id);
+      expect(ids).toContain(p2.id);
+    });
+  });
+
+  describe("syncPostCollections", () => {
+    it("replaces all collection memberships for a post", async () => {
+      const col1 = await collectionService.create({
+        slug: "col1",
+        title: "Col 1",
+      });
+      const col2 = await collectionService.create({
+        slug: "col2",
+        title: "Col 2",
+      });
+      const col3 = await collectionService.create({
+        slug: "col3",
+        title: "Col 3",
+      });
+
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      // Initially in col1 and col2
+      await collectionService.addPost(col1.id, post.id);
+      await collectionService.addPost(col2.id, post.id);
+
+      // Sync to col2 and col3
+      await collectionService.syncPostCollections(post.id, [col2.id, col3.id]);
+
+      const collections = await collectionService.getCollectionsByPostId(
+        post.id,
+      );
+      const ids = collections.map((c) => c.id);
+      expect(ids).toHaveLength(2);
+      expect(ids).toContain(col2.id);
+      expect(ids).toContain(col3.id);
+      expect(ids).not.toContain(col1.id);
+    });
+
+    it("removes all collections when empty array provided", async () => {
+      const col = await collectionService.create({
+        slug: "test",
+        title: "Test",
+      });
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      await collectionService.addPost(col.id, post.id);
+      await collectionService.syncPostCollections(post.id, []);
+
+      const collections = await collectionService.getCollectionsByPostId(
+        post.id,
+      );
+      expect(collections).toHaveLength(0);
     });
   });
 });

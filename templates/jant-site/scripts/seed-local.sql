@@ -30,16 +30,16 @@ INSERT INTO collections VALUES(1,'best-quotes','发人深省',NULL,NULL,'newest'
 
 -- posts
 INSERT INTO posts VALUES(1,'note','published',0,0,NULL,'really?',NULL,'is this works?','<p>is this works?</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771089786,1771089786,1771089786);
-INSERT INTO posts VALUES(2,'quote','published',0,0,NULL,NULL,NULL,NULL,NULL,'worked?',NULL,NULL,NULL,NULL,NULL,1771089808,1771089808,1771089808);
+',NULL,NULL,NULL,NULL,NULL,1771089786,1771089786,1771089786);
+INSERT INTO posts VALUES(2,'quote','published',0,0,NULL,NULL,NULL,NULL,NULL,'worked?',NULL,NULL,NULL,NULL,1771089808,1771089808,1771089808);
 INSERT INTO posts VALUES(3,'note','published',0,0,NULL,'greate image',NULL,'great','<p>great</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771092931,1771092931,1771268464);
+',NULL,NULL,NULL,NULL,NULL,1771092931,1771092931,1771268464);
 INSERT INTO posts VALUES(4,'note','published',0,0,NULL,NULL,NULL,'没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。','<p>没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771114861,1771114861,1771114861);
+',NULL,NULL,NULL,NULL,NULL,1771114861,1771114861,1771114861);
 INSERT INTO posts VALUES(5,'note','published',0,0,NULL,NULL,NULL,'新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。"。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。','<p>新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。&quot;。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。</p>
-',NULL,NULL,1,NULL,NULL,NULL,1771114906,1771114906,1771273733);
+',NULL,NULL,NULL,NULL,NULL,1771114906,1771114906,1771273733);
 INSERT INTO posts VALUES(6,'link','published',0,0,NULL,'Forty News','https://forty.news/','40年前今日的新闻...','<p>40年前今日的新闻...</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771114955,1771114955,1771114955);
+',NULL,NULL,NULL,NULL,NULL,1771114955,1771114955,1771114955);
 INSERT INTO posts VALUES(7,'note','published',0,0,NULL,'我从 Hacker News 中学到了什么？',NULL,'昨天看到 Hacker News 的创始人 Paul Graham 在 2009
 年写的一篇文章[《我从 Hacker News 中学到了什么》](http://www.paulgraham.com/hackernews.html),
 作者提到：
@@ -177,24 +177,28 @@ HN 上所有最新的文章了。即使是全部文章，由于是母语阅读�
 <p>从我沉迷 HN<br>的例子里就能看出，网络已经剥夺了我保持专注和沉思的能力，但是真正值得探索和学习的知识都需要我拥有这种能力。如果我没有在某一个特定时段给自己安排任务，那么这些网站总是会更有诱惑力。所以如果我想抵御社交网络对我时间和精力的诱惑，那么必须要给大脑找一些高质量的替代活动，所以我基于开源<br><a href="https://lemmy.ml/">Lemmy</a> 搭建了一个类似 Reddit<br>的社区，叫<a href="https://d.buzzing.cc/"><strong>如何度过每一天</strong></a>,希望能在社区里分享有意义的事，不虚度光阴的事，可以是阅读某本书，学习某项技能，看某部纪录片等等等等。社区有投票的功能，某项活动被投票的次数越多，说明认为这项活动有意义的更多。</p>
 <p>目前其实就只有少数几个用户在用，网站依然是部署在我的一个 廉价 VPS 上，没有盈利的打算，目前加载也有点慢，但是够用。</p>
 <p>以上是我在 Hacker News 上学到的一些东西。</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771115051,1771115051,1771115051);
-INSERT INTO posts VALUES(8,'quote','published',0,0,NULL,NULL,'https://www.joanwestenberg.com/why-my-newsletter-costs-2-50/',NULL,NULL,'拥有五万个从不打开邮件的订阅者名单，其价值远不及五百个逐字阅读并偶尔给予深度回复的读者。后者会购买你的著作，向朋友推荐你，并长久陪伴你。前者不过是你在那些无聊的数字炫耀派对上能拿出来吹嘘的数字而已。',NULL,NULL,NULL,NULL,NULL,1771115103,1771115103,1771115103);
+',NULL,NULL,NULL,NULL,NULL,1771115051,1771115051,1771115051);
+INSERT INTO posts VALUES(8,'quote','published',0,0,NULL,NULL,'https://www.joanwestenberg.com/why-my-newsletter-costs-2-50/',NULL,NULL,'拥有五万个从不打开邮件的订阅者名单，其价值远不及五百个逐字阅读并偶尔给予深度回复的读者。后者会购买你的著作，向朋友推荐你，并长久陪伴你。前者不过是你在那些无聊的数字炫耀派对上能拿出来吹嘘的数字而已。',NULL,NULL,NULL,NULL,1771115103,1771115103,1771115103);
 INSERT INTO posts VALUES(9,'quote','published',1,0,NULL,'JA Westenberg','https://www.joanwestenberg.com/the-case-for-blogging-in-the-ruins/',NULL,NULL,'弗吉尼亚·伍尔夫曾论述拥有独立空间的重要性：那是供人进行创作的物理场所，不受干扰与控制。博客便是网络世界中的独立空间。在这里，你自主决定书写内容与表达方式，无需屈从于平台算法的任性摆布——那些平台只顾榨取你的参与度，却不关心这种参与究竟是否让你或他人变得更聪明。
 
-我们不会通过等待平台减少剥削来获得更好的互联网。我们需要亲手构建它——维护自己的空间，相互链接，打造独立网站的互联网络，让博客圈重现昔日的辉煌。',NULL,NULL,NULL,NULL,NULL,1771115159,1771115159,1771115177);
+我们不会通过等待平台减少剥削来获得更好的互联网。我们需要亲手构建它——维护自己的空间，相互链接，打造独立网站的互联网络，让博客圈重现昔日的辉煌。',NULL,NULL,NULL,NULL,1771115159,1771115159,1771115177);
 INSERT INTO posts VALUES(10,'link','published',0,0,NULL,'Some pics','https://some.pics/','一个干净的图片流网站
 ','<p>一个干净的图片流网站</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771115271,1771115271,1771115271);
+',NULL,NULL,NULL,NULL,NULL,1771115271,1771115271,1771115271);
 INSERT INTO posts VALUES(11,'note','published',0,0,NULL,NULL,NULL,'From splash','<p>From splash</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771268320,1771268320,1771268958);
+',NULL,NULL,NULL,NULL,NULL,1771268320,1771268320,1771268958);
 INSERT INTO posts VALUES(12,'note','published',0,0,NULL,NULL,NULL,'note111','<p>note111</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771284473,1771284473,1771284473);
+',NULL,NULL,NULL,NULL,NULL,1771284473,1771284473,1771284473);
 INSERT INTO posts VALUES(13,'note','published',0,0,NULL,NULL,NULL,'test','<p>test</p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771297687,1771297687,1771297687);
-INSERT INTO posts VALUES(14,'quote','draft',1,1,NULL,NULL,NULL,NULL,NULL,NULL,5,1,NULL,NULL,NULL,1771299167,1771299167,1771299167);
+',NULL,NULL,NULL,NULL,NULL,1771297687,1771297687,1771297687);
+INSERT INTO posts VALUES(14,'quote','draft',1,1,NULL,NULL,NULL,NULL,NULL,NULL,5,NULL,NULL,NULL,1771299167,1771299167,1771299167);
 INSERT INTO posts VALUES(15,'note','published',0,0,NULL,NULL,NULL,'刚知道一件还挺唏嘘的事：康德的老家如今属于俄罗斯。。他老人家其实一生都没离开过哥尼斯堡，而这座城市在二战后被划入苏联，改名为加里宁格勒。苏联随后驱逐了所有原本的德国居民——这是人类历史上最彻底的一次人口更替。直到今天，它还是俄罗斯在欧洲的一块飞地，邻居是立陶宛和波兰。 ','<p>刚知道一件还挺唏嘘的事：康德的老家如今属于俄罗斯。。他老人家其实一生都没离开过哥尼斯堡，而这座城市在二战后被划入苏联，改名为加里宁格勒。苏联随后驱逐了所有原本的德国居民——这是人类历史上最彻底的一次人口更替。直到今天，它还是俄罗斯在欧洲的一块飞地，邻居是立陶宛和波兰。 </p>
-',NULL,NULL,NULL,NULL,NULL,NULL,1771307003,1771307003,1771307003);
+',NULL,NULL,NULL,NULL,NULL,1771307003,1771307003,1771307003);
 
+
+-- post_collections
+INSERT INTO post_collections VALUES(5,1);
+INSERT INTO post_collections VALUES(14,1);
 -- nav_items
 INSERT INTO nav_items VALUES(4,'page','About','/about',1,0,1771272722,1771303903);
 INSERT INTO nav_items VALUES(6,'link','Collections','/collections',NULL,1,1771303681,1771303903);
