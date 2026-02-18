@@ -333,10 +333,40 @@
     border-bottom: var(--card-border-width) solid var(--site-divider);
   }
 
-  .compose-dialog-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0;
+  /* Segmented control — replaces title in compose header */
+  .compose-segmented {
+    display: flex;
+    background-color: var(--site-nav-hover-bg);
+    border-radius: 8px;
+    padding: 2px;
+  }
+
+  .compose-segmented-item {
+    flex: 1;
+    padding: 5px 16px;
+    border-radius: 6px;
+    border: none;
+    background: none;
+    color: var(--site-text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      box-shadow 0.2s;
+  }
+
+  .compose-segmented-item:hover {
+    color: var(--site-text-primary);
+  }
+
+  .compose-segmented-item-active {
+    background-color: var(--site-elevated-bg);
+    color: var(--site-text-primary);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.08),
+      0 0 0 0.5px rgba(0, 0, 0, 0.04);
   }
 
   .compose-dialog-cancel {
@@ -387,39 +417,6 @@
     justify-content: space-between;
     padding-top: 12px;
     border-top: var(--card-border-width) solid var(--site-divider);
-  }
-
-  /* Format tabs — inline pill buttons */
-  .compose-format-tabs {
-    display: flex;
-    gap: 4px;
-    padding-bottom: 8px;
-  }
-
-  .compose-format-tab {
-    padding: 4px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--site-column-outline);
-    background: none;
-    color: var(--site-text-secondary);
-    font-size: var(--text-sm);
-    cursor: pointer;
-    transition:
-      background-color 0.15s,
-      color 0.15s,
-      border-color 0.15s;
-  }
-
-  .compose-format-tab:hover {
-    color: var(--site-text-primary);
-    border-color: var(--site-text-secondary);
-  }
-
-  .compose-format-tab-active {
-    color: var(--site-text-primary);
-    background-color: var(--site-nav-hover-bg);
-    border-color: var(--site-text-primary);
-    font-weight: 500;
   }
 
   /* Borderless title input */

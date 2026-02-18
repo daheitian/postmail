@@ -37,7 +37,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
       class="compose-dialog backdrop:bg-black/50"
       onclick="event.target === this && this.close()"
     >
-      <div class="compose-dialog-inner">
+      <div class="compose-dialog-inner" data-signals={signals}>
         {/* Header */}
         <header class="compose-dialog-header">
           <button
@@ -50,12 +50,41 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
               comment: "@context: Close compose dialog",
             })}
           </button>
-          <h2 class="compose-dialog-title">
-            {t({
-              message: "New Post",
-              comment: "@context: Compose dialog title",
-            })}
-          </h2>
+          <div class="compose-segmented">
+            <button
+              type="button"
+              class="compose-segmented-item"
+              data-class:compose-segmented-item-active="$format === 'note'"
+              data-on:click="$format = 'note'"
+            >
+              {t({
+                message: "Note",
+                comment: "@context: Compose format tab",
+              })}
+            </button>
+            <button
+              type="button"
+              class="compose-segmented-item"
+              data-class:compose-segmented-item-active="$format === 'link'"
+              data-on:click="$format = 'link'"
+            >
+              {t({
+                message: "Link",
+                comment: "@context: Compose format tab",
+              })}
+            </button>
+            <button
+              type="button"
+              class="compose-segmented-item"
+              data-class:compose-segmented-item-active="$format === 'quote'"
+              data-on:click="$format = 'quote'"
+            >
+              {t({
+                message: "Quote",
+                comment: "@context: Compose format tab",
+              })}
+            </button>
+          </div>
           <div class="flex items-center gap-1">
             <button
               type="button"
@@ -112,48 +141,10 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
         {/* Form */}
         <section class="compose-dialog-body">
           <form
-            data-signals={signals}
             data-on:submit__prevent="@post('/compose')"
             data-indicator="_composeLoading"
             class="flex flex-col gap-3"
           >
-            {/* Format tabs */}
-            <div class="compose-format-tabs">
-              <button
-                type="button"
-                class="compose-format-tab"
-                data-class-compose-format-tab-active="$format === 'note'"
-                data-on:click="$format = 'note'"
-              >
-                {t({
-                  message: "Note",
-                  comment: "@context: Compose format tab",
-                })}
-              </button>
-              <button
-                type="button"
-                class="compose-format-tab"
-                data-class-compose-format-tab-active="$format === 'link'"
-                data-on:click="$format = 'link'"
-              >
-                {t({
-                  message: "Link",
-                  comment: "@context: Compose format tab",
-                })}
-              </button>
-              <button
-                type="button"
-                class="compose-format-tab"
-                data-class-compose-format-tab-active="$format === 'quote'"
-                data-on:click="$format = 'quote'"
-              >
-                {t({
-                  message: "Quote",
-                  comment: "@context: Compose format tab",
-                })}
-              </button>
-            </div>
-
             {/* Title input */}
             <input
               type="text"

@@ -55,7 +55,7 @@ msgstr "新增連結"
 
 #. @context: Button to open media picker
 #. @context: Compose toolbar - add media
-#: src/ui/compose/ComposeDialog.tsx:258
+#: src/ui/compose/ComposeDialog.tsx:249
 #: src/ui/dash/PostForm.tsx:213
 msgid "Add Media"
 msgstr "添加媒體"
@@ -135,7 +135,7 @@ msgid "Click image to view full size"
 msgstr "點擊圖片以查看完整大小"
 
 #. @context: Compose toolbar - toggle collection
-#: src/ui/compose/ComposeDialog.tsx:311
+#: src/ui/compose/ComposeDialog.tsx:302
 msgid "Collection"
 msgstr "集合"
 
@@ -148,7 +148,7 @@ msgstr "集合"
 #. @context: Compose collection field
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
-#: src/ui/compose/ComposeDialog.tsx:230
+#: src/ui/compose/ComposeDialog.tsx:221
 #: src/ui/dash/collections/CollectionsListContent.tsx:26
 #: src/ui/layouts/DashLayout.tsx:114
 #: src/ui/pages/CollectionsPage.tsx:18
@@ -297,7 +297,7 @@ msgstr "顯示連結的文字"
 
 #. @context: Close media picker button
 #. @context: Close media picker button
-#: src/ui/compose/ComposeDialog.tsx:381
+#: src/ui/compose/ComposeDialog.tsx:372
 #: src/ui/dash/PostForm.tsx:338
 msgid "Done"
 msgstr "完成"
@@ -470,7 +470,7 @@ msgstr "鏈接"
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:139
+#: src/ui/compose/ComposeDialog.tsx:71
 #: src/ui/dash/FormatBadge.tsx:20
 #: src/ui/dash/PostForm.tsx:76
 #: src/ui/pages/ArchivePage.tsx:17
@@ -489,7 +489,7 @@ msgstr "載入更多"
 
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx:392
+#: src/ui/compose/ComposeDialog.tsx:383
 #: src/ui/dash/PostForm.tsx:349
 msgid "Loading..."
 msgstr "載入中..."
@@ -524,7 +524,7 @@ msgid "Media"
 msgstr "媒體"
 
 #. @context: Header more button tooltip
-#: src/ui/compose/ComposeDialog.tsx:88
+#: src/ui/compose/ComposeDialog.tsx:117
 msgid "More options"
 msgstr ""
 
@@ -573,12 +573,10 @@ msgstr "新密碼"
 
 #. @context: Button to create new post
 #. @context: Button to create new post
-#. @context: Compose dialog title
 #. @context: Page heading
 #: src/routes/dash/index.tsx:68
 #: src/routes/dash/posts.tsx:30
 #: src/routes/dash/posts.tsx:46
-#: src/ui/compose/ComposeDialog.tsx:54
 msgid "New Post"
 msgstr "新帖子"
 
@@ -655,7 +653,7 @@ msgid "No results found."
 msgstr "未找到結果。"
 
 #. @context: No rating selected
-#: src/ui/compose/ComposeDialog.tsx:213
+#: src/ui/compose/ComposeDialog.tsx:204
 msgid "None"
 msgstr "無"
 
@@ -663,7 +661,7 @@ msgstr "無"
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:128
+#: src/ui/compose/ComposeDialog.tsx:60
 #: src/ui/dash/FormatBadge.tsx:19
 #: src/ui/dash/PostForm.tsx:73
 #: src/ui/pages/ArchivePage.tsx:16
@@ -752,7 +750,7 @@ msgstr "文章"
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/ui/compose/ComposeDialog.tsx:353
+#: src/ui/compose/ComposeDialog.tsx:344
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "文章"
@@ -833,7 +831,7 @@ msgstr "快速操作"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:150
+#: src/ui/compose/ComposeDialog.tsx:82
 #: src/ui/dash/FormatBadge.tsx:21
 #: src/ui/dash/PostForm.tsx:79
 #: src/ui/pages/ArchivePage.tsx:18
@@ -852,8 +850,8 @@ msgstr "引用"
 
 #. @context: Compose rating field
 #. @context: Compose toolbar - toggle rating
-#: src/ui/compose/ComposeDialog.tsx:206
-#: src/ui/compose/ComposeDialog.tsx:285
+#: src/ui/compose/ComposeDialog.tsx:197
+#: src/ui/compose/ComposeDialog.tsx:276
 msgid "Rating"
 msgstr "評分"
 
@@ -884,7 +882,7 @@ msgid "Save"
 msgstr "保存"
 
 #. @context: Header draft button tooltip
-#: src/ui/compose/ComposeDialog.tsx:63
+#: src/ui/compose/ComposeDialog.tsx:92
 msgid "Save as Draft"
 msgstr ""
 
@@ -919,7 +917,7 @@ msgstr "搜尋帖子..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx:371
+#: src/ui/compose/ComposeDialog.tsx:362
 #: src/ui/dash/PostForm.tsx:328
 msgid "Select Media"
 msgstr "選擇媒體"
@@ -1006,7 +1004,7 @@ msgstr "敏捷的棕色狐狸跳過懶惰的狗。"
 
 #. @context: Compose quote text placeholder
 #. @context: Quote text placeholder
-#: src/ui/compose/ComposeDialog.tsx:195
+#: src/ui/compose/ComposeDialog.tsx:186
 #: src/ui/dash/PostForm.tsx:147
 msgid "The text being quoted..."
 msgstr "被引用的文本..."
@@ -1070,7 +1068,7 @@ msgstr "標題"
 
 #. @context: Compose title placeholder
 #. @context: Post form field
-#: src/ui/compose/ComposeDialog.tsx:162
+#: src/ui/compose/ComposeDialog.tsx:153
 #: src/ui/dash/PostForm.tsx:87
 msgid "Title (optional)"
 msgstr "標題（選填）"
@@ -1198,7 +1196,7 @@ msgstr "歡迎來到 Jant"
 #. @context: Compose body placeholder
 #. @context: Compose prompt placeholder text
 #. @context: Post content placeholder
-#: src/ui/compose/ComposeDialog.tsx:173
+#: src/ui/compose/ComposeDialog.tsx:164
 #: src/ui/compose/ComposePrompt.tsx:37
 #: src/ui/dash/PostForm.tsx:111
 msgid "What's on your mind?"
