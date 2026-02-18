@@ -23,8 +23,6 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
     url: "",
     quoteText: "",
     status: "published",
-    featured: false,
-    pinned: false,
     rating: 0,
     collectionId: 0,
     mediaIds: [],
@@ -44,23 +42,13 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
         <header class="compose-dialog-header">
           <button
             type="button"
-            class="compose-dialog-close"
+            class="compose-dialog-cancel"
             onclick="this.closest('dialog').close()"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M18 6 6 18" />
-              <path d="M6 6l12 12" />
-            </svg>
+            {t({
+              message: "Cancel",
+              comment: "@context: Close compose dialog",
+            })}
           </button>
           <h2 class="compose-dialog-title">
             {t({
@@ -68,7 +56,57 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
               comment: "@context: Compose dialog title",
             })}
           </h2>
-          <div class="w-5" />
+          <div class="flex items-center gap-1">
+            <button
+              type="button"
+              class="compose-dialog-header-btn"
+              title={t({
+                message: "Save as Draft",
+                comment: "@context: Header draft button tooltip",
+              })}
+              data-attr:disabled="$_composeLoading"
+              data-on:click="$status = 'draft'; document.querySelector('#compose-dialog form').requestSubmit()"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="compose-dialog-header-btn"
+              title={t({
+                message: "More options",
+                comment: "@context: Header more button tooltip",
+              })}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="1" />
+                <circle cx="19" cy="12" r="1" />
+                <circle cx="5" cy="12" r="1" />
+              </svg>
+            </button>
+          </div>
         </header>
 
         {/* Form */}
@@ -131,6 +169,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
             <textarea
               data-bind="body"
               class="compose-body-input"
+              autofocus
               placeholder={t({
                 message: "What's on your mind?",
                 comment: "@context: Compose body placeholder",
@@ -209,8 +248,8 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
               </div>
             )}
 
-            {/* Toolbar */}
-            <div class="compose-toolbar">
+            {/* Footer: toolbar + submit */}
+            <div class="compose-dialog-footer">
               <div class="flex gap-1">
                 {/* Media button */}
                 <button
@@ -291,83 +330,31 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
                   </button>
                 )}
               </div>
-            </div>
-
-            {/* Footer: checkboxes + submit */}
-            <div class="compose-dialog-footer">
-              <div class="flex gap-3">
-                <label class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    class="checkbox"
-                    data-bind="featured"
-                  />
-                  {t({
-                    message: "Featured",
-                    comment: "@context: Compose checkbox - mark as featured",
-                  })}
-                </label>
-                <label class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <input type="checkbox" class="checkbox" data-bind="pinned" />
-                  {t({
-                    message: "Pinned",
-                    comment: "@context: Compose checkbox - pin to top",
-                  })}
-                </label>
-              </div>
-              <div class="flex gap-2">
-                <button
-                  type="button"
-                  class="btn-outline text-sm"
-                  data-attr:disabled="$_composeLoading"
-                  data-on:click="$status = 'draft'; document.querySelector('#compose-dialog form').requestSubmit()"
+              <button
+                type="submit"
+                class="btn text-sm"
+                data-attr:disabled="$_composeLoading"
+              >
+                <svg
+                  data-show="$_composeLoading"
+                  style="display:none"
+                  class="animate-spin size-4"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  role="status"
                 >
-                  <svg
-                    data-show="$_composeLoading"
-                    style="display:none"
-                    class="animate-spin size-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    role="status"
-                  >
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                  </svg>
-                  {t({
-                    message: "Draft",
-                    comment: "@context: Compose button - save as draft",
-                  })}
-                </button>
-                <button
-                  type="submit"
-                  class="btn text-sm"
-                  data-attr:disabled="$_composeLoading"
-                >
-                  <svg
-                    data-show="$_composeLoading"
-                    style="display:none"
-                    class="animate-spin size-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    role="status"
-                  >
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                  </svg>
-                  {t({
-                    message: "Post",
-                    comment: "@context: Compose button - publish post",
-                  })}
-                </button>
-              </div>
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+                {t({
+                  message: "Post",
+                  comment: "@context: Compose button - publish post",
+                })}
+              </button>
             </div>
           </form>
         </section>

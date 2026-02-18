@@ -339,22 +339,40 @@
     margin: 0;
   }
 
-  .compose-dialog-close {
+  .compose-dialog-cancel {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--site-text-primary);
+    font-size: var(--text-base);
+    cursor: pointer;
+  }
+
+  .compose-dialog-cancel:hover {
+    opacity: 0.7;
+  }
+
+  .compose-dialog-header-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
     background: none;
-    color: var(--site-text-secondary);
+    color: var(--site-text-primary);
     cursor: pointer;
     transition: background-color 0.15s;
   }
 
-  .compose-dialog-close:hover {
+  .compose-dialog-header-btn:hover {
     background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-dialog-header-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
   .compose-dialog-body {
@@ -436,11 +454,6 @@
 
   .compose-body-input::placeholder {
     color: var(--site-text-secondary);
-  }
-
-  /* Bottom toolbar */
-  .compose-toolbar {
-    padding: 8px 0;
   }
 
   .compose-toolbar-btn {

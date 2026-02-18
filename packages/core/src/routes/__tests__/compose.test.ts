@@ -18,7 +18,7 @@ describe("Compose Routes", () => {
       expect(res.headers.get("Location")).toBe("/signin");
     });
 
-    it("creates a note post and returns redirect", async () => {
+    it("creates a note post and returns timeline card via SSE", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/compose", composeRoutes);
 
@@ -29,7 +29,13 @@ describe("Compose Routes", () => {
       });
 
       expect(res.status).toBe(200);
-      expect(res.headers.get("Content-Type")).toBe("text/html");
+      expect(res.headers.get("Content-Type")).toBe("text/event-stream");
+
+      const text = await res.text();
+      // SSE prepends the card to the timeline
+      expect(text).toContain("datastar-patch-elements");
+      expect(text).toContain('data-format="note"');
+      expect(text).toContain("selector #timeline-items");
 
       // Verify post was created
       const posts = await services.posts.list();
@@ -54,6 +60,10 @@ describe("Compose Routes", () => {
       });
 
       expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("text/event-stream");
+
+      const text = await res.text();
+      expect(text).toContain('data-format="link"');
 
       const posts = await services.posts.list();
       expect(posts).toHaveLength(1);
@@ -77,6 +87,10 @@ describe("Compose Routes", () => {
       });
 
       expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("text/event-stream");
+
+      const text = await res.text();
+      expect(text).toContain('data-format="quote"');
 
       const posts = await services.posts.list();
       expect(posts).toHaveLength(1);
@@ -84,7 +98,7 @@ describe("Compose Routes", () => {
       expect(posts[0].quoteText).toBe("The original quote");
     });
 
-    it("creates a draft when status is draft", async () => {
+    it("creates a draft and closes dialog with toast", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/compose", composeRoutes);
 
@@ -99,6 +113,13 @@ describe("Compose Routes", () => {
       });
 
       expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe("text/event-stream");
+
+      const text = await res.text();
+      // Should close dialog and show toast, not prepend to timeline
+      expect(text).toContain("compose-dialog");
+      expect(text).toContain("Draft saved");
+      expect(text).not.toContain("selector #timeline-items");
 
       const posts = await services.posts.list({ includeDrafts: true });
       expect(posts).toHaveLength(1);
@@ -158,27 +179,20 @@ describe("Compose Routes", () => {
       expect(attachments[0].id).toBe(media.id);
     });
 
-    it("sets featured and pinned flags", async () => {
-      const { app, services } = createTestApp({ authenticated: true });
+    it("resets compose signals after publishing", async () => {
+      const { app } = createTestApp({ authenticated: true });
       app.route("/compose", composeRoutes);
 
       const res = await app.request("/compose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          format: "note",
-          body: "Featured and pinned",
-          featured: true,
-          pinned: true,
-        }),
+        body: JSON.stringify({ format: "note", body: "Hello" }),
       });
 
-      expect(res.status).toBe(200);
-
-      const posts = await services.posts.list();
-      expect(posts).toHaveLength(1);
-      expect(posts[0].featured).toBe(1);
-      expect(posts[0].pinned).toBe(1);
+      const text = await res.text();
+      // SSE should include signal reset
+      expect(text).toContain("datastar-patch-signals");
+      expect(text).toContain('"_composeLoading":false');
     });
 
     it("returns error when format is missing", async () => {

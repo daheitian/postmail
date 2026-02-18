@@ -72,7 +72,7 @@ msgstr "Add Link"
 
 #. @context: Button to open media picker
 #. @context: Compose toolbar - add media
-#: src/ui/compose/ComposeDialog.tsx:219
+#: src/ui/compose/ComposeDialog.tsx:258
 #: src/ui/dash/PostForm.tsx:211
 msgid "Add Media"
 msgstr "Add Media"
@@ -151,7 +151,9 @@ msgstr "Blog Avatar"
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel unsaved changes and revert to original values
+#. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx:183
+#: src/ui/compose/ComposeDialog.tsx:48
 #: src/ui/dash/collections/CollectionForm.tsx:144
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
@@ -184,8 +186,8 @@ msgstr "Click image to view full size"
 
 #. @context: Compose collection field
 #. @context: Compose toolbar - toggle collection
-#: src/ui/compose/ComposeDialog.tsx:191
-#: src/ui/compose/ComposeDialog.tsx:272
+#: src/ui/compose/ComposeDialog.tsx:230
+#: src/ui/compose/ComposeDialog.tsx:311
 msgid "Collection"
 msgstr "Collection"
 
@@ -370,16 +372,14 @@ msgstr "Display text for the link"
 
 #. @context: Close media picker button
 #. @context: Close media picker button
-#: src/ui/compose/ComposeDialog.tsx:394
+#: src/ui/compose/ComposeDialog.tsx:381
 #: src/ui/dash/PostForm.tsx:340
 msgid "Done"
 msgstr "Done"
 
-#. @context: Compose button - save as draft
 #. @context: Page status option - draft
 #. @context: Post status badge - draft
 #. @context: Post status option
-#: src/ui/compose/ComposeDialog.tsx:340
 #: src/ui/dash/PageForm.tsx:133
 #: src/ui/dash/PostForm.tsx:234
 #: src/ui/dash/StatusBadge.tsx:34
@@ -460,11 +460,9 @@ msgstr "Enter your new password."
 
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
-#. @context: Compose checkbox - mark as featured
 #. @context: Homepage view option - show featured posts
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
-#: src/ui/compose/ComposeDialog.tsx:305
 #: src/ui/dash/PostForm.tsx:246
 #: src/ui/dash/settings/GeneralContent.tsx:398
 #: src/ui/dash/StatusBadge.tsx:45
@@ -565,7 +563,7 @@ msgstr "link"
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:101
+#: src/ui/compose/ComposeDialog.tsx:139
 #: src/ui/dash/FormatBadge.tsx:20
 #: src/ui/dash/PostForm.tsx:74
 #: src/ui/pages/ArchivePage.tsx:17
@@ -584,7 +582,7 @@ msgstr "Load more"
 
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx:405
+#: src/ui/compose/ComposeDialog.tsx:392
 #: src/ui/dash/PostForm.tsx:351
 msgid "Loading..."
 msgstr "Loading..."
@@ -612,6 +610,11 @@ msgstr "Markdown supported"
 #: src/ui/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "Media"
+
+#. @context: Header more button tooltip
+#: src/ui/compose/ComposeDialog.tsx:88
+msgid "More options"
+msgstr "More options"
 
 #. @context: Setup site name placeholder
 #: src/app.tsx:137
@@ -675,7 +678,7 @@ msgstr "New Password"
 #: src/routes/dash/index.tsx:68
 #: src/routes/dash/posts.tsx:30
 #: src/routes/dash/posts.tsx:46
-#: src/ui/compose/ComposeDialog.tsx:66
+#: src/ui/compose/ComposeDialog.tsx:54
 msgid "New Post"
 msgstr "New Post"
 
@@ -759,8 +762,8 @@ msgstr "No results found."
 #. @context: No collection selected
 #. @context: No collection selected
 #. @context: No rating selected
-#: src/ui/compose/ComposeDialog.tsx:174
-#: src/ui/compose/ComposeDialog.tsx:198
+#: src/ui/compose/ComposeDialog.tsx:213
+#: src/ui/compose/ComposeDialog.tsx:237
 #: src/ui/dash/PostForm.tsx:271
 msgid "None"
 msgstr "None"
@@ -769,7 +772,7 @@ msgstr "None"
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:90
+#: src/ui/compose/ComposeDialog.tsx:128
 #: src/ui/dash/FormatBadge.tsx:19
 #: src/ui/dash/PostForm.tsx:71
 #: src/ui/pages/ArchivePage.tsx:16
@@ -842,10 +845,8 @@ msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 msgid "Permalink"
 msgstr "Permalink"
 
-#. @context: Compose checkbox - pin to top
 #. @context: Post badge - pinned
 #. @context: Post form checkbox - pin to top
-#: src/ui/compose/ComposeDialog.tsx:312
 #: src/ui/dash/PostForm.tsx:253
 #: src/ui/dash/StatusBadge.tsx:53
 msgid "Pinned"
@@ -860,7 +861,7 @@ msgstr "post"
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/ui/compose/ComposeDialog.tsx:365
+#: src/ui/compose/ComposeDialog.tsx:353
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "Post"
@@ -961,7 +962,7 @@ msgstr "Quick Actions"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:112
+#: src/ui/compose/ComposeDialog.tsx:150
 #: src/ui/dash/FormatBadge.tsx:21
 #: src/ui/dash/PostForm.tsx:77
 #: src/ui/pages/ArchivePage.tsx:18
@@ -980,8 +981,8 @@ msgstr "Quotes"
 
 #. @context: Compose rating field
 #. @context: Compose toolbar - toggle rating
-#: src/ui/compose/ComposeDialog.tsx:167
-#: src/ui/compose/ComposeDialog.tsx:246
+#: src/ui/compose/ComposeDialog.tsx:206
+#: src/ui/compose/ComposeDialog.tsx:285
 msgid "Rating"
 msgstr "Rating"
 
@@ -1010,6 +1011,11 @@ msgstr "Reset Password"
 #: src/ui/dash/settings/GeneralContent.tsx:74
 msgid "Save"
 msgstr "Save"
+
+#. @context: Header draft button tooltip
+#: src/ui/compose/ComposeDialog.tsx:63
+msgid "Save as Draft"
+msgstr "Save as Draft"
 
 #. @context: Button to save edited navigation link
 #: src/ui/dash/pages/LinkFormContent.tsx:100
@@ -1052,7 +1058,7 @@ msgstr "Search posts..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx:384
+#: src/ui/compose/ComposeDialog.tsx:371
 #: src/ui/dash/PostForm.tsx:330
 msgid "Select Media"
 msgstr "Select Media"
@@ -1159,7 +1165,7 @@ msgstr "The quick brown fox jumps over the lazy dog."
 
 #. @context: Compose quote text placeholder
 #. @context: Quote text placeholder
-#: src/ui/compose/ComposeDialog.tsx:156
+#: src/ui/compose/ComposeDialog.tsx:195
 #: src/ui/dash/PostForm.tsx:145
 msgid "The text being quoted..."
 msgstr "The text being quoted..."
@@ -1228,7 +1234,7 @@ msgstr "Title"
 
 #. @context: Compose title placeholder
 #. @context: Post form field
-#: src/ui/compose/ComposeDialog.tsx:124
+#: src/ui/compose/ComposeDialog.tsx:162
 #: src/ui/dash/PostForm.tsx:85
 msgid "Title (optional)"
 msgstr "Title (optional)"
@@ -1367,12 +1373,14 @@ msgstr "Welcome to Jant"
 
 #. @context: Compose prompt placeholder text
 #: src/ui/compose/ComposePrompt.tsx:37
-msgid "What's new?"
-msgstr "What's new?"
+#~ msgid "What's new?"
+#~ msgstr "What's new?"
 
 #. @context: Compose body placeholder
+#. @context: Compose prompt placeholder text
 #. @context: Post content placeholder
-#: src/ui/compose/ComposeDialog.tsx:134
+#: src/ui/compose/ComposeDialog.tsx:173
+#: src/ui/compose/ComposePrompt.tsx:37
 #: src/ui/dash/PostForm.tsx:109
 msgid "What's on your mind?"
 msgstr "What's on your mind?"

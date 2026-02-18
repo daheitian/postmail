@@ -35,7 +35,7 @@ export const ComposePrompt: FC = () => {
         </span>
         <span class="compose-prompt-text">
           {t({
-            message: "What's new?",
+            message: "What's on your mind?",
             comment: "@context: Compose prompt placeholder text",
           })}
         </span>
