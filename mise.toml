@@ -426,16 +426,19 @@ echo "Review worktree ready: $WORKTREE_PATH"
 echo "  cd $WORKTREE_PATH"
 """
 
-[tasks.trash]
-alias = "rm"
-description = "Remove a worktree directory (keeps branch): mise run trash feat-login"
-usage = 'arg "<name>"'
+[tasks.rm]
+alias = "trash"
+description = "Remove a worktree and its branch: mise run rm feat/login"
+usage = 'arg "<branch>"'
 run = """
-WORKTREE_PATH="../$usage_name"
+BRANCH_NAME="$usage_branch"
+# Normalize branch name for directory: feat/login → feat-login
+DIR_NAME=$(echo "$BRANCH_NAME" | tr '/' '-')
+WORKTREE_PATH="../$DIR_NAME"
 
 # Safety: prevent deleting the main worktree
 CURRENT_DIR=$(basename "$(pwd)")
-if [ "$usage_name" = "$CURRENT_DIR" ]; then
+if [ "$DIR_NAME" = "$CURRENT_DIR" ]; then
   echo "Cannot remove the current worktree. Run this from a different worktree."
   exit 1
 fi
@@ -450,11 +453,15 @@ fi
 
 echo "Removing worktree: $WORKTREE_PATH"
 git worktree remove "$WORKTREE_PATH" --force
-echo "Done. Branch is still available (use 'git branch -d <name>' to delete it)."
+
+echo "Deleting branch: $BRANCH_NAME"
+git branch -D "$BRANCH_NAME" 2>/dev/null || echo "Branch '$BRANCH_NAME' not found (already deleted?)"
+
+echo "Done."
 """
 
-[tasks.wt-list]
-alias = "wl"
+[tasks.ls]
+alias = "worktrees"
 description = "List all git worktrees"
 run = "git worktree list"
 
