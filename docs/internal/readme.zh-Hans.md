@@ -108,14 +108,13 @@
 
 **规则**：
 
-- 一个帖子只属于一个 Collection（一对多）
+- 一个帖子可以属于多个 Collectio
 - Collection 有名称和图标（Lucide SVG 或用户上传图片）
 - Collection 有自定义排序方式（最新/最早/评分最高/评分最低）
 - Collection 有自定义 slug，地址为 `/c/{slug}`，创建时根据名称自动生成，用户可修改
 - Collection 有独立的 RSS：`/c/{slug}/feed`
-- Collection 支持 `+` 组合语法：`/c/reading+tools` 展示多个 Collection 的聚合内容
 - Collection 有 `position` 字段，后台支持拖拽排序
-- Collection 支持 `show_divider` 字段（布尔值），为 true 时在此 Collection 上方显示分隔线，实现视觉分组。第一个 Collection 的 show_divider 强制为 false
+- Collection 支持 `show_divider` 字段（布尔值），为 true 时在此 Collection 上方显示分隔线，实现视觉分组。第一个 Collection 的 show_divider 强制为 false, /dash/collections 每个collection 可以上下拖动排序。
 - 不预设任何 Collection，首次使用时引导创建
 - 查看 Collection 时可通过 featured 筛选
 
