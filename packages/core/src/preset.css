@@ -16,6 +16,8 @@
 @theme {
   --radius-default: 0.5rem;
   --color-success: var(--success);
+  --default-font-family: var(--font-body);
+  --default-mono-font-family: var(--font-mono);
 }
 
 :root {

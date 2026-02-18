@@ -168,16 +168,16 @@ setupRoutes.post("/setup", async (c) => {
       }
     }
 
-    // Seed default navigation items
-    await c.var.services.navItems.create({
-      type: "link",
-      label: "Featured",
-      url: "/featured",
-    });
     await c.var.services.navItems.create({
       type: "link",
       label: "Collections",
       url: "/collections",
+    });
+    // Seed default navigation items
+    await c.var.services.navItems.create({
+      type: "link",
+      label: "Archive",
+      url: "/archive",
     });
 
     return dsRedirect("/signin?setup");
