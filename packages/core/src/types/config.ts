@@ -129,6 +129,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  SITE_FAVICON_VERSION: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
   FONT_THEME: {
     defaultValue: "",
     envOnly: false,

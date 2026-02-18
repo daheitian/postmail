@@ -139,7 +139,7 @@ run = """
 echo "Resetting database..."
 rm -rf .wrangler
 echo "Running migrations..."
-pnpm exec wrangler d1 migrations apply DB --local
+yes | pnpm exec wrangler d1 migrations apply DB --local
 echo "Clearing data..."
 pnpm exec wrangler d1 execute DB --local --file=scripts/reset-local.sql
 echo "Loading seed data..."

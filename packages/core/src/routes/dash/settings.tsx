@@ -277,19 +277,37 @@ settingsRoutes.post("/avatar", async (c) => {
 
     await c.var.services.settings.set("SITE_AVATAR", storageKey);
 
-    // Store favicon variants as base64 in settings (small files, accessed every page load)
+    // Store favicon ICO as base64 in settings (tiny file, accessed every page load)
     const faviconFile = formData.get("favicon") as File | null;
-    const appleTouchFile = formData.get("appleTouch") as File | null;
-
     if (faviconFile) {
       const b64 = arrayBufferToBase64(await faviconFile.arrayBuffer());
       await c.var.services.settings.set("SITE_FAVICON_ICO", b64);
     }
 
+    // Store apple-touch-icon in R2 (180x180 PNG, not tiny enough for base64)
+    const appleTouchFile = formData.get("appleTouch") as File | null;
     if (appleTouchFile) {
-      const b64 = arrayBufferToBase64(await appleTouchFile.arrayBuffer());
-      await c.var.services.settings.set("SITE_FAVICON_APPLE_TOUCH", b64);
+      const appleTouchKey = "favicon/apple-touch-icon.png";
+      await storage.put(
+        appleTouchKey,
+        new Uint8Array(await appleTouchFile.arrayBuffer()),
+        { contentType: "image/png" },
+      );
+      await c.var.services.settings.set(
+        "SITE_FAVICON_APPLE_TOUCH",
+        appleTouchKey,
+      );
     }
+
+    // Set favicon version for cache-busting
+    const now = new Date();
+    const version =
+      String(now.getUTCFullYear()) +
+      String(now.getUTCMonth() + 1).padStart(2, "0") +
+      String(now.getUTCDate()).padStart(2, "0") +
+      String(now.getUTCHours()).padStart(2, "0") +
+      String(now.getUTCMinutes()).padStart(2, "0");
+    await c.var.services.settings.set("SITE_FAVICON_VERSION", version);
 
     return dsRedirect("/dash/settings?saved");
   } catch {
@@ -298,9 +316,18 @@ settingsRoutes.post("/avatar", async (c) => {
 });
 
 settingsRoutes.post("/avatar/remove", async (c) => {
+  const storage = c.var.storage;
+  const appleTouchKey = await c.var.services.settings.get(
+    "SITE_FAVICON_APPLE_TOUCH",
+  );
+  if (storage && appleTouchKey) {
+    await storage.delete(appleTouchKey);
+  }
+
   await c.var.services.settings.remove("SITE_AVATAR");
   await c.var.services.settings.remove("SITE_FAVICON_ICO");
   await c.var.services.settings.remove("SITE_FAVICON_APPLE_TOUCH");
+  await c.var.services.settings.remove("SITE_FAVICON_VERSION");
   return dsRedirect("/dash/settings?saved");
 });
 
