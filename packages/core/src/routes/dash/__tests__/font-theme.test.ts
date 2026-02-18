@@ -31,32 +31,32 @@ describe("Font theme save & CSS generation", () => {
     await settings.set("FONT_THEME", "serif");
     expect(await settings.get("FONT_THEME")).toBe("serif");
 
-    // Update to humanist
-    await settings.set("FONT_THEME", "humanist");
-    expect(await settings.get("FONT_THEME")).toBe("humanist");
+    // Update to geometric
+    await settings.set("FONT_THEME", "geometric");
+    expect(await settings.get("FONT_THEME")).toBe("geometric");
 
     // Remove (reset to default)
     await settings.remove("FONT_THEME");
     expect(await settings.get("FONT_THEME")).toBeNull();
   });
 
-  it("generates correct CSS when switching from serif to humanist", async () => {
-    // Save serif, then switch to humanist — simulates the middleware flow
+  it("generates correct CSS when switching from serif to geometric", async () => {
+    // Save serif, then switch to geometric — simulates the middleware flow
     await settings.set("FONT_THEME", "serif");
-    await settings.set("FONT_THEME", "humanist");
+    await settings.set("FONT_THEME", "geometric");
 
     const fontThemeId = await settings.get("FONT_THEME");
-    expect(fontThemeId).toBe("humanist");
+    expect(fontThemeId).toBe("geometric");
 
     const fontTheme = BUILTIN_FONT_THEMES.find((f) => f.id === fontThemeId)!;
     expect(fontTheme).toBeDefined();
-    expect(fontTheme.fontFamily).toContain("Optima");
+    expect(fontTheme.fontFamily).toContain("Futura");
 
     const fontOverrides = { "--font-body": fontTheme.fontFamily };
     const css = buildThemeStyle(undefined, fontOverrides);
 
     expect(css).toContain("--font-body:");
-    expect(css).toContain("Optima");
+    expect(css).toContain("Futura");
     expect(css).not.toContain("Charter");
   });
 

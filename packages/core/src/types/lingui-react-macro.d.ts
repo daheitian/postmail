@@ -9,7 +9,7 @@
  */
 
 declare module "@lingui/react/macro" {
-  import type { I18n } from "@lingui/core";
+  import type { I18n, MessageDescriptor } from "@lingui/core";
   import type { FC, PropsWithChildren } from "hono/jsx";
 
   interface TranslationDescriptor {
@@ -20,8 +20,8 @@ declare module "@lingui/react/macro" {
   }
 
   export function useLingui(): {
-    t: (descriptor: TranslationDescriptor) => string;
-    _: (descriptor: TranslationDescriptor) => string;
+    t: (descriptor: TranslationDescriptor | MessageDescriptor) => string;
+    _: (descriptor: TranslationDescriptor | MessageDescriptor) => string;
     i18n: I18n;
   };
 

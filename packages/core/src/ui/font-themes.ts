@@ -2,7 +2,11 @@
  * Built-in Font Themes
  *
  * System-font-only presets — no external font loading required.
+ * Name and description are MessageDescriptor objects for i18n support.
+ * Pass them to t() from useLingui() when rendering.
  */
+
+import type { MessageDescriptor } from "@lingui/core";
 
 /**
  * A font theme definition with display metadata.
@@ -10,45 +14,85 @@
 export interface FontTheme {
   /** Stored in DB settings, e.g. "serif" */
   id: string;
-  /** Display name, e.g. "Serif" */
-  name: string;
+  /** Display name — pass to t() for translation */
+  name: MessageDescriptor;
   /** CSS font-family stack */
   fontFamily: string;
-  /** Short description for the picker UI */
-  description: string;
+  /** Short description for the picker UI — pass to t() for translation */
+  description: MessageDescriptor;
 }
 
 export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {
     id: "default",
-    name: "System Default",
-    // 现代系统字体栈：先英文，后 Mac/iOS 中文，再 Win 中文
+    name: {
+      message: "System Default",
+      comment: "@context: Font theme name",
+    },
     fontFamily:
-      'system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans CN", sans-serif',
-    description: "与你的操作系统保持一致，最稳定的阅读体验",
+      'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif',
+    description: {
+      message: "Matches your OS native font for consistent reading",
+      comment: "@context: Font theme description",
+    },
   },
   {
     id: "serif",
-    name: "Classic Serif",
-    // Charter 是 Apple 系统自带的极品衬线体
+    // ui-serif → New York (macOS 10.15+); Iowan Old Style (macOS/iOS);
+    // Charter (macOS); Cambria / Sitka Text (Windows); Georgia (universal)
+    name: {
+      message: "Editorial Serif",
+      comment: "@context: Font theme name",
+    },
     fontFamily:
-      'Charter, "Bitstream Charter", "Sitka Text", Georgia, "Songti SC", "Source Han Serif CN", "STSong", "SimSun", serif',
-    description: "传统的衬线体，适合深度长文阅读",
+      'ui-serif, "Iowan Old Style", Charter, "Bitstream Charter", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif',
+    description: {
+      message: "Elegant serif typeface for immersive long-form reading",
+      comment: "@context: Font theme description",
+    },
   },
   {
-    id: "humanist",
-    name: "Humanist",
-    // Optima 具有书法韵味，Candara 是 Windows 上的优质人文体
+    id: "classical",
+    // Palatino (macOS); Palatino Linotype / Book Antiqua (Windows);
+    // Old-style serif with calligraphic warmth, distinct from Editorial's modern screen serif
+    name: {
+      message: "Classical Serif",
+      comment: "@context: Font theme name",
+    },
     fontFamily:
-      'Optima, Candara, "Noto Sans", "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
-    description: "温润如玉的字体风格，兼具现代感与书法美感",
+      'Palatino, "Palatino Linotype", "Book Antiqua", "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif',
+    description: {
+      message: "Old-style serif with warm, calligraphic character",
+      comment: "@context: Font theme description",
+    },
+  },
+  {
+    id: "geometric",
+    // Futura (macOS); Century Gothic (Windows); clean geometric proportions
+    name: {
+      message: "Geometric Sans",
+      comment: "@context: Font theme name",
+    },
+    fontFamily:
+      'Futura, "Century Gothic", "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif',
+    description: {
+      message: "Clean geometric sans-serif with modern design aesthetics",
+      comment: "@context: Font theme description",
+    },
   },
   {
     id: "mono",
-    name: "Monospace",
-    // 优先使用 JetBrains Mono 或 SF Mono
+    // SF Mono (macOS); Cascadia Code (Windows 11+); Menlo (macOS fallback);
+    // Consolas (Windows fallback)
+    name: {
+      message: "Monospace",
+      comment: "@context: Font theme name",
+    },
     fontFamily:
-      '"JetBrains Mono", "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", "PingFang SC", "Microsoft YaHei", monospace',
-    description: "等宽字体，适合技术内容或代码展示",
+      '"SF Mono", "Cascadia Code", "Cascadia Mono", Menlo, Consolas, "Ubuntu Mono", "Liberation Mono", "Courier New", "PingFang SC", "Microsoft YaHei", monospace',
+    description: {
+      message: "Fixed-width typeface for technical writing and code",
+      comment: "@context: Font theme description",
+    },
   },
 ];

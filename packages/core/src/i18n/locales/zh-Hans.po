@@ -13,25 +13,15 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#. @context: Archive post reply indicator - plural
-#: src/theme/pages/ArchivePage.tsx:168
-#~ msgid "{count} replies"
-#~ msgstr "{count} 条回复"
-
 #. @context: Custom CSS textarea placeholder
 #: src/ui/dash/settings/AppearanceContent.tsx:218
 msgid "/* Your custom CSS here */"
-msgstr ""
+msgstr "/* 您的自定义 CSS 在这里 */"
 
 #. @context: Navigation link
 #: src/ui/dash/collections/ViewCollectionContent.tsx:84
 msgid "← Back to Collections"
 msgstr "← 返回收藏夹"
-
-#. @context: Archive post reply indicator - single
-#: src/theme/pages/ArchivePage.tsx:163
-#~ msgid "1 reply"
-#~ msgstr "1 条回复"
 
 #. @context: Redirect type option
 #: src/routes/dash/redirects.tsx:146
@@ -46,7 +36,7 @@ msgstr "302（临时）"
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx:324
 msgid "About this blog"
-msgstr ""
+msgstr "关于这个博客"
 
 #. @context: Settings sub-navigation tab
 #: src/ui/dash/settings/SettingsNav.tsx:31
@@ -56,12 +46,12 @@ msgstr "账户"
 #. @context: Custom CSS settings description
 #: src/ui/dash/settings/AppearanceContent.tsx:208
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
-msgstr ""
+msgstr "添加自定义 CSS 以覆盖任何样式。使用数据属性，如 [data-page]、[data-post]、[data-format] 来定位特定元素。"
 
 #. @context: Button to add a navigation link
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:28
 msgid "Add Link"
-msgstr ""
+msgstr "添加链接"
 
 #. @context: Button to open media picker
 #. @context: Compose toolbar - add media
@@ -73,7 +63,7 @@ msgstr "添加媒体"
 #. @context: Button to add page to navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:163
 msgid "Add to nav"
-msgstr ""
+msgstr "添加到导航"
 
 #. @context: Archive filter - all formats
 #: src/ui/pages/ArchivePage.tsx:71
@@ -83,7 +73,7 @@ msgstr "所有"
 #. @context: Empty state when all pages are in nav
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:146
 msgid "All pages are in your navigation."
-msgstr ""
+msgstr "所有页面都在您的导航中。"
 
 #. @context: Settings sub-navigation tab
 #: src/ui/dash/settings/SettingsNav.tsx:23
@@ -98,26 +88,7 @@ msgstr "档案馆"
 #. @context: Confirmation dialog when deleting a post from the list
 #: src/ui/dash/PostList.tsx:60
 msgid "Are you sure you want to delete this post? This cannot be undone."
-msgstr ""
-
-#. @context: Post type badge - article
-#. @context: Post type label - article
-#. @context: Post type option
-#: src/theme/components/PostForm.tsx:74
-#: src/theme/components/TypeBadge.tsx:20
-#: src/themes/threads/pages/ArchivePage.tsx:17
-#~ msgid "Article"
-#~ msgstr "文章"
-
-#. @context: Post type label plural - articles
-#: src/themes/threads/pages/ArchivePage.tsx:42
-#~ msgid "Articles"
-#~ msgstr "文章"
-
-#. @context: Hint for image post type media requirement
-#: src/theme/components/PostForm.tsx:137
-#~ msgid "At least 1 image required for image posts."
-#~ msgstr "图像帖子至少需要 1 张图片。"
+msgstr "您确定要删除此帖子吗？此操作无法撤销。"
 
 #. @context: Button to go back to media list
 #: src/ui/dash/media/ViewMediaContent.tsx:57
@@ -127,7 +98,7 @@ msgstr "返回"
 #. @context: Settings section heading for avatar
 #: src/ui/dash/settings/GeneralContent.tsx:160
 msgid "Blog Avatar"
-msgstr ""
+msgstr "博客头像"
 
 #. @context: Button to cancel and go back
 #. @context: Button to cancel form
@@ -154,7 +125,7 @@ msgstr "更改密码"
 #. @context: Font theme settings description
 #: src/ui/dash/settings/AppearanceContent.tsx:153
 msgid "Choose a font for your site. All options use system fonts for fast loading."
-msgstr ""
+msgstr "选择一个字体用于您的网站。所有选项都使用系统字体以实现快速加载。"
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx:90
@@ -166,12 +137,12 @@ msgstr "点击图片查看完整尺寸"
 #: src/ui/compose/ComposeDialog.tsx:191
 #: src/ui/compose/ComposeDialog.tsx:272
 msgid "Collection"
-msgstr ""
+msgstr "集合"
 
 #. @context: Post form field - assign to collection
 #: src/ui/dash/PostForm.tsx:264
 msgid "Collection (optional)"
-msgstr ""
+msgstr "集合（可选）"
 
 #. @context: Collections page heading
 #. @context: Dashboard heading
@@ -181,11 +152,6 @@ msgstr ""
 #: src/ui/pages/CollectionsPage.tsx:18
 msgid "Collections"
 msgstr "收藏夹"
-
-#. @context: Post form field - assign to collections
-#: src/theme/components/PostForm.tsx:273
-#~ msgid "Collections (optional)"
-#~ msgstr "集合（可选）"
 
 #. @context: Appearance settings heading
 #: src/ui/dash/settings/AppearanceContent.tsx:112
@@ -246,11 +212,6 @@ msgstr "创建重定向"
 msgid "Create your admin account."
 msgstr "创建您的管理员账户。"
 
-#. @context: Button in empty state to create first page
-#: src/routes/dash/pages.tsx:48
-#~ msgid "Create your first page"
-#~ msgstr "创建您的第一页"
-
 #. @context: Button in empty state to create first post
 #: src/ui/dash/PostList.tsx:29
 msgid "Create your first post"
@@ -264,22 +225,7 @@ msgstr "当前密码"
 #. @context: Appearance settings heading for custom CSS
 #: src/ui/dash/settings/AppearanceContent.tsx:202
 msgid "Custom CSS"
-msgstr ""
-
-#. @context: Post form field
-#: src/theme/components/PostForm.tsx:297
-#~ msgid "Custom Path (optional)"
-#~ msgstr "自定义路径（可选）"
-
-#. @context: Post form field
-#: src/theme/components/PostForm.tsx:293
-#~ msgid "Custom Slug (optional)"
-#~ msgstr ""
-
-#. @context: Slug help text
-#: src/theme/components/PostForm.tsx:306
-#~ msgid "Custom URL path. Leave empty to use default /p/ID format."
-#~ msgstr ""
+msgstr "自定义 CSS"
 
 #. @context: Section heading for dangerous/destructive actions
 #: src/ui/dash/DangerZone.tsx:55
@@ -296,7 +242,7 @@ msgstr "仪表板"
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx:374
 msgid "Default Homepage View"
-msgstr ""
+msgstr "默认主页视图"
 
 #. @context: Button to delete item
 #. @context: Button to delete link
@@ -306,11 +252,6 @@ msgstr ""
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:98
 msgid "Delete"
 msgstr "删除"
-
-#. @context: Button to delete collection
-#: src/routes/dash/collections.tsx:363
-#~ msgid "Delete Collection"
-#~ msgstr "删除收藏夹"
 
 #. @context: Button to delete media
 #: src/ui/dash/media/ViewMediaContent.tsx:176
@@ -340,7 +281,7 @@ msgstr "描述（可选）"
 #. @context: Checkbox to show avatar in the site header
 #: src/ui/dash/settings/GeneralContent.tsx:274
 msgid "Display avatar in my site header"
-msgstr ""
+msgstr "在我的网站头部显示头像"
 
 #. @context: Navigation label help text
 #: src/ui/dash/pages/LinkFormContent.tsx:52
@@ -369,11 +310,6 @@ msgstr "草稿"
 #: src/routes/dash/index.tsx:55
 msgid "Drafts"
 msgstr "草稿"
-
-#. @context: Source name placeholder
-#: src/theme/components/PostForm.tsx:226
-#~ msgid "e.g. The Verge, John Doe"
-#~ msgstr "例如：The Verge，John Doe"
 
 #. @context: Button to edit collection
 #. @context: Button to edit collection
@@ -446,12 +382,12 @@ msgstr "精选"
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/settings/AppearanceContent.tsx:147
 msgid "Font theme"
-msgstr ""
+msgstr "字体主题"
 
 #. @context: Post form field - post format
 #: src/ui/dash/PostForm.tsx:64
 msgid "Format"
-msgstr ""
+msgstr "格式"
 
 #. @context: Search results count - multiple
 #: src/ui/pages/SearchPage.tsx:73
@@ -475,20 +411,6 @@ msgstr "来源路径"
 msgid "General"
 msgstr "常规"
 
-#. @context: Post type badge - image
-#. @context: Post type label - image
-#. @context: Post type option
-#: src/theme/components/PostForm.tsx:83
-#: src/theme/components/TypeBadge.tsx:29
-#: src/themes/threads/pages/ArchivePage.tsx:26
-#~ msgid "Image"
-#~ msgstr "图像"
-
-#. @context: Post type label plural - images
-#: src/themes/threads/pages/ArchivePage.tsx:54
-#~ msgid "Images"
-#~ msgstr "图片"
-
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx:147
 msgid "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
@@ -502,7 +424,7 @@ msgstr "无效或过期的链接"
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx:515
 msgid "It's OK for search engines to index my site"
-msgstr ""
+msgstr "允许搜索引擎索引我的网站是可以的"
 
 #. @context: Navigation link form field
 #: src/ui/dash/pages/LinkFormContent.tsx:39
@@ -519,12 +441,12 @@ msgstr "语言"
 #: src/ui/dash/settings/GeneralContent.tsx:388
 #: src/ui/layouts/SiteLayout.tsx:48
 msgid "Latest"
-msgstr ""
+msgstr "最新"
 
 #. @context: Nav item type badge
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:123
 msgid "link"
-msgstr ""
+msgstr "链接"
 
 #. @context: Compose format tab
 #. @context: Post format badge - link
@@ -567,7 +489,7 @@ msgstr "Markdown"
 #. @context: Placeholder for footer textarea
 #: src/ui/dash/settings/GeneralContent.tsx:466
 msgid "Markdown supported"
-msgstr ""
+msgstr "支持Markdown"
 
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
@@ -587,13 +509,6 @@ msgstr "我的收藏"
 #: src/ui/dash/settings/AccountContent.tsx:38
 msgid "Name"
 msgstr "姓名"
-
-#. @context: Dashboard heading
-#. @context: Dashboard navigation - navigation links management
-#: src/routes/dash/navigation.tsx:29
-#: src/theme/layouts/DashLayout.tsx:133
-#~ msgid "Navigation"
-#~ msgstr "导航"
 
 #. @context: Help text with link
 #: src/routes/dash/index.tsx:78
@@ -665,27 +580,17 @@ msgstr "尚未有任何收藏。"
 #. @context: Empty state message on featured page
 #: src/ui/pages/FeaturedPage.tsx:20
 msgid "No featured posts yet."
-msgstr ""
+msgstr "尚无精选帖子。"
 
 #. @context: Empty state message when no media exists
 #: src/ui/dash/media/MediaListContent.tsx:162
 msgid "No media uploaded yet."
 msgstr "尚未上传任何媒体。"
 
-#. @context: Empty state message
-#: src/routes/dash/navigation.tsx:42
-#~ msgid "No navigation links configured."
-#~ msgstr "未配置导航链接。"
-
 #. @context: Empty state for navigation section
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:52
 msgid "No navigation links yet. Add pages to navigation or create links."
-msgstr ""
-
-#. @context: Empty state message when no pages exist
-#: src/routes/dash/pages.tsx:44
-#~ msgid "No pages yet."
-#~ msgstr "还没有页面。"
+msgstr "尚未有导航链接。请将页面添加到导航或创建链接。"
 
 #. @context: Archive empty state
 #: src/ui/pages/ArchivePage.tsx:103
@@ -723,7 +628,7 @@ msgstr "未找到结果。"
 #: src/ui/compose/ComposeDialog.tsx:198
 #: src/ui/dash/PostForm.tsx:271
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. @context: Compose format tab
 #. @context: Post format badge - note
@@ -744,12 +649,12 @@ msgstr "笔记"
 #. @context: Section heading for pages not in navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:139
 msgid "Other pages"
-msgstr ""
+msgstr "其他页面"
 
 #. @context: Nav item type badge
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:119
 msgid "page"
-msgstr ""
+msgstr "页面"
 
 #. @context: Default page heading when untitled
 #: src/routes/dash/pages.tsx:46
@@ -785,11 +690,6 @@ msgstr "页面"
 msgid "Password"
 msgstr "密码"
 
-#. @context: Page form field label - URL path
-#: src/theme/components/PageForm.tsx:64
-#~ msgid "Path"
-#~ msgstr "路径"
-
 #. @context: Navigation URL help text
 #: src/ui/dash/pages/LinkFormContent.tsx:74
 msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
@@ -809,12 +709,12 @@ msgstr "永久链接"
 #: src/ui/dash/PostForm.tsx:253
 #: src/ui/dash/StatusBadge.tsx:53
 msgid "Pinned"
-msgstr ""
+msgstr "已固定"
 
 #. @context: Singular post count label
 #: src/ui/pages/CollectionsPage.tsx:56
 msgid "post"
-msgstr ""
+msgstr "帖子"
 
 #. @context: Compose button - publish post
 #. @context: Compose prompt post button
@@ -830,15 +730,10 @@ msgstr "帖子"
 msgid "Post title..."
 msgstr "帖子标题..."
 
-#. @context: Compose loading text while posting
-#: src/ui/compose/ComposeDialog.tsx:345
-#~ msgid "Posting..."
-#~ msgstr ""
-
 #. @context: Plural post count label
 #: src/ui/pages/CollectionsPage.tsx:60
 msgid "posts"
-msgstr ""
+msgstr "帖子"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - posts management
@@ -893,29 +788,14 @@ msgid "Published"
 msgstr "已发布"
 
 #. @context: Page status helper text
-#: src/theme/components/PageForm.tsx:140
-#~ msgid "Published pages are accessible via their path. Drafts are not visible."
-#~ msgstr "已发布的页面可以通过其路径访问。草稿不可见。"
-
-#. @context: Page status helper text
 #: src/ui/dash/PageForm.tsx:140
 msgid "Published pages are accessible via their slug. Drafts are not visible."
-msgstr ""
+msgstr "已发布的页面可以通过其别名访问。草稿不可见。"
 
 #. @context: Dashboard section title
 #: src/routes/dash/index.tsx:62
 msgid "Quick Actions"
 msgstr "快速操作"
-
-#. @context: Post visibility badge - normal
-#: src/theme/components/VisibilityBadge.tsx:30
-#~ msgid "Quiet"
-#~ msgstr "安静"
-
-#. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:243
-#~ msgid "Quiet (normal)"
-#~ msgstr "安静（正常）"
 
 #. @context: Compose format tab
 #. @context: Post format badge - quote
@@ -931,7 +811,7 @@ msgstr "引用"
 #. @context: Post form field - quoted text
 #: src/ui/dash/PostForm.tsx:137
 msgid "Quote Text"
-msgstr ""
+msgstr "引用文本"
 
 #. @context: Post format label plural - quotes
 #: src/ui/pages/ArchivePage.tsx:37
@@ -943,7 +823,7 @@ msgstr "引用"
 #: src/ui/compose/ComposeDialog.tsx:167
 #: src/ui/compose/ComposeDialog.tsx:246
 msgid "Rating"
-msgstr ""
+msgstr "评分"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - URL redirects
@@ -969,7 +849,7 @@ msgstr "重置密码"
 #. @context: Button to save settings
 #: src/ui/dash/settings/GeneralContent.tsx:74
 msgid "Save"
-msgstr ""
+msgstr "保存"
 
 #. @context: Button to save edited navigation link
 #: src/ui/dash/pages/LinkFormContent.tsx:100
@@ -979,17 +859,12 @@ msgstr "保存更改"
 #. @context: Button to save custom CSS
 #: src/ui/dash/settings/AppearanceContent.tsx:246
 msgid "Save CSS"
-msgstr ""
+msgstr "保存 CSS"
 
 #. @context: Button to save profile
 #: src/ui/dash/settings/AccountContent.tsx:73
 msgid "Save Profile"
 msgstr "保存个人资料"
-
-#. @context: Button to save settings
-#: src/ui/dash/settings/GeneralContent.tsx:142
-#~ msgid "Save Settings"
-#~ msgstr "保存设置"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title
@@ -1015,7 +890,7 @@ msgstr "选择媒体"
 #. @context: Settings section heading for SEO
 #: src/ui/dash/settings/GeneralContent.tsx:498
 msgid "SEO"
-msgstr ""
+msgstr "搜索引擎优化"
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
@@ -1046,15 +921,10 @@ msgstr "登录"
 msgid "Sign Out"
 msgstr "登出"
 
-#. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:72
-#~ msgid "Site Description"
-#~ msgstr "网站描述"
-
 #. @context: Settings section heading for site footer
 #: src/ui/dash/settings/GeneralContent.tsx:454
 msgid "Site Footer"
-msgstr ""
+msgstr "网站页脚"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx:308
@@ -1067,16 +937,6 @@ msgstr "网站名称"
 #: src/ui/dash/PageForm.tsx:64
 msgid "Slug"
 msgstr "缩略名"
-
-#. @context: Post form field - name of the source website or author
-#: src/theme/components/PostForm.tsx:216
-#~ msgid "Source Name (optional)"
-#~ msgstr "来源名称（可选）"
-
-#. @context: Post form field
-#: src/theme/components/PostForm.tsx:200
-#~ msgid "Source URL (optional)"
-#~ msgstr "源网址（可选）"
 
 #. @context: Page form field label - publish status
 #. @context: Post form field
@@ -1100,7 +960,7 @@ msgstr "重定向的路径"
 #: src/ui/compose/ComposeDialog.tsx:156
 #: src/ui/dash/PostForm.tsx:145
 msgid "The text being quoted..."
-msgstr ""
+msgstr "被引用的文本..."
 
 #. @context: Page slug helper text
 #: src/ui/dash/PageForm.tsx:85
@@ -1110,22 +970,17 @@ msgstr "此页面的 URL 路径。使用小写字母、数字和连字符。"
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx:340
 msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
-msgstr ""
+msgstr "这将在您的默认主页上显示在博客文章上方。这也用于您主页上的元描述。"
 
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx:474
 msgid "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
-msgstr ""
+msgstr "这将在您所有的帖子和页面底部显示。支持Markdown。"
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/GeneralContent.tsx:253
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
-msgstr ""
-
-#. @context: Help text for avatar upload
-#: src/ui/dash/settings/GeneralContent.tsx:238
-#~ msgid "This is used for your favicon."
-#~ msgstr ""
+msgstr "这用于您的网站图标和苹果触控图标。为了获得最佳效果，请上传至少 180x180 像素的正方形图像。"
 
 #. @context: Password reset error description
 #: src/routes/auth/reset.tsx:128
@@ -1155,7 +1010,7 @@ msgstr "包含 1 条帖子的话题"
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx:409
 msgid "Time Zone"
-msgstr ""
+msgstr "时区"
 
 #. @context: Collection form field
 #. @context: Page form field label - title
@@ -1184,14 +1039,7 @@ msgstr "类型"
 #. @context: Button to remove page from navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:82
 msgid "Un-nav"
-msgstr ""
-
-#. @context: Post visibility badge - unlisted
-#. @context: Post visibility option
-#: src/theme/components/PostForm.tsx:255
-#: src/theme/components/VisibilityBadge.tsx:34
-#~ msgid "Unlisted"
-#~ msgstr "未列出"
+msgstr "取消导航"
 
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
@@ -1223,7 +1071,7 @@ msgstr "上传"
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/GeneralContent.tsx:205
 msgid "Upload Avatar"
-msgstr ""
+msgstr "上传头像"
 
 #. @context: Error message when avatar upload fails
 #. @context: Upload error message
@@ -1249,7 +1097,7 @@ msgstr "网址"
 #. @context: Post form field - source URL
 #: src/ui/dash/PostForm.tsx:121
 msgid "URL (optional)"
-msgstr ""
+msgstr "网址（可选）"
 
 #. @context: Collection path help text
 #: src/ui/dash/collections/CollectionForm.tsx:92
@@ -1283,11 +1131,6 @@ msgstr "查看"
 msgid "View Site"
 msgstr "查看网站"
 
-#. @context: Post form field
-#: src/theme/components/PostForm.tsx:236
-#~ msgid "Visibility"
-#~ msgstr "可见性"
-
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx:27
 msgid "Welcome to Jant"
@@ -1296,7 +1139,7 @@ msgstr "欢迎来到Jant"
 #. @context: Compose prompt placeholder text
 #: src/ui/compose/ComposePrompt.tsx:37
 msgid "What's new?"
-msgstr ""
+msgstr "有什么新消息？"
 
 #. @context: Compose body placeholder
 #. @context: Post content placeholder
@@ -1318,4 +1161,4 @@ msgstr "您的姓名"
 #. @context: Section heading for navigation items
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:45
 msgid "Your site navigation"
-msgstr ""
+msgstr "您的网站导航"

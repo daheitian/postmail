@@ -173,16 +173,16 @@ export function AppearanceContent({
                   class="mt-1"
                 />
                 <div>
-                  <div class="font-medium">{ft.name}</div>
+                  <div class="font-medium">{t(ft.name)}</div>
                   <div class="text-sm text-muted-foreground">
-                    {ft.description}
+                    {t(ft.description)}
                   </div>
                   <div
-                    class="mt-1 text-sm"
+                    class="mt-1 text-sm leading-relaxed"
                     style={`font-family:${ft.fontFamily}`}
                   >
-                    The quick brown fox jumps over the lazy dog.{" "}
-                    敏捷的棕色狐狸跳过了懒狗。
+                    <div>The quick brown fox jumps over the lazy dog.</div>
+                    <div>敏捷的棕色狐狸跳过了懒惰的狗。</div>
                   </div>
                 </div>
               </label>
