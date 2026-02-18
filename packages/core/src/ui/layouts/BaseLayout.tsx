@@ -41,7 +41,8 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   const resolvedLang = lang ?? (c ? c.get("lang") : "en");
 
   // Read faviconUrl from context when not provided as prop (fixes dashboard favicon)
-  const resolvedFaviconUrl = faviconUrl ?? (c ? c.get("faviconUrl") : undefined);
+  const resolvedFaviconUrl =
+    faviconUrl ?? (c ? c.get("faviconUrl") : undefined);
 
   // Read noindex from context when not provided as prop
   const resolvedNoindex = noindex ?? (c ? c.get("noindex") : undefined);
@@ -69,13 +70,19 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         {resolvedFaviconUrl && (
           <>
             <link rel="icon" href="/favicon.ico" sizes="16x16 32x32" />
-            <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+            <link
+              rel="apple-touch-icon"
+              href="/apple-touch-icon.png"
+              sizes="180x180"
+            />
           </>
         )}
         <ViteClient />
         <Link href="/src/style.css" rel="stylesheet" />
-        {themeStyle && <style>{themeStyle}</style>}
-        {customCSS && <style>{customCSS}</style>}
+        {themeStyle && (
+          <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
+        )}
+        {customCSS && <style dangerouslySetInnerHTML={{ __html: customCSS }} />}
         <Script src="/src/client.ts" />
       </head>
       <body

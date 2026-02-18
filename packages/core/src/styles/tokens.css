@@ -45,8 +45,3 @@
   --site-media-outline: var(--border);
   --site-divider: var(--border);
 }
-
-/* Apply font tokens to body — overrides Tailwind preflight's hardcoded font-family */
-body {
-  font-family: var(--font-body);
-}
