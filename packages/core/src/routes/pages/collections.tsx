@@ -10,6 +10,7 @@ import type { AppVariables } from "../../app.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { CollectionsPage } from "../../ui/pages/CollectionsPage.js";
+import { CollectionsSidebar } from "../../ui/shared/CollectionsSidebar.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -31,6 +32,7 @@ collectionsPageRoutes.get("/", async (c) => {
   return renderPublicPage(c, {
     title: `Collections - ${navData.siteName}`,
     navData,
+    sidebar: <CollectionsSidebar collections={allCollections} />,
     content: <CollectionsPage collections={collections} />,
   });
 });

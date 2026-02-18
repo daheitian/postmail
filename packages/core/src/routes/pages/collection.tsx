@@ -16,6 +16,7 @@ import {
 import { defaultRssRenderer } from "../../lib/feed.js";
 import { getSiteLanguage } from "../../lib/config.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
+import { CollectionsSidebar } from "../../ui/shared/CollectionsSidebar.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -27,12 +28,15 @@ collectionRoutes.get("/:slug", async (c) => {
   const collection = await c.var.services.collections.getBySlug(slug);
   if (!collection) return c.notFound();
 
-  // Fetch posts in this collection
-  const posts = await c.var.services.posts.list({
-    collectionId: collection.id,
-    status: "published",
-    excludeReplies: true,
-  });
+  // Fetch posts and all collections in parallel
+  const [posts, allCollections] = await Promise.all([
+    c.var.services.posts.list({
+      collectionId: collection.id,
+      status: "published",
+      excludeReplies: true,
+    }),
+    c.var.services.collections.list(),
+  ]);
 
   const navData = await getNavigationData(c);
 
@@ -44,6 +48,9 @@ collectionRoutes.get("/:slug", async (c) => {
     title: `${collection.title} - ${navData.siteName}`,
     description: collection.description ?? undefined,
     navData,
+    sidebar: (
+      <CollectionsSidebar collections={allCollections} activeSlug={slug} />
+    ),
     content: (
       <CollectionPage
         collection={collection}

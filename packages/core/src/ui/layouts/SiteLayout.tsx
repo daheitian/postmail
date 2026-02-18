@@ -36,6 +36,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   siteAvatarUrl,
   showHeaderAvatar,
   siteFooterHtml,
+  sidebar,
   children,
 }) => {
   const { t } = useLingui();
@@ -76,7 +77,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
 
   return (
     <div class="site-page">
-      <header class="site-header">
+      <header class={`site-header ${sidebar ? "site-header-sidebar" : ""}`}>
         <div class="site-header-inner">
           <div class="site-header-top site-header-top-bordered">
             <a href="/" class="site-logo">
@@ -123,32 +124,46 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       </header>
 
       <main class="site-main">
-        <div class="site-container">
-          <div class="site-content">
-            {isHomePage && (
-              <nav class="site-browse-nav">
-                {browseLinks.map((link, i) => (
-                  <>
-                    {i > 0 && <span class="site-browse-sep">/</span>}
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      class={`site-browse-link ${currentPath === link.href ? "site-browse-link-active" : ""}`}
-                    >
-                      {link.label}
-                    </a>
-                  </>
-                ))}
-              </nav>
-            )}
-            {isHomePage && isAuthenticated && <ComposePrompt />}
-            {children}
+        {sidebar ? (
+          <div class="container-sidebar">
+            <div class="sidebar-layout">
+              <aside class="sidebar-nav">{sidebar}</aside>
+              <div class="sidebar-main">
+                <div class="site-content">{children}</div>
+              </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div class="site-container">
+            <div class="site-content">
+              {isHomePage && (
+                <nav class="site-browse-nav">
+                  {browseLinks.map((link, i) => (
+                    <>
+                      {i > 0 && <span class="site-browse-sep">/</span>}
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        class={`site-browse-link ${currentPath === link.href ? "site-browse-link-active" : ""}`}
+                      >
+                        {link.label}
+                      </a>
+                    </>
+                  ))}
+                </nav>
+              )}
+              {isHomePage && isAuthenticated && <ComposePrompt />}
+              {children}
+            </div>
+          </div>
+        )}
       </main>
 
       {siteFooterHtml && (
-        <footer class="site-footer" data-footer>
+        <footer
+          class={`site-footer ${sidebar ? "site-footer-sidebar" : ""}`}
+          data-footer
+        >
           <div class="site-container">
             <div
               class="prose"

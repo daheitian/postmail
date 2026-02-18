@@ -19,7 +19,7 @@ msgid "/* Your custom CSS here */"
 msgstr "/* 您的自定义 CSS 在这里 */"
 
 #. @context: Navigation link
-#: src/ui/dash/collections/ViewCollectionContent.tsx:84
+#: src/ui/dash/collections/ViewCollectionContent.tsx:95
 msgid "← Back to Collections"
 msgstr "← 返回收藏夹"
 
@@ -109,7 +109,7 @@ msgstr "博客头像"
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx:183
 #: src/ui/compose/ComposeDialog.tsx:48
-#: src/ui/dash/collections/CollectionForm.tsx:219
+#: src/ui/dash/collections/CollectionForm.tsx:297
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
 #: src/ui/dash/PostForm.tsx:316
@@ -129,10 +129,22 @@ msgstr "更改密码"
 msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
 msgstr "选择一个字体搭配用于您的网站。所有选项都使用系统字体以实现快速加载。"
 
+#. @context: Button to open icon picker
+#. @context: Icon picker dialog title
+#: src/ui/dash/collections/CollectionForm.tsx:185
+#: src/ui/dash/collections/CollectionForm.tsx:313
+msgid "Choose Icon"
+msgstr ""
+
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx:90
 msgid "Click image to view full size"
 msgstr "点击图片查看完整尺寸"
+
+#. @context: Button to close icon picker
+#: src/ui/dash/collections/CollectionForm.tsx:323
+msgid "Close"
+msgstr ""
 
 #. @context: Compose toolbar - toggle collection
 #: src/ui/compose/ComposeDialog.tsx:311
@@ -148,10 +160,12 @@ msgstr "集合"
 #. @context: Compose collection field
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
+#. @context: Sidebar heading for collections nav
 #: src/ui/compose/ComposeDialog.tsx:230
-#: src/ui/dash/collections/CollectionsListContent.tsx:26
+#: src/ui/dash/collections/CollectionsListContent.tsx:27
 #: src/ui/layouts/DashLayout.tsx:114
-#: src/ui/pages/CollectionsPage.tsx:18
+#: src/ui/pages/CollectionsPage.tsx:19
+#: src/ui/shared/CollectionsSidebar.tsx:27
 msgid "Collections"
 msgstr "收藏夹"
 
@@ -195,7 +209,7 @@ msgid "Copy"
 msgstr "复制"
 
 #. @context: Button to save new collection
-#: src/ui/dash/collections/CollectionForm.tsx:38
+#: src/ui/dash/collections/CollectionForm.tsx:49
 msgid "Create Collection"
 msgstr "创建集合"
 
@@ -281,7 +295,7 @@ msgid "Demo account pre-filled. Just click Sign In."
 msgstr "演示账户已预填。只需点击登录。"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:110
+#: src/ui/dash/collections/CollectionForm.tsx:126
 msgid "Description (optional)"
 msgstr "描述（可选）"
 
@@ -328,8 +342,8 @@ msgstr "草稿"
 #: src/routes/dash/pages.tsx:55
 #: src/routes/dash/posts.tsx:140
 #: src/ui/dash/ActionButtons.tsx:72
-#: src/ui/dash/collections/CollectionsListContent.tsx:65
-#: src/ui/dash/collections/ViewCollectionContent.tsx:33
+#: src/ui/dash/collections/CollectionsListContent.tsx:66
+#: src/ui/dash/collections/ViewCollectionContent.tsx:44
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:72
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:93
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:170
@@ -338,7 +352,7 @@ msgid "Edit"
 msgstr "编辑"
 
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:30
+#: src/ui/dash/collections/CollectionForm.tsx:41
 msgid "Edit Collection"
 msgstr "编辑集合"
 
@@ -366,13 +380,23 @@ msgstr "电子邮件"
 
 #. @context: Collection icon placeholder
 #: src/ui/dash/collections/CollectionForm.tsx:143
-msgid "Emoji or icon name"
-msgstr ""
+#~ msgid "Emoji or icon name"
+#~ msgstr ""
 
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx:39
 msgid "Enter your new password."
 msgstr "输入您的新密码。"
+
+#. @context: Plural entry count label
+#: src/ui/pages/CollectionsPage.tsx:61
+msgid "entries"
+msgstr ""
+
+#. @context: Singular entry count label
+#: src/ui/pages/CollectionsPage.tsx:57
+msgid "entry"
+msgstr ""
 
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
@@ -382,7 +406,7 @@ msgstr "输入您的新密码。"
 #: src/ui/dash/PostForm.tsx:248
 #: src/ui/dash/settings/GeneralContent.tsx:398
 #: src/ui/dash/StatusBadge.tsx:45
-#: src/ui/layouts/SiteLayout.tsx:55
+#: src/ui/layouts/SiteLayout.tsx:56
 #: src/ui/pages/ArchivePage.tsx:92
 msgid "Featured"
 msgstr "精选"
@@ -420,12 +444,12 @@ msgid "General"
 msgstr "常规"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:182
+#: src/ui/dash/collections/CollectionForm.tsx:260
 msgid "Highest rated"
 msgstr ""
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:134
+#: src/ui/dash/collections/CollectionForm.tsx:150
 msgid "Icon (optional)"
 msgstr ""
 
@@ -457,7 +481,7 @@ msgstr "语言"
 #. @context: Browse filter for latest posts
 #. @context: Homepage view option - show latest posts
 #: src/ui/dash/settings/GeneralContent.tsx:388
-#: src/ui/layouts/SiteLayout.tsx:48
+#: src/ui/layouts/SiteLayout.tsx:49
 msgid "Latest"
 msgstr "最新"
 
@@ -500,7 +524,7 @@ msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "仅允许小写字母、数字和连字符"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:191
+#: src/ui/dash/collections/CollectionForm.tsx:269
 msgid "Lowest rated"
 msgstr ""
 
@@ -529,7 +553,7 @@ msgid "More options"
 msgstr ""
 
 #. @context: Collection title placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:72
+#: src/ui/dash/collections/CollectionForm.tsx:88
 msgid "My Collection"
 msgstr "我的收藏"
 
@@ -546,9 +570,9 @@ msgstr "需要帮助吗？访问<0>文档</0>。"
 #. @context: Button to create new collection
 #. @context: Button to create new collection
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:31
-#: src/ui/dash/collections/CollectionsListContent.tsx:30
-#: src/ui/dash/collections/CollectionsListContent.tsx:43
+#: src/ui/dash/collections/CollectionForm.tsx:42
+#: src/ui/dash/collections/CollectionsListContent.tsx:31
+#: src/ui/dash/collections/CollectionsListContent.tsx:44
 msgid "New Collection"
 msgstr "新收藏"
 
@@ -592,7 +616,7 @@ msgid "New Redirect"
 msgstr "新重定向"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:164
+#: src/ui/dash/collections/CollectionForm.tsx:242
 msgid "Newest first"
 msgstr ""
 
@@ -605,8 +629,8 @@ msgstr "下一页"
 
 #. @context: Empty state message
 #. @context: Empty state message on collections page
-#: src/ui/dash/collections/CollectionsListContent.tsx:39
-#: src/ui/pages/CollectionsPage.tsx:28
+#: src/ui/dash/collections/CollectionsListContent.tsx:40
+#: src/ui/pages/CollectionsPage.tsx:29
 msgid "No collections yet."
 msgstr "尚未有任何收藏。"
 
@@ -632,8 +656,8 @@ msgstr "未找到帖子。"
 
 #. @context: Empty state message
 #. @context: Empty state message
-#: src/ui/dash/collections/ViewCollectionContent.tsx:56
-#: src/ui/pages/CollectionPage.tsx:29
+#: src/ui/dash/collections/ViewCollectionContent.tsx:67
+#: src/ui/pages/CollectionPage.tsx:39
 msgid "No posts in this collection."
 msgstr "此集合中没有帖子。"
 
@@ -676,7 +700,7 @@ msgid "Notes"
 msgstr "笔记"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:173
+#: src/ui/dash/collections/CollectionForm.tsx:251
 msgid "Oldest first"
 msgstr ""
 
@@ -745,8 +769,8 @@ msgstr "已固定"
 
 #. @context: Singular post count label
 #: src/ui/pages/CollectionsPage.tsx:56
-msgid "post"
-msgstr "帖子"
+#~ msgid "post"
+#~ msgstr "帖子"
 
 #. @context: Compose button - publish post
 #. @context: Compose prompt post button
@@ -764,8 +788,8 @@ msgstr "帖子标题..."
 
 #. @context: Plural post count label
 #: src/ui/pages/CollectionsPage.tsx:60
-msgid "posts"
-msgstr "帖子"
+#~ msgid "posts"
+#~ msgstr "帖子"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - posts management
@@ -775,7 +799,7 @@ msgid "Posts"
 msgstr "帖子"
 
 #. @context: Collection posts section heading
-#: src/ui/dash/collections/ViewCollectionContent.tsx:18
+#: src/ui/dash/collections/ViewCollectionContent.tsx:19
 msgid "Posts in Collection ({count})"
 msgstr "集合中的帖子 ({count})"
 
@@ -864,8 +888,10 @@ msgstr "评分"
 msgid "Redirects"
 msgstr "重定向"
 
+#. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
+#: src/ui/dash/collections/CollectionForm.tsx:199
 #: src/ui/dash/PostForm.tsx:196
 #: src/ui/dash/settings/GeneralContent.tsx:243
 msgid "Remove"
@@ -906,7 +932,7 @@ msgstr "保存个人资料"
 #. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
-#: src/ui/layouts/SiteLayout.tsx:67
+#: src/ui/layouts/SiteLayout.tsx:68
 #: src/ui/pages/SearchPage.tsx:20
 #: src/ui/pages/SearchPage.tsx:44
 msgid "Search"
@@ -970,13 +996,13 @@ msgstr "网站名称"
 
 #. @context: Collection form field
 #. @context: Page form field label - URL slug
-#: src/ui/dash/collections/CollectionForm.tsx:87
+#: src/ui/dash/collections/CollectionForm.tsx:103
 #: src/ui/dash/PageForm.tsx:64
 msgid "Slug"
 msgstr "缩略名"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:152
+#: src/ui/dash/collections/CollectionForm.tsx:230
 msgid "Sort Order"
 msgstr ""
 
@@ -1063,7 +1089,7 @@ msgstr "时区"
 
 #. @context: Collection form field
 #. @context: Page form field label - title
-#: src/ui/dash/collections/CollectionForm.tsx:59
+#: src/ui/dash/collections/CollectionForm.tsx:75
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "标题"
@@ -1103,7 +1129,7 @@ msgid "Update"
 msgstr "更新"
 
 #. @context: Button to save collection changes
-#: src/ui/dash/collections/CollectionForm.tsx:34
+#: src/ui/dash/collections/CollectionForm.tsx:45
 msgid "Update Collection"
 msgstr "更新收藏夹"
 
@@ -1154,7 +1180,7 @@ msgstr "网址（可选）"
 #~ msgstr "URL安全标识符（小写字母、数字、连字符）"
 
 #. @context: Collection path help text
-#: src/ui/dash/collections/CollectionForm.tsx:99
+#: src/ui/dash/collections/CollectionForm.tsx:115
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr ""
 
@@ -1173,8 +1199,8 @@ msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
 #: src/routes/dash/pages.tsx:60
 #: src/routes/dash/posts.tsx:145
 #: src/ui/dash/ActionButtons.tsx:76
-#: src/ui/dash/collections/CollectionsListContent.tsx:70
-#: src/ui/dash/collections/ViewCollectionContent.tsx:38
+#: src/ui/dash/collections/CollectionsListContent.tsx:71
+#: src/ui/dash/collections/ViewCollectionContent.tsx:49
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:177
 #: src/ui/dash/PostList.tsx:55
 msgid "View"
@@ -1205,7 +1231,7 @@ msgid "What's on your mind?"
 msgstr "你在想什么？"
 
 #. @context: Collection description placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:122
+#: src/ui/dash/collections/CollectionForm.tsx:138
 msgid "What's this collection about?"
 msgstr "这个系列是关于什么的？"
 

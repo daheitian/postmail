@@ -10,6 +10,7 @@ import {
   ActionButtons,
   CrudPageHeader,
 } from "../index.js";
+import { renderCollectionIcon } from "../../../lib/icons.js";
 
 export function CollectionsListContent({
   collections,
@@ -81,7 +82,16 @@ export function CollectionsListContent({
                     <span class="text-muted-foreground select-none">⠿</span>
                     <div>
                       <div class="flex items-center gap-2">
-                        {col.icon && <span>{col.icon}</span>}
+                        {col.icon && (
+                          <span
+                            class="flex items-center justify-center w-5 h-5 shrink-0"
+                            dangerouslySetInnerHTML={{
+                              __html: renderCollectionIcon(col.icon, {
+                                size: 18,
+                              }),
+                            }}
+                          />
+                        )}
                         <a
                           href={`/dash/collections/${col.id}`}
                           class="font-medium hover:underline"

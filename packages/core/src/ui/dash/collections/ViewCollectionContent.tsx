@@ -6,6 +6,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { Collection, PostView } from "../../../types.js";
 import { ActionButtons } from "../index.js";
 import { encode } from "../../../lib/sqid.js";
+import { renderCollectionIcon } from "../../../lib/icons.js";
 
 export function ViewCollectionContent({
   collection,
@@ -25,7 +26,17 @@ export function ViewCollectionContent({
     <>
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-semibold">{collection.title}</h1>
+          <h1 class="text-2xl font-semibold flex items-center gap-2">
+            {collection.icon && (
+              <span
+                class="shrink-0"
+                dangerouslySetInnerHTML={{
+                  __html: renderCollectionIcon(collection.icon, { size: 24 }),
+                }}
+              />
+            )}
+            {collection.title}
+          </h1>
           <p class="text-sm text-muted-foreground">/{collection.slug}</p>
         </div>
         <ActionButtons

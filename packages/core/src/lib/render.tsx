@@ -21,6 +21,8 @@ export interface RenderPublicPageOptions {
   navData: NavigationData;
   /** Page content JSX to render inside SiteLayout */
   content: Child;
+  /** Optional sidebar content for sidebar layout */
+  sidebar?: Child;
 }
 
 /**
@@ -41,7 +43,7 @@ export interface RenderPublicPageOptions {
  * ```
  */
 export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
-  const { title, description, navData, content } = options;
+  const { title, description, navData, content, sidebar } = options;
 
   const layoutProps: SiteLayoutProps = {
     siteName: navData.siteName,
@@ -54,6 +56,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     siteAvatarUrl: navData.siteAvatarUrl,
     showHeaderAvatar: navData.showHeaderAvatar,
     siteFooterHtml: navData.siteFooterHtml,
+    sidebar,
   };
 
   // Read favicon, version, and noindex from context (set by theme middleware)

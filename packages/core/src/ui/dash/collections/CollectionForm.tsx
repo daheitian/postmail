@@ -4,6 +4,12 @@
 
 import { useLingui } from "@lingui/react/macro";
 import type { Collection } from "../../../types.js";
+import {
+  parseCollectionIcon,
+  renderCollectionIcon,
+  ICON_COLOR_PRESETS,
+  DEFAULT_ICON_COLOR,
+} from "../../../lib/icons.js";
 
 export function CollectionForm({
   collection,
@@ -14,12 +20,17 @@ export function CollectionForm({
 }) {
   const { t } = useLingui();
 
+  const parsedIcon = parseCollectionIcon(collection?.icon ?? null);
+
   const signals = JSON.stringify({
     title: collection?.title ?? "",
     slug: collection?.slug ?? "",
     description: collection?.description ?? "",
     sortOrder: collection?.sortOrder ?? "newest",
     icon: collection?.icon ?? "",
+    iconName: parsedIcon?.name ?? "",
+    iconSvg: parsedIcon?.svg ?? "",
+    iconColor: parsedIcon?.color ?? DEFAULT_ICON_COLOR,
   }).replace(/</g, "\\u003c");
 
   const action = isEdit
@@ -43,6 +54,11 @@ export function CollectionForm({
   const cancelHref = isEdit
     ? `/dash/collections/${collection?.id}`
     : "/dash/collections";
+
+  const currentIconHtml = renderCollectionIcon(collection?.icon ?? null, {
+    size: 24,
+    fallback: false,
+  });
 
   return (
     <>
@@ -136,15 +152,77 @@ export function CollectionForm({
               comment: "@context: Collection form field",
             })}
           </label>
-          <input
-            type="text"
-            data-bind="icon"
-            class="input"
-            placeholder={t({
-              message: "Emoji or icon name",
-              comment: "@context: Collection icon placeholder",
-            })}
-          />
+          <div class="flex items-center gap-3">
+            {/* Icon preview */}
+            <div class="flex items-center justify-center w-10 h-10 rounded-md border border-border">
+              <span
+                data-show="$iconSvg"
+                style={currentIconHtml ? undefined : "display:none"}
+                class="w-6 h-6 flex items-center justify-center"
+                data-html={
+                  "(() => { if (!$iconSvg) return ''; let s = $iconSvg.replace(/width=\\\"24\\\"/,'width=\\\"24\\\"').replace(/height=\\\"24\\\"/,'height=\\\"24\\\"'); return '<svg' + ' style=\\\"color: ' + $iconColor + '\\\"' + s.slice(4); })()"
+                }
+              >
+                {currentIconHtml && (
+                  <span dangerouslySetInnerHTML={{ __html: currentIconHtml }} />
+                )}
+              </span>
+              <span
+                data-show="!$iconSvg"
+                style={currentIconHtml ? "display:none" : undefined}
+                class="text-muted-foreground text-lg"
+              >
+                ?
+              </span>
+            </div>
+
+            {/* Choose icon button */}
+            <button
+              type="button"
+              class="btn-outline text-sm"
+              data-on:click="document.getElementById('icon-picker-dialog')?.showModal()"
+            >
+              {t({
+                message: "Choose Icon",
+                comment: "@context: Button to open icon picker",
+              })}
+            </button>
+
+            {/* Remove icon button */}
+            <button
+              type="button"
+              class="btn-ghost text-sm"
+              data-show="$iconSvg"
+              style={parsedIcon ? undefined : "display:none"}
+              data-on:click="$iconName = ''; $iconSvg = ''; $icon = ''"
+            >
+              {t({
+                message: "Remove",
+                comment: "@context: Button to remove icon",
+              })}
+            </button>
+          </div>
+
+          {/* Color presets */}
+          <div
+            class="flex items-center gap-2 mt-2"
+            data-show="$iconSvg"
+            style={parsedIcon ? undefined : "display:none"}
+          >
+            {ICON_COLOR_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                class="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
+                style={`background-color: ${preset.value}; border-color: transparent`}
+                title={preset.name}
+                data-on:click={`$iconColor = '${preset.value}'; $icon = JSON.stringify({ name: $iconName, svg: $iconSvg, color: $iconColor })`}
+              />
+            ))}
+          </div>
+
+          {/* Hidden input for form submission */}
+          <input type="hidden" data-bind="icon" />
         </div>
 
         <div class="field">
@@ -223,6 +301,39 @@ export function CollectionForm({
           </a>
         </div>
       </form>
+
+      {/* Icon picker dialog */}
+      <dialog
+        id="icon-picker-dialog"
+        class="rounded-lg border border-border bg-background p-0 w-full max-w-md max-h-[80vh] shadow-lg backdrop:bg-black/50"
+      >
+        <div class="flex flex-col max-h-[80vh]">
+          <div class="flex items-center justify-between p-4 border-b border-border">
+            <h2 class="font-semibold">
+              {t({
+                message: "Choose Icon",
+                comment: "@context: Icon picker dialog title",
+              })}
+            </h2>
+            <button
+              type="button"
+              class="btn-ghost text-sm"
+              data-on:click="document.getElementById('icon-picker-dialog')?.close()"
+            >
+              {t({
+                message: "Close",
+                comment: "@context: Button to close icon picker",
+              })}
+            </button>
+          </div>
+          <div
+            class="overflow-y-auto p-4"
+            data-on:load={`@get('/dash/collections/icons', { target: '#icon-grid' })`}
+          >
+            <div id="icon-grid" />
+          </div>
+        </div>
+      </dialog>
     </>
   );
 }

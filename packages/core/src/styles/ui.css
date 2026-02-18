@@ -223,6 +223,33 @@
   }
 
   /* =========================================================================
+   * Collection Cards
+   * ========================================================================= */
+
+  .collection-card {
+    display: block;
+    padding: var(--card-padding);
+    border: 1px solid var(--site-divider);
+    border-radius: var(--media-radius);
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+
+  .collection-card:hover {
+    border-color: var(--site-text-secondary);
+  }
+
+  .collection-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  /* =========================================================================
    * Timeline & Post Components
    * ========================================================================= */
 

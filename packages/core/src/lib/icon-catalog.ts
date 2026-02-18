@@ -1,0 +1,181 @@
+/**
+ * Icon Catalog
+ *
+ * Curated subset of Lucide icons organized by category.
+ * Used by the dashboard icon picker to keep the response payload small.
+ */
+
+/** Curated icon names (kebab-case) organized by category */
+export const ICON_CATALOG: Record<string, string[]> = {
+  general: [
+    "library",
+    "bookmark",
+    "heart",
+    "star",
+    "flag",
+    "tag",
+    "hash",
+    "circle",
+    "square",
+    "triangle",
+    "diamond",
+    "award",
+    "trophy",
+    "medal",
+    "crown",
+    "gem",
+    "sparkles",
+    "zap",
+    "flame",
+  ],
+  files: [
+    "file",
+    "file-text",
+    "folder",
+    "folder-open",
+    "archive",
+    "clipboard",
+    "notebook",
+    "book",
+    "book-open",
+    "book-marked",
+    "scroll",
+    "newspaper",
+    "sticky-note",
+  ],
+  media: [
+    "image",
+    "camera",
+    "video",
+    "film",
+    "music",
+    "headphones",
+    "mic",
+    "radio",
+    "tv",
+    "monitor",
+    "podcast",
+    "palette",
+    "brush",
+    "pen-tool",
+  ],
+  communication: [
+    "mail",
+    "message-circle",
+    "message-square",
+    "phone",
+    "at-sign",
+    "send",
+    "inbox",
+    "megaphone",
+    "bell",
+    "rss",
+  ],
+  nature: [
+    "sun",
+    "moon",
+    "cloud",
+    "snowflake",
+    "droplets",
+    "leaf",
+    "flower-2",
+    "trees",
+    "mountain",
+    "waves",
+    "bird",
+    "bug",
+    "fish",
+    "paw-print",
+  ],
+  tech: [
+    "code",
+    "terminal",
+    "cpu",
+    "database",
+    "server",
+    "hard-drive",
+    "wifi",
+    "globe",
+    "link",
+    "qr-code",
+    "smartphone",
+    "laptop",
+    "tablet",
+    "gamepad-2",
+    "bot",
+  ],
+  travel: [
+    "map",
+    "map-pin",
+    "compass",
+    "navigation",
+    "plane",
+    "car",
+    "bike",
+    "ship",
+    "train-front",
+    "building-2",
+    "home",
+    "tent",
+    "landmark",
+  ],
+  food: [
+    "coffee",
+    "wine",
+    "beer",
+    "utensils",
+    "pizza",
+    "cake",
+    "apple",
+    "cherry",
+    "grape",
+    "cookie",
+  ],
+  people: [
+    "user",
+    "users",
+    "baby",
+    "smile",
+    "laugh",
+    "angry",
+    "hand-heart",
+    "brain",
+    "dumbbell",
+    "stethoscope",
+    "graduation-cap",
+    "briefcase",
+  ],
+  objects: [
+    "key",
+    "lock",
+    "shield",
+    "clock",
+    "calendar",
+    "gift",
+    "shopping-bag",
+    "shopping-cart",
+    "wallet",
+    "scissors",
+    "wrench",
+    "hammer",
+    "lightbulb",
+    "rocket",
+    "umbrella",
+    "glasses",
+  ],
+};
+
+/**
+ * Get all curated icon names as a flat array.
+ *
+ * @returns Array of kebab-case icon names
+ *
+ * @example
+ * ```typescript
+ * const names = getAllCatalogIconNames();
+ * // ["library", "bookmark", "heart", ...]
+ * ```
+ */
+export function getAllCatalogIconNames(): string[] {
+  return Object.values(ICON_CATALOG).flat();
+}

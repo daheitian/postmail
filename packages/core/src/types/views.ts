@@ -166,4 +166,5 @@ export interface SiteLayoutProps {
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;
+  sidebar?: import("hono/jsx").Child;
 }

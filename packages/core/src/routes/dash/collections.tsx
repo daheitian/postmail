@@ -14,6 +14,7 @@ import { slugify } from "../../lib/url.js";
 import { CollectionsListContent } from "../../ui/dash/collections/CollectionsListContent.js";
 import { CollectionForm } from "../../ui/dash/collections/CollectionForm.js";
 import { ViewCollectionContent } from "../../ui/dash/collections/ViewCollectionContent.js";
+import { IconPickerGrid } from "../../ui/dash/collections/IconPickerGrid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -87,6 +88,11 @@ collectionsRoutes.post("/reorder", async (c) => {
   const body = await c.req.json<{ ids: number[] }>();
   await c.var.services.collections.reorder(body.ids);
   return c.json({ success: true });
+});
+
+// Icon picker grid (HTML fragment)
+collectionsRoutes.get("/icons", (c) => {
+  return c.html(<IconPickerGrid />);
 });
 
 // View single collection

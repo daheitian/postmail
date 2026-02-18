@@ -1,12 +1,13 @@
 /**
  * Collections Listing Page
  *
- * Lists all collections with titles, descriptions, and post counts.
+ * 2-column card grid of collections with icons and post counts.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionsPageProps } from "../../types.js";
+import { renderCollectionIcon } from "../../lib/icons.js";
 
 export const CollectionsPage: FC<CollectionsPageProps> = ({ collections }) => {
   const { t } = useLingui();
@@ -31,38 +32,37 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({ collections }) => {
             })}
           </p>
         ) : (
-          <div class="divide-y divide-border">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {collections.map((collection) => (
               <a
                 key={collection.id}
-                href={"/c/" + collection.slug}
-                class="block py-4 hover:bg-accent/50 -mx-4 px-4 rounded-md transition-colors"
+                href={`/c/${collection.slug}`}
+                class="collection-card"
               >
                 <div class="flex items-center gap-3">
-                  {collection.icon && (
-                    <span class="text-2xl">{collection.icon}</span>
-                  )}
-                  <div class="flex-1 min-w-0">
-                    <h2 class="font-medium">{collection.title}</h2>
-                    {collection.description && (
-                      <p class="text-sm text-muted-foreground mt-1">
-                        {collection.description}
-                      </p>
-                    )}
-                  </div>
-                  <span class="text-sm text-muted-foreground shrink-0">
-                    {collection.postCount}{" "}
-                    {collection.postCount === 1
-                      ? t({
-                          message: "post",
-                          comment: "@context: Singular post count label",
-                        })
-                      : t({
-                          message: "posts",
-                          comment: "@context: Plural post count label",
-                        })}
-                  </span>
+                  <span
+                    class="collection-card-icon"
+                    dangerouslySetInnerHTML={{
+                      __html: renderCollectionIcon(collection.icon, {
+                        size: 20,
+                        fallback: true,
+                      }),
+                    }}
+                  />
+                  <span class="font-medium">{collection.title}</span>
                 </div>
+                <p class="text-sm text-muted-foreground mt-1">
+                  {collection.postCount}{" "}
+                  {collection.postCount === 1
+                    ? t({
+                        message: "entry",
+                        comment: "@context: Singular entry count label",
+                      })
+                    : t({
+                        message: "entries",
+                        comment: "@context: Plural entry count label",
+                      })}
+                </p>
               </a>
             ))}
           </div>
