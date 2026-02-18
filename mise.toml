@@ -147,6 +147,11 @@ pnpm exec wrangler d1 execute DB --local --file=scripts/seed-local.sql
 echo "Done! Database has been seeded."
 """
 
+[tasks.dev-password]
+description = "Set dev login credentials: mise run dev-password <password>"
+dir = "templates/jant-site"
+run = "node scripts/set-dev-password.mjs {{arg(name=\"password\")}}"
+
 # =============================================================================
 # i18n (Lingui)
 # =============================================================================
