@@ -1,9 +1,23 @@
 // @vitest-environment happy-dom
 
 import { describe, it, expect, beforeEach } from "vitest";
-import type { SettingsLabels } from "../settings-types.js";
+import type {
+  AvatarRemoveDetail,
+  SettingsLabels,
+  SettingsSaveDetail,
+} from "../settings-types.js";
 import "../jant-settings-avatar.js";
 import type { JantSettingsAvatar } from "../jant-settings-avatar.js";
+
+function requireElement<T extends globalThis.Element>(
+  element: T | null,
+  message: string,
+): T {
+  if (!element) {
+    throw new Error(message);
+  }
+  return element;
+}
 
 const labels: SettingsLabels = {
   blogAvatar: "Blog Avatar",
@@ -117,9 +131,10 @@ describe("JantSettingsAvatar", () => {
 
   it("toggling checkbox marks form as dirty", async () => {
     const el = await createElement("", false);
-    const checkbox = el.querySelector<HTMLInputElement>(
-      'input[type="checkbox"]',
-    )!;
+    const checkbox = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="checkbox"]'),
+      "expected header display checkbox",
+    );
 
     toggleCheckbox(checkbox);
     await el.updateComplete;
@@ -130,9 +145,10 @@ describe("JantSettingsAvatar", () => {
 
   it("cancel reverts checkbox to original state", async () => {
     const el = await createElement("", false);
-    const checkbox = el.querySelector<HTMLInputElement>(
-      'input[type="checkbox"]',
-    )!;
+    const checkbox = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="checkbox"]'),
+      "expected header display checkbox",
+    );
 
     toggleCheckbox(checkbox);
     await el.updateComplete;
@@ -146,17 +162,19 @@ describe("JantSettingsAvatar", () => {
 
   it("dispatches jant:settings-save on save click", async () => {
     const el = await createElement("", false);
-    const checkbox = el.querySelector<HTMLInputElement>(
-      'input[type="checkbox"]',
-    )!;
+    const checkbox = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="checkbox"]'),
+      "expected header display checkbox",
+    );
 
     toggleCheckbox(checkbox);
     await el.updateComplete;
 
-    let detail: any = null;
-    el.addEventListener("jant:settings-save", ((e: CustomEvent) => {
-      detail = e.detail;
-    }) as EventListener);
+    let detail: SettingsSaveDetail | null = null;
+    el.addEventListener("jant:settings-save", (event) => {
+      const customEvent = event as CustomEvent<SettingsSaveDetail>;
+      detail = customEvent.detail;
+    });
 
     const saveBtn = findSaveBtn(el);
     saveBtn?.click();
@@ -171,10 +189,11 @@ describe("JantSettingsAvatar", () => {
   it("dispatches jant:avatar-remove on remove click", async () => {
     const el = await createElement("https://example.com/avatar.png");
 
-    let detail: any = null;
-    el.addEventListener("jant:avatar-remove", ((e: CustomEvent) => {
-      detail = e.detail;
-    }) as EventListener);
+    let detail: AvatarRemoveDetail | null = null;
+    el.addEventListener("jant:avatar-remove", (event) => {
+      const customEvent = event as CustomEvent<AvatarRemoveDetail>;
+      detail = customEvent.detail;
+    });
 
     const buttons = el.querySelectorAll("button");
     const removeBtn = Array.from(buttons).find((b) =>
@@ -188,9 +207,10 @@ describe("JantSettingsAvatar", () => {
 
   it("saved() resets dirty state", async () => {
     const el = await createElement("", false);
-    const checkbox = el.querySelector<HTMLInputElement>(
-      'input[type="checkbox"]',
-    )!;
+    const checkbox = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="checkbox"]'),
+      "expected header display checkbox",
+    );
 
     toggleCheckbox(checkbox);
     await el.updateComplete;

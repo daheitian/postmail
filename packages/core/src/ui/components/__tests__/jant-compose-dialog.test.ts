@@ -9,6 +9,17 @@ import type {
 import "../jant-compose-editor.js";
 import "../jant-compose-dialog.js";
 import type { JantComposeDialog } from "../jant-compose-dialog.js";
+import type { JantComposeEditor } from "../jant-compose-editor.js";
+
+function requireElement<T extends globalThis.Element>(
+  element: T | null,
+  message: string,
+): T {
+  if (!element) {
+    throw new Error(message);
+  }
+  return element;
+}
 
 const labels: ComposeLabels = {
   cancel: "Cancel",
@@ -53,8 +64,8 @@ async function createElement(
   document.body.appendChild(el);
   await el.updateComplete;
   // Wait for nested editor to also render
-  const editor = el.querySelector("jant-compose-editor");
-  if (editor) await (editor as any).updateComplete;
+  const editor = el.querySelector<JantComposeEditor>("jant-compose-editor");
+  if (editor) await editor.updateComplete;
   return el;
 }
 
@@ -77,9 +88,11 @@ describe("JantComposeDialog", () => {
     expect(segmentedItems[2].textContent?.trim()).toBe("Quote");
 
     // Post button present
-    const postBtn = el.querySelector<HTMLButtonElement>(".compose-post-btn");
-    expect(postBtn).not.toBeNull();
-    expect(postBtn!.textContent?.trim()).toBe("Post");
+    const postBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected post button",
+    );
+    expect(postBtn.textContent?.trim()).toBe("Post");
   });
 
   it("format switching updates active state", async () => {
@@ -111,42 +124,45 @@ describe("JantComposeDialog", () => {
 
   it("submit dispatches jant:compose-submit with correct payload", async () => {
     const el = await createElement();
-    const editor = el.querySelector("jant-compose-editor") as any;
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
     editor._body = "Hello world";
     await editor.updateComplete;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
-    el.addEventListener("jant:compose-submit", ((e: CustomEvent) => {
-      receivedDetail = e.detail;
-    }) as EventListener);
+    el.addEventListener("jant:compose-submit", (event) => {
+      const customEvent = event as CustomEvent<ComposeSubmitDetail>;
+      receivedDetail = customEvent.detail;
+    });
 
     // Click post button
-    const postBtn = el.querySelector<HTMLButtonElement>(".compose-post-btn");
-    postBtn?.click();
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected post button",
+    ).click();
 
     expect(receivedDetail).not.toBeNull();
-    expect(receivedDetail!.format).toBe("note");
-    expect(receivedDetail!.body).toBe("Hello world");
-    expect(receivedDetail!.status).toBe("published");
-    expect(receivedDetail!.collectionIds).toEqual([]);
-    expect(receivedDetail!.mediaIds).toEqual([]);
+    if (!receivedDetail) return;
+    expect(receivedDetail.format).toBe("note");
+    expect(receivedDetail.body).toBe("Hello world");
+    expect(receivedDetail.status).toBe("published");
+    expect(receivedDetail.collectionIds).toEqual([]);
+    expect(receivedDetail.mediaIds).toEqual([]);
   });
 
   it("collection selector toggles IDs", async () => {
     const el = await createElement();
 
     // Open collection dropdown
-    const trigger = el.querySelector<HTMLButtonElement>(
-      ".compose-collection-trigger",
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
     );
-    trigger?.click();
+    trigger.click();
     await el.updateComplete;
 
-    // Collection items appear
-    const items = el.querySelectorAll<HTMLButtonElement>(
-      ".compose-dropdown-item",
-    );
-    // Filter to collection items only (exclude more menu items)
     const collectionItems = el.querySelectorAll<HTMLButtonElement>(
       ".compose-dropdown-above .compose-dropdown-item",
     );
@@ -188,8 +204,11 @@ describe("JantComposeDialog", () => {
     el._loading = true;
     await el.updateComplete;
 
-    const postBtn = el.querySelector<HTMLButtonElement>(".compose-post-btn");
-    expect(postBtn?.disabled).toBe(true);
+    const postBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected post button",
+    );
+    expect(postBtn.disabled).toBe(true);
   });
 
   it("renders without collections", async () => {
@@ -204,23 +223,29 @@ describe("JantComposeDialog", () => {
 
   it("draft button dispatches submit with draft status", async () => {
     const el = await createElement();
-    const editor = el.querySelector("jant-compose-editor") as any;
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
     editor._body = "Draft content";
     await editor.updateComplete;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
-    el.addEventListener("jant:compose-submit", ((e: CustomEvent) => {
-      receivedDetail = e.detail;
-    }) as EventListener);
+    el.addEventListener("jant:compose-submit", (event) => {
+      const customEvent = event as CustomEvent<ComposeSubmitDetail>;
+      receivedDetail = customEvent.detail;
+    });
 
     // Click the draft header button
-    const draftBtn = el.querySelector<HTMLButtonElement>(
-      ".compose-dialog-header-btn",
+    const draftBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-dialog-header-btn"),
+      "expected draft button",
     );
-    draftBtn?.click();
+    draftBtn.click();
 
     expect(receivedDetail).not.toBeNull();
-    expect(receivedDetail!.status).toBe("draft");
+    if (!receivedDetail) return;
+    expect(receivedDetail.status).toBe("draft");
   });
 
   it("does not dispatch submit when loading", async () => {
@@ -233,8 +258,11 @@ describe("JantComposeDialog", () => {
       dispatched = true;
     });
 
-    const postBtn = el.querySelector<HTMLButtonElement>(".compose-post-btn");
-    postBtn?.click();
+    const postBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected post button",
+    );
+    postBtn.click();
 
     expect(dispatched).toBe(false);
   });

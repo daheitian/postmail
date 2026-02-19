@@ -5,9 +5,20 @@ import type {
   SettingsLabels,
   SettingsTimezone,
   SettingsLanguage,
+  SettingsSaveDetail,
 } from "../settings-types.js";
 import "../jant-settings-general.js";
 import type { JantSettingsGeneral } from "../jant-settings-general.js";
+
+function requireElement<T extends globalThis.Element>(
+  element: T | null,
+  message: string,
+): T {
+  if (!element) {
+    throw new Error(message);
+  }
+  return element;
+}
 
 const labels: SettingsLabels = {
   blogAvatar: "Blog Avatar",
@@ -88,9 +99,11 @@ describe("JantSettingsGeneral", () => {
 
   it("renders form fields with initial values", async () => {
     const el = await createElement();
-    const siteNameInput =
-      el.querySelector<HTMLInputElement>('input[type="text"]');
-    expect(siteNameInput?.value).toBe("My Blog");
+    const siteNameInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="text"]'),
+      "expected site name input",
+    );
+    expect(siteNameInput.value).toBe("My Blog");
 
     const textareas = el.querySelectorAll("textarea");
     expect(textareas[0]?.value).toBe("A test blog");
@@ -119,12 +132,14 @@ describe("JantSettingsGeneral", () => {
 
   it("tracks general form dirty state on input", async () => {
     const el = await createElement();
-    const siteNameInput =
-      el.querySelector<HTMLInputElement>('input[type="text"]');
+    const siteNameInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="text"]'),
+      "expected site name input",
+    );
 
     // Simulate input
-    siteNameInput!.value = "New Name";
-    siteNameInput!.dispatchEvent(new Event("input", { bubbles: true }));
+    siteNameInput.value = "New Name";
+    siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
     // Save button should be enabled
@@ -134,12 +149,14 @@ describe("JantSettingsGeneral", () => {
 
   it("cancel reverts general form to original values", async () => {
     const el = await createElement();
-    const siteNameInput =
-      el.querySelector<HTMLInputElement>('input[type="text"]');
+    const siteNameInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="text"]'),
+      "expected site name input",
+    );
 
     // Change the value
-    siteNameInput!.value = "Changed";
-    siteNameInput!.dispatchEvent(new Event("input", { bubbles: true }));
+    siteNameInput.value = "Changed";
+    siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
     // Click cancel (second button after Save)
@@ -153,18 +170,21 @@ describe("JantSettingsGeneral", () => {
 
   it("dispatches jant:settings-save for general section", async () => {
     const el = await createElement();
-    const siteNameInput =
-      el.querySelector<HTMLInputElement>('input[type="text"]');
+    const siteNameInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="text"]'),
+      "expected site name input",
+    );
 
     // Make dirty
-    siteNameInput!.value = "New Name";
-    siteNameInput!.dispatchEvent(new Event("input", { bubbles: true }));
+    siteNameInput.value = "New Name";
+    siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
-    let detail: any = null;
-    el.addEventListener("jant:settings-save", ((e: CustomEvent) => {
-      detail = e.detail;
-    }) as EventListener);
+    let detail: SettingsSaveDetail | null = null;
+    el.addEventListener("jant:settings-save", (event) => {
+      const customEvent = event as CustomEvent<SettingsSaveDetail>;
+      detail = customEvent.detail;
+    });
 
     // Click save
     const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
@@ -179,12 +199,14 @@ describe("JantSettingsGeneral", () => {
 
   it("sectionSaved resets dirty state and updates originals", async () => {
     const el = await createElement();
-    const siteNameInput =
-      el.querySelector<HTMLInputElement>('input[type="text"]');
+    const siteNameInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="text"]'),
+      "expected site name input",
+    );
 
     // Make dirty and save
-    siteNameInput!.value = "Saved Name";
-    siteNameInput!.dispatchEvent(new Event("input", { bubbles: true }));
+    siteNameInput.value = "Saved Name";
+    siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
     // Simulate bridge calling sectionSaved
@@ -219,14 +241,16 @@ describe("JantSettingsGeneral", () => {
     const footerTextarea = textareas[1]; // Second textarea is footer
 
     // Make dirty
-    footerTextarea!.value = "New footer";
-    footerTextarea!.dispatchEvent(new Event("input", { bubbles: true }));
+    const footer = requireElement(footerTextarea, "expected footer textarea");
+    footer.value = "New footer";
+    footer.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
-    let detail: any = null;
-    el.addEventListener("jant:settings-save", ((e: CustomEvent) => {
-      detail = e.detail;
-    }) as EventListener);
+    let detail: SettingsSaveDetail | null = null;
+    el.addEventListener("jant:settings-save", (event) => {
+      const customEvent = event as CustomEvent<SettingsSaveDetail>;
+      detail = customEvent.detail;
+    });
 
     // Find the footer Save button (second card's button)
     const cards = el.querySelectorAll(".card");
@@ -251,10 +275,11 @@ describe("JantSettingsGeneral", () => {
     seoCheckbox?.click();
     await el.updateComplete;
 
-    let detail: any = null;
-    el.addEventListener("jant:settings-save", ((e: CustomEvent) => {
-      detail = e.detail;
-    }) as EventListener);
+    let detail: SettingsSaveDetail | null = null;
+    el.addEventListener("jant:settings-save", (event) => {
+      const customEvent = event as CustomEvent<SettingsSaveDetail>;
+      detail = customEvent.detail;
+    });
 
     // Find SEO Save button (third card)
     const cards = el.querySelectorAll(".card");
@@ -269,12 +294,14 @@ describe("JantSettingsGeneral", () => {
 
   it("shows loading spinner during save", async () => {
     const el = await createElement();
-    const siteNameInput =
-      el.querySelector<HTMLInputElement>('input[type="text"]');
+    const siteNameInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="text"]'),
+      "expected site name input",
+    );
 
     // Make dirty and save
-    siteNameInput!.value = "Loading test";
-    siteNameInput!.dispatchEvent(new Event("input", { bubbles: true }));
+    siteNameInput.value = "Loading test";
+    siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
     const saveBtn = el.querySelector<HTMLButtonElement>(".btn");

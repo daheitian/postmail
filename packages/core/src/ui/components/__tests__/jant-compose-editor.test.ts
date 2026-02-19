@@ -5,6 +5,28 @@ import type { ComposeLabels } from "../compose-types.js";
 import "../jant-compose-editor.js";
 import type { JantComposeEditor } from "../jant-compose-editor.js";
 
+function requireElement<T extends globalThis.Element>(
+  element: T | null,
+  message: string,
+): T {
+  if (!element) {
+    throw new Error(message);
+  }
+  return element;
+}
+
+function requireItem<T extends globalThis.Element>(
+  collection: globalThis.NodeListOf<T>,
+  index: number,
+  message: string,
+): T {
+  const item = collection.item(index);
+  if (!item) {
+    throw new Error(message);
+  }
+  return item;
+}
+
 const labels: ComposeLabels = {
   cancel: "Cancel",
   note: "Note",
@@ -52,18 +74,20 @@ describe("JantComposeEditor", () => {
 
   it("renders note fields by default", async () => {
     const el = await createElement("note");
-    const textarea = el.querySelector<HTMLTextAreaElement>(
-      ".compose-body-input",
+    const textarea = requireElement(
+      el.querySelector<HTMLTextAreaElement>(".compose-body-input"),
+      "expected compose body textarea",
     );
-    expect(textarea).not.toBeNull();
-    expect(textarea!.placeholder).toBe("What's on your mind...");
+    expect(textarea.placeholder).toBe("What's on your mind...");
   });
 
   it("renders link fields when format is link", async () => {
     const el = await createElement("link");
-    const urlInput = el.querySelector<HTMLInputElement>('input[type="url"]');
-    expect(urlInput).not.toBeNull();
-    expect(urlInput!.placeholder).toBe("Paste a URL...");
+    const urlInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="url"]'),
+      "expected url input",
+    );
+    expect(urlInput.placeholder).toBe("Paste a URL...");
 
     const titleInput = el.querySelector<HTMLInputElement>(
       ".compose-link-title",
@@ -91,10 +115,13 @@ describe("JantComposeEditor", () => {
     expect(el.querySelector(".compose-star-rating")).toBeNull();
 
     // Click score button to show rating
-    const scoreBtn =
+    const toolButtons =
       el.querySelectorAll<HTMLButtonElement>(".compose-tool-btn");
-    // Score is the third tool button
-    const scoreBtnEl = scoreBtn[2];
+    const scoreBtnEl = requireItem(
+      toolButtons,
+      2,
+      "expected score tool button",
+    );
     scoreBtnEl.click();
     await el.updateComplete;
 
@@ -130,7 +157,11 @@ describe("JantComposeEditor", () => {
     // Click attached text tool button
     const toolBtns =
       el.querySelectorAll<HTMLButtonElement>(".compose-tool-btn");
-    const attachedBtn = toolBtns[1]; // second tool button
+    const attachedBtn = requireItem(
+      toolBtns,
+      1,
+      "expected attached text button",
+    );
     attachedBtn.click();
     await el.updateComplete;
 
