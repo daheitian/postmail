@@ -8,7 +8,7 @@ Tracking document for migrating complex Datastar components to Lit Web Component
 | --- | -------------- | ------------------------- | ----- | -------- | ------- |
 | 1   | ComposeDialog  | `<jant-compose-dialog>`   | 770   | High     | Done    |
 | 2   | GeneralContent | `<jant-settings-general>` | 534   | High     | Done    |
-| 3   | CollectionForm | `<jant-collection-form>`  | 358   | Medium   | Pending |
+| 3   | CollectionForm | `<jant-collection-form>`  | 358   | Medium   | Done    |
 | 4   | PostForm       | `<jant-post-form>`        | 359   | Optional | Pending |
 
 ## Component Decomposition Plans
@@ -91,3 +91,10 @@ For each component migration:
 - Form data passed via `<script type="application/json">` rather than attributes (too large for timezone list)
 - Avatar upload still uses existing `avatar-upload.ts` script (event delegation via `[data-avatar-upload]`)
 - Fix: `createRenderRoot()` must clear `innerHTML` to remove SSR fallback skeleton (also applied to compose dialog)
+
+### Session 4 — CollectionForm Migration
+
+- Replaced Datastar `CollectionForm` with `<jant-collection-form>` Lit component (< 300 lines)
+- Added `collection-form-bridge.ts` for JSON POST + redirect handling (Accept: application/json)
+- New tests in `jant-collection-form.test.ts` cover slug auto-generation and submit payload
+- Routes `/dash/collections` + `/:id` now support JSON responses for Lit bridge while keeping Datastar fallback

@@ -167,7 +167,7 @@ msgstr "Blog Avatar"
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx:183
 #: src/ui/compose/ComposeDialog.tsx:23
-#: src/ui/dash/collections/CollectionForm.tsx:297
+#: src/ui/dash/collections/CollectionForm.tsx:108
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
 #: src/ui/dash/PostForm.tsx:316
@@ -194,8 +194,8 @@ msgstr "Choose a font pairing for your site. All options use system fonts for fa
 
 #. @context: Button to open icon picker
 #. @context: Icon picker dialog title
-#: src/ui/dash/collections/CollectionForm.tsx:185
-#: src/ui/dash/collections/CollectionForm.tsx:314
+#: src/ui/dash/collections/CollectionForm.tsx:67
+#: src/ui/dash/collections/CollectionForm.tsx:75
 msgid "Choose Icon"
 msgstr "Choose Icon"
 
@@ -205,7 +205,7 @@ msgid "Click image to view full size"
 msgstr "Click image to view full size"
 
 #. @context: Button to close icon picker
-#: src/ui/dash/collections/CollectionForm.tsx:324
+#: src/ui/dash/collections/CollectionForm.tsx:79
 msgid "Close"
 msgstr "Close"
 
@@ -270,7 +270,7 @@ msgid "Copy"
 msgstr "Copy"
 
 #. @context: Button to save new collection
-#: src/ui/dash/collections/CollectionForm.tsx:50
+#: src/ui/dash/collections/CollectionForm.tsx:32
 msgid "Create Collection"
 msgstr "Create Collection"
 
@@ -381,7 +381,7 @@ msgid "Demo account pre-filled. Just click Sign In."
 msgstr "Demo account pre-filled. Just click Sign In."
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:127
+#: src/ui/dash/collections/CollectionForm.tsx:55
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
@@ -448,7 +448,7 @@ msgid "Edit"
 msgstr "Edit"
 
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:42
+#: src/ui/dash/collections/CollectionForm.tsx:24
 msgid "Edit Collection"
 msgstr "Edit Collection"
 
@@ -554,12 +554,12 @@ msgid "Give it a title..."
 msgstr "Give it a title..."
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:260
+#: src/ui/dash/collections/CollectionForm.tsx:99
 msgid "Highest rated"
 msgstr "Highest rated"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:151
+#: src/ui/dash/collections/CollectionForm.tsx:63
 msgid "Icon (optional)"
 msgstr "Icon (optional)"
 
@@ -653,7 +653,7 @@ msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "Lowercase letters, numbers, and hyphens only"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:269
+#: src/ui/dash/collections/CollectionForm.tsx:103
 msgid "Lowest rated"
 msgstr "Lowest rated"
 
@@ -689,7 +689,7 @@ msgstr "Media"
 #~ msgstr "My Blog"
 
 #. @context: Collection title placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:89
+#: src/ui/dash/collections/CollectionForm.tsx:42
 msgid "My Collection"
 msgstr "My Collection"
 
@@ -713,7 +713,7 @@ msgstr "Need help? Visit the <0>documentation</0>"
 #. @context: Button to create new collection
 #. @context: Button to create new collection
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:43
+#: src/ui/dash/collections/CollectionForm.tsx:25
 #: src/ui/dash/collections/CollectionsListContent.tsx:50
 #: src/ui/dash/collections/CollectionsListContent.tsx:64
 msgid "New Collection"
@@ -762,7 +762,7 @@ msgid "New Redirect"
 msgstr "New Redirect"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:242
+#: src/ui/dash/collections/CollectionForm.tsx:91
 msgid "Newest first"
 msgstr "Newest first"
 
@@ -856,7 +856,7 @@ msgid "Notes"
 msgstr "Notes"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:251
+#: src/ui/dash/collections/CollectionForm.tsx:95
 msgid "Oldest first"
 msgstr "Oldest first"
 
@@ -1088,7 +1088,7 @@ msgstr "Redirects"
 #. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
-#: src/ui/dash/collections/CollectionForm.tsx:199
+#: src/ui/dash/collections/CollectionForm.tsx:71
 #: src/ui/dash/PostForm.tsx:196
 #: src/ui/dash/settings/GeneralContent.tsx:55
 msgid "Remove"
@@ -1161,7 +1161,7 @@ msgstr "Search"
 #~ msgstr "Search failed. Please try again."
 
 #. @context: Icon picker search placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:334
+#: src/ui/dash/collections/CollectionForm.tsx:83
 msgid "Search icons..."
 msgstr "Search icons..."
 
@@ -1233,13 +1233,13 @@ msgstr "Site Name"
 
 #. @context: Collection form field
 #. @context: Page form field label - URL slug
-#: src/ui/dash/collections/CollectionForm.tsx:104
+#: src/ui/dash/collections/CollectionForm.tsx:46
 #: src/ui/dash/PageForm.tsx:64
 msgid "Slug"
 msgstr "Slug"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:230
+#: src/ui/dash/collections/CollectionForm.tsx:87
 msgid "Sort Order"
 msgstr "Sort Order"
 
@@ -1358,7 +1358,7 @@ msgstr "Time Zone"
 #. @context: Page form field label - title
 #: src/ui/compose/ComposeDialog.tsx:39
 #: src/ui/compose/ComposeDialog.tsx:96
-#: src/ui/dash/collections/CollectionForm.tsx:76
+#: src/ui/dash/collections/CollectionForm.tsx:38
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "Title"
@@ -1408,7 +1408,7 @@ msgid "Update"
 msgstr "Update"
 
 #. @context: Button to save collection changes
-#: src/ui/dash/collections/CollectionForm.tsx:46
+#: src/ui/dash/collections/CollectionForm.tsx:28
 msgid "Update Collection"
 msgstr "Update Collection"
 
@@ -1464,7 +1464,7 @@ msgstr "URL (optional)"
 #~ msgstr "URL-safe identifier (lowercase, numbers, hyphens)"
 
 #. @context: Collection path help text
-#: src/ui/dash/collections/CollectionForm.tsx:116
+#: src/ui/dash/collections/CollectionForm.tsx:50
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 
@@ -1526,7 +1526,7 @@ msgid "What's on your mind..."
 msgstr "What's on your mind..."
 
 #. @context: Collection description placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:139
+#: src/ui/dash/collections/CollectionForm.tsx:59
 msgid "What's this collection about?"
 msgstr "What's this collection about?"
 

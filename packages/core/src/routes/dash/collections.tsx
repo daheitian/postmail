@@ -63,6 +63,7 @@ collectionsRoutes.get("/new", async (c) => {
 
 // Create collection
 collectionsRoutes.post("/", async (c) => {
+  const wantsJson = c.req.header("Accept")?.includes("application/json");
   const body = await c.req.json<{
     title: string;
     slug: string;
@@ -82,7 +83,12 @@ collectionsRoutes.post("/", async (c) => {
     sortOrder: (body.sortOrder as SortOrder) || undefined,
   });
 
-  return dsRedirect(`/dash/collections/${collection.id}`);
+  const redirectUrl = `/dash/collections/${collection.id}`;
+  if (wantsJson) {
+    return c.json({ status: "redirect" as const, url: redirectUrl });
+  }
+
+  return dsRedirect(redirectUrl);
 });
 
 // Reorder collections (accepts prefixed items)
@@ -176,6 +182,7 @@ collectionsRoutes.post("/:id", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
 
+  const wantsJson = c.req.header("Accept")?.includes("application/json");
   const body = await c.req.json<{
     title: string;
     slug: string;
@@ -192,7 +199,12 @@ collectionsRoutes.post("/:id", async (c) => {
     sortOrder: (body.sortOrder as SortOrder) || undefined,
   });
 
-  return dsRedirect(`/dash/collections/${id}`);
+  const redirectUrl = `/dash/collections/${id}`;
+  if (wantsJson) {
+    return c.json({ status: "redirect" as const, url: redirectUrl });
+  }
+
+  return dsRedirect(redirectUrl);
 });
 
 // Delete collection

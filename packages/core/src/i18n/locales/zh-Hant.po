@@ -117,7 +117,7 @@ msgstr "部落格頭像"
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx:183
 #: src/ui/compose/ComposeDialog.tsx:23
-#: src/ui/dash/collections/CollectionForm.tsx:297
+#: src/ui/dash/collections/CollectionForm.tsx:108
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
 #: src/ui/dash/PostForm.tsx:316
@@ -139,8 +139,8 @@ msgstr "選擇一個字體搭配以供您的網站使用。所有選項均使用
 
 #. @context: Button to open icon picker
 #. @context: Icon picker dialog title
-#: src/ui/dash/collections/CollectionForm.tsx:185
-#: src/ui/dash/collections/CollectionForm.tsx:314
+#: src/ui/dash/collections/CollectionForm.tsx:67
+#: src/ui/dash/collections/CollectionForm.tsx:75
 msgid "Choose Icon"
 msgstr "選擇圖示"
 
@@ -150,7 +150,7 @@ msgid "Click image to view full size"
 msgstr "點擊圖片以查看完整大小"
 
 #. @context: Button to close icon picker
-#: src/ui/dash/collections/CollectionForm.tsx:324
+#: src/ui/dash/collections/CollectionForm.tsx:79
 msgid "Close"
 msgstr "關閉"
 
@@ -210,7 +210,7 @@ msgid "Copy"
 msgstr "複製"
 
 #. @context: Button to save new collection
-#: src/ui/dash/collections/CollectionForm.tsx:50
+#: src/ui/dash/collections/CollectionForm.tsx:32
 msgid "Create Collection"
 msgstr "創建收藏夾"
 
@@ -296,7 +296,7 @@ msgid "Demo account pre-filled. Just click Sign In."
 msgstr "示範帳戶已預填。只需點擊登入。"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:127
+#: src/ui/dash/collections/CollectionForm.tsx:55
 msgid "Description (optional)"
 msgstr "描述（可選）"
 
@@ -358,7 +358,7 @@ msgid "Edit"
 msgstr "編輯"
 
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:42
+#: src/ui/dash/collections/CollectionForm.tsx:24
 msgid "Edit Collection"
 msgstr "編輯收藏集"
 
@@ -450,12 +450,12 @@ msgid "Give it a title..."
 msgstr "給它一個標題..."
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:260
+#: src/ui/dash/collections/CollectionForm.tsx:99
 msgid "Highest rated"
 msgstr "最高評價"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:151
+#: src/ui/dash/collections/CollectionForm.tsx:63
 msgid "Icon (optional)"
 msgstr "圖示（可選）"
 
@@ -530,7 +530,7 @@ msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "僅限小寫字母、數字和連字符"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:269
+#: src/ui/dash/collections/CollectionForm.tsx:103
 msgid "Lowest rated"
 msgstr "最低評價"
 
@@ -556,7 +556,7 @@ msgid "Media"
 msgstr "媒體"
 
 #. @context: Collection title placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:89
+#: src/ui/dash/collections/CollectionForm.tsx:42
 msgid "My Collection"
 msgstr "我的收藏"
 
@@ -573,7 +573,7 @@ msgstr "需要幫助嗎？請訪問<0>文檔</0>。"
 #. @context: Button to create new collection
 #. @context: Button to create new collection
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:43
+#: src/ui/dash/collections/CollectionForm.tsx:25
 #: src/ui/dash/collections/CollectionsListContent.tsx:50
 #: src/ui/dash/collections/CollectionsListContent.tsx:64
 msgid "New Collection"
@@ -622,7 +622,7 @@ msgid "New Redirect"
 msgstr "新重定向"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:242
+#: src/ui/dash/collections/CollectionForm.tsx:91
 msgid "Newest first"
 msgstr "最新的在前"
 
@@ -701,7 +701,7 @@ msgid "Notes"
 msgstr "筆記"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx:251
+#: src/ui/dash/collections/CollectionForm.tsx:95
 msgid "Oldest first"
 msgstr "最舊的在前"
 
@@ -891,7 +891,7 @@ msgstr "重定向"
 #. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
-#: src/ui/dash/collections/CollectionForm.tsx:199
+#: src/ui/dash/collections/CollectionForm.tsx:71
 #: src/ui/dash/PostForm.tsx:196
 #: src/ui/dash/settings/GeneralContent.tsx:55
 msgid "Remove"
@@ -954,7 +954,7 @@ msgid "Search"
 msgstr "搜尋"
 
 #. @context: Icon picker search placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:334
+#: src/ui/dash/collections/CollectionForm.tsx:83
 msgid "Search icons..."
 msgstr "搜尋圖示..."
 
@@ -1016,13 +1016,13 @@ msgstr "網站名稱"
 
 #. @context: Collection form field
 #. @context: Page form field label - URL slug
-#: src/ui/dash/collections/CollectionForm.tsx:104
+#: src/ui/dash/collections/CollectionForm.tsx:46
 #: src/ui/dash/PageForm.tsx:64
 msgid "Slug"
 msgstr "縮略名"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:230
+#: src/ui/dash/collections/CollectionForm.tsx:87
 msgid "Sort Order"
 msgstr "排序順序"
 
@@ -1121,7 +1121,7 @@ msgstr "時區"
 #. @context: Page form field label - title
 #: src/ui/compose/ComposeDialog.tsx:39
 #: src/ui/compose/ComposeDialog.tsx:96
-#: src/ui/dash/collections/CollectionForm.tsx:76
+#: src/ui/dash/collections/CollectionForm.tsx:38
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "標題"
@@ -1164,7 +1164,7 @@ msgid "Update"
 msgstr "更新"
 
 #. @context: Button to save collection changes
-#: src/ui/dash/collections/CollectionForm.tsx:46
+#: src/ui/dash/collections/CollectionForm.tsx:28
 msgid "Update Collection"
 msgstr "更新收藏集"
 
@@ -1210,7 +1210,7 @@ msgid "URL (optional)"
 msgstr "網址（可選）"
 
 #. @context: Collection path help text
-#: src/ui/dash/collections/CollectionForm.tsx:116
+#: src/ui/dash/collections/CollectionForm.tsx:50
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL安全識別碼（小寫、數字、連字符）。對於CJK標題，slug將在伺服器上自動生成。"
 
@@ -1257,7 +1257,7 @@ msgid "What's on your mind..."
 msgstr "你在想什麼..."
 
 #. @context: Collection description placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:139
+#: src/ui/dash/collections/CollectionForm.tsx:59
 msgid "What's this collection about?"
 msgstr "這個收藏是關於什麼的？"
 
