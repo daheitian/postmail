@@ -54,8 +54,6 @@ msgid "Add Link"
 msgstr "添加链接"
 
 #. @context: Button to open media picker
-#. @context: Compose toolbar - add media
-#: src/ui/compose/ComposeDialog.tsx:249
 #: src/ui/dash/PostForm.tsx:213
 msgid "Add Media"
 msgstr "添加媒体"
@@ -90,6 +88,23 @@ msgstr "档案馆"
 msgid "Are you sure you want to delete this post? This cannot be undone."
 msgstr "您确定要删除此帖子吗？此操作无法撤销。"
 
+#. @context: Attached text badge label
+#: src/ui/compose/ComposeDialog.tsx:469
+msgid "Attached text"
+msgstr ""
+
+#. @context: Attached text panel title
+#. @context: Compose toolbar - attached text tooltip
+#: src/ui/compose/ComposeDialog.tsx:72
+#: src/ui/compose/ComposeDialog.tsx:543
+msgid "Attached Text"
+msgstr ""
+
+#. @context: Compose quote author placeholder
+#: src/ui/compose/ComposeDialog.tsx:362
+msgid "Author (optional)"
+msgstr ""
+
 #. @context: Button to go back to media list
 #: src/ui/dash/media/ViewMediaContent.tsx:57
 msgid "Back"
@@ -108,7 +123,7 @@ msgstr "博客头像"
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx:183
-#: src/ui/compose/ComposeDialog.tsx:48
+#: src/ui/compose/ComposeDialog.tsx:126
 #: src/ui/dash/collections/CollectionForm.tsx:219
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
@@ -134,8 +149,8 @@ msgstr "选择一个字体搭配用于您的网站。所有选项都使用系统
 msgid "Click image to view full size"
 msgstr "点击图片查看完整尺寸"
 
-#. @context: Compose toolbar - toggle collection
-#: src/ui/compose/ComposeDialog.tsx:302
+#. @context: Compose collection selector placeholder
+#: src/ui/compose/ComposeDialog.tsx:646
 msgid "Collection"
 msgstr "集合"
 
@@ -145,10 +160,8 @@ msgstr "集合"
 #~ msgstr "集合（可选）"
 
 #. @context: Collections page heading
-#. @context: Compose collection field
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
-#: src/ui/compose/ComposeDialog.tsx:221
 #: src/ui/dash/collections/CollectionsListContent.tsx:26
 #: src/ui/layouts/DashLayout.tsx:114
 #: src/ui/pages/CollectionsPage.tsx:18
@@ -285,6 +298,11 @@ msgstr "演示账户已预填。只需点击登录。"
 msgid "Description (optional)"
 msgstr "描述（可选）"
 
+#. @context: More menu - discard post
+#: src/ui/compose/ComposeDialog.tsx:246
+msgid "Discard"
+msgstr ""
+
 #. @context: Checkbox to show avatar in the site header
 #: src/ui/dash/settings/GeneralContent.tsx:274
 msgid "Display avatar in my site header"
@@ -295,9 +313,11 @@ msgstr "在我的网站头部显示头像"
 msgid "Display text for the link"
 msgstr "链接的显示文本"
 
+#. @context: Close attached text panel
 #. @context: Close media picker button
 #. @context: Close media picker button
-#: src/ui/compose/ComposeDialog.tsx:372
+#: src/ui/compose/ComposeDialog.tsx:111
+#: src/ui/compose/ComposeDialog.tsx:748
 #: src/ui/dash/PostForm.tsx:338
 msgid "Done"
 msgstr "完成"
@@ -419,6 +439,11 @@ msgstr "来源路径"
 msgid "General"
 msgstr "常规"
 
+#. @context: Compose link title placeholder
+#: src/ui/compose/ComposeDialog.tsx:321
+msgid "Give it a title..."
+msgstr ""
+
 #. @context: Collection sort order option
 #: src/ui/dash/collections/CollectionForm.tsx:182
 msgid "Highest rated"
@@ -470,7 +495,7 @@ msgstr "链接"
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:71
+#: src/ui/compose/ComposeDialog.tsx:156
 #: src/ui/dash/FormatBadge.tsx:20
 #: src/ui/dash/PostForm.tsx:76
 #: src/ui/pages/ArchivePage.tsx:17
@@ -489,7 +514,7 @@ msgstr "加载更多"
 
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx:383
+#: src/ui/compose/ComposeDialog.tsx:759
 #: src/ui/dash/PostForm.tsx:349
 msgid "Loading..."
 msgstr "加载中..."
@@ -514,9 +539,11 @@ msgstr "Markdown"
 msgid "Markdown supported"
 msgstr "支持Markdown"
 
+#. @context: Compose toolbar - media tooltip
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
 #. @context: Post form field - media attachments
+#: src/ui/compose/ComposeDialog.tsx:514
 #: src/ui/dash/media/MediaListContent.tsx:127
 #: src/ui/dash/PostForm.tsx:160
 #: src/ui/layouts/DashLayout.tsx:105
@@ -525,8 +552,8 @@ msgstr "媒体"
 
 #. @context: Header more button tooltip
 #: src/ui/compose/ComposeDialog.tsx:117
-msgid "More options"
-msgstr ""
+#~ msgid "More options"
+#~ msgstr ""
 
 #. @context: Collection title placeholder
 #: src/ui/dash/collections/CollectionForm.tsx:72
@@ -654,14 +681,14 @@ msgstr "未找到结果。"
 
 #. @context: No rating selected
 #: src/ui/compose/ComposeDialog.tsx:204
-msgid "None"
-msgstr "无"
+#~ msgid "None"
+#~ msgstr "无"
 
 #. @context: Compose format tab
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:60
+#: src/ui/compose/ComposeDialog.tsx:145
 #: src/ui/dash/FormatBadge.tsx:19
 #: src/ui/dash/PostForm.tsx:73
 #: src/ui/pages/ArchivePage.tsx:16
@@ -722,6 +749,19 @@ msgstr "页面"
 msgid "Password"
 msgstr "密码"
 
+#. @context: Attached text placeholder
+#: src/ui/compose/ComposeDialog.tsx:90
+msgid ""
+"Paste a long article, AI response, or any text...\n"
+"\n"
+"Markdown formatting will be preserved."
+msgstr ""
+
+#. @context: Compose link URL placeholder
+#: src/ui/compose/ComposeDialog.tsx:310
+msgid "Paste a URL..."
+msgstr ""
+
 #. @context: Navigation URL help text
 #: src/ui/dash/pages/LinkFormContent.tsx:74
 msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
@@ -750,7 +790,7 @@ msgstr "帖子"
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/ui/compose/ComposeDialog.tsx:344
+#: src/ui/compose/ComposeDialog.tsx:722
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "帖子"
@@ -831,7 +871,7 @@ msgstr "快速操作"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:82
+#: src/ui/compose/ComposeDialog.tsx:167
 #: src/ui/dash/FormatBadge.tsx:21
 #: src/ui/dash/PostForm.tsx:79
 #: src/ui/pages/ArchivePage.tsx:18
@@ -852,8 +892,8 @@ msgstr "引用"
 #. @context: Compose toolbar - toggle rating
 #: src/ui/compose/ComposeDialog.tsx:197
 #: src/ui/compose/ComposeDialog.tsx:276
-msgid "Rating"
-msgstr "评分"
+#~ msgid "Rating"
+#~ msgstr "评分"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - URL redirects
@@ -881,8 +921,13 @@ msgstr "重置密码"
 msgid "Save"
 msgstr "保存"
 
+#. @context: More menu - save draft
+#: src/ui/compose/ComposeDialog.tsx:235
+msgid "Save as draft"
+msgstr ""
+
 #. @context: Header draft button tooltip
-#: src/ui/compose/ComposeDialog.tsx:92
+#: src/ui/compose/ComposeDialog.tsx:179
 msgid "Save as Draft"
 msgstr ""
 
@@ -901,6 +946,11 @@ msgstr "保存 CSS"
 msgid "Save Profile"
 msgstr "保存个人资料"
 
+#. @context: Compose toolbar - score tooltip
+#: src/ui/compose/ComposeDialog.tsx:572
+msgid "Score"
+msgstr ""
+
 #. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
@@ -917,7 +967,7 @@ msgstr "搜索帖子..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx:362
+#: src/ui/compose/ComposeDialog.tsx:738
 #: src/ui/dash/PostForm.tsx:328
 msgid "Select Media"
 msgstr "选择媒体"
@@ -978,12 +1028,22 @@ msgstr "缩略名"
 msgid "Sort Order"
 msgstr ""
 
+#. @context: Compose quote source link placeholder
+#: src/ui/compose/ComposeDialog.tsx:373
+msgid "Source link (optional)"
+msgstr ""
+
 #. @context: Page form field label - publish status
 #. @context: Post form field
 #: src/ui/dash/PageForm.tsx:117
 #: src/ui/dash/PostForm.tsx:223
 msgid "Status"
 msgstr "状态"
+
+#. @context: Attached text panel hint
+#: src/ui/compose/ComposeDialog.tsx:101
+msgid "Supplementary content attached to your post"
+msgstr ""
 
 #. @context: Redirect to path help text
 #: src/routes/dash/redirects.tsx:133
@@ -1002,9 +1062,7 @@ msgstr "重定向的路径"
 msgid "The quick brown fox jumps over the lazy dog."
 msgstr "敏捷的棕色狐狸跳过懒狗。"
 
-#. @context: Compose quote text placeholder
 #. @context: Quote text placeholder
-#: src/ui/compose/ComposeDialog.tsx:186
 #: src/ui/dash/PostForm.tsx:147
 msgid "The text being quoted..."
 msgstr "被引用的文本..."
@@ -1060,15 +1118,17 @@ msgid "Time Zone"
 msgstr "时区"
 
 #. @context: Collection form field
+#. @context: Compose note title placeholder
+#. @context: Compose toolbar - title tooltip
 #. @context: Page form field label - title
+#: src/ui/compose/ComposeDialog.tsx:273
+#: src/ui/compose/ComposeDialog.tsx:604
 #: src/ui/dash/collections/CollectionForm.tsx:59
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "标题"
 
-#. @context: Compose title placeholder
 #. @context: Post form field
-#: src/ui/compose/ComposeDialog.tsx:153
 #: src/ui/dash/PostForm.tsx:87
 msgid "Title (optional)"
 msgstr "标题（可选）"
@@ -1082,6 +1142,11 @@ msgstr "到路径"
 #: src/routes/dash/redirects.tsx:142
 msgid "Type"
 msgstr "类型"
+
+#. @context: Compose quote text placeholder
+#: src/ui/compose/ComposeDialog.tsx:349
+msgid "Type the quote..."
+msgstr ""
 
 #. @context: Button to remove page from navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:82
@@ -1193,14 +1258,17 @@ msgstr "欢迎来到Jant"
 #~ msgid "What's new?"
 #~ msgstr "有什么新消息？"
 
-#. @context: Compose body placeholder
 #. @context: Compose prompt placeholder text
 #. @context: Post content placeholder
-#: src/ui/compose/ComposeDialog.tsx:164
 #: src/ui/compose/ComposePrompt.tsx:37
 #: src/ui/dash/PostForm.tsx:111
 msgid "What's on your mind?"
 msgstr "你在想什么？"
+
+#. @context: Compose body placeholder
+#: src/ui/compose/ComposeDialog.tsx:290
+msgid "What's on your mind..."
+msgstr ""
 
 #. @context: Collection description placeholder
 #: src/ui/dash/collections/CollectionForm.tsx:122
@@ -1216,3 +1284,10 @@ msgstr "您的姓名"
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:45
 msgid "Your site navigation"
 msgstr "您的网站导航"
+
+#. @context: Compose thoughts placeholder
+#. @context: Compose thoughts placeholder
+#: src/ui/compose/ComposeDialog.tsx:330
+#: src/ui/compose/ComposeDialog.tsx:384
+msgid "Your thoughts (optional)"
+msgstr ""

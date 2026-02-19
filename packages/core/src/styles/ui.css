@@ -299,87 +299,101 @@
    * Compose Dialog
    * ========================================================================= */
 
-  /* Dialog — positioned near top of viewport */
+  @keyframes compose-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes compose-modal-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* --- Dialog shell ------------------------------------------------------- */
+
   .compose-dialog {
     padding: 0;
     border: none;
-    border-radius: 16px;
-    max-width: 560px;
+    border-radius: 20px;
+    max-width: 520px;
     width: calc(100% - 32px);
     max-height: calc(100dvh - 64px);
     margin: max(80px, 10vh) auto auto;
     background-color: var(--site-elevated-bg);
     color: var(--site-text-primary);
     box-shadow:
-      0 25px 50px -12px rgba(0, 0, 0, 0.25),
-      0 0 0 1px var(--site-column-outline);
+      0 8px 40px rgba(0, 0, 0, 0.08),
+      0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--site-column-outline);
+    overflow: hidden;
+  }
+
+  .compose-dialog[open] {
+    animation: compose-modal-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .compose-dialog::backdrop {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.3);
   }
 
   .compose-dialog-inner {
     display: flex;
     flex-direction: column;
     max-height: calc(100dvh - 64px);
+    position: relative;
   }
+
+  /* --- Header ------------------------------------------------------------- */
 
   .compose-dialog-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: var(--card-border-width) solid var(--site-divider);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--site-divider);
+    position: relative;
   }
 
-  /* Segmented control — replaces title in compose header */
-  .compose-segmented {
-    display: flex;
-    background-color: var(--site-nav-hover-bg);
-    border-radius: 8px;
-    padding: 2px;
-  }
-
-  .compose-segmented-item {
-    flex: 1;
-    padding: 5px 16px;
-    border-radius: 6px;
-    border: none;
-    background: none;
-    color: var(--site-text-secondary);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition:
-      background-color 0.2s,
-      color 0.2s,
-      box-shadow 0.2s;
-  }
-
-  .compose-segmented-item:hover {
-    color: var(--site-text-primary);
-  }
-
-  .compose-segmented-item-active {
-    background-color: var(--site-elevated-bg);
-    color: var(--site-text-primary);
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.08),
-      0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  @media (min-width: 700px) {
+    .compose-dialog-header {
+      padding: 12px 16px;
+    }
   }
 
   .compose-dialog-cancel {
-    padding: 0;
+    padding: 4px 8px;
     border: none;
     background: none;
-    color: var(--site-text-primary);
-    font-size: var(--text-base);
+    border-radius: 6px;
+    color: var(--site-text-secondary);
+    font-size: var(--text-sm);
     cursor: pointer;
+    transition: color 0.15s ease-out;
+    flex-shrink: 0;
+    min-width: 60px;
+    text-align: left;
   }
 
   .compose-dialog-cancel:hover {
-    opacity: 0.7;
+    color: var(--site-text-primary);
+  }
+
+  .compose-dialog-header-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .compose-dialog-header-btn {
@@ -388,90 +402,663 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
-    border: none;
-    background: none;
-    color: var(--site-text-primary);
-    cursor: pointer;
-    transition: background-color 0.15s;
-  }
-
-  .compose-dialog-header-btn:hover {
-    background-color: var(--site-nav-hover-bg);
-  }
-
-  .compose-dialog-header-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .compose-dialog-body {
-    padding: 16px 20px;
-    overflow-y: auto;
-    flex: 1;
-  }
-
-  .compose-dialog-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 12px;
-    border-top: var(--card-border-width) solid var(--site-divider);
-  }
-
-  /* Borderless title input */
-  .compose-title-input {
-    width: 100%;
-    padding: 4px 0;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: var(--site-text-primary);
-    font-size: var(--text-lg);
-    font-weight: 600;
-  }
-
-  .compose-title-input::placeholder {
-    color: var(--site-text-secondary);
-    font-weight: 400;
-  }
-
-  /* Borderless body textarea */
-  .compose-body-input {
-    width: 100%;
-    padding: 4px 0;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: var(--site-text-primary);
-    font-size: var(--text-base);
-    line-height: var(--leading);
-    resize: vertical;
-  }
-
-  .compose-body-input::placeholder {
-    color: var(--site-text-secondary);
-  }
-
-  .compose-toolbar-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
     border-radius: 8px;
     border: none;
     background: none;
     color: var(--site-text-secondary);
     cursor: pointer;
     transition:
-      background-color 0.15s,
-      color 0.15s;
+      background-color 0.15s ease-out,
+      color 0.15s ease-out;
   }
 
-  .compose-toolbar-btn:hover {
+  .compose-dialog-header-btn:hover {
     color: var(--site-text-primary);
     background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-dialog-header-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* --- Format switcher with animated pill --------------------------------- */
+
+  .compose-segmented {
+    display: inline-flex;
+    background-color: var(--site-nav-hover-bg);
+    border-radius: 10px;
+    padding: 3px;
+    position: relative;
+  }
+
+  .compose-format-pill {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc((100% - 6px) / 3);
+    height: calc(100% - 6px);
+    background-color: var(--site-elevated-bg);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: left 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 0;
+  }
+
+  .compose-format-pill-link {
+    left: calc(3px + (100% - 6px) / 3);
+  }
+
+  .compose-format-pill-quote {
+    left: calc(3px + (100% - 6px) * 2 / 3);
+  }
+
+  .compose-segmented-item {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--site-text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 400;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    letter-spacing: 0.01em;
+  }
+
+  .compose-segmented-item-active {
+    color: var(--site-text-primary);
+    font-weight: 500;
+  }
+
+  /* --- Body --------------------------------------------------------------- */
+
+  .compose-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 20px 12px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (min-width: 700px) {
+    .compose-body {
+      padding: 18px 24px 12px;
+    }
+  }
+
+  .compose-body::-webkit-scrollbar {
+    width: 3px;
+  }
+  .compose-body::-webkit-scrollbar-thumb {
+    background-color: var(--site-divider);
+    border-radius: 4px;
+  }
+
+  .compose-field-enter {
+    animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* --- Shared input reset ------------------------------------------------- */
+
+  .compose-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    resize: none;
+    width: 100%;
+    color: var(--site-text-primary);
+    font-family: var(--font-body);
+  }
+
+  .compose-input::placeholder {
+    color: var(--site-text-secondary);
+  }
+  .compose-input:focus::placeholder {
+    opacity: 0.6;
+  }
+
+  /* --- Note mode ---------------------------------------------------------- */
+
+  .compose-note-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .compose-note-title {
+    flex: 1;
+    font-family: var(--font-heading);
+    font-size: 1.125rem;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+
+  @media (min-width: 700px) {
+    .compose-note-title {
+      font-size: 1.25rem;
+    }
+  }
+
+  .compose-note-title-dismiss {
+    border: none;
+    background: transparent;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    padding: 2px 4px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+  }
+
+  .compose-note-title-dismiss:hover {
+    opacity: 1;
+  }
+
+  .compose-body-input {
+    width: 100%;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--site-text-primary);
+    font-size: var(--text-base);
+    font-family: var(--font-body);
+    line-height: 1.65;
+    letter-spacing: 0.005em;
+    resize: none;
+  }
+
+  .compose-body-input::placeholder {
+    color: var(--site-text-secondary);
+  }
+
+  /* --- Link mode ---------------------------------------------------------- */
+
+  .compose-link-url-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--site-nav-hover-bg);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+  }
+
+  .compose-link-title {
+    font-family: var(--font-heading);
+    font-size: 1.03rem;
+    font-weight: 400;
+    letter-spacing: -0.005em;
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+
+  @media (min-width: 700px) {
+    .compose-link-title {
+      font-size: 1.05rem;
+    }
+  }
+
+  /* --- Quote mode --------------------------------------------------------- */
+
+  .compose-quote-wrap {
+    position: relative;
+    background-color: var(--site-nav-hover-bg);
+    border-radius: 14px;
+    padding: 16px 18px 14px 36px;
+    margin-bottom: 10px;
+  }
+
+  @media (min-width: 700px) {
+    .compose-quote-wrap {
+      padding: 20px 22px 16px 40px;
+    }
+  }
+
+  .compose-quote-mark {
+    position: absolute;
+    top: 10px;
+    left: 14px;
+    font-size: 36px;
+    font-family: var(--font-heading);
+    color: var(--site-text-secondary);
+    opacity: 0.5;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .compose-quote-text {
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    font-style: italic;
+    line-height: 1.6;
+    letter-spacing: 0.005em;
+  }
+
+  @media (min-width: 700px) {
+    .compose-quote-text {
+      font-size: 1rem;
+    }
+  }
+
+  .compose-quote-author-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-left: 6px;
+    margin-bottom: 4px;
+  }
+
+  .compose-quote-dash {
+    color: var(--site-text-secondary);
+    font-size: 1rem;
+    font-family: var(--font-heading);
+    user-select: none;
+  }
+
+  .compose-quote-author {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .compose-quote-source {
+    padding-left: 22px;
+    margin-bottom: 14px;
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
+  }
+
+  /* --- Shared elements ---------------------------------------------------- */
+
+  .compose-divider {
+    height: 1px;
+    background-color: var(--site-divider);
+    margin: 2px 0 14px;
+    border-radius: 1px;
+  }
+
+  .compose-thoughts {
+    font-size: var(--text-sm);
+    line-height: 1.6;
+    color: var(--site-text-secondary);
+  }
+
+  @media (min-width: 700px) {
+    .compose-thoughts {
+      font-size: 0.9rem;
+    }
+  }
+
+  /* --- Star rating -------------------------------------------------------- */
+
+  .compose-star-rating {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-top: 12px;
+    padding-left: 2px;
+    animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .compose-star {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 2px;
+    font-size: 18px;
+    color: var(--site-divider);
+    transition: all 0.15s ease;
+    line-height: 1;
+  }
+
+  .compose-star-filled {
+    color: var(--primary);
+    transform: scale(1.1);
+  }
+
+  .compose-star-label {
+    font-size: 0.6875rem;
+    color: var(--site-text-secondary);
+    margin-left: 4px;
+  }
+
+  /* --- Attached text badge ------------------------------------------------ */
+
+  .compose-attached-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    background-color: var(--site-nav-hover-bg);
+    border-radius: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+    transition: opacity 0.15s ease;
+  }
+
+  .compose-attached-badge:hover {
+    opacity: 0.85;
+  }
+
+  .compose-attached-badge-dismiss {
+    border: none;
+    background: transparent;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0 2px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.15s ease;
+  }
+
+  .compose-attached-badge-dismiss:hover {
+    opacity: 1;
+  }
+
+  /* --- Attached text overlay panel ---------------------------------------- */
+
+  .compose-attached-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background-color: var(--site-elevated-bg);
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .compose-attached-panel-back {
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--site-text-secondary);
+    transition: color 0.15s ease;
+  }
+
+  .compose-attached-panel-back:hover {
+    color: var(--site-text-primary);
+  }
+
+  .compose-attached-textarea {
+    flex: 1;
+    font-size: 0.84rem;
+    line-height: 1.65;
+    letter-spacing: 0.005em;
+    overflow-y: auto;
+  }
+
+  .compose-attached-textarea::-webkit-scrollbar {
+    width: 3px;
+  }
+  .compose-attached-textarea::-webkit-scrollbar-thumb {
+    background-color: var(--site-divider);
+    border-radius: 4px;
+  }
+
+  /* --- Tools row ---------------------------------------------------------- */
+
+  .compose-tools-row {
+    border-top: 1px solid var(--site-divider);
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    background-color: var(--site-elevated-bg);
+  }
+
+  @media (min-width: 700px) {
+    .compose-tools-row {
+      padding: 6px 16px;
+      gap: 2px;
+    }
+  }
+
+  .compose-tool-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+    color: var(--site-text-secondary);
+  }
+
+  .compose-tool-btn:hover {
+    background-color: var(--site-nav-hover-bg);
+  }
+  .compose-tool-btn-active {
+    background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-tool-sep {
+    width: 1px;
+    height: 16px;
+    background-color: var(--site-divider);
+    margin: 0 2px;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+
+  .compose-tool-tip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.92);
+    background-color: var(--site-text-primary);
+    color: var(--site-elevated-bg);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .compose-tool-btn:hover .compose-tool-tip {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+
+  /* --- Action row --------------------------------------------------------- */
+
+  .compose-action-row {
+    border-top: 1px solid var(--site-divider);
+    padding: 8px 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--site-elevated-bg);
+  }
+
+  @media (min-width: 700px) {
+    .compose-action-row {
+      padding: 8px 16px 12px;
+    }
+  }
+
+  .compose-collection-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    max-width: 100%;
+    color: var(--site-text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .compose-collection-trigger:hover {
+    background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-collection-trigger-active {
+    background-color: var(--site-nav-hover-bg);
+    padding: 6px 12px;
+  }
+
+  .compose-collection-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+
+  .compose-collection-label-selected {
+    font-weight: 500;
+    color: var(--site-text-primary);
+  }
+
+  .compose-post-btn {
+    font-size: 0.84rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--site-elevated-bg);
+    background-color: var(--site-text-primary);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 700px) {
+    .compose-post-btn {
+      padding: 8px 22px;
+    }
+  }
+
+  .compose-post-btn:hover {
+    opacity: 0.85;
+  }
+  .compose-post-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* --- Dropdowns ---------------------------------------------------------- */
+
+  .compose-dropdown-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+  }
+
+  .compose-dropdown {
+    position: absolute;
+    min-width: 170px;
+    background-color: var(--site-elevated-bg);
+    border-radius: 12px;
+    border: 1px solid var(--site-column-outline);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      0 1px 4px rgba(0, 0, 0, 0.05);
+    padding: 5px;
+    z-index: 100;
+    animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .compose-dropdown-above {
+    bottom: calc(100% + 6px);
+    left: 0;
+    min-width: 200px;
+  }
+  .compose-dropdown-right {
+    top: calc(100% + 6px);
+    right: 0;
+  }
+
+  .compose-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-size: var(--text-sm);
+    color: var(--site-text-primary);
+    transition: background-color 0.12s ease;
+  }
+
+  .compose-dropdown-item:hover {
+    background-color: var(--site-nav-hover-bg);
+  }
+  .compose-dropdown-item-active {
+    background-color: var(--site-nav-hover-bg);
+    font-weight: 500;
+  }
+  .compose-dropdown-item-muted {
+    color: var(--site-text-secondary);
+  }
+  .compose-dropdown-item-danger {
+    color: var(--destructive);
+  }
+
+  .compose-dropdown-divider {
+    height: 1px;
+    background-color: var(--site-divider);
+    margin: 3px 8px;
+  }
+
+  .compose-dropdown-check {
+    margin-left: auto;
+    color: var(--primary);
+    font-size: var(--text-sm);
+  }
+
+  /* --- Nested media picker dialog ----------------------------------------- */
+
+  .compose-media-picker {
+    padding: 1.5rem;
+    border-radius: 16px;
+    max-width: 32rem;
+    width: 100%;
+    border: none;
+    background-color: var(--site-elevated-bg);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .compose-media-picker::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
   }
 
   /* =========================================================================
