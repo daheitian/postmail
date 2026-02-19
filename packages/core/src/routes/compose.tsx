@@ -36,7 +36,7 @@ const INITIAL_SIGNALS = {
   quoteText: "",
   status: "published",
   rating: 0,
-  collectionId: 0,
+  collectionIds: [],
   mediaIds: [],
   _composeLoading: false,
   _showRating: false,
@@ -49,10 +49,14 @@ const CLOSE_DIALOG_SCRIPT =
 
 composeRoutes.post("/", async (c) => {
   const raw = await c.req.json();
+  const wantsJson = c.req.header("accept")?.includes("application/json");
 
   const result = CreatePostSchema.safeParse(raw);
   if (!result.success) {
     const firstError = result.error.issues[0]?.message ?? "Invalid input";
+    if (wantsJson) {
+      return c.json({ status: "error" as const, error: firstError }, 422);
+    }
     return dsToast(firstError, "error");
   }
 
@@ -74,7 +78,7 @@ composeRoutes.post("/", async (c) => {
     url: data.url || undefined,
     quoteText: data.quoteText || undefined,
     rating: data.rating || undefined,
-    collectionId: data.collectionId || undefined,
+    collectionIds: data.collectionIds?.length ? data.collectionIds : undefined,
   });
 
   // Attach media if provided
@@ -84,6 +88,41 @@ composeRoutes.post("/", async (c) => {
 
   const isDraft = (data.status ?? "published") === "draft";
 
+  // ── JSON response mode (used by Lit compose bridge) ──────────────
+  if (wantsJson) {
+    if (isDraft) {
+      return c.json({ status: "draft" as const, toast: "Draft saved." });
+    }
+
+    const mediaCtx = createMediaContext(c);
+    let postView;
+    if (data.mediaIds && data.mediaIds.length > 0) {
+      const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
+      const mediaMap = buildMediaMap(
+        rawMediaMap,
+        mediaCtx.r2PublicUrl,
+        mediaCtx.imageTransformUrl,
+        mediaCtx.s3PublicUrl,
+      );
+      postView = toPostView(
+        { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
+        mediaCtx,
+      );
+    } else {
+      postView = toPostViewFromPost(post, mediaCtx);
+    }
+
+    const cardHtml = (
+      <div>
+        <TimelineItemFromPost post={postView} />
+        <hr class="feed-divider" />
+      </div>
+    ).toString();
+
+    return c.json({ status: "published" as const, cardHtml });
+  }
+
+  // ── SSE response mode (used by Datastar) ─────────────────────────
   if (isDraft) {
     return sse(c, async (stream) => {
       await stream.patchElements(CLOSE_DIALOG_SCRIPT, {

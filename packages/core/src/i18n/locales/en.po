@@ -51,7 +51,7 @@ msgid "302 (Temporary)"
 msgstr "302 (Temporary)"
 
 #. @context: Settings form field for site description
-#: src/ui/dash/settings/GeneralContent.tsx:324
+#: src/ui/dash/settings/GeneralContent.tsx:89
 msgid "About this blog"
 msgstr "About this blog"
 
@@ -126,18 +126,16 @@ msgstr "Are you sure you want to delete this post? This cannot be undone."
 
 #. @context: Attached text badge label
 #: src/ui/compose/ComposeDialog.tsx:469
-msgid "Attached text"
-msgstr "Attached text"
+#~ msgid "Attached text"
+#~ msgstr "Attached text"
 
 #. @context: Attached text panel title
-#. @context: Compose toolbar - attached text tooltip
-#: src/ui/compose/ComposeDialog.tsx:72
-#: src/ui/compose/ComposeDialog.tsx:543
+#: src/ui/compose/ComposeDialog.tsx:71
 msgid "Attached Text"
 msgstr "Attached Text"
 
 #. @context: Compose quote author placeholder
-#: src/ui/compose/ComposeDialog.tsx:362
+#: src/ui/compose/ComposeDialog.tsx:63
 msgid "Author (optional)"
 msgstr "Author (optional)"
 
@@ -156,7 +154,7 @@ msgstr "Back"
 #~ msgstr "Back to home"
 
 #. @context: Settings section heading for avatar
-#: src/ui/dash/settings/GeneralContent.tsx:160
+#: src/ui/dash/settings/GeneralContent.tsx:47
 msgid "Blog Avatar"
 msgstr "Blog Avatar"
 
@@ -168,12 +166,12 @@ msgstr "Blog Avatar"
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx:183
-#: src/ui/compose/ComposeDialog.tsx:126
+#: src/ui/compose/ComposeDialog.tsx:23
 #: src/ui/dash/collections/CollectionForm.tsx:297
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
 #: src/ui/dash/PostForm.tsx:316
-#: src/ui/dash/settings/GeneralContent.tsx:86
+#: src/ui/dash/settings/GeneralContent.tsx:143
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -212,7 +210,7 @@ msgid "Close"
 msgstr "Close"
 
 #. @context: Compose collection selector placeholder
-#: src/ui/compose/ComposeDialog.tsx:646
+#: src/ui/compose/ComposeDialog.tsx:100
 msgid "Collection"
 msgstr "Collection"
 
@@ -344,7 +342,7 @@ msgid "Dashboard"
 msgstr "Dashboard"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:374
+#: src/ui/dash/settings/GeneralContent.tsx:102
 msgid "Default Homepage View"
 msgstr "Default Homepage View"
 
@@ -388,12 +386,12 @@ msgid "Description (optional)"
 msgstr "Description (optional)"
 
 #. @context: More menu - discard post
-#: src/ui/compose/ComposeDialog.tsx:246
+#: src/ui/compose/ComposeDialog.tsx:35
 msgid "Discard"
 msgstr "Discard"
 
 #. @context: Checkbox to show avatar in the site header
-#: src/ui/dash/settings/GeneralContent.tsx:274
+#: src/ui/dash/settings/GeneralContent.tsx:64
 msgid "Display avatar in my site header"
 msgstr "Display avatar in my site header"
 
@@ -404,9 +402,7 @@ msgstr "Display text for the link"
 
 #. @context: Close attached text panel
 #. @context: Close media picker button
-#. @context: Close media picker button
-#: src/ui/compose/ComposeDialog.tsx:111
-#: src/ui/compose/ComposeDialog.tsx:748
+#: src/ui/compose/ComposeDialog.tsx:84
 #: src/ui/dash/PostForm.tsx:338
 msgid "Done"
 msgstr "Done"
@@ -513,7 +509,7 @@ msgstr "entry"
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
 #: src/ui/dash/PostForm.tsx:248
-#: src/ui/dash/settings/GeneralContent.tsx:398
+#: src/ui/dash/settings/GeneralContent.tsx:110
 #: src/ui/dash/StatusBadge.tsx:45
 #: src/ui/layouts/SiteLayout.tsx:56
 #: src/ui/pages/ArchivePage.tsx:92
@@ -547,13 +543,13 @@ msgstr "From Path"
 
 #. @context: Settings section heading
 #. @context: Settings sub-navigation tab
-#: src/ui/dash/settings/GeneralContent.tsx:299
+#: src/ui/dash/settings/GeneralContent.tsx:81
 #: src/ui/dash/settings/SettingsNav.tsx:15
 msgid "General"
 msgstr "General"
 
 #. @context: Compose link title placeholder
-#: src/ui/compose/ComposeDialog.tsx:321
+#: src/ui/compose/ComposeDialog.tsx:51
 msgid "Give it a title..."
 msgstr "Give it a title..."
 
@@ -592,7 +588,7 @@ msgid "Invalid or Expired Link"
 msgstr "Invalid or Expired Link"
 
 #. @context: Checkbox for allowing search engine indexing
-#: src/ui/dash/settings/GeneralContent.tsx:515
+#: src/ui/dash/settings/GeneralContent.tsx:135
 msgid "It's OK for search engines to index my site"
 msgstr "It's OK for search engines to index my site"
 
@@ -602,13 +598,13 @@ msgid "Label"
 msgstr "Label"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:350
+#: src/ui/dash/settings/GeneralContent.tsx:98
 msgid "Language"
 msgstr "Language"
 
 #. @context: Browse filter for latest posts
 #. @context: Homepage view option - show latest posts
-#: src/ui/dash/settings/GeneralContent.tsx:388
+#: src/ui/dash/settings/GeneralContent.tsx:106
 #: src/ui/layouts/SiteLayout.tsx:49
 msgid "Latest"
 msgstr "Latest"
@@ -627,7 +623,7 @@ msgstr "link"
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:156
+#: src/ui/compose/ComposeDialog.tsx:25
 #: src/ui/dash/FormatBadge.tsx:20
 #: src/ui/dash/PostForm.tsx:76
 #: src/ui/pages/ArchivePage.tsx:17
@@ -646,7 +642,7 @@ msgstr "Load more"
 
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx:759
+#: src/ui/compose/ComposeDialog.tsx:112
 #: src/ui/dash/PostForm.tsx:349
 msgid "Loading..."
 msgstr "Loading..."
@@ -667,7 +663,7 @@ msgid "Markdown"
 msgstr "Markdown"
 
 #. @context: Placeholder for footer textarea
-#: src/ui/dash/settings/GeneralContent.tsx:466
+#: src/ui/dash/settings/GeneralContent.tsx:122
 msgid "Markdown supported"
 msgstr "Markdown supported"
 
@@ -675,7 +671,7 @@ msgstr "Markdown supported"
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
 #. @context: Post form field - media attachments
-#: src/ui/compose/ComposeDialog.tsx:514
+#: src/ui/compose/ComposeDialog.tsx:88
 #: src/ui/dash/media/MediaListContent.tsx:127
 #: src/ui/dash/PostForm.tsx:160
 #: src/ui/layouts/DashLayout.tsx:105
@@ -847,7 +843,7 @@ msgstr "No results found."
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:145
+#: src/ui/compose/ComposeDialog.tsx:24
 #: src/ui/dash/FormatBadge.tsx:19
 #: src/ui/dash/PostForm.tsx:73
 #: src/ui/pages/ArchivePage.tsx:16
@@ -909,7 +905,7 @@ msgid "Password"
 msgstr "Password"
 
 #. @context: Attached text placeholder
-#: src/ui/compose/ComposeDialog.tsx:90
+#: src/ui/compose/ComposeDialog.tsx:75
 msgid ""
 "Paste a long article, AI response, or any text...\n"
 "\n"
@@ -920,7 +916,7 @@ msgstr ""
 "Markdown formatting will be preserved."
 
 #. @context: Compose link URL placeholder
-#: src/ui/compose/ComposeDialog.tsx:310
+#: src/ui/compose/ComposeDialog.tsx:47
 msgid "Paste a URL..."
 msgstr "Paste a URL..."
 
@@ -957,7 +953,7 @@ msgstr "Pinned"
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/ui/compose/ComposeDialog.tsx:722
+#: src/ui/compose/ComposeDialog.tsx:104
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "Post"
@@ -1004,7 +1000,7 @@ msgstr "Previous"
 #. @context: Avatar upload button text while generating favicon variants
 #. @context: Upload status - processing
 #: src/ui/dash/media/MediaListContent.tsx:95
-#: src/ui/dash/settings/GeneralContent.tsx:215
+#: src/ui/dash/settings/GeneralContent.tsx:68
 msgid "Processing..."
 msgstr "Processing..."
 
@@ -1058,7 +1054,7 @@ msgstr "Quick Actions"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:167
+#: src/ui/compose/ComposeDialog.tsx:26
 #: src/ui/dash/FormatBadge.tsx:21
 #: src/ui/dash/PostForm.tsx:79
 #: src/ui/pages/ArchivePage.tsx:18
@@ -1094,7 +1090,7 @@ msgstr "Redirects"
 #. @context: Remove media attachment button
 #: src/ui/dash/collections/CollectionForm.tsx:199
 #: src/ui/dash/PostForm.tsx:196
-#: src/ui/dash/settings/GeneralContent.tsx:243
+#: src/ui/dash/settings/GeneralContent.tsx:55
 msgid "Remove"
 msgstr "Remove"
 
@@ -1111,17 +1107,17 @@ msgid "Reset Password"
 msgstr "Reset Password"
 
 #. @context: Button to save settings
-#: src/ui/dash/settings/GeneralContent.tsx:74
+#: src/ui/dash/settings/GeneralContent.tsx:139
 msgid "Save"
 msgstr "Save"
 
 #. @context: More menu - save draft
-#: src/ui/compose/ComposeDialog.tsx:235
+#: src/ui/compose/ComposeDialog.tsx:31
 msgid "Save as draft"
 msgstr "Save as draft"
 
 #. @context: Header draft button tooltip
-#: src/ui/compose/ComposeDialog.tsx:179
+#: src/ui/compose/ComposeDialog.tsx:27
 msgid "Save as Draft"
 msgstr "Save as Draft"
 
@@ -1146,7 +1142,7 @@ msgstr "Save Profile"
 #~ msgstr "Save Settings"
 
 #. @context: Compose toolbar - score tooltip
-#: src/ui/compose/ComposeDialog.tsx:572
+#: src/ui/compose/ComposeDialog.tsx:92
 msgid "Score"
 msgstr "Score"
 
@@ -1176,13 +1172,13 @@ msgstr "Search posts..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx:738
+#: src/ui/compose/ComposeDialog.tsx:108
 #: src/ui/dash/PostForm.tsx:328
 msgid "Select Media"
 msgstr "Select Media"
 
 #. @context: Settings section heading for SEO
-#: src/ui/dash/settings/GeneralContent.tsx:498
+#: src/ui/dash/settings/GeneralContent.tsx:131
 msgid "SEO"
 msgstr "SEO"
 
@@ -1192,7 +1188,7 @@ msgstr "SEO"
 #. @context: Dashboard navigation - site settings
 #: src/ui/dash/settings/AccountContent.tsx:16
 #: src/ui/dash/settings/AppearanceContent.tsx:101
-#: src/ui/dash/settings/GeneralContent.tsx:151
+#: src/ui/dash/settings/GeneralContent.tsx:173
 #: src/ui/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "Settings"
@@ -1226,12 +1222,12 @@ msgstr "Sign Out"
 #~ msgstr "Site Description"
 
 #. @context: Settings section heading for site footer
-#: src/ui/dash/settings/GeneralContent.tsx:454
+#: src/ui/dash/settings/GeneralContent.tsx:118
 msgid "Site Footer"
 msgstr "Site Footer"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:308
+#: src/ui/dash/settings/GeneralContent.tsx:85
 msgid "Site Name"
 msgstr "Site Name"
 
@@ -1248,7 +1244,7 @@ msgid "Sort Order"
 msgstr "Sort Order"
 
 #. @context: Compose quote source link placeholder
-#: src/ui/compose/ComposeDialog.tsx:373
+#: src/ui/compose/ComposeDialog.tsx:67
 msgid "Source link (optional)"
 msgstr "Source link (optional)"
 
@@ -1270,7 +1266,7 @@ msgid "Status"
 msgstr "Status"
 
 #. @context: Attached text panel hint
-#: src/ui/compose/ComposeDialog.tsx:101
+#: src/ui/compose/ComposeDialog.tsx:80
 msgid "Supplementary content attached to your post"
 msgstr "Supplementary content attached to your post"
 
@@ -1307,17 +1303,17 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 
 #. @context: Help text for site description field
-#: src/ui/dash/settings/GeneralContent.tsx:340
+#: src/ui/dash/settings/GeneralContent.tsx:93
 msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
 msgstr "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
 
 #. @context: Help text for site footer field
-#: src/ui/dash/settings/GeneralContent.tsx:474
+#: src/ui/dash/settings/GeneralContent.tsx:126
 msgid "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
 msgstr "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
 
 #. @context: Help text for avatar upload
-#: src/ui/dash/settings/GeneralContent.tsx:253
+#: src/ui/dash/settings/GeneralContent.tsx:59
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
 msgstr "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
 
@@ -1352,7 +1348,7 @@ msgid "Thread with 1 post"
 msgstr "Thread with 1 post"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:409
+#: src/ui/dash/settings/GeneralContent.tsx:114
 msgid "Time Zone"
 msgstr "Time Zone"
 
@@ -1360,8 +1356,8 @@ msgstr "Time Zone"
 #. @context: Compose note title placeholder
 #. @context: Compose toolbar - title tooltip
 #. @context: Page form field label - title
-#: src/ui/compose/ComposeDialog.tsx:273
-#: src/ui/compose/ComposeDialog.tsx:604
+#: src/ui/compose/ComposeDialog.tsx:39
+#: src/ui/compose/ComposeDialog.tsx:96
 #: src/ui/dash/collections/CollectionForm.tsx:76
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
@@ -1383,7 +1379,7 @@ msgid "Type"
 msgstr "Type"
 
 #. @context: Compose quote text placeholder
-#: src/ui/compose/ComposeDialog.tsx:349
+#: src/ui/compose/ComposeDialog.tsx:59
 msgid "Type the quote..."
 msgstr "Type the quote..."
 
@@ -1427,14 +1423,14 @@ msgid "Upload"
 msgstr "Upload"
 
 #. @context: Button to upload avatar image
-#: src/ui/dash/settings/GeneralContent.tsx:205
+#: src/ui/dash/settings/GeneralContent.tsx:51
 msgid "Upload Avatar"
 msgstr "Upload Avatar"
 
 #. @context: Error message when avatar upload fails
 #. @context: Upload error message
 #: src/ui/dash/media/MediaListContent.tsx:107
-#: src/ui/dash/settings/GeneralContent.tsx:225
+#: src/ui/dash/settings/GeneralContent.tsx:77
 msgid "Upload failed. Please try again."
 msgstr "Upload failed. Please try again."
 
@@ -1446,7 +1442,7 @@ msgstr "Upload failed. Please try again."
 #. @context: Avatar upload button text while uploading
 #. @context: Upload status - uploading
 #: src/ui/dash/media/MediaListContent.tsx:99
-#: src/ui/dash/settings/GeneralContent.tsx:220
+#: src/ui/dash/settings/GeneralContent.tsx:73
 msgid "Uploading..."
 msgstr "Uploading..."
 
@@ -1525,7 +1521,7 @@ msgid "What's on your mind?"
 msgstr "What's on your mind?"
 
 #. @context: Compose body placeholder
-#: src/ui/compose/ComposeDialog.tsx:290
+#: src/ui/compose/ComposeDialog.tsx:43
 msgid "What's on your mind..."
 msgstr "What's on your mind..."
 
@@ -1545,8 +1541,6 @@ msgid "Your site navigation"
 msgstr "Your site navigation"
 
 #. @context: Compose thoughts placeholder
-#. @context: Compose thoughts placeholder
-#: src/ui/compose/ComposeDialog.tsx:330
-#: src/ui/compose/ComposeDialog.tsx:384
+#: src/ui/compose/ComposeDialog.tsx:55
 msgid "Your thoughts (optional)"
 msgstr "Your thoughts (optional)"

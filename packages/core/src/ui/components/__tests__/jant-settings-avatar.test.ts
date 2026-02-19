@@ -1,0 +1,213 @@
+// @vitest-environment happy-dom
+
+import { describe, it, expect, beforeEach } from "vitest";
+import type { SettingsLabels } from "../settings-types.js";
+import "../jant-settings-avatar.js";
+import type { JantSettingsAvatar } from "../jant-settings-avatar.js";
+
+const labels: SettingsLabels = {
+  blogAvatar: "Blog Avatar",
+  uploadAvatar: "Upload Avatar",
+  remove: "Remove",
+  avatarHelp: "For best results, upload a square image.",
+  displayInHeader: "Display avatar in my site header",
+  processing: "Processing...",
+  uploading: "Uploading...",
+  uploadError: "Upload failed.",
+  general: "General",
+  siteName: "Site Name",
+  aboutBlog: "About this blog",
+  aboutBlogHelp: "Displayed above your blog posts.",
+  language: "Language",
+  defaultHomepageView: "Default Homepage View",
+  latest: "Latest",
+  featured: "Featured",
+  timeZone: "Time Zone",
+  siteFooter: "Site Footer",
+  footerPlaceholder: "Markdown supported",
+  footerHelp: "Displayed at the bottom of posts.",
+  seo: "SEO",
+  allowIndexing: "It's OK for search engines to index my site",
+  save: "Save",
+  cancel: "Cancel",
+};
+
+async function createElement(
+  avatarUrl = "",
+  showInHeader = false,
+): Promise<JantSettingsAvatar> {
+  const el = document.createElement(
+    "jant-settings-avatar",
+  ) as JantSettingsAvatar;
+  el.avatarUrl = avatarUrl;
+  el.showInHeader = showInHeader;
+  el.labels = labels;
+  document.body.appendChild(el);
+  await el.updateComplete;
+  return el;
+}
+
+/** Toggle a checkbox reliably in happy-dom by explicitly dispatching change */
+function toggleCheckbox(checkbox: HTMLInputElement) {
+  checkbox.checked = !checkbox.checked;
+  checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+/** Find the save button (not the upload label which also has .btn) */
+function findSaveBtn(el: HTMLElement): HTMLButtonElement | null {
+  return el.querySelector<HTMLButtonElement>("button.btn:not(.btn-outline)");
+}
+
+/** Find the cancel button */
+function findCancelBtn(el: HTMLElement): HTMLButtonElement | null {
+  return el.querySelector<HTMLButtonElement>("button.btn-outline");
+}
+
+describe("JantSettingsAvatar", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("renders card with Blog Avatar heading", async () => {
+    const el = await createElement();
+    const heading = el.querySelector("h2");
+    expect(heading?.textContent).toBe("Blog Avatar");
+  });
+
+  it("renders placeholder when no avatar URL", async () => {
+    const el = await createElement();
+    const img = el.querySelector("img");
+    expect(img).toBeNull();
+    const placeholder = el.querySelector(".bg-muted");
+    expect(placeholder).not.toBeNull();
+  });
+
+  it("renders avatar image when URL provided", async () => {
+    const el = await createElement("https://example.com/avatar.png");
+    const img = el.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img?.src).toBe("https://example.com/avatar.png");
+  });
+
+  it("shows Remove button when avatar exists", async () => {
+    const el = await createElement("https://example.com/avatar.png");
+    const buttons = el.querySelectorAll("button");
+    const removeBtn = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Remove"),
+    );
+    expect(removeBtn).not.toBeNull();
+  });
+
+  it("hides Remove button when no avatar", async () => {
+    const el = await createElement();
+    const buttons = el.querySelectorAll("button");
+    const removeBtn = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Remove"),
+    );
+    expect(removeBtn).toBeUndefined();
+  });
+
+  it("renders display-in-header checkbox with correct state", async () => {
+    const el = await createElement("", true);
+    const checkbox = el.querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    );
+    expect(checkbox?.checked).toBe(true);
+  });
+
+  it("toggling checkbox marks form as dirty", async () => {
+    const el = await createElement("", false);
+    const checkbox = el.querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    )!;
+
+    toggleCheckbox(checkbox);
+    await el.updateComplete;
+
+    const saveBtn = findSaveBtn(el);
+    expect(saveBtn?.disabled).toBe(false);
+  });
+
+  it("cancel reverts checkbox to original state", async () => {
+    const el = await createElement("", false);
+    const checkbox = el.querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    )!;
+
+    toggleCheckbox(checkbox);
+    await el.updateComplete;
+
+    const cancelBtn = findCancelBtn(el);
+    cancelBtn?.click();
+    await el.updateComplete;
+
+    expect(checkbox.checked).toBe(false);
+  });
+
+  it("dispatches jant:settings-save on save click", async () => {
+    const el = await createElement("", false);
+    const checkbox = el.querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    )!;
+
+    toggleCheckbox(checkbox);
+    await el.updateComplete;
+
+    let detail: any = null;
+    el.addEventListener("jant:settings-save", ((e: CustomEvent) => {
+      detail = e.detail;
+    }) as EventListener);
+
+    const saveBtn = findSaveBtn(el);
+    saveBtn?.click();
+    await el.updateComplete;
+
+    expect(detail).not.toBeNull();
+    expect(detail.endpoint).toBe("/dash/settings/avatar/display");
+    expect(detail.section).toBe("avatar-display");
+    expect(detail.data.showHeaderAvatar).toBe("true");
+  });
+
+  it("dispatches jant:avatar-remove on remove click", async () => {
+    const el = await createElement("https://example.com/avatar.png");
+
+    let detail: any = null;
+    el.addEventListener("jant:avatar-remove", ((e: CustomEvent) => {
+      detail = e.detail;
+    }) as EventListener);
+
+    const buttons = el.querySelectorAll("button");
+    const removeBtn = Array.from(buttons).find((b) =>
+      b.textContent?.includes("Remove"),
+    );
+    removeBtn?.click();
+
+    expect(detail).not.toBeNull();
+    expect(detail.endpoint).toBe("/dash/settings/avatar/remove");
+  });
+
+  it("saved() resets dirty state", async () => {
+    const el = await createElement("", false);
+    const checkbox = el.querySelector<HTMLInputElement>(
+      'input[type="checkbox"]',
+    )!;
+
+    toggleCheckbox(checkbox);
+    await el.updateComplete;
+
+    el.saved();
+    await el.updateComplete;
+
+    const saveBtn = findSaveBtn(el);
+    expect(saveBtn?.disabled).toBe(true);
+  });
+
+  it("renders file input with data-avatar-upload attribute", async () => {
+    const el = await createElement();
+    const fileInput = el.querySelector<HTMLInputElement>(
+      "input[data-avatar-upload]",
+    );
+    expect(fileInput).not.toBeNull();
+    expect(fileInput?.type).toBe("file");
+  });
+});

@@ -14,3 +14,11 @@ import "./lib/media-upload.js";
 import "./lib/avatar-upload.js";
 import "./lib/nav-reorder.js";
 import "./lib/collections-reorder.js";
+
+// Lit Web Components
+import "./ui/components/jant-compose-dialog.js";
+import "./ui/components/jant-compose-editor.js";
+import "./lib/compose-bridge.js";
+import "./ui/components/jant-settings-general.js";
+import "./ui/components/jant-settings-avatar.js";
+import "./lib/settings-bridge.js";

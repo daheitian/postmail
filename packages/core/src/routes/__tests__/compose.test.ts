@@ -210,4 +210,77 @@ describe("Compose Routes", () => {
       expect(text).toContain("toast-error");
     });
   });
+
+  describe("POST /compose (JSON mode)", () => {
+    it("returns JSON for published note", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/compose", composeRoutes);
+
+      const res = await app.request("/compose", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ format: "note", body: "Hello JSON" }),
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toContain("application/json");
+
+      const data = await res.json();
+      expect(data.status).toBe("published");
+      expect(data.cardHtml).toContain('data-format="note"');
+
+      const posts = await services.posts.list();
+      expect(posts).toHaveLength(1);
+      expect(posts[0].body).toBe("Hello JSON");
+    });
+
+    it("returns JSON for draft", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/compose", composeRoutes);
+
+      const res = await app.request("/compose", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          format: "note",
+          body: "Draft JSON",
+          status: "draft",
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.status).toBe("draft");
+      expect(data.toast).toBe("Draft saved.");
+
+      const posts = await services.posts.list({ includeDrafts: true });
+      expect(posts).toHaveLength(1);
+      expect(posts[0].status).toBe("draft");
+    });
+
+    it("returns JSON error for invalid input", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/compose", composeRoutes);
+
+      const res = await app.request("/compose", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ format: "invalid", body: "Hello" }),
+      });
+
+      expect(res.status).toBe(422);
+      const data = await res.json();
+      expect(data.status).toBe("error");
+      expect(data.error).toBeDefined();
+    });
+  });
 });

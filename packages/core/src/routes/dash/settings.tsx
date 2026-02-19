@@ -153,6 +153,22 @@ settingsRoutes.post("/", async (c) => {
   const languageChanged = oldLanguage !== body.siteLanguage;
   const displayName = body.siteName.trim() || getConfigFallback(c, "SITE_NAME");
 
+  // ── JSON response mode (used by Lit settings bridge) ──────────────
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    if (languageChanged) {
+      return c.json({
+        status: "redirect" as const,
+        url: "/dash/settings?saved",
+      });
+    }
+    return c.json({
+      status: "ok" as const,
+      toast: "Settings saved successfully.",
+      siteName: displayName,
+    });
+  }
+
   return sse(c, async (stream) => {
     if (languageChanged) {
       await stream.redirect("/dash/settings?saved");
@@ -188,6 +204,15 @@ settingsRoutes.post("/footer", async (c) => {
     await settings.remove("SITE_FOOTER");
   }
 
+  // ── JSON response mode (used by Lit settings bridge) ──────────────
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    return c.json({
+      status: "ok" as const,
+      toast: "Footer saved successfully.",
+    });
+  }
+
   return sse(c, async (stream) => {
     await stream.toast("Footer saved successfully.");
     await stream.patchSignals({
@@ -208,6 +233,15 @@ settingsRoutes.post("/seo", async (c) => {
     await settings.remove("NOINDEX");
   } else {
     await settings.set("NOINDEX", "true");
+  }
+
+  // ── JSON response mode (used by Lit settings bridge) ──────────────
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    return c.json({
+      status: "ok" as const,
+      toast: "SEO settings saved successfully.",
+    });
   }
 
   return sse(c, async (stream) => {
@@ -328,6 +362,13 @@ settingsRoutes.post("/avatar/remove", async (c) => {
   await c.var.services.settings.remove("SITE_FAVICON_ICO");
   await c.var.services.settings.remove("SITE_FAVICON_APPLE_TOUCH");
   await c.var.services.settings.remove("SITE_FAVICON_VERSION");
+
+  // ── JSON response mode (used by Lit settings bridge) ──────────────
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    return c.json({ status: "redirect" as const, url: "/dash/settings?saved" });
+  }
+
   return dsRedirect("/dash/settings?saved");
 });
 
@@ -339,6 +380,15 @@ settingsRoutes.post("/avatar/display", async (c) => {
     await settings.set("SHOW_HEADER_AVATAR", "true");
   } else {
     await settings.remove("SHOW_HEADER_AVATAR");
+  }
+
+  // ── JSON response mode (used by Lit settings bridge) ──────────────
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    return c.json({
+      status: "ok" as const,
+      toast: "Avatar display setting saved successfully.",
+    });
   }
 
   return sse(c, async (stream) => {

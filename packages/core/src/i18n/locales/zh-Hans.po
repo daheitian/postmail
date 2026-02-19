@@ -34,7 +34,7 @@ msgid "302 (Temporary)"
 msgstr "302（临时）"
 
 #. @context: Settings form field for site description
-#: src/ui/dash/settings/GeneralContent.tsx:324
+#: src/ui/dash/settings/GeneralContent.tsx:89
 msgid "About this blog"
 msgstr "关于这个博客"
 
@@ -88,20 +88,13 @@ msgstr "档案馆"
 msgid "Are you sure you want to delete this post? This cannot be undone."
 msgstr "您确定要删除此帖子吗？此操作无法撤销。"
 
-#. @context: Attached text badge label
-#: src/ui/compose/ComposeDialog.tsx:469
-msgid "Attached text"
-msgstr "附加文本"
-
 #. @context: Attached text panel title
-#. @context: Compose toolbar - attached text tooltip
-#: src/ui/compose/ComposeDialog.tsx:72
-#: src/ui/compose/ComposeDialog.tsx:543
+#: src/ui/compose/ComposeDialog.tsx:71
 msgid "Attached Text"
 msgstr "附加文本"
 
 #. @context: Compose quote author placeholder
-#: src/ui/compose/ComposeDialog.tsx:362
+#: src/ui/compose/ComposeDialog.tsx:63
 msgid "Author (optional)"
 msgstr "作者（可选）"
 
@@ -111,7 +104,7 @@ msgid "Back"
 msgstr "返回"
 
 #. @context: Settings section heading for avatar
-#: src/ui/dash/settings/GeneralContent.tsx:160
+#: src/ui/dash/settings/GeneralContent.tsx:47
 msgid "Blog Avatar"
 msgstr "博客头像"
 
@@ -123,12 +116,12 @@ msgstr "博客头像"
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx:183
-#: src/ui/compose/ComposeDialog.tsx:126
+#: src/ui/compose/ComposeDialog.tsx:23
 #: src/ui/dash/collections/CollectionForm.tsx:297
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
 #: src/ui/dash/PostForm.tsx:316
-#: src/ui/dash/settings/GeneralContent.tsx:86
+#: src/ui/dash/settings/GeneralContent.tsx:143
 msgid "Cancel"
 msgstr "取消"
 
@@ -162,7 +155,7 @@ msgid "Close"
 msgstr "关闭"
 
 #. @context: Compose collection selector placeholder
-#: src/ui/compose/ComposeDialog.tsx:646
+#: src/ui/compose/ComposeDialog.tsx:100
 msgid "Collection"
 msgstr "集合"
 
@@ -269,7 +262,7 @@ msgid "Dashboard"
 msgstr "仪表板"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:374
+#: src/ui/dash/settings/GeneralContent.tsx:102
 msgid "Default Homepage View"
 msgstr "默认主页视图"
 
@@ -308,12 +301,12 @@ msgid "Description (optional)"
 msgstr "描述（可选）"
 
 #. @context: More menu - discard post
-#: src/ui/compose/ComposeDialog.tsx:246
+#: src/ui/compose/ComposeDialog.tsx:35
 msgid "Discard"
 msgstr "丢弃"
 
 #. @context: Checkbox to show avatar in the site header
-#: src/ui/dash/settings/GeneralContent.tsx:274
+#: src/ui/dash/settings/GeneralContent.tsx:64
 msgid "Display avatar in my site header"
 msgstr "在我的网站头部显示头像"
 
@@ -324,9 +317,7 @@ msgstr "链接的显示文本"
 
 #. @context: Close attached text panel
 #. @context: Close media picker button
-#. @context: Close media picker button
-#: src/ui/compose/ComposeDialog.tsx:111
-#: src/ui/compose/ComposeDialog.tsx:748
+#: src/ui/compose/ComposeDialog.tsx:84
 #: src/ui/dash/PostForm.tsx:338
 msgid "Done"
 msgstr "完成"
@@ -414,7 +405,7 @@ msgstr "条目"
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
 #: src/ui/dash/PostForm.tsx:248
-#: src/ui/dash/settings/GeneralContent.tsx:398
+#: src/ui/dash/settings/GeneralContent.tsx:110
 #: src/ui/dash/StatusBadge.tsx:45
 #: src/ui/layouts/SiteLayout.tsx:56
 #: src/ui/pages/ArchivePage.tsx:92
@@ -448,13 +439,13 @@ msgstr "来源路径"
 
 #. @context: Settings section heading
 #. @context: Settings sub-navigation tab
-#: src/ui/dash/settings/GeneralContent.tsx:299
+#: src/ui/dash/settings/GeneralContent.tsx:81
 #: src/ui/dash/settings/SettingsNav.tsx:15
 msgid "General"
 msgstr "常规"
 
 #. @context: Compose link title placeholder
-#: src/ui/compose/ComposeDialog.tsx:321
+#: src/ui/compose/ComposeDialog.tsx:51
 msgid "Give it a title..."
 msgstr "给它一个标题..."
 
@@ -479,7 +470,7 @@ msgid "Invalid or Expired Link"
 msgstr "无效或过期的链接"
 
 #. @context: Checkbox for allowing search engine indexing
-#: src/ui/dash/settings/GeneralContent.tsx:515
+#: src/ui/dash/settings/GeneralContent.tsx:135
 msgid "It's OK for search engines to index my site"
 msgstr "允许搜索引擎索引我的网站是可以的"
 
@@ -489,13 +480,13 @@ msgid "Label"
 msgstr "标签"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:350
+#: src/ui/dash/settings/GeneralContent.tsx:98
 msgid "Language"
 msgstr "语言"
 
 #. @context: Browse filter for latest posts
 #. @context: Homepage view option - show latest posts
-#: src/ui/dash/settings/GeneralContent.tsx:388
+#: src/ui/dash/settings/GeneralContent.tsx:106
 #: src/ui/layouts/SiteLayout.tsx:49
 msgid "Latest"
 msgstr "最新"
@@ -509,7 +500,7 @@ msgstr "链接"
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:156
+#: src/ui/compose/ComposeDialog.tsx:25
 #: src/ui/dash/FormatBadge.tsx:20
 #: src/ui/dash/PostForm.tsx:76
 #: src/ui/pages/ArchivePage.tsx:17
@@ -528,7 +519,7 @@ msgstr "加载更多"
 
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx:759
+#: src/ui/compose/ComposeDialog.tsx:112
 #: src/ui/dash/PostForm.tsx:349
 msgid "Loading..."
 msgstr "加载中..."
@@ -549,7 +540,7 @@ msgid "Markdown"
 msgstr "Markdown"
 
 #. @context: Placeholder for footer textarea
-#: src/ui/dash/settings/GeneralContent.tsx:466
+#: src/ui/dash/settings/GeneralContent.tsx:122
 msgid "Markdown supported"
 msgstr "支持Markdown"
 
@@ -557,7 +548,7 @@ msgstr "支持Markdown"
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
 #. @context: Post form field - media attachments
-#: src/ui/compose/ComposeDialog.tsx:514
+#: src/ui/compose/ComposeDialog.tsx:88
 #: src/ui/dash/media/MediaListContent.tsx:127
 #: src/ui/dash/PostForm.tsx:160
 #: src/ui/layouts/DashLayout.tsx:105
@@ -591,7 +582,7 @@ msgstr "新收藏"
 #. @context: Button to add divider between collections
 #: src/ui/dash/collections/CollectionsListContent.tsx:43
 msgid "New Divider"
-msgstr ""
+msgstr "新分隔符"
 
 #. @context: Page heading
 #: src/ui/dash/pages/LinkFormContent.tsx:18
@@ -697,7 +688,7 @@ msgstr "未找到结果。"
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:145
+#: src/ui/compose/ComposeDialog.tsx:24
 #: src/ui/dash/FormatBadge.tsx:19
 #: src/ui/dash/PostForm.tsx:73
 #: src/ui/pages/ArchivePage.tsx:16
@@ -759,7 +750,7 @@ msgid "Password"
 msgstr "密码"
 
 #. @context: Attached text placeholder
-#: src/ui/compose/ComposeDialog.tsx:90
+#: src/ui/compose/ComposeDialog.tsx:75
 msgid ""
 "Paste a long article, AI response, or any text...\n"
 "\n"
@@ -770,7 +761,7 @@ msgstr ""
 "Markdown 格式将被保留。"
 
 #. @context: Compose link URL placeholder
-#: src/ui/compose/ComposeDialog.tsx:310
+#: src/ui/compose/ComposeDialog.tsx:47
 msgid "Paste a URL..."
 msgstr "粘贴一个网址..."
 
@@ -797,7 +788,7 @@ msgstr "已固定"
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/ui/compose/ComposeDialog.tsx:722
+#: src/ui/compose/ComposeDialog.tsx:104
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "帖子"
@@ -834,7 +825,7 @@ msgstr "上一页"
 #. @context: Avatar upload button text while generating favicon variants
 #. @context: Upload status - processing
 #: src/ui/dash/media/MediaListContent.tsx:95
-#: src/ui/dash/settings/GeneralContent.tsx:215
+#: src/ui/dash/settings/GeneralContent.tsx:68
 msgid "Processing..."
 msgstr "处理中..."
 
@@ -873,7 +864,7 @@ msgstr "快速操作"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:167
+#: src/ui/compose/ComposeDialog.tsx:26
 #: src/ui/dash/FormatBadge.tsx:21
 #: src/ui/dash/PostForm.tsx:79
 #: src/ui/pages/ArchivePage.tsx:18
@@ -902,14 +893,14 @@ msgstr "重定向"
 #. @context: Remove media attachment button
 #: src/ui/dash/collections/CollectionForm.tsx:199
 #: src/ui/dash/PostForm.tsx:196
-#: src/ui/dash/settings/GeneralContent.tsx:243
+#: src/ui/dash/settings/GeneralContent.tsx:55
 msgid "Remove"
 msgstr "移除"
 
 #. @context: Button to delete a divider
 #: src/ui/dash/collections/CollectionsListContent.tsx:93
 msgid "Remove divider"
-msgstr ""
+msgstr "移除分隔符"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
@@ -919,17 +910,17 @@ msgid "Reset Password"
 msgstr "重置密码"
 
 #. @context: Button to save settings
-#: src/ui/dash/settings/GeneralContent.tsx:74
+#: src/ui/dash/settings/GeneralContent.tsx:139
 msgid "Save"
 msgstr "保存"
 
 #. @context: More menu - save draft
-#: src/ui/compose/ComposeDialog.tsx:235
+#: src/ui/compose/ComposeDialog.tsx:31
 msgid "Save as draft"
 msgstr "保存为草稿"
 
 #. @context: Header draft button tooltip
-#: src/ui/compose/ComposeDialog.tsx:179
+#: src/ui/compose/ComposeDialog.tsx:27
 msgid "Save as Draft"
 msgstr "保存为草稿"
 
@@ -949,7 +940,7 @@ msgid "Save Profile"
 msgstr "保存个人资料"
 
 #. @context: Compose toolbar - score tooltip
-#: src/ui/compose/ComposeDialog.tsx:572
+#: src/ui/compose/ComposeDialog.tsx:92
 msgid "Score"
 msgstr "得分"
 
@@ -965,7 +956,7 @@ msgstr "搜索"
 #. @context: Icon picker search placeholder
 #: src/ui/dash/collections/CollectionForm.tsx:334
 msgid "Search icons..."
-msgstr ""
+msgstr "搜索图标..."
 
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx:36
@@ -974,13 +965,13 @@ msgstr "搜索帖子..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx:738
+#: src/ui/compose/ComposeDialog.tsx:108
 #: src/ui/dash/PostForm.tsx:328
 msgid "Select Media"
 msgstr "选择媒体"
 
 #. @context: Settings section heading for SEO
-#: src/ui/dash/settings/GeneralContent.tsx:498
+#: src/ui/dash/settings/GeneralContent.tsx:131
 msgid "SEO"
 msgstr "搜索引擎优化"
 
@@ -990,7 +981,7 @@ msgstr "搜索引擎优化"
 #. @context: Dashboard navigation - site settings
 #: src/ui/dash/settings/AccountContent.tsx:16
 #: src/ui/dash/settings/AppearanceContent.tsx:101
-#: src/ui/dash/settings/GeneralContent.tsx:151
+#: src/ui/dash/settings/GeneralContent.tsx:173
 #: src/ui/layouts/DashLayout.tsx:133
 msgid "Settings"
 msgstr "设置"
@@ -1014,12 +1005,12 @@ msgid "Sign Out"
 msgstr "登出"
 
 #. @context: Settings section heading for site footer
-#: src/ui/dash/settings/GeneralContent.tsx:454
+#: src/ui/dash/settings/GeneralContent.tsx:118
 msgid "Site Footer"
 msgstr "网站页脚"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:308
+#: src/ui/dash/settings/GeneralContent.tsx:85
 msgid "Site Name"
 msgstr "网站名称"
 
@@ -1036,7 +1027,7 @@ msgid "Sort Order"
 msgstr "排序顺序"
 
 #. @context: Compose quote source link placeholder
-#: src/ui/compose/ComposeDialog.tsx:373
+#: src/ui/compose/ComposeDialog.tsx:67
 msgid "Source link (optional)"
 msgstr "来源链接（可选）"
 
@@ -1048,7 +1039,7 @@ msgid "Status"
 msgstr "状态"
 
 #. @context: Attached text panel hint
-#: src/ui/compose/ComposeDialog.tsx:101
+#: src/ui/compose/ComposeDialog.tsx:80
 msgid "Supplementary content attached to your post"
 msgstr "附加在您帖子上的补充内容"
 
@@ -1080,17 +1071,17 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此页面的 URL 路径。使用小写字母、数字和连字符。"
 
 #. @context: Help text for site description field
-#: src/ui/dash/settings/GeneralContent.tsx:340
+#: src/ui/dash/settings/GeneralContent.tsx:93
 msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
 msgstr "这将在您的默认主页上显示在博客文章上方。这也用于您主页上的元描述。"
 
 #. @context: Help text for site footer field
-#: src/ui/dash/settings/GeneralContent.tsx:474
+#: src/ui/dash/settings/GeneralContent.tsx:126
 msgid "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
 msgstr "这将在您所有的帖子和页面底部显示。支持Markdown。"
 
 #. @context: Help text for avatar upload
-#: src/ui/dash/settings/GeneralContent.tsx:253
+#: src/ui/dash/settings/GeneralContent.tsx:59
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
 msgstr "这用于您的网站图标和苹果触控图标。为了获得最佳效果，请上传至少 180x180 像素的正方形图像。"
 
@@ -1120,7 +1111,7 @@ msgid "Thread with 1 post"
 msgstr "包含 1 条帖子的话题"
 
 #. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx:409
+#: src/ui/dash/settings/GeneralContent.tsx:114
 msgid "Time Zone"
 msgstr "时区"
 
@@ -1128,8 +1119,8 @@ msgstr "时区"
 #. @context: Compose note title placeholder
 #. @context: Compose toolbar - title tooltip
 #. @context: Page form field label - title
-#: src/ui/compose/ComposeDialog.tsx:273
-#: src/ui/compose/ComposeDialog.tsx:604
+#: src/ui/compose/ComposeDialog.tsx:39
+#: src/ui/compose/ComposeDialog.tsx:96
 #: src/ui/dash/collections/CollectionForm.tsx:76
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
@@ -1151,7 +1142,7 @@ msgid "Type"
 msgstr "类型"
 
 #. @context: Compose quote text placeholder
-#: src/ui/compose/ComposeDialog.tsx:349
+#: src/ui/compose/ComposeDialog.tsx:59
 msgid "Type the quote..."
 msgstr "输入引用..."
 
@@ -1188,21 +1179,21 @@ msgid "Upload"
 msgstr "上传"
 
 #. @context: Button to upload avatar image
-#: src/ui/dash/settings/GeneralContent.tsx:205
+#: src/ui/dash/settings/GeneralContent.tsx:51
 msgid "Upload Avatar"
 msgstr "上传头像"
 
 #. @context: Error message when avatar upload fails
 #. @context: Upload error message
 #: src/ui/dash/media/MediaListContent.tsx:107
-#: src/ui/dash/settings/GeneralContent.tsx:225
+#: src/ui/dash/settings/GeneralContent.tsx:77
 msgid "Upload failed. Please try again."
 msgstr "上传失败。请再试一次。"
 
 #. @context: Avatar upload button text while uploading
 #. @context: Upload status - uploading
 #: src/ui/dash/media/MediaListContent.tsx:99
-#: src/ui/dash/settings/GeneralContent.tsx:220
+#: src/ui/dash/settings/GeneralContent.tsx:73
 msgid "Uploading..."
 msgstr "上传中..."
 
@@ -1261,7 +1252,7 @@ msgid "What's on your mind?"
 msgstr "你在想什么？"
 
 #. @context: Compose body placeholder
-#: src/ui/compose/ComposeDialog.tsx:290
+#: src/ui/compose/ComposeDialog.tsx:43
 msgid "What's on your mind..."
 msgstr "你在想什么..."
 
@@ -1281,8 +1272,6 @@ msgid "Your site navigation"
 msgstr "您的网站导航"
 
 #. @context: Compose thoughts placeholder
-#. @context: Compose thoughts placeholder
-#: src/ui/compose/ComposeDialog.tsx:330
-#: src/ui/compose/ComposeDialog.tsx:384
+#: src/ui/compose/ComposeDialog.tsx:55
 msgid "Your thoughts (optional)"
 msgstr "您的想法（可选）"
