@@ -88,6 +88,7 @@ postsRoutes.get("/new", async (c) => {
 
 // Create post
 postsRoutes.post("/", async (c) => {
+  const wantsJson = c.req.header("Accept")?.includes("application/json");
   const body = await c.req.json<{
     format: string;
     title?: string;
@@ -120,7 +121,12 @@ postsRoutes.post("/", async (c) => {
     await c.var.services.media.attachToPost(post.id, body.mediaIds);
   }
 
-  return dsRedirect(`/dash/posts/${sqid.encode(post.id)}`);
+  const redirectUrl = `/dash/posts/${sqid.encode(post.id)}`;
+  if (wantsJson) {
+    return c.json({ status: "redirect" as const, url: redirectUrl });
+  }
+
+  return dsRedirect(redirectUrl);
 });
 
 function ViewPostContent({ post }: { post: Post }) {
@@ -193,6 +199,7 @@ function EditPostContent({
         s3PublicUrl={s3PublicUrl}
         collections={collections}
         postCollectionIds={postCollectionIds}
+        cancelHref={`/dash/posts/${sqid.encode(post.id)}`}
       />
     </>
   );
@@ -265,6 +272,8 @@ postsRoutes.post("/:id", async (c) => {
   const id = sqid.decode(c.req.param("id"));
   if (!id) return c.notFound();
 
+  const wantsJson = c.req.header("Accept")?.includes("application/json");
+
   const body = await c.req.json<{
     format: string;
     title?: string;
@@ -297,7 +306,12 @@ postsRoutes.post("/:id", async (c) => {
     await c.var.services.media.attachToPost(id, body.mediaIds);
   }
 
-  return dsRedirect(`/dash/posts/${sqid.encode(id)}`);
+  const redirectUrl = `/dash/posts/${sqid.encode(id)}`;
+  if (wantsJson) {
+    return c.json({ status: "redirect" as const, url: redirectUrl });
+  }
+
+  return dsRedirect(redirectUrl);
 });
 
 // Delete post

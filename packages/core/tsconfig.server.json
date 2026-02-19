@@ -14,6 +14,7 @@
     "src/lib/nav-reorder.ts",
     "src/lib/compose-bridge.ts",
     "src/lib/settings-bridge.ts",
+    "src/lib/post-form-bridge.ts",
     "src/lib/collections-reorder.ts",
     "src/ui/components/**",
     "src/**/__tests__/**"

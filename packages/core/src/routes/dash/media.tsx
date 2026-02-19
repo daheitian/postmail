@@ -79,11 +79,8 @@ mediaRoutes.get("/picker", async (c) => {
             <button
               key={m.id}
               type="button"
-              class="aspect-square rounded-lg overflow-hidden border-2 hover:border-primary cursor-pointer transition-colors"
-              data-on:click={`$mediaIds.includes('${m.id}') ? ($mediaIds = $mediaIds.filter(id => id !== '${m.id}')) : ($mediaIds = [...$mediaIds, '${m.id}'])`}
-              data-class:border-primary={`$mediaIds.includes('${m.id}')`}
-              data-class:ring-2={`$mediaIds.includes('${m.id}')`}
-              data-class:ring-primary={`$mediaIds.includes('${m.id}')`}
+              class="aspect-square rounded-lg overflow-hidden border-2 hover:border-primary cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              data-media-id={m.id}
             >
               <img
                 src={thumbUrl}

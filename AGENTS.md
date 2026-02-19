@@ -6,6 +6,7 @@
 - **BaseCoat button variants are standalone**: `.btn-outline`, `.btn-secondary`, `.btn-ghost`, `.btn-destructive`, `.btn-link` are self-contained. NEVER combine with `.btn` (e.g., `class="btn btn-outline"` is WRONG).
 - **Node.js 24** - Do NOT use older versions.
 - **Tests required**: Every feature, fix, or logic change MUST include tests. Run `mise run test` before finishing.
+- **Lint required**: After tests pass, run `mise run lint` and resolve all issues before wrapping up.
 - **Verify before changing**: Never assume CLI flags or API options exist. Run `--help` or check docs first.
 - **Latest packages**: Always `@latest` when installing.
 - **Vite only**: NEVER run `wrangler dev`. Use mise tasks (`mise run dev` / `mise run build`).

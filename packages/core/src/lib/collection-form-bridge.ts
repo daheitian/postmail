@@ -60,8 +60,7 @@ document.addEventListener("jant:collection-submit", async (event: Event) => {
     }
 
     showToast("Saved successfully.");
-  } catch (err) {
-    console.error(err);
+  } catch {
     showToast("Failed to save collection. Please try again.", "error");
   } finally {
     formEl.loading = false;

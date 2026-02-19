@@ -54,7 +54,7 @@ msgid "Add Link"
 msgstr "新增連結"
 
 #. @context: Button to open media picker
-#: src/ui/dash/PostForm.tsx:213
+#: src/ui/dash/posts/PostForm.tsx:94
 msgid "Add Media"
 msgstr "添加媒體"
 
@@ -120,7 +120,7 @@ msgstr "部落格頭像"
 #: src/ui/dash/collections/CollectionForm.tsx:108
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
-#: src/ui/dash/PostForm.tsx:316
+#: src/ui/dash/posts/PostForm.tsx:139
 #: src/ui/dash/settings/GeneralContent.tsx:143
 msgid "Cancel"
 msgstr "取消"
@@ -171,7 +171,7 @@ msgid "Collections"
 msgstr "收藏夾"
 
 #. @context: Post form field - assign to collections
-#: src/ui/dash/PostForm.tsx:266
+#: src/ui/dash/posts/PostForm.tsx:126
 msgid "Collections (optional)"
 msgstr "收藏（可選）"
 
@@ -198,7 +198,7 @@ msgstr "確認密碼"
 #. @context: Page form field label - content
 #. @context: Post form field
 #: src/ui/dash/PageForm.tsx:96
-#: src/ui/dash/PostForm.tsx:106
+#: src/ui/dash/posts/PostForm.tsx:69
 msgid "Content"
 msgstr "內容"
 
@@ -318,7 +318,7 @@ msgstr "顯示連結的文字"
 #. @context: Close attached text panel
 #. @context: Close media picker button
 #: src/ui/compose/ComposeDialog.tsx:84
-#: src/ui/dash/PostForm.tsx:338
+#: src/ui/dash/posts/PostForm.tsx:147
 msgid "Done"
 msgstr "完成"
 
@@ -326,7 +326,7 @@ msgstr "完成"
 #. @context: Post status badge - draft
 #. @context: Post status option
 #: src/ui/dash/PageForm.tsx:133
-#: src/ui/dash/PostForm.tsx:236
+#: src/ui/dash/posts/PostForm.tsx:114
 #: src/ui/dash/StatusBadge.tsx:34
 msgid "Draft"
 msgstr "草稿"
@@ -346,7 +346,7 @@ msgstr "草稿"
 #. @context: Button to edit post
 #. @context: Button to edit post
 #: src/routes/dash/pages.tsx:55
-#: src/routes/dash/posts.tsx:140
+#: src/routes/dash/posts.tsx:146
 #: src/ui/dash/ActionButtons.tsx:72
 #: src/ui/dash/collections/CollectionsListContent.tsx:134
 #: src/ui/dash/collections/ViewCollectionContent.tsx:44
@@ -373,7 +373,7 @@ msgid "Edit Page"
 msgstr "編輯頁面"
 
 #. @context: Page heading
-#: src/routes/dash/posts.tsx:185
+#: src/routes/dash/posts.tsx:191
 msgid "Edit Post"
 msgstr "編輯文章"
 
@@ -399,12 +399,17 @@ msgstr "條目"
 msgid "entry"
 msgstr "條目"
 
+#. @context: Toast when post save fails
+#: src/ui/dash/posts/PostForm.tsx:164
+msgid "Failed to save post. Please try again."
+msgstr ""
+
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
 #. @context: Homepage view option - show featured posts
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
-#: src/ui/dash/PostForm.tsx:248
+#: src/ui/dash/posts/PostForm.tsx:118
 #: src/ui/dash/settings/GeneralContent.tsx:110
 #: src/ui/dash/StatusBadge.tsx:45
 #: src/ui/layouts/SiteLayout.tsx:56
@@ -418,7 +423,7 @@ msgid "Font theme"
 msgstr "字型主題"
 
 #. @context: Post form field - post format
-#: src/ui/dash/PostForm.tsx:66
+#: src/ui/dash/posts/PostForm.tsx:45
 msgid "Format"
 msgstr "格式"
 
@@ -502,7 +507,7 @@ msgstr "鏈接"
 #. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx:25
 #: src/ui/dash/FormatBadge.tsx:20
-#: src/ui/dash/PostForm.tsx:76
+#: src/ui/dash/posts/PostForm.tsx:53
 #: src/ui/pages/ArchivePage.tsx:17
 msgid "Link"
 msgstr "連結"
@@ -520,7 +525,7 @@ msgstr "載入更多"
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
 #: src/ui/compose/ComposeDialog.tsx:112
-#: src/ui/dash/PostForm.tsx:349
+#: src/ui/dash/posts/PostForm.tsx:151
 msgid "Loading..."
 msgstr "載入中..."
 
@@ -550,7 +555,7 @@ msgstr "支援Markdown"
 #. @context: Post form field - media attachments
 #: src/ui/compose/ComposeDialog.tsx:88
 #: src/ui/dash/media/MediaListContent.tsx:127
-#: src/ui/dash/PostForm.tsx:160
+#: src/ui/dash/posts/PostForm.tsx:90
 #: src/ui/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "媒體"
@@ -645,6 +650,11 @@ msgstr "尚未有任何收藏。"
 msgid "No featured posts yet."
 msgstr "尚未有精選文章。"
 
+#. @context: Post form media empty state
+#: src/ui/dash/posts/PostForm.tsx:102
+msgid "No media selected yet."
+msgstr ""
+
 #. @context: Empty state message when no media exists
 #: src/ui/dash/media/MediaListContent.tsx:162
 msgid "No media uploaded yet."
@@ -690,7 +700,7 @@ msgstr "未找到結果。"
 #. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx:24
 #: src/ui/dash/FormatBadge.tsx:19
-#: src/ui/dash/PostForm.tsx:73
+#: src/ui/dash/posts/PostForm.tsx:49
 #: src/ui/pages/ArchivePage.tsx:16
 msgid "Note"
 msgstr "備註"
@@ -779,7 +789,7 @@ msgstr "永久鏈接"
 
 #. @context: Post badge - pinned
 #. @context: Post form checkbox - pin to top
-#: src/ui/dash/PostForm.tsx:255
+#: src/ui/dash/posts/PostForm.tsx:122
 #: src/ui/dash/StatusBadge.tsx:53
 msgid "Pinned"
 msgstr "置頂"
@@ -787,16 +797,26 @@ msgstr "置頂"
 #. @context: Compose button - publish post
 #. @context: Compose prompt post button
 #. @context: Default post title
-#: src/routes/dash/posts.tsx:128
+#: src/routes/dash/posts.tsx:134
 #: src/ui/compose/ComposeDialog.tsx:104
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "文章"
 
+#. @context: Toast after creating post
+#: src/ui/dash/posts/PostForm.tsx:160
+msgid "Post published successfully."
+msgstr ""
+
 #. @context: Post title placeholder
-#: src/ui/dash/PostForm.tsx:96
+#: src/ui/dash/posts/PostForm.tsx:65
 msgid "Post title..."
 msgstr "文章標題..."
+
+#. @context: Toast after editing post
+#: src/ui/dash/posts/PostForm.tsx:156
+msgid "Post updated successfully."
+msgstr ""
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - posts management
@@ -835,7 +855,7 @@ msgid "Profile"
 msgstr "個人資料"
 
 #. @context: Button to publish new post
-#: src/ui/dash/PostForm.tsx:310
+#: src/ui/dash/posts/PostForm.tsx:135
 msgid "Publish"
 msgstr "發佈"
 
@@ -845,7 +865,7 @@ msgstr "發佈"
 #. @context: Post status option
 #: src/routes/dash/index.tsx:44
 #: src/ui/dash/PageForm.tsx:127
-#: src/ui/dash/PostForm.tsx:230
+#: src/ui/dash/posts/PostForm.tsx:110
 #: src/ui/dash/StatusBadge.tsx:30
 msgid "Published"
 msgstr "已發佈"
@@ -866,13 +886,13 @@ msgstr "快速操作"
 #. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx:26
 #: src/ui/dash/FormatBadge.tsx:21
-#: src/ui/dash/PostForm.tsx:79
+#: src/ui/dash/posts/PostForm.tsx:57
 #: src/ui/pages/ArchivePage.tsx:18
 msgid "Quote"
 msgstr "引用"
 
 #. @context: Post form field - quoted text
-#: src/ui/dash/PostForm.tsx:139
+#: src/ui/dash/posts/PostForm.tsx:82
 msgid "Quote Text"
 msgstr "引用文本"
 
@@ -892,7 +912,7 @@ msgstr "重定向"
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
 #: src/ui/dash/collections/CollectionForm.tsx:71
-#: src/ui/dash/PostForm.tsx:196
+#: src/ui/dash/posts/PostForm.tsx:98
 #: src/ui/dash/settings/GeneralContent.tsx:55
 msgid "Remove"
 msgstr "移除"
@@ -966,7 +986,7 @@ msgstr "搜尋帖子..."
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
 #: src/ui/compose/ComposeDialog.tsx:108
-#: src/ui/dash/PostForm.tsx:328
+#: src/ui/dash/posts/PostForm.tsx:143
 msgid "Select Media"
 msgstr "選擇媒體"
 
@@ -1034,7 +1054,7 @@ msgstr "來源連結（選填）"
 #. @context: Page form field label - publish status
 #. @context: Post form field
 #: src/ui/dash/PageForm.tsx:117
-#: src/ui/dash/PostForm.tsx:223
+#: src/ui/dash/posts/PostForm.tsx:106
 msgid "Status"
 msgstr "狀態"
 
@@ -1061,7 +1081,7 @@ msgid "The quick brown fox jumps over the lazy dog."
 msgstr "敏捷的棕色狐狸跳過懶惰的狗。"
 
 #. @context: Quote text placeholder
-#: src/ui/dash/PostForm.tsx:147
+#: src/ui/dash/posts/PostForm.tsx:86
 msgid "The text being quoted..."
 msgstr "被引用的文本..."
 
@@ -1127,7 +1147,7 @@ msgid "Title"
 msgstr "標題"
 
 #. @context: Post form field
-#: src/ui/dash/PostForm.tsx:87
+#: src/ui/dash/posts/PostForm.tsx:61
 msgid "Title (optional)"
 msgstr "標題（選填）"
 
@@ -1159,7 +1179,7 @@ msgid "Untitled"
 msgstr "無標題"
 
 #. @context: Button to update existing post
-#: src/ui/dash/PostForm.tsx:306
+#: src/ui/dash/posts/PostForm.tsx:131
 msgid "Update"
 msgstr "更新"
 
@@ -1205,7 +1225,7 @@ msgid "URL"
 msgstr "網址"
 
 #. @context: Post form field - source URL
-#: src/ui/dash/PostForm.tsx:123
+#: src/ui/dash/posts/PostForm.tsx:77
 msgid "URL (optional)"
 msgstr "網址（可選）"
 
@@ -1226,7 +1246,7 @@ msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
 #. @context: Button to view post
 #. @context: Button to view post on public site
 #: src/routes/dash/pages.tsx:60
-#: src/routes/dash/posts.tsx:145
+#: src/routes/dash/posts.tsx:151
 #: src/ui/dash/ActionButtons.tsx:76
 #: src/ui/dash/collections/ViewCollectionContent.tsx:49
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:177
@@ -1247,7 +1267,7 @@ msgstr "歡迎來到 Jant"
 #. @context: Compose prompt placeholder text
 #. @context: Post content placeholder
 #: src/ui/compose/ComposePrompt.tsx:37
-#: src/ui/dash/PostForm.tsx:111
+#: src/ui/dash/posts/PostForm.tsx:73
 msgid "What's on your mind?"
 msgstr "你在想什麼？"
 

@@ -24,3 +24,5 @@ import "./ui/components/jant-settings-avatar.js";
 import "./lib/settings-bridge.js";
 import "./ui/components/jant-collection-form.js";
 import "./lib/collection-form-bridge.js";
+import "./ui/components/jant-post-form.js";
+import "./lib/post-form-bridge.js";

@@ -4,12 +4,12 @@ Tracking document for migrating complex Datastar components to Lit Web Component
 
 ## Migration Order
 
-| #   | Component      | Target Tag                | Lines | Priority | Status  |
-| --- | -------------- | ------------------------- | ----- | -------- | ------- |
-| 1   | ComposeDialog  | `<jant-compose-dialog>`   | 770   | High     | Done    |
-| 2   | GeneralContent | `<jant-settings-general>` | 534   | High     | Done    |
-| 3   | CollectionForm | `<jant-collection-form>`  | 358   | Medium   | Done    |
-| 4   | PostForm       | `<jant-post-form>`        | 359   | Optional | Pending |
+| #   | Component      | Target Tag                | Lines | Priority | Status |
+| --- | -------------- | ------------------------- | ----- | -------- | ------ |
+| 1   | ComposeDialog  | `<jant-compose-dialog>`   | 770   | High     | Done   |
+| 2   | GeneralContent | `<jant-settings-general>` | 534   | High     | Done   |
+| 3   | CollectionForm | `<jant-collection-form>`  | 358   | Medium   | Done   |
+| 4   | PostForm       | `<jant-post-form>`        | 359   | Optional | Done   |
 
 ## Component Decomposition Plans
 
@@ -98,3 +98,11 @@ For each component migration:
 - Added `collection-form-bridge.ts` for JSON POST + redirect handling (Accept: application/json)
 - New tests in `jant-collection-form.test.ts` cover slug auto-generation and submit payload
 - Routes `/dash/collections` + `/:id` now support JSON responses for Lit bridge while keeping Datastar fallback
+
+### Session 5 — PostForm Migration
+
+- Replaced Datastar dashboard `PostForm` with `<jant-post-form>` Lit component + bridge
+- Added JSON-aware dashboard routes for create/update (Accept: application/json → redirect payload)
+- Media picker now uses shared bridge selection (no Datastar attributes)
+- New tests (`jant-post-form.test.ts`) cover submit payload, format toggles, media state
+- Updated client bundle to include `jant-post-form` + `post-form-bridge`

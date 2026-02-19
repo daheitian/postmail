@@ -1,0 +1,172 @@
+// @vitest-environment happy-dom
+
+import { describe, it, expect, beforeEach } from "vitest";
+import type {
+  PostFormLabels,
+  PostFormInitial,
+  PostCollectionOption,
+  PostMediaItem,
+  PostSubmitDetail,
+} from "../post-form-types.js";
+import "../jant-post-form.js";
+import type { JantPostForm } from "../jant-post-form.js";
+
+const labels: PostFormLabels = {
+  formatLabel: "Format",
+  noteOption: "Note",
+  linkOption: "Link",
+  quoteOption: "Quote",
+  titleLabel: "Title",
+  titlePlaceholder: "Title...",
+  bodyLabel: "Body",
+  bodyPlaceholder: "Body...",
+  urlLabel: "URL",
+  urlPlaceholder: "https://example.com",
+  quoteTextLabel: "Quote Text",
+  quoteTextPlaceholder: "Quote...",
+  mediaLabel: "Media",
+  mediaAddButton: "Add Media",
+  mediaRemoveButton: "Remove",
+  mediaEmptyLabel: "No media",
+  statusLabel: "Status",
+  statusPublished: "Published",
+  statusDraft: "Draft",
+  featuredLabel: "Featured",
+  pinnedLabel: "Pinned",
+  collectionsLabel: "Collections",
+  submitLabel: "Publish",
+  cancelLabel: "Cancel",
+  mediaDialogTitle: "Select Media",
+  mediaDialogDone: "Done",
+  mediaDialogLoading: "Loading...",
+  submitSuccessMessage: "Saved!",
+  submitErrorMessage: "Failed.",
+};
+
+const initial: PostFormInitial = {
+  format: "note",
+  title: "",
+  body: "",
+  url: "",
+  quoteText: "",
+  status: "published",
+  featured: false,
+  pinned: false,
+  rating: 0,
+  collectionIds: [],
+  mediaIds: [],
+};
+
+const collections: PostCollectionOption[] = [
+  { id: 1, title: "General", icon: null },
+  { id: 2, title: "Favorites", icon: "★" },
+];
+
+const media: PostMediaItem[] = [
+  { id: "m1", thumbUrl: "https://cdn.example.com/m1.jpg", alt: "Media 1" },
+];
+
+async function createElement(
+  overrides: Partial<JantPostForm> = {},
+): Promise<JantPostForm> {
+  const el = document.createElement("jant-post-form") as JantPostForm;
+  el.labels = { ...labels };
+  el.initial = { ...initial };
+  el.collections = [...collections];
+  el.media = [...media];
+  el.action = "/dash/posts";
+  Object.assign(el, overrides);
+  document.body.appendChild(el);
+  await el.updateComplete;
+  return el;
+}
+
+describe("JantPostForm", () => {
+  beforeEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("renders base fields and labels", async () => {
+    const el = await createElement();
+    const select = el.querySelector("select.select");
+    expect(select).not.toBeNull();
+    const label = el.querySelector(".field .label");
+    expect(label?.textContent?.trim()).toBe("Format");
+    const submit = el.querySelector<HTMLButtonElement>("button[type=submit]");
+    expect(submit?.textContent?.trim()).toContain("Publish");
+  });
+
+  it("shows quote textarea when format set to quote", async () => {
+    const el = await createElement({
+      initial: { ...initial, format: "quote" },
+    });
+    await el.updateComplete;
+    const textarea = el.querySelector<HTMLTextAreaElement>(
+      "textarea[placeholder='Quote...']",
+    );
+    expect(textarea).not.toBeNull();
+  });
+
+  it("dispatches jant:post-submit with form data", async () => {
+    const el = await createElement();
+    const form = el.querySelector("form");
+    expect(form).not.toBeNull();
+    if (!form) throw new Error("Form element not found");
+
+    const titleInput = el.querySelector<HTMLInputElement>("input.input");
+    expect(titleInput).not.toBeNull();
+    if (!titleInput) throw new Error("Title input not found");
+    titleInput.value = "Sample Post";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+    const bodyTextarea =
+      el.querySelector<HTMLTextAreaElement>("textarea.textarea");
+    expect(bodyTextarea).not.toBeNull();
+    if (!bodyTextarea) throw new Error("Body textarea not found");
+    bodyTextarea.value = "Hello world";
+    bodyTextarea.dispatchEvent(new Event("input", { bubbles: true }));
+
+    const checkboxList =
+      el.querySelectorAll<HTMLInputElement>("input.checkbox");
+    expect(checkboxList.length).toBeGreaterThan(0);
+    const checkbox = checkboxList[0];
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+
+    const collectionCheckbox = checkboxList.item(2);
+    expect(collectionCheckbox).not.toBeNull();
+    if (!collectionCheckbox) throw new Error("Collection checkbox missing");
+    collectionCheckbox.checked = true;
+    collectionCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+
+    el.mediaIds = ["m1"];
+
+    let detail: PostSubmitDetail | null = null;
+    el.addEventListener("jant:post-submit", (event) => {
+      detail = (event as CustomEvent<PostSubmitDetail>).detail;
+    });
+
+    form.dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
+
+    expect(detail).not.toBeNull();
+    if (!detail) return;
+    expect(detail.endpoint).toBe("/dash/posts");
+    expect(detail.data.title).toBe("Sample Post");
+    expect(detail.data.body).toBe("Hello world");
+    expect(detail.data.featured).toBe(true);
+    expect(detail.data.collectionIds).toEqual([collections[0].id]);
+    expect(detail.data.mediaIds).toEqual(["m1"]);
+  });
+
+  it("updates mediaIds when setter called", async () => {
+    const el = await createElement();
+    el.mediaIds = ["m1"];
+    await el.updateComplete;
+
+    const items = el.querySelectorAll("[data-media-id]");
+    expect(items.length).toBe(1);
+    expect(items[0].getAttribute("data-media-id")).toBe("m1");
+  });
+});
