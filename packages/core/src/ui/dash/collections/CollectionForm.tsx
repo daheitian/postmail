@@ -10,6 +10,7 @@ import {
   ICON_COLOR_PRESETS,
   DEFAULT_ICON_COLOR,
 } from "../../../lib/icons.js";
+import { IconPickerGrid } from "./IconPickerGrid.js";
 
 export function CollectionForm({
   collection,
@@ -107,7 +108,7 @@ export function CollectionForm({
             data-bind="slug"
             class="input"
             required
-            pattern="[a-z0-9-]+"
+            pattern="[a-z0-9\-]+"
             placeholder={isEdit ? undefined : "my-collection"}
           />
           {!isEdit && (
@@ -156,12 +157,11 @@ export function CollectionForm({
             {/* Icon preview */}
             <div class="flex items-center justify-center w-10 h-10 rounded-md border border-border">
               <span
+                id="icon-preview"
                 data-show="$iconSvg"
                 style={currentIconHtml ? undefined : "display:none"}
                 class="w-6 h-6 flex items-center justify-center"
-                data-html={
-                  "(() => { if (!$iconSvg) return ''; let s = $iconSvg.replace(/width=\\\"24\\\"/,'width=\\\"24\\\"').replace(/height=\\\"24\\\"/,'height=\\\"24\\\"'); return '<svg' + ' style=\\\"color: ' + $iconColor + '\\\"' + s.slice(4); })()"
-                }
+                data-style:color="$iconColor"
               >
                 {currentIconHtml && (
                   <span dangerouslySetInnerHTML={{ __html: currentIconHtml }} />
@@ -180,7 +180,7 @@ export function CollectionForm({
             <button
               type="button"
               class="btn-outline text-sm"
-              data-on:click="document.getElementById('icon-picker-dialog')?.showModal()"
+              data-on:click="(() => { const d = document.getElementById('icon-picker-dialog'); const s = d?.querySelector('#icon-search'); if (s) { s.value = ''; s.dispatchEvent(new Event('input')); } d?.showModal(); })()"
             >
               {t({
                 message: "Choose Icon",
@@ -305,32 +305,51 @@ export function CollectionForm({
       {/* Icon picker dialog */}
       <dialog
         id="icon-picker-dialog"
-        class="rounded-lg border border-border bg-background p-0 w-full max-w-md max-h-[80vh] shadow-lg backdrop:bg-black/50"
+        class="m-auto rounded-lg border border-border bg-background text-foreground p-0 w-full max-w-md max-h-[80vh] shadow-lg backdrop:bg-black/50"
       >
         <div class="flex flex-col max-h-[80vh]">
-          <div class="flex items-center justify-between p-4 border-b border-border">
-            <h2 class="font-semibold">
-              {t({
-                message: "Choose Icon",
-                comment: "@context: Icon picker dialog title",
+          <div class="flex flex-col gap-3 p-4 border-b border-border">
+            <div class="flex items-center justify-between">
+              <h2 class="font-semibold">
+                {t({
+                  message: "Choose Icon",
+                  comment: "@context: Icon picker dialog title",
+                })}
+              </h2>
+              <button
+                type="button"
+                class="btn-ghost text-sm"
+                data-on:click="document.getElementById('icon-picker-dialog')?.close()"
+              >
+                {t({
+                  message: "Close",
+                  comment: "@context: Button to close icon picker",
+                })}
+              </button>
+            </div>
+            <input
+              id="icon-search"
+              type="search"
+              class="input text-sm"
+              placeholder={t({
+                message: "Search icons...",
+                comment: "@context: Icon picker search placeholder",
               })}
-            </h2>
-            <button
-              type="button"
-              class="btn-ghost text-sm"
-              data-on:click="document.getElementById('icon-picker-dialog')?.close()"
-            >
-              {t({
-                message: "Close",
-                comment: "@context: Button to close icon picker",
-              })}
-            </button>
+              data-on:input={`(() => {
+                const q = el.value.toLowerCase();
+                const grid = document.getElementById('icon-grid');
+                grid.querySelectorAll('[data-icon-name]').forEach(b => {
+                  b.style.display = b.dataset.iconName.includes(q) ? '' : 'none';
+                });
+                grid.querySelectorAll('[data-category]').forEach(c => {
+                  const has = c.querySelector('[data-icon-name]:not([style*="display: none"])');
+                  c.style.display = has ? '' : 'none';
+                });
+              })()`}
+            />
           </div>
-          <div
-            class="overflow-y-auto p-4"
-            data-on:load={`@get('/dash/collections/icons', { target: '#icon-grid' })`}
-          >
-            <div id="icon-grid" />
+          <div class="overflow-y-auto p-4" id="icon-grid">
+            <IconPickerGrid />
           </div>
         </div>
       </dialog>

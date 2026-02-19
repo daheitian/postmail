@@ -6,10 +6,15 @@
 
 import { eq, asc, sql, desc, and } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { collections, postCollections } from "../db/schema.js";
+import {
+  collections,
+  collectionDividers,
+  postCollections,
+} from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type {
   Collection,
+  CollectionDivider,
   CreateCollection,
   UpdateCollection,
   SortOrder,
@@ -23,6 +28,14 @@ export interface CollectionService {
   update(id: number, data: UpdateCollection): Promise<Collection | null>;
   delete(id: number): Promise<boolean>;
   reorder(ids: number[]): Promise<void>;
+  /** Reorder mixed collections and dividers using prefixed IDs (e.g. "c-1", "d-2") */
+  reorderAll(items: string[]): Promise<void>;
+  /** Create a standalone divider with auto-assigned position */
+  createDivider(): Promise<CollectionDivider>;
+  /** Delete a divider by ID */
+  deleteDivider(id: number): Promise<boolean>;
+  /** List all dividers ordered by position */
+  listDividers(): Promise<CollectionDivider[]>;
   /** Get post count per collection */
   getPostCounts(): Promise<Map<number, number>>;
   /** Add a post to a collection */
@@ -47,7 +60,17 @@ export function createCollectionService(db: Database): CollectionService {
       icon: row.icon,
       sortOrder: row.sortOrder as SortOrder,
       position: row.position,
-      showDivider: row.showDivider,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+
+  function toDivider(
+    row: typeof collectionDividers.$inferSelect,
+  ): CollectionDivider {
+    return {
+      id: row.id,
+      position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -88,8 +111,11 @@ export function createCollectionService(db: Database): CollectionService {
         const maxResult = await db
           .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
           .from(collections);
+        const divMaxResult = await db
+          .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
+          .from(collectionDividers);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- aggregate always returns one row
-        position = maxResult[0]!.maxPos + 1;
+        position = Math.max(maxResult[0]!.maxPos, divMaxResult[0]!.maxPos) + 1;
       }
 
       const result = await db
@@ -101,7 +127,6 @@ export function createCollectionService(db: Database): CollectionService {
           icon: data.icon ?? null,
           sortOrder: data.sortOrder ?? "newest",
           position,
-          showDivider: data.showDivider ? 1 : 0,
           createdAt: timestamp,
           updatedAt: timestamp,
         })
@@ -127,8 +152,6 @@ export function createCollectionService(db: Database): CollectionService {
       if (data.icon !== undefined) updates.icon = data.icon;
       if (data.sortOrder !== undefined) updates.sortOrder = data.sortOrder;
       if (data.position !== undefined) updates.position = data.position;
-      if (data.showDivider !== undefined)
-        updates.showDivider = data.showDivider ? 1 : 0;
 
       const result = await db
         .update(collections)
@@ -149,14 +172,70 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async reorder(ids) {
+      // Delegate to reorderAll with "c-" prefix for backward compat
+      await this.reorderAll(ids.map((id) => `c-${id}`));
+    },
+
+    async reorderAll(items) {
       const timestamp = now();
-      for (let i = 0; i < ids.length; i++) {
-        await db
-          .update(collections)
-          .set({ position: i, updatedAt: timestamp })
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- loop index guarantees element exists
-          .where(eq(collections.id, ids[i]!));
+      for (let i = 0; i < items.length; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- loop index guarantees element exists
+        const item = items[i]!;
+        const [prefix, idStr] = item.split("-");
+        const id = Number(idStr);
+        if (prefix === "c") {
+          await db
+            .update(collections)
+            .set({ position: i, updatedAt: timestamp })
+            .where(eq(collections.id, id));
+        } else if (prefix === "d") {
+          await db
+            .update(collectionDividers)
+            .set({ position: i, updatedAt: timestamp })
+            .where(eq(collectionDividers.id, id));
+        }
       }
+    },
+
+    async createDivider() {
+      const timestamp = now();
+
+      const colMax = await db
+        .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
+        .from(collections);
+      const divMax = await db
+        .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
+        .from(collectionDividers);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- aggregate always returns one row
+      const position = Math.max(colMax[0]!.maxPos, divMax[0]!.maxPos) + 1;
+
+      const result = await db
+        .insert(collectionDividers)
+        .values({
+          position,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        })
+        .returning();
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
+      return toDivider(result[0]!);
+    },
+
+    async deleteDivider(id) {
+      const result = await db
+        .delete(collectionDividers)
+        .where(eq(collectionDividers.id, id))
+        .returning();
+      return result.length > 0;
+    },
+
+    async listDividers() {
+      const rows = await db
+        .select()
+        .from(collectionDividers)
+        .orderBy(asc(collectionDividers.position));
+      return rows.map(toDivider);
     },
 
     async getPostCounts() {

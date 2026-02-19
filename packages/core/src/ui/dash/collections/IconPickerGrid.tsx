@@ -13,7 +13,7 @@ export const IconPickerGrid: FC = () => {
   return (
     <div class="flex flex-col gap-4">
       {Object.entries(ICON_CATALOG).map(([category, names]) => (
-        <div key={category}>
+        <div key={category} data-category={category}>
           <h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
             {category}
           </h3>
@@ -29,7 +29,7 @@ export const IconPickerGrid: FC = () => {
                   data-icon-name={name}
                   data-icon-svg={svg}
                   title={name}
-                  data-on:click={`$iconName = el.dataset.iconName; $iconSvg = el.dataset.iconSvg; $icon = JSON.stringify({ name: $iconName, svg: $iconSvg, color: $iconColor }); document.getElementById('icon-picker-dialog')?.close()`}
+                  data-on:click={`$iconName = el.dataset.iconName; $iconSvg = el.dataset.iconSvg; $icon = JSON.stringify({ name: $iconName, svg: $iconSvg, color: $iconColor }); const p = document.getElementById('icon-preview'); if (p) p.innerHTML = el.dataset.iconSvg; document.getElementById('icon-picker-dialog')?.close()`}
                 >
                   <span
                     class="w-5 h-5 flex items-center justify-center"

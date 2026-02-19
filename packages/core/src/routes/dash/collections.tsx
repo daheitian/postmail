@@ -23,8 +23,9 @@ export const collectionsRoutes = new Hono<Env>();
 // List collections
 collectionsRoutes.get("/", async (c) => {
   const siteName = await getSiteName(c);
-  const [collections, postCounts] = await Promise.all([
+  const [collections, dividers, postCounts] = await Promise.all([
     c.var.services.collections.list(),
+    c.var.services.collections.listDividers(),
     c.var.services.collections.getPostCounts(),
   ]);
 
@@ -37,6 +38,7 @@ collectionsRoutes.get("/", async (c) => {
     >
       <CollectionsListContent
         collections={collections}
+        dividers={dividers}
         postCounts={postCounts}
       />
     </DashLayout>,
@@ -83,11 +85,33 @@ collectionsRoutes.post("/", async (c) => {
   return dsRedirect(`/dash/collections/${collection.id}`);
 });
 
-// Reorder collections
+// Reorder collections (accepts prefixed items)
 collectionsRoutes.post("/reorder", async (c) => {
-  const body = await c.req.json<{ ids: number[] }>();
-  await c.var.services.collections.reorder(body.ids);
+  const body = await c.req.json<{ items?: string[]; ids?: number[] }>();
+
+  if (body.items) {
+    await c.var.services.collections.reorderAll(body.items);
+  } else if (body.ids) {
+    // Backward compat: plain numeric IDs
+    await c.var.services.collections.reorder(body.ids);
+  }
+
   return c.json({ success: true });
+});
+
+// Create divider
+collectionsRoutes.post("/dividers", async (c) => {
+  await c.var.services.collections.createDivider();
+  return dsRedirect("/dash/collections");
+});
+
+// Delete divider
+collectionsRoutes.post("/dividers/:id/delete", async (c) => {
+  const id = parseInt(c.req.param("id"), 10);
+  if (!isNaN(id)) {
+    await c.var.services.collections.deleteDivider(id);
+  }
+  return dsRedirect("/dash/collections");
 });
 
 // Icon picker grid (HTML fragment)

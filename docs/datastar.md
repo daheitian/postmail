@@ -74,6 +74,7 @@ return sse(c, async (stream) => {
 ## Key Rules
 
 - **Loading states required**: Every form with `@post`/`@put`/`@patch`/`@delete` must use `data-indicator` + `data-attr-disabled` on the submit button. No exceptions.
+- **No `data-html`**: Datastar v1 does NOT have a `data-html` attribute. Use `data-text` for plain text. For dynamic HTML/SVG content, set `innerHTML` directly via JS in `data-on:click` or similar handlers (e.g., `document.getElementById('target').innerHTML = value`).
 - `@post` sends non-private signals as JSON body
 - Define signals on parent element containing all children that need access
 - Use `throwIfNamespace: false` in SWC config for colon syntax (`data-on:click`)

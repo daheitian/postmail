@@ -74,7 +74,6 @@ export interface CreateCollection {
   icon?: string;
   sortOrder?: SortOrder;
   position?: number;
-  showDivider?: boolean;
 }
 
 export interface UpdateCollection {
@@ -84,5 +83,4 @@ export interface UpdateCollection {
   icon?: string | null;
   sortOrder?: SortOrder;
   position?: number;
-  showDivider?: boolean;
 }

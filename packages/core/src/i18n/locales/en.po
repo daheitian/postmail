@@ -197,7 +197,7 @@ msgstr "Choose a font pairing for your site. All options use system fonts for fa
 #. @context: Button to open icon picker
 #. @context: Icon picker dialog title
 #: src/ui/dash/collections/CollectionForm.tsx:185
-#: src/ui/dash/collections/CollectionForm.tsx:313
+#: src/ui/dash/collections/CollectionForm.tsx:314
 msgid "Choose Icon"
 msgstr "Choose Icon"
 
@@ -207,7 +207,7 @@ msgid "Click image to view full size"
 msgstr "Click image to view full size"
 
 #. @context: Button to close icon picker
-#: src/ui/dash/collections/CollectionForm.tsx:323
+#: src/ui/dash/collections/CollectionForm.tsx:324
 msgid "Close"
 msgstr "Close"
 
@@ -225,7 +225,7 @@ msgstr "Collection"
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #. @context: Sidebar heading for collections nav
-#: src/ui/dash/collections/CollectionsListContent.tsx:27
+#: src/ui/dash/collections/CollectionsListContent.tsx:35
 #: src/ui/layouts/DashLayout.tsx:114
 #: src/ui/pages/CollectionsPage.tsx:19
 #: src/ui/shared/CollectionsSidebar.tsx:27
@@ -272,7 +272,7 @@ msgid "Copy"
 msgstr "Copy"
 
 #. @context: Button to save new collection
-#: src/ui/dash/collections/CollectionForm.tsx:49
+#: src/ui/dash/collections/CollectionForm.tsx:50
 msgid "Create Collection"
 msgstr "Create Collection"
 
@@ -383,7 +383,7 @@ msgid "Demo account pre-filled. Just click Sign In."
 msgstr "Demo account pre-filled. Just click Sign In."
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:126
+#: src/ui/dash/collections/CollectionForm.tsx:127
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
@@ -442,7 +442,7 @@ msgstr "Drafts"
 #: src/routes/dash/pages.tsx:55
 #: src/routes/dash/posts.tsx:140
 #: src/ui/dash/ActionButtons.tsx:72
-#: src/ui/dash/collections/CollectionsListContent.tsx:66
+#: src/ui/dash/collections/CollectionsListContent.tsx:134
 #: src/ui/dash/collections/ViewCollectionContent.tsx:44
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:72
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:93
@@ -452,7 +452,7 @@ msgid "Edit"
 msgstr "Edit"
 
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:41
+#: src/ui/dash/collections/CollectionForm.tsx:42
 msgid "Edit Collection"
 msgstr "Edit Collection"
 
@@ -563,7 +563,7 @@ msgid "Highest rated"
 msgstr "Highest rated"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx:150
+#: src/ui/dash/collections/CollectionForm.tsx:151
 msgid "Icon (optional)"
 msgstr "Icon (optional)"
 
@@ -693,7 +693,7 @@ msgstr "Media"
 #~ msgstr "My Blog"
 
 #. @context: Collection title placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:88
+#: src/ui/dash/collections/CollectionForm.tsx:89
 msgid "My Collection"
 msgstr "My Collection"
 
@@ -717,11 +717,16 @@ msgstr "Need help? Visit the <0>documentation</0>"
 #. @context: Button to create new collection
 #. @context: Button to create new collection
 #. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx:42
-#: src/ui/dash/collections/CollectionsListContent.tsx:31
-#: src/ui/dash/collections/CollectionsListContent.tsx:44
+#: src/ui/dash/collections/CollectionForm.tsx:43
+#: src/ui/dash/collections/CollectionsListContent.tsx:50
+#: src/ui/dash/collections/CollectionsListContent.tsx:64
 msgid "New Collection"
 msgstr "New Collection"
+
+#. @context: Button to add divider between collections
+#: src/ui/dash/collections/CollectionsListContent.tsx:43
+msgid "New Divider"
+msgstr "New Divider"
 
 #. @context: Page heading
 #: src/ui/dash/pages/LinkFormContent.tsx:18
@@ -774,7 +779,7 @@ msgstr "Next"
 
 #. @context: Empty state message
 #. @context: Empty state message on collections page
-#: src/ui/dash/collections/CollectionsListContent.tsx:40
+#: src/ui/dash/collections/CollectionsListContent.tsx:60
 #: src/ui/pages/CollectionsPage.tsx:29
 msgid "No collections yet."
 msgstr "No collections yet."
@@ -1093,6 +1098,11 @@ msgstr "Redirects"
 msgid "Remove"
 msgstr "Remove"
 
+#. @context: Button to delete a divider
+#: src/ui/dash/collections/CollectionsListContent.tsx:93
+msgid "Remove divider"
+msgstr "Remove divider"
+
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
 #: src/routes/auth/reset.tsx:33
@@ -1153,6 +1163,11 @@ msgstr "Search"
 #: src/routes/pages/search.tsx:49
 #~ msgid "Search failed. Please try again."
 #~ msgstr "Search failed. Please try again."
+
+#. @context: Icon picker search placeholder
+#: src/ui/dash/collections/CollectionForm.tsx:334
+msgid "Search icons..."
+msgstr "Search icons..."
 
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx:36
@@ -1222,7 +1237,7 @@ msgstr "Site Name"
 
 #. @context: Collection form field
 #. @context: Page form field label - URL slug
-#: src/ui/dash/collections/CollectionForm.tsx:103
+#: src/ui/dash/collections/CollectionForm.tsx:104
 #: src/ui/dash/PageForm.tsx:64
 msgid "Slug"
 msgstr "Slug"
@@ -1347,7 +1362,7 @@ msgstr "Time Zone"
 #. @context: Page form field label - title
 #: src/ui/compose/ComposeDialog.tsx:273
 #: src/ui/compose/ComposeDialog.tsx:604
-#: src/ui/dash/collections/CollectionForm.tsx:75
+#: src/ui/dash/collections/CollectionForm.tsx:76
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "Title"
@@ -1397,7 +1412,7 @@ msgid "Update"
 msgstr "Update"
 
 #. @context: Button to save collection changes
-#: src/ui/dash/collections/CollectionForm.tsx:45
+#: src/ui/dash/collections/CollectionForm.tsx:46
 msgid "Update Collection"
 msgstr "Update Collection"
 
@@ -1453,7 +1468,7 @@ msgstr "URL (optional)"
 #~ msgstr "URL-safe identifier (lowercase, numbers, hyphens)"
 
 #. @context: Collection path help text
-#: src/ui/dash/collections/CollectionForm.tsx:115
+#: src/ui/dash/collections/CollectionForm.tsx:116
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 
@@ -1463,7 +1478,6 @@ msgid "Use this URL to embed the media in your posts."
 msgstr "Use this URL to embed the media in your posts."
 
 #. @context: Button to view collection
-#. @context: Button to view collection
 #. @context: Button to view item on public site
 #. @context: Button to view page on public site
 #. @context: Button to view page on public site
@@ -1472,7 +1486,6 @@ msgstr "Use this URL to embed the media in your posts."
 #: src/routes/dash/pages.tsx:60
 #: src/routes/dash/posts.tsx:145
 #: src/ui/dash/ActionButtons.tsx:76
-#: src/ui/dash/collections/CollectionsListContent.tsx:71
 #: src/ui/dash/collections/ViewCollectionContent.tsx:49
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:177
 #: src/ui/dash/PostList.tsx:55
@@ -1517,7 +1530,7 @@ msgid "What's on your mind..."
 msgstr "What's on your mind..."
 
 #. @context: Collection description placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:138
+#: src/ui/dash/collections/CollectionForm.tsx:139
 msgid "What's this collection about?"
 msgstr "What's this collection about?"
 

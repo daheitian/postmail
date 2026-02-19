@@ -77,7 +77,13 @@ export interface Collection {
   icon: string | null;
   sortOrder: SortOrder;
   position: number;
-  showDivider: number; // 0 | 1
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CollectionDivider {
+  id: number;
+  position: number;
   createdAt: number;
   updatedAt: number;
 }

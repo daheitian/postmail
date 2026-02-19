@@ -22,7 +22,6 @@ const CreateCollectionSchema = z.object({
   icon: z.string().optional(),
   sortOrder: SortOrderSchema.optional(),
   position: z.number().int().min(0).optional(),
-  showDivider: z.boolean().optional(),
 });
 
 const UpdateCollectionSchema = z.object({
@@ -32,11 +31,11 @@ const UpdateCollectionSchema = z.object({
   icon: z.string().nullable().optional(),
   sortOrder: SortOrderSchema.optional(),
   position: z.number().int().min(0).optional(),
-  showDivider: z.boolean().optional(),
 });
 
 const ReorderSchema = z.object({
-  ids: z.array(z.number().int().positive()),
+  ids: z.array(z.number().int().positive()).optional(),
+  items: z.array(z.string().regex(/^[cd]-\d+$/)).optional(),
 });
 
 const PostAssignSchema = z.object({
@@ -79,7 +78,11 @@ collectionsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
     );
   }
 
-  await c.var.services.collections.reorder(parseResult.data.ids);
+  if (parseResult.data.items) {
+    await c.var.services.collections.reorderAll(parseResult.data.items);
+  } else if (parseResult.data.ids) {
+    await c.var.services.collections.reorder(parseResult.data.ids);
+  }
   const collections = await c.var.services.collections.list();
   return c.json({ collections });
 });
@@ -105,7 +108,6 @@ collectionsApiRoutes.post("/", requireAuthApi(), async (c) => {
     icon: body.icon,
     sortOrder: body.sortOrder as SortOrder | undefined,
     position: body.position,
-    showDivider: body.showDivider,
   });
 
   return c.json(collection, 201);

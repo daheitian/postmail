@@ -110,6 +110,12 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     }
   }
 
+  // Apply 0008: collection_dividers table
+  applyMigration(sqlite, "0008_add_collection_dividers.sql");
+
+  // Apply 0009: drop show_divider column from collections
+  applyMigration(sqlite, "0009_drop_collection_show_divider.sql");
+
   const db = drizzle(sqlite, { schema });
 
   return { db, sqlite };

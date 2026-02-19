@@ -73,10 +73,10 @@ describe("Setup seed logic", () => {
 
     const aboutPage = await services.pages.getBySlug("about");
     expect(aboutPage).not.toBeNull();
-    expect(aboutPage!.title).toBe("About");
-    expect(aboutPage!.status).toBe("published");
-    expect(aboutPage!.body).toContain("Welcome to my corner of the internet");
-    expect(aboutPage!.bodyHtml).toBeTruthy();
+    expect(aboutPage?.title).toBe("About");
+    expect(aboutPage?.status).toBe("published");
+    expect(aboutPage?.body).toContain("Welcome to my corner of the internet");
+    expect(aboutPage?.bodyHtml).toBeTruthy();
   });
 
   it("adds About page to navigation as a page-type nav item", async () => {
@@ -86,12 +86,12 @@ describe("Setup seed logic", () => {
     const navItemsList = await services.navItems.list();
 
     const aboutNavItem = navItemsList.find(
-      (item) => item.pageId === aboutPage!.id,
+      (item) => item.pageId === aboutPage?.id,
     );
     expect(aboutNavItem).toBeDefined();
-    expect(aboutNavItem!.type).toBe("page");
-    expect(aboutNavItem!.label).toBe("About");
-    expect(aboutNavItem!.url).toBe("/about");
+    expect(aboutNavItem?.type).toBe("page");
+    expect(aboutNavItem?.label).toBe("About");
+    expect(aboutNavItem?.url).toBe("/about");
   });
 
   it("creates three nav items total: Collections, Archive, About", async () => {
@@ -110,8 +110,8 @@ describe("Setup seed logic", () => {
     await runSetupSeed(services);
 
     const aboutPage = await services.pages.getBySlug("about");
-    expect(aboutPage!.bodyHtml).toContain("<p>");
-    expect(aboutPage!.bodyHtml).toContain(
+    expect(aboutPage?.bodyHtml).toContain("<p>");
+    expect(aboutPage?.bodyHtml).toContain(
       "Welcome to my corner of the internet",
     );
   });

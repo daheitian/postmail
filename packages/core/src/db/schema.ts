@@ -93,7 +93,17 @@ export const collections = sqliteTable("collections", {
     .notNull()
     .default("newest"),
   position: integer("position").notNull().default(0),
-  showDivider: integer("show_divider").notNull().default(0),
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
+
+// =============================================================================
+// Collection Dividers (standalone sortable separators)
+// =============================================================================
+
+export const collectionDividers = sqliteTable("collection_dividers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  position: integer("position").notNull().default(0),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

@@ -140,9 +140,6 @@ export const CreateCollectionSchema = z.object({
   icon: z.string().optional(),
   sortOrder: SortOrderSchema.optional(),
   position: z.coerce.number().int().min(0).optional(),
-  showDivider: z
-    .union([z.boolean(), z.literal("on").transform(() => true)])
-    .optional(),
 });
 
 /**

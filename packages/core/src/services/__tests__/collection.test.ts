@@ -29,7 +29,6 @@ describe("CollectionService", () => {
       expect(collection.description).toBeNull();
       expect(collection.icon).toBeNull();
       expect(collection.sortOrder).toBe("newest");
-      expect(collection.showDivider).toBe(0);
     });
 
     it("creates a collection with all fields", async () => {
@@ -40,7 +39,6 @@ describe("CollectionService", () => {
         icon: "laptop",
         sortOrder: "oldest",
         position: 5,
-        showDivider: true,
       });
 
       expect(collection.slug).toBe("tech");
@@ -49,7 +47,6 @@ describe("CollectionService", () => {
       expect(collection.icon).toBe("laptop");
       expect(collection.sortOrder).toBe("oldest");
       expect(collection.position).toBe(5);
-      expect(collection.showDivider).toBe(1);
     });
 
     it("sets timestamps", async () => {
@@ -214,7 +211,7 @@ describe("CollectionService", () => {
       expect(updated?.icon).toBeNull();
     });
 
-    it("updates icon, sortOrder, position, and showDivider", async () => {
+    it("updates icon, sortOrder, and position", async () => {
       const collection = await collectionService.create({
         slug: "test",
         title: "Test",
@@ -224,13 +221,11 @@ describe("CollectionService", () => {
         icon: "rocket",
         sortOrder: "rating_desc",
         position: 10,
-        showDivider: true,
       });
 
       expect(updated?.icon).toBe("rocket");
       expect(updated?.sortOrder).toBe("rating_desc");
       expect(updated?.position).toBe(10);
-      expect(updated?.showDivider).toBe(1);
     });
 
     it("updates updatedAt timestamp", async () => {
@@ -539,6 +534,127 @@ describe("CollectionService", () => {
       expect(ids).toHaveLength(2);
       expect(ids).toContain(p1.id);
       expect(ids).toContain(p2.id);
+    });
+  });
+
+  describe("createDivider", () => {
+    it("creates a divider with auto-assigned position", async () => {
+      const divider = await collectionService.createDivider();
+
+      expect(divider.id).toBe(1);
+      expect(divider.position).toBe(0);
+      expect(divider.createdAt).toBeGreaterThan(0);
+      expect(divider.updatedAt).toBeGreaterThan(0);
+    });
+
+    it("assigns position after existing collections", async () => {
+      await collectionService.create({ slug: "a", title: "A" }); // position 0
+      await collectionService.create({ slug: "b", title: "B" }); // position 1
+
+      const divider = await collectionService.createDivider();
+      expect(divider.position).toBe(2);
+    });
+
+    it("assigns position after existing dividers", async () => {
+      const d1 = await collectionService.createDivider(); // position 0
+      const d2 = await collectionService.createDivider(); // position 1
+
+      expect(d1.position).toBe(0);
+      expect(d2.position).toBe(1);
+    });
+
+    it("considers both collections and dividers for position", async () => {
+      await collectionService.create({ slug: "a", title: "A" }); // position 0
+      await collectionService.createDivider(); // position 1
+      await collectionService.create({ slug: "b", title: "B" }); // position 2
+
+      const divider = await collectionService.createDivider();
+      expect(divider.position).toBe(3);
+    });
+  });
+
+  describe("deleteDivider", () => {
+    it("deletes a divider by ID", async () => {
+      const divider = await collectionService.createDivider();
+
+      const result = await collectionService.deleteDivider(divider.id);
+      expect(result).toBe(true);
+
+      const list = await collectionService.listDividers();
+      expect(list).toHaveLength(0);
+    });
+
+    it("returns false for non-existent divider", async () => {
+      const result = await collectionService.deleteDivider(9999);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("listDividers", () => {
+    it("returns empty array when no dividers exist", async () => {
+      const list = await collectionService.listDividers();
+      expect(list).toEqual([]);
+    });
+
+    it("returns dividers ordered by position", async () => {
+      const d1 = await collectionService.createDivider();
+      const d2 = await collectionService.createDivider();
+
+      const list = await collectionService.listDividers();
+      expect(list).toHaveLength(2);
+      expect(list[0]?.id).toBe(d1.id);
+      expect(list[1]?.id).toBe(d2.id);
+    });
+  });
+
+  describe("reorderAll", () => {
+    it("handles mixed prefixed IDs correctly", async () => {
+      const a = await collectionService.create({ slug: "a", title: "A" });
+      const b = await collectionService.create({ slug: "b", title: "B" });
+      const d1 = await collectionService.createDivider();
+
+      // Reorder: divider first, then B, then A
+      await collectionService.reorderAll([
+        `d-${d1.id}`,
+        `c-${b.id}`,
+        `c-${a.id}`,
+      ]);
+
+      const dividers = await collectionService.listDividers();
+      expect(dividers[0]?.position).toBe(0);
+
+      const colB = await collectionService.getById(b.id);
+      const colA = await collectionService.getById(a.id);
+      expect(colB?.position).toBe(1);
+      expect(colA?.position).toBe(2);
+    });
+
+    it("handles empty array", async () => {
+      await collectionService.reorderAll([]);
+      // Should not throw
+      const list = await collectionService.list();
+      expect(list).toEqual([]);
+    });
+
+    it("reflects new order in combined list", async () => {
+      const a = await collectionService.create({ slug: "a", title: "A" });
+      const d1 = await collectionService.createDivider();
+      const b = await collectionService.create({ slug: "b", title: "B" });
+
+      // Put divider between B and A
+      await collectionService.reorderAll([
+        `c-${b.id}`,
+        `d-${d1.id}`,
+        `c-${a.id}`,
+      ]);
+
+      const cols = await collectionService.list();
+      const divs = await collectionService.listDividers();
+
+      // B at position 0, divider at 1, A at 2
+      expect(cols.find((c) => c.id === b.id)?.position).toBe(0);
+      expect(divs[0]?.position).toBe(1);
+      expect(cols.find((c) => c.id === a.id)?.position).toBe(2);
     });
   });
 
