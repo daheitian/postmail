@@ -54,8 +54,6 @@ msgid "Add Link"
 msgstr "新增連結"
 
 #. @context: Button to open media picker
-#. @context: Compose toolbar - add media
-#: src/ui/compose/ComposeDialog.tsx:258
 #: src/ui/dash/PostForm.tsx:213
 msgid "Add Media"
 msgstr "添加媒體"
@@ -90,6 +88,23 @@ msgstr "檔案館"
 msgid "Are you sure you want to delete this post? This cannot be undone."
 msgstr "您確定要刪除這篇文章嗎？這個操作無法撤銷。"
 
+#. @context: Attached text badge label
+#: src/ui/compose/ComposeDialog.tsx:469
+msgid "Attached text"
+msgstr "附加文本"
+
+#. @context: Attached text panel title
+#. @context: Compose toolbar - attached text tooltip
+#: src/ui/compose/ComposeDialog.tsx:72
+#: src/ui/compose/ComposeDialog.tsx:543
+msgid "Attached Text"
+msgstr "附加文本"
+
+#. @context: Compose quote author placeholder
+#: src/ui/compose/ComposeDialog.tsx:362
+msgid "Author (optional)"
+msgstr "作者（可選）"
+
 #. @context: Button to go back to media list
 #: src/ui/dash/media/ViewMediaContent.tsx:57
 msgid "Back"
@@ -108,7 +123,7 @@ msgstr "部落格頭像"
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx:183
-#: src/ui/compose/ComposeDialog.tsx:48
+#: src/ui/compose/ComposeDialog.tsx:126
 #: src/ui/dash/collections/CollectionForm.tsx:297
 #: src/ui/dash/PageForm.tsx:177
 #: src/ui/dash/pages/LinkFormContent.tsx:110
@@ -134,7 +149,7 @@ msgstr "選擇一個字體搭配以供您的網站使用。所有選項均使用
 #: src/ui/dash/collections/CollectionForm.tsx:185
 #: src/ui/dash/collections/CollectionForm.tsx:313
 msgid "Choose Icon"
-msgstr ""
+msgstr "選擇圖示"
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx:90
@@ -144,24 +159,17 @@ msgstr "點擊圖片以查看完整大小"
 #. @context: Button to close icon picker
 #: src/ui/dash/collections/CollectionForm.tsx:323
 msgid "Close"
-msgstr ""
+msgstr "關閉"
 
-#. @context: Compose toolbar - toggle collection
-#: src/ui/compose/ComposeDialog.tsx:311
+#. @context: Compose collection selector placeholder
+#: src/ui/compose/ComposeDialog.tsx:646
 msgid "Collection"
 msgstr "集合"
 
-#. @context: Post form field - assign to collection
-#: src/ui/dash/PostForm.tsx:264
-#~ msgid "Collection (optional)"
-#~ msgstr "集合（可選）"
-
 #. @context: Collections page heading
-#. @context: Compose collection field
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - collections management
 #. @context: Sidebar heading for collections nav
-#: src/ui/compose/ComposeDialog.tsx:230
 #: src/ui/dash/collections/CollectionsListContent.tsx:27
 #: src/ui/layouts/DashLayout.tsx:114
 #: src/ui/pages/CollectionsPage.tsx:19
@@ -172,7 +180,7 @@ msgstr "收藏夾"
 #. @context: Post form field - assign to collections
 #: src/ui/dash/PostForm.tsx:266
 msgid "Collections (optional)"
-msgstr ""
+msgstr "收藏（可選）"
 
 #. @context: Appearance settings heading
 #: src/ui/dash/settings/AppearanceContent.tsx:112
@@ -299,6 +307,11 @@ msgstr "示範帳戶已預填。只需點擊登入。"
 msgid "Description (optional)"
 msgstr "描述（可選）"
 
+#. @context: More menu - discard post
+#: src/ui/compose/ComposeDialog.tsx:246
+msgid "Discard"
+msgstr "丟棄"
+
 #. @context: Checkbox to show avatar in the site header
 #: src/ui/dash/settings/GeneralContent.tsx:274
 msgid "Display avatar in my site header"
@@ -309,9 +322,11 @@ msgstr "在我的網站標頭中顯示頭像"
 msgid "Display text for the link"
 msgstr "顯示連結的文字"
 
+#. @context: Close attached text panel
 #. @context: Close media picker button
 #. @context: Close media picker button
-#: src/ui/compose/ComposeDialog.tsx:381
+#: src/ui/compose/ComposeDialog.tsx:111
+#: src/ui/compose/ComposeDialog.tsx:748
 #: src/ui/dash/PostForm.tsx:338
 msgid "Done"
 msgstr "完成"
@@ -378,11 +393,6 @@ msgstr "編輯文章"
 msgid "Email"
 msgstr "電子郵件"
 
-#. @context: Collection icon placeholder
-#: src/ui/dash/collections/CollectionForm.tsx:143
-#~ msgid "Emoji or icon name"
-#~ msgstr ""
-
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx:39
 msgid "Enter your new password."
@@ -391,12 +401,12 @@ msgstr "請輸入您的新密碼。"
 #. @context: Plural entry count label
 #: src/ui/pages/CollectionsPage.tsx:61
 msgid "entries"
-msgstr ""
+msgstr "條目"
 
 #. @context: Singular entry count label
 #: src/ui/pages/CollectionsPage.tsx:57
 msgid "entry"
-msgstr ""
+msgstr "條目"
 
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
@@ -443,15 +453,20 @@ msgstr "來源路徑"
 msgid "General"
 msgstr "一般設定"
 
+#. @context: Compose link title placeholder
+#: src/ui/compose/ComposeDialog.tsx:321
+msgid "Give it a title..."
+msgstr "給它一個標題..."
+
 #. @context: Collection sort order option
 #: src/ui/dash/collections/CollectionForm.tsx:260
 msgid "Highest rated"
-msgstr ""
+msgstr "最高評價"
 
 #. @context: Collection form field
 #: src/ui/dash/collections/CollectionForm.tsx:150
 msgid "Icon (optional)"
-msgstr ""
+msgstr "圖示（可選）"
 
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx:147
@@ -494,7 +509,7 @@ msgstr "鏈接"
 #. @context: Post format badge - link
 #. @context: Post format label - link
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:139
+#: src/ui/compose/ComposeDialog.tsx:156
 #: src/ui/dash/FormatBadge.tsx:20
 #: src/ui/dash/PostForm.tsx:76
 #: src/ui/pages/ArchivePage.tsx:17
@@ -513,7 +528,7 @@ msgstr "載入更多"
 
 #. @context: Loading state for media picker
 #. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx:392
+#: src/ui/compose/ComposeDialog.tsx:759
 #: src/ui/dash/PostForm.tsx:349
 msgid "Loading..."
 msgstr "載入中..."
@@ -526,7 +541,7 @@ msgstr "僅限小寫字母、數字和連字符"
 #. @context: Collection sort order option
 #: src/ui/dash/collections/CollectionForm.tsx:269
 msgid "Lowest rated"
-msgstr ""
+msgstr "最低評價"
 
 #. @context: Media detail section - Markdown snippet
 #: src/ui/dash/media/ViewMediaContent.tsx:146
@@ -538,19 +553,16 @@ msgstr "Markdown"
 msgid "Markdown supported"
 msgstr "支援Markdown"
 
+#. @context: Compose toolbar - media tooltip
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
 #. @context: Post form field - media attachments
+#: src/ui/compose/ComposeDialog.tsx:514
 #: src/ui/dash/media/MediaListContent.tsx:127
 #: src/ui/dash/PostForm.tsx:160
 #: src/ui/layouts/DashLayout.tsx:105
 msgid "Media"
 msgstr "媒體"
-
-#. @context: Header more button tooltip
-#: src/ui/compose/ComposeDialog.tsx:88
-msgid "More options"
-msgstr ""
 
 #. @context: Collection title placeholder
 #: src/ui/dash/collections/CollectionForm.tsx:88
@@ -597,12 +609,10 @@ msgstr "新密碼"
 
 #. @context: Button to create new post
 #. @context: Button to create new post
-#. @context: Compose dialog title
 #. @context: Page heading
 #: src/routes/dash/index.tsx:67
 #: src/routes/dash/posts.tsx:30
 #: src/routes/dash/posts.tsx:46
-#: src/ui/compose/ComposeDialog.tsx:54
 msgid "New Post"
 msgstr "新帖子"
 
@@ -618,7 +628,7 @@ msgstr "新重定向"
 #. @context: Collection sort order option
 #: src/ui/dash/collections/CollectionForm.tsx:242
 msgid "Newest first"
-msgstr ""
+msgstr "最新的在前"
 
 #. @context: Pagination button - next page
 #. @context: Pagination button - next page
@@ -678,16 +688,11 @@ msgstr "未配置任何重定向。"
 msgid "No results found."
 msgstr "未找到結果。"
 
-#. @context: No rating selected
-#: src/ui/compose/ComposeDialog.tsx:213
-msgid "None"
-msgstr "無"
-
 #. @context: Compose format tab
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:128
+#: src/ui/compose/ComposeDialog.tsx:145
 #: src/ui/dash/FormatBadge.tsx:19
 #: src/ui/dash/PostForm.tsx:73
 #: src/ui/pages/ArchivePage.tsx:16
@@ -702,7 +707,7 @@ msgstr "筆記"
 #. @context: Collection sort order option
 #: src/ui/dash/collections/CollectionForm.tsx:251
 msgid "Oldest first"
-msgstr ""
+msgstr "最舊的在前"
 
 #. @context: Section heading for pages not in navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:139
@@ -748,6 +753,22 @@ msgstr "頁面"
 msgid "Password"
 msgstr "密碼"
 
+#. @context: Attached text placeholder
+#: src/ui/compose/ComposeDialog.tsx:90
+msgid ""
+"Paste a long article, AI response, or any text...\n"
+"\n"
+"Markdown formatting will be preserved."
+msgstr ""
+"粘貼一篇長文章、AI 回應或任何文本...\n"
+"\n"
+"Markdown 格式將被保留。"
+
+#. @context: Compose link URL placeholder
+#: src/ui/compose/ComposeDialog.tsx:310
+msgid "Paste a URL..."
+msgstr "粘貼一個網址..."
+
 #. @context: Navigation URL help text
 #: src/ui/dash/pages/LinkFormContent.tsx:74
 msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
@@ -767,16 +788,11 @@ msgstr "永久鏈接"
 msgid "Pinned"
 msgstr "置頂"
 
-#. @context: Singular post count label
-#: src/ui/pages/CollectionsPage.tsx:56
-#~ msgid "post"
-#~ msgstr "文章"
-
 #. @context: Compose button - publish post
 #. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx:128
-#: src/ui/compose/ComposeDialog.tsx:353
+#: src/ui/compose/ComposeDialog.tsx:722
 #: src/ui/compose/ComposePrompt.tsx:48
 msgid "Post"
 msgstr "文章"
@@ -785,11 +801,6 @@ msgstr "文章"
 #: src/ui/dash/PostForm.tsx:96
 msgid "Post title..."
 msgstr "文章標題..."
-
-#. @context: Plural post count label
-#: src/ui/pages/CollectionsPage.tsx:60
-#~ msgid "posts"
-#~ msgstr "文章"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - posts management
@@ -857,7 +868,7 @@ msgstr "快速操作"
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
 #. @context: Post format option
-#: src/ui/compose/ComposeDialog.tsx:150
+#: src/ui/compose/ComposeDialog.tsx:167
 #: src/ui/dash/FormatBadge.tsx:21
 #: src/ui/dash/PostForm.tsx:79
 #: src/ui/pages/ArchivePage.tsx:18
@@ -873,13 +884,6 @@ msgstr "引用文本"
 #: src/ui/pages/ArchivePage.tsx:37
 msgid "Quotes"
 msgstr "引用"
-
-#. @context: Compose rating field
-#. @context: Compose toolbar - toggle rating
-#: src/ui/compose/ComposeDialog.tsx:206
-#: src/ui/compose/ComposeDialog.tsx:285
-msgid "Rating"
-msgstr "評分"
 
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - URL redirects
@@ -909,10 +913,15 @@ msgstr "重設密碼"
 msgid "Save"
 msgstr "保存"
 
+#. @context: More menu - save draft
+#: src/ui/compose/ComposeDialog.tsx:235
+msgid "Save as draft"
+msgstr "儲存為草稿"
+
 #. @context: Header draft button tooltip
-#: src/ui/compose/ComposeDialog.tsx:63
+#: src/ui/compose/ComposeDialog.tsx:179
 msgid "Save as Draft"
-msgstr ""
+msgstr "儲存為草稿"
 
 #. @context: Button to save edited navigation link
 #: src/ui/dash/pages/LinkFormContent.tsx:100
@@ -928,6 +937,11 @@ msgstr "儲存 CSS"
 #: src/ui/dash/settings/AccountContent.tsx:73
 msgid "Save Profile"
 msgstr "保存個人資料"
+
+#. @context: Compose toolbar - score tooltip
+#: src/ui/compose/ComposeDialog.tsx:572
+msgid "Score"
+msgstr "分數"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title
@@ -945,7 +959,7 @@ msgstr "搜尋帖子..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx:371
+#: src/ui/compose/ComposeDialog.tsx:738
 #: src/ui/dash/PostForm.tsx:328
 msgid "Select Media"
 msgstr "選擇媒體"
@@ -1004,7 +1018,12 @@ msgstr "縮略名"
 #. @context: Collection form field
 #: src/ui/dash/collections/CollectionForm.tsx:230
 msgid "Sort Order"
-msgstr ""
+msgstr "排序順序"
+
+#. @context: Compose quote source link placeholder
+#: src/ui/compose/ComposeDialog.tsx:373
+msgid "Source link (optional)"
+msgstr "來源連結（選填）"
 
 #. @context: Page form field label - publish status
 #. @context: Post form field
@@ -1012,6 +1031,11 @@ msgstr ""
 #: src/ui/dash/PostForm.tsx:223
 msgid "Status"
 msgstr "狀態"
+
+#. @context: Attached text panel hint
+#: src/ui/compose/ComposeDialog.tsx:101
+msgid "Supplementary content attached to your post"
+msgstr "附加在您帖子上的補充內容"
 
 #. @context: Redirect to path help text
 #: src/routes/dash/redirects.tsx:133
@@ -1030,9 +1054,7 @@ msgstr "重定向來源的路徑"
 msgid "The quick brown fox jumps over the lazy dog."
 msgstr "敏捷的棕色狐狸跳過懶惰的狗。"
 
-#. @context: Compose quote text placeholder
 #. @context: Quote text placeholder
-#: src/ui/compose/ComposeDialog.tsx:195
 #: src/ui/dash/PostForm.tsx:147
 msgid "The text being quoted..."
 msgstr "被引用的文本..."
@@ -1088,15 +1110,17 @@ msgid "Time Zone"
 msgstr "時區"
 
 #. @context: Collection form field
+#. @context: Compose note title placeholder
+#. @context: Compose toolbar - title tooltip
 #. @context: Page form field label - title
+#: src/ui/compose/ComposeDialog.tsx:273
+#: src/ui/compose/ComposeDialog.tsx:604
 #: src/ui/dash/collections/CollectionForm.tsx:75
 #: src/ui/dash/PageForm.tsx:44
 msgid "Title"
 msgstr "標題"
 
-#. @context: Compose title placeholder
 #. @context: Post form field
-#: src/ui/compose/ComposeDialog.tsx:162
 #: src/ui/dash/PostForm.tsx:87
 msgid "Title (optional)"
 msgstr "標題（選填）"
@@ -1110,6 +1134,11 @@ msgstr "到路徑"
 #: src/routes/dash/redirects.tsx:142
 msgid "Type"
 msgstr "類型"
+
+#. @context: Compose quote text placeholder
+#: src/ui/compose/ComposeDialog.tsx:349
+msgid "Type the quote..."
+msgstr "輸入引用..."
 
 #. @context: Button to remove page from navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:82
@@ -1175,14 +1204,9 @@ msgid "URL (optional)"
 msgstr "網址（可選）"
 
 #. @context: Collection path help text
-#: src/ui/dash/collections/CollectionForm.tsx:92
-#~ msgid "URL-safe identifier (lowercase, numbers, hyphens)"
-#~ msgstr "網址安全識別碼（小寫、數字、連字符）"
-
-#. @context: Collection path help text
 #: src/ui/dash/collections/CollectionForm.tsx:115
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
-msgstr ""
+msgstr "URL安全識別碼（小寫、數字、連字符）。對於CJK標題，slug將在伺服器上自動生成。"
 
 #. @context: Media URL helper text
 #: src/ui/dash/media/ViewMediaContent.tsx:135
@@ -1217,18 +1241,16 @@ msgid "Welcome to Jant"
 msgstr "歡迎來到 Jant"
 
 #. @context: Compose prompt placeholder text
-#: src/ui/compose/ComposePrompt.tsx:37
-#~ msgid "What's new?"
-#~ msgstr "有什麼新消息？"
-
-#. @context: Compose body placeholder
-#. @context: Compose prompt placeholder text
 #. @context: Post content placeholder
-#: src/ui/compose/ComposeDialog.tsx:173
 #: src/ui/compose/ComposePrompt.tsx:37
 #: src/ui/dash/PostForm.tsx:111
 msgid "What's on your mind?"
 msgstr "你在想什麼？"
+
+#. @context: Compose body placeholder
+#: src/ui/compose/ComposeDialog.tsx:290
+msgid "What's on your mind..."
+msgstr "你在想什麼..."
 
 #. @context: Collection description placeholder
 #: src/ui/dash/collections/CollectionForm.tsx:138
@@ -1244,3 +1266,10 @@ msgstr "您的姓名"
 #: src/ui/dash/pages/UnifiedPagesContent.tsx:45
 msgid "Your site navigation"
 msgstr "您的網站導航"
+
+#. @context: Compose thoughts placeholder
+#. @context: Compose thoughts placeholder
+#: src/ui/compose/ComposeDialog.tsx:330
+#: src/ui/compose/ComposeDialog.tsx:384
+msgid "Your thoughts (optional)"
+msgstr "您的想法（可選）"
