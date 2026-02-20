@@ -1,26 +1,21 @@
-# Jant - 产品设计文档 v2
+# Jant - 产品设计文档
 
 > **Jant** = Jantelagen（詹代法则）缩写
 > 强调低调、去社交化的个人表达
+> 简单低摩擦的发布体验，同时强调不打扰 RSS 订阅用户(默认的 RSS 仅输出 Featured 内容)
 
 ## 1. 产品定位
 
-**一句话**：像 Threads.net 一样丝滑的个人微博客系统。
+**一句话**：像 Threads.net 一样丝滑的个人轻博客系统。
 
 **核心特征**：
 
 - 单博客，单作者
-- 三种内容格式（Note, Link, Quote）
+- 三种内容格式（Note, Link, Quote）类似 Tumblr
 - Thread（帖子串）——把想法串联成连贯的对话
 - Collection（策展）——把零散帖子组织成主题集合
-- 可定制的主题和颜色方案
+- 可定制的颜色方案
 - 极简部署（Cloudflare Workers，一键启动）
-
-**非目标**：
-
-- 没有社交功能（不关注、不点赞、不转发）
-- 不支持多用户
-- 不做复杂权限系统
 
 ---
 
@@ -114,9 +109,7 @@
 - Collection 有自定义 slug，地址为 `/c/{slug}`，创建时根据名称自动生成，用户可修改
 - Collection 有独立的 RSS：`/c/{slug}/feed`
 - Collection 有 `position` 字段，后台支持拖拽排序
-- Collection 支持 `show_divider` 字段（布尔值），为 true 时在此 Collection 上方显示分隔线，实现视觉分组。第一个 Collection 的 show_divider 强制为 false, /dash/collections 每个collection 可以上下拖动排序。
 - 不预设任何 Collection，首次使用时引导创建
-- 查看 Collection 时可通过 featured 筛选
 
 ### 2.6 Media（媒体）
 
@@ -169,7 +162,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 3.3 首页 Timeline
 
-- 展示所有 published 帖子，按日期分组
+- 展示所有 published 帖子
 - 置顶帖子（pinned）显示在日期分组之前
 - 帖子卡片根据 format 和内容自动适配不同样式
 - 无限滚动加载更多，基于 cursor 分页，无 footer
@@ -209,7 +202,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 3.7 Collections 页面
 
-`/collections` 展示所有 Collection 的列表页，点击进入单个 Collection 的帖子列表（`/c/{slug}`）。所有页面均为单栏布局。
+`/collections` 展示所有 Collection 的列表页，点击进入单个 Collection 的帖子列表（`/c/{slug}`）。Collections 页面为双栏布局，左侧边栏展示所有的 Collection，右侧栏展示当前 Collection 的帖子列表。
 
 ### 3.8 首次使用（Onboarding）
 
@@ -313,133 +306,18 @@ Archive 页面筛选后可展示对应的 RSS 订阅链接。
 
 ## 7. 主题系统
 
-### 7.1 颜色主题
-
 内置 14 种颜色方案：default, ocean, forest, sunset, lavender, rose, sand, slate, gameboy, terminal, notepad, nord, dracula, solarized。
 
 通过 CSS 变量实现，自动支持 light/dark mode。在后台设置中切换。
 
-### 7.2 组件定制
-
-用户可通过 `createApp({ theme })` 覆盖任意 UI 组件——从整个页面布局到单个卡片类型。也可以覆盖 RSS/Atom/Sitemap 的渲染逻辑，或通过 CSS 变量微调视觉风格。
-
----
-
-## 8. 配置策略
-
-**运行时配置**（环境变量 / 数据库）：
-
-- 站点名称、描述、语言——可在后台设置中修改
-- 站点 URL、认证密钥、存储配置——通过环境变量设置
-
-**编译时定制**（代码）：
-
-- 主题组件覆盖、CSS 变量——需要编译，通过 `createApp()` 传入
-
----
-
-## 9. 技术选型
+## 8. 技术选型
 
 - **部署**：Cloudflare Workers
 - **框架**：Hono + Hono JSX
-- **交互**：Datastar（Hypermedia，服务端渲染 + 增量更新）
+- **交互**：Datastar（Hypermedia，服务端渲染 + 增量更新） + Lit
 - **样式**：Tailwind CSS v4 + BaseCoat 组件
 - **数据库**：D1 + Drizzle ORM
 - **存储**：Cloudflare R2 或 S3 兼容存储
 - **认证**：better-auth
 - **多语言**：Lingui
 - **语义标记**：microformats2
-
----
-
-## 10. 未来方向
-
-以下功能不在当前范围内，但可能在未来考虑：
-
-- 评论系统
-- 统计分析
-- 定时发布（scheduled status）
-- 自定义帖子类型
-- API Token（外部集成）
-- 自定义 CSS/JS 注入
-- 更多部署目标（Docker 等）
-
----
-
-## 附录：v1 → v2 变更清单
-
-### 内容类型重构
-
-- 6 种内容类型（note, article, link, quote, image, page）→ 3 种 Format（note, link, quote）+ 独立 Page
-- `article` 合并到 `note`：有 title = 文章样式渲染，无 title = 短帖子样式渲染
-- `image` 取消：图片作为任何 format 的通用媒体能力
-- `page` 独立为单独数据表：不参与时间线和 RSS，行为与 Post 完全不同
-- `quote_source` 复用 `title` 字段，减少专属字段
-- `attachments` 改名为 `media`
-- 新增 `body_html` 字段：写入时渲染，读取时直接使用
-- 新增 `rating` 通用字段（1-5 整数），任何帖子可评分，不需要 review 类型
-- 新增 `pinned` 字段（布尔值），支持置顶，最多 3 条
-- 媒体支持混合上传（图片 + 视频 + 音频），不再按类型限制数量
-- Post 支持可选 `path` 字段（仅 API 可用），支持多级路径（如 `2024/01/my-post`），用于博客迁移
-- Page 仅支持单级 slug，不支持多级路径
-
-### 可见性系统重构
-
-- 4 级可见性（featured, quiet, unlisted, draft）→ `status` + `featured` + `pinned` 三个独立字段
-- 取消 `quiet`：默认状态为 `published`
-- 取消 `unlisted`：Page 天然承担此角色
-- `draft` 从可见性维度移到 `status` 维度
-- `status` 使用字符串（预留 scheduled 等扩展）
-
-### Collection 变更
-
-- 多对多 → 一对多（一个帖子只属于一个 Collection）
-- 新增图标支持（Lucide SVG 或用户上传图片）
-- 新增自定义排序（最新 / 最早 / 评分正序 / 倒序）
-- 新增自定义 slug（根据名称自动生成，用户可改），地址为 `/c/{slug}`
-- 新增 Collection RSS（`/c/{slug}/feed`）
-- 新增 `+` 组合语法（`/c/a+b` 聚合查看）
-- 新增 `position` + `show_divider` 字段，支持拖拽排序和视觉分组
-- 不预设任何 Collection，首次使用时引导创建
-
-### 导航系统重构
-
-- 原有的「导航链接」→ `nav_items` 统一管理，参考 Pika.page
-- nav_items 仅两种类型：`page`（关联 Page）和 `link`（任意 URL）
-- 导航管理与 Page 管理合并到 `/dash/pages`，参考 Pika.page
-- 取消社交链接功能，用户在 `/about` 页面自行编写
-- 取消 `/dash/navigation` 独立页面
-
-### 前台布局变更
-
-- 取消侧边栏，全站单栏布局，参考 Pika.page 简洁风格
-- 首页展示所有 published 帖子（按日期分组）+ 置顶帖子
-- 筛选功能（format、featured）收到 `/archive` 页面
-- `/featured` 作为独立页面，通过导航链接进入
-- `/collections` 作为独立列表页
-- 搜索和发帖均为弹窗形式
-- 无限滚动，无 footer
-- 登录后导航栏出现头像 + 下拉菜单
-
-### 新增功能
-
-- Link 富媒体渲染（YouTube、Bilibili、Spotify 等自动识别 embed）
-- 帖子置顶（pinned）
-- Collection 视觉分组（show_divider）
-- Archive 和 Feed 支持 query parameter 筛选（format、featured）
-
-### 路由变更
-
-| 变更类型 | 路由                         | 说明                              |
-| -------- | ---------------------------- | --------------------------------- |
-| 新增     | `/featured`                  | 精选帖子页                        |
-| 新增     | `/collections`               | Collection 列表页                 |
-| 新增     | `/c/{slug}/feed`             | Collection RSS                    |
-| 新增     | `/c/{a}+{b}`                 | Collection 组合语法               |
-| 新增     | `/feed/all?format=`          | Feed 支持 format 筛选             |
-| 新增     | `/archive?format=&featured=` | Archive 支持 query parameter 筛选 |
-| 变更     | `/p/{slug}` → `/{path}`      | 帖子支持可选多级路径（仅 API）    |
-| 取消     | `/dash/navigation`           | 合并到 `/dash/pages`              |
-| 变更     | `/{path}` → `/{slug}`        | Page 仅支持单级 slug              |
-| 变更     | `/dash/pages`                | 整合导航管理                      |
-| 变更     | `/dash/settings`             | 移除社交链接配置                  |

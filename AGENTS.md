@@ -1,147 +1,94 @@
 # Jant - Development Guide
 
-## Critical Rules
+## What is Jant
 
-- **BaseCoat components first**: Use BaseCoat semantic CSS classes (`.alert`, `.btn`, `.badge`, `.card`, `.input`, `.field`) instead of Tailwind utilities. Tailwind only for layout, spacing, and typography not covered by BaseCoat. See `references/basecoat/`.
-- **BaseCoat button variants are standalone**: `.btn-outline`, `.btn-secondary`, `.btn-ghost`, `.btn-destructive`, `.btn-link` are self-contained. NEVER combine with `.btn` (e.g., `class="btn btn-outline"` is WRONG).
-- **Node.js 24** - Do NOT use older versions.
-- **Tests required**: Every feature, fix, or logic change MUST include tests. Run `mise run test` before finishing.
-- **Lint required**: After tests pass, run `mise run lint` and resolve all issues before wrapping up.
-- **Verify before changing**: Never assume CLI flags or API options exist. Run `--help` or check docs first.
-- **Latest packages**: Always `@latest` when installing.
-- **Vite only**: NEVER run `wrangler dev`. Use mise tasks (`mise run dev` / `mise run build`).
-- **Use mise tasks**: All dev commands via mise. Run `mise tasks` to see available commands.
-- **NEVER edit `packages/create-jant/template/`**: Auto-generated from `templates/jant-site`.
-- **Releasing**: Only publish via the `/release` command. Never run publish/release commands ad-hoc.
-- **Debug port**: Use `mise run dev-debug` (port 19019), not `mise run dev`.
-- **Stop dev after debugging**: Stop background processes when done.
-- **GitHub Actions**: Always add `workflow_dispatch:` trigger.
-- **DO NOT change `@lingui/react/macro` to `@lingui/macro`** in source.
-- **NEVER add feature flags or site settings to `createApp()`** - use env vars or database.
-- **Data attributes are stable public API**: Don't rename/remove `data-page`, `data-post`, `data-format`, etc. without major version bump.
-- **CSS tokens**: Never hardcode colors, fonts, spacing, or radii - use tokens in `styles/tokens.css`.
-- **Organic Minimalism**: All UI must follow the Soft UI design language — soft corners, gentle shadows, generous whitespace, muted colors, minimal noise. See `docs/theming.md` for full guidelines.
+Jant (short for Jantelagen) is a personal microblogging system — self-hosted, single-author, and stripped of all social mechanics. No followers, no likes, no algorithmic feed. It combines Tumblr-style multi-format posts (notes, links, quotes), Threads-style threading for connected thoughts, and curated Collections to organize content by topic. Just a clean space for one person to think out loud.
 
-## Tech Stack
+It runs on Cloudflare Workers with minimal infrastructure. The UI follows an "Organic Minimalism" aesthetic: generous whitespace, single-column layout, smooth animations, mobile-first. Content comes in three formats — Note (), Link (shared reference), Quote (cited text) — organized through Threads and Collections.
 
-Cloudflare Workers, Hono v4, Vite + SWC, Tailwind v4 + BaseCoat, D1 + Drizzle ORM, better-auth, @lingui/core, Datastar v1.0.0-RC.7 (vendored), Lit (Web Components), Zod, ESLint + Prettier
+The project is in **pre-1.0 development**. Breaking changes are expected and welcome when they improve the design. Always follow best practices over minimal-change conservatism. Update all references in the same change and document what changed in the commit message.
 
-## Architecture
+## Development Philosophy
 
-- `packages/core`: Pure library (not runnable). `templates/jant-site`: Dev environment. `packages/create-jant/template`: Auto-generated (never edit).
-- **Types**: All definitions in `types.ts`. Zod schemas in `lib/schemas.ts`.
-- **Routes**: Use `xxxRoutes` suffix (`postsRoutes`, `dashIndexRoutes`).
-- **Services**: All DB operations go through `src/services/`.
-- **Time**: Unix timestamps (seconds), use `lib/time.ts`.
-- **IDs**: Sqids for URLs (`/p/jR3k`), integers in DB.
-- **Media URLs from storage keys**: `getMediaUrl(storageKey, publicUrl?)` is the only way to build media URLs. Proxy and CDN use the same path (`/media/YYYY/MM/uuid.ext`) — only the domain differs. Never store a media ID just to look up a storage key for URL construction; store the storage key directly (e.g., `SITE_AVATAR` stores `storageKey`, not media ID).
-- **Soft delete**: Posts use `deleted_at` field.
-- **Lib functions**: 100% JSDoc with `@param`, `@returns`, `@example`.
-- **TypeScript**: Strict mode, no `any`, all exports typed.
+These principles explain _why_ the codebase is structured the way it is. When you encounter a situation not covered by a specific rule, use these to guide your judgment.
 
-## Lit Web Components
+- **Separation of concerns**: routes handle HTTP, services own business logic and all DB access, UI renders data. Each layer should be replaceable without affecting the others. Module dependency direction: `routes → services → db`, `routes → viewmodels → ui`. Detailed rules in `docs/internal/coding-standards.md`.
 
-Lit handles high-complexity client components (complex data staging, high-frequency state, third-party lib wrappers). Datastar remains the default for server-driven state, simple toggles, and SSE streams.
+- **Type safety as communication**: TypeScript strict mode with no `any` and fully typed exports prevents silent contract drift between layers. When a service return type changes, the compiler should catch every consumer.
 
-- **When to use Datastar vs Lit**: Datastar for server-driven state, simple toggles, SSE; Lit for high-frequency client state, complex data staging (e.g., compose dialog), third-party library wrappers.
-- **Light DOM only**: Override `createRenderRoot() { return this; }`. No Shadow DOM, no `static styles`. BaseCoat and Tailwind classes work directly.
-- **Data flow**: Hono renders `<jant-xxx attr="...">` with initial data as attributes. Lit receives via static `properties`. Output via `jant:`-prefixed CustomEvents (e.g., `jant:submit`, `jant:change`).
-- **No fetch() inside Lit**: Components emit events only. Datastar or other server-communication layers handle network requests.
-- **State**: Use static `properties` with `{ type: String }` for attributes, `{ state: true }` for internal reactive state. Plain class fields for non-reactive data.
-- **Static properties pattern** (not decorators): Avoids SWC decorator config issues. Use `static properties = { ... }` with `declare` field declarations. This is a first-class Lit pattern.
-- **classMap**: Use `classMap()` from `lit/directives/class-map.js` for dynamic classes.
-- **disconnectedCallback**: Always clean up event listeners, timers, and observers.
-- **Naming**: `<jant-xxx>` element tags, `jant:xxx` custom events, files in `src/ui/components/`.
-- **SSR fallback**: Server renders a skeleton or static content inside the custom element tag. Lit upgrades it on hydration.
-- **300-line max**: Split large components into sub-components (e.g., `<jant-compose-dialog>` → `<jant-compose-editor>`, `<jant-compose-toolbar>`).
+- **Tokens and components over raw values**: CSS tokens (`styles/tokens.css`) and BaseCoat semantic classes (`.alert`, `.btn`, `.badge`, `.card`, `.input`, `.field`) encode design decisions in one place. Hardcoding a color or spacing value means it can't evolve with the theme. See `docs/theming.md` and `references/basecoat/`.
 
-```typescript
-// Example Lit component pattern
-import { LitElement, html } from "lit";
-import { classMap } from "lit/directives/class-map.js";
+- **Cohesion over small files**: organize code by responsibility and keep related logic together. A well-structured 400-line file is better than four fragmented 100-line files that constantly import each other.
 
-export class JantExample extends LitElement {
-  static properties = {
-    label: { type: String },
-    _active: { state: true },
-  };
+- **Strict boundaries, free internals**: validate and convert at boundaries (HTTP entry, DB queries). Once data is inside a layer, trust the types.
 
-  declare label: string;
-  declare _active: boolean;
+- **Data flows down**: DB → Service → ViewModel → Component. Never in the other direction.
 
-  createRenderRoot() {
-    return this;
-  }
+- **Fail fast**: missing required config should crash at startup with a clear error, not silently degrade at runtime.
 
-  constructor() {
-    super();
-    this.label = "";
-    this._active = false;
-  }
+### Hard Constraints
 
-  render() {
-    return html`<div class=${classMap({ active: this._active })}>
-      ${this.label}
-    </div>`;
-  }
-}
+Non-negotiable regardless of context:
 
-customElements.define("jant-example", JantExample);
-```
+- **No DB in routes**: routes must never contain direct DB calls, raw SQL, or import DB drivers. All data access goes through `src/services/`.
+- **Relative imports only**: no `@/` path aliases anywhere in the codebase.
+- **Data attributes with care**: `data-page`, `data-post`, `data-format`, etc. are consumed by themes and external scripts. Design them thoughtfully and update all references when changing.
 
-## Principles
+## Working with the Codebase
 
-- **File-level readability**: Any single file should be understandable without jumping elsewhere. 300-line max, single responsibility.
-- **Strict boundaries, free internals**: Validate and type-convert at system boundaries (HTTP entry, DB). Internal code trusts clean data.
-- **Data flows down**: DB → Service → ViewModel → Component. Each layer depends only on the layer above; never reach back.
-- **Fail fast & loud**: Missing config? Error at startup with a clear message. Never defer to a cryptic runtime error.
-- **Smooth upgrades**: DB migrations run automatically and are forward-compatible. Config keys are append-only. `git pull` + redeploy = done.
+### Tooling
 
-## Testing
+- **Use mise tasks** for all commands (`mise tasks` to list). Never run `wrangler dev`; use `mise run dev` / `mise run build`.
+- **Debug**: `mise run dev-debug` (port `19019`). Stop background processes when done.
+- **Verify before changing**: never assume CLI flags; confirm with `--help` or docs.
+- **Latest packages**: use `@latest` when installing.
+- **Generated template is read-only**: never edit `packages/create-jant/template/`.
+- **GitHub Actions**: always add `workflow_dispatch:`.
+- **After every change**: run `mise run test`, then `mise run lint`, and fix all issues.
 
-Vitest v4, configured in `packages/core/vitest.config.ts`. Tests colocated in `__tests__/` next to source.
+### Conventions
 
-```typescript
-// Service tests - in-memory SQLite
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
-const { db } = createTestDatabase(); // without FTS
-const { db } = createTestDatabase({ fts: true }); // with FTS5
+- `packages/core`: pure library (not runnable). `templates/jant-site`: dev environment.
+- **Types**: public exports in `src/types.ts`; definitions in `src/types/`.
+- **Schemas**: shared domain schemas in `src/lib/schemas.ts`; route-specific schemas colocated with routes.
+- **Routes**: `xxxRoutes` suffix (`postsRoutes`, `dashIndexRoutes`).
+- **Time**: Unix timestamps (seconds) via `lib/time.ts`. **IDs**: Sqids for URLs (`/p/jR3k`), integers in DB.
+- **Soft delete**: posts use `deleted_at`.
+- **Library functions**: include JSDoc with `@param`, `@returns`, `@example`.
 
-// Route tests - test Hono app
-import { createTestApp } from "../../__tests__/helpers/app.js";
-const { app, services } = createTestApp({ authenticated: true });
-app.route("/api/posts", postsApiRoutes);
-const res = await app.request("/api/posts");
-```
+### i18n
 
-Each test gets a fresh database via `beforeEach`. Don't test third-party internals or JSX rendering.
-
-## Dev Login
-
-After `mise run db-seed`, the database has user/account rows but the password hash is from an export and unusable. Run `mise run dev-password <password>` to set a known password via better-auth's `hashPassword()`. Credentials after setup:
-
-- **Email**: `demo@jant.me`
-- **Password**: whatever you passed to `dev-password`
-- **Login page**: `/signin` → then `/dash` for the dashboard
-- **Remote sessions**: `scripts/setup-remote.sh` auto-runs `db-seed` + `dev-password testtest`, so credentials are `demo@jant.me / testtest`
-
-## i18n
+All user-facing strings use `t()` with a `@context:` comment for translators:
 
 ```tsx
-import { useLingui } from "@/i18n";
+import { useLingui } from "@lingui/react/macro";
+
 const { t } = useLingui();
 return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
 ```
 
-All user-facing strings use `t()` with `comment` including `@context:` prefix. Pre-commit hook auto-runs extract + compile.
+### Tech Stack
 
-## Worktrees
+Cloudflare Workers, Hono v4, Vite + SWC, Tailwind v4 + BaseCoat, D1 + Drizzle ORM, better-auth, @lingui/core, Datastar v1.0.0-RC.7 (vendored — version matters, APIs vary between releases), Lit (Web Components), Zod, ESLint + Prettier
 
-This project uses git worktrees for parallel development. Each worktree is a sibling directory (e.g., `../feat-login/`). Use `mise run draft feat/name` to create, `mise run trash feat-name` to remove, `mise run wt-list` to list.
+## Reference
 
-## Reference Docs
+If you notice code contradicting this document, think about which side is correct, then update whichever is wrong.
 
-- Datastar patterns & API: `docs/datastar.md`, `references/datastar/`
-- Configuration: `docs/configuration.md`
-- Theming & CSS: `docs/theming.md`
-- Releasing: `docs/RELEASING.md`
+### Common Pitfalls
+
+- Combining `.btn` with variant classes (`.btn-outline`, `.btn-ghost`, etc.) — BaseCoat variants are self-contained and combining produces broken styles.
+- Importing from `@lingui/react` instead of `@lingui/react/macro` — the macro enables compile-time message extraction.
+- Editing `packages/create-jant/template/` — this is auto-generated and will be overwritten.
+
+### Docs Index
+
+- **Coding standards** (module deps, error handling, testing): `docs/internal/coding-standards.md`
+- **Lit/Datastar conventions**: `docs/internal/lit-guide.md`
+- **Testing guide**: `docs/internal/testing-guide.md`
+- **Datastar patterns and API**: `docs/datastar.md`, `references/datastar/`
+- **BaseCoat components**: `references/basecoat/`
+- **Configuration**: `docs/configuration.md`
+- **Theming and CSS tokens**: `docs/theming.md`
+- **Releasing**: `docs/RELEASING.md`
+- **Developer onboarding**: `README.md`, `mise tasks`
