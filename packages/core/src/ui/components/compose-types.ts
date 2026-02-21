@@ -31,6 +31,8 @@ export interface ComposeLabels {
   score: string;
   title: string;
   collection: string;
+  searchCollections: string;
+  noCollections: string;
   post: string;
   selectMedia: string;
   loading: string;

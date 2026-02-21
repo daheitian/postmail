@@ -237,7 +237,7 @@ msgstr "Click image to view full size"
 msgid "Close"
 msgstr "Close"
 
-#. @context: Compose collection selector placeholder
+#. @context: Compose collection selector trigger label
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Collection"
 msgstr "Collection"
@@ -915,6 +915,11 @@ msgstr "Newest first"
 msgid "Next"
 msgstr "Next"
 
+#. @context: Compose collection combobox empty state
+#: src/ui/compose/ComposeDialog.tsx
+msgid "No collections found."
+msgstr "No collections found."
+
 #. @context: Empty state message
 #. @context: Empty state message on collections page
 #: src/ui/dash/collections/CollectionsListContent.tsx
@@ -1356,6 +1361,11 @@ msgstr "Search icons..."
 #: src/ui/pages/SearchPage.tsx
 msgid "Search posts..."
 msgstr "Search posts..."
+
+#. @context: Compose collection combobox search placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Search..."
+msgstr "Search..."
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title
