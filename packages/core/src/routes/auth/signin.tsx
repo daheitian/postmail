@@ -182,7 +182,15 @@ signinRoutes.post("/signin", async (c) => {
 signinRoutes.get("/signout", async (c) => {
   if (c.var.auth) {
     try {
-      await c.var.auth.api.signOut({ headers: c.req.raw.headers });
+      const res = await c.var.auth.api.signOut({
+        headers: c.req.raw.headers,
+        asResponse: true,
+      });
+      const redirect = c.redirect("/");
+      for (const cookie of res.headers.getSetCookie()) {
+        redirect.headers.append("Set-Cookie", cookie);
+      }
+      return redirect;
     } catch {
       // Ignore signout errors
     }
