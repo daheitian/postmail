@@ -131,21 +131,13 @@ export function createApp(config: JantConfig = {}): App {
 
   // Theme middleware - resolve active color theme, font theme, custom CSS, and auth state
   app.use("*", async (c, next) => {
-    const [
-      themeId,
-      fontThemeId,
-      customCSS,
-      noindexValue,
-      avatarKey,
-      faviconVersion,
-    ] = await Promise.all([
-      c.var.services.settings.get(SETTINGS_KEYS.THEME),
-      c.var.services.settings.get("FONT_THEME"),
-      c.var.services.settings.get(SETTINGS_KEYS.CUSTOM_CSS),
-      c.var.services.settings.get("NOINDEX"),
-      c.var.services.settings.get("SITE_AVATAR"),
-      c.var.services.settings.get("SITE_FAVICON_VERSION"),
-    ]);
+    const allSettings = await c.var.services.settings.getAll();
+    const themeId = allSettings[SETTINGS_KEYS.THEME] ?? null;
+    const fontThemeId = allSettings["FONT_THEME"] ?? null;
+    const customCSS = allSettings[SETTINGS_KEYS.CUSTOM_CSS] ?? null;
+    const noindexValue = allSettings["NOINDEX"] ?? null;
+    const avatarKey = allSettings["SITE_AVATAR"] ?? null;
+    const faviconVersion = allSettings["SITE_FAVICON_VERSION"] ?? null;
     const themes = getAvailableThemes(resolvedConfig);
     const defaultThemeId = c.env.DEFAULT_THEME || "halloween";
     const activeTheme = themes.find(
