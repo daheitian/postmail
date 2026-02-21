@@ -134,10 +134,27 @@ msgstr "Are you sure you want to delete this post? This cannot be undone."
 msgid "Attached Text"
 msgstr "Attached Text"
 
+#. @context: Error toast when authentication system is unavailable
+#: src/routes/auth/signin.tsx
+msgid "Auth not configured"
+msgstr "Auth not configured"
+
+#. @context: Error toast when authentication secret is missing from server config
+#: src/routes/auth/setup.tsx
+msgid "AUTH_SECRET not configured"
+msgstr "AUTH_SECRET not configured"
+
 #. @context: Compose quote author placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Author (optional)"
 msgstr "Author (optional)"
+
+#. @context: Toast after saving avatar display preference
+#. @context: Toast after saving avatar display preference
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Avatar display setting saved successfully."
+msgstr "Avatar display setting saved successfully."
 
 #. @context: Button to go back to media list
 #: src/ui/dash/media/ViewMediaContent.tsx
@@ -309,10 +326,20 @@ msgstr "Create your first post"
 msgid "Current Password"
 msgstr "Current Password"
 
+#. @context: Error toast when current password verification fails
+#: src/routes/dash/settings.tsx
+msgid "Current password is incorrect."
+msgstr "Current password is incorrect."
+
 #. @context: Appearance settings heading for custom CSS
 #: src/ui/dash/settings/AppearanceContent.tsx
 msgid "Custom CSS"
 msgstr "Custom CSS"
+
+#. @context: Toast after saving custom CSS
+#: src/routes/dash/settings.tsx
+msgid "Custom CSS saved successfully."
+msgstr "Custom CSS saved successfully."
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx
@@ -416,6 +443,13 @@ msgstr "Done"
 msgid "Draft"
 msgstr "Draft"
 
+#. @context: Toast after saving a draft post
+#. @context: Toast after saving a draft post
+#: src/routes/compose.tsx
+#: src/routes/compose.tsx
+msgid "Draft saved."
+msgstr "Draft saved."
+
 #. @context: Post status label
 #: src/routes/dash/index.tsx
 msgid "Drafts"
@@ -503,10 +537,22 @@ msgstr "entries"
 msgid "entry"
 msgstr "entry"
 
+#. @context: Error toast when account creation fails
+#. @context: Error toast when account creation fails
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/setup.tsx
+msgid "Failed to create account"
+msgstr "Failed to create account"
+
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Failed to save post. Please try again."
 msgstr "Failed to save post. Please try again."
+
+#. @context: Error toast when profile update fails
+#: src/routes/dash/settings.tsx
+msgid "Failed to update profile."
+msgstr "Failed to update profile."
 
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
@@ -526,15 +572,28 @@ msgstr "Featured"
 msgid "Font theme"
 msgstr "Font theme"
 
+#. @context: Toast after saving site footer
+#. @context: Toast after saving site footer
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Footer saved successfully."
+msgstr "Footer saved successfully."
+
 #. @context: Post form field - post format
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Format"
 msgstr "Format"
 
 #. @context: Search results count - multiple
+#. placeholder {0}: String(results.length)
 #: src/ui/pages/SearchPage.tsx
-msgid "Found {count} results"
-msgstr "Found {count} results"
+msgid "Found {0} results"
+msgstr "Found {0} results"
+
+#. @context: Search results count - multiple
+#: src/ui/pages/SearchPage.tsx
+#~ msgid "Found {count} results"
+#~ msgstr "Found {count} results"
 
 #. @context: Search results count - single
 #: src/ui/pages/SearchPage.tsx
@@ -587,10 +646,45 @@ msgstr "Icon (optional)"
 msgid "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
 msgstr "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
 
+#. @context: Error toast when sign-in credentials are wrong
+#: src/routes/auth/signin.tsx
+msgid "Invalid email or password"
+msgstr "Invalid email or password"
+
+#. @context: Error toast when selected font theme is not valid
+#: src/routes/dash/settings.tsx
+msgid "Invalid font theme selected."
+msgstr "Invalid font theme selected."
+
+#. @context: Fallback validation error for compose form
+#. @context: Fallback validation error for page form
+#. @context: Fallback validation error for page form
+#. @context: Fallback validation error for password reset form
+#. @context: Fallback validation error for setup form
+#. @context: Fallback validation error for sign-in form
+#: src/routes/auth/reset.tsx
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/signin.tsx
+#: src/routes/compose.tsx
+#: src/routes/dash/pages.tsx
+#: src/routes/dash/pages.tsx
+msgid "Invalid input"
+msgstr "Invalid input"
+
 #. @context: Password reset error heading
 #: src/routes/auth/reset.tsx
 msgid "Invalid or Expired Link"
 msgstr "Invalid or Expired Link"
+
+#. @context: Error toast when reorder request is malformed
+#: src/routes/dash/pages.tsx
+msgid "Invalid request"
+msgstr "Invalid request"
+
+#. @context: Error toast when selected theme is not valid
+#: src/routes/dash/settings.tsx
+msgid "Invalid theme selected."
+msgstr "Invalid theme selected."
 
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -601,6 +695,13 @@ msgstr "It's OK for search engines to index my site"
 #: src/ui/dash/pages/LinkFormContent.tsx
 msgid "Label"
 msgstr "Label"
+
+#. @context: Error toast when nav link fields are empty
+#. @context: Error toast when nav link fields are empty
+#: src/routes/dash/pages.tsx
+#: src/routes/dash/pages.tsx
+msgid "Label and URL are required"
+msgstr "Label and URL are required"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -703,6 +804,11 @@ msgstr "My Collection"
 msgid "Name"
 msgstr "Name"
 
+#. @context: Error toast when display name is empty
+#: src/routes/dash/settings.tsx
+msgid "Name is required."
+msgstr "Name is required."
+
 #. @context: Dashboard heading
 #. @context: Dashboard navigation - navigation links management
 #: src/routes/dash/navigation.tsx
@@ -790,6 +896,16 @@ msgstr "No collections yet."
 msgid "No featured posts yet."
 msgstr "No featured posts yet."
 
+#. @context: Error when no file was selected for upload
+#: src/routes/api/upload.ts
+msgid "No file provided"
+msgstr "No file provided"
+
+#. @context: Error toast when no file was selected for upload
+#: src/routes/dash/settings.tsx
+msgid "No file provided."
+msgstr "No file provided."
+
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
 msgid "No media selected yet."
@@ -870,6 +986,11 @@ msgstr "Notes"
 msgid "Oldest first"
 msgstr "Oldest first"
 
+#. @context: Toast after saving navigation item order
+#: src/routes/dash/pages.tsx
+msgid "Order saved"
+msgstr "Order saved"
+
 #. @context: Section heading for pages not in navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
 msgid "Other pages"
@@ -913,6 +1034,16 @@ msgstr "Pages"
 #: src/routes/auth/signin.tsx
 msgid "Password"
 msgstr "Password"
+
+#. @context: Toast after changing account password
+#: src/routes/dash/settings.tsx
+msgid "Password changed successfully."
+msgstr "Password changed successfully."
+
+#. @context: Error toast when new password and confirmation differ
+#: src/routes/dash/settings.tsx
+msgid "Passwords do not match."
+msgstr "Passwords do not match."
 
 #. @context: Attached text placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -1028,6 +1159,11 @@ msgstr "Processing..."
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "Profile"
 msgstr "Profile"
+
+#. @context: Toast after saving user profile
+#: src/routes/dash/settings.tsx
+msgid "Profile saved successfully."
+msgstr "Profile saved successfully."
 
 #. @context: Button to publish new post
 #: src/ui/dash/posts/PostForm.tsx
@@ -1202,6 +1338,13 @@ msgstr "Select Media"
 msgid "SEO"
 msgstr "SEO"
 
+#. @context: Toast after saving SEO settings
+#. @context: Toast after saving SEO settings
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "SEO settings saved successfully."
+msgstr "SEO settings saved successfully."
+
 #. @context: Dashboard heading
 #. @context: Dashboard heading
 #. @context: Dashboard heading
@@ -1212,6 +1355,13 @@ msgstr "SEO"
 #: src/ui/layouts/DashLayout.tsx
 msgid "Settings"
 msgstr "Settings"
+
+#. @context: Toast after saving general settings
+#. @context: Toast after saving general settings
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Settings saved successfully."
+msgstr "Settings saved successfully."
 
 #. @context: Setup page title
 #: src/app.tsx
@@ -1284,6 +1434,16 @@ msgstr "Source link (optional)"
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Status"
 msgstr "Status"
+
+#. @context: Error when file storage is not set up
+#: src/routes/api/upload.ts
+msgid "Storage not configured"
+msgstr "Storage not configured"
+
+#. @context: Error toast when file storage is not set up
+#: src/routes/dash/settings.tsx
+msgid "Storage not configured."
+msgstr "Storage not configured."
 
 #. @context: Attached text panel hint
 #: src/ui/compose/ComposeDialog.tsx
@@ -1448,7 +1608,11 @@ msgid "Upload Avatar"
 msgstr "Upload Avatar"
 
 #. @context: Error message when avatar upload fails
+#. @context: Error toast when avatar upload fails
+#. @context: Error when file upload fails
 #. @context: Upload error message
+#: src/routes/api/upload.ts
+#: src/routes/dash/settings.tsx
 #: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Upload failed. Please try again."
@@ -1458,6 +1622,11 @@ msgstr "Upload failed. Please try again."
 #: src/routes/dash/media.tsx
 #~ msgid "Upload images via the API: POST /api/upload with a file form field."
 #~ msgstr "Upload images via the API: POST /api/upload with a file form field."
+
+#. @context: Toast after successful file upload
+#: src/routes/api/upload.ts
+msgid "Upload successful!"
+msgstr "Upload successful!"
 
 #. @context: Avatar upload button text while uploading
 #. @context: Upload status - uploading

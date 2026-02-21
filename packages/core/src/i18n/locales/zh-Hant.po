@@ -93,10 +93,27 @@ msgstr "您確定要刪除這篇文章嗎？這個操作無法撤銷。"
 msgid "Attached Text"
 msgstr "附加文本"
 
+#. @context: Error toast when authentication system is unavailable
+#: src/routes/auth/signin.tsx
+msgid "Auth not configured"
+msgstr ""
+
+#. @context: Error toast when authentication secret is missing from server config
+#: src/routes/auth/setup.tsx
+msgid "AUTH_SECRET not configured"
+msgstr ""
+
 #. @context: Compose quote author placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Author (optional)"
 msgstr "作者（可選）"
+
+#. @context: Toast after saving avatar display preference
+#. @context: Toast after saving avatar display preference
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Avatar display setting saved successfully."
+msgstr ""
 
 #. @context: Button to go back to media list
 #: src/ui/dash/media/ViewMediaContent.tsx
@@ -244,10 +261,20 @@ msgstr "創建你的第一篇帖子"
 msgid "Current Password"
 msgstr "當前密碼"
 
+#. @context: Error toast when current password verification fails
+#: src/routes/dash/settings.tsx
+msgid "Current password is incorrect."
+msgstr ""
+
 #. @context: Appearance settings heading for custom CSS
 #: src/ui/dash/settings/AppearanceContent.tsx
 msgid "Custom CSS"
 msgstr "自訂 CSS"
+
+#. @context: Toast after saving custom CSS
+#: src/routes/dash/settings.tsx
+msgid "Custom CSS saved successfully."
+msgstr ""
 
 #. @context: Section heading for dangerous/destructive actions
 #: src/ui/dash/DangerZone.tsx
@@ -331,6 +358,13 @@ msgstr "完成"
 msgid "Draft"
 msgstr "草稿"
 
+#. @context: Toast after saving a draft post
+#. @context: Toast after saving a draft post
+#: src/routes/compose.tsx
+#: src/routes/compose.tsx
+msgid "Draft saved."
+msgstr ""
+
 #. @context: Post status label
 #: src/routes/dash/index.tsx
 msgid "Drafts"
@@ -399,9 +433,21 @@ msgstr "條目"
 msgid "entry"
 msgstr "條目"
 
+#. @context: Error toast when account creation fails
+#. @context: Error toast when account creation fails
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/setup.tsx
+msgid "Failed to create account"
+msgstr ""
+
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Failed to save post. Please try again."
+msgstr ""
+
+#. @context: Error toast when profile update fails
+#: src/routes/dash/settings.tsx
+msgid "Failed to update profile."
 msgstr ""
 
 #. @context: Archive filter - featured posts
@@ -422,15 +468,28 @@ msgstr "精選"
 msgid "Font theme"
 msgstr "字型主題"
 
+#. @context: Toast after saving site footer
+#. @context: Toast after saving site footer
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Footer saved successfully."
+msgstr ""
+
 #. @context: Post form field - post format
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Format"
 msgstr "格式"
 
 #. @context: Search results count - multiple
+#. placeholder {0}: String(results.length)
 #: src/ui/pages/SearchPage.tsx
-msgid "Found {count} results"
-msgstr "找到 {count} 個結果"
+msgid "Found {0} results"
+msgstr ""
+
+#. @context: Search results count - multiple
+#: src/ui/pages/SearchPage.tsx
+#~ msgid "Found {count} results"
+#~ msgstr "找到 {count} 個結果"
 
 #. @context: Search results count - single
 #: src/ui/pages/SearchPage.tsx
@@ -469,10 +528,45 @@ msgstr "圖示（可選）"
 msgid "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
 msgstr "圖片會自動優化：調整大小至最大 1920 像素，轉換為 WebP 格式，並去除元數據。"
 
+#. @context: Error toast when sign-in credentials are wrong
+#: src/routes/auth/signin.tsx
+msgid "Invalid email or password"
+msgstr ""
+
+#. @context: Error toast when selected font theme is not valid
+#: src/routes/dash/settings.tsx
+msgid "Invalid font theme selected."
+msgstr ""
+
+#. @context: Fallback validation error for compose form
+#. @context: Fallback validation error for page form
+#. @context: Fallback validation error for page form
+#. @context: Fallback validation error for password reset form
+#. @context: Fallback validation error for setup form
+#. @context: Fallback validation error for sign-in form
+#: src/routes/auth/reset.tsx
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/signin.tsx
+#: src/routes/compose.tsx
+#: src/routes/dash/pages.tsx
+#: src/routes/dash/pages.tsx
+msgid "Invalid input"
+msgstr ""
+
 #. @context: Password reset error heading
 #: src/routes/auth/reset.tsx
 msgid "Invalid or Expired Link"
 msgstr "無效或已過期的連結"
+
+#. @context: Error toast when reorder request is malformed
+#: src/routes/dash/pages.tsx
+msgid "Invalid request"
+msgstr ""
+
+#. @context: Error toast when selected theme is not valid
+#: src/routes/dash/settings.tsx
+msgid "Invalid theme selected."
+msgstr ""
 
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -483,6 +577,13 @@ msgstr "允許搜尋引擎索引我的網站是可以的"
 #: src/ui/dash/pages/LinkFormContent.tsx
 msgid "Label"
 msgstr "標籤"
+
+#. @context: Error toast when nav link fields are empty
+#. @context: Error toast when nav link fields are empty
+#: src/routes/dash/pages.tsx
+#: src/routes/dash/pages.tsx
+msgid "Label and URL are required"
+msgstr ""
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -570,6 +671,11 @@ msgstr "我的收藏"
 msgid "Name"
 msgstr "名稱"
 
+#. @context: Error toast when display name is empty
+#: src/routes/dash/settings.tsx
+msgid "Name is required."
+msgstr ""
+
 #. @context: Help text with link
 #: src/routes/dash/index.tsx
 msgid "Need help? Visit the <0>documentation</0>"
@@ -650,6 +756,16 @@ msgstr "尚未有任何收藏。"
 msgid "No featured posts yet."
 msgstr "尚未有精選文章。"
 
+#. @context: Error when no file was selected for upload
+#: src/routes/api/upload.ts
+msgid "No file provided"
+msgstr ""
+
+#. @context: Error toast when no file was selected for upload
+#: src/routes/dash/settings.tsx
+msgid "No file provided."
+msgstr ""
+
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
 msgid "No media selected yet."
@@ -715,6 +831,11 @@ msgstr "筆記"
 msgid "Oldest first"
 msgstr "最舊的在前"
 
+#. @context: Toast after saving navigation item order
+#: src/routes/dash/pages.tsx
+msgid "Order saved"
+msgstr ""
+
 #. @context: Section heading for pages not in navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
 msgid "Other pages"
@@ -758,6 +879,16 @@ msgstr "頁面"
 #: src/routes/auth/signin.tsx
 msgid "Password"
 msgstr "密碼"
+
+#. @context: Toast after changing account password
+#: src/routes/dash/settings.tsx
+msgid "Password changed successfully."
+msgstr ""
+
+#. @context: Error toast when new password and confirmation differ
+#: src/routes/dash/settings.tsx
+msgid "Passwords do not match."
+msgstr ""
 
 #. @context: Attached text placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -853,6 +984,11 @@ msgstr "處理中..."
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "Profile"
 msgstr "個人資料"
+
+#. @context: Toast after saving user profile
+#: src/routes/dash/settings.tsx
+msgid "Profile saved successfully."
+msgstr ""
 
 #. @context: Button to publish new post
 #: src/ui/dash/posts/PostForm.tsx
@@ -995,6 +1131,13 @@ msgstr "選擇媒體"
 msgid "SEO"
 msgstr "SEO"
 
+#. @context: Toast after saving SEO settings
+#. @context: Toast after saving SEO settings
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "SEO settings saved successfully."
+msgstr ""
+
 #. @context: Dashboard heading
 #. @context: Dashboard heading
 #. @context: Dashboard heading
@@ -1005,6 +1148,13 @@ msgstr "SEO"
 #: src/ui/layouts/DashLayout.tsx
 msgid "Settings"
 msgstr "設定"
+
+#. @context: Toast after saving general settings
+#. @context: Toast after saving general settings
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Settings saved successfully."
+msgstr ""
 
 #. @context: Link to show remaining thread replies
 #. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
@@ -1057,6 +1207,16 @@ msgstr "來源連結（選填）"
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Status"
 msgstr "狀態"
+
+#. @context: Error when file storage is not set up
+#: src/routes/api/upload.ts
+msgid "Storage not configured"
+msgstr ""
+
+#. @context: Error toast when file storage is not set up
+#: src/routes/dash/settings.tsx
+msgid "Storage not configured."
+msgstr ""
 
 #. @context: Attached text panel hint
 #: src/ui/compose/ComposeDialog.tsx
@@ -1204,11 +1364,20 @@ msgid "Upload Avatar"
 msgstr "上傳頭像"
 
 #. @context: Error message when avatar upload fails
+#. @context: Error toast when avatar upload fails
+#. @context: Error when file upload fails
 #. @context: Upload error message
+#: src/routes/api/upload.ts
+#: src/routes/dash/settings.tsx
 #: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Upload failed. Please try again."
 msgstr "上傳失敗。請再試一次。"
+
+#. @context: Toast after successful file upload
+#: src/routes/api/upload.ts
+msgid "Upload successful!"
+msgstr ""
 
 #. @context: Avatar upload button text while uploading
 #. @context: Upload status - uploading
