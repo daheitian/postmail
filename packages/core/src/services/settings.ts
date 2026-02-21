@@ -61,20 +61,28 @@ export function createSettingsService(db: Database): SettingsService {
 
     async setMany(entries) {
       const timestamp = now();
-      const keys = Object.keys(entries) as SettingsKey[];
+      const pairs = (Object.keys(entries) as SettingsKey[])
+        .map((key) => ({ key, value: entries[key] }))
+        .filter(
+          (pair): pair is { key: SettingsKey; value: string } =>
+            pair.value !== undefined,
+        );
 
-      for (const key of keys) {
-        const value = entries[key];
-        if (value !== undefined) {
-          await db
-            .insert(settings)
-            .values({ key, value, updatedAt: timestamp })
-            .onConflictDoUpdate({
-              target: settings.key,
-              set: { value, updatedAt: timestamp },
-            });
-        }
-      }
+      if (pairs.length === 0) return;
+
+      const queries = pairs.map(({ key, value }) =>
+        db
+          .insert(settings)
+          .values({ key, value, updatedAt: timestamp })
+          .onConflictDoUpdate({
+            target: settings.key,
+            set: { value, updatedAt: timestamp },
+          }),
+      );
+
+      await db.batch(
+        queries as [(typeof queries)[number], ...(typeof queries)[number][]],
+      );
     },
 
     async isOnboardingComplete() {

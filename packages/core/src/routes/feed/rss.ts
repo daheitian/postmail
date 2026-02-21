@@ -9,6 +9,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { defaultRssRenderer, defaultAtomRenderer } from "../../lib/feed.js";
 import { getSiteLanguage } from "../../lib/config.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
+
 import { createMediaContext, toPostViews } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -19,11 +20,10 @@ export const rssRoutes = new Hono<Env>();
  * Build FeedData from the Hono context.
  */
 async function buildFeedData(c: Context<Env>): Promise<FeedData> {
-  const all = await c.var.services.settings.getAll();
-  const siteName = all["SITE_NAME"] ?? "Jant";
-  const siteDescription = all["SITE_DESCRIPTION"] ?? "";
+  const siteName = c.var.allSettings["SITE_NAME"] ?? "Jant";
+  const siteDescription = c.var.allSettings["SITE_DESCRIPTION"] ?? "";
   const siteUrl = c.env.SITE_URL;
-  const siteLanguage = await getSiteLanguage(c);
+  const siteLanguage = getSiteLanguage(c);
 
   const feedLimit = parseInt(c.env.RSS_FEED_LIMIT ?? "50", 10) || 50;
 

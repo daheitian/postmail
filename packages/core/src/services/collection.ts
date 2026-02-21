@@ -108,14 +108,11 @@ export function createCollectionService(db: Database): CollectionService {
 
       let position = data.position;
       if (position === undefined) {
-        const maxResult = await db
-          .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
-          .from(collections);
-        const divMaxResult = await db
-          .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
-          .from(collectionDividers);
+        const result = await db.all<{ maxPos: number }>(
+          sql`SELECT COALESCE(MAX(pos), -1) AS maxPos FROM (SELECT position AS pos FROM ${collections} UNION ALL SELECT position AS pos FROM ${collectionDividers})`,
+        );
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- aggregate always returns one row
-        position = Math.max(maxResult[0]!.maxPos, divMaxResult[0]!.maxPos) + 1;
+        position = result[0]!.maxPos + 1;
       }
 
       const result = await db
@@ -201,14 +198,11 @@ export function createCollectionService(db: Database): CollectionService {
     async createDivider() {
       const timestamp = now();
 
-      const colMax = await db
-        .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
-        .from(collections);
-      const divMax = await db
-        .select({ maxPos: sql<number>`COALESCE(MAX(position), -1)` })
-        .from(collectionDividers);
+      const maxResult = await db.all<{ maxPos: number }>(
+        sql`SELECT COALESCE(MAX(pos), -1) AS maxPos FROM (SELECT position AS pos FROM ${collections} UNION ALL SELECT position AS pos FROM ${collectionDividers})`,
+      );
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- aggregate always returns one row
-      const position = Math.max(colMax[0]!.maxPos, divMax[0]!.maxPos) + 1;
+      const position = maxResult[0]!.maxPos + 1;
 
       const result = await db
         .insert(collectionDividers)

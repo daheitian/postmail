@@ -5,8 +5,6 @@
 import type { MiddlewareHandler } from "hono";
 import type { I18n } from "@lingui/core";
 import { createI18n, isLocale, baseLocale, type Locale } from "./i18n.js";
-import type { Services } from "../services/index.js";
-
 declare module "hono" {
   interface ContextVariableMap {
     lang: Locale;
@@ -25,15 +23,13 @@ export function i18nMiddleware(): MiddlewareHandler {
   return async (c, next) => {
     let lang: Locale = baseLocale;
 
-    const services = c.get("services") as Services | undefined;
-    if (services) {
-      try {
-        const siteLang = await services.settings.get("SITE_LANGUAGE");
-        if (siteLang && isLocale(siteLang)) {
-          lang = siteLang;
-        }
-      } catch {
-        // Ignore errors, fall back to default locale
+    const allSettings = c.get("allSettings") as
+      | Record<string, string>
+      | undefined;
+    if (allSettings) {
+      const siteLang = allSettings["SITE_LANGUAGE"];
+      if (siteLang && isLocale(siteLang)) {
+        lang = siteLang;
       }
     }
 

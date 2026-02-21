@@ -70,6 +70,7 @@ export function createTestApp(options: TestAppOptions = {}) {
 
     c.set("services", services as AppVariables["services"]);
     c.set("config", {});
+    c.set("allSettings", await services.settings.getAll());
     c.set("storage", null);
 
     // i18n (English default for tests)

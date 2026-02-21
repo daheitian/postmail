@@ -68,10 +68,9 @@ collectionRoutes.get("/:slug/feed", async (c) => {
   const collection = await c.var.services.collections.getBySlug(slug);
   if (!collection) return c.notFound();
 
-  const all = await c.var.services.settings.getAll();
-  const siteName = all["SITE_NAME"] ?? "Jant";
+  const siteName = c.var.allSettings["SITE_NAME"] ?? "Jant";
   const siteUrl = c.env.SITE_URL;
-  const siteLanguage = await getSiteLanguage(c);
+  const siteLanguage = getSiteLanguage(c);
 
   const feedLimit = parseInt(c.env.RSS_FEED_LIMIT ?? "50", 10) || 50;
 

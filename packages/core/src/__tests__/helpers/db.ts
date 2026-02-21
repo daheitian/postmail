@@ -116,6 +116,9 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0009: drop show_divider column from collections
   applyMigration(sqlite, "0009_drop_collection_show_divider.sql");
 
+  // Apply 0010: performance indexes
+  applyMigration(sqlite, "0010_add_performance_indexes.sql");
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

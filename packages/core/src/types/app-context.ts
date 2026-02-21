@@ -17,6 +17,7 @@ export interface AppVariables {
   services: Services;
   auth: Auth;
   config: JantConfig;
+  allSettings: Record<string, string>;
   themeStyle: string;
   customCSS: string;
   isAuthenticated: boolean;

@@ -28,11 +28,10 @@ export const appearanceRoutes = new Hono<Env>();
 // ===========================================================================
 
 appearanceRoutes.get("/", async (c) => {
-  const { settings } = c.var.services;
-  const siteName = await getSiteName(c);
+  const siteName = getSiteName(c);
   const defaultThemeId = getConfigFallback(c, "DEFAULT_THEME");
   const currentThemeId =
-    (await settings.get(SETTINGS_KEYS.THEME)) ?? defaultThemeId;
+    c.var.allSettings[SETTINGS_KEYS.THEME] ?? defaultThemeId;
   const themes = getAvailableThemes(c.var.config);
   const saved = c.req.query("saved") !== undefined;
 
@@ -83,9 +82,8 @@ appearanceRoutes.post("/", async (c) => {
 // ===========================================================================
 
 appearanceRoutes.get("/fonts", async (c) => {
-  const { settings } = c.var.services;
-  const siteName = await getSiteName(c);
-  const currentFontThemeId = (await settings.get("FONT_THEME")) ?? "default";
+  const siteName = getSiteName(c);
+  const currentFontThemeId = c.var.allSettings["FONT_THEME"] ?? "default";
   const saved = c.req.query("saved") !== undefined;
 
   return c.html(
@@ -137,9 +135,8 @@ appearanceRoutes.post("/font-theme", async (c) => {
 // ===========================================================================
 
 appearanceRoutes.get("/advanced", async (c) => {
-  const { settings } = c.var.services;
-  const siteName = await getSiteName(c);
-  const customCSS = (await settings.get(SETTINGS_KEYS.CUSTOM_CSS)) ?? "";
+  const siteName = getSiteName(c);
+  const customCSS = c.var.allSettings[SETTINGS_KEYS.CUSTOM_CSS] ?? "";
 
   return c.html(
     <DashLayout

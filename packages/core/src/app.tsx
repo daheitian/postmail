@@ -132,6 +132,7 @@ export function createApp(config: JantConfig = {}): App {
   // Theme middleware - resolve active color theme, font theme, custom CSS, and auth state
   app.use("*", async (c, next) => {
     const allSettings = await c.var.services.settings.getAll();
+    c.set("allSettings", allSettings);
     const themeId = allSettings[SETTINGS_KEYS.THEME] ?? null;
     const fontThemeId = allSettings["FONT_THEME"] ?? null;
     const customCSS = allSettings[SETTINGS_KEYS.CUSTOM_CSS] ?? null;

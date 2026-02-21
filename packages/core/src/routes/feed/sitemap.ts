@@ -49,7 +49,7 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
 // robots.txt
 sitemapRoutes.get("/robots.txt", async (c) => {
   const siteUrl = c.env.SITE_URL;
-  const noindex = (await c.var.services.settings.get("NOINDEX")) === "true";
+  const noindex = c.var.allSettings["NOINDEX"] === "true";
 
   const directive = noindex ? "Disallow: /" : "Allow: /";
   const robots = `User-agent: *

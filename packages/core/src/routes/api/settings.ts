@@ -58,11 +58,7 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
   }
 
   if (Object.keys(filteredUpdates).length > 0) {
-    // Settings service expects SettingsKey, but our ConfigKeys that are
-    // editable (SITE_NAME, SITE_DESCRIPTION, SITE_LANGUAGE) are valid SettingsKeys
-    for (const [key, value] of Object.entries(filteredUpdates)) {
-      await c.var.services.settings.set(key as never, value as string);
-    }
+    await c.var.services.settings.setMany(filteredUpdates as never);
   }
 
   // Return updated state

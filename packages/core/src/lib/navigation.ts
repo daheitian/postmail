@@ -49,22 +49,19 @@ export interface NavigationData {
 export async function getNavigationData(c: Context): Promise<NavigationData> {
   const items = await c.var.services.navItems.list();
   const currentPath = new URL(c.req.url).pathname;
-  const [siteName, homeDefaultView, siteFooter] = await Promise.all([
-    getSiteName(c),
-    getHomeDefaultView(c),
-    getSiteFooter(c),
-  ]);
+  const siteName = getSiteName(c);
+  const homeDefaultView = getHomeDefaultView(c);
+  const siteFooter = getSiteFooter(c);
 
   // Only include description if explicitly set (DB or env), not the default
-  const dbDescription = await c.var.services.settings.get("SITE_DESCRIPTION");
+  const dbDescription = c.var.allSettings["SITE_DESCRIPTION"];
   const envDescription = c.env.SITE_DESCRIPTION;
   const siteDescription =
     dbDescription || (typeof envDescription === "string" ? envDescription : "");
 
   // Resolve avatar URL from storage key
-  const avatarKey = await c.var.services.settings.get("SITE_AVATAR");
-  const showHeaderAvatar =
-    (await c.var.services.settings.get("SHOW_HEADER_AVATAR")) === "true";
+  const avatarKey = c.var.allSettings["SITE_AVATAR"];
+  const showHeaderAvatar = c.var.allSettings["SHOW_HEADER_AVATAR"] === "true";
   let siteAvatarUrl: string | undefined;
   if (avatarKey) {
     const publicUrl = getPublicUrlForProvider(

@@ -29,6 +29,7 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
 
     c.set("services", services as AppVariables["services"]);
     c.set("config", {});
+    c.set("allSettings", await services.settings.getAll());
     await next();
   });
 

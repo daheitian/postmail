@@ -37,40 +37,36 @@ export const settingsRoutes = new Hono<Env>();
 // ===========================================================================
 
 /** Resolve the avatar storage key to a URL */
-async function resolveAvatarUrl(c: {
-  var: { services: AppVariables["services"] };
-  env: Bindings;
-}): Promise<string> {
-  const avatarKey = await c.var.services.settings.get("SITE_AVATAR");
+function resolveAvatarUrl(
+  allSettings: Record<string, string>,
+  env: Bindings,
+): string {
+  const avatarKey = allSettings["SITE_AVATAR"];
   if (!avatarKey) return "";
   const publicUrl = getPublicUrlForProvider(
-    c.env.STORAGE_DRIVER || "r2",
-    c.env.R2_PUBLIC_URL,
-    c.env.S3_PUBLIC_URL,
+    env.STORAGE_DRIVER || "r2",
+    env.R2_PUBLIC_URL,
+    env.S3_PUBLIC_URL,
   );
   return getMediaUrl(avatarKey, publicUrl);
 }
 
 settingsRoutes.get("/", async (c) => {
-  const { settings } = c.var.services;
+  const { allSettings } = c.var;
 
-  const dbSiteName = await settings.get("SITE_NAME");
-  const dbSiteDescription = await settings.get("SITE_DESCRIPTION");
-  const [siteLanguage, homeDefaultView, timeZone, siteFooter, noindex] =
-    await Promise.all([
-      getSiteLanguage(c),
-      getHomeDefaultView(c),
-      getTimeZone(c),
-      getSiteFooter(c),
-      isNoIndex(c),
-    ]);
+  const dbSiteName = allSettings["SITE_NAME"] ?? "";
+  const dbSiteDescription = allSettings["SITE_DESCRIPTION"] ?? "";
+  const siteLanguage = getSiteLanguage(c);
+  const homeDefaultView = getHomeDefaultView(c);
+  const timeZone = getTimeZone(c);
+  const siteFooter = getSiteFooter(c);
+  const noindex = isNoIndex(c);
 
   const siteNameFallback = getConfigFallback(c, "SITE_NAME");
   const siteDescriptionFallback = getConfigFallback(c, "SITE_DESCRIPTION");
 
-  const siteAvatarUrl = await resolveAvatarUrl(c);
-  const showHeaderAvatar =
-    (await settings.get("SHOW_HEADER_AVATAR")) === "true";
+  const siteAvatarUrl = resolveAvatarUrl(allSettings, c.env);
+  const showHeaderAvatar = allSettings["SHOW_HEADER_AVATAR"] === "true";
 
   const saved = c.req.query("saved") !== undefined;
 
@@ -113,7 +109,7 @@ settingsRoutes.post("/", async (c) => {
 
   const { settings } = c.var.services;
 
-  const oldLanguage = (await settings.get("SITE_LANGUAGE")) ?? "en";
+  const oldLanguage = c.var.allSettings["SITE_LANGUAGE"] ?? "en";
 
   if (body.siteName.trim()) {
     await settings.set("SITE_NAME", body.siteName.trim());
@@ -356,9 +352,7 @@ settingsRoutes.post("/avatar", async (c) => {
 
 settingsRoutes.post("/avatar/remove", async (c) => {
   const storage = c.var.storage;
-  const appleTouchKey = await c.var.services.settings.get(
-    "SITE_FAVICON_APPLE_TOUCH",
-  );
+  const appleTouchKey = c.var.allSettings["SITE_FAVICON_APPLE_TOUCH"];
   if (storage && appleTouchKey) {
     await storage.delete(appleTouchKey);
   }
@@ -423,7 +417,7 @@ settingsRoutes.post("/avatar/display", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account", async (c) => {
-  const siteName = await getSiteName(c);
+  const siteName = getSiteName(c);
   const session = await c.var.auth.api.getSession({
     headers: c.req.raw.headers,
   });
