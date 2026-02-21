@@ -396,8 +396,8 @@
     padding: 0;
     border: none;
     border-radius: 20px;
-    max-width: 520px;
-    width: calc(100% - 32px);
+    width: calc(100% - 20px);
+    max-width: calc(var(--site-width) - var(--site-padding) * 2 - 20px);
     max-height: calc(100dvh - 64px);
     margin: max(80px, 10vh) auto auto;
     background-color: var(--site-elevated-bg);
