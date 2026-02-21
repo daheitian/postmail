@@ -7,6 +7,7 @@
  */
 
 import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
+import type { BatchItem } from "drizzle-orm/batch";
 import type { Database } from "../db/index.js";
 import { posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
@@ -260,35 +261,78 @@ export function createPostService(db: Database): PostService {
       if (statusChanged) updates.status = data.status;
       if (featuredChanged) updates.featured = data.featured ? 1 : 0;
 
-      // If this is a root post and status/featured changed, cascade to thread
-      if ((statusChanged || featuredChanged) && !existing.threadId) {
-        await this.updateThreadStatusAndFeatured(
-          id,
-          data.status ?? (existing.status as Status),
-          data.featured !== undefined ? data.featured : existing.featured === 1,
+      // Build all write queries for atomic execution via D1 batch
+      const needsCascade =
+        (statusChanged || featuredChanged) && !existing.threadId;
+      const needsCollectionSync = data.collectionIds !== undefined;
+      const hasExtraWrites = needsCascade || needsCollectionSync;
+
+      if (!hasExtraWrites) {
+        // Simple case: only the post update
+        const result = await db
+          .update(posts)
+          .set(updates)
+          .where(eq(posts.id, id))
+          .returning();
+        return result[0] ? toPost(result[0]) : null;
+      }
+
+      // Complex case: batch cascade + update + collection sync atomically
+      const writeQueries: BatchItem<"sqlite">[] = [];
+
+      if (needsCascade) {
+        writeQueries.push(
+          db
+            .update(posts)
+            .set({
+              status: data.status ?? (existing.status as Status),
+              featured: (
+                data.featured !== undefined
+                  ? data.featured
+                  : existing.featured === 1
+              )
+                ? 1
+                : 0,
+              updatedAt: timestamp,
+            })
+            .where(eq(posts.threadId, id)),
         );
       }
 
-      const result = await db
-        .update(posts)
-        .set(updates)
-        .where(eq(posts.id, id))
-        .returning();
+      // Post update is always present; track its index for result extraction
+      const updateIdx = writeQueries.length;
+      writeQueries.push(
+        db.update(posts).set(updates).where(eq(posts.id, id)).returning(),
+      );
 
-      // Sync collection memberships if provided
-      if (data.collectionIds !== undefined) {
-        await db.delete(postCollections).where(eq(postCollections.postId, id));
-        if (data.collectionIds.length > 0) {
-          await db.insert(postCollections).values(
-            data.collectionIds.map((collectionId) => ({
-              postId: id,
-              collectionId,
-            })),
+      if (needsCollectionSync) {
+        writeQueries.push(
+          db.delete(postCollections).where(eq(postCollections.postId, id)),
+        );
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by needsCollectionSync
+        if (data.collectionIds!.length > 0) {
+          writeQueries.push(
+            db.insert(postCollections).values(
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by needsCollectionSync
+              data.collectionIds!.map((collectionId) => ({
+                postId: id,
+                collectionId,
+              })),
+            ),
           );
         }
       }
 
-      return result[0] ? toPost(result[0]) : null;
+      const results = await db.batch(
+        writeQueries as [
+          (typeof writeQueries)[number],
+          ...(typeof writeQueries)[number][],
+        ],
+      );
+      const updateResult = results[updateIdx] as
+        | (typeof posts.$inferSelect)[]
+        | undefined;
+      return updateResult?.[0] ? toPost(updateResult[0]) : null;
     },
 
     async delete(id) {

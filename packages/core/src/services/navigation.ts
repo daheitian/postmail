@@ -128,14 +128,17 @@ export function createNavItemService(db: Database): NavItemService {
     },
 
     async reorder(ids) {
+      if (ids.length === 0) return;
       const timestamp = now();
-      for (let i = 0; i < ids.length; i++) {
-        await db
+      const queries = ids.map((id, i) =>
+        db
           .update(navItems)
           .set({ position: i, updatedAt: timestamp })
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- loop index guarantees element exists
-          .where(eq(navItems.id, ids[i]!));
-      }
+          .where(eq(navItems.id, id)),
+      );
+      await db.batch(
+        queries as [(typeof queries)[number], ...(typeof queries)[number][]],
+      );
     },
   };
 }

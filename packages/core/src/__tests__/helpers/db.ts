@@ -118,5 +118,19 @@ export function createTestDatabase(options?: { fts?: boolean }) {
 
   const db = drizzle(sqlite, { schema });
 
+  // Polyfill D1 batch() for test compatibility.
+  // In production, D1 batch executes statements atomically in a single transaction.
+  // In tests, better-sqlite3 is synchronous and single-threaded so sequential
+  // execution is effectively atomic.
+  Object.defineProperty(db, "batch", {
+    value: async (queries: PromiseLike<unknown>[]) => {
+      const results = [];
+      for (const q of queries) {
+        results.push(await q);
+      }
+      return results;
+    },
+  });
+
   return { db, sqlite };
 }

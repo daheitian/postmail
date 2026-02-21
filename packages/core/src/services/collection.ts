@@ -177,24 +177,25 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async reorderAll(items) {
+      if (items.length === 0) return;
       const timestamp = now();
-      for (let i = 0; i < items.length; i++) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- loop index guarantees element exists
-        const item = items[i]!;
+      const queries = items.map((item, i) => {
         const [prefix, idStr] = item.split("-");
         const id = Number(idStr);
-        if (prefix === "c") {
-          await db
-            .update(collections)
-            .set({ position: i, updatedAt: timestamp })
-            .where(eq(collections.id, id));
-        } else if (prefix === "d") {
-          await db
+        if (prefix === "d") {
+          return db
             .update(collectionDividers)
             .set({ position: i, updatedAt: timestamp })
             .where(eq(collectionDividers.id, id));
         }
-      }
+        return db
+          .update(collections)
+          .set({ position: i, updatedAt: timestamp })
+          .where(eq(collections.id, id));
+      });
+      await db.batch(
+        queries as [(typeof queries)[number], ...(typeof queries)[number][]],
+      );
     },
 
     async createDivider() {
@@ -300,19 +301,23 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async syncPostCollections(postId, collectionIds) {
-      // Remove all existing associations
-      await db
+      if (collectionIds.length === 0) {
+        // Only delete — single statement, no batch needed
+        await db
+          .delete(postCollections)
+          .where(eq(postCollections.postId, postId));
+        return;
+      }
+      // Delete existing + insert new atomically
+      const deleteQuery = db
         .delete(postCollections)
         .where(eq(postCollections.postId, postId));
-
-      // Insert new associations
-      if (collectionIds.length > 0) {
-        await db
-          .insert(postCollections)
-          .values(
-            collectionIds.map((collectionId) => ({ postId, collectionId })),
-          );
-      }
+      const insertQuery = db
+        .insert(postCollections)
+        .values(
+          collectionIds.map((collectionId) => ({ postId, collectionId })),
+        );
+      await db.batch([deleteQuery, insertQuery]);
     },
   };
 }

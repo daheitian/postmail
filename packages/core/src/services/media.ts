@@ -170,21 +170,29 @@ export function createMediaService(db: Database): MediaService {
     },
 
     async attachToPost(postId, mediaIds) {
-      // Clear existing attachments
-      await db
+      const clearQuery = db
         .update(media)
         .set({ postId: null, position: 0 })
         .where(eq(media.postId, postId));
 
-      // Set new attachments with position = array index
-      for (let i = 0; i < mediaIds.length; i++) {
-        const mediaId = mediaIds[i];
-        if (!mediaId) continue;
-        await db
+      const validIds = mediaIds.filter((id): id is string => Boolean(id));
+      if (validIds.length === 0) {
+        // Only clear — single statement, no batch needed
+        await clearQuery;
+        return;
+      }
+
+      // Clear existing + re-attach atomically
+      const attachQueries = validIds.map((mediaId, i) =>
+        db
           .update(media)
           .set({ postId, position: i })
-          .where(eq(media.id, mediaId));
-      }
+          .where(eq(media.id, mediaId)),
+      );
+      await db.batch([clearQuery, ...attachQueries] as [
+        typeof clearQuery,
+        ...(typeof attachQueries)[number][],
+      ]);
     },
 
     async detachFromPost(postId) {

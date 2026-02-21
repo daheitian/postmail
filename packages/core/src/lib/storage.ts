@@ -71,6 +71,40 @@ export interface S3DriverConfig {
   region: string;
 }
 
+/** Constructor for an S3 command object */
+interface S3CommandCtor<TInput> {
+  new (input: TInput): unknown;
+}
+
+/** Input for PutObject */
+interface PutObjectInput {
+  Bucket: string;
+  Key: string;
+  Body: Uint8Array;
+  ContentType?: string;
+}
+
+/** Input for GetObject / DeleteObject */
+interface ObjectKeyInput {
+  Bucket: string;
+  Key: string;
+}
+
+/** Subset of GetObjectOutput used by the S3 driver */
+interface S3GetObjectOutput {
+  Body?: { transformToWebStream(): ReadableStream };
+  ContentType?: string;
+}
+
+/** Lazy-loaded S3 client bundle */
+interface S3ClientBundle {
+  send: (command: unknown) => Promise<unknown>;
+  PutObjectCommand: S3CommandCtor<PutObjectInput>;
+  GetObjectCommand: S3CommandCtor<ObjectKeyInput>;
+  DeleteObjectCommand: S3CommandCtor<ObjectKeyInput>;
+  bucket: string;
+}
+
 /**
  * Creates an S3-compatible storage driver using the AWS SDK.
  *
@@ -82,18 +116,7 @@ export interface S3DriverConfig {
  */
 export function createS3Driver(config: S3DriverConfig): StorageDriver {
   // Lazy-load the AWS SDK to avoid bundling it when using R2
-  let clientPromise: Promise<{
-    send: (command: unknown) => Promise<unknown>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic import type
-    S3Client: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic import type
-    PutObjectCommand: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic import type
-    GetObjectCommand: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic import type
-    DeleteObjectCommand: any;
-    bucket: string;
-  }> | null = null;
+  let clientPromise: Promise<S3ClientBundle> | null = null;
 
   function getClient() {
     if (!clientPromise) {
@@ -110,7 +133,6 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
         });
         return {
           send: (cmd: unknown) => client.send(cmd as never),
-          S3Client: sdk.S3Client,
           PutObjectCommand: sdk.PutObjectCommand,
           GetObjectCommand: sdk.GetObjectCommand,
           DeleteObjectCommand: sdk.DeleteObjectCommand,
@@ -163,11 +185,10 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
           Bucket: s3.bucket,
           Key: key,
         });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AWS SDK response type
-        const response = (await s3.send(command)) as any;
+        const response = (await s3.send(command)) as S3GetObjectOutput;
         if (!response.Body) return null;
         return {
-          body: response.Body.transformToWebStream() as ReadableStream,
+          body: response.Body.transformToWebStream(),
           contentType: response.ContentType ?? undefined,
         };
       } catch (err: unknown) {
