@@ -133,7 +133,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
         {/* SSR fallback skeleton */}
         <div class="compose-dialog-inner">
           <div class="compose-dialog-header" />
-          <div class="compose-body" style="min-height:200px" />
+          <div class="compose-body skel-section-md" />
         </div>
       </jant-compose-dialog>
     </dialog>

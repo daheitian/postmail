@@ -92,3 +92,30 @@
     opacity: 0;
   }
 }
+
+/* Skeleton screen sizing — used in SSR fallbacks while Lit hydrates */
+@layer components {
+  .skel-label {
+    min-height: 1.5rem;
+  }
+
+  .skel-input {
+    height: 2.75rem;
+  }
+
+  .skel-textarea {
+    height: 6rem;
+  }
+
+  .skel-section-sm {
+    min-height: 180px;
+  }
+
+  .skel-section-md {
+    min-height: 200px;
+  }
+
+  .skel-section-lg {
+    min-height: 300px;
+  }
+}

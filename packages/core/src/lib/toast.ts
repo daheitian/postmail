@@ -1,0 +1,43 @@
+/**
+ * Toast Utility
+ *
+ * Shared showToast() for all client-side bridge modules.
+ * Appends a temporary notification to `#toast-container`.
+ */
+
+const TOAST_ICONS = {
+  success:
+    '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
+  error:
+    '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>',
+};
+
+/**
+ * Show a toast notification.
+ *
+ * @param message - Text to display
+ * @param type - Visual style: "success" (default) or "error"
+ *
+ * @example
+ * showToast("Saved successfully.");
+ * showToast("Something went wrong", "error");
+ */
+export function showToast(
+  message: string,
+  type: "success" | "error" = "success",
+): void {
+  if (!message) return;
+
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("toast-out");
+    toast.addEventListener("animationend", () => toast.remove());
+  }, 3000);
+}

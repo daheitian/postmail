@@ -8,29 +8,7 @@
 
 import type { ComposeSubmitDetail } from "../ui/components/compose-types.js";
 import type { JantComposeDialog } from "../ui/components/jant-compose-dialog.js";
-
-// ── Toast utility ─────────────────────────────────────────────────
-
-function showToast(message: string, type: "success" | "error" = "success") {
-  const container = document.getElementById("toast-container");
-  if (!container) return;
-
-  const cls = type === "error" ? "toast-error" : "toast-success";
-  const icon =
-    type === "error"
-      ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>'
-      : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
-
-  const toast = document.createElement("div");
-  toast.className = `toast ${cls}`;
-  toast.innerHTML = `${icon}<span>${message}</span>`;
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add("toast-out");
-    toast.addEventListener("animationend", () => toast.remove());
-  }, 3000);
-}
+import { showToast } from "./toast.js";
 
 // ── Submit handler ────────────────────────────────────────────────
 

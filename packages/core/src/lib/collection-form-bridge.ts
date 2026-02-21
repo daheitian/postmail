@@ -8,23 +8,7 @@
 
 import type { CollectionSubmitDetail } from "../ui/components/collection-types.js";
 import type { JantCollectionForm } from "../ui/components/jant-collection-form.js";
-
-function showToast(message: string, type: "success" | "error" = "success") {
-  const container = document.getElementById("toast-container");
-  if (!container) return;
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  const icon =
-    type === "error"
-      ? '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>'
-      : '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>';
-  toast.innerHTML = `${icon}<span>${message}</span>`;
-  container.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add("toast-out");
-    toast.addEventListener("animationend", () => toast.remove());
-  }, 3000);
-}
+import { showToast } from "./toast.js";
 
 document.addEventListener("jant:collection-submit", async (event: Event) => {
   const customEvent = event as CustomEvent<CollectionSubmitDetail>;

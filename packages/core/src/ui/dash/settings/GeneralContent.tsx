@@ -183,9 +183,9 @@ export function GeneralContent({
           {/* SSR fallback skeleton */}
           <div class="card">
             <header>
-              <h2 style="min-height:1.5em" />
+              <h2 class="skel-label" />
             </header>
-            <section style="min-height:180px" />
+            <section class="skel-section-sm" />
           </div>
         </jant-settings-avatar>
 
@@ -200,9 +200,9 @@ export function GeneralContent({
           <div class="flex flex-col gap-6">
             <div class="card">
               <header>
-                <h2 style="min-height:1.5em" />
+                <h2 class="skel-label" />
               </header>
-              <section style="min-height:300px" />
+              <section class="skel-section-lg" />
             </div>
           </div>
         </jant-settings-general>

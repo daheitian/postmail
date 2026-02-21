@@ -227,20 +227,20 @@ export const PostForm: FC<PostFormProps> = ({
     >
       <div class="flex flex-col gap-4 max-w-2xl">
         <div class="field">
-          <div class="label" style="min-height:1.5rem"></div>
-          <div class="input" style="height:2.75rem"></div>
+          <div class="label skel-label"></div>
+          <div class="input skel-input"></div>
         </div>
         <div class="field">
-          <div class="label" style="min-height:1.5rem"></div>
-          <div class="textarea" style="height:6rem"></div>
+          <div class="label skel-label"></div>
+          <div class="textarea skel-textarea"></div>
         </div>
         <div class="field">
-          <div class="label" style="min-height:1.5rem"></div>
-          <div class="input" style="height:2.75rem"></div>
+          <div class="label skel-label"></div>
+          <div class="input skel-input"></div>
         </div>
         <div class="flex gap-2">
-          <div class="btn" style="height:2.75rem;min-width:6rem"></div>
-          <div class="btn-outline" style="height:2.75rem;min-width:5rem"></div>
+          <div class="btn skel-input" style="min-width:6rem"></div>
+          <div class="btn-outline skel-input" style="min-width:5rem"></div>
         </div>
       </div>
     </jant-post-form>
