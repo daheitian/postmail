@@ -19,16 +19,14 @@ export interface SettingsLabels {
   siteName: string;
   aboutBlog: string;
   aboutBlogHelp: string;
+  siteFooter: string;
+  footerHelp: string;
+  markdownSupported: string;
   language: string;
   defaultHomepageView: string;
   latest: string;
   featured: string;
   timeZone: string;
-
-  // Footer
-  siteFooter: string;
-  footerPlaceholder: string;
-  footerHelp: string;
 
   // SEO
   seo: string;

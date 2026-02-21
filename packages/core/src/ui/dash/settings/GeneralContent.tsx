@@ -92,7 +92,7 @@ export function GeneralContent({
     }),
     aboutBlogHelp: t({
       message:
-        "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page.",
+        "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported.",
       comment: "@context: Help text for site description field",
     }),
     language: t({
@@ -119,14 +119,14 @@ export function GeneralContent({
       message: "Site Footer",
       comment: "@context: Settings section heading for site footer",
     }),
-    footerPlaceholder: t({
-      message: "Markdown supported",
-      comment: "@context: Placeholder for footer textarea",
-    }),
     footerHelp: t({
       message:
-        "This is displayed at the bottom of all of your posts and pages. Markdown is supported.",
+        "Displayed at the bottom of all posts and pages. Markdown supported.",
       comment: "@context: Help text for site footer field",
+    }),
+    markdownSupported: t({
+      message: "Markdown supported",
+      comment: "@context: Placeholder hint for markdown-enabled textareas",
     }),
     seo: t({
       message: "SEO",

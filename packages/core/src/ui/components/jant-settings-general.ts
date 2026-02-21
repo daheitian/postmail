@@ -3,8 +3,7 @@
  *
  * Main container for the General settings page. Contains:
  * - Avatar section (delegated to <jant-settings-avatar>)
- * - General settings form (site name, description, language, homepage view, timezone)
- * - Site footer form
+ * - General settings form (site name, description, footer, language, homepage view, timezone)
  * - SEO form
  *
  * Each form section tracks dirty state independently and dispatches
@@ -34,18 +33,13 @@ export class JantSettingsGeneral extends LitElement {
     // General form
     _siteName: { state: true },
     _siteDescription: { state: true },
+    _siteFooter: { state: true },
     _siteLanguage: { state: true },
     _homeDefaultView: { state: true },
     _timeZone: { state: true },
     _origGeneral: { state: true },
     _generalDirty: { state: true },
     _generalLoading: { state: true },
-
-    // Footer form
-    _siteFooter: { state: true },
-    _origFooter: { state: true },
-    _footerDirty: { state: true },
-    _footerLoading: { state: true },
 
     // SEO form
     _noindex: { state: true },
@@ -63,18 +57,13 @@ export class JantSettingsGeneral extends LitElement {
   // General
   declare _siteName: string;
   declare _siteDescription: string;
+  declare _siteFooter: string;
   declare _siteLanguage: string;
   declare _homeDefaultView: string;
   declare _timeZone: string;
   declare _origGeneral: Record<string, string>;
   declare _generalDirty: boolean;
   declare _generalLoading: boolean;
-
-  // Footer
-  declare _siteFooter: string;
-  declare _origFooter: string;
-  declare _footerDirty: boolean;
-  declare _footerLoading: boolean;
 
   // SEO
   declare _noindex: boolean;
@@ -97,17 +86,13 @@ export class JantSettingsGeneral extends LitElement {
 
     this._siteName = "";
     this._siteDescription = "";
+    this._siteFooter = "";
     this._siteLanguage = "en";
     this._homeDefaultView = "latest";
     this._timeZone = "UTC";
     this._origGeneral = {};
     this._generalDirty = false;
     this._generalLoading = false;
-
-    this._siteFooter = "";
-    this._origFooter = "";
-    this._footerDirty = false;
-    this._footerLoading = false;
 
     this._noindex = false;
     this._origNoindex = false;
@@ -127,19 +112,18 @@ export class JantSettingsGeneral extends LitElement {
   }) {
     this._siteName = data.siteName;
     this._siteDescription = data.siteDescription;
+    this._siteFooter = data.siteFooter;
     this._siteLanguage = data.siteLanguage;
     this._homeDefaultView = data.homeDefaultView;
     this._timeZone = data.timeZone;
     this._origGeneral = {
       siteName: data.siteName,
       siteDescription: data.siteDescription,
+      siteFooter: data.siteFooter,
       siteLanguage: data.siteLanguage,
       homeDefaultView: data.homeDefaultView,
       timeZone: data.timeZone,
     };
-
-    this._siteFooter = data.siteFooter;
-    this._origFooter = data.siteFooter;
 
     this._noindex = data.noindex;
     this._origNoindex = data.noindex;
@@ -151,16 +135,13 @@ export class JantSettingsGeneral extends LitElement {
       this._origGeneral = {
         siteName: this._siteName,
         siteDescription: this._siteDescription,
+        siteFooter: this._siteFooter,
         siteLanguage: this._siteLanguage,
         homeDefaultView: this._homeDefaultView,
         timeZone: this._timeZone,
       };
       this._generalDirty = false;
       this._generalLoading = false;
-    } else if (section === "footer") {
-      this._origFooter = this._siteFooter;
-      this._footerDirty = false;
-      this._footerLoading = false;
     } else if (section === "seo") {
       this._origNoindex = this._noindex;
       this._seoDirty = false;
@@ -171,7 +152,6 @@ export class JantSettingsGeneral extends LitElement {
   /** Called by bridge on save error */
   sectionError(section: string) {
     if (section === "general") this._generalLoading = false;
-    else if (section === "footer") this._footerLoading = false;
     else if (section === "seo") this._seoLoading = false;
   }
 
@@ -184,6 +164,7 @@ export class JantSettingsGeneral extends LitElement {
   private _cancelGeneral() {
     this._siteName = this._origGeneral.siteName ?? "";
     this._siteDescription = this._origGeneral.siteDescription ?? "";
+    this._siteFooter = this._origGeneral.siteFooter ?? "";
     this._siteLanguage = this._origGeneral.siteLanguage ?? "en";
     this._homeDefaultView = this._origGeneral.homeDefaultView ?? "latest";
     this._timeZone = this._origGeneral.timeZone ?? "UTC";
@@ -201,33 +182,12 @@ export class JantSettingsGeneral extends LitElement {
           data: {
             siteName: this._siteName,
             siteDescription: this._siteDescription,
+            siteFooter: this._siteFooter,
             siteLanguage: this._siteLanguage,
             homeDefaultView: this._homeDefaultView,
             timeZone: this._timeZone,
           },
           section: "general",
-        },
-      }),
-    );
-  }
-
-  // ── Footer form helpers ───────────────────────────────────────────
-
-  private _cancelFooter() {
-    this._siteFooter = this._origFooter;
-    this._footerDirty = false;
-  }
-
-  private _saveFooter() {
-    if (this._footerLoading || !this._footerDirty) return;
-    this._footerLoading = true;
-    this.dispatchEvent(
-      new CustomEvent("jant:settings-save", {
-        bubbles: true,
-        detail: {
-          endpoint: "/dash/settings/footer",
-          data: { siteFooter: this._siteFooter },
-          section: "footer",
         },
       }),
     );
@@ -332,7 +292,7 @@ export class JantSettingsGeneral extends LitElement {
               class="textarea"
               rows="3"
               .value=${this._siteDescription}
-              placeholder=${this.siteDescriptionFallback}
+              placeholder=${this.labels.markdownSupported}
               @input=${(e: Event) => {
                 this._siteDescription = (e.target as HTMLTextAreaElement).value;
                 this._markGeneralDirty();
@@ -340,6 +300,23 @@ export class JantSettingsGeneral extends LitElement {
             ></textarea>
             <p class="text-sm text-muted-foreground mt-1">
               ${this.labels.aboutBlogHelp}
+            </p>
+          </div>
+
+          <div class="field">
+            <label class="label">${this.labels.siteFooter}</label>
+            <textarea
+              class="textarea font-mono text-sm"
+              rows="4"
+              .value=${this._siteFooter}
+              placeholder=${this.labels.markdownSupported}
+              @input=${(e: Event) => {
+                this._siteFooter = (e.target as HTMLTextAreaElement).value;
+                this._markGeneralDirty();
+              }}
+            ></textarea>
+            <p class="text-sm text-muted-foreground mt-1">
+              ${this.labels.footerHelp}
             </p>
           </div>
 
@@ -422,35 +399,6 @@ export class JantSettingsGeneral extends LitElement {
     `;
   }
 
-  private _renderFooterForm() {
-    return html`
-      <div class="card">
-        <header>
-          <h2>${this.labels.siteFooter}</h2>
-        </header>
-        <section class="flex flex-col gap-4">
-          <textarea
-            class="textarea font-mono text-sm"
-            rows="4"
-            .value=${this._siteFooter}
-            placeholder=${this.labels.footerPlaceholder}
-            @input=${(e: Event) => {
-              this._siteFooter = (e.target as HTMLTextAreaElement).value;
-              this._footerDirty = true;
-            }}
-          ></textarea>
-          <p class="text-sm text-muted-foreground">${this.labels.footerHelp}</p>
-          ${this._renderActions(
-            this._footerLoading,
-            this._footerDirty,
-            () => this._saveFooter(),
-            () => this._cancelFooter(),
-          )}
-        </section>
-      </div>
-    `;
-  }
-
   private _renderSeoForm() {
     return html`
       <div class="card">
@@ -481,8 +429,7 @@ export class JantSettingsGeneral extends LitElement {
   render() {
     return html`
       <div class="flex flex-col gap-6">
-        ${this._renderGeneralForm()} ${this._renderFooterForm()}
-        ${this._renderSeoForm()}
+        ${this._renderGeneralForm()} ${this._renderSeoForm()}
       </div>
     `;
   }

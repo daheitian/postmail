@@ -19,7 +19,7 @@ msgstr ""
 #~ msgstr "{count} replies"
 
 #. @context: Custom CSS textarea placeholder
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "/* Your custom CSS here */"
 msgstr "/* Your custom CSS here */"
 
@@ -61,7 +61,7 @@ msgid "Account"
 msgstr "Account"
 
 #. @context: Custom CSS settings description
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 
@@ -80,6 +80,11 @@ msgstr "Add Media"
 msgid "Add to nav"
 msgstr "Add to nav"
 
+#. @context: Appearance sub-navigation tab
+#: src/ui/dash/appearance/AppearanceNav.tsx
+msgid "Advanced"
+msgstr "Advanced"
+
 #. @context: Archive filter - all formats
 #: src/ui/pages/ArchivePage.tsx
 msgid "All"
@@ -90,8 +95,14 @@ msgstr "All"
 msgid "All pages are in your navigation."
 msgstr "All pages are in your navigation."
 
-#. @context: Settings sub-navigation tab
-#: src/ui/dash/settings/SettingsNav.tsx
+#. @context: Dashboard heading
+#. @context: Dashboard heading
+#. @context: Dashboard heading
+#. @context: Dashboard navigation - appearance settings
+#: src/ui/dash/appearance/AdvancedContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
+#: src/ui/layouts/DashLayout.tsx
 msgid "Appearance"
 msgstr "Appearance"
 
@@ -205,7 +216,7 @@ msgstr "Change Password"
 #~ msgstr "Choose a font for your site. All options use system fonts for fast loading."
 
 #. @context: Font theme settings description
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
 msgstr "Choose a font pairing for your site. All options use system fonts for fast loading."
 
@@ -253,9 +264,14 @@ msgid "Collections (optional)"
 msgstr "Collections (optional)"
 
 #. @context: Appearance settings heading
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Color theme"
 msgstr "Color theme"
+
+#. @context: Appearance sub-navigation tab
+#: src/ui/dash/appearance/AppearanceNav.tsx
+msgid "Color Theme"
+msgstr "Color Theme"
 
 #. @context: Setup form submit button
 #: src/routes/auth/setup.tsx
@@ -332,12 +348,12 @@ msgid "Current password is incorrect."
 msgstr "Current password is incorrect."
 
 #. @context: Appearance settings heading for custom CSS
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Custom CSS"
 msgstr "Custom CSS"
 
 #. @context: Toast after saving custom CSS
-#: src/routes/dash/settings.tsx
+#: src/routes/dash/appearance.tsx
 msgid "Custom CSS saved successfully."
 msgstr "Custom CSS saved successfully."
 
@@ -426,6 +442,16 @@ msgstr "Display avatar in my site header"
 #: src/ui/dash/pages/LinkFormContent.tsx
 msgid "Display text for the link"
 msgstr "Display text for the link"
+
+#. @context: Help text for site description field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
+msgstr "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
+
+#. @context: Help text for site footer field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Displayed at the bottom of all posts and pages. Markdown supported."
+msgstr "Displayed at the bottom of all posts and pages. Markdown supported."
 
 #. @context: Close attached text panel
 #. @context: Close media picker button
@@ -568,16 +594,21 @@ msgid "Featured"
 msgstr "Featured"
 
 #. @context: Appearance settings heading for font theme
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Font theme"
 msgstr "Font theme"
+
+#. @context: Appearance sub-navigation tab
+#: src/ui/dash/appearance/AppearanceNav.tsx
+msgid "Font Theme"
+msgstr "Font Theme"
 
 #. @context: Toast after saving site footer
 #. @context: Toast after saving site footer
 #: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
-msgid "Footer saved successfully."
-msgstr "Footer saved successfully."
+#~ msgid "Footer saved successfully."
+#~ msgstr "Footer saved successfully."
 
 #. @context: Post form field - post format
 #: src/ui/dash/posts/PostForm.tsx
@@ -652,7 +683,7 @@ msgid "Invalid email or password"
 msgstr "Invalid email or password"
 
 #. @context: Error toast when selected font theme is not valid
-#: src/routes/dash/settings.tsx
+#: src/routes/dash/appearance.tsx
 msgid "Invalid font theme selected."
 msgstr "Invalid font theme selected."
 
@@ -682,7 +713,7 @@ msgid "Invalid request"
 msgstr "Invalid request"
 
 #. @context: Error toast when selected theme is not valid
-#: src/routes/dash/settings.tsx
+#: src/routes/dash/appearance.tsx
 msgid "Invalid theme selected."
 msgstr "Invalid theme selected."
 
@@ -768,7 +799,7 @@ msgstr "Lowest rated"
 msgid "Markdown"
 msgstr "Markdown"
 
-#. @context: Placeholder for footer textarea
+#. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Markdown supported"
 msgstr "Markdown supported"
@@ -1234,10 +1265,10 @@ msgstr "Quotes"
 #~ msgid "Rating"
 #~ msgstr "Rating"
 
-#. @context: Dashboard heading
-#. @context: Dashboard navigation - URL redirects
+#. @context: Settings section heading
+#. @context: Settings sub-navigation tab
 #: src/routes/dash/redirects.tsx
-#: src/ui/layouts/DashLayout.tsx
+#: src/ui/dash/settings/SettingsNav.tsx
 msgid "Redirects"
 msgstr "Redirects"
 
@@ -1283,7 +1314,7 @@ msgid "Save Changes"
 msgstr "Save Changes"
 
 #. @context: Button to save custom CSS
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Save CSS"
 msgstr "Save CSS"
 
@@ -1348,9 +1379,11 @@ msgstr "SEO settings saved successfully."
 #. @context: Dashboard heading
 #. @context: Dashboard heading
 #. @context: Dashboard heading
+#. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
+#: src/routes/dash/redirects.tsx
+#: src/routes/dash/redirects.tsx
 #: src/ui/dash/settings/AccountContent.tsx
-#: src/ui/dash/settings/AppearanceContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/layouts/DashLayout.tsx
 msgid "Settings"
@@ -1467,8 +1500,8 @@ msgstr "The path to redirect from"
 
 #. @context: Font theme preview sentence for body text
 #. @context: Font theme preview sentence for headings
-#: src/ui/dash/settings/AppearanceContent.tsx
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "The quick brown fox jumps over the lazy dog."
 msgstr "The quick brown fox jumps over the lazy dog."
 
@@ -1484,13 +1517,13 @@ msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens.
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
-msgstr "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
+#~ msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
+#~ msgstr "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
 
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
-msgstr "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
+#~ msgid "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
+#~ msgstr "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1508,7 +1541,7 @@ msgid "This password reset link is invalid or has expired. Please generate a new
 msgstr "This password reset link is invalid or has expired. Please generate a new one."
 
 #. @context: Appearance settings description
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "This will theme both your site and your dashboard. All color themes support dark mode."
 msgstr "This will theme both your site and your dashboard. All color themes support dark mode."
 

@@ -1,7 +1,7 @@
 /**
  * Dashboard Settings Routes
  *
- * Sub-pages: General, Appearance, Account
+ * Sub-pages: General, Account
  */
 
 import { Hono } from "hono";
@@ -21,15 +21,11 @@ import {
   isNoIndex,
   getConfigFallback,
 } from "../../lib/config.js";
-import { SETTINGS_KEYS } from "../../lib/constants.js";
-import { getAvailableThemes } from "../../lib/theme.js";
 import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 import { TIMEZONES } from "../../lib/timezones.js";
 import { escapeHtml } from "../../lib/html.js";
 import { validateUploadFile, generateStorageKey } from "../../lib/upload.js";
-import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
 import { GeneralContent } from "../../ui/dash/settings/GeneralContent.js";
-import { AppearanceContent } from "../../ui/dash/settings/AppearanceContent.js";
 import { AccountContent } from "../../ui/dash/settings/AccountContent.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -109,6 +105,7 @@ settingsRoutes.post("/", async (c) => {
   const body = await c.req.json<{
     siteName: string;
     siteDescription: string;
+    siteFooter: string;
     siteLanguage: string;
     homeDefaultView: string;
     timeZone: string;
@@ -128,6 +125,13 @@ settingsRoutes.post("/", async (c) => {
     await settings.set("SITE_DESCRIPTION", body.siteDescription.trim());
   } else {
     await settings.remove("SITE_DESCRIPTION");
+  }
+
+  // Footer
+  if (body.siteFooter?.trim()) {
+    await settings.set("SITE_FOOTER", body.siteFooter.trim());
+  } else {
+    await settings.remove("SITE_FOOTER");
   }
 
   await settings.set("SITE_LANGUAGE", body.siteLanguage);
@@ -193,53 +197,13 @@ settingsRoutes.post("/", async (c) => {
       await stream.patchSignals({
         _orig_siteName: body.siteName,
         _orig_siteDescription: body.siteDescription,
+        _orig_siteFooter: body.siteFooter,
         _orig_siteLanguage: body.siteLanguage,
         _orig_homeDefaultView: body.homeDefaultView,
         _orig_timeZone: body.timeZone,
         _generalDirty: false,
       });
     }
-  });
-});
-
-settingsRoutes.post("/footer", async (c) => {
-  const i18n = getI18n(c);
-  const body = await c.req.json<{ siteFooter: string }>();
-  const { settings } = c.var.services;
-
-  if (body.siteFooter?.trim()) {
-    await settings.set("SITE_FOOTER", body.siteFooter.trim());
-  } else {
-    await settings.remove("SITE_FOOTER");
-  }
-
-  // ── JSON response mode (used by Lit settings bridge) ──────────────
-  const wantsJson = c.req.header("accept")?.includes("application/json");
-  if (wantsJson) {
-    return c.json({
-      status: "ok" as const,
-      toast: i18n._(
-        msg({
-          message: "Footer saved successfully.",
-          comment: "@context: Toast after saving site footer",
-        }),
-      ),
-    });
-  }
-
-  return sse(c, async (stream) => {
-    await stream.toast(
-      i18n._(
-        msg({
-          message: "Footer saved successfully.",
-          comment: "@context: Toast after saving site footer",
-        }),
-      ),
-    );
-    await stream.patchSignals({
-      _orig_siteFooter: body.siteFooter,
-      _footerDirty: false,
-    });
   });
 });
 
@@ -452,120 +416,6 @@ settingsRoutes.post("/avatar/display", async (c) => {
       _avatarDisplayDirty: false,
     });
   });
-});
-
-// ===========================================================================
-// Appearance
-// ===========================================================================
-
-settingsRoutes.get("/appearance", async (c) => {
-  const { settings } = c.var.services;
-  const siteName = await getSiteName(c);
-  const defaultThemeId = getConfigFallback(c, "DEFAULT_THEME");
-  const currentThemeId =
-    (await settings.get(SETTINGS_KEYS.THEME)) ?? defaultThemeId;
-  const currentFontThemeId = (await settings.get("FONT_THEME")) ?? "default";
-  const customCSS = (await settings.get(SETTINGS_KEYS.CUSTOM_CSS)) ?? "";
-  const themes = getAvailableThemes(c.var.config);
-  const saved = c.req.query("saved") !== undefined;
-
-  return c.html(
-    <DashLayout
-      c={c}
-      title="Settings"
-      siteName={siteName}
-      currentPath="/dash/settings"
-      toast={saved ? { message: "Theme saved successfully." } : undefined}
-    >
-      <AppearanceContent
-        themes={themes}
-        currentThemeId={currentThemeId}
-        fontThemes={BUILTIN_FONT_THEMES}
-        currentFontThemeId={currentFontThemeId}
-        customCSS={customCSS}
-      />
-    </DashLayout>,
-  );
-});
-
-settingsRoutes.post("/appearance", async (c) => {
-  const i18n = getI18n(c);
-  const body = await c.req.json<{ theme: string }>();
-  const { settings } = c.var.services;
-  const themes = getAvailableThemes(c.var.config);
-
-  const validTheme = themes.find((t) => t.id === body.theme);
-  if (!validTheme) {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "Invalid theme selected.",
-          comment: "@context: Error toast when selected theme is not valid",
-        }),
-      ),
-      "error",
-    );
-  }
-
-  const defaultThemeId = getConfigFallback(c, "DEFAULT_THEME");
-  if (validTheme.id === defaultThemeId) {
-    await settings.remove(SETTINGS_KEYS.THEME);
-  } else {
-    await settings.set(SETTINGS_KEYS.THEME, validTheme.id);
-  }
-
-  return dsRedirect("/dash/settings/appearance?saved");
-});
-
-settingsRoutes.post("/font-theme", async (c) => {
-  const i18n = getI18n(c);
-  const body = await c.req.json<{ fontTheme: string }>();
-  const { settings } = c.var.services;
-
-  const validFont = BUILTIN_FONT_THEMES.find((f) => f.id === body.fontTheme);
-  if (!validFont) {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "Invalid font theme selected.",
-          comment:
-            "@context: Error toast when selected font theme is not valid",
-        }),
-      ),
-      "error",
-    );
-  }
-
-  if (validFont.id === "default") {
-    await settings.remove("FONT_THEME");
-  } else {
-    await settings.set("FONT_THEME", validFont.id);
-  }
-
-  return dsRedirect("/dash/settings/appearance?saved");
-});
-
-settingsRoutes.post("/custom-css", async (c) => {
-  const i18n = getI18n(c);
-  const body = await c.req.json<{ customCSS: string }>();
-  const { settings } = c.var.services;
-
-  const css = body.customCSS?.trim() ?? "";
-
-  if (css) {
-    await settings.set(SETTINGS_KEYS.CUSTOM_CSS, css);
-  } else {
-    await settings.remove(SETTINGS_KEYS.CUSTOM_CSS);
-  }
-
-  return dsToast(
-    i18n._(
-      msg({
-        message: "Custom CSS saved successfully.",
-        comment: "@context: Toast after saving custom CSS",
-      }),
-    ),
-  );
 });
 
 // ===========================================================================

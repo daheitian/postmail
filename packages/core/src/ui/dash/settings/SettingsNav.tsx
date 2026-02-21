@@ -4,7 +4,7 @@
 
 import { useLingui } from "@lingui/react/macro";
 
-export type SettingsTab = "general" | "appearance" | "account";
+export type SettingsTab = "general" | "redirects" | "account";
 
 export function SettingsNav({ currentTab }: { currentTab: SettingsTab }) {
   const { t } = useLingui();
@@ -19,12 +19,12 @@ export function SettingsNav({ currentTab }: { currentTab: SettingsTab }) {
       href: "/dash/settings",
     },
     {
-      id: "appearance",
+      id: "redirects",
       label: t({
-        message: "Appearance",
+        message: "Redirects",
         comment: "@context: Settings sub-navigation tab",
       }),
-      href: "/dash/settings/appearance",
+      href: "/dash/settings/redirects",
     },
     {
       id: "account",

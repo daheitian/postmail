@@ -39,8 +39,8 @@ const labels: SettingsLabels = {
   featured: "Featured",
   timeZone: "Time Zone",
   siteFooter: "Site Footer",
-  footerPlaceholder: "Markdown supported",
   footerHelp: "Displayed at the bottom of posts.",
+  markdownSupported: "Markdown supported",
   seo: "SEO",
   allowIndexing: "It's OK for search engines to index my site",
   save: "Save",
@@ -88,12 +88,11 @@ describe("JantSettingsGeneral", () => {
     document.body.innerHTML = "";
   });
 
-  it("renders general, footer, and SEO sections", async () => {
+  it("renders general and SEO sections", async () => {
     const el = await createElement();
     const headings = el.querySelectorAll("h2");
     const headingTexts = Array.from(headings).map((h) => h.textContent);
     expect(headingTexts).toContain("General");
-    expect(headingTexts).toContain("Site Footer");
     expect(headingTexts).toContain("SEO");
   });
 
@@ -236,7 +235,7 @@ describe("JantSettingsGeneral", () => {
     expect(seoCheckbox?.checked).toBe(false);
   });
 
-  it("dispatches jant:settings-save for footer section", async () => {
+  it("includes footer in general section save", async () => {
     const el = await createElement();
     const textareas = el.querySelectorAll("textarea");
     const footerTextarea = textareas[1]; // Second textarea is footer
@@ -253,16 +252,15 @@ describe("JantSettingsGeneral", () => {
       detail = customEvent.detail;
     });
 
-    // Find the footer Save button (second card's button)
-    const cards = el.querySelectorAll(".card");
-    const footerSaveBtn = cards[1]?.querySelector<HTMLButtonElement>(".btn");
-    footerSaveBtn?.click();
+    // Click save in the general card (footer is now part of general form)
+    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    saveBtn?.click();
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
-    expect(d.endpoint).toBe("/dash/settings/footer");
-    expect(d.section).toBe("footer");
+    expect(d.endpoint).toBe("/dash/settings");
+    expect(d.section).toBe("general");
     expect(d.data.siteFooter).toBe("New footer");
   });
 
@@ -283,9 +281,9 @@ describe("JantSettingsGeneral", () => {
       detail = customEvent.detail;
     });
 
-    // Find SEO Save button (third card)
+    // Find SEO Save button (second card)
     const cards = el.querySelectorAll(".card");
-    const seoSaveBtn = cards[2]?.querySelector<HTMLButtonElement>(".btn");
+    const seoSaveBtn = cards[1]?.querySelector<HTMLButtonElement>(".btn");
     seoSaveBtn?.click();
     await el.updateComplete;
 

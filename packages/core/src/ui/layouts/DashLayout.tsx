@@ -118,12 +118,12 @@ function DashLayoutContent({
               })}
             </a>
             <a
-              href="/dash/redirects"
-              class={navClass("/dash/redirects", /^\/dash\/redirects/)}
+              href="/dash/appearance"
+              class={navClass("/dash/appearance", /^\/dash\/appearance/)}
             >
               {t({
-                message: "Redirects",
-                comment: "@context: Dashboard navigation - URL redirects",
+                message: "Appearance",
+                comment: "@context: Dashboard navigation - appearance settings",
               })}
             </a>
             <a
