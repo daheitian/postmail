@@ -188,6 +188,7 @@ depends = ["translate-zh-Hans", "translate-zh-Hant"]
 alias = "tz"
 description = "Translate to Simplified Chinese"
 run = """
+OPENAI_API_KEY="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
 npx lingui-po-translate \
   --srcFile=packages/core/src/i18n/locales/en.po \
   --srcLng=en \
@@ -196,13 +197,15 @@ npx lingui-po-translate \
   --targetLng=zh-Hans \
   --targetFormat=po \
   --service=openai \
-  --serviceConfig="$OPENAI_API_KEY"
+  --serviceConfig="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
+  --baseUrl="${CUSTOM_OPENAI_BASE_URL:-https://api.openai.com/v1}"
 """
 
 [tasks.translate-zh-Hant]
 alias = "tt"
 description = "Translate to Traditional Chinese"
 run = """
+OPENAI_API_KEY="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
 npx lingui-po-translate \
   --srcFile=packages/core/src/i18n/locales/en.po \
   --srcLng=en \
@@ -211,7 +214,8 @@ npx lingui-po-translate \
   --targetLng=zh-Hant \
   --targetFormat=po \
   --service=openai \
-  --serviceConfig="$OPENAI_API_KEY" \
+  --serviceConfig="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
+  --baseUrl="${CUSTOM_OPENAI_BASE_URL:-https://api.openai.com/v1}" \
   --sourceOverride="zh-Hant:zh-Hans"
 """
 
