@@ -60,18 +60,6 @@ describe("requireAuth", () => {
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toBe("/login");
   });
-
-  it("redirects when auth is not configured", async () => {
-    const app = new Hono<Env>();
-    app.use("*", async (c, next) => {
-      // auth not set (undefined)
-      await next();
-    });
-    app.get("/dash", requireAuth(), (c) => c.text("Dashboard"));
-
-    const res = await app.request("/dash", { redirect: "manual" });
-    expect(res.status).toBe(302);
-  });
 });
 
 describe("requireAuthApi", () => {
@@ -106,23 +94,6 @@ describe("requireAuthApi", () => {
     const body = await res.json();
     expect(body.error).toBe("Unauthorized");
     expect(body.code).toBe("UNAUTHORIZED");
-  });
-
-  it("returns 500 when auth is not configured", async () => {
-    const app = new Hono<Env>();
-    app.onError(errorHandler);
-    app.use("*", async (c, next) => {
-      // auth not set (undefined)
-      await next();
-    });
-    app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
-
-    const res = await app.request("/api/data");
-    expect(res.status).toBe(500);
-
-    const body = await res.json();
-    expect(body.error).toBe("Authentication not configured");
-    expect(body.code).toBe("EXTERNAL_SERVICE_ERROR");
   });
 
   it("returns 401 when getSession throws", async () => {

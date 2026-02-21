@@ -26,6 +26,7 @@ export interface BaseLayoutProps {
   faviconUrl?: string;
   faviconVersion?: string;
   noindex?: boolean;
+  isAuthenticated?: boolean;
 }
 
 export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
@@ -37,6 +38,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   faviconUrl,
   faviconVersion,
   noindex,
+  isAuthenticated = false,
   children,
 }) => {
   // Read lang from Hono context if available, otherwise use prop or default
@@ -58,9 +60,6 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
 
   // Read custom CSS from appConfig
   const customCSS = appConfig?.customCSS || undefined;
-
-  // Check authentication status for data attribute
-  const isAuthenticated = c ? c.get("isAuthenticated") : false;
 
   return (
     <html lang={resolvedLang}>

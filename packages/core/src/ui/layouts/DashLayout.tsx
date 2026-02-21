@@ -154,7 +154,12 @@ export const DashLayout: FC<PropsWithChildren<DashLayoutProps>> = ({
   children,
 }) => {
   return (
-    <BaseLayout title={`${title} - ${siteName}`} c={c} toast={toast}>
+    <BaseLayout
+      title={`${title} - ${siteName}`}
+      c={c}
+      toast={toast}
+      isAuthenticated={true}
+    >
       <DashLayoutContent siteName={siteName} currentPath={currentPath}>
         {children}
       </DashLayoutContent>

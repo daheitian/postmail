@@ -70,15 +70,13 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   // Check auth status for compose button
   let isAuthenticated = false;
   let collections: Collection[] = [];
-  if (c.var.auth) {
-    try {
-      const session = await c.var.auth.api.getSession({
-        headers: c.req.raw.headers,
-      });
-      isAuthenticated = !!session?.user;
-    } catch {
-      // Not authenticated
-    }
+  try {
+    const session = await c.var.auth.api.getSession({
+      headers: c.req.raw.headers,
+    });
+    isAuthenticated = !!session?.user;
+  } catch {
+    // Not authenticated
   }
 
   // Only load collections when authenticated (for compose dialog)
