@@ -105,6 +105,7 @@ settingsRoutes.post("/", async (c) => {
   const body = await c.req.json<{
     siteName: string;
     siteDescription: string;
+    siteFooter: string;
     siteLanguage: string;
     homeDefaultView: string;
     timeZone: string;
@@ -124,6 +125,13 @@ settingsRoutes.post("/", async (c) => {
     await settings.set("SITE_DESCRIPTION", body.siteDescription.trim());
   } else {
     await settings.remove("SITE_DESCRIPTION");
+  }
+
+  // Footer
+  if (body.siteFooter?.trim()) {
+    await settings.set("SITE_FOOTER", body.siteFooter.trim());
+  } else {
+    await settings.remove("SITE_FOOTER");
   }
 
   await settings.set("SITE_LANGUAGE", body.siteLanguage);
@@ -189,53 +197,13 @@ settingsRoutes.post("/", async (c) => {
       await stream.patchSignals({
         _orig_siteName: body.siteName,
         _orig_siteDescription: body.siteDescription,
+        _orig_siteFooter: body.siteFooter,
         _orig_siteLanguage: body.siteLanguage,
         _orig_homeDefaultView: body.homeDefaultView,
         _orig_timeZone: body.timeZone,
         _generalDirty: false,
       });
     }
-  });
-});
-
-settingsRoutes.post("/footer", async (c) => {
-  const i18n = getI18n(c);
-  const body = await c.req.json<{ siteFooter: string }>();
-  const { settings } = c.var.services;
-
-  if (body.siteFooter?.trim()) {
-    await settings.set("SITE_FOOTER", body.siteFooter.trim());
-  } else {
-    await settings.remove("SITE_FOOTER");
-  }
-
-  // ── JSON response mode (used by Lit settings bridge) ──────────────
-  const wantsJson = c.req.header("accept")?.includes("application/json");
-  if (wantsJson) {
-    return c.json({
-      status: "ok" as const,
-      toast: i18n._(
-        msg({
-          message: "Footer saved successfully.",
-          comment: "@context: Toast after saving site footer",
-        }),
-      ),
-    });
-  }
-
-  return sse(c, async (stream) => {
-    await stream.toast(
-      i18n._(
-        msg({
-          message: "Footer saved successfully.",
-          comment: "@context: Toast after saving site footer",
-        }),
-      ),
-    );
-    await stream.patchSignals({
-      _orig_siteFooter: body.siteFooter,
-      _footerDirty: false,
-    });
   });
 });
 

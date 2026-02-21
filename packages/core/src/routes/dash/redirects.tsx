@@ -1,6 +1,8 @@
 import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Redirects Routes
+ *
+ * Mounted under /dash/settings/redirects
  */
 
 import { Hono } from "hono";
@@ -8,12 +10,8 @@ import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Redirect } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
-import {
-  EmptyState,
-  ListItemRow,
-  ActionButtons,
-  CrudPageHeader,
-} from "../../ui/dash/index.js";
+import { EmptyState, ListItemRow, ActionButtons } from "../../ui/dash/index.js";
+import { SettingsNav } from "../../ui/dash/settings/SettingsNav.js";
 import { dsRedirect } from "../../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -25,17 +23,25 @@ function RedirectsListContent({ redirects }: { redirects: Redirect[] }) {
 
   return (
     <>
-      <CrudPageHeader
-        title={t({
-          message: "Redirects",
-          comment: "@context: Dashboard heading",
-        })}
-        ctaLabel={t({
-          message: "New Redirect",
-          comment: "@context: Button to create new redirect",
-        })}
-        ctaHref="/dash/redirects/new"
-      />
+      <h1 class="text-2xl font-semibold mb-2">
+        {t({ message: "Settings", comment: "@context: Dashboard heading" })}
+      </h1>
+      <SettingsNav currentTab="redirects" />
+
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-medium">
+          {t({
+            message: "Redirects",
+            comment: "@context: Settings section heading",
+          })}
+        </h2>
+        <a href="/dash/settings/redirects/new" class="btn">
+          {t({
+            message: "New Redirect",
+            comment: "@context: Button to create new redirect",
+          })}
+        </a>
+      </div>
 
       {redirects.length === 0 ? (
         <EmptyState
@@ -47,7 +53,7 @@ function RedirectsListContent({ redirects }: { redirects: Redirect[] }) {
             message: "New Redirect",
             comment: "@context: Button to create new redirect",
           })}
-          ctaHref="/dash/redirects/new"
+          ctaHref="/dash/settings/redirects/new"
         />
       ) : (
         <div class="flex flex-col divide-y">
@@ -56,7 +62,7 @@ function RedirectsListContent({ redirects }: { redirects: Redirect[] }) {
               key={r.id}
               actions={
                 <ActionButtons
-                  deleteAction={`/dash/redirects/${r.id}/delete`}
+                  deleteAction={`/dash/settings/redirects/${r.id}/delete`}
                   deleteLabel={t({
                     message: "Delete",
                     comment: "@context: Button to delete redirect",
@@ -83,13 +89,18 @@ function NewRedirectContent() {
 
   return (
     <>
-      <h1 class="text-2xl font-semibold mb-6">
-        {t({ message: "New Redirect", comment: "@context: Page heading" })}
+      <h1 class="text-2xl font-semibold mb-2">
+        {t({ message: "Settings", comment: "@context: Dashboard heading" })}
       </h1>
+      <SettingsNav currentTab="redirects" />
+
+      <h2 class="text-lg font-medium mb-6">
+        {t({ message: "New Redirect", comment: "@context: Page heading" })}
+      </h2>
 
       <form
         data-signals="{fromPath: '', toPath: '', type: '301'}"
-        data-on:submit__prevent="@post('/dash/redirects')"
+        data-on:submit__prevent="@post('/dash/settings/redirects')"
         data-indicator="_loading"
         class="flex flex-col gap-4 max-w-lg"
       >
@@ -179,7 +190,7 @@ function NewRedirectContent() {
               comment: "@context: Button to save new redirect",
             })}
           </button>
-          <a href="/dash/redirects" class="btn-outline">
+          <a href="/dash/settings/redirects" class="btn-outline">
             {t({
               message: "Cancel",
               comment: "@context: Button to cancel form",
@@ -199,9 +210,9 @@ redirectsRoutes.get("/", async (c) => {
   return c.html(
     <DashLayout
       c={c}
-      title="Redirects"
+      title="Settings"
       siteName={siteName}
-      currentPath="/dash/redirects"
+      currentPath="/dash/settings"
     >
       <RedirectsListContent redirects={redirects} />
     </DashLayout>,
@@ -215,9 +226,9 @@ redirectsRoutes.get("/new", async (c) => {
   return c.html(
     <DashLayout
       c={c}
-      title="New Redirect"
+      title="Settings"
       siteName={siteName}
-      currentPath="/dash/redirects"
+      currentPath="/dash/settings"
     >
       <NewRedirectContent />
     </DashLayout>,
@@ -235,7 +246,7 @@ redirectsRoutes.post("/", async (c) => {
   const type = parseInt(body.type, 10) as 301 | 302;
   await c.var.services.redirects.create(body.fromPath, body.toPath, type);
 
-  return dsRedirect("/dash/redirects");
+  return dsRedirect("/dash/settings/redirects");
 });
 
 // Delete redirect
@@ -245,5 +256,5 @@ redirectsRoutes.post("/:id/delete", async (c) => {
     await c.var.services.redirects.delete(id);
   }
 
-  return dsRedirect("/dash/redirects");
+  return dsRedirect("/dash/settings/redirects");
 });

@@ -301,7 +301,7 @@ export function createApp(config: JantConfig = {}): App {
   app.route("/dash/media", dashMediaRoutes);
   app.route("/dash/settings", dashSettingsRoutes);
   app.route("/dash/appearance", dashAppearanceRoutes);
-  app.route("/dash/redirects", dashRedirectsRoutes);
+  app.route("/dash/settings/redirects", dashRedirectsRoutes);
   app.route("/dash/collections", dashCollectionsRoutes);
   // API routes
   app.route("/api/upload", uploadApiRoutes);
