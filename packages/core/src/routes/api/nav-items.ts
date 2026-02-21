@@ -7,7 +7,12 @@ import { z } from "zod";
 import type { Bindings, NavItemType } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { CreateNavItemSchema, ReorderSchema } from "../../lib/schemas.js";
+import {
+  CreateNavItemSchema,
+  ReorderSchema,
+  parseValidated,
+} from "../../lib/schemas.js";
+import { assertFound, parseIntParam, NotFoundError } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -26,34 +31,16 @@ navItemsApiRoutes.get("/", async (c) => {
 
 // Reorder nav items (requires auth) — must be before /:id
 navItemsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
-  const rawBody = await c.req.json();
+  const body = parseValidated(ReorderSchema, await c.req.json());
 
-  const parseResult = ReorderSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  await c.var.services.navItems.reorder(parseResult.data.ids);
+  await c.var.services.navItems.reorder(body.ids);
   const items = await c.var.services.navItems.list();
   return c.json({ navItems: items });
 });
 
 // Create nav item (requires auth)
 navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
-  const rawBody = await c.req.json();
-
-  const parseResult = CreateNavItemSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  const body = parseResult.data;
+  const body = parseValidated(CreateNavItemSchema, await c.req.json());
 
   const item = await c.var.services.navItems.create({
     type: body.type as NavItemType,
@@ -68,32 +55,23 @@ navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Update nav item (requires auth)
 navItemsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+  const id = parseIntParam(c.req.param("id"));
+  const body = parseValidated(UpdateNavItemSchema, await c.req.json());
 
-  const rawBody = await c.req.json();
-
-  const parseResult = UpdateNavItemSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  const item = await c.var.services.navItems.update(id, parseResult.data);
-  if (!item) return c.json({ error: "Not found" }, 404);
+  const item = assertFound(
+    await c.var.services.navItems.update(id, body),
+    "Nav item",
+  );
 
   return c.json(item);
 });
 
 // Delete nav item (requires auth)
 navItemsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+  const id = parseIntParam(c.req.param("id"));
 
   const success = await c.var.services.navItems.delete(id);
-  if (!success) return c.json({ error: "Not found" }, 404);
+  if (!success) throw new NotFoundError("Nav item");
 
   return c.json({ success: true });
 });

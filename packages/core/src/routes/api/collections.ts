@@ -7,7 +7,12 @@ import { z } from "zod";
 import type { Bindings, SortOrder } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { CreateCollectionSchema, SortOrderSchema } from "../../lib/schemas.js";
+import {
+  CreateCollectionSchema,
+  SortOrderSchema,
+  parseValidated,
+} from "../../lib/schemas.js";
+import { assertFound, parseIntParam, NotFoundError } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -46,31 +51,22 @@ collectionsApiRoutes.get("/", async (c) => {
 
 // Get single collection
 collectionsApiRoutes.get("/:id", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
-
-  const collection = await c.var.services.collections.getById(id);
-  if (!collection) return c.json({ error: "Not found" }, 404);
-
+  const id = parseIntParam(c.req.param("id"));
+  const collection = assertFound(
+    await c.var.services.collections.getById(id),
+    "Collection",
+  );
   return c.json(collection);
 });
 
 // Reorder collections (requires auth) — must be before /:id
 collectionsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
-  const rawBody = await c.req.json();
+  const body = parseValidated(CollectionReorderSchema, await c.req.json());
 
-  const parseResult = CollectionReorderSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  if (parseResult.data.items) {
-    await c.var.services.collections.reorderAll(parseResult.data.items);
-  } else if (parseResult.data.ids) {
-    await c.var.services.collections.reorder(parseResult.data.ids);
+  if (body.items) {
+    await c.var.services.collections.reorderAll(body.items);
+  } else if (body.ids) {
+    await c.var.services.collections.reorder(body.ids);
   }
   const collections = await c.var.services.collections.list();
   return c.json({ collections });
@@ -78,17 +74,7 @@ collectionsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
 
 // Create collection (requires auth)
 collectionsApiRoutes.post("/", requireAuthApi(), async (c) => {
-  const rawBody = await c.req.json();
-
-  const parseResult = CreateCollectionSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  const body = parseResult.data;
+  const body = parseValidated(CreateCollectionSchema, await c.req.json());
 
   const collection = await c.var.services.collections.create({
     slug: body.slug,
@@ -104,60 +90,36 @@ collectionsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Update collection (requires auth)
 collectionsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+  const id = parseIntParam(c.req.param("id"));
+  const body = parseValidated(UpdateCollectionSchema, await c.req.json());
 
-  const rawBody = await c.req.json();
-
-  const parseResult = UpdateCollectionSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  const collection = await c.var.services.collections.update(
-    id,
-    parseResult.data,
+  const collection = assertFound(
+    await c.var.services.collections.update(id, body),
+    "Collection",
   );
-  if (!collection) return c.json({ error: "Not found" }, 404);
 
   return c.json(collection);
 });
 
 // Delete collection (requires auth)
 collectionsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+  const id = parseIntParam(c.req.param("id"));
 
   const success = await c.var.services.collections.delete(id);
-  if (!success) return c.json({ error: "Not found" }, 404);
+  if (!success) throw new NotFoundError("Collection");
 
   return c.json({ success: true });
 });
 
 // Add a post to a collection (requires auth)
 collectionsApiRoutes.post("/:id/posts", requireAuthApi(), async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.json({ error: "Invalid ID" }, 400);
+  const id = parseIntParam(c.req.param("id"));
+  assertFound(await c.var.services.collections.getById(id), "Collection");
 
-  const collection = await c.var.services.collections.getById(id);
-  if (!collection) return c.json({ error: "Collection not found" }, 404);
+  const body = parseValidated(PostAssignSchema, await c.req.json());
+  assertFound(await c.var.services.posts.getById(body.postId), "Post");
 
-  const rawBody = await c.req.json();
-  const parseResult = PostAssignSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  const post = await c.var.services.posts.getById(parseResult.data.postId);
-  if (!post) return c.json({ error: "Post not found" }, 404);
-
-  await c.var.services.collections.addPost(id, parseResult.data.postId);
+  await c.var.services.collections.addPost(id, body.postId);
 
   return c.json({ success: true }, 201);
 });
@@ -167,9 +129,8 @@ collectionsApiRoutes.delete(
   "/:id/posts/:postId",
   requireAuthApi(),
   async (c) => {
-    const id = parseInt(c.req.param("id"), 10);
-    const postId = parseInt(c.req.param("postId"), 10);
-    if (isNaN(id) || isNaN(postId)) return c.json({ error: "Invalid ID" }, 400);
+    const id = parseIntParam(c.req.param("id"));
+    const postId = parseIntParam(c.req.param("postId"));
 
     await c.var.services.collections.removePost(id, postId);
 

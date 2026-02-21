@@ -8,6 +8,8 @@ import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { CONFIG_FIELDS, type ConfigKey } from "../../types.js";
 import { z } from "zod";
+import { parseValidated } from "../../lib/schemas.js";
+import { ValidationError } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -35,17 +37,7 @@ settingsApiRoutes.get("/", requireAuthApi(), async (c) => {
 
 // Update settings (requires auth)
 settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
-  const rawBody = await c.req.json();
-
-  const parseResult = UpdateSettingsSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  const updates = parseResult.data;
+  const updates = parseValidated(UpdateSettingsSchema, await c.req.json());
 
   // Filter to only editable keys
   const filteredUpdates: Partial<Record<ConfigKey, string>> = {};
@@ -60,13 +52,9 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
   }
 
   if (rejectedKeys.length > 0 && Object.keys(filteredUpdates).length === 0) {
-    return c.json(
-      {
-        error: "None of the provided keys are editable",
-        rejectedKeys,
-      },
-      400,
-    );
+    throw new ValidationError("None of the provided keys are editable", {
+      rejectedKeys,
+    });
   }
 
   if (Object.keys(filteredUpdates).length > 0) {

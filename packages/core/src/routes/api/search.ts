@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import * as sqid from "../../lib/sqid.js";
+import { ValidationError, ExternalServiceError } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -16,11 +17,11 @@ searchApiRoutes.get("/", async (c) => {
   const query = c.req.query("q");
 
   if (!query || query.trim().length === 0) {
-    return c.json({ error: "Query parameter 'q' is required" }, 400);
+    throw new ValidationError("Query parameter 'q' is required");
   }
 
   if (query.length > 200) {
-    return c.json({ error: "Query too long" }, 400);
+    throw new ValidationError("Query too long");
   }
 
   const limitParam = c.req.query("limit");
@@ -46,8 +47,9 @@ searchApiRoutes.get("/", async (c) => {
       count: results.length,
     });
   } catch (err) {
+    if (err instanceof ValidationError) throw err;
     // eslint-disable-next-line no-console -- Error logging is intentional
     console.error("Search error:", err);
-    return c.json({ error: "Search failed" }, 500);
+    throw new ExternalServiceError("Search failed");
   }
 });

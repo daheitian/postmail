@@ -407,7 +407,7 @@ Round 4    Round 5
 | ------- | --------- | ---------- | ------------------------ |
 | Round 1 | ✅ 已完成 | 2026-02-21 | 硬约束修复               |
 | Round 2 | ✅ 已完成 | 2026-02-21 | 路由分离 + Schema 统一   |
-| Round 3 | ⬜ 待开始 |            | ViewModel + Typed Errors |
+| Round 3 | ✅ 已完成 | 2026-02-21 | ViewModel + Typed Errors |
 | Round 4 | ⬜ 待开始 |            | lib/ toast + CSS tokens  |
 | Round 5 | ⬜ 待开始 |            | 事务安全 + 类型改进      |
 

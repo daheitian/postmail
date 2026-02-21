@@ -53,6 +53,7 @@ import { sitemapRoutes } from "./routes/feed/sitemap.js";
 // Middleware
 import { requireAuth } from "./middleware/auth.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
+import { errorHandler } from "./middleware/error-handler.js";
 
 import { getAvailableThemes, buildThemeStyle } from "./lib/theme.js";
 import { createStorageDriver } from "./lib/storage.js";
@@ -86,6 +87,9 @@ export function createApp(config: JantConfig = {}): App {
   const resolvedConfig: JantConfig = { ...config };
 
   const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
+
+  // Global error handler: maps DomainError → HTTP responses
+  app.onError(errorHandler);
 
   // Initialize services, auth, and config middleware
   app.use("*", async (c, next) => {

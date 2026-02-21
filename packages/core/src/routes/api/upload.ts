@@ -17,6 +17,7 @@ import {
 } from "../../lib/image.js";
 import { sse } from "../../lib/sse.js";
 import { validateUploadFile, generateStorageKey } from "../../lib/upload.js";
+import { assertFound } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -255,10 +256,7 @@ uploadApiRoutes.get("/", async (c) => {
 // Delete a file
 uploadApiRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
-  const media = await c.var.services.media.getById(id);
-  if (!media) {
-    return c.json({ error: "Not found" }, 404);
-  }
+  const media = assertFound(await c.var.services.media.getById(id), "Media");
 
   // Delete from storage
   const storage = c.var.storage;

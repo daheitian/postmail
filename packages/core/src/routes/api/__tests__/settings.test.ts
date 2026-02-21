@@ -94,7 +94,7 @@ describe("Settings API Routes", () => {
 
       expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.rejectedKeys).toContain("AUTH_SECRET");
+      expect(body.details.rejectedKeys).toContain("AUTH_SECRET");
     });
 
     it("partially applies when mixing editable and env-only keys", async () => {

@@ -5,7 +5,13 @@ import { getSiteName } from "../../lib/config.js";
 
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
-import type { Bindings, Post, Media, Collection } from "../../types.js";
+import type {
+  Bindings,
+  Post,
+  PostView,
+  Media,
+  Collection,
+} from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import {
@@ -16,12 +22,17 @@ import {
 } from "../../ui/dash/index.js";
 import * as sqid from "../../lib/sqid.js";
 import { dsRedirect } from "../../lib/sse.js";
+import {
+  toPostViewsFromPosts,
+  toPostViewFromPost,
+  createMediaContext,
+} from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const postsRoutes = new Hono<Env>();
 
-function PostsListContent({ posts }: { posts: Post[] }) {
+function PostsListContent({ posts }: { posts: PostView[] }) {
   const { t } = useLingui();
   return (
     <>
@@ -56,6 +67,7 @@ postsRoutes.get("/", async (c) => {
     excludeReplies: true,
   });
   const siteName = await getSiteName(c);
+  const postViews = toPostViewsFromPosts(posts, createMediaContext(c));
 
   return c.html(
     <DashLayout
@@ -64,7 +76,7 @@ postsRoutes.get("/", async (c) => {
       siteName={siteName}
       currentPath="/dash/posts"
     >
-      <PostsListContent posts={posts} />
+      <PostsListContent posts={postViews} />
     </DashLayout>,
   );
 });
@@ -129,13 +141,12 @@ postsRoutes.post("/", async (c) => {
   return dsRedirect(redirectUrl);
 });
 
-function ViewPostContent({ post }: { post: Post }) {
+function ViewPostContent({ post }: { post: PostView }) {
   const { t } = useLingui();
   const defaultTitle = t({
     message: "Post",
     comment: "@context: Default post title",
   });
-  const permalink = post.path ? `/${post.path}` : `/p/${sqid.encode(post.id)}`;
 
   return (
     <>
@@ -147,7 +158,7 @@ function ViewPostContent({ post }: { post: Post }) {
             message: "Edit",
             comment: "@context: Button to edit post",
           })}
-          viewHref={permalink}
+          viewHref={post.permalink}
           viewLabel={t({
             message: "View",
             comment: "@context: Button to view post",
@@ -215,6 +226,7 @@ postsRoutes.get("/:id", async (c) => {
 
   const siteName = await getSiteName(c);
   const pageTitle = post.title || "Post";
+  const postView = toPostViewFromPost(post, createMediaContext(c));
 
   return c.html(
     <DashLayout
@@ -223,7 +235,7 @@ postsRoutes.get("/:id", async (c) => {
       siteName={siteName}
       currentPath="/dash/posts"
     >
-      <ViewPostContent post={post} />
+      <ViewPostContent post={postView} />
     </DashLayout>,
   );
 });

@@ -10,6 +10,7 @@ import {
   CreatePostSchema,
   UpdatePostSchema,
   validateMediaCount,
+  parseValidated,
 } from "../../lib/schemas.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import {
@@ -17,6 +18,11 @@ import {
   getImageUrl,
   getPublicUrlForProvider,
 } from "../../lib/image.js";
+import {
+  assertFound,
+  NotFoundError,
+  ValidationError,
+} from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -55,6 +61,24 @@ function toMediaAttachment(
     position: m.position,
     mimeType: m.mimeType,
   };
+}
+
+/**
+ * Validates media IDs: checks count limit and verifies all IDs exist.
+ */
+async function validateMediaIds(
+  mediaIds: string[],
+  getByIds: (ids: string[]) => Promise<Media[]>,
+): Promise<void> {
+  const countError = validateMediaCount(mediaIds);
+  if (countError) throw new ValidationError(countError);
+
+  if (mediaIds.length > 0) {
+    const existing = await getByIds(mediaIds);
+    if (existing.length !== mediaIds.length) {
+      throw new ValidationError("One or more media IDs are invalid");
+    }
+  }
 }
 
 // List posts
@@ -97,10 +121,9 @@ postsApiRoutes.get("/", async (c) => {
 // Get single post
 postsApiRoutes.get("/:id", async (c) => {
   const id = sqid.decode(c.req.param("id"));
-  if (!id) return c.json({ error: "Invalid ID" }, 400);
+  if (!id) throw new ValidationError("Invalid ID");
 
-  const post = await c.var.services.posts.getById(id);
-  if (!post) return c.json({ error: "Not found" }, 404);
+  const post = assertFound(await c.var.services.posts.getById(id), "Post");
 
   const mediaList = await c.var.services.media.getByPostId(post.id);
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
@@ -118,33 +141,13 @@ postsApiRoutes.get("/:id", async (c) => {
 
 // Create post (requires auth)
 postsApiRoutes.post("/", requireAuthApi(), async (c) => {
-  const rawBody = await c.req.json();
+  const body = parseValidated(CreatePostSchema, await c.req.json());
 
-  // Validate request body
-  const parseResult = CreatePostSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
-    );
-  }
-
-  const body = parseResult.data;
-
-  // Validate media count
+  // Validate media IDs
   if (body.mediaIds) {
-    const mediaError = validateMediaCount(body.mediaIds);
-    if (mediaError) {
-      return c.json({ error: mediaError }, 400);
-    }
-
-    // Verify all media IDs exist
-    if (body.mediaIds.length > 0) {
-      const existing = await c.var.services.media.getByIds(body.mediaIds);
-      if (existing.length !== body.mediaIds.length) {
-        return c.json({ error: "One or more media IDs are invalid" }, 400);
-      }
-    }
+    await validateMediaIds(body.mediaIds, (ids) =>
+      c.var.services.media.getByIds(ids),
+    );
   }
 
   const post = await c.var.services.posts.create({
@@ -190,53 +193,36 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
 // Update post (requires auth)
 postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   const id = sqid.decode(c.req.param("id"));
-  if (!id) return c.json({ error: "Invalid ID" }, 400);
+  if (!id) throw new ValidationError("Invalid ID");
 
-  const rawBody = await c.req.json();
+  const body = parseValidated(UpdatePostSchema, await c.req.json());
 
-  // Validate request body
-  const parseResult = UpdatePostSchema.safeParse(rawBody);
-  if (!parseResult.success) {
-    return c.json(
-      { error: "Validation failed", details: parseResult.error.flatten() },
-      400,
+  // Validate media IDs if provided
+  if (body.mediaIds !== undefined) {
+    await validateMediaIds(body.mediaIds, (ids) =>
+      c.var.services.media.getByIds(ids),
     );
   }
 
-  const body = parseResult.data;
-
-  // Validate media count if mediaIds is provided
-  if (body.mediaIds !== undefined) {
-    const mediaError = validateMediaCount(body.mediaIds);
-    if (mediaError) {
-      return c.json({ error: mediaError }, 400);
-    }
-
-    // Verify all media IDs exist
-    if (body.mediaIds.length > 0) {
-      const existing = await c.var.services.media.getByIds(body.mediaIds);
-      if (existing.length !== body.mediaIds.length) {
-        return c.json({ error: "One or more media IDs are invalid" }, 400);
-      }
-    }
-  }
-
-  const post = await c.var.services.posts.update(id, {
-    format: body.format,
-    title: body.title,
-    body: body.body,
-    path: body.path,
-    status: body.status,
-    featured: body.featured,
-    pinned: body.pinned,
-    url: body.url,
-    quoteText: body.quoteText,
-    rating: body.rating || undefined,
-    collectionIds: body.collectionIds?.length ? body.collectionIds : undefined,
-    publishedAt: body.publishedAt,
-  });
-
-  if (!post) return c.json({ error: "Not found" }, 404);
+  const post = assertFound(
+    await c.var.services.posts.update(id, {
+      format: body.format,
+      title: body.title,
+      body: body.body,
+      path: body.path,
+      status: body.status,
+      featured: body.featured,
+      pinned: body.pinned,
+      url: body.url,
+      quoteText: body.quoteText,
+      rating: body.rating || undefined,
+      collectionIds: body.collectionIds?.length
+        ? body.collectionIds
+        : undefined,
+      publishedAt: body.publishedAt,
+    }),
+    "Post",
+  );
 
   // Update media attachments if provided (including empty array to clear)
   if (body.mediaIds !== undefined) {
@@ -260,13 +246,13 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 // Delete post (requires auth)
 postsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
   const id = sqid.decode(c.req.param("id"));
-  if (!id) return c.json({ error: "Invalid ID" }, 400);
+  if (!id) throw new ValidationError("Invalid ID");
 
   // Detach media before deleting
   await c.var.services.media.detachFromPost(id);
 
   const success = await c.var.services.posts.delete(id);
-  if (!success) return c.json({ error: "Not found" }, 404);
+  if (!success) throw new NotFoundError("Post");
 
   return c.json({ success: true });
 });

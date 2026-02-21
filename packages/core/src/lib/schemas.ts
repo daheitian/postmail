@@ -16,6 +16,7 @@ import {
   NAV_ITEM_TYPES,
   MAX_MEDIA_ATTACHMENTS,
 } from "../types.js";
+import { ValidationError } from "./errors.js";
 
 /**
  * Post format enum schema
@@ -288,4 +289,23 @@ export function validateMediaCount(mediaIds: string[]): string | null {
     return `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} media attachments`;
   }
   return null;
+}
+
+/**
+ * Parse and validate data against a Zod schema, throwing ValidationError on failure.
+ *
+ * @param schema - Zod schema to validate against
+ * @param data - Data to validate
+ * @returns Validated data
+ * @example
+ * ```ts
+ * const body = parseValidated(CreatePageSchema, await c.req.json());
+ * ```
+ */
+export function parseValidated<T>(schema: z.ZodSchema<T>, data: unknown): T {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    throw new ValidationError("Validation failed", result.error.flatten());
+  }
+  return result.data;
 }

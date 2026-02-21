@@ -19,6 +19,7 @@ import { createNavItemService } from "../../services/navigation.js";
 import { createAuthService } from "../../services/auth.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
+import { errorHandler } from "../../middleware/error-handler.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -55,6 +56,9 @@ export function createTestApp(options: TestAppOptions = {}) {
   };
 
   const app = new Hono<Env>();
+
+  // Global error handler: maps DomainError → HTTP responses
+  app.onError(errorHandler);
 
   // Inject env bindings and services middleware
   app.use("*", async (c, next) => {
