@@ -3,7 +3,7 @@
 > 目标：让代码库与 AGENTS.md 的设计哲学保持一致。
 > 分支：`feat/claude-reflactor`
 > 创建日期：2026-02-20
-> 更新日期：2026-02-20（v2 — 合并交叉审计结论）
+> 更新日期：2026-02-21
 > 状态：**计划阶段 — 待审批**
 
 ---
@@ -23,117 +23,11 @@
 | Tokens over raw values    | ⚠️ 少量         | ~20 处骨架屏硬编码                                              |
 | Cohesion over small files | ⚠️ lib/ 混杂    | 1 个结构性问题（toast 重复 4 次）                               |
 | Transaction safety        | ⚠️ 缺失         | 10+ 处多步写入无事务保护                                        |
-| i18n（用户需求）          | ⚠️ 单一 catalog | 需要按功能拆分                                                  |
 | 文档一致性                | ⚠️ 漂移         | `docs/datastar.md` 含 `@/` 别名示例                             |
-
-### v1 → v2 审计修正说明
-
-初版审计遗漏了以下问题，经交叉验证后确认并纳入计划：
-
-1. **`auth/reset.tsx` 含 raw SQL**（行 206-228）：直接执行 `SELECT`/`UPDATE`/`DELETE` SQL 语句，严重违反 "No DB in routes" 硬约束
-2. **`AppVariables` 反向依赖**：定义在 `app.tsx`（组合根），被 35 个文件 import，违反 `coding-standards.md` 的 "Forbidden Edges" 规则
-3. **Typed domain errors 未实现**：`coding-standards.md` 定义了 `ValidationError → 400`、`NotFoundError → 404` 等映射，但代码中全部使用 ad-hoc 字符串响应
-4. **Schema 重复与漂移**：`lib/schemas.ts` 中的 slug regex 验证在 route 重定义时被丢失，导致路由接受无效 slug
-5. **Upload 管线重复**：文件校验、storage key 生成逻辑在 `routes/api/upload.ts` 和 `routes/dash/settings.tsx` 各实现一次
-6. **Service 层无事务**：10+ 处多步写入操作（create + position、sync collections、reorder）无 `db.batch()` 或 `db.transaction()` 保护
-7. **文档漂移**：`docs/datastar.md` 行 47、66 使用 `@/` 别名示例
 
 ---
 
 ## 重构轮次
-
-### Round 0：i18n 按功能拆分 catalog
-
-**优先级：最高（用户明确需求）**
-**类型：refactor（调整结构，保留逻辑）**
-
-#### 问题
-
-当前所有 217 条翻译字符串在一个 `en.po` 文件中（1566 行）。多分支并行开发时，不同功能的翻译修改都集中在同一文件，导致频繁冲突。
-
-#### 方案
-
-将单一 catalog 拆分为按功能/页面划分的多个 catalog，利用 lingui 的 `{name}` 通配符自动匹配目录名。
-
-**目标结构：**
-
-```
-src/i18n/locales/
-├── en/
-│   ├── auth.po          # routes/auth/ + 相关 UI
-│   ├── compose.po       # routes/compose + ui/compose/
-│   ├── dash.po          # routes/dash/ + ui/dash/
-│   ├── pages.po         # routes/pages/ + ui/pages/
-│   ├── feed.po          # routes/feed/
-│   └── common.po        # ui/shared/ + ui/layouts/ + lib/ 中的公共字符串
-├── zh-Hans/
-│   └── (同上结构)
-└── zh-Hant/
-    └── (同上结构)
-```
-
-#### 具体步骤
-
-1. **分析字符串归属**：根据 `@context:` 注释和使用文件，将 217 条字符串归类到对应 catalog
-2. **修改 `lingui.config.ts`**：配置多 catalog，使用 `{name}` 通配符
-   ```ts
-   catalogs: [
-     {
-       path: "src/i18n/locales/{locale}/auth",
-       include: ["src/routes/auth/**", "src/ui/auth/**"],
-     },
-     {
-       path: "src/i18n/locales/{locale}/compose",
-       include: ["src/routes/compose.*", "src/ui/compose/**"],
-     },
-     {
-       path: "src/i18n/locales/{locale}/dash",
-       include: ["src/routes/dash/**", "src/ui/dash/**"],
-     },
-     {
-       path: "src/i18n/locales/{locale}/pages",
-       include: ["src/routes/pages/**", "src/ui/pages/**"],
-     },
-     {
-       path: "src/i18n/locales/{locale}/feed",
-       include: ["src/routes/feed/**", "src/ui/feed/**"],
-     },
-     {
-       path: "src/i18n/locales/{locale}/common",
-       include: [
-         "src/ui/shared/**",
-         "src/ui/layouts/**",
-         "src/lib/**",
-         "src/middleware/**",
-       ],
-     },
-   ];
-   ```
-3. **修改 i18n 运行时加载**：更新 `i18n.ts` 和 `middleware.ts`，将多个 catalog 合并加载（lingui 支持 `i18n.load(locale, mergedMessages)`）
-4. **运行 `pnpm i18n:extract`** 验证字符串正确分布到各 catalog
-5. **迁移现有翻译**：将 `zh-Hans.po` 和 `zh-Hant.po` 中的翻译按对应 ID 拆分到新文件
-6. **运行 `pnpm i18n:compile`** 验证编译通过
-7. **删除旧的单一 `.po` 和 `.ts` 文件**
-8. **更新 AGENTS.md** 的 i18n 章节，说明新的 catalog 结构
-
-#### 涉及文件
-
-| 文件                     | 操作                                  |
-| ------------------------ | ------------------------------------- |
-| `lingui.config.ts`       | 重写 catalog 配置                     |
-| `src/i18n/i18n.ts`       | 修改 catalog 加载逻辑，合并多 catalog |
-| `src/i18n/middleware.ts` | 可能需要适配新加载方式                |
-| `src/i18n/locales/*.po`  | 删除旧文件，生成新的分 catalog 文件   |
-| `src/i18n/locales/*.ts`  | 删除旧编译文件，生成新文件            |
-| `AGENTS.md`              | 更新 i18n 章节                        |
-
-#### 风险
-
-- lingui 的多 catalog 配置需要测试与当前 SWC 插件的兼容性
-- 合并加载多个编译文件的性能影响（预计极小，只有 6 个小文件）
-- 需要确认 hash-based message ID 在拆分后是否稳定（应该稳定，ID 基于消息内容生成）
-
----
 
 ### Round 1：硬约束修复
 
@@ -432,23 +326,22 @@ Service 层存在大量多步写入操作，全部无 `db.batch()` 或 `db.trans
 ## 执行顺序与依赖关系
 
 ```
-Round 0 (i18n)          Round 1 (硬约束修复)
-    ↓                       ↓
-    ├───────────┬───────────┤
-                ↓
-        Round 2 (路由分离 + Schema)
-                ↓
-        Round 3 (ViewModel + Errors)
-                ↓
-    ┌───────────┴───────────┐
-    ↓                       ↓
-Round 4 (lib/CSS)    Round 5 (事务+类型)
+Round 1 (硬约束修复)
+        ↓
+Round 2 (路由分离 + Schema)
+        ↓
+Round 3 (ViewModel + Errors)
+        ↓
+  ┌─────┴─────┐
+  ↓           ↓
+Round 4    Round 5
+(lib/CSS)  (事务+类型)
 ```
 
-- **Round 0 和 Round 1 可以并行**（互不影响）
-- **Round 2 依赖 Round 1**（AppVariables 迁移后再改路由，避免重复修改 import）
+- **Round 1 必须最先执行**（修复硬约束违规，AppVariables 迁移后再改路由避免重复修改 import）
+- **Round 2 依赖 Round 1**
 - **Round 3 依赖 Round 2**（service 方法在 Round 2 创建后，Round 3 添加 error typing）
-- **Round 4 和 Round 5 互相独立**，均依赖 Round 2 完成
+- **Round 4 和 Round 5 互相独立**，均依赖 Round 3 完成
 
 ---
 
@@ -459,7 +352,6 @@ Round 4 (lib/CSS)    Round 5 (事务+类型)
 1. `mise run test` — 全部测试通过
 2. `mise run lint` — 无 lint 错误
 3. `mise run build` — 构建成功
-4. 对于 Round 0：额外执行 `pnpm i18n:extract && pnpm i18n:compile` 验证 i18n 工具链
 
 ---
 
@@ -491,7 +383,6 @@ Round 4 (lib/CSS)    Round 5 (事务+类型)
 - [ ] 是否提升了边界清晰度（而非仅减少行数）？
 - [ ] 是否降低了并发/事务风险？
 - [ ] 是否保持或增强了类型与错误语义一致性？
-- [ ] 是否减少了未来多分支冲突（尤其 i18n 文件）？
 - [ ] 是否补齐了对应测试与文档更新？
 
 ---
@@ -500,6 +391,7 @@ Round 4 (lib/CSS)    Round 5 (事务+类型)
 
 以下内容经审计确认合规或不适合本次处理：
 
+- ✅ **i18n** — 已独立解决
 - ✅ 全部使用相对 import（无 `@/` alias）— 代码中合规，仅文档有漂移（Round 1 修复）
 - ✅ UI 层不 import services 或 db
 - ✅ Services 不 import routes
@@ -513,7 +405,6 @@ Round 4 (lib/CSS)    Round 5 (事务+类型)
 
 | 轮次    | 状态      | 完成日期 | 备注                     |
 | ------- | --------- | -------- | ------------------------ |
-| Round 0 | ⬜ 待开始 |          | i18n catalog 拆分        |
 | Round 1 | ⬜ 待开始 |          | 硬约束修复               |
 | Round 2 | ⬜ 待开始 |          | 路由分离 + Schema 统一   |
 | Round 3 | ⬜ 待开始 |          | ViewModel + Typed Errors |
