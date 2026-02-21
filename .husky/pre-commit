@@ -1,7 +1,1 @@
 pnpm exec lint-staged
-
-# Auto-extract & compile i18n catalogs when source files change
-if git diff --cached --name-only | grep -qE '\.tsx?$'; then
-  pnpm --filter @jant/core i18n:build
-  git add packages/core/src/i18n/locales/
-fi

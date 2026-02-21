@@ -4,6 +4,43 @@ import swc from "unplugin-swc";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "path";
 import { readFileSync, writeFileSync, readdirSync } from "fs";
+// @create-jant: @remove-start
+import { exec } from "child_process";
+// @create-jant: @remove-end
+
+// @create-jant: @remove-start
+/**
+ * Auto-extract and compile i18n catalogs when core source files change.
+ * Debounced to 500ms so rapid saves don't spawn multiple processes.
+ */
+function linguiAutoExtract(): Plugin {
+  const coreDir = resolve(__dirname, "../../packages/core");
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let running = false;
+
+  function run() {
+    if (running) return;
+    running = true;
+    exec("pnpm i18n:build", { cwd: coreDir }, (err) => {
+      running = false;
+      if (err) {
+        console.error("[i18n] extract failed:", err.message);
+      }
+    });
+  }
+
+  return {
+    name: "lingui-auto-extract",
+    apply: "serve",
+    hotUpdate({ file }) {
+      if (!file.endsWith(".ts") && !file.endsWith(".tsx")) return;
+      if (file.includes("/i18n/locales/")) return;
+      clearTimeout(timer);
+      timer = setTimeout(run, 500);
+    },
+  };
+}
+// @create-jant: @remove-end
 
 /**
  * Trigger full page reload when server/worker code changes.
@@ -126,6 +163,7 @@ export default defineConfig({
     port: 9019,
   },
 
+  // @create-jant: @remove-start
   // Exclude @lingui/react from dependency optimization
   // Why: Source code uses `@lingui/react/macro` (for Lingui SWC plugin recognition),
   // but SWC rewrites imports to `@jant/core/i18n` at compile time (see runtimeModules config).
@@ -134,6 +172,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["@lingui/react"],
   },
+  // @create-jant: @remove-end
 
   environments: {
     client: {
@@ -149,6 +188,9 @@ export default defineConfig({
 
   plugins: [
     tailwindcss(),
+    // @create-jant: @remove-start
+    linguiAutoExtract(),
+    // @create-jant: @remove-end
     ssrReload(),
     swc.vite({
       jsc: {
@@ -161,6 +203,7 @@ export default defineConfig({
           },
         },
         target: "es2022",
+        // @create-jant: @remove-start
         experimental: {
           plugins: [
             [
@@ -174,6 +217,7 @@ export default defineConfig({
             ],
           ],
         },
+        // @create-jant: @remove-end
       },
       module: { type: "es6" },
     }),

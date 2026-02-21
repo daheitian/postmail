@@ -33,7 +33,7 @@ pnpm --filter create-jant test-template
 # =============================================================================
 [tasks.dev]
 description = "Start development server"
-run = "pnpm --filter jant-site dev"
+run = "pnpm --filter @jant/core i18n:build && pnpm --filter jant-site dev"
 
 [tasks.build-lib]
 alias = "bl"

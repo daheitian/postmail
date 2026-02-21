@@ -220,8 +220,9 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     if (pkg.dependencies?.["@jant/core"] === "workspace:*") {
       pkg.dependencies["@jant/core"] = `^${CORE_VERSION}`;
     }
-    // Remove monorepo-only scripts
+    // Remove monorepo-only scripts and dependencies
     delete pkg.scripts["dev:debug"];
+    delete pkg.devDependencies?.["@lingui/swc-plugin"];
 
     // Adapt for non-pnpm package managers
     if (packageManager !== "pnpm") {
