@@ -32,7 +32,7 @@ homeRoutes.get("/", async (c) => {
       status: "published",
       excludeReplies: true,
     });
-    const mediaCtx = createMediaContext(c);
+    const mediaCtx = createMediaContext(c.var.appConfig);
     const postViews = toPostViewsFromPosts(posts, mediaCtx);
     const items = postViews.map((post) => ({ post }));
 
@@ -57,7 +57,7 @@ homeRoutes.get("/", async (c) => {
     status: "published",
     excludeReplies: true,
   });
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(c.var.appConfig);
   const pinnedItems = toPostViewsFromPosts(pinnedPosts, mediaCtx);
 
   return renderPublicPage(c, {

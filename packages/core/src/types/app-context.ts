@@ -9,22 +9,18 @@
 import type { Hono } from "hono";
 import type { Services } from "../services/index.js";
 import type { Auth } from "../auth.js";
-import type { JantConfig } from "./config.js";
+import type { AppConfig } from "./config.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { Bindings } from "./bindings.js";
 
 export interface AppVariables {
   services: Services;
   auth: Auth;
-  config: JantConfig;
+  appConfig: AppConfig;
   allSettings: Record<string, string>;
   themeStyle: string;
-  customCSS: string;
   isAuthenticated: boolean;
   storage: StorageDriver | null;
-  faviconUrl?: string;
-  faviconVersion?: string;
-  noindex?: boolean;
 }
 
 export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;

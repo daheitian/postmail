@@ -12,7 +12,6 @@ import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { PageForm, ActionButtons, DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
-import { getSiteName } from "../../lib/config.js";
 import { CreatePageSchema } from "../../lib/schemas.js";
 import { UnifiedPagesContent } from "../../ui/dash/pages/UnifiedPagesContent.js";
 import { LinkFormContent } from "../../ui/dash/pages/LinkFormContent.js";
@@ -112,7 +111,7 @@ pagesRoutes.get("/", async (c) => {
     c.var.services.navItems.list(),
     c.var.services.pages.listNotInNav(),
   ]);
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
 
   return c.html(
     <DashLayout
@@ -127,7 +126,7 @@ pagesRoutes.get("/", async (c) => {
 });
 
 pagesRoutes.get("/new", async (c) => {
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   return c.html(
     <DashLayout
       c={c}
@@ -141,7 +140,7 @@ pagesRoutes.get("/new", async (c) => {
 });
 
 pagesRoutes.get("/links/new", async (c) => {
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   return c.html(
     <DashLayout
       c={c}
@@ -209,7 +208,7 @@ pagesRoutes.get("/links/:id/edit", async (c) => {
   const item = await c.var.services.navItems.getById(id);
   if (!item) return c.notFound();
 
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   return c.html(
     <DashLayout
       c={c}
@@ -314,7 +313,7 @@ pagesRoutes.get("/:id", async (c) => {
   const page = await c.var.services.pages.getById(id);
   if (!page) return c.notFound();
 
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   return c.html(
     <DashLayout
       c={c}
@@ -334,7 +333,7 @@ pagesRoutes.get("/:id/edit", async (c) => {
   const page = await c.var.services.pages.getById(id);
   if (!page) return c.notFound();
 
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   return c.html(
     <DashLayout
       c={c}

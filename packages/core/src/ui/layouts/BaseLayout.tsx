@@ -42,16 +42,13 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   // Read lang from Hono context if available, otherwise use prop or default
   const resolvedLang = lang ?? (c ? c.get("lang") : "en");
 
-  // Read faviconUrl from context when not provided as prop (fixes dashboard favicon)
+  // Read favicon/noindex from appConfig when not provided as prop
+  const appConfig = c ? c.get("appConfig") : undefined;
   const resolvedFaviconUrl =
-    faviconUrl ?? (c ? c.get("faviconUrl") : undefined);
-
-  // Read faviconVersion from context when not provided as prop
+    faviconUrl ?? (appConfig?.siteAvatarUrl || undefined);
   const resolvedFaviconVersion =
-    faviconVersion ?? (c ? c.get("faviconVersion") : undefined);
-
-  // Read noindex from context when not provided as prop
-  const resolvedNoindex = noindex ?? (c ? c.get("noindex") : undefined);
+    faviconVersion ?? (appConfig?.faviconVersion || undefined);
+  const resolvedNoindex = noindex ?? appConfig?.noindex;
 
   // Automatically wrap with I18nProvider if Context is provided
   const content = c ? <I18nProvider c={c}>{children}</I18nProvider> : children;
@@ -59,8 +56,8 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   // Read theme style from Hono context if available
   const themeStyle = c ? c.get("themeStyle") : undefined;
 
-  // Read custom CSS from Hono context if available
-  const customCSS = c ? c.get("customCSS") : undefined;
+  // Read custom CSS from appConfig
+  const customCSS = appConfig?.customCSS || undefined;
 
   // Check authentication status for data attribute
   const isAuthenticated = c ? c.get("isAuthenticated") : false;

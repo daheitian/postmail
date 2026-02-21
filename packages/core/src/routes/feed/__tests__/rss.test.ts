@@ -6,6 +6,7 @@ import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createPostService } from "../../../services/post.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createMediaService } from "../../../services/media.js";
+import { resolveConfig } from "../../../lib/resolve-config.js";
 import { rssRoutes } from "../rss.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -22,14 +23,16 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
   const app = new Hono<Env>();
 
   app.use("*", async (c, next) => {
-    c.env = {
+    const env = {
       SITE_URL: "http://localhost:9019",
       ...envOverrides,
     } as Bindings;
+    c.env = env;
 
     c.set("services", services as AppVariables["services"]);
-    c.set("config", {});
-    c.set("allSettings", await services.settings.getAll());
+    const allSettings = await services.settings.getAll();
+    c.set("allSettings", allSettings);
+    c.set("appConfig", resolveConfig(env, allSettings));
     await next();
   });
 

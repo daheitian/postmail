@@ -13,8 +13,6 @@ import { createMediaContext, toPostView, toPostViews } from "./view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-const DEFAULT_PAGE_SIZE = 20;
-
 /**
  * Result from assembling a timeline page.
  */
@@ -30,7 +28,7 @@ export interface TimelineResult {
  * Fetches posts using offset-based pagination, batch-loads media, identifies
  * threads, and returns render-ready `TimelineItemView[]` with page info.
  *
- * @param c - Hono context (provides services + env)
+ * @param c - Hono context (provides services + appConfig)
  * @param options - Optional page number (1-indexed, defaults to 1)
  * @returns Assembled timeline items with pagination info
  *
@@ -44,9 +42,7 @@ export async function assembleTimeline(
   c: Context<Env>,
   options?: { page?: number },
 ): Promise<TimelineResult> {
-  const pageSize =
-    parseInt(c.env.PAGE_SIZE ?? String(DEFAULT_PAGE_SIZE), 10) ||
-    DEFAULT_PAGE_SIZE;
+  const pageSize = c.var.appConfig.pageSize;
 
   const page = Math.max(1, options?.page ?? 1);
   const offset = (page - 1) * pageSize;
@@ -73,7 +69,7 @@ export async function assembleTimeline(
   // Batch load media attachments
   const postIds = posts.map((p) => p.id);
   const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(c.var.appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
     mediaCtx.r2PublicUrl,

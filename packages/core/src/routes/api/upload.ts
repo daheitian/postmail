@@ -190,21 +190,20 @@ uploadApiRoutes.post("/", async (c) => {
       mimeType: file.type,
       size: file.size,
       storageKey,
-      provider: c.env.STORAGE_DRIVER || "r2",
+      provider: c.var.appConfig.storageDriver,
     });
 
     // SSE response for Datastar
     if (wantsSSE(c)) {
-      const provider = c.env.STORAGE_DRIVER || "r2";
       const mediaPublicUrl = getPublicUrlForProvider(
-        provider,
-        c.env.R2_PUBLIC_URL,
-        c.env.S3_PUBLIC_URL,
+        c.var.appConfig.storageDriver,
+        c.var.appConfig.r2PublicUrl,
+        c.var.appConfig.s3PublicUrl,
       );
       const cardHtml = renderMediaCard(
         media,
         mediaPublicUrl,
-        c.env.IMAGE_TRANSFORM_URL,
+        c.var.appConfig.imageTransformUrl,
       );
 
       return sse(c, async (stream) => {
@@ -225,11 +224,10 @@ uploadApiRoutes.post("/", async (c) => {
     }
 
     // JSON response for API clients
-    const provider = c.env.STORAGE_DRIVER || "r2";
     const mediaPublicUrl = getPublicUrlForProvider(
-      provider,
-      c.env.R2_PUBLIC_URL,
-      c.env.S3_PUBLIC_URL,
+      c.var.appConfig.storageDriver,
+      c.var.appConfig.r2PublicUrl,
+      c.var.appConfig.s3PublicUrl,
     );
     const publicUrl = getMediaUrl(storageKey, mediaPublicUrl);
     return c.json({
@@ -263,8 +261,7 @@ uploadApiRoutes.post("/", async (c) => {
 uploadApiRoutes.get("/", async (c) => {
   const limit = parseInt(c.req.query("limit") ?? "50", 10);
   const mediaList = await c.var.services.media.list({ limit });
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const { r2PublicUrl, s3PublicUrl } = c.var.appConfig;
 
   return c.json({
     media: mediaList.map((m) => ({

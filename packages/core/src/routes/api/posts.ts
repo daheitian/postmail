@@ -98,9 +98,7 @@ postsApiRoutes.get("/", async (c) => {
   // Batch load media for all posts
   const postIds = posts.map((p) => p.id);
   const mediaMap = await c.var.services.media.getByPostIds(postIds);
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
 
   return c.json({
     posts: posts.map((p) => ({
@@ -126,9 +124,7 @@ postsApiRoutes.get("/:id", async (c) => {
   const post = assertFound(await c.var.services.posts.getById(id), "Post");
 
   const mediaList = await c.var.services.media.getByPostId(post.id);
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
 
   return c.json({
     ...post,
@@ -174,9 +170,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   }
 
   const mediaList = await c.var.services.media.getByPostId(post.id);
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
 
   return c.json(
     {
@@ -230,9 +224,7 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   }
 
   const mediaList = await c.var.services.media.getByPostId(post.id);
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
 
   return c.json({
     ...post,

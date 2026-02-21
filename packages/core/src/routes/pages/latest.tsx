@@ -41,7 +41,7 @@ latestRoutes.get("/", async (c) => {
     status: "published",
     excludeReplies: true,
   });
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(c.var.appConfig);
   const pinnedItems = toPostViewsFromPosts(pinnedPosts, mediaCtx);
 
   return renderPublicPage(c, {

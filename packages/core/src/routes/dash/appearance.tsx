@@ -11,7 +11,6 @@ import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { getI18n } from "../../i18n/index.js";
-import { getSiteName, getConfigFallback } from "../../lib/config.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { getAvailableThemes } from "../../lib/theme.js";
 import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
@@ -28,11 +27,11 @@ export const appearanceRoutes = new Hono<Env>();
 // ===========================================================================
 
 appearanceRoutes.get("/", async (c) => {
-  const siteName = getSiteName(c);
-  const defaultThemeId = getConfigFallback(c, "DEFAULT_THEME");
+  const siteName = c.var.appConfig.siteName;
+  const defaultThemeId = c.var.appConfig.fallbacks.defaultTheme;
   const currentThemeId =
     c.var.allSettings[SETTINGS_KEYS.THEME] ?? defaultThemeId;
-  const themes = getAvailableThemes(c.var.config);
+  const themes = getAvailableThemes();
   const saved = c.req.query("saved") !== undefined;
 
   return c.html(
@@ -52,7 +51,7 @@ appearanceRoutes.post("/", async (c) => {
   const i18n = getI18n(c);
   const body = await c.req.json<{ theme: string }>();
   const { settings } = c.var.services;
-  const themes = getAvailableThemes(c.var.config);
+  const themes = getAvailableThemes();
 
   const validTheme = themes.find((t) => t.id === body.theme);
   if (!validTheme) {
@@ -67,7 +66,7 @@ appearanceRoutes.post("/", async (c) => {
     );
   }
 
-  const defaultThemeId = getConfigFallback(c, "DEFAULT_THEME");
+  const defaultThemeId = c.var.appConfig.fallbacks.defaultTheme;
   if (validTheme.id === defaultThemeId) {
     await settings.remove(SETTINGS_KEYS.THEME);
   } else {
@@ -82,7 +81,7 @@ appearanceRoutes.post("/", async (c) => {
 // ===========================================================================
 
 appearanceRoutes.get("/fonts", async (c) => {
-  const siteName = getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   const currentFontThemeId = c.var.allSettings["FONT_THEME"] ?? "default";
   const saved = c.req.query("saved") !== undefined;
 
@@ -135,7 +134,7 @@ appearanceRoutes.post("/font-theme", async (c) => {
 // ===========================================================================
 
 appearanceRoutes.get("/advanced", async (c) => {
-  const siteName = getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   const customCSS = c.var.allSettings[SETTINGS_KEYS.CUSTOM_CSS] ?? "";
 
   return c.html(

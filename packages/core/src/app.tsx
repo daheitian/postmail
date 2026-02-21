@@ -7,8 +7,7 @@ import { createDatabase } from "./db/index.js";
 import { createServices } from "./services/index.js";
 import { createAuth } from "./auth.js";
 import { i18nMiddleware } from "./i18n/index.js";
-import type { Bindings, JantConfig } from "./types.js";
-import { SETTINGS_KEYS } from "./lib/constants.js";
+import type { Bindings } from "./types.js";
 
 // Routes - Auth
 import { setupRoutes } from "./routes/auth/setup.js";
@@ -56,10 +55,11 @@ import { requireAuth } from "./middleware/auth.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
 import { errorHandler } from "./middleware/error-handler.js";
 
-import { getAvailableThemes, buildThemeStyle } from "./lib/theme.js";
+import { buildThemeStyle } from "./lib/theme.js";
 import { createStorageDriver } from "./lib/storage.js";
+import { BUILTIN_COLOR_THEMES } from "./ui/color-themes.js";
 import { BUILTIN_FONT_THEMES } from "./ui/font-themes.js";
-import { getMediaUrl, getPublicUrlForProvider } from "./lib/image.js";
+import { resolveConfig } from "./lib/resolve-config.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
 import { type AppVariables, type App } from "./types/app-context.js";
 
@@ -68,31 +68,22 @@ export type { AppVariables, App };
 /**
  * Create a Jant application
  *
- * @param config - Optional configuration
  * @returns Hono app instance
- *
- * Site settings (name, description, language) should be configured via
- * environment variables (SITE_NAME, SITE_DESCRIPTION, SITE_LANGUAGE).
- * They can also be set in the dashboard, which stores them in the database.
  *
  * @example
  * ```typescript
  * import { createApp } from "@jant/core";
  *
- * export default createApp({
- *   cssVariables: { "--card-radius": "0" },
- * });
+ * export default createApp();
  * ```
  */
-export function createApp(config: JantConfig = {}): App {
-  const resolvedConfig: JantConfig = { ...config };
-
+export function createApp(): App {
   const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
   // Global error handler: maps DomainError → HTTP responses
   app.onError(errorHandler);
 
-  // Initialize services, auth, and config middleware
+  // Initialize services, auth, config, theme — single middleware
   app.use("*", async (c, next) => {
     // Use withSession() to enable D1 Read Replication
     const session = c.env.DB.withSession();
@@ -102,7 +93,6 @@ export function createApp(config: JantConfig = {}): App {
     const db = createDatabase(session as unknown as D1Database);
     const services = createServices(db, session as unknown as D1Database);
     c.set("services", services);
-    c.set("config", resolvedConfig);
     c.set("storage", createStorageDriver(c.env));
 
     if (!c.env.AUTH_SECRET) {
@@ -123,31 +113,20 @@ export function createApp(config: JantConfig = {}): App {
       c.set("auth", auth);
     }
 
-    await next();
-  });
-
-  // Onboarding gate — redirect to /setup if not yet initialized
-  app.use("*", requireOnboarding());
-
-  // Theme middleware - resolve active color theme, font theme, custom CSS, and auth state
-  app.use("*", async (c, next) => {
-    const allSettings = await c.var.services.settings.getAll();
+    // Resolve all config from DB + ENV + defaults
+    const allSettings = await services.settings.getAll();
     c.set("allSettings", allSettings);
-    const themeId = allSettings[SETTINGS_KEYS.THEME] ?? null;
-    const fontThemeId = allSettings["FONT_THEME"] ?? null;
-    const customCSS = allSettings[SETTINGS_KEYS.CUSTOM_CSS] ?? null;
-    const noindexValue = allSettings["NOINDEX"] ?? null;
-    const avatarKey = allSettings["SITE_AVATAR"] ?? null;
-    const faviconVersion = allSettings["SITE_FAVICON_VERSION"] ?? null;
-    const themes = getAvailableThemes(resolvedConfig);
-    const defaultThemeId = c.env.DEFAULT_THEME || "halloween";
-    const activeTheme = themes.find(
-      (t) => t.id === (themeId ?? defaultThemeId),
+    const appConfig = resolveConfig(c.env, allSettings);
+    c.set("appConfig", appConfig);
+
+    // Resolve active color theme
+    const activeTheme = BUILTIN_COLOR_THEMES.find(
+      (t) => t.id === (appConfig.themeId || appConfig.defaultThemeId),
     );
 
     // Build font override CSS variables
-    const fontTheme = fontThemeId
-      ? BUILTIN_FONT_THEMES.find((f) => f.id === fontThemeId)
+    const fontTheme = appConfig.fontThemeId
+      ? BUILTIN_FONT_THEMES.find((f) => f.id === appConfig.fontThemeId)
       : undefined;
     const fontOverrides: Record<string, string> = {};
     if (fontTheme) {
@@ -155,39 +134,17 @@ export function createApp(config: JantConfig = {}): App {
       fontOverrides["--font-heading"] = fontTheme.headingFontFamily;
     }
 
-    const themeStyle = buildThemeStyle(activeTheme, {
-      ...resolvedConfig.cssVariables,
-      ...fontOverrides,
-    });
+    const themeStyle = buildThemeStyle(activeTheme, fontOverrides);
     c.set("themeStyle", themeStyle);
-    c.set("customCSS", customCSS ?? "");
-
-    // Noindex
-    c.set("noindex", noindexValue === "true");
-
-    // Resolve favicon from avatar storage key
-    if (avatarKey) {
-      const publicUrl = getPublicUrlForProvider(
-        c.env.STORAGE_DRIVER || "r2",
-        c.env.R2_PUBLIC_URL,
-        c.env.S3_PUBLIC_URL,
-      );
-      c.set("faviconUrl", getMediaUrl(avatarKey, publicUrl));
-    }
-
-    // Favicon version for cache-busting
-    if (faviconVersion) {
-      c.set("faviconVersion", faviconVersion);
-    }
 
     // Check auth state for data-authenticated attribute on <body>
     let isAuthenticated = false;
     if (c.var.auth) {
       try {
-        const session = await c.var.auth.api.getSession({
+        const authSession = await c.var.auth.api.getSession({
           headers: c.req.raw.headers,
         });
-        isAuthenticated = !!session;
+        isAuthenticated = !!authSession;
       } catch {
         // Not authenticated
       }
@@ -196,6 +153,9 @@ export function createApp(config: JantConfig = {}): App {
 
     await next();
   });
+
+  // Onboarding gate — redirect to /setup if not yet initialized
+  app.use("*", requireOnboarding());
 
   // i18n middleware
   app.use("*", i18nMiddleware());
@@ -230,8 +190,7 @@ export function createApp(config: JantConfig = {}): App {
   app.get("/health", (c) =>
     c.json({
       status: "ok",
-      auth: c.env.AUTH_SECRET ? "configured" : "missing",
-      authSecretLength: c.env.AUTH_SECRET?.length ?? 0,
+      auth: c.var.appConfig.authConfigured ? "configured" : "missing",
     }),
   );
 

@@ -251,18 +251,7 @@ body:not([data-authenticated]) .compose-prompt {
 
 ### Code-Level Customization
 
-Pass CSS variable overrides or custom color themes via `createApp()`:
-
-```typescript
-import { createApp } from "@jant/core";
-
-export default createApp({
-  cssVariables: {
-    "--site-width": "720px",
-    "--card-radius": "0.5rem",
-  },
-});
-```
+Customize your site's appearance via the dashboard under **Appearance > Advanced** (Custom CSS), or through environment variables and DB settings. The `createApp()` function takes no arguments — all configuration is resolved from environment and database at runtime.
 
 ## Updating
 

@@ -7,7 +7,6 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { dsRedirect } from "../../lib/sse.js";
-import { getSiteName } from "../../lib/config.js";
 import {
   getMediaUrl,
   getImageUrl,
@@ -23,7 +22,7 @@ export const mediaRoutes = new Hono<Env>();
 // List media
 mediaRoutes.get("/", async (c) => {
   const mediaList = await c.var.services.media.list({ limit: 100 });
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
 
   return c.html(
     <DashLayout
@@ -34,9 +33,9 @@ mediaRoutes.get("/", async (c) => {
     >
       <MediaListContent
         mediaList={mediaList}
-        r2PublicUrl={c.env.R2_PUBLIC_URL}
-        imageTransformUrl={c.env.IMAGE_TRANSFORM_URL}
-        s3PublicUrl={c.env.S3_PUBLIC_URL}
+        r2PublicUrl={c.var.appConfig.r2PublicUrl}
+        imageTransformUrl={c.var.appConfig.imageTransformUrl}
+        s3PublicUrl={c.var.appConfig.s3PublicUrl}
       />
     </DashLayout>,
   );
@@ -49,9 +48,9 @@ mediaRoutes.get("/picker", async (c) => {
     limit: 100,
     mimePrefix: "image/",
   });
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const r2PublicUrl = c.var.appConfig.r2PublicUrl;
+  const imageTransformUrl = c.var.appConfig.imageTransformUrl;
+  const s3PublicUrl = c.var.appConfig.s3PublicUrl;
 
   if (mediaList.length === 0) {
     return c.html(
@@ -102,7 +101,7 @@ mediaRoutes.get("/:id", async (c) => {
   const media = await c.var.services.media.getById(id);
   if (!media) return c.notFound();
 
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
 
   return c.html(
     <DashLayout
@@ -113,9 +112,9 @@ mediaRoutes.get("/:id", async (c) => {
     >
       <ViewMediaContent
         media={media}
-        r2PublicUrl={c.env.R2_PUBLIC_URL}
-        imageTransformUrl={c.env.IMAGE_TRANSFORM_URL}
-        s3PublicUrl={c.env.S3_PUBLIC_URL}
+        r2PublicUrl={c.var.appConfig.r2PublicUrl}
+        imageTransformUrl={c.var.appConfig.imageTransformUrl}
+        s3PublicUrl={c.var.appConfig.s3PublicUrl}
       />
     </DashLayout>,
   );

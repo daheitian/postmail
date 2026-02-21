@@ -58,7 +58,7 @@ pageRoutes.get("/*", async (c) => {
 
     // Load media attachments
     const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
-    const mediaCtx = createMediaContext(c);
+    const mediaCtx = createMediaContext(c.var.appConfig);
     const mediaMap = buildMediaMap(
       rawMediaMap,
       mediaCtx.r2PublicUrl,

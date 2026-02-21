@@ -6,23 +6,21 @@
 
 import type { ColorTheme } from "../ui/color-themes.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
-import type { JantConfig } from "../types.js";
 
 /**
  * Get the list of available color themes.
  *
- * Returns `config.colorThemes` if provided, otherwise the built-in list.
+ * Returns the built-in color theme list.
  *
- * @param config - The Jant configuration
  * @returns Array of available color themes
  *
  * @example
  * ```typescript
- * const themes = getAvailableThemes(c.var.config);
+ * const themes = getAvailableThemes();
  * ```
  */
-export function getAvailableThemes(config: JantConfig): ColorTheme[] {
-  return config.colorThemes ?? BUILTIN_COLOR_THEMES;
+export function getAvailableThemes(): ColorTheme[] {
+  return BUILTIN_COLOR_THEMES;
 }
 
 /**
@@ -32,7 +30,7 @@ export function getAvailableThemes(config: JantConfig): ColorTheme[] {
  *   BaseCoat defaults → selected theme → cssVariables
  *
  * @param theme - The active color theme (undefined = no theme overrides)
- * @param cssVariables - Extra CSS variable overrides from `createApp({ cssVariables })`
+ * @param cssVariables - Extra CSS variable overrides
  * @returns CSS string to inject in `<head>`, or empty string if nothing to inject
  *
  * Uses `:root:root` and `:root.dark` selectors for higher specificity than

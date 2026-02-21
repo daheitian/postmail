@@ -14,7 +14,6 @@ import {
   toPostViews,
 } from "../../lib/view.js";
 import { defaultRssRenderer } from "../../lib/feed.js";
-import { getSiteLanguage } from "../../lib/config.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { CollectionsSidebar } from "../../ui/shared/CollectionsSidebar.js";
 
@@ -41,7 +40,7 @@ collectionRoutes.get("/:slug", async (c) => {
   const navData = await getNavigationData(c);
 
   // Transform to View Models
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(c.var.appConfig);
   const postViews = toPostViewsFromPosts(posts, mediaCtx);
 
   return renderPublicPage(c, {
@@ -68,11 +67,11 @@ collectionRoutes.get("/:slug/feed", async (c) => {
   const collection = await c.var.services.collections.getBySlug(slug);
   if (!collection) return c.notFound();
 
-  const siteName = c.var.allSettings["SITE_NAME"] ?? "Jant";
-  const siteUrl = c.env.SITE_URL;
-  const siteLanguage = getSiteLanguage(c);
-
-  const feedLimit = parseInt(c.env.RSS_FEED_LIMIT ?? "50", 10) || 50;
+  const { appConfig } = c.var;
+  const siteName = appConfig.siteName;
+  const siteUrl = appConfig.siteUrl;
+  const siteLanguage = appConfig.siteLanguage;
+  const feedLimit = appConfig.rssFeedLimit;
 
   const posts = await c.var.services.posts.list({
     collectionId: collection.id,
@@ -84,7 +83,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
   // Batch load media for enclosures
   const postIds = posts.map((p) => p.id);
   const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
     mediaCtx.r2PublicUrl,
@@ -100,8 +99,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
     mediaCtx,
   );
 
-  const renderer = c.var.config.feed?.rss ?? defaultRssRenderer;
-  const xml = renderer({
+  const xml = defaultRssRenderer({
     siteName: `${collection.title} - ${siteName}`,
     siteDescription: collection.description ?? "",
     siteUrl,

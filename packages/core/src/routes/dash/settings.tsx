@@ -12,16 +12,6 @@ import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
 import { getI18n } from "../../i18n/index.js";
 import { arrayBufferToBase64 } from "../../lib/favicon.js";
-import {
-  getSiteLanguage,
-  getSiteName,
-  getHomeDefaultView,
-  getTimeZone,
-  getSiteFooter,
-  isNoIndex,
-  getConfigFallback,
-} from "../../lib/config.js";
-import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 import { TIMEZONES } from "../../lib/timezones.js";
 import { escapeHtml } from "../../lib/html.js";
 import { validateUploadFile, generateStorageKey } from "../../lib/upload.js";
@@ -36,37 +26,11 @@ export const settingsRoutes = new Hono<Env>();
 // General settings
 // ===========================================================================
 
-/** Resolve the avatar storage key to a URL */
-function resolveAvatarUrl(
-  allSettings: Record<string, string>,
-  env: Bindings,
-): string {
-  const avatarKey = allSettings["SITE_AVATAR"];
-  if (!avatarKey) return "";
-  const publicUrl = getPublicUrlForProvider(
-    env.STORAGE_DRIVER || "r2",
-    env.R2_PUBLIC_URL,
-    env.S3_PUBLIC_URL,
-  );
-  return getMediaUrl(avatarKey, publicUrl);
-}
-
 settingsRoutes.get("/", async (c) => {
-  const { allSettings } = c.var;
+  const { allSettings, appConfig } = c.var;
 
   const dbSiteName = allSettings["SITE_NAME"] ?? "";
   const dbSiteDescription = allSettings["SITE_DESCRIPTION"] ?? "";
-  const siteLanguage = getSiteLanguage(c);
-  const homeDefaultView = getHomeDefaultView(c);
-  const timeZone = getTimeZone(c);
-  const siteFooter = getSiteFooter(c);
-  const noindex = isNoIndex(c);
-
-  const siteNameFallback = getConfigFallback(c, "SITE_NAME");
-  const siteDescriptionFallback = getConfigFallback(c, "SITE_DESCRIPTION");
-
-  const siteAvatarUrl = resolveAvatarUrl(allSettings, c.env);
-  const showHeaderAvatar = allSettings["SHOW_HEADER_AVATAR"] === "true";
 
   const saved = c.req.query("saved") !== undefined;
 
@@ -74,22 +38,22 @@ settingsRoutes.get("/", async (c) => {
     <DashLayout
       c={c}
       title="Settings"
-      siteName={dbSiteName || siteNameFallback}
+      siteName={dbSiteName || appConfig.fallbacks.siteName}
       currentPath="/dash/settings"
       toast={saved ? { message: "Settings saved successfully." } : undefined}
     >
       <GeneralContent
         siteName={dbSiteName || ""}
         siteDescription={dbSiteDescription || ""}
-        siteLanguage={siteLanguage}
-        homeDefaultView={homeDefaultView}
-        siteNameFallback={siteNameFallback}
-        siteDescriptionFallback={siteDescriptionFallback}
-        siteAvatarUrl={siteAvatarUrl}
-        showHeaderAvatar={showHeaderAvatar}
-        timeZone={timeZone}
-        siteFooter={siteFooter}
-        noindex={noindex}
+        siteLanguage={appConfig.siteLanguage}
+        homeDefaultView={appConfig.homeDefaultView}
+        siteNameFallback={appConfig.fallbacks.siteName}
+        siteDescriptionFallback={appConfig.fallbacks.siteDescription}
+        siteAvatarUrl={appConfig.siteAvatarUrl}
+        showHeaderAvatar={appConfig.showHeaderAvatar}
+        timeZone={appConfig.timeZone}
+        siteFooter={appConfig.siteFooter}
+        noindex={appConfig.noindex}
         timezones={TIMEZONES}
       />
     </DashLayout>,
@@ -147,7 +111,8 @@ settingsRoutes.post("/", async (c) => {
   }
 
   const languageChanged = oldLanguage !== body.siteLanguage;
-  const displayName = body.siteName.trim() || getConfigFallback(c, "SITE_NAME");
+  const displayName =
+    body.siteName.trim() || c.var.appConfig.fallbacks.siteName;
 
   // ── JSON response mode (used by Lit settings bridge) ──────────────
   const wantsJson = c.req.header("accept")?.includes("application/json");
@@ -299,7 +264,7 @@ settingsRoutes.post("/avatar", async (c) => {
       mimeType: file.type,
       size: file.size,
       storageKey,
-      provider: c.env.STORAGE_DRIVER || "r2",
+      provider: c.var.appConfig.storageDriver,
     });
 
     await c.var.services.settings.set("SITE_AVATAR", storageKey);
@@ -417,7 +382,7 @@ settingsRoutes.post("/avatar/display", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account", async (c) => {
-  const siteName = getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   const session = await c.var.auth.api.getSession({
     headers: c.req.raw.headers,
   });

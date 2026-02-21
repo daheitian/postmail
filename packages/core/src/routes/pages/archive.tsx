@@ -66,7 +66,7 @@ archiveRoutes.get("/", async (c) => {
   }
 
   // Transform to View Models
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(c.var.appConfig);
   const groups = toArchiveGroups(grouped, mediaCtx);
 
   return renderPublicPage(c, {

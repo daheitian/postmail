@@ -9,7 +9,6 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
-import { getSiteName } from "../../lib/config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -85,7 +84,7 @@ function DashboardContent({
 }
 
 dashIndexRoutes.get("/", async (c) => {
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
 
   // Get stats via service-level counting (avoids loading all posts into memory)
   const [publishedCount, draftCount] = await Promise.all([

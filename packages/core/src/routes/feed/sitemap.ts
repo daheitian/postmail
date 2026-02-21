@@ -18,7 +18,8 @@ export const sitemapRoutes = new Hono<Env>();
 
 // XML Sitemap
 sitemapRoutes.get("/sitemap.xml", async (c) => {
-  const siteUrl = c.env.SITE_URL;
+  const { appConfig } = c.var;
+  const siteUrl = appConfig.siteUrl;
 
   const posts = await c.var.services.posts.list({
     status: "published",
@@ -32,12 +33,15 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
   });
 
   // Transform to View Models
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(appConfig);
   const postViews = toPostViewsFromPosts(posts, mediaCtx);
   const pageViews = publishedPages.map(toPageView);
 
-  const renderer = c.var.config.feed?.sitemap ?? defaultSitemapRenderer;
-  const xml = renderer({ siteUrl, posts: postViews, pages: pageViews });
+  const xml = defaultSitemapRenderer({
+    siteUrl,
+    posts: postViews,
+    pages: pageViews,
+  });
 
   return new Response(xml, {
     headers: {
@@ -48,8 +52,9 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
 
 // robots.txt
 sitemapRoutes.get("/robots.txt", async (c) => {
-  const siteUrl = c.env.SITE_URL;
-  const noindex = c.var.allSettings["NOINDEX"] === "true";
+  const { appConfig } = c.var;
+  const siteUrl = appConfig.siteUrl;
+  const noindex = appConfig.noindex;
 
   const directive = noindex ? "Disallow: /" : "Allow: /";
   const robots = `User-agent: *

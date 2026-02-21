@@ -8,7 +8,6 @@ import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
-import { getSiteName } from "../../lib/config.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 import { slugify } from "../../lib/url.js";
 import { CollectionsListContent } from "../../ui/dash/collections/CollectionsListContent.js";
@@ -22,7 +21,7 @@ export const collectionsRoutes = new Hono<Env>();
 
 // List collections
 collectionsRoutes.get("/", async (c) => {
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   const [collections, dividers, postCounts] = await Promise.all([
     c.var.services.collections.list(),
     c.var.services.collections.listDividers(),
@@ -47,7 +46,7 @@ collectionsRoutes.get("/", async (c) => {
 
 // New collection form
 collectionsRoutes.get("/new", async (c) => {
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
 
   return c.html(
     <DashLayout
@@ -134,9 +133,9 @@ collectionsRoutes.get("/:id", async (c) => {
   if (!collection) return c.notFound();
 
   const rawPosts = await c.var.services.posts.list({ collectionId: id });
-  const ctx = createMediaContext(c);
+  const ctx = createMediaContext(c.var.appConfig);
   const posts = toPostViewsFromPosts(rawPosts, ctx);
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
 
   return c.html(
     <DashLayout
@@ -158,7 +157,7 @@ collectionsRoutes.get("/:id/edit", async (c) => {
   const collection = await c.var.services.collections.getById(id);
   if (!collection) return c.notFound();
 
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
 
   return c.html(
     <DashLayout

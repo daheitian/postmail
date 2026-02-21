@@ -30,7 +30,7 @@ featuredRoutes.get("/", async (c) => {
     excludeReplies: true,
   });
 
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(c.var.appConfig);
   const postViews = toPostViewsFromPosts(posts, mediaCtx);
 
   // Convert to timeline items (simple — no thread previews)

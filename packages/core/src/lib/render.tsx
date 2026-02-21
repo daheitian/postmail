@@ -59,10 +59,11 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     sidebar,
   };
 
-  // Read favicon, version, and noindex from context (set by theme middleware)
-  const faviconUrl = c.get("faviconUrl") as string | undefined;
-  const faviconVersion = c.get("faviconVersion") as string | undefined;
-  const noindex = c.get("noindex") as boolean | undefined;
+  // Read favicon, version, and noindex from appConfig
+  const appConfig = c.get("appConfig");
+  const faviconUrl = appConfig.siteAvatarUrl || undefined;
+  const faviconVersion = appConfig.faviconVersion || undefined;
+  const noindex = appConfig.noindex;
 
   return c.html(
     <BaseLayout

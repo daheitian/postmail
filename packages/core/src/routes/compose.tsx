@@ -55,7 +55,7 @@ async function buildTimelineCard(
   post: Post,
   mediaIds: string[] | undefined,
 ): Promise<string> {
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(c.var.appConfig);
   let postView;
 
   if (mediaIds && mediaIds.length > 0) {

@@ -5,7 +5,6 @@
  * Theme components receive only View types -- no lib/ imports needed.
  */
 
-import type { Context } from "hono";
 import type {
   Post,
   PostWithMedia,
@@ -22,6 +21,7 @@ import type {
   Format,
   Status,
   NavItemType,
+  AppConfig,
 } from "../types.js";
 import { encode } from "./sqid.js";
 import {
@@ -38,7 +38,7 @@ import { getHtmlExcerpt } from "./excerpt.js";
 // =============================================================================
 
 /**
- * Central media config -- extracted once per request from env.
+ * Central media config -- extracted once per request from appConfig.
  */
 export interface MediaContext {
   r2PublicUrl?: string;
@@ -47,16 +47,16 @@ export interface MediaContext {
 }
 
 /**
- * Creates a MediaContext from Hono context environment variables.
+ * Creates a MediaContext from AppConfig.
  *
- * @param c - Hono context
- * @returns MediaContext with env values
+ * @param appConfig - Resolved app configuration
+ * @returns MediaContext with URL values
  */
-export function createMediaContext(c: Context): MediaContext {
+export function createMediaContext(appConfig: AppConfig): MediaContext {
   return {
-    r2PublicUrl: c.env.R2_PUBLIC_URL,
-    imageTransformUrl: c.env.IMAGE_TRANSFORM_URL,
-    s3PublicUrl: c.env.S3_PUBLIC_URL,
+    r2PublicUrl: appConfig.r2PublicUrl || undefined,
+    imageTransformUrl: appConfig.imageTransformUrl || undefined,
+    s3PublicUrl: appConfig.s3PublicUrl || undefined,
   };
 }
 

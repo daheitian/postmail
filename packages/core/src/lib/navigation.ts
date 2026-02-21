@@ -5,10 +5,8 @@
  */
 
 import type { Context } from "hono";
-import { getSiteName, getHomeDefaultView, getSiteFooter } from "./config.js";
 import type { Collection, NavItemView } from "../types.js";
 import { toNavItemViews } from "./view.js";
-import { getMediaUrl, getPublicUrlForProvider } from "./image.js";
 import { render as renderMarkdown } from "./markdown.js";
 
 /**
@@ -49,28 +47,20 @@ export interface NavigationData {
 export async function getNavigationData(c: Context): Promise<NavigationData> {
   const items = await c.var.services.navItems.list();
   const currentPath = new URL(c.req.url).pathname;
-  const siteName = getSiteName(c);
-  const homeDefaultView = getHomeDefaultView(c);
-  const siteFooter = getSiteFooter(c);
+  const appConfig = c.var.appConfig;
+
+  const siteName = appConfig.siteName;
+  const homeDefaultView = appConfig.homeDefaultView;
+  const siteFooter = appConfig.siteFooter;
 
   // Only include description if explicitly set (DB or env), not the default
-  const dbDescription = c.var.allSettings["SITE_DESCRIPTION"];
-  const envDescription = c.env.SITE_DESCRIPTION;
-  const siteDescription =
-    dbDescription || (typeof envDescription === "string" ? envDescription : "");
+  const siteDescription = appConfig.siteDescriptionExplicit
+    ? appConfig.siteDescription
+    : "";
 
-  // Resolve avatar URL from storage key
-  const avatarKey = c.var.allSettings["SITE_AVATAR"];
-  const showHeaderAvatar = c.var.allSettings["SHOW_HEADER_AVATAR"] === "true";
-  let siteAvatarUrl: string | undefined;
-  if (avatarKey) {
-    const publicUrl = getPublicUrlForProvider(
-      c.env.STORAGE_DRIVER || "r2",
-      c.env.R2_PUBLIC_URL,
-      c.env.S3_PUBLIC_URL,
-    );
-    siteAvatarUrl = getMediaUrl(avatarKey, publicUrl);
-  }
+  // Avatar URL and display flag come from appConfig
+  const siteAvatarUrl = appConfig.siteAvatarUrl || undefined;
+  const showHeaderAvatar = appConfig.showHeaderAvatar;
 
   // Render footer markdown
   const siteFooterHtml = siteFooter ? renderMarkdown(siteFooter) : undefined;

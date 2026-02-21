@@ -4,9 +4,6 @@
  * Single Source of Truth for all configuration fields.
  */
 
-import type { ColorTheme } from "../ui/color-themes.js";
-import type { FeedData, SitemapData } from "./props.js";
-
 /**
  * Configuration Registry - Single Source of Truth
  *
@@ -166,27 +163,58 @@ export const CONFIG_FIELDS = {
 export type ConfigKey = keyof typeof CONFIG_FIELDS;
 
 /**
- * Main Jant configuration
+ * Unified application configuration
  *
- * Configuration Philosophy:
- * - Use environment variables for runtime config (API keys, feature flags, site settings)
- * - Use code config (this object) for CSS customization and feed overrides
- *
- * Site-level settings (name, description, language) are configured via
- * environment variables, not here. See lib/config.ts for details.
+ * Resolved once per request from DB settings + env + defaults.
+ * Access via `c.var.appConfig` in routes and lib functions.
  */
-export interface JantConfig {
-  /** CSS variable overrides (highest priority after custom CSS) */
-  cssVariables?: Record<string, string>;
-  /** Replace built-in color themes with custom list */
-  colorThemes?: ColorTheme[];
-  /** Custom feed renderers */
-  feed?: {
-    /** Custom RSS 2.0 renderer -- returns XML string */
-    rss?: (data: FeedData) => string;
-    /** Custom Atom renderer -- returns XML string */
-    atom?: (data: FeedData) => string;
-    /** Custom Sitemap renderer -- returns XML string */
-    sitemap?: (data: SitemapData) => string;
+export interface AppConfig {
+  // Site identity (DB > ENV > Default)
+  siteName: string;
+  siteDescription: string;
+  /** true only when description is set in DB or ENV (not just the default) */
+  siteDescriptionExplicit: boolean;
+  siteLanguage: string;
+  homeDefaultView: string;
+  timeZone: string;
+  siteFooter: string;
+  noindex: boolean;
+
+  // Infrastructure (ENV only)
+  siteUrl: string;
+  authConfigured: boolean;
+
+  // Media (ENV only)
+  storageDriver: string;
+  r2PublicUrl: string;
+  s3PublicUrl: string;
+  imageTransformUrl: string;
+
+  // Pagination/Feed (ENV only, parsed to number)
+  pageSize: number;
+  rssFeedLimit: number;
+
+  // Demo (ENV only)
+  demoEmail: string;
+  demoPassword: string;
+
+  // Theme (DB internal)
+  themeId: string;
+  defaultThemeId: string;
+  fontThemeId: string;
+  customCSS: string;
+
+  // Site appearance (DB internal)
+  siteAvatar: string;
+  showHeaderAvatar: boolean;
+  /** Derived: getMediaUrl(siteAvatar, publicUrl) */
+  siteAvatarUrl: string;
+  faviconVersion: string;
+
+  // Dashboard form placeholders (ENV > Default, without DB)
+  fallbacks: {
+    siteName: string;
+    siteDescription: string;
+    defaultTheme: string;
   };
 }

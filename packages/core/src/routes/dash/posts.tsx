@@ -1,4 +1,3 @@
-import { getSiteName } from "../../lib/config.js";
 /**
  * Dashboard Posts Routes
  */
@@ -66,8 +65,11 @@ postsRoutes.get("/", async (c) => {
   const posts = await c.var.services.posts.list({
     excludeReplies: true,
   });
-  const siteName = await getSiteName(c);
-  const postViews = toPostViewsFromPosts(posts, createMediaContext(c));
+  const siteName = c.var.appConfig.siteName;
+  const postViews = toPostViewsFromPosts(
+    posts,
+    createMediaContext(c.var.appConfig),
+  );
 
   return c.html(
     <DashLayout
@@ -83,7 +85,7 @@ postsRoutes.get("/", async (c) => {
 
 // New post form
 postsRoutes.get("/new", async (c) => {
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   const collections = await c.var.services.collections.list();
 
   return c.html(
@@ -224,9 +226,12 @@ postsRoutes.get("/:id", async (c) => {
   const post = await c.var.services.posts.getById(id);
   if (!post) return c.notFound();
 
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   const pageTitle = post.title || "Post";
-  const postView = toPostViewFromPost(post, createMediaContext(c));
+  const postView = toPostViewFromPost(
+    post,
+    createMediaContext(c.var.appConfig),
+  );
 
   return c.html(
     <DashLayout
@@ -248,11 +253,9 @@ postsRoutes.get("/:id/edit", async (c) => {
   const post = await c.var.services.posts.getById(id);
   if (!post) return c.notFound();
 
-  const siteName = await getSiteName(c);
+  const siteName = c.var.appConfig.siteName;
   const mediaAttachments = await c.var.services.media.getByPostId(post.id);
-  const r2PublicUrl = c.env.R2_PUBLIC_URL;
-  const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
-  const s3PublicUrl = c.env.S3_PUBLIC_URL;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
   const [collections, postCollections] = await Promise.all([
     c.var.services.collections.list(),
     c.var.services.collections.getCollectionsByPostId(post.id),

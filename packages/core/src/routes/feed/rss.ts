@@ -7,7 +7,6 @@ import type { Context } from "hono";
 import type { Bindings, FeedData } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { defaultRssRenderer, defaultAtomRenderer } from "../../lib/feed.js";
-import { getSiteLanguage } from "../../lib/config.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 
 import { createMediaContext, toPostViews } from "../../lib/view.js";
@@ -20,12 +19,12 @@ export const rssRoutes = new Hono<Env>();
  * Build FeedData from the Hono context.
  */
 async function buildFeedData(c: Context<Env>): Promise<FeedData> {
-  const siteName = c.var.allSettings["SITE_NAME"] ?? "Jant";
-  const siteDescription = c.var.allSettings["SITE_DESCRIPTION"] ?? "";
-  const siteUrl = c.env.SITE_URL;
-  const siteLanguage = getSiteLanguage(c);
-
-  const feedLimit = parseInt(c.env.RSS_FEED_LIMIT ?? "50", 10) || 50;
+  const { appConfig } = c.var;
+  const siteName = appConfig.siteName;
+  const siteDescription = appConfig.siteDescription;
+  const siteUrl = appConfig.siteUrl;
+  const siteLanguage = appConfig.siteLanguage;
+  const feedLimit = appConfig.rssFeedLimit;
 
   const posts = await c.var.services.posts.list({
     status: "published",
@@ -36,7 +35,7 @@ async function buildFeedData(c: Context<Env>): Promise<FeedData> {
   // Batch load media for enclosures
   const postIds = posts.map((p) => p.id);
   const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
-  const mediaCtx = createMediaContext(c);
+  const mediaCtx = createMediaContext(appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
     mediaCtx.r2PublicUrl,
@@ -65,9 +64,7 @@ async function buildFeedData(c: Context<Env>): Promise<FeedData> {
 // RSS 2.0 Feed - main feed at /feed
 rssRoutes.get("/", async (c) => {
   const feedData = await buildFeedData(c);
-
-  const renderer = c.var.config.feed?.rss ?? defaultRssRenderer;
-  const xml = renderer(feedData);
+  const xml = defaultRssRenderer(feedData);
 
   return new Response(xml, {
     headers: {
@@ -79,9 +76,7 @@ rssRoutes.get("/", async (c) => {
 // Atom Feed
 rssRoutes.get("/atom.xml", async (c) => {
   const feedData = await buildFeedData(c);
-
-  const renderer = c.var.config.feed?.atom ?? defaultAtomRenderer;
-  const xml = renderer(feedData);
+  const xml = defaultAtomRenderer(feedData);
 
   return new Response(xml, {
     headers: {

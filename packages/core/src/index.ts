@@ -32,7 +32,7 @@ export type {
   UpdateNavItem,
   CreateCollection,
   UpdateCollection,
-  JantConfig,
+  AppConfig,
   // View Model types
   PostView,
   PageView,

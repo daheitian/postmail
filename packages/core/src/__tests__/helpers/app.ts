@@ -21,6 +21,7 @@ import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
 import { createI18n } from "../../i18n/i18n.js";
+import { resolveConfig } from "../../lib/resolve-config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -69,8 +70,9 @@ export function createTestApp(options: TestAppOptions = {}) {
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);
-    c.set("config", {});
-    c.set("allSettings", await services.settings.getAll());
+    const allSettings = await services.settings.getAll();
+    c.set("allSettings", allSettings);
+    c.set("appConfig", resolveConfig(c.env, allSettings));
     c.set("storage", null);
 
     // i18n (English default for tests)

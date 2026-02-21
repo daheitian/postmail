@@ -118,8 +118,8 @@ signinRoutes.get("/signin", async (c) => {
   return c.html(
     <BaseLayout title="Sign In - Jant" c={c} toast={toast}>
       <SigninContent
-        demoEmail={c.env.DEMO_EMAIL}
-        demoPassword={c.env.DEMO_PASSWORD}
+        demoEmail={c.var.appConfig.demoEmail}
+        demoPassword={c.var.appConfig.demoPassword}
       />
     </BaseLayout>,
   );
