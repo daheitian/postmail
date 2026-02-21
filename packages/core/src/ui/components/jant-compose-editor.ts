@@ -61,15 +61,40 @@ export class JantComposeEditor extends LitElement {
   }
 
   getData() {
-    return {
-      title: this._title,
-      body: this._body,
-      url: this._url,
-      quoteText: this._quoteText,
-      quoteAuthor: this._quoteAuthor,
+    const shared = {
       rating: this._rating,
       attachedText: this._attachedText,
     };
+
+    switch (this.format) {
+      case "link":
+        return {
+          ...shared,
+          title: this._title,
+          body: this._body,
+          url: this._url,
+          quoteText: "",
+          quoteAuthor: "",
+        };
+      case "quote":
+        return {
+          ...shared,
+          title: "",
+          body: this._body,
+          url: this._url,
+          quoteText: this._quoteText,
+          quoteAuthor: this._quoteAuthor,
+        };
+      default:
+        return {
+          ...shared,
+          title: this._title,
+          body: this._body,
+          url: "",
+          quoteText: "",
+          quoteAuthor: "",
+        };
+    }
   }
 
   reset() {

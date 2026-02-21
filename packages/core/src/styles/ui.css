@@ -431,7 +431,6 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 12px;
-    border-bottom: 1px solid var(--site-divider);
     position: relative;
   }
 
@@ -751,10 +750,7 @@
   /* --- Shared elements ---------------------------------------------------- */
 
   .compose-divider {
-    height: 1px;
-    background-color: var(--site-divider);
-    margin: 2px 0 14px;
-    border-radius: 1px;
+    display: none;
   }
 
   .compose-thoughts {
@@ -887,7 +883,6 @@
   /* --- Tools row ---------------------------------------------------------- */
 
   .compose-tools-row {
-    border-top: 1px solid var(--site-divider);
     padding: 6px 10px;
     display: flex;
     align-items: center;
@@ -960,7 +955,6 @@
   /* --- Action row --------------------------------------------------------- */
 
   .compose-action-row {
-    border-top: 1px solid var(--site-divider);
     padding: 8px 10px 12px;
     display: flex;
     align-items: center;

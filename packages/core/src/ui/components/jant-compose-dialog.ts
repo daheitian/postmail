@@ -200,6 +200,9 @@ export class JantComposeDialog extends LitElement {
                   })}
                   @click=${() => {
                     this._format = f;
+                    globalThis.requestAnimationFrame(() =>
+                      this._editor?.focusInput(),
+                    );
                   }}
                 >
                   ${formatLabels[f]}
