@@ -9,7 +9,7 @@
     "build": "vite build",
     "deploy": "pnpm run db:migrate:remote && pnpm run build && wrangler deploy",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b --noEmit",
     "db:migrate:local": "yes | wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "jant": "jant",
