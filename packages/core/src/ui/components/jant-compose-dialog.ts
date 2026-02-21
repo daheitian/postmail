@@ -137,6 +137,7 @@ export class JantComposeDialog extends LitElement {
       "jant:open-media-picker",
       this._handleOpenMediaPicker,
     );
+    this.addEventListener("keydown", this._handleKeydown);
   }
 
   disconnectedCallback() {
@@ -145,10 +146,19 @@ export class JantComposeDialog extends LitElement {
       "jant:open-media-picker",
       this._handleOpenMediaPicker,
     );
+    this.removeEventListener("keydown", this._handleKeydown);
   }
 
   private _handleOpenMediaPicker = () => {
     this._openMediaPicker();
+  };
+
+  private _handleKeydown = (e: Event) => {
+    const ke = e as globalThis.KeyboardEvent;
+    if ((ke.metaKey || ke.ctrlKey) && ke.key === "Enter") {
+      e.preventDefault();
+      this._submit("published");
+    }
   };
 
   // ── Render helpers ────────────────────────────────────────────────

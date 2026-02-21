@@ -65,6 +65,8 @@ document.addEventListener("jant:compose-submit", async (e: Event) => {
     }
 
     dialog?.close();
+    // Prevent browser from restoring focus to the trigger button
+    (document.activeElement as HTMLElement)?.blur();
     composeEl.reset();
   } catch {
     showToast("Something went wrong", "error");

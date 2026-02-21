@@ -98,6 +98,17 @@ export class JantComposeEditor extends LitElement {
   private _onInput(field: string, e: Event) {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
     (this as Record<string, unknown>)[field] = target.value;
+    if (
+      target.tagName === "TEXTAREA" &&
+      !target.classList.contains("compose-attached-textarea")
+    ) {
+      this._autoResize(target as HTMLElement);
+    }
+  }
+
+  private _autoResize(el: HTMLElement) {
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
   }
 
   private _setRating(star: number) {
