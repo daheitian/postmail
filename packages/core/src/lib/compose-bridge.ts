@@ -59,6 +59,7 @@ document.addEventListener("jant:compose-submit", async (e: Event) => {
     } else if (data.status === "published" && data.cardHtml) {
       const timeline = document.getElementById("timeline-items");
       if (timeline) {
+        document.getElementById("empty-timeline")?.remove();
         timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
       }
     }

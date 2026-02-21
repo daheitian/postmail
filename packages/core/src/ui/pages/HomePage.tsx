@@ -19,12 +19,21 @@ export const HomePage: FC<HomePageProps> = ({
   return (
     <div data-page="home">
       {items.length === 0 ? (
-        <p class="py-12 text-center text-muted-foreground">
-          {t({
-            message: "No posts yet.",
-            comment: "@context: Empty state message on home page",
-          })}
-        </p>
+        <div data-feed>
+          <div id="timeline-feed">
+            <div id="timeline-items" class="flex flex-col">
+              <p
+                id="empty-timeline"
+                class="py-12 text-center text-muted-foreground"
+              >
+                {t({
+                  message: "No posts yet.",
+                  comment: "@context: Empty state message on home page",
+                })}
+              </p>
+            </div>
+          </div>
+        </div>
       ) : (
         <TimelineFeed
           items={items}

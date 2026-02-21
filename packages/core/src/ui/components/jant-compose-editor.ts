@@ -85,6 +85,16 @@ export class JantComposeEditor extends LitElement {
     this._showAttachedText = false;
   }
 
+  focusInput() {
+    const selector =
+      this.format === "link"
+        ? '.compose-input[type="url"]'
+        : this.format === "quote"
+          ? ".compose-quote-text"
+          : ".compose-body-input";
+    this.querySelector<HTMLElement>(selector)?.focus();
+  }
+
   private _onInput(field: string, e: Event) {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
     (this as Record<string, unknown>)[field] = target.value;
