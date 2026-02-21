@@ -96,22 +96,34 @@ export function createApp(): App {
     c.set("storage", createStorageDriver(c.env));
 
     if (!c.env.AUTH_SECRET) {
-      // eslint-disable-next-line no-console -- Startup warning is intentional
-      console.warn(
-        "[Jant] AUTH_SECRET is not set. Authentication is disabled. Set AUTH_SECRET in .dev.vars or wrangler.toml to enable auth.",
+      return c.html(
+        `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration Error</title>
+<style>body{font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#fafafa;color:#111}div{max-width:480px;text-align:center}h1{font-size:1.25rem;font-weight:600}p{color:#666;line-height:1.6}code{background:#eee;padding:2px 6px;border-radius:4px;font-size:.9em}</style>
+</head>
+<body>
+<div>
+<h1>AUTH_SECRET is not set</h1>
+<p>Set <code>AUTH_SECRET</code> in <code>.dev.vars</code> or <code>wrangler.toml</code> to start Jant.</p>
+</div>
+</body>
+</html>`,
+        500,
       );
     }
 
-    if (c.env.AUTH_SECRET) {
-      const baseURL = c.env.SITE_URL || new URL(c.req.url).origin;
-      const requestUrl = new URL(c.req.url);
-      const auth = createAuth(session as unknown as D1Database, {
-        secret: c.env.AUTH_SECRET,
-        baseURL,
-        useSecureCookies: requestUrl.protocol === "https:",
-      });
-      c.set("auth", auth);
-    }
+    const baseURL = c.env.SITE_URL || new URL(c.req.url).origin;
+    const requestUrl = new URL(c.req.url);
+    const auth = createAuth(session as unknown as D1Database, {
+      secret: c.env.AUTH_SECRET,
+      baseURL,
+      useSecureCookies: requestUrl.protocol === "https:",
+    });
+    c.set("auth", auth);
 
     // Resolve all config from DB + ENV + defaults
     const allSettings = await services.settings.getAll();
@@ -139,15 +151,13 @@ export function createApp(): App {
 
     // Check auth state for data-authenticated attribute on <body>
     let isAuthenticated = false;
-    if (c.var.auth) {
-      try {
-        const authSession = await c.var.auth.api.getSession({
-          headers: c.req.raw.headers,
-        });
-        isAuthenticated = !!authSession;
-      } catch {
-        // Not authenticated
-      }
+    try {
+      const authSession = await c.var.auth.api.getSession({
+        headers: c.req.raw.headers,
+      });
+      isAuthenticated = !!authSession;
+    } catch {
+      // Not authenticated
     }
     c.set("isAuthenticated", isAuthenticated);
 
@@ -227,9 +237,6 @@ export function createApp(): App {
 
   // better-auth handler
   app.all("/api/auth/*", async (c) => {
-    if (!c.var.auth) {
-      return c.json({ error: "Auth not configured. Set AUTH_SECRET." }, 500);
-    }
     return c.var.auth.handler(c.req.raw);
   });
 
