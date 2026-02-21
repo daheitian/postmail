@@ -73,6 +73,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
       faviconUrl={faviconUrl}
       faviconVersion={faviconVersion}
       noindex={noindex}
+      isAuthenticated={navData.isAuthenticated}
     >
       <SiteLayout {...layoutProps}>{content}</SiteLayout>
     </BaseLayout>,

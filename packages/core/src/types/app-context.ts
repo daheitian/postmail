@@ -19,7 +19,6 @@ export interface AppVariables {
   appConfig: AppConfig;
   allSettings: Record<string, string>;
   themeStyle: string;
-  isAuthenticated: boolean;
   storage: StorageDriver | null;
 }
 

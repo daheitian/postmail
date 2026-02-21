@@ -54,12 +54,9 @@ import { sitemapRoutes } from "./routes/feed/sitemap.js";
 import { requireAuth } from "./middleware/auth.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
 import { errorHandler } from "./middleware/error-handler.js";
+import { withConfig } from "./middleware/config.js";
 
-import { buildThemeStyle } from "./lib/theme.js";
 import { createStorageDriver } from "./lib/storage.js";
-import { BUILTIN_COLOR_THEMES } from "./ui/color-themes.js";
-import { BUILTIN_FONT_THEMES } from "./ui/font-themes.js";
-import { resolveConfig } from "./lib/resolve-config.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
 import { type AppVariables, type App } from "./types/app-context.js";
 
@@ -83,116 +80,85 @@ export function createApp(): App {
   // Global error handler: maps DomainError → HTTP responses
   app.onError(errorHandler);
 
-  // Initialize services, auth, config, theme — single middleware
+  // Lightweight init — no DB queries
   app.use("*", async (c, next) => {
+    if (!c.env.AUTH_SECRET) {
+      return c.html(
+        `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration Error</title>
+<style>body{font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#fafafa;color:#111}div{max-width:480px;text-align:center}h1{font-size:1.25rem;font-weight:600}p{color:#666;line-height:1.6}code{background:#eee;padding:2px 6px;border-radius:4px;font-size:.9em}</style>
+</head>
+<body>
+<div>
+<h1>AUTH_SECRET is not set</h1>
+<p>Set <code>AUTH_SECRET</code> in <code>.dev.vars</code> or <code>wrangler.toml</code> to start Jant.</p>
+</div>
+</body>
+</html>`,
+        500,
+      );
+    }
+
     // Use withSession() to enable D1 Read Replication
     const session = c.env.DB.withSession();
 
     // Note: Drizzle ORM doesn't officially support D1DatabaseSession yet (issue #2226)
     // but it works at runtime. We use type assertion as a temporary workaround.
     const db = createDatabase(session as unknown as D1Database);
-    const services = createServices(db, session as unknown as D1Database);
-    c.set("services", services);
+    c.set("services", createServices(db, session as unknown as D1Database));
     c.set("storage", createStorageDriver(c.env));
 
-    if (!c.env.AUTH_SECRET) {
-      // eslint-disable-next-line no-console -- Startup warning is intentional
-      console.warn(
-        "[Jant] AUTH_SECRET is not set. Authentication is disabled. Set AUTH_SECRET in .dev.vars or wrangler.toml to enable auth.",
-      );
-    }
-
-    if (c.env.AUTH_SECRET) {
-      const baseURL = c.env.SITE_URL || new URL(c.req.url).origin;
-      const requestUrl = new URL(c.req.url);
-      const auth = createAuth(session as unknown as D1Database, {
+    const baseURL = c.env.SITE_URL || new URL(c.req.url).origin;
+    const requestUrl = new URL(c.req.url);
+    c.set(
+      "auth",
+      createAuth(session as unknown as D1Database, {
         secret: c.env.AUTH_SECRET,
         baseURL,
         useSecureCookies: requestUrl.protocol === "https:",
-      });
-      c.set("auth", auth);
-    }
-
-    // Resolve all config from DB + ENV + defaults
-    const allSettings = await services.settings.getAll();
-    c.set("allSettings", allSettings);
-    const appConfig = resolveConfig(c.env, allSettings);
-    c.set("appConfig", appConfig);
-
-    // Resolve active color theme
-    const activeTheme = BUILTIN_COLOR_THEMES.find(
-      (t) => t.id === (appConfig.themeId || appConfig.defaultThemeId),
+      }),
     );
 
-    // Build font override CSS variables
-    const fontTheme = appConfig.fontThemeId
-      ? BUILTIN_FONT_THEMES.find((f) => f.id === appConfig.fontThemeId)
-      : undefined;
-    const fontOverrides: Record<string, string> = {};
-    if (fontTheme) {
-      fontOverrides["--font-body"] = fontTheme.bodyFontFamily;
-      fontOverrides["--font-heading"] = fontTheme.headingFontFamily;
-    }
-
-    const themeStyle = buildThemeStyle(activeTheme, fontOverrides);
-    c.set("themeStyle", themeStyle);
-
-    // Check auth state for data-authenticated attribute on <body>
-    let isAuthenticated = false;
-    if (c.var.auth) {
-      try {
-        const authSession = await c.var.auth.api.getSession({
-          headers: c.req.raw.headers,
-        });
-        isAuthenticated = !!authSession;
-      } catch {
-        // Not authenticated
-      }
-    }
-    c.set("isAuthenticated", isAuthenticated);
-
     await next();
   });
 
-  // Onboarding gate — redirect to /setup if not yet initialized
-  app.use("*", requireOnboarding());
-
-  // i18n middleware
-  app.use("*", i18nMiddleware());
-
-  // Trailing slash redirect (redirect /foo/ to /foo)
-  app.use("*", async (c, next) => {
-    const url = new URL(c.req.url);
-    if (url.pathname !== "/" && url.pathname.endsWith("/")) {
-      const newUrl = url.pathname.slice(0, -1) + url.search;
-      return c.redirect(newUrl, 301);
-    }
-    await next();
-  });
-
-  // Redirect middleware
-  app.use("*", async (c, next) => {
-    const path = new URL(c.req.url).pathname;
-    // Skip redirect check for API routes and static assets
-    if (path.startsWith("/api/") || path.startsWith("/assets/")) {
-      return next();
-    }
-
-    const redirect = await c.var.services.redirects.getByPath(path);
-    if (redirect) {
-      return c.redirect(redirect.toPath, redirect.type);
-    }
-
-    await next();
-  });
+  // --- Routes that don't need config/theme ---
 
   // Health check
-  app.get("/health", (c) =>
-    c.json({
-      status: "ok",
-      auth: c.var.appConfig.authConfigured ? "configured" : "missing",
-    }),
-  );
+  app.get("/health", (c) => c.json({ status: "ok" }));
+
+  // Media files from storage (path matches storage key: media/YYYY/MM/uuid.ext)
+  app.get("/media/*", async (c) => {
+    const storage = c.var.storage;
+    if (!storage) {
+      return c.notFound();
+    }
+
+    // The storage key is the full path without the leading "/"
+    const storageKey = c.req.path.slice(1);
+    const object = await storage.get(storageKey);
+    if (!object) {
+      return c.notFound();
+    }
+
+    const headers = new Headers();
+    headers.set(
+      "Content-Type",
+      object.contentType || "application/octet-stream",
+    );
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
+
+    return new Response(object.body, { headers });
+  });
+
+  // better-auth handler
+  app.all("/api/auth/*", async (c) => {
+    return c.var.auth.handler(c.req.raw);
+  });
 
   // Favicon routes - serve from DB settings (small files, avoids R2 round-trip)
   app.get("/favicon.ico", async (c) => {
@@ -225,13 +191,42 @@ export function createApp(): App {
     });
   });
 
-  // better-auth handler
-  app.all("/api/auth/*", async (c) => {
-    if (!c.var.auth) {
-      return c.json({ error: "Auth not configured. Set AUTH_SECRET." }, 500);
+  // --- Middleware for all remaining routes ---
+
+  // Onboarding gate — redirect to /setup if not yet initialized
+  app.use("*", requireOnboarding());
+
+  // Trailing slash redirect (redirect /foo/ to /foo)
+  app.use("*", async (c, next) => {
+    const url = new URL(c.req.url);
+    if (url.pathname !== "/" && url.pathname.endsWith("/")) {
+      const newUrl = url.pathname.slice(0, -1) + url.search;
+      return c.redirect(newUrl, 301);
     }
-    return c.var.auth.handler(c.req.raw);
+    await next();
   });
+
+  // Redirect middleware
+  app.use("*", async (c, next) => {
+    const path = new URL(c.req.url).pathname;
+    // Skip redirect check for API routes and static assets
+    if (path.startsWith("/api/") || path.startsWith("/assets/")) {
+      return next();
+    }
+
+    const redirect = await c.var.services.redirects.getByPath(path);
+    if (redirect) {
+      return c.redirect(redirect.toPath, redirect.type);
+    }
+
+    await next();
+  });
+
+  // Config + i18n — loads settings, resolves config/theme
+  app.use("*", withConfig());
+  app.use("*", i18nMiddleware());
+
+  // --- Routes that need config ---
 
   // API Routes
   app.route("/api/posts", postsApiRoutes);
@@ -258,30 +253,6 @@ export function createApp(): App {
   // API routes
   app.route("/api/upload", uploadApiRoutes);
   app.route("/api/search", searchApiRoutes);
-
-  // Media files from storage (path matches storage key: media/YYYY/MM/uuid.ext)
-  app.get("/media/*", async (c) => {
-    const storage = c.var.storage;
-    if (!storage) {
-      return c.notFound();
-    }
-
-    // The storage key is the full path without the leading "/"
-    const storageKey = c.req.path.slice(1);
-    const object = await storage.get(storageKey);
-    if (!object) {
-      return c.notFound();
-    }
-
-    const headers = new Headers();
-    headers.set(
-      "Content-Type",
-      object.contentType || "application/octet-stream",
-    );
-    headers.set("Cache-Control", "public, max-age=31536000, immutable");
-
-    return new Response(object.body, { headers });
-  });
 
   // Compose route (auth enforced in route middleware)
   app.route("/compose", composeRoutes);
