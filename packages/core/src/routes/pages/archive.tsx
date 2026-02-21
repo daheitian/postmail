@@ -6,7 +6,7 @@
 
 import { Hono } from "hono";
 import type { Bindings, Format } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { FORMATS } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";

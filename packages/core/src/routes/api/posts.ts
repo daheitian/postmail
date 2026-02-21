@@ -4,7 +4,7 @@
 
 import { Hono } from "hono";
 import type { Bindings, Format, Status, Media } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import * as sqid from "../../lib/sqid.js";
 import {
   CreatePostSchema,

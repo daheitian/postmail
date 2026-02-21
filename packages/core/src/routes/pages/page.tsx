@@ -8,7 +8,7 @@
 
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { SinglePage } from "../../ui/pages/SinglePage.js";
 import { PostPage } from "../../ui/pages/PostPage.js";
 import { getNavigationData } from "../../lib/navigation.js";

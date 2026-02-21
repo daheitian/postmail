@@ -4,7 +4,7 @@
 
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { z } from "zod";
 import { StatusSchema } from "../../lib/schemas.js";

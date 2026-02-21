@@ -7,7 +7,7 @@
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Page } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { PageForm, ActionButtons, DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";

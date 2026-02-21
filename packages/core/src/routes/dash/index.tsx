@@ -7,7 +7,7 @@
 import { Hono } from "hono";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { getSiteName } from "../../lib/config.js";
 

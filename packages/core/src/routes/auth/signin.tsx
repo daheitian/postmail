@@ -6,7 +6,7 @@ import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SigninSchema } from "../../lib/schemas.js";

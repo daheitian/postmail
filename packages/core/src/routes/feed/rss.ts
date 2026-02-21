@@ -5,7 +5,7 @@
 import { Hono } from "hono";
 import type { Context } from "hono";
 import type { Bindings, FeedData } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { defaultRssRenderer, defaultAtomRenderer } from "../../lib/feed.js";
 import { getSiteLanguage } from "../../lib/config.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";

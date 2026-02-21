@@ -7,7 +7,7 @@
 
 import type { Context } from "hono";
 import type { Bindings, TimelineItemView } from "../types.js";
-import type { AppVariables } from "../app.js";
+import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
 import { createMediaContext, toPostView, toPostViews } from "./view.js";
 

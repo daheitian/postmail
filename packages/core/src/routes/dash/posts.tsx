@@ -6,7 +6,7 @@ import { getSiteName } from "../../lib/config.js";
 import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Post, Media, Collection } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import {
   PostForm,

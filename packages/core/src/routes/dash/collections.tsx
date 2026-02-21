@@ -4,7 +4,7 @@
 
 import { Hono } from "hono";
 import type { Bindings, SortOrder } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";

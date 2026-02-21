@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { Hono } from "hono";
 import { requireOnboarding, resetOnboardingCache } from "../onboarding.js";
 import type { Bindings } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 

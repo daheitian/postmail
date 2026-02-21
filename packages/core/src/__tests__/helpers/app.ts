@@ -6,7 +6,7 @@
 
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { createTestDatabase } from "./db.js";
 import { createPostService } from "../../services/post.js";
 import { createPageService } from "../../services/page.js";
@@ -16,6 +16,7 @@ import { createMediaService } from "../../services/media.js";
 import { createCollectionService } from "../../services/collection.js";
 import { createSearchService } from "../../services/search.js";
 import { createNavItemService } from "../../services/navigation.js";
+import { createAuthService } from "../../services/auth.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 
@@ -40,15 +41,17 @@ export function createTestApp(options: TestAppOptions = {}) {
   // Create a mock D1 for search service
   const mockD1 = createMockD1(sqlite);
 
+  const settingsService = createSettingsService(db);
   const services = {
     posts: createPostService(db),
     pages: createPageService(db),
-    settings: createSettingsService(db),
+    settings: settingsService,
     redirects: createRedirectService(db),
     media: createMediaService(db),
     collections: createCollectionService(db),
     search: createSearchService(mockD1),
     navItems: createNavItemService(db),
+    auth: createAuthService(db, settingsService),
   };
 
   const app = new Hono<Env>();

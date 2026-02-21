@@ -4,8 +4,8 @@
 
 import { Hono } from "hono";
 import { createDatabase } from "./db/index.js";
-import { createServices, type Services } from "./services/index.js";
-import { createAuth, type Auth } from "./auth.js";
+import { createServices } from "./services/index.js";
+import { createAuth } from "./auth.js";
 import { i18nMiddleware } from "./i18n/index.js";
 import type { Bindings, JantConfig } from "./types.js";
 import { SETTINGS_KEYS } from "./lib/constants.js";
@@ -55,26 +55,13 @@ import { requireAuth } from "./middleware/auth.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
 
 import { getAvailableThemes, buildThemeStyle } from "./lib/theme.js";
-import { createStorageDriver, type StorageDriver } from "./lib/storage.js";
+import { createStorageDriver } from "./lib/storage.js";
 import { BUILTIN_FONT_THEMES } from "./ui/font-themes.js";
 import { getMediaUrl, getPublicUrlForProvider } from "./lib/image.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
+import { type AppVariables, type App } from "./types/app-context.js";
 
-// Extend Hono's context variables
-export interface AppVariables {
-  services: Services;
-  auth: Auth;
-  config: JantConfig;
-  themeStyle: string;
-  customCSS: string;
-  isAuthenticated: boolean;
-  storage: StorageDriver | null;
-  faviconUrl?: string;
-  faviconVersion?: string;
-  noindex?: boolean;
-}
-
-export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;
+export type { AppVariables, App };
 
 /**
  * Create a Jant application

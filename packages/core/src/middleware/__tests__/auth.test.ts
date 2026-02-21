@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
 import { requireAuth, requireAuthApi } from "../auth.js";
 import type { Bindings } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 

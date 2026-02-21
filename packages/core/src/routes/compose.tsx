@@ -8,7 +8,7 @@
 
 import { Hono } from "hono";
 import type { Bindings } from "../types.js";
-import type { AppVariables } from "../app.js";
+import type { AppVariables } from "../types/app-context.js";
 import { requireAuth } from "../middleware/auth.js";
 import { CreatePostSchema, validateMediaCount } from "../lib/schemas.js";
 import { sse, dsToast } from "../lib/sse.js";

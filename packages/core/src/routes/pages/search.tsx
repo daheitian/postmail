@@ -4,7 +4,7 @@
 
 import { Hono } from "hono";
 import type { Bindings, SearchResult } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { SearchPage } from "../../ui/pages/SearchPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";

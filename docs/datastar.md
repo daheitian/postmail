@@ -44,7 +44,7 @@
 **Default: Use non-SSE helpers** for single-operation responses (most cases):
 
 ```typescript
-import { dsRedirect, dsToast, dsSignals } from "@/lib/sse";
+import { dsRedirect, dsToast, dsSignals } from "../lib/sse.js";
 
 // Redirect (Datastar detects text/html -> patch-elements)
 return dsRedirect("/dash/posts");
@@ -63,7 +63,7 @@ return dsSignals({ _uploadError: "File too large" });
 **SSE: Only when you need multiple operations** in one response:
 
 ```typescript
-import { sse } from "@/lib/sse";
+import { sse } from "../lib/sse.js";
 
 return sse(c, async (stream) => {
   await stream.patchElements('<div id="msg">Success!</div>');

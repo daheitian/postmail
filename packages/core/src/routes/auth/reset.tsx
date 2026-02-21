@@ -7,12 +7,10 @@
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import { hashPassword } from "better-auth/crypto";
 import type { Bindings } from "../../types.js";
-import type { AppVariables } from "../../app.js";
+import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
-import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { ResetPasswordSchema } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -137,25 +135,6 @@ const ResetErrorContent: FC = () => {
   );
 };
 
-/**
- * Validate a password reset token against the stored value.
- * Returns true if the token is valid and not expired.
- */
-async function validateResetToken(
-  settings: { get(key: string): Promise<string | null> },
-  token: string,
-): Promise<boolean> {
-  const stored = await settings.get(SETTINGS_KEYS.PASSWORD_RESET_TOKEN);
-  if (!stored) return false;
-
-  const separatorIndex = stored.lastIndexOf(":");
-  const storedToken = stored.substring(0, separatorIndex);
-  const expiry = parseInt(stored.substring(separatorIndex + 1), 10);
-  const now = Math.floor(Date.now() / 1000);
-
-  return token === storedToken && now <= expiry;
-}
-
 export const resetRoutes = new Hono<Env>();
 
 resetRoutes.get("/reset", async (c) => {
@@ -168,7 +147,7 @@ resetRoutes.get("/reset", async (c) => {
     );
   }
 
-  const isValid = await validateResetToken(c.var.services.settings, token);
+  const isValid = await c.var.services.auth.validateResetToken(token);
   if (!isValid) {
     return c.html(
       <BaseLayout title="Reset Password - Jant" c={c}>
@@ -195,45 +174,14 @@ resetRoutes.post("/reset", async (c) => {
 
   const { password, token } = parsed.data;
 
-  // Validate token
-  const isValid = await validateResetToken(c.var.services.settings, token);
-  if (!isValid) {
-    return dsToast("Invalid or expired reset link.", "error");
-  }
-
   try {
-    const hashedPassword = await hashPassword(password);
-    const db = c.env.DB.withSession() as unknown as D1Database;
-
-    // Get admin user
-    const userResult = await db
-      .prepare("SELECT id FROM user LIMIT 1")
-      .first<{ id: string }>();
-    if (!userResult) {
-      return dsToast("No user account found.", "error");
-    }
-
-    // Update password
-    await db
-      .prepare(
-        "UPDATE account SET password = ? WHERE user_id = ? AND provider_id = 'credential'",
-      )
-      .bind(hashedPassword, userResult.id)
-      .run();
-
-    // Delete all sessions
-    await db
-      .prepare("DELETE FROM session WHERE user_id = ?")
-      .bind(userResult.id)
-      .run();
-
-    // Delete the reset token
-    await c.var.services.settings.remove(SETTINGS_KEYS.PASSWORD_RESET_TOKEN);
-
+    await c.var.services.auth.resetPassword(token, password);
     return dsRedirect("/signin?reset");
   } catch (err) {
     // eslint-disable-next-line no-console -- Error logging is intentional
     console.error("Password reset error:", err);
-    return dsToast("Failed to reset password.", "error");
+    const message =
+      err instanceof Error ? err.message : "Failed to reset password.";
+    return dsToast(message, "error");
   }
 });
