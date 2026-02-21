@@ -139,7 +139,7 @@ setupRoutes.post("/setup", async (c) => {
   const browserTimezone = body._timezone;
 
   if (!parsed.success) {
-    const msg = parsed.error.errors[0]?.message ?? "Invalid input";
+    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
     return dsToast(msg, "error");
   }
 

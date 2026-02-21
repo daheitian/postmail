@@ -71,9 +71,8 @@ export const SearchPage: FC<SearchPageProps> = ({
                     comment: "@context: Search results count - single",
                   })
                 : t({
-                    message: "Found {count} results",
+                    message: `Found ${String(results.length)} results`,
                     comment: "@context: Search results count - multiple",
-                    values: { count: String(results.length) },
                   })}
           </p>
 

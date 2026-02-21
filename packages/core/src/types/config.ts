@@ -5,7 +5,7 @@
  */
 
 import type { ColorTheme } from "../ui/color-themes.js";
-import type { FeedData, SitemapData } from "./views.js";
+import type { FeedData, SitemapData } from "./props.js";
 
 /**
  * Configuration Registry - Single Source of Truth

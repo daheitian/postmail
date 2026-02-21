@@ -192,9 +192,10 @@ describe("JantSettingsGeneral", () => {
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
-    expect(detail.endpoint).toBe("/dash/settings");
-    expect(detail.section).toBe("general");
-    expect(detail.data.siteName).toBe("New Name");
+    const d = detail as unknown as SettingsSaveDetail;
+    expect(d.endpoint).toBe("/dash/settings");
+    expect(d.section).toBe("general");
+    expect(d.data.siteName).toBe("New Name");
   });
 
   it("sectionSaved resets dirty state and updates originals", async () => {
@@ -259,9 +260,10 @@ describe("JantSettingsGeneral", () => {
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
-    expect(detail.endpoint).toBe("/dash/settings/footer");
-    expect(detail.section).toBe("footer");
-    expect(detail.data.siteFooter).toBe("New footer");
+    const d = detail as unknown as SettingsSaveDetail;
+    expect(d.endpoint).toBe("/dash/settings/footer");
+    expect(d.section).toBe("footer");
+    expect(d.data.siteFooter).toBe("New footer");
   });
 
   it("dispatches jant:settings-save for SEO section", async () => {
@@ -288,8 +290,9 @@ describe("JantSettingsGeneral", () => {
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
-    expect(detail.endpoint).toBe("/dash/settings/seo");
-    expect(detail.section).toBe("seo");
+    const d = detail as unknown as SettingsSaveDetail;
+    expect(d.endpoint).toBe("/dash/settings/seo");
+    expect(d.section).toBe("seo");
   });
 
   it("shows loading spinner during save", async () => {

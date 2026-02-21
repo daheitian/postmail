@@ -151,13 +151,13 @@ describe("JantPostForm", () => {
     );
 
     expect(detail).not.toBeNull();
-    if (!detail) return;
-    expect(detail.endpoint).toBe("/dash/posts");
-    expect(detail.data.title).toBe("Sample Post");
-    expect(detail.data.body).toBe("Hello world");
-    expect(detail.data.featured).toBe(true);
-    expect(detail.data.collectionIds).toEqual([collections[0].id]);
-    expect(detail.data.mediaIds).toEqual(["m1"]);
+    const d = detail as unknown as PostSubmitDetail;
+    expect(d.endpoint).toBe("/dash/posts");
+    expect(d.data.title).toBe("Sample Post");
+    expect(d.data.body).toBe("Hello world");
+    expect(d.data.featured).toBe(true);
+    expect(d.data.collectionIds).toEqual([collections[0].id]);
+    expect(d.data.mediaIds).toEqual(["m1"]);
   });
 
   it("updates mediaIds when setter called", async () => {

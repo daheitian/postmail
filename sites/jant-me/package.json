@@ -24,7 +24,7 @@
     "@lingui/swc-plugin": "^5.10.1",
     "@swc/core": "^1.15.11",
     "@tailwindcss/vite": "^4.1.18",
-    "@types/node": "^22.15.4",
+    "@types/node": "^25.1.0",
     "hono": "^4.11.9",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",

@@ -181,9 +181,10 @@ describe("JantSettingsAvatar", () => {
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
-    expect(detail.endpoint).toBe("/dash/settings/avatar/display");
-    expect(detail.section).toBe("avatar-display");
-    expect(detail.data.showHeaderAvatar).toBe("true");
+    const d = detail as unknown as SettingsSaveDetail;
+    expect(d.endpoint).toBe("/dash/settings/avatar/display");
+    expect(d.section).toBe("avatar-display");
+    expect(d.data.showHeaderAvatar).toBe("true");
   });
 
   it("dispatches jant:avatar-remove on remove click", async () => {
@@ -202,7 +203,8 @@ describe("JantSettingsAvatar", () => {
     removeBtn?.click();
 
     expect(detail).not.toBeNull();
-    expect(detail.endpoint).toBe("/dash/settings/avatar/remove");
+    const d = detail as unknown as AvatarRemoveDetail;
+    expect(d.endpoint).toBe("/dash/settings/avatar/remove");
   });
 
   it("saved() resets dirty state", async () => {

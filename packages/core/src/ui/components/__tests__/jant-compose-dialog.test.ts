@@ -144,12 +144,12 @@ describe("JantComposeDialog", () => {
     ).click();
 
     expect(receivedDetail).not.toBeNull();
-    if (!receivedDetail) return;
-    expect(receivedDetail.format).toBe("note");
-    expect(receivedDetail.body).toBe("Hello world");
-    expect(receivedDetail.status).toBe("published");
-    expect(receivedDetail.collectionIds).toEqual([]);
-    expect(receivedDetail.mediaIds).toEqual([]);
+    const detail = receivedDetail as unknown as ComposeSubmitDetail;
+    expect(detail.format).toBe("note");
+    expect(detail.body).toBe("Hello world");
+    expect(detail.status).toBe("published");
+    expect(detail.collectionIds).toEqual([]);
+    expect(detail.mediaIds).toEqual([]);
   });
 
   it("collection selector toggles IDs", async () => {
@@ -244,8 +244,8 @@ describe("JantComposeDialog", () => {
     draftBtn.click();
 
     expect(receivedDetail).not.toBeNull();
-    if (!receivedDetail) return;
-    expect(receivedDetail.status).toBe("draft");
+    const detail = receivedDetail as unknown as ComposeSubmitDetail;
+    expect(detail.status).toBe("draft");
   });
 
   it("does not dispatch submit when loading", async () => {

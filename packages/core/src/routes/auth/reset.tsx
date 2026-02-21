@@ -168,7 +168,7 @@ resetRoutes.post("/reset", async (c) => {
   const parsed = ResetPasswordSchema.safeParse(body);
 
   if (!parsed.success) {
-    const msg = parsed.error.errors[0]?.message ?? "Invalid input";
+    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
     return dsToast(msg, "error");
   }
 

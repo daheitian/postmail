@@ -6,6 +6,7 @@
  */
 
 import type { ErrorHandler } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { DomainError, NotFoundError, ValidationError } from "../lib/errors.js";
@@ -25,7 +26,7 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
         body.details = err.details;
       }
 
-      return c.json(body, { status: err.statusCode });
+      return c.json(body, err.statusCode as ContentfulStatusCode);
     }
 
     // Unknown API error

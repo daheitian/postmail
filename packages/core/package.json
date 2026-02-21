@@ -40,6 +40,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.987.0",
     "@lingui/core": "^5.9.0",
+    "@lingui/react": "^5.9.0",
     "@tailwindcss/typography": "^0.5.19",
     "basecoat-css": "^0.3.10",
     "better-auth": "^1.4.18",

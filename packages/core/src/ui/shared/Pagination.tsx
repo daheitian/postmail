@@ -224,10 +224,10 @@ export const PagePagination: FC<PagePaginationProps> = ({
   }
 
   // Simple prev/next fallback when totalPages is unknown
+  const page = String(currentPage);
   const pageText = t({
-    message: "Page {page}",
+    message: `Page ${page}`,
     comment: "@context: Pagination - current page indicator",
-    values: { page: String(currentPage) },
   });
 
   return (

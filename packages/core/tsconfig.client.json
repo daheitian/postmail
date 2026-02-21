@@ -17,6 +17,9 @@
     "src/lib/settings-bridge.ts",
     "src/lib/post-form-bridge.ts",
     "src/lib/collections-reorder.ts",
+    "src/lib/avatar-upload.ts",
+    "src/lib/collection-form-bridge.ts",
+    "src/lib/toast.ts",
     "src/types/sortablejs.d.ts",
     "src/ui/components/**/*.ts"
   ]

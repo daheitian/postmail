@@ -142,12 +142,12 @@ describe("JantCollectionForm", () => {
     );
 
     expect(detail).not.toBeNull();
-    if (!detail) return;
-    expect(detail.endpoint).toBe("/dash/collections");
-    expect(detail.data.title).toBe("Books");
-    expect(detail.data.slug).toBe("books");
-    expect(detail.data.description).toBe("All about books");
-    expect(detail.data.sortOrder).toBe("rating_desc");
-    expect(detail.data.icon).toBeUndefined();
+    const d = detail as unknown as CollectionSubmitDetail;
+    expect(d.endpoint).toBe("/dash/collections");
+    expect(d.data.title).toBe("Books");
+    expect(d.data.slug).toBe("books");
+    expect(d.data.description).toBe("All about books");
+    expect(d.data.sortOrder).toBe("rating_desc");
+    expect(d.data.icon).toBeUndefined();
   });
 });

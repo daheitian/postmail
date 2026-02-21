@@ -16,10 +16,10 @@ export function ViewCollectionContent({
   posts: PostView[];
 }) {
   const { t } = useLingui();
+  const count = String(posts.length);
   const postsHeader = t({
-    message: "Posts in Collection ({count})",
+    message: `Posts in Collection (${count})`,
     comment: "@context: Collection posts section heading",
-    values: { count: String(posts.length) },
   });
 
   return (

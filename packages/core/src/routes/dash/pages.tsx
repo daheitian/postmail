@@ -225,7 +225,7 @@ pagesRoutes.post("/", async (c) => {
   const raw = await c.req.json();
   const parsed = CreatePageSchema.safeParse(raw);
   if (!parsed.success) {
-    const msg = parsed.error.errors[0]?.message ?? "Invalid input";
+    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
     return dsToast(msg, "error");
   }
 
@@ -310,7 +310,7 @@ pagesRoutes.post("/:id", async (c) => {
   const raw = await c.req.json();
   const parsed = CreatePageSchema.safeParse(raw);
   if (!parsed.success) {
-    const msg = parsed.error.errors[0]?.message ?? "Invalid input";
+    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
     return dsToast(msg, "error");
   }
 

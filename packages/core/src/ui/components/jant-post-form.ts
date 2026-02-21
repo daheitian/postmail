@@ -216,25 +216,22 @@ export class JantPostForm extends LitElement {
     this.#initialized = true;
   }
 
-  protected handleInput(
-    field: "_title" | "_body" | "_url" | "_quoteText",
-    e: Event,
-  ) {
+  handleInput(field: "_title" | "_body" | "_url" | "_quoteText", e: Event) {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
     (this as unknown as Record<string, string>)[field] = target.value;
   }
 
-  protected toggleCollection(id: number) {
+  toggleCollection(id: number) {
     this._collectionIds = this._collectionIds.includes(id)
       ? this._collectionIds.filter((cid) => cid !== id)
       : [...this._collectionIds, id];
   }
 
-  protected removeMedia(id: string) {
+  removeMedia(id: string) {
     this._mediaIds = this._mediaIds.filter((mid) => mid !== id);
   }
 
-  protected openMediaPicker() {
+  openMediaPicker() {
     const dialog = this.#mediaDialog;
     if (!dialog) return;
     dialog.showModal();
@@ -249,11 +246,11 @@ export class JantPostForm extends LitElement {
     );
   }
 
-  protected closeMediaPicker() {
+  closeMediaPicker() {
     this.#mediaDialog?.close();
   }
 
-  protected handleSubmit(e: Event) {
+  handleSubmit(e: Event) {
     e.preventDefault();
     if (this._loading || !this.action) return;
     const detail: PostSubmitDetail = {
