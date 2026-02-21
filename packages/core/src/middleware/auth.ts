@@ -7,6 +7,11 @@
 import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
+import {
+  DomainError,
+  UnauthorizedError,
+  ExternalServiceError,
+} from "../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -43,7 +48,7 @@ export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
 export function requireAuthApi(): MiddlewareHandler<Env> {
   return async (c, next) => {
     if (!c.var.auth) {
-      return c.json({ error: "Authentication not configured" }, 500);
+      throw new ExternalServiceError("Authentication not configured");
     }
 
     try {
@@ -52,12 +57,13 @@ export function requireAuthApi(): MiddlewareHandler<Env> {
       });
 
       if (!session?.user) {
-        return c.json({ error: "Unauthorized" }, 401);
+        throw new UnauthorizedError();
       }
 
       await next();
-    } catch {
-      return c.json({ error: "Unauthorized" }, 401);
+    } catch (err) {
+      if (err instanceof DomainError) throw err;
+      throw new UnauthorizedError();
     }
   };
 }

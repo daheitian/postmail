@@ -275,7 +275,8 @@ describe("Posts API Routes", () => {
 
       expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.error).toBe("Validation failed");
+      expect(body.error).toContain("Invalid");
+      expect(body.code).toBe("VALIDATION_ERROR");
     });
 
     it("returns 400 for missing required fields", async () => {

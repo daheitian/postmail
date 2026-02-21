@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
 import { requireAuth, requireAuthApi } from "../auth.js";
+import { errorHandler } from "../error-handler.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 
@@ -76,6 +77,7 @@ describe("requireAuth", () => {
 describe("requireAuthApi", () => {
   it("allows authenticated requests", async () => {
     const app = new Hono<Env>();
+    app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(true));
       await next();
@@ -91,6 +93,7 @@ describe("requireAuthApi", () => {
 
   it("returns 401 for unauthenticated requests", async () => {
     const app = new Hono<Env>();
+    app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
       await next();
@@ -102,10 +105,12 @@ describe("requireAuthApi", () => {
 
     const body = await res.json();
     expect(body.error).toBe("Unauthorized");
+    expect(body.code).toBe("UNAUTHORIZED");
   });
 
   it("returns 500 when auth is not configured", async () => {
     const app = new Hono<Env>();
+    app.onError(errorHandler);
     app.use("*", async (c, next) => {
       // auth not set (undefined)
       await next();
@@ -117,10 +122,12 @@ describe("requireAuthApi", () => {
 
     const body = await res.json();
     expect(body.error).toBe("Authentication not configured");
+    expect(body.code).toBe("EXTERNAL_SERVICE_ERROR");
   });
 
   it("returns 401 when getSession throws", async () => {
     const app = new Hono<Env>();
+    app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", {
         api: {

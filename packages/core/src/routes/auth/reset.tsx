@@ -185,21 +185,6 @@ resetRoutes.post("/reset", async (c) => {
 
   const { password, token } = parsed.data;
 
-  try {
-    await c.var.services.auth.resetPassword(token, password);
-    return dsRedirect("/signin?reset");
-  } catch (err) {
-    // eslint-disable-next-line no-console -- Error logging is intentional
-    console.error("Password reset error:", err);
-    const message =
-      err instanceof Error
-        ? err.message
-        : i18n._(
-            msg({
-              message: "Failed to reset password.",
-              comment: "@context: Error toast when password reset fails",
-            }),
-          );
-    return dsToast(message, "error");
-  }
+  await c.var.services.auth.resetPassword(token, password);
+  return dsRedirect("/signin?reset");
 });

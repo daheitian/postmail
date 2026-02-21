@@ -11,6 +11,7 @@ import type { Database } from "../db/index.js";
 import { user, account, session } from "../db/schema.js";
 import type { SettingsService } from "./settings.js";
 import { SETTINGS_KEYS } from "../lib/constants.js";
+import { ValidationError, NotFoundError } from "../lib/errors.js";
 
 export interface AuthService {
   /**
@@ -29,7 +30,8 @@ export interface AuthService {
    *
    * @param token - The reset token (re-validated to prevent TOCTOU)
    * @param newPassword - The new plaintext password
-   * @throws Error if token is invalid or no user account exists
+   * @throws {ValidationError} if token is invalid or expired
+   * @throws {NotFoundError} if no user account exists
    */
   resetPassword(token: string, newPassword: string): Promise<void>;
 }
@@ -56,7 +58,7 @@ export function createAuthService(
     async resetPassword(token, newPassword) {
       const isValid = await validateResetToken(token);
       if (!isValid) {
-        throw new Error("Invalid or expired reset token");
+        throw new ValidationError("Invalid or expired reset token");
       }
 
       const hashedPw = await hashPassword(newPassword);
@@ -64,7 +66,7 @@ export function createAuthService(
       // Get admin user (single-author system)
       const userResult = await db.select({ id: user.id }).from(user).limit(1);
       if (!userResult[0]) {
-        throw new Error("No user account found");
+        throw new NotFoundError("User account");
       }
       const userId = userResult[0].id;
 

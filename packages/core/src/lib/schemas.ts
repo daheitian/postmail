@@ -251,7 +251,7 @@ export function parseFormData<T>(
 ): T {
   const value = formData.get(key);
   if (value === null) {
-    throw new Error(`Missing required field: ${key}`);
+    throw new ValidationError(`Missing required field: ${key}`);
   }
   return schema.parse(value);
 }
@@ -305,7 +305,8 @@ export function validateMediaCount(mediaIds: string[]): string | null {
 export function parseValidated<T>(schema: z.ZodSchema<T>, data: unknown): T {
   const result = schema.safeParse(data);
   if (!result.success) {
-    throw new ValidationError("Validation failed", result.error.flatten());
+    const firstMessage = result.error.issues[0]?.message ?? "Validation failed";
+    throw new ValidationError(firstMessage, result.error.flatten());
   }
   return result.data;
 }

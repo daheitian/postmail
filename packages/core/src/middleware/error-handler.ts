@@ -10,6 +10,7 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { DomainError, NotFoundError, ValidationError } from "../lib/errors.js";
+import { dsToast } from "../lib/sse.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -33,6 +34,16 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
     // eslint-disable-next-line no-console -- Server error logging is intentional
     console.error("[Jant] Unhandled error:", err);
     return c.json({ error: "Internal server error" }, 500);
+  }
+
+  // Datastar requests: return toast
+  if (c.req.header("datastar-request")) {
+    if (err instanceof DomainError) {
+      return dsToast(err.message, "error");
+    }
+    // eslint-disable-next-line no-console -- Server error logging is intentional
+    console.error("[Jant] Unhandled error:", err);
+    return dsToast("An unexpected error occurred", "error");
   }
 
   // Non-API routes: map NotFoundError to Hono's built-in 404
