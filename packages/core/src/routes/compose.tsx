@@ -7,11 +7,13 @@
  */
 
 import { Hono, type Context } from "hono";
+import { msg } from "@lingui/core/macro";
 import type { Bindings, Post } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { requireAuth } from "../middleware/auth.js";
 import { CreatePostSchema, validateMediaCount } from "../lib/schemas.js";
 import { sse, dsToast } from "../lib/sse.js";
+import { getI18n } from "../i18n/index.js";
 import {
   toPostView,
   toPostViewFromPost,
@@ -81,12 +83,20 @@ async function buildTimelineCard(
 }
 
 composeRoutes.post("/", async (c) => {
+  const i18n = getI18n(c);
   const raw = await c.req.json();
   const wantsJson = c.req.header("accept")?.includes("application/json");
 
   const result = CreatePostSchema.safeParse(raw);
   if (!result.success) {
-    const firstError = result.error.issues[0]?.message ?? "Invalid input";
+    const firstError =
+      result.error.issues[0]?.message ??
+      i18n._(
+        msg({
+          message: "Invalid input",
+          comment: "@context: Fallback validation error for compose form",
+        }),
+      );
     if (wantsJson) {
       return c.json({ status: "error" as const, error: firstError }, 422);
     }
@@ -124,7 +134,15 @@ composeRoutes.post("/", async (c) => {
   // ── JSON response mode (used by Lit compose bridge) ──────────────
   if (wantsJson) {
     if (isDraft) {
-      return c.json({ status: "draft" as const, toast: "Draft saved." });
+      return c.json({
+        status: "draft" as const,
+        toast: i18n._(
+          msg({
+            message: "Draft saved.",
+            comment: "@context: Toast after saving a draft post",
+          }),
+        ),
+      });
     }
 
     const cardHtml = await buildTimelineCard(c, post, data.mediaIds);
@@ -139,7 +157,14 @@ composeRoutes.post("/", async (c) => {
         selector: "body",
       });
       await stream.patchSignals(INITIAL_SIGNALS);
-      await stream.toast("Draft saved.");
+      await stream.toast(
+        i18n._(
+          msg({
+            message: "Draft saved.",
+            comment: "@context: Toast after saving a draft post",
+          }),
+        ),
+      );
     });
   }
 

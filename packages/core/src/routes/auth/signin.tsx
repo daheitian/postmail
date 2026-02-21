@@ -4,12 +4,14 @@
 
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
+import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SigninSchema } from "../../lib/schemas.js";
+import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -124,16 +126,34 @@ signinRoutes.get("/signin", async (c) => {
 });
 
 signinRoutes.post("/signin", async (c) => {
+  const i18n = getI18n(c);
+
   if (!c.var.auth) {
-    return dsToast("Auth not configured", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Auth not configured",
+          comment:
+            "@context: Error toast when authentication system is unavailable",
+        }),
+      ),
+      "error",
+    );
   }
 
   const body = await c.req.json();
   const parsed = SigninSchema.safeParse(body);
 
   if (!parsed.success) {
-    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
-    return dsToast(msg, "error");
+    const errorMsg =
+      parsed.error.issues[0]?.message ??
+      i18n._(
+        msg({
+          message: "Invalid input",
+          comment: "@context: Fallback validation error for sign-in form",
+        }),
+      );
+    return dsToast(errorMsg, "error");
   }
 
   const { email, password } = parsed.data;
@@ -147,7 +167,15 @@ signinRoutes.post("/signin", async (c) => {
 
     return dsRedirect("/dash", { headers });
   } catch {
-    return dsToast("Invalid email or password", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Invalid email or password",
+          comment: "@context: Error toast when sign-in credentials are wrong",
+        }),
+      ),
+      "error",
+    );
   }
 });
 

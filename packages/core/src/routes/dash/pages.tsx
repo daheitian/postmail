@@ -5,6 +5,7 @@
  */
 
 import { Hono } from "hono";
+import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Page } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -15,6 +16,7 @@ import { getSiteName } from "../../lib/config.js";
 import { CreatePageSchema } from "../../lib/schemas.js";
 import { UnifiedPagesContent } from "../../ui/dash/pages/UnifiedPagesContent.js";
 import { LinkFormContent } from "../../ui/dash/pages/LinkFormContent.js";
+import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -153,9 +155,18 @@ pagesRoutes.get("/links/new", async (c) => {
 });
 
 pagesRoutes.post("/links", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ label: string; url: string }>();
   if (!body.label || !body.url) {
-    return dsToast("Label and URL are required", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Label and URL are required",
+          comment: "@context: Error toast when nav link fields are empty",
+        }),
+      ),
+      "error",
+    );
   }
 
   await c.var.services.navItems.create({
@@ -167,12 +178,28 @@ pagesRoutes.post("/links", async (c) => {
 });
 
 pagesRoutes.post("/reorder", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ ids: number[] }>();
   if (!Array.isArray(body.ids)) {
-    return dsToast("Invalid request", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Invalid request",
+          comment: "@context: Error toast when reorder request is malformed",
+        }),
+      ),
+      "error",
+    );
   }
   await c.var.services.navItems.reorder(body.ids);
-  return dsToast("Order saved");
+  return dsToast(
+    i18n._(
+      msg({
+        message: "Order saved",
+        comment: "@context: Toast after saving navigation item order",
+      }),
+    ),
+  );
 });
 
 pagesRoutes.get("/links/:id/edit", async (c) => {
@@ -196,12 +223,21 @@ pagesRoutes.get("/links/:id/edit", async (c) => {
 });
 
 pagesRoutes.post("/links/:id", async (c) => {
+  const i18n = getI18n(c);
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
 
   const body = await c.req.json<{ label: string; url: string }>();
   if (!body.label || !body.url) {
-    return dsToast("Label and URL are required", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Label and URL are required",
+          comment: "@context: Error toast when nav link fields are empty",
+        }),
+      ),
+      "error",
+    );
   }
 
   const updated = await c.var.services.navItems.update(id, {
@@ -222,11 +258,19 @@ pagesRoutes.post("/links/:id/delete", async (c) => {
 });
 
 pagesRoutes.post("/", async (c) => {
+  const i18n = getI18n(c);
   const raw = await c.req.json();
   const parsed = CreatePageSchema.safeParse(raw);
   if (!parsed.success) {
-    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
-    return dsToast(msg, "error");
+    const errorMsg =
+      parsed.error.issues[0]?.message ??
+      i18n._(
+        msg({
+          message: "Invalid input",
+          comment: "@context: Fallback validation error for page form",
+        }),
+      );
+    return dsToast(errorMsg, "error");
   }
 
   const page = await c.var.services.pages.create({
@@ -304,14 +348,22 @@ pagesRoutes.get("/:id/edit", async (c) => {
 });
 
 pagesRoutes.post("/:id", async (c) => {
+  const i18n = getI18n(c);
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
 
   const raw = await c.req.json();
   const parsed = CreatePageSchema.safeParse(raw);
   if (!parsed.success) {
-    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
-    return dsToast(msg, "error");
+    const errorMsg =
+      parsed.error.issues[0]?.message ??
+      i18n._(
+        msg({
+          message: "Invalid input",
+          comment: "@context: Fallback validation error for page form",
+        }),
+      );
+    return dsToast(errorMsg, "error");
   }
 
   await c.var.services.pages.update(id, {

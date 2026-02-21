@@ -6,12 +6,14 @@
 
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
+import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { ResetPasswordSchema } from "../../lib/schemas.js";
+import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -164,12 +166,21 @@ resetRoutes.get("/reset", async (c) => {
 });
 
 resetRoutes.post("/reset", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json();
   const parsed = ResetPasswordSchema.safeParse(body);
 
   if (!parsed.success) {
-    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
-    return dsToast(msg, "error");
+    const errorMsg =
+      parsed.error.issues[0]?.message ??
+      i18n._(
+        msg({
+          message: "Invalid input",
+          comment:
+            "@context: Fallback validation error for password reset form",
+        }),
+      );
+    return dsToast(errorMsg, "error");
   }
 
   const { password, token } = parsed.data;
@@ -181,7 +192,14 @@ resetRoutes.post("/reset", async (c) => {
     // eslint-disable-next-line no-console -- Error logging is intentional
     console.error("Password reset error:", err);
     const message =
-      err instanceof Error ? err.message : "Failed to reset password.";
+      err instanceof Error
+        ? err.message
+        : i18n._(
+            msg({
+              message: "Failed to reset password.",
+              comment: "@context: Error toast when password reset fails",
+            }),
+          );
     return dsToast(message, "error");
   }
 });

@@ -6,6 +6,7 @@
 
 import { Hono } from "hono";
 import type { FC } from "hono/jsx";
+import { msg } from "@lingui/core/macro";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -13,6 +14,7 @@ import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SetupSchema } from "../../lib/schemas.js";
 import { mapIanaToTimezone } from "../../lib/timezones.js";
+import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -131,6 +133,7 @@ setupRoutes.get("/setup", async (c) => {
 });
 
 setupRoutes.post("/setup", async (c) => {
+  const i18n = getI18n(c);
   const isComplete = await c.var.services.settings.isOnboardingComplete();
   if (isComplete) return c.redirect("/");
 
@@ -139,14 +142,30 @@ setupRoutes.post("/setup", async (c) => {
   const browserTimezone = body._timezone;
 
   if (!parsed.success) {
-    const msg = parsed.error.issues[0]?.message ?? "Invalid input";
-    return dsToast(msg, "error");
+    const errorMsg =
+      parsed.error.issues[0]?.message ??
+      i18n._(
+        msg({
+          message: "Invalid input",
+          comment: "@context: Fallback validation error for setup form",
+        }),
+      );
+    return dsToast(errorMsg, "error");
   }
 
   const { name, email, password } = parsed.data;
 
   if (!c.var.auth) {
-    return dsToast("AUTH_SECRET not configured", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "AUTH_SECRET not configured",
+          comment:
+            "@context: Error toast when authentication secret is missing from server config",
+        }),
+      ),
+      "error",
+    );
   }
 
   try {
@@ -155,7 +174,15 @@ setupRoutes.post("/setup", async (c) => {
     });
 
     if (!signUpResponse || "error" in signUpResponse) {
-      return dsToast("Failed to create account", "error");
+      return dsToast(
+        i18n._(
+          msg({
+            message: "Failed to create account",
+            comment: "@context: Error toast when account creation fails",
+          }),
+        ),
+        "error",
+      );
     }
 
     await c.var.services.settings.completeOnboarding();
@@ -205,6 +232,14 @@ setupRoutes.post("/setup", async (c) => {
   } catch (err) {
     // eslint-disable-next-line no-console -- Error logging is intentional
     console.error("Setup error:", err);
-    return dsToast("Failed to create account", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Failed to create account",
+          comment: "@context: Error toast when account creation fails",
+        }),
+      ),
+      "error",
+    );
   }
 });

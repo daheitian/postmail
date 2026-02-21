@@ -7,6 +7,7 @@
 
 import { Hono, type Context } from "hono";
 import { html } from "hono/html";
+import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
@@ -18,6 +19,7 @@ import {
 import { sse } from "../../lib/sse.js";
 import { validateUploadFile, generateStorageKey } from "../../lib/upload.js";
 import { assertFound } from "../../lib/errors.js";
+import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -131,22 +133,35 @@ function sseUploadError(c: Context<Env>, message: string): Response {
 
 // Upload a file
 uploadApiRoutes.post("/", async (c) => {
+  const i18n = getI18n(c);
   const storage = c.var.storage;
   if (!storage) {
+    const errorText = i18n._(
+      msg({
+        message: "Storage not configured",
+        comment: "@context: Error when file storage is not set up",
+      }),
+    );
     if (wantsSSE(c)) {
-      return sseUploadError(c, "Storage not configured");
+      return sseUploadError(c, errorText);
     }
-    return c.json({ error: "Storage not configured" }, 500);
+    return c.json({ error: errorText }, 500);
   }
 
   const formData = await c.req.formData();
   const file = formData.get("file") as File | null;
 
   if (!file) {
+    const errorText = i18n._(
+      msg({
+        message: "No file provided",
+        comment: "@context: Error when no file was selected for upload",
+      }),
+    );
     if (wantsSSE(c)) {
-      return sseUploadError(c, "No file provided");
+      return sseUploadError(c, errorText);
     }
-    return c.json({ error: "No file provided" }, 400);
+    return c.json({ error: errorText }, 400);
   }
 
   // Validate file type and size
@@ -198,7 +213,14 @@ uploadApiRoutes.post("/", async (c) => {
           mode: "outer",
           selector: "#upload-placeholder",
         });
-        await stream.toast("Upload successful!");
+        await stream.toast(
+          i18n._(
+            msg({
+              message: "Upload successful!",
+              comment: "@context: Toast after successful file upload",
+            }),
+          ),
+        );
       });
     }
 
@@ -221,13 +243,19 @@ uploadApiRoutes.post("/", async (c) => {
     // eslint-disable-next-line no-console -- Error logging is intentional
     console.error("Upload error:", err);
 
+    const errorText = i18n._(
+      msg({
+        message: "Upload failed. Please try again.",
+        comment: "@context: Error when file upload fails",
+      }),
+    );
     if (wantsSSE(c)) {
       return sse(c, async (stream) => {
         await stream.remove("#upload-placeholder");
-        await stream.toast("Upload failed. Please try again.", "error");
+        await stream.toast(errorText, "error");
       });
     }
-    return c.json({ error: "Upload failed" }, 500);
+    return c.json({ error: errorText }, 500);
   }
 });
 

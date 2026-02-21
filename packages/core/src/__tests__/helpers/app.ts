@@ -20,6 +20,7 @@ import { createAuthService } from "../../services/auth.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
+import { createI18n } from "../../i18n/i18n.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -70,6 +71,11 @@ export function createTestApp(options: TestAppOptions = {}) {
     c.set("services", services as AppVariables["services"]);
     c.set("config", {});
     c.set("storage", null);
+
+    // i18n (English default for tests)
+    const i18n = createI18n("en");
+    c.set("lang", "en");
+    c.set("i18n", i18n);
 
     if (options.authenticated) {
       // Mock auth that always returns a session

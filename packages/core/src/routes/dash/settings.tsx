@@ -5,10 +5,12 @@
  */
 
 import { Hono } from "hono";
+import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
+import { getI18n } from "../../i18n/index.js";
 import { arrayBufferToBase64 } from "../../lib/favicon.js";
 import {
   getSiteLanguage,
@@ -103,6 +105,7 @@ settingsRoutes.get("/", async (c) => {
 });
 
 settingsRoutes.post("/", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{
     siteName: string;
     siteDescription: string;
@@ -157,7 +160,12 @@ settingsRoutes.post("/", async (c) => {
     }
     return c.json({
       status: "ok" as const,
-      toast: "Settings saved successfully.",
+      toast: i18n._(
+        msg({
+          message: "Settings saved successfully.",
+          comment: "@context: Toast after saving general settings",
+        }),
+      ),
       siteName: displayName,
     });
   }
@@ -174,7 +182,14 @@ settingsRoutes.post("/", async (c) => {
         mode: "inner",
         selector: "title",
       });
-      await stream.toast("Settings saved successfully.");
+      await stream.toast(
+        i18n._(
+          msg({
+            message: "Settings saved successfully.",
+            comment: "@context: Toast after saving general settings",
+          }),
+        ),
+      );
       await stream.patchSignals({
         _orig_siteName: body.siteName,
         _orig_siteDescription: body.siteDescription,
@@ -188,6 +203,7 @@ settingsRoutes.post("/", async (c) => {
 });
 
 settingsRoutes.post("/footer", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ siteFooter: string }>();
   const { settings } = c.var.services;
 
@@ -202,12 +218,24 @@ settingsRoutes.post("/footer", async (c) => {
   if (wantsJson) {
     return c.json({
       status: "ok" as const,
-      toast: "Footer saved successfully.",
+      toast: i18n._(
+        msg({
+          message: "Footer saved successfully.",
+          comment: "@context: Toast after saving site footer",
+        }),
+      ),
     });
   }
 
   return sse(c, async (stream) => {
-    await stream.toast("Footer saved successfully.");
+    await stream.toast(
+      i18n._(
+        msg({
+          message: "Footer saved successfully.",
+          comment: "@context: Toast after saving site footer",
+        }),
+      ),
+    );
     await stream.patchSignals({
       _orig_siteFooter: body.siteFooter,
       _footerDirty: false,
@@ -216,6 +244,7 @@ settingsRoutes.post("/footer", async (c) => {
 });
 
 settingsRoutes.post("/seo", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ noindex: string }>();
   const { settings } = c.var.services;
 
@@ -233,12 +262,24 @@ settingsRoutes.post("/seo", async (c) => {
   if (wantsJson) {
     return c.json({
       status: "ok" as const,
-      toast: "SEO settings saved successfully.",
+      toast: i18n._(
+        msg({
+          message: "SEO settings saved successfully.",
+          comment: "@context: Toast after saving SEO settings",
+        }),
+      ),
     });
   }
 
   return sse(c, async (stream) => {
-    await stream.toast("SEO settings saved successfully.");
+    await stream.toast(
+      i18n._(
+        msg({
+          message: "SEO settings saved successfully.",
+          comment: "@context: Toast after saving SEO settings",
+        }),
+      ),
+    );
     await stream.patchSignals({
       _orig_noindex: body.noindex,
       _seoDirty: false,
@@ -251,15 +292,32 @@ settingsRoutes.post("/seo", async (c) => {
 // ===========================================================================
 
 settingsRoutes.post("/avatar", async (c) => {
+  const i18n = getI18n(c);
   const storage = c.var.storage;
   if (!storage) {
-    return dsToast("Storage not configured.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Storage not configured.",
+          comment: "@context: Error toast when file storage is not set up",
+        }),
+      ),
+      "error",
+    );
   }
 
   const formData = await c.req.formData();
   const file = formData.get("file") as File | null;
   if (!file) {
-    return dsToast("No file provided.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "No file provided.",
+          comment: "@context: Error toast when no file was selected for upload",
+        }),
+      ),
+      "error",
+    );
   }
 
   const uploadError = validateUploadFile(file);
@@ -320,7 +378,15 @@ settingsRoutes.post("/avatar", async (c) => {
 
     return dsRedirect("/dash/settings?saved");
   } catch {
-    return dsToast("Upload failed. Please try again.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Upload failed. Please try again.",
+          comment: "@context: Error toast when avatar upload fails",
+        }),
+      ),
+      "error",
+    );
   }
 });
 
@@ -348,6 +414,7 @@ settingsRoutes.post("/avatar/remove", async (c) => {
 });
 
 settingsRoutes.post("/avatar/display", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ showHeaderAvatar: string }>();
   const { settings } = c.var.services;
 
@@ -362,12 +429,24 @@ settingsRoutes.post("/avatar/display", async (c) => {
   if (wantsJson) {
     return c.json({
       status: "ok" as const,
-      toast: "Avatar display setting saved successfully.",
+      toast: i18n._(
+        msg({
+          message: "Avatar display setting saved successfully.",
+          comment: "@context: Toast after saving avatar display preference",
+        }),
+      ),
     });
   }
 
   return sse(c, async (stream) => {
-    await stream.toast("Avatar display setting saved successfully.");
+    await stream.toast(
+      i18n._(
+        msg({
+          message: "Avatar display setting saved successfully.",
+          comment: "@context: Toast after saving avatar display preference",
+        }),
+      ),
+    );
     await stream.patchSignals({
       _orig_showHeaderAvatar: body.showHeaderAvatar,
       _avatarDisplayDirty: false,
@@ -410,13 +489,22 @@ settingsRoutes.get("/appearance", async (c) => {
 });
 
 settingsRoutes.post("/appearance", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ theme: string }>();
   const { settings } = c.var.services;
   const themes = getAvailableThemes(c.var.config);
 
   const validTheme = themes.find((t) => t.id === body.theme);
   if (!validTheme) {
-    return dsToast("Invalid theme selected.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Invalid theme selected.",
+          comment: "@context: Error toast when selected theme is not valid",
+        }),
+      ),
+      "error",
+    );
   }
 
   const defaultThemeId = getConfigFallback(c, "DEFAULT_THEME");
@@ -430,12 +518,22 @@ settingsRoutes.post("/appearance", async (c) => {
 });
 
 settingsRoutes.post("/font-theme", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ fontTheme: string }>();
   const { settings } = c.var.services;
 
   const validFont = BUILTIN_FONT_THEMES.find((f) => f.id === body.fontTheme);
   if (!validFont) {
-    return dsToast("Invalid font theme selected.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Invalid font theme selected.",
+          comment:
+            "@context: Error toast when selected font theme is not valid",
+        }),
+      ),
+      "error",
+    );
   }
 
   if (validFont.id === "default") {
@@ -448,6 +546,7 @@ settingsRoutes.post("/font-theme", async (c) => {
 });
 
 settingsRoutes.post("/custom-css", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ customCSS: string }>();
   const { settings } = c.var.services;
 
@@ -459,7 +558,14 @@ settingsRoutes.post("/custom-css", async (c) => {
     await settings.remove(SETTINGS_KEYS.CUSTOM_CSS);
   }
 
-  return dsToast("Custom CSS saved successfully.");
+  return dsToast(
+    i18n._(
+      msg({
+        message: "Custom CSS saved successfully.",
+        comment: "@context: Toast after saving custom CSS",
+      }),
+    ),
+  );
 });
 
 // ===========================================================================
@@ -488,11 +594,20 @@ settingsRoutes.get("/account", async (c) => {
 });
 
 settingsRoutes.post("/account", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{ userName: string }>();
   const name = body.userName?.trim();
 
   if (!name) {
-    return dsToast("Name is required.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Name is required.",
+          comment: "@context: Error toast when display name is empty",
+        }),
+      ),
+      "error",
+    );
   }
 
   try {
@@ -501,13 +616,29 @@ settingsRoutes.post("/account", async (c) => {
       headers: c.req.raw.headers,
     });
   } catch {
-    return dsToast("Failed to update profile.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Failed to update profile.",
+          comment: "@context: Error toast when profile update fails",
+        }),
+      ),
+      "error",
+    );
   }
 
-  return dsToast("Profile saved successfully.");
+  return dsToast(
+    i18n._(
+      msg({
+        message: "Profile saved successfully.",
+        comment: "@context: Toast after saving user profile",
+      }),
+    ),
+  );
 });
 
 settingsRoutes.post("/password", async (c) => {
+  const i18n = getI18n(c);
   const body = await c.req.json<{
     currentPassword: string;
     newPassword: string;
@@ -515,7 +646,16 @@ settingsRoutes.post("/password", async (c) => {
   }>();
 
   if (body.newPassword !== body.confirmPassword) {
-    return dsToast("Passwords do not match.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Passwords do not match.",
+          comment:
+            "@context: Error toast when new password and confirmation differ",
+        }),
+      ),
+      "error",
+    );
   }
 
   try {
@@ -528,11 +668,27 @@ settingsRoutes.post("/password", async (c) => {
       headers: c.req.raw.headers,
     });
   } catch {
-    return dsToast("Current password is incorrect.", "error");
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Current password is incorrect.",
+          comment:
+            "@context: Error toast when current password verification fails",
+        }),
+      ),
+      "error",
+    );
   }
 
   return sse(c, async (stream) => {
-    await stream.toast("Password changed successfully.");
+    await stream.toast(
+      i18n._(
+        msg({
+          message: "Password changed successfully.",
+          comment: "@context: Toast after changing account password",
+        }),
+      ),
+    );
     await stream.patchSignals({
       currentPassword: "",
       newPassword: "",
