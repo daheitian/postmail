@@ -147,9 +147,8 @@ export class JantComposeEditor extends LitElement {
             type="url"
             .value=${this._url}
             @input=${(e: Event) => this._onInput("_url", e)}
-            class="compose-input"
+            class="compose-input text-[0.9rem]"
             placeholder=${this.labels.urlPlaceholder}
-            style="font-size:0.9rem"
           />
         </div>
         <input
@@ -199,9 +198,8 @@ export class JantComposeEditor extends LitElement {
             type="url"
             .value=${this._url}
             @input=${(e: Event) => this._onInput("_url", e)}
-            class="compose-input"
+            class="compose-input text-[0.78rem]"
             placeholder=${this.labels.sourcePlaceholder}
-            style="font-size:0.78rem"
           />
         </div>
         <div class="compose-divider"></div>

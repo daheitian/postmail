@@ -111,14 +111,12 @@ export class JantSettingsAvatar extends LitElement {
       return html`<img
         src=${this.avatarUrl}
         alt=""
-        class="rounded-full object-cover"
-        style="width:64px;height:64px"
+        class="rounded-full object-cover size-16"
       />`;
     }
     return html`
       <div
-        class="rounded-full bg-muted flex items-center justify-center text-muted-foreground"
-        style="width:64px;height:64px"
+        class="rounded-full bg-muted flex items-center justify-center text-muted-foreground size-16"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

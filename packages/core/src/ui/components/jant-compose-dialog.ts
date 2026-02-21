@@ -356,8 +356,7 @@ export class JantComposeDialog extends LitElement {
                     >
                       <input
                         type="checkbox"
-                        class="checkbox"
-                        style="pointer-events:none"
+                        class="checkbox pointer-events-none"
                         .checked=${this._collectionIds.includes(col.id)}
                       />
                       ${col.icon ? `${col.icon} ${col.title}` : col.title}

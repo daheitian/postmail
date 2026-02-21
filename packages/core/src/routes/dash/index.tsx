@@ -63,7 +63,7 @@ function DashboardContent({
               comment: "@context: Dashboard section title",
             })}
           </p>
-          <a href="/dash/posts/new" class="btn btn-primary w-full">
+          <a href="/dash/posts/new" class="btn-primary w-full">
             {t({
               message: "New Post",
               comment: "@context: Button to create new post",

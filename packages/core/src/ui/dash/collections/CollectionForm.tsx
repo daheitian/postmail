@@ -156,8 +156,8 @@ export const CollectionForm: FC<CollectionFormProps> = ({
             <div class="input skel-input"></div>
           </div>
           <div class="flex gap-2">
-            <div class="btn skel-input" style="min-width:7rem"></div>
-            <div class="btn-outline skel-input" style="min-width:5rem"></div>
+            <div class="btn skel-input min-w-28"></div>
+            <div class="btn-outline skel-input min-w-20"></div>
           </div>
         </div>
       </jant-collection-form>
