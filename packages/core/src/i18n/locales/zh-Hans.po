@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. @context: Custom CSS textarea placeholder
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "/* Your custom CSS here */"
 msgstr "/* 您的自定义 CSS 在这里 */"
 
@@ -44,7 +44,7 @@ msgid "Account"
 msgstr "账户"
 
 #. @context: Custom CSS settings description
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr "添加自定义 CSS 以覆盖任何样式。使用数据属性，如 [data-page]、[data-post]、[data-format] 来定位特定元素。"
 
@@ -63,6 +63,11 @@ msgstr "添加媒体"
 msgid "Add to nav"
 msgstr "添加到导航"
 
+#. @context: Appearance sub-navigation tab
+#: src/ui/dash/appearance/AppearanceNav.tsx
+msgid "Advanced"
+msgstr ""
+
 #. @context: Archive filter - all formats
 #: src/ui/pages/ArchivePage.tsx
 msgid "All"
@@ -73,8 +78,14 @@ msgstr "所有"
 msgid "All pages are in your navigation."
 msgstr "所有页面都在您的导航中。"
 
-#. @context: Settings sub-navigation tab
-#: src/ui/dash/settings/SettingsNav.tsx
+#. @context: Dashboard heading
+#. @context: Dashboard heading
+#. @context: Dashboard heading
+#. @context: Dashboard navigation - appearance settings
+#: src/ui/dash/appearance/AdvancedContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
+#: src/ui/layouts/DashLayout.tsx
 msgid "Appearance"
 msgstr "外观"
 
@@ -150,7 +161,7 @@ msgid "Change Password"
 msgstr "更改密码"
 
 #. @context: Font theme settings description
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
 msgstr "选择一个字体搭配用于您的网站。所有选项都使用系统字体以实现快速加载。"
 
@@ -193,9 +204,14 @@ msgid "Collections (optional)"
 msgstr "集合（可选）"
 
 #. @context: Appearance settings heading
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Color theme"
 msgstr "颜色主题"
+
+#. @context: Appearance sub-navigation tab
+#: src/ui/dash/appearance/AppearanceNav.tsx
+msgid "Color Theme"
+msgstr ""
 
 #. @context: Setup form submit button
 #: src/routes/auth/setup.tsx
@@ -267,12 +283,12 @@ msgid "Current password is incorrect."
 msgstr "当前密码不正确。"
 
 #. @context: Appearance settings heading for custom CSS
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Custom CSS"
 msgstr "自定义 CSS"
 
 #. @context: Toast after saving custom CSS
-#: src/routes/dash/settings.tsx
+#: src/routes/dash/appearance.tsx
 msgid "Custom CSS saved successfully."
 msgstr "自定义 CSS 保存成功。"
 
@@ -464,9 +480,14 @@ msgid "Featured"
 msgstr "精选"
 
 #. @context: Appearance settings heading for font theme
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Font theme"
 msgstr "字体主题"
+
+#. @context: Appearance sub-navigation tab
+#: src/ui/dash/appearance/AppearanceNav.tsx
+msgid "Font Theme"
+msgstr ""
 
 #. @context: Toast after saving site footer
 #. @context: Toast after saving site footer
@@ -529,7 +550,7 @@ msgid "Invalid email or password"
 msgstr "无效的电子邮件或密码"
 
 #. @context: Error toast when selected font theme is not valid
-#: src/routes/dash/settings.tsx
+#: src/routes/dash/appearance.tsx
 msgid "Invalid font theme selected."
 msgstr "所选字体主题无效。"
 
@@ -559,7 +580,7 @@ msgid "Invalid request"
 msgstr "无效的请求"
 
 #. @context: Error toast when selected theme is not valid
-#: src/routes/dash/settings.tsx
+#: src/routes/dash/appearance.tsx
 msgid "Invalid theme selected."
 msgstr "所选主题无效。"
 
@@ -1081,7 +1102,7 @@ msgid "Save Changes"
 msgstr "保存更改"
 
 #. @context: Button to save custom CSS
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Save CSS"
 msgstr "保存 CSS"
 
@@ -1135,10 +1156,8 @@ msgstr "SEO设置已成功保存。"
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
-#. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
 #: src/ui/dash/settings/AccountContent.tsx
-#: src/ui/dash/settings/AppearanceContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/layouts/DashLayout.tsx
 msgid "Settings"
@@ -1230,8 +1249,8 @@ msgstr "重定向的路径"
 
 #. @context: Font theme preview sentence for body text
 #. @context: Font theme preview sentence for headings
-#: src/ui/dash/settings/AppearanceContent.tsx
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
+#: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "The quick brown fox jumps over the lazy dog."
 msgstr "敏捷的棕色狐狸跳过懒狗。"
 
@@ -1266,7 +1285,7 @@ msgid "This password reset link is invalid or has expired. Please generate a new
 msgstr "此密码重置链接无效或已过期。请生成一个新的链接。"
 
 #. @context: Appearance settings description
-#: src/ui/dash/settings/AppearanceContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "This will theme both your site and your dashboard. All color themes support dark mode."
 msgstr "这将为您的网站和仪表板设置主题。所有颜色主题都支持暗黑模式。"
 
