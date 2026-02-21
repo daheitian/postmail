@@ -7,7 +7,6 @@
 
 import { Hono, type Context } from "hono";
 import { html } from "hono/html";
-import { uuidv7 } from "uuidv7";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
@@ -17,6 +16,7 @@ import {
   getPublicUrlForProvider,
 } from "../../lib/image.js";
 import { sse } from "../../lib/sse.js";
+import { validateUploadFile, generateStorageKey } from "../../lib/upload.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -148,38 +148,17 @@ uploadApiRoutes.post("/", async (c) => {
     return c.json({ error: "No file provided" }, 400);
   }
 
-  // Validate file type
-  const allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-    "image/svg+xml",
-  ];
-  if (!allowedTypes.includes(file.type)) {
+  // Validate file type and size
+  const uploadError = validateUploadFile(file);
+  if (uploadError) {
     if (wantsSSE(c)) {
-      return sseUploadError(c, "File type not allowed");
+      return sseUploadError(c, uploadError);
     }
-    return c.json({ error: "File type not allowed" }, 400);
-  }
-
-  // Validate file size (max 10MB)
-  const maxSize = 10 * 1024 * 1024;
-  if (file.size > maxSize) {
-    if (wantsSSE(c)) {
-      return sseUploadError(c, "File too large (max 10MB)");
-    }
-    return c.json({ error: "File too large (max 10MB)" }, 400);
+    return c.json({ error: uploadError }, 400);
   }
 
   // Generate unique filename using UUIDv7
-  const ext = file.name.split(".").pop() || "bin";
-  const id = uuidv7();
-  const date = new Date();
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const filename = `${id}.${ext}`;
-  const storageKey = `media/${year}/${month}/${filename}`;
+  const { id, filename, storageKey } = generateStorageKey(file.name);
 
   try {
     // Upload to storage
@@ -254,7 +233,7 @@ uploadApiRoutes.post("/", async (c) => {
 // List uploaded files (JSON only)
 uploadApiRoutes.get("/", async (c) => {
   const limit = parseInt(c.req.query("limit") ?? "50", 10);
-  const mediaList = await c.var.services.media.list(limit);
+  const mediaList = await c.var.services.media.list({ limit });
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const s3PublicUrl = c.env.S3_PUBLIC_URL;
 

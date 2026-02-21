@@ -87,16 +87,17 @@ function DashboardContent({
 dashIndexRoutes.get("/", async (c) => {
   const siteName = await getSiteName(c);
 
-  // Get some stats
-  const allPosts = await c.var.services.posts.list({ limit: 1000 });
-  const publishedPosts = allPosts.filter((p) => p.status !== "draft");
-  const draftPosts = allPosts.filter((p) => p.status === "draft");
+  // Get stats via service-level counting (avoids loading all posts into memory)
+  const [publishedCount, draftCount] = await Promise.all([
+    c.var.services.posts.count({ status: "published" }),
+    c.var.services.posts.count({ status: "draft" }),
+  ]);
 
   return c.html(
     <DashLayout c={c} title="Dashboard" siteName={siteName} currentPath="/dash">
       <DashboardContent
-        publishedCount={publishedPosts.length}
-        draftCount={draftPosts.length}
+        publishedCount={publishedCount}
+        draftCount={draftCount}
       />
     </DashLayout>,
   );

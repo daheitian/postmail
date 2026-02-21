@@ -21,6 +21,7 @@ export interface NavItemService {
   create(data: CreateNavItem): Promise<NavItem>;
   update(id: number, data: UpdateNavItem): Promise<NavItem | null>;
   delete(id: number): Promise<boolean>;
+  deleteByPageId(pageId: number): Promise<boolean>;
   reorder(ids: number[]): Promise<void>;
 }
 
@@ -114,6 +115,14 @@ export function createNavItemService(db: Database): NavItemService {
       const result = await db
         .delete(navItems)
         .where(eq(navItems.id, id))
+        .returning();
+      return result.length > 0;
+    },
+
+    async deleteByPageId(pageId) {
+      const result = await db
+        .delete(navItems)
+        .where(eq(navItems.pageId, pageId))
         .returning();
       return result.length > 0;
     },

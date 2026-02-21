@@ -4,17 +4,21 @@
  * CRUD operations for standalone pages (about, now, etc.)
  */
 
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
 import type { Database } from "../db/index.js";
 import { pages, navItems } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
 import type { Page, Status, CreatePage, UpdatePage } from "../types.js";
 
+export interface PageFilters {
+  status?: Status;
+}
+
 export interface PageService {
   getById(id: number): Promise<Page | null>;
   getBySlug(slug: string): Promise<Page | null>;
-  list(): Promise<Page[]>;
+  list(filters?: PageFilters): Promise<Page[]>;
   listNotInNav(): Promise<Page[]>;
   create(data: CreatePage): Promise<Page>;
   update(id: number, data: UpdatePage): Promise<Page | null>;
@@ -54,8 +58,16 @@ export function createPageService(db: Database): PageService {
       return result[0] ? toPage(result[0]) : null;
     },
 
-    async list() {
-      const rows = await db.select().from(pages).orderBy(desc(pages.createdAt));
+    async list(filters?: PageFilters) {
+      const conditions = [];
+      if (filters?.status) {
+        conditions.push(eq(pages.status, filters.status));
+      }
+      const rows = await db
+        .select()
+        .from(pages)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(pages.createdAt));
       return rows.map(toPage);
     },
 

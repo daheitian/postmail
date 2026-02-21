@@ -3,37 +3,26 @@
  */
 
 import { Hono } from "hono";
+import { z } from "zod";
 import type { Bindings, SortOrder } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { z } from "zod";
-import { SORT_ORDERS } from "../../types.js";
+import { CreateCollectionSchema, SortOrderSchema } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const collectionsApiRoutes = new Hono<Env>();
 
-const SortOrderSchema = z.enum(SORT_ORDERS);
-
-const CreateCollectionSchema = z.object({
-  slug: z.string().min(1),
-  title: z.string().min(1),
-  description: z.string().optional(),
-  icon: z.string().optional(),
-  sortOrder: SortOrderSchema.optional(),
-  position: z.number().int().min(0).optional(),
-});
-
-const UpdateCollectionSchema = z.object({
-  slug: z.string().min(1).optional(),
-  title: z.string().min(1).optional(),
+// API update schema extends shared schema with nullable fields for explicit clearing
+const UpdateCollectionSchema = CreateCollectionSchema.partial().extend({
   description: z.string().nullable().optional(),
   icon: z.string().nullable().optional(),
   sortOrder: SortOrderSchema.optional(),
   position: z.number().int().min(0).optional(),
 });
 
-const ReorderSchema = z.object({
+// Route-specific schemas (not shared domain schemas)
+const CollectionReorderSchema = z.object({
   ids: z.array(z.number().int().positive()).optional(),
   items: z.array(z.string().regex(/^[cd]-\d+$/)).optional(),
 });
@@ -70,7 +59,7 @@ collectionsApiRoutes.get("/:id", async (c) => {
 collectionsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
   const rawBody = await c.req.json();
 
-  const parseResult = ReorderSchema.safeParse(rawBody);
+  const parseResult = CollectionReorderSchema.safeParse(rawBody);
   if (!parseResult.success) {
     return c.json(
       { error: "Validation failed", details: parseResult.error.flatten() },

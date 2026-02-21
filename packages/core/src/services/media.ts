@@ -4,19 +4,25 @@
  * Handles media upload and management with pluggable storage backends.
  */
 
-import { eq, desc, inArray, asc } from "drizzle-orm";
+import { eq, desc, inArray, asc, sql, and } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { media } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type { Media } from "../types.js";
 
+export interface MediaFilters {
+  limit?: number;
+  /** Filter by MIME type prefix, e.g. "image/" */
+  mimePrefix?: string;
+}
+
 export interface MediaService {
   getById(id: string): Promise<Media | null>;
   getByIds(ids: string[]): Promise<Media[]>;
   getByPostId(postId: number): Promise<Media[]>;
   getByPostIds(postIds: number[]): Promise<Map<number, Media[]>>;
-  list(limit?: number): Promise<Media[]>;
+  list(filters?: MediaFilters): Promise<Media[]>;
   create(data: CreateMediaData): Promise<Media>;
   delete(id: string): Promise<boolean>;
   getByStorageKey(storageKey: string): Promise<Media | null>;
@@ -118,10 +124,18 @@ export function createMediaService(db: Database): MediaService {
       return result[0] ? toMedia(result[0]) : null;
     },
 
-    async list(limit = 100) {
+    async list(filters?: MediaFilters) {
+      const limit = filters?.limit ?? 100;
+      const conditions = [];
+      if (filters?.mimePrefix) {
+        conditions.push(
+          sql`${media.mimeType} LIKE ${filters.mimePrefix + "%"}`,
+        );
+      }
       const rows = await db
         .select()
         .from(media)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(desc(media.createdAt))
         .limit(limit);
       return rows.map(toMedia);

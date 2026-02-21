@@ -22,7 +22,7 @@ export const mediaRoutes = new Hono<Env>();
 
 // List media
 mediaRoutes.get("/", async (c) => {
-  const mediaList = await c.var.services.media.list(100);
+  const mediaList = await c.var.services.media.list({ limit: 100 });
   const siteName = await getSiteName(c);
 
   return c.html(
@@ -45,7 +45,10 @@ mediaRoutes.get("/", async (c) => {
 // Media picker (returns HTML fragment for PostForm dialog)
 // Must be defined before /:id to avoid "picker" matching as an ID
 mediaRoutes.get("/picker", async (c) => {
-  const mediaList = await c.var.services.media.list(100);
+  const mediaList = await c.var.services.media.list({
+    limit: 100,
+    mimePrefix: "image/",
+  });
   const r2PublicUrl = c.env.R2_PUBLIC_URL;
   const imageTransformUrl = c.env.IMAGE_TRANSFORM_URL;
   const s3PublicUrl = c.env.S3_PUBLIC_URL;
@@ -60,37 +63,35 @@ mediaRoutes.get("/picker", async (c) => {
 
   return c.html(
     <>
-      {mediaList
-        .filter((m) => m.mimeType.startsWith("image/"))
-        .map((m) => {
-          const pUrl = getPublicUrlForProvider(
-            m.provider,
-            r2PublicUrl,
-            s3PublicUrl,
-          );
-          const url = getMediaUrl(m.storageKey, pUrl);
-          const thumbUrl = getImageUrl(url, imageTransformUrl, {
-            width: 150,
-            quality: 80,
-            format: "auto",
-            fit: "cover",
-          });
-          return (
-            <button
-              key={m.id}
-              type="button"
-              class="aspect-square rounded-lg overflow-hidden border-2 hover:border-primary cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              data-media-id={m.id}
-            >
-              <img
-                src={thumbUrl}
-                alt={m.alt || m.originalName}
-                class="w-full h-full object-cover"
-                loading="lazy"
-              />
-            </button>
-          );
-        })}
+      {mediaList.map((m) => {
+        const pUrl = getPublicUrlForProvider(
+          m.provider,
+          r2PublicUrl,
+          s3PublicUrl,
+        );
+        const url = getMediaUrl(m.storageKey, pUrl);
+        const thumbUrl = getImageUrl(url, imageTransformUrl, {
+          width: 150,
+          quality: 80,
+          format: "auto",
+          fit: "cover",
+        });
+        return (
+          <button
+            key={m.id}
+            type="button"
+            class="aspect-square rounded-lg overflow-hidden border-2 hover:border-primary cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            data-media-id={m.id}
+          >
+            <img
+              src={thumbUrl}
+              alt={m.alt || m.originalName}
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </button>
+        );
+      })}
     </>,
   );
 });

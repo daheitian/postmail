@@ -3,35 +3,19 @@
  */
 
 import { Hono } from "hono";
+import { z } from "zod";
 import type { Bindings, NavItemType } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { z } from "zod";
+import { CreateNavItemSchema, ReorderSchema } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const navItemsApiRoutes = new Hono<Env>();
 
-const NavItemTypeSchema = z.enum(["link", "page"]);
-
-const CreateNavItemSchema = z.object({
-  type: NavItemTypeSchema,
-  label: z.string().min(1),
-  url: z.string().min(1),
-  pageId: z.number().int().positive().optional(),
-  position: z.number().int().min(0).optional(),
-});
-
-const UpdateNavItemSchema = z.object({
-  type: NavItemTypeSchema.optional(),
-  label: z.string().min(1).optional(),
-  url: z.string().min(1).optional(),
+// API update schema extends shared schema with nullable pageId for explicit clearing
+const UpdateNavItemSchema = CreateNavItemSchema.partial().extend({
   pageId: z.number().int().positive().nullable().optional(),
-  position: z.number().int().min(0).optional(),
-});
-
-const ReorderSchema = z.object({
-  ids: z.array(z.number().int().positive()),
 });
 
 // List nav items

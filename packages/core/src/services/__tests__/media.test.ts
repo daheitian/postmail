@@ -301,7 +301,7 @@ describe("MediaService", () => {
         });
       }
 
-      const list = await mediaService.list(2);
+      const list = await mediaService.list({ limit: 2 });
       expect(list).toHaveLength(2);
     });
   });

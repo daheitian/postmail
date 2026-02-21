@@ -23,19 +23,12 @@ import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { getAvailableThemes } from "../../lib/theme.js";
 import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 import { TIMEZONES } from "../../lib/timezones.js";
+import { escapeHtml } from "../../lib/html.js";
+import { validateUploadFile, generateStorageKey } from "../../lib/upload.js";
 import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
 import { GeneralContent } from "../../ui/dash/settings/GeneralContent.js";
 import { AppearanceContent } from "../../ui/dash/settings/AppearanceContent.js";
 import { AccountContent } from "../../ui/dash/settings/AccountContent.js";
-
-/** Escape HTML special characters for safe insertion into HTML strings */
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -269,30 +262,12 @@ settingsRoutes.post("/avatar", async (c) => {
     return dsToast("No file provided.", "error");
   }
 
-  const allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp",
-    "image/svg+xml",
-  ];
-  if (!allowedTypes.includes(file.type)) {
-    return dsToast("File type not allowed.", "error");
+  const uploadError = validateUploadFile(file);
+  if (uploadError) {
+    return dsToast(uploadError, "error");
   }
 
-  const maxSize = 10 * 1024 * 1024;
-  if (file.size > maxSize) {
-    return dsToast("File too large (max 10MB).", "error");
-  }
-
-  const { uuidv7 } = await import("uuidv7");
-  const ext = file.name.split(".").pop() || "bin";
-  const id = uuidv7();
-  const date = new Date();
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const filename = `${id}.${ext}`;
-  const storageKey = `media/${year}/${month}/${filename}`;
+  const { id, filename, storageKey } = generateStorageKey(file.name);
 
   try {
     await storage.put(storageKey, file.stream(), {

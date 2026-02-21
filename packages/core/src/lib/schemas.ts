@@ -100,7 +100,13 @@ export const CreatePageSchema = z.object({
   slug: z
     .string()
     .min(1)
-    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+    .transform(normalizeSlug)
+    .pipe(
+      z
+        .string()
+        .min(1)
+        .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+    ),
   title: z.string().optional(),
   body: z.string().optional(),
   status: StatusSchema.optional(),
@@ -134,7 +140,13 @@ export const CreateCollectionSchema = z.object({
   slug: z
     .string()
     .min(1)
-    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+    .transform(normalizeSlug)
+    .pipe(
+      z
+        .string()
+        .min(1)
+        .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+    ),
   title: z.string().min(1),
   description: z.string().optional(),
   icon: z.string().optional(),
@@ -181,6 +193,42 @@ export const ResetPasswordSchema = z
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
+
+// =============================================================================
+// Slug Normalization
+// =============================================================================
+
+/**
+ * Normalize a string into a valid slug format.
+ * Lowercases, replaces non-alphanumeric characters with dashes,
+ * collapses consecutive dashes, and trims leading/trailing dashes.
+ *
+ * @param s - Raw input string
+ * @returns Normalized slug
+ * @example
+ * ```ts
+ * normalizeSlug("My Cool Page!") // "my-cool-page"
+ * normalizeSlug("  hello  world  ") // "hello-world"
+ * ```
+ */
+export function normalizeSlug(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-{2,}/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+// =============================================================================
+// Reorder Schemas
+// =============================================================================
+
+/**
+ * Reorder request schema for simple ID-based reordering
+ */
+export const ReorderSchema = z.object({
+  ids: z.array(z.coerce.number().int().positive()),
+});
 
 // =============================================================================
 // Form Data Helpers

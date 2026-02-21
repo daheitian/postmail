@@ -27,8 +27,9 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
   });
 
   // Fetch published pages
-  const allPages = await c.var.services.pages.list();
-  const publishedPages = allPages.filter((p) => p.status === "published");
+  const publishedPages = await c.var.services.pages.list({
+    status: "published",
+  });
 
   // Transform to View Models
   const mediaCtx = createMediaContext(c);

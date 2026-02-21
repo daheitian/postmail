@@ -12,6 +12,7 @@ import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { PageForm, ActionButtons, DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { getSiteName } from "../../lib/config.js";
+import { CreatePageSchema } from "../../lib/schemas.js";
 import { UnifiedPagesContent } from "../../ui/dash/pages/UnifiedPagesContent.js";
 import { LinkFormContent } from "../../ui/dash/pages/LinkFormContent.js";
 
@@ -221,18 +222,18 @@ pagesRoutes.post("/links/:id/delete", async (c) => {
 });
 
 pagesRoutes.post("/", async (c) => {
-  const body = await c.req.json<{
-    title: string;
-    body: string;
-    status: string;
-    slug: string;
-  }>();
+  const raw = await c.req.json();
+  const parsed = CreatePageSchema.safeParse(raw);
+  if (!parsed.success) {
+    const msg = parsed.error.errors[0]?.message ?? "Invalid input";
+    return dsToast(msg, "error");
+  }
 
   const page = await c.var.services.pages.create({
-    title: body.title,
-    body: body.body,
-    status: body.status as Page["status"],
-    slug: body.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+    title: parsed.data.title,
+    body: parsed.data.body,
+    status: parsed.data.status,
+    slug: parsed.data.slug,
   });
 
   return dsRedirect(`/dash/pages/${page.id}`);
@@ -258,11 +259,7 @@ pagesRoutes.post("/:id/remove-from-nav", async (c) => {
   const pageId = parseInt(c.req.param("id"), 10);
   if (isNaN(pageId)) return c.notFound();
 
-  const navItems = await c.var.services.navItems.list();
-  const navItem = navItems.find((item) => item.pageId === pageId);
-  if (navItem) {
-    await c.var.services.navItems.delete(navItem.id);
-  }
+  await c.var.services.navItems.deleteByPageId(pageId);
   return dsRedirect("/dash/pages");
 });
 
@@ -310,18 +307,18 @@ pagesRoutes.post("/:id", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
 
-  const body = await c.req.json<{
-    title: string;
-    body: string;
-    status: string;
-    slug: string;
-  }>();
+  const raw = await c.req.json();
+  const parsed = CreatePageSchema.safeParse(raw);
+  if (!parsed.success) {
+    const msg = parsed.error.errors[0]?.message ?? "Invalid input";
+    return dsToast(msg, "error");
+  }
 
   await c.var.services.pages.update(id, {
-    title: body.title,
-    body: body.body,
-    status: body.status as Page["status"],
-    slug: body.slug.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+    title: parsed.data.title,
+    body: parsed.data.body,
+    status: parsed.data.status,
+    slug: parsed.data.slug,
   });
 
   return dsRedirect(`/dash/pages/${id}`);

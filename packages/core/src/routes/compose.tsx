@@ -6,8 +6,8 @@
  * Drafts close the dialog and show a confirmation toast.
  */
 
-import { Hono } from "hono";
-import type { Bindings } from "../types.js";
+import { Hono, type Context } from "hono";
+import type { Bindings, Post } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { requireAuth } from "../middleware/auth.js";
 import { CreatePostSchema, validateMediaCount } from "../lib/schemas.js";
@@ -46,6 +46,39 @@ const INITIAL_SIGNALS = {
 /** Script fragment that closes the compose dialog and self-removes */
 const CLOSE_DIALOG_SCRIPT =
   "<script data-effect=\"el.remove()\">document.getElementById('compose-dialog').close()</script>";
+
+/** Build a timeline card HTML string for a newly created post */
+async function buildTimelineCard(
+  c: Context<Env>,
+  post: Post,
+  mediaIds: string[] | undefined,
+): Promise<string> {
+  const mediaCtx = createMediaContext(c);
+  let postView;
+
+  if (mediaIds && mediaIds.length > 0) {
+    const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
+    const mediaMap = buildMediaMap(
+      rawMediaMap,
+      mediaCtx.r2PublicUrl,
+      mediaCtx.imageTransformUrl,
+      mediaCtx.s3PublicUrl,
+    );
+    postView = toPostView(
+      { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
+      mediaCtx,
+    );
+  } else {
+    postView = toPostViewFromPost(post, mediaCtx);
+  }
+
+  return (
+    <div>
+      <TimelineItemFromPost post={postView} />
+      <hr class="feed-divider" />
+    </div>
+  ).toString();
+}
 
 composeRoutes.post("/", async (c) => {
   const raw = await c.req.json();
@@ -94,31 +127,7 @@ composeRoutes.post("/", async (c) => {
       return c.json({ status: "draft" as const, toast: "Draft saved." });
     }
 
-    const mediaCtx = createMediaContext(c);
-    let postView;
-    if (data.mediaIds && data.mediaIds.length > 0) {
-      const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
-      const mediaMap = buildMediaMap(
-        rawMediaMap,
-        mediaCtx.r2PublicUrl,
-        mediaCtx.imageTransformUrl,
-        mediaCtx.s3PublicUrl,
-      );
-      postView = toPostView(
-        { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
-        mediaCtx,
-      );
-    } else {
-      postView = toPostViewFromPost(post, mediaCtx);
-    }
-
-    const cardHtml = (
-      <div>
-        <TimelineItemFromPost post={postView} />
-        <hr class="feed-divider" />
-      </div>
-    ).toString();
-
+    const cardHtml = await buildTimelineCard(c, post, data.mediaIds);
     return c.json({ status: "published" as const, cardHtml });
   }
 
@@ -134,32 +143,7 @@ composeRoutes.post("/", async (c) => {
     });
   }
 
-  // Build PostView for rendering the timeline card
-  const mediaCtx = createMediaContext(c);
-  let postView;
-
-  if (data.mediaIds && data.mediaIds.length > 0) {
-    const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
-    const mediaMap = buildMediaMap(
-      rawMediaMap,
-      mediaCtx.r2PublicUrl,
-      mediaCtx.imageTransformUrl,
-      mediaCtx.s3PublicUrl,
-    );
-    postView = toPostView(
-      { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
-      mediaCtx,
-    );
-  } else {
-    postView = toPostViewFromPost(post, mediaCtx);
-  }
-
-  const cardHtml = (
-    <div>
-      <TimelineItemFromPost post={postView} />
-      <hr class="feed-divider" />
-    </div>
-  ).toString();
+  const cardHtml = await buildTimelineCard(c, post, data.mediaIds);
 
   return sse(c, async (stream) => {
     await stream.patchElements(cardHtml, {

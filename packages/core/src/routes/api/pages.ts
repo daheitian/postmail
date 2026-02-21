@@ -3,25 +3,18 @@
  */
 
 import { Hono } from "hono";
+import { z } from "zod";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { z } from "zod";
-import { StatusSchema } from "../../lib/schemas.js";
+import { CreatePageSchema, StatusSchema } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const pagesApiRoutes = new Hono<Env>();
 
-const CreatePageSchema = z.object({
-  slug: z.string().min(1),
-  title: z.string().optional(),
-  body: z.string().optional(),
-  status: StatusSchema.optional(),
-});
-
-const UpdatePageSchema = z.object({
-  slug: z.string().min(1).optional(),
+// API update schema extends shared schema with nullable fields for explicit clearing
+const UpdatePageSchema = CreatePageSchema.partial().extend({
   title: z.string().nullable().optional(),
   body: z.string().nullable().optional(),
   status: StatusSchema.optional(),

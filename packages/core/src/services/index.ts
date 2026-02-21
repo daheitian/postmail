@@ -47,9 +47,9 @@ export function createServices(db: Database, d1: D1Database): Services {
 
 export type { SettingsService } from "./settings.js";
 export type { PostService, PostFilters } from "./post.js";
-export type { PageService } from "./page.js";
+export type { PageService, PageFilters } from "./page.js";
 export type { RedirectService } from "./redirect.js";
-export type { MediaService } from "./media.js";
+export type { MediaService, MediaFilters } from "./media.js";
 export type { CollectionService } from "./collection.js";
 export type { SearchService, SearchResult, SearchOptions } from "./search.js";
 export type { NavItemService } from "./navigation.js";
