@@ -139,11 +139,9 @@ export class JantSettingsAvatar extends LitElement {
 
   render() {
     return html`
-      <div class="card">
-        <header>
-          <h2>${this.labels.blogAvatar}</h2>
-        </header>
-        <section class="flex flex-col gap-4">
+      <div>
+        <h2 class="text-lg font-semibold mb-4">${this.labels.blogAvatar}</h2>
+        <div class="flex flex-col gap-4">
           <div class="flex items-center gap-4">
             ${this._renderPreview()}
             <div class="flex flex-col gap-2">
@@ -224,7 +222,7 @@ export class JantSettingsAvatar extends LitElement {
               ${this.labels.cancel}
             </button>
           </div>
-        </section>
+        </div>
       </div>
     `;
   }

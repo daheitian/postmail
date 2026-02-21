@@ -174,20 +174,20 @@ export function GeneralContent({
       </h1>
       <SettingsNav currentTab="general" />
 
-      <div class="flex flex-col gap-6 max-w-lg">
+      <div class="flex flex-col max-w-lg">
         <jant-settings-avatar
           avatar-url={siteAvatarUrl}
           show-in-header={showHeaderAvatar || undefined}
           labels={labels}
         >
           {/* SSR fallback skeleton */}
-          <div class="card">
-            <header>
-              <h2 class="skel-label" />
-            </header>
-            <section class="skel-section-sm" />
+          <div>
+            <h2 class="skel-label" />
+            <div class="skel-section-sm" />
           </div>
         </jant-settings-avatar>
+
+        <hr class="my-8" />
 
         <jant-settings-general
           labels={labels}
@@ -197,13 +197,9 @@ export function GeneralContent({
           sitedescription-fallback={siteDescriptionFallback}
         >
           {/* SSR fallback skeleton */}
-          <div class="flex flex-col gap-6">
-            <div class="card">
-              <header>
-                <h2 class="skel-label" />
-              </header>
-              <section class="skel-section-lg" />
-            </div>
+          <div>
+            <h2 class="skel-label" />
+            <div class="skel-section-lg" />
           </div>
         </jant-settings-general>
       </div>

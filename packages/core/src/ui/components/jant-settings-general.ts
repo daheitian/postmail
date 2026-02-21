@@ -267,11 +267,9 @@ export class JantSettingsGeneral extends LitElement {
 
   private _renderGeneralForm() {
     return html`
-      <div class="card">
-        <header>
-          <h2>${this.labels.general}</h2>
-        </header>
-        <section class="flex flex-col gap-4">
+      <div>
+        <h2 class="text-lg font-semibold mb-4">${this.labels.general}</h2>
+        <div class="flex flex-col gap-4">
           <div class="field">
             <label class="label">${this.labels.siteName}</label>
             <input
@@ -394,18 +392,16 @@ export class JantSettingsGeneral extends LitElement {
             () => this._saveGeneral(),
             () => this._cancelGeneral(),
           )}
-        </section>
+        </div>
       </div>
     `;
   }
 
   private _renderSeoForm() {
     return html`
-      <div class="card">
-        <header>
-          <h2>${this.labels.seo}</h2>
-        </header>
-        <section>
+      <div>
+        <h2 class="text-lg font-semibold mb-4">${this.labels.seo}</h2>
+        <div>
           <label class="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -421,15 +417,17 @@ export class JantSettingsGeneral extends LitElement {
             () => this._saveSeo(),
             () => this._cancelSeo(),
           )}
-        </section>
+        </div>
       </div>
     `;
   }
 
   render() {
     return html`
-      <div class="flex flex-col gap-6">
-        ${this._renderGeneralForm()} ${this._renderSeoForm()}
+      <div class="flex flex-col">
+        ${this._renderGeneralForm()}
+        <hr class="my-8" />
+        ${this._renderSeoForm()}
       </div>
     `;
   }

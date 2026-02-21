@@ -281,9 +281,10 @@ describe("JantSettingsGeneral", () => {
       detail = customEvent.detail;
     });
 
-    // Find SEO Save button (second card)
-    const cards = el.querySelectorAll(".card");
-    const seoSaveBtn = cards[1]?.querySelector<HTMLButtonElement>(".btn");
+    // Find SEO Save button (section after the <hr> divider)
+    const hr = el.querySelector("hr");
+    const seoSection = hr?.nextElementSibling;
+    const seoSaveBtn = seoSection?.querySelector<HTMLButtonElement>(".btn");
     seoSaveBtn?.click();
     await el.updateComplete;
 
