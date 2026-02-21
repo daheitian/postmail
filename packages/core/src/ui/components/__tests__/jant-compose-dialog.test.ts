@@ -45,6 +45,8 @@ const labels: ComposeLabels = {
   score: "Score",
   title: "Title",
   collection: "Collection",
+  searchCollections: "Search...",
+  noCollections: "No collections found.",
   post: "Post",
   selectMedia: "Select Media",
   loading: "Loading...",
@@ -155,7 +157,7 @@ describe("JantComposeDialog", () => {
   it("collection selector toggles IDs", async () => {
     const el = await createElement();
 
-    // Open collection dropdown
+    // Open collection combobox
     const trigger = requireElement(
       el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
       "expected collection trigger",
@@ -163,23 +165,23 @@ describe("JantComposeDialog", () => {
     trigger.click();
     await el.updateComplete;
 
-    const collectionItems = el.querySelectorAll<HTMLButtonElement>(
-      ".compose-dropdown-above .compose-dropdown-item",
+    const options = el.querySelectorAll<HTMLElement>(
+      "[data-popover] [role='option']",
     );
-    expect(collectionItems.length).toBe(2);
+    expect(options.length).toBe(2);
 
     // Select first collection
-    collectionItems[0].click();
+    options[0].click();
     await el.updateComplete;
     expect(el._collectionIds).toEqual([1]);
 
     // Select second collection
-    collectionItems[1].click();
+    options[1].click();
     await el.updateComplete;
     expect(el._collectionIds).toEqual([1, 2]);
 
     // Deselect first
-    collectionItems[0].click();
+    options[0].click();
     await el.updateComplete;
     expect(el._collectionIds).toEqual([2]);
   });

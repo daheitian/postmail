@@ -968,6 +968,11 @@
     }
   }
 
+  .compose-collection-select {
+    display: inline-flex;
+    position: relative;
+  }
+
   .compose-collection-trigger {
     display: flex;
     align-items: center;
@@ -987,21 +992,23 @@
     background-color: var(--site-nav-hover-bg);
   }
 
-  .compose-collection-trigger-active {
-    background-color: var(--site-nav-hover-bg);
-    padding: 6px 12px;
+  .compose-collection-badge {
+    font-size: 0.6875rem;
+    min-width: 1.125rem;
+    height: 1.125rem;
+    padding: 0 4px;
+    line-height: 1.125rem;
   }
 
-  .compose-collection-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    letter-spacing: 0.01em;
+  .compose-collection-select [data-popover] {
+    z-index: 100;
+    min-width: 200px;
+    max-width: 280px;
   }
 
-  .compose-collection-label-selected {
-    font-weight: 500;
-    color: var(--site-text-primary);
+  .compose-collection-select [data-popover] [role="listbox"] {
+    max-height: 12rem;
+    overflow-y: auto;
   }
 
   .compose-post-btn {
@@ -1054,11 +1061,6 @@
     animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .compose-dropdown-above {
-    bottom: calc(100% + 6px);
-    left: 0;
-    min-width: 200px;
-  }
   .compose-dropdown-right {
     top: calc(100% + 6px);
     right: 0;
@@ -1083,10 +1085,6 @@
   .compose-dropdown-item:hover {
     background-color: var(--site-nav-hover-bg);
   }
-  .compose-dropdown-item-active {
-    background-color: var(--site-nav-hover-bg);
-    font-weight: 500;
-  }
   .compose-dropdown-item-muted {
     color: var(--site-text-secondary);
   }
@@ -1098,12 +1096,6 @@
     height: 1px;
     background-color: var(--site-divider);
     margin: 3px 8px;
-  }
-
-  .compose-dropdown-check {
-    margin-left: auto;
-    color: var(--primary);
-    font-size: var(--text-sm);
   }
 
   /* --- Nested media picker dialog ----------------------------------------- */

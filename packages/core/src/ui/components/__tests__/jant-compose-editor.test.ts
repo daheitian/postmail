@@ -51,6 +51,8 @@ const labels: ComposeLabels = {
   score: "Score",
   title: "Title",
   collection: "Collection",
+  searchCollections: "Search...",
+  noCollections: "No collections found.",
   post: "Post",
   selectMedia: "Select Media",
   loading: "Loading...",

@@ -28,6 +28,7 @@ export class JantComposeDialog extends LitElement {
     _mediaIds: { state: true },
     _showCollection: { state: true },
     _showMoreMenu: { state: true },
+    _collectionSearch: { state: true },
   };
 
   declare collections: ComposeCollection[];
@@ -39,6 +40,7 @@ export class JantComposeDialog extends LitElement {
   declare _mediaIds: string[];
   declare _showCollection: boolean;
   declare _showMoreMenu: boolean;
+  declare _collectionSearch: string;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -56,6 +58,7 @@ export class JantComposeDialog extends LitElement {
     this._mediaIds = [];
     this._showCollection = false;
     this._showMoreMenu = false;
+    this._collectionSearch = "";
   }
 
   private get _editor(): JantComposeEditor | null {
@@ -70,6 +73,7 @@ export class JantComposeDialog extends LitElement {
     this._mediaIds = [];
     this._showCollection = false;
     this._showMoreMenu = false;
+    this._collectionSearch = "";
     this._editor?.reset();
   }
 
@@ -301,87 +305,121 @@ export class JantComposeDialog extends LitElement {
       return html`<div class="flex-1"></div>`;
     }
 
+    const search = this._collectionSearch.toLowerCase();
+    const filtered = search
+      ? this.collections.filter((c) => c.title.toLowerCase().includes(search))
+      : this.collections;
+    const selectedCount = this._collectionIds.length;
+
     return html`
-      <div class="relative flex-1 min-w-0">
+      <div class="flex-1 min-w-0">
         ${this._showCollection
           ? html`<div
               class="compose-dropdown-backdrop"
               @click=${() => {
                 this._showCollection = false;
+                this._collectionSearch = "";
               }}
             ></div>`
           : nothing}
-        <button
-          type="button"
-          class=${classMap({
-            "compose-collection-trigger": true,
-            "compose-collection-trigger-active": this._collectionIds.length > 0,
-          })}
-          @click=${() => {
-            this._showCollection = !this._showCollection;
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 18 18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="shrink-0"
+        <div class="select compose-collection-select">
+          <button
+            type="button"
+            class="compose-collection-trigger"
+            @click=${() => {
+              this._showCollection = !this._showCollection;
+              if (!this._showCollection) {
+                this._collectionSearch = "";
+              }
+            }}
           >
-            <rect x="3" y="5" width="12" height="10" rx="2" />
-            <path d="M6 5V4a1 1 0 011-1h4a1 1 0 011 1v1" />
-          </svg>
-          <span class="compose-collection-label"
-            >${this.labels.collection}</span
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="shrink-0"
+            >
+              <rect x="3" y="5" width="12" height="10" rx="2" />
+              <path d="M6 5V4a1 1 0 011-1h4a1 1 0 011 1v1" />
+            </svg>
+            ${selectedCount > 0
+              ? html`<span class="badge compose-collection-badge"
+                  >${selectedCount}</span
+                >`
+              : html`<span>${this.labels.collection}</span>`}
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 10 10"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="shrink-0 opacity-50"
+            >
+              <path d="M3 4l2 2 2-2" />
+            </svg>
+          </button>
+          <div
+            data-popover
+            data-side="top"
+            aria-hidden=${this._showCollection ? "false" : "true"}
           >
-          <svg
-            width="10"
-            height="10"
-            viewBox="0 0 10 10"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="shrink-0 -ml-0.5"
-          >
-            <path d="M3 4l2 2 2-2" />
-          </svg>
-        </button>
-
-        ${this._showCollection
-          ? html`
-              <div class="compose-dropdown compose-dropdown-above">
-                ${this.collections.map(
-                  (col) => html`
-                    <button
-                      type="button"
-                      class=${classMap({
-                        "compose-dropdown-item": true,
-                        "compose-dropdown-item-active":
-                          this._collectionIds.includes(col.id),
-                      })}
-                      @click=${() => this._toggleCollection(col.id)}
-                    >
-                      <input
-                        type="checkbox"
-                        class="checkbox pointer-events-none"
-                        .checked=${this._collectionIds.includes(col.id)}
-                      />
-                      ${col.icon ? `${col.icon} ${col.title}` : col.title}
-                      ${this._collectionIds.includes(col.id)
-                        ? html`<span class="compose-dropdown-check">✓</span>`
-                        : nothing}
-                    </button>
-                  `,
-                )}
-              </div>
-            `
-          : nothing}
+            <header>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <input
+                type="text"
+                role="combobox"
+                placeholder=${this.labels.searchCollections}
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+                .value=${this._collectionSearch}
+                @input=${(e: Event) => {
+                  this._collectionSearch = (e.target as HTMLInputElement).value;
+                }}
+              />
+            </header>
+            <div
+              role="listbox"
+              aria-multiselectable="true"
+              data-empty=${this.labels.noCollections}
+            >
+              ${filtered.map(
+                (col) => html`
+                  <div
+                    role="option"
+                    data-value=${col.id}
+                    aria-selected=${this._collectionIds.includes(col.id)
+                      ? "true"
+                      : nothing}
+                    @click=${() => this._toggleCollection(col.id)}
+                  >
+                    ${col.icon ? `${col.icon} ` : ""}${col.title}
+                  </div>
+                `,
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     `;
   }

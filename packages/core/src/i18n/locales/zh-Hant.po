@@ -182,7 +182,7 @@ msgstr "點擊圖片以查看完整大小"
 msgid "Close"
 msgstr "關閉"
 
-#. @context: Compose collection selector placeholder
+#. @context: Compose collection selector trigger label
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Collection"
 msgstr "集合"
@@ -770,6 +770,11 @@ msgstr "最新的在前"
 msgid "Next"
 msgstr "下一頁"
 
+#. @context: Compose collection combobox empty state
+#: src/ui/compose/ComposeDialog.tsx
+msgid "No collections found."
+msgstr ""
+
 #. @context: Empty state message
 #. @context: Empty state message on collections page
 #: src/ui/dash/collections/CollectionsListContent.tsx
@@ -1144,6 +1149,11 @@ msgstr "搜尋圖示..."
 #: src/ui/pages/SearchPage.tsx
 msgid "Search posts..."
 msgstr "搜尋帖子..."
+
+#. @context: Compose collection combobox search placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Search..."
+msgstr ""
 
 #. @context: Media picker dialog title
 #. @context: Media picker dialog title

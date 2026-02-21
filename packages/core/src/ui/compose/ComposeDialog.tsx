@@ -99,7 +99,15 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
     }),
     collection: t({
       message: "Collection",
-      comment: "@context: Compose collection selector placeholder",
+      comment: "@context: Compose collection selector trigger label",
+    }),
+    searchCollections: t({
+      message: "Search...",
+      comment: "@context: Compose collection combobox search placeholder",
+    }),
+    noCollections: t({
+      message: "No collections found.",
+      comment: "@context: Compose collection combobox empty state",
     }),
     post: t({
       message: "Post",
