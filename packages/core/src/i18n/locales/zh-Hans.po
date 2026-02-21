@@ -23,6 +23,11 @@ msgstr "/* 您的自定义 CSS 在这里 */"
 msgid "← Back to Collections"
 msgstr "← 返回收藏夹"
 
+#. @context: Add alt text label under attachment thumbnail
+#: src/ui/compose/ComposeDialog.tsx
+msgid "+ ALT"
+msgstr ""
+
 #. @context: Redirect type option
 #: src/routes/dash/redirects.tsx
 msgid "301 (Permanent)"
@@ -42,6 +47,16 @@ msgstr "关于这个博客"
 #: src/ui/dash/settings/SettingsNav.tsx
 msgid "Account"
 msgstr "账户"
+
+#. @context: Add more attachments button
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add"
+msgstr ""
+
+#. @context: Alt text panel title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add alt text"
+msgstr ""
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -77,6 +92,11 @@ msgstr "所有"
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
 msgid "All pages are in your navigation."
 msgstr "所有页面都在您的导航中。"
+
+#. @context: Hint text in alt text panel
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Alt text improves accessibility"
+msgstr ""
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
@@ -337,6 +357,11 @@ msgstr "删除此媒体将永久从存储中移除。"
 #: src/routes/auth/signin.tsx
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "演示账户已预填。只需点击登录。"
+
+#. @context: Alt text textarea placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Describe this for people with visual impairments..."
+msgstr ""
 
 #. @context: Collection form field
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -650,8 +675,6 @@ msgid "Load more"
 msgstr "加载更多"
 
 #. @context: Loading state for media picker
-#. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Loading..."
 msgstr "加载中..."
@@ -1042,6 +1065,11 @@ msgstr "已发布"
 msgid "Published pages are accessible via their slug. Drafts are not visible."
 msgstr "已发布的页面可以通过其别名访问。草稿不可见。"
 
+#. @context: Toast shown after successful deferred publish
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Published!"
+msgstr ""
+
 #. @context: Dashboard section title
 #: src/routes/dash/index.tsx
 msgid "Quick Actions"
@@ -1156,8 +1184,6 @@ msgid "Search..."
 msgstr ""
 
 #. @context: Media picker dialog title
-#. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Select Media"
 msgstr "选择媒体"
@@ -1418,7 +1444,9 @@ msgid "Upload successful!"
 msgstr "上传成功！"
 
 #. @context: Avatar upload button text while uploading
+#. @context: Toast shown during background upload
 #. @context: Upload status - uploading
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Uploading..."

@@ -2,14 +2,19 @@
  * Compose Editor
  *
  * Format-specific content editing sub-component for the compose dialog.
- * Handles note/link/quote fields, star rating, and attached text panel.
+ * Handles note/link/quote fields, star rating, attached text panel,
+ * file attachments with thumbnail strip, and alt text editing.
  *
  * Light DOM only — BaseCoat and Tailwind classes apply directly.
  */
 
 import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
-import type { ComposeFormat, ComposeLabels } from "./compose-types.js";
+import type {
+  ComposeFormat,
+  ComposeLabels,
+  ComposeAttachment,
+} from "./compose-types.js";
 
 export class JantComposeEditor extends LitElement {
   static properties = {
@@ -25,6 +30,9 @@ export class JantComposeEditor extends LitElement {
     _showRating: { state: true },
     _attachedText: { state: true },
     _showAttachedText: { state: true },
+    _attachments: { state: true },
+    _showAltPanel: { state: true },
+    _altPanelIndex: { state: true },
   };
 
   declare format: ComposeFormat;
@@ -39,6 +47,11 @@ export class JantComposeEditor extends LitElement {
   declare _showRating: boolean;
   declare _attachedText: string;
   declare _showAttachedText: boolean;
+  declare _attachments: ComposeAttachment[];
+  declare _showAltPanel: boolean;
+  declare _altPanelIndex: number;
+
+  private _fileInput: HTMLInputElement | null = null;
 
   createRenderRoot() {
     return this;
@@ -58,12 +71,16 @@ export class JantComposeEditor extends LitElement {
     this._showRating = false;
     this._attachedText = "";
     this._showAttachedText = false;
+    this._attachments = [];
+    this._showAltPanel = false;
+    this._altPanelIndex = 0;
   }
 
   getData() {
     const shared = {
       rating: this._rating,
       attachedText: this._attachedText,
+      attachments: this._attachments,
     };
 
     switch (this.format) {
@@ -108,6 +125,24 @@ export class JantComposeEditor extends LitElement {
     this._showRating = false;
     this._attachedText = "";
     this._showAttachedText = false;
+    // Revoke preview URLs before clearing
+    for (const a of this._attachments) {
+      URL.revokeObjectURL(a.previewUrl);
+    }
+    this._attachments = [];
+    this._showAltPanel = false;
+    this._altPanelIndex = 0;
+  }
+
+  updateAttachmentStatus(
+    clientId: string,
+    status: ComposeAttachment["status"],
+    mediaId: string | null,
+    error: string | null,
+  ) {
+    this._attachments = this._attachments.map((a) =>
+      a.clientId === clientId ? { ...a, status, mediaId, error } : a,
+    );
   }
 
   focusInput() {
@@ -118,6 +153,15 @@ export class JantComposeEditor extends LitElement {
           ? ".compose-quote-text"
           : ".compose-body-input";
     this.querySelector<HTMLElement>(selector)?.focus();
+  }
+
+  private _openAttachedText() {
+    this._showAttachedText = true;
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLTextAreaElement>(
+        ".compose-attached-textarea",
+      )?.focus();
+    });
   }
 
   private _onInput(field: string, e: Event) {
@@ -140,9 +184,83 @@ export class JantComposeEditor extends LitElement {
     this._rating = this._rating === star ? 0 : star;
   }
 
-  private _openMediaPicker() {
+  private _openFilePicker() {
+    if (!this._fileInput) {
+      this._fileInput = document.createElement("input");
+      this._fileInput.type = "file";
+      this._fileInput.accept = "image/*";
+      this._fileInput.multiple = true;
+      this._fileInput.style.display = "none";
+      this._fileInput.addEventListener("change", () =>
+        this._handleFilesSelected(),
+      );
+      this.appendChild(this._fileInput);
+    }
+    this._fileInput.value = "";
+    this._fileInput.click();
+  }
+
+  private _handleFilesSelected() {
+    if (!this._fileInput?.files?.length) return;
+
+    const newAttachments: ComposeAttachment[] = [];
+    const files: { file: File; clientId: string }[] = [];
+
+    for (const file of Array.from(this._fileInput.files)) {
+      const clientId = crypto.randomUUID();
+      const previewUrl = URL.createObjectURL(file);
+      newAttachments.push({
+        clientId,
+        file,
+        previewUrl,
+        status: "pending",
+        mediaId: null,
+        alt: "",
+        error: null,
+      });
+      files.push({ file, clientId });
+    }
+
+    this._attachments = [...this._attachments, ...newAttachments];
+
     this.dispatchEvent(
-      new CustomEvent("jant:open-media-picker", { bubbles: true }),
+      new CustomEvent("jant:files-selected", {
+        bubbles: true,
+        detail: { files },
+      }),
+    );
+  }
+
+  private _removeAttachment(index: number) {
+    const attachment = this._attachments[index];
+    if (attachment) {
+      URL.revokeObjectURL(attachment.previewUrl);
+    }
+    this._attachments = this._attachments.filter((_, i) => i !== index);
+    // Close alt panel if it was showing the removed item
+    if (this._showAltPanel && this._altPanelIndex === index) {
+      this._showAltPanel = false;
+    } else if (this._showAltPanel && this._altPanelIndex > index) {
+      this._altPanelIndex = this._altPanelIndex - 1;
+    }
+  }
+
+  private _openAltPanel(index: number) {
+    this._altPanelIndex = index;
+    this._showAltPanel = true;
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLTextAreaElement>(".compose-alt-textarea")?.focus();
+    });
+  }
+
+  private _closeAltPanel() {
+    this._showAltPanel = false;
+  }
+
+  private _onAltInput(e: Event) {
+    const value = (e.target as HTMLTextAreaElement).value;
+    this._attachments = this._attachments.map((a, i) =>
+      i === this._altPanelIndex ? { ...a, alt: value } : a,
     );
   }
 
@@ -220,7 +338,7 @@ export class JantComposeEditor extends LitElement {
     return html`
       <div class="compose-field-enter">
         <div class="compose-quote-wrap">
-          <span class="compose-quote-mark">“</span>
+          <span class="compose-quote-mark">"</span>
           <textarea
             .value=${this._quoteText}
             @input=${(e: Event) => this._onInput("_quoteText", e)}
@@ -292,9 +410,7 @@ export class JantComposeEditor extends LitElement {
     return html`
       <div
         class="compose-attached-badge"
-        @click=${() => {
-          this._showAttachedText = true;
-        }}
+        @click=${() => this._openAttachedText()}
       >
         <svg
           width="14"
@@ -395,15 +511,159 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
+  private _renderAltPanel() {
+    if (!this._showAltPanel) return nothing;
+    const attachment = this._attachments[this._altPanelIndex];
+    if (!attachment) return nothing;
+
+    return html`
+      <div class="compose-alt-panel">
+        <div
+          class="flex items-center gap-2.5 px-3 py-2.5 border-b border-border"
+        >
+          <button
+            type="button"
+            class="compose-attached-panel-back"
+            @click=${() => this._closeAltPanel()}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 3L6 8l5 5" />
+            </svg>
+          </button>
+          <span class="text-sm font-medium tracking-tight"
+            >${this.labels.addAltTitle}</span
+          >
+        </div>
+        <div class="compose-alt-preview">
+          <img
+            src=${attachment.previewUrl}
+            alt=""
+            class="compose-alt-preview-img"
+          />
+        </div>
+        <div class="flex-1 p-4 overflow-hidden flex flex-col">
+          <textarea
+            .value=${attachment.alt}
+            @input=${(e: Event) => this._onAltInput(e)}
+            class="compose-input compose-alt-textarea"
+            placeholder=${this.labels.altPlaceholder}
+            rows="3"
+          ></textarea>
+        </div>
+        <div
+          class="flex items-center justify-between px-3 py-2 border-t border-border"
+        >
+          <span class="text-xs text-muted-foreground"
+            >${this.labels.altHint}</span
+          >
+          <button
+            type="button"
+            class="compose-post-btn"
+            @click=${() => this._closeAltPanel()}
+          >
+            ${this.labels.done}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderAttachments() {
+    if (this._attachments.length === 0) return nothing;
+
+    return html`
+      <div class="compose-attachments">
+        ${this._attachments.map(
+          (a, i) => html`
+            <div class="compose-attachment">
+              <div class="compose-attachment-thumb">
+                <img
+                  src=${a.previewUrl}
+                  alt=""
+                  class="compose-attachment-img"
+                />
+                ${a.status === "pending" || a.status === "uploading"
+                  ? html`
+                      <div class="compose-attachment-overlay">
+                        <svg
+                          class="animate-spin size-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.5"
+                          stroke-linecap="round"
+                        >
+                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        </svg>
+                      </div>
+                    `
+                  : nothing}
+                ${a.status === "error"
+                  ? html`
+                      <div
+                        class="compose-attachment-overlay compose-attachment-error"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        >
+                          <circle cx="8" cy="8" r="6" />
+                          <path d="M10 6L6 10M6 6l4 4" />
+                        </svg>
+                      </div>
+                    `
+                  : nothing}
+                <button
+                  type="button"
+                  class="compose-attachment-remove"
+                  @click=${() => this._removeAttachment(i)}
+                >
+                  ✕
+                </button>
+              </div>
+              <button
+                type="button"
+                class=${classMap({
+                  "compose-attachment-alt": true,
+                  "compose-attachment-alt-set": a.alt.length > 0,
+                })}
+                @click=${() => this._openAltPanel(i)}
+              >
+                ${a.alt.length > 0 ? "ALT" : "+ ALT"}
+              </button>
+            </div>
+          `,
+        )}
+      </div>
+    `;
+  }
+
   private _renderToolsRow() {
     const hasAttached = this._attachedText.trim().length > 0;
     return html`
       <div class="compose-tools-row">
-        <!-- Media -->
+        <!-- Media / Add -->
         <button
           type="button"
-          class="compose-tool-btn"
-          @click=${() => this._openMediaPicker()}
+          class=${classMap({
+            "compose-tool-btn": true,
+            "compose-tool-btn-active": this._attachments.length > 0,
+          })}
+          @click=${() => this._openFilePicker()}
         >
           <svg
             width="18"
@@ -420,7 +680,11 @@ export class JantComposeEditor extends LitElement {
             <path d="M2 13l4-4c.6-.6 1.4-.6 2 0l4 4" />
             <path d="M11 11l1.5-1.5c.6-.6 1.4-.6 2 0L16 11" />
           </svg>
-          <span class="compose-tool-tip">${this.labels.media}</span>
+          <span class="compose-tool-tip"
+            >${this._attachments.length > 0
+              ? this.labels.addMore
+              : this.labels.media}</span
+          >
         </button>
 
         <!-- Attached Text -->
@@ -430,9 +694,7 @@ export class JantComposeEditor extends LitElement {
             "compose-tool-btn": true,
             "compose-tool-btn-active": hasAttached,
           })}
-          @click=${() => {
-            this._showAttachedText = true;
-          }}
+          @click=${() => this._openAttachedText()}
         >
           <svg
             width="18"
@@ -519,7 +781,7 @@ export class JantComposeEditor extends LitElement {
 
   render() {
     return html`
-      ${this._renderAttachedPanel()}
+      ${this._renderAttachedPanel()} ${this._renderAltPanel()}
       <section class="compose-body">
         ${this.format === "note"
           ? this._renderNoteFields()
@@ -527,6 +789,7 @@ export class JantComposeEditor extends LitElement {
             ? this._renderLinkFields()
             : this._renderQuoteFields()}
         ${this._renderStarRating()} ${this._renderAttachedBadge()}
+        ${this._renderAttachments()}
       </section>
       ${this._renderToolsRow()}
     `;

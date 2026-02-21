@@ -10,6 +10,7 @@
 
 import type { FC } from "hono/jsx";
 import type { Collection } from "../../types.js";
+import { renderCollectionIcon } from "../../lib/icons.js";
 import { useLingui } from "@lingui/react/macro";
 
 export interface ComposeDialogProps {
@@ -113,13 +114,33 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
       message: "Post",
       comment: "@context: Compose button - publish post",
     }),
-    selectMedia: t({
-      message: "Select Media",
-      comment: "@context: Media picker dialog title",
+    addAlt: t({
+      message: "+ ALT",
+      comment: "@context: Add alt text label under attachment thumbnail",
     }),
-    loading: t({
-      message: "Loading...",
-      comment: "@context: Loading state for media picker",
+    addAltTitle: t({
+      message: "Add alt text",
+      comment: "@context: Alt text panel title",
+    }),
+    altPlaceholder: t({
+      message: "Describe this for people with visual impairments...",
+      comment: "@context: Alt text textarea placeholder",
+    }),
+    altHint: t({
+      message: "Alt text improves accessibility",
+      comment: "@context: Hint text in alt text panel",
+    }),
+    addMore: t({
+      message: "Add",
+      comment: "@context: Add more attachments button",
+    }),
+    uploading: t({
+      message: "Uploading...",
+      comment: "@context: Toast shown during background upload",
+    }),
+    published: t({
+      message: "Published!",
+      comment: "@context: Toast shown after successful deferred publish",
     }),
   }).replace(/</g, "\\u003c");
 
@@ -127,7 +148,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
     (collections ?? []).map((c) => ({
       id: c.id,
       title: c.title,
-      icon: c.icon,
+      iconHtml: renderCollectionIcon(c.icon, { size: 16 }),
     })),
   ).replace(/</g, "\\u003c");
 

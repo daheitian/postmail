@@ -41,3 +41,94 @@ export function showToast(
     toast.addEventListener("animationend", () => toast.remove());
   }, 3000);
 }
+
+/**
+ * Show a persistent toast that stays until explicitly dismissed.
+ *
+ * @param id - Unique identifier for updating/dismissing later
+ * @param message - Text to display
+ * @param type - Visual style: "success" (default) or "error"
+ * @returns The toast element
+ *
+ * @example
+ * showPersistentToast("upload", "Uploading...");
+ */
+export function showPersistentToast(
+  id: string,
+  message: string,
+  type: "success" | "error" = "success",
+): HTMLElement | null {
+  const container = document.getElementById("toast-container");
+  if (!container) return null;
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.id = `toast-${id}`;
+  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span>`;
+  container.appendChild(toast);
+
+  return toast;
+}
+
+/**
+ * Update the message of an existing persistent toast.
+ *
+ * @param id - The toast identifier
+ * @param message - New message text
+ *
+ * @example
+ * updateToast("upload", "Almost done...");
+ */
+export function updateToast(id: string, message: string): void {
+  const toast = document.getElementById(`toast-${id}`);
+  if (!toast) return;
+
+  const span = toast.querySelector("span");
+  if (span) span.textContent = message;
+}
+
+/**
+ * Dismiss a persistent toast with fadeout animation.
+ *
+ * @param id - The toast identifier
+ *
+ * @example
+ * dismissToast("upload");
+ */
+export function dismissToast(id: string): void {
+  const toast = document.getElementById(`toast-${id}`);
+  if (!toast) return;
+
+  toast.classList.add("toast-out");
+  toast.addEventListener("animationend", () => toast.remove());
+}
+
+/**
+ * Replace a persistent toast with an auto-dismissing one.
+ *
+ * @param id - The toast identifier
+ * @param message - New message text
+ * @param type - Visual style: "success" (default) or "error"
+ *
+ * @example
+ * replaceWithAutoClose("upload", "Published!", "success");
+ */
+export function replaceWithAutoClose(
+  id: string,
+  message: string,
+  type: "success" | "error" = "success",
+): void {
+  const toast = document.getElementById(`toast-${id}`);
+  if (!toast) {
+    showToast(message, type);
+    return;
+  }
+
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span>`;
+
+  setTimeout(() => {
+    toast.classList.add("toast-out");
+    toast.addEventListener("animationend", () => toast.remove());
+  }, 3000);
+}

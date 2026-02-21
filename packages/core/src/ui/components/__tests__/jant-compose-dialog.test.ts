@@ -48,13 +48,18 @@ const labels: ComposeLabels = {
   searchCollections: "Search...",
   noCollections: "No collections found.",
   post: "Post",
-  selectMedia: "Select Media",
-  loading: "Loading...",
+  addAlt: "+ ALT",
+  addAltTitle: "Add alt text",
+  altPlaceholder: "Describe this...",
+  altHint: "Alt text improves accessibility",
+  addMore: "Add",
+  uploading: "Uploading...",
+  published: "Published!",
 };
 
 const collections: ComposeCollection[] = [
-  { id: 1, title: "Books", icon: null },
-  { id: 2, title: "Movies", icon: "\u{1F3AC}" },
+  { id: 1, title: "Books", iconHtml: "" },
+  { id: 2, title: "Movies", iconHtml: "<span>🎬</span>" },
 ];
 
 async function createElement(
@@ -152,6 +157,7 @@ describe("JantComposeDialog", () => {
     expect(detail.status).toBe("published");
     expect(detail.collectionIds).toEqual([]);
     expect(detail.mediaIds).toEqual([]);
+    expect(detail.mediaAlts).toEqual({});
   });
 
   it("collection selector toggles IDs", async () => {
@@ -190,14 +196,12 @@ describe("JantComposeDialog", () => {
     const el = await createElement();
     el._format = "link";
     el._collectionIds = [1, 2];
-    el._mediaIds = ["abc"];
     el._loading = true;
 
     el.reset();
 
     expect(el._format).toBe("note");
     expect(el._collectionIds).toEqual([]);
-    expect(el._mediaIds).toEqual([]);
     expect(el._loading).toBe(false);
   });
 
@@ -276,5 +280,233 @@ describe("JantComposeDialog", () => {
 
     const spinner = el.querySelector(".compose-post-btn .animate-spin");
     expect(spinner).not.toBeNull();
+  });
+
+  it("no old media picker dialog is rendered", async () => {
+    const el = await createElement();
+
+    expect(el.querySelector("#compose-media-picker")).toBeNull();
+    expect(el.querySelector(".compose-media-picker")).toBeNull();
+  });
+
+  it("editor renders attachments when present", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    // Simulate adding an attachment
+    const blob = new Blob(["fake-image"], { type: "image/png" });
+    const file = new File([blob], "test.png", { type: "image/png" });
+    const previewUrl = URL.createObjectURL(blob);
+
+    editor._attachments = [
+      {
+        clientId: "test-id-1",
+        file,
+        previewUrl,
+        status: "done",
+        mediaId: "media-1",
+        alt: "",
+        error: null,
+      },
+    ];
+    await editor.updateComplete;
+
+    // Thumbnail strip should be visible
+    expect(editor.querySelector(".compose-attachments")).not.toBeNull();
+    expect(editor.querySelector(".compose-attachment-thumb")).not.toBeNull();
+    // ALT button should be visible
+    expect(editor.querySelector(".compose-attachment-alt")).not.toBeNull();
+    // Media tool button should show "Add" label
+    const mediaBtn =
+      editor.querySelector<HTMLButtonElement>(".compose-tool-btn");
+    expect(mediaBtn?.querySelector(".compose-tool-tip")?.textContent).toBe(
+      "Add",
+    );
+
+    URL.revokeObjectURL(previewUrl);
+  });
+
+  it("remove button clears attachment", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    const blob = new Blob(["fake-image"], { type: "image/png" });
+    const file = new File([blob], "test.png", { type: "image/png" });
+    const previewUrl = URL.createObjectURL(blob);
+
+    editor._attachments = [
+      {
+        clientId: "test-id-1",
+        file,
+        previewUrl,
+        status: "done",
+        mediaId: "media-1",
+        alt: "",
+        error: null,
+      },
+    ];
+    await editor.updateComplete;
+
+    // Click remove button
+    const removeBtn = requireElement(
+      editor.querySelector<HTMLButtonElement>(".compose-attachment-remove"),
+      "expected remove button",
+    );
+    removeBtn.click();
+    await editor.updateComplete;
+
+    // Attachment strip should be gone (no attachments)
+    expect(editor.querySelector(".compose-attachments")).toBeNull();
+    expect(editor._attachments.length).toBe(0);
+  });
+
+  it("alt panel opens and closes", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    const blob = new Blob(["fake-image"], { type: "image/png" });
+    const file = new File([blob], "test.png", { type: "image/png" });
+    const previewUrl = URL.createObjectURL(blob);
+
+    editor._attachments = [
+      {
+        clientId: "test-id-1",
+        file,
+        previewUrl,
+        status: "done",
+        mediaId: "media-1",
+        alt: "",
+        error: null,
+      },
+    ];
+    await editor.updateComplete;
+
+    // Click ALT button
+    const altBtn = requireElement(
+      editor.querySelector<HTMLButtonElement>(".compose-attachment-alt"),
+      "expected alt button",
+    );
+    altBtn.click();
+    await editor.updateComplete;
+
+    // Alt panel should be visible
+    expect(editor.querySelector(".compose-alt-panel")).not.toBeNull();
+    expect(editor._showAltPanel).toBe(true);
+
+    // Click done to close
+    const doneBtn = editor.querySelector<HTMLButtonElement>(
+      ".compose-alt-panel .compose-post-btn",
+    );
+    doneBtn?.click();
+    await editor.updateComplete;
+
+    expect(editor._showAltPanel).toBe(false);
+    expect(editor.querySelector(".compose-alt-panel")).toBeNull();
+
+    URL.revokeObjectURL(previewUrl);
+  });
+
+  it("submit includes mediaIds and mediaAlts from completed attachments", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    const blob = new Blob(["fake-image"], { type: "image/png" });
+    const file = new File([blob], "test.png", { type: "image/png" });
+    const previewUrl = URL.createObjectURL(blob);
+
+    editor._attachments = [
+      {
+        clientId: "test-id-1",
+        file,
+        previewUrl,
+        status: "done",
+        mediaId: "media-1",
+        alt: "A test image",
+        error: null,
+      },
+    ];
+    editor._body = "Post with image";
+    await editor.updateComplete;
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit", (event) => {
+      const customEvent = event as CustomEvent<ComposeSubmitDetail>;
+      receivedDetail = customEvent.detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected post button",
+    ).click();
+
+    expect(receivedDetail).not.toBeNull();
+    const detail = receivedDetail as unknown as ComposeSubmitDetail;
+    expect(detail.mediaIds).toEqual(["media-1"]);
+    expect(detail.mediaAlts).toEqual({ "media-1": "A test image" });
+
+    URL.revokeObjectURL(previewUrl);
+  });
+
+  it("dispatches deferred submit when uploads are pending", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    const blob = new Blob(["fake-image"], { type: "image/png" });
+    const file = new File([blob], "test.png", { type: "image/png" });
+    const previewUrl = URL.createObjectURL(blob);
+
+    editor._attachments = [
+      {
+        clientId: "test-id-1",
+        file,
+        previewUrl,
+        status: "uploading",
+        mediaId: null,
+        alt: "Alt for pending",
+        error: null,
+      },
+    ];
+    editor._body = "Post with pending upload";
+    await editor.updateComplete;
+
+    let deferredEvent: CustomEvent | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      deferredEvent = event as CustomEvent;
+    });
+
+    // Prevent dialog.close() from throwing (no parent dialog in test)
+    let submitEvent: CustomEvent | null = null;
+    el.addEventListener("jant:compose-submit", (event) => {
+      submitEvent = event as CustomEvent;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected post button",
+    ).click();
+
+    // Should have dispatched deferred, not regular submit
+    expect(deferredEvent).not.toBeNull();
+    expect(submitEvent).toBeNull();
+    expect(
+      (deferredEvent as CustomEvent).detail.pendingAttachments,
+    ).toBeDefined();
+
+    URL.revokeObjectURL(previewUrl);
   });
 });

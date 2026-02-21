@@ -54,8 +54,13 @@ const labels: ComposeLabels = {
   searchCollections: "Search...",
   noCollections: "No collections found.",
   post: "Post",
-  selectMedia: "Select Media",
-  loading: "Loading...",
+  addAlt: "+ ALT",
+  addAltTitle: "Add alt text",
+  altPlaceholder: "Describe this...",
+  altHint: "Alt text improves accessibility",
+  addMore: "Add",
+  uploading: "Uploading...",
+  published: "Published!",
 };
 
 async function createElement(
@@ -235,16 +240,33 @@ describe("JantComposeEditor", () => {
     expect(badge?.textContent).toContain("chars");
   });
 
-  it("dispatches jant:open-media-picker on media button click", async () => {
+  it("media button highlights when attachments are present", async () => {
     const el = await createElement("note");
-    let dispatched = false;
-    el.addEventListener("jant:open-media-picker", () => {
-      dispatched = true;
-    });
 
+    // Media button should not be active initially
     const mediaBtn = el.querySelector<HTMLButtonElement>(".compose-tool-btn");
-    mediaBtn?.click();
+    expect(mediaBtn?.classList.contains("compose-tool-btn-active")).toBe(false);
 
-    expect(dispatched).toBe(true);
+    // Add an attachment
+    const blob = new Blob(["fake"], { type: "image/png" });
+    const file = new File([blob], "test.png", { type: "image/png" });
+    el._attachments = [
+      {
+        clientId: "test-1",
+        file,
+        previewUrl: URL.createObjectURL(blob),
+        status: "done",
+        mediaId: "m1",
+        alt: "",
+        error: null,
+      },
+    ];
+    await el.updateComplete;
+
+    const mediaBtnAfter =
+      el.querySelector<HTMLButtonElement>(".compose-tool-btn");
+    expect(mediaBtnAfter?.classList.contains("compose-tool-btn-active")).toBe(
+      true,
+    );
   });
 });

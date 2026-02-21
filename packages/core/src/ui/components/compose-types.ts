@@ -7,6 +7,16 @@
 
 export type ComposeFormat = "note" | "link" | "quote";
 
+export interface ComposeAttachment {
+  clientId: string;
+  file: File;
+  previewUrl: string;
+  status: "pending" | "uploading" | "done" | "error";
+  mediaId: string | null;
+  alt: string;
+  error: string | null;
+}
+
 export interface ComposeLabels {
   cancel: string;
   note: string;
@@ -34,8 +44,13 @@ export interface ComposeLabels {
   searchCollections: string;
   noCollections: string;
   post: string;
-  selectMedia: string;
-  loading: string;
+  addAlt: string;
+  addAltTitle: string;
+  altPlaceholder: string;
+  altHint: string;
+  addMore: string;
+  uploading: string;
+  published: string;
 }
 
 export interface ComposeSubmitDetail {
@@ -49,11 +64,12 @@ export interface ComposeSubmitDetail {
   rating: number;
   collectionIds: number[];
   mediaIds: string[];
+  mediaAlts: Record<string, string>;
   attachedText: string;
 }
 
 export interface ComposeCollection {
   id: number;
   title: string;
-  icon: string | null;
+  iconHtml: string;
 }

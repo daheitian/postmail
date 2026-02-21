@@ -127,6 +127,16 @@ composeRoutes.post("/", async (c) => {
   // Attach media if provided
   if (data.mediaIds && data.mediaIds.length > 0) {
     await c.var.services.media.attachToPost(post.id, data.mediaIds);
+
+    // Save alt text for each media item
+    if (data.mediaAlts) {
+      const altEntries = Object.entries(data.mediaAlts).filter(
+        ([id, alt]) => alt && (data.mediaIds ?? []).includes(id),
+      );
+      await Promise.all(
+        altEntries.map(([id, alt]) => c.var.services.media.updateAlt(id, alt)),
+      );
+    }
   }
 
   const isDraft = (data.status ?? "published") === "draft";

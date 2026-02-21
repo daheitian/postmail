@@ -28,6 +28,7 @@ export interface MediaService {
   getByStorageKey(storageKey: string): Promise<Media | null>;
   attachToPost(postId: number, mediaIds: string[]): Promise<void>;
   detachFromPost(postId: number): Promise<void>;
+  updateAlt(id: string, alt: string): Promise<void>;
 }
 
 export interface CreateMediaData {
@@ -200,6 +201,10 @@ export function createMediaService(db: Database): MediaService {
         .update(media)
         .set({ postId: null, position: 0 })
         .where(eq(media.postId, postId));
+    },
+
+    async updateAlt(id, alt) {
+      await db.update(media).set({ alt }).where(eq(media.id, id));
     },
 
     async delete(id) {

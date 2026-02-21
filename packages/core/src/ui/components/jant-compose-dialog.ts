@@ -2,13 +2,14 @@
  * Compose Dialog
  *
  * Outer shell for the compose dialog: header with format switcher,
- * collection selector, action row, and media picker dialog.
+ * collection selector, action row, and attachment upload coordination.
  *
  * Light DOM only — BaseCoat and Tailwind classes apply directly.
  */
 
 import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import type {
   ComposeFormat,
   ComposeLabels,
@@ -25,7 +26,6 @@ export class JantComposeDialog extends LitElement {
     _status: { state: true },
     _loading: { state: true },
     _collectionIds: { state: true },
-    _mediaIds: { state: true },
     _showCollection: { state: true },
     _showMoreMenu: { state: true },
     _collectionSearch: { state: true },
@@ -37,7 +37,6 @@ export class JantComposeDialog extends LitElement {
   declare _status: "published" | "draft";
   declare _loading: boolean;
   declare _collectionIds: number[];
-  declare _mediaIds: string[];
   declare _showCollection: boolean;
   declare _showMoreMenu: boolean;
   declare _collectionSearch: string;
@@ -55,7 +54,6 @@ export class JantComposeDialog extends LitElement {
     this._status = "published";
     this._loading = false;
     this._collectionIds = [];
-    this._mediaIds = [];
     this._showCollection = false;
     this._showMoreMenu = false;
     this._collectionSearch = "";
@@ -70,7 +68,6 @@ export class JantComposeDialog extends LitElement {
     this._status = "published";
     this._loading = false;
     this._collectionIds = [];
-    this._mediaIds = [];
     this._showCollection = false;
     this._showMoreMenu = false;
     this._collectionSearch = "";
@@ -81,21 +78,33 @@ export class JantComposeDialog extends LitElement {
     this._loading = v;
   }
 
-  set mediaIds(v: string[]) {
-    this._mediaIds = [...v];
-  }
-
   private _closeDialog() {
     this.closest("dialog")?.close();
   }
 
-  private _submit(status: "published" | "draft") {
-    if (this._loading) return;
+  private _buildSubmitDetail(
+    status: "published" | "draft",
+  ): ComposeSubmitDetail | null {
     const editor = this._editor;
-    if (!editor) return;
+    if (!editor) return null;
 
     const editorData = editor.getData();
-    const detail: ComposeSubmitDetail = {
+    const attachments = editorData.attachments ?? [];
+
+    // Collect mediaIds from completed uploads
+    const mediaIds = attachments
+      .filter((a) => a.status === "done" && a.mediaId)
+      .map((a) => a.mediaId as string);
+
+    // Collect alt text keyed by mediaId
+    const mediaAlts: Record<string, string> = {};
+    for (const a of attachments) {
+      if (a.mediaId && a.alt) {
+        mediaAlts[a.mediaId] = a.alt;
+      }
+    }
+
+    return {
       format: this._format,
       title: editorData.title,
       body: editorData.body,
@@ -105,16 +114,50 @@ export class JantComposeDialog extends LitElement {
       status,
       rating: editorData.rating,
       collectionIds: [...this._collectionIds],
-      mediaIds: [...this._mediaIds],
+      mediaIds,
+      mediaAlts,
       attachedText: editorData.attachedText,
     };
+  }
 
-    this.dispatchEvent(
-      new CustomEvent("jant:compose-submit", {
-        bubbles: true,
-        detail,
-      }),
+  private _submit(status: "published" | "draft") {
+    if (this._loading) return;
+    const editor = this._editor;
+    if (!editor) return;
+
+    const attachments = editor._attachments ?? [];
+    const hasPending = attachments.some(
+      (a) => a.status === "pending" || a.status === "uploading",
     );
+
+    const detail = this._buildSubmitDetail(status);
+    if (!detail) return;
+
+    if (hasPending) {
+      // Deferred submit: close dialog, let bridge finish uploads and post
+      this.dispatchEvent(
+        new CustomEvent("jant:compose-submit-deferred", {
+          bubbles: true,
+          detail: {
+            ...detail,
+            pendingAttachments: attachments.filter(
+              (a) => a.status === "pending" || a.status === "uploading",
+            ),
+          },
+        }),
+      );
+      this._closeDialog();
+      // Prevent browser from restoring focus to the trigger button
+      (document.activeElement as HTMLElement)?.blur();
+      this.reset();
+    } else {
+      this.dispatchEvent(
+        new CustomEvent("jant:compose-submit", {
+          bubbles: true,
+          detail,
+        }),
+      );
+    }
   }
 
   private _toggleCollection(id: number) {
@@ -125,37 +168,15 @@ export class JantComposeDialog extends LitElement {
     }
   }
 
-  private _openMediaPicker() {
-    const picker = this.querySelector<HTMLDialogElement>(
-      "#compose-media-picker",
-    );
-    picker?.showModal();
-    this.dispatchEvent(
-      new CustomEvent("jant:load-media-picker", { bubbles: true }),
-    );
-  }
-
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener(
-      "jant:open-media-picker",
-      this._handleOpenMediaPicker,
-    );
     this.addEventListener("keydown", this._handleKeydown);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    this.removeEventListener(
-      "jant:open-media-picker",
-      this._handleOpenMediaPicker,
-    );
     this.removeEventListener("keydown", this._handleKeydown);
   }
-
-  private _handleOpenMediaPicker = () => {
-    this._openMediaPicker();
-  };
 
   private _handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
@@ -413,7 +434,13 @@ export class JantComposeDialog extends LitElement {
                       : nothing}
                     @click=${() => this._toggleCollection(col.id)}
                   >
-                    ${col.icon ? `${col.icon} ` : ""}${col.title}
+                    ${col.iconHtml
+                      ? html`<span
+                          class="inline-flex items-center justify-center w-4 h-4 shrink-0"
+                          >${unsafeHTML(col.iconHtml)}</span
+                        >`
+                      : nothing}
+                    ${col.title}
                   </div>
                 `,
               )}
@@ -421,39 +448,6 @@ export class JantComposeDialog extends LitElement {
           </div>
         </div>
       </div>
-    `;
-  }
-
-  private _renderMediaPicker() {
-    return html`
-      <dialog
-        id="compose-media-picker"
-        class="compose-media-picker"
-        @click=${(e: Event) => {
-          if (e.target === e.currentTarget)
-            (e.target as HTMLDialogElement).close();
-        }}
-      >
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold">${this.labels.selectMedia}</h2>
-          <button
-            type="button"
-            class="btn-outline text-sm"
-            @click=${(e: Event) =>
-              (e.target as HTMLElement).closest("dialog")?.close()}
-          >
-            ${this.labels.done}
-          </button>
-        </div>
-        <div
-          id="compose-media-grid"
-          class="grid grid-cols-4 gap-2 max-h-96 overflow-y-auto"
-        >
-          <p class="text-muted-foreground text-sm col-span-4">
-            ${this.labels.loading}
-          </p>
-        </div>
-      </dialog>
     `;
   }
 
@@ -492,8 +486,6 @@ export class JantComposeDialog extends LitElement {
             ${this.labels.post}
           </button>
         </div>
-
-        ${this._renderMediaPicker()}
       </div>
     `;
   }

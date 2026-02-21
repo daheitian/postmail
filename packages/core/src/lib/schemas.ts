@@ -87,6 +87,7 @@ export const CreatePostSchema = z.object({
   replyToId: z.string().optional(), // Sqid format
   publishedAt: z.number().int().positive().optional(),
   mediaIds: z.array(z.string()).max(MAX_MEDIA_ATTACHMENTS).optional(),
+  mediaAlts: z.record(z.string(), z.string()).optional(),
 });
 
 /**

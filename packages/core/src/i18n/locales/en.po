@@ -35,6 +35,11 @@ msgstr "← Back to Collections"
 #~ msgid "← Back to home"
 #~ msgstr "← Back to home"
 
+#. @context: Add alt text label under attachment thumbnail
+#: src/ui/compose/ComposeDialog.tsx
+msgid "+ ALT"
+msgstr "+ ALT"
+
 #. @context: Archive post reply indicator - single
 #: src/theme/pages/ArchivePage.tsx
 #~ msgid "1 reply"
@@ -59,6 +64,16 @@ msgstr "About this blog"
 #: src/ui/dash/settings/SettingsNav.tsx
 msgid "Account"
 msgstr "Account"
+
+#. @context: Add more attachments button
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add"
+msgstr "Add"
+
+#. @context: Alt text panel title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add alt text"
+msgstr "Add alt text"
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -94,6 +109,11 @@ msgstr "All"
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
 msgid "All pages are in your navigation."
 msgstr "All pages are in your navigation."
+
+#. @context: Hint text in alt text panel
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Alt text improves accessibility"
+msgstr "Alt text improves accessibility"
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
@@ -422,6 +442,11 @@ msgstr "Deleting this media will remove it permanently from storage."
 #: src/routes/auth/signin.tsx
 msgid "Demo account pre-filled. Just click Sign In."
 msgstr "Demo account pre-filled. Just click Sign In."
+
+#. @context: Alt text textarea placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Describe this for people with visual impairments..."
+msgstr "Describe this for people with visual impairments..."
 
 #. @context: Collection form field
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -778,8 +803,6 @@ msgid "Load more"
 msgstr "Load more"
 
 #. @context: Loading state for media picker
-#. @context: Loading state for media picker
-#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Loading..."
 msgstr "Loading..."
@@ -1227,6 +1250,11 @@ msgstr "Published"
 msgid "Published pages are accessible via their slug. Drafts are not visible."
 msgstr "Published pages are accessible via their slug. Drafts are not visible."
 
+#. @context: Toast shown after successful deferred publish
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Published!"
+msgstr "Published!"
+
 #. @context: Dashboard section title
 #: src/routes/dash/index.tsx
 msgid "Quick Actions"
@@ -1368,8 +1396,6 @@ msgid "Search..."
 msgstr "Search..."
 
 #. @context: Media picker dialog title
-#. @context: Media picker dialog title
-#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Select Media"
 msgstr "Select Media"
@@ -1672,7 +1698,9 @@ msgid "Upload successful!"
 msgstr "Upload successful!"
 
 #. @context: Avatar upload button text while uploading
+#. @context: Toast shown during background upload
 #. @context: Upload status - uploading
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Uploading..."
