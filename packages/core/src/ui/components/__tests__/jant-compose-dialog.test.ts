@@ -504,7 +504,7 @@ describe("JantComposeDialog", () => {
     expect(deferredEvent).not.toBeNull();
     expect(submitEvent).toBeNull();
     expect(
-      (deferredEvent as CustomEvent).detail.pendingAttachments,
+      (deferredEvent as unknown as CustomEvent).detail.pendingAttachments,
     ).toBeDefined();
 
     URL.revokeObjectURL(previewUrl);

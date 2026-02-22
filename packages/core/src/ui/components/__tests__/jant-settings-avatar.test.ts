@@ -38,7 +38,7 @@ const labels: SettingsLabels = {
   featured: "Featured",
   timeZone: "Time Zone",
   siteFooter: "Site Footer",
-  footerPlaceholder: "Markdown supported",
+  markdownSupported: "Markdown supported",
   footerHelp: "Displayed at the bottom of posts.",
   seo: "SEO",
   allowIndexing: "It's OK for search engines to index my site",
