@@ -14,13 +14,13 @@ const outputFile =
 // better-sqlite3 is installed in packages/core
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const coreRequire = createRequire(
-  resolve(__dirname, "../../../packages/core/package.json")
+  resolve(__dirname, "../../package.json")
 );
 const Database = coreRequire("better-sqlite3");
 
 const dbDir = resolve(
   __dirname,
-  "../.wrangler/state/v3/d1/miniflare-D1DatabaseObject"
+  "../../.wrangler/state/v3/d1/miniflare-D1DatabaseObject"
 );
 const files = readdirSync(dbDir).filter((f) => f.endsWith(".sqlite"));
 if (!files.length) {
@@ -87,4 +87,4 @@ for (const [name, query] of tables) {
 const out = resolve(__dirname, outputFile);
 writeFileSync(out, sql);
 db.close();
-console.log(`Exported to templates/jant-site/scripts/${outputFile}`);
+console.log(`Exported to dev/scripts/${outputFile}`);

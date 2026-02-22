@@ -48,7 +48,7 @@ mise run dev
 
 ### Environment Setup
 
-Create `.dev.vars` in `templates/jant-site/`:
+Create `.dev.vars` in `packages/core/`:
 
 ```
 AUTH_SECRET=your-secret-at-least-32-chars
@@ -78,13 +78,9 @@ jant/
 │   └── create-jant/           # create-jant — CLI scaffolding tool
 │       └── template/          # ⚠️ Auto-generated, do NOT edit directly
 ├── templates/
-│   └── jant-site/             # Development + demo site + deployment
-│       ├── src/
-│       │   ├── style.css      # CSS entry
-│       │   ├── client.ts      # Client JS entry
-│       │   └── app.ts         # App entry
-│       ├── scripts/           # Dev scripts (export-seed, reset-dev, etc.)
-│       ├── vite.config.ts     # Vite config (monorepo alias)
+│   └── worker-starter/        # Minimal user template (3 files)
+│       ├── index.js           # App entry
+│       ├── package.json       # Dependencies
 │       └── wrangler.toml      # Cloudflare config
 ├── docs/                      # Documentation
 └── .changeset/                # Changesets for versioning
@@ -92,19 +88,19 @@ jant/
 
 ### Packages
 
-| Package                         | Purpose                                     | Has Vite/Wrangler? |
-| ------------------------------- | ------------------------------------------- | ------------------ |
-| `packages/core`                 | Pure library — exports components and utils | No                 |
-| `templates/jant-site`           | Development, testing, and deployment        | Yes                |
-| `packages/create-jant/template` | User project starter (auto-generated)       | Yes                |
+| Package                         | Purpose                                   | Has Vite/Wrangler? |
+| ------------------------------- | ----------------------------------------- | ------------------ |
+| `packages/core`                 | Library + dev environment (Vite HMR)      | Yes                |
+| `templates/worker-starter`      | Minimal user template (3 files, no build) | No                 |
+| `packages/create-jant/template` | User project starter (auto-generated)     | No                 |
 
-**Important**: `packages/core` is a pure library. All development and testing happens in `templates/jant-site`, which has a Vite alias pointing to core's source for HMR.
+**Important**: Development and testing happens in `packages/core`, which has a Vite dev server with HMR. The `templates/worker-starter` is the minimal template for end users — just `index.js`, `package.json`, and `wrangler.toml`.
 
 ## Tech Stack
 
 - **Runtime**: Cloudflare Workers
 - **Framework**: Hono (v4)
-- **Build**: Vite + SWC + @cloudflare/vite-plugin
+- **Build**: Vite library mode + SWC + @cloudflare/vite-plugin
 - **CSS**: Tailwind CSS v4 + [BaseCoat](https://basecoat.dev)
 - **Database**: D1 (SQLite) + Drizzle ORM
 - **Auth**: better-auth
@@ -134,9 +130,9 @@ All commands are run via `mise run <command>`. You never need to `cd` into subdi
 ```bash
 mise run dev              # Start Vite dev server on port 9019 (auto-runs migrations)
 mise run dev-debug        # Start dev server on port 19019 (for debugging)
-mise run build            # Build with Vite
-mise run preview          # Build and preview production locally
-mise run deploy           # Build + deploy to Cloudflare Workers
+mise run build            # Build @jant/core (lib + client assets)
+mise run site-dev         # Build @jant/core + start jant.me dev server
+mise run site-deploy      # Build @jant/core + deploy jant.me to Workers
 ```
 
 ### Code Quality
@@ -218,7 +214,7 @@ mise run ci               # Run all CI checks (lint + typecheck + test + build +
    mise run dev
    ```
 
-3. **Make your changes** — edit files in `packages/core/src/` (the library) or `templates/jant-site/` (the dev environment).
+3. **Make your changes** — edit files in `packages/core/src/` (the library) or `packages/core/` (the dev environment).
 
 4. **Write tests** for any new functionality or bug fixes (see [Testing](#testing)).
 
@@ -415,7 +411,7 @@ The project includes a workflow for maintaining development seed data:
    mise run db-export
    ```
 
-   This saves the current local D1 data to `templates/jant-site/scripts/seed-local.sql`.
+   This saves the current local D1 data to `packages/core/scripts/seed-local.sql`.
 
 3. **Load seed data** (on a fresh clone or after reset):
 
@@ -450,7 +446,7 @@ const { t } = useLingui();
 return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
 ```
 
-**Important**: The import from `@lingui/react/macro` is intentional — the SWC plugin rewrites it to `@jant/core/i18n` at compile time. Do not change this import path.
+**Important**: The import from `@lingui/react/macro` is intentional — the SWC plugin rewrites it to `@jant/core/i18n` at compile time, which Vite resolves to source during bundling. Do not change this import path.
 
 ### Workflow
 

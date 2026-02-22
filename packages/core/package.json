@@ -8,12 +8,7 @@
       "types": "./src/index.ts",
       "default": "./dist/index.js"
     },
-    "./i18n": {
-      "types": "./src/i18n/index.ts",
-      "default": "./dist/i18n/index.js"
-    },
-    "./preset.css": "./src/preset.css",
-    "./client": "./dist/client.js"
+    "./i18n": "./src/i18n/index.ts"
   },
   "files": [
     "dist",
@@ -23,19 +18,23 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm build:lib",
-    "build:lib": "swc src -d dist --strip-leading-paths --ignore '**/__tests__/**' && pnpm build:types",
-    "build:types": "tsc -p tsconfig.build.json",
+    "build": "pnpm build:lib && pnpm build:client",
+    "build:client": "vite build --config vite.config.client.ts",
+    "build:lib": "vite build --config vite.config.worker.ts",
     "typecheck": "tsc -b --noEmit",
     "db:generate": "drizzle-kit generate",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile --typescript",
     "i18n:build": "pnpm i18n:extract && pnpm i18n:compile",
+    "dev": "pnpm db:migrate:local && vite dev",
+    "dev:debug": "pnpm db:migrate:local && vite dev --port 19019",
+    "db:migrate:local": "yes | wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "postinstall": "lingui compile --typescript",
-    "prepublishOnly": "pnpm i18n:compile && pnpm build:lib"
+    "prepare": "lingui compile --typescript",
+    "prepublishOnly": "pnpm i18n:compile && pnpm build"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.987.0",
@@ -53,7 +52,6 @@
     "sortablejs": "^1.15.6",
     "sqids": "^0.3.0",
     "uuidv7": "^1.1.0",
-    "vite-ssr-components": "^0.5.2",
     "zod": "^4.3.6"
   },
   "peerDependencies": {
@@ -61,12 +59,12 @@
     "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.22.1",
     "@cloudflare/workers-types": "^4.20260131.0",
     "@lingui/cli": "^5.9.0",
     "@lingui/conf": "^5.9.0",
     "@lingui/format-po": "^5.9.0",
     "@lingui/swc-plugin": "^5.10.1",
-    "@swc/cli": "^0.6.0",
     "@swc/core": "^1.15.11",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.1.0",
@@ -74,10 +72,14 @@
     "drizzle-kit": "^0.31.8",
     "glob": "^13.0.0",
     "happy-dom": "^20.6.3",
+    "@tailwindcss/vite": "^4.1.18",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "unplugin-swc": "^1.5.9",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.18",
+    "wrangler": "^4.61.1"
   },
   "repository": {
     "type": "git",

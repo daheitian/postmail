@@ -12,8 +12,7 @@ pnpm = "10.28.2"
 alias = "check"
 description = "Run all CI checks (lint + typecheck + test + build + i18n + template)"
 run = """
-# Phase 1: Build @jant/core once (swc + tsc declarations)
-# - typecheck needs declaration files
+# Phase 1: Build @jant/core once (Vite lib mode → single dist/index.js)
 # - test-template needs dist/
 pnpm --filter @jant/core build:lib
 
@@ -29,11 +28,11 @@ pnpm --filter create-jant test-template
 """
 
 # =============================================================================
-# Development (uses templates/jant-site)
+# Development (uses packages/core dev environment)
 # =============================================================================
 [tasks.dev]
 description = "Start development server"
-run = "pnpm --filter @jant/core i18n:build && pnpm --filter jant-site dev"
+run = "pnpm --filter @jant/core i18n:build && pnpm --filter @jant/core dev"
 
 [tasks.build-lib]
 alias = "bl"
@@ -43,15 +42,11 @@ run = "pnpm --filter @jant/core build:lib"
 [tasks.dev-debug]
 alias = "debug"
 description = "Start dev server on port 19019 (for Claude debugging)"
-run = "pnpm --filter jant-site dev:debug"
+run = "pnpm --filter @jant/core dev:debug"
 
 [tasks.build]
-description = "Build template project"
-run = "pnpm --filter jant-site build"
-
-[tasks.build-types]
-description = "Generate @jant/core type declarations"
-run = "pnpm --filter @jant/core build:types"
+description = "Build @jant/core (lib + client assets)"
+run = "pnpm --filter @jant/core build"
 
 [tasks.build-all]
 description = "Build all publishable packages"
@@ -62,7 +57,6 @@ pnpm --filter create-jant build
 
 [tasks.typecheck]
 description = "Run TypeScript type checking (all packages)"
-depends = ["build-types"]
 run = "pnpm -r typecheck"
 
 # =============================================================================
@@ -108,42 +102,42 @@ run = "pnpm --filter @jant/core db:generate"
 
 [tasks.db-migrate]
 alias = "migrate"
-description = "Run D1 migrations (local template)"
-run = "pnpm --filter jant-site db:migrate:local"
+description = "Run D1 migrations (local)"
+run = "pnpm --filter @jant/core db:migrate:local"
 
 [tasks.db-migrate-remote]
-description = "Run D1 migrations (remote template)"
-run = "pnpm --filter jant-site db:migrate:remote"
+description = "Run D1 migrations (remote)"
+run = "pnpm --filter @jant/core db:migrate:remote"
 
 [tasks.db-clean]
 description = "Delete local D1 database (wrangler state)"
-run = "rm -rf templates/jant-site/.wrangler"
+run = "rm -rf packages/core/.wrangler"
 
 [tasks.db-reset]
 description = "Delete local database and re-run migrations"
 run = """
-rm -rf templates/jant-site/.wrangler
-pnpm --filter jant-site db:migrate:local
+rm -rf packages/core/.wrangler
+pnpm --filter @jant/core db:migrate:local
 """
 
 [tasks.db-export]
 description = "Export current local D1 data to seed-local.sql"
-dir = "templates/jant-site"
-run = "node scripts/export-seed.mjs"
+dir = "packages/core"
+run = "node dev/scripts/export-seed.mjs"
 
 [tasks.db-seed]
 alias = "seed"
 description = "Reset local database and load dev seed data"
-dir = "templates/jant-site"
+dir = "packages/core"
 run = """
 echo "Resetting database..."
 rm -rf .wrangler
 echo "Running migrations..."
 yes | pnpm exec wrangler d1 migrations apply DB --local
 echo "Clearing data..."
-pnpm exec wrangler d1 execute DB --local --file=scripts/reset-local.sql
+pnpm exec wrangler d1 execute DB --local --file=dev/scripts/reset-local.sql
 echo "Loading seed data..."
-pnpm exec wrangler d1 execute DB --local --file=scripts/seed-local.sql
+pnpm exec wrangler d1 execute DB --local --file=dev/scripts/seed-local.sql
 echo "Done! Database has been seeded."
 """
 
@@ -164,7 +158,7 @@ run = """
 pnpm --filter @jant/core i18n:build
 if ! git diff --exit-code packages/core/src/i18n/locales/; then
   echo ""
-  echo "❌ i18n catalogs are out of sync!"
+  echo "i18n catalogs are out of sync!"
   echo "Run 'mise run i18n-no-translate' locally and commit the changes."
   exit 1
 fi
@@ -219,25 +213,13 @@ npx lingui-po-translate \
   --sourceOverride="zh-Hant:zh-Hans"
 """
 
-[tasks.preview]
-description = "Build and preview production locally"
-depends = ["build"]
-run = "pnpm --filter jant-site preview"
-
-# =============================================================================
-# Deploy
-# =============================================================================
-[tasks.deploy]
-description = "Deploy template to Cloudflare Workers"
-run = "pnpm --filter jant-site run deploy"
-
 # =============================================================================
 # Demo
 # =============================================================================
 [tasks.demo-deploy]
 alias = "dd"
 description = "Deploy demo site to demo.jant.me"
-dir = "templates/jant-site"
+dir = "packages/core"
 run = """
 echo "Running remote migrations..."
 pnpm exec wrangler d1 migrations apply DB --remote --config wrangler.demo.toml
@@ -251,23 +233,23 @@ pnpm exec wrangler deploy --config wrangler.demo.toml
 
 [tasks.demo-reset]
 description = "Reset demo.jant.me data (clear + reseed)"
-dir = "templates/jant-site"
-run = "pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/seed-demo.sql"
+dir = "packages/core"
+run = "pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=dev/scripts/seed-demo.sql"
 
 [tasks.demo-export]
-description = "Export demo database to scripts/seed-demo.sql"
-dir = "templates/jant-site"
-run = "node scripts/export-demo.mjs"
+description = "Export demo database to dev/scripts/seed-demo.sql"
+dir = "packages/core"
+run = "node dev/scripts/export-demo.mjs"
 
 [tasks.demo-seed]
 description = "Push local seed data to demo"
-dir = "templates/jant-site"
+dir = "packages/core"
 run = """
 echo "Exporting local data..."
-node scripts/export-seed.mjs --no-auth --output seed-demo-upload.sql
+node dev/scripts/export-seed.mjs --no-auth --output seed-demo-upload.sql
 echo "Loading seed data to demo (includes reset)..."
-pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=scripts/seed-demo-upload.sql
-rm scripts/seed-demo-upload.sql
+pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=dev/scripts/seed-demo-upload.sql
+rm dev/scripts/seed-demo-upload.sql
 echo "Done! Demo has been seeded from local data."
 """
 
@@ -276,25 +258,20 @@ echo "Done! Demo has been seeded from local data."
 # =============================================================================
 [tasks.site-dev]
 alias = "sd"
-description = "Start jant.me development server"
-run = "pnpm --filter jant-me dev"
-
-[tasks.site-build]
-alias = "sb"
-description = "Build jant.me for production"
-run = "pnpm --filter jant-me build"
+description = "Start jant.me development server (build @jant/core first)"
+run = "pnpm --filter @jant/core build && pnpm --filter jant-me dev"
 
 [tasks.site-deploy]
 description = "Deploy jant.me to Cloudflare Workers"
-run = "pnpm --filter jant-me run deploy"
+run = "pnpm --filter @jant/core build && pnpm --filter jant-me run deploy"
 
 # =============================================================================
 # Utilities
 # =============================================================================
 [tasks.reset-password]
 description = "Generate password reset token (local D1)"
-dir = "templates/jant-site"
-run = "node scripts/reset-password.mjs"
+dir = "packages/core"
+run = "node dev/scripts/reset-password.mjs"
 
 [tasks.clean]
 description = "Clean build artifacts"
@@ -308,38 +285,38 @@ run = "rm -rf node_modules packages/*/node_modules templates/*/node_modules them
 alias = "reset"
 description = "Nuclear reset - delete everything and start fresh (node_modules, dist, cache, db, lock file)"
 run = """
-echo "🧹 Nuclear reset - deleting everything..."
+echo "Nuclear reset - deleting everything..."
 echo ""
-echo "📦 Removing node_modules..."
+echo "Removing node_modules..."
 rm -rf node_modules packages/*/node_modules templates/*/node_modules themes/*/node_modules
 
-echo "🗑️  Removing build artifacts..."
+echo "Removing build artifacts..."
 rm -rf packages/*/dist themes/*/dist templates/*/dist packages/create-jant/template/dist
 
-echo "💾 Removing local databases and Wrangler state..."
+echo "Removing local databases and Wrangler state..."
 rm -rf packages/*/.wrangler templates/*/.wrangler packages/create-jant/template/.wrangler
 
-echo "⚡ Removing Vite cache..."
+echo "Removing Vite cache..."
 rm -rf packages/*/.vite templates/*/.vite packages/create-jant/template/.vite
 
-echo "🌐 Removing i18n build cache..."
+echo "Removing i18n build cache..."
 rm -rf packages/*/.lingui-build
 
-echo "🗂️  Removing generated examples..."
+echo "Removing generated examples..."
 rm -rf examples/
 
-echo "🔒 Removing lock file..."
+echo "Removing lock file..."
 rm -f pnpm-lock.yaml
 
 echo ""
-echo "✨ Everything deleted! Now reinstalling dependencies..."
+echo "Everything deleted! Now reinstalling dependencies..."
 echo ""
 pnpm install
 
 echo ""
-echo "✅ Fresh install complete! Project is now in pristine state."
+echo "Fresh install complete! Project is now in pristine state."
 echo ""
-echo "📋 Next step:"
+echo "Next step:"
 echo "   mise run dev    # Start development (auto-runs migrations)"
 echo ""
 """
@@ -355,7 +332,7 @@ arg "<name>"
 arg "[base]" default="main"
 """
 run = """
-# Normalize branch name for directory: feat/login → feat-login
+# Normalize branch name for directory: feat/login -> feat-login
 DIR_NAME=$(echo "$usage_name" | tr '/' '-')
 WORKTREE_PATH="../$DIR_NAME"
 
@@ -374,8 +351,8 @@ else
 fi
 
 # Copy secrets file if it exists
-if [ -f "templates/jant-site/.dev.vars" ]; then
-  cp templates/jant-site/.dev.vars "$WORKTREE_PATH/templates/jant-site/.dev.vars"
+if [ -f "packages/core/.dev.vars" ]; then
+  cp packages/core/.dev.vars "$WORKTREE_PATH/packages/core/.dev.vars"
   echo "Copied .dev.vars"
 fi
 
@@ -416,8 +393,8 @@ fi
 git worktree add -b "$usage_branch" "$WORKTREE_PATH" "origin/$usage_branch"
 
 # Copy secrets file if it exists
-if [ -f "templates/jant-site/.dev.vars" ]; then
-  cp templates/jant-site/.dev.vars "$WORKTREE_PATH/templates/jant-site/.dev.vars"
+if [ -f "packages/core/.dev.vars" ]; then
+  cp packages/core/.dev.vars "$WORKTREE_PATH/packages/core/.dev.vars"
   echo "Copied .dev.vars"
 fi
 
@@ -436,7 +413,7 @@ description = "Remove a worktree and its branch: mise run rm feat/login"
 usage = 'arg "<branch>"'
 run = """
 BRANCH_NAME="$usage_branch"
-# Normalize branch name for directory: feat/login → feat-login
+# Normalize branch name for directory: feat/login -> feat-login
 DIR_NAME=$(echo "$BRANCH_NAME" | tr '/' '-')
 WORKTREE_PATH="../$DIR_NAME"
 
@@ -487,15 +464,15 @@ if [ -d "$DEST" ]; then
 fi
 
 mv "$SOURCE" "$DEST"
-echo "Moved: $SOURCE → $DEST"
+echo "Moved: $SOURCE -> $DEST"
 """
 
 # =============================================================================
-# Examples (generated from templates/jant-site, not committed to git)
+# Examples (generated from templates/worker-starter)
 # =============================================================================
 [tasks.example-new]
 alias = "ne"
-description = "Create a new example from templates/jant-site"
+description = "Create a new example from templates/worker-starter"
 usage = 'arg "<name>"'
 run = """
 DEST="examples/$usage_name"
@@ -506,20 +483,15 @@ if [ -d "$DEST" ]; then
 fi
 
 rsync -a \
-  --exclude='node_modules' --exclude='.wrangler' --exclude='.swc' \
-  --exclude='.vite' --exclude='dist' --exclude='.dev.vars' \
-  --exclude='scripts/' --exclude='wrangler.demo.toml' --exclude='README.md' \
-  --exclude='_github' --exclude='_gitignore' --exclude='_env.example' \
-  --exclude='pnpm-workspace.yaml' --exclude='.prettierrc' \
-  templates/jant-site/ "$DEST/"
+  --exclude='node_modules' --exclude='.wrangler' \
+  templates/worker-starter/ "$DEST/"
 
-sed -i '' "s/\"name\": \"jant-site\"/\"name\": \"example-$usage_name\"/" "$DEST/package.json"
-echo 'AUTH_SECRET=example-dev-secret-at-least-32-characters-long' > "$DEST/.dev.vars"
+sed -i '' "s/\"name\": \"my-jant-site\"/\"name\": \"example-$usage_name\"/" "$DEST/package.json"
 pnpm install
 
 echo ""
 echo "Created: $DEST"
-echo "Next: edit $DEST/src/index.ts, then mise run example $usage_name"
+echo "Next: mise run example $usage_name"
 """
 
 [tasks.example-seed]
@@ -529,8 +501,8 @@ usage = 'arg "<name>"'
 run = """
 cd "examples/$usage_name"
 yes | pnpm exec wrangler d1 migrations apply DB --local
-pnpm exec wrangler d1 execute DB --local --file=../../templates/jant-site/scripts/reset-local.sql
-pnpm exec wrangler d1 execute DB --local --file=../../templates/jant-site/scripts/seed-local.sql
+pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/reset-local.sql
+pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/seed-local.sql
 """
 
 [tasks.example]
@@ -618,7 +590,7 @@ run = "pnpm release"
 [tasks.release-local]
 description = "Build and publish all packages locally"
 run = """
-pnpm --filter @jant/core build:lib
+pnpm --filter @jant/core build
 pnpm --filter jant-theme-card build
 pnpm --filter jant-theme-minimal build
 pnpm --filter jant-theme-threads build
@@ -627,13 +599,12 @@ pnpm -r --filter './packages/*' --filter './themes/*' publish --access public --
 
 [tasks.release-dry]
 description = "Dry run of release (no actual publish)"
-run = "pnpm build && pnpm -r --filter './packages/*' --filter './themes/*' publish --dry-run --no-provenance"
+run = "pnpm --filter @jant/core build && pnpm -r --filter './packages/*' --filter './themes/*' publish --dry-run --no-provenance"
 
 [tasks.publish-core]
 description = "Build and publish @jant/core to npm"
-run = "pnpm --filter @jant/core build:lib && cd packages/core && npm publish --access public --no-provenance --no-git-checks"
+run = "pnpm --filter @jant/core build && cd packages/core && npm publish --access public --no-provenance --no-git-checks"
 
 [tasks.publish-create]
 description = "Build and publish create-jant to npm"
 run = "pnpm --filter create-jant build && cd packages/create-jant && npm publish --access public --no-provenance --no-git-checks"
-

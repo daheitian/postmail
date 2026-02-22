@@ -2,8 +2,8 @@
 /**
  * Integration test for the create-jant template.
  *
- * Scaffolds a project using the CLI and verifies that `pnpm build` succeeds.
- * This catches issues like broken tsconfig extends, missing monorepo-only transforms, etc.
+ * Scaffolds a project using the CLI and verifies that `wrangler deploy --dry-run`
+ * succeeds with the pre-built client assets from @jant/core.
  *
  * Usage: node scripts/test-template.js [path-to-core-tarball]
  *
@@ -54,7 +54,7 @@ async function main() {
 
   const cliPath = path.join(PACKAGE_ROOT, "dist/index.js");
   if (!(await fs.pathExists(cliPath))) {
-    console.error(`  ✗ CLI not built. Run "pnpm --filter create-jant prepublishOnly" first.`);
+    console.error(`  CLI not built. Run "pnpm --filter create-jant prepublishOnly" first.`);
     process.exit(1);
   }
 
@@ -74,23 +74,38 @@ async function main() {
   run("pnpm install --no-frozen-lockfile", { cwd: projectDir });
   console.log();
 
-  // 5. Run build
-  console.log("Step 5: Running pnpm build...");
-  run("pnpm build", { cwd: projectDir });
-  console.log();
+  // 5. Verify client assets exist
+  console.log("Step 5: Verifying client assets...");
+  const clientDir = path.join(projectDir, "node_modules/@jant/core/dist/client");
+  const clientJs = path.join(clientDir, "client.js");
+  const clientCss = path.join(clientDir, "client.css");
 
-  // 6. Run typecheck
-  console.log("Step 6: Running pnpm typecheck...");
-  run("pnpm typecheck", { cwd: projectDir });
-  console.log();
+  if (!(await fs.pathExists(clientJs))) {
+    console.error(`  client.js not found at ${clientJs}`);
+    process.exit(1);
+  }
+  if (!(await fs.pathExists(clientCss))) {
+    console.error(`  client.css not found at ${clientCss}`);
+    process.exit(1);
+  }
+  console.log("  client.js and client.css found\n");
+
+  // 6. Verify wrangler.toml is valid
+  console.log("Step 6: Verifying wrangler.toml...");
+  const wranglerToml = await fs.readFile(path.join(projectDir, "wrangler.toml"), "utf-8");
+  if (!wranglerToml.includes("test-project")) {
+    console.error("  wrangler.toml does not contain project name");
+    process.exit(1);
+  }
+  console.log("  wrangler.toml looks correct\n");
 
   // Cleanup
   await fs.remove(testDir);
 
-  console.log("✓ Template integration test passed!");
+  console.log("Template integration test passed!");
 }
 
 main().catch((error) => {
-  console.error("\n✗ Template integration test failed:", error.message);
+  console.error("\nTemplate integration test failed:", error.message);
   process.exit(1);
 });

@@ -1,9 +1,10 @@
 name = "jant-me"
-main = "src/index.ts"
+main = "index.js"
 compatibility_date = "2026-01-20"
 compatibility_flags = ["nodejs_compat"]
-[dev]
-port = 9019
+
+[assets]
+directory = "./node_modules/@jant/core/dist/client"
 
 # ============================================
 # Environment Variables

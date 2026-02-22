@@ -15,11 +15,11 @@ const CORE_VERSION = "__JANT_CORE_VERSION__";
 
 // Template directory resolution:
 // - If template/ exists next to dist/ (after prepublish copy), use that
-// - Otherwise, use the source templates/jant-site (for local dev)
-// From dist/index.js: ../template or ../../../templates/jant-site
+// - Otherwise, use the source templates/worker-starter (for local dev)
+// From dist/index.js: ../template or ../../../templates/worker-starter
 const TEMPLATE_DIR = fs.existsSync(path.resolve(__dirname, "../template"))
   ? path.resolve(__dirname, "../template")
-  : path.resolve(__dirname, "../../../templates/jant-site");
+  : path.resolve(__dirname, "../../../templates/worker-starter");
 
 type PackageManager = "pnpm" | "yarn" | "npm";
 
@@ -92,14 +92,6 @@ function formatRunCmd(pm: PackageManager, script: string): string {
 }
 
 /**
- * Format a package add command for the given package manager.
- * npm uses `install`, pnpm/yarn use `add`.
- */
-function formatAddCmd(pm: PackageManager, pkg: string): string {
-  return pm === "npm" ? `npm install ${pkg}` : `${pm} add ${pkg}`;
-}
-
-/**
  * Execute a shell command silently, returning success/failure.
  */
 function runCommand(cmd: string, cwd: string): boolean {
@@ -112,104 +104,20 @@ function runCommand(cmd: string, cwd: string): boolean {
 }
 
 /**
- * Process @create-jant markers in file content.
- *
- * Supported markers (using line comments # or //):
- * - `@create-jant: @remove`         — remove the entire line
- * - `@create-jant: @remove-start/end` — remove the entire block (inclusive)
- * - `@create-jant: "${template}"`   — replace the quoted value before the comment
- *
- * @example
- * // wrangler.toml
- * name = "jant-site" # @create-jant: "${name}"
- * account_id = "abc" # @create-jant: @remove
- *
- * // vite.config.ts
- * // @create-jant: @remove-start
- * "@jant/core": resolve(__dirname, "../../packages/core/src"),
- * // @create-jant: @remove-end
- */
-function processMarkers(content: string, vars: Record<string, string>): string {
-  // 1. Remove blocks between @remove-start and @remove-end
-  content = content.replace(
-    /\s*(?:\/\/|#)\s*@create-jant:\s*@remove-start[\s\S]*?(?:\/\/|#)\s*@create-jant:\s*@remove-end\n?/g,
-    "",
-  );
-
-  // 2. Remove lines with @remove
-  content = content.replace(
-    /^.*(?:\/\/|#)\s*@create-jant:\s*@remove\s*\n?/gm,
-    "",
-  );
-
-  // 3. Replace value markers: `key = "old" # @create-jant: "${name}"` → `key = "interpolated"`
-  content = content.replace(
-    /^(.+=\s*)"[^"]*"\s*(?:\/\/|#)\s*@create-jant:\s*"([^"]*)"/gm,
-    (_, prefix: string, template: string) => {
-      const value = template.replace(
-        /\$\{(\w+)\}/g,
-        (__, key: string) => vars[key] ?? "",
-      );
-      return `${prefix}"${value}"`;
-    },
-  );
-
-  return content;
-}
-
-/**
  * Copy template files to target directory
  */
 async function copyTemplate(config: ProjectConfig): Promise<void> {
   const { projectName, targetDir, packageManager } = config;
 
-  // Copy all template files
+  // Copy all template files (worker-starter is just 3 files: index.js, package.json, wrangler.toml)
   await fs.copy(TEMPLATE_DIR, targetDir, {
     filter: (src) => {
       const basename = path.basename(src);
-      // Skip system files and development artifacts
-      if (basename.startsWith(".DS_Store")) return false;
       if (basename === "node_modules") return false;
       if (basename === ".wrangler") return false;
-      if (basename === ".swc") return false;
-      if (basename === ".dev.vars") return false;
-      if (basename === "pnpm-lock.yaml") return false;
-      if (basename === "yarn.lock") return false;
-      if (basename === "package-lock.json") return false;
-      if (basename === "bun.lockb") return false;
-      if (basename === "pnpm-workspace.yaml") return false;
-      if (basename === "dist") return false;
-      if (basename === "wrangler.demo.toml") return false;
-      if (basename === "reset-demo.sql") return false;
-      if (basename === "seed-demo.sql") return false;
-      if (basename === "reset-local.sql") return false;
-      if (basename === "seed-local.sql") return false;
-      if (basename === "export-demo.mjs") return false;
-      if (basename === "export-seed.mjs") return false;
       return true;
     },
   });
-
-  // Determine secrets file names based on deployment target
-  // Cloudflare Workers: .dev.vars.example / .dev.vars
-  // Future VPS/Docker: .env.example / .env
-  const secretsExampleFile = ".dev.vars.example";
-  const secretsFile = ".dev.vars";
-
-  // Rename special files/directories (prefixed with _ to avoid issues)
-  const renames: Array<[string, string]> = [
-    ["_gitignore", ".gitignore"],
-    ["_env.example", secretsExampleFile],
-    ["_github", ".github"],
-  ];
-
-  for (const [from, to] of renames) {
-    const fromPath = path.join(targetDir, from);
-    const toPath = path.join(targetDir, to);
-    if (await fs.pathExists(fromPath)) {
-      await fs.rename(fromPath, toPath);
-    }
-  }
 
   // Update package.json with project name and fix dependencies
   const pkgPath = path.join(targetDir, "package.json");
@@ -220,32 +128,45 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     if (pkg.dependencies?.["@jant/core"] === "workspace:*") {
       pkg.dependencies["@jant/core"] = `^${CORE_VERSION}`;
     }
-    // Remove monorepo-only scripts and dependencies
-    delete pkg.scripts["dev:debug"];
-    delete pkg.devDependencies?.["@lingui/swc-plugin"];
 
-    // Adapt for non-pnpm package managers
-    if (packageManager !== "pnpm") {
+    // Adapt scripts for the detected package manager
+    if (packageManager !== "pnpm" && pkg.scripts) {
       delete pkg.packageManager;
-      if (pkg.scripts) {
-        for (const [key, value] of Object.entries(pkg.scripts)) {
-          if (typeof value === "string") {
-            pkg.scripts[key] = value.replace(
-              /pnpm run (\S+)/g,
-              (_, script: string) => formatRunCmd(packageManager, script),
-            );
-          }
+      for (const [key, value] of Object.entries(pkg.scripts)) {
+        if (typeof value === "string") {
+          pkg.scripts[key] = value.replace(
+            /pnpm run (\S+)/g,
+            (_, script: string) => formatRunCmd(packageManager, script),
+          );
         }
       }
     }
     await fs.writeJson(pkgPath, pkg, { spaces: 2 });
   }
 
-  // Process @create-jant markers in wrangler.toml
+  // Update wrangler.toml with project name
   const wranglerPath = path.join(targetDir, "wrangler.toml");
   if (await fs.pathExists(wranglerPath)) {
     let content = await fs.readFile(wranglerPath, "utf-8");
-    content = processMarkers(content, { name: projectName });
+    content = content.replace(
+      /^name = "my-jant-site"/m,
+      `name = "${projectName}"`,
+    );
+    content = content.replace(
+      /^database_name = "my-site-db"/m,
+      `database_name = "${projectName}-db"`,
+    );
+    content = content.replace(
+      /^bucket_name = "my-site-media"/m,
+      `bucket_name = "${projectName}-media"`,
+    );
+
+    // S3 storage configuration
+    if (config.s3) {
+      // Remove [[r2_buckets]] section
+      content = content.replace(/\n\[\[r2_buckets\]\][^[]*/s, "\n");
+    }
+
     await fs.writeFile(wranglerPath, content, "utf-8");
   }
 
@@ -258,24 +179,6 @@ AUTH_SECRET=${authSecret}
 
   // S3 storage configuration
   if (config.s3) {
-    // Uncomment S3 vars and set STORAGE_DRIVER in wrangler.toml
-    if (await fs.pathExists(wranglerPath)) {
-      let wContent = await fs.readFile(wranglerPath, "utf-8");
-      // Uncomment STORAGE_DRIVER and S3 vars
-      wContent = wContent.replace(
-        /^# STORAGE_DRIVER = "s3"/m,
-        'STORAGE_DRIVER = "s3"',
-      );
-      wContent = wContent.replace(/^# S3_ENDPOINT = /m, "S3_ENDPOINT = ");
-      wContent = wContent.replace(/^# S3_BUCKET = /m, "S3_BUCKET = ");
-      wContent = wContent.replace(/^# S3_REGION = /m, "S3_REGION = ");
-      wContent = wContent.replace(/^# S3_PUBLIC_URL = /m, "S3_PUBLIC_URL = ");
-      // Remove [[r2_buckets]] section
-      wContent = wContent.replace(/\n\[\[r2_buckets\]\][^[]*/s, "\n");
-      await fs.writeFile(wranglerPath, wContent, "utf-8");
-    }
-
-    // Add S3 secrets to .dev.vars
     devVarsContent += `
 # S3-compatible storage credentials
 S3_ACCESS_KEY_ID=
@@ -284,48 +187,10 @@ S3_SECRET_ACCESS_KEY=
   }
 
   await fs.writeFile(
-    path.join(targetDir, secretsFile),
+    path.join(targetDir, ".dev.vars"),
     devVarsContent,
     "utf-8",
   );
-
-  // Process @create-jant markers in vite.config.ts
-  const viteConfigPath = path.join(targetDir, "vite.config.ts");
-  if (await fs.pathExists(viteConfigPath)) {
-    let content = await fs.readFile(viteConfigPath, "utf-8");
-    content = processMarkers(content, {});
-    await fs.writeFile(viteConfigPath, content, "utf-8");
-  }
-
-  // Adapt README.md commands for the detected package manager
-  const readmePath = path.join(targetDir, "README.md");
-  if (packageManager !== "npm" && (await fs.pathExists(readmePath))) {
-    let readme = await fs.readFile(readmePath, "utf-8");
-    // Replace `npm install <pkg>` → add command (must run before standalone `npm install`)
-    readme = readme.replace(/npm install (\S+)/g, (_, pkg: string) =>
-      formatAddCmd(packageManager, pkg),
-    );
-    // Replace standalone `npm install` → install command
-    readme = readme.replace(/npm install/g, `${packageManager} install`);
-    // Replace `npm run <script>` → run command
-    readme = readme.replace(/npm run (\S+)/g, (_, script: string) =>
-      formatRunCmd(packageManager, script),
-    );
-    // Replace `npm create` → create command
-    readme = readme.replace(/npm create/g, `${packageManager} create`);
-    await fs.writeFile(readmePath, readme, "utf-8");
-  }
-
-  // Copy pnpm-workspace.yaml only for pnpm (contains pnpm-specific onlyBuiltDependencies)
-  if (packageManager === "pnpm") {
-    const wsSource = path.join(TEMPLATE_DIR, "pnpm-workspace.yaml");
-    if (await fs.pathExists(wsSource)) {
-      await fs.copy(wsSource, path.join(targetDir, "pnpm-workspace.yaml"));
-    }
-  }
-
-  // Note: tsconfig.json is already merged during prepublishOnly (prepare-template script)
-  // No runtime merging needed - the template/ directory contains a standalone tsconfig.json
 }
 
 /**
@@ -359,12 +224,12 @@ async function main(): Promise<void> {
   if (args[0]) {
     projectName = args[0];
   } else if (opts.yes) {
-    projectName = "jant-site";
+    projectName = "my-jant-site";
   } else {
     const result = await p.text({
       message: "What is your project name?",
-      placeholder: "jant-site",
-      defaultValue: "jant-site",
+      placeholder: "my-jant-site",
+      defaultValue: "my-jant-site",
       validate: (value) => {
         if (!value) return "Project name is required";
         const sanitized = toValidProjectName(value);

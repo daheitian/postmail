@@ -4,12 +4,13 @@
  * Provides the HTML shell with meta tags, styles, and scripts.
  * If Context is provided, automatically wraps children with I18nProvider.
  *
- * Uses vite-ssr-components for automatic dev/prod asset path resolution.
+ * In dev mode (Vite), serves assets via Vite's dev server.
+ * In production, serves pre-built assets with version cache-busting.
  */
 
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { Context } from "hono";
-import { Script, Link, ViteClient } from "vite-ssr-components/hono";
+import { CORE_VERSION, IS_VITE_DEV } from "../../lib/version.js";
 import { I18nProvider } from "../../i18n/index.js";
 
 export interface ToastProps {
@@ -91,13 +92,21 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
             />
           </>
         )}
-        <ViteClient />
-        <Link href="/src/style.css" rel="stylesheet" />
+        {IS_VITE_DEV && <script type="module" src="/@vite/client" />}
+        <link
+          rel="stylesheet"
+          href={
+            IS_VITE_DEV ? "/src/style.css" : `/client.css?v=${CORE_VERSION}`
+          }
+        />
         {themeStyle && (
           <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
         )}
         {customCSS && <style dangerouslySetInnerHTML={{ __html: customCSS }} />}
-        <Script src="/src/client.ts" />
+        <script
+          type="module"
+          src={IS_VITE_DEV ? "/src/client.ts" : `/client.js?v=${CORE_VERSION}`}
+        />
       </head>
       <body
         class="bg-background text-foreground antialiased"

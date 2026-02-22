@@ -7,8 +7,8 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "dev": "pnpm --filter jant-site dev",
-    "build": "pnpm --filter jant-site build",
+    "dev": "pnpm --filter @jant/core dev",
+    "build": "pnpm --filter @jant/core build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -35,8 +35,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3",
-    "vite-ssr-components": "^0.5.2"
+    "typescript": "^5.9.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

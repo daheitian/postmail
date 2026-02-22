@@ -16,7 +16,7 @@ function queryRemote(sql) {
   try {
     stdout = execSync(
       `pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --command "${sql}" --json`,
-      { encoding: "utf-8", cwd: resolve(__dirname, "..") }
+      { encoding: "utf-8", cwd: resolve(__dirname, "../..") }
     );
   } catch (err) {
     // Wrangler returns JSON errors on stdout even with non-zero exit codes
@@ -82,4 +82,4 @@ for (const [name, query] of tables) {
 
 const out = resolve(__dirname, "seed-demo.sql");
 writeFileSync(out, sql);
-console.log("Exported demo database to templates/jant-site/scripts/seed-demo.sql");
+console.log("Exported demo database to dev/scripts/seed-demo.sql");
