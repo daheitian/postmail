@@ -224,8 +224,8 @@ run = """
 echo "Running remote migrations..."
 pnpm exec wrangler d1 migrations apply DB --remote --config wrangler.demo.toml
 
-echo "Building for demo environment..."
-WRANGLER_CONFIG=./wrangler.demo.toml NODE_ENV=production pnpm exec vite build
+echo "Building @jant/core..."
+pnpm build
 
 echo "Deploying to Cloudflare Workers..."
 pnpm exec wrangler deploy --config wrangler.demo.toml

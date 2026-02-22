@@ -1,3 +1,5 @@
+# Dev entry point for @cloudflare/vite-plugin HMR.
+# Production builds use src/index.ts via vite.config.worker.ts.
 name = "jant-dev"
 main = "dev/entry.ts"
 compatibility_date = "2026-01-20"

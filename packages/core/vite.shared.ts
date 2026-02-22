@@ -12,8 +12,10 @@ import swc from "unplugin-swc";
 import { resolve } from "path";
 import { readFileSync } from "fs";
 
+const dir = import.meta.dirname;
+
 export const pkg = JSON.parse(
-  readFileSync(resolve(__dirname, "package.json"), "utf-8"),
+  readFileSync(resolve(dir, "package.json"), "utf-8"),
 );
 
 /** Browser target for client assets. */
@@ -27,10 +29,7 @@ export const clientBuildOptions = {
   outDir: "dist/client",
   target: CLIENT_TARGET,
   rollupOptions: {
-    input: [
-      resolve(__dirname, "src/client.ts"),
-      resolve(__dirname, "src/style.css"),
-    ],
+    input: [resolve(dir, "src/client.ts"), resolve(dir, "src/style.css")],
     output: {
       entryFileNames: "client.js",
       assetFileNames: "client[extname]",
@@ -40,7 +39,7 @@ export const clientBuildOptions = {
 
 /**
  * SWC plugin for Hono JSX transforms and Lingui macro rewrites.
- * Used by dev and worker builds. Client code uses Vite's default esbuild.
+ * Server-side only (dev + worker builds). Client code uses Vite's default esbuild.
  */
 export const swcPlugin = () =>
   swc.vite({
@@ -53,7 +52,7 @@ export const swcPlugin = () =>
           throwIfNamespace: false,
         },
       },
-      target: CLIENT_TARGET,
+      target: "esnext",
       experimental: {
         plugins: [
           [

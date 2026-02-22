@@ -12,6 +12,8 @@ import { defineConfig } from "vite";
 import { resolve } from "path";
 import { pkg, swcPlugin } from "./vite.shared";
 
+const dir = import.meta.dirname;
+
 export default defineConfig({
   define: {
     __JANT_VERSION__: JSON.stringify(pkg.version),
@@ -20,7 +22,7 @@ export default defineConfig({
 
   build: {
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: resolve(dir, "src/index.ts"),
       formats: ["es"],
       fileName: "index",
     },
@@ -29,13 +31,14 @@ export default defineConfig({
         if (id.startsWith("@jant/core")) return false; // bundle internal modules
         if (id.startsWith("cloudflare:")) return true;
         if (id === "__STATIC_CONTENT_MANIFEST") return true;
-        return Object.keys(pkg.dependencies).some(
+        return Object.keys(pkg.dependencies ?? {}).some(
           (dep: string) => id === dep || id.startsWith(dep + "/"),
         );
       },
     },
     target: "esnext",
     minify: false,
+    emptyOutDir: false,
   },
 
   plugins: [swcPlugin()],

@@ -1,14 +1,13 @@
 /**
- * Development server + Cloudflare Worker production build.
+ * Development server (`vite dev`).
  *
- * - `vite dev`: HMR with Tailwind, SWC (Lingui), and Cloudflare Workers.
- * - `vite build`: Production worker build via @cloudflare/vite-plugin (used by demo deploy).
+ * Full HMR with Tailwind, SWC (Lingui), and Cloudflare Workers.
+ * Production builds use vite.config.worker.ts and vite.config.client.ts.
  */
 
 import { defineConfig, type Plugin } from "vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
-import { resolve } from "path";
 import { exec } from "child_process";
 import { pkg, clientBuildOptions, swcPlugin } from "./vite.shared";
 
@@ -17,7 +16,7 @@ import { pkg, clientBuildOptions, swcPlugin } from "./vite.shared";
  * Debounced to 500ms so rapid saves don't spawn multiple processes.
  */
 function linguiAutoExtract(): Plugin {
-  const coreDir = resolve(__dirname);
+  const coreDir = import.meta.dirname;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let running = false;
 
@@ -78,14 +77,6 @@ export default defineConfig({
   environments: {
     client: {
       build: clientBuildOptions,
-    },
-  },
-
-  build: {
-    target: "esnext",
-    minify: false,
-    rollupOptions: {
-      external: ["cloudflare:*", "__STATIC_CONTENT_MANIFEST"],
     },
   },
 
