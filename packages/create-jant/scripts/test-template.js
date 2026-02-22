@@ -36,8 +36,9 @@ async function main() {
   // 1. Pack @jant/core into a tarball
   let coreTarball = process.argv[2];
   if (!coreTarball) {
-    console.log("Step 1: Packing @jant/core...");
+    console.log("Step 1: Building and packing @jant/core...");
     const coreDir = path.resolve(MONOREPO_ROOT, "packages/core");
+    run("pnpm run build", { cwd: coreDir });
     const packOutput = runCapture("pnpm pack --pack-destination /tmp", { cwd: coreDir });
     coreTarball = packOutput.split("\n").pop();
     console.log(`  Tarball: ${coreTarball}\n`);
