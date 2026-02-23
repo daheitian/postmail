@@ -44,10 +44,11 @@ function toMediaAttachment(
   );
   const url = getMediaUrl(m.storageKey, publicUrl);
   const previewUrl = getImageUrl(url, imageTransformUrl, {
-    width: 400,
+    width: 1200,
+    height: 768,
     quality: 80,
     format: "auto",
-    fit: "cover",
+    fit: "scale-down",
   });
 
   return {

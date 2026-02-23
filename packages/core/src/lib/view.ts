@@ -79,10 +79,11 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
   );
   const url = getMediaUrl(media.storageKey, publicUrl);
   const thumbnailUrl = getImageUrl(url, ctx.imageTransformUrl, {
-    width: 400,
+    width: 1200,
+    height: 768,
     quality: 80,
     format: "auto",
-    fit: "cover",
+    fit: "scale-down",
   });
 
   return {

@@ -49,7 +49,13 @@ export function buildMediaMap(
           previewUrl: getImageUrl(
             getMediaUrl(m.storageKey, publicUrl),
             imageTransformUrl,
-            { width: 400, quality: 80, format: "auto", fit: "cover" },
+            {
+              width: 1200,
+              height: 768,
+              quality: 80,
+              format: "auto",
+              fit: "scale-down",
+            },
           ),
           alt: m.alt,
           blurhash: m.blurhash,
