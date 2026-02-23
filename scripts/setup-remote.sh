@@ -11,19 +11,14 @@ if ! command -v mise &>/dev/null; then
   curl -fsSL https://mise.jdx.dev/install.sh | sh
 fi
 
-# Install entire (skip if already installed)
-if ! command -v entire &>/dev/null; then
-  curl -fsSL https://entire.io/install.sh | bash
-fi
-
 # Add mise shims to PATH for this script (non-interactive, so `mise activate`
 # won't work here). This makes bare `node`/`pnpm` resolve to mise-managed
 # versions (Node 24) instead of the system ones (Node 22).
 export PATH="$HOME/.local/share/mise/shims:$PATH"
 
 # For interactive shells, activate mise properly in .bashrc
-grep -qF 'mise activate bash' "$HOME/.bashrc" 2>/dev/null \
-  || cat >> "$HOME/.bashrc" <<'BASHRC'
+grep -qF 'mise activate bash' "$HOME/.bashrc" 2>/dev/null ||
+  cat >>"$HOME/.bashrc" <<'BASHRC'
 
 # mise
 if command -v mise >/dev/null 2>&1; then

@@ -43,6 +43,10 @@ jobs:
           # Remove generated .dev.vars (starter should only have .dev.vars.example)
           rm -f /tmp/my-site/.dev.vars
 
+          # Generate package-lock.json so the deploy workflow can use npm ci
+          cd /tmp/my-site
+          npm install
+
           # Read version
           cd "$GITHUB_WORKSPACE"
           VERSION=$(node -p "JSON.parse(require('fs').readFileSync('packages/core/package.json','utf-8')).version")
