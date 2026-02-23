@@ -393,13 +393,15 @@
   /* --- Dialog shell ------------------------------------------------------- */
 
   .compose-dialog {
+    --compose-margin-top: max(80px, 10vh);
+
     padding: 0;
     border: none;
     border-radius: 20px;
     width: calc(100% - 20px);
     max-width: calc(var(--site-width) - var(--site-padding) * 2 - 20px);
-    max-height: calc(100dvh - 64px);
-    margin: max(80px, 10vh) auto auto;
+    max-height: calc(100dvh - var(--compose-margin-top) - 20px);
+    margin: var(--compose-margin-top) auto auto;
     background-color: var(--site-elevated-bg);
     color: var(--site-text-primary);
     box-shadow:
@@ -420,7 +422,16 @@
   .compose-dialog-inner {
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - 64px);
+    max-height: calc(100dvh - var(--compose-margin-top) - 20px);
+    position: relative;
+  }
+
+  .compose-dialog-inner > jant-compose-editor {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     position: relative;
   }
 
