@@ -158,9 +158,8 @@ mise run test:coverage    # Run tests with coverage report
 mise run db-generate      # Generate Drizzle migrations (from core schema)
 mise run db-migrate       # Apply migrations (local D1) — usually not needed, dev auto-runs this
 mise run db-export        # Export current local D1 data to seed-local.sql
-mise run db-seed          # Reset local database and load dev seed data
+mise run db-reset         # Reset local database and load dev seed data
 mise run db-clean         # Delete local D1 database (.wrangler)
-mise run db-reset         # Delete database and re-run migrations
 ```
 
 ### i18n
@@ -416,7 +415,7 @@ The project includes a workflow for maintaining development seed data:
 3. **Load seed data** (on a fresh clone or after reset):
 
    ```bash
-   mise run db-seed
+   mise run db-reset
    ```
 
    This resets the local database, runs migrations, clears existing data, and loads `seed-local.sql`.
@@ -425,7 +424,6 @@ The project includes a workflow for maintaining development seed data:
 
 ```bash
 mise run db-clean         # Delete local D1 database only
-mise run db-reset         # Delete database and re-run migrations
 mise run fresh            # Nuclear reset — everything (node_modules, dist, db, cache, lockfile)
 ```
 

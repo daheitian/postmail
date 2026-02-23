@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Local development seed data for Jant
 -- Exported from local D1 database
--- Usage: mise run db-seed
+-- Usage: mise run db-reset
 -- =============================================================================
 
 -- settings

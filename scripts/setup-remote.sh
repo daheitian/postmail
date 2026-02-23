@@ -41,7 +41,7 @@ mise install
 pnpm install
 
 # Set up local database with seed data
-mise run db-seed
+mise run db-reset
 
 # Set dev login credentials (demo@jant.me / testtest)
 mise run dev-password testtest

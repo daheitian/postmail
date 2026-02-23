@@ -113,20 +113,13 @@ run = "pnpm --filter @jant/core db:migrate:remote"
 description = "Delete local D1 database (wrangler state)"
 run = "rm -rf packages/core/.wrangler"
 
-[tasks.db-reset]
-description = "Delete local database and re-run migrations"
-run = """
-rm -rf packages/core/.wrangler
-pnpm --filter @jant/core db:migrate:local
-"""
-
 [tasks.db-export]
 description = "Export current local D1 data to seed-local.sql"
 dir = "packages/core"
 run = "node dev/scripts/export-seed.mjs"
 
-[tasks.db-seed]
-alias = "seed"
+[tasks.db-reset]
+alias = ["seed", "reset"]
 description = "Reset local database and load dev seed data"
 dir = "packages/core"
 run = """
@@ -241,7 +234,18 @@ description = "Export demo database to dev/scripts/seed-demo.sql"
 dir = "packages/core"
 run = "node dev/scripts/export-demo.mjs"
 
-[tasks.demo-seed]
+[tasks.demo-clean]
+description = "Clear all demo data (no reseed)"
+dir = "packages/core"
+run = """
+echo "Clearing demo data..."
+SQL=$(cat dev/scripts/reset-local.sql | grep -v '^--')
+pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --command "$SQL"
+echo "Done! Demo data has been cleared."
+"""
+
+[tasks.demo-push]
+alias = "dp"
 description = "Push local seed data to demo"
 dir = "packages/core"
 run = """
