@@ -3,7 +3,7 @@
  *
  * Run via: `vite build --config vite.config.client.ts`
  *
- * These two files are served via wrangler [assets] in the worker-starter template.
+ * These two files are served via wrangler [assets] in user projects.
  * Contains all interactive JS (Datastar, Lit components) and CSS (Tailwind + BaseCoat).
  */
 

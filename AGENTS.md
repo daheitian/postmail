@@ -50,7 +50,7 @@ Non-negotiable regardless of context:
 
 ### Conventions
 
-- `packages/core`: library + dev environment (Vite HMR). `templates/worker-starter`: minimal user template.
+- `packages/core`: library + dev environment (Vite HMR). `sites/demo`: demo site + user template source (via `@create-jant` annotations).
 - **Types**: public exports in `src/types.ts`; definitions in `src/types/`.
 - **Schemas**: shared domain schemas in `src/lib/schemas.ts`; route-specific schemas colocated with routes.
 - **Routes**: `xxxRoutes` suffix (`postsRoutes`, `dashIndexRoutes`).

@@ -23,7 +23,7 @@ export const CLIENT_TARGET = "es2022" as const;
 
 /**
  * Client asset build options — produces client.js + client.css
- * consumed by wrangler [assets] in the worker-starter template.
+ * consumed by wrangler [assets] in user projects.
  */
 export const clientBuildOptions = {
   outDir: "dist/client",

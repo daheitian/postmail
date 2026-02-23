@@ -4,7 +4,7 @@ name = "jant-dev"
 main = "dev/entry.ts"
 compatibility_date = "2026-01-20"
 compatibility_flags = ["nodejs_compat"]
-
+account_id = "03e7294bdb3750ed5a0d6afef6d770e4"
 [dev]
 port = 9019
 
@@ -17,6 +17,8 @@ database_name = "jant-dev-db"
 database_id = "local"
 migrations_dir = "src/db/migrations"
 
+
 [[r2_buckets]]
 binding = "R2"
-bucket_name = "jant-dev-media"
+bucket_name = "jant-demo-media"
+remote = true

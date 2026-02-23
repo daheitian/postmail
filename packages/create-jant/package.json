@@ -15,7 +15,7 @@
     "build": "tsup src/index.ts --format esm --clean --outDir dist",
     "dev": "tsup src/index.ts --format esm --watch",
     "typecheck": "tsc --noEmit",
-    "copy-template": "rm -rf template && cp -r ../../templates/worker-starter template",
+    "copy-template": "rm -rf template && rsync -a --exclude node_modules --exclude .wrangler --exclude .dev.vars ../../sites/demo/ template/",
     "inject-version": "node -e \"const fs=require('fs');const v=require('../core/package.json').version;const f='dist/index.js';fs.writeFileSync(f,fs.readFileSync(f,'utf8').replace('__JANT_CORE_VERSION__',v))\"",
     "test-template": "node scripts/test-template.js",
     "prepublishOnly": "pnpm copy-template && pnpm build && pnpm inject-version"

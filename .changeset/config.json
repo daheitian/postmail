@@ -7,5 +7,5 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["my-jant-site", "example-*"]
+  "ignore": ["jant-demo", "example-*"]
 }

@@ -15,11 +15,11 @@ const CORE_VERSION = "__JANT_CORE_VERSION__";
 
 // Template directory resolution:
 // - If template/ exists next to dist/ (after prepublish copy), use that
-// - Otherwise, use the source templates/worker-starter (for local dev)
-// From dist/index.js: ../template or ../../../templates/worker-starter
+// - Otherwise, use the source sites/demo (for local dev)
+// From dist/index.js: ../template or ../../../sites/demo
 const TEMPLATE_DIR = fs.existsSync(path.resolve(__dirname, "../template"))
   ? path.resolve(__dirname, "../template")
-  : path.resolve(__dirname, "../../../templates/worker-starter");
+  : path.resolve(__dirname, "../../../sites/demo");
 
 type PackageManager = "pnpm" | "yarn" | "npm";
 
@@ -104,17 +104,77 @@ function runCommand(cmd: string, cwd: string): boolean {
 }
 
 /**
+ * Process `@create-jant` annotations in a file.
+ *
+ * Supported annotations (in TOML comments):
+ * - `# @create-jant: @remove`           — remove the entire line
+ * - `# @create-jant: @remove-start/end` — remove a block of lines
+ * - `# @create-jant: "value"`           — replace the quoted value on this line
+ * - `# @create-jant: "${name}"`         — replace with interpolated variable
+ *
+ * @param content - file content to process
+ * @param vars - variables for interpolation (e.g. `{ name: "my-site" }`)
+ * @returns processed content with annotations applied and removed
+ */
+function processAnnotations(
+  content: string,
+  vars: Record<string, string>,
+): string {
+  const lines = content.split("\n");
+  const result: string[] = [];
+  let removing = false;
+
+  for (const line of lines) {
+    if (line.trim() === "# @create-jant: @remove-start") {
+      removing = true;
+      continue;
+    }
+    if (line.trim() === "# @create-jant: @remove-end") {
+      removing = false;
+      continue;
+    }
+    if (removing) continue;
+
+    if (line.includes("# @create-jant: @remove")) {
+      continue;
+    }
+
+    // Inline value replacement: key = "old" # @create-jant: "new"
+    const replaceMatch = line.match(/^(.+?)\s*#\s*@create-jant:\s*"(.*)"$/);
+    if (replaceMatch) {
+      const [, prefix, newValue] = replaceMatch;
+      const interpolated = newValue.replace(
+        /\$\{(\w+)\}/g,
+        (_, key: string) => vars[key] ?? "",
+      );
+      const valueMatch = prefix.match(/^(\s*\S+\s*=\s*)"[^"]*"(.*)$/);
+      if (valueMatch) {
+        result.push(`${valueMatch[1]}"${interpolated}"${valueMatch[2]}`);
+      } else {
+        result.push(prefix);
+      }
+      continue;
+    }
+
+    result.push(line);
+  }
+
+  return result.join("\n");
+}
+
+/**
  * Copy template files to target directory
  */
 async function copyTemplate(config: ProjectConfig): Promise<void> {
   const { projectName, targetDir, packageManager } = config;
 
-  // Copy all template files (worker-starter is just 3 files: index.js, package.json, wrangler.toml)
+  // Copy template files from sites/demo (filtered to exclude dev artifacts)
   await fs.copy(TEMPLATE_DIR, targetDir, {
     filter: (src) => {
       const basename = path.basename(src);
       if (basename === "node_modules") return false;
       if (basename === ".wrangler") return false;
+      if (basename === ".dev.vars") return false;
       return true;
     },
   });
@@ -144,22 +204,11 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     await fs.writeJson(pkgPath, pkg, { spaces: 2 });
   }
 
-  // Update wrangler.toml with project name
+  // Process @create-jant annotations in wrangler.toml
   const wranglerPath = path.join(targetDir, "wrangler.toml");
   if (await fs.pathExists(wranglerPath)) {
     let content = await fs.readFile(wranglerPath, "utf-8");
-    content = content.replace(
-      /^name = "my-jant-site"/m,
-      `name = "${projectName}"`,
-    );
-    content = content.replace(
-      /^database_name = "my-site-db"/m,
-      `database_name = "${projectName}-db"`,
-    );
-    content = content.replace(
-      /^bucket_name = "my-site-media"/m,
-      `bucket_name = "${projectName}-media"`,
-    );
+    content = processAnnotations(content, { name: projectName });
 
     // S3 storage configuration
     if (config.s3) {

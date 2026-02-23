@@ -77,24 +77,24 @@ jant/
 │   │   └── vitest.config.ts
 │   └── create-jant/           # create-jant — CLI scaffolding tool
 │       └── template/          # ⚠️ Auto-generated, do NOT edit directly
-├── templates/
-│   └── worker-starter/        # Minimal user template (3 files)
+├── sites/
+│   └── demo/                  # Demo site + user template source
 │       ├── index.js           # App entry
 │       ├── package.json       # Dependencies
-│       └── wrangler.toml      # Cloudflare config
+│       └── wrangler.toml      # Cloudflare config (with @create-jant annotations)
 ├── docs/                      # Documentation
 └── .changeset/                # Changesets for versioning
 ```
 
 ### Packages
 
-| Package                         | Purpose                                   | Has Vite/Wrangler? |
-| ------------------------------- | ----------------------------------------- | ------------------ |
-| `packages/core`                 | Library + dev environment (Vite HMR)      | Yes                |
-| `templates/worker-starter`      | Minimal user template (3 files, no build) | No                 |
-| `packages/create-jant/template` | User project starter (auto-generated)     | No                 |
+| Package                         | Purpose                                                            | Has Vite/Wrangler? |
+| ------------------------------- | ------------------------------------------------------------------ | ------------------ |
+| `packages/core`                 | Library + dev environment (Vite HMR)                               | Yes                |
+| `sites/demo`                    | Demo site + user template source (with `@create-jant` annotations) | No                 |
+| `packages/create-jant/template` | User project starter (auto-generated from `sites/demo`)            | No                 |
 
-**Important**: Development and testing happens in `packages/core`, which has a Vite dev server with HMR. The `templates/worker-starter` is the minimal template for end users — just `index.js`, `package.json`, and `wrangler.toml`.
+**Important**: Development and testing happens in `packages/core`, which has a Vite dev server with HMR. `sites/demo` is both the live demo and the source for user templates — `create-jant` processes `@create-jant` annotations in `wrangler.toml` to strip demo-specific config.
 
 ## Tech Stack
 

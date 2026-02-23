@@ -462,11 +462,11 @@ echo "Moved: $SOURCE -> $DEST"
 """
 
 # =============================================================================
-# Examples (generated from templates/worker-starter)
+# Examples (scaffolded via create-jant from sites/demo)
 # =============================================================================
 [tasks.example-new]
 alias = "ne"
-description = "Create a new example from templates/worker-starter"
+description = "Create a new example from sites/demo via create-jant"
 usage = 'arg "<name>"'
 run = """
 DEST="examples/$usage_name"
@@ -476,11 +476,17 @@ if [ -d "$DEST" ]; then
   exit 1
 fi
 
-rsync -a \
-  --exclude='node_modules' --exclude='.wrangler' \
-  templates/worker-starter/ "$DEST/"
+# Build create-jant if needed
+if [ ! -f packages/create-jant/dist/index.js ]; then
+  pnpm --filter create-jant prepublishOnly
+fi
 
-sed -i '' "s/\"name\": \"my-jant-site\"/\"name\": \"example-$usage_name\"/" "$DEST/package.json"
+# Scaffold via create-jant (processes @create-jant annotations)
+cd /tmp
+npm_config_user_agent="pnpm/10.0.0" node "$OLDPWD/packages/create-jant/dist/index.js" "example-$usage_name" -y --no-install --no-git
+cd -
+
+mv "/tmp/example-$usage_name" "$DEST"
 pnpm install
 
 echo ""
