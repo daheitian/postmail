@@ -15,8 +15,8 @@ function queryRemote(sql) {
   let stdout;
   try {
     stdout = execSync(
-      `pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --command "${sql}" --json`,
-      { encoding: "utf-8", cwd: resolve(__dirname, "../..") }
+      `pnpm exec wrangler d1 execute DB --remote --command "${sql}" --json`,
+      { encoding: "utf-8", cwd: process.cwd() }
     );
   } catch (err) {
     // Wrangler returns JSON errors on stdout even with non-zero exit codes

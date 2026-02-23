@@ -1,14 +1,11 @@
-# Demo environment configuration for demo.jant.me
-# This is a standalone config, not using wrangler environments
-
 name = "jant-demo"
-main = "dist/index.js"
+main = "index.js"
 compatibility_date = "2026-01-20"
 compatibility_flags = ["nodejs_compat"]
 account_id = "03e7294bdb3750ed5a0d6afef6d770e4"
 
 [assets]
-directory = "dist/client"
+directory = "./node_modules/@jant/core/dist/client"
 
 [vars]
 SITE_URL = "https://demo.jant.me"
@@ -21,7 +18,7 @@ IMAGE_TRANSFORM_URL = "https://demo-media.jant.me/cdn-cgi/image"
 binding = "DB"
 database_name = "jant-demo-db"
 database_id = "76329154-291d-4580-af73-aa77397649f1"
-migrations_dir = "src/db/migrations"
+migrations_dir = "node_modules/@jant/core/src/db/migrations"
 
 [[r2_buckets]]
 binding = "R2"

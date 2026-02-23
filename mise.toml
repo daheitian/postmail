@@ -212,48 +212,38 @@ npx lingui-po-translate \
 [tasks.demo-deploy]
 alias = "dd"
 description = "Deploy demo site to demo.jant.me"
-dir = "packages/core"
-run = """
-echo "Running remote migrations..."
-pnpm exec wrangler d1 migrations apply DB --remote --config wrangler.demo.toml
-
-echo "Building @jant/core..."
-pnpm build
-
-echo "Deploying to Cloudflare Workers..."
-pnpm exec wrangler deploy --config wrangler.demo.toml
-"""
+run = "pnpm --filter @jant/core build && pnpm --filter jant-demo run deploy"
 
 [tasks.demo-reset]
 description = "Reset demo.jant.me data (clear + reseed)"
-dir = "packages/core"
-run = "pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=dev/scripts/seed-demo.sql"
+dir = "sites/demo"
+run = "pnpm exec wrangler d1 execute DB --remote --file=../../packages/core/dev/scripts/seed-demo.sql"
 
 [tasks.demo-export]
 description = "Export demo database to dev/scripts/seed-demo.sql"
-dir = "packages/core"
-run = "node dev/scripts/export-demo.mjs"
+dir = "sites/demo"
+run = "node ../../packages/core/dev/scripts/export-demo.mjs"
 
 [tasks.demo-clean]
 description = "Clear all demo data (no reseed)"
-dir = "packages/core"
+dir = "sites/demo"
 run = """
 echo "Clearing demo data..."
-SQL=$(cat dev/scripts/reset-local.sql | grep -v '^--')
-pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --command "$SQL"
+SQL=$(cat ../../packages/core/dev/scripts/reset-local.sql | grep -v '^--')
+pnpm exec wrangler d1 execute DB --remote --command "$SQL"
 echo "Done! Demo data has been cleared."
 """
 
 [tasks.demo-push]
 alias = "dp"
 description = "Push local seed data to demo"
-dir = "packages/core"
+dir = "sites/demo"
 run = """
 echo "Exporting local data..."
-node dev/scripts/export-seed.mjs --no-auth --output seed-demo-upload.sql
+node ../../packages/core/dev/scripts/export-seed.mjs --no-auth --output seed-demo-upload.sql
 echo "Loading seed data to demo (includes reset)..."
-pnpm exec wrangler d1 execute DB --remote --config wrangler.demo.toml --file=dev/scripts/seed-demo-upload.sql
-rm dev/scripts/seed-demo-upload.sql
+pnpm exec wrangler d1 execute DB --remote --file=../../packages/core/dev/scripts/seed-demo-upload.sql
+rm ../../packages/core/dev/scripts/seed-demo-upload.sql
 echo "Done! Demo has been seeded from local data."
 """
 

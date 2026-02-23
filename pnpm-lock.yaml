@@ -194,6 +194,16 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  sites/demo:
+    dependencies:
+      '@jant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      wrangler:
+        specifier: ^4.61.1
+        version: 4.63.0(@cloudflare/workers-types@4.20260207.0)
+
   sites/jant-me:
     dependencies:
       '@jant/core':
