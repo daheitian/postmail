@@ -100,6 +100,29 @@ async function main() {
   }
   console.log("  wrangler.toml looks correct\n");
 
+  // 7. Verify dotfiles were renamed correctly
+  console.log("Step 7: Verifying dotfiles...");
+  const expectedFiles = [
+    ".gitignore",
+    ".github/workflows/deploy.yml",
+    "README.md",
+    ".dev.vars.example",
+  ];
+  for (const file of expectedFiles) {
+    if (!(await fs.pathExists(path.join(projectDir, file)))) {
+      console.error(`  Missing expected file: ${file}`);
+      process.exit(1);
+    }
+  }
+  const staleFiles = ["_gitignore", "_github"];
+  for (const file of staleFiles) {
+    if (await fs.pathExists(path.join(projectDir, file))) {
+      console.error(`  Underscore-prefixed file should have been renamed: ${file}`);
+      process.exit(1);
+    }
+  }
+  console.log("  All dotfiles present and correctly renamed\n");
+
   // Cleanup
   await fs.remove(testDir);
 

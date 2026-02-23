@@ -180,6 +180,20 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     },
   });
 
+  // Rename underscore-prefixed dotfiles (npm renames .gitignore → .npmignore
+  // in published packages, so the template stores them as _gitignore/_github)
+  const renames: Array<[string, string]> = [
+    ["_gitignore", ".gitignore"],
+    ["_github", ".github"],
+  ];
+  for (const [from, to] of renames) {
+    const fromPath = path.join(targetDir, from);
+    const toPath = path.join(targetDir, to);
+    if (await fs.pathExists(fromPath)) {
+      await fs.rename(fromPath, toPath);
+    }
+  }
+
   // Update package.json with project name and fix dependencies
   const pkgPath = path.join(targetDir, "package.json");
   if (await fs.pathExists(pkgPath)) {
