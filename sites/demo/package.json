@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "wrangler d1 migrations apply DB --local && wrangler dev",
     "deploy": "wrangler d1 migrations apply DB --remote && wrangler deploy",
-    "reset-password": "jant-reset-password"
+    "reset-password": "jant reset-password",
+    "export": "jant export"
   },
   "dependencies": {
     "@jant/core": "workspace:*"

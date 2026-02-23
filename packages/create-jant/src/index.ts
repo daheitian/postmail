@@ -377,6 +377,9 @@ async function main(): Promise<void> {
     spinner.start("Installing dependencies...");
     installOk = runCommand(`${packageManager} install`, targetDir);
     if (installOk) {
+      // Run install again to stabilize lock file (npm may change peer
+      // dependency flags between the first and second resolution pass)
+      runCommand(`${packageManager} install`, targetDir);
       spinner.stop("Dependencies installed.");
     } else {
       spinner.stop(

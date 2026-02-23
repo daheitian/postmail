@@ -291,7 +291,7 @@ echo "Done! jant.me has been seeded from seed-site.sql."
 [tasks.reset-password]
 description = "Generate password reset token (local D1)"
 dir = "packages/core"
-run = "node dev/scripts/reset-password.mjs"
+run = "npx jant reset-password"
 
 [tasks.clean]
 description = "Clean build artifacts"
