@@ -24,7 +24,7 @@ port = 9019
 [vars]
 # Required: Your site's public URL (e.g. https://my-blog.example.com)
 # https://github.com/jant-me/jant/blob/main/docs/configuration.md#required
-SITE_URL = "https://demo.jant.me" # @create-jant: ""
+SITE_URL = "https://demo.jant.me" # @create-jant: "https://example.com"
 
 # Optional: Site configuration
 # You can also set these in the dashboard UI at /dash/settings
