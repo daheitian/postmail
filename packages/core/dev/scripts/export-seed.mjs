@@ -74,7 +74,7 @@ let sql = header;
 
 // When --no-auth, embed reset statements so everything runs in a single D1 import
 if (noAuth) {
-  const resetSql = readFileSync(resolve(__dirname, "reset-demo.sql"), "utf-8");
+  const resetSql = readFileSync(resolve(__dirname, "reset-content.sql"), "utf-8");
   sql += "\n-- Reset (clear existing content)\n";
   sql += resetSql.replace(/^--.*\n/gm, "").trim() + "\n";
 }

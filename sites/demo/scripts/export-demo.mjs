@@ -82,4 +82,4 @@ for (const [name, query] of tables) {
 
 const out = resolve(__dirname, "seed-demo.sql");
 writeFileSync(out, sql);
-console.log("Exported demo database to dev/scripts/seed-demo.sql");
+console.log("Exported demo database to scripts/seed-demo.sql");

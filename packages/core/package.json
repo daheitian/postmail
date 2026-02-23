@@ -10,7 +10,11 @@
     },
     "./i18n": "./src/i18n/index.ts"
   },
+  "bin": {
+    "jant-reset-password": "bin/reset-password.js"
+  },
   "files": [
+    "bin",
     "dist",
     "src"
   ],

@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler d1 migrations apply DB --local && wrangler dev",
-    "deploy": "wrangler d1 migrations apply DB --remote && wrangler deploy"
+    "deploy": "wrangler d1 migrations apply DB --remote && wrangler deploy",
+    "reset-password": "jant-reset-password"
   },
   "dependencies": {
     "@jant/core": "workspace:*"

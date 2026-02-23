@@ -81,4 +81,4 @@ for (const [name, query] of tables) {
 
 const out = resolve(__dirname, "seed-site.sql");
 writeFileSync(out, sql);
-console.log("Exported jant.me database to dev/scripts/seed-site.sql");
+console.log("Exported jant.me database to scripts/seed-site.sql");
