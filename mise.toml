@@ -259,6 +259,32 @@ run = "pnpm --filter @jant/core build && pnpm --filter jant-me dev"
 description = "Deploy jant.me to Cloudflare Workers"
 run = "pnpm --filter @jant/core build && pnpm --filter jant-me run deploy"
 
+[tasks.site-export]
+description = "Export jant.me remote database to dev/scripts/seed-site.sql"
+dir = "sites/jant-me"
+run = "node ../../packages/core/dev/scripts/export-site.mjs"
+
+[tasks.site-clean]
+description = "Clear all jant.me content data (no reseed)"
+dir = "sites/jant-me"
+run = """
+echo "Clearing jant.me data..."
+pnpm exec wrangler d1 execute DB --remote --file=../../packages/core/dev/scripts/reset-site.sql
+echo "Done! jant.me content has been cleared."
+"""
+
+[tasks.site-push]
+alias = "sp"
+description = "Push seed-site.sql to jant.me remote (run migrations first)"
+dir = "sites/jant-me"
+run = """
+echo "Running remote migrations..."
+pnpm exec wrangler d1 migrations apply DB --remote
+echo "Loading seed data to jant.me..."
+pnpm exec wrangler d1 execute DB --remote --file=../../packages/core/dev/scripts/seed-site.sql
+echo "Done! jant.me has been seeded from seed-site.sql."
+"""
+
 # =============================================================================
 # Utilities
 # =============================================================================
