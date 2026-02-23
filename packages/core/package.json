@@ -32,7 +32,7 @@
     "i18n:build": "pnpm i18n:extract && pnpm i18n:compile",
     "dev": "pnpm db:migrate:local && vite dev",
     "dev:debug": "pnpm db:migrate:local && vite dev --port 19019",
-    "db:migrate:local": "yes | wrangler d1 migrations apply DB --local",
+    "db:migrate:local": "echo y | wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -126,7 +126,7 @@ run = """
 echo "Resetting database..."
 rm -rf .wrangler
 echo "Running migrations..."
-yes | pnpm exec wrangler d1 migrations apply DB --local
+echo y | pnpm exec wrangler d1 migrations apply DB --local
 echo "Clearing data..."
 pnpm exec wrangler d1 execute DB --local --file=dev/scripts/reset-local.sql
 echo "Loading seed data..."
@@ -526,7 +526,7 @@ description = "Seed an example's local database with dev data"
 usage = 'arg "<name>"'
 run = """
 cd "examples/$usage_name"
-yes | pnpm exec wrangler d1 migrations apply DB --local
+echo y | pnpm exec wrangler d1 migrations apply DB --local
 pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/reset-local.sql
 pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/seed-local.sql
 """
