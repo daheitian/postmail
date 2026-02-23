@@ -2,7 +2,7 @@
 # scripts/setup-remote.sh — Bootstrap tooling for Claude Code remote sessions
 set -euo pipefail
 
-if [ "$CLAUDE_CODE_REMOTE" != "true" ]; then
+if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
