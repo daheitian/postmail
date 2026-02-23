@@ -39,8 +39,6 @@ INSERT INTO posts VALUES(2,'note','published',0,0,NULL,NULL,NULL,'好的组织�
 <p>一个好的组织要做的，其实就是：找到那些“在乎”的人，然后清理掉让“在乎”变成奢侈的障碍，让“在乎”重新成为组织的本能。</p>
 <p>有了“在乎”，再加上手艺和品味，“对的东西”就会自然生长出来。</p>
 ',NULL,NULL,NULL,NULL,NULL,1771819104,1771819104,1771819104);
-INSERT INTO posts VALUES(3,'note','published',0,0,NULL,NULL,NULL,'Images from Upsplash.','<p>Images from Upsplash.</p>
-',NULL,NULL,NULL,NULL,NULL,1771819170,1771819170,1771819170);
 INSERT INTO posts VALUES(4,'note','published',0,0,NULL,'刷社交网络，阅读文章以及读书的区别是什么？',NULL,'之前我一直都在思考这个问题：为什么我明明在社交网络上也能学到不少东西，但为什么大家都说社交网络纯属浪费时间？那假如我在社交网络上关注的都是精心筛选过的用户，那么刷社交网络还是很浪费时间吗？
 
 阅读文章比刷社交网络要好吗？
@@ -105,6 +103,8 @@ INSERT INTO posts VALUES(5,'link','published',0,0,NULL,'List Chanllenges','https
 
 ','<p>用户自制清单的聚合平台，涵盖电影/书籍/旅行/食物等几十种类别（超过 30 万份清单），每份清单可打勾标记「已完成」并统计完成率。典型用法是刷「看过多少部 1001 部必看电影」或「去过哪些国家」这类清单，适合喜欢用数字量化生活经历的人；但清单质量参差不齐，很多是个人流水账而非精选榜单。首页按 Trending/New/Popular 排序，更新活跃，无付费墙。</p>
 ',NULL,NULL,NULL,NULL,NULL,1771820865,1771820865,1771820865);
+INSERT INTO posts VALUES(6,'note','published',0,0,NULL,NULL,NULL,'一些图片:)','<p>一些图片:)</p>
+',NULL,NULL,NULL,NULL,NULL,1771838016,1771838016,1771838016);
 
 -- nav_items
 INSERT INTO nav_items VALUES(1,'link','Collections','/collections',NULL,0,1771819048,1771819048);
@@ -112,7 +112,6 @@ INSERT INTO nav_items VALUES(2,'link','Archive','/archive',NULL,1,1771819048,177
 INSERT INTO nav_items VALUES(3,'page','About','/about',1,2,1771819048,1771819048);
 
 -- media
-INSERT INTO media VALUES('019c88a6-d329-7530-bc79-61917b8ee0e2',3,'019c88a6-d329-7530-bc79-61917b8ee0e2.webp','leonardo-iribe-zG87D_xiAVQ-unsplash.webp','image/webp',75040,'media/2026/02/019c88a6-d329-7530-bc79-61917b8ee0e2.webp',NULL,NULL,NULL,1771819160,1,NULL,'r2');
-INSERT INTO media VALUES('019c88a6-d47b-769c-9629-9fdf0a5b0e02',3,'019c88a6-d47b-769c-9629-9fdf0a5b0e02.webp','maeva-vigier-hdgHGw5EqIc-unsplash.webp','image/webp',384088,'media/2026/02/019c88a6-d47b-769c-9629-9fdf0a5b0e02.webp',NULL,NULL,NULL,1771819160,2,NULL,'r2');
-INSERT INTO media VALUES('019c88a6-d52c-7538-bced-a0b493c5fc72',3,'019c88a6-d52c-7538-bced-a0b493c5fc72.webp','land-o-lakes-inc-yPBP2u24rMs-unsplash.webp','image/webp',607962,'media/2026/02/019c88a6-d52c-7538-bced-a0b493c5fc72.webp',NULL,NULL,NULL,1771819160,0,NULL,'r2');
-INSERT INTO media VALUES('019c88c0-ce73-7430-a995-151104c37e52',5,'019c88c0-ce73-7430-a995-151104c37e52.webp','CleanShot 2026-02-23 at 12.27.27@2x.webp','image/webp',126956,'media/2026/02/019c88c0-ce73-7430-a995-151104c37e52.webp',NULL,NULL,NULL,1771820863,0,NULL,'r2');
+INSERT INTO media VALUES('019c89c6-516f-7eb4-9e53-bc6402b59355',6,'019c89c6-516f-7eb4-9e53-bc6402b59355.webp','leonardo-iribe-zG87D_xiAVQ-unsplash.webp','image/webp',75040,'media/2026/02/019c89c6-516f-7eb4-9e53-bc6402b59355.webp',NULL,NULL,NULL,1771838002,1,NULL,'r2');
+INSERT INTO media VALUES('019c89c6-52c6-7ad4-956b-01583ab92216',6,'019c89c6-52c6-7ad4-956b-01583ab92216.webp','maeva-vigier-hdgHGw5EqIc-unsplash.webp','image/webp',384088,'media/2026/02/019c89c6-52c6-7ad4-956b-01583ab92216.webp',NULL,NULL,NULL,1771838002,2,NULL,'r2');
+INSERT INTO media VALUES('019c89c6-5380-72f2-b462-06de1b9e3f81',6,'019c89c6-5380-72f2-b462-06de1b9e3f81.webp','land-o-lakes-inc-yPBP2u24rMs-unsplash.webp','image/webp',607962,'media/2026/02/019c89c6-5380-72f2-b462-06de1b9e3f81.webp',NULL,NULL,NULL,1771838003,0,NULL,'r2');
