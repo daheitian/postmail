@@ -26,7 +26,7 @@ msgstr "← 返回收藏夾"
 #. @context: Add alt text label under attachment thumbnail
 #: src/ui/compose/ComposeDialog.tsx
 msgid "+ ALT"
-msgstr ""
+msgstr "+ ALT"
 
 #. @context: Redirect type option
 #: src/routes/dash/redirects.tsx
@@ -51,12 +51,12 @@ msgstr "帳戶"
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add"
-msgstr ""
+msgstr "新增"
 
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add alt text"
-msgstr ""
+msgstr "添加替代文字"
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -81,7 +81,7 @@ msgstr "加入導航"
 #. @context: Appearance sub-navigation tab
 #: src/ui/dash/appearance/AppearanceNav.tsx
 msgid "Advanced"
-msgstr ""
+msgstr "進階"
 
 #. @context: Archive filter - all formats
 #: src/ui/pages/ArchivePage.tsx
@@ -96,7 +96,7 @@ msgstr "所有頁面都在您的導航中。"
 #. @context: Hint text in alt text panel
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Alt text improves accessibility"
-msgstr ""
+msgstr "替代文字改善可及性"
 
 #. @context: Dashboard heading
 #. @context: Dashboard heading
@@ -231,7 +231,7 @@ msgstr "顏色主題"
 #. @context: Appearance sub-navigation tab
 #: src/ui/dash/appearance/AppearanceNav.tsx
 msgid "Color Theme"
-msgstr ""
+msgstr "顏色主題"
 
 #. @context: Setup form submit button
 #: src/routes/auth/setup.tsx
@@ -361,7 +361,7 @@ msgstr "示範帳戶已預填。只需點擊登入。"
 #. @context: Alt text textarea placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Describe this for people with visual impairments..."
-msgstr ""
+msgstr "為視障人士描述這個..."
 
 #. @context: Collection form field
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -386,12 +386,12 @@ msgstr "顯示連結的文字"
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
-msgstr ""
+msgstr "顯示在首頁的博客文章上方。也用作元描述。支持Markdown。"
 
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
-msgstr ""
+msgstr "顯示在所有文章和頁面的底部。支持Markdown。"
 
 #. @context: Close attached text panel
 #. @context: Close media picker button
@@ -522,14 +522,7 @@ msgstr "字型主題"
 #. @context: Appearance sub-navigation tab
 #: src/ui/dash/appearance/AppearanceNav.tsx
 msgid "Font Theme"
-msgstr ""
-
-#. @context: Toast after saving site footer
-#. @context: Toast after saving site footer
-#: src/routes/dash/settings.tsx
-#: src/routes/dash/settings.tsx
-#~ msgid "Footer saved successfully."
-#~ msgstr "頁腳已成功保存。"
+msgstr "字型主題"
 
 #. @context: Post form field - post format
 #: src/ui/dash/posts/PostForm.tsx
@@ -796,7 +789,7 @@ msgstr "下一頁"
 #. @context: Compose collection combobox empty state
 #: src/ui/compose/ComposeDialog.tsx
 msgid "No collections found."
-msgstr ""
+msgstr "找不到任何收藏。"
 
 #. @context: Empty state message
 #. @context: Empty state message on collections page
@@ -1068,7 +1061,7 @@ msgstr "已發佈的頁面可以通過其標識符訪問。草稿不可見。"
 #. @context: Toast shown after successful deferred publish
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Published!"
-msgstr ""
+msgstr "已發佈！"
 
 #. @context: Dashboard section title
 #: src/routes/dash/index.tsx
@@ -1181,7 +1174,7 @@ msgstr "搜尋帖子..."
 #. @context: Compose collection combobox search placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Search..."
-msgstr ""
+msgstr "搜尋..."
 
 #. @context: Media picker dialog title
 #: src/ui/dash/posts/PostForm.tsx
@@ -1313,16 +1306,6 @@ msgstr "被引用的文本..."
 #: src/ui/dash/PageForm.tsx
 msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
-
-#. @context: Help text for site description field
-#: src/ui/dash/settings/GeneralContent.tsx
-#~ msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
-#~ msgstr "這會顯示在您預設首頁的部落格文章上方。這也用於您首頁的 meta 描述。"
-
-#. @context: Help text for site footer field
-#: src/ui/dash/settings/GeneralContent.tsx
-#~ msgid "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
-#~ msgstr "這會顯示在您所有的文章和頁面的底部。支持 Markdown。"
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/GeneralContent.tsx
