@@ -21,7 +21,9 @@ describe("resolveConfig", () => {
     const config = resolveConfig(makeEnv(), {});
 
     expect(config.siteName).toBe("Jant");
-    expect(config.siteDescription).toBe("A microblog powered by Jant");
+    expect(config.siteDescription).toBe(
+      "Thoughts, links, and quotes — one post at a time",
+    );
     expect(config.siteLanguage).toBe("en");
     expect(config.homeDefaultView).toBe("latest");
     expect(config.timeZone).toBe("UTC");
@@ -168,6 +170,28 @@ describe("resolveConfig", () => {
     expect(config.themeId).toBe("blue");
     expect(config.fontThemeId).toBe("serif");
     expect(config.customCSS).toBe("body { color: red; }");
+  });
+
+  it("resolves headerNavMaxVisible with default, DB override, and clamping", () => {
+    // Default is 3
+    const config1 = resolveConfig(makeEnv(), {});
+    expect(config1.headerNavMaxVisible).toBe(3);
+
+    // DB override works
+    const config2 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "5" });
+    expect(config2.headerNavMaxVisible).toBe(5);
+
+    // Clamped to 0 minimum
+    const config3 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "-1" });
+    expect(config3.headerNavMaxVisible).toBe(0);
+
+    // Clamped to 5 maximum
+    const config4 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "10" });
+    expect(config4.headerNavMaxVisible).toBe(5);
+
+    // Zero is valid
+    const config5 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "0" });
+    expect(config5.headerNavMaxVisible).toBe(0);
   });
 
   it("resolves defaultThemeId from env", () => {

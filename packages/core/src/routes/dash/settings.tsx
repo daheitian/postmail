@@ -47,6 +47,7 @@ settingsRoutes.get("/", async (c) => {
         siteDescription={dbSiteDescription || ""}
         siteLanguage={appConfig.siteLanguage}
         homeDefaultView={appConfig.homeDefaultView}
+        headerNavMaxVisible={appConfig.headerNavMaxVisible}
         siteNameFallback={appConfig.fallbacks.siteName}
         siteDescriptionFallback={appConfig.fallbacks.siteDescription}
         siteAvatarUrl={appConfig.siteAvatarUrl}
@@ -68,6 +69,7 @@ settingsRoutes.post("/", async (c) => {
     siteFooter: string;
     siteLanguage: string;
     homeDefaultView: string;
+    headerNavMaxVisible: string;
     timeZone: string;
   }>();
 
@@ -101,6 +103,14 @@ settingsRoutes.post("/", async (c) => {
     await settings.set("HOME_DEFAULT_VIEW", body.homeDefaultView);
   } else {
     await settings.remove("HOME_DEFAULT_VIEW");
+  }
+
+  // Header nav max visible (only store if non-default)
+  const navMax = parseInt(String(body.headerNavMaxVisible), 10);
+  if (!isNaN(navMax) && navMax !== 3) {
+    await settings.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
+  } else {
+    await settings.remove("HEADER_NAV_MAX_VISIBLE");
   }
 
   // Timezone
@@ -161,6 +171,7 @@ settingsRoutes.post("/", async (c) => {
         _orig_siteFooter: body.siteFooter,
         _orig_siteLanguage: body.siteLanguage,
         _orig_homeDefaultView: body.homeDefaultView,
+        _orig_headerNavMaxVisible: body.headerNavMaxVisible,
         _orig_timeZone: body.timeZone,
         _generalDirty: false,
       });

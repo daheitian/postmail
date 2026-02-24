@@ -15,6 +15,7 @@ export interface Bindings {
   // Timeline
   PAGE_SIZE?: string;
   // Site configuration (optional - can be overridden in DB)
+  HEADER_NAV_MAX_VISIBLE?: string;
   SITE_NAME?: string;
   SITE_DESCRIPTION?: string;
   SITE_LANGUAGE?: string;

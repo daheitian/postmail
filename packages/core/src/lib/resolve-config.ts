@@ -112,6 +112,13 @@ export function resolveConfig(
     siteDescriptionExplicit,
     siteLanguage: resolve("SITE_LANGUAGE", allSettings, env),
     homeDefaultView: resolve("HOME_DEFAULT_VIEW", allSettings, env),
+    headerNavMaxVisible: (() => {
+      const parsed = parseInt(
+        resolve("HEADER_NAV_MAX_VISIBLE", allSettings, env),
+        10,
+      );
+      return Math.max(0, Math.min(5, isNaN(parsed) ? 3 : parsed));
+    })(),
     timeZone: resolve("TIME_ZONE", allSettings, env),
     siteFooter: resolve("SITE_FOOTER", allSettings, env),
     noindex: resolve("NOINDEX", allSettings, env) === "true",

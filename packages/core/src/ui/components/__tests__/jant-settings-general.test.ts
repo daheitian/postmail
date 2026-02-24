@@ -38,6 +38,7 @@ const labels: SettingsLabels = {
   latest: "Latest",
   featured: "Featured",
   timeZone: "Time Zone",
+  headerNavMaxVisible: "Max Visible Nav Links",
   siteFooter: "Site Footer",
   footerHelp: "Displayed at the bottom of posts.",
   markdownSupported: "Markdown supported",
@@ -62,6 +63,7 @@ const initialData = {
   siteDescription: "A test blog",
   siteLanguage: "en",
   homeDefaultView: "latest",
+  headerNavMaxVisible: 3,
   timeZone: "UTC",
   siteFooter: "Footer text",
   noindex: false,
@@ -112,8 +114,8 @@ describe("JantSettingsGeneral", () => {
   it("renders timezone options", async () => {
     const el = await createElement();
     const selects = el.querySelectorAll("select");
-    // Third select is timezone (language, homepage view, timezone)
-    const tzSelect = selects[2];
+    // Fourth select is timezone (language, homepage view, header nav, timezone)
+    const tzSelect = selects[3];
     const options = tzSelect?.querySelectorAll("option");
     expect(options?.length).toBe(2);
     expect(options?.[0]?.value).toBe("UTC");

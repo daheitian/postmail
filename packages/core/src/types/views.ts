@@ -157,12 +157,12 @@ export interface ArchiveGroup {
  */
 export interface SiteLayoutProps {
   siteName: string;
-  siteDescription?: string;
   links: NavItemView[];
   currentPath: string;
   isAuthenticated?: boolean;
   collections?: Collection[];
   homeDefaultView?: string;
+  headerNavMaxVisible?: number;
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;

@@ -55,6 +55,11 @@ msgstr "301 (Permanent)"
 msgid "302 (Temporary)"
 msgstr "302 (Temporary)"
 
+#. @context: Help text for site description field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "A short intro for search engines and feed readers. Plain text only."
+msgstr "A short intro for search engines and feed readers. Plain text only."
+
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "About this blog"
@@ -470,8 +475,8 @@ msgstr "Display text for the link"
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
-msgstr "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
+#~ msgid "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
+#~ msgstr "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
 
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -673,6 +678,11 @@ msgstr "General"
 msgid "Give it a title..."
 msgstr "Give it a title..."
 
+#. @context: Settings form field for max visible nav links in header
+#: src/ui/dash/settings/GeneralContent.tsx
+#~ msgid "Header Nav Links"
+#~ msgstr "Header Nav Links"
+
 #. @context: Collection sort order option
 #: src/ui/dash/collections/CollectionForm.tsx
 msgid "Highest rated"
@@ -827,6 +837,11 @@ msgstr "Markdown"
 msgid "Markdown supported"
 msgstr "Markdown supported"
 
+#. @context: Settings form field for max visible nav links in header before overflow menu
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Max Visible Nav Links"
+msgstr "Max Visible Nav Links"
+
 #. @context: Compose toolbar - media tooltip
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
@@ -837,6 +852,11 @@ msgstr "Markdown supported"
 #: src/ui/layouts/DashLayout.tsx
 msgid "Media"
 msgstr "Media"
+
+#. @context: Button to show overflow nav links
+#: src/ui/layouts/SiteLayout.tsx
+msgid "More links"
+msgstr "More links"
 
 #. @context: Header more button tooltip
 #: src/ui/compose/ComposeDialog.tsx

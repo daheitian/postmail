@@ -142,8 +142,7 @@ function processAnnotations(
     // Inline value replacement: key = "old" # @create-jant: "new"
     const replaceMatch = line.match(/^(.+?)\s*#\s*@create-jant:\s*"(.*)"$/);
     if (replaceMatch) {
-      const prefix = replaceMatch[1]!;
-      const newValue = replaceMatch[2]!;
+      const [, prefix, newValue] = replaceMatch;
       const interpolated = newValue.replace(
         /\$\{(\w+)\}/g,
         (_, key: string) => vars[key] ?? "",

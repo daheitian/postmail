@@ -45,14 +45,17 @@ export interface RenderPublicPageOptions {
 export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
   const { title, description, navData, content, sidebar } = options;
 
+  // Use siteDescription as meta description fallback when not explicitly provided
+  const metaDescription = description || navData.siteDescription || undefined;
+
   const layoutProps: SiteLayoutProps = {
     siteName: navData.siteName,
-    siteDescription: navData.siteDescription,
     links: navData.links,
     currentPath: navData.currentPath,
     isAuthenticated: navData.isAuthenticated,
     collections: navData.collections,
     homeDefaultView: navData.homeDefaultView,
+    headerNavMaxVisible: navData.headerNavMaxVisible,
     siteAvatarUrl: navData.siteAvatarUrl,
     showHeaderAvatar: navData.showHeaderAvatar,
     siteFooterHtml: navData.siteFooterHtml,
@@ -68,7 +71,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
   return c.html(
     <BaseLayout
       title={title}
-      description={description}
+      description={metaDescription}
       c={c}
       faviconUrl={faviconUrl}
       faviconVersion={faviconVersion}

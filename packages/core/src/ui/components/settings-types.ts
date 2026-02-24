@@ -27,6 +27,7 @@ export interface SettingsLabels {
   latest: string;
   featured: string;
   timeZone: string;
+  headerNavMaxVisible: string;
 
   // SEO
   seo: string;

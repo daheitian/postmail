@@ -23,7 +23,7 @@ describe("Settings API Routes", () => {
       expect(body.settings).toBeDefined();
       expect(body.settings.SITE_NAME).toBe("Jant");
       expect(body.settings.SITE_DESCRIPTION).toBe(
-        "A microblog powered by Jant",
+        "Thoughts, links, and quotes — one post at a time",
       );
       expect(body.settings.SITE_LANGUAGE).toBe("en");
     });

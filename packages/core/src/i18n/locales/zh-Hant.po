@@ -38,6 +38,11 @@ msgstr "301（永久）"
 msgid "302 (Temporary)"
 msgstr "302（臨時）"
 
+#. @context: Help text for site description field
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "A short intro for search engines and feed readers. Plain text only."
+msgstr ""
+
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "About this blog"
@@ -385,8 +390,8 @@ msgstr "顯示連結的文字"
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
-msgstr "顯示在首頁的博客文章上方。也用作元描述。支持Markdown。"
+#~ msgid "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
+#~ msgstr "顯示在首頁的博客文章上方。也用作元描述。支持Markdown。"
 
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -557,6 +562,11 @@ msgstr "一般設定"
 msgid "Give it a title..."
 msgstr "給它一個標題..."
 
+#. @context: Settings form field for max visible nav links in header
+#: src/ui/dash/settings/GeneralContent.tsx
+#~ msgid "Header Nav Links"
+#~ msgstr ""
+
 #. @context: Collection sort order option
 #: src/ui/dash/collections/CollectionForm.tsx
 msgid "Highest rated"
@@ -692,6 +702,11 @@ msgstr "Markdown"
 msgid "Markdown supported"
 msgstr "支援Markdown"
 
+#. @context: Settings form field for max visible nav links in header before overflow menu
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Max Visible Nav Links"
+msgstr ""
+
 #. @context: Compose toolbar - media tooltip
 #. @context: Dashboard navigation - media library
 #. @context: Media main heading
@@ -702,6 +717,11 @@ msgstr "支援Markdown"
 #: src/ui/layouts/DashLayout.tsx
 msgid "Media"
 msgstr "媒體"
+
+#. @context: Button to show overflow nav links
+#: src/ui/layouts/SiteLayout.tsx
+msgid "More links"
+msgstr ""
 
 #. @context: Collection title placeholder
 #: src/ui/dash/collections/CollectionForm.tsx

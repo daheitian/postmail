@@ -1,7 +1,7 @@
 /**
  * Site Layout
  *
- * Vertical header: site name on top, custom nav links below, description under nav.
+ * Vertical header: site name on top, custom nav links below.
  * Content area with browse filter tabs and compose prompt/dialog for authenticated users.
  */
 
@@ -27,12 +27,12 @@ function HeaderLink({ link }: { link: NavItemView }) {
 
 export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   siteName,
-  siteDescription,
   links,
   currentPath,
   isAuthenticated,
   collections,
   homeDefaultView,
+  headerNavMaxVisible,
   siteAvatarUrl,
   showHeaderAvatar,
   siteFooterHtml,
@@ -40,6 +40,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   children,
 }) => {
   const { t } = useLingui();
+  const maxVisible = headerNavMaxVisible ?? 3;
 
   const latestHref = homeDefaultView === "featured" ? "/latest" : "/";
   const featuredHref = homeDefaultView === "featured" ? "/" : "/featured";
@@ -89,9 +90,66 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
             <div class="site-header-right">
               {links.length > 0 && (
                 <nav class="site-header-nav">
-                  {links.map((link) => (
+                  {links.slice(0, maxVisible).map((link) => (
                     <HeaderLink key={link.id} link={link} />
                   ))}
+                  {links.length > maxVisible && (
+                    <div class="dropdown-menu site-header-more">
+                      <button
+                        type="button"
+                        id="site-nav-more-trigger"
+                        class="site-header-more-btn"
+                        aria-haspopup="menu"
+                        aria-controls="site-nav-more-menu"
+                        aria-expanded="false"
+                        aria-label={t({
+                          message: "More links",
+                          comment:
+                            "@context: Button to show overflow nav links",
+                        })}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <circle cx="5" cy="12" r="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <circle cx="19" cy="12" r="2" />
+                        </svg>
+                      </button>
+                      <div
+                        id="site-nav-more-popover"
+                        data-popover
+                        data-align="end"
+                        aria-hidden="true"
+                      >
+                        <div
+                          role="menu"
+                          id="site-nav-more-menu"
+                          aria-labelledby="site-nav-more-trigger"
+                        >
+                          {links.slice(maxVisible).map((link) => (
+                            <a
+                              key={link.id}
+                              href={link.url}
+                              role="menuitem"
+                              {...(link.isExternal
+                                ? {
+                                    target: "_blank",
+                                    rel: "noopener noreferrer",
+                                  }
+                                : {})}
+                            >
+                              {link.label}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </nav>
               )}
               <a
@@ -117,9 +175,6 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
               </a>
             </div>
           </div>
-          {isHomePage && siteDescription && (
-            <p class="site-description">{siteDescription}</p>
-          )}
         </div>
       </header>
 

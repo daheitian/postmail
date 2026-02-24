@@ -19,6 +19,7 @@ export function GeneralContent({
   siteDescription,
   siteLanguage,
   homeDefaultView,
+  headerNavMaxVisible,
   siteNameFallback,
   siteDescriptionFallback,
   siteAvatarUrl,
@@ -32,6 +33,7 @@ export function GeneralContent({
   siteDescription: string;
   siteLanguage: string;
   homeDefaultView: string;
+  headerNavMaxVisible: number;
   siteNameFallback: string;
   siteDescriptionFallback: string;
   siteAvatarUrl: string;
@@ -92,7 +94,7 @@ export function GeneralContent({
     }),
     aboutBlogHelp: t({
       message:
-        "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported.",
+        "A short intro for search engines and feed readers. Plain text only.",
       comment: "@context: Help text for site description field",
     }),
     language: t({
@@ -114,6 +116,11 @@ export function GeneralContent({
     timeZone: t({
       message: "Time Zone",
       comment: "@context: Settings form field",
+    }),
+    headerNavMaxVisible: t({
+      message: "Max Visible Nav Links",
+      comment:
+        "@context: Settings form field for max visible nav links in header before overflow menu",
     }),
     siteFooter: t({
       message: "Site Footer",
@@ -162,6 +169,7 @@ export function GeneralContent({
     siteDescription,
     siteLanguage,
     homeDefaultView,
+    headerNavMaxVisible,
     timeZone,
     siteFooter,
     noindex,

@@ -130,11 +130,31 @@
     color: var(--site-text-primary);
   }
 
-  .site-description {
-    font-size: var(--text-sm);
+  /* --- "More" overflow dropdown for > 4 nav links ----------------------- */
+
+  .site-header-more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: none;
+    background: none;
     color: var(--site-text-secondary);
-    margin: 2px 0 0;
-    line-height: var(--leading);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      background-color 0.15s;
+  }
+
+  .site-header-more-btn:hover {
+    color: var(--site-text-primary);
+    background-color: var(--site-nav-hover-bg);
+  }
+
+  .site-header-more [data-popover] {
+    min-width: 170px;
   }
 
   /* --- Browse filter tabs ------------------------------------------------- */
@@ -322,8 +342,13 @@
     align-items: center;
     gap: 12px;
     padding: 16px 0;
-    margin: 0;
-    border-bottom: 0.5px solid var(--site-divider);
+    margin-bottom: 10px;
+    border-bottom: 0.5px solid oklch(from var(--site-divider) l c h / 0.5);
+    transition: border-color 0.15s;
+  }
+
+  .compose-prompt:hover {
+    border-bottom-color: var(--site-divider);
   }
 
   .compose-prompt-trigger {
@@ -337,6 +362,13 @@
     background: none;
     cursor: pointer;
     text-align: left;
+    color: var(--site-text-primary);
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+
+  .compose-prompt-trigger:hover {
+    opacity: 0.7;
   }
 
   .compose-prompt-avatar {
@@ -344,12 +376,10 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: var(--site-text-secondary);
   }
 
   .compose-prompt-text {
     font-size: var(--text-base);
-    color: var(--site-text-placeholder);
   }
 
   .compose-prompt-post-btn {
@@ -1304,9 +1334,13 @@
   .site-footer {
     max-width: var(--site-width);
     margin: var(--space-xl) auto 0;
-    padding: var(--content-gap) var(--site-padding) var(--space-xl);
-    border-top: 0.5px solid var(--site-divider);
+    padding: 0 var(--site-padding) var(--space-xl);
     color: var(--site-text-secondary);
     font-size: var(--text-sm);
+  }
+
+  .site-footer > .site-container {
+    border-top: 0.5px solid var(--site-divider);
+    padding-top: var(--content-gap);
   }
 }

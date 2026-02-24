@@ -21,7 +21,7 @@ export const CONFIG_FIELDS = {
     envOnly: false,
   },
   SITE_DESCRIPTION: {
-    defaultValue: "A microblog powered by Jant",
+    defaultValue: "Thoughts, links, and quotes — one post at a time",
     envOnly: false,
   },
   SITE_LANGUAGE: {
@@ -30,6 +30,10 @@ export const CONFIG_FIELDS = {
   },
   HOME_DEFAULT_VIEW: {
     defaultValue: "latest",
+    envOnly: false,
+  },
+  HEADER_NAV_MAX_VISIBLE: {
+    defaultValue: "3",
     envOnly: false,
   },
 
@@ -176,6 +180,7 @@ export interface AppConfig {
   siteDescriptionExplicit: boolean;
   siteLanguage: string;
   homeDefaultView: string;
+  headerNavMaxVisible: number;
   timeZone: string;
   siteFooter: string;
   noindex: boolean;

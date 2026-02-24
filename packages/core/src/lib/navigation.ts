@@ -10,16 +10,18 @@ import { toNavItemViews } from "./view.js";
 import { render as renderMarkdown } from "./markdown.js";
 
 /**
- * Navigation data needed by SiteLayout
+ * Navigation data needed by public page rendering
  */
 export interface NavigationData {
   links: NavItemView[];
   currentPath: string;
   siteName: string;
+  /** Used as meta description fallback and in RSS/Atom feeds */
   siteDescription: string;
   isAuthenticated: boolean;
   collections: Collection[];
   homeDefaultView: string;
+  headerNavMaxVisible: number;
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;
@@ -92,6 +94,7 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
     isAuthenticated,
     collections,
     homeDefaultView,
+    headerNavMaxVisible: appConfig.headerNavMaxVisible,
     siteAvatarUrl,
     showHeaderAvatar: showHeaderAvatar && !!siteAvatarUrl,
     siteFooterHtml,
