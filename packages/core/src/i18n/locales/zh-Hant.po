@@ -973,11 +973,9 @@ msgid "Pinned"
 msgstr "置頂"
 
 #. @context: Compose button - publish post
-#. @context: Compose prompt post button
 #. @context: Default post title
 #: src/routes/dash/posts.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/compose/ComposePrompt.tsx
 msgid "Post"
 msgstr "文章"
 

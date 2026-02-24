@@ -30,7 +30,9 @@ export const ComposePrompt: FC = () => {
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 1 1 3.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
+            <line x1="16" y1="8" x2="2" y2="22" />
+            <line x1="17.5" y1="15" x2="9" y2="15" />
           </svg>
         </span>
         <span class="compose-prompt-text">
@@ -39,16 +41,6 @@ export const ComposePrompt: FC = () => {
             comment: "@context: Compose prompt placeholder text",
           })}
         </span>
-      </button>
-      <button
-        type="button"
-        class="compose-prompt-post-btn"
-        onclick="const d=document.getElementById('compose-dialog');d.showModal();d.querySelector('jant-compose-editor')?.focusInput()"
-      >
-        {t({
-          message: "Post",
-          comment: "@context: Compose prompt post button",
-        })}
       </button>
     </div>
   );

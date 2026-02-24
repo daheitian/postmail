@@ -137,22 +137,28 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           <div class="site-container">
             <div class="site-content">
               {isHomePage && (
-                <nav class="site-browse-nav">
-                  {browseLinks.map((link, i) => (
-                    <>
-                      {i > 0 && <span class="site-browse-sep">/</span>}
-                      <a
-                        key={link.href}
-                        href={link.href}
-                        class={`site-browse-link ${currentPath === link.href ? "site-browse-link-active" : ""}`}
-                      >
-                        {link.label}
-                      </a>
-                    </>
-                  ))}
-                </nav>
+                <div class="site-home-header">
+                  {isAuthenticated && <ComposePrompt />}
+                  <nav class="site-browse-nav">
+                    {browseLinks.map((link, i) => (
+                      <>
+                        {i > 0 && (
+                          <span class="site-browse-sep" aria-hidden="true">
+                            /
+                          </span>
+                        )}
+                        <a
+                          key={link.href}
+                          href={link.href}
+                          class={`site-browse-link ${currentPath === link.href ? "site-browse-link-active" : ""}`}
+                        >
+                          {link.label}
+                        </a>
+                      </>
+                    ))}
+                  </nav>
+                </div>
               )}
-              {isHomePage && isAuthenticated && <ComposePrompt />}
               {children}
             </div>
           </div>

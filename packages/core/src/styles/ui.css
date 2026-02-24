@@ -49,7 +49,7 @@
 
   .site-header-top-bordered {
     padding-bottom: 12px;
-    border-bottom: 0.5px solid var(--site-divider);
+    /* border-bottom: 0.5px solid var(--site-divider); */
   }
 
   .site-header-right {
@@ -141,31 +141,42 @@
 
   .site-browse-nav {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 16px 0 var(--space-xl);
+    align-items: baseline;
+    gap: 10px;
+    padding: 16px 0;
   }
 
   .site-browse-sep {
-    color: var(--site-divider);
     font-size: var(--text-sm);
+    color: var(--site-text-primary);
+    opacity: 0.15;
+    user-select: none;
   }
 
   .site-browse-link {
     font-size: var(--text-base);
-    color: var(--site-text-secondary);
+    font-weight: 400;
+    color: var(--site-text-primary);
     text-decoration: none;
-    font-weight: 500;
-    transition: color 0.15s;
+    opacity: 0.28;
+    transition: opacity 0.2s ease;
   }
 
   .site-browse-link:hover {
-    color: var(--site-text-primary);
+    opacity: 0.55;
   }
 
   .site-browse-link-active {
-    color: var(--site-text-primary);
-    font-weight: 700;
+    opacity: 1;
+    font-weight: 500;
+  }
+
+  /* --- Home header wrapper (compose-prompt + browse-nav) ------------------ */
+
+  .site-home-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--space-xl);
   }
 
   /* --- Main content area -------------------------------------------------- */
@@ -177,7 +188,7 @@
 
   .site-content {
     background-color: var(--site-elevated-bg);
-    padding: 0 var(--site-padding);
+    padding: 0px var(--site-padding) 0;
   }
 
   /* --- Sidebar layout (shared by dashboard and site sidebar pages) ------- */
@@ -311,7 +322,8 @@
     align-items: center;
     gap: 12px;
     padding: 16px 0;
-    margin: -20px 0 12px;
+    margin: 0;
+    border-bottom: 0.5px solid var(--site-divider);
   }
 
   .compose-prompt-trigger {
@@ -331,17 +343,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--avatar-size);
-    height: var(--avatar-size);
     flex-shrink: 0;
-    border-radius: var(--avatar-radius);
-    border: 1.5px solid var(--site-column-outline);
     color: var(--site-text-secondary);
   }
 
   .compose-prompt-text {
     font-size: var(--text-base);
-    color: var(--site-text-secondary);
+    color: var(--site-text-placeholder);
   }
 
   .compose-prompt-post-btn {

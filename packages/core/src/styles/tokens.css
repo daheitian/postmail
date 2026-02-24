@@ -17,7 +17,7 @@
   --leading: 1.5;
 
   /* Layout */
-  --site-width: 640px;
+  --site-width: 600px;
   --site-padding: 1.5rem;
   --content-gap: 1rem;
   --space-xl: 2rem;
@@ -46,6 +46,7 @@
   --site-nav-hover-bg: var(--accent);
   --site-text-primary: var(--foreground);
   --site-text-secondary: var(--muted-foreground);
+  --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
   --site-media-outline: var(--border);
   --site-divider: var(--border);
 }
