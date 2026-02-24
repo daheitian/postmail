@@ -1,7 +1,7 @@
 /**
  * Minimal type declarations for sortablejs
  *
- * Only covers the API surface used by jant-nav-manager and collections-reorder.
+ * Only covers the API surface used by jant-nav-manager and jant-collection-sidebar.
  */
 
 declare module "sortablejs" {

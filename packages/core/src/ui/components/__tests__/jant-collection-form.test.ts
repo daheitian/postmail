@@ -47,8 +47,8 @@ async function createElement(
   ) as JantCollectionForm;
   el.labels = labels;
   el.initial = initial;
-  el.action = "/dash/collections";
-  el.cancelHref = "/dash/collections";
+  el.action = "/api/collections";
+  el.cancelHref = "/api/collections";
   el.isEdit = false;
   Object.assign(el, overrides);
   document.body.appendChild(el);
@@ -143,7 +143,7 @@ describe("JantCollectionForm", () => {
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as CollectionSubmitDetail;
-    expect(d.endpoint).toBe("/dash/collections");
+    expect(d.endpoint).toBe("/api/collections");
     expect(d.data.title).toBe("Books");
     expect(d.data.slug).toBe("books");
     expect(d.data.description).toBe("All about books");

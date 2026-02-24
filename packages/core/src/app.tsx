@@ -32,7 +32,6 @@ import { pagesRoutes as dashPagesRoutes } from "./routes/dash/pages.js";
 import { mediaRoutes as dashMediaRoutes } from "./routes/dash/media.js";
 import { settingsRoutes as dashSettingsRoutes } from "./routes/dash/settings.js";
 import { redirectsRoutes as dashRedirectsRoutes } from "./routes/dash/redirects.js";
-import { collectionsRoutes as dashCollectionsRoutes } from "./routes/dash/collections.js";
 import { appearanceRoutes as dashAppearanceRoutes } from "./routes/dash/appearance.js";
 
 // Routes - API
@@ -249,8 +248,7 @@ export function createApp(): App {
   app.route("/dash/settings", dashSettingsRoutes);
   app.route("/dash/appearance", dashAppearanceRoutes);
   app.route("/dash/settings/redirects", dashRedirectsRoutes);
-  app.route("/dash/collections", dashCollectionsRoutes);
-  // API routes
+  // Protected API routes
   app.route("/api/upload", uploadApiRoutes);
   app.route("/api/search", searchApiRoutes);
 

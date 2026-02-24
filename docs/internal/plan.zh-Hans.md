@@ -307,7 +307,7 @@
 
 **拖拽排序 + 分隔线**：
 
-- [ ] `/dash/collections` 支持拖拽排序（SortableJS）
+- [ ] `/c` 侧边栏支持拖拽排序（SortableJS）
 - [ ] show_divider 开关
 
 **Collection RSS**：

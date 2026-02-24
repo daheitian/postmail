@@ -36,17 +36,34 @@ const PostAssignSchema = z.object({
   postId: z.number().int().positive(),
 });
 
-// List collections (includes post counts)
+// List collections (includes post counts and dividers)
 collectionsApiRoutes.get("/", async (c) => {
-  const collections = await c.var.services.collections.list();
-  const postCounts = await c.var.services.collections.getPostCounts();
+  const [collections, dividers, postCounts] = await Promise.all([
+    c.var.services.collections.list(),
+    c.var.services.collections.listDividers(),
+    c.var.services.collections.getPostCounts(),
+  ]);
 
   return c.json({
     collections: collections.map((col) => ({
       ...col,
       postCount: postCounts.get(col.id) ?? 0,
     })),
+    dividers,
   });
+});
+
+// Create divider (requires auth) — must be before /:id
+collectionsApiRoutes.post("/dividers", requireAuthApi(), async (c) => {
+  const divider = await c.var.services.collections.createDivider();
+  return c.json(divider, 201);
+});
+
+// Delete divider (requires auth) — must be before /:id
+collectionsApiRoutes.delete("/dividers/:id", requireAuthApi(), async (c) => {
+  const id = parseIntParam(c.req.param("id"));
+  await c.var.services.collections.deleteDivider(id);
+  return c.json({ success: true });
 });
 
 // Get single collection

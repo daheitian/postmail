@@ -25,8 +25,8 @@ msgstr "/* Your custom CSS here */"
 
 #. @context: Navigation link
 #: src/ui/dash/collections/ViewCollectionContent.tsx
-msgid "← Back to Collections"
-msgstr "← Back to Collections"
+#~ msgid "← Back to Collections"
+#~ msgstr "← Back to Collections"
 
 #. @context: Navigation link
 #. @context: Navigation link
@@ -100,6 +100,11 @@ msgstr "Add custom CSS to override any styles. Use data attributes like [data-pa
 msgid "Add custom link to navigation"
 msgstr "Add custom link to navigation"
 
+#. @context: Menu action to add a divider
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Add Divider"
+msgstr "Add Divider"
+
 #. @context: Button and heading for adding custom link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Link"
@@ -169,6 +174,11 @@ msgstr "Appearance"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Archive"
 msgstr "Archive"
+
+#. @context: Confirm dialog for deleting a collection
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Are you sure you want to delete this collection?"
+msgstr "Are you sure you want to delete this collection?"
 
 #. @context: Confirmation dialog when deleting a post from the list
 #: src/ui/dash/PostList.tsx
@@ -253,10 +263,10 @@ msgstr "Blog Avatar"
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/collections/CollectionForm.tsx
 #: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -284,8 +294,8 @@ msgstr "Choose a page…"
 
 #. @context: Button to open icon picker
 #. @context: Icon picker dialog title
-#: src/ui/dash/collections/CollectionForm.tsx
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Choose Icon"
 msgstr "Choose Icon"
 
@@ -295,7 +305,7 @@ msgid "Click image to view full size"
 msgstr "Click image to view full size"
 
 #. @context: Button to close icon picker
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Close"
 msgstr "Close"
 
@@ -310,10 +320,10 @@ msgstr "Collection"
 #~ msgstr "Collection (optional)"
 
 #. @context: Collections page heading
-#. @context: Dashboard heading
 #. @context: Sidebar heading for collections nav
-#: src/ui/dash/collections/CollectionsListContent.tsx
+#. @context: Sidebar heading for collections nav
 #: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Collections"
 msgstr "Collections"
@@ -364,8 +374,8 @@ msgstr "Copy"
 
 #. @context: Button to save new collection
 #: src/ui/dash/collections/CollectionForm.tsx
-msgid "Create Collection"
-msgstr "Create Collection"
+#~ msgid "Create Collection"
+#~ msgstr "Create Collection"
 
 #. @context: Button to save new navigation link
 #: src/ui/dash/pages/LinkFormContent.tsx
@@ -454,10 +464,12 @@ msgstr "Dashboard"
 
 #. @context: Button to delete item
 #. @context: Button to delete redirect
+#. @context: Delete collection action
 #. @context: Delete nav item
 #: src/routes/dash/redirects.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Delete"
 msgstr "Delete"
 
@@ -476,6 +488,11 @@ msgstr "Delete Media"
 msgid "Delete Page"
 msgstr "Delete Page"
 
+#. @context: Toast after deleting a collection
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Deleted"
+msgstr "Deleted"
+
 #. @context: Warning message before deleting media
 #: src/ui/dash/media/ViewMediaContent.tsx
 msgid "Deleting this media will remove it permanently from storage."
@@ -492,7 +509,7 @@ msgid "Describe this for people with visual impairments..."
 msgstr "Describe this for people with visual impairments..."
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
@@ -521,10 +538,12 @@ msgstr "Display avatar in my site header"
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "Displayed at the bottom of all posts and pages. Markdown supported."
 
+#. @context: Button to exit reorder mode
 #. @context: Close attached text panel
 #. @context: Close media picker button
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/posts/PostForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Done"
 msgstr "Done"
 
@@ -554,27 +573,25 @@ msgstr "Drafts"
 #~ msgid "e.g. The Verge, John Doe"
 #~ msgstr "e.g. The Verge, John Doe"
 
-#. @context: Button to edit collection
-#. @context: Button to edit collection
 #. @context: Button to edit item
 #. @context: Button to edit page
 #. @context: Button to edit page
 #. @context: Button to edit post
 #. @context: Button to edit post
+#. @context: Per-collection edit action
 #: src/routes/dash/pages.tsx
 #: src/routes/dash/posts.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/collections/CollectionsListContent.tsx
-#: src/ui/dash/collections/ViewCollectionContent.tsx
 #: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Edit"
 msgstr "Edit"
 
 #. @context: Page heading
 #: src/ui/dash/collections/CollectionForm.tsx
-msgid "Edit Collection"
-msgstr "Edit Collection"
+#~ msgid "Edit Collection"
+#~ msgstr "Edit Collection"
 
 #. @context: Page heading
 #: src/ui/dash/pages/LinkFormContent.tsx
@@ -647,7 +664,9 @@ msgid "Failed to save post. Please try again."
 msgstr "Failed to save post. Please try again."
 
 #. @context: Error toast when nav save fails
+#. @context: Toast when save fails
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Failed to save. Please try again."
 msgstr "Failed to save. Please try again."
 
@@ -734,7 +753,7 @@ msgstr "Give it a title..."
 #~ msgstr "Header Nav Links"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Highest rated"
 msgstr "Highest rated"
 
@@ -744,7 +763,7 @@ msgid "Home view saved"
 msgstr "Home view saved"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Icon (optional)"
 msgstr "Icon (optional)"
 
@@ -885,7 +904,7 @@ msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "Lowercase letters, numbers, and hyphens only"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Lowest rated"
 msgstr "Lowest rated"
 
@@ -928,6 +947,11 @@ msgstr "Media"
 msgid "Menu"
 msgstr "Menu"
 
+#. @context: Aria-label for more button
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "More actions"
+msgstr "More actions"
+
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
@@ -944,7 +968,7 @@ msgstr "More links"
 #~ msgstr "My Blog"
 
 #. @context: Collection title placeholder
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "My Collection"
 msgstr "My Collection"
 
@@ -973,19 +997,15 @@ msgstr "Navigation items"
 msgid "Need help? Visit the <0>documentation</0>"
 msgstr "Need help? Visit the <0>documentation</0>"
 
-#. @context: Button to create new collection
-#. @context: Button to create new collection
-#. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx
-#: src/ui/dash/collections/CollectionsListContent.tsx
-#: src/ui/dash/collections/CollectionsListContent.tsx
+#. @context: Tooltip/aria for add collection button
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "New Collection"
 msgstr "New Collection"
 
 #. @context: Button to add divider between collections
 #: src/ui/dash/collections/CollectionsListContent.tsx
-msgid "New Divider"
-msgstr "New Divider"
+#~ msgid "New Divider"
+#~ msgstr "New Divider"
 
 #. @context: Page heading
 #: src/ui/dash/pages/LinkFormContent.tsx
@@ -1025,7 +1045,7 @@ msgid "New Redirect"
 msgstr "New Redirect"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Newest first"
 msgstr "Newest first"
 
@@ -1041,9 +1061,7 @@ msgstr "Next"
 msgid "No collections found."
 msgstr "No collections found."
 
-#. @context: Empty state message
 #. @context: Empty state message on collections page
-#: src/ui/dash/collections/CollectionsListContent.tsx
 #: src/ui/pages/CollectionsPage.tsx
 msgid "No collections yet."
 msgstr "No collections yet."
@@ -1109,8 +1127,6 @@ msgid "No posts found."
 msgstr "No posts found."
 
 #. @context: Empty state message
-#. @context: Empty state message
-#: src/ui/dash/collections/ViewCollectionContent.tsx
 #: src/ui/pages/CollectionPage.tsx
 msgid "No posts in this collection."
 msgstr "No posts in this collection."
@@ -1154,12 +1170,14 @@ msgid "Notes"
 msgstr "Notes"
 
 #. @context: Collection sort order option
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Oldest first"
 msgstr "Oldest first"
 
+#. @context: Toast after reordering collections
 #. @context: Toast after saving navigation item order
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Order saved"
 msgstr "Order saved"
 
@@ -1301,8 +1319,8 @@ msgstr "Posts"
 
 #. @context: Collection posts section heading
 #: src/ui/dash/collections/ViewCollectionContent.tsx
-msgid "Posts in Collection ({count})"
-msgstr "Posts in Collection ({count})"
+#~ msgid "Posts in Collection ({count})"
+#~ msgstr "Posts in Collection ({count})"
 
 #. @context: Label for nav preview section
 #. @context: Label for nav preview section
@@ -1423,16 +1441,26 @@ msgstr "Redirects"
 #. @context: Remove media attachment button
 #. @context: Remove page from navigation
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/collections/CollectionForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Remove"
 msgstr "Remove"
 
 #. @context: Button to delete a divider
 #: src/ui/dash/collections/CollectionsListContent.tsx
-msgid "Remove divider"
-msgstr "Remove divider"
+#~ msgid "Remove divider"
+#~ msgstr "Remove divider"
+
+#. @context: Tooltip for divider delete button
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Remove Divider"
+msgstr "Remove Divider"
+
+#. @context: Menu action to reorder collections
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Reorder"
+msgstr "Reorder"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
@@ -1441,10 +1469,12 @@ msgstr "Remove divider"
 msgid "Reset Password"
 msgstr "Reset Password"
 
+#. @context: Button to save collection
 #. @context: Button to save settings
 #. @context: Save nav item changes
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Save"
 msgstr "Save"
 
@@ -1478,6 +1508,11 @@ msgstr "Save Profile"
 #~ msgid "Save Settings"
 #~ msgstr "Save Settings"
 
+#. @context: Toast after saving a collection
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Saved"
+msgstr "Saved"
+
 #. @context: Compose toolbar - score tooltip
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Score"
@@ -1498,7 +1533,7 @@ msgstr "Search"
 #~ msgstr "Search failed. Please try again."
 
 #. @context: Icon picker search placeholder
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Search icons..."
 msgstr "Search icons..."
 
@@ -1586,13 +1621,13 @@ msgstr "Site Name"
 
 #. @context: Collection form field
 #. @context: Page form field label - URL slug
-#: src/ui/dash/collections/CollectionForm.tsx
 #: src/ui/dash/PageForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "Slug"
 
 #. @context: Collection form field
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Sort Order"
 msgstr "Sort Order"
 
@@ -1731,8 +1766,8 @@ msgstr "Time Zone"
 #. @context: Page form field label - title
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/collections/CollectionForm.tsx
 #: src/ui/dash/PageForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "Title"
 msgstr "Title"
 
@@ -1792,8 +1827,8 @@ msgstr "Update"
 
 #. @context: Button to save collection changes
 #: src/ui/dash/collections/CollectionForm.tsx
-msgid "Update Collection"
-msgstr "Update Collection"
+#~ msgid "Update Collection"
+#~ msgstr "Update Collection"
 
 #. @context: Button to update existing page
 #: src/ui/dash/PageForm.tsx
@@ -1858,7 +1893,7 @@ msgstr "URL (optional)"
 #~ msgstr "URL-safe identifier (lowercase, numbers, hyphens)"
 
 #. @context: Collection path help text
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 
@@ -1872,7 +1907,6 @@ msgstr "Use Featured as default home view"
 msgid "Use this URL to embed the media in your posts."
 msgstr "Use this URL to embed the media in your posts."
 
-#. @context: Button to view collection
 #. @context: Button to view item on public site
 #. @context: Button to view page on public site
 #. @context: Button to view page on public site
@@ -1881,7 +1915,6 @@ msgstr "Use this URL to embed the media in your posts."
 #: src/routes/dash/pages.tsx
 #: src/routes/dash/posts.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/collections/ViewCollectionContent.tsx
 #: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "View"
@@ -1930,7 +1963,7 @@ msgid "What's on your mind..."
 msgstr "What's on your mind..."
 
 #. @context: Collection description placeholder
-#: src/ui/dash/collections/CollectionForm.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
 msgid "What's this collection about?"
 msgstr "What's this collection about?"
 

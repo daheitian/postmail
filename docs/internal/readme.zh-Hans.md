@@ -274,7 +274,6 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `/dash`                    | 仪表盘                                           |
 | `/dash/posts`              | 帖子管理                                         |
 | `/dash/pages`              | 页面管理                                         |
-| `/dash/collections`        | Collection 管理（拖拽排序 + 分隔线）             |
 | `/dash/media`              | 媒体库                                           |
 | `/dash/appearance`         | 外观设置（导航、颜色主题、字体主题、自定义 CSS） |
 | `/dash/settings`           | 站点设置（通用设置、账号设置）                   |

@@ -27,14 +27,16 @@ collectionRoutes.get("/:slug", async (c) => {
   const collection = await c.var.services.collections.getBySlug(slug);
   if (!collection) return c.notFound();
 
-  // Fetch posts and all collections in parallel
-  const [posts, allCollections] = await Promise.all([
+  // Fetch posts, all collections, dividers, and post counts in parallel
+  const [posts, allCollections, dividers, postCounts] = await Promise.all([
     c.var.services.posts.list({
       collectionId: collection.id,
       status: "published",
       excludeReplies: true,
     }),
     c.var.services.collections.list(),
+    c.var.services.collections.listDividers(),
+    c.var.services.collections.getPostCounts(),
   ]);
 
   const navData = await getNavigationData(c);
@@ -48,7 +50,13 @@ collectionRoutes.get("/:slug", async (c) => {
     description: collection.description ?? undefined,
     navData,
     sidebar: (
-      <CollectionsSidebar collections={allCollections} activeSlug={slug} />
+      <CollectionsSidebar
+        collections={allCollections}
+        dividers={dividers}
+        activeSlug={slug}
+        isAuthenticated={navData.isAuthenticated}
+        postCounts={postCounts}
+      />
     ),
     content: (
       <CollectionPage
