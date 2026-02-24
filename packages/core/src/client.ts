@@ -12,7 +12,6 @@ import "basecoat-css/all";
 import "./lib/image-processor.js";
 import "./lib/media-upload.js";
 import "./lib/avatar-upload.js";
-import "./lib/nav-reorder.js";
 import "./lib/collections-reorder.js";
 
 // Lit Web Components
@@ -26,3 +25,5 @@ import "./ui/components/jant-collection-form.js";
 import "./lib/collection-form-bridge.js";
 import "./ui/components/jant-post-form.js";
 import "./lib/post-form-bridge.js";
+import "./ui/components/jant-nav-manager.js";
+import "./lib/nav-manager-bridge.js";

@@ -1,7 +1,7 @@
 /**
- * Dashboard Pages & Navigation Routes
+ * Dashboard Pages Routes
  *
- * Unified management for pages and navigation items.
+ * Page CRUD management.
  */
 
 import { Hono } from "hono";
@@ -12,14 +12,11 @@ import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { PageForm, ActionButtons, DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
-import { CreatePageSchema, CreateNavItemSchema } from "../../lib/schemas.js";
-import { UnifiedPagesContent } from "../../ui/dash/pages/UnifiedPagesContent.js";
-import { LinkFormContent } from "../../ui/dash/pages/LinkFormContent.js";
+import { CreatePageSchema } from "../../lib/schemas.js";
+import { PagesContent } from "../../ui/dash/pages/PagesContent.js";
 import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
-
-const NavLinkBody = CreateNavItemSchema.pick({ label: true, url: true });
 
 export const pagesRoutes = new Hono<Env>();
 
@@ -109,10 +106,7 @@ function EditPageContent({ page }: { page: Page }) {
 // =============================================================================
 
 pagesRoutes.get("/", async (c) => {
-  const [navItems, otherPages] = await Promise.all([
-    c.var.services.navItems.list(),
-    c.var.services.pages.listNotInNav(),
-  ]);
+  const pages = await c.var.services.pages.list();
   const siteName = c.var.appConfig.siteName;
 
   return c.html(
@@ -122,7 +116,7 @@ pagesRoutes.get("/", async (c) => {
       siteName={siteName}
       currentPath="/dash/pages"
     >
-      <UnifiedPagesContent navItems={navItems} otherPages={otherPages} />
+      <PagesContent pages={pages} />
     </DashLayout>,
   );
 });
@@ -139,125 +133,6 @@ pagesRoutes.get("/new", async (c) => {
       <NewPageContent />
     </DashLayout>,
   );
-});
-
-pagesRoutes.get("/links/new", async (c) => {
-  const siteName = c.var.appConfig.siteName;
-  return c.html(
-    <DashLayout
-      c={c}
-      title="New Link"
-      siteName={siteName}
-      currentPath="/dash/pages"
-    >
-      <LinkFormContent />
-    </DashLayout>,
-  );
-});
-
-pagesRoutes.post("/links", async (c) => {
-  const i18n = getI18n(c);
-  const result = NavLinkBody.safeParse(await c.req.json());
-  if (!result.success) {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "Label and URL are required",
-          comment: "@context: Error toast when nav link fields are empty",
-        }),
-      ),
-      "error",
-    );
-  }
-  const body = result.data;
-
-  await c.var.services.navItems.create({
-    type: "link",
-    label: body.label,
-    url: body.url,
-  });
-  return dsRedirect("/dash/pages");
-});
-
-pagesRoutes.post("/reorder", async (c) => {
-  const i18n = getI18n(c);
-  const body = await c.req.json<{ ids: number[] }>();
-  if (!Array.isArray(body.ids)) {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "Invalid request",
-          comment: "@context: Error toast when reorder request is malformed",
-        }),
-      ),
-      "error",
-    );
-  }
-  await c.var.services.navItems.reorder(body.ids);
-  return dsToast(
-    i18n._(
-      msg({
-        message: "Order saved",
-        comment: "@context: Toast after saving navigation item order",
-      }),
-    ),
-  );
-});
-
-pagesRoutes.get("/links/:id/edit", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.notFound();
-
-  const item = await c.var.services.navItems.getById(id);
-  if (!item) return c.notFound();
-
-  const siteName = c.var.appConfig.siteName;
-  return c.html(
-    <DashLayout
-      c={c}
-      title="Edit Link"
-      siteName={siteName}
-      currentPath="/dash/pages"
-    >
-      <LinkFormContent item={item} isEdit />
-    </DashLayout>,
-  );
-});
-
-pagesRoutes.post("/links/:id", async (c) => {
-  const i18n = getI18n(c);
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.notFound();
-
-  const result = NavLinkBody.safeParse(await c.req.json());
-  if (!result.success) {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "Label and URL are required",
-          comment: "@context: Error toast when nav link fields are empty",
-        }),
-      ),
-      "error",
-    );
-  }
-  const body = result.data;
-
-  const updated = await c.var.services.navItems.update(id, {
-    label: body.label,
-    url: body.url,
-  });
-  if (!updated) return c.notFound();
-
-  return dsRedirect("/dash/pages");
-});
-
-pagesRoutes.post("/links/:id/delete", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (!isNaN(id)) {
-    await c.var.services.navItems.delete(id);
-  }
-  return dsRedirect("/dash/pages");
 });
 
 pagesRoutes.post("/", async (c) => {
@@ -284,30 +159,6 @@ pagesRoutes.post("/", async (c) => {
   });
 
   return dsRedirect(`/dash/pages/${page.id}`);
-});
-
-pagesRoutes.post("/:id/add-to-nav", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.notFound();
-
-  const page = await c.var.services.pages.getById(id);
-  if (!page) return c.notFound();
-
-  await c.var.services.navItems.create({
-    type: "page",
-    label: page.title || page.slug,
-    url: `/${page.slug}`,
-    pageId: page.id,
-  });
-  return dsRedirect("/dash/pages");
-});
-
-pagesRoutes.post("/:id/remove-from-nav", async (c) => {
-  const pageId = parseInt(c.req.param("id"), 10);
-  if (isNaN(pageId)) return c.notFound();
-
-  await c.var.services.navItems.deleteByPageId(pageId);
-  return dsRedirect("/dash/pages");
 });
 
 pagesRoutes.get("/:id", async (c) => {

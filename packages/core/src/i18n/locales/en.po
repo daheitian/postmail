@@ -71,22 +71,34 @@ msgid "Account"
 msgstr "Account"
 
 #. @context: Add more attachments button
+#. @context: Button to add page to nav
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add"
 msgstr "Add"
+
+#. @context: Card description for link form
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add a custom link to any URL"
+msgstr "Add a custom link to any URL"
 
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add alt text"
 msgstr "Add alt text"
 
+#. @context: Card description for page picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add an existing page to your navigation"
+msgstr "Add an existing page to your navigation"
+
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 
-#. @context: Button to add a navigation link
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#. @context: Card title for adding custom link
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Link"
 msgstr "Add Link"
 
@@ -95,10 +107,20 @@ msgstr "Add Link"
 msgid "Add Media"
 msgstr "Add Media"
 
+#. @context: Card title for adding page to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add Page"
+msgstr "Add Page"
+
 #. @context: Button to add page to navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "Add to nav"
-msgstr "Add to nav"
+#~ msgid "Add to nav"
+#~ msgstr "Add to nav"
+
+#. @context: Section heading for adding nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add to navigation"
+msgstr "Add to navigation"
 
 #. @context: Appearance sub-navigation tab
 #: src/ui/dash/appearance/AppearanceNav.tsx
@@ -110,10 +132,15 @@ msgstr "Advanced"
 msgid "All"
 msgstr "All"
 
+#. @context: Message when no pages available to add
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "All pages are in navigation"
+msgstr "All pages are in navigation"
+
 #. @context: Empty state when all pages are in nav
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "All pages are in your navigation."
-msgstr "All pages are in your navigation."
+#~ msgid "All pages are in your navigation."
+#~ msgstr "All pages are in your navigation."
 
 #. @context: Hint text in alt text panel
 #: src/ui/compose/ComposeDialog.tsx
@@ -209,14 +236,12 @@ msgstr "Blog Avatar"
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
-#. @context: Button to cancel form
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/collections/CollectionForm.tsx
 #: src/ui/dash/PageForm.tsx
-#: src/ui/dash/pages/LinkFormContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Cancel"
@@ -326,8 +351,8 @@ msgstr "Create Collection"
 
 #. @context: Button to save new navigation link
 #: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Create Link"
-msgstr "Create Link"
+#~ msgid "Create Link"
+#~ msgstr "Create Link"
 
 #. @context: Button to create new page
 #: src/ui/dash/PageForm.tsx
@@ -405,11 +430,11 @@ msgid "Default Homepage View"
 msgstr "Default Homepage View"
 
 #. @context: Button to delete item
-#. @context: Button to delete link
 #. @context: Button to delete redirect
+#. @context: Delete nav item
 #: src/routes/dash/redirects.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Delete"
 msgstr "Delete"
 
@@ -460,8 +485,8 @@ msgstr "Display avatar in my site header"
 
 #. @context: Navigation label help text
 #: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Display text for the link"
-msgstr "Display text for the link"
+#~ msgid "Display text for the link"
+#~ msgstr "Display text for the link"
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -509,8 +534,6 @@ msgstr "Drafts"
 #. @context: Button to edit collection
 #. @context: Button to edit collection
 #. @context: Button to edit item
-#. @context: Button to edit link
-#. @context: Button to edit page
 #. @context: Button to edit page
 #. @context: Button to edit page
 #. @context: Button to edit post
@@ -520,9 +543,7 @@ msgstr "Drafts"
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/collections/CollectionsListContent.tsx
 #: src/ui/dash/collections/ViewCollectionContent.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "Edit"
 msgstr "Edit"
@@ -534,11 +555,13 @@ msgstr "Edit Collection"
 
 #. @context: Page heading
 #: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Edit Link"
-msgstr "Edit Link"
+#~ msgid "Edit Link"
+#~ msgstr "Edit Link"
 
 #. @context: Edit page main heading
+#. @context: Link to edit the page
 #: src/routes/dash/pages.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Edit Page"
 msgstr "Edit Page"
 
@@ -590,10 +613,20 @@ msgstr "entry"
 msgid "Failed to create account"
 msgstr "Failed to create account"
 
+#. @context: Error toast when nav delete fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Failed to delete. Please try again."
+msgstr "Failed to delete. Please try again."
+
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Failed to save post. Please try again."
 msgstr "Failed to save post. Please try again."
+
+#. @context: Error toast when nav save fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Failed to save. Please try again."
+msgstr "Failed to save. Please try again."
 
 #. @context: Error toast when profile update fails
 #: src/routes/dash/settings.tsx
@@ -733,9 +766,9 @@ msgid "Invalid or Expired Link"
 msgstr "Invalid or Expired Link"
 
 #. @context: Error toast when reorder request is malformed
-#: src/routes/dash/pages.tsx
-msgid "Invalid request"
-msgstr "Invalid request"
+#: src/routes/dash/appearance.tsx
+#~ msgid "Invalid request"
+#~ msgstr "Invalid request"
 
 #. @context: Error toast when selected theme is not valid
 #: src/routes/dash/appearance.tsx
@@ -747,17 +780,20 @@ msgstr "Invalid theme selected."
 msgid "It's OK for search engines to index my site"
 msgstr "It's OK for search engines to index my site"
 
-#. @context: Navigation link form field
-#: src/ui/dash/pages/LinkFormContent.tsx
+#. @context: Nav item label field
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label"
 msgstr "Label"
 
 #. @context: Error toast when nav link fields are empty
-#. @context: Error toast when nav link fields are empty
-#: src/routes/dash/pages.tsx
-#: src/routes/dash/pages.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label and URL are required"
 msgstr "Label and URL are required"
+
+#. @context: Error toast when nav label is empty
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Label is required"
+msgstr "Label is required"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -777,7 +813,7 @@ msgstr "Latest"
 #~ msgstr "Let's set up your site."
 
 #. @context: Nav item type badge
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "link"
 msgstr "link"
 
@@ -876,12 +912,15 @@ msgstr "Name"
 msgid "Name is required."
 msgstr "Name is required."
 
-#. @context: Dashboard heading
-#. @context: Dashboard navigation - navigation links management
-#: src/routes/dash/navigation.tsx
-#: src/theme/layouts/DashLayout.tsx
-#~ msgid "Navigation"
-#~ msgstr "Navigation"
+#. @context: Appearance sub-navigation tab
+#: src/ui/dash/appearance/AppearanceNav.tsx
+msgid "Navigation"
+msgstr "Navigation"
+
+#. @context: Section heading for nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation items"
+msgstr "Navigation items"
 
 #. @context: Help text with link
 #: src/routes/dash/index.tsx
@@ -904,13 +943,13 @@ msgstr "New Divider"
 
 #. @context: Page heading
 #: src/ui/dash/pages/LinkFormContent.tsx
-msgid "New Link"
-msgstr "New Link"
+#~ msgid "New Link"
+#~ msgstr "New Link"
 
 #. @context: Button to create new page
 #. @context: New page main heading
 #: src/routes/dash/pages.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 msgid "New Page"
 msgstr "New Page"
 
@@ -988,6 +1027,11 @@ msgstr "No media selected yet."
 msgid "No media uploaded yet."
 msgstr "No media uploaded yet."
 
+#. @context: Empty state for navigation items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No navigation items yet. Add pages, links, or enable system items below."
+msgstr "No navigation items yet. Add pages, links, or enable system items below."
+
 #. @context: Empty state message
 #: src/routes/dash/navigation.tsx
 #~ msgid "No navigation links configured."
@@ -995,13 +1039,18 @@ msgstr "No media uploaded yet."
 
 #. @context: Empty state for navigation section
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "No navigation links yet. Add pages to navigation or create links."
-msgstr "No navigation links yet. Add pages to navigation or create links."
+#~ msgid "No navigation links yet. Add pages to navigation or create links."
+#~ msgstr "No navigation links yet. Add pages to navigation or create links."
 
 #. @context: Empty state message when no pages exist
 #: src/routes/dash/pages.tsx
 #~ msgid "No pages yet."
 #~ msgstr "No pages yet."
+
+#. @context: Empty state for pages list
+#: src/ui/dash/pages/PagesContent.tsx
+msgid "No pages yet. Create your first page to get started."
+msgstr "No pages yet. Create your first page to get started."
 
 #. @context: Archive empty state
 #: src/ui/pages/ArchivePage.tsx
@@ -1059,17 +1108,17 @@ msgid "Oldest first"
 msgstr "Oldest first"
 
 #. @context: Toast after saving navigation item order
-#: src/routes/dash/pages.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Order saved"
 msgstr "Order saved"
 
 #. @context: Section heading for pages not in navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "Other pages"
-msgstr "Other pages"
+#~ msgid "Other pages"
+#~ msgstr "Other pages"
 
 #. @context: Nav item type badge
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "page"
 msgstr "page"
 
@@ -1095,7 +1144,7 @@ msgstr "Page title..."
 
 #. @context: Dashboard navigation - pages management
 #. @context: Pages main heading
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/layouts/DashLayout.tsx
 msgid "Pages"
 msgstr "Pages"
@@ -1140,8 +1189,8 @@ msgstr "Paste a URL..."
 
 #. @context: Navigation URL help text
 #: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
-msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
+#~ msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
+#~ msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
@@ -1204,7 +1253,11 @@ msgstr "Posts"
 msgid "Posts in Collection ({count})"
 msgstr "Posts in Collection ({count})"
 
+#. @context: Label for nav preview section
+#. @context: Label for nav preview section
 #. @context: Media detail section - preview
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/media/ViewMediaContent.tsx
 msgid "Preview"
 msgstr "Preview"
@@ -1317,6 +1370,8 @@ msgstr "Redirects"
 #. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
+#. @context: Remove page from navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/collections/CollectionForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1336,6 +1391,8 @@ msgid "Reset Password"
 msgstr "Reset Password"
 
 #. @context: Button to save settings
+#. @context: Save nav item changes
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Save"
 msgstr "Save"
@@ -1352,8 +1409,8 @@ msgstr "Save as Draft"
 
 #. @context: Button to save edited navigation link
 #: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Save Changes"
-msgstr "Save Changes"
+#~ msgid "Save Changes"
+#~ msgstr "Save Changes"
 
 #. @context: Button to save custom CSS
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -1525,6 +1582,16 @@ msgstr "Supplementary content attached to your post"
 #~ msgid "Supported formats: JPEG, PNG, GIF, WebP, SVG. Max size: 10MB."
 #~ msgstr "Supported formats: JPEG, PNG, GIF, WebP, SVG. Max size: 10MB."
 
+#. @context: Nav item type badge
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "system"
+msgstr "system"
+
+#. @context: Section heading for system nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "System links"
+msgstr "System links"
+
 #. @context: Redirect to path help text
 #: src/routes/dash/redirects.tsx
 msgid "The destination path or URL"
@@ -1623,6 +1690,16 @@ msgstr "Title (optional)"
 msgid "To Path"
 msgstr "To Path"
 
+#. @context: Description for system nav toggles
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
+msgstr "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
+
+#. @context: Button to expand/collapse nav item edit
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Toggle edit panel"
+msgstr "Toggle edit panel"
+
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
 msgid "Type"
@@ -1635,8 +1712,8 @@ msgstr "Type the quote..."
 
 #. @context: Button to remove page from navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "Un-nav"
-msgstr "Un-nav"
+#~ msgid "Un-nav"
+#~ msgstr "Un-nav"
 
 #. @context: Post visibility badge - unlisted
 #. @context: Post visibility option
@@ -1647,7 +1724,7 @@ msgstr "Un-nav"
 
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "Untitled"
 msgstr "Untitled"
@@ -1708,9 +1785,9 @@ msgid "Uploading..."
 msgstr "Uploading..."
 
 #. @context: Media detail section - URL
-#. @context: Navigation link form field
+#. @context: Nav item URL field
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/media/ViewMediaContent.tsx
-#: src/ui/dash/pages/LinkFormContent.tsx
 msgid "URL"
 msgstr "URL"
 
@@ -1744,7 +1821,7 @@ msgstr "Use this URL to embed the media in your posts."
 #: src/routes/dash/posts.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/collections/ViewCollectionContent.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "View"
 msgstr "View"
@@ -1798,8 +1875,8 @@ msgstr "Your Name"
 
 #. @context: Section heading for navigation items
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "Your site navigation"
-msgstr "Your site navigation"
+#~ msgid "Your site navigation"
+#~ msgstr "Your site navigation"
 
 #. @context: Compose thoughts placeholder
 #: src/ui/compose/ComposeDialog.tsx

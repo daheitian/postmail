@@ -41,7 +41,7 @@ msgstr "302（臨時）"
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "A short intro for search engines and feed readers. Plain text only."
-msgstr ""
+msgstr "為搜尋引擎和訂閱閱讀器提供的簡短介紹。僅限純文字。"
 
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -54,22 +54,34 @@ msgid "Account"
 msgstr "帳戶"
 
 #. @context: Add more attachments button
+#. @context: Button to add page to nav
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add"
 msgstr "新增"
+
+#. @context: Card description for link form
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add a custom link to any URL"
+msgstr "添加自定義連結到任何 URL"
 
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add alt text"
 msgstr "添加替代文字"
 
+#. @context: Card description for page picker
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add an existing page to your navigation"
+msgstr "將現有頁面添加到您的導航中"
+
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr "添加自定義 CSS 以覆蓋任何樣式。使用數據屬性，如 [data-page]、[data-post]、[data-format] 來針對特定元素。"
 
-#. @context: Button to add a navigation link
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#. @context: Card title for adding custom link
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Link"
 msgstr "新增連結"
 
@@ -78,10 +90,15 @@ msgstr "新增連結"
 msgid "Add Media"
 msgstr "添加媒體"
 
-#. @context: Button to add page to navigation
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "Add to nav"
-msgstr "加入導航"
+#. @context: Card title for adding page to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add Page"
+msgstr "新增頁面"
+
+#. @context: Section heading for adding nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add to navigation"
+msgstr "添加到導航"
 
 #. @context: Appearance sub-navigation tab
 #: src/ui/dash/appearance/AppearanceNav.tsx
@@ -93,10 +110,10 @@ msgstr "進階"
 msgid "All"
 msgstr "所有"
 
-#. @context: Empty state when all pages are in nav
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "All pages are in your navigation."
-msgstr "所有頁面都在您的導航中。"
+#. @context: Message when no pages available to add
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "All pages are in navigation"
+msgstr "所有頁面都在導航中"
 
 #. @context: Hint text in alt text panel
 #: src/ui/compose/ComposeDialog.tsx
@@ -159,14 +176,12 @@ msgstr "部落格頭像"
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
-#. @context: Button to cancel form
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #: src/routes/dash/redirects.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/collections/CollectionForm.tsx
 #: src/ui/dash/PageForm.tsx
-#: src/ui/dash/pages/LinkFormContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Cancel"
@@ -264,11 +279,6 @@ msgstr "複製"
 msgid "Create Collection"
 msgstr "創建收藏夾"
 
-#. @context: Button to save new navigation link
-#: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Create Link"
-msgstr "建立連結"
-
 #. @context: Button to create new page
 #: src/ui/dash/PageForm.tsx
 msgid "Create Page"
@@ -325,11 +335,11 @@ msgid "Default Homepage View"
 msgstr "預設首頁視圖"
 
 #. @context: Button to delete item
-#. @context: Button to delete link
 #. @context: Button to delete redirect
+#. @context: Delete nav item
 #: src/routes/dash/redirects.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Delete"
 msgstr "刪除"
 
@@ -373,16 +383,6 @@ msgstr "丟棄"
 msgid "Display avatar in my site header"
 msgstr "在我的網站標頭中顯示頭像"
 
-#. @context: Navigation label help text
-#: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Display text for the link"
-msgstr "顯示連結的文字"
-
-#. @context: Help text for site description field
-#: src/ui/dash/settings/GeneralContent.tsx
-#~ msgid "Displayed above your blog posts on the home page. Also used as the meta description. Markdown supported."
-#~ msgstr "顯示在首頁的博客文章上方。也用作元描述。支持Markdown。"
-
 #. @context: Help text for site footer field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
@@ -419,8 +419,6 @@ msgstr "草稿"
 #. @context: Button to edit collection
 #. @context: Button to edit collection
 #. @context: Button to edit item
-#. @context: Button to edit link
-#. @context: Button to edit page
 #. @context: Button to edit page
 #. @context: Button to edit page
 #. @context: Button to edit post
@@ -430,9 +428,7 @@ msgstr "草稿"
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/collections/CollectionsListContent.tsx
 #: src/ui/dash/collections/ViewCollectionContent.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "Edit"
 msgstr "編輯"
@@ -442,13 +438,10 @@ msgstr "編輯"
 msgid "Edit Collection"
 msgstr "編輯收藏集"
 
-#. @context: Page heading
-#: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Edit Link"
-msgstr "編輯連結"
-
 #. @context: Edit page main heading
+#. @context: Link to edit the page
 #: src/routes/dash/pages.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Edit Page"
 msgstr "編輯頁面"
 
@@ -486,10 +479,20 @@ msgstr "條目"
 msgid "Failed to create account"
 msgstr "無法創建帳戶"
 
+#. @context: Error toast when nav delete fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Failed to delete. Please try again."
+msgstr "刪除失敗。請再試一次。"
+
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Failed to save post. Please try again."
 msgstr "無法保存帖子。請再試一次。"
+
+#. @context: Error toast when nav save fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Failed to save. Please try again."
+msgstr "保存失敗。請再試一次。"
 
 #. @context: Error toast when profile update fails
 #: src/routes/dash/settings.tsx
@@ -552,11 +555,6 @@ msgstr "一般設定"
 msgid "Give it a title..."
 msgstr "給它一個標題..."
 
-#. @context: Settings form field for max visible nav links in header
-#: src/ui/dash/settings/GeneralContent.tsx
-#~ msgid "Header Nav Links"
-#~ msgstr ""
-
 #. @context: Collection sort order option
 #: src/ui/dash/collections/CollectionForm.tsx
 msgid "Highest rated"
@@ -602,11 +600,6 @@ msgstr "無效的輸入"
 msgid "Invalid or Expired Link"
 msgstr "無效或已過期的連結"
 
-#. @context: Error toast when reorder request is malformed
-#: src/routes/dash/pages.tsx
-msgid "Invalid request"
-msgstr "無效的請求"
-
 #. @context: Error toast when selected theme is not valid
 #: src/routes/dash/appearance.tsx
 msgid "Invalid theme selected."
@@ -617,17 +610,20 @@ msgstr "選擇的主題無效。"
 msgid "It's OK for search engines to index my site"
 msgstr "允許搜尋引擎索引我的網站是可以的"
 
-#. @context: Navigation link form field
-#: src/ui/dash/pages/LinkFormContent.tsx
+#. @context: Nav item label field
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label"
 msgstr "標籤"
 
 #. @context: Error toast when nav link fields are empty
-#. @context: Error toast when nav link fields are empty
-#: src/routes/dash/pages.tsx
-#: src/routes/dash/pages.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label and URL are required"
 msgstr "標籤和網址是必填的"
+
+#. @context: Error toast when nav label is empty
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Label is required"
+msgstr "標籤是必需的"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -642,7 +638,7 @@ msgid "Latest"
 msgstr "最新"
 
 #. @context: Nav item type badge
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "link"
 msgstr "鏈接"
 
@@ -695,7 +691,7 @@ msgstr "支援Markdown"
 #. @context: Settings form field for max visible nav links in header before overflow menu
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Max Visible Nav Links"
-msgstr ""
+msgstr "最大可見導航連結"
 
 #. @context: Compose toolbar - media tooltip
 #. @context: Media main heading
@@ -709,12 +705,12 @@ msgstr "媒體"
 #. @context: Dashboard header menu button
 #: src/ui/layouts/DashLayout.tsx
 msgid "Menu"
-msgstr ""
+msgstr "菜單"
 
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
-msgstr ""
+msgstr "更多連結"
 
 #. @context: Collection title placeholder
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -730,6 +726,16 @@ msgstr "名稱"
 #: src/routes/dash/settings.tsx
 msgid "Name is required."
 msgstr "名稱是必填的。"
+
+#. @context: Appearance sub-navigation tab
+#: src/ui/dash/appearance/AppearanceNav.tsx
+msgid "Navigation"
+msgstr "導航"
+
+#. @context: Section heading for nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation items"
+msgstr "導航項目"
 
 #. @context: Help text with link
 #: src/routes/dash/index.tsx
@@ -750,15 +756,10 @@ msgstr "新收藏集"
 msgid "New Divider"
 msgstr "新分隔線"
 
-#. @context: Page heading
-#: src/ui/dash/pages/LinkFormContent.tsx
-msgid "New Link"
-msgstr "新連結"
-
 #. @context: Button to create new page
 #. @context: New page main heading
 #: src/routes/dash/pages.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 msgid "New Page"
 msgstr "新頁面"
 
@@ -836,10 +837,15 @@ msgstr "尚未選擇任何媒體。"
 msgid "No media uploaded yet."
 msgstr "尚未上傳任何媒體。"
 
-#. @context: Empty state for navigation section
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "No navigation links yet. Add pages to navigation or create links."
-msgstr "尚未有導航連結。請將頁面添加到導航或創建連結。"
+#. @context: Empty state for navigation items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No navigation items yet. Add pages, links, or enable system items below."
+msgstr "尚未有導航項目。請在下方添加頁面、鏈接或啟用系統項目。"
+
+#. @context: Empty state for pages list
+#: src/ui/dash/pages/PagesContent.tsx
+msgid "No pages yet. Create your first page to get started."
+msgstr "尚未有頁面。創建您的第一個頁面以開始使用。"
 
 #. @context: Archive empty state
 #: src/ui/pages/ArchivePage.tsx
@@ -892,17 +898,12 @@ msgid "Oldest first"
 msgstr "最舊的在前"
 
 #. @context: Toast after saving navigation item order
-#: src/routes/dash/pages.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Order saved"
 msgstr "已保存順序"
 
-#. @context: Section heading for pages not in navigation
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "Other pages"
-msgstr "其他頁面"
-
 #. @context: Nav item type badge
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "page"
 msgstr "頁面"
 
@@ -928,7 +929,7 @@ msgstr "頁面標題..."
 
 #. @context: Dashboard navigation - pages management
 #. @context: Pages main heading
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/layouts/DashLayout.tsx
 msgid "Pages"
 msgstr "頁面"
@@ -965,11 +966,6 @@ msgstr ""
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Paste a URL..."
 msgstr "粘貼一個網址..."
-
-#. @context: Navigation URL help text
-#: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
-msgstr "路徑（例如 /archive）或完整網址（例如 https://example.com）"
 
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
@@ -1017,7 +1013,11 @@ msgstr "文章"
 msgid "Posts in Collection ({count})"
 msgstr "收藏中的帖子 ({count})"
 
+#. @context: Label for nav preview section
+#. @context: Label for nav preview section
 #. @context: Media detail section - preview
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/media/ViewMediaContent.tsx
 msgid "Preview"
 msgstr "預覽"
@@ -1108,6 +1108,8 @@ msgstr "重定向"
 #. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
+#. @context: Remove page from navigation
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/collections/CollectionForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1127,6 +1129,8 @@ msgid "Reset Password"
 msgstr "重設密碼"
 
 #. @context: Button to save settings
+#. @context: Save nav item changes
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Save"
 msgstr "保存"
@@ -1140,11 +1144,6 @@ msgstr "儲存為草稿"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Save as Draft"
 msgstr "儲存為草稿"
-
-#. @context: Button to save edited navigation link
-#: src/ui/dash/pages/LinkFormContent.tsx
-msgid "Save Changes"
-msgstr "保存更改"
 
 #. @context: Button to save custom CSS
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -1281,6 +1280,16 @@ msgstr "儲存空間未配置。"
 msgid "Supplementary content attached to your post"
 msgstr "附加在您帖子上的補充內容"
 
+#. @context: Nav item type badge
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "system"
+msgstr "系統"
+
+#. @context: Section heading for system nav items
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "System links"
+msgstr "系統連結"
+
 #. @context: Redirect to path help text
 #: src/routes/dash/redirects.tsx
 msgid "The destination path or URL"
@@ -1364,6 +1373,16 @@ msgstr "標題（選填）"
 msgid "To Path"
 msgstr "到路徑"
 
+#. @context: Description for system nav toggles
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
+msgstr "切換內建導航項目。啟用的項目會與頁面和連結一起顯示在您的導航中。"
+
+#. @context: Button to expand/collapse nav item edit
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Toggle edit panel"
+msgstr "切換編輯面板"
+
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
 msgid "Type"
@@ -1374,14 +1393,9 @@ msgstr "類型"
 msgid "Type the quote..."
 msgstr "輸入引用..."
 
-#. @context: Button to remove page from navigation
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "Un-nav"
-msgstr "取消導航"
-
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "Untitled"
 msgstr "無標題"
@@ -1437,9 +1451,9 @@ msgid "Uploading..."
 msgstr "上傳中..."
 
 #. @context: Media detail section - URL
-#. @context: Navigation link form field
+#. @context: Nav item URL field
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/media/ViewMediaContent.tsx
-#: src/ui/dash/pages/LinkFormContent.tsx
 msgid "URL"
 msgstr "網址"
 
@@ -1468,7 +1482,7 @@ msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
 #: src/routes/dash/posts.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/collections/ViewCollectionContent.tsx
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
+#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "View"
 msgstr "查看"
@@ -1504,11 +1518,6 @@ msgstr "這個收藏是關於什麼的？"
 #: src/routes/auth/setup.tsx
 msgid "Your Name"
 msgstr "您的姓名"
-
-#. @context: Section heading for navigation items
-#: src/ui/dash/pages/UnifiedPagesContent.tsx
-msgid "Your site navigation"
-msgstr "您的網站導航"
 
 #. @context: Compose thoughts placeholder
 #: src/ui/compose/ComposeDialog.tsx

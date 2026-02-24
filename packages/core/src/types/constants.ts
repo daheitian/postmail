@@ -16,8 +16,16 @@ export const SORT_ORDERS = [
 ] as const;
 export type SortOrder = (typeof SORT_ORDERS)[number];
 
-export const NAV_ITEM_TYPES = ["page", "link"] as const;
+export const NAV_ITEM_TYPES = ["page", "link", "system"] as const;
 export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
+
+export const SYSTEM_NAV_KEYS = {
+  rss: { defaultLabel: "RSS", url: "/feed" },
+  dashboard: { defaultLabel: "Dashboard", url: "/dash" },
+  collections: { defaultLabel: "Collections", url: "/collections" },
+  archive: { defaultLabel: "Archive", url: "/archive" },
+} as const;
+export type SystemNavKey = keyof typeof SYSTEM_NAV_KEYS;
 
 export const MAX_MEDIA_ATTACHMENTS = 20;
 export const MAX_PINNED_POSTS = 3;

@@ -128,7 +128,7 @@ export const postCollections = sqliteTable("post_collections", {
 export const navItems = sqliteTable("nav_items", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   type: text("type", {
-    enum: ["page", "link"],
+    enum: ["page", "link", "system"],
   })
     .notNull()
     .default("link"),

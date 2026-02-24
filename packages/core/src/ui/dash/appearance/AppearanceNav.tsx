@@ -4,19 +4,27 @@
 
 import { useLingui } from "@lingui/react/macro";
 
-export type AppearanceTab = "color" | "fonts" | "advanced";
+export type AppearanceTab = "navigation" | "color" | "fonts" | "advanced";
 
 export function AppearanceNav({ currentTab }: { currentTab: AppearanceTab }) {
   const { t } = useLingui();
 
   const tabs: { id: AppearanceTab; label: string; href: string }[] = [
     {
+      id: "navigation",
+      label: t({
+        message: "Navigation",
+        comment: "@context: Appearance sub-navigation tab",
+      }),
+      href: "/dash/appearance",
+    },
+    {
       id: "color",
       label: t({
         message: "Color Theme",
         comment: "@context: Appearance sub-navigation tab",
       }),
-      href: "/dash/appearance",
+      href: "/dash/appearance/color",
     },
     {
       id: "fonts",

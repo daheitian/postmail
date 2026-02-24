@@ -92,7 +92,7 @@ export function ColorThemeContent({
 
       <div
         data-signals={themeSignals}
-        data-on:change="@post('/dash/appearance')"
+        data-on:change="@post('/dash/appearance/color')"
         class="max-w-3xl"
       >
         <fieldset>

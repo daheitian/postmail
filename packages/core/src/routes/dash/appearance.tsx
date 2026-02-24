@@ -1,7 +1,7 @@
 /**
  * Dashboard Appearance Routes
  *
- * Sub-pages: Color Theme, Font Theme, Advanced (Custom CSS)
+ * Sub-pages: Navigation (default), Color Theme, Font Theme, Advanced (Custom CSS)
  */
 
 import { Hono } from "hono";
@@ -16,6 +16,7 @@ import { getAvailableThemes } from "../../lib/theme.js";
 import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
 import { ColorThemeContent } from "../../ui/dash/appearance/ColorThemeContent.js";
 import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
+import { NavigationContent } from "../../ui/dash/appearance/NavigationContent.js";
 import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -23,10 +24,39 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const appearanceRoutes = new Hono<Env>();
 
 // ===========================================================================
-// Color Theme
+// Navigation (default tab)
 // ===========================================================================
 
 appearanceRoutes.get("/", async (c) => {
+  const [navItems, availablePages] = await Promise.all([
+    c.var.services.navItems.list(),
+    c.var.services.pages.listNotInNav(),
+  ]);
+  const siteName = c.var.appConfig.siteName;
+  const headerNavMaxVisible = c.var.appConfig.headerNavMaxVisible;
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Appearance"
+      siteName={siteName}
+      currentPath="/dash/appearance"
+    >
+      <NavigationContent
+        navItems={navItems}
+        availablePages={availablePages}
+        headerNavMaxVisible={headerNavMaxVisible}
+        siteName={siteName}
+      />
+    </DashLayout>,
+  );
+});
+
+// ===========================================================================
+// Color Theme
+// ===========================================================================
+
+appearanceRoutes.get("/color", async (c) => {
   const siteName = c.var.appConfig.siteName;
   const defaultThemeId = c.var.appConfig.fallbacks.defaultTheme;
   const currentThemeId =
@@ -47,7 +77,7 @@ appearanceRoutes.get("/", async (c) => {
   );
 });
 
-appearanceRoutes.post("/", async (c) => {
+appearanceRoutes.post("/color", async (c) => {
   const i18n = getI18n(c);
   const body = await c.req.json<{ theme: string }>();
   const { settings } = c.var.services;
@@ -73,7 +103,7 @@ appearanceRoutes.post("/", async (c) => {
     await settings.set(SETTINGS_KEYS.THEME, validTheme.id);
   }
 
-  return dsRedirect("/dash/appearance?saved");
+  return dsRedirect("/dash/appearance/color?saved");
 });
 
 // ===========================================================================

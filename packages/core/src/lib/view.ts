@@ -229,26 +229,43 @@ export function toPageView(page: Page): PageView {
 
 /**
  * Converts a NavItem to a NavItemView with pre-computed state.
+ *
+ * @param item - Raw nav item from database
+ * @param currentPath - Current URL path for active state
+ * @param isAuthenticated - Whether the user is logged in (affects system dashboard item)
  */
-export function toNavItemView(item: NavItem, currentPath: string): NavItemView {
-  const isExternal =
-    item.url.startsWith("http://") || item.url.startsWith("https://");
+export function toNavItemView(
+  item: NavItem,
+  currentPath: string,
+  isAuthenticated = false,
+): NavItemView {
+  let url = item.url;
+  let label = item.label;
+
+  // System dashboard item: resolve URL and label based on auth
+  if (item.type === "system" && item.url === "/dash") {
+    url = isAuthenticated ? "/dash" : "/signin";
+    if (!isAuthenticated) {
+      label = "Sign in";
+    }
+  }
+
+  const isExternal = url.startsWith("http://") || url.startsWith("https://");
 
   let isActive = false;
   if (!isExternal) {
-    if (item.url === "/") {
+    if (url === "/") {
       isActive = currentPath === "/";
     } else {
-      isActive =
-        currentPath === item.url || currentPath.startsWith(item.url + "/");
+      isActive = currentPath === url || currentPath.startsWith(url + "/");
     }
   }
 
   return {
     id: item.id,
     type: item.type as NavItemType,
-    label: item.label,
-    url: item.url,
+    label,
+    url,
     pageId: item.pageId ?? undefined,
     isActive,
     isExternal,
@@ -257,12 +274,17 @@ export function toNavItemView(item: NavItem, currentPath: string): NavItemView {
 
 /**
  * Batch converts NavItem[] to NavItemView[].
+ *
+ * @param items - Raw nav items from database
+ * @param currentPath - Current URL path for active state
+ * @param isAuthenticated - Whether the user is logged in
  */
 export function toNavItemViews(
   items: NavItem[],
   currentPath: string,
+  isAuthenticated = false,
 ): NavItemView[] {
-  return items.map((item) => toNavItemView(item, currentPath));
+  return items.map((item) => toNavItemView(item, currentPath, isAuthenticated));
 }
 
 // =============================================================================

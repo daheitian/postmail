@@ -67,9 +67,7 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   // Render footer markdown
   const siteFooterHtml = siteFooter ? renderMarkdown(siteFooter) : undefined;
 
-  const links = toNavItemViews(items, currentPath);
-
-  // Check auth status for compose button
+  // Check auth status (needed for compose button and system nav items)
   let isAuthenticated = false;
   let collections: Collection[] = [];
   try {
@@ -80,6 +78,8 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   } catch {
     // Not authenticated
   }
+
+  const links = toNavItemViews(items, currentPath, isAuthenticated);
 
   // Only load collections when authenticated (for compose dialog)
   if (isAuthenticated) {
