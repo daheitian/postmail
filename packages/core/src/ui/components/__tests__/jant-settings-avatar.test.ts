@@ -37,6 +37,7 @@ const labels: SettingsLabels = {
   latest: "Latest",
   featured: "Featured",
   timeZone: "Time Zone",
+  headerNavMaxVisible: "Max Visible Nav Links",
   siteFooter: "Site Footer",
   markdownSupported: "Markdown supported",
   footerHelp: "Displayed at the bottom of posts.",
