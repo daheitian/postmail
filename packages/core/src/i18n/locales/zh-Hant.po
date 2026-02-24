@@ -54,13 +54,11 @@ msgid "Account"
 msgstr "帳戶"
 
 #. @context: Add more attachments button
-#. @context: Button to add page to nav
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add"
 msgstr "新增"
 
-#. @context: Card description for link form
+#. @context: Description in link popover form
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add a custom link to any URL"
 msgstr "添加自定義連結到任何 URL"
@@ -72,15 +70,20 @@ msgstr "添加替代文字"
 
 #. @context: Card description for page picker
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Add an existing page to your navigation"
-msgstr "將現有頁面添加到您的導航中"
+#~ msgid "Add an existing page to your navigation"
+#~ msgstr "將現有頁面添加到您的導航中"
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr "添加自定義 CSS 以覆蓋任何樣式。使用數據屬性，如 [data-page]、[data-post]、[data-format] 來針對特定元素。"
 
-#. @context: Card title for adding custom link
+#. @context: Section heading for adding custom link to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add custom link to navigation"
+msgstr ""
+
+#. @context: Button and heading for adding custom link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Link"
 msgstr "新增連結"
@@ -92,13 +95,18 @@ msgstr "添加媒體"
 
 #. @context: Card title for adding page to nav
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Add Page"
-msgstr "新增頁面"
+#~ msgid "Add Page"
+#~ msgstr "新增頁面"
+
+#. @context: Section heading for adding page to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add page to navigation"
+msgstr ""
 
 #. @context: Section heading for adding nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Add to navigation"
-msgstr "添加到導航"
+#~ msgid "Add to navigation"
+#~ msgstr "添加到導航"
 
 #. @context: Appearance sub-navigation tab
 #: src/ui/dash/appearance/AppearanceNav.tsx
@@ -112,8 +120,13 @@ msgstr "所有"
 
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "All pages are in navigation"
-msgstr "所有頁面都在導航中"
+msgid "All pages are already in navigation."
+msgstr ""
+
+#. @context: Message when no pages available to add
+#: src/ui/dash/appearance/NavigationContent.tsx
+#~ msgid "All pages are in navigation"
+#~ msgstr "所有頁面都在導航中"
 
 #. @context: Hint text in alt text panel
 #: src/ui/compose/ComposeDialog.tsx
@@ -198,6 +211,11 @@ msgstr "更改密碼"
 #: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
 msgstr "選擇一個字體搭配以供您的網站使用。所有選項均使用系統字體以加快加載速度。"
+
+#. @context: Placeholder for page select combobox trigger
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Choose a page…"
+msgstr ""
 
 #. @context: Button to open icon picker
 #. @context: Icon picker dialog title
@@ -331,8 +349,8 @@ msgstr "儀表板"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Default Homepage View"
-msgstr "預設首頁視圖"
+#~ msgid "Default Homepage View"
+#~ msgstr "預設首頁視圖"
 
 #. @context: Button to delete item
 #. @context: Button to delete redirect
@@ -501,11 +519,15 @@ msgstr "無法更新個人資料。"
 
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
-#. @context: Homepage view option - show featured posts
+#. @context: Browse filter label
+#. @context: Browse filter label
+#. @context: Browse filter label for featured posts
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
@@ -559,6 +581,11 @@ msgstr "給它一個標題..."
 #: src/ui/dash/collections/CollectionForm.tsx
 msgid "Highest rated"
 msgstr "最高評價"
+
+#. @context: Toast after saving home default view setting
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Home view saved"
+msgstr ""
 
 #. @context: Collection form field
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -631,8 +658,12 @@ msgid "Language"
 msgstr "語言"
 
 #. @context: Browse filter for latest posts
-#. @context: Homepage view option - show latest posts
-#: src/ui/dash/settings/GeneralContent.tsx
+#. @context: Browse filter label
+#. @context: Browse filter label
+#. @context: Browse filter label for latest posts
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
 msgid "Latest"
 msgstr "最新"
@@ -688,10 +719,20 @@ msgstr "Markdown"
 msgid "Markdown supported"
 msgstr "支援Markdown"
 
+#. @context: Label for max visible nav links number input
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Max visible links"
+msgstr ""
+
+#. @context: Toast after saving max visible nav links setting
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Max visible links saved"
+msgstr ""
+
 #. @context: Settings form field for max visible nav links in header before overflow menu
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Max Visible Nav Links"
-msgstr "最大可見導航連結"
+#~ msgid "Max Visible Nav Links"
+#~ msgstr "最大可見導航連結"
 
 #. @context: Compose toolbar - media tooltip
 #. @context: Media main heading
@@ -841,6 +882,11 @@ msgstr "尚未上傳任何媒體。"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "No navigation items yet. Add pages, links, or enable system items below."
 msgstr "尚未有導航項目。請在下方添加頁面、鏈接或啟用系統項目。"
+
+#. @context: Empty state when page search has no results
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No pages found."
+msgstr ""
 
 #. @context: Empty state for pages list
 #: src/ui/dash/pages/PagesContent.tsx
@@ -1174,6 +1220,11 @@ msgstr "搜尋"
 msgid "Search icons..."
 msgstr "搜尋圖示..."
 
+#. @context: Placeholder for page search input in combobox
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Search pages…"
+msgstr ""
+
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx
 msgid "Search posts..."
@@ -1466,6 +1517,11 @@ msgstr "網址（可選）"
 #: src/ui/dash/collections/CollectionForm.tsx
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL安全識別碼（小寫、數字、連字符）。對於CJK標題，slug將在伺服器上自動生成。"
+
+#. @context: Switch label for setting featured posts as default homepage
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Use Featured as default home view"
+msgstr ""
 
 #. @context: Media URL helper text
 #: src/ui/dash/media/ViewMediaContent.tsx

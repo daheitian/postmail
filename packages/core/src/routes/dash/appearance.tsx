@@ -34,6 +34,7 @@ appearanceRoutes.get("/", async (c) => {
   ]);
   const siteName = c.var.appConfig.siteName;
   const headerNavMaxVisible = c.var.appConfig.headerNavMaxVisible;
+  const homeDefaultView = c.var.appConfig.homeDefaultView;
 
   return c.html(
     <DashLayout
@@ -46,10 +47,46 @@ appearanceRoutes.get("/", async (c) => {
         navItems={navItems}
         availablePages={availablePages}
         headerNavMaxVisible={headerNavMaxVisible}
+        homeDefaultView={homeDefaultView}
         siteName={siteName}
       />
     </DashLayout>,
   );
+});
+
+// ===========================================================================
+// Nav max visible links
+// ===========================================================================
+
+appearanceRoutes.post("/nav-max-visible", async (c) => {
+  const body = await c.req.json<{ value: number }>();
+  const { settings } = c.var.services;
+
+  const navMax = Math.max(0, Math.min(5, body.value ?? 3));
+  if (navMax !== 3) {
+    await settings.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
+  } else {
+    await settings.remove("HEADER_NAV_MAX_VISIBLE");
+  }
+
+  return c.json({ ok: true });
+});
+
+// ===========================================================================
+// Home default view
+// ===========================================================================
+
+appearanceRoutes.post("/home-default-view", async (c) => {
+  const body = await c.req.json<{ value: string }>();
+  const { settings } = c.var.services;
+
+  if (body.value === "featured") {
+    await settings.set("HOME_DEFAULT_VIEW", "featured");
+  } else {
+    await settings.remove("HOME_DEFAULT_VIEW");
+  }
+
+  return c.json({ ok: true });
 });
 
 // ===========================================================================

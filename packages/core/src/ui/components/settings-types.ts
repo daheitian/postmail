@@ -23,11 +23,7 @@ export interface SettingsLabels {
   footerHelp: string;
   markdownSupported: string;
   language: string;
-  defaultHomepageView: string;
-  latest: string;
-  featured: string;
   timeZone: string;
-  headerNavMaxVisible: string;
 
   // SEO
   seo: string;

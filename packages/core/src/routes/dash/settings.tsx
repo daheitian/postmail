@@ -45,8 +45,6 @@ settingsRoutes.get("/", async (c) => {
         siteName={dbSiteName || ""}
         siteDescription={dbSiteDescription || ""}
         siteLanguage={appConfig.siteLanguage}
-        homeDefaultView={appConfig.homeDefaultView}
-        headerNavMaxVisible={appConfig.headerNavMaxVisible}
         siteNameFallback={appConfig.fallbacks.siteName}
         siteDescriptionFallback={appConfig.fallbacks.siteDescription}
         siteAvatarUrl={appConfig.siteAvatarUrl}
@@ -67,8 +65,8 @@ settingsRoutes.post("/", async (c) => {
     siteDescription: string;
     siteFooter: string;
     siteLanguage: string;
-    homeDefaultView: string;
-    headerNavMaxVisible: string;
+    homeDefaultView?: string;
+    headerNavMaxVisible?: string;
     timeZone: string;
   }>();
 
@@ -124,8 +122,6 @@ settingsRoutes.post("/", async (c) => {
         _orig_siteDescription: body.siteDescription,
         _orig_siteFooter: body.siteFooter,
         _orig_siteLanguage: body.siteLanguage,
-        _orig_homeDefaultView: body.homeDefaultView,
-        _orig_headerNavMaxVisible: body.headerNavMaxVisible,
         _orig_timeZone: body.timeZone,
         _generalDirty: false,
       });

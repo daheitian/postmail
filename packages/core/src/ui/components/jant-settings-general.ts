@@ -35,8 +35,6 @@ export class JantSettingsGeneral extends LitElement {
     _siteDescription: { state: true },
     _siteFooter: { state: true },
     _siteLanguage: { state: true },
-    _homeDefaultView: { state: true },
-    _headerNavMaxVisible: { state: true },
     _timeZone: { state: true },
     _origGeneral: { state: true },
     _generalDirty: { state: true },
@@ -60,8 +58,6 @@ export class JantSettingsGeneral extends LitElement {
   declare _siteDescription: string;
   declare _siteFooter: string;
   declare _siteLanguage: string;
-  declare _homeDefaultView: string;
-  declare _headerNavMaxVisible: number;
   declare _timeZone: string;
   declare _origGeneral: Record<string, string>;
   declare _generalDirty: boolean;
@@ -90,8 +86,6 @@ export class JantSettingsGeneral extends LitElement {
     this._siteDescription = "";
     this._siteFooter = "";
     this._siteLanguage = "en";
-    this._homeDefaultView = "latest";
-    this._headerNavMaxVisible = 3;
     this._timeZone = "UTC";
     this._origGeneral = {};
     this._generalDirty = false;
@@ -108,8 +102,6 @@ export class JantSettingsGeneral extends LitElement {
     siteName: string;
     siteDescription: string;
     siteLanguage: string;
-    homeDefaultView: string;
-    headerNavMaxVisible: number;
     timeZone: string;
     siteFooter: string;
     noindex: boolean;
@@ -118,16 +110,12 @@ export class JantSettingsGeneral extends LitElement {
     this._siteDescription = data.siteDescription;
     this._siteFooter = data.siteFooter;
     this._siteLanguage = data.siteLanguage;
-    this._homeDefaultView = data.homeDefaultView;
-    this._headerNavMaxVisible = data.headerNavMaxVisible;
     this._timeZone = data.timeZone;
     this._origGeneral = {
       siteName: data.siteName,
       siteDescription: data.siteDescription,
       siteFooter: data.siteFooter,
       siteLanguage: data.siteLanguage,
-      homeDefaultView: data.homeDefaultView,
-      headerNavMaxVisible: String(data.headerNavMaxVisible),
       timeZone: data.timeZone,
     };
 
@@ -143,8 +131,6 @@ export class JantSettingsGeneral extends LitElement {
         siteDescription: this._siteDescription,
         siteFooter: this._siteFooter,
         siteLanguage: this._siteLanguage,
-        homeDefaultView: this._homeDefaultView,
-        headerNavMaxVisible: String(this._headerNavMaxVisible),
         timeZone: this._timeZone,
       };
       this._generalDirty = false;
@@ -173,9 +159,6 @@ export class JantSettingsGeneral extends LitElement {
     this._siteDescription = this._origGeneral.siteDescription ?? "";
     this._siteFooter = this._origGeneral.siteFooter ?? "";
     this._siteLanguage = this._origGeneral.siteLanguage ?? "en";
-    this._homeDefaultView = this._origGeneral.homeDefaultView ?? "latest";
-    this._headerNavMaxVisible =
-      parseInt(this._origGeneral.headerNavMaxVisible ?? "3", 10) || 3;
     this._timeZone = this._origGeneral.timeZone ?? "UTC";
     this._generalDirty = false;
   }
@@ -193,8 +176,6 @@ export class JantSettingsGeneral extends LitElement {
             siteDescription: this._siteDescription,
             siteFooter: this._siteFooter,
             siteLanguage: this._siteLanguage,
-            homeDefaultView: this._homeDefaultView,
-            headerNavMaxVisible: this._headerNavMaxVisible,
             timeZone: this._timeZone,
           },
           section: "general",
@@ -344,55 +325,6 @@ export class JantSettingsGeneral extends LitElement {
                     ?selected=${this._siteLanguage === lang.value}
                   >
                     ${lang.label}
-                  </option>
-                `,
-              )}
-            </select>
-          </div>
-
-          <div class="field">
-            <label class="label">${this.labels.defaultHomepageView}</label>
-            <select
-              class="select"
-              @change=${(e: Event) => {
-                this._homeDefaultView = (e.target as HTMLSelectElement).value;
-                this._markGeneralDirty();
-              }}
-            >
-              <option
-                value="latest"
-                ?selected=${this._homeDefaultView === "latest"}
-              >
-                ${this.labels.latest}
-              </option>
-              <option
-                value="featured"
-                ?selected=${this._homeDefaultView === "featured"}
-              >
-                ${this.labels.featured}
-              </option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label class="label">${this.labels.headerNavMaxVisible}</label>
-            <select
-              class="select"
-              @change=${(e: Event) => {
-                this._headerNavMaxVisible = parseInt(
-                  (e.target as HTMLSelectElement).value,
-                  10,
-                );
-                this._markGeneralDirty();
-              }}
-            >
-              ${[0, 1, 2, 3, 4, 5].map(
-                (n) => html`
-                  <option
-                    value=${n}
-                    ?selected=${this._headerNavMaxVisible === n}
-                  >
-                    ${n}
                   </option>
                 `,
               )}

@@ -24,8 +24,8 @@ export interface GeneralSettingsData {
   siteDescription: string;
   siteFooter: string;
   siteLanguage: string;
-  homeDefaultView: string;
-  headerNavMaxVisible: string;
+  homeDefaultView?: string;
+  headerNavMaxVisible?: string;
   timeZone: string;
 }
 
@@ -182,19 +182,23 @@ export function createSettingsService(db: Database): SettingsService {
       // Language is always stored
       await this.set("SITE_LANGUAGE", data.siteLanguage);
 
-      // Homepage default view: only store non-default
-      if (data.homeDefaultView === "featured") {
-        await this.set("HOME_DEFAULT_VIEW", data.homeDefaultView);
-      } else {
-        await this.remove("HOME_DEFAULT_VIEW");
+      // Homepage default view: only update if provided (may be managed separately)
+      if (data.homeDefaultView !== undefined) {
+        if (data.homeDefaultView === "featured") {
+          await this.set("HOME_DEFAULT_VIEW", data.homeDefaultView);
+        } else {
+          await this.remove("HOME_DEFAULT_VIEW");
+        }
       }
 
-      // Header nav max visible: only store non-default (default is 3)
-      const navMax = parseInt(String(data.headerNavMaxVisible), 10);
-      if (!isNaN(navMax) && navMax !== 3) {
-        await this.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
-      } else {
-        await this.remove("HEADER_NAV_MAX_VISIBLE");
+      // Header nav max visible: only update if provided (may be managed separately)
+      if (data.headerNavMaxVisible !== undefined) {
+        const navMax = parseInt(String(data.headerNavMaxVisible), 10);
+        if (!isNaN(navMax) && navMax !== 3) {
+          await this.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
+        } else {
+          await this.remove("HEADER_NAV_MAX_VISIBLE");
+        }
       }
 
       // Timezone: only store non-default (default is UTC)

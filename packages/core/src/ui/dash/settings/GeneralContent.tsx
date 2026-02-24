@@ -18,8 +18,6 @@ export function GeneralContent({
   siteName,
   siteDescription,
   siteLanguage,
-  homeDefaultView,
-  headerNavMaxVisible,
   siteNameFallback,
   siteDescriptionFallback,
   siteAvatarUrl,
@@ -32,8 +30,6 @@ export function GeneralContent({
   siteName: string;
   siteDescription: string;
   siteLanguage: string;
-  homeDefaultView: string;
-  headerNavMaxVisible: number;
   siteNameFallback: string;
   siteDescriptionFallback: string;
   siteAvatarUrl: string;
@@ -101,26 +97,9 @@ export function GeneralContent({
       message: "Language",
       comment: "@context: Settings form field",
     }),
-    defaultHomepageView: t({
-      message: "Default Homepage View",
-      comment: "@context: Settings form field",
-    }),
-    latest: t({
-      message: "Latest",
-      comment: "@context: Homepage view option - show latest posts",
-    }),
-    featured: t({
-      message: "Featured",
-      comment: "@context: Homepage view option - show featured posts",
-    }),
     timeZone: t({
       message: "Time Zone",
       comment: "@context: Settings form field",
-    }),
-    headerNavMaxVisible: t({
-      message: "Max Visible Nav Links",
-      comment:
-        "@context: Settings form field for max visible nav links in header before overflow menu",
     }),
     siteFooter: t({
       message: "Site Footer",
@@ -168,8 +147,6 @@ export function GeneralContent({
     siteName,
     siteDescription,
     siteLanguage,
-    homeDefaultView,
-    headerNavMaxVisible,
     timeZone,
     siteFooter,
     noindex,

@@ -71,13 +71,11 @@ msgid "Account"
 msgstr "Account"
 
 #. @context: Add more attachments button
-#. @context: Button to add page to nav
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add"
 msgstr "Add"
 
-#. @context: Card description for link form
+#. @context: Description in link popover form
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add a custom link to any URL"
 msgstr "Add a custom link to any URL"
@@ -89,15 +87,20 @@ msgstr "Add alt text"
 
 #. @context: Card description for page picker
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Add an existing page to your navigation"
-msgstr "Add an existing page to your navigation"
+#~ msgid "Add an existing page to your navigation"
+#~ msgstr "Add an existing page to your navigation"
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 msgstr "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
 
-#. @context: Card title for adding custom link
+#. @context: Section heading for adding custom link to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add custom link to navigation"
+msgstr "Add custom link to navigation"
+
+#. @context: Button and heading for adding custom link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Link"
 msgstr "Add Link"
@@ -109,8 +112,13 @@ msgstr "Add Media"
 
 #. @context: Card title for adding page to nav
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Add Page"
-msgstr "Add Page"
+#~ msgid "Add Page"
+#~ msgstr "Add Page"
+
+#. @context: Section heading for adding page to nav
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Add page to navigation"
+msgstr "Add page to navigation"
 
 #. @context: Button to add page to navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
@@ -119,8 +127,8 @@ msgstr "Add Page"
 
 #. @context: Section heading for adding nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Add to navigation"
-msgstr "Add to navigation"
+#~ msgid "Add to navigation"
+#~ msgstr "Add to navigation"
 
 #. @context: Appearance sub-navigation tab
 #: src/ui/dash/appearance/AppearanceNav.tsx
@@ -134,8 +142,13 @@ msgstr "All"
 
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "All pages are in navigation"
-msgstr "All pages are in navigation"
+msgid "All pages are already in navigation."
+msgstr "All pages are already in navigation."
+
+#. @context: Message when no pages available to add
+#: src/ui/dash/appearance/NavigationContent.tsx
+#~ msgid "All pages are in navigation"
+#~ msgstr "All pages are in navigation"
 
 #. @context: Empty state when all pages are in nav
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
@@ -263,6 +276,11 @@ msgstr "Change Password"
 #: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
 msgstr "Choose a font pairing for your site. All options use system fonts for fast loading."
+
+#. @context: Placeholder for page select combobox trigger
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Choose a page…"
+msgstr "Choose a page…"
 
 #. @context: Button to open icon picker
 #. @context: Icon picker dialog title
@@ -426,8 +444,8 @@ msgstr "Dashboard"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Default Homepage View"
-msgstr "Default Homepage View"
+#~ msgid "Default Homepage View"
+#~ msgstr "Default Homepage View"
 
 #. @context: Button to delete item
 #. @context: Button to delete redirect
@@ -635,11 +653,15 @@ msgstr "Failed to update profile."
 
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
-#. @context: Homepage view option - show featured posts
+#. @context: Browse filter label
+#. @context: Browse filter label
+#. @context: Browse filter label for featured posts
 #. @context: Post badge - featured
 #. @context: Post form checkbox - mark as featured
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
@@ -710,6 +732,11 @@ msgstr "Give it a title..."
 #: src/ui/dash/collections/CollectionForm.tsx
 msgid "Highest rated"
 msgstr "Highest rated"
+
+#. @context: Toast after saving home default view setting
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Home view saved"
+msgstr "Home view saved"
 
 #. @context: Collection form field
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -801,8 +828,12 @@ msgid "Language"
 msgstr "Language"
 
 #. @context: Browse filter for latest posts
-#. @context: Homepage view option - show latest posts
-#: src/ui/dash/settings/GeneralContent.tsx
+#. @context: Browse filter label
+#. @context: Browse filter label
+#. @context: Browse filter label for latest posts
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
 msgid "Latest"
 msgstr "Latest"
@@ -863,10 +894,20 @@ msgstr "Markdown"
 msgid "Markdown supported"
 msgstr "Markdown supported"
 
+#. @context: Label for max visible nav links number input
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Max visible links"
+msgstr "Max visible links"
+
+#. @context: Toast after saving max visible nav links setting
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Max visible links saved"
+msgstr "Max visible links saved"
+
 #. @context: Settings form field for max visible nav links in header before overflow menu
 #: src/ui/dash/settings/GeneralContent.tsx
-msgid "Max Visible Nav Links"
-msgstr "Max Visible Nav Links"
+#~ msgid "Max Visible Nav Links"
+#~ msgstr "Max Visible Nav Links"
 
 #. @context: Compose toolbar - media tooltip
 #. @context: Media main heading
@@ -1041,6 +1082,11 @@ msgstr "No navigation items yet. Add pages, links, or enable system items below.
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
 #~ msgid "No navigation links yet. Add pages to navigation or create links."
 #~ msgstr "No navigation links yet. Add pages to navigation or create links."
+
+#. @context: Empty state when page search has no results
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No pages found."
+msgstr "No pages found."
 
 #. @context: Empty state message when no pages exist
 #: src/routes/dash/pages.tsx
@@ -1451,6 +1497,11 @@ msgstr "Search"
 msgid "Search icons..."
 msgstr "Search icons..."
 
+#. @context: Placeholder for page search input in combobox
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Search pages…"
+msgstr "Search pages…"
+
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx
 msgid "Search posts..."
@@ -1805,6 +1856,11 @@ msgstr "URL (optional)"
 #: src/ui/dash/collections/CollectionForm.tsx
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
+
+#. @context: Switch label for setting featured posts as default homepage
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Use Featured as default home view"
+msgstr "Use Featured as default home view"
 
 #. @context: Media URL helper text
 #: src/ui/dash/media/ViewMediaContent.tsx

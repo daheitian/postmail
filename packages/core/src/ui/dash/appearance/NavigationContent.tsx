@@ -30,11 +30,13 @@ export function NavigationContent({
   navItems,
   availablePages,
   headerNavMaxVisible,
+  homeDefaultView,
   siteName,
 }: {
   navItems: NavItem[];
   availablePages: Page[];
   headerNavMaxVisible: number;
+  homeDefaultView: string;
   siteName: string;
 }) {
   const { t } = useLingui();
@@ -135,35 +137,64 @@ export function NavigationContent({
         "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links.",
       comment: "@context: Description for system nav toggles",
     }),
-    addToNavigation: t({
-      message: "Add to navigation",
-      comment: "@context: Section heading for adding nav items",
+    addPageToNavigation: t({
+      message: "Add page to navigation",
+      comment: "@context: Section heading for adding page to nav",
     }),
-    addPage: t({
-      message: "Add Page",
-      comment: "@context: Card title for adding page to nav",
+    addCustomLinkToNavigation: t({
+      message: "Add custom link to navigation",
+      comment: "@context: Section heading for adding custom link to nav",
     }),
-    addPageDescription: t({
-      message: "Add an existing page to your navigation",
-      comment: "@context: Card description for page picker",
+    choosePage: t({
+      message: "Choose a page…",
+      comment: "@context: Placeholder for page select combobox trigger",
+    }),
+    searchPages: t({
+      message: "Search pages…",
+      comment: "@context: Placeholder for page search input in combobox",
+    }),
+    noPagesFound: t({
+      message: "No pages found.",
+      comment: "@context: Empty state when page search has no results",
     }),
     addLink: t({
       message: "Add Link",
-      comment: "@context: Card title for adding custom link",
+      comment: "@context: Button and heading for adding custom link",
     }),
     addLinkDescription: t({
       message: "Add a custom link to any URL",
-      comment: "@context: Card description for link form",
-    }),
-    add: t({
-      message: "Add",
-      comment: "@context: Button to add page to nav",
+      comment: "@context: Description in link popover form",
     }),
     allPagesInNav: t({
-      message: "All pages are in navigation",
+      message: "All pages are already in navigation.",
       comment: "@context: Message when no pages available to add",
     }),
     urlPlaceholder: "/archive or https://...",
+    maxVisibleLinks: t({
+      message: "Max visible links",
+      comment: "@context: Label for max visible nav links number input",
+    }),
+    maxVisibleSaved: t({
+      message: "Max visible links saved",
+      comment: "@context: Toast after saving max visible nav links setting",
+    }),
+    useFeaturedAsDefault: t({
+      message: "Use Featured as default home view",
+      comment:
+        "@context: Switch label for setting featured posts as default homepage",
+    }),
+    homeViewSaved: t({
+      message: "Home view saved",
+      comment: "@context: Toast after saving home default view setting",
+    }),
+    latest: t({
+      message: "Latest",
+      comment: "@context: Browse filter label for latest posts",
+    }),
+    featured: t({
+      message: "Featured",
+      comment: "@context: Browse filter label for featured posts",
+    }),
     labelAndUrlRequired: t({
       message: "Label and URL are required",
       comment: "@context: Error toast when nav link fields are empty",
@@ -185,27 +216,83 @@ export function NavigationContent({
           available-pages={escapeJson(pagesData)}
           site-name={siteName}
           max-visible={headerNavMaxVisible}
+          home-default-view={homeDefaultView}
         >
           {/* SSR fallback: static preview until JS hydrates */}
-          <div class="border rounded-lg p-4 bg-muted/30">
-            <p class="text-xs text-muted-foreground mb-3">
+          <div class="border rounded-lg">
+            <p class="text-xs text-muted-foreground px-4 pt-3">
               {t({
                 message: "Preview",
                 comment: "@context: Label for nav preview section",
               })}
             </p>
-            <div class="flex items-center justify-between">
-              <span class="font-semibold">{siteName}</span>
-              <div class="flex items-center gap-3 text-sm">
-                {navItems.slice(0, headerNavMaxVisible).map((item) => (
-                  <span key={item.id} class="text-muted-foreground">
-                    {item.label}
+            <div class="px-5 py-3">
+              <div class="site-header-top">
+                <a href="/" class="site-logo">
+                  {siteName}
+                </a>
+                <div class="site-header-right">
+                  {navItems.length > 0 && (
+                    <nav class="site-header-nav">
+                      {navItems.slice(0, headerNavMaxVisible).map((item) => (
+                        <a
+                          key={item.id}
+                          href={item.url}
+                          class="site-header-link"
+                        >
+                          {item.label}
+                        </a>
+                      ))}
+                      {navItems.length > headerNavMaxVisible && (
+                        <span class="text-muted-foreground">…</span>
+                      )}
+                    </nav>
+                  )}
+                  <span class="site-header-search" aria-hidden="true">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.35-4.35" />
+                    </svg>
                   </span>
-                ))}
-                {navItems.length > headerNavMaxVisible && (
-                  <span class="text-muted-foreground">...</span>
-                )}
+                </div>
               </div>
+              <nav class="site-browse-nav">
+                <span class="site-browse-link site-browse-link-active">
+                  {homeDefaultView === "featured"
+                    ? t({
+                        message: "Featured",
+                        comment: "@context: Browse filter label",
+                      })
+                    : t({
+                        message: "Latest",
+                        comment: "@context: Browse filter label",
+                      })}
+                </span>
+                <span class="site-browse-sep" aria-hidden="true">
+                  /
+                </span>
+                <span class="site-browse-link">
+                  {homeDefaultView === "featured"
+                    ? t({
+                        message: "Latest",
+                        comment: "@context: Browse filter label",
+                      })
+                    : t({
+                        message: "Featured",
+                        comment: "@context: Browse filter label",
+                      })}
+                </span>
+              </nav>
             </div>
           </div>
         </jant-nav-manager>

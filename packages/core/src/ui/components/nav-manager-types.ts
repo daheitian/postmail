@@ -43,15 +43,22 @@ export interface NavManagerLabels {
   deleteFailed: string;
   systemLinks: string;
   systemLinksDescription: string;
-  addToNavigation: string;
-  addPage: string;
-  addPageDescription: string;
+  addPageToNavigation: string;
+  addCustomLinkToNavigation: string;
+  choosePage: string;
+  searchPages: string;
+  noPagesFound: string;
   addLink: string;
   addLinkDescription: string;
-  add: string;
   allPagesInNav: string;
   urlPlaceholder: string;
   labelAndUrlRequired: string;
+  maxVisibleLinks: string;
+  maxVisibleSaved: string;
+  useFeaturedAsDefault: string;
+  homeViewSaved: string;
+  latest: string;
+  featured: string;
 }
 
 export interface NavManagerUpdateDetail {
