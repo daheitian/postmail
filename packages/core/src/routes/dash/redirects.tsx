@@ -22,9 +22,6 @@ function RedirectsListContent({ redirects }: { redirects: Redirect[] }) {
 
   return (
     <>
-      <h1 class="text-2xl font-semibold mb-2">
-        {t({ message: "Settings", comment: "@context: Dashboard heading" })}
-      </h1>
       <SettingsNav currentTab="redirects" />
 
       <div class="flex items-center justify-between mb-6">
@@ -88,9 +85,6 @@ function NewRedirectContent() {
 
   return (
     <>
-      <h1 class="text-2xl font-semibold mb-2">
-        {t({ message: "Settings", comment: "@context: Dashboard heading" })}
-      </h1>
       <SettingsNav currentTab="redirects" />
 
       <h2 class="text-lg font-medium mb-6">

@@ -37,16 +37,12 @@ export function AppearanceNav({ currentTab }: { currentTab: AppearanceTab }) {
   ];
 
   return (
-    <nav class="flex gap-1 mb-6">
+    <nav class="dash-subnav">
       {tabs.map((tab) => (
         <a
           key={tab.id}
           href={tab.href}
-          class={`px-3 py-2 text-sm rounded-md ${
-            tab.id === currentTab
-              ? "bg-accent text-accent-foreground font-medium"
-              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-          }`}
+          class={tab.id === currentTab ? "active" : ""}
         >
           {tab.label}
         </a>

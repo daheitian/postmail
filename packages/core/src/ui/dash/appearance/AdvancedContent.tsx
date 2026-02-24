@@ -12,9 +12,6 @@ export function AdvancedContent({ customCSS }: { customCSS: string }) {
 
   return (
     <>
-      <h1 class="text-2xl font-semibold mb-2">
-        {t({ message: "Appearance", comment: "@context: Dashboard heading" })}
-      </h1>
       <AppearanceNav currentTab="advanced" />
 
       <form

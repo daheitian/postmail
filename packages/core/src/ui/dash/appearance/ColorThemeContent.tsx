@@ -88,9 +88,6 @@ export function ColorThemeContent({
 
   return (
     <>
-      <h1 class="text-2xl font-semibold mb-2">
-        {t({ message: "Appearance", comment: "@context: Dashboard heading" })}
-      </h1>
       <AppearanceNav currentTab="color" />
 
       <div

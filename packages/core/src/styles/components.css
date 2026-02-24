@@ -102,6 +102,132 @@ svg[stroke-width].icon-fine {
   }
 }
 
+/* Dashboard header */
+@layer components {
+  .dash-header {
+    padding: 20px 0 0;
+  }
+
+  @media (min-width: 700px) {
+    .dash-header {
+      padding: 24px 0 0;
+    }
+  }
+
+  .dash-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 12px;
+  }
+
+  .dash-header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dash-header-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .dash-header-logo {
+    font-size: 1.125rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--color-foreground);
+  }
+
+  .dash-header-site-link {
+    @apply flex items-center justify-center;
+    color: var(--color-muted-foreground);
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--color-foreground);
+    }
+  }
+
+  .dash-header-link {
+    position: relative;
+    font-size: 0.875rem;
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    color: var(--color-muted-foreground);
+    transition:
+      color 0.15s,
+      background-color 0.15s;
+
+    &:hover {
+      color: var(--color-foreground);
+      background-color: var(--color-accent);
+    }
+  }
+
+  .dash-header-link-active {
+    color: var(--color-foreground);
+    font-weight: 600;
+    background-color: var(--color-accent);
+  }
+
+  .dash-header-menu-btn {
+    @apply flex items-center justify-center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--color-muted-foreground);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      background-color 0.15s;
+
+    &:hover {
+      color: var(--color-foreground);
+      background-color: var(--color-accent);
+    }
+  }
+
+  .dash-header-menu-btn + [data-popover] {
+    min-width: 170px;
+  }
+}
+
+/* Sub-navigation — underline style for secondary tabs (Settings, Appearance) */
+@layer components {
+  .dash-subnav {
+    @apply flex gap-4 mb-6;
+
+    > a {
+      position: relative;
+      font-size: 0.8125rem;
+      padding-bottom: 8px;
+      color: var(--color-muted-foreground);
+      transition: color 0.15s;
+
+      &:hover {
+        color: var(--color-foreground);
+      }
+
+      &.active {
+        color: var(--color-foreground);
+        font-weight: 500;
+
+        &::after {
+          content: "";
+          @apply absolute inset-x-0 bottom-0 h-0.5 rounded-full;
+          background-color: var(--color-foreground);
+        }
+      }
+    }
+  }
+}
+
 /* Skeleton screen sizing — used in SSR fallbacks while Lit hydrates */
 @layer components {
   .skel-label {

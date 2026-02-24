@@ -177,9 +177,6 @@ export function GeneralContent({
 
   return (
     <>
-      <h1 class="text-2xl font-semibold mb-2">
-        {t({ message: "Settings", comment: "@context: Dashboard heading" })}
-      </h1>
       <SettingsNav currentTab="general" />
 
       <div class="flex flex-col max-w-lg">

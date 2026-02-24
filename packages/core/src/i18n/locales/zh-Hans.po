@@ -103,13 +103,7 @@ msgstr "所有页面都在您的导航中。"
 msgid "Alt text improves accessibility"
 msgstr "替代文本提高可访问性"
 
-#. @context: Dashboard heading
-#. @context: Dashboard heading
-#. @context: Dashboard heading
 #. @context: Dashboard navigation - appearance settings
-#: src/ui/dash/appearance/AdvancedContent.tsx
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-#: src/ui/dash/appearance/FontThemeContent.tsx
 #: src/ui/layouts/DashLayout.tsx
 msgid "Appearance"
 msgstr "外观"
@@ -214,10 +208,8 @@ msgstr "集合"
 
 #. @context: Collections page heading
 #. @context: Dashboard heading
-#. @context: Dashboard navigation - collections management
 #. @context: Sidebar heading for collections nav
 #: src/ui/dash/collections/CollectionsListContent.tsx
-#: src/ui/layouts/DashLayout.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Collections"
@@ -323,9 +315,7 @@ msgid "Danger Zone"
 msgstr "危险区域"
 
 #. @context: Dashboard main heading
-#. @context: Dashboard navigation - main dashboard page
 #: src/routes/dash/index.tsx
-#: src/ui/layouts/DashLayout.tsx
 msgid "Dashboard"
 msgstr "仪表板"
 
@@ -708,15 +698,18 @@ msgid "Max Visible Nav Links"
 msgstr ""
 
 #. @context: Compose toolbar - media tooltip
-#. @context: Dashboard navigation - media library
 #. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
-#: src/ui/layouts/DashLayout.tsx
 msgid "Media"
 msgstr "媒体"
+
+#. @context: Dashboard header menu button
+#: src/ui/layouts/DashLayout.tsx
+msgid "Menu"
+msgstr ""
 
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
@@ -1015,9 +1008,7 @@ msgid "Post updated successfully."
 msgstr "帖子更新成功。"
 
 #. @context: Dashboard heading
-#. @context: Dashboard navigation - posts management
 #: src/routes/dash/posts.tsx
-#: src/ui/layouts/DashLayout.tsx
 msgid "Posts"
 msgstr "帖子"
 
@@ -1211,15 +1202,7 @@ msgstr "搜索引擎优化"
 msgid "SEO settings saved successfully."
 msgstr "SEO设置已成功保存。"
 
-#. @context: Dashboard heading
-#. @context: Dashboard heading
-#. @context: Dashboard heading
-#. @context: Dashboard heading
 #. @context: Dashboard navigation - site settings
-#: src/routes/dash/redirects.tsx
-#: src/routes/dash/redirects.tsx
-#: src/ui/dash/settings/AccountContent.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/layouts/DashLayout.tsx
 msgid "Settings"
 msgstr "设置"
@@ -1244,7 +1227,7 @@ msgstr "显示 {remainingCount} 个更多 {0}"
 msgid "Sign In"
 msgstr "登录"
 
-#. @context: Dashboard header link to sign out
+#. @context: Dashboard menu item to sign out
 #: src/ui/layouts/DashLayout.tsx
 msgid "Sign Out"
 msgstr "登出"
