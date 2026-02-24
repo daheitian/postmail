@@ -108,11 +108,11 @@ INSERT INTO posts VALUES(6,'note','published',0,0,NULL,NULL,NULL,'一些图片:)
 ',NULL,NULL,NULL,NULL,NULL,1771838016,1771838016,1771838016);
 
 -- nav_items
-INSERT INTO nav_items VALUES(3,'page','About','/about',1,1,1771819048,1771934514);
-INSERT INTO nav_items VALUES(4,'system','RSS','/feed',NULL,3,1771933096,1771934514);
-INSERT INTO nav_items VALUES(5,'system','Dashboard','/dash',NULL,4,1771933098,1771934514);
-INSERT INTO nav_items VALUES(6,'system','Collections','/c',NULL,0,1771933103,1771934514);
-INSERT INTO nav_items VALUES(7,'system','Archive','/archive',NULL,2,1771933104,1771934514);
+INSERT INTO nav_items VALUES(3,'page','About','/about',1,1,1771819048,1771935668);
+INSERT INTO nav_items VALUES(4,'system','RSS','/feed',NULL,3,1771933096,1771935668);
+INSERT INTO nav_items VALUES(5,'system','Dashboard','/dash',NULL,4,1771933098,1771935668);
+INSERT INTO nav_items VALUES(7,'system','Archive','/archive',NULL,2,1771933104,1771935668);
+INSERT INTO nav_items VALUES(8,'system','Collections','/c',NULL,0,1771935661,1771935668);
 
 -- media
 INSERT INTO media VALUES('019c89c6-516f-7eb4-9e53-bc6402b59355',6,'019c89c6-516f-7eb4-9e53-bc6402b59355.webp','leonardo-iribe-zG87D_xiAVQ-unsplash.webp','image/webp',75040,'media/2026/02/019c89c6-516f-7eb4-9e53-bc6402b59355.webp',NULL,NULL,NULL,1771838002,1,NULL,'r2');
