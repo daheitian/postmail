@@ -74,6 +74,10 @@ export class JantNavManager extends LitElement {
 
   #sortable: { destroy(): void } | null = null;
   #initialized = false;
+  #closeOverflow = () => {
+    this._showOverflow = false;
+    document.removeEventListener("click", this.#closeOverflow);
+  };
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -123,6 +127,7 @@ export class JantNavManager extends LitElement {
     super.disconnectedCallback();
     this.#sortable?.destroy();
     this.#sortable = null;
+    document.removeEventListener("click", this.#closeOverflow);
   }
 
   // ===========================================================================
@@ -376,11 +381,35 @@ export class JantNavManager extends LitElement {
                   <button
                     type="button"
                     class="text-muted-foreground hover:text-foreground transition-colors"
-                    @click=${() => {
+                    @click=${(e: Event) => {
+                      e.stopPropagation();
                       this._showOverflow = !this._showOverflow;
+                      if (this._showOverflow) {
+                        setTimeout(() => {
+                          document.addEventListener(
+                            "click",
+                            this.#closeOverflow,
+                          );
+                        });
+                      } else {
+                        document.removeEventListener(
+                          "click",
+                          this.#closeOverflow,
+                        );
+                      }
                     }}
                   >
-                    ...
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <circle cx="5" cy="12" r="2" />
+                      <circle cx="12" cy="12" r="2" />
+                      <circle cx="19" cy="12" r="2" />
+                    </svg>
                   </button>
                   ${this._showOverflow
                     ? html`<div
