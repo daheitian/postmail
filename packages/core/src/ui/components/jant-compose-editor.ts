@@ -420,7 +420,7 @@ export class JantComposeEditor extends LitElement {
           stroke="currentColor"
           stroke-width="1.3"
           stroke-linecap="round"
-          class="text-muted-foreground"
+          class="text-muted-foreground icon-fine"
         >
           <rect x="3" y="2" width="12" height="14" rx="2" />
           <line x1="6" y1="6" x2="12" y2="6" />
@@ -461,6 +461,7 @@ export class JantComposeEditor extends LitElement {
             }}
           >
             <svg
+              class="icon-fine"
               width="16"
               height="16"
               viewBox="0 0 16 16"
@@ -527,6 +528,7 @@ export class JantComposeEditor extends LitElement {
             @click=${() => this._closeAltPanel()}
           >
             <svg
+              class="icon-fine"
               width="16"
               height="16"
               viewBox="0 0 16 16"
@@ -599,7 +601,7 @@ export class JantComposeEditor extends LitElement {
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
-                          stroke-width="2.5"
+                          style="stroke-width: 2.5"
                           stroke-linecap="round"
                         >
                           <path d="M21 12a9 9 0 1 1-6.219-8.56" />
@@ -613,6 +615,7 @@ export class JantComposeEditor extends LitElement {
                         class="compose-attachment-overlay compose-attachment-error"
                       >
                         <svg
+                          class="icon-fine"
                           width="16"
                           height="16"
                           viewBox="0 0 16 16"
@@ -666,6 +669,7 @@ export class JantComposeEditor extends LitElement {
           @click=${() => this._openFilePicker()}
         >
           <svg
+            class="icon-fine"
             width="18"
             height="18"
             viewBox="0 0 18 18"
@@ -697,6 +701,7 @@ export class JantComposeEditor extends LitElement {
           @click=${() => this._openAttachedText()}
         >
           <svg
+            class="icon-fine"
             width="18"
             height="18"
             viewBox="0 0 18 18"
@@ -725,6 +730,7 @@ export class JantComposeEditor extends LitElement {
           }}
         >
           <svg
+            class="icon-fine"
             width="18"
             height="18"
             viewBox="0 0 18 18"

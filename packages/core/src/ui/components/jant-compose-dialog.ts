@@ -246,6 +246,7 @@ export class JantComposeDialog extends LitElement {
             @click=${() => this._submit("draft")}
           >
             <svg
+              class="icon-fine"
               width="18"
               height="18"
               viewBox="0 0 18 18"
@@ -363,7 +364,7 @@ export class JantComposeDialog extends LitElement {
               stroke-width="1.4"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="shrink-0"
+              class="shrink-0 icon-fine"
             >
               <rect x="3" y="5" width="12" height="10" rx="2" />
               <path d="M6 5V4a1 1 0 011-1h4a1 1 0 011 1v1" />
@@ -382,7 +383,7 @@ export class JantComposeDialog extends LitElement {
               stroke-width="1.4"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="shrink-0 opacity-50"
+              class="shrink-0 opacity-50 icon-fine"
             >
               <path d="M3 4l2 2 2-2" />
             </svg>

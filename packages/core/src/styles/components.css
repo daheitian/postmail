@@ -5,6 +5,15 @@
  * AFTER Tailwind is initialized in the user's CSS entry.
  */
 
+/* Icon stroke width — CSS property overrides SVG presentational attributes */
+svg[stroke-width] {
+  stroke-width: var(--icon-stroke);
+}
+
+svg[stroke-width].icon-fine {
+  stroke-width: var(--icon-stroke-fine);
+}
+
 /* Custom utilities */
 @layer utilities {
   .container {

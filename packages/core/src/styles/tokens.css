@@ -38,6 +38,10 @@
   --avatar-radius: 50%;
   --media-radius: 0.5rem;
 
+  /* Icons */
+  --icon-stroke: 2;
+  --icon-stroke-fine: 1.5;
+
   /* Derived color tokens (from BaseCoat variables) */
   --site-column-outline: var(--border);
   --site-threadline: var(--border);
