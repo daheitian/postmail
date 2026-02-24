@@ -198,7 +198,7 @@ setupRoutes.post("/setup", async (c) => {
     await c.var.services.navItems.create({
       type: "link",
       label: "Collections",
-      url: "/collections",
+      url: "/c",
     });
     // Seed default navigation items
     await c.var.services.navItems.create({

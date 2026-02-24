@@ -266,7 +266,7 @@ export function createApp(): App {
   app.route("/archive", archiveRoutes);
   app.route("/featured", featuredRoutes);
   app.route("/latest", latestRoutes);
-  app.route("/collections", collectionsPageRoutes);
+  app.route("/c", collectionsPageRoutes);
   app.route("/c", collectionRoutes);
   app.route("/p", postRoutes);
   app.route("/", homeRoutes);

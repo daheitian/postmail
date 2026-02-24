@@ -291,9 +291,9 @@
 - [ ] 分页（cursor-based）
 - [ ] 可通过 nav_items 添加到导航
 
-### 2.6 /collections 列表页
+### 2.6 /c 列表页
 
-- [ ] 独立路由 `/collections`
+- [ ] 独立路由 `/c`
 - [ ] 展示所有 Collection（按 position 排序）
 - [ ] 显示 Collection 图标、标题、描述、帖子数量
 - [ ] show_divider 分组线
@@ -406,7 +406,7 @@
 ```
 1. 前台布局重设计 (2.1) — 基础框架
 2. 首页 Timeline (2.2) + 置顶 (2.4) — 核心体验
-3. /featured (2.5) + /collections (2.6) — 新页面
+3. /featured (2.5) + /c (2.6) — 新页面
 4. Collection 增强 (2.7) — 排序、RSS、组合语法
 5. Archive + Feed 增强 (2.8, 2.9) — 筛选功能
 6. /dash/pages 整合导航 (2.10) — 后台优化

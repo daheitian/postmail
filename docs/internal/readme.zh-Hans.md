@@ -202,7 +202,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 3.7 Collections 页面
 
-`/collections` 展示所有 Collection 的列表页，点击进入单个 Collection 的帖子列表（`/c/{slug}`）。Collections 页面为双栏布局，左侧边栏展示所有的 Collection，右侧栏展示当前 Collection 的帖子列表。
+`/c` 展示所有 Collection 的列表页，点击进入单个 Collection 的帖子列表（`/c/{slug}`）。Collections 页面为双栏布局，左侧边栏展示所有的 Collection，右侧栏展示当前 Collection 的帖子列表。
 
 ### 3.8 首次使用（Onboarding）
 
@@ -225,7 +225,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 **类型**：
 
 - `page` — 指向一个 Page（自动关联，Page 删除时 nav_item 也删除）
-- `link` — 任意 URL（/collections、/featured、/archive、/c/reading、外部链接，都是 link）
+- `link` — 任意 URL（/c、/featured、/archive、/c/reading、外部链接，都是 link）
 
 **后台管理**（`/dash/pages`，与 Page 管理合并，参考 Pika.page）：
 
@@ -254,7 +254,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `/{path}`        | 帖子自定义路径（支持多级，API 设置）      |
 | `/c/{slug}`      | Collection                                |
 | `/c/{a}+{b}`     | Collection 组合查看                       |
-| `/collections`   | Collection 列表页                         |
+| `/c`             | Collection 列表页                         |
 | `/archive`       | 归档（支持 ?format= &featured= 筛选）     |
 | `/search`        | 搜索（弹窗，也支持直接访问）              |
 | `/feed`          | RSS（仅 featured）                        |

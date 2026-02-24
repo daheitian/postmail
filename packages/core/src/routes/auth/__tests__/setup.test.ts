@@ -23,7 +23,7 @@ async function runSetupSeed(services: {
   await services.navItems.create({
     type: "link",
     label: "Collections",
-    url: "/collections",
+    url: "/c",
   });
   await services.navItems.create({
     type: "link",
