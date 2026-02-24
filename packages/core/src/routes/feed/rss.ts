@@ -1,13 +1,19 @@
 /**
  * RSS Feed Routes
+ *
+ * Three-level hierarchy:
+ * - /feed          — featured posts only (curated feed for subscribers)
+ * - /feed/all      — all published posts (with optional ?format= filter)
+ * - /c/{slug}/feed — per-collection feed (handled in collection routes)
  */
 
 import { Hono } from "hono";
 import type { Context } from "hono";
-import type { Bindings, FeedData } from "../../types.js";
+import type { Bindings, FeedData, Format } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { defaultRssRenderer, defaultAtomRenderer } from "../../lib/feed.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
+import { FORMATS } from "../../types/constants.js";
 
 import { createMediaContext, toPostViews } from "../../lib/view.js";
 
@@ -15,10 +21,22 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const rssRoutes = new Hono<Env>();
 
+interface FeedOptions {
+  featured?: boolean;
+  format?: Format;
+}
+
 /**
  * Build FeedData from the Hono context.
+ *
+ * @param c - Hono context
+ * @param opts - Filter options for the feed
+ * @returns Feed data ready for rendering
  */
-async function buildFeedData(c: Context<Env>): Promise<FeedData> {
+async function buildFeedData(
+  c: Context<Env>,
+  opts?: FeedOptions,
+): Promise<FeedData> {
   const { appConfig } = c.var;
   const siteName = appConfig.siteName;
   const siteDescription = appConfig.siteDescription;
@@ -29,6 +47,8 @@ async function buildFeedData(c: Context<Env>): Promise<FeedData> {
   const posts = await c.var.services.posts.list({
     status: "published",
     excludeReplies: true,
+    featured: opts?.featured,
+    format: opts?.format,
     limit: feedLimit,
   });
 
@@ -61,9 +81,23 @@ async function buildFeedData(c: Context<Env>): Promise<FeedData> {
   };
 }
 
-// RSS 2.0 Feed - main feed at /feed
+/**
+ * Parse and validate the `format` query parameter.
+ * Returns a valid Format or undefined if missing/invalid.
+ */
+function parseFormatQuery(c: Context<Env>): Format | undefined {
+  const raw = c.req.query("format");
+  if (raw && (FORMATS as readonly string[]).includes(raw)) {
+    return raw as Format;
+  }
+  return undefined;
+}
+
+// --- Featured feed (curated) ---
+
+// RSS 2.0 — /feed
 rssRoutes.get("/", async (c) => {
-  const feedData = await buildFeedData(c);
+  const feedData = await buildFeedData(c, { featured: true });
   const xml = defaultRssRenderer(feedData);
 
   return new Response(xml, {
@@ -73,9 +107,37 @@ rssRoutes.get("/", async (c) => {
   });
 });
 
-// Atom Feed
+// Atom — /feed/atom.xml
 rssRoutes.get("/atom.xml", async (c) => {
-  const feedData = await buildFeedData(c);
+  const feedData = await buildFeedData(c, { featured: true });
+  const xml = defaultAtomRenderer(feedData);
+
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/atom+xml; charset=utf-8",
+    },
+  });
+});
+
+// --- All posts feed ---
+
+// RSS 2.0 — /feed/all
+rssRoutes.get("/all", async (c) => {
+  const format = parseFormatQuery(c);
+  const feedData = await buildFeedData(c, { format });
+  const xml = defaultRssRenderer(feedData);
+
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/rss+xml; charset=utf-8",
+    },
+  });
+});
+
+// Atom — /feed/all/atom.xml
+rssRoutes.get("/all/atom.xml", async (c) => {
+  const format = parseFormatQuery(c);
+  const feedData = await buildFeedData(c, { format });
   const xml = defaultAtomRenderer(feedData);
 
   return new Response(xml, {

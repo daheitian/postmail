@@ -2,7 +2,7 @@
 
 > **Jant** = Jantelagen（詹代法则）缩写
 > 强调低调、去社交化的个人表达
-> 简单低摩擦的发布体验，同时强调不打扰 RSS 订阅用户(默认的 RSS 仅输出 Featured 内容)
+> 简单低摩擦的发布体验
 
 ## 1. 产品定位
 
@@ -14,7 +14,8 @@
 - 三种内容格式（Note, Link, Quote）类似 Tumblr
 - Thread（帖子串）——把想法串联成连贯的对话
 - Collection（策展）——把零散帖子组织成主题集合
-- 可定制的颜色方案
+- 可定制的颜色方案和字体主题
+- 多语言支持（英文、简体中文、繁体中文）
 - 极简部署（Cloudflare Workers，一键启动）
 
 ---
@@ -51,6 +52,7 @@
 - 不出现在时间线和 RSS
 - 不属于任何 Collection
 - 没有 featured / rating / format / pinned 概念
+- 有 `status` 字段（`draft` / `published`），与 Post 一致
 - 有固定 URL：`/{slug}`，用户必须自定义 slug，仅支持单级
 - 在 `/dash` 后台创建和管理
 - 同样存储 `body` 和 `body_html`
@@ -72,7 +74,7 @@
 - 置顶帖子最多 3 条，之间按 created_at 倒序
 - `status` 使用字符串而非布尔值，预留 `scheduled` 等未来扩展
 
-**设计理念**：默认 published 但不 featured。减少发布焦虑——随手发的东西不会被推送到 RSS，只有主动标记精选的内容才进默认 feed。
+**设计理念**：默认 published 但不 featured。减少发布焦虑——随手发的东西可以随时发布，只有主动标记精选的内容才进精选视图。
 
 ### 2.4 Thread（帖子串）
 
@@ -103,12 +105,12 @@
 
 **规则**：
 
-- 一个帖子可以属于多个 Collectio
-- Collection 有名称和图标（Lucide SVG 或用户上传图片）
+- 一个帖子可以属于多个 Collection（多对多关系，通过 `post_collections` 关联表实现）
+- Collection 有名称、描述和图标
 - Collection 有自定义排序方式（最新/最早/评分最高/评分最低）
 - Collection 有自定义 slug，地址为 `/c/{slug}`，创建时根据名称自动生成，用户可修改
-- Collection 有独立的 RSS：`/c/{slug}/feed`
 - Collection 有 `position` 字段，后台支持拖拽排序
+- Collection 之间可以插入分隔线（独立的 `collection_dividers` 表），用于在列表页分组
 - 不预设任何 Collection，首次使用时引导创建
 
 ### 2.6 Media（媒体）
@@ -155,17 +157,17 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 作者名       About  Featured  Archive  Collections  📡  🔍
 ```
 
-- 导航链接完全由用户通过 nav_items 自定义配置（📡 RSS 链接也是一个普通的 link 类型 nav_item）
+- 导航链接由用户通过 nav_items 自定义配置，支持三种类型：`page`（关联页面）、`link`（任意 URL）、`system`（系统内置：RSS、Dashboard、Collections、Archive）
 - 🔍 点击弹出搜索弹窗
 - 登录后导航栏右侧出现头像，点击弹出菜单（Dashboard、New Post、Logout）
 - 未登录的博主直接访问 `/dash` 进入登录页
 
 ### 3.3 首页 Timeline
 
-- 展示所有 published 帖子
+- 首页默认展示所有 published 帖子（可通过 `HOME_DEFAULT_VIEW` 设置切换为仅展示 featured 帖子）
 - 置顶帖子（pinned）显示在日期分组之前
 - 帖子卡片根据 format 和内容自动适配不同样式
-- 无限滚动加载更多，基于 cursor 分页，无 footer
+- 基于页码分页加载更多
 - 登录后顶部出现发帖框
 
 ### 3.4 发帖
@@ -220,18 +222,19 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 4.1 nav_items
 
-站点顶部导航完全由用户自定义，参考 Pika.page 的导航管理设计。通过拖拽排序。
+站点顶部导航完全由用户自定义。通过拖拽排序，可配置最大可见数量（`HEADER_NAV_MAX_VISIBLE`，超出部分折叠到菜单中）。
 
 **类型**：
 
-- `page` — 指向一个 Page（自动关联，Page 删除时 nav_item 也删除）
+- `page` — 指向一个 Page（自动关联，Page 删除时 nav_item 也级联删除）
 - `link` — 任意 URL（/c、/featured、/archive、/c/reading、外部链接，都是 link）
+- `system` — 系统内置链接（RSS `/feed`、Dashboard `/dash`、Collections `/c`、Archive `/archive`），label 可自定义
 
-**后台管理**（`/dash/pages`，与 Page 管理合并，参考 Pika.page）：
+**后台管理**（`/dash/appearance`，外观设置的导航子页面）：
 
-- 上半区：已添加到导航的项目（Page 和 Link 混合），可拖拽排序
-- 下半区：未添加到导航的 Page，可一键添加
-- 支持添加任意外部链接
+- 已添加到导航的项目（page、link、system 类型混合），可拖拽排序
+- 支持添加 Page、任意链接、系统链接
+- 支持内联编辑 label 和 URL
 
 ---
 
@@ -245,58 +248,58 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 5.2 前台路由
 
-| URL              | 内容                                      |
-| ---------------- | ----------------------------------------- |
-| `/`              | 首页 timeline（所有 published）           |
-| `/featured`      | 仅精选帖子                                |
-| `/p/{id}`        | 单条帖子                                  |
-| `/{slug}`        | 独立页面（最低优先级）                    |
-| `/{path}`        | 帖子自定义路径（支持多级，API 设置）      |
-| `/c/{slug}`      | Collection                                |
-| `/c/{a}+{b}`     | Collection 组合查看                       |
-| `/c`             | Collection 列表页                         |
-| `/archive`       | 归档（支持 ?format= &featured= 筛选）     |
-| `/search`        | 搜索（弹窗，也支持直接访问）              |
-| `/feed`          | RSS（仅 featured）                        |
-| `/feed/all`      | RSS（所有 published，支持 ?format= 筛选） |
-| `/c/{slug}/feed` | Collection RSS                            |
-| `/sitemap.xml`   | 自动生成的站点地图                        |
+| URL                  | 内容                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| `/`                  | 首页（默认展示最新帖子；`HOME_DEFAULT_VIEW=featured` 时展示精选帖子） |
+| `/latest`            | 最新帖子（当首页已展示最新时，302 重定向到 `/`）                      |
+| `/featured`          | 精选帖子（当首页已展示精选时，302 重定向到 `/`）                      |
+| `/p/{id}`            | 单条帖子                                                              |
+| `/{slug}`            | 独立页面（最低优先级，catch-all）                                     |
+| `/{path}`            | 帖子自定义路径（支持多级，API 设置）                                  |
+| `/c/{slug}`          | Collection 帖子列表                                                   |
+| `/c`                 | Collection 列表页                                                     |
+| `/archive`           | 归档（支持 ?format= &featured= 筛选）                                 |
+| `/search`            | 搜索                                                                  |
+| `/feed`              | RSS 2.0（仅精选帖子，面向订阅者的精选内容）                           |
+| `/feed/atom.xml`     | Atom Feed（仅精选帖子）                                               |
+| `/feed/all`          | RSS 2.0（所有 published 帖子，支持 `?format=` 筛选）                  |
+| `/feed/all/atom.xml` | Atom Feed（所有 published 帖子）                                      |
+| `/c/{slug}/feed`     | 单个 Collection 的 RSS Feed                                           |
+| `/sitemap.xml`       | 自动生成的站点地图                                                    |
 
 ### 5.3 后台路由
 
-| URL                 | 功能                                 |
-| ------------------- | ------------------------------------ |
-| `/dash`             | 仪表盘                               |
-| `/dash/posts`       | 帖子管理                             |
-| `/dash/pages`       | 页面 + 导航管理（参考 Pika.page）    |
-| `/dash/collections` | Collection 管理（拖拽排序 + 分隔线） |
-| `/dash/media`       | 媒体库                               |
-| `/dash/settings`    | 站点设置（个人资料、主题）           |
+| URL                        | 功能                                             |
+| -------------------------- | ------------------------------------------------ |
+| `/dash`                    | 仪表盘                                           |
+| `/dash/posts`              | 帖子管理                                         |
+| `/dash/pages`              | 页面管理                                         |
+| `/dash/collections`        | Collection 管理（拖拽排序 + 分隔线）             |
+| `/dash/media`              | 媒体库                                           |
+| `/dash/appearance`         | 外观设置（导航、颜色主题、字体主题、自定义 CSS） |
+| `/dash/settings`           | 站点设置（通用设置、账号设置）                   |
+| `/dash/settings/redirects` | 重定向管理                                       |
 
-### 5.4 重定向
+### 5.4 重定向与路径注册
 
-支持 301（永久）和 302（临时）重定向。两种来源：
+**重定向**：支持 301（永久）和 302（临时）重定向。两种来源：
 
 - **自动**：Page 或 Collection 修改 slug 时，系统自动为旧路径创建 301 重定向
-- **手动**：用户在后台自行创建，用于短链接、旧站迁移等场景
+- **手动**：用户在后台（`/dash/settings/redirects`）自行创建，用于短链接、旧站迁移等场景
+
+**路径注册**（Path Registry）：`path_registry` 表作为所有 URL 路径的唯一归属来源，确保 Page slug、Post 自定义路径、重定向之间不会冲突。通过主键约束在数据库层面保证唯一性。
 
 ---
 
 ## 6. RSS 与 SEO
 
-**三级 feed**：
+**Feed**（三级结构）：
 
-- `/feed` — 仅 featured，适合订阅精选内容
-- `/feed/all` — 所有 published，不想错过任何东西
-- `/c/{slug}/feed` — 单个 Collection 内的帖子
-
-**Feed 支持 query parameter 筛选**（与 Archive 一致）：
-
-- `/feed/all?format=note` — 所有 Note
-- `/feed/all?format=link` — 所有 Link
-- `/feed/all?format=quote` — 所有 Quote
-
-Archive 页面筛选后可展示对应的 RSS 订阅链接。
+- `/feed` — RSS 2.0，仅精选帖子（面向订阅者的精选内容）
+- `/feed/atom.xml` — Atom 格式，仅精选帖子
+- `/feed/all` — RSS 2.0，所有 published 帖子（支持 `?format=note` 等格式筛选）
+- `/feed/all/atom.xml` — Atom 格式，所有 published 帖子
+- `/c/{slug}/feed` — 单个 Collection 的 RSS Feed
 
 **Sitemap**：自动生成，包含所有公开帖子和页面。
 
@@ -306,18 +309,63 @@ Archive 页面筛选后可展示对应的 RSS 订阅链接。
 
 ## 7. 主题系统
 
-内置 14 种颜色方案：default, ocean, forest, sunset, lavender, rose, sand, slate, gameboy, terminal, notepad, nord, dracula, solarized。
+### 7.1 颜色主题
 
-通过 CSS 变量实现，自动支持 light/dark mode。在后台设置中切换。
+内置 7 种颜色方案：notepad, halloween, panda, beach, gameboy, grayscale, sonnet。不选择时使用 BaseCoat 默认样式。
 
-## 8. 技术选型
+通过 CSS 变量实现，自动支持 light/dark mode。使用 `:root:root` 和 `:root.dark` 选择器确保主题覆盖优先级高于 BaseCoat 默认值。在后台 `/dash/appearance` 切换。
+
+### 7.2 字体主题
+
+内置 5 种字体方案，全部使用系统字体（无需加载外部字体）：
+
+- **default** — 系统默认字体
+- **modern-editorial** — 无衬线标题 + 衬线正文
+- **classic-editorial** — 衬线标题 + 无衬线正文
+- **literary** — 全衬线（适合长文阅读）
+- **geometric** — 几何无衬线标题 + 无衬线正文
+
+### 7.3 自定义 CSS
+
+后台 `/dash/appearance` 的 Advanced 页面支持用户自定义 CSS，可覆盖任何 CSS 变量或样式。
+
+## 8. 配置系统
+
+配置采用三级优先级：DB > ENV > Default（用户可配置字段），ENV > Default（环境专属字段）。
+
+**用户可配置**（后台设置）：
+
+| 字段                     | 说明                              | 默认值   |
+| ------------------------ | --------------------------------- | -------- |
+| `SITE_NAME`              | 站点名称                          | `Jant`   |
+| `SITE_DESCRIPTION`       | 站点描述                          | 自动生成 |
+| `SITE_LANGUAGE`          | 站点语言（en, zh-Hans, zh-Hant）  | `en`     |
+| `HOME_DEFAULT_VIEW`      | 首页默认视图（latest / featured） | `latest` |
+| `HEADER_NAV_MAX_VISIBLE` | 导航栏最大可见链接数              | `3`      |
+| `TIME_ZONE`              | 时区                              | `UTC`    |
+| `SITE_FOOTER`            | 自定义页脚                        |          |
+| `NOINDEX`                | 是否禁止搜索引擎索引              |          |
+
+**环境配置**（`wrangler.toml` / `.dev.vars`）：
+
+| 字段                  | 说明                        |
+| --------------------- | --------------------------- |
+| `AUTH_SECRET`         | 认证密钥（必填）            |
+| `SITE_URL`            | 站点 URL                    |
+| `R2_PUBLIC_URL`       | R2 公开 URL（CDN 直接访问） |
+| `IMAGE_TRANSFORM_URL` | 图片转换 URL                |
+| `STORAGE_DRIVER`      | 存储驱动（r2 / s3）         |
+| `S3_*`                | S3 兼容存储配置             |
+
+## 9. 技术选型
 
 - **部署**：Cloudflare Workers
 - **框架**：Hono + Hono JSX
-- **交互**：Datastar（Hypermedia，服务端渲染 + 增量更新） + Lit
+- **交互**：Datastar（Hypermedia，服务端渲染 + 增量更新） + Lit（Web Components）
 - **样式**：Tailwind CSS v4 + BaseCoat 组件
 - **数据库**：D1 + Drizzle ORM
 - **存储**：Cloudflare R2 或 S3 兼容存储
 - **认证**：better-auth
-- **多语言**：Lingui
+- **多语言**：Lingui（编译时消息提取）
+- **校验**：Zod
 - **语义标记**：microformats2
