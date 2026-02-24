@@ -102,7 +102,7 @@ describe("SettingsService", () => {
       siteFooter: "",
       siteLanguage: "en",
       homeDefaultView: "latest",
-      headerNavMaxVisible: "3",
+      headerNavMaxVisible: "2",
       timeZone: "UTC",
     };
 
@@ -154,10 +154,10 @@ describe("SettingsService", () => {
       expect(await settingsService.get("HOME_DEFAULT_VIEW")).toBe("featured");
     });
 
-    it("removes HEADER_NAV_MAX_VISIBLE when set to default (3)", async () => {
+    it("removes HEADER_NAV_MAX_VISIBLE when set to default (2)", async () => {
       await settingsService.set("HEADER_NAV_MAX_VISIBLE", "5");
       await settingsService.updateGeneral(
-        { ...defaults, headerNavMaxVisible: "3" },
+        { ...defaults, headerNavMaxVisible: "2" },
         { oldLanguage: "en", fallbackSiteName: "Jant" },
       );
 

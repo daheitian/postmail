@@ -33,7 +33,7 @@ export const CONFIG_FIELDS = {
     envOnly: false,
   },
   HEADER_NAV_MAX_VISIBLE: {
-    defaultValue: "3",
+    defaultValue: "2",
     envOnly: false,
   },
 

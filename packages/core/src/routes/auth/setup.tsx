@@ -195,19 +195,13 @@ setupRoutes.post("/setup", async (c) => {
       }
     }
 
+    // Seed default navigation items (order: Collections, About, Archive, RSS, Dashboard)
     await c.var.services.navItems.create({
       type: "link",
       label: "Collections",
       url: "/c",
     });
-    // Seed default navigation items
-    await c.var.services.navItems.create({
-      type: "link",
-      label: "Archive",
-      url: "/archive",
-    });
 
-    // Seed default About page
     const aboutPage = await c.var.services.pages.create({
       slug: "about",
       title: "About",
@@ -226,6 +220,24 @@ setupRoutes.post("/setup", async (c) => {
       label: "About",
       url: "/about",
       pageId: aboutPage.id,
+    });
+
+    await c.var.services.navItems.create({
+      type: "link",
+      label: "Archive",
+      url: "/archive",
+    });
+
+    await c.var.services.navItems.create({
+      type: "system",
+      label: "RSS",
+      url: "/feed",
+    });
+
+    await c.var.services.navItems.create({
+      type: "system",
+      label: "Dashboard",
+      url: "/dash",
     });
 
     return dsRedirect("/signin?setup");

@@ -173,9 +173,9 @@ describe("resolveConfig", () => {
   });
 
   it("resolves headerNavMaxVisible with default, DB override, and clamping", () => {
-    // Default is 3
+    // Default is 2
     const config1 = resolveConfig(makeEnv(), {});
-    expect(config1.headerNavMaxVisible).toBe(3);
+    expect(config1.headerNavMaxVisible).toBe(2);
 
     // DB override works
     const config2 = resolveConfig(makeEnv(), { HEADER_NAV_MAX_VISIBLE: "5" });

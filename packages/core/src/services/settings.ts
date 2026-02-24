@@ -194,7 +194,7 @@ export function createSettingsService(db: Database): SettingsService {
       // Header nav max visible: only update if provided (may be managed separately)
       if (data.headerNavMaxVisible !== undefined) {
         const navMax = parseInt(String(data.headerNavMaxVisible), 10);
-        if (!isNaN(navMax) && navMax !== 3) {
+        if (!isNaN(navMax) && navMax !== 2) {
           await this.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
         } else {
           await this.remove("HEADER_NAV_MAX_VISIBLE");

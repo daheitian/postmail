@@ -104,7 +104,7 @@ export class JantNavManager extends LitElement {
     this.systemNavItems = [];
     this.availablePages = [];
     this.siteName = "";
-    this.maxVisible = 3;
+    this.maxVisible = 2;
     this.homeDefaultView = "latest";
 
     this._items = [];

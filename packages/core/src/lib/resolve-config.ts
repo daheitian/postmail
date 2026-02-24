@@ -117,7 +117,7 @@ export function resolveConfig(
         resolve("HEADER_NAV_MAX_VISIBLE", allSettings, env),
         10,
       );
-      return Math.max(0, Math.min(5, isNaN(parsed) ? 3 : parsed));
+      return Math.max(0, Math.min(5, isNaN(parsed) ? 2 : parsed));
     })(),
     timeZone: resolve("TIME_ZONE", allSettings, env),
     siteFooter: resolve("SITE_FOOTER", allSettings, env),
