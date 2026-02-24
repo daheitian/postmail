@@ -51,6 +51,7 @@ export interface NavManagerLabels {
   addLink: string;
   addLinkDescription: string;
   allPagesInNav: string;
+  createPage: string;
   urlPlaceholder: string;
   labelAndUrlRequired: string;
   maxVisibleLinks: string;

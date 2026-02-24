@@ -372,6 +372,11 @@ msgstr "Create Collection"
 #~ msgid "Create Link"
 #~ msgstr "Create Link"
 
+#. @context: Link at bottom of page combobox to create a new page
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Create page"
+msgstr "Create page"
+
 #. @context: Button to create new page
 #: src/ui/dash/PageForm.tsx
 msgid "Create Page"

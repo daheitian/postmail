@@ -297,6 +297,11 @@ msgstr "複製"
 msgid "Create Collection"
 msgstr "創建收藏夾"
 
+#. @context: Link at bottom of page combobox to create a new page
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Create page"
+msgstr ""
+
 #. @context: Button to create new page
 #: src/ui/dash/PageForm.tsx
 msgid "Create Page"

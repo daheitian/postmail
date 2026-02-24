@@ -169,6 +169,10 @@ export function NavigationContent({
       message: "All pages are already in navigation.",
       comment: "@context: Message when no pages available to add",
     }),
+    createPage: t({
+      message: "Create page",
+      comment: "@context: Link at bottom of page combobox to create a new page",
+    }),
     urlPlaceholder: "/archive or https://...",
     maxVisibleLinks: t({
       message: "Max visible links",

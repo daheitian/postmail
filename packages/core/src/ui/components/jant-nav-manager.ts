@@ -420,11 +420,9 @@ export class JantNavManager extends LitElement {
     const hasMore = overflow.length > 0;
 
     return html`
-      <div class="border rounded-lg">
-        <p class="text-xs text-muted-foreground px-4 pt-3">
-          ${this.labels.preview}
-        </p>
-        <div class="px-5 py-3">
+      <div>
+        <p class="text-xs text-muted-foreground">${this.labels.preview}</p>
+        <div class="py-3">
           <div class="site-header-top">
             <a href="/" class="site-logo">${this.siteName}</a>
             <div class="site-header-right">
@@ -525,6 +523,7 @@ export class JantNavManager extends LitElement {
             </span>
           </nav>
         </div>
+        <hr class="mt-3" />
       </div>
     `;
   }
@@ -842,14 +841,52 @@ export class JantNavManager extends LitElement {
                               </div>
                             `,
                           )}
+                          <hr role="separator" />
+                          <a href="/dash/pages/new" role="option">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M8 12h8" />
+                              <path d="M12 8v8" />
+                            </svg>
+                            ${this.labels.createPage}
+                          </a>
                         </div>`
                       : html`<div
-                          class="py-6 text-center text-sm text-muted-foreground"
-                        >
-                          ${this._availablePages.length === 0
-                            ? this.labels.allPagesInNav
-                            : this.labels.noPagesFound}
-                        </div>`}
+                            class="py-6 text-center text-sm text-muted-foreground"
+                          >
+                            ${this._availablePages.length === 0
+                              ? this.labels.allPagesInNav
+                              : this.labels.noPagesFound}
+                          </div>
+                          <hr role="separator" />
+                          <a href="/dash/pages/new" role="option">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            >
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M8 12h8" />
+                              <path d="M12 8v8" />
+                            </svg>
+                            ${this.labels.createPage}
+                          </a>`}
                   </div>
                 </div>
               `
