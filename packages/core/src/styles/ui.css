@@ -211,46 +211,23 @@
     padding: 0px var(--site-padding) var(--space-xl);
   }
 
-  /* --- Sidebar layout (shared by dashboard and site sidebar pages) ------- */
+  /* --- Sidebar layout (collections pages) -------------------------------- */
 
-  .sidebar-layout {
-    display: flex;
-    gap: var(--sidebar-gap);
+  .site-container-sidebar {
+    position: relative;
   }
 
   .sidebar-nav {
+    position: absolute;
+    right: calc(100% + var(--sidebar-gap));
+    top: 0;
     width: var(--sidebar-width);
-    flex-shrink: 0;
   }
 
-  .sidebar-main {
-    flex: 1;
-    min-width: 0;
-    max-width: var(--site-width);
-  }
-
-  @media (max-width: 959px) {
-    .sidebar-layout {
-      display: block;
-    }
+  @media (max-width: 1079px) {
     .sidebar-nav {
       display: none;
     }
-    .sidebar-main {
-      max-width: none;
-    }
-  }
-
-  .site-header-sidebar {
-    max-width: calc(
-      var(--sidebar-width) + var(--sidebar-gap) + var(--site-width)
-    );
-  }
-
-  .site-footer-sidebar {
-    max-width: calc(
-      var(--sidebar-width) + var(--sidebar-gap) + var(--site-width)
-    );
   }
 
   /* =========================================================================

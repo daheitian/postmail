@@ -1548,6 +1548,11 @@ msgstr "查看"
 msgid "View Site"
 msgstr "查看网站"
 
+#. @context: Dashboard menu item to visit the public site
+#: src/ui/layouts/DashLayout.tsx
+msgid "Visit Site"
+msgstr ""
+
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx
 msgid "Welcome to Jant"

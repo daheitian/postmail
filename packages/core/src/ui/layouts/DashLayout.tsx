@@ -122,6 +122,13 @@ function DashLayoutContent({
                 id="dash-menu"
                 aria-labelledby="dash-menu-trigger"
               >
+                <a href="/" role="menuitem" target="_blank">
+                  {t({
+                    message: "Visit Site",
+                    comment:
+                      "@context: Dashboard menu item to visit the public site",
+                  })}
+                </a>
                 <a href="/signout" role="menuitem">
                   {t({
                     message: "Sign Out",

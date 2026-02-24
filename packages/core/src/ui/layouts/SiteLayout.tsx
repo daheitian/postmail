@@ -78,7 +78,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
 
   return (
     <div class="site-page">
-      <header class={`site-header ${sidebar ? "site-header-sidebar" : ""}`}>
+      <header class="site-header">
         <div class="site-header-inner">
           <div class="site-header-top site-header-top-bordered">
             <a href="/" class="site-logo">
@@ -180,13 +180,9 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
 
       <main class="site-main">
         {sidebar ? (
-          <div class="container-sidebar">
-            <div class="sidebar-layout">
-              <aside class="sidebar-nav">{sidebar}</aside>
-              <div class="sidebar-main">
-                <div class="site-content">{children}</div>
-              </div>
-            </div>
+          <div class="site-container site-container-sidebar">
+            <aside class="sidebar-nav">{sidebar}</aside>
+            <div class="site-content">{children}</div>
           </div>
         ) : (
           <div class="site-container">
@@ -221,10 +217,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       </main>
 
       {siteFooterHtml && (
-        <footer
-          class={`site-footer ${sidebar ? "site-footer-sidebar" : ""}`}
-          data-footer
-        >
+        <footer class="site-footer" data-footer>
           <div class="site-container">
             <div
               class="prose"

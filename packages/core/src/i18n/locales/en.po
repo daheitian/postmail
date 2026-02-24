@@ -1897,6 +1897,11 @@ msgstr "View Site"
 #~ msgid "Visibility"
 #~ msgstr "Visibility"
 
+#. @context: Dashboard menu item to visit the public site
+#: src/ui/layouts/DashLayout.tsx
+msgid "Visit Site"
+msgstr "Visit Site"
+
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx
 msgid "Welcome to Jant"
