@@ -1,16 +1,26 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createRedirectService } from "../redirect.js";
+import { createPageService } from "../page.js";
+import { createPostService } from "../post.js";
+import { createPathRegistryService } from "../path-registry.js";
+import { ConflictError } from "../../lib/errors.js";
 import type { Database } from "../../db/index.js";
 
 describe("RedirectService", () => {
   let db: Database;
   let redirectService: ReturnType<typeof createRedirectService>;
+  let pageService: ReturnType<typeof createPageService>;
+  let postService: ReturnType<typeof createPostService>;
+  let pathRegistry: ReturnType<typeof createPathRegistryService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    redirectService = createRedirectService(db);
+    pathRegistry = createPathRegistryService(db);
+    redirectService = createRedirectService(db, pathRegistry);
+    pageService = createPageService(db, pathRegistry);
+    postService = createPostService(db, pathRegistry);
   });
 
   describe("create", () => {
@@ -99,12 +109,51 @@ describe("RedirectService", () => {
     });
 
     it("returns all redirects", async () => {
-      await redirectService.create("/a", "/b");
-      await redirectService.create("/c", "/d");
-      await redirectService.create("/e", "/f");
+      await redirectService.create("/old-a", "/new-a");
+      await redirectService.create("/old-b", "/new-b");
+      await redirectService.create("/old-c", "/new-c");
 
       const redirects = await redirectService.list();
       expect(redirects).toHaveLength(3);
+    });
+  });
+
+  describe("path registry integration", () => {
+    it("rejects redirect that conflicts with a page", async () => {
+      await pageService.create({ slug: "about", title: "About" });
+
+      await expect(
+        redirectService.create("/about", "/new-about"),
+      ).rejects.toThrow(ConflictError);
+    });
+
+    it("rejects redirect that conflicts with a post path", async () => {
+      await postService.create({
+        format: "note",
+        body: "test",
+        path: "my-post",
+      });
+
+      await expect(
+        redirectService.create("/my-post", "/elsewhere"),
+      ).rejects.toThrow(ConflictError);
+    });
+
+    it("allows upsert for existing redirect (same type)", async () => {
+      await redirectService.create("/old", "/first");
+      const second = await redirectService.create("/old", "/second");
+
+      expect(second.toPath).toBe("/second");
+
+      const list = await redirectService.list();
+      expect(list).toHaveLength(1);
+    });
+
+    it("releases path on delete", async () => {
+      const redirect = await redirectService.create("/old", "/new");
+      await redirectService.delete(redirect.id);
+
+      expect(await pathRegistry.isAvailable("old")).toBe(true);
     });
   });
 });

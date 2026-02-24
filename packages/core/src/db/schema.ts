@@ -155,6 +155,17 @@ export const redirects = sqliteTable("redirects", {
 });
 
 // =============================================================================
+// Path Registry (URL path ownership)
+// =============================================================================
+
+export const pathRegistry = sqliteTable("path_registry", {
+  path: text("path").primaryKey(),
+  ownerType: text("owner_type").notNull(),
+  ownerId: integer("owner_id").notNull(),
+  createdAt: integer("created_at").notNull(),
+});
+
+// =============================================================================
 // Settings (Key-Value)
 // =============================================================================
 

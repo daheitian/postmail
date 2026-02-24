@@ -10,6 +10,8 @@ import { redirects } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { normalizePath } from "../lib/url.js";
 import type { Redirect } from "../types.js";
+import type { PathRegistryService } from "./path-registry.js";
+import { ConflictError } from "../lib/errors.js";
 
 export interface RedirectService {
   getByPath(fromPath: string): Promise<Redirect | null>;
@@ -18,7 +20,10 @@ export interface RedirectService {
   list(): Promise<Redirect[]>;
 }
 
-export function createRedirectService(db: Database): RedirectService {
+export function createRedirectService(
+  db: Database,
+  pathRegistry: PathRegistryService,
+): RedirectService {
   function toRedirect(row: typeof redirects.$inferSelect): Redirect {
     return {
       id: row.id,
@@ -44,7 +49,16 @@ export function createRedirectService(db: Database): RedirectService {
       const timestamp = now();
       const normalizedFrom = normalizePath(fromPath);
 
-      // Delete existing redirect from this path if any
+      // Check if path is claimed by a non-redirect entity
+      const existingClaim = await pathRegistry.getByPath(normalizedFrom);
+      if (existingClaim && existingClaim.ownerType !== "redirect") {
+        throw new ConflictError(`Path "${normalizedFrom}" is already in use`);
+      }
+
+      // Delete existing redirect from this path if any (upsert behavior)
+      if (existingClaim?.ownerType === "redirect") {
+        await pathRegistry.release(normalizedFrom);
+      }
       await db.delete(redirects).where(eq(redirects.fromPath, normalizedFrom));
 
       const result = await db
@@ -58,10 +72,16 @@ export function createRedirectService(db: Database): RedirectService {
         .returning();
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toRedirect(result[0]!);
+      const redirect = toRedirect(result[0]!);
+
+      await pathRegistry.claim(normalizedFrom, "redirect", redirect.id);
+
+      return redirect;
     },
 
     async delete(id) {
+      // Release path registry entries for this redirect
+      await pathRegistry.releaseByOwner("redirect", id);
       const result = await db
         .delete(redirects)
         .where(eq(redirects.id, id))

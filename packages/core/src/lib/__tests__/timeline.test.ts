@@ -11,6 +11,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPostService } from "../../services/post.js";
 import { createMediaService } from "../../services/media.js";
+import { createPathRegistryService } from "../../services/path-registry.js";
 import { buildMediaMap } from "../media-helpers.js";
 import type { Database } from "../../db/index.js";
 import type { PostWithMedia } from "../../types.js";
@@ -23,7 +24,7 @@ describe("Timeline data assembly", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    postService = createPostService(db);
+    postService = createPostService(db, createPathRegistryService(db));
     mediaService = createMediaService(db);
   });
 

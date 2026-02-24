@@ -21,6 +21,9 @@ import {
 /** Track in-flight upload promises keyed by clientId */
 const uploadPromises = new Map<string, Promise<string | null>>();
 
+/** Track attachments removed while their upload is still in flight */
+const removedClientIds = new Set<string>();
+
 /**
  * Upload a single file: process with ImageProcessor, then POST to /api/upload.
  * Returns the mediaId on success, null on failure.
@@ -67,6 +70,22 @@ function getEditor(): JantComposeEditor | null {
   return document.querySelector("jant-compose-editor");
 }
 
+// ── Attachment removal handler ───────────────────────────────────────
+
+document.addEventListener("jant:attachment-removed", (e: Event) => {
+  const { clientId, mediaId } = (
+    e as CustomEvent<{ clientId: string; mediaId: string | null }>
+  ).detail;
+
+  if (mediaId) {
+    // Upload already finished — fire-and-forget delete
+    fetch(`/api/upload/${mediaId}`, { method: "DELETE" }).catch(() => {});
+  } else {
+    // Upload still in flight — mark for cleanup after it finishes
+    removedClientIds.add(clientId);
+  }
+});
+
 // ── File selection handler ──────────────────────────────────────────
 
 document.addEventListener("jant:files-selected", (e: Event) => {
@@ -76,7 +95,17 @@ document.addEventListener("jant:files-selected", (e: Event) => {
   const editor = getEditor();
 
   for (const { file, clientId } of event.detail.files) {
-    const promise = uploadFile(file, clientId, editor);
+    const promise = uploadFile(file, clientId, editor).then((mediaId) => {
+      // If the attachment was removed while uploading, delete it immediately
+      if (removedClientIds.has(clientId)) {
+        removedClientIds.delete(clientId);
+        if (mediaId) {
+          fetch(`/api/upload/${mediaId}`, { method: "DELETE" }).catch(() => {});
+        }
+        return null;
+      }
+      return mediaId;
+    });
     uploadPromises.set(clientId, promise);
     promise.finally(() => uploadPromises.delete(clientId));
   }

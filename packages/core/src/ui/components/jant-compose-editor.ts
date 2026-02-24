@@ -235,6 +235,15 @@ export class JantComposeEditor extends LitElement {
     const attachment = this._attachments[index];
     if (attachment) {
       URL.revokeObjectURL(attachment.previewUrl);
+      this.dispatchEvent(
+        new CustomEvent("jant:attachment-removed", {
+          bubbles: true,
+          detail: {
+            clientId: attachment.clientId,
+            mediaId: attachment.mediaId,
+          },
+        }),
+      );
     }
     this._attachments = this._attachments.filter((_, i) => i !== index);
     // Close alt panel if it was showing the removed item

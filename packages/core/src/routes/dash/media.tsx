@@ -126,19 +126,7 @@ mediaRoutes.post("/:id/delete", async (c) => {
   const media = await c.var.services.media.getById(id);
   if (!media) return c.notFound();
 
-  // Delete from storage
-  const storage = c.var.storage;
-  if (storage) {
-    try {
-      await storage.delete(media.storageKey);
-    } catch (err) {
-      // eslint-disable-next-line no-console -- Error logging is intentional
-      console.error("Storage delete error:", err);
-    }
-  }
-
-  // Delete from database
-  await c.var.services.media.delete(id);
+  await c.var.services.media.delete(id, c.var.storage);
 
   return dsRedirect("/dash/media");
 });

@@ -119,6 +119,9 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0010: performance indexes
   applyMigration(sqlite, "0010_add_performance_indexes.sql");
 
+  // Apply 0011: path registry
+  applyMigration(sqlite, "0011_add_path_registry.sql");
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

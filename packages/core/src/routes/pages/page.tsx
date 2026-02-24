@@ -1,9 +1,10 @@
 /**
  * Custom Page Route
  *
- * Serves pages from the pages table and posts with custom paths.
+ * Serves pages and posts with custom paths via the path registry.
  * This is a catch-all route mounted at "/" - must be registered last.
- * Supports multi-level paths (e.g. /2024/my-post) for posts.
+ * The path registry eliminates ambiguity: each path maps to exactly
+ * one entity (page, post, or redirect).
  */
 
 import { Hono } from "hono";
@@ -25,34 +26,28 @@ pageRoutes.get("/*", async (c) => {
   const fullPath = c.req.path.slice(1); // Remove leading /
   if (!fullPath) return c.notFound();
 
-  const isMultiSegment = fullPath.includes("/");
+  const entry = await c.var.services.pathRegistry.getByPath(fullPath);
 
-  // Pages only have single-level slugs; skip page lookup for multi-segment paths
-  if (!isMultiSegment) {
-    const page = await c.var.services.pages.getBySlug(fullPath);
-
-    if (page) {
-      if (page.status === "draft") {
-        return c.notFound();
-      }
-
-      const navData = await getNavigationData(c);
-      const pageView = toPageView(page);
-
-      return renderPublicPage(c, {
-        title: `${page.title || fullPath} - ${navData.siteName}`,
-        description: page.body?.slice(0, 160),
-        navData,
-        content: <SinglePage page={pageView} />,
-      });
+  if (entry?.ownerType === "page") {
+    const page = await c.var.services.pages.getById(entry.ownerId);
+    if (!page || page.status === "draft") {
+      return c.notFound();
     }
+
+    const navData = await getNavigationData(c);
+    const pageView = toPageView(page);
+
+    return renderPublicPage(c, {
+      title: `${page.title || fullPath} - ${navData.siteName}`,
+      description: page.body?.slice(0, 160),
+      navData,
+      content: <SinglePage page={pageView} />,
+    });
   }
 
-  // Posts support multi-level paths
-  const post = await c.var.services.posts.getByPath(fullPath);
-
-  if (post) {
-    if (post.status === "draft") {
+  if (entry?.ownerType === "post") {
+    const post = await c.var.services.posts.getById(entry.ownerId);
+    if (!post || post.status === "draft") {
       return c.notFound();
     }
 

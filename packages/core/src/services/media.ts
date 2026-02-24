@@ -9,6 +9,7 @@ import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { media } from "../db/schema.js";
 import { now } from "../lib/time.js";
+import type { StorageDriver } from "../lib/storage.js";
 import type { Media } from "../types.js";
 
 export interface MediaFilters {
@@ -24,7 +25,21 @@ export interface MediaService {
   getByPostIds(postIds: number[]): Promise<Map<number, Media[]>>;
   list(filters?: MediaFilters): Promise<Media[]>;
   create(data: CreateMediaData): Promise<Media>;
-  delete(id: string): Promise<boolean>;
+  /**
+   * Delete a media record and its storage file.
+   *
+   * @param id - Media record ID
+   * @param storage - Optional storage driver; when provided the file is deleted from storage
+   * @returns true if the record existed and was deleted
+   */
+  delete(id: string, storage?: StorageDriver | null): Promise<boolean>;
+  /**
+   * Delete multiple media records and their storage files.
+   *
+   * @param ids - Media record IDs
+   * @param storage - Optional storage driver; when provided the files are deleted from storage
+   */
+  deleteByIds(ids: string[], storage?: StorageDriver | null): Promise<void>;
   getByStorageKey(storageKey: string): Promise<Media | null>;
   attachToPost(postId: number, mediaIds: string[]): Promise<void>;
   detachFromPost(postId: number): Promise<void>;
@@ -207,9 +222,37 @@ export function createMediaService(db: Database): MediaService {
       await db.update(media).set({ alt }).where(eq(media.id, id));
     },
 
-    async delete(id) {
-      const result = await db.delete(media).where(eq(media.id, id)).returning();
-      return result.length > 0;
+    async delete(id, storage) {
+      const record = await this.getById(id);
+      if (!record) return false;
+
+      if (storage) {
+        await storage.delete(record.storageKey).catch((err) => {
+          // eslint-disable-next-line no-console -- Error logging is intentional
+          console.error("Storage delete error:", err);
+        });
+      }
+
+      await db.delete(media).where(eq(media.id, id));
+      return true;
+    },
+
+    async deleteByIds(ids, storage) {
+      if (ids.length === 0) return;
+
+      if (storage) {
+        const records = await this.getByIds(ids);
+        await Promise.all(
+          records.map((r) =>
+            storage.delete(r.storageKey).catch((err) => {
+              // eslint-disable-next-line no-console -- Error logging is intentional
+              console.error("Storage delete error:", err);
+            }),
+          ),
+        );
+      }
+
+      await db.delete(media).where(inArray(media.id, ids));
     },
   };
 }

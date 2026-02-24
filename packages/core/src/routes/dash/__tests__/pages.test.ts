@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createPageService } from "../../../services/page.js";
 import { createNavItemService } from "../../../services/navigation.js";
+import { createPathRegistryService } from "../../../services/path-registry.js";
 import type { Database } from "../../../db/index.js";
 
 describe("Dashboard Pages - Nav Management Logic", () => {
@@ -20,7 +21,7 @@ describe("Dashboard Pages - Nav Management Logic", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    pageService = createPageService(db);
+    pageService = createPageService(db, createPathRegistryService(db));
     navItemService = createNavItemService(db);
   });
 

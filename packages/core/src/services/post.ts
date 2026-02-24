@@ -12,7 +12,17 @@ import type { Database } from "../db/index.js";
 import { posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
+import type { StorageDriver } from "../lib/storage.js";
+import type { MediaService } from "./media.js";
 import type { Format, Status, Post, CreatePost, UpdatePost } from "../types.js";
+import type { PathRegistryService } from "./path-registry.js";
+import { ConflictError } from "../lib/errors.js";
+
+/** Dependencies for operations that coordinate with other services */
+export interface PostDeleteDeps {
+  media: MediaService;
+  storage?: StorageDriver | null;
+}
 
 export interface PostFilters {
   format?: Format;
@@ -37,7 +47,14 @@ export interface PostService {
   count(filters?: PostFilters): Promise<number>;
   create(data: CreatePost): Promise<Post>;
   update(id: number, data: UpdatePost): Promise<Post | null>;
-  delete(id: number): Promise<boolean>;
+  /**
+   * Soft-delete a post and clean up its media (storage files + DB records).
+   * Thread roots cascade to all replies.
+   *
+   * @param id - Post ID
+   * @param deps - Media service and optional storage driver for file cleanup
+   */
+  delete(id: number, deps?: PostDeleteDeps): Promise<boolean>;
   getThread(rootId: number): Promise<Post[]>;
   updateThreadStatusAndFeatured(
     rootId: number,
@@ -53,7 +70,16 @@ export interface PostService {
   ): Promise<Map<number, Post[]>>;
 }
 
-export function createPostService(db: Database): PostService {
+/** Check if an error is a SQLite UNIQUE constraint violation (D1 or better-sqlite3) */
+function isUniqueConstraintError(err: unknown): boolean {
+  const msg = String(err);
+  return msg.includes("UNIQUE constraint") || msg.includes("SQLITE_CONSTRAINT");
+}
+
+export function createPostService(
+  db: Database,
+  pathRegistry: PathRegistryService,
+): PostService {
   /** Build WHERE conditions from filters (shared by list and count) */
   function buildFilterConditions(filters: PostFilters) {
     const conditions = [];
@@ -189,30 +215,52 @@ export function createPostService(db: Database): PostService {
         }
       }
 
-      const result = await db
-        .insert(posts)
-        .values({
-          format: data.format,
-          status,
-          featured: featured ? 1 : 0,
-          pinned: data.pinned ? 1 : 0,
-          path: data.path ?? null,
-          title: data.title ?? null,
-          url: data.url ?? null,
-          body: data.body ?? null,
-          bodyHtml,
-          quoteText: data.quoteText ?? null,
-          rating: data.rating ?? null,
-          replyToId: data.replyToId ?? null,
-          threadId,
-          publishedAt: data.publishedAt ?? timestamp,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-        })
-        .returning();
+      // Validate path availability before DB insert — throws friendly
+      // ConflictError/ValidationError instead of a raw UNIQUE constraint error.
+      // Uses placeholder owner ID; corrected to real ID after insert.
+      if (data.path) {
+        await pathRegistry.claim(data.path, "post", 0);
+      }
+
+      let result;
+      try {
+        result = await db
+          .insert(posts)
+          .values({
+            format: data.format,
+            status,
+            featured: featured ? 1 : 0,
+            pinned: data.pinned ? 1 : 0,
+            path: data.path ?? null,
+            title: data.title ?? null,
+            url: data.url ?? null,
+            body: data.body ?? null,
+            bodyHtml,
+            quoteText: data.quoteText ?? null,
+            rating: data.rating ?? null,
+            replyToId: data.replyToId ?? null,
+            threadId,
+            publishedAt: data.publishedAt ?? timestamp,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          })
+          .returning();
+      } catch (err) {
+        if (data.path) await pathRegistry.release(data.path);
+        if (isUniqueConstraintError(err)) {
+          throw new ConflictError(`Path "${data.path}" is already in use`);
+        }
+        throw err;
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
       const post = toPost(result[0]!);
+
+      // Update registry with actual post ID
+      if (post.path) {
+        await pathRegistry.release(post.path);
+        await pathRegistry.claim(post.path, "post", post.id);
+      }
 
       // Sync collection memberships if provided
       if (data.collectionIds && data.collectionIds.length > 0) {
@@ -230,6 +278,20 @@ export function createPostService(db: Database): PostService {
     async update(id, data) {
       const existing = await this.getById(id);
       if (!existing) return null;
+
+      // Handle path changes in the registry before modifying the post
+      const pathChanging =
+        data.path !== undefined && data.path !== existing.path;
+      if (pathChanging) {
+        // Claim new path (if non-null) before releasing old
+        if (data.path) {
+          await pathRegistry.claim(data.path, "post", id);
+        }
+        // Release old path (if it existed)
+        if (existing.path) {
+          await pathRegistry.release(existing.path);
+        }
+      }
 
       const timestamp = now();
       const updates: Partial<typeof posts.$inferInsert> = {
@@ -335,9 +397,42 @@ export function createPostService(db: Database): PostService {
       return updateResult?.[0] ? toPost(updateResult[0]) : null;
     },
 
-    async delete(id) {
+    async delete(id, deps) {
       const existing = await this.getById(id);
       if (!existing) return false;
+
+      // Clean up media for all affected posts
+      if (deps?.media) {
+        let postIds: number[];
+        if (!existing.threadId) {
+          const thread = await this.getThread(id);
+          postIds = thread.map((p) => p.id);
+        } else {
+          postIds = [id];
+        }
+
+        const mediaMap = await deps.media.getByPostIds(postIds);
+        const allMedia = [...mediaMap.values()].flat();
+        if (allMedia.length > 0) {
+          await deps.media.deleteByIds(
+            allMedia.map((m) => m.id),
+            deps.storage,
+          );
+        }
+      }
+
+      // Release paths from registry
+      if (!existing.threadId) {
+        // Thread root: release paths for all posts in thread
+        const thread = await this.getThread(id);
+        for (const post of thread) {
+          if (post.path) {
+            await pathRegistry.release(post.path);
+          }
+        }
+      } else if (existing.path) {
+        await pathRegistry.release(existing.path);
+      }
 
       const timestamp = now();
 

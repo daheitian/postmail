@@ -1,18 +1,25 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPageService } from "../page.js";
+import { createPostService } from "../post.js";
 import { createNavItemService } from "../navigation.js";
+import { createPathRegistryService } from "../path-registry.js";
+import { ValidationError, ConflictError } from "../../lib/errors.js";
 import type { Database } from "../../db/index.js";
 
 describe("PageService", () => {
   let db: Database;
   let pageService: ReturnType<typeof createPageService>;
+  let postService: ReturnType<typeof createPostService>;
   let navItemService: ReturnType<typeof createNavItemService>;
+  let pathRegistry: ReturnType<typeof createPathRegistryService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    pageService = createPageService(db);
+    pathRegistry = createPathRegistryService(db);
+    pageService = createPageService(db, pathRegistry);
+    postService = createPostService(db, pathRegistry);
     navItemService = createNavItemService(db);
   });
 
@@ -216,6 +223,76 @@ describe("PageService", () => {
       const contactNav = navs.find((n) => n.pageId === page2.id);
       expect(aboutNav?.label).toBe("About Us");
       expect(contactNav?.label).toBe("Contact");
+    });
+  });
+
+  describe("path registry integration", () => {
+    it("rejects reserved slug on create", async () => {
+      await expect(
+        pageService.create({ slug: "dash", title: "Dashboard" }),
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it("rejects slug that conflicts with a post path", async () => {
+      await postService.create({
+        format: "note",
+        body: "test",
+        path: "about",
+      });
+
+      await expect(
+        pageService.create({ slug: "about", title: "About" }),
+      ).rejects.toThrow(ConflictError);
+    });
+
+    it("rejects reserved slug on update", async () => {
+      const page = await pageService.create({
+        slug: "about",
+        title: "About",
+      });
+
+      await expect(
+        pageService.update(page.id, { slug: "api" }),
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it("rejects slug update that conflicts with another entity", async () => {
+      const page = await pageService.create({
+        slug: "about",
+        title: "About",
+      });
+      await postService.create({
+        format: "note",
+        body: "test",
+        path: "contact",
+      });
+
+      await expect(
+        pageService.update(page.id, { slug: "contact" }),
+      ).rejects.toThrow(ConflictError);
+    });
+
+    it("releases path on delete", async () => {
+      const page = await pageService.create({
+        slug: "about",
+        title: "About",
+      });
+
+      await pageService.delete(page.id);
+
+      expect(await pathRegistry.isAvailable("about")).toBe(true);
+    });
+
+    it("releases old slug and claims new slug on update", async () => {
+      const page = await pageService.create({
+        slug: "about",
+        title: "About",
+      });
+
+      await pageService.update(page.id, { slug: "about-us" });
+
+      expect(await pathRegistry.isAvailable("about")).toBe(true);
+      expect(await pathRegistry.isAvailable("about-us")).toBe(false);
     });
   });
 });

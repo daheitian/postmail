@@ -28,14 +28,17 @@ export interface HtmlExcerpt {
   excerpt: string;
   /** Whether the original content has more text beyond the excerpt */
   hasMore: boolean;
+  /** Character offset in the original HTML where the excerpt ends */
+  excerptEnd: number;
 }
 
 /**
  * Extracts a paragraph-aware HTML excerpt from body HTML.
  *
- * Uses a greedy algorithm: accumulates paragraphs until the total
- * plain-text length exceeds 500 characters, then stops. At least
- * one paragraph is always included.
+ * Uses a greedy algorithm: accumulates paragraphs until either
+ * the total plain-text length exceeds 500 characters or 5 paragraphs
+ * have been collected, whichever comes first. At least one paragraph
+ * is always included.
  *
  * If the content contains a `<!--more-->` marker, the content before
  * the marker is used as the excerpt instead.
@@ -62,26 +65,32 @@ export function getHtmlExcerpt(bodyHtml: string): HtmlExcerpt {
   // Honor manual <!--more--> marker
   if (bodyHtml.includes("<!--more-->")) {
     const excerpt = bodyHtml.split("<!--more-->")[0] ?? "";
-    return { excerpt, hasMore: true };
+    return {
+      excerpt,
+      hasMore: true,
+      excerptEnd: excerpt.length + "<!--more-->".length,
+    };
   }
 
   const paragraphs = bodyHtml.match(/<p>[\s\S]*?<\/p>/g) || [];
 
   // No paragraphs found — return full content
   if (paragraphs.length === 0) {
-    return { excerpt: bodyHtml, hasMore: false };
+    return { excerpt: bodyHtml, hasMore: false, excerptEnd: bodyHtml.length };
   }
 
   let excerpt = "";
   let charCount = 0;
+  let paraCount = 0;
 
   for (const p of paragraphs) {
     const textLen = stripHtml(p).length;
-    if (charCount + textLen > 500 && excerpt) break;
+    if ((charCount + textLen > 500 || paraCount >= 5) && excerpt) break;
     excerpt += p;
     charCount += textLen;
+    paraCount++;
   }
 
   const hasMore = excerpt.length < bodyHtml.length;
-  return { excerpt, hasMore };
+  return { excerpt, hasMore, excerptEnd: excerpt.length };
 }

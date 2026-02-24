@@ -10,6 +10,8 @@ import { pages, navItems } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
 import type { Page, Status, CreatePage, UpdatePage } from "../types.js";
+import type { PathRegistryService } from "./path-registry.js";
+import { ConflictError } from "../lib/errors.js";
 
 export interface PageFilters {
   status?: Status;
@@ -25,7 +27,16 @@ export interface PageService {
   delete(id: number): Promise<boolean>;
 }
 
-export function createPageService(db: Database): PageService {
+/** Check if an error is a SQLite UNIQUE constraint violation (D1 or better-sqlite3) */
+function isUniqueConstraintError(err: unknown): boolean {
+  const msg = String(err);
+  return msg.includes("UNIQUE constraint") || msg.includes("SQLITE_CONSTRAINT");
+}
+
+export function createPageService(
+  db: Database,
+  pathRegistry: PathRegistryService,
+): PageService {
   function toPage(row: typeof pages.$inferSelect): Page {
     return {
       id: row.id,
@@ -83,30 +94,59 @@ export function createPageService(db: Database): PageService {
     },
 
     async create(data) {
-      const timestamp = now();
+      // Validate and reserve path before DB insert — throws friendly
+      // ConflictError/ValidationError instead of a raw UNIQUE constraint error.
+      // Uses placeholder owner ID; corrected to real ID after insert.
+      await pathRegistry.claim(data.slug, "page", 0);
 
+      const timestamp = now();
       const bodyHtml = data.body ? renderMarkdown(data.body) : null;
 
-      const result = await db
-        .insert(pages)
-        .values({
-          slug: data.slug,
-          title: data.title ?? null,
-          body: data.body ?? null,
-          bodyHtml,
-          status: data.status ?? "published",
-          createdAt: timestamp,
-          updatedAt: timestamp,
-        })
-        .returning();
+      let page: Page;
+      try {
+        const result = await db
+          .insert(pages)
+          .values({
+            slug: data.slug,
+            title: data.title ?? null,
+            body: data.body ?? null,
+            bodyHtml,
+            status: data.status ?? "published",
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          })
+          .returning();
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toPage(result[0]!);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
+        page = toPage(result[0]!);
+      } catch (err) {
+        await pathRegistry.release(data.slug);
+        // Surface DB unique constraint failures as a friendly error
+        if (isUniqueConstraintError(err)) {
+          throw new ConflictError(`Slug "${data.slug}" is already in use`);
+        }
+        throw err;
+      }
+
+      // Update registry with actual page ID
+      await pathRegistry.release(data.slug);
+      await pathRegistry.claim(data.slug, "page", page.id);
+
+      return page;
     },
 
     async update(id, data) {
       const existing = await this.getById(id);
       if (!existing) return null;
+
+      const slugChanging =
+        data.slug !== undefined && data.slug !== existing.slug;
+
+      // If slug is changing, claim the new path first (validates before modifying)
+      if (slugChanging) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by slugChanging check
+        await pathRegistry.claim(data.slug!, "page", id);
+      }
 
       const timestamp = now();
       const updates: Partial<typeof pages.$inferInsert> = {
@@ -123,7 +163,7 @@ export function createPageService(db: Database): PageService {
       }
 
       // If slug changed, update related nav_items
-      if (data.slug !== undefined && data.slug !== existing.slug) {
+      if (slugChanging) {
         await db
           .update(navItems)
           .set({ url: `/${data.slug}`, updatedAt: timestamp })
@@ -144,10 +184,17 @@ export function createPageService(db: Database): PageService {
         .where(eq(pages.id, id))
         .returning();
 
+      // Release old slug from registry after successful update
+      if (slugChanging) {
+        await pathRegistry.release(existing.slug);
+      }
+
       return result[0] ? toPage(result[0]) : null;
     },
 
     async delete(id) {
+      // Release path registry entries for this page
+      await pathRegistry.releaseByOwner("page", id);
       // nav_items with page_id FK have ON DELETE CASCADE, so they auto-delete
       const result = await db.delete(pages).where(eq(pages.id, id)).returning();
       return result.length > 0;

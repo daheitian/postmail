@@ -484,5 +484,85 @@ describe("Posts API Routes", () => {
 
       expect(res.status).toBe(404);
     });
+
+    it("deletes media records when post is deleted", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "note",
+        body: "with media",
+      });
+
+      const m1 = await services.media.create({
+        filename: "a.jpg",
+        originalName: "a.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        storageKey: "media/2025/01/a.jpg",
+      });
+      const m2 = await services.media.create({
+        filename: "b.jpg",
+        originalName: "b.jpg",
+        mimeType: "image/jpeg",
+        size: 2048,
+        storageKey: "media/2025/01/b.jpg",
+      });
+
+      await services.media.attachToPost(post.id, [m1.id, m2.id]);
+
+      const res = await app.request(`/api/posts/${sqid.encode(post.id)}`, {
+        method: "DELETE",
+      });
+
+      expect(res.status).toBe(200);
+
+      // Media records should be deleted, not just detached
+      expect(await services.media.getById(m1.id)).toBeNull();
+      expect(await services.media.getById(m2.id)).toBeNull();
+    });
+
+    it("deletes media for all posts in a thread when root is deleted", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const root = await services.posts.create({
+        format: "note",
+        body: "thread root",
+      });
+      const reply = await services.posts.create({
+        format: "note",
+        body: "reply",
+        replyToId: root.id,
+      });
+
+      const rootMedia = await services.media.create({
+        filename: "root.jpg",
+        originalName: "root.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        storageKey: "media/2025/01/root.jpg",
+      });
+      const replyMedia = await services.media.create({
+        filename: "reply.jpg",
+        originalName: "reply.jpg",
+        mimeType: "image/jpeg",
+        size: 2048,
+        storageKey: "media/2025/01/reply.jpg",
+      });
+
+      await services.media.attachToPost(root.id, [rootMedia.id]);
+      await services.media.attachToPost(reply.id, [replyMedia.id]);
+
+      const res = await app.request(`/api/posts/${sqid.encode(root.id)}`, {
+        method: "DELETE",
+      });
+
+      expect(res.status).toBe(200);
+
+      // Both root and reply media should be deleted
+      expect(await services.media.getById(rootMedia.id)).toBeNull();
+      expect(await services.media.getById(replyMedia.id)).toBeNull();
+    });
   });
 });

@@ -3,6 +3,7 @@ import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createPageService } from "../../../services/page.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createNavItemService } from "../../../services/navigation.js";
+import { createPathRegistryService } from "../../../services/path-registry.js";
 import type { Database } from "../../../db/index.js";
 import type { PageService } from "../../../services/page.js";
 import type { SettingsService } from "../../../services/settings.js";
@@ -62,7 +63,7 @@ describe("Setup seed logic", () => {
     const testDb = createTestDatabase();
     const db = testDb.db as unknown as Database;
     services = {
-      pages: createPageService(db),
+      pages: createPageService(db, createPathRegistryService(db)),
       settings: createSettingsService(db),
       navItems: createNavItemService(db),
     };

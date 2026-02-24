@@ -17,6 +17,7 @@ import { createCollectionService } from "../../services/collection.js";
 import { createSearchService } from "../../services/search.js";
 import { createNavItemService } from "../../services/navigation.js";
 import { createAuthService } from "../../services/auth.js";
+import { createPathRegistryService } from "../../services/path-registry.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
@@ -45,11 +46,13 @@ export function createTestApp(options: TestAppOptions = {}) {
   const mockD1 = createMockD1(sqlite);
 
   const settingsService = createSettingsService(db);
+  const pathRegistryService = createPathRegistryService(db);
   const services = {
-    posts: createPostService(db),
-    pages: createPageService(db),
+    posts: createPostService(db, pathRegistryService),
+    pages: createPageService(db, pathRegistryService),
     settings: settingsService,
-    redirects: createRedirectService(db),
+    pathRegistry: pathRegistryService,
+    redirects: createRedirectService(db, pathRegistryService),
     media: createMediaService(db),
     collections: createCollectionService(db),
     search: createSearchService(mockD1),

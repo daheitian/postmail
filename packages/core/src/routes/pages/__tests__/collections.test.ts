@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createCollectionService } from "../../../services/collection.js";
 import { createPostService } from "../../../services/post.js";
+import { createPathRegistryService } from "../../../services/path-registry.js";
 import type { Database } from "../../../db/index.js";
 
 describe("Collections Listing Page - Data Logic", () => {
@@ -21,7 +22,7 @@ describe("Collections Listing Page - Data Logic", () => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
     collectionService = createCollectionService(db);
-    postService = createPostService(db);
+    postService = createPostService(db, createPathRegistryService(db));
   });
 
   it("returns collections with post counts", async () => {

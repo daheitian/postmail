@@ -111,6 +111,31 @@ describe("getHtmlExcerpt", () => {
     expect(result.hasMore).toBe(true);
   });
 
+  it("stops at 5 paragraphs even if under 500 chars", () => {
+    const paras = Array.from(
+      { length: 8 },
+      (_, i) => `<p>Paragraph ${i + 1}</p>`,
+    );
+    const html = paras.join("");
+
+    const result = getHtmlExcerpt(html);
+    expect(result.excerpt).toBe(paras.slice(0, 5).join(""));
+    expect(result.hasMore).toBe(true);
+  });
+
+  it("stops at char limit before reaching 5 paragraphs", () => {
+    const p1 = `<p>${"A".repeat(300)}</p>`;
+    const p2 = `<p>${"B".repeat(300)}</p>`;
+    const p3 = `<p>${"C".repeat(50)}</p>`;
+    const html = p1 + p2 + p3;
+
+    const result = getHtmlExcerpt(html);
+    // 300 + 300 > 500, so only first paragraph fits (second would exceed)
+    // Wait: first iteration charCount=0+300=300 < 500, added. Second: 300+300=600 > 500, break.
+    expect(result.excerpt).toBe(p1);
+    expect(result.hasMore).toBe(true);
+  });
+
   it("handles paragraphs with nested HTML elements", () => {
     const p1 = `<p>Hello <strong>bold</strong> and <em>italic</em> text here.</p>`;
     const p2 = `<p>${"B".repeat(500)}</p>`;

@@ -1,16 +1,23 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPostService } from "../post.js";
+import { createPageService } from "../page.js";
+import { createPathRegistryService } from "../path-registry.js";
+import { ValidationError, ConflictError } from "../../lib/errors.js";
 import type { Database } from "../../db/index.js";
 
 describe("PostService", () => {
   let db: Database;
   let postService: ReturnType<typeof createPostService>;
+  let pageService: ReturnType<typeof createPageService>;
+  let pathRegistry: ReturnType<typeof createPathRegistryService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    postService = createPostService(db);
+    pathRegistry = createPathRegistryService(db);
+    postService = createPostService(db, pathRegistry);
+    pageService = createPageService(db, pathRegistry);
   });
 
   describe("create", () => {
@@ -866,6 +873,101 @@ describe("PostService", () => {
 
       const counts = await postService.getReplyCounts([root.id]);
       expect(counts.get(root.id)).toBe(1);
+    });
+  });
+
+  describe("path registry integration", () => {
+    it("claims path on create", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+        path: "my-post",
+      });
+
+      const entry = await pathRegistry.getByPath("my-post");
+      expect(entry).not.toBeNull();
+      expect(entry?.ownerType).toBe("post");
+      expect(entry?.ownerId).toBe(post.id);
+    });
+
+    it("does not claim when no path provided", async () => {
+      await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      // No path registry entries should exist
+      expect(await pathRegistry.isAvailable("test")).toBe(true);
+    });
+
+    it("rejects path that conflicts with a page slug", async () => {
+      await pageService.create({ slug: "about", title: "About" });
+
+      await expect(
+        postService.create({ format: "note", body: "test", path: "about" }),
+      ).rejects.toThrow(ConflictError);
+    });
+
+    it("rejects reserved path on create", async () => {
+      await expect(
+        postService.create({ format: "note", body: "test", path: "dash" }),
+      ).rejects.toThrow(ValidationError);
+    });
+
+    it("releases old path and claims new on update", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+        path: "old-path",
+      });
+
+      await postService.update(post.id, { path: "new-path" });
+
+      expect(await pathRegistry.isAvailable("old-path")).toBe(true);
+      expect(await pathRegistry.isAvailable("new-path")).toBe(false);
+    });
+
+    it("releases path when cleared to null on update", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+        path: "my-path",
+      });
+
+      await postService.update(post.id, { path: null });
+
+      expect(await pathRegistry.isAvailable("my-path")).toBe(true);
+    });
+
+    it("releases path on soft-delete", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+        path: "my-path",
+      });
+
+      await postService.delete(post.id);
+
+      expect(await pathRegistry.isAvailable("my-path")).toBe(true);
+    });
+
+    it("releases paths for all thread posts on root delete", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+        path: "thread-root",
+      });
+      await postService.create({
+        format: "note",
+        body: "reply",
+        path: "thread-reply",
+        replyToId: root.id,
+      });
+
+      await postService.delete(root.id);
+
+      expect(await pathRegistry.isAvailable("thread-root")).toBe(true);
+      expect(await pathRegistry.isAvailable("thread-reply")).toBe(true);
     });
   });
 });

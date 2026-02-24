@@ -122,10 +122,20 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
   // Pre-compute HTML summary for article-style posts (with title)
   let summaryHtml: string | undefined;
   let summaryHasMore: boolean | undefined;
+  let bodyHtmlWithAnchor = post.bodyHtml;
   if (post.title && post.bodyHtml) {
     const result = getHtmlExcerpt(post.bodyHtml);
     summaryHtml = result.excerpt;
     summaryHasMore = result.hasMore;
+
+    // Inject #continue anchor at the excerpt boundary for scroll targeting
+    if (result.hasMore) {
+      const pos = result.excerptEnd;
+      bodyHtmlWithAnchor =
+        post.bodyHtml.slice(0, pos) +
+        '<span id="continue"></span>' +
+        post.bodyHtml.slice(pos);
+    }
   }
 
   // Convert media attachments
@@ -144,7 +154,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     permalink,
     path: post.path ?? undefined,
     title: post.title ?? undefined,
-    bodyHtml: post.bodyHtml ?? undefined,
+    bodyHtml: bodyHtmlWithAnchor ?? undefined,
     excerpt,
     summaryHtml,
     summaryHasMore,

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createMediaService } from "../media.js";
 import { createPostService } from "../post.js";
+import { createPathRegistryService } from "../path-registry.js";
 import type { Database } from "../../db/index.js";
 
 describe("MediaService", () => {
@@ -14,7 +15,7 @@ describe("MediaService", () => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
     mediaService = createMediaService(db);
-    postService = createPostService(db);
+    postService = createPostService(db, createPathRegistryService(db));
   });
 
   const sampleMedia = {
@@ -422,6 +423,37 @@ describe("MediaService", () => {
     it("returns false for non-existent ID", async () => {
       const result = await mediaService.delete("nonexistent");
       expect(result).toBe(false);
+    });
+  });
+
+  describe("deleteByIds", () => {
+    it("deletes multiple media records", async () => {
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/b.jpg",
+      });
+      const m3 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/c.jpg",
+      });
+
+      await mediaService.deleteByIds([m1.id, m2.id]);
+
+      expect(await mediaService.getById(m1.id)).toBeNull();
+      expect(await mediaService.getById(m2.id)).toBeNull();
+      expect(await mediaService.getById(m3.id)).not.toBeNull();
+    });
+
+    it("handles empty array gracefully", async () => {
+      const m1 = await mediaService.create(sampleMedia);
+
+      await mediaService.deleteByIds([]);
+
+      expect(await mediaService.getById(m1.id)).not.toBeNull();
     });
   });
 });

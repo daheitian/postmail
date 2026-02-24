@@ -281,21 +281,9 @@ uploadApiRoutes.get("/", async (c) => {
 // Delete a file
 uploadApiRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
-  const media = assertFound(await c.var.services.media.getById(id), "Media");
+  assertFound(await c.var.services.media.getById(id), "Media");
 
-  // Delete from storage
-  const storage = c.var.storage;
-  if (storage) {
-    try {
-      await storage.delete(media.storageKey);
-    } catch (err) {
-      // eslint-disable-next-line no-console -- Error logging is intentional
-      console.error("Storage delete error:", err);
-    }
-  }
-
-  // Delete from database
-  await c.var.services.media.delete(id);
+  await c.var.services.media.delete(id, c.var.storage);
 
   return c.json({ success: true });
 });

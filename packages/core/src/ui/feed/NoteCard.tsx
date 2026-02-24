@@ -42,10 +42,10 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
       )}
       {!compact && isArticle && post.summaryHasMore && (
         <a
-          href={post.permalink}
+          href={`${post.permalink}#continue`}
           class="text-sm text-muted-foreground hover:underline mt-1 inline-block"
         >
-          Read more →
+          Continue →
         </a>
       )}
       <footer class="mt-2" data-post-meta>

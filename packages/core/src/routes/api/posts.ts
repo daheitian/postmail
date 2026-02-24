@@ -241,10 +241,10 @@ postsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
   const id = sqid.decode(c.req.param("id"));
   if (!id) throw new ValidationError("Invalid ID");
 
-  // Detach media before deleting
-  await c.var.services.media.detachFromPost(id);
-
-  const success = await c.var.services.posts.delete(id);
+  const success = await c.var.services.posts.delete(id, {
+    media: c.var.services.media,
+    storage: c.var.storage,
+  });
   if (!success) throw new NotFoundError("Post");
 
   return c.json({ success: true });

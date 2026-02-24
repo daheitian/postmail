@@ -334,8 +334,10 @@ postsRoutes.post("/:id/delete", async (c) => {
   const id = sqid.decode(c.req.param("id"));
   if (!id) return c.notFound();
 
-  await c.var.services.media.detachFromPost(id);
-  await c.var.services.posts.delete(id);
+  await c.var.services.posts.delete(id, {
+    media: c.var.services.media,
+    storage: c.var.storage,
+  });
 
   return dsRedirect("/dash/posts");
 });
