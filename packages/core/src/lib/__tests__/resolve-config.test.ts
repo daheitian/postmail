@@ -203,6 +203,6 @@ describe("resolveConfig", () => {
 
     // Falls back to default
     const config2 = resolveConfig(makeEnv(), {});
-    expect(config2.defaultThemeId).toBe("halloween");
+    expect(config2.defaultThemeId).toBe("notepad");
   });
 });

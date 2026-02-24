@@ -119,6 +119,37 @@ function defineTheme(opts: {
 
 export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
+    id: "notepad",
+    name: "Notepad",
+    preview: {
+      lightBg: "#fdfce8",
+      lightText: "#333333",
+      lightLink: "#2060b8",
+      darkBg: "#2a291a",
+      darkText: "#d2d2b8",
+      darkLink: "#6695cc",
+    },
+    light: {
+      bg: "oklch(0.985 0.018 95)",
+      fg: "oklch(0.27 0 0)",
+      primary: "oklch(0.5 0.17 260)",
+      primaryFg: "oklch(0.985 0.01 95)",
+      muted: "oklch(0.94 0.022 95)",
+      mutedFg: "oklch(0.52 0 0)",
+      border: "oklch(0.88 0.025 95)",
+    },
+    dark: {
+      bg: "oklch(0.2 0.02 90)",
+      fg: "oklch(0.87 0.015 95)",
+      primary: "oklch(0.65 0.14 260)",
+      primaryFg: "oklch(0.98 0.01 95)",
+      muted: "oklch(0.26 0.018 90)",
+      mutedFg: "oklch(0.62 0.012 95)",
+      border: "oklch(0.32 0.018 90)",
+    },
+  }),
+
+  defineTheme({
     id: "halloween",
     name: "Halloween",
     preview: {
@@ -254,37 +285,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
       muted: "oklch(0.24 0 0)",
       mutedFg: "oklch(0.6 0 0)",
       border: "oklch(0.3 0 0)",
-    },
-  }),
-
-  defineTheme({
-    id: "notepad",
-    name: "Notepad",
-    preview: {
-      lightBg: "#fdfce8",
-      lightText: "#333333",
-      lightLink: "#2060b8",
-      darkBg: "#2a291a",
-      darkText: "#d2d2b8",
-      darkLink: "#6695cc",
-    },
-    light: {
-      bg: "oklch(0.985 0.018 95)",
-      fg: "oklch(0.27 0 0)",
-      primary: "oklch(0.5 0.17 260)",
-      primaryFg: "oklch(0.985 0.01 95)",
-      muted: "oklch(0.94 0.022 95)",
-      mutedFg: "oklch(0.52 0 0)",
-      border: "oklch(0.88 0.025 95)",
-    },
-    dark: {
-      bg: "oklch(0.2 0.02 90)",
-      fg: "oklch(0.87 0.015 95)",
-      primary: "oklch(0.65 0.14 260)",
-      primaryFg: "oklch(0.98 0.01 95)",
-      muted: "oklch(0.26 0.018 90)",
-      mutedFg: "oklch(0.62 0.012 95)",
-      border: "oklch(0.32 0.018 90)",
     },
   }),
 
