@@ -11,10 +11,9 @@ import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
 import { getI18n } from "../../i18n/index.js";
-import { arrayBufferToBase64 } from "../../lib/favicon.js";
 import { TIMEZONES } from "../../lib/timezones.js";
 import { escapeHtml } from "../../lib/html.js";
-import { validateUploadFile, generateStorageKey } from "../../lib/upload.js";
+import { ValidationError } from "../../lib/errors.js";
 import { GeneralContent } from "../../ui/dash/settings/GeneralContent.js";
 import { AccountContent } from "../../ui/dash/settings/AccountContent.js";
 
@@ -73,56 +72,11 @@ settingsRoutes.post("/", async (c) => {
     timeZone: string;
   }>();
 
-  const { settings } = c.var.services;
-
-  const oldLanguage = c.var.allSettings["SITE_LANGUAGE"] ?? "en";
-
-  if (body.siteName.trim()) {
-    await settings.set("SITE_NAME", body.siteName.trim());
-  } else {
-    await settings.remove("SITE_NAME");
-  }
-
-  if (body.siteDescription.trim()) {
-    await settings.set("SITE_DESCRIPTION", body.siteDescription.trim());
-  } else {
-    await settings.remove("SITE_DESCRIPTION");
-  }
-
-  // Footer
-  if (body.siteFooter?.trim()) {
-    await settings.set("SITE_FOOTER", body.siteFooter.trim());
-  } else {
-    await settings.remove("SITE_FOOTER");
-  }
-
-  await settings.set("SITE_LANGUAGE", body.siteLanguage);
-
-  // Save homepage default view (only store if non-default)
-  if (body.homeDefaultView === "featured") {
-    await settings.set("HOME_DEFAULT_VIEW", body.homeDefaultView);
-  } else {
-    await settings.remove("HOME_DEFAULT_VIEW");
-  }
-
-  // Header nav max visible (only store if non-default)
-  const navMax = parseInt(String(body.headerNavMaxVisible), 10);
-  if (!isNaN(navMax) && navMax !== 3) {
-    await settings.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
-  } else {
-    await settings.remove("HEADER_NAV_MAX_VISIBLE");
-  }
-
-  // Timezone
-  if (body.timeZone && body.timeZone !== "UTC") {
-    await settings.set("TIME_ZONE", body.timeZone);
-  } else {
-    await settings.remove("TIME_ZONE");
-  }
-
-  const languageChanged = oldLanguage !== body.siteLanguage;
-  const displayName =
-    body.siteName.trim() || c.var.appConfig.fallbacks.siteName;
+  const { languageChanged, displayName } =
+    await c.var.services.settings.updateGeneral(body, {
+      oldLanguage: c.var.allSettings["SITE_LANGUAGE"] ?? "en",
+      fallbackSiteName: c.var.appConfig.fallbacks.siteName,
+    });
 
   // ── JSON response mode (used by Lit settings bridge) ──────────────
   const wantsJson = c.req.header("accept")?.includes("application/json");
@@ -256,64 +210,30 @@ settingsRoutes.post("/avatar", async (c) => {
     );
   }
 
-  const uploadError = validateUploadFile(file);
-  if (uploadError) {
-    return dsToast(uploadError, "error");
-  }
-
-  const { id, filename, storageKey } = generateStorageKey(file.name);
+  const faviconFile = formData.get("favicon") as File | null;
+  const appleTouchFile = formData.get("appleTouch") as File | null;
 
   try {
-    await storage.put(storageKey, file.stream(), {
-      contentType: file.type,
-    });
-
-    await c.var.services.media.create({
-      id,
-      filename,
-      originalName: file.name,
-      mimeType: file.type,
-      size: file.size,
-      storageKey,
-      provider: c.var.appConfig.storageDriver,
-    });
-
-    await c.var.services.settings.set("SITE_AVATAR", storageKey);
-
-    // Store favicon ICO as base64 in settings (tiny file, accessed every page load)
-    const faviconFile = formData.get("favicon") as File | null;
-    if (faviconFile) {
-      const b64 = arrayBufferToBase64(await faviconFile.arrayBuffer());
-      await c.var.services.settings.set("SITE_FAVICON_ICO", b64);
-    }
-
-    // Store apple-touch-icon in R2 (180x180 PNG, not tiny enough for base64)
-    const appleTouchFile = formData.get("appleTouch") as File | null;
-    if (appleTouchFile) {
-      const appleTouchKey = "favicon/apple-touch-icon.png";
-      await storage.put(
-        appleTouchKey,
-        new Uint8Array(await appleTouchFile.arrayBuffer()),
-        { contentType: "image/png" },
-      );
-      await c.var.services.settings.set(
-        "SITE_FAVICON_APPLE_TOUCH",
-        appleTouchKey,
-      );
-    }
-
-    // Set favicon version for cache-busting
-    const now = new Date();
-    const version =
-      String(now.getUTCFullYear()) +
-      String(now.getUTCMonth() + 1).padStart(2, "0") +
-      String(now.getUTCDate()).padStart(2, "0") +
-      String(now.getUTCHours()).padStart(2, "0") +
-      String(now.getUTCMinutes()).padStart(2, "0");
-    await c.var.services.settings.set("SITE_FAVICON_VERSION", version);
+    await c.var.services.settings.uploadAvatar(
+      {
+        file,
+        faviconIco: faviconFile ? await faviconFile.arrayBuffer() : undefined,
+        appleTouchIcon: appleTouchFile
+          ? await appleTouchFile.arrayBuffer()
+          : undefined,
+      },
+      {
+        media: c.var.services.media,
+        storage,
+        storageProvider: c.var.appConfig.storageDriver,
+      },
+    );
 
     return dsRedirect("/dash/settings?saved");
-  } catch {
+  } catch (e) {
+    if (e instanceof ValidationError) {
+      return dsToast(e.message, "error");
+    }
     return dsToast(
       i18n._(
         msg({
@@ -327,16 +247,7 @@ settingsRoutes.post("/avatar", async (c) => {
 });
 
 settingsRoutes.post("/avatar/remove", async (c) => {
-  const storage = c.var.storage;
-  const appleTouchKey = c.var.allSettings["SITE_FAVICON_APPLE_TOUCH"];
-  if (storage && appleTouchKey) {
-    await storage.delete(appleTouchKey);
-  }
-
-  await c.var.services.settings.remove("SITE_AVATAR");
-  await c.var.services.settings.remove("SITE_FAVICON_ICO");
-  await c.var.services.settings.remove("SITE_FAVICON_APPLE_TOUCH");
-  await c.var.services.settings.remove("SITE_FAVICON_VERSION");
+  await c.var.services.settings.removeAvatar(c.var.storage);
 
   // ── JSON response mode (used by Lit settings bridge) ──────────────
   const wantsJson = c.req.header("accept")?.includes("application/json");

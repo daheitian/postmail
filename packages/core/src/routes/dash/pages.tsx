@@ -12,12 +12,14 @@ import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { PageForm, ActionButtons, DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
-import { CreatePageSchema } from "../../lib/schemas.js";
+import { CreatePageSchema, CreateNavItemSchema } from "../../lib/schemas.js";
 import { UnifiedPagesContent } from "../../ui/dash/pages/UnifiedPagesContent.js";
 import { LinkFormContent } from "../../ui/dash/pages/LinkFormContent.js";
 import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
+
+const NavLinkBody = CreateNavItemSchema.pick({ label: true, url: true });
 
 export const pagesRoutes = new Hono<Env>();
 
@@ -155,8 +157,8 @@ pagesRoutes.get("/links/new", async (c) => {
 
 pagesRoutes.post("/links", async (c) => {
   const i18n = getI18n(c);
-  const body = await c.req.json<{ label: string; url: string }>();
-  if (!body.label || !body.url) {
+  const result = NavLinkBody.safeParse(await c.req.json());
+  if (!result.success) {
     return dsToast(
       i18n._(
         msg({
@@ -167,6 +169,7 @@ pagesRoutes.post("/links", async (c) => {
       "error",
     );
   }
+  const body = result.data;
 
   await c.var.services.navItems.create({
     type: "link",
@@ -226,8 +229,8 @@ pagesRoutes.post("/links/:id", async (c) => {
   const id = parseInt(c.req.param("id"), 10);
   if (isNaN(id)) return c.notFound();
 
-  const body = await c.req.json<{ label: string; url: string }>();
-  if (!body.label || !body.url) {
+  const result = NavLinkBody.safeParse(await c.req.json());
+  if (!result.success) {
     return dsToast(
       i18n._(
         msg({
@@ -238,6 +241,7 @@ pagesRoutes.post("/links/:id", async (c) => {
       "error",
     );
   }
+  const body = result.data;
 
   const updated = await c.var.services.navItems.update(id, {
     label: body.label,

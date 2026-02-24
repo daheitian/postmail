@@ -11,7 +11,8 @@ import { msg } from "@lingui/core/macro";
 import type { Bindings, Post } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { requireAuth } from "../middleware/auth.js";
-import { CreatePostSchema, validateMediaCount } from "../lib/schemas.js";
+import { CreatePostSchema } from "../lib/schemas.js";
+import { ValidationError } from "../lib/errors.js";
 import { sse, dsToast } from "../lib/sse.js";
 import { getI18n } from "../i18n/index.js";
 import {
@@ -105,11 +106,18 @@ composeRoutes.post("/", async (c) => {
 
   const data = result.data;
 
-  // Validate media count
+  // Validate media IDs
   if (data.mediaIds) {
-    const mediaError = validateMediaCount(data.mediaIds);
-    if (mediaError) {
-      return dsToast(mediaError, "error");
+    try {
+      await c.var.services.media.validateIds(data.mediaIds);
+    } catch (e) {
+      if (e instanceof ValidationError) {
+        if (wantsJson) {
+          return c.json({ status: "error" as const, error: e.message }, 422);
+        }
+        return dsToast(e.message, "error");
+      }
+      throw e;
     }
   }
 

@@ -5,6 +5,7 @@
  */
 
 import { Hono } from "hono";
+import { z } from "zod";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, Redirect } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -12,8 +13,15 @@ import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { EmptyState, ListItemRow, ActionButtons } from "../../ui/dash/index.js";
 import { SettingsNav } from "../../ui/dash/settings/SettingsNav.js";
 import { dsRedirect } from "../../lib/sse.js";
+import { RedirectTypeSchema, parseValidated } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
+
+const CreateRedirectBody = z.object({
+  fromPath: z.string().min(1),
+  toPath: z.string().min(1),
+  type: RedirectTypeSchema,
+});
 
 export const redirectsRoutes = new Hono<Env>();
 
@@ -230,11 +238,7 @@ redirectsRoutes.get("/new", async (c) => {
 
 // Create redirect
 redirectsRoutes.post("/", async (c) => {
-  const body = await c.req.json<{
-    fromPath: string;
-    toPath: string;
-    type: string;
-  }>();
+  const body = parseValidated(CreateRedirectBody, await c.req.json());
 
   const type = parseInt(body.type, 10) as 301 | 302;
   await c.var.services.redirects.create(body.fromPath, body.toPath, type);

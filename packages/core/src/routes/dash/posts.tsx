@@ -22,6 +22,11 @@ import {
 import * as sqid from "../../lib/sqid.js";
 import { dsRedirect } from "../../lib/sse.js";
 import {
+  CreatePostSchema,
+  UpdatePostSchema,
+  parseValidated,
+} from "../../lib/schemas.js";
+import {
   toPostViewsFromPosts,
   toPostViewFromPost,
   createMediaContext,
@@ -103,25 +108,18 @@ postsRoutes.get("/new", async (c) => {
 // Create post
 postsRoutes.post("/", async (c) => {
   const wantsJson = c.req.header("Accept")?.includes("application/json");
-  const body = await c.req.json<{
-    format: string;
-    title?: string;
-    body: string;
-    status: string;
-    featured?: boolean;
-    pinned?: boolean;
-    url?: string;
-    quoteText?: string;
-    rating?: number;
-    collectionIds?: number[];
-    mediaIds?: string[];
-  }>();
+  const body = parseValidated(CreatePostSchema, await c.req.json());
+
+  // Validate media IDs before creating post
+  if (body.mediaIds && body.mediaIds.length > 0) {
+    await c.var.services.media.validateIds(body.mediaIds);
+  }
 
   const post = await c.var.services.posts.create({
-    format: body.format as Post["format"],
+    format: body.format,
     title: body.title || undefined,
     body: body.body,
-    status: body.status as Post["status"],
+    status: body.status,
     featured: body.featured,
     pinned: body.pinned,
     url: body.url || undefined,
@@ -289,25 +287,18 @@ postsRoutes.post("/:id", async (c) => {
 
   const wantsJson = c.req.header("Accept")?.includes("application/json");
 
-  const body = await c.req.json<{
-    format: string;
-    title?: string;
-    body?: string;
-    status: string;
-    featured?: boolean;
-    pinned?: boolean;
-    url?: string;
-    quoteText?: string;
-    rating?: number;
-    collectionIds?: number[];
-    mediaIds?: string[];
-  }>();
+  const body = parseValidated(UpdatePostSchema, await c.req.json());
+
+  // Validate media IDs if provided
+  if (body.mediaIds !== undefined) {
+    await c.var.services.media.validateIds(body.mediaIds);
+  }
 
   await c.var.services.posts.update(id, {
-    format: body.format as Post["format"],
+    format: body.format,
     title: body.title || null,
     body: body.body || null,
-    status: body.status as Post["status"],
+    status: body.status,
     featured: body.featured,
     pinned: body.pinned,
     url: body.url || null,

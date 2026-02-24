@@ -46,6 +46,22 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
     return dsToast("An unexpected error occurred", "error");
   }
 
+  // JSON-accepting requests (Lit bridges)
+  if (c.req.header("accept")?.includes("application/json")) {
+    if (err instanceof DomainError) {
+      const body: Record<string, unknown> = {
+        error: err.message,
+        code: err.code,
+      };
+      if (err instanceof ValidationError && err.details)
+        body.details = err.details;
+      return c.json(body, err.statusCode as ContentfulStatusCode);
+    }
+    // eslint-disable-next-line no-console -- Server error logging is intentional
+    console.error("[Jant] Unhandled error:", err);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+
   // Non-API routes: map NotFoundError to Hono's built-in 404
   if (err instanceof NotFoundError) {
     return c.notFound();

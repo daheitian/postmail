@@ -16,6 +16,8 @@ These principles explain _why_ the codebase is structured the way it is. When yo
 
 - **Separation of concerns**: routes handle HTTP, services own business logic and all DB access, UI renders data. Each layer should be replaceable without affecting the others. Module dependency direction: `routes → services → db`, `routes → viewmodels → ui`. Detailed rules in `docs/internal/coding-standards.md`.
 
+- **Routes are thin adapters**: a route handler should only parse/validate the request, call one or more service methods, and format the response. Multi-service orchestration (e.g. "delete a post and clean up its media files") belongs in the service layer, not in routes. **Litmus test**: if two routes need the same sequence of service calls, that sequence must be extracted into a service method. Cross-cutting concerns like storage file cleanup are passed to services via optional dependency parameters (e.g. `storage?: StorageDriver | null`) rather than being handled in routes.
+
 - **Type safety as communication**: TypeScript strict mode with no `any` and fully typed exports prevents silent contract drift between layers. When a service return type changes, the compiler should catch every consumer.
 
 - **Tokens and components over raw values**: CSS tokens (`styles/tokens.css`) and BaseCoat semantic classes (`.alert`, `.btn`, `.badge`, `.card`, `.input`, `.field`) encode design decisions in one place. Hardcoding a color or spacing value means it can't evolve with the theme. See `docs/theming.md` and `references/basecoat/`.
@@ -33,6 +35,7 @@ These principles explain _why_ the codebase is structured the way it is. When yo
 Non-negotiable regardless of context:
 
 - **No DB in routes**: routes must never contain direct DB calls, raw SQL, or import DB drivers. All data access goes through `src/services/`.
+- **No business logic in routes**: routes must not orchestrate multi-service operations, coordinate side effects, or duplicate logic that belongs in a service. If two routes would need the same logic, it must live in a service method.
 - **Relative imports only**: no `@/` path aliases anywhere in the codebase.
 - **Data attributes with care**: `data-page`, `data-post`, `data-format`, etc. are consumed by themes and external scripts. Design them thoughtfully and update all references when changing.
 
@@ -82,6 +85,7 @@ If you notice code contradicting this document, think about which side is correc
 - Combining `.btn` with variant classes (`.btn-outline`, `.btn-ghost`, etc.) — BaseCoat variants are self-contained and combining produces broken styles.
 - Importing from `@lingui/react` instead of `@lingui/react/macro` — the macro enables compile-time message extraction.
 - Editing `packages/create-jant/template/` — this is auto-generated and will be overwritten.
+- Putting multi-service orchestration in route handlers — if two routes need the same sequence of service calls, extract it into a service method. Routes should be thin adapters: parse request → call service → format response.
 
 ### Docs Index
 

@@ -3,11 +3,16 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, SortOrder } from "../../types.js";
+import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
+import {
+  CreateCollectionSchema,
+  UpdateCollectionSchema,
+  parseValidated,
+} from "../../lib/schemas.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 import { slugify } from "../../lib/url.js";
 import { CollectionsListContent } from "../../ui/dash/collections/CollectionsListContent.js";
@@ -63,23 +68,18 @@ collectionsRoutes.get("/new", async (c) => {
 // Create collection
 collectionsRoutes.post("/", async (c) => {
   const wantsJson = c.req.header("Accept")?.includes("application/json");
-  const body = await c.req.json<{
-    title: string;
-    slug: string;
-    description?: string;
-    icon?: string;
-    sortOrder?: string;
-  }>();
-
-  // Auto-generate slug from title if empty
-  const slug = body.slug || slugify(body.title);
+  const raw = await c.req.json();
+  const body = parseValidated(CreateCollectionSchema, {
+    ...raw,
+    slug: raw.slug || slugify(raw.title ?? ""),
+  });
 
   const collection = await c.var.services.collections.create({
     title: body.title,
-    slug,
+    slug: body.slug,
     description: body.description || undefined,
     icon: body.icon || undefined,
-    sortOrder: (body.sortOrder as SortOrder) || undefined,
+    sortOrder: body.sortOrder || undefined,
   });
 
   const redirectUrl = `/dash/collections/${collection.id}`;
@@ -182,20 +182,14 @@ collectionsRoutes.post("/:id", async (c) => {
   if (isNaN(id)) return c.notFound();
 
   const wantsJson = c.req.header("Accept")?.includes("application/json");
-  const body = await c.req.json<{
-    title: string;
-    slug: string;
-    description?: string;
-    icon?: string;
-    sortOrder?: string;
-  }>();
+  const body = parseValidated(UpdateCollectionSchema, await c.req.json());
 
   await c.var.services.collections.update(id, {
     title: body.title,
     slug: body.slug,
     description: body.description || null,
     icon: body.icon || null,
-    sortOrder: (body.sortOrder as SortOrder) || undefined,
+    sortOrder: body.sortOrder || undefined,
   });
 
   const redirectUrl = `/dash/collections/${id}`;

@@ -263,6 +263,51 @@ describe("MediaService", () => {
     });
   });
 
+  describe("validateIds", () => {
+    it("passes for valid IDs", async () => {
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/b.jpg",
+      });
+
+      await expect(
+        mediaService.validateIds([m1.id, m2.id]),
+      ).resolves.not.toThrow();
+    });
+
+    it("is a no-op for empty array", async () => {
+      await expect(mediaService.validateIds([])).resolves.not.toThrow();
+    });
+
+    it("throws ValidationError when count exceeds limit", async () => {
+      const ids = Array.from({ length: 21 }, (_, i) => `fake-id-${i}`);
+      await expect(mediaService.validateIds(ids)).rejects.toThrow(
+        "at most 20 media attachments",
+      );
+    });
+
+    it("throws ValidationError when IDs do not exist", async () => {
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/a.jpg",
+      });
+
+      await expect(
+        mediaService.validateIds([m1.id, "nonexistent-id"]),
+      ).rejects.toThrow("media IDs are invalid");
+    });
+
+    it("throws ValidationError for all nonexistent IDs", async () => {
+      await expect(
+        mediaService.validateIds(["fake-1", "fake-2"]),
+      ).rejects.toThrow("media IDs are invalid");
+    });
+  });
+
   describe("getByStorageKey", () => {
     it("returns media by R2 key", async () => {
       await mediaService.create(sampleMedia);

@@ -11,6 +11,8 @@ import { media } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { Media } from "../types.js";
+import { MAX_MEDIA_ATTACHMENTS } from "../types.js";
+import { ValidationError } from "../lib/errors.js";
 
 export interface MediaFilters {
   limit?: number;
@@ -25,6 +27,14 @@ export interface MediaService {
   getByPostIds(postIds: number[]): Promise<Map<number, Media[]>>;
   list(filters?: MediaFilters): Promise<Media[]>;
   create(data: CreateMediaData): Promise<Media>;
+  /**
+   * Validate media IDs: checks count limit and verifies all IDs exist in the database.
+   * No-op when the array is empty.
+   *
+   * @param ids - Media IDs to validate
+   * @throws {ValidationError} When count exceeds MAX_MEDIA_ATTACHMENTS or any ID is missing
+   */
+  validateIds(ids: string[]): Promise<void>;
   /**
    * Delete a media record and its storage file.
    *
@@ -155,6 +165,21 @@ export function createMediaService(db: Database): MediaService {
         .orderBy(desc(media.createdAt))
         .limit(limit);
       return rows.map(toMedia);
+    },
+
+    async validateIds(ids) {
+      if (ids.length === 0) return;
+
+      if (ids.length > MAX_MEDIA_ATTACHMENTS) {
+        throw new ValidationError(
+          `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} media attachments`,
+        );
+      }
+
+      const existing = await this.getByIds(ids);
+      if (existing.length !== ids.length) {
+        throw new ValidationError("One or more media IDs are invalid");
+      }
     },
 
     async create(data) {

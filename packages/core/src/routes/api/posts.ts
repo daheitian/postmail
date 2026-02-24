@@ -9,7 +9,6 @@ import * as sqid from "../../lib/sqid.js";
 import {
   CreatePostSchema,
   UpdatePostSchema,
-  validateMediaCount,
   parseValidated,
 } from "../../lib/schemas.js";
 import { requireAuthApi } from "../../middleware/auth.js";
@@ -62,24 +61,6 @@ function toMediaAttachment(
     position: m.position,
     mimeType: m.mimeType,
   };
-}
-
-/**
- * Validates media IDs: checks count limit and verifies all IDs exist.
- */
-async function validateMediaIds(
-  mediaIds: string[],
-  getByIds: (ids: string[]) => Promise<Media[]>,
-): Promise<void> {
-  const countError = validateMediaCount(mediaIds);
-  if (countError) throw new ValidationError(countError);
-
-  if (mediaIds.length > 0) {
-    const existing = await getByIds(mediaIds);
-    if (existing.length !== mediaIds.length) {
-      throw new ValidationError("One or more media IDs are invalid");
-    }
-  }
 }
 
 // List posts
@@ -142,9 +123,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
   // Validate media IDs
   if (body.mediaIds) {
-    await validateMediaIds(body.mediaIds, (ids) =>
-      c.var.services.media.getByIds(ids),
-    );
+    await c.var.services.media.validateIds(body.mediaIds);
   }
 
   const post = await c.var.services.posts.create({
@@ -194,9 +173,7 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
   // Validate media IDs if provided
   if (body.mediaIds !== undefined) {
-    await validateMediaIds(body.mediaIds, (ids) =>
-      c.var.services.media.getByIds(ids),
-    );
+    await c.var.services.media.validateIds(body.mediaIds);
   }
 
   const post = assertFound(
