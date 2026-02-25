@@ -1,17 +1,18 @@
 /**
  * Collection Page
  *
- * Collection header with icon and divider-separated post list.
+ * Collection header with icon and timeline feed of posts.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionPageProps } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
+import { TimelineFeed } from "../feed/TimelineFeed.js";
 
 export const CollectionPage: FC<CollectionPageProps> = ({
   collection,
-  posts,
+  items,
 }) => {
   const { t } = useLingui();
   const iconHtml = renderCollectionIcon(collection.icon, { size: 28 });
@@ -34,7 +35,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
       </header>
 
       <main>
-        {posts.length === 0 ? (
+        {items.length === 0 ? (
           <p class="text-muted-foreground">
             {t({
               message: "This collection is empty. Add posts from the editor.",
@@ -42,37 +43,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
             })}
           </p>
         ) : (
-          <div class="divide-y divide-border">
-            {posts.map((post) => (
-              <article
-                key={post.id}
-                class="h-entry py-4"
-                data-post
-                data-format={post.format}
-              >
-                {post.title && (
-                  <h2 class="p-name text-lg font-medium mb-2">
-                    <a href={post.permalink} class="u-url hover:underline">
-                      {post.title}
-                    </a>
-                  </h2>
-                )}
-                <div
-                  class="e-content prose prose-sm"
-                  data-post-body
-                  dangerouslySetInnerHTML={{ __html: post.bodyHtml || "" }}
-                />
-                <footer
-                  class="mt-2 text-sm text-muted-foreground"
-                  data-post-meta
-                >
-                  <time class="dt-published" datetime={post.publishedAt}>
-                    {post.publishedAtFormatted}
-                  </time>
-                </footer>
-              </article>
-            ))}
-          </div>
+          <TimelineFeed items={items} />
         )}
       </main>
     </div>

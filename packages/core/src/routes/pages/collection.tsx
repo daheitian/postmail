@@ -8,11 +8,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { CollectionPage } from "../../ui/pages/CollectionPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
-import {
-  createMediaContext,
-  toPostViewsFromPosts,
-  toPostViews,
-} from "../../lib/view.js";
+import { createMediaContext, toPostViews } from "../../lib/view.js";
 import { defaultRssRenderer } from "../../lib/feed.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { CollectionsSidebar } from "../../ui/shared/CollectionsSidebar.js";
@@ -41,9 +37,26 @@ collectionRoutes.get("/:slug", async (c) => {
 
   const navData = await getNavigationData(c);
 
-  // Transform to View Models
+  // Batch-load media for posts
+  const postIds = posts.map((p) => p.id);
+  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
   const mediaCtx = createMediaContext(c.var.appConfig);
-  const postViews = toPostViewsFromPosts(posts, mediaCtx);
+  const mediaMap = buildMediaMap(
+    rawMediaMap,
+    mediaCtx.r2PublicUrl,
+    mediaCtx.imageTransformUrl,
+    mediaCtx.s3PublicUrl,
+  );
+
+  const postViews = toPostViews(
+    posts.map((p) => ({
+      ...p,
+      mediaAttachments: mediaMap.get(p.id) ?? [],
+    })),
+    mediaCtx,
+  );
+
+  const items = postViews.map((post) => ({ post }));
 
   return renderPublicPage(c, {
     title: `${collection.title} - ${navData.siteName}`,
@@ -59,11 +72,7 @@ collectionRoutes.get("/:slug", async (c) => {
       />
     ),
     content: (
-      <CollectionPage
-        collection={collection}
-        posts={postViews}
-        hasMore={false}
-      />
+      <CollectionPage collection={collection} items={items} hasMore={false} />
     ),
   });
 });

@@ -60,7 +60,7 @@ export interface SearchPageProps {
 /** Props for the single collection page component */
 export interface CollectionPageProps {
   collection: Collection;
-  posts: PostView[];
+  items: TimelineItemView[];
   hasMore: boolean;
   nextCursor?: number;
 }
