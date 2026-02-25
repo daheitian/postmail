@@ -231,8 +231,8 @@ msgstr ""
 #. @context: Icon picker dialog title
 #: src/ui/shared/CollectionsSidebar.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
-msgid "Choose Icon"
-msgstr "选择图标"
+#~ msgid "Choose Icon"
+#~ msgstr "选择图标"
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx
@@ -241,8 +241,8 @@ msgstr "点击图片查看完整尺寸"
 
 #. @context: Button to close icon picker
 #: src/ui/shared/CollectionsSidebar.tsx
-msgid "Close"
-msgstr "关闭"
+#~ msgid "Close"
+#~ msgstr "关闭"
 
 #. @context: Compose collection selector trigger label
 #: src/ui/compose/ComposeDialog.tsx
@@ -497,6 +497,11 @@ msgstr "编辑帖子"
 msgid "Email"
 msgstr "电子邮件"
 
+#. @context: Emoji picker tab label
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Emojis"
+msgstr ""
+
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Enter your new password."
@@ -613,8 +618,13 @@ msgstr ""
 
 #. @context: Collection form field
 #: src/ui/shared/CollectionsSidebar.tsx
-msgid "Icon (optional)"
-msgstr "图标（可选）"
+#~ msgid "Icon (optional)"
+#~ msgstr "图标（可选）"
+
+#. @context: Icon picker tab label
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Icons"
+msgstr ""
 
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx
@@ -1267,6 +1277,11 @@ msgstr "得分"
 #: src/ui/pages/SearchPage.tsx
 msgid "Search"
 msgstr "搜索"
+
+#. @context: Emoji picker search placeholder
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Search emojis..."
+msgstr ""
 
 #. @context: Icon picker search placeholder
 #: src/ui/shared/CollectionsSidebar.tsx

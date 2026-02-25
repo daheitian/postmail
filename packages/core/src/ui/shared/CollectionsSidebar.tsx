@@ -221,29 +221,25 @@ const AuthenticatedSidebar: FC<{
         message: "What's this collection about?",
         comment: "@context: Collection description placeholder",
       }),
-      iconLabel: t({
-        message: "Icon (optional)",
-        comment: "@context: Collection form field",
-      }),
-      chooseIcon: t({
-        message: "Choose Icon",
-        comment: "@context: Button to open icon picker",
-      }),
       removeIcon: t({
         message: "Remove",
         comment: "@context: Button to remove icon",
       }),
-      dialogTitle: t({
-        message: "Choose Icon",
-        comment: "@context: Icon picker dialog title",
+      iconsTab: t({
+        message: "Icons",
+        comment: "@context: Icon picker tab label",
       }),
-      dialogClose: t({
-        message: "Close",
-        comment: "@context: Button to close icon picker",
+      emojisTab: t({
+        message: "Emojis",
+        comment: "@context: Emoji picker tab label",
       }),
       searchIconsPlaceholder: t({
         message: "Search icons...",
         comment: "@context: Icon picker search placeholder",
+      }),
+      searchEmojisPlaceholder: t({
+        message: "Search emojis...",
+        comment: "@context: Emoji picker search placeholder",
       }),
       sortOrderLabel: t({
         message: "Sort Order",

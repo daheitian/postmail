@@ -16,12 +16,11 @@ const labels: CollectionFormLabels = {
   slugHelp: "Help text",
   descriptionLabel: "Description",
   descriptionPlaceholder: "Placeholder Description",
-  iconLabel: "Icon",
-  chooseIcon: "Choose Icon",
   removeIcon: "Remove",
-  dialogTitle: "Choose Icon",
-  dialogClose: "Close",
+  iconsTab: "Icons",
+  emojisTab: "Emojis",
   searchIconsPlaceholder: "Search icons...",
+  searchEmojisPlaceholder: "Search emojis...",
   sortOrderLabel: "Sort Order",
   sortNewest: "Newest first",
   sortOldest: "Oldest first",
@@ -148,6 +147,8 @@ describe("JantCollectionForm", () => {
     expect(d.data.slug).toBe("books");
     expect(d.data.description).toBe("All about books");
     expect(d.data.sortOrder).toBe("rating_desc");
-    expect(d.data.icon).toBeUndefined();
+    // Default icon is auto-selected in create mode (library icon with gray color)
+    expect(d.data.icon).toBeDefined();
+    expect(d.data.icon).toContain('"name":"library"');
   });
 });

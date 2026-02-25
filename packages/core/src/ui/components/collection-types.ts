@@ -9,12 +9,11 @@ export interface CollectionFormLabels {
   slugHelp: string;
   descriptionLabel: string;
   descriptionPlaceholder: string;
-  iconLabel: string;
-  chooseIcon: string;
   removeIcon: string;
-  dialogTitle: string;
-  dialogClose: string;
+  iconsTab: string;
+  emojisTab: string;
   searchIconsPlaceholder: string;
+  searchEmojisPlaceholder: string;
   sortOrderLabel: string;
   sortNewest: string;
   sortOldest: string;

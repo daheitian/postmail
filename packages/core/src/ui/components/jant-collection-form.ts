@@ -3,7 +3,9 @@
  *
  * Handles create/edit collection form interactions:
  * - Maintains form state for title, slug, description, sort order, and icon
- * - Opens the icon picker dialog with search and color presets
+ * - Notion-style inline icon trigger with anchored popover (Icons + Emojis tabs)
+ * - Color presets that instantly recolor all icon previews
+ * - Default "library" icon in create mode
  * - Dispatches `jant:collection-submit` for the bridge to POST to the server
  *
  * Light DOM only — BaseCoat and Tailwind classes apply directly.
@@ -11,10 +13,10 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
-import { classMap } from "lit/directives/class-map.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import {
   DEFAULT_ICON_COLOR,
+  DEFAULT_ICON_NAME,
   ICON_COLOR_PRESETS,
   createIconValue,
   parseCollectionIcon,
@@ -22,6 +24,7 @@ import {
   getIconSvg,
 } from "../../lib/icons.js";
 import { ICON_CATALOG } from "../../lib/icon-catalog.js";
+import { EMOJI_CATALOG } from "../../lib/emoji-catalog.js";
 import type {
   CollectionFormInitial,
   CollectionFormLabels,
@@ -31,6 +34,11 @@ import type {
 type CatalogCategory = {
   name: string;
   icons: Array<{ name: string; svg: string }>;
+};
+
+type EmojiCategory = {
+  name: string;
+  emojis: string[];
 };
 
 function slugifyTitle(title: string): string {
@@ -57,7 +65,10 @@ export class JantCollectionForm extends LitElement {
     _iconName: { state: true },
     _iconSvg: { state: true },
     _iconColor: { state: true },
+    _iconEmoji: { state: true },
     _iconSearch: { state: true },
+    _pickerOpen: { state: true },
+    _pickerTab: { state: true },
     _loading: { state: true },
   };
 
@@ -74,10 +85,27 @@ export class JantCollectionForm extends LitElement {
   declare _iconName: string;
   declare _iconSvg: string;
   declare _iconColor: string;
+  declare _iconEmoji: string;
   declare _iconSearch: string;
+  declare _pickerOpen: boolean;
+  declare _pickerTab: "icons" | "emojis";
   declare _loading: boolean;
 
   #initialized = false;
+  #closePickerHandler = (e: Event) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+    const pickerEl = this.querySelector<HTMLElement>("[data-icon-picker]");
+    const triggerEl = this.querySelector<HTMLElement>("[data-icon-trigger]");
+    if (
+      pickerEl &&
+      !pickerEl.contains(target) &&
+      triggerEl &&
+      !triggerEl.contains(target)
+    ) {
+      this._pickerOpen = false;
+    }
+  };
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -105,7 +133,10 @@ export class JantCollectionForm extends LitElement {
     this._iconName = "";
     this._iconSvg = "";
     this._iconColor = DEFAULT_ICON_COLOR;
+    this._iconEmoji = "";
     this._iconSearch = "";
+    this._pickerOpen = false;
+    this._pickerTab = "icons";
     this._loading = false;
   }
 
@@ -126,6 +157,16 @@ export class JantCollectionForm extends LitElement {
     return this._loading;
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener("click", this.#closePickerHandler, true);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener("click", this.#closePickerHandler, true);
+  }
+
   #applyInitialData() {
     if (!this.initial) return;
     this.#initialized = true;
@@ -134,29 +175,44 @@ export class JantCollectionForm extends LitElement {
     this._description = this.initial.description ?? "";
     this._sortOrder = this.initial.sortOrder ?? "newest";
 
-    const parsed = parseCollectionIcon(this.initial.icon ?? "");
+    const rawIcon = this.initial.icon ?? "";
+    const parsed = parseCollectionIcon(rawIcon);
     if (parsed) {
       this._iconName = parsed.name;
       this._iconSvg = parsed.svg;
       this._iconColor = parsed.color || DEFAULT_ICON_COLOR;
+      this._iconEmoji = "";
+    } else if (rawIcon && !rawIcon.startsWith("{")) {
+      // Legacy emoji value
+      this._iconEmoji = rawIcon;
+      this._iconName = "";
+      this._iconSvg = "";
+      this._iconColor = DEFAULT_ICON_COLOR;
     } else {
       this._iconName = "";
       this._iconSvg = "";
       this._iconColor = DEFAULT_ICON_COLOR;
+      this._iconEmoji = "";
+      // Default icon in create mode
+      if (!this.isEdit) {
+        this.#applyDefaultIcon();
+      }
     }
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    const dialog = this.#iconDialog;
-    if (dialog?.open) dialog.close();
-  }
-
-  get #iconDialog(): HTMLDialogElement | null {
-    return this.querySelector<HTMLDialogElement>("#collection-icon-dialog");
+  #applyDefaultIcon() {
+    const svg = getIconSvg(DEFAULT_ICON_NAME);
+    if (svg) {
+      this._iconName = DEFAULT_ICON_NAME;
+      this._iconSvg = svg;
+      this._iconColor = DEFAULT_ICON_COLOR;
+    }
   }
 
   get #iconValue(): string {
+    if (this._iconEmoji) {
+      return this._iconEmoji;
+    }
     if (this._iconName && this._iconSvg) {
       return createIconValue(
         this._iconName,
@@ -185,12 +241,47 @@ export class JantCollectionForm extends LitElement {
     return result;
   }
 
-  #openDialog() {
-    this.#iconDialog?.showModal();
+  #filteredEmojiCatalog(): EmojiCategory[] {
+    const q = this._iconSearch.trim().toLowerCase();
+    const result: EmojiCategory[] = [];
+    for (const [category, emojis] of Object.entries(EMOJI_CATALOG)) {
+      if (q && !category.includes(q)) continue;
+      result.push({ name: category, emojis });
+    }
+    return result;
   }
 
-  #closeDialog() {
-    this.#iconDialog?.close();
+  #togglePicker(e: Event) {
+    e.stopPropagation();
+    this._pickerOpen = !this._pickerOpen;
+    this._iconSearch = "";
+  }
+
+  #selectIcon(name: string, svg: string) {
+    this._iconName = name;
+    this._iconSvg = svg;
+    this._iconEmoji = "";
+    if (!this._iconColor) {
+      this._iconColor = DEFAULT_ICON_COLOR;
+    }
+    this._iconSearch = "";
+    this._pickerOpen = false;
+  }
+
+  #selectEmoji(emoji: string) {
+    this._iconEmoji = emoji;
+    this._iconName = "";
+    this._iconSvg = "";
+    this._iconSearch = "";
+    this._pickerOpen = false;
+  }
+
+  #removeIcon() {
+    this._iconName = "";
+    this._iconSvg = "";
+    this._iconColor = DEFAULT_ICON_COLOR;
+    this._iconEmoji = "";
+    this._pickerOpen = false;
   }
 
   #handleSubmit(e: Event) {
@@ -221,48 +312,47 @@ export class JantCollectionForm extends LitElement {
     );
   }
 
-  #renderIconPreview() {
+  #renderTriggerIcon() {
+    if (this._iconEmoji) {
+      return html`<span class="text-lg leading-none">${this._iconEmoji}</span>`;
+    }
     if (this._iconSvg) {
       const htmlString = renderCollectionIcon(this.#iconValue, {
-        size: 24,
+        size: 20,
         fallback: false,
       });
       return html`<span
-        class="w-6 h-6 flex items-center justify-center"
+        class="w-5 h-5 flex items-center justify-center"
         style=${`color:${this._iconColor}`}
       >
         ${unsafeHTML(htmlString)}
       </span>`;
     }
-    if (this.initial.icon && !this.initial.icon.startsWith("{")) {
-      const htmlString = renderCollectionIcon(this.initial.icon, {
-        size: 24,
-        fallback: false,
-      });
-      if (htmlString) {
-        return html`<span class="w-6 h-6 flex items-center justify-center">
-          ${unsafeHTML(htmlString)}
-        </span>`;
-      }
-    }
-    return html`<span class="text-muted-foreground text-lg">?</span>`;
+    return html`<span class="text-muted-foreground text-base">+</span>`;
   }
 
-  #renderColorPresets() {
-    if (!this._iconSvg) return nothing;
+  #renderInlineIconTrigger() {
     return html`
-      <div class="flex items-center gap-2 mt-2">
+      <button
+        type="button"
+        data-icon-trigger
+        class="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent transition-colors z-10"
+        @click=${(e: Event) => this.#togglePicker(e)}
+      >
+        ${this.#renderTriggerIcon()}
+      </button>
+    `;
+  }
+
+  #renderPickerColorPresets() {
+    return html`
+      <div class="flex items-center gap-1.5 px-3 pb-2">
         ${ICON_COLOR_PRESETS.map((preset) => {
           const isActive = this._iconColor === preset.value;
           return html`
             <button
               type="button"
-              class=${classMap({
-                "w-6 h-6 rounded-full border-2 transition-transform hover:scale-110": true,
-                "ring-2": isActive,
-                "ring-offset-1": isActive,
-                "ring-primary": isActive,
-              })}
+              class=${`w-5 h-5 rounded-full border-2 transition-transform hover:scale-110${isActive ? " ring-2 ring-offset-1 ring-primary" : ""}`}
               style=${`background-color:${preset.value}; border-color: transparent`}
               title=${preset.name}
               @click=${() => {
@@ -275,97 +365,157 @@ export class JantCollectionForm extends LitElement {
     `;
   }
 
-  #renderIconDialog() {
+  #renderIconsGrid() {
     const categories = this.#filteredCatalog();
-    return html`
-      <dialog
-        id="collection-icon-dialog"
-        class="m-auto rounded-lg border border-border bg-background text-foreground p-0 w-full max-w-md max-h-[80vh] shadow-lg backdrop:bg-black/50"
-        @cancel=${() => this.#closeDialog()}
-      >
-        <div class="flex flex-col max-h-[80vh]">
-          <div class="flex flex-col gap-3 p-4 border-b border-border">
-            <div class="flex items-center justify-between">
-              <h2 class="font-semibold">${this.labels.dialogTitle}</h2>
-              <button
-                type="button"
-                class="btn-ghost text-sm"
-                @click=${() => this.#closeDialog()}
-              >
-                ${this.labels.dialogClose}
-              </button>
-            </div>
-            <input
-              type="search"
-              class="input text-sm"
-              placeholder=${this.labels.searchIconsPlaceholder}
-              .value=${this._iconSearch}
-              @input=${(event: Event) => {
-                const target = event.target as HTMLInputElement;
-                this._iconSearch = target.value;
-              }}
-            />
-          </div>
-          <div class="overflow-y-auto p-4 flex-1">
-            ${categories.length === 0
-              ? html`<p class="text-sm text-muted-foreground">
-                  ${this.labels.searchIconsPlaceholder}
-                </p>`
-              : categories.map(
-                  (category) => html`
-                    <div
-                      class="flex flex-col gap-2 mb-4"
-                      data-category=${category.name}
-                    >
-                      <h3
-                        class="text-xs font-medium text-muted-foreground uppercase tracking-wider"
-                      >
-                        ${category.name}
-                      </h3>
-                      <div class="grid grid-cols-8 gap-1">
-                        ${category.icons.map(
-                          (icon) => html`
-                            <button
-                              type="button"
-                              class=${classMap({
-                                "flex items-center justify-center w-9 h-9 rounded-md hover:bg-accent transition-colors": true,
-                                "ring-2":
-                                  this._iconName === icon.name &&
-                                  this._iconSvg === icon.svg,
-                                "ring-primary":
-                                  this._iconName === icon.name &&
-                                  this._iconSvg === icon.svg,
-                              })}
-                              data-icon-name=${icon.name}
-                              @click=${() => {
-                                this._iconName = icon.name;
-                                this._iconSvg = icon.svg;
-                                if (!this._iconColor) {
-                                  this._iconColor = DEFAULT_ICON_COLOR;
-                                }
-                                this._iconSearch = "";
-                                this.#closeDialog();
-                              }}
-                            >
-                              <span
-                                class="w-5 h-5 flex items-center justify-center"
-                              >
-                                ${unsafeHTML(
-                                  icon.svg
-                                    .replace(/width="24"/, 'width="20"')
-                                    .replace(/height="24"/, 'height="20"'),
-                                )}
-                              </span>
-                            </button>
-                          `,
-                        )}
-                      </div>
-                    </div>
-                  `,
-                )}
+    if (categories.length === 0) {
+      return html`<p class="text-sm text-muted-foreground px-3 py-2">
+        No icons found
+      </p>`;
+    }
+    return categories.map(
+      (category) => html`
+        <div class="flex flex-col gap-1.5 mb-3" data-category=${category.name}>
+          <h3
+            class="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3"
+          >
+            ${category.name}
+          </h3>
+          <div class="grid grid-cols-8 gap-0.5 px-2">
+            ${category.icons.map(
+              (icon) => html`
+                <button
+                  type="button"
+                  class=${`flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent transition-colors${this._iconName === icon.name && this._iconSvg === icon.svg && !this._iconEmoji ? " ring-2 ring-primary" : ""}`}
+                  data-icon-name=${icon.name}
+                  style=${`color:${this._iconColor}`}
+                  @click=${() => this.#selectIcon(icon.name, icon.svg)}
+                >
+                  <span class="w-4 h-4 flex items-center justify-center">
+                    ${unsafeHTML(
+                      icon.svg
+                        .replace(/width="24"/, 'width="16"')
+                        .replace(/height="24"/, 'height="16"'),
+                    )}
+                  </span>
+                </button>
+              `,
+            )}
           </div>
         </div>
-      </dialog>
+      `,
+    );
+  }
+
+  #renderEmojisGrid() {
+    const categories = this.#filteredEmojiCatalog();
+    if (categories.length === 0) {
+      return html`<p class="text-sm text-muted-foreground px-3 py-2">
+        No emojis found
+      </p>`;
+    }
+    return categories.map(
+      (category) => html`
+        <div class="flex flex-col gap-1.5 mb-3" data-category=${category.name}>
+          <h3
+            class="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3"
+          >
+            ${category.name}
+          </h3>
+          <div class="grid grid-cols-8 gap-0.5 px-2">
+            ${category.emojis.map(
+              (emoji) => html`
+                <button
+                  type="button"
+                  class=${`flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent transition-colors text-lg${this._iconEmoji === emoji ? " ring-2 ring-primary" : ""}`}
+                  @click=${() => this.#selectEmoji(emoji)}
+                >
+                  ${emoji}
+                </button>
+              `,
+            )}
+          </div>
+        </div>
+      `,
+    );
+  }
+
+  #renderIconPopover() {
+    if (!this._pickerOpen) return nothing;
+
+    const isIconsTab = this._pickerTab === "icons";
+    const searchPlaceholder = isIconsTab
+      ? this.labels.searchIconsPlaceholder
+      : this.labels.searchEmojisPlaceholder;
+    const hasIcon = this._iconSvg || this._iconEmoji;
+
+    return html`
+      <div
+        data-icon-picker
+        class="absolute left-0 top-full mt-1 z-50 w-80 rounded-lg border border-border bg-background shadow-lg"
+      >
+        <!-- Tabs -->
+        <div class="flex border-b border-border">
+          <button
+            type="button"
+            class=${`flex-1 px-3 py-2 text-sm font-medium transition-colors ${isIconsTab ? "border-b-2 border-primary text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            @click=${() => {
+              this._pickerTab = "icons";
+              this._iconSearch = "";
+            }}
+          >
+            ${this.labels.iconsTab}
+          </button>
+          <button
+            type="button"
+            class=${`flex-1 px-3 py-2 text-sm font-medium transition-colors ${!isIconsTab ? "border-b-2 border-primary text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            @click=${() => {
+              this._pickerTab = "emojis";
+              this._iconSearch = "";
+            }}
+          >
+            ${this.labels.emojisTab}
+          </button>
+        </div>
+
+        <!-- Color presets (icons tab only) -->
+        ${isIconsTab
+          ? html`<div class="pt-2">${this.#renderPickerColorPresets()}</div>`
+          : nothing}
+
+        <!-- Search -->
+        <div class="px-3 py-2">
+          <input
+            type="search"
+            class="input text-sm w-full"
+            placeholder=${searchPlaceholder}
+            .value=${this._iconSearch}
+            @input=${(event: Event) => {
+              const target = event.target as HTMLInputElement;
+              this._iconSearch = target.value;
+            }}
+          />
+        </div>
+
+        <!-- Grid -->
+        <div class="overflow-y-auto max-h-56">
+          ${isIconsTab ? this.#renderIconsGrid() : this.#renderEmojisGrid()}
+        </div>
+
+        <!-- Remove button -->
+        ${hasIcon
+          ? html`
+              <div class="border-t border-border px-3 py-2">
+                <button
+                  type="button"
+                  class="btn-ghost text-sm w-full"
+                  @click=${() => this.#removeIcon()}
+                >
+                  ${this.labels.removeIcon}
+                </button>
+              </div>
+            `
+          : nothing}
+      </div>
     `;
   }
 
@@ -377,20 +527,26 @@ export class JantCollectionForm extends LitElement {
       >
         <div class="field">
           <label class="label">${this.labels.titleLabel}</label>
-          <input
-            type="text"
-            class="input"
-            required
-            .value=${this._title}
-            placeholder=${this.isEdit ? nothing : this.labels.titlePlaceholder}
-            @input=${(event: Event) => {
-              const target = event.target as HTMLInputElement;
-              this._title = target.value;
-              if (!this.isEdit) {
-                this._slug = slugifyTitle(target.value);
-              }
-            }}
-          />
+          <div class="relative">
+            ${this.#renderInlineIconTrigger()}
+            <input
+              type="text"
+              class="input pl-12"
+              required
+              .value=${this._title}
+              placeholder=${this.isEdit
+                ? nothing
+                : this.labels.titlePlaceholder}
+              @input=${(event: Event) => {
+                const target = event.target as HTMLInputElement;
+                this._title = target.value;
+                if (!this.isEdit) {
+                  this._slug = slugifyTitle(target.value);
+                }
+              }}
+            />
+            ${this.#renderIconPopover()}
+          </div>
         </div>
 
         <div class="field">
@@ -428,38 +584,6 @@ export class JantCollectionForm extends LitElement {
               this._description = target.value;
             }}
           ></textarea>
-        </div>
-
-        <div class="field">
-          <label class="label">${this.labels.iconLabel}</label>
-          <div class="flex items-center gap-3">
-            <div
-              class="flex items-center justify-center w-10 h-10 rounded-md border border-border"
-            >
-              ${this.#renderIconPreview()}
-            </div>
-            <button
-              type="button"
-              class="btn-outline text-sm"
-              @click=${() => this.#openDialog()}
-            >
-              ${this.labels.chooseIcon}
-            </button>
-            ${this._iconSvg
-              ? html`<button
-                  type="button"
-                  class="btn-ghost text-sm"
-                  @click=${() => {
-                    this._iconName = "";
-                    this._iconSvg = "";
-                    this._iconColor = DEFAULT_ICON_COLOR;
-                  }}
-                >
-                  ${this.labels.removeIcon}
-                </button>`
-              : nothing}
-          </div>
-          ${this.#renderColorPresets()}
         </div>
 
         <div class="field">
@@ -503,8 +627,6 @@ export class JantCollectionForm extends LitElement {
           </a>
         </div>
       </form>
-
-      ${this.#renderIconDialog()}
     `;
   }
 }

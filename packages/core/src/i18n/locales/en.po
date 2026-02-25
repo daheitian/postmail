@@ -296,8 +296,8 @@ msgstr "Choose a page…"
 #. @context: Icon picker dialog title
 #: src/ui/shared/CollectionsSidebar.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
-msgid "Choose Icon"
-msgstr "Choose Icon"
+#~ msgid "Choose Icon"
+#~ msgstr "Choose Icon"
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx
@@ -306,8 +306,8 @@ msgstr "Click image to view full size"
 
 #. @context: Button to close icon picker
 #: src/ui/shared/CollectionsSidebar.tsx
-msgid "Close"
-msgstr "Close"
+#~ msgid "Close"
+#~ msgstr "Close"
 
 #. @context: Compose collection selector trigger label
 #: src/ui/compose/ComposeDialog.tsx
@@ -631,6 +631,11 @@ msgstr "Email"
 #~ msgid "Emoji or icon name"
 #~ msgstr "Emoji or icon name"
 
+#. @context: Emoji picker tab label
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Emojis"
+msgstr "Emojis"
+
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Enter your new password."
@@ -764,8 +769,13 @@ msgstr "Home view saved"
 
 #. @context: Collection form field
 #: src/ui/shared/CollectionsSidebar.tsx
-msgid "Icon (optional)"
-msgstr "Icon (optional)"
+#~ msgid "Icon (optional)"
+#~ msgstr "Icon (optional)"
+
+#. @context: Icon picker tab label
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Icons"
+msgstr "Icons"
 
 #. @context: Post type badge - image
 #. @context: Post type label - image
@@ -1539,6 +1549,11 @@ msgstr "Score"
 #: src/ui/pages/SearchPage.tsx
 msgid "Search"
 msgstr "Search"
+
+#. @context: Emoji picker search placeholder
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Search emojis..."
+msgstr "Search emojis..."
 
 #. @context: Search error message
 #: src/routes/pages/search.tsx
