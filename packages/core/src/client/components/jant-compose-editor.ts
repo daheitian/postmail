@@ -167,11 +167,17 @@ export class JantComposeEditor extends LitElement {
 
   private _openAttachedText() {
     this._showAttachedText = true;
-    this.updateComplete.then(() => {
-      this.querySelector<HTMLTextAreaElement>(
-        ".compose-attached-textarea",
-      )?.focus();
-    });
+    this.dispatchEvent(
+      new CustomEvent("jant:attached-panel-open", { bubbles: true }),
+    );
+  }
+
+  updateAttachedText(value: string) {
+    this._attachedText = value;
+  }
+
+  closeAttachedPanel() {
+    this._showAttachedText = false;
   }
 
   private _onInput(field: string, e: Event) {
@@ -270,6 +276,9 @@ export class JantComposeEditor extends LitElement {
     // Close alt panel if it was showing the removed item
     if (this._showAltPanel && this._altPanelIndex === index) {
       this._showAltPanel = false;
+      this.dispatchEvent(
+        new CustomEvent("jant:alt-panel-close", { bubbles: true }),
+      );
     } else if (this._showAltPanel && this._altPanelIndex > index) {
       this._altPanelIndex = this._altPanelIndex - 1;
     }
@@ -278,19 +287,17 @@ export class JantComposeEditor extends LitElement {
   private _openAltPanel(index: number) {
     this._altPanelIndex = index;
     this._showAltPanel = true;
-    this.updateComplete.then(() => {
-      this.querySelector<HTMLTextAreaElement>(".compose-alt-textarea")?.focus();
-    });
+    this.dispatchEvent(
+      new CustomEvent("jant:alt-panel-open", {
+        bubbles: true,
+        detail: { index },
+      }),
+    );
   }
 
-  private _closeAltPanel() {
-    this._showAltPanel = false;
-  }
-
-  private _onAltInput(e: Event) {
-    const value = (e.target as HTMLTextAreaElement).value;
+  updateAlt(index: number, value: string) {
     this._attachments = this._attachments.map((a, i) =>
-      i === this._altPanelIndex ? { ...a, alt: value } : a,
+      i === index ? { ...a, alt: value } : a,
     );
   }
 
@@ -484,150 +491,6 @@ export class JantComposeEditor extends LitElement {
         >
           ✕
         </button>
-      </div>
-    `;
-  }
-
-  private _renderAttachedPanel() {
-    if (!this._showAttachedText) return nothing;
-    return html`
-      <div class="compose-attached-panel">
-        <div
-          class="flex items-center gap-2.5 px-3 py-2.5 border-b border-border"
-        >
-          <button
-            type="button"
-            class="compose-attached-panel-back"
-            @click=${() => {
-              this._showAttachedText = false;
-            }}
-          >
-            <svg
-              class="icon-fine"
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M11 3L6 8l5 5" />
-            </svg>
-          </button>
-          <span class="text-sm font-medium tracking-tight"
-            >${this.labels.attachedText}</span
-          >
-          <div class="flex-1"></div>
-          ${this._attachedText.length > 0
-            ? html`<span class="text-xs text-muted-foreground tracking-wide"
-                >${this._attachedText.length.toLocaleString()} chars</span
-              >`
-            : nothing}
-        </div>
-        <div class="flex-1 p-4 overflow-hidden flex flex-col">
-          <textarea
-            .value=${this._attachedText}
-            @input=${(e: Event) => this._onInput("_attachedText", e)}
-            class="compose-input compose-attached-textarea"
-            placeholder=${this.labels.attachedTextPlaceholder}
-          ></textarea>
-        </div>
-        <div
-          class="flex items-center justify-between px-3 py-2 border-t border-border"
-        >
-          <span class="text-xs text-muted-foreground"
-            >${this.labels.attachedTextHint}</span
-          >
-          <button
-            type="button"
-            class="compose-post-btn"
-            @click=${() => {
-              this._showAttachedText = false;
-            }}
-          >
-            ${this.labels.done}
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  private _renderAltPanel() {
-    if (!this._showAltPanel) return nothing;
-    const attachment = this._attachments[this._altPanelIndex];
-    if (!attachment) return nothing;
-
-    return html`
-      <div class="compose-alt-panel">
-        <div
-          class="flex items-center gap-2.5 px-3 py-2.5 border-b border-border"
-        >
-          <button
-            type="button"
-            class="compose-attached-panel-back"
-            @click=${() => this._closeAltPanel()}
-          >
-            <svg
-              class="icon-fine"
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M11 3L6 8l5 5" />
-            </svg>
-          </button>
-          <span class="text-sm font-medium tracking-tight"
-            >${this.labels.addAltTitle}</span
-          >
-        </div>
-        <div class="compose-alt-preview">
-          ${this._getCategory(attachment) === "image"
-            ? html`<img
-                src=${attachment.previewUrl}
-                alt=""
-                class="compose-alt-preview-img"
-              />`
-            : this._getCategory(attachment) === "video"
-              ? html`<video
-                  src=${attachment.previewUrl}
-                  class="compose-alt-preview-img"
-                  preload="metadata"
-                  muted
-                ></video>`
-              : html`<span class="text-sm text-muted-foreground"
-                  >${attachment.file.name}</span
-                >`}
-        </div>
-        <div class="flex-1 p-4 overflow-hidden flex flex-col">
-          <textarea
-            .value=${attachment.alt}
-            @input=${(e: Event) => this._onAltInput(e)}
-            class="compose-input compose-alt-textarea"
-            placeholder=${this.labels.altPlaceholder}
-            rows="3"
-          ></textarea>
-        </div>
-        <div
-          class="flex items-center justify-between px-3 py-2 border-t border-border"
-        >
-          <span class="text-xs text-muted-foreground"
-            >${this.labels.altHint}</span
-          >
-          <button
-            type="button"
-            class="compose-post-btn"
-            @click=${() => this._closeAltPanel()}
-          >
-            ${this.labels.done}
-          </button>
-        </div>
       </div>
     `;
   }
@@ -960,7 +823,6 @@ export class JantComposeEditor extends LitElement {
 
   render() {
     return html`
-      ${this._renderAttachedPanel()} ${this._renderAltPanel()}
       <section class="compose-body">
         ${this.format === "note"
           ? this._renderNoteFields()

@@ -15,8 +15,10 @@ import type {
   ComposeLabels,
   ComposeCollection,
   ComposeSubmitDetail,
+  ComposeAttachment,
 } from "./compose-types.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
+import { getMediaCategory } from "../../lib/upload.js";
 
 export class JantComposeDialog extends LitElement {
   static properties = {
@@ -30,6 +32,9 @@ export class JantComposeDialog extends LitElement {
     _showCollection: { state: true },
     _showMoreMenu: { state: true },
     _collectionSearch: { state: true },
+    _altPanelOpen: { state: true },
+    _altPanelIndex: { state: true },
+    _attachedPanelOpen: { state: true },
   };
 
   declare collections: ComposeCollection[];
@@ -42,6 +47,9 @@ export class JantComposeDialog extends LitElement {
   declare _showCollection: boolean;
   declare _showMoreMenu: boolean;
   declare _collectionSearch: string;
+  declare _altPanelOpen: boolean;
+  declare _altPanelIndex: number;
+  declare _attachedPanelOpen: boolean;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -60,6 +68,9 @@ export class JantComposeDialog extends LitElement {
     this._showCollection = false;
     this._showMoreMenu = false;
     this._collectionSearch = "";
+    this._altPanelOpen = false;
+    this._altPanelIndex = 0;
+    this._attachedPanelOpen = false;
   }
 
   private get _editor(): JantComposeEditor | null {
@@ -74,6 +85,9 @@ export class JantComposeDialog extends LitElement {
     this._showCollection = false;
     this._showMoreMenu = false;
     this._collectionSearch = "";
+    this._altPanelOpen = false;
+    this._altPanelIndex = 0;
+    this._attachedPanelOpen = false;
     this._editor?.reset();
   }
 
@@ -174,11 +188,23 @@ export class JantComposeDialog extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener("keydown", this._handleKeydown);
+    this.addEventListener("jant:alt-panel-open", this._handleAltPanelOpen);
+    this.addEventListener("jant:alt-panel-close", this._handleAltPanelClose);
+    this.addEventListener(
+      "jant:attached-panel-open",
+      this._handleAttachedPanelOpen,
+    );
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener("keydown", this._handleKeydown);
+    this.removeEventListener("jant:alt-panel-open", this._handleAltPanelOpen);
+    this.removeEventListener("jant:alt-panel-close", this._handleAltPanelClose);
+    this.removeEventListener(
+      "jant:attached-panel-open",
+      this._handleAttachedPanelOpen,
+    );
   }
 
   private _handleKeydown = (e: Event) => {
@@ -188,6 +214,51 @@ export class JantComposeDialog extends LitElement {
       this._submit("published");
     }
   };
+
+  private _handleAltPanelOpen = (e: Event) => {
+    const detail = (e as CustomEvent<{ index: number }>).detail;
+    this._altPanelIndex = detail.index;
+    this._altPanelOpen = true;
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLInputElement>(".compose-alt-input")?.focus();
+    });
+  };
+
+  private _handleAltPanelClose = () => {
+    this._altPanelOpen = false;
+  };
+
+  private _getAltAttachment(): ComposeAttachment | null {
+    return this._editor?._attachments[this._altPanelIndex] ?? null;
+  }
+
+  private _onAltInput(e: Event) {
+    const value = (e.target as HTMLInputElement).value;
+    this._editor?.updateAlt(this._altPanelIndex, value);
+  }
+
+  private _closeAltPanel() {
+    this._altPanelOpen = false;
+  }
+
+  private _handleAttachedPanelOpen = () => {
+    this._attachedPanelOpen = true;
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLTextAreaElement>(
+        ".compose-attached-textarea",
+      )?.focus();
+    });
+  };
+
+  private _onAttachedTextInput(e: Event) {
+    const value = (e.target as HTMLTextAreaElement).value;
+    this._editor?.updateAttachedText(value);
+  }
+
+  private _closeAttachedPanel() {
+    this._attachedPanelOpen = false;
+    this._editor?.closeAttachedPanel();
+  }
 
   // ── Render helpers ────────────────────────────────────────────────
 
@@ -455,6 +526,139 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _renderAttachedPanel() {
+    if (!this._attachedPanelOpen) return nothing;
+    const editor = this._editor;
+    const attachedText = editor?._attachedText ?? "";
+
+    return html`
+      <div class="compose-attached-panel">
+        <div class="compose-alt-header">
+          <button
+            type="button"
+            class="compose-attached-panel-back"
+            @click=${() => this._closeAttachedPanel()}
+          >
+            <svg
+              class="icon-fine"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 3L6 8l5 5" />
+            </svg>
+          </button>
+          <span class="compose-alt-title">${this.labels.attachedText}</span>
+          ${attachedText.length > 0
+            ? html`<span
+                class="compose-attached-charcount text-xs text-muted-foreground tracking-wide"
+                >${attachedText.length.toLocaleString()} chars</span
+              >`
+            : nothing}
+        </div>
+        <div class="flex-1 p-4 overflow-hidden flex flex-col">
+          <textarea
+            .value=${attachedText}
+            @input=${(e: Event) => this._onAttachedTextInput(e)}
+            class="compose-input compose-attached-textarea"
+            placeholder=${this.labels.attachedTextPlaceholder}
+          ></textarea>
+        </div>
+        <div class="compose-alt-footer">
+          <span class="text-xs text-muted-foreground"
+            >${this.labels.attachedTextHint}</span
+          >
+          <button
+            type="button"
+            class="compose-post-btn"
+            @click=${() => this._closeAttachedPanel()}
+          >
+            ${this.labels.done}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderAltPanel() {
+    if (!this._altPanelOpen) return nothing;
+    const attachment = this._getAltAttachment();
+    if (!attachment) return nothing;
+
+    const category = getMediaCategory(attachment.file.type);
+
+    return html`
+      <div class="compose-alt-panel">
+        <div class="compose-alt-header">
+          <button
+            type="button"
+            class="compose-attached-panel-back"
+            @click=${() => this._closeAltPanel()}
+          >
+            <svg
+              class="icon-fine"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 3L6 8l5 5" />
+            </svg>
+          </button>
+          <span class="compose-alt-title">${this.labels.addAltTitle}</span>
+        </div>
+        <div class="compose-alt-preview">
+          ${category === "image"
+            ? html`<img
+                src=${attachment.previewUrl}
+                alt=""
+                class="compose-alt-preview-img"
+              />`
+            : category === "video"
+              ? html`<video
+                  src=${attachment.previewUrl}
+                  class="compose-alt-preview-img"
+                  preload="metadata"
+                  muted
+                ></video>`
+              : html`<span class="text-sm text-muted-foreground"
+                  >${attachment.file.name}</span
+                >`}
+        </div>
+        <div class="compose-alt-input-row">
+          <input
+            type="text"
+            .value=${attachment.alt}
+            @input=${(e: Event) => this._onAltInput(e)}
+            class="compose-input compose-alt-input"
+            placeholder=${this.labels.altPlaceholder}
+          />
+        </div>
+        <div class="compose-alt-footer">
+          <span class="text-xs text-muted-foreground"
+            >${this.labels.altHint}</span
+          >
+          <button
+            type="button"
+            class="compose-post-btn"
+            @click=${() => this._closeAltPanel()}
+          >
+            ${this.labels.done}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     return html`
       <div class="compose-dialog-inner">
@@ -491,6 +695,7 @@ export class JantComposeDialog extends LitElement {
             ${this.labels.post}
           </button>
         </div>
+        ${this._renderAttachedPanel()} ${this._renderAltPanel()}
       </div>
     `;
   }

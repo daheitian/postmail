@@ -57,7 +57,11 @@ export class JantMediaLightbox extends LitElement {
     this._currentIndex = Math.max(0, Math.min(index, images.length - 1));
     this._open = true;
     this.updateComplete.then(() => {
-      this.querySelector<HTMLDialogElement>(".media-lightbox")?.showModal();
+      const dialog = this.querySelector<HTMLDialogElement>(".media-lightbox");
+      dialog?.showModal();
+      // Focus the content wrapper instead of letting the browser auto-focus
+      // the close button, which would show a focus ring on arrow-key nav.
+      this.querySelector<HTMLElement>(".media-lightbox-content")?.focus();
     });
   }
 
@@ -144,7 +148,7 @@ export class JantMediaLightbox extends LitElement {
         @click=${this.#handleDialogClick}
         @close=${this.#handleClose}
       >
-        <div class="media-lightbox-content">
+        <div class="media-lightbox-content" tabindex="-1">
           <button
             type="button"
             class="media-lightbox-close"

@@ -158,8 +158,11 @@ describe("JantComposeEditor", () => {
     expect(el._rating).toBe(0);
   });
 
-  it("toggles attached text panel", async () => {
+  it("dispatches attached panel open event", async () => {
     const el = await createElement("note");
+
+    const events: Event[] = [];
+    el.addEventListener("jant:attached-panel-open", (e) => events.push(e));
 
     // Click attached text tool button
     const toolBtns =
@@ -172,16 +175,8 @@ describe("JantComposeEditor", () => {
     attachedBtn.click();
     await el.updateComplete;
 
-    expect(el.querySelector(".compose-attached-panel")).not.toBeNull();
-
-    // Click done button to close
-    const doneBtn = el.querySelector<HTMLButtonElement>(
-      ".compose-attached-panel .compose-post-btn",
-    );
-    doneBtn?.click();
-    await el.updateComplete;
-
-    expect(el.querySelector(".compose-attached-panel")).toBeNull();
+    expect(events).toHaveLength(1);
+    expect(el._showAttachedText).toBe(true);
   });
 
   it("shows title toggle only in note mode", async () => {
