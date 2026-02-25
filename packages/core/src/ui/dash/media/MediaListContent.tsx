@@ -85,11 +85,13 @@ export function MediaListContent({
   r2PublicUrl,
   imageTransformUrl,
   s3PublicUrl,
+  uploadMaxFileSize,
 }: {
   mediaList: Media[];
   r2PublicUrl?: string;
   imageTransformUrl?: string;
   s3PublicUrl?: string;
+  uploadMaxFileSize?: number;
 }) {
   const { t } = useLingui();
 
@@ -134,6 +136,7 @@ export function MediaListContent({
             class="hidden"
             accept={UPLOAD_ACCEPT}
             data-media-upload
+            data-max-file-size={uploadMaxFileSize ?? 200}
             data-text-processing={processingText}
             data-text-uploading={uploadingText}
             data-text-error={errorText}

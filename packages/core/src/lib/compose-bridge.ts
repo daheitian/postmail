@@ -10,7 +10,6 @@ import type { ComposeAttachment } from "../ui/components/compose-types.js";
 import type { JantComposeDialog } from "../ui/components/jant-compose-dialog.js";
 import type { JantComposeEditor } from "../ui/components/jant-compose-editor.js";
 import { ImageProcessor } from "./image-processor.js";
-import { validateUploadFile } from "./upload.js";
 import {
   showToast,
   showPersistentToast,
@@ -35,13 +34,6 @@ async function uploadFile(
   editor: JantComposeEditor | null,
 ): Promise<string | null> {
   try {
-    // Validate file type and size before uploading
-    const validationError = validateUploadFile(file);
-    if (validationError) {
-      editor?.updateAttachmentStatus(clientId, "error", null, validationError);
-      return null;
-    }
-
     // Update status to uploading
     editor?.updateAttachmentStatus(clientId, "uploading", null, null);
 

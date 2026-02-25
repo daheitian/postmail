@@ -133,6 +133,9 @@ export function resolveConfig(
     s3PublicUrl,
     imageTransformUrl,
 
+    // Upload (ENV only)
+    uploadMaxFileSize: parseInt(env.UPLOAD_MAX_FILE_SIZE ?? "200", 10) || 200,
+
     // Pagination/Feed (ENV only)
     pageSize: parseInt(env.PAGE_SIZE ?? "20", 10) || 20,
     rssFeedLimit: parseInt(env.RSS_FEED_LIMIT ?? "50", 10) || 50,

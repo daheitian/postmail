@@ -11,6 +11,7 @@
 
 import { ImageProcessor } from "./image-processor.js";
 import { validateUploadFile } from "./upload.js";
+import { showToast } from "./toast.js";
 
 /**
  * Format file size for display
@@ -91,23 +92,25 @@ async function handleUpload(
   input: HTMLInputElement,
   file: File,
 ): Promise<void> {
+  const maxFileSizeMB = parseInt(input.dataset.maxFileSize || "200", 10) || 200;
   const processingText = input.dataset.textProcessing || "Processing...";
   const uploadingText = input.dataset.textUploading || "Uploading...";
   const errorText =
     input.dataset.textError || "Upload failed. Please try again.";
+
+  // Validate before creating placeholder — reject immediately with toast
+  const validationError = validateUploadFile(file, { maxFileSizeMB });
+  if (validationError) {
+    showToast(validationError, "error");
+    input.value = "";
+    return;
+  }
 
   const grid = ensureGridExists();
   const placeholder = createPlaceholder(file.name, file.size, processingText);
   grid.prepend(placeholder);
 
   try {
-    // Validate file type and size before uploading
-    const validationError = validateUploadFile(file);
-    if (validationError) {
-      showPlaceholderError(placeholder, file.name, validationError);
-      return;
-    }
-
     // Process images client-side (resize, convert to WebP); upload non-images as-is
     const toUpload = file.type.startsWith("image/")
       ? await ImageProcessor.processToFile(file)

@@ -15,13 +15,19 @@ import type {
   ComposeLabels,
   ComposeAttachment,
 } from "./compose-types.js";
-import { UPLOAD_ACCEPT, getMediaCategory } from "../../lib/upload.js";
+import {
+  UPLOAD_ACCEPT,
+  getMediaCategory,
+  validateUploadFile,
+} from "../../lib/upload.js";
 import type { MediaCategory } from "../../lib/upload.js";
+import { showToast } from "../../lib/toast.js";
 
 export class JantComposeEditor extends LitElement {
   static properties = {
     format: { type: String },
     labels: { type: Object },
+    uploadMaxFileSize: { type: Number },
     _title: { state: true },
     _body: { state: true },
     _url: { state: true },
@@ -39,6 +45,7 @@ export class JantComposeEditor extends LitElement {
 
   declare format: ComposeFormat;
   declare labels: ComposeLabels;
+  declare uploadMaxFileSize: number;
   declare _title: string;
   declare _body: string;
   declare _url: string;
@@ -63,6 +70,7 @@ export class JantComposeEditor extends LitElement {
     super();
     this.format = "note";
     this.labels = {} as ComposeLabels;
+    this.uploadMaxFileSize = 200;
     this._title = "";
     this._body = "";
     this._url = "";
@@ -209,6 +217,15 @@ export class JantComposeEditor extends LitElement {
     const files: { file: File; clientId: string }[] = [];
 
     for (const file of Array.from(this._fileInput.files)) {
+      // Validate before creating attachment preview
+      const error = validateUploadFile(file, {
+        maxFileSizeMB: this.uploadMaxFileSize,
+      });
+      if (error) {
+        showToast(error, "error");
+        continue;
+      }
+
       const clientId = crypto.randomUUID();
       const previewUrl = URL.createObjectURL(file);
       newAttachments.push({
@@ -222,6 +239,8 @@ export class JantComposeEditor extends LitElement {
       });
       files.push({ file, clientId });
     }
+
+    if (newAttachments.length === 0) return;
 
     this._attachments = [...this._attachments, ...newAttachments];
 

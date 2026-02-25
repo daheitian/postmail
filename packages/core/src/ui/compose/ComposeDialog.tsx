@@ -15,9 +15,13 @@ import { useLingui } from "@lingui/react/macro";
 
 export interface ComposeDialogProps {
   collections?: Collection[];
+  uploadMaxFileSize?: number;
 }
 
-export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
+export const ComposeDialog: FC<ComposeDialogProps> = ({
+  collections,
+  uploadMaxFileSize,
+}) => {
   const { t } = useLingui();
 
   const labels = JSON.stringify({
@@ -158,7 +162,11 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({ collections }) => {
       class="compose-dialog"
       onclick="event.target === this && this.close()"
     >
-      <jant-compose-dialog collections={collectionsJson} labels={labels}>
+      <jant-compose-dialog
+        collections={collectionsJson}
+        labels={labels}
+        upload-max-file-size={uploadMaxFileSize ?? 200}
+      >
         {/* SSR fallback skeleton */}
         <div class="compose-dialog-inner">
           <div class="compose-dialog-header" />
