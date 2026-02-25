@@ -283,6 +283,7 @@ settingsRoutes.post("/avatar", async (c) => {
         media: c.var.services.media,
         storage,
         storageProvider: c.var.appConfig.storageDriver,
+        maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
       },
     );
 

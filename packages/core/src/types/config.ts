@@ -99,7 +99,7 @@ export const CONFIG_FIELDS = {
     envOnly: true,
   },
   UPLOAD_MAX_FILE_SIZE: {
-    defaultValue: "200",
+    defaultValue: "500",
     envOnly: true,
   },
 
@@ -200,7 +200,7 @@ export interface AppConfig {
   imageTransformUrl: string;
 
   // Upload (ENV only, parsed to number)
-  /** Max file size for non-image uploads, in MB */
+  /** Max upload file size in MB. Defaults to 500. */
   uploadMaxFileSize: number;
 
   // Pagination/Feed (ENV only, parsed to number)

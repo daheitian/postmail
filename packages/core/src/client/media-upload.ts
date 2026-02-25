@@ -92,7 +92,7 @@ async function handleUpload(
   input: HTMLInputElement,
   file: File,
 ): Promise<void> {
-  const maxFileSizeMB = parseInt(input.dataset.maxFileSize || "200", 10) || 200;
+  const maxFileSizeMB = parseInt(input.dataset.maxFileSize || "500", 10) || 500;
   const processingText = input.dataset.textProcessing || "Processing...";
   const uploadingText = input.dataset.textUploading || "Uploading...";
   const errorText =

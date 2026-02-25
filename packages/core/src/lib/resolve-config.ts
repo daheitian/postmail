@@ -134,7 +134,7 @@ export function resolveConfig(
     imageTransformUrl,
 
     // Upload (ENV only)
-    uploadMaxFileSize: parseInt(env.UPLOAD_MAX_FILE_SIZE ?? "200", 10) || 200,
+    uploadMaxFileSize: parseInt(env.UPLOAD_MAX_FILE_SIZE ?? "500", 10) || 500,
 
     // Pagination/Feed (ENV only)
     pageSize: parseInt(env.PAGE_SIZE ?? "20", 10) || 20,

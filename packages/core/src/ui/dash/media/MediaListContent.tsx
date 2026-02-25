@@ -136,7 +136,7 @@ export function MediaListContent({
             class="hidden"
             accept={UPLOAD_ACCEPT}
             data-media-upload
-            data-max-file-size={uploadMaxFileSize ?? 200}
+            data-max-file-size={uploadMaxFileSize ?? 500}
             data-text-processing={processingText}
             data-text-uploading={uploadingText}
             data-text-error={errorText}

@@ -44,6 +44,7 @@ export interface AvatarUploadDeps {
   media: MediaService;
   storage: StorageDriver;
   storageProvider: string;
+  maxFileSizeMB: number;
 }
 
 export interface SettingsService {
@@ -217,6 +218,7 @@ export function createSettingsService(db: Database): SettingsService {
     async uploadAvatar(data, deps) {
       const uploadError = validateUploadFile(data.file as unknown as File, {
         imagesOnly: true,
+        maxFileSizeMB: deps.maxFileSizeMB,
       });
       if (uploadError) {
         throw new ValidationError(uploadError);

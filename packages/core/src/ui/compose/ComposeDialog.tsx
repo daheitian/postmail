@@ -165,7 +165,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       <jant-compose-dialog
         collections={collectionsJson}
         labels={labels}
-        upload-max-file-size={uploadMaxFileSize ?? 200}
+        upload-max-file-size={uploadMaxFileSize ?? 500}
       >
         {/* SSR fallback skeleton */}
         <div class="compose-dialog-inner">

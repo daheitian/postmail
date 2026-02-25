@@ -70,7 +70,7 @@ export class JantComposeEditor extends LitElement {
     super();
     this.format = "note";
     this.labels = {} as ComposeLabels;
-    this.uploadMaxFileSize = 200;
+    this.uploadMaxFileSize = 500;
     this._title = "";
     this._body = "";
     this._url = "";

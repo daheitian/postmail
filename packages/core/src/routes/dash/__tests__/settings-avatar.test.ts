@@ -57,7 +57,12 @@ describe("Dashboard Settings - Avatar Upload Logic", () => {
 
       await settingsService.uploadAvatar(
         { file },
-        { media: mediaService, storage, storageProvider: "r2" },
+        {
+          media: mediaService,
+          storage,
+          storageProvider: "r2",
+          maxFileSizeMB: 500,
+        },
       );
 
       const avatarKey = await settingsService.get("SITE_AVATAR");
@@ -72,7 +77,12 @@ describe("Dashboard Settings - Avatar Upload Logic", () => {
 
       await settingsService.uploadAvatar(
         { file },
-        { media: mediaService, storage, storageProvider: "r2" },
+        {
+          media: mediaService,
+          storage,
+          storageProvider: "r2",
+          maxFileSizeMB: 500,
+        },
       );
 
       const mediaList = await mediaService.list();
@@ -89,7 +99,12 @@ describe("Dashboard Settings - Avatar Upload Logic", () => {
 
       await settingsService.uploadAvatar(
         { file, faviconIco: fakeIcoData.buffer },
-        { media: mediaService, storage, storageProvider: "r2" },
+        {
+          media: mediaService,
+          storage,
+          storageProvider: "r2",
+          maxFileSizeMB: 500,
+        },
       );
 
       const stored = await settingsService.get("SITE_FAVICON_ICO");
@@ -105,7 +120,12 @@ describe("Dashboard Settings - Avatar Upload Logic", () => {
 
       await settingsService.uploadAvatar(
         { file, appleTouchIcon: appleTouchData },
-        { media: mediaService, storage, storageProvider: "r2" },
+        {
+          media: mediaService,
+          storage,
+          storageProvider: "r2",
+          maxFileSizeMB: 500,
+        },
       );
 
       const stored = await settingsService.get("SITE_FAVICON_APPLE_TOUCH");
@@ -120,7 +140,12 @@ describe("Dashboard Settings - Avatar Upload Logic", () => {
 
       await settingsService.uploadAvatar(
         { file },
-        { media: mediaService, storage, storageProvider: "r2" },
+        {
+          media: mediaService,
+          storage,
+          storageProvider: "r2",
+          maxFileSizeMB: 500,
+        },
       );
 
       const stored = await settingsService.get("SITE_FAVICON_VERSION");
@@ -135,19 +160,29 @@ describe("Dashboard Settings - Avatar Upload Logic", () => {
       await expect(
         settingsService.uploadAvatar(
           { file },
-          { media: mediaService, storage, storageProvider: "r2" },
+          {
+            media: mediaService,
+            storage,
+            storageProvider: "r2",
+            maxFileSizeMB: 500,
+          },
         ),
       ).rejects.toThrow("File type not allowed");
     });
 
     it("throws ValidationError for oversized file", async () => {
       const storage = createMockStorage();
-      const file = createMockFile("big.png", "image/png", 20 * 1024 * 1024);
+      const file = createMockFile("big.png", "image/png", 501 * 1024 * 1024);
 
       await expect(
         settingsService.uploadAvatar(
           { file },
-          { media: mediaService, storage, storageProvider: "r2" },
+          {
+            media: mediaService,
+            storage,
+            storageProvider: "r2",
+            maxFileSizeMB: 500,
+          },
         ),
       ).rejects.toThrow("File too large");
     });

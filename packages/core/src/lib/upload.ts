@@ -42,12 +42,6 @@ const ALLOWED_UPLOAD_TYPES = [
   ...DOCUMENT_MIME_TYPES,
 ] as const;
 
-/** Maximum file size for images (10MB) */
-const MAX_IMAGE_UPLOAD_SIZE = 10 * 1024 * 1024;
-
-/** Default maximum file size for non-images (200MB) */
-const DEFAULT_MAX_UPLOAD_SIZE = 200 * 1024 * 1024;
-
 /**
  * Accept string for file inputs, covering all allowed upload types.
  *
@@ -99,25 +93,25 @@ export function isImageMimeType(mimeType: string): boolean {
 export interface ValidateUploadOptions {
   /** When true, only image MIME types are accepted (e.g. for avatar uploads). */
   imagesOnly?: boolean;
-  /** Max file size for non-images, in MB. Defaults to 200. */
-  maxFileSizeMB?: number;
+  /** Max file size in MB. */
+  maxFileSizeMB: number;
 }
 
 /**
  * Validates an uploaded file's type and size.
  *
  * @param file - The uploaded File object
- * @param options - Optional validation constraints
+ * @param options - Validation constraints
  * @returns null if valid, error message string if invalid
  * @example
  * ```ts
- * const error = validateUploadFile(file);
+ * const error = validateUploadFile(file, { maxFileSizeMB: 500 });
  * if (error) return dsToast(error, "error");
  * ```
  */
 export function validateUploadFile(
   file: File,
-  options?: ValidateUploadOptions,
+  options: ValidateUploadOptions,
 ): string | null {
   if (options?.imagesOnly) {
     if (!isImageMimeType(file.type)) {
@@ -130,17 +124,9 @@ export function validateUploadFile(
   ) {
     return "File type not allowed.";
   }
-  const maxUploadBytes = options?.maxFileSizeMB
-    ? options.maxFileSizeMB * 1024 * 1024
-    : DEFAULT_MAX_UPLOAD_SIZE;
-  const maxSize = isImageMimeType(file.type)
-    ? MAX_IMAGE_UPLOAD_SIZE
-    : maxUploadBytes;
-  const maxLabel = isImageMimeType(file.type)
-    ? "10MB"
-    : `${options?.maxFileSizeMB ?? 200}MB`;
-  if (file.size > maxSize) {
-    return `File too large (max ${maxLabel}).`;
+  const maxMB = options.maxFileSizeMB;
+  if (file.size > maxMB * 1024 * 1024) {
+    return `File too large (max ${maxMB}MB).`;
   }
   return null;
 }
