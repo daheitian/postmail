@@ -15,7 +15,7 @@
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
 import Sortable from "sortablejs";
-import { showToast } from "../../lib/toast.js";
+import { showToast } from "../toast.js";
 import type {
   AvailablePage,
   NavManagerItem,

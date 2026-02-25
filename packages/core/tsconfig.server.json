@@ -9,17 +9,7 @@
     "dist",
     ".lingui-build",
     "src/client.ts",
-    "src/lib/image-processor.ts",
-    "src/lib/media-upload.ts",
-    "src/lib/nav-manager-bridge.ts",
-    "src/lib/compose-bridge.ts",
-    "src/lib/settings-bridge.ts",
-    "src/lib/post-form-bridge.ts",
-    "src/lib/collections-reorder.ts",
-    "src/lib/avatar-upload.ts",
-    "src/lib/collection-form-bridge.ts",
-    "src/lib/toast.ts",
-    "src/ui/components/**",
+    "src/client/**",
     "src/**/__tests__/**"
   ]
 }

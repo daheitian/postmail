@@ -2,7 +2,7 @@
  * URL Utilities
  */
 
-import { pinyin } from "pinyin-pro";
+import limax from "limax";
 
 /**
  * Extracts the hostname (domain) from a URL string.
@@ -79,37 +79,21 @@ export function isFullUrl(str: string): boolean {
 /**
  * Converts text to a URL-friendly slug.
  *
- * Transforms text into a lowercase, hyphen-separated slug by:
- * - Converting to lowercase
- * - Removing special characters (keeping only word characters, spaces, and hyphens)
- * - Replacing whitespace and underscores with hyphens
- * - Removing leading and trailing hyphens
- *
- * Used for generating clean URLs from titles and names.
+ * Transforms text into a lowercase, hyphen-separated slug using limax for
+ * i18n-aware transliteration (CJK → Pinyin, Japanese → Romaji, accented → ASCII).
  *
  * @param text - The text to convert to a slug
  * @returns The slugified string
  *
  * @example
  * ```ts
- * const slug = slugify("Hello World! This is a Test.");
+ * slugify("Hello World! This is a Test.");
  * // Returns: "hello-world-this-is-a-test"
  *
- * const slug = slugify("  Multiple   Spaces  ");
- * // Returns: "multiple-spaces"
+ * slugify("书评");
+ * // Returns: "shu-ping"
  * ```
  */
 export function slugify(text: string): string {
-  // Replace CJK characters with their pinyin equivalents, preserving non-CJK text
-  const converted = text.replace(
-    /[\u4e00-\u9fff\u3400-\u4dbf]+/g,
-    (match) => ` ${pinyin(match, { toneType: "none", separator: " " })} `,
-  );
-
-  return converted
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  return limax(text, { tone: false }).replace(/_/g, "-");
 }

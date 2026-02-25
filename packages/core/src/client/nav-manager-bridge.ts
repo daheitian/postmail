@@ -9,7 +9,7 @@
 import type {
   NavManagerUpdateDetail,
   NavManagerDeleteDetail,
-} from "../ui/components/nav-manager-types.js";
+} from "./components/nav-manager-types.js";
 import { showToast } from "./toast.js";
 
 document.addEventListener("jant:nav-update", async (event: Event) => {

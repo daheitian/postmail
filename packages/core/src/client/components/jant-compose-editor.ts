@@ -21,7 +21,7 @@ import {
   validateUploadFile,
 } from "../../lib/upload.js";
 import type { MediaCategory } from "../../lib/upload.js";
-import { showToast } from "../../lib/toast.js";
+import { showToast } from "../toast.js";
 
 export class JantComposeEditor extends LitElement {
   static properties = {

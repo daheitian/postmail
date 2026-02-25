@@ -132,8 +132,8 @@ describe("slugify", () => {
     expect(slugify("")).toBe("");
   });
 
-  it("removes non-word characters", () => {
-    expect(slugify("café & résumé")).toBe("caf-rsum");
+  it("transliterates accented characters", () => {
+    expect(slugify("café & résumé")).toBe("cafe-and-resume");
   });
 
   it("converts Chinese characters to pinyin", () => {

@@ -9,9 +9,9 @@
 import type {
   SettingsSaveDetail,
   AvatarRemoveDetail,
-} from "../ui/components/settings-types.js";
-import type { JantSettingsGeneral } from "../ui/components/jant-settings-general.js";
-import type { JantSettingsAvatar } from "../ui/components/jant-settings-avatar.js";
+} from "./components/settings-types.js";
+import type { JantSettingsGeneral } from "./components/jant-settings-general.js";
+import type { JantSettingsAvatar } from "./components/jant-settings-avatar.js";
 import { showToast } from "./toast.js";
 
 function updateSidebarSiteName(siteName: string) {

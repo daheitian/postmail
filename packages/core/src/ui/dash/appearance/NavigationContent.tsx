@@ -8,7 +8,7 @@ import { SYSTEM_NAV_KEYS } from "../../../types.js";
 import type {
   NavManagerLabels,
   SystemNavConfig,
-} from "../../components/nav-manager-types.js";
+} from "../../../client/components/nav-manager-types.js";
 // =============================================================================
 // System descriptions (used to build the config passed to the Lit component)
 // =============================================================================

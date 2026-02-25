@@ -347,7 +347,7 @@ export class JantComposeDialog extends LitElement {
               }}
             ></div>`
           : nothing}
-        <div class="select compose-collection-select">
+        <div class="select compose-collection-select" data-select-initialized>
           <button
             type="button"
             class="compose-collection-trigger"

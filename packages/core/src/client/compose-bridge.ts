@@ -5,10 +5,10 @@
  * Manages file uploads, deferred submit flow, and toast notifications.
  */
 
-import type { ComposeSubmitDetail } from "../ui/components/compose-types.js";
-import type { ComposeAttachment } from "../ui/components/compose-types.js";
-import type { JantComposeDialog } from "../ui/components/jant-compose-dialog.js";
-import type { JantComposeEditor } from "../ui/components/jant-compose-editor.js";
+import type { ComposeSubmitDetail } from "./components/compose-types.js";
+import type { ComposeAttachment } from "./components/compose-types.js";
+import type { JantComposeDialog } from "./components/jant-compose-dialog.js";
+import type { JantComposeEditor } from "./components/jant-compose-editor.js";
 import { ImageProcessor } from "./image-processor.js";
 import {
   showToast,

@@ -25,6 +25,7 @@ import {
 } from "../../lib/icons.js";
 import { ICON_CATALOG } from "../../lib/icon-catalog.js";
 import { EMOJI_CATALOG } from "../../lib/emoji-catalog.js";
+import { slugify } from "../lazy-slugify.js";
 import type {
   CollectionFormInitial,
   CollectionFormLabels,
@@ -40,15 +41,6 @@ type EmojiCategory = {
   name: string;
   emojis: string[];
 };
-
-function slugifyTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 export class JantCollectionForm extends LitElement {
   static properties = {
@@ -541,7 +533,12 @@ export class JantCollectionForm extends LitElement {
                 const target = event.target as HTMLInputElement;
                 this._title = target.value;
                 if (!this.isEdit) {
-                  this._slug = slugifyTitle(target.value);
+                  const currentTitle = target.value;
+                  slugify(currentTitle).then((slug) => {
+                    if (this._title === currentTitle) {
+                      this._slug = slug;
+                    }
+                  });
                 }
               }}
             />

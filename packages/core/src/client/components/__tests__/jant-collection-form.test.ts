@@ -1,6 +1,20 @@
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+
+vi.mock("../../lazy-slugify.js", () => ({
+  slugify: (text: string) =>
+    Promise.resolve(
+      text
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, "")
+        .replace(/[\s_-]+/g, "-")
+        .replace(/^-+|-+$/g, ""),
+    ),
+  preloadSlug: () => {},
+}));
+
 import type {
   CollectionFormInitial,
   CollectionFormLabels,
@@ -81,6 +95,8 @@ describe("JantCollectionForm", () => {
 
     titleInput.value = "My Great Collection!";
     titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    // slugify is async — flush the microtask then wait for Lit re-render
+    await new Promise((r) => setTimeout(r, 0));
     await el.updateComplete;
 
     expect(slugInput.value).toBe("my-great-collection");

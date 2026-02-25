@@ -6,8 +6,8 @@
  * - `jant:post-load-media` → fetch media picker HTML and manage selections
  */
 
-import type { PostSubmitDetail } from "../ui/components/post-form-types.js";
-import type { JantPostForm } from "../ui/components/jant-post-form.js";
+import type { PostSubmitDetail } from "./components/post-form-types.js";
+import type { JantPostForm } from "./components/jant-post-form.js";
 import { showToast } from "./toast.js";
 
 function findPostForm(

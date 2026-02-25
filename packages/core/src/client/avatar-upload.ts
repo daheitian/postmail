@@ -9,7 +9,7 @@
  * Uses the `[data-avatar-upload]` attribute on file inputs.
  */
 
-import { encodeIco } from "./favicon.js";
+import { encodeIco } from "../lib/favicon.js";
 
 /**
  * Load an image from a File object

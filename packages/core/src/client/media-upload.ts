@@ -10,7 +10,7 @@
  */
 
 import { ImageProcessor } from "./image-processor.js";
-import { validateUploadFile } from "./upload.js";
+import { validateUploadFile } from "../lib/upload.js";
 import { showToast } from "./toast.js";
 
 /**

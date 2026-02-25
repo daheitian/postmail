@@ -19,7 +19,7 @@ import type { PropertyValueMap } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import Sortable from "sortablejs";
-import { showToast } from "../../lib/toast.js";
+import { showToast } from "../toast.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import type {
@@ -552,7 +552,10 @@ export class JantCollectionSidebar extends LitElement {
     return html`
       <div
         data-sidebar-item="c-${col.id}"
-        class="group relative"
+        class=${classMap({
+          "group relative": true,
+          "z-50": this._showItemMenuId === col.id,
+        })}
         @mouseenter=${() => {
           this._hoveringId = col.id;
         }}

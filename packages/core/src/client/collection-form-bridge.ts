@@ -6,8 +6,8 @@
  * redirects on success. Displays toasts on failure.
  */
 
-import type { CollectionSubmitDetail } from "../ui/components/collection-types.js";
-import type { JantCollectionForm } from "../ui/components/jant-collection-form.js";
+import type { CollectionSubmitDetail } from "./components/collection-types.js";
+import type { JantCollectionForm } from "./components/jant-collection-form.js";
 import { showToast } from "./toast.js";
 
 document.addEventListener("jant:collection-submit", async (event: Event) => {

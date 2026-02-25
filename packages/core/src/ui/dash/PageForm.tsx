@@ -31,6 +31,8 @@ export const PageForm: FC<PageFormProps> = ({
 
   return (
     <form
+      data-page-form
+      {...(isEdit ? { "data-page-edit": "" } : {})}
       data-signals={signals}
       data-on:submit__prevent={`@post('${action}')`}
       data-indicator="_loading"
