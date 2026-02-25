@@ -144,7 +144,8 @@ pagesRoutes.post("/", async (c) => {
       parsed.error.issues[0]?.message ??
       i18n._(
         msg({
-          message: "Invalid input",
+          message:
+            "Something doesn't look right. Check the form and try again.",
           comment: "@context: Fallback validation error for page form",
         }),
       );
@@ -213,7 +214,8 @@ pagesRoutes.post("/:id", async (c) => {
       parsed.error.issues[0]?.message ??
       i18n._(
         msg({
-          message: "Invalid input",
+          message:
+            "Something doesn't look right. Check the form and try again.",
           comment: "@context: Fallback validation error for page form",
         }),
       );

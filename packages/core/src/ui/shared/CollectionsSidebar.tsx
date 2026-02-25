@@ -176,7 +176,8 @@ const AuthenticatedSidebar: FC<{
       comment: "@context: Delete collection action",
     }),
     confirmDelete: t({
-      message: "Are you sure you want to delete this collection?",
+      message:
+        "Delete this collection permanently? Posts inside won't be removed.",
       comment: "@context: Confirm dialog for deleting a collection",
     }),
     orderSaved: t({
@@ -188,7 +189,7 @@ const AuthenticatedSidebar: FC<{
       comment: "@context: Toast after saving a collection",
     }),
     saveFailed: t({
-      message: "Failed to save. Please try again.",
+      message: "Couldn't save. Try again in a moment.",
       comment: "@context: Toast when save fails",
     }),
     deleted: t({

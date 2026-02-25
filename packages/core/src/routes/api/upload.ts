@@ -138,7 +138,7 @@ uploadApiRoutes.post("/", async (c) => {
   if (!storage) {
     const errorText = i18n._(
       msg({
-        message: "Storage not configured",
+        message: "File storage isn't set up. Check your server config.",
         comment: "@context: Error when file storage is not set up",
       }),
     );
@@ -154,7 +154,7 @@ uploadApiRoutes.post("/", async (c) => {
   if (!file) {
     const errorText = i18n._(
       msg({
-        message: "No file provided",
+        message: "No file selected. Choose a file to upload.",
         comment: "@context: Error when no file was selected for upload",
       }),
     );
@@ -217,7 +217,7 @@ uploadApiRoutes.post("/", async (c) => {
         await stream.toast(
           i18n._(
             msg({
-              message: "Upload successful!",
+              message: "File uploaded.",
               comment: "@context: Toast after successful file upload",
             }),
           ),
@@ -245,7 +245,7 @@ uploadApiRoutes.post("/", async (c) => {
 
     const errorText = i18n._(
       msg({
-        message: "Upload failed. Please try again.",
+        message: "Upload didn't go through. Try again in a moment.",
         comment: "@context: Error when file upload fails",
       }),
     );

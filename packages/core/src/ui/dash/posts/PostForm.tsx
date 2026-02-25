@@ -100,7 +100,7 @@ export const PostForm: FC<PostFormProps> = ({
       comment: "@context: Remove media attachment button",
     }),
     mediaEmptyLabel: t({
-      message: "No media selected yet.",
+      message: "No media attached.",
       comment: "@context: Post form media empty state",
     }),
     statusLabel: t({
@@ -154,15 +154,15 @@ export const PostForm: FC<PostFormProps> = ({
     }),
     submitSuccessMessage: isEdit
       ? t({
-          message: "Post updated successfully.",
+          message: "Post updated.",
           comment: "@context: Toast after editing post",
         })
       : t({
-          message: "Post published successfully.",
+          message: "Post published.",
           comment: "@context: Toast after creating post",
         }),
     submitErrorMessage: t({
-      message: "Failed to save post. Please try again.",
+      message: "Couldn't save your post. Try again in a moment.",
       comment: "@context: Toast when post save fails",
     }),
   }).replace(/</g, "\\u003c");

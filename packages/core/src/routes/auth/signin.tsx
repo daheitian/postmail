@@ -40,7 +40,8 @@ const SigninContent: FC<{
           {demoEmail && demoPassword && (
             <p class="text-muted-foreground text-sm mb-4">
               {t({
-                message: "Demo account pre-filled. Just click Sign In.",
+                message:
+                  "Demo credentials are pre-filled — hit Sign In to continue.",
                 comment:
                   "@context: Hint shown on signin page when demo credentials are pre-filled",
               })}
@@ -110,9 +111,9 @@ signinRoutes.get("/signin", async (c) => {
   const isReset = c.req.query("reset") !== undefined;
   let toast: { message: string } | undefined;
   if (isSetup) {
-    toast = { message: "Account created successfully. Please sign in." };
+    toast = { message: "Account created. Sign in to get started." };
   } else if (isReset) {
-    toast = { message: "Password reset successfully. Please sign in." };
+    toast = { message: "Password reset. Sign in with your new password." };
   }
 
   return c.html(
@@ -132,7 +133,7 @@ signinRoutes.post("/signin", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Auth not configured",
+          message: "Authentication isn't set up. Check your server config.",
           comment:
             "@context: Error toast when authentication system is unavailable",
         }),
@@ -149,7 +150,8 @@ signinRoutes.post("/signin", async (c) => {
       parsed.error.issues[0]?.message ??
       i18n._(
         msg({
-          message: "Invalid input",
+          message:
+            "Something doesn't look right. Check the form and try again.",
           comment: "@context: Fallback validation error for sign-in form",
         }),
       );
@@ -170,7 +172,8 @@ signinRoutes.post("/signin", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Invalid email or password",
+          message:
+            "Wrong email or password. Check your credentials and try again.",
           comment: "@context: Error toast when sign-in credentials are wrong",
         }),
       ),

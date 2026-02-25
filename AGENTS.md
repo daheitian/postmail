@@ -76,6 +76,53 @@ return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
 
 Cloudflare Workers, Hono v4, Vite + SWC, Tailwind v4 + BaseCoat, D1 + Drizzle ORM, better-auth, @lingui/core, Datastar v1.0.0-RC.7 (vendored — version matters, APIs vary between releases), Lit (Web Components), Zod, ESLint + Prettier
 
+## UX Copy Guidelines
+
+All user-facing text follows a consistent voice. When writing or reviewing copy, apply these rules.
+
+### Voice & Tone
+
+- Write like a knowledgeable friend — warm but not cute, confident but not arrogant.
+- Use plain English. If you can say it in 5 words, don't use 10.
+- Avoid filler words: "please", "simply", "just", "easily", "feel free to".
+- Never say "successfully" — if it worked, the user knows.
+
+### Empty States
+
+- Never show "No [thing] found" or "No [thing] yet" alone. Always pair it with a next action or brief reason the space is empty.
+- Good: `"Nothing published yet. Write your first post to get started."`
+- Bad: `"No posts."`
+
+### Buttons & CTAs
+
+- Verb-first, action-specific labels. Avoid generic text.
+- Good: `"Publish"`, `"Write your first post"`, `"Delete Media"`
+- Bad: `"Submit"`, `"OK"`, `"Confirm"`
+
+### Error Messages
+
+- Always tell the user (1) what went wrong, (2) what they can do about it. Never blame the user.
+- Good: `"Wrong email or password. Check your credentials and try again."`
+- Bad: `"Invalid input"`
+
+### Success & Confirmation
+
+- Acknowledge the action briefly. Don't say "Success" or "[action] successfully."
+- Good: `"Post published."`, `"Settings updated."`, `"Password changed."`
+- Bad: `"Operation completed successfully."`
+
+### Destructive Actions
+
+- Be specific about what will be lost. Make it irreversible-sounding if it is.
+- Good: `"Delete this post permanently? This can't be undone."`
+- Bad: `"Are you sure?"`
+
+### Settings Descriptions
+
+- Describe what a setting **does**, not what it **is**.
+- Good: `"Hide this post from search engines and RSS feeds"`
+- Bad: `"Visibility: Private"`
+
 ## Reference
 
 If you notice code contradicting this document, think about which side is correct, then update whichever is wrong.

@@ -47,7 +47,8 @@ function RedirectsListContent({ redirects }: { redirects: Redirect[] }) {
       {redirects.length === 0 ? (
         <EmptyState
           message={t({
-            message: "No redirects configured.",
+            message:
+              "No redirects yet. Create one to forward traffic from old URLs.",
             comment: "@context: Empty state message",
           })}
           ctaText={t({

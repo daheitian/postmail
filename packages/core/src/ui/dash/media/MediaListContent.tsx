@@ -108,7 +108,7 @@ export function MediaListContent({
     comment: "@context: Button to upload media file",
   });
   const errorText = t({
-    message: "Upload failed. Please try again.",
+    message: "Upload didn't go through. Try again in a moment.",
     comment: "@context: Upload error message",
   });
 
@@ -164,7 +164,8 @@ export function MediaListContent({
           <div id="empty-state">
             <EmptyState
               message={t({
-                message: "No media uploaded yet.",
+                message:
+                  "Your media library is empty. Upload your first file to get started.",
                 comment: "@context: Empty state message when no media exists",
               })}
             />

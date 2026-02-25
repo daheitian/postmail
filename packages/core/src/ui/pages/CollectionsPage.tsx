@@ -27,7 +27,8 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({ collections }) => {
         {collections.length === 0 ? (
           <p class="text-muted-foreground">
             {t({
-              message: "No collections yet.",
+              message:
+                "No collections yet. Start one to organize posts by topic.",
               comment: "@context: Empty state message on collections page",
             })}
           </p>

@@ -146,7 +146,8 @@ setupRoutes.post("/setup", async (c) => {
       parsed.error.issues[0]?.message ??
       i18n._(
         msg({
-          message: "Invalid input",
+          message:
+            "Something doesn't look right. Check the form and try again.",
           comment: "@context: Fallback validation error for setup form",
         }),
       );
@@ -159,7 +160,7 @@ setupRoutes.post("/setup", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "AUTH_SECRET not configured",
+          message: "Auth secret is missing. Check your environment variables.",
           comment:
             "@context: Error toast when authentication secret is missing from server config",
         }),
@@ -177,7 +178,8 @@ setupRoutes.post("/setup", async (c) => {
       return dsToast(
         i18n._(
           msg({
-            message: "Failed to create account",
+            message:
+              "Couldn't create your account. Check the details and try again.",
             comment: "@context: Error toast when account creation fails",
           }),
         ),
@@ -247,7 +249,8 @@ setupRoutes.post("/setup", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Failed to create account",
+          message:
+            "Couldn't create your account. Check the details and try again.",
           comment: "@context: Error toast when account creation fails",
         }),
       ),

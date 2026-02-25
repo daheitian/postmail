@@ -55,6 +55,11 @@ msgstr "301 (Permanent)"
 msgid "302 (Temporary)"
 msgstr "302 (Temporary)"
 
+#. @context: Error toast when display name is empty
+#: src/routes/dash/settings.tsx
+msgid "A display name is required."
+msgstr "A display name is required."
+
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "A short intro for search engines and feed readers. Plain text only."
@@ -74,8 +79,8 @@ msgstr "Account"
 
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Add"
-msgstr "Add"
+#~ msgid "Add"
+#~ msgstr "Add"
 
 #. @context: Description in link popover form
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -116,6 +121,11 @@ msgstr "Add Link"
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Add Media"
 msgstr "Add Media"
+
+#. @context: Add more attachments button
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add More"
+msgstr "Add More"
 
 #. @context: Card title for adding page to nav
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -164,8 +174,8 @@ msgstr "All pages are already in navigation."
 
 #. @context: Hint text in alt text panel
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Alt text improves accessibility"
-msgstr "Alt text improves accessibility"
+#~ msgid "Alt text improves accessibility"
+#~ msgstr "Alt text improves accessibility"
 
 #. @context: Dashboard navigation - appearance settings
 #: src/ui/layouts/DashLayout.tsx
@@ -179,13 +189,13 @@ msgstr "Archive"
 
 #. @context: Confirm dialog for deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
-msgid "Are you sure you want to delete this collection?"
-msgstr "Are you sure you want to delete this collection?"
+#~ msgid "Are you sure you want to delete this collection?"
+#~ msgstr "Are you sure you want to delete this collection?"
 
 #. @context: Confirmation dialog when deleting a post from the list
 #: src/ui/dash/PostList.tsx
-msgid "Are you sure you want to delete this post? This cannot be undone."
-msgstr "Are you sure you want to delete this post? This cannot be undone."
+#~ msgid "Are you sure you want to delete this post? This cannot be undone."
+#~ msgstr "Are you sure you want to delete this post? This cannot be undone."
 
 #. @context: Post type badge - article
 #. @context: Post type label - article
@@ -218,13 +228,23 @@ msgstr "Attached Text"
 
 #. @context: Error toast when authentication system is unavailable
 #: src/routes/auth/signin.tsx
-msgid "Auth not configured"
-msgstr "Auth not configured"
+#~ msgid "Auth not configured"
+#~ msgstr "Auth not configured"
 
 #. @context: Error toast when authentication secret is missing from server config
 #: src/routes/auth/setup.tsx
-msgid "AUTH_SECRET not configured"
-msgstr "AUTH_SECRET not configured"
+msgid "Auth secret is missing. Check your environment variables."
+msgstr "Auth secret is missing. Check your environment variables."
+
+#. @context: Error toast when authentication secret is missing from server config
+#: src/routes/auth/setup.tsx
+#~ msgid "AUTH_SECRET not configured"
+#~ msgstr "AUTH_SECRET not configured"
+
+#. @context: Error toast when authentication system is unavailable
+#: src/routes/auth/signin.tsx
+msgid "Authentication isn't set up. Check your server config."
+msgstr "Authentication isn't set up. Check your server config."
 
 #. @context: Compose quote author placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -240,8 +260,15 @@ msgstr "Avatar"
 #. @context: Toast after saving avatar display preference
 #: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
-msgid "Avatar display setting saved successfully."
-msgstr "Avatar display setting saved successfully."
+#~ msgid "Avatar display setting saved successfully."
+#~ msgstr "Avatar display setting saved successfully."
+
+#. @context: Toast after saving avatar display preference
+#. @context: Toast after saving avatar display preference
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Avatar display updated."
+msgstr "Avatar display updated."
 
 #. @context: Button to go back to media list
 #: src/ui/dash/media/ViewMediaContent.tsx
@@ -298,6 +325,11 @@ msgstr "Change Password"
 #: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
 msgstr "Choose a font pairing for your site. All options use system fonts for fast loading."
+
+#. @context: Password reset page description
+#: src/routes/auth/reset.tsx
+msgid "Choose a new password."
+msgstr "Choose a new password."
 
 #. @context: Placeholder for page select combobox trigger
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -386,6 +418,35 @@ msgstr "Content"
 msgid "Copy"
 msgstr "Copy"
 
+#. @context: Error toast when account creation fails
+#. @context: Error toast when account creation fails
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/setup.tsx
+msgid "Couldn't create your account. Check the details and try again."
+msgstr "Couldn't create your account. Check the details and try again."
+
+#. @context: Error toast when nav delete fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Couldn't delete. Try again in a moment."
+msgstr "Couldn't delete. Try again in a moment."
+
+#. @context: Toast when post save fails
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Couldn't save your post. Try again in a moment."
+msgstr "Couldn't save your post. Try again in a moment."
+
+#. @context: Error toast when nav save fails
+#. @context: Toast when save fails
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Couldn't save. Try again in a moment."
+msgstr "Couldn't save. Try again in a moment."
+
+#. @context: Error toast when profile update fails
+#: src/routes/dash/settings.tsx
+msgid "Couldn't update your profile. Try again in a moment."
+msgstr "Couldn't update your profile. Try again in a moment."
+
 #. @context: Button to save new collection
 #: src/ui/dash/collections/CollectionForm.tsx
 #~ msgid "Create Collection"
@@ -423,8 +484,8 @@ msgstr "Create your admin account."
 
 #. @context: Button in empty state to create first post
 #: src/ui/dash/PostList.tsx
-msgid "Create your first post"
-msgstr "Create your first post"
+#~ msgid "Create your first post"
+#~ msgstr "Create your first post"
 
 #. @context: Password form field
 #: src/ui/dash/settings/AccountContent.tsx
@@ -433,8 +494,13 @@ msgstr "Current Password"
 
 #. @context: Error toast when current password verification fails
 #: src/routes/dash/settings.tsx
-msgid "Current password is incorrect."
-msgstr "Current password is incorrect."
+msgid "Current password doesn't match. Try again."
+msgstr "Current password doesn't match. Try again."
+
+#. @context: Error toast when current password verification fails
+#: src/routes/dash/settings.tsx
+#~ msgid "Current password is incorrect."
+#~ msgstr "Current password is incorrect."
 
 #. @context: Appearance settings heading for custom CSS
 #. @context: Settings item — custom CSS settings
@@ -445,8 +511,13 @@ msgstr "Custom CSS"
 
 #. @context: Toast after saving custom CSS
 #: src/routes/dash/settings.tsx
-msgid "Custom CSS saved successfully."
-msgstr "Custom CSS saved successfully."
+#~ msgid "Custom CSS saved successfully."
+#~ msgstr "Custom CSS saved successfully."
+
+#. @context: Toast after saving custom CSS
+#: src/routes/dash/settings.tsx
+msgid "Custom CSS updated."
+msgstr "Custom CSS updated."
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx
@@ -511,6 +582,16 @@ msgstr "Delete Media"
 msgid "Delete Page"
 msgstr "Delete Page"
 
+#. @context: Confirm dialog for deleting a collection
+#: src/ui/shared/CollectionsSidebar.tsx
+msgid "Delete this collection permanently? Posts inside won't be removed."
+msgstr "Delete this collection permanently? Posts inside won't be removed."
+
+#. @context: Confirmation dialog when deleting a post from the list
+#: src/ui/dash/PostList.tsx
+msgid "Delete this post permanently? This can't be undone."
+msgstr "Delete this post permanently? This can't be undone."
+
 #. @context: Toast after deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Deleted"
@@ -518,13 +599,18 @@ msgstr "Deleted"
 
 #. @context: Warning message before deleting media
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Deleting this media will remove it permanently from storage."
-msgstr "Deleting this media will remove it permanently from storage."
+#~ msgid "Deleting this media will remove it permanently from storage."
+#~ msgstr "Deleting this media will remove it permanently from storage."
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
-msgid "Demo account pre-filled. Just click Sign In."
-msgstr "Demo account pre-filled. Just click Sign In."
+#~ msgid "Demo account pre-filled. Just click Sign In."
+#~ msgstr "Demo account pre-filled. Just click Sign In."
+
+#. @context: Hint shown on signin page when demo credentials are pre-filled
+#: src/routes/auth/signin.tsx
+msgid "Demo credentials are pre-filled — hit Sign In to continue."
+msgstr "Demo credentials are pre-filled — hit Sign In to continue."
 
 #. @context: Alt text textarea placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -666,8 +752,8 @@ msgstr "Emojis"
 
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
-msgid "Enter your new password."
-msgstr "Enter your new password."
+#~ msgid "Enter your new password."
+#~ msgstr "Enter your new password."
 
 #. @context: Plural entry count label
 #: src/ui/pages/CollectionsPage.tsx
@@ -683,30 +769,28 @@ msgstr "entry"
 #. @context: Error toast when account creation fails
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/setup.tsx
-msgid "Failed to create account"
-msgstr "Failed to create account"
+#~ msgid "Failed to create account"
+#~ msgstr "Failed to create account"
 
 #. @context: Error toast when nav delete fails
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Failed to delete. Please try again."
-msgstr "Failed to delete. Please try again."
+#~ msgid "Failed to delete. Please try again."
+#~ msgstr "Failed to delete. Please try again."
 
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Failed to save post. Please try again."
-msgstr "Failed to save post. Please try again."
+#~ msgid "Failed to save post. Please try again."
+#~ msgstr "Failed to save post. Please try again."
 
 #. @context: Error toast when nav save fails
-#. @context: Toast when save fails
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
-msgid "Failed to save. Please try again."
-msgstr "Failed to save. Please try again."
+#~ msgid "Failed to save. Please try again."
+#~ msgstr "Failed to save. Please try again."
 
 #. @context: Error toast when profile update fails
 #: src/routes/dash/settings.tsx
-msgid "Failed to update profile."
-msgstr "Failed to update profile."
+#~ msgid "Failed to update profile."
+#~ msgstr "Failed to update profile."
 
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -729,6 +813,18 @@ msgstr "Favicon and header icon"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Featured"
 msgstr "Featured"
+
+#. @context: Error toast when file storage is not set up
+#. @context: Error when file storage is not set up
+#: src/routes/api/upload.ts
+#: src/routes/dash/settings.tsx
+msgid "File storage isn't set up. Check your server config."
+msgstr "File storage isn't set up. Check your server config."
+
+#. @context: Toast after successful file upload
+#: src/routes/api/upload.ts
+msgid "File uploaded."
+msgstr "File uploaded."
 
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -795,6 +891,11 @@ msgstr "Header links, featured"
 #~ msgid "Header Nav Links"
 #~ msgstr "Header Nav Links"
 
+#. @context: Hint text in alt text panel
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Helps screen readers describe the image"
+msgstr "Helps screen readers describe the image"
+
 #. @context: Collection sort order option
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Highest rated"
@@ -841,33 +942,25 @@ msgstr "Images are automatically optimized (resized, converted to WebP). Video, 
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
-msgid "Invalid email or password"
-msgstr "Invalid email or password"
+#~ msgid "Invalid email or password"
+#~ msgstr "Invalid email or password"
 
 #. @context: Error toast when selected font theme is not valid
 #: src/routes/dash/settings.tsx
-msgid "Invalid font theme selected."
-msgstr "Invalid font theme selected."
+#~ msgid "Invalid font theme selected."
+#~ msgstr "Invalid font theme selected."
 
-#. @context: Fallback validation error for compose form
 #. @context: Fallback validation error for page form
 #. @context: Fallback validation error for page form
-#. @context: Fallback validation error for password reset form
-#. @context: Fallback validation error for setup form
-#. @context: Fallback validation error for sign-in form
-#: src/routes/auth/reset.tsx
-#: src/routes/auth/setup.tsx
-#: src/routes/auth/signin.tsx
-#: src/routes/compose.tsx
 #: src/routes/dash/pages.tsx
 #: src/routes/dash/pages.tsx
-msgid "Invalid input"
-msgstr "Invalid input"
+#~ msgid "Invalid input"
+#~ msgstr "Invalid input"
 
 #. @context: Password reset error heading
 #: src/routes/auth/reset.tsx
-msgid "Invalid or Expired Link"
-msgstr "Invalid or Expired Link"
+#~ msgid "Invalid or Expired Link"
+#~ msgstr "Invalid or Expired Link"
 
 #. @context: Error toast when reorder request is malformed
 #: src/routes/dash/appearance.tsx
@@ -876,8 +969,8 @@ msgstr "Invalid or Expired Link"
 
 #. @context: Error toast when selected theme is not valid
 #: src/routes/dash/settings.tsx
-msgid "Invalid theme selected."
-msgstr "Invalid theme selected."
+#~ msgid "Invalid theme selected."
+#~ msgstr "Invalid theme selected."
 
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1037,8 +1130,8 @@ msgstr "Name"
 
 #. @context: Error toast when display name is empty
 #: src/routes/dash/settings.tsx
-msgid "Name is required."
-msgstr "Name is required."
+#~ msgid "Name is required."
+#~ msgstr "Name is required."
 
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1128,38 +1221,70 @@ msgstr "Next"
 
 #. @context: Compose collection combobox empty state
 #: src/ui/compose/ComposeDialog.tsx
-msgid "No collections found."
-msgstr "No collections found."
+#~ msgid "No collections found."
+#~ msgstr "No collections found."
 
 #. @context: Empty state message on collections page
 #: src/ui/pages/CollectionsPage.tsx
-msgid "No collections yet."
-msgstr "No collections yet."
+#~ msgid "No collections yet."
+#~ msgstr "No collections yet."
+
+#. @context: Empty state message on collections page
+#: src/ui/pages/CollectionsPage.tsx
+msgid "No collections yet. Start one to organize posts by topic."
+msgstr "No collections yet. Start one to organize posts by topic."
 
 #. @context: Empty state message on featured page
 #: src/ui/pages/FeaturedPage.tsx
-msgid "No featured posts yet."
-msgstr "No featured posts yet."
+#~ msgid "No featured posts yet."
+#~ msgstr "No featured posts yet."
+
+#. @context: Empty state message on featured page
+#: src/ui/pages/FeaturedPage.tsx
+msgid "No featured posts. Mark a post as featured to highlight it here."
+msgstr "No featured posts. Mark a post as featured to highlight it here."
 
 #. @context: Error when no file was selected for upload
 #: src/routes/api/upload.ts
-msgid "No file provided"
-msgstr "No file provided"
+#~ msgid "No file provided"
+#~ msgstr "No file provided"
 
 #. @context: Error toast when no file was selected for upload
 #: src/routes/dash/settings.tsx
-msgid "No file provided."
-msgstr "No file provided."
+#~ msgid "No file provided."
+#~ msgstr "No file provided."
+
+#. @context: Error toast when no file was selected for upload
+#. @context: Error when no file was selected for upload
+#: src/routes/api/upload.ts
+#: src/routes/dash/settings.tsx
+msgid "No file selected. Choose a file to upload."
+msgstr "No file selected. Choose a file to upload."
+
+#. @context: Compose collection combobox empty state
+#: src/ui/compose/ComposeDialog.tsx
+msgid "No matching collections."
+msgstr "No matching collections."
+
+#. @context: Empty state when page search has no results
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "No matching pages."
+msgstr "No matching pages."
 
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
-msgid "No media selected yet."
-msgstr "No media selected yet."
+msgid "No media attached."
+msgstr "No media attached."
+
+#. @context: Post form media empty state
+#: src/ui/dash/posts/PostForm.tsx
+#~ msgid "No media selected yet."
+#~ msgstr "No media selected yet."
 
 #. @context: Empty state message when no media exists
 #: src/ui/dash/media/MediaListContent.tsx
-msgid "No media uploaded yet."
-msgstr "No media uploaded yet."
+#~ msgid "No media uploaded yet."
+#~ msgstr "No media uploaded yet."
 
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1178,8 +1303,8 @@ msgstr "No navigation items yet. Add pages, links, or enable system items below.
 
 #. @context: Empty state when page search has no results
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "No pages found."
-msgstr "No pages found."
+#~ msgid "No pages found."
+#~ msgstr "No pages found."
 
 #. @context: Empty state message when no pages exist
 #: src/routes/dash/pages.tsx
@@ -1188,35 +1313,53 @@ msgstr "No pages found."
 
 #. @context: Empty state for pages list
 #: src/ui/dash/pages/PagesContent.tsx
-msgid "No pages yet. Create your first page to get started."
-msgstr "No pages yet. Create your first page to get started."
+msgid "No pages yet. Create one to add static content to your site."
+msgstr "No pages yet. Create one to add static content to your site."
+
+#. @context: Empty state for pages list
+#: src/ui/dash/pages/PagesContent.tsx
+#~ msgid "No pages yet. Create your first page to get started."
+#~ msgstr "No pages yet. Create your first page to get started."
 
 #. @context: Archive empty state
 #: src/ui/pages/ArchivePage.tsx
-msgid "No posts found."
-msgstr "No posts found."
+#~ msgid "No posts found."
+#~ msgstr "No posts found."
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
-msgid "No posts in this collection."
-msgstr "No posts in this collection."
+#~ msgid "No posts in this collection."
+#~ msgstr "No posts in this collection."
+
+#. @context: Archive empty state
+#: src/ui/pages/ArchivePage.tsx
+msgid "No posts match this filter."
+msgstr "No posts match this filter."
 
 #. @context: Empty state message on home page
-#. @context: Empty state message when no posts exist
-#: src/ui/dash/PostList.tsx
 #: src/ui/pages/HomePage.tsx
-msgid "No posts yet."
-msgstr "No posts yet."
+#~ msgid "No posts yet."
+#~ msgstr "No posts yet."
 
 #. @context: Empty state message
 #: src/routes/dash/redirects.tsx
-msgid "No redirects configured."
-msgstr "No redirects configured."
+#~ msgid "No redirects configured."
+#~ msgstr "No redirects configured."
+
+#. @context: Empty state message
+#: src/routes/dash/redirects.tsx
+msgid "No redirects yet. Create one to forward traffic from old URLs."
+msgstr "No redirects yet. Create one to forward traffic from old URLs."
 
 #. @context: Search empty results
 #: src/ui/pages/SearchPage.tsx
-msgid "No results found."
-msgstr "No results found."
+#~ msgid "No results found."
+#~ msgstr "No results found."
+
+#. @context: Search empty results
+#: src/ui/pages/SearchPage.tsx
+msgid "No results. Try different keywords."
+msgstr "No results. Try different keywords."
 
 #. @context: No rating selected
 #: src/ui/compose/ComposeDialog.tsx
@@ -1238,6 +1381,16 @@ msgstr "Note"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Notes"
 msgstr "Notes"
+
+#. @context: Empty state message on home page
+#: src/ui/pages/HomePage.tsx
+msgid "Nothing here yet."
+msgstr "Nothing here yet."
+
+#. @context: Empty state message when no posts exist
+#: src/ui/dash/PostList.tsx
+msgid "Nothing published yet. Write your first post to get started."
+msgstr "Nothing published yet. Write your first post to get started."
 
 #. @context: Collection sort order option
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -1302,13 +1455,23 @@ msgstr "Password"
 
 #. @context: Toast after changing account password
 #: src/routes/dash/settings.tsx
-msgid "Password changed successfully."
-msgstr "Password changed successfully."
+#~ msgid "Password changed successfully."
+#~ msgstr "Password changed successfully."
+
+#. @context: Toast after changing account password
+#: src/routes/dash/settings.tsx
+msgid "Password changed."
+msgstr "Password changed."
 
 #. @context: Error toast when new password and confirmation differ
 #: src/routes/dash/settings.tsx
-msgid "Passwords do not match."
-msgstr "Passwords do not match."
+#~ msgid "Passwords do not match."
+#~ msgstr "Passwords do not match."
+
+#. @context: Error toast when new password and confirmation differ
+#: src/routes/dash/settings.tsx
+msgid "Passwords don't match. Make sure both fields are identical."
+msgstr "Passwords don't match. Make sure both fields are identical."
 
 #. @context: Attached text placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -1364,8 +1527,13 @@ msgstr "Post"
 
 #. @context: Toast after creating post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Post published successfully."
-msgstr "Post published successfully."
+#~ msgid "Post published successfully."
+#~ msgstr "Post published successfully."
+
+#. @context: Toast after creating post
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Post published."
+msgstr "Post published."
 
 #. @context: Post title placeholder
 #: src/ui/dash/posts/PostForm.tsx
@@ -1374,8 +1542,13 @@ msgstr "Post title..."
 
 #. @context: Toast after editing post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Post updated successfully."
-msgstr "Post updated successfully."
+#~ msgid "Post updated successfully."
+#~ msgstr "Post updated successfully."
+
+#. @context: Toast after editing post
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Post updated."
+msgstr "Post updated."
 
 #. @context: Compose loading text while posting
 #: src/ui/compose/ComposeDialog.tsx
@@ -1423,8 +1596,13 @@ msgstr "Profile"
 
 #. @context: Toast after saving user profile
 #: src/routes/dash/settings.tsx
-msgid "Profile saved successfully."
-msgstr "Profile saved successfully."
+#~ msgid "Profile saved successfully."
+#~ msgstr "Profile saved successfully."
+
+#. @context: Toast after saving user profile
+#: src/routes/dash/settings.tsx
+msgid "Profile updated."
+msgstr "Profile updated."
 
 #. @context: Settings item description for account
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1647,8 +1825,15 @@ msgstr "SEO"
 #. @context: Toast after saving SEO settings
 #: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
-msgid "SEO settings saved successfully."
-msgstr "SEO settings saved successfully."
+#~ msgid "SEO settings saved successfully."
+#~ msgstr "SEO settings saved successfully."
+
+#. @context: Toast after saving SEO settings
+#. @context: Toast after saving SEO settings
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "SEO settings updated."
+msgstr "SEO settings updated."
 
 #. @context: Dashboard navigation - site settings
 #: src/ui/layouts/DashLayout.tsx
@@ -1656,11 +1841,16 @@ msgid "Settings"
 msgstr "Settings"
 
 #. @context: Toast after saving general settings
+#: src/routes/dash/settings.tsx
+#~ msgid "Settings saved successfully."
+#~ msgstr "Settings saved successfully."
+
+#. @context: Toast after saving general settings
 #. @context: Toast after saving general settings
 #: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
-msgid "Settings saved successfully."
-msgstr "Settings saved successfully."
+msgid "Settings updated."
+msgstr "Settings updated."
 
 #. @context: Setup page title
 #: src/app.tsx
@@ -1712,6 +1902,21 @@ msgstr "Site Name"
 msgid "Slug"
 msgstr "Slug"
 
+#. @context: Fallback validation error for compose form
+#. @context: Fallback validation error for page form
+#. @context: Fallback validation error for page form
+#. @context: Fallback validation error for password reset form
+#. @context: Fallback validation error for setup form
+#. @context: Fallback validation error for sign-in form
+#: src/routes/auth/reset.tsx
+#: src/routes/auth/setup.tsx
+#: src/routes/auth/signin.tsx
+#: src/routes/compose.tsx
+#: src/routes/dash/pages.tsx
+#: src/routes/dash/pages.tsx
+msgid "Something doesn't look right. Check the form and try again."
+msgstr "Something doesn't look right. Check the form and try again."
+
 #. @context: Collection form field
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Sort Order"
@@ -1741,13 +1946,13 @@ msgstr "Status"
 
 #. @context: Error when file storage is not set up
 #: src/routes/api/upload.ts
-msgid "Storage not configured"
-msgstr "Storage not configured"
+#~ msgid "Storage not configured"
+#~ msgstr "Storage not configured"
 
 #. @context: Error toast when file storage is not set up
 #: src/routes/dash/settings.tsx
-msgid "Storage not configured."
-msgstr "Storage not configured."
+#~ msgid "Storage not configured."
+#~ msgstr "Storage not configured."
 
 #. @context: Attached text panel hint
 #: src/ui/compose/ComposeDialog.tsx
@@ -1768,6 +1973,16 @@ msgstr "system"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "System links"
 msgstr "System links"
+
+#. @context: Error toast when selected font theme is not valid
+#: src/routes/dash/settings.tsx
+msgid "That font theme isn't available. Pick another one."
+msgstr "That font theme isn't available. Pick another one."
+
+#. @context: Error toast when selected theme is not valid
+#: src/routes/dash/settings.tsx
+msgid "That theme isn't available. Pick another one."
+msgstr "That theme isn't available. Pick another one."
 
 #. @context: Redirect to path help text
 #: src/routes/dash/redirects.tsx
@@ -1801,6 +2016,16 @@ msgstr "The text being quoted..."
 msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 
+#. @context: Empty state message
+#: src/ui/pages/CollectionPage.tsx
+msgid "This collection is empty. Add posts from the editor."
+msgstr "This collection is empty. Add posts from the editor."
+
+#. @context: Warning message before deleting media
+#: src/ui/dash/media/ViewMediaContent.tsx
+msgid "This file will be permanently removed from storage. Posts using it will show a broken link."
+msgstr "This file will be permanently removed from storage. Posts using it will show a broken link."
+
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 #~ msgid "This is displayed above your blog posts on your default home page. This is also used for the meta description on your home page."
@@ -1821,10 +2046,20 @@ msgstr "This is used for your favicon and apple-touch-icon. For best results, up
 #~ msgid "This is used for your favicon."
 #~ msgstr "This is used for your favicon."
 
+#. @context: Password reset error heading
+#: src/routes/auth/reset.tsx
+msgid "This Link Has Expired"
+msgstr "This Link Has Expired"
+
 #. @context: Password reset error description
 #: src/routes/auth/reset.tsx
-msgid "This password reset link is invalid or has expired. Please generate a new one."
-msgstr "This password reset link is invalid or has expired. Please generate a new one."
+#~ msgid "This password reset link is invalid or has expired. Please generate a new one."
+#~ msgstr "This password reset link is invalid or has expired. Please generate a new one."
+
+#. @context: Password reset error description
+#: src/routes/auth/reset.tsx
+msgid "This reset link is no longer valid. Request a new one to continue."
+msgstr "This reset link is no longer valid. Request a new one to continue."
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1941,13 +2176,16 @@ msgstr "Upload"
 msgid "Upload Avatar"
 msgstr "Upload Avatar"
 
-#. @context: Error message when avatar upload fails
 #. @context: Error toast when avatar upload fails
 #. @context: Error when file upload fails
 #. @context: Upload error message
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/media/MediaListContent.tsx
+msgid "Upload didn't go through. Try again in a moment."
+msgstr "Upload didn't go through. Try again in a moment."
+
+#. @context: Error message when avatar upload fails
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Upload failed. Please try again."
 msgstr "Upload failed. Please try again."
@@ -1959,8 +2197,8 @@ msgstr "Upload failed. Please try again."
 
 #. @context: Toast after successful file upload
 #: src/routes/api/upload.ts
-msgid "Upload successful!"
-msgstr "Upload successful!"
+#~ msgid "Upload successful!"
+#~ msgstr "Upload successful!"
 
 #. @context: Avatar upload button text while uploading
 #. @context: Toast shown during background upload
@@ -2081,6 +2319,21 @@ msgstr "What's this collection about?"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "When off, visitors see your latest posts first"
 msgstr "When off, visitors see your latest posts first"
+
+#. @context: Button in empty state to create first post
+#: src/ui/dash/PostList.tsx
+msgid "Write your first post"
+msgstr "Write your first post"
+
+#. @context: Error toast when sign-in credentials are wrong
+#: src/routes/auth/signin.tsx
+msgid "Wrong email or password. Check your credentials and try again."
+msgstr "Wrong email or password. Check your credentials and try again."
+
+#. @context: Empty state message when no media exists
+#: src/ui/dash/media/MediaListContent.tsx
+msgid "Your media library is empty. Upload your first file to get started."
+msgstr "Your media library is empty. Upload your first file to get started."
 
 #. @context: Setup form field - user name
 #: src/routes/auth/setup.tsx

@@ -62,7 +62,7 @@ export const SearchPage: FC<SearchPageProps> = ({
           <p class="text-sm text-muted-foreground mb-4">
             {results.length === 0
               ? t({
-                  message: "No results found.",
+                  message: "No results. Try different keywords.",
                   comment: "@context: Search empty results",
                 })
               : results.length === 1

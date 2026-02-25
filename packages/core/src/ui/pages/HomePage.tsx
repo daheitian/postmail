@@ -27,7 +27,7 @@ export const HomePage: FC<HomePageProps> = ({
                 class="py-12 text-center text-muted-foreground"
               >
                 {t({
-                  message: "No posts yet.",
+                  message: "Nothing here yet.",
                   comment: "@context: Empty state message on home page",
                 })}
               </p>

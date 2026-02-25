@@ -119,11 +119,11 @@ export function NavigationContent({
       comment: "@context: Error toast when nav label is empty",
     }),
     saveFailed: t({
-      message: "Failed to save. Please try again.",
+      message: "Couldn't save. Try again in a moment.",
       comment: "@context: Error toast when nav save fails",
     }),
     deleteFailed: t({
-      message: "Failed to delete. Please try again.",
+      message: "Couldn't delete. Try again in a moment.",
       comment: "@context: Error toast when nav delete fails",
     }),
     systemLinks: t({
@@ -152,7 +152,7 @@ export function NavigationContent({
       comment: "@context: Placeholder for page search input in combobox",
     }),
     noPagesFound: t({
-      message: "No pages found.",
+      message: "No matching pages.",
       comment: "@context: Empty state when page search has no results",
     }),
     addLink: t({

@@ -37,7 +37,7 @@ const ResetContent: FC<{ token: string }> = ({ token }) => {
           </h2>
           <p>
             {t({
-              message: "Enter your new password.",
+              message: "Choose a new password.",
               comment: "@context: Password reset page description",
             })}
           </p>
@@ -118,7 +118,7 @@ const ResetErrorContent: FC = () => {
         <header>
           <h2>
             {t({
-              message: "Invalid or Expired Link",
+              message: "This Link Has Expired",
               comment: "@context: Password reset error heading",
             })}
           </h2>
@@ -127,7 +127,7 @@ const ResetErrorContent: FC = () => {
           <p class="text-muted-foreground">
             {t({
               message:
-                "This password reset link is invalid or has expired. Please generate a new one.",
+                "This reset link is no longer valid. Request a new one to continue.",
               comment: "@context: Password reset error description",
             })}
           </p>
@@ -175,7 +175,8 @@ resetRoutes.post("/reset", async (c) => {
       parsed.error.issues[0]?.message ??
       i18n._(
         msg({
-          message: "Invalid input",
+          message:
+            "Something doesn't look right. Check the form and try again.",
           comment:
             "@context: Fallback validation error for password reset form",
         }),

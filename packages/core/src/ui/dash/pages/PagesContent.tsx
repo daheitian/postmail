@@ -28,7 +28,8 @@ export function PagesContent({ pages }: { pages: Page[] }) {
       {pages.length === 0 ? (
         <p class="text-sm text-muted-foreground py-4">
           {t({
-            message: "No pages yet. Create your first page to get started.",
+            message:
+              "No pages yet. Create one to add static content to your site.",
             comment: "@context: Empty state for pages list",
           })}
         </p>

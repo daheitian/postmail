@@ -94,7 +94,8 @@ composeRoutes.post("/", async (c) => {
       result.error.issues[0]?.message ??
       i18n._(
         msg({
-          message: "Invalid input",
+          message:
+            "Something doesn't look right. Check the form and try again.",
           comment: "@context: Fallback validation error for compose form",
         }),
       );

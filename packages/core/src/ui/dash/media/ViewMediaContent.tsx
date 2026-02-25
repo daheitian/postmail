@@ -178,10 +178,10 @@ export function ViewMediaContent({
               comment: "@context: Button to delete media",
             })}
             formAction={`/dash/media/${media.id}/delete`}
-            confirmMessage="Are you sure you want to delete this media?"
+            confirmMessage="Delete this file permanently?"
             description={t({
               message:
-                "Deleting this media will remove it permanently from storage.",
+                "This file will be permanently removed from storage. Posts using it will show a broken link.",
               comment: "@context: Warning message before deleting media",
             })}
           />

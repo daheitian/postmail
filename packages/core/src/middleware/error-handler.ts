@@ -33,7 +33,7 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
     // Unknown API error
     // eslint-disable-next-line no-console -- Server error logging is intentional
     console.error("[Jant] Unhandled error:", err);
-    return c.json({ error: "Internal server error" }, 500);
+    return c.json({ error: "Something went wrong on our end" }, 500);
   }
 
   // Datastar requests: return toast
@@ -43,7 +43,7 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
     }
     // eslint-disable-next-line no-console -- Server error logging is intentional
     console.error("[Jant] Unhandled error:", err);
-    return dsToast("An unexpected error occurred", "error");
+    return dsToast("Something went wrong. Try refreshing the page.", "error");
   }
 
   // JSON-accepting requests (Lit bridges)
@@ -59,7 +59,7 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
     }
     // eslint-disable-next-line no-console -- Server error logging is intentional
     console.error("[Jant] Unhandled error:", err);
-    return c.json({ error: "Internal server error" }, 500);
+    return c.json({ error: "Something went wrong on our end" }, 500);
   }
 
   // Non-API routes: map NotFoundError to Hono's built-in 404

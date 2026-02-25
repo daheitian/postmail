@@ -22,11 +22,12 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
     return (
       <EmptyState
         message={t({
-          message: "No posts yet.",
+          message:
+            "Nothing published yet. Write your first post to get started.",
           comment: "@context: Empty state message when no posts exist",
         })}
         ctaText={t({
-          message: "Create your first post",
+          message: "Write your first post",
           comment: "@context: Button in empty state to create first post",
         })}
         ctaHref="/dash/posts/new"
@@ -53,8 +54,7 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
               })}
               deleteAction={`/dash/posts/${sqid.encode(post.id)}/delete`}
               deleteConfirm={t({
-                message:
-                  "Are you sure you want to delete this post? This cannot be undone.",
+                message: "Delete this post permanently? This can't be undone.",
                 comment:
                   "@context: Confirmation dialog when deleting a post from the list",
               })}

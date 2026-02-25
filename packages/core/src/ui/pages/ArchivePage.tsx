@@ -101,7 +101,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
         {groups.length === 0 ? (
           <p class="text-muted-foreground">
             {t({
-              message: "No posts found.",
+              message: "No posts match this filter.",
               comment: "@context: Archive empty state",
             })}
           </p>

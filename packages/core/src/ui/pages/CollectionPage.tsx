@@ -37,7 +37,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
         {posts.length === 0 ? (
           <p class="text-muted-foreground">
             {t({
-              message: "No posts in this collection.",
+              message: "This collection is empty. Add posts from the editor.",
               comment: "@context: Empty state message",
             })}
           </p>

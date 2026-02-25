@@ -18,7 +18,8 @@ export const FeaturedPage: FC<FeaturedPageProps> = ({ items }) => {
         {items.length === 0 ? (
           <p class="text-muted-foreground">
             {t({
-              message: "No featured posts yet.",
+              message:
+                "No featured posts. Mark a post as featured to highlight it here.",
               comment: "@context: Empty state message on featured page",
             })}
           </p>

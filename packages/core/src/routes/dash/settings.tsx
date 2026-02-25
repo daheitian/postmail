@@ -74,7 +74,7 @@ settingsRoutes.get("/general", async (c) => {
         parentHref: "/dash/settings",
         current: "General",
       }}
-      toast={saved ? { message: "Settings saved successfully." } : undefined}
+      toast={saved ? { message: "Settings updated." } : undefined}
     >
       <GeneralContent
         siteName={dbSiteName || ""}
@@ -122,7 +122,7 @@ settingsRoutes.post("/general", async (c) => {
       status: "ok" as const,
       toast: i18n._(
         msg({
-          message: "Settings saved successfully.",
+          message: "Settings updated.",
           comment: "@context: Toast after saving general settings",
         }),
       ),
@@ -145,7 +145,7 @@ settingsRoutes.post("/general", async (c) => {
       await stream.toast(
         i18n._(
           msg({
-            message: "Settings saved successfully.",
+            message: "Settings updated.",
             comment: "@context: Toast after saving general settings",
           }),
         ),
@@ -183,7 +183,7 @@ settingsRoutes.post("/general/seo", async (c) => {
       status: "ok" as const,
       toast: i18n._(
         msg({
-          message: "SEO settings saved successfully.",
+          message: "SEO settings updated.",
           comment: "@context: Toast after saving SEO settings",
         }),
       ),
@@ -194,7 +194,7 @@ settingsRoutes.post("/general/seo", async (c) => {
     await stream.toast(
       i18n._(
         msg({
-          message: "SEO settings saved successfully.",
+          message: "SEO settings updated.",
           comment: "@context: Toast after saving SEO settings",
         }),
       ),
@@ -225,7 +225,7 @@ settingsRoutes.get("/avatar", async (c) => {
         parentHref: "/dash/settings",
         current: "Avatar",
       }}
-      toast={saved ? { message: "Avatar saved successfully." } : undefined}
+      toast={saved ? { message: "Avatar updated." } : undefined}
     >
       <AvatarContent
         siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
@@ -242,7 +242,7 @@ settingsRoutes.post("/avatar", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Storage not configured.",
+          message: "File storage isn't set up. Check your server config.",
           comment: "@context: Error toast when file storage is not set up",
         }),
       ),
@@ -256,7 +256,7 @@ settingsRoutes.post("/avatar", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "No file provided.",
+          message: "No file selected. Choose a file to upload.",
           comment: "@context: Error toast when no file was selected for upload",
         }),
       ),
@@ -291,7 +291,7 @@ settingsRoutes.post("/avatar", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Upload failed. Please try again.",
+          message: "Upload didn't go through. Try again in a moment.",
           comment: "@context: Error toast when avatar upload fails",
         }),
       ),
@@ -333,7 +333,7 @@ settingsRoutes.post("/avatar/display", async (c) => {
       status: "ok" as const,
       toast: i18n._(
         msg({
-          message: "Avatar display setting saved successfully.",
+          message: "Avatar display updated.",
           comment: "@context: Toast after saving avatar display preference",
         }),
       ),
@@ -344,7 +344,7 @@ settingsRoutes.post("/avatar/display", async (c) => {
     await stream.toast(
       i18n._(
         msg({
-          message: "Avatar display setting saved successfully.",
+          message: "Avatar display updated.",
           comment: "@context: Toast after saving avatar display preference",
         }),
       ),
@@ -442,7 +442,7 @@ settingsRoutes.get("/color-theme", async (c) => {
         parentHref: "/dash/settings",
         current: "Color Theme",
       }}
-      toast={saved ? { message: "Theme saved successfully." } : undefined}
+      toast={saved ? { message: "Theme updated." } : undefined}
     >
       <ColorThemeContent themes={themes} currentThemeId={currentThemeId} />
     </DashLayout>,
@@ -460,7 +460,7 @@ settingsRoutes.post("/color-theme", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Invalid theme selected.",
+          message: "That theme isn't available. Pick another one.",
           comment: "@context: Error toast when selected theme is not valid",
         }),
       ),
@@ -498,7 +498,7 @@ settingsRoutes.get("/font-theme", async (c) => {
         parentHref: "/dash/settings",
         current: "Font Theme",
       }}
-      toast={saved ? { message: "Font theme saved successfully." } : undefined}
+      toast={saved ? { message: "Font theme updated." } : undefined}
     >
       <FontThemeContent
         fontThemes={BUILTIN_FONT_THEMES}
@@ -518,7 +518,7 @@ settingsRoutes.post("/font-theme", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Invalid font theme selected.",
+          message: "That font theme isn't available. Pick another one.",
           comment:
             "@context: Error toast when selected font theme is not valid",
         }),
@@ -577,7 +577,7 @@ settingsRoutes.post("/custom-css", async (c) => {
   return dsToast(
     i18n._(
       msg({
-        message: "Custom CSS saved successfully.",
+        message: "Custom CSS updated.",
         comment: "@context: Toast after saving custom CSS",
       }),
     ),
@@ -607,7 +607,7 @@ settingsRoutes.get("/account", async (c) => {
         parentHref: "/dash/settings",
         current: "Account",
       }}
-      toast={saved ? { message: "Profile saved successfully." } : undefined}
+      toast={saved ? { message: "Profile updated." } : undefined}
     >
       <AccountContent userName={userName} />
     </DashLayout>,
@@ -623,7 +623,7 @@ settingsRoutes.post("/account", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Name is required.",
+          message: "A display name is required.",
           comment: "@context: Error toast when display name is empty",
         }),
       ),
@@ -640,7 +640,7 @@ settingsRoutes.post("/account", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Failed to update profile.",
+          message: "Couldn't update your profile. Try again in a moment.",
           comment: "@context: Error toast when profile update fails",
         }),
       ),
@@ -651,7 +651,7 @@ settingsRoutes.post("/account", async (c) => {
   return dsToast(
     i18n._(
       msg({
-        message: "Profile saved successfully.",
+        message: "Profile updated.",
         comment: "@context: Toast after saving user profile",
       }),
     ),
@@ -670,7 +670,8 @@ settingsRoutes.post("/password", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Passwords do not match.",
+          message:
+            "Passwords don't match. Make sure both fields are identical.",
           comment:
             "@context: Error toast when new password and confirmation differ",
         }),
@@ -692,7 +693,7 @@ settingsRoutes.post("/password", async (c) => {
     return dsToast(
       i18n._(
         msg({
-          message: "Current password is incorrect.",
+          message: "Current password doesn't match. Try again.",
           comment:
             "@context: Error toast when current password verification fails",
         }),
@@ -705,7 +706,7 @@ settingsRoutes.post("/password", async (c) => {
     await stream.toast(
       i18n._(
         msg({
-          message: "Password changed successfully.",
+          message: "Password changed.",
           comment: "@context: Toast after changing account password",
         }),
       ),

@@ -111,7 +111,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment: "@context: Compose collection combobox search placeholder",
     }),
     noCollections: t({
-      message: "No collections found.",
+      message: "No matching collections.",
       comment: "@context: Compose collection combobox empty state",
     }),
     post: t({
@@ -131,11 +131,11 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment: "@context: Alt text textarea placeholder",
     }),
     altHint: t({
-      message: "Alt text improves accessibility",
+      message: "Helps screen readers describe the image",
       comment: "@context: Hint text in alt text panel",
     }),
     addMore: t({
-      message: "Add",
+      message: "Add More",
       comment: "@context: Add more attachments button",
     }),
     uploading: t({
