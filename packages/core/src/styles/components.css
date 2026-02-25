@@ -218,6 +218,101 @@ svg[stroke-width].icon-fine {
   }
 }
 
+/* Navigation preview — browser-chrome frame for nav preview */
+@layer components {
+  .nav-preview {
+    @apply border rounded-lg overflow-hidden;
+    background-color: var(--color-card);
+  }
+
+  .nav-preview-chrome {
+    @apply flex items-center gap-3 px-4 py-2.5 border-b;
+    background-color: var(--color-muted);
+  }
+
+  .nav-preview-dots {
+    @apply flex gap-1.5;
+
+    > span {
+      @apply block size-2.5 rounded-full;
+      background-color: var(--color-muted-foreground);
+      opacity: 0.3;
+    }
+  }
+
+  .nav-preview-label {
+    @apply text-xs;
+    color: var(--color-muted-foreground);
+  }
+
+  .nav-preview-content {
+    @apply px-5 py-3;
+  }
+}
+
+/* Navigation items list — card-style draggable nav items */
+@layer components {
+  .nav-items-list {
+    @apply flex flex-col gap-2;
+  }
+
+  .nav-item {
+    @apply border rounded-lg transition-shadow;
+
+    &:hover {
+      @apply shadow-xs;
+    }
+  }
+
+  .nav-item-editing {
+    @apply ring-1 ring-ring;
+  }
+
+  .nav-item-row {
+    @apply flex items-center gap-1 px-1 py-1;
+  }
+
+  .nav-item-handle {
+    @apply flex items-center justify-center w-8 h-8 shrink-0 cursor-grab rounded;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background-color: var(--color-accent);
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  .nav-item-info {
+    @apply flex flex-col flex-1 min-w-0 py-1.5 px-1.5 rounded cursor-pointer;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background-color: var(--color-accent);
+    }
+  }
+
+  .nav-item-toggle {
+    @apply flex items-center justify-center w-8 h-8 shrink-0 rounded border-0 bg-transparent cursor-pointer;
+    color: var(--color-muted-foreground);
+    transition:
+      color 0.15s,
+      background-color 0.15s;
+
+    &:hover {
+      color: var(--color-foreground);
+      background-color: var(--color-accent);
+    }
+  }
+
+  .nav-item-edit {
+    @apply flex flex-col gap-3 px-4 pb-3 pt-3 border-t mx-1 mb-1;
+    border-color: var(--color-border);
+  }
+}
+
 /* Skeleton screen sizing — used in SSR fallbacks while Lit hydrates */
 @layer components {
   .skel-label {

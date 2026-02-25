@@ -746,6 +746,12 @@ export class JantCollectionSidebar extends LitElement {
           this._dialogMode = null;
           this._editingCollection = null;
         }}
+        @click=${(e: Event) => {
+          // Backdrop click — target is the <dialog> itself when clicking outside the box
+          if (e.target === e.currentTarget) {
+            this.#closeDialog();
+          }
+        }}
       >
         <jant-collection-form
           .labels=${dialogLabels}
@@ -753,10 +759,18 @@ export class JantCollectionSidebar extends LitElement {
           action=${isEdit && col
             ? `/api/collections/${col.id}`
             : "/api/collections"}
-          cancel-href="#"
+          cancel-href="javascript:void(0)"
           ?is-edit=${isEdit}
           @jant:collection-submit=${(e: Event) =>
             this.#handleCollectionSubmit(e)}
+          @click=${(e: Event) => {
+            // Intercept cancel link click
+            const target = (e.target as HTMLElement).closest?.("a.btn-outline");
+            if (target) {
+              e.preventDefault();
+              this.#closeDialog();
+            }
+          }}
         ></jant-collection-form>
       </dialog>
     `;

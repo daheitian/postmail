@@ -420,9 +420,14 @@ export class JantNavManager extends LitElement {
     const hasMore = overflow.length > 0;
 
     return html`
-      <div>
-        <p class="text-xs text-muted-foreground">${this.labels.preview}</p>
-        <div class="py-3">
+      <div class="nav-preview">
+        <div class="nav-preview-chrome">
+          <div class="nav-preview-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="nav-preview-label">${this.labels.preview}</span>
+        </div>
+        <div class="nav-preview-content">
           <div class="site-header-top">
             <a href="/" class="site-logo">${this.siteName}</a>
             <div class="site-header-right">
@@ -523,7 +528,6 @@ export class JantNavManager extends LitElement {
             </span>
           </nav>
         </div>
-        <hr class="mt-3" />
       </div>
     `;
   }
@@ -543,7 +547,7 @@ export class JantNavManager extends LitElement {
 
     if (item.type === "link") {
       return html`
-        <div class="pb-4 pl-8 flex flex-col gap-3">
+        <div class="nav-item-edit">
           <div class="field">
             <label class="label">${this.labels.label}</label>
             <input
@@ -568,20 +572,20 @@ export class JantNavManager extends LitElement {
               }}
             />
           </div>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="btn-sm"
-              @click=${() => this.#handleUpdate(item)}
-            >
-              ${this.labels.save}
-            </button>
+          <div class="flex items-center justify-between">
             <button
               type="button"
               class="btn-sm-ghost text-destructive"
               @click=${() => this.#handleDelete(item)}
             >
               ${this.labels.delete}
+            </button>
+            <button
+              type="button"
+              class="btn-sm"
+              @click=${() => this.#handleUpdate(item)}
+            >
+              ${this.labels.save}
             </button>
           </div>
         </div>
@@ -590,16 +594,8 @@ export class JantNavManager extends LitElement {
 
     if (item.type === "page") {
       return html`
-        <div class="pb-4 pl-8 flex flex-col gap-3">
-          <code class="text-sm text-muted-foreground">${item.url}</code>
-          <div class="flex gap-2">
-            ${item.pageId
-              ? html`<a
-                  href=${`/dash/pages/${item.pageId}/edit`}
-                  class="btn-sm-outline"
-                  >${this.labels.editPage}</a
-                >`
-              : nothing}
+        <div class="nav-item-edit">
+          <div class="flex items-center justify-between">
             <button
               type="button"
               class="btn-sm-ghost text-destructive"
@@ -607,6 +603,13 @@ export class JantNavManager extends LitElement {
             >
               ${this.labels.remove}
             </button>
+            ${item.pageId
+              ? html`<a
+                  href=${`/dash/pages/${item.pageId}/edit`}
+                  class="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >${this.labels.editPage} &rarr;</a
+                >`
+              : nothing}
           </div>
         </div>
       `;
@@ -614,8 +617,7 @@ export class JantNavManager extends LitElement {
 
     if (item.type === "system") {
       return html`
-        <div class="pb-4 pl-8 flex flex-col gap-3">
-          <code class="text-sm text-muted-foreground">${item.url}</code>
+        <div class="nav-item-edit">
           <div class="field">
             <label class="label">${this.labels.label}</label>
             <input
@@ -628,20 +630,20 @@ export class JantNavManager extends LitElement {
               }}
             />
           </div>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="btn-sm"
-              @click=${() => this.#handleUpdate(item)}
-            >
-              ${this.labels.save}
-            </button>
+          <div class="flex items-center justify-between">
             <button
               type="button"
               class="btn-sm-ghost text-destructive"
               @click=${() => this.#handleDelete(item)}
             >
               ${this.labels.remove}
+            </button>
+            <button
+              type="button"
+              class="btn-sm"
+              @click=${() => this.#handleUpdate(item)}
+            >
+              ${this.labels.save}
             </button>
           </div>
         </div>
@@ -652,17 +654,19 @@ export class JantNavManager extends LitElement {
   }
 
   #renderItem(item: NavManagerItem) {
+    const isEditing = this._editingId === item.id;
+
     return html`
-      <div data-nav-id=${item.id}>
-        <div class="flex items-center py-3 gap-2">
-          <div
-            class="flex items-center gap-3 cursor-grab flex-1 min-w-0"
-            data-drag-handle
-          >
+      <div
+        data-nav-id=${item.id}
+        class="nav-item${isEditing ? " nav-item-editing" : ""}"
+      >
+        <div class="nav-item-row">
+          <div class="nav-item-handle" data-drag-handle>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -678,31 +682,39 @@ export class JantNavManager extends LitElement {
               <circle cx="15" cy="5" r="1" />
               <circle cx="15" cy="19" r="1" />
             </svg>
-            <span class="font-medium truncate">${item.label}</span>
           </div>
-          <div class="flex items-center gap-2 shrink-0">
-            ${this.#renderTypeBadge(item.type)}
-            <button
-              type="button"
-              class="btn-sm-ghost"
-              @click=${() => this.#toggleEdit(item)}
-              aria-label=${this.labels.toggleEdit}
+          <div class="nav-item-info" @click=${() => this.#toggleEdit(item)}>
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-sm font-medium truncate">${item.label}</span>
+              ${this.#renderTypeBadge(item.type)}
+            </div>
+            <span class="text-xs text-muted-foreground truncate"
+              >${item.url}</span
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
           </div>
+          <button
+            type="button"
+            class="nav-item-toggle"
+            @click=${() => this.#toggleEdit(item)}
+            aria-label=${this.labels.toggleEdit}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="transition: transform 0.15s; ${isEditing
+                ? "transform: rotate(180deg);"
+                : ""}"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
         </div>
         ${this.#renderEditPanel(item)}
       </div>
@@ -1044,15 +1056,20 @@ export class JantNavManager extends LitElement {
     return html`
       ${this.#renderPreview()}
 
-      <div class="flex flex-col gap-3 mt-3">
-        <div class="flex items-center gap-3">
-          <label class="text-sm" for="nav-max-visible">
-            ${this.labels.maxVisibleLinks}
-          </label>
+      <div class="flex flex-col gap-4 mt-3">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex flex-col gap-0.5">
+            <label class="text-sm font-medium" for="nav-max-visible">
+              ${this.labels.maxVisibleLinks}
+            </label>
+            <p class="text-xs text-muted-foreground">
+              ${this.labels.maxVisibleLinksDescription}
+            </p>
+          </div>
           <input
             type="number"
             id="nav-max-visible"
-            class="input w-16 h-8"
+            class="input w-16 h-8 shrink-0"
             min="0"
             max="5"
             .value=${String(this.maxVisible)}
@@ -1062,15 +1079,20 @@ export class JantNavManager extends LitElement {
             }}
           />
         </div>
-        <div class="flex items-center gap-3">
-          <label class="text-sm" for="nav-home-view">
-            ${this.labels.useFeaturedAsDefault}
-          </label>
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex flex-col gap-0.5">
+            <label class="text-sm font-medium" for="nav-home-view">
+              ${this.labels.useFeaturedAsDefault}
+            </label>
+            <p class="text-xs text-muted-foreground">
+              ${this.labels.useFeaturedAsDefaultDescription}
+            </p>
+          </div>
           <input
             type="checkbox"
             role="switch"
             id="nav-home-view"
-            class="input"
+            class="input shrink-0"
             .checked=${this.homeDefaultView === "featured"}
             @change=${(e: Event) => {
               this.#handleHomeViewToggle(
@@ -1090,7 +1112,7 @@ export class JantNavManager extends LitElement {
               ${this.labels.emptyState}
             </p>`
           : html`
-              <div id="nav-items-list" class="flex flex-col divide-y">
+              <div id="nav-items-list" class="nav-items-list">
                 ${this._items.map((item) => this.#renderItem(item))}
               </div>
             `}

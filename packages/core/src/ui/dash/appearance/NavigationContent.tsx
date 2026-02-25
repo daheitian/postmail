@@ -69,7 +69,7 @@ export function NavigationContent({
 
   const labels: NavManagerLabels = {
     preview: t({
-      message: "Preview",
+      message: "Navigation Preview",
       comment: "@context: Label for nav preview section",
     }),
     navigationItems: t({
@@ -175,17 +175,27 @@ export function NavigationContent({
     }),
     urlPlaceholder: "/archive or https://...",
     maxVisibleLinks: t({
-      message: "Max visible links",
+      message: "Links shown in header",
       comment: "@context: Label for max visible nav links number input",
+    }),
+    maxVisibleLinksDescription: t({
+      message: "The rest will be tucked into a ··· menu",
+      comment:
+        "@context: Description for max visible nav links, explains overflow behavior",
     }),
     maxVisibleSaved: t({
       message: "Max visible links saved",
       comment: "@context: Toast after saving max visible nav links setting",
     }),
     useFeaturedAsDefault: t({
-      message: "Use Featured as default home view",
+      message: "Open with Featured posts",
       comment:
         "@context: Switch label for setting featured posts as default homepage",
+    }),
+    useFeaturedAsDefaultDescription: t({
+      message: "When off, visitors see your latest posts first",
+      comment:
+        "@context: Description for featured default toggle, explains what happens when off",
     }),
     homeViewSaved: t({
       message: "Home view saved",
@@ -223,14 +233,21 @@ export function NavigationContent({
           home-default-view={homeDefaultView}
         >
           {/* SSR fallback: static preview until JS hydrates */}
-          <div class="border rounded-lg">
-            <p class="text-xs text-muted-foreground px-4 pt-3">
-              {t({
-                message: "Preview",
-                comment: "@context: Label for nav preview section",
-              })}
-            </p>
-            <div class="px-5 py-3">
+          <div class="nav-preview">
+            <div class="nav-preview-chrome">
+              <div class="nav-preview-dots">
+                <span />
+                <span />
+                <span />
+              </div>
+              <span class="nav-preview-label">
+                {t({
+                  message: "Navigation Preview",
+                  comment: "@context: Label for nav preview section",
+                })}
+              </span>
+            </div>
+            <div class="nav-preview-content">
               <div class="site-header-top">
                 <a href="/" class="site-logo">
                   {siteName}

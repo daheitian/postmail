@@ -888,6 +888,11 @@ msgstr "Link"
 msgid "Links"
 msgstr "Links"
 
+#. @context: Label for max visible nav links number input
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Links shown in header"
+msgstr "Links shown in header"
+
 #. @context: Pagination button - load more items
 #: src/ui/shared/Pagination.tsx
 msgid "Load more"
@@ -920,8 +925,8 @@ msgstr "Markdown supported"
 
 #. @context: Label for max visible nav links number input
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Max visible links"
-msgstr "Max visible links"
+#~ msgid "Max visible links"
+#~ msgstr "Max visible links"
 
 #. @context: Toast after saving max visible nav links setting
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -991,6 +996,13 @@ msgstr "Navigation"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Navigation items"
 msgstr "Navigation items"
+
+#. @context: Label for nav preview section
+#. @context: Label for nav preview section
+#: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation Preview"
+msgstr "Navigation Preview"
 
 #. @context: Help text with link
 #: src/routes/dash/index.tsx
@@ -1174,6 +1186,11 @@ msgstr "Notes"
 msgid "Oldest first"
 msgstr "Oldest first"
 
+#. @context: Switch label for setting featured posts as default homepage
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Open with Featured posts"
+msgstr "Open with Featured posts"
+
 #. @context: Toast after reordering collections
 #. @context: Toast after saving navigation item order
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1322,11 +1339,7 @@ msgstr "Posts"
 #~ msgid "Posts in Collection ({count})"
 #~ msgstr "Posts in Collection ({count})"
 
-#. @context: Label for nav preview section
-#. @context: Label for nav preview section
 #. @context: Media detail section - preview
-#: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/media/ViewMediaContent.tsx
 msgid "Preview"
 msgstr "Preview"
@@ -1700,6 +1713,11 @@ msgstr "The path to redirect from"
 msgid "The quick brown fox jumps over the lazy dog."
 msgstr "The quick brown fox jumps over the lazy dog."
 
+#. @context: Description for max visible nav links, explains overflow behavior
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "The rest will be tucked into a ··· menu"
+msgstr "The rest will be tucked into a ··· menu"
+
 #. @context: Quote text placeholder
 #: src/ui/dash/posts/PostForm.tsx
 msgid "The text being quoted..."
@@ -1899,8 +1917,8 @@ msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug 
 
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Use Featured as default home view"
-msgstr "Use Featured as default home view"
+#~ msgid "Use Featured as default home view"
+#~ msgstr "Use Featured as default home view"
 
 #. @context: Media URL helper text
 #: src/ui/dash/media/ViewMediaContent.tsx
@@ -1966,6 +1984,11 @@ msgstr "What's on your mind..."
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "What's this collection about?"
 msgstr "What's this collection about?"
+
+#. @context: Description for featured default toggle, explains what happens when off
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "When off, visitors see your latest posts first"
+msgstr "When off, visitors see your latest posts first"
 
 #. @context: Setup form field - user name
 #: src/routes/auth/setup.tsx
