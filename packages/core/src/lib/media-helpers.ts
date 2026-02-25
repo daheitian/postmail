@@ -43,20 +43,21 @@ export function buildMediaMap(
           r2PublicUrl,
           s3PublicUrl,
         );
-        return {
-          id: m.id,
-          url: getMediaUrl(m.storageKey, publicUrl),
-          previewUrl: getImageUrl(
-            getMediaUrl(m.storageKey, publicUrl),
-            imageTransformUrl,
-            {
+        const mediaUrl = getMediaUrl(m.storageKey, publicUrl);
+        // Only apply image transforms for image MIME types
+        const previewUrl = m.mimeType.startsWith("image/")
+          ? getImageUrl(mediaUrl, imageTransformUrl, {
               width: 1200,
               height: 768,
               quality: 80,
               format: "auto",
               fit: "scale-down",
-            },
-          ),
+            })
+          : mediaUrl;
+        return {
+          id: m.id,
+          url: mediaUrl,
+          previewUrl,
           alt: m.alt,
           blurhash: m.blurhash,
           width: m.width,

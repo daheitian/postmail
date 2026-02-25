@@ -10,6 +10,7 @@ import {
   getImageUrl,
   getPublicUrlForProvider,
 } from "../../../lib/image.js";
+import { UPLOAD_ACCEPT } from "../../../lib/upload.js";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -131,7 +132,7 @@ export function MediaListContent({
           <input
             type="file"
             class="hidden"
-            accept="image/*"
+            accept={UPLOAD_ACCEPT}
             data-media-upload
             data-text-processing={processingText}
             data-text-uploading={uploadingText}
@@ -146,7 +147,7 @@ export function MediaListContent({
           <p>
             {t({
               message:
-                "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped.",
+                "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB).",
               comment:
                 "@context: Media upload instructions - auto optimization",
             })}

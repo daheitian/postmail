@@ -16,6 +16,7 @@ interface LightboxImage {
   alt: string;
   width?: number;
   height?: number;
+  mimeType?: string;
 }
 
 export class JantMediaLightbox extends LitElement {
@@ -166,13 +167,19 @@ export class JantMediaLightbox extends LitElement {
                 ${this._currentIndex + 1} / ${this._images.length}
               </div>`
             : nothing}
-
-          <img
-            class="media-lightbox-img"
-            src=${img?.url ?? ""}
-            alt=${img?.alt ?? ""}
-          />
-
+          ${img?.mimeType?.startsWith("video/")
+            ? html`<video
+                class="media-lightbox-video"
+                src=${img.url}
+                controls
+                autoplay
+                playsinline
+              ></video>`
+            : html`<img
+                class="media-lightbox-img"
+                src=${img?.url ?? ""}
+                alt=${img?.alt ?? ""}
+              />`}
           ${multiple
             ? html`
                 <button

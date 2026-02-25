@@ -215,7 +215,9 @@ export function createSettingsService(db: Database): SettingsService {
     },
 
     async uploadAvatar(data, deps) {
-      const uploadError = validateUploadFile(data.file as unknown as File);
+      const uploadError = validateUploadFile(data.file as unknown as File, {
+        imagesOnly: true,
+      });
       if (uploadError) {
         throw new ValidationError(uploadError);
       }

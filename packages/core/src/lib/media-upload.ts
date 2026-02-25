@@ -10,6 +10,7 @@
  */
 
 import { ImageProcessor } from "./image-processor.js";
+import { validateUploadFile } from "./upload.js";
 
 /**
  * Format file size for display
@@ -100,8 +101,17 @@ async function handleUpload(
   grid.prepend(placeholder);
 
   try {
-    // Process image client-side (resize, convert to WebP)
-    const processed = await ImageProcessor.processToFile(file);
+    // Validate file type and size before uploading
+    const validationError = validateUploadFile(file);
+    if (validationError) {
+      showPlaceholderError(placeholder, file.name, validationError);
+      return;
+    }
+
+    // Process images client-side (resize, convert to WebP); upload non-images as-is
+    const toUpload = file.type.startsWith("image/")
+      ? await ImageProcessor.processToFile(file)
+      : file;
 
     // Update status
     const statusEl = document.getElementById("upload-status");
@@ -117,7 +127,7 @@ async function handleUpload(
     if (!formInput || !form) throw new Error("Upload form not found");
 
     const dt = new DataTransfer();
-    dt.items.add(processed);
+    dt.items.add(toUpload);
     formInput.files = dt.files;
 
     // Trigger Datastar-intercepted form submission

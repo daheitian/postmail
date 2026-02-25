@@ -78,13 +78,17 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
     ctx.s3PublicUrl,
   );
   const url = getMediaUrl(media.storageKey, publicUrl);
-  const thumbnailUrl = getImageUrl(url, ctx.imageTransformUrl, {
-    width: 1200,
-    height: 768,
-    quality: 80,
-    format: "auto",
-    fit: "scale-down",
-  });
+
+  // Only apply image transforms for image MIME types
+  const thumbnailUrl = media.mimeType.startsWith("image/")
+    ? getImageUrl(url, ctx.imageTransformUrl, {
+        width: 1200,
+        height: 768,
+        quality: 80,
+        format: "auto",
+        fit: "scale-down",
+      })
+    : url;
 
   return {
     id: media.id,
