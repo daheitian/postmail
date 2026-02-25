@@ -165,7 +165,7 @@ signinRoutes.post("/signin", async (c) => {
       headers: c.req.raw.headers,
     });
 
-    return dsRedirect("/dash", { headers });
+    return dsRedirect("/", { headers });
   } catch {
     return dsToast(
       i18n._(

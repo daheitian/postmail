@@ -461,6 +461,10 @@ git branch -D "$BRANCH_NAME" 2>/dev/null || echo "Branch '$BRANCH_NAME' not foun
 echo "Done."
 """
 
+[tasks.rm-all-branch]
+description = "Delete all local branches except main"
+run = "git branch | grep -v '^\\* main$' | grep -v '^  main$' | xargs git branch -D"
+
 [tasks.ls]
 alias = "worktrees"
 description = "List all git worktrees"
