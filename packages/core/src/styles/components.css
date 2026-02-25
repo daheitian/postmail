@@ -111,29 +111,28 @@ svg[stroke-width].icon-fine {
     padding-bottom: 12px;
   }
 
-  .dash-header-left {
+  .dash-header-nav {
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  .dash-header-nav {
+  .dash-header-nav-sep {
+    color: var(--color-muted-foreground);
+    opacity: 0.35;
+    font-size: 0.75rem;
+    user-select: none;
+  }
+
+  .dash-header-right {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 4px;
-    flex: 1;
+    gap: 8px;
+    margin-left: auto;
   }
 
-  .dash-header-logo {
-    font-size: 1.125rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--color-foreground);
-  }
-
-  .dash-header-site-link {
-    @apply flex items-center justify-center;
+  .dash-header-link {
+    font-size: 0.875rem;
     color: var(--color-muted-foreground);
     transition: color 0.15s;
 
@@ -142,33 +141,41 @@ svg[stroke-width].icon-fine {
     }
   }
 
-  .dash-header-link {
-    position: relative;
-    font-size: 0.875rem;
-    padding: 6px 10px;
-    border-radius: var(--radius);
-    color: var(--color-muted-foreground);
-    transition:
-      color 0.15s,
-      background-color 0.15s;
-
-    &:hover {
-      color: var(--color-foreground);
-      background-color: var(--color-accent);
-    }
-  }
-
   .dash-header-link-active {
     color: var(--color-foreground);
     font-weight: 600;
-    background-color: var(--color-accent);
+  }
+
+  .dash-header-visit {
+    @apply flex items-center gap-3;
+    font-size: 0.875rem;
+    color: var(--color-muted-foreground);
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--color-foreground);
+    }
+  }
+
+  .dash-header-visit-text {
+    display: none;
+  }
+
+  @media (min-width: 700px) {
+    .dash-header-visit-text {
+      display: inline;
+    }
+
+    .dash-header-visit-icon {
+      display: none;
+    }
   }
 
   .dash-header-menu-btn {
     @apply flex items-center justify-center;
     width: 32px;
     height: 32px;
-    border-radius: 999px;
+    border-radius: var(--radius);
     border: none;
     background: transparent;
     color: var(--color-muted-foreground);
@@ -188,33 +195,100 @@ svg[stroke-width].icon-fine {
   }
 }
 
-/* Sub-navigation — underline style for secondary tabs (Settings, Appearance) */
+/* Breadcrumb — second row below header on settings sub-pages */
 @layer components {
-  .dash-subnav {
-    @apply flex gap-4 mb-6;
+  .dash-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    font-size: 0.8125rem;
+  }
 
-    > a {
-      position: relative;
-      font-size: 0.8125rem;
-      padding-bottom: 8px;
-      color: var(--color-muted-foreground);
-      transition: color 0.15s;
+  .dash-breadcrumb-parent {
+    color: var(--color-muted-foreground);
+    transition: color 0.15s;
 
-      &:hover {
-        color: var(--color-foreground);
-      }
-
-      &.active {
-        color: var(--color-foreground);
-        font-weight: 500;
-
-        &::after {
-          content: "";
-          @apply absolute inset-x-0 bottom-0 h-0.5 rounded-full;
-          background-color: var(--color-foreground);
-        }
-      }
+    &:hover {
+      color: var(--color-foreground);
     }
+  }
+
+  .dash-breadcrumb-sep {
+    color: var(--color-muted-foreground);
+    opacity: 0.5;
+  }
+
+  .dash-breadcrumb-current {
+    color: var(--color-foreground);
+    font-weight: 500;
+  }
+}
+
+/* Settings root — iOS-style grouped list */
+@layer components {
+  .settings-root {
+    @apply flex flex-col gap-6;
+    max-width: 480px;
+  }
+
+  .settings-group-label {
+    @apply text-xs font-medium uppercase tracking-wider mb-2 px-1;
+    color: var(--color-muted-foreground);
+  }
+
+  .settings-group {
+    @apply border rounded-xl overflow-hidden;
+    border-radius: var(--dash-card-radius);
+  }
+
+  .settings-item {
+    @apply flex items-center gap-3 px-4 py-3;
+    transition: background-color 0.15s;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: var(--color-accent);
+    }
+  }
+
+  .settings-item-icon {
+    @apply flex items-center justify-center shrink-0;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: white;
+  }
+
+  .settings-item-text {
+    @apply flex flex-col flex-1 min-w-0;
+  }
+
+  .settings-item-name {
+    @apply text-sm font-medium;
+    color: var(--color-foreground);
+  }
+
+  .settings-item-desc {
+    @apply text-xs;
+    color: var(--color-muted-foreground);
+  }
+
+  .settings-item-chevron {
+    @apply shrink-0;
+    color: var(--color-muted-foreground);
+    opacity: 0.5;
+  }
+}
+
+/* Dashboard scoped font rules */
+@layer components {
+  .dash-heading {
+    font-family: Georgia, "Times New Roman", serif;
   }
 }
 

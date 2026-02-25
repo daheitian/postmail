@@ -11,7 +11,6 @@ import type { Bindings, Redirect } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { EmptyState, ListItemRow, ActionButtons } from "../../ui/dash/index.js";
-import { SettingsNav } from "../../ui/dash/settings/SettingsNav.js";
 import { dsRedirect } from "../../lib/sse.js";
 import { RedirectTypeSchema, parseValidated } from "../../lib/schemas.js";
 
@@ -30,8 +29,6 @@ function RedirectsListContent({ redirects }: { redirects: Redirect[] }) {
 
   return (
     <>
-      <SettingsNav currentTab="redirects" />
-
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-lg font-medium">
           {t({
@@ -76,7 +73,7 @@ function RedirectsListContent({ redirects }: { redirects: Redirect[] }) {
             >
               <div class="flex items-center gap-2">
                 <code class="text-sm bg-muted px-1 rounded">{r.fromPath}</code>
-                <span class="text-muted-foreground">→</span>
+                <span class="text-muted-foreground">&rarr;</span>
                 <code class="text-sm bg-muted px-1 rounded">{r.toPath}</code>
                 <span class="badge-outline">{r.type}</span>
               </div>
@@ -93,8 +90,6 @@ function NewRedirectContent() {
 
   return (
     <>
-      <SettingsNav currentTab="redirects" />
-
       <h2 class="text-lg font-medium mb-6">
         {t({ message: "New Redirect", comment: "@context: Page heading" })}
       </h2>
@@ -203,6 +198,12 @@ function NewRedirectContent() {
   );
 }
 
+const BREADCRUMB = {
+  parent: "Settings",
+  parentHref: "/dash/settings",
+  current: "Redirects",
+};
+
 // List redirects
 redirectsRoutes.get("/", async (c) => {
   const siteName = c.var.appConfig.siteName;
@@ -211,9 +212,10 @@ redirectsRoutes.get("/", async (c) => {
   return c.html(
     <DashLayout
       c={c}
-      title="Settings"
+      title="Redirects"
       siteName={siteName}
       currentPath="/dash/settings"
+      breadcrumb={BREADCRUMB}
     >
       <RedirectsListContent redirects={redirects} />
     </DashLayout>,
@@ -227,9 +229,10 @@ redirectsRoutes.get("/new", async (c) => {
   return c.html(
     <DashLayout
       c={c}
-      title="Settings"
+      title="Redirects"
       siteName={siteName}
       currentPath="/dash/settings"
+      breadcrumb={BREADCRUMB}
     >
       <NewRedirectContent />
     </DashLayout>,

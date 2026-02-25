@@ -65,8 +65,10 @@ msgstr "A short intro for search engines and feed readers. Plain text only."
 msgid "About this blog"
 msgstr "About this blog"
 
-#. @context: Settings sub-navigation tab
-#: src/ui/dash/settings/SettingsNav.tsx
+#. @context: Settings group label for account settings
+#. @context: Settings item — account settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
 msgstr "Account"
 
@@ -135,8 +137,8 @@ msgstr "Add page to navigation"
 #~ msgid "Add to navigation"
 #~ msgstr "Add to navigation"
 
-#. @context: Appearance sub-navigation tab
-#: src/ui/dash/appearance/AppearanceNav.tsx
+#. @context: Settings group label for advanced settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Advanced"
 msgstr "Advanced"
 
@@ -167,8 +169,8 @@ msgstr "Alt text improves accessibility"
 
 #. @context: Dashboard navigation - appearance settings
 #: src/ui/layouts/DashLayout.tsx
-msgid "Appearance"
-msgstr "Appearance"
+#~ msgid "Appearance"
+#~ msgstr "Appearance"
 
 #. @context: Archive page title
 #: src/ui/pages/ArchivePage.tsx
@@ -229,6 +231,11 @@ msgstr "AUTH_SECRET not configured"
 msgid "Author (optional)"
 msgstr "Author (optional)"
 
+#. @context: Settings item — avatar settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Avatar"
+msgstr "Avatar"
+
 #. @context: Toast after saving avatar display preference
 #. @context: Toast after saving avatar display preference
 #: src/routes/dash/settings.tsx
@@ -250,8 +257,13 @@ msgstr "Back"
 #~ msgid "Back to home"
 #~ msgstr "Back to home"
 
+#. @context: Dashboard header link to go back to the public site
+#: src/ui/layouts/DashLayout.tsx
+#~ msgid "Back to site"
+#~ msgstr "Back to site"
+
 #. @context: Settings section heading for avatar
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Blog Avatar"
 msgstr "Blog Avatar"
 
@@ -334,12 +346,14 @@ msgid "Collections (optional)"
 msgstr "Collections (optional)"
 
 #. @context: Appearance settings heading
+#. @context: Settings item description for color theme
 #: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Color theme"
 msgstr "Color theme"
 
-#. @context: Appearance sub-navigation tab
-#: src/ui/dash/appearance/AppearanceNav.tsx
+#. @context: Settings item — color theme settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Color Theme"
 msgstr "Color Theme"
 
@@ -423,12 +437,14 @@ msgid "Current password is incorrect."
 msgstr "Current password is incorrect."
 
 #. @context: Appearance settings heading for custom CSS
+#. @context: Settings item — custom CSS settings
 #: src/ui/dash/appearance/AdvancedContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Custom CSS"
 msgstr "Custom CSS"
 
 #. @context: Toast after saving custom CSS
-#: src/routes/dash/appearance.tsx
+#: src/routes/dash/settings.tsx
 msgid "Custom CSS saved successfully."
 msgstr "Custom CSS saved successfully."
 
@@ -442,6 +458,11 @@ msgstr "Custom CSS saved successfully."
 #~ msgid "Custom Slug (optional)"
 #~ msgstr "Custom Slug (optional)"
 
+#. @context: Settings item description for custom CSS
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Custom styling"
+msgstr "Custom styling"
+
 #. @context: Slug help text
 #: src/theme/components/PostForm.tsx
 #~ msgid "Custom URL path. Leave empty to use default /p/ID format."
@@ -453,7 +474,9 @@ msgid "Danger Zone"
 msgstr "Danger Zone"
 
 #. @context: Dashboard main heading
+#. @context: Dashboard navigation - dashboard home
 #: src/routes/dash/index.tsx
+#: src/ui/layouts/DashLayout.tsx
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -513,13 +536,18 @@ msgstr "Describe this for people with visual impairments..."
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
+#. @context: Settings group label for design settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Design"
+msgstr "Design"
+
 #. @context: More menu - discard post
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "Discard"
 
 #. @context: Checkbox to show avatar in the site header
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Display avatar in my site header"
 msgstr "Display avatar in my site header"
 
@@ -680,6 +708,11 @@ msgstr "Failed to save. Please try again."
 msgid "Failed to update profile."
 msgstr "Failed to update profile."
 
+#. @context: Settings item description for avatar
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Favicon and header icon"
+msgstr "Favicon and header icon"
+
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
 #. @context: Browse filter label
@@ -702,8 +735,8 @@ msgstr "Featured"
 msgid "Font theme"
 msgstr "Font theme"
 
-#. @context: Appearance sub-navigation tab
-#: src/ui/dash/appearance/AppearanceNav.tsx
+#. @context: Settings item — font theme settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Font Theme"
 msgstr "Font Theme"
 
@@ -740,10 +773,10 @@ msgstr "Found 1 result"
 msgid "From Path"
 msgstr "From Path"
 
+#. @context: Settings item — general settings
 #. @context: Settings section heading
-#. @context: Settings sub-navigation tab
 #: src/ui/dash/settings/GeneralContent.tsx
-#: src/ui/dash/settings/SettingsNav.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "General"
 msgstr "General"
 
@@ -751,6 +784,11 @@ msgstr "General"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Give it a title..."
 msgstr "Give it a title..."
+
+#. @context: Settings item description for navigation
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Header links, featured"
+msgstr "Header links, featured"
 
 #. @context: Settings form field for max visible nav links in header
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -807,7 +845,7 @@ msgid "Invalid email or password"
 msgstr "Invalid email or password"
 
 #. @context: Error toast when selected font theme is not valid
-#: src/routes/dash/appearance.tsx
+#: src/routes/dash/settings.tsx
 msgid "Invalid font theme selected."
 msgstr "Invalid font theme selected."
 
@@ -837,7 +875,7 @@ msgstr "Invalid or Expired Link"
 #~ msgstr "Invalid request"
 
 #. @context: Error toast when selected theme is not valid
-#: src/routes/dash/appearance.tsx
+#: src/routes/dash/settings.tsx
 msgid "Invalid theme selected."
 msgstr "Invalid theme selected."
 
@@ -1002,8 +1040,13 @@ msgstr "Name"
 msgid "Name is required."
 msgstr "Name is required."
 
-#. @context: Appearance sub-navigation tab
-#: src/ui/dash/appearance/AppearanceNav.tsx
+#. @context: Settings item description for general
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Name, description, language"
+msgstr "Name, description, language"
+
+#. @context: Settings item — navigation settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Navigation"
 msgstr "Navigation"
 
@@ -1369,7 +1412,7 @@ msgstr "Previous"
 #. @context: Avatar upload button text while generating favicon variants
 #. @context: Upload status - processing
 #: src/ui/dash/media/MediaListContent.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "Processing..."
 
@@ -1382,6 +1425,11 @@ msgstr "Profile"
 #: src/routes/dash/settings.tsx
 msgid "Profile saved successfully."
 msgstr "Profile saved successfully."
+
+#. @context: Settings item description for account
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Profile, password"
+msgstr "Profile, password"
 
 #. @context: Button to publish new post
 #: src/ui/dash/posts/PostForm.tsx
@@ -1457,10 +1505,10 @@ msgstr "Quotes"
 #~ msgid "Rating"
 #~ msgstr "Rating"
 
+#. @context: Settings item — redirects settings
 #. @context: Settings section heading
-#. @context: Settings sub-navigation tab
 #: src/routes/dash/redirects.tsx
-#: src/ui/dash/settings/SettingsNav.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Redirects"
 msgstr "Redirects"
 
@@ -1470,7 +1518,7 @@ msgstr "Redirects"
 #. @context: Remove page from navigation
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Remove"
 msgstr "Remove"
@@ -1637,6 +1685,11 @@ msgstr "Sign In"
 msgid "Sign Out"
 msgstr "Sign Out"
 
+#. @context: Settings group label for site settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Site"
+msgstr "Site"
+
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
 #~ msgid "Site Description"
@@ -1759,7 +1812,7 @@ msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens.
 #~ msgstr "This is displayed at the bottom of all of your posts and pages. Markdown is supported."
 
 #. @context: Help text for avatar upload
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
 msgstr "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
 
@@ -1839,6 +1892,11 @@ msgstr "Type"
 msgid "Type the quote..."
 msgstr "Type the quote..."
 
+#. @context: Settings item description for font theme
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Typography"
+msgstr "Typography"
+
 #. @context: Button to remove page from navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
 #~ msgid "Un-nav"
@@ -1879,7 +1937,7 @@ msgid "Upload"
 msgstr "Upload"
 
 #. @context: Button to upload avatar image
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Upload Avatar"
 msgstr "Upload Avatar"
 
@@ -1890,7 +1948,7 @@ msgstr "Upload Avatar"
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/media/MediaListContent.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Upload failed. Please try again."
 msgstr "Upload failed. Please try again."
 
@@ -1909,7 +1967,7 @@ msgstr "Upload successful!"
 #. @context: Upload status - uploading
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/media/MediaListContent.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Uploading..."
 msgstr "Uploading..."
 
@@ -1924,6 +1982,11 @@ msgstr "URL"
 #: src/ui/dash/posts/PostForm.tsx
 msgid "URL (optional)"
 msgstr "URL (optional)"
+
+#. @context: Settings item description for redirects
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "URL redirects"
+msgstr "URL redirects"
 
 #. @context: Collection path help text
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -1965,18 +2028,27 @@ msgstr "View"
 
 #. @context: Dashboard header link to view the public site
 #: src/ui/layouts/DashLayout.tsx
-msgid "View Site"
-msgstr "View Site"
+#~ msgid "View Site"
+#~ msgstr "View Site"
 
 #. @context: Post form field
 #: src/theme/components/PostForm.tsx
 #~ msgid "Visibility"
 #~ msgstr "Visibility"
 
+#. @context: Dashboard header link text to visit the public blog
+#. @context: Dashboard header link to visit the public blog
+#. @context: Dashboard header tooltip for visit blog icon on mobile
+#: src/ui/layouts/DashLayout.tsx
+#: src/ui/layouts/DashLayout.tsx
+#: src/ui/layouts/DashLayout.tsx
+msgid "Visit Blog"
+msgstr "Visit Blog"
+
 #. @context: Dashboard menu item to visit the public site
 #: src/ui/layouts/DashLayout.tsx
-msgid "Visit Site"
-msgstr "Visit Site"
+#~ msgid "Visit Site"
+#~ msgstr "Visit Site"
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx

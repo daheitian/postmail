@@ -53,4 +53,14 @@
   --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
   --site-media-outline: var(--border);
   --site-divider: var(--border);
+
+  /* Dashboard */
+  --dash-bg: oklch(0.97 0.005 80);
+  --dash-card-radius: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dash-bg: oklch(0.2 0.005 80);
+  }
 }

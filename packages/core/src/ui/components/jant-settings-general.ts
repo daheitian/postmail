@@ -170,7 +170,7 @@ export class JantSettingsGeneral extends LitElement {
       new CustomEvent("jant:settings-save", {
         bubbles: true,
         detail: {
-          endpoint: "/dash/settings",
+          endpoint: "/dash/settings/general",
           data: {
             siteName: this._siteName,
             siteDescription: this._siteDescription,
@@ -203,7 +203,7 @@ export class JantSettingsGeneral extends LitElement {
       new CustomEvent("jant:settings-save", {
         bubbles: true,
         detail: {
-          endpoint: "/dash/settings/seo",
+          endpoint: "/dash/settings/general/seo",
           data: { noindex: this._noindex ? "" : "true" },
           section: "seo",
         },

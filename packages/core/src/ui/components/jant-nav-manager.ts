@@ -253,7 +253,7 @@ export class JantNavManager extends LitElement {
     const clamped = Math.max(0, Math.min(5, value));
     this.maxVisible = clamped;
     try {
-      const res = await fetch("/dash/appearance/nav-max-visible", {
+      const res = await fetch("/dash/settings/navigation/nav-max-visible", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value: clamped }),
@@ -268,7 +268,7 @@ export class JantNavManager extends LitElement {
   async #handleHomeViewToggle(useFeatured: boolean) {
     this.homeDefaultView = useFeatured ? "featured" : "latest";
     try {
-      const res = await fetch("/dash/appearance/home-default-view", {
+      const res = await fetch("/dash/settings/navigation/home-default-view", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ value: this.homeDefaultView }),

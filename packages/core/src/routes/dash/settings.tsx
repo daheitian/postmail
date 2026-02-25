@@ -1,7 +1,9 @@
 /**
  * Dashboard Settings Routes
  *
- * Sub-pages: General, Account
+ * Unified settings hub — root page with iOS-style grouped list,
+ * plus sub-pages for General, Avatar, Navigation, Color Theme,
+ * Font Theme, Custom CSS, and Account.
  */
 
 import { Hono } from "hono";
@@ -14,18 +16,46 @@ import { getI18n } from "../../i18n/index.js";
 import { TIMEZONES } from "../../lib/timezones.js";
 import { escapeHtml } from "../../lib/html.js";
 import { ValidationError } from "../../lib/errors.js";
+import { SETTINGS_KEYS } from "../../lib/constants.js";
+import { getAvailableThemes } from "../../lib/theme.js";
+import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
+import { SettingsRootContent } from "../../ui/dash/settings/SettingsRootContent.js";
 import { GeneralContent } from "../../ui/dash/settings/GeneralContent.js";
+import { AvatarContent } from "../../ui/dash/settings/AvatarContent.js";
 import { AccountContent } from "../../ui/dash/settings/AccountContent.js";
+import { NavigationContent } from "../../ui/dash/appearance/NavigationContent.js";
+import { ColorThemeContent } from "../../ui/dash/appearance/ColorThemeContent.js";
+import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
+import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const settingsRoutes = new Hono<Env>();
 
 // ===========================================================================
-// General settings
+// Settings root — iOS-style grouped list
 // ===========================================================================
 
 settingsRoutes.get("/", async (c) => {
+  const siteName = c.var.appConfig.siteName;
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Settings"
+      siteName={siteName}
+      currentPath="/dash/settings"
+    >
+      <SettingsRootContent />
+    </DashLayout>,
+  );
+});
+
+// ===========================================================================
+// General settings
+// ===========================================================================
+
+settingsRoutes.get("/general", async (c) => {
   const { allSettings, appConfig } = c.var;
 
   const dbSiteName = allSettings["SITE_NAME"] ?? "";
@@ -36,9 +66,14 @@ settingsRoutes.get("/", async (c) => {
   return c.html(
     <DashLayout
       c={c}
-      title="Settings"
+      title="General"
       siteName={dbSiteName || appConfig.fallbacks.siteName}
       currentPath="/dash/settings"
+      breadcrumb={{
+        parent: "Settings",
+        parentHref: "/dash/settings",
+        current: "General",
+      }}
       toast={saved ? { message: "Settings saved successfully." } : undefined}
     >
       <GeneralContent
@@ -47,8 +82,6 @@ settingsRoutes.get("/", async (c) => {
         siteLanguage={appConfig.siteLanguage}
         siteNameFallback={appConfig.fallbacks.siteName}
         siteDescriptionFallback={appConfig.fallbacks.siteDescription}
-        siteAvatarUrl={appConfig.siteAvatarUrl}
-        showHeaderAvatar={appConfig.showHeaderAvatar}
         timeZone={appConfig.timeZone}
         siteFooter={appConfig.siteFooter}
         noindex={appConfig.noindex}
@@ -58,7 +91,7 @@ settingsRoutes.get("/", async (c) => {
   );
 });
 
-settingsRoutes.post("/", async (c) => {
+settingsRoutes.post("/general", async (c) => {
   const i18n = getI18n(c);
   const body = await c.req.json<{
     siteName: string;
@@ -82,7 +115,7 @@ settingsRoutes.post("/", async (c) => {
     if (languageChanged) {
       return c.json({
         status: "redirect" as const,
-        url: "/dash/settings?saved",
+        url: "/dash/settings/general?saved",
       });
     }
     return c.json({
@@ -99,13 +132,13 @@ settingsRoutes.post("/", async (c) => {
 
   return sse(c, async (stream) => {
     if (languageChanged) {
-      await stream.redirect("/dash/settings?saved");
+      await stream.redirect("/dash/settings/general?saved");
     } else {
       const escaped = escapeHtml(displayName);
       await stream.patchElements(
         `<a id="site-name" href="/dash" class="font-semibold">${escaped}</a>`,
       );
-      await stream.patchElements(`Settings - ${escaped}`, {
+      await stream.patchElements(`General - ${escaped}`, {
         mode: "inner",
         selector: "title",
       });
@@ -129,7 +162,7 @@ settingsRoutes.post("/", async (c) => {
   });
 });
 
-settingsRoutes.post("/seo", async (c) => {
+settingsRoutes.post("/general/seo", async (c) => {
   const i18n = getI18n(c);
   const body = await c.req.json<{ noindex: string }>();
   const { settings } = c.var.services;
@@ -174,8 +207,33 @@ settingsRoutes.post("/seo", async (c) => {
 });
 
 // ===========================================================================
-// Avatar upload & removal
+// Avatar
 // ===========================================================================
+
+settingsRoutes.get("/avatar", async (c) => {
+  const siteName = c.var.appConfig.siteName;
+  const saved = c.req.query("saved") !== undefined;
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Avatar"
+      siteName={siteName}
+      currentPath="/dash/settings"
+      breadcrumb={{
+        parent: "Settings",
+        parentHref: "/dash/settings",
+        current: "Avatar",
+      }}
+      toast={saved ? { message: "Avatar saved successfully." } : undefined}
+    >
+      <AvatarContent
+        siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
+        showHeaderAvatar={c.var.appConfig.showHeaderAvatar}
+      />
+    </DashLayout>,
+  );
+});
 
 settingsRoutes.post("/avatar", async (c) => {
   const i18n = getI18n(c);
@@ -225,7 +283,7 @@ settingsRoutes.post("/avatar", async (c) => {
       },
     );
 
-    return dsRedirect("/dash/settings?saved");
+    return dsRedirect("/dash/settings/avatar?saved");
   } catch (e) {
     if (e instanceof ValidationError) {
       return dsToast(e.message, "error");
@@ -248,10 +306,13 @@ settingsRoutes.post("/avatar/remove", async (c) => {
   // ── JSON response mode (used by Lit settings bridge) ──────────────
   const wantsJson = c.req.header("accept")?.includes("application/json");
   if (wantsJson) {
-    return c.json({ status: "redirect" as const, url: "/dash/settings?saved" });
+    return c.json({
+      status: "redirect" as const,
+      url: "/dash/settings/avatar?saved",
+    });
   }
 
-  return dsRedirect("/dash/settings?saved");
+  return dsRedirect("/dash/settings/avatar?saved");
 });
 
 settingsRoutes.post("/avatar/display", async (c) => {
@@ -296,6 +357,234 @@ settingsRoutes.post("/avatar/display", async (c) => {
 });
 
 // ===========================================================================
+// Navigation (moved from appearance routes)
+// ===========================================================================
+
+settingsRoutes.get("/navigation", async (c) => {
+  const [navItems, availablePages] = await Promise.all([
+    c.var.services.navItems.list(),
+    c.var.services.pages.listNotInNav(),
+  ]);
+  const siteName = c.var.appConfig.siteName;
+  const headerNavMaxVisible = c.var.appConfig.headerNavMaxVisible;
+  const homeDefaultView = c.var.appConfig.homeDefaultView;
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Navigation"
+      siteName={siteName}
+      currentPath="/dash/settings"
+      breadcrumb={{
+        parent: "Settings",
+        parentHref: "/dash/settings",
+        current: "Navigation",
+      }}
+    >
+      <NavigationContent
+        navItems={navItems}
+        availablePages={availablePages}
+        headerNavMaxVisible={headerNavMaxVisible}
+        homeDefaultView={homeDefaultView}
+        siteName={siteName}
+      />
+    </DashLayout>,
+  );
+});
+
+settingsRoutes.post("/navigation/nav-max-visible", async (c) => {
+  const body = await c.req.json<{ value: number }>();
+  const { settings } = c.var.services;
+
+  const navMax = Math.max(0, Math.min(5, body.value ?? 3));
+  if (navMax !== 3) {
+    await settings.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
+  } else {
+    await settings.remove("HEADER_NAV_MAX_VISIBLE");
+  }
+
+  return c.json({ ok: true });
+});
+
+settingsRoutes.post("/navigation/home-default-view", async (c) => {
+  const body = await c.req.json<{ value: string }>();
+  const { settings } = c.var.services;
+
+  if (body.value === "featured") {
+    await settings.set("HOME_DEFAULT_VIEW", "featured");
+  } else {
+    await settings.remove("HOME_DEFAULT_VIEW");
+  }
+
+  return c.json({ ok: true });
+});
+
+// ===========================================================================
+// Color Theme (moved from appearance routes)
+// ===========================================================================
+
+settingsRoutes.get("/color-theme", async (c) => {
+  const siteName = c.var.appConfig.siteName;
+  const defaultThemeId = c.var.appConfig.fallbacks.defaultTheme;
+  const currentThemeId =
+    c.var.allSettings[SETTINGS_KEYS.THEME] ?? defaultThemeId;
+  const themes = getAvailableThemes();
+  const saved = c.req.query("saved") !== undefined;
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Color Theme"
+      siteName={siteName}
+      currentPath="/dash/settings"
+      breadcrumb={{
+        parent: "Settings",
+        parentHref: "/dash/settings",
+        current: "Color Theme",
+      }}
+      toast={saved ? { message: "Theme saved successfully." } : undefined}
+    >
+      <ColorThemeContent themes={themes} currentThemeId={currentThemeId} />
+    </DashLayout>,
+  );
+});
+
+settingsRoutes.post("/color-theme", async (c) => {
+  const i18n = getI18n(c);
+  const body = await c.req.json<{ theme: string }>();
+  const { settings } = c.var.services;
+  const themes = getAvailableThemes();
+
+  const validTheme = themes.find((t) => t.id === body.theme);
+  if (!validTheme) {
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Invalid theme selected.",
+          comment: "@context: Error toast when selected theme is not valid",
+        }),
+      ),
+      "error",
+    );
+  }
+
+  const defaultThemeId = c.var.appConfig.fallbacks.defaultTheme;
+  if (validTheme.id === defaultThemeId) {
+    await settings.remove(SETTINGS_KEYS.THEME);
+  } else {
+    await settings.set(SETTINGS_KEYS.THEME, validTheme.id);
+  }
+
+  return dsRedirect("/dash/settings/color-theme?saved");
+});
+
+// ===========================================================================
+// Font Theme (moved from appearance routes)
+// ===========================================================================
+
+settingsRoutes.get("/font-theme", async (c) => {
+  const siteName = c.var.appConfig.siteName;
+  const currentFontThemeId = c.var.allSettings["FONT_THEME"] ?? "default";
+  const saved = c.req.query("saved") !== undefined;
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Font Theme"
+      siteName={siteName}
+      currentPath="/dash/settings"
+      breadcrumb={{
+        parent: "Settings",
+        parentHref: "/dash/settings",
+        current: "Font Theme",
+      }}
+      toast={saved ? { message: "Font theme saved successfully." } : undefined}
+    >
+      <FontThemeContent
+        fontThemes={BUILTIN_FONT_THEMES}
+        currentFontThemeId={currentFontThemeId}
+      />
+    </DashLayout>,
+  );
+});
+
+settingsRoutes.post("/font-theme", async (c) => {
+  const i18n = getI18n(c);
+  const body = await c.req.json<{ fontTheme: string }>();
+  const { settings } = c.var.services;
+
+  const validFont = BUILTIN_FONT_THEMES.find((f) => f.id === body.fontTheme);
+  if (!validFont) {
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Invalid font theme selected.",
+          comment:
+            "@context: Error toast when selected font theme is not valid",
+        }),
+      ),
+      "error",
+    );
+  }
+
+  if (validFont.id === "default") {
+    await settings.remove("FONT_THEME");
+  } else {
+    await settings.set("FONT_THEME", validFont.id);
+  }
+
+  return dsRedirect("/dash/settings/font-theme?saved");
+});
+
+// ===========================================================================
+// Custom CSS (moved from appearance routes)
+// ===========================================================================
+
+settingsRoutes.get("/custom-css", async (c) => {
+  const siteName = c.var.appConfig.siteName;
+  const customCSS = c.var.allSettings[SETTINGS_KEYS.CUSTOM_CSS] ?? "";
+
+  return c.html(
+    <DashLayout
+      c={c}
+      title="Custom CSS"
+      siteName={siteName}
+      currentPath="/dash/settings"
+      breadcrumb={{
+        parent: "Settings",
+        parentHref: "/dash/settings",
+        current: "Custom CSS",
+      }}
+    >
+      <AdvancedContent customCSS={customCSS} />
+    </DashLayout>,
+  );
+});
+
+settingsRoutes.post("/custom-css", async (c) => {
+  const i18n = getI18n(c);
+  const body = await c.req.json<{ customCSS: string }>();
+  const { settings } = c.var.services;
+
+  const css = body.customCSS?.trim() ?? "";
+
+  if (css) {
+    await settings.set(SETTINGS_KEYS.CUSTOM_CSS, css);
+  } else {
+    await settings.remove(SETTINGS_KEYS.CUSTOM_CSS);
+  }
+
+  return dsToast(
+    i18n._(
+      msg({
+        message: "Custom CSS saved successfully.",
+        comment: "@context: Toast after saving custom CSS",
+      }),
+    ),
+  );
+});
+
+// ===========================================================================
 // Account
 // ===========================================================================
 
@@ -310,9 +599,14 @@ settingsRoutes.get("/account", async (c) => {
   return c.html(
     <DashLayout
       c={c}
-      title="Settings"
+      title="Account"
       siteName={siteName}
       currentPath="/dash/settings"
+      breadcrumb={{
+        parent: "Settings",
+        parentHref: "/dash/settings",
+        current: "Account",
+      }}
       toast={saved ? { message: "Profile saved successfully." } : undefined}
     >
       <AccountContent userName={userName} />

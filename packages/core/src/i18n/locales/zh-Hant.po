@@ -48,8 +48,10 @@ msgstr "為搜尋引擎和訂閱閱讀器提供的簡短介紹。僅限純文字
 msgid "About this blog"
 msgstr "關於這個部落格"
 
-#. @context: Settings sub-navigation tab
-#: src/ui/dash/settings/SettingsNav.tsx
+#. @context: Settings group label for account settings
+#. @context: Settings item — account settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
 msgstr "帳戶"
 
@@ -113,8 +115,8 @@ msgstr ""
 #~ msgid "Add to navigation"
 #~ msgstr "添加到導航"
 
-#. @context: Appearance sub-navigation tab
-#: src/ui/dash/appearance/AppearanceNav.tsx
+#. @context: Settings group label for advanced settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Advanced"
 msgstr "進階"
 
@@ -140,8 +142,8 @@ msgstr "替代文字改善可及性"
 
 #. @context: Dashboard navigation - appearance settings
 #: src/ui/layouts/DashLayout.tsx
-msgid "Appearance"
-msgstr "外觀"
+#~ msgid "Appearance"
+#~ msgstr "外觀"
 
 #. @context: Archive page title
 #: src/ui/pages/ArchivePage.tsx
@@ -178,6 +180,11 @@ msgstr "AUTH_SECRET 未配置"
 msgid "Author (optional)"
 msgstr "作者（可選）"
 
+#. @context: Settings item — avatar settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Avatar"
+msgstr ""
+
 #. @context: Toast after saving avatar display preference
 #. @context: Toast after saving avatar display preference
 #: src/routes/dash/settings.tsx
@@ -190,8 +197,13 @@ msgstr "頭像顯示設置已成功保存。"
 msgid "Back"
 msgstr "返回"
 
+#. @context: Dashboard header link to go back to the public site
+#: src/ui/layouts/DashLayout.tsx
+#~ msgid "Back to site"
+#~ msgstr ""
+
 #. @context: Settings section heading for avatar
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Blog Avatar"
 msgstr "部落格頭像"
 
@@ -264,12 +276,14 @@ msgid "Collections (optional)"
 msgstr "收藏（可選）"
 
 #. @context: Appearance settings heading
+#. @context: Settings item description for color theme
 #: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Color theme"
 msgstr "顏色主題"
 
-#. @context: Appearance sub-navigation tab
-#: src/ui/dash/appearance/AppearanceNav.tsx
+#. @context: Settings item — color theme settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Color Theme"
 msgstr "顏色主題"
 
@@ -343,14 +357,21 @@ msgid "Current password is incorrect."
 msgstr "當前密碼不正確。"
 
 #. @context: Appearance settings heading for custom CSS
+#. @context: Settings item — custom CSS settings
 #: src/ui/dash/appearance/AdvancedContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Custom CSS"
 msgstr "自訂 CSS"
 
 #. @context: Toast after saving custom CSS
-#: src/routes/dash/appearance.tsx
+#: src/routes/dash/settings.tsx
 msgid "Custom CSS saved successfully."
 msgstr "自訂 CSS 已成功儲存。"
+
+#. @context: Settings item description for custom CSS
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Custom styling"
+msgstr ""
 
 #. @context: Section heading for dangerous/destructive actions
 #: src/ui/dash/DangerZone.tsx
@@ -358,7 +379,9 @@ msgid "Danger Zone"
 msgstr "危險區域"
 
 #. @context: Dashboard main heading
+#. @context: Dashboard navigation - dashboard home
 #: src/routes/dash/index.tsx
+#: src/ui/layouts/DashLayout.tsx
 msgid "Dashboard"
 msgstr "儀表板"
 
@@ -413,13 +436,18 @@ msgstr "為視障人士描述這個..."
 msgid "Description (optional)"
 msgstr "描述（可選）"
 
+#. @context: Settings group label for design settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Design"
+msgstr ""
+
 #. @context: More menu - discard post
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "丟棄"
 
 #. @context: Checkbox to show avatar in the site header
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Display avatar in my site header"
 msgstr "在我的網站標頭中顯示頭像"
 
@@ -546,6 +574,11 @@ msgstr "保存失敗。請再試一次。"
 msgid "Failed to update profile."
 msgstr "無法更新個人資料。"
 
+#. @context: Settings item description for avatar
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Favicon and header icon"
+msgstr ""
+
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
 #. @context: Browse filter label
@@ -568,8 +601,8 @@ msgstr "精選"
 msgid "Font theme"
 msgstr "字型主題"
 
-#. @context: Appearance sub-navigation tab
-#: src/ui/dash/appearance/AppearanceNav.tsx
+#. @context: Settings item — font theme settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Font Theme"
 msgstr "字型主題"
 
@@ -594,10 +627,10 @@ msgstr "找到 1 個結果"
 msgid "From Path"
 msgstr "來源路徑"
 
+#. @context: Settings item — general settings
 #. @context: Settings section heading
-#. @context: Settings sub-navigation tab
 #: src/ui/dash/settings/GeneralContent.tsx
-#: src/ui/dash/settings/SettingsNav.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "General"
 msgstr "一般設定"
 
@@ -605,6 +638,11 @@ msgstr "一般設定"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Give it a title..."
 msgstr "給它一個標題..."
+
+#. @context: Settings item description for navigation
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Header links, featured"
+msgstr ""
 
 #. @context: Collection sort order option
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -642,7 +680,7 @@ msgid "Invalid email or password"
 msgstr "無效的電子郵件或密碼"
 
 #. @context: Error toast when selected font theme is not valid
-#: src/routes/dash/appearance.tsx
+#: src/routes/dash/settings.tsx
 msgid "Invalid font theme selected."
 msgstr "選擇的字體主題無效。"
 
@@ -667,7 +705,7 @@ msgid "Invalid or Expired Link"
 msgstr "無效或已過期的連結"
 
 #. @context: Error toast when selected theme is not valid
-#: src/routes/dash/appearance.tsx
+#: src/routes/dash/settings.tsx
 msgid "Invalid theme selected."
 msgstr "選擇的主題無效。"
 
@@ -817,8 +855,13 @@ msgstr "名稱"
 msgid "Name is required."
 msgstr "名稱是必填的。"
 
-#. @context: Appearance sub-navigation tab
-#: src/ui/dash/appearance/AppearanceNav.tsx
+#. @context: Settings item description for general
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Name, description, language"
+msgstr ""
+
+#. @context: Settings item — navigation settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Navigation"
 msgstr "導航"
 
@@ -1129,7 +1172,7 @@ msgstr "上一頁"
 #. @context: Avatar upload button text while generating favicon variants
 #. @context: Upload status - processing
 #: src/ui/dash/media/MediaListContent.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "處理中..."
 
@@ -1142,6 +1185,11 @@ msgstr "個人資料"
 #: src/routes/dash/settings.tsx
 msgid "Profile saved successfully."
 msgstr "個人資料已成功儲存。"
+
+#. @context: Settings item description for account
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Profile, password"
+msgstr ""
 
 #. @context: Button to publish new post
 #: src/ui/dash/posts/PostForm.tsx
@@ -1195,10 +1243,10 @@ msgstr "引用文本"
 msgid "Quotes"
 msgstr "引用"
 
+#. @context: Settings item — redirects settings
 #. @context: Settings section heading
-#. @context: Settings sub-navigation tab
 #: src/routes/dash/redirects.tsx
-#: src/ui/dash/settings/SettingsNav.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Redirects"
 msgstr "重定向"
 
@@ -1208,7 +1256,7 @@ msgstr "重定向"
 #. @context: Remove page from navigation
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Remove"
 msgstr "移除"
@@ -1355,6 +1403,11 @@ msgstr "登入"
 msgid "Sign Out"
 msgstr "登出"
 
+#. @context: Settings group label for site settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Site"
+msgstr ""
+
 #. @context: Settings section heading for site footer
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Site Footer"
@@ -1447,7 +1500,7 @@ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
 
 #. @context: Help text for avatar upload
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
 msgstr "這是用於您的網站圖標和蘋果觸控圖標。為了獲得最佳效果，請上傳至少 180x180 像素的正方形圖片。"
 
@@ -1522,6 +1575,11 @@ msgstr "類型"
 msgid "Type the quote..."
 msgstr "輸入引用..."
 
+#. @context: Settings item description for font theme
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Typography"
+msgstr ""
+
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
 #: src/ui/dash/pages/PagesContent.tsx
@@ -1550,7 +1608,7 @@ msgid "Upload"
 msgstr "上傳"
 
 #. @context: Button to upload avatar image
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Upload Avatar"
 msgstr "上傳頭像"
 
@@ -1561,7 +1619,7 @@ msgstr "上傳頭像"
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
 #: src/ui/dash/media/MediaListContent.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Upload failed. Please try again."
 msgstr "上傳失敗。請再試一次。"
 
@@ -1575,7 +1633,7 @@ msgstr "上傳成功！"
 #. @context: Upload status - uploading
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/media/MediaListContent.tsx
-#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 msgid "Uploading..."
 msgstr "上傳中..."
 
@@ -1590,6 +1648,11 @@ msgstr "網址"
 #: src/ui/dash/posts/PostForm.tsx
 msgid "URL (optional)"
 msgstr "網址（可選）"
+
+#. @context: Settings item description for redirects
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "URL redirects"
+msgstr ""
 
 #. @context: Collection path help text
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -1621,13 +1684,22 @@ msgstr "查看"
 
 #. @context: Dashboard header link to view the public site
 #: src/ui/layouts/DashLayout.tsx
-msgid "View Site"
-msgstr "查看網站"
+#~ msgid "View Site"
+#~ msgstr "查看網站"
+
+#. @context: Dashboard header link text to visit the public blog
+#. @context: Dashboard header link to visit the public blog
+#. @context: Dashboard header tooltip for visit blog icon on mobile
+#: src/ui/layouts/DashLayout.tsx
+#: src/ui/layouts/DashLayout.tsx
+#: src/ui/layouts/DashLayout.tsx
+msgid "Visit Blog"
+msgstr ""
 
 #. @context: Dashboard menu item to visit the public site
 #: src/ui/layouts/DashLayout.tsx
-msgid "Visit Site"
-msgstr ""
+#~ msgid "Visit Site"
+#~ msgstr ""
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx

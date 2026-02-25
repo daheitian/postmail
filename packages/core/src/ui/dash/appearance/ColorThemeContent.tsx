@@ -4,7 +4,6 @@
 
 import { useLingui } from "@lingui/react/macro";
 import type { ColorTheme } from "../../color-themes.js";
-import { AppearanceNav } from "./AppearanceNav.js";
 
 function ThemeCard({
   theme,
@@ -87,40 +86,36 @@ export function ColorThemeContent({
   );
 
   return (
-    <>
-      <AppearanceNav currentTab="color" />
+    <div
+      data-signals={themeSignals}
+      data-on:change="@post('/dash/settings/color-theme')"
+      class="max-w-3xl"
+    >
+      <fieldset>
+        <legend class="text-lg font-semibold">
+          {t({
+            message: "Color theme",
+            comment: "@context: Appearance settings heading",
+          })}
+        </legend>
+        <p class="text-sm text-muted-foreground mb-4">
+          {t({
+            message:
+              "This will theme both your site and your dashboard. All color themes support dark mode.",
+            comment: "@context: Appearance settings description",
+          })}
+        </p>
 
-      <div
-        data-signals={themeSignals}
-        data-on:change="@post('/dash/appearance/color')"
-        class="max-w-3xl"
-      >
-        <fieldset>
-          <legend class="text-lg font-semibold">
-            {t({
-              message: "Color theme",
-              comment: "@context: Appearance settings heading",
-            })}
-          </legend>
-          <p class="text-sm text-muted-foreground mb-4">
-            {t({
-              message:
-                "This will theme both your site and your dashboard. All color themes support dark mode.",
-              comment: "@context: Appearance settings description",
-            })}
-          </p>
-
-          <div class="flex flex-col gap-4">
-            {themes.map((theme) => (
-              <ThemeCard
-                key={theme.id}
-                theme={theme}
-                selected={theme.id === currentThemeId}
-              />
-            ))}
-          </div>
-        </fieldset>
-      </div>
-    </>
+        <div class="flex flex-col gap-4">
+          {themes.map((theme) => (
+            <ThemeCard
+              key={theme.id}
+              theme={theme}
+              selected={theme.id === currentThemeId}
+            />
+          ))}
+        </div>
+      </fieldset>
+    </div>
   );
 }

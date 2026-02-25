@@ -9,8 +9,6 @@ import type {
   NavManagerLabels,
   SystemNavConfig,
 } from "../../components/nav-manager-types.js";
-import { AppearanceNav } from "./AppearanceNav.js";
-
 // =============================================================================
 // System descriptions (used to build the config passed to the Lit component)
 // =============================================================================
@@ -219,105 +217,97 @@ export function NavigationContent({
     JSON.stringify(data).replace(/</g, "\\u003c");
 
   return (
-    <>
-      <AppearanceNav currentTab="navigation" />
-
-      <div class="max-w-3xl flex flex-col gap-8">
-        <jant-nav-manager
-          items={escapeJson(itemsData)}
-          labels={escapeJson(labels)}
-          system-nav-items={escapeJson(systemNavData)}
-          available-pages={escapeJson(pagesData)}
-          site-name={siteName}
-          max-visible={headerNavMaxVisible}
-          home-default-view={homeDefaultView}
-        >
-          {/* SSR fallback: static preview until JS hydrates */}
-          <div class="nav-preview">
-            <div class="nav-preview-chrome">
-              <div class="nav-preview-dots">
-                <span />
-                <span />
-                <span />
-              </div>
-              <span class="nav-preview-label">
-                {t({
-                  message: "Navigation Preview",
-                  comment: "@context: Label for nav preview section",
-                })}
-              </span>
+    <div class="max-w-3xl flex flex-col gap-8">
+      <jant-nav-manager
+        items={escapeJson(itemsData)}
+        labels={escapeJson(labels)}
+        system-nav-items={escapeJson(systemNavData)}
+        available-pages={escapeJson(pagesData)}
+        site-name={siteName}
+        max-visible={headerNavMaxVisible}
+        home-default-view={homeDefaultView}
+      >
+        {/* SSR fallback: static preview until JS hydrates */}
+        <div class="nav-preview">
+          <div class="nav-preview-chrome">
+            <div class="nav-preview-dots">
+              <span />
+              <span />
+              <span />
             </div>
-            <div class="nav-preview-content">
-              <div class="site-header-top">
-                <a href="/" class="site-logo">
-                  {siteName}
-                </a>
-                <div class="site-header-right">
-                  {navItems.length > 0 && (
-                    <nav class="site-header-nav">
-                      {navItems.slice(0, headerNavMaxVisible).map((item) => (
-                        <a
-                          key={item.id}
-                          href={item.url}
-                          class="site-header-link"
-                        >
-                          {item.label}
-                        </a>
-                      ))}
-                      {navItems.length > headerNavMaxVisible && (
-                        <span class="text-muted-foreground">…</span>
-                      )}
-                    </nav>
-                  )}
-                  <span class="site-header-search" aria-hidden="true">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.35-4.35" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
-              <nav class="site-browse-nav">
-                <span class="site-browse-link site-browse-link-active">
-                  {homeDefaultView === "featured"
-                    ? t({
-                        message: "Featured",
-                        comment: "@context: Browse filter label",
-                      })
-                    : t({
-                        message: "Latest",
-                        comment: "@context: Browse filter label",
-                      })}
-                </span>
-                <span class="site-browse-sep" aria-hidden="true">
-                  /
-                </span>
-                <span class="site-browse-link">
-                  {homeDefaultView === "featured"
-                    ? t({
-                        message: "Latest",
-                        comment: "@context: Browse filter label",
-                      })
-                    : t({
-                        message: "Featured",
-                        comment: "@context: Browse filter label",
-                      })}
-                </span>
-              </nav>
-            </div>
+            <span class="nav-preview-label">
+              {t({
+                message: "Navigation Preview",
+                comment: "@context: Label for nav preview section",
+              })}
+            </span>
           </div>
-        </jant-nav-manager>
-      </div>
-    </>
+          <div class="nav-preview-content">
+            <div class="site-header-top">
+              <a href="/" class="site-logo">
+                {siteName}
+              </a>
+              <div class="site-header-right">
+                {navItems.length > 0 && (
+                  <nav class="site-header-nav">
+                    {navItems.slice(0, headerNavMaxVisible).map((item) => (
+                      <a key={item.id} href={item.url} class="site-header-link">
+                        {item.label}
+                      </a>
+                    ))}
+                    {navItems.length > headerNavMaxVisible && (
+                      <span class="text-muted-foreground">…</span>
+                    )}
+                  </nav>
+                )}
+                <span class="site-header-search" aria-hidden="true">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+            <nav class="site-browse-nav">
+              <span class="site-browse-link site-browse-link-active">
+                {homeDefaultView === "featured"
+                  ? t({
+                      message: "Featured",
+                      comment: "@context: Browse filter label",
+                    })
+                  : t({
+                      message: "Latest",
+                      comment: "@context: Browse filter label",
+                    })}
+              </span>
+              <span class="site-browse-sep" aria-hidden="true">
+                /
+              </span>
+              <span class="site-browse-link">
+                {homeDefaultView === "featured"
+                  ? t({
+                      message: "Latest",
+                      comment: "@context: Browse filter label",
+                    })
+                  : t({
+                      message: "Featured",
+                      comment: "@context: Browse filter label",
+                    })}
+              </span>
+            </nav>
+          </div>
+        </div>
+      </jant-nav-manager>
+    </div>
   );
 }
