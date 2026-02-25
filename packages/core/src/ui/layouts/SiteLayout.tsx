@@ -227,6 +227,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         </footer>
       )}
 
+      <jant-media-lightbox />
       {isAuthenticated && <ComposeDialog collections={collections} />}
     </div>
   );

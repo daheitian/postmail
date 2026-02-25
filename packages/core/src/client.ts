@@ -27,3 +27,4 @@ import "./ui/components/jant-post-form.js";
 import "./lib/post-form-bridge.js";
 import "./ui/components/jant-nav-manager.js";
 import "./lib/nav-manager-bridge.js";
+import "./ui/components/jant-media-lightbox.js";

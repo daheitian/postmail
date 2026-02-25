@@ -18,14 +18,23 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
 
   const single = images.length === 1;
 
+  const lightboxImages = images.map((img) => ({
+    url: img.url,
+    alt: img.altText || "",
+    width: img.width,
+    height: img.height,
+  }));
+
   return (
     <div
+      data-post-media
+      data-lightbox-group={JSON.stringify(lightboxImages)}
       class={`mt-3 flex gap-2 ${single ? "" : "overflow-x-auto scroll-smooth snap-x snap-mandatory"}`}
       style={
         single ? undefined : "scrollbar-width: none; -ms-overflow-style: none;"
       }
     >
-      {images.map((img) => {
+      {images.map((img, index) => {
         const aspectRatio =
           img.width && img.height ? img.width / img.height : 4 / 3;
         const itemWidth = single
@@ -36,8 +45,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
           <a
             key={img.id}
             href={img.url}
-            target="_blank"
-            rel="noopener noreferrer"
+            data-lightbox-index={index}
             class={`${single ? "" : "shrink-0 snap-start"} block rounded-lg overflow-hidden`}
             style={single ? undefined : { width: itemWidth, maxWidth: "85%" }}
           >

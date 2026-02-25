@@ -52,6 +52,7 @@ export default [
         HTMLTextAreaElement: "readonly",
         HTMLSelectElement: "readonly",
         HTMLDialogElement: "readonly",
+        HTMLAnchorElement: "readonly",
         Event: "readonly",
         CustomEvent: "readonly",
         EventListener: "readonly",
