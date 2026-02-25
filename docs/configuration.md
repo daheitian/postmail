@@ -115,6 +115,21 @@ When enabled, the dashboard displays optimized thumbnails instead of full images
 - Metadata stripped (GPS, device info removed)
 - Converted to WebP at 85% quality
 
+Video, audio, and PDF files are uploaded as-is without processing.
+
+### Upload Limits (Optional)
+
+| Variable               | Default | Description                                    |
+| ---------------------- | ------- | ---------------------------------------------- |
+| `UPLOAD_MAX_FILE_SIZE` | `200`   | Maximum file size for non-image uploads, in MB |
+
+Images are always limited to 10MB. This setting controls the limit for video, audio, and PDF uploads.
+
+```toml
+[vars]
+UPLOAD_MAX_FILE_SIZE = "500"  # Allow up to 500MB uploads
+```
+
 ## Dashboard Settings
 
 These can be changed in `/dash/settings`:

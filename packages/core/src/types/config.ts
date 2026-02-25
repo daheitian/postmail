@@ -98,6 +98,10 @@ export const CONFIG_FIELDS = {
     defaultValue: "",
     envOnly: true,
   },
+  UPLOAD_MAX_FILE_SIZE: {
+    defaultValue: "200",
+    envOnly: true,
+  },
 
   // Internal settings (DB-only, not configurable via env or dashboard)
   THEME: {
@@ -194,6 +198,10 @@ export interface AppConfig {
   r2PublicUrl: string;
   s3PublicUrl: string;
   imageTransformUrl: string;
+
+  // Upload (ENV only, parsed to number)
+  /** Max file size for non-image uploads, in MB */
+  uploadMaxFileSize: number;
 
   // Pagination/Feed (ENV only, parsed to number)
   pageSize: number;

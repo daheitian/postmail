@@ -15,11 +15,19 @@ import type {
   ComposeLabels,
   ComposeAttachment,
 } from "./compose-types.js";
+import {
+  UPLOAD_ACCEPT,
+  getMediaCategory,
+  validateUploadFile,
+} from "../../lib/upload.js";
+import type { MediaCategory } from "../../lib/upload.js";
+import { showToast } from "../../lib/toast.js";
 
 export class JantComposeEditor extends LitElement {
   static properties = {
     format: { type: String },
     labels: { type: Object },
+    uploadMaxFileSize: { type: Number },
     _title: { state: true },
     _body: { state: true },
     _url: { state: true },
@@ -37,6 +45,7 @@ export class JantComposeEditor extends LitElement {
 
   declare format: ComposeFormat;
   declare labels: ComposeLabels;
+  declare uploadMaxFileSize: number;
   declare _title: string;
   declare _body: string;
   declare _url: string;
@@ -61,6 +70,7 @@ export class JantComposeEditor extends LitElement {
     super();
     this.format = "note";
     this.labels = {} as ComposeLabels;
+    this.uploadMaxFileSize = 200;
     this._title = "";
     this._body = "";
     this._url = "";
@@ -188,7 +198,7 @@ export class JantComposeEditor extends LitElement {
     if (!this._fileInput) {
       this._fileInput = document.createElement("input");
       this._fileInput.type = "file";
-      this._fileInput.accept = "image/*";
+      this._fileInput.accept = UPLOAD_ACCEPT;
       this._fileInput.multiple = true;
       this._fileInput.style.display = "none";
       this._fileInput.addEventListener("change", () =>
@@ -207,6 +217,15 @@ export class JantComposeEditor extends LitElement {
     const files: { file: File; clientId: string }[] = [];
 
     for (const file of Array.from(this._fileInput.files)) {
+      // Validate before creating attachment preview
+      const error = validateUploadFile(file, {
+        maxFileSizeMB: this.uploadMaxFileSize,
+      });
+      if (error) {
+        showToast(error, "error");
+        continue;
+      }
+
       const clientId = crypto.randomUUID();
       const previewUrl = URL.createObjectURL(file);
       newAttachments.push({
@@ -220,6 +239,8 @@ export class JantComposeEditor extends LitElement {
       });
       files.push({ file, clientId });
     }
+
+    if (newAttachments.length === 0) return;
 
     this._attachments = [...this._attachments, ...newAttachments];
 
@@ -271,6 +292,18 @@ export class JantComposeEditor extends LitElement {
     this._attachments = this._attachments.map((a, i) =>
       i === this._altPanelIndex ? { ...a, alt: value } : a,
     );
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────
+
+  private _getCategory(a: ComposeAttachment): MediaCategory | null {
+    return getMediaCategory(a.file.type);
+  }
+
+  private _formatSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
   // ── Render helpers ────────────────────────────────────────────────
@@ -555,11 +588,22 @@ export class JantComposeEditor extends LitElement {
           >
         </div>
         <div class="compose-alt-preview">
-          <img
-            src=${attachment.previewUrl}
-            alt=""
-            class="compose-alt-preview-img"
-          />
+          ${this._getCategory(attachment) === "image"
+            ? html`<img
+                src=${attachment.previewUrl}
+                alt=""
+                class="compose-alt-preview-img"
+              />`
+            : this._getCategory(attachment) === "video"
+              ? html`<video
+                  src=${attachment.previewUrl}
+                  class="compose-alt-preview-img"
+                  preload="metadata"
+                  muted
+                ></video>`
+              : html`<span class="text-sm text-muted-foreground"
+                  >${attachment.file.name}</span
+                >`}
         </div>
         <div class="flex-1 p-4 overflow-hidden flex flex-col">
           <textarea
@@ -588,65 +632,185 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
+  private _renderAttachmentPreview(a: ComposeAttachment) {
+    const category = this._getCategory(a);
+
+    if (category === "video") {
+      return html`
+        <div class="compose-attachment-thumb">
+          <video
+            src=${a.previewUrl}
+            class="compose-attachment-img"
+            preload="metadata"
+            muted
+          ></video>
+          <div class="compose-attachment-play-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+        </div>
+      `;
+    }
+
+    if (category === "audio") {
+      return html`
+        <div class="compose-attachment-file-card">
+          <div class="compose-attachment-file-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M9 18V5l12-2v13" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
+          </div>
+          <span class="compose-attachment-file-name">${a.file.name}</span>
+        </div>
+      `;
+    }
+
+    if (category === "document") {
+      return html`
+        <div class="compose-attachment-file-card">
+          <div class="compose-attachment-file-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </div>
+          <span class="compose-attachment-file-name">${a.file.name}</span>
+          <span class="compose-attachment-file-size"
+            >${this._formatSize(a.file.size)}</span
+          >
+        </div>
+      `;
+    }
+
+    // Default: image
+    return html`
+      <div class="compose-attachment-thumb">
+        <img src=${a.previewUrl} alt="" class="compose-attachment-img" />
+      </div>
+    `;
+  }
+
+  private _renderAttachmentOverlay(a: ComposeAttachment, index: number) {
+    return html`
+      ${a.status === "pending" || a.status === "uploading"
+        ? html`
+            <div class="compose-attachment-overlay">
+              <svg
+                class="animate-spin size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                style="stroke-width: 2.5"
+                stroke-linecap="round"
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            </div>
+          `
+        : nothing}
+      ${a.status === "error"
+        ? html`
+            <div class="compose-attachment-overlay compose-attachment-error">
+              <svg
+                class="icon-fine"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              >
+                <circle cx="8" cy="8" r="6" />
+                <path d="M10 6L6 10M6 6l4 4" />
+              </svg>
+            </div>
+          `
+        : nothing}
+      <button
+        type="button"
+        class="compose-attachment-remove"
+        @click=${() => this._removeAttachment(index)}
+      >
+        ✕
+      </button>
+    `;
+  }
+
   private _renderAttachments() {
     if (this._attachments.length === 0) return nothing;
 
     return html`
       <div class="compose-attachments">
-        ${this._attachments.map(
-          (a, i) => html`
+        ${this._attachments.map((a, i) => {
+          const category = this._getCategory(a);
+          const isFileCard = category === "audio" || category === "document";
+
+          return html`
             <div class="compose-attachment">
-              <div class="compose-attachment-thumb">
-                <img
-                  src=${a.previewUrl}
-                  alt=""
-                  class="compose-attachment-img"
-                />
-                ${a.status === "pending" || a.status === "uploading"
-                  ? html`
-                      <div class="compose-attachment-overlay">
-                        <svg
-                          class="animate-spin size-4"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          style="stroke-width: 2.5"
-                          stroke-linecap="round"
-                        >
-                          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                        </svg>
-                      </div>
-                    `
-                  : nothing}
-                ${a.status === "error"
-                  ? html`
-                      <div
-                        class="compose-attachment-overlay compose-attachment-error"
-                      >
-                        <svg
-                          class="icon-fine"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
-                        >
-                          <circle cx="8" cy="8" r="6" />
-                          <path d="M10 6L6 10M6 6l4 4" />
-                        </svg>
-                      </div>
-                    `
-                  : nothing}
-                <button
-                  type="button"
-                  class="compose-attachment-remove"
-                  @click=${() => this._removeAttachment(i)}
-                >
-                  ✕
-                </button>
-              </div>
+              ${isFileCard
+                ? html`
+                    <div class="compose-attachment-thumb">
+                      ${this._renderAttachmentPreview(a)}
+                      ${this._renderAttachmentOverlay(a, i)}
+                    </div>
+                  `
+                : html`
+                    <div class="compose-attachment-thumb">
+                      ${category === "video"
+                        ? html`
+                            <video
+                              src=${a.previewUrl}
+                              class="compose-attachment-img"
+                              preload="metadata"
+                              muted
+                            ></video>
+                            <div class="compose-attachment-play-icon">
+                              <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="white"
+                              >
+                                <path d="M8 5v14l11-7z" />
+                              </svg>
+                            </div>
+                          `
+                        : html`
+                            <img
+                              src=${a.previewUrl}
+                              alt=""
+                              class="compose-attachment-img"
+                            />
+                          `}
+                      ${this._renderAttachmentOverlay(a, i)}
+                    </div>
+                  `}
               <button
                 type="button"
                 class=${classMap({
@@ -658,8 +822,8 @@ export class JantComposeEditor extends LitElement {
                 ${a.alt.length > 0 ? "ALT" : "+ ALT"}
               </button>
             </div>
-          `,
-        )}
+          `;
+        })}
       </div>
     `;
   }

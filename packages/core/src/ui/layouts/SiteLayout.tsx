@@ -37,6 +37,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   showHeaderAvatar,
   siteFooterHtml,
   sidebar,
+  uploadMaxFileSize,
   children,
 }) => {
   const { t } = useLingui();
@@ -228,7 +229,12 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       )}
 
       <jant-media-lightbox />
-      {isAuthenticated && <ComposeDialog collections={collections} />}
+      {isAuthenticated && (
+        <ComposeDialog
+          collections={collections}
+          uploadMaxFileSize={uploadMaxFileSize}
+        />
+      )}
     </div>
   );
 };

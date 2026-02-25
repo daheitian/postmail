@@ -793,8 +793,13 @@ msgstr "Icons"
 
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx
-msgid "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
-msgstr "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
+msgid "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
+msgstr "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
+
+#. @context: Media upload instructions - auto optimization
+#: src/ui/dash/media/MediaListContent.tsx
+#~ msgid "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
+#~ msgstr "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx

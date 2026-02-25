@@ -167,4 +167,5 @@ export interface SiteLayoutProps {
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;
   sidebar?: import("hono/jsx").Child;
+  uploadMaxFileSize?: number;
 }

@@ -37,12 +37,14 @@ async function uploadFile(
     // Update status to uploading
     editor?.updateAttachmentStatus(clientId, "uploading", null, null);
 
-    // Process image (resize, convert to WebP)
-    const processed = await ImageProcessor.processToFile(file);
+    // Process images (resize, convert to WebP); upload non-images as-is
+    const toUpload = file.type.startsWith("image/")
+      ? await ImageProcessor.processToFile(file)
+      : file;
 
     // Upload to server
     const formData = new FormData();
-    formData.append("file", processed);
+    formData.append("file", toUpload);
 
     const res = await fetch("/api/upload", {
       method: "POST",

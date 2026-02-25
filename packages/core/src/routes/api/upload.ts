@@ -165,7 +165,9 @@ uploadApiRoutes.post("/", async (c) => {
   }
 
   // Validate file type and size
-  const uploadError = validateUploadFile(file);
+  const uploadError = validateUploadFile(file, {
+    maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+  });
   if (uploadError) {
     if (wantsSSE(c)) {
       return sseUploadError(c, uploadError);

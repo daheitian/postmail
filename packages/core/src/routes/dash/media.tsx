@@ -36,6 +36,7 @@ mediaRoutes.get("/", async (c) => {
         r2PublicUrl={c.var.appConfig.r2PublicUrl}
         imageTransformUrl={c.var.appConfig.imageTransformUrl}
         s3PublicUrl={c.var.appConfig.s3PublicUrl}
+        uploadMaxFileSize={c.var.appConfig.uploadMaxFileSize}
       />
     </DashLayout>,
   );

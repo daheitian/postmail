@@ -48,6 +48,9 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
   // Use siteDescription as meta description fallback when not explicitly provided
   const metaDescription = description || navData.siteDescription || undefined;
 
+  // Read favicon, version, and noindex from appConfig
+  const appConfig = c.get("appConfig");
+
   const layoutProps: SiteLayoutProps = {
     siteName: navData.siteName,
     links: navData.links,
@@ -60,10 +63,8 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     showHeaderAvatar: navData.showHeaderAvatar,
     siteFooterHtml: navData.siteFooterHtml,
     sidebar,
+    uploadMaxFileSize: appConfig.uploadMaxFileSize,
   };
-
-  // Read favicon, version, and noindex from appConfig
-  const appConfig = c.get("appConfig");
   const faviconUrl = appConfig.siteAvatarUrl || undefined;
   const faviconVersion = appConfig.faviconVersion || undefined;
   const noindex = appConfig.noindex;

@@ -22,6 +22,7 @@ export class JantComposeDialog extends LitElement {
   static properties = {
     collections: { type: Array },
     labels: { type: Object },
+    uploadMaxFileSize: { type: Number, attribute: "upload-max-file-size" },
     _format: { state: true },
     _status: { state: true },
     _loading: { state: true },
@@ -33,6 +34,7 @@ export class JantComposeDialog extends LitElement {
 
   declare collections: ComposeCollection[];
   declare labels: ComposeLabels;
+  declare uploadMaxFileSize: number;
   declare _format: ComposeFormat;
   declare _status: "published" | "draft";
   declare _loading: boolean;
@@ -50,6 +52,7 @@ export class JantComposeDialog extends LitElement {
     super();
     this.collections = [];
     this.labels = {} as ComposeLabels;
+    this.uploadMaxFileSize = 200;
     this._format = "note";
     this._status = "published";
     this._loading = false;
@@ -459,6 +462,7 @@ export class JantComposeDialog extends LitElement {
         <jant-compose-editor
           .format=${this._format}
           .labels=${this.labels}
+          .uploadMaxFileSize=${this.uploadMaxFileSize}
         ></jant-compose-editor>
 
         <div class="compose-action-row">

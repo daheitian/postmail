@@ -10,6 +10,7 @@ import {
   getImageUrl,
   getPublicUrlForProvider,
 } from "../../../lib/image.js";
+import { UPLOAD_ACCEPT } from "../../../lib/upload.js";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -84,11 +85,13 @@ export function MediaListContent({
   r2PublicUrl,
   imageTransformUrl,
   s3PublicUrl,
+  uploadMaxFileSize,
 }: {
   mediaList: Media[];
   r2PublicUrl?: string;
   imageTransformUrl?: string;
   s3PublicUrl?: string;
+  uploadMaxFileSize?: number;
 }) {
   const { t } = useLingui();
 
@@ -131,8 +134,9 @@ export function MediaListContent({
           <input
             type="file"
             class="hidden"
-            accept="image/*"
+            accept={UPLOAD_ACCEPT}
             data-media-upload
+            data-max-file-size={uploadMaxFileSize ?? 200}
             data-text-processing={processingText}
             data-text-uploading={uploadingText}
             data-text-error={errorText}
@@ -146,7 +150,7 @@ export function MediaListContent({
           <p>
             {t({
               message:
-                "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped.",
+                "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB).",
               comment:
                 "@context: Media upload instructions - auto optimization",
             })}
