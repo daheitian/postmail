@@ -44,6 +44,7 @@ settingsRoutes.get("/", async (c) => {
       c={c}
       title="Settings"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
     >
       <SettingsRootContent />
@@ -68,6 +69,7 @@ settingsRoutes.get("/general", async (c) => {
       c={c}
       title="General"
       siteName={dbSiteName || appConfig.fallbacks.siteName}
+      siteAvatarUrl={appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={{
         parent: "Settings",
@@ -219,6 +221,7 @@ settingsRoutes.get("/avatar", async (c) => {
       c={c}
       title="Avatar"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={{
         parent: "Settings",
@@ -374,6 +377,7 @@ settingsRoutes.get("/navigation", async (c) => {
       c={c}
       title="Navigation"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={{
         parent: "Settings",
@@ -436,6 +440,7 @@ settingsRoutes.get("/color-theme", async (c) => {
       c={c}
       title="Color Theme"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={{
         parent: "Settings",
@@ -492,6 +497,7 @@ settingsRoutes.get("/font-theme", async (c) => {
       c={c}
       title="Font Theme"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={{
         parent: "Settings",
@@ -549,6 +555,7 @@ settingsRoutes.get("/custom-css", async (c) => {
       c={c}
       title="Custom CSS"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={{
         parent: "Settings",
@@ -601,6 +608,7 @@ settingsRoutes.get("/account", async (c) => {
       c={c}
       title="Account"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={{
         parent: "Settings",

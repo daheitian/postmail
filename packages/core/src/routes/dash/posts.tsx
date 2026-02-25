@@ -81,6 +81,7 @@ postsRoutes.get("/", async (c) => {
       c={c}
       title="Posts"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/posts"
     >
       <PostsListContent posts={postViews} />
@@ -98,6 +99,7 @@ postsRoutes.get("/new", async (c) => {
       c={c}
       title="New Post"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/posts"
     >
       <NewPostContent collections={collections} />
@@ -236,6 +238,7 @@ postsRoutes.get("/:id", async (c) => {
       c={c}
       title={pageTitle}
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/posts"
     >
       <ViewPostContent post={postView} />
@@ -265,6 +268,7 @@ postsRoutes.get("/:id/edit", async (c) => {
       c={c}
       title={`Edit: ${post.title || "Post"}`}
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/posts"
     >
       <EditPostContent

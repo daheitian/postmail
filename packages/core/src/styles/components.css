@@ -111,17 +111,39 @@ svg[stroke-width].icon-fine {
     padding-bottom: 12px;
   }
 
+  .dash-header-avatar-link {
+    flex-shrink: 0;
+    line-height: 0;
+  }
+
+  .dash-header-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+  }
+
+  .dash-header-avatar:is(img) {
+    object-fit: cover;
+  }
+
+  .dash-header-avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
   .dash-header-nav {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 16px;
   }
 
   .dash-header-nav-sep {
-    color: var(--color-muted-foreground);
-    opacity: 0.35;
-    font-size: 0.75rem;
-    user-select: none;
+    display: none;
   }
 
   .dash-header-right {
@@ -132,7 +154,7 @@ svg[stroke-width].icon-fine {
   }
 
   .dash-header-link {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: var(--color-muted-foreground);
     transition: color 0.15s;
 
@@ -143,7 +165,7 @@ svg[stroke-width].icon-fine {
 
   .dash-header-link-active {
     color: var(--color-foreground);
-    font-weight: 600;
+    font-weight: 500;
   }
 
   .dash-header-visit {
@@ -229,7 +251,6 @@ svg[stroke-width].icon-fine {
 @layer components {
   .settings-root {
     @apply flex flex-col gap-6;
-    max-width: 480px;
   }
 
   .settings-group-label {

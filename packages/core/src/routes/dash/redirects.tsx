@@ -215,6 +215,7 @@ redirectsRoutes.get("/", async (c) => {
       c={c}
       title="Redirects"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={BREADCRUMB}
     >
@@ -232,6 +233,7 @@ redirectsRoutes.get("/new", async (c) => {
       c={c}
       title="Redirects"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={BREADCRUMB}
     >

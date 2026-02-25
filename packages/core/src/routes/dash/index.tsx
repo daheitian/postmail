@@ -93,7 +93,13 @@ dashIndexRoutes.get("/", async (c) => {
   ]);
 
   return c.html(
-    <DashLayout c={c} title="Dashboard" siteName={siteName} currentPath="/dash">
+    <DashLayout
+      c={c}
+      title="Dashboard"
+      siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
+      currentPath="/dash"
+    >
       <DashboardContent
         publishedCount={publishedCount}
         draftCount={draftCount}

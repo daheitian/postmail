@@ -114,6 +114,7 @@ pagesRoutes.get("/", async (c) => {
       c={c}
       title="Pages"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/pages"
     >
       <PagesContent pages={pages} />
@@ -128,6 +129,7 @@ pagesRoutes.get("/new", async (c) => {
       c={c}
       title="New Page"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/pages"
     >
       <NewPageContent />
@@ -175,6 +177,7 @@ pagesRoutes.get("/:id", async (c) => {
       c={c}
       title={page.title || "Page"}
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/pages"
     >
       <ViewPageContent page={page} />
@@ -195,6 +198,7 @@ pagesRoutes.get("/:id/edit", async (c) => {
       c={c}
       title={`Edit: ${page.title || "Page"}`}
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/pages"
     >
       <EditPageContent page={page} />

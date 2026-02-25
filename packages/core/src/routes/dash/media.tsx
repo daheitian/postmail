@@ -29,6 +29,7 @@ mediaRoutes.get("/", async (c) => {
       c={c}
       title="Media"
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/media"
     >
       <MediaListContent
@@ -109,6 +110,7 @@ mediaRoutes.get("/:id", async (c) => {
       c={c}
       title={media.originalName}
       siteName={siteName}
+      siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/media"
     >
       <ViewMediaContent

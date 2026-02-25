@@ -19,16 +19,38 @@ export interface DashLayoutProps {
   c: Context;
   title: string;
   siteName: string;
+  siteAvatarUrl?: string;
   currentPath?: string;
   breadcrumb?: DashBreadcrumb;
   toast?: ToastProps;
 }
 
+const AVATAR_COLORS = [
+  "#737fab", // slate blue
+  "#8d7dab", // muted violet
+  "#ab7d8d", // dusty rose
+  "#ab917d", // warm taupe
+  "#7dab8d", // sage green
+  "#7d9bab", // steel blue
+  "#9a8d7d", // earth brown
+  "#7dabab", // teal grey
+];
+
+function hashString(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 33) ^ str.charCodeAt(i);
+  }
+  return Math.abs(hash);
+}
+
 function DashLayoutContent({
+  siteName,
+  siteAvatarUrl,
   currentPath,
   breadcrumb,
   children,
-}: PropsWithChildren<Omit<DashLayoutProps, "c" | "title" | "siteName">>) {
+}: PropsWithChildren<Omit<DashLayoutProps, "c" | "title">>) {
   const { t } = useLingui();
 
   const navClass = (match: RegExp) =>
@@ -39,6 +61,18 @@ function DashLayoutContent({
       {/* Header */}
       <header class="dash-header">
         <div class="container dash-header-inner">
+          <a href="/dash" class="dash-header-avatar-link">
+            {siteAvatarUrl ? (
+              <img src={siteAvatarUrl} alt="" class="dash-header-avatar" />
+            ) : (
+              <span
+                class="dash-header-avatar dash-header-avatar-fallback"
+                style={`background-color: ${AVATAR_COLORS[hashString(siteName) % AVATAR_COLORS.length]}`}
+              >
+                {siteName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </a>
           <nav class="dash-header-nav">
             <a href="/dash" class={navClass(/^\/dash$/)}>
               {t({
@@ -71,19 +105,21 @@ function DashLayoutContent({
               href="/"
               class="dash-header-visit"
               target="_blank"
-              data-tooltip={t({
-                message: "Visit Blog",
-                comment:
-                  "@context: Dashboard header tooltip for visit blog icon on mobile",
-              })}
-              data-side="bottom"
               aria-label={t({
                 message: "Visit Blog",
                 comment:
                   "@context: Dashboard header link to visit the public blog",
               })}
             >
-              <span class="dash-header-visit-icon">
+              <span
+                class="dash-header-visit-icon"
+                data-tooltip={t({
+                  message: "Visit Blog",
+                  comment:
+                    "@context: Dashboard header tooltip for visit blog icon on mobile",
+                })}
+                data-side="bottom"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -185,6 +221,7 @@ export const DashLayout: FC<PropsWithChildren<DashLayoutProps>> = ({
   c,
   title,
   siteName,
+  siteAvatarUrl,
   currentPath,
   breadcrumb,
   toast,
@@ -197,7 +234,12 @@ export const DashLayout: FC<PropsWithChildren<DashLayoutProps>> = ({
       toast={toast}
       isAuthenticated={true}
     >
-      <DashLayoutContent currentPath={currentPath} breadcrumb={breadcrumb}>
+      <DashLayoutContent
+        siteName={siteName}
+        siteAvatarUrl={siteAvatarUrl}
+        currentPath={currentPath}
+        breadcrumb={breadcrumb}
+      >
         {children}
       </DashLayoutContent>
     </BaseLayout>
