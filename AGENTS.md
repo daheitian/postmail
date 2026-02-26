@@ -44,7 +44,7 @@ Non-negotiable regardless of context:
 ### Tooling
 
 - **Use mise tasks** for all commands (`mise tasks` to list). Never run `wrangler dev`; use `mise run dev` / `mise run build`.
-- **Debug**: `mise run dev-debug` (port `19019`). Stop background processes when done.
+- **Debug**: `mise run dev-debug` (port `19020`). Stop background processes when done.
 - **Verify before changing**: never assume CLI flags; confirm with `--help` or docs.
 - **Latest packages**: use `@latest` when installing.
 - **Generated template is read-only**: never edit `packages/create-jant/template/`.

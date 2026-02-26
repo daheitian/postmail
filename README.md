@@ -71,7 +71,7 @@ cd jant
 mise install   # installs Node.js and pnpm
 pnpm install   # installs dependencies
 
-# Start development server (http://localhost:9019)
+# Start development server (http://localhost:9020)
 mise run dev
 ```
 

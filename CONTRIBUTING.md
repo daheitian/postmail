@@ -40,7 +40,7 @@ mise install
 # Install dependencies
 pnpm install
 
-# Start development server (http://localhost:9019)
+# Start development server (http://localhost:9020)
 mise run dev
 ```
 
@@ -128,8 +128,8 @@ All commands are run via `mise run <command>`. You never need to `cd` into subdi
 ### Development
 
 ```bash
-mise run dev              # Start Vite dev server on port 9019 (auto-runs migrations)
-mise run dev-debug        # Start dev server on port 19019 (for debugging)
+mise run dev              # Start Vite dev server on port 9020 (auto-runs migrations)
+mise run dev-debug        # Start dev server on port 19020 (for debugging)
 mise run build            # Build @jant/core (lib + client assets)
 mise run site-dev         # Build @jant/core + start jant.me dev server
 mise run site-deploy      # Build @jant/core + deploy jant.me to Workers
@@ -283,7 +283,7 @@ git branch -d feat/login          # Optionally delete the branch too
 
 #### Port Conflicts
 
-Each worktree is a full copy of the project. If you run `mise run dev` in multiple worktrees, you'll get port conflicts. Use `mise run dev-debug` (port 19019) in one of them, or stop one before starting another.
+Each worktree is a full copy of the project. If you run `mise run dev` in multiple worktrees, you'll get port conflicts. Use `mise run dev-debug` (port 19020) in one of them, or stop one before starting another.
 
 ## Testing
 

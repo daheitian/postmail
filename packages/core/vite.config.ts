@@ -60,13 +60,13 @@ function ssrReload(): Plugin {
 
 export default defineConfig({
   server: {
-    port: 9019,
+    port: 9020,
     host: true,
     allowedHosts: true,
   },
 
   preview: {
-    port: 9019,
+    port: 9020,
   },
 
   define: {

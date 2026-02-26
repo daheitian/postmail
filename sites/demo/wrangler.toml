@@ -9,7 +9,7 @@ directory = "./node_modules/@jant/core/dist/client"
 
 # @create-jant: @remove-start
 [dev]
-port = 9019
+port = 9020
 # @create-jant: @remove-end
 
 # ============================================

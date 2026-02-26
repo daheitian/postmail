@@ -45,7 +45,7 @@ cp .dev.vars.example .dev.vars
 pnpm dev
 ```
 
-Visit http://localhost:9019 to see your site.
+Visit http://localhost:9020 to see your site.
 
 ## Project Structure
 
@@ -71,7 +71,7 @@ my-site/
 ## Scripts
 
 ```bash
-pnpm dev               # Start dev server (http://localhost:9019)
+pnpm dev               # Start dev server (http://localhost:9020)
 pnpm build             # Build for production
 pnpm run deploy        # Build + deploy to Cloudflare Workers
 pnpm typecheck         # Run TypeScript checks

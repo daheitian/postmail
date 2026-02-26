@@ -31,7 +31,7 @@
     "i18n:compile": "lingui compile --typescript",
     "i18n:build": "pnpm i18n:extract && pnpm i18n:compile",
     "dev": "pnpm db:migrate:local && vite dev",
-    "dev:debug": "pnpm db:migrate:local && vite dev --port 19019",
+    "dev:debug": "pnpm db:migrate:local && vite dev --port 19020",
     "db:migrate:local": "echo y | wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "test": "vitest run",

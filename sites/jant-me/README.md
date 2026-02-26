@@ -36,6 +36,6 @@ pnpm install
 pnpm dev
 ```
 
-Visit http://localhost:9019. Changes pushed to `main` will auto-deploy.
+Visit http://localhost:9020. Changes pushed to `main` will auto-deploy.
 
 Other docs see [Docs](https://github.com/jant-me/jant)

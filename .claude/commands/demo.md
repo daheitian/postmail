@@ -22,5 +22,5 @@ streamed in real-time to a remote datasette-showboat instance via the
 - **All output to `/tmp/`** — never write demo files or images into the project directory.
 - **Always overwrite** — the demo reflects final state only, not debug history.
 - **All evidence must be real** — screenshots and command outputs from actual execution. Never fabricate.
-- **Use `mise run dev-debug`** (port 19019) if you need a running dev server for screenshots.
+- **Use `mise run dev-debug`** (port 19020) if you need a running dev server for screenshots.
 - **Stop the dev server** when the demo is complete.

@@ -69,7 +69,7 @@ export function createTestApp(options: TestAppOptions = {}) {
   app.use("*", async (c, next) => {
     // Provide mock env bindings so c.env.* works in route handlers
     c.env = {
-      SITE_URL: "http://localhost:9019",
+      SITE_URL: "http://localhost:9020",
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);
