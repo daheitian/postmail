@@ -9,6 +9,7 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
+import { isLinkToolbarInputActive } from "./link-toolbar.js";
 
 const bubbleMenuKey = new PluginKey("bubbleMenu");
 
@@ -78,14 +79,11 @@ function getButtons(editor: Extension["editor"]): BubbleBtn[] {
       key: "link",
       icon: ICONS.link,
       title: "Link",
-      action: () => {
+      action: (view: EditorView) => {
         if (editor.isActive("link")) {
           editor.chain().focus().unsetLink().run();
         } else {
-          const url = globalThis.prompt("Enter URL");
-          if (url) {
-            editor.chain().focus().setLink({ href: url }).run();
-          }
+          view.dom.dispatchEvent(new CustomEvent("tiptap:open-link-input"));
         }
       },
       isActive: () => editor.isActive("link"),
@@ -174,6 +172,8 @@ export const BubbleMenu = Extension.create({
       // Only show for non-empty text selections (not node selections)
       if (empty) return false;
       if (!selection.$from.parent.isTextblock) return false;
+      // Hide when link input popup is open
+      if (isLinkToolbarInputActive()) return false;
       return true;
     }
 

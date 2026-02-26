@@ -221,7 +221,7 @@ export class JantComposeEditor extends LitElement {
       default:
         return {
           ...shared,
-          title: this._title,
+          title: this._showTitle ? this._title : "",
           body,
           url: "",
           quoteText: "",
@@ -1163,7 +1163,15 @@ export class JantComposeEditor extends LitElement {
                   })}
                   title=${this.labels.title}
                   @click=${() => {
-                    this._showTitle = !this._showTitle;
+                    const willShow = !this._showTitle;
+                    this._showTitle = willShow;
+                    if (willShow) {
+                      this.updateComplete.then(() => {
+                        this.querySelector<HTMLInputElement>(
+                          ".compose-note-title",
+                        )?.focus();
+                      });
+                    }
                   }}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">

@@ -193,6 +193,7 @@ describe("JantComposeEditor", () => {
   it("getData returns current field values", async () => {
     const el = await createElement("note");
     el._title = "Test Title";
+    el._showTitle = true;
     el._bodyJson = {
       type: "doc",
       content: [
@@ -210,6 +211,33 @@ describe("JantComposeEditor", () => {
     expect(data.url).toBe("");
     expect(data.quoteText).toBe("");
     expect(data.quoteAuthor).toBe("");
+  });
+
+  it("getData omits title when showTitle is off in note mode", async () => {
+    const el = await createElement("note");
+    el._title = "Hidden Title";
+    el._showTitle = false;
+
+    const data = el.getData();
+    expect(data.title).toBe("");
+  });
+
+  it("preserves title in memory when toggling off and restores on toggle on", async () => {
+    const el = await createElement("note");
+    el._title = "My Title";
+    el._showTitle = true;
+    await el.updateComplete;
+
+    // Toggle off — title stays in memory
+    el._showTitle = false;
+    await el.updateComplete;
+    expect(el._title).toBe("My Title");
+    expect(el.getData().title).toBe("");
+
+    // Toggle back on — title restored
+    el._showTitle = true;
+    await el.updateComplete;
+    expect(el.getData().title).toBe("My Title");
   });
 
   it("reset clears all fields", async () => {

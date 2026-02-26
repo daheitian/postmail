@@ -103,6 +103,32 @@ function renderNode(node: TiptapNode): string {
       return `<pre><code${langClass}>${renderChildren(node)}</code></pre>`;
     }
 
+    case "table":
+      return `<table>${renderChildren(node)}</table>`;
+
+    case "tableRow":
+      return `<tr>${renderChildren(node)}</tr>`;
+
+    case "tableCell": {
+      const colspan = node.attrs?.colspan;
+      const rowspan = node.attrs?.rowspan;
+      const colspanAttr =
+        colspan && colspan !== 1 ? ` colspan="${colspan}"` : "";
+      const rowspanAttr =
+        rowspan && rowspan !== 1 ? ` rowspan="${rowspan}"` : "";
+      return `<td${colspanAttr}${rowspanAttr}>${renderChildren(node)}</td>`;
+    }
+
+    case "tableHeader": {
+      const thColspan = node.attrs?.colspan;
+      const thRowspan = node.attrs?.rowspan;
+      const thColspanAttr =
+        thColspan && thColspan !== 1 ? ` colspan="${thColspan}"` : "";
+      const thRowspanAttr =
+        thRowspan && thRowspan !== 1 ? ` rowspan="${thRowspan}"` : "";
+      return `<th${thColspanAttr}${thRowspanAttr}>${renderChildren(node)}</th>`;
+    }
+
     case "horizontalRule":
       return "<hr>";
 

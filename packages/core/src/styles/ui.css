@@ -1813,8 +1813,14 @@
     margin: 0.25em 0;
   }
 
-  .compose-tiptap-body .tiptap ul,
+  .compose-tiptap-body .tiptap ul {
+    list-style-type: disc;
+    padding-left: 1.5em;
+    margin: 0.25em 0;
+  }
+
   .compose-tiptap-body .tiptap ol {
+    list-style-type: decimal;
     padding-left: 1.5em;
     margin: 0.25em 0;
   }
@@ -1857,6 +1863,33 @@
     border: none;
     border-top: 1px solid var(--site-divider);
     margin: 1em 0;
+  }
+
+  /* --- Table in editor -------------------------------------------------- */
+
+  .compose-tiptap-body .tiptap table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75em 0;
+    overflow: hidden;
+  }
+
+  .compose-tiptap-body .tiptap td,
+  .compose-tiptap-body .tiptap th {
+    border: 1px solid var(--site-divider);
+    padding: 0.4em 0.6em;
+    vertical-align: top;
+    min-width: 1em;
+    position: relative;
+  }
+
+  .compose-tiptap-body .tiptap th {
+    font-weight: 600;
+    background: var(--site-elevated-bg);
+  }
+
+  .compose-tiptap-body .tiptap .selectedCell {
+    background: oklch(from var(--site-accent) l c h / 0.12);
   }
 
   /* --- Image figure in editor ------------------------------------------- */
@@ -2177,6 +2210,135 @@
     width: 1px;
     height: 16px;
     background: oklch(from var(--color-background) l c h / 0.2);
+    flex-shrink: 0;
+  }
+
+  /* Link input popup — light speech-bubble with URL field */
+  .tiptap-link-input {
+    position: fixed;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 4px 4px 10px;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  }
+
+  .tiptap-link-input::before {
+    content: "";
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--color-border);
+  }
+
+  .tiptap-link-input::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--color-background);
+  }
+
+  .tiptap-link-input-field {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.875rem;
+    min-width: 240px;
+    color: var(--color-foreground);
+  }
+
+  .tiptap-link-input-field::placeholder {
+    color: var(--color-muted-foreground);
+  }
+
+  .tiptap-link-input-confirm {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--color-muted-foreground);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .tiptap-link-input-confirm:hover {
+    background: var(--color-accent);
+    color: var(--color-foreground);
+  }
+
+  /* Link preview tooltip — dark with URL + edit/delete buttons */
+  .tiptap-link-preview {
+    position: fixed;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 4px 4px 10px;
+    background: var(--color-foreground);
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    max-width: 360px;
+  }
+
+  .tiptap-link-preview::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--color-foreground);
+  }
+
+  .tiptap-link-preview-url {
+    font-size: 0.8125rem;
+    color: var(--color-background);
+    opacity: 0.7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 220px;
+  }
+
+  .tiptap-link-preview-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--color-background);
+    opacity: 0.7;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .tiptap-link-preview-btn:hover {
+    background: oklch(from var(--color-background) l c h / 0.15);
+    opacity: 1;
+  }
+
+  .tiptap-link-preview-btn svg {
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
   }
 

@@ -98,6 +98,18 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
     },
   },
   {
+    label: "Table",
+    icon: "▦",
+    command: (editor, range) => {
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run();
+    },
+  },
+  {
     label: "Read More",
     icon: "↓",
     command: (editor, range) => {
