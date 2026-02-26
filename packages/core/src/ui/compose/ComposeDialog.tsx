@@ -94,9 +94,13 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Media",
       comment: "@context: Compose toolbar - media tooltip",
     }),
-    score: t({
-      message: "Score",
-      comment: "@context: Compose toolbar - score tooltip",
+    rate: t({
+      message: "Rate",
+      comment: "@context: Compose toolbar - rate tooltip",
+    }),
+    emoji: t({
+      message: "Emoji",
+      comment: "@context: Compose toolbar - emoji picker tooltip",
     }),
     title: t({
       message: "Title",

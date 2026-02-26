@@ -740,6 +740,11 @@ msgstr "Edit Post"
 msgid "Email"
 msgstr "Email"
 
+#. @context: Compose toolbar - emoji picker tooltip
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Emoji"
+msgstr "Emoji"
+
 #. @context: Collection icon placeholder
 #: src/ui/dash/collections/CollectionForm.tsx
 #~ msgid "Emoji or icon name"
@@ -1676,6 +1681,11 @@ msgstr "Quote Text"
 msgid "Quotes"
 msgstr "Quotes"
 
+#. @context: Compose toolbar - rate tooltip
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Rate"
+msgstr "Rate"
+
 #. @context: Compose rating field
 #. @context: Compose toolbar - toggle rating
 #: src/ui/compose/ComposeDialog.tsx
@@ -1766,11 +1776,6 @@ msgstr "Save Profile"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Saved"
 msgstr "Saved"
-
-#. @context: Compose toolbar - score tooltip
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Score"
-msgstr "Score"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title

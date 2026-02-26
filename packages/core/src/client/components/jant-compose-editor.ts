@@ -41,6 +41,7 @@ export class JantComposeEditor extends LitElement {
     _attachments: { state: true },
     _showAltPanel: { state: true },
     _altPanelIndex: { state: true },
+    _showEmojiPicker: { state: true },
   };
 
   declare format: ComposeFormat;
@@ -59,8 +60,14 @@ export class JantComposeEditor extends LitElement {
   declare _attachments: ComposeAttachment[];
   declare _showAltPanel: boolean;
   declare _altPanelIndex: number;
+  declare _showEmojiPicker: boolean;
 
   private _fileInput: HTMLInputElement | null = null;
+  private _lastFocusedField: HTMLTextAreaElement | HTMLInputElement | null =
+    null;
+  private _emojiPickerEl: HTMLElement | null = null;
+  private _emojiContainer: HTMLElement | null = null;
+  private _onDocClickBound = this._onDocumentClick.bind(this);
 
   createRenderRoot() {
     return this;
@@ -84,6 +91,13 @@ export class JantComposeEditor extends LitElement {
     this._attachments = [];
     this._showAltPanel = false;
     this._altPanelIndex = 0;
+    this._showEmojiPicker = false;
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener("click", this._onDocClickBound, true);
+    this._emojiContainer?.remove();
   }
 
   getData() {
@@ -142,6 +156,7 @@ export class JantComposeEditor extends LitElement {
     this._attachments = [];
     this._showAltPanel = false;
     this._altPanelIndex = 0;
+    this.closeEmojiPicker();
   }
 
   updateAttachmentStatus(
@@ -301,6 +316,127 @@ export class JantComposeEditor extends LitElement {
     );
   }
 
+  // ── Emoji picker ────────────────────────────────────────────────
+
+  private _onFieldFocus(e: Event) {
+    const target = e.target as HTMLTextAreaElement | HTMLInputElement;
+    this._lastFocusedField = target;
+  }
+
+  private _toggleEmojiPicker() {
+    if (this._showEmojiPicker) {
+      this.closeEmojiPicker();
+    } else {
+      this._showEmojiPicker = true;
+      this._mountEmojiPicker();
+      // Defer listener so the current click event doesn't immediately close it
+      globalThis.setTimeout(() => {
+        document.addEventListener("click", this._onDocClickBound);
+      }, 0);
+    }
+  }
+
+  closeEmojiPicker() {
+    if (!this._showEmojiPicker) return;
+    this._showEmojiPicker = false;
+    this._emojiContainer?.remove();
+    document.removeEventListener("click", this._onDocClickBound);
+  }
+
+  private _onDocumentClick(e: Event) {
+    const target = e.target as globalThis.Node;
+    const btn = this.querySelector(".compose-emoji-btn");
+    if (btn?.contains(target)) return;
+    if (this._emojiContainer?.contains(target)) return;
+    this.closeEmojiPicker();
+  }
+
+  private async _mountEmojiPicker() {
+    // Portal into the <dialog> element (shares top-layer, escapes inner overflow/transform)
+    const dialog = this.closest("dialog");
+    if (!this._emojiContainer) {
+      this._emojiContainer = document.createElement("div");
+      this._emojiContainer.className = "compose-emoji-picker";
+    }
+    (dialog ?? document.body).appendChild(this._emojiContainer);
+
+    // Only create the picker element once
+    if (!this._emojiPickerEl) {
+      const [{ default: data }, { Picker }] = await Promise.all([
+        import("@emoji-mart/data"),
+        import("emoji-mart"),
+      ]);
+
+      // Check we're still open after the async import
+      if (!this._showEmojiPicker) return;
+
+      const picker = new Picker({
+        data,
+        onEmojiSelect: (emoji: { native: string }) => {
+          this._insertEmoji(emoji.native);
+          this.closeEmojiPicker();
+        },
+        theme: "auto",
+        previewPosition: "none",
+        skinTonePosition: "none",
+      });
+      this._emojiPickerEl = picker as unknown as HTMLElement;
+    }
+
+    this._emojiContainer.innerHTML = "";
+    this._emojiContainer.appendChild(this._emojiPickerEl);
+
+    // Position relative to the dialog (whose transform makes fixed = absolute)
+    const btn = this.querySelector(".compose-emoji-btn");
+    if (btn && dialog) {
+      const btnRect = btn.getBoundingClientRect();
+      const dlgRect = dialog.getBoundingClientRect();
+      const pickerWidth = 352;
+      const pickerHeight = 435;
+
+      // Button position relative to the dialog
+      const btnRelLeft = btnRect.left - dlgRect.left;
+      const btnRelTop = btnRect.top - dlgRect.top;
+
+      let left = btnRelLeft + btnRect.width / 2 - pickerWidth / 2;
+      left = Math.max(-dlgRect.left + 8, Math.min(left, dlgRect.width - 8));
+
+      let top = btnRelTop - pickerHeight - 8;
+      if (dlgRect.top + top < 8) {
+        top = btnRelTop + btnRect.height + 8;
+      }
+
+      this._emojiContainer.style.left = `${left}px`;
+      this._emojiContainer.style.top = `${top}px`;
+    }
+  }
+
+  private _insertEmoji(emoji: string) {
+    const field = this._lastFocusedField;
+    if (!field) {
+      // Fallback: insert into the primary body textarea
+      this._body += emoji;
+      return;
+    }
+
+    const start = field.selectionStart ?? field.value.length;
+    const end = field.selectionEnd ?? start;
+    const before = field.value.slice(0, start);
+    const after = field.value.slice(end);
+    const newValue = before + emoji + after;
+
+    // Update the Lit state that corresponds to this field
+    field.value = newValue;
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+
+    // Restore cursor position after the inserted emoji
+    const cursorPos = start + emoji.length;
+    globalThis.requestAnimationFrame(() => {
+      field.focus();
+      field.setSelectionRange(cursorPos, cursorPos);
+    });
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────
 
   private _getCategory(a: ComposeAttachment): MediaCategory | null {
@@ -325,6 +461,7 @@ export class JantComposeEditor extends LitElement {
                   type="text"
                   .value=${this._title}
                   @input=${(e: Event) => this._onInput("_title", e)}
+                  @focus=${(e: Event) => this._onFieldFocus(e)}
                   class="compose-input compose-note-title"
                   placeholder=${this.labels.titlePlaceholder}
                 />
@@ -343,6 +480,7 @@ export class JantComposeEditor extends LitElement {
         <textarea
           .value=${this._body}
           @input=${(e: Event) => this._onInput("_body", e)}
+          @focus=${(e: Event) => this._onFieldFocus(e)}
           class="compose-input compose-body-input"
           placeholder=${this.labels.bodyPlaceholder}
           rows="4"
@@ -360,6 +498,7 @@ export class JantComposeEditor extends LitElement {
             type="url"
             .value=${this._url}
             @input=${(e: Event) => this._onInput("_url", e)}
+            @focus=${(e: Event) => this._onFieldFocus(e)}
             class="compose-input text-[0.9rem]"
             placeholder=${this.labels.urlPlaceholder}
           />
@@ -368,6 +507,7 @@ export class JantComposeEditor extends LitElement {
           type="text"
           .value=${this._title}
           @input=${(e: Event) => this._onInput("_title", e)}
+          @focus=${(e: Event) => this._onFieldFocus(e)}
           class="compose-input compose-link-title"
           placeholder=${this.labels.linkTitlePlaceholder}
         />
@@ -375,6 +515,7 @@ export class JantComposeEditor extends LitElement {
         <textarea
           .value=${this._body}
           @input=${(e: Event) => this._onInput("_body", e)}
+          @focus=${(e: Event) => this._onFieldFocus(e)}
           class="compose-input compose-thoughts"
           placeholder=${this.labels.thoughtsPlaceholder}
           rows="3"
@@ -391,6 +532,7 @@ export class JantComposeEditor extends LitElement {
           <textarea
             .value=${this._quoteText}
             @input=${(e: Event) => this._onInput("_quoteText", e)}
+            @focus=${(e: Event) => this._onFieldFocus(e)}
             class="compose-input compose-quote-text"
             placeholder=${this.labels.quotePlaceholder}
             rows="3"
@@ -402,6 +544,7 @@ export class JantComposeEditor extends LitElement {
             type="text"
             .value=${this._quoteAuthor}
             @input=${(e: Event) => this._onInput("_quoteAuthor", e)}
+            @focus=${(e: Event) => this._onFieldFocus(e)}
             class="compose-input compose-quote-author"
             placeholder=${this.labels.authorPlaceholder}
           />
@@ -411,6 +554,7 @@ export class JantComposeEditor extends LitElement {
             type="url"
             .value=${this._url}
             @input=${(e: Event) => this._onInput("_url", e)}
+            @focus=${(e: Event) => this._onFieldFocus(e)}
             class="compose-input text-[0.78rem]"
             placeholder=${this.labels.sourcePlaceholder}
           />
@@ -419,6 +563,7 @@ export class JantComposeEditor extends LitElement {
         <textarea
           .value=${this._body}
           @input=${(e: Event) => this._onInput("_body", e)}
+          @focus=${(e: Event) => this._onFieldFocus(e)}
           class="compose-input compose-thoughts"
           placeholder=${this.labels.thoughtsPlaceholder}
           rows="2"
@@ -702,6 +847,7 @@ export class JantComposeEditor extends LitElement {
             "compose-tool-btn": true,
             "compose-tool-btn-add": this._attachments.length > 0,
           })}
+          title=${this._attachments.length > 0 ? "" : this.labels.media}
           @click=${() => this._openFilePicker()}
         >
           <svg
@@ -724,7 +870,7 @@ export class JantComposeEditor extends LitElement {
             ? html`<span class="compose-tool-label"
                 >${this.labels.addMore}</span
               >`
-            : html`<span class="compose-tool-tip">${this.labels.media}</span>`}
+            : nothing}
         </button>
 
         <!-- Attached Text -->
@@ -734,6 +880,7 @@ export class JantComposeEditor extends LitElement {
             "compose-tool-btn": true,
             "compose-tool-btn-active": hasAttached,
           })}
+          title=${this.labels.attachedText}
           @click=${() => this._openAttachedText()}
         >
           <svg
@@ -751,19 +898,57 @@ export class JantComposeEditor extends LitElement {
             <line x1="6" y1="9" x2="12" y2="9" />
             <line x1="6" y1="12" x2="9.5" y2="12" />
           </svg>
-          <span class="compose-tool-tip">${this.labels.attachedText}</span>
         </button>
 
-        <!-- Score -->
+        <!-- Rate -->
         <button
           type="button"
           class=${classMap({
             "compose-tool-btn": true,
             "compose-tool-btn-active": this._showRating,
           })}
+          title=${this.labels.rate}
           @click=${() => {
             this._showRating = !this._showRating;
           }}
+        >
+          <svg
+            class="icon-fine"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <defs>
+              <clipPath id="half-left">
+                <rect x="0" y="0" width="12" height="24" />
+              </clipPath>
+            </defs>
+            <polygon
+              points="12 2 14.8 9.2 22.5 9.7 16.8 14.8 18.8 22.3 12 18.2 5.2 22.3 7.2 14.8 1.5 9.7 9.2 9.2"
+              fill="#888"
+              clip-path="url(#half-left)"
+            />
+            <polygon
+              points="12 2 14.8 9.2 22.5 9.7 16.8 14.8 18.8 22.3 12 18.2 5.2 22.3 7.2 14.8 1.5 9.7 9.2 9.2"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+
+        <!-- Emoji -->
+        <button
+          type="button"
+          class=${classMap({
+            "compose-tool-btn": true,
+            "compose-emoji-btn": true,
+            "compose-tool-btn-active": this._showEmojiPicker,
+          })}
+          title=${this.labels.emoji}
+          @click=${() => this._toggleEmojiPicker()}
         >
           <svg
             class="icon-fine"
@@ -776,11 +961,17 @@ export class JantComposeEditor extends LitElement {
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <rect x="3" y="12" width="2.8" height="3" rx="0.7" />
-            <rect x="7.6" y="8.5" width="2.8" height="6.5" rx="0.7" />
-            <rect x="12.2" y="5" width="2.8" height="10" rx="0.7" />
+            <circle cx="9" cy="9" r="7" />
+            <path d="M6 10.5c.5 1.2 1.5 2 3 2s2.5-.8 3-2" />
+            <circle cx="6.5" cy="7" r="0.5" fill="currentColor" stroke="none" />
+            <circle
+              cx="11.5"
+              cy="7"
+              r="0.5"
+              fill="currentColor"
+              stroke="none"
+            />
           </svg>
-          <span class="compose-tool-tip">${this.labels.score}</span>
         </button>
 
         <!-- Title toggle (Note only) -->
@@ -794,6 +985,7 @@ export class JantComposeEditor extends LitElement {
                     "compose-tool-btn": true,
                     "compose-tool-btn-active": this._showTitle,
                   })}
+                  title=${this.labels.title}
                   @click=${() => {
                     this._showTitle = !this._showTitle;
                   }}
@@ -810,7 +1002,6 @@ export class JantComposeEditor extends LitElement {
                       T
                     </text>
                   </svg>
-                  <span class="compose-tool-tip">${this.labels.title}</span>
                 </button>
               </div>
             `

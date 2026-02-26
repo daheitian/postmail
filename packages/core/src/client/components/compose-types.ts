@@ -38,7 +38,8 @@ export interface ComposeLabels {
   attachedTextHint: string;
   done: string;
   media: string;
-  score: string;
+  rate: string;
+  emoji: string;
   title: string;
   collection: string;
   searchCollections: string;

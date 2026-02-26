@@ -611,6 +611,11 @@ msgstr "编辑帖子"
 msgid "Email"
 msgstr "电子邮件"
 
+#. @context: Compose toolbar - emoji picker tooltip
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Emoji"
+msgstr ""
+
 #. @context: Emoji picker tab label
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Emojis"
@@ -1421,6 +1426,11 @@ msgstr "引用文本"
 msgid "Quotes"
 msgstr "引用"
 
+#. @context: Compose toolbar - rate tooltip
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Rate"
+msgstr "评分"
+
 #. @context: Settings item — redirects settings
 #. @context: Settings section heading
 #: src/routes/dash/redirects.tsx
@@ -1494,11 +1504,6 @@ msgstr "保存个人资料"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Saved"
 msgstr ""
-
-#. @context: Compose toolbar - score tooltip
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Score"
-msgstr "得分"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title

@@ -425,7 +425,7 @@
       0 8px 40px rgba(0, 0, 0, 0.08),
       0 1px 3px rgba(0, 0, 0, 0.04);
     border: 1px solid var(--site-column-outline);
-    overflow: hidden;
+    overflow: visible;
   }
 
   .compose-dialog[open] {
@@ -441,6 +441,8 @@
     flex-direction: column;
     max-height: calc(100dvh - var(--compose-margin-top) - 20px);
     position: relative;
+    border-radius: inherit;
+    overflow: hidden;
   }
 
   .compose-dialog-inner > jant-compose-editor {
@@ -977,27 +979,14 @@
     flex-shrink: 0;
   }
 
-  .compose-tool-tip {
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) scale(0.92);
-    background-color: var(--site-text-primary);
-    color: var(--site-elevated-bg);
-    font-size: 0.6875rem;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-    padding: 4px 10px;
-    border-radius: 6px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-  }
+  /* --- Emoji picker ------------------------------------------------------- */
 
-  .compose-tool-btn:hover .compose-tool-tip {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
+  .compose-emoji-picker {
+    position: fixed;
+    z-index: 100;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgb(0 0 0 / 0.25);
   }
 
   /* --- Action row --------------------------------------------------------- */
