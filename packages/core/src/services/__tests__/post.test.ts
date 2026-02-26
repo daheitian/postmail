@@ -22,14 +22,23 @@ describe("PostService", () => {
 
   describe("create", () => {
     it("creates a note post with required fields", async () => {
+      const body = JSON.stringify({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Hello world" }],
+          },
+        ],
+      });
       const post = await postService.create({
         format: "note",
-        body: "Hello world",
+        body,
       });
 
       expect(post.id).toBe(1);
       expect(post.format).toBe("note");
-      expect(post.body).toBe("Hello world");
+      expect(post.body).toBe(body);
       expect(post.status).toBe("published"); // default
       expect(post.featured).toBe(0);
       expect(post.pinned).toBe(0);
@@ -38,10 +47,24 @@ describe("PostService", () => {
     });
 
     it("creates a post with all fields", async () => {
+      const body = JSON.stringify({
+        type: "doc",
+        content: [
+          {
+            type: "heading",
+            attrs: { level: 1 },
+            content: [{ type: "text", text: "Introduction" }],
+          },
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Some content." }],
+          },
+        ],
+      });
       const post = await postService.create({
         format: "link",
         title: "My Link",
-        body: "# Introduction\n\nSome content.",
+        body,
         status: "published",
         featured: true,
         pinned: true,
@@ -63,10 +86,27 @@ describe("PostService", () => {
       expect(post.bodyHtml).toContain("<h1>");
     });
 
-    it("renders markdown body to HTML", async () => {
+    it("renders Tiptap JSON body to HTML", async () => {
+      const body = JSON.stringify({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [
+              { type: "text", text: "This is " },
+              {
+                type: "text",
+                marks: [{ type: "bold" }],
+                text: "bold",
+              },
+              { type: "text", text: " text" },
+            ],
+          },
+        ],
+      });
       const post = await postService.create({
         format: "note",
-        body: "This is **bold** text",
+        body,
       });
 
       expect(post.bodyHtml).toContain("<strong>bold</strong>");
@@ -470,15 +510,32 @@ describe("PostService", () => {
     it("updates post body", async () => {
       const post = await postService.create({
         format: "note",
-        body: "original",
+        body: JSON.stringify({
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "original" }],
+            },
+          ],
+        }),
       });
 
+      const updatedBody = JSON.stringify({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "updated content" }],
+          },
+        ],
+      });
       const updated = await postService.update(post.id, {
-        body: "updated content",
+        body: updatedBody,
       });
 
       expect(updated).not.toBeNull();
-      expect(updated?.body).toBe("updated content");
+      expect(updated?.body).toBe(updatedBody);
       expect(updated?.bodyHtml).toContain("updated content");
     });
 

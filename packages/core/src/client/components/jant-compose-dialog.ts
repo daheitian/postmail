@@ -194,6 +194,11 @@ export class JantComposeDialog extends LitElement {
       "jant:attached-panel-open",
       this._handleAttachedPanelOpen,
     );
+    // Listen on document — fullscreen element lives on document.body, outside the dialog
+    document.addEventListener(
+      "jant:fullscreen-close",
+      this._handleFullscreenClose as EventListener,
+    );
   }
 
   disconnectedCallback() {
@@ -204,6 +209,10 @@ export class JantComposeDialog extends LitElement {
     this.removeEventListener(
       "jant:attached-panel-open",
       this._handleAttachedPanelOpen,
+    );
+    document.removeEventListener(
+      "jant:fullscreen-close",
+      this._handleFullscreenClose as EventListener,
     );
   }
 
@@ -240,6 +249,18 @@ export class JantComposeDialog extends LitElement {
   private _closeAltPanel() {
     this._altPanelOpen = false;
   }
+
+  private _handleFullscreenClose = (
+    e: CustomEvent<{ json: unknown; title: string }>,
+  ) => {
+    const editor = this._editor;
+    if (editor) {
+      editor.setEditorState(
+        e.detail.json as import("@tiptap/core").JSONContent,
+        e.detail.title,
+      );
+    }
+  };
 
   private _handleAttachedPanelOpen = () => {
     this._attachedPanelOpen = true;

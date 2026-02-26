@@ -11,7 +11,8 @@ import type { BatchItem } from "drizzle-orm/batch";
 import type { Database } from "../db/index.js";
 import { posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
-import { render as renderMarkdown } from "../lib/markdown.js";
+import { renderTiptapJson } from "../lib/tiptap-render.js";
+import { extractSummary } from "../lib/summary.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import type { Format, Status, Post, CreatePost, UpdatePost } from "../types.js";
@@ -39,14 +40,24 @@ export interface PostFilters {
   offset?: number; // offset for page-based pagination
 }
 
+/** Config for automatic summary extraction */
+export interface SummaryConfig {
+  maxParagraphs: number;
+  maxChars: number;
+}
+
 export interface PostService {
   getById(id: number): Promise<Post | null>;
   getByPath(path: string): Promise<Post | null>;
   list(filters?: PostFilters): Promise<Post[]>;
   /** Count posts matching filters (ignores cursor, offset, limit) */
   count(filters?: PostFilters): Promise<number>;
-  create(data: CreatePost): Promise<Post>;
-  update(id: number, data: UpdatePost): Promise<Post | null>;
+  create(data: CreatePost, summaryConfig?: SummaryConfig): Promise<Post>;
+  update(
+    id: number,
+    data: UpdatePost,
+    summaryConfig?: SummaryConfig,
+  ): Promise<Post | null>;
   /**
    * Soft-delete a post and clean up its media (storage files + DB records).
    * Thread roots cascade to all replies.
@@ -141,6 +152,7 @@ export function createPostService(
       body: row.body,
       bodyHtml: row.bodyHtml,
       quoteText: row.quoteText,
+      summary: row.summary,
       rating: row.rating,
       replyToId: row.replyToId,
       threadId: row.threadId,
@@ -203,10 +215,20 @@ export function createPostService(
       return result[0]?.count ?? 0;
     },
 
-    async create(data) {
+    async create(data, summaryConfig) {
       const timestamp = now();
 
-      const bodyHtml = data.body ? renderMarkdown(data.body) : null;
+      const bodyHtml = data.body ? renderTiptapJson(data.body) : null;
+
+      // Generate summary for titled notes with body content
+      let summary: string | null = null;
+      if (data.format === "note" && data.title && data.body && summaryConfig) {
+        summary = extractSummary(
+          data.body,
+          summaryConfig.maxParagraphs,
+          summaryConfig.maxChars,
+        );
+      }
 
       // Handle thread relationship
       let threadId: number | null = null;
@@ -250,6 +272,7 @@ export function createPostService(
             body: data.body ?? null,
             bodyHtml,
             quoteText: data.quoteText ?? null,
+            summary,
             rating: data.rating ?? null,
             replyToId: data.replyToId ?? null,
             threadId,
@@ -288,7 +311,7 @@ export function createPostService(
       return post;
     },
 
-    async update(id, data) {
+    async update(id, data, summaryConfig) {
       const existing = await this.getById(id);
       if (!existing) return null;
 
@@ -323,7 +346,23 @@ export function createPostService(
 
       if (data.body !== undefined) {
         updates.body = data.body;
-        updates.bodyHtml = data.body ? renderMarkdown(data.body) : null;
+        updates.bodyHtml = data.body ? renderTiptapJson(data.body) : null;
+      }
+
+      // Recompute summary when body, title, or format change
+      if (summaryConfig) {
+        const format = data.format ?? (existing.format as Format);
+        const title = data.title !== undefined ? data.title : existing.title;
+        const body = data.body !== undefined ? data.body : existing.body;
+        if (format === "note" && title && body) {
+          updates.summary = extractSummary(
+            body,
+            summaryConfig.maxParagraphs,
+            summaryConfig.maxChars,
+          );
+        } else {
+          updates.summary = null;
+        }
       }
 
       // Handle status/featured change - cascade to thread if this is root

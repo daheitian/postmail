@@ -119,12 +119,14 @@ describe("JantPostForm", () => {
     titleInput.value = "Sample Post";
     titleInput.dispatchEvent(new Event("input", { bubbles: true }));
 
-    const bodyTextarea =
-      el.querySelector<HTMLTextAreaElement>("textarea.textarea");
-    expect(bodyTextarea).not.toBeNull();
-    if (!bodyTextarea) throw new Error("Body textarea not found");
-    bodyTextarea.value = "Hello world";
-    bodyTextarea.dispatchEvent(new Event("input", { bubbles: true }));
+    // Set body via Tiptap JSON state (Tiptap editor may not init in happy-dom)
+    el._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Hello world" }] },
+      ],
+    };
+    el._body = JSON.stringify(el._bodyJson);
 
     const checkboxList =
       el.querySelectorAll<HTMLInputElement>("input.checkbox");
@@ -154,7 +156,7 @@ describe("JantPostForm", () => {
     const d = detail as unknown as PostSubmitDetail;
     expect(d.endpoint).toBe("/dash/posts");
     expect(d.data.title).toBe("Sample Post");
-    expect(d.data.body).toBe("Hello world");
+    expect(d.data.body).toContain("Hello world");
     expect(d.data.featured).toBe(true);
     expect(d.data.collectionIds).toEqual([collections[0].id]);
     expect(d.data.mediaIds).toEqual(["m1"]);

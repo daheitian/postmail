@@ -10,6 +10,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
+import type { Editor, JSONContent } from "@tiptap/core";
 import type {
   ComposeFormat,
   ComposeLabels,
@@ -22,6 +23,7 @@ import {
 } from "../../lib/upload.js";
 import type { MediaCategory } from "../../lib/upload.js";
 import { showToast } from "../toast.js";
+import { createTiptapEditor } from "../tiptap/create-editor.js";
 
 export class JantComposeEditor extends LitElement {
   static properties = {
@@ -29,7 +31,7 @@ export class JantComposeEditor extends LitElement {
     labels: { type: Object },
     uploadMaxFileSize: { type: Number },
     _title: { state: true },
-    _body: { state: true },
+    _bodyJson: { state: true },
     _url: { state: true },
     _quoteText: { state: true },
     _quoteAuthor: { state: true },
@@ -48,7 +50,7 @@ export class JantComposeEditor extends LitElement {
   declare labels: ComposeLabels;
   declare uploadMaxFileSize: number;
   declare _title: string;
-  declare _body: string;
+  declare _bodyJson: JSONContent | null;
   declare _url: string;
   declare _quoteText: string;
   declare _quoteAuthor: string;
@@ -62,6 +64,7 @@ export class JantComposeEditor extends LitElement {
   declare _altPanelIndex: number;
   declare _showEmojiPicker: boolean;
 
+  private _editor: Editor | null = null;
   private _fileInput: HTMLInputElement | null = null;
   private _lastFocusedField: HTMLTextAreaElement | HTMLInputElement | null =
     null;
@@ -79,7 +82,7 @@ export class JantComposeEditor extends LitElement {
     this.labels = {} as ComposeLabels;
     this.uploadMaxFileSize = 500;
     this._title = "";
-    this._body = "";
+    this._bodyJson = null;
     this._url = "";
     this._quoteText = "";
     this._quoteAuthor = "";
@@ -94,13 +97,106 @@ export class JantComposeEditor extends LitElement {
     this._showEmojiPicker = false;
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener("jant:slash-image", this._onSlashImage);
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
+    this._editor?.destroy();
+    this._editor = null;
+    document.removeEventListener("jant:slash-image", this._onSlashImage);
     document.removeEventListener("click", this._onDocClickBound, true);
     this._emojiContainer?.remove();
   }
 
+  private _onSlashImage = () => {
+    // Skip when fullscreen is open — it has its own handler
+    if (document.querySelector(".compose-fullscreen-dialog[open]")) return;
+    if (!this._editor) return;
+    this._triggerSlashImagePicker();
+  };
+
+  private _slashImageInput: HTMLInputElement | null = null;
+
+  private _triggerSlashImagePicker() {
+    if (!this._slashImageInput) {
+      this._slashImageInput = document.createElement("input");
+      this._slashImageInput.type = "file";
+      this._slashImageInput.accept = "image/*";
+      this._slashImageInput.style.display = "none";
+      this._slashImageInput.addEventListener("change", () => {
+        const file = this._slashImageInput?.files?.[0];
+        if (file && this._editor) {
+          this._uploadAndInsertImage(file);
+        }
+        if (this._slashImageInput) this._slashImageInput.value = "";
+      });
+      document.body.appendChild(this._slashImageInput);
+    }
+    this._slashImageInput.click();
+  }
+
+  private async _uploadAndInsertImage(file: File) {
+    if (!this._editor) return;
+
+    const placeholderUrl = URL.createObjectURL(file);
+    this._editor
+      .chain()
+      .focus()
+      .setImage({ src: placeholderUrl, alt: file.name })
+      .run();
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
+      const data = (await response.json()) as { url: string };
+
+      const { doc } = this._editor.state;
+      let replaced = false;
+      doc.descendants((node, pos) => {
+        if (
+          replaced ||
+          node.type.name !== "image" ||
+          node.attrs.src !== placeholderUrl
+        )
+          return;
+        this._editor
+          ?.chain()
+          .focus()
+          .command(({ tr }) => {
+            tr.setNodeMarkup(pos, undefined, { ...node.attrs, src: data.url });
+            return true;
+          })
+          .run();
+        replaced = true;
+      });
+    } catch {
+      const { doc } = this._editor.state;
+      doc.descendants((node, pos) => {
+        if (node.type.name === "image" && node.attrs.src === placeholderUrl) {
+          this._editor
+            ?.chain()
+            .command(({ tr }) => {
+              tr.delete(pos, pos + node.nodeSize);
+              return true;
+            })
+            .run();
+        }
+      });
+    } finally {
+      URL.revokeObjectURL(placeholderUrl);
+    }
+  }
+
   getData() {
+    const body = this._bodyJson ? JSON.stringify(this._bodyJson) : "";
     const shared = {
       rating: this._rating,
       attachedText: this._attachedText,
@@ -112,7 +208,7 @@ export class JantComposeEditor extends LitElement {
         return {
           ...shared,
           title: this._title,
-          body: this._body,
+          body,
           url: this._url,
           quoteText: "",
           quoteAuthor: "",
@@ -121,7 +217,7 @@ export class JantComposeEditor extends LitElement {
         return {
           ...shared,
           title: "",
-          body: this._body,
+          body,
           url: this._url,
           quoteText: this._quoteText,
           quoteAuthor: this._quoteAuthor,
@@ -130,7 +226,7 @@ export class JantComposeEditor extends LitElement {
         return {
           ...shared,
           title: this._title,
-          body: this._body,
+          body,
           url: "",
           quoteText: "",
           quoteAuthor: "",
@@ -140,7 +236,8 @@ export class JantComposeEditor extends LitElement {
 
   reset() {
     this._title = "";
-    this._body = "";
+    this._bodyJson = null;
+    this._editor?.commands.clearContent();
     this._url = "";
     this._quoteText = "";
     this._quoteAuthor = "";
@@ -171,13 +268,76 @@ export class JantComposeEditor extends LitElement {
   }
 
   focusInput() {
-    const selector =
-      this.format === "link"
-        ? '.compose-input[type="url"]'
-        : this.format === "quote"
-          ? ".compose-quote-text"
-          : ".compose-body-input";
-    this.querySelector<HTMLElement>(selector)?.focus();
+    if (this.format === "link") {
+      this.querySelector<HTMLElement>('.compose-input[type="url"]')?.focus();
+    } else if (this.format === "quote") {
+      this.querySelector<HTMLElement>(".compose-quote-text")?.focus();
+    } else {
+      this._editor?.commands.focus();
+    }
+  }
+
+  private _initEditor() {
+    const container = this.querySelector<HTMLElement>(".compose-tiptap-body");
+    if (!container || this._editor) return;
+
+    this._editor = createTiptapEditor({
+      element: container,
+      placeholder:
+        this.format === "note"
+          ? this.labels.bodyPlaceholder
+          : this.labels.thoughtsPlaceholder,
+      content: this._bodyJson,
+      onUpdate: (json) => {
+        this._bodyJson = json;
+      },
+      onFocus: () => {
+        this._lastFocusedField = null;
+      },
+    });
+  }
+
+  private _destroyEditor() {
+    this._editor?.destroy();
+    this._editor = null;
+  }
+
+  protected updated(changed: Map<string, unknown>) {
+    super.updated(changed);
+
+    // Initialize editor after first render or when format changes
+    if (!this._editor) {
+      this._initEditor();
+    }
+
+    if (changed.has("format") && changed.get("format") !== undefined) {
+      // Format changed — recreate editor with appropriate placeholder
+      this._destroyEditor();
+      // Schedule init after Lit re-renders the new template
+      this.updateComplete.then(() => this._initEditor());
+    }
+  }
+
+  /** Returns Tiptap editor content and title for fullscreen handoff */
+  getEditorState() {
+    return {
+      json: this._editor?.getJSON() ?? this._bodyJson,
+      title: this._title,
+      showTitle: this._showTitle,
+    };
+  }
+
+  /** Updates editor content and title from fullscreen close */
+  setEditorState(json: JSONContent | null, title: string) {
+    this._bodyJson = json;
+    this._title = title;
+    // Show the title field if user typed a title in fullscreen
+    if (title && this.format === "note") {
+      this._showTitle = true;
+    }
+    if (this._editor && json) {
+      this._editor.commands.setContent(json);
+    }
   }
 
   private _openAttachedText() {
@@ -414,8 +574,10 @@ export class JantComposeEditor extends LitElement {
   private _insertEmoji(emoji: string) {
     const field = this._lastFocusedField;
     if (!field) {
-      // Fallback: insert into the primary body textarea
-      this._body += emoji;
+      // Insert into Tiptap editor
+      if (this._editor) {
+        this._editor.chain().focus().insertContent(emoji).run();
+      }
       return;
     }
 
@@ -462,6 +624,12 @@ export class JantComposeEditor extends LitElement {
                   .value=${this._title}
                   @input=${(e: Event) => this._onInput("_title", e)}
                   @focus=${(e: Event) => this._onFieldFocus(e)}
+                  @keydown=${(e: globalThis.KeyboardEvent) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      this._editor?.commands.focus("start");
+                    }
+                  }}
                   class="compose-input compose-note-title"
                   placeholder=${this.labels.titlePlaceholder}
                 />
@@ -477,14 +645,7 @@ export class JantComposeEditor extends LitElement {
               </div>
             `
           : nothing}
-        <textarea
-          .value=${this._body}
-          @input=${(e: Event) => this._onInput("_body", e)}
-          @focus=${(e: Event) => this._onFieldFocus(e)}
-          class="compose-input compose-body-input"
-          placeholder=${this.labels.bodyPlaceholder}
-          rows="4"
-        ></textarea>
+        <div class="compose-tiptap-body"></div>
       </div>
     `;
   }
@@ -512,14 +673,7 @@ export class JantComposeEditor extends LitElement {
           placeholder=${this.labels.linkTitlePlaceholder}
         />
         <div class="compose-divider"></div>
-        <textarea
-          .value=${this._body}
-          @input=${(e: Event) => this._onInput("_body", e)}
-          @focus=${(e: Event) => this._onFieldFocus(e)}
-          class="compose-input compose-thoughts"
-          placeholder=${this.labels.thoughtsPlaceholder}
-          rows="3"
-        ></textarea>
+        <div class="compose-tiptap-body compose-tiptap-thoughts"></div>
       </div>
     `;
   }
@@ -560,14 +714,7 @@ export class JantComposeEditor extends LitElement {
           />
         </div>
         <div class="compose-divider"></div>
-        <textarea
-          .value=${this._body}
-          @input=${(e: Event) => this._onInput("_body", e)}
-          @focus=${(e: Event) => this._onFieldFocus(e)}
-          class="compose-input compose-thoughts"
-          placeholder=${this.labels.thoughtsPlaceholder}
-          rows="2"
-        ></textarea>
+        <div class="compose-tiptap-body compose-tiptap-thoughts"></div>
       </div>
     `;
   }
@@ -1009,8 +1156,42 @@ export class JantComposeEditor extends LitElement {
           : nothing}
 
         <div class="flex-1"></div>
+
+        <!-- Expand to fullscreen -->
+        <button
+          type="button"
+          class="compose-tool-btn"
+          @click=${() => this._openFullscreen()}
+        >
+          <svg
+            class="icon-fine"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 2 2 2 2 6" />
+            <polyline points="12 16 16 16 16 12" />
+            <line x1="2" y1="2" x2="7" y2="7" />
+            <line x1="16" y1="16" x2="11" y2="11" />
+          </svg>
+        </button>
       </div>
     `;
+  }
+
+  private _openFullscreen() {
+    const state = this.getEditorState();
+    this.dispatchEvent(
+      new CustomEvent("jant:fullscreen-open", {
+        bubbles: true,
+        detail: { ...state, labels: this.labels },
+      }),
+    );
   }
 
   render() {

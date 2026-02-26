@@ -122,16 +122,24 @@ composeRoutes.post("/", async (c) => {
     }
   }
 
-  const post = await c.var.services.posts.create({
-    format: data.format,
-    title: data.title || undefined,
-    body: data.body || undefined,
-    status: data.status ?? "published",
-    url: data.url || undefined,
-    quoteText: data.quoteText || undefined,
-    rating: data.rating || undefined,
-    collectionIds: data.collectionIds?.length ? data.collectionIds : undefined,
-  });
+  const post = await c.var.services.posts.create(
+    {
+      format: data.format,
+      title: data.title || undefined,
+      body: data.body || undefined,
+      status: data.status ?? "published",
+      url: data.url || undefined,
+      quoteText: data.quoteText || undefined,
+      rating: data.rating || undefined,
+      collectionIds: data.collectionIds?.length
+        ? data.collectionIds
+        : undefined,
+    },
+    {
+      maxParagraphs: c.var.appConfig.summaryMaxParagraphs,
+      maxChars: c.var.appConfig.summaryMaxChars,
+    },
+  );
 
   // Attach media if provided
   if (data.mediaIds && data.mediaIds.length > 0) {

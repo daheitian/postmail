@@ -122,6 +122,9 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0011: path registry
   applyMigration(sqlite, "0011_add_path_registry.sql");
 
+  // Apply 0012: Tiptap columns (summary)
+  applyMigration(sqlite, "0012_add_tiptap_columns.sql");
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

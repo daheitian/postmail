@@ -128,17 +128,27 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
   let summaryHasMore: boolean | undefined;
   let bodyHtmlWithAnchor = post.bodyHtml;
   if (post.title && post.bodyHtml) {
-    const result = getHtmlExcerpt(post.bodyHtml);
-    summaryHtml = result.excerpt;
-    summaryHasMore = result.hasMore;
+    if (post.summary) {
+      // Use stored summary (generated from Tiptap JSON)
+      summaryHtml = post.summary
+        .split("\n\n")
+        .map((p) => `<p>${p}</p>`)
+        .join("");
+      summaryHasMore = true;
+    } else {
+      // Fallback: extract from rendered HTML
+      const result = getHtmlExcerpt(post.bodyHtml);
+      summaryHtml = result.excerpt;
+      summaryHasMore = result.hasMore;
 
-    // Inject #continue anchor at the excerpt boundary for scroll targeting
-    if (result.hasMore) {
-      const pos = result.excerptEnd;
-      bodyHtmlWithAnchor =
-        post.bodyHtml.slice(0, pos) +
-        '<span id="continue"></span>' +
-        post.bodyHtml.slice(pos);
+      // Inject #continue anchor at the excerpt boundary for scroll targeting
+      if (result.hasMore) {
+        const pos = result.excerptEnd;
+        bodyHtmlWithAnchor =
+          post.bodyHtml.slice(0, pos) +
+          '<span id="continue"></span>' +
+          post.bodyHtml.slice(pos);
+      }
     }
   }
 

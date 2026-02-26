@@ -126,23 +126,31 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
     await c.var.services.media.validateIds(body.mediaIds);
   }
 
-  const post = await c.var.services.posts.create({
-    format: body.format,
-    title: body.title,
-    body: body.body,
-    path: body.path || undefined,
-    status: body.status,
-    featured: body.featured,
-    pinned: body.pinned,
-    url: body.url || undefined,
-    quoteText: body.quoteText,
-    rating: body.rating || undefined,
-    collectionIds: body.collectionIds?.length ? body.collectionIds : undefined,
-    replyToId: body.replyToId
-      ? (sqid.decode(body.replyToId) ?? undefined)
-      : undefined,
-    publishedAt: body.publishedAt,
-  });
+  const post = await c.var.services.posts.create(
+    {
+      format: body.format,
+      title: body.title,
+      body: body.body,
+      path: body.path || undefined,
+      status: body.status,
+      featured: body.featured,
+      pinned: body.pinned,
+      url: body.url || undefined,
+      quoteText: body.quoteText,
+      rating: body.rating || undefined,
+      collectionIds: body.collectionIds?.length
+        ? body.collectionIds
+        : undefined,
+      replyToId: body.replyToId
+        ? (sqid.decode(body.replyToId) ?? undefined)
+        : undefined,
+      publishedAt: body.publishedAt,
+    },
+    {
+      maxParagraphs: c.var.appConfig.summaryMaxParagraphs,
+      maxChars: c.var.appConfig.summaryMaxChars,
+    },
+  );
 
   // Attach media
   if (body.mediaIds && body.mediaIds.length > 0) {
@@ -177,22 +185,29 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   }
 
   const post = assertFound(
-    await c.var.services.posts.update(id, {
-      format: body.format,
-      title: body.title,
-      body: body.body,
-      path: body.path,
-      status: body.status,
-      featured: body.featured,
-      pinned: body.pinned,
-      url: body.url,
-      quoteText: body.quoteText,
-      rating: body.rating || undefined,
-      collectionIds: body.collectionIds?.length
-        ? body.collectionIds
-        : undefined,
-      publishedAt: body.publishedAt,
-    }),
+    await c.var.services.posts.update(
+      id,
+      {
+        format: body.format,
+        title: body.title,
+        body: body.body,
+        path: body.path,
+        status: body.status,
+        featured: body.featured,
+        pinned: body.pinned,
+        url: body.url,
+        quoteText: body.quoteText,
+        rating: body.rating || undefined,
+        collectionIds: body.collectionIds?.length
+          ? body.collectionIds
+          : undefined,
+        publishedAt: body.publishedAt,
+      },
+      {
+        maxParagraphs: c.var.appConfig.summaryMaxParagraphs,
+        maxChars: c.var.appConfig.summaryMaxChars,
+      },
+    ),
     "Post",
   );
 

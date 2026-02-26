@@ -136,6 +136,10 @@ export function resolveConfig(
     // Upload (ENV only)
     uploadMaxFileSize: parseInt(env.UPLOAD_MAX_FILE_SIZE ?? "500", 10) || 500,
 
+    // Summary extraction (ENV only)
+    summaryMaxParagraphs: parseInt(env.SUMMARY_MAX_PARAGRAPHS ?? "5", 10) || 5,
+    summaryMaxChars: parseInt(env.SUMMARY_MAX_CHARS ?? "500", 10) || 500,
+
     // Pagination/Feed (ENV only)
     pageSize: parseInt(env.PAGE_SIZE ?? "20", 10) || 20,
     rssFeedLimit: parseInt(env.RSS_FEED_LIMIT ?? "50", 10) || 50,

@@ -135,7 +135,12 @@ describe("JantComposeDialog", () => {
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
       "expected compose editor",
     );
-    editor._body = "Hello world";
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Hello world" }] },
+      ],
+    };
     await editor.updateComplete;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
@@ -153,7 +158,7 @@ describe("JantComposeDialog", () => {
     expect(receivedDetail).not.toBeNull();
     const detail = receivedDetail as unknown as ComposeSubmitDetail;
     expect(detail.format).toBe("note");
-    expect(detail.body).toBe("Hello world");
+    expect(detail.body).toContain("Hello world");
     expect(detail.status).toBe("published");
     expect(detail.collectionIds).toEqual([]);
     expect(detail.mediaIds).toEqual([]);
@@ -233,7 +238,15 @@ describe("JantComposeDialog", () => {
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
       "expected compose editor",
     );
-    editor._body = "Draft content";
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Draft content" }],
+        },
+      ],
+    };
     await editor.updateComplete;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
@@ -438,7 +451,15 @@ describe("JantComposeDialog", () => {
         error: null,
       },
     ];
-    editor._body = "Post with image";
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Post with image" }],
+        },
+      ],
+    };
     await editor.updateComplete;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
@@ -482,7 +503,15 @@ describe("JantComposeDialog", () => {
         error: null,
       },
     ];
-    editor._body = "Post with pending upload";
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Post with pending upload" }],
+        },
+      ],
+    };
     await editor.updateComplete;
 
     let deferredEvent: CustomEvent | null = null;

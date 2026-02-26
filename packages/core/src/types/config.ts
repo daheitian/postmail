@@ -102,6 +102,14 @@ export const CONFIG_FIELDS = {
     defaultValue: "500",
     envOnly: true,
   },
+  SUMMARY_MAX_PARAGRAPHS: {
+    defaultValue: "5",
+    envOnly: true,
+  },
+  SUMMARY_MAX_CHARS: {
+    defaultValue: "500",
+    envOnly: true,
+  },
 
   // Internal settings (DB-only, not configurable via env or dashboard)
   THEME: {
@@ -202,6 +210,12 @@ export interface AppConfig {
   // Upload (ENV only, parsed to number)
   /** Max upload file size in MB. Defaults to 500. */
   uploadMaxFileSize: number;
+
+  // Summary extraction (ENV only)
+  /** Max paragraphs to include in auto-extracted summary. Defaults to 5. */
+  summaryMaxParagraphs: number;
+  /** Max characters to include in auto-extracted summary. Defaults to 500. */
+  summaryMaxChars: number;
 
   // Pagination/Feed (ENV only, parsed to number)
   pageSize: number;

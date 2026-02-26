@@ -113,12 +113,9 @@ export function renderPostForm(component: JantPostForm) {
 
       <div class="field">
         <label class="label">${component.labels.bodyLabel}</label>
-        <textarea
-          class="textarea min-h-32"
-          placeholder=${component.labels.bodyPlaceholder}
-          .value=${component._body}
-          @input=${(e: Event) => component.handleInput("_body", e)}
-        ></textarea>
+        <div
+          class="post-form-tiptap-body compose-tiptap-body border rounded-lg p-3 min-h-32"
+        ></div>
       </div>
 
       <div class="field">

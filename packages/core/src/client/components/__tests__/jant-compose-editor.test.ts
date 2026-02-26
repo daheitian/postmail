@@ -81,11 +81,11 @@ describe("JantComposeEditor", () => {
 
   it("renders note fields by default", async () => {
     const el = await createElement("note");
-    const textarea = requireElement(
-      el.querySelector<HTMLTextAreaElement>(".compose-body-input"),
-      "expected compose body textarea",
+    const tiptapContainer = requireElement(
+      el.querySelector<HTMLElement>(".compose-tiptap-body"),
+      "expected compose Tiptap body container",
     );
-    expect(textarea.placeholder).toBe("What's on your mind...");
+    expect(tiptapContainer).toBeTruthy();
   });
 
   it("renders link fields when format is link", async () => {
@@ -192,13 +192,18 @@ describe("JantComposeEditor", () => {
   it("getData returns current field values", async () => {
     const el = await createElement("note");
     el._title = "Test Title";
-    el._body = "Test Body";
+    el._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Test Body" }] },
+      ],
+    };
     el._rating = 4;
     el._attachedText = "Some attached text";
 
     const data = el.getData();
     expect(data.title).toBe("Test Title");
-    expect(data.body).toBe("Test Body");
+    expect(data.body).toContain("Test Body");
     expect(data.rating).toBe(4);
     expect(data.attachedText).toBe("Some attached text");
     expect(data.url).toBe("");
@@ -209,7 +214,12 @@ describe("JantComposeEditor", () => {
   it("reset clears all fields", async () => {
     const el = await createElement("note");
     el._title = "Test";
-    el._body = "Body";
+    el._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Body" }] },
+      ],
+    };
     el._rating = 3;
     el._showRating = true;
     el._attachedText = "text";
@@ -218,7 +228,7 @@ describe("JantComposeEditor", () => {
     el.reset();
 
     expect(el._title).toBe("");
-    expect(el._body).toBe("");
+    expect(el._bodyJson).toBeNull();
     expect(el._rating).toBe(0);
     expect(el._showRating).toBe(false);
     expect(el._attachedText).toBe("");

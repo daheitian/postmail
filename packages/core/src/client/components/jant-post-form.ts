@@ -6,6 +6,7 @@
  */
 
 import { LitElement } from "lit";
+import type { Editor, JSONContent } from "@tiptap/core";
 import type {
   PostFormInitial,
   PostFormLabels,
@@ -16,6 +17,7 @@ import type {
   PostStatus,
 } from "./post-form-types.js";
 import { renderPostForm } from "./post-form-template.js";
+import { createTiptapEditor } from "../tiptap/create-editor.js";
 
 const DEFAULT_INITIAL: PostFormInitial = {
   format: "note",
@@ -122,6 +124,8 @@ export class JantPostForm extends LitElement {
   declare _mediaIds: string[];
   declare _loading: boolean;
 
+  _editor: Editor | null = null;
+  _bodyJson: JSONContent | null = null;
   #initialized = false;
 
   createRenderRoot() {
@@ -197,6 +201,8 @@ export class JantPostForm extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this._editor?.destroy();
+    this._editor = null;
     this.closeMediaPicker();
   }
 
@@ -214,6 +220,40 @@ export class JantPostForm extends LitElement {
     this._collectionIds = [...(init.collectionIds ?? [])];
     this._mediaIds = [...(init.mediaIds ?? [])];
     this.#initialized = true;
+
+    // Parse body as Tiptap JSON if it looks like JSON
+    if (this._body && this._body.startsWith("{")) {
+      try {
+        this._bodyJson = JSON.parse(this._body) as JSONContent;
+      } catch {
+        this._bodyJson = null;
+      }
+    } else {
+      this._bodyJson = null;
+    }
+  }
+
+  initEditor() {
+    if (this._editor) return;
+    const container = this.querySelector<HTMLElement>(".post-form-tiptap-body");
+    if (!container) return;
+
+    this._editor = createTiptapEditor({
+      element: container,
+      placeholder: this.labels.bodyPlaceholder ?? "Write something…",
+      content: this._bodyJson,
+      onUpdate: (json) => {
+        this._bodyJson = json;
+        this._body = JSON.stringify(json);
+      },
+    });
+  }
+
+  protected updated(changed: Map<string, unknown>) {
+    super.updated(changed);
+    if (!this._editor) {
+      this.initEditor();
+    }
   }
 
   handleInput(field: "_title" | "_body" | "_url" | "_quoteText", e: Event) {
@@ -253,13 +293,18 @@ export class JantPostForm extends LitElement {
   handleSubmit(e: Event) {
     e.preventDefault();
     if (this._loading || !this.action) return;
+    // Use Tiptap JSON for body
+    const bodyValue = this._bodyJson
+      ? JSON.stringify(this._bodyJson)
+      : this._body;
+
     const detail: PostSubmitDetail = {
       endpoint: this.action,
       isEdit: this.isEdit,
       data: {
         format: this._format,
         title: this._title.trim(),
-        body: this._body,
+        body: bodyValue,
         status: this._status,
         featured: this._featured,
         pinned: this._pinned,

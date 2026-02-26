@@ -28,6 +28,7 @@ export const posts = sqliteTable("posts", {
   body: text("body"),
   bodyHtml: text("body_html"),
   quoteText: text("quote_text"),
+  summary: text("summary"),
   rating: integer("rating"),
   replyToId: integer("reply_to_id"),
   threadId: integer("thread_id"),

@@ -16,6 +16,7 @@ export interface Post {
   body: string | null;
   bodyHtml: string | null;
   quoteText: string | null;
+  summary: string | null;
   rating: number | null;
   replyToId: number | null;
   threadId: number | null;
