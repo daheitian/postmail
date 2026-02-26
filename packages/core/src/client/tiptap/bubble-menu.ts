@@ -1,0 +1,205 @@
+/**
+ * Bubble Menu Extension
+ *
+ * Floating toolbar that appears on text selection with inline
+ * formatting actions: Bold, Italic, H1, H2, Blockquote, Link.
+ * Vanilla DOM — positioned via ProseMirror plugin, dialog-aware.
+ */
+
+import { Extension } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
+
+const bubbleMenuKey = new PluginKey("bubbleMenu");
+
+// SVG icons (16×16, stroke-based)
+const ICONS = {
+  bold: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H6V4h8a4 4 0 0 1 0 8"/></svg>`,
+  italic: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>`,
+  h1: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M17 12l3-2v10"/></svg>`,
+  h2: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"/></svg>`,
+  blockquote: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>`,
+  link: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+} as const;
+
+interface BubbleBtn {
+  key: string;
+  icon: string;
+  title: string;
+  action: (view: EditorView) => void;
+  isActive: (view: EditorView) => boolean;
+}
+
+function getButtons(editor: Extension["editor"]): BubbleBtn[] {
+  return [
+    {
+      key: "bold",
+      icon: ICONS.bold,
+      title: "Bold",
+      action: () => editor.chain().focus().toggleBold().run(),
+      isActive: () => editor.isActive("bold"),
+    },
+    {
+      key: "italic",
+      icon: ICONS.italic,
+      title: "Italic",
+      action: () => editor.chain().focus().toggleItalic().run(),
+      isActive: () => editor.isActive("italic"),
+    },
+    {
+      key: "h1",
+      icon: ICONS.h1,
+      title: "Heading 1",
+      action: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
+      isActive: () => editor.isActive("heading", { level: 1 }),
+    },
+    {
+      key: "h2",
+      icon: ICONS.h2,
+      title: "Heading 2",
+      action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+      isActive: () => editor.isActive("heading", { level: 2 }),
+    },
+    {
+      key: "sep",
+      icon: "",
+      title: "",
+      action: () => {},
+      isActive: () => false,
+    },
+    {
+      key: "blockquote",
+      icon: ICONS.blockquote,
+      title: "Quote",
+      action: () => editor.chain().focus().toggleBlockquote().run(),
+      isActive: () => editor.isActive("blockquote"),
+    },
+    {
+      key: "link",
+      icon: ICONS.link,
+      title: "Link",
+      action: () => {
+        if (editor.isActive("link")) {
+          editor.chain().focus().unsetLink().run();
+        } else {
+          const url = globalThis.prompt("Enter URL");
+          if (url) {
+            editor.chain().focus().setLink({ href: url }).run();
+          }
+        }
+      },
+      isActive: () => editor.isActive("link"),
+    },
+  ];
+}
+
+export const BubbleMenu = Extension.create({
+  name: "bubbleMenu",
+
+  addProseMirrorPlugins() {
+    const editor = this.editor;
+    let el: HTMLElement | null = null;
+    let buttons: BubbleBtn[] = [];
+    const btnEls: Map<string, HTMLButtonElement> = new Map();
+
+    function create() {
+      el = document.createElement("div");
+      el.className = "tiptap-bubble-menu";
+      el.style.position = "fixed";
+      el.style.display = "none";
+
+      buttons = getButtons(editor);
+      for (const btn of buttons) {
+        if (btn.key === "sep") {
+          const sep = document.createElement("span");
+          sep.className = "tiptap-bubble-sep";
+          el.appendChild(sep);
+          continue;
+        }
+        const b = document.createElement("button");
+        b.type = "button";
+        b.innerHTML = btn.icon;
+        b.title = btn.title;
+        b.className = "tiptap-bubble-btn";
+        b.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          btn.action(editor.view);
+        });
+        el.appendChild(b);
+        btnEls.set(btn.key, b);
+      }
+    }
+
+    function show(view: EditorView) {
+      if (!el) return;
+
+      // Position above selection center
+      const { from, to } = view.state.selection;
+      const start = view.coordsAtPos(from);
+      const end = view.coordsAtPos(to);
+      const cx = (start.left + end.right) / 2;
+      const top = start.top;
+
+      // Dialog offset (same pattern as slash commands)
+      const dialog = view.dom.closest("dialog");
+      const offsetX = dialog?.getBoundingClientRect().left ?? 0;
+      const offsetY = dialog?.getBoundingClientRect().top ?? 0;
+
+      el.style.display = "flex";
+      // Measure width after display
+      const rect = el.getBoundingClientRect();
+      el.style.left = `${cx - rect.width / 2 - offsetX}px`;
+      el.style.top = `${top - rect.height - 8 - offsetY}px`;
+
+      syncActive();
+    }
+
+    function hide() {
+      if (!el) return;
+      el.style.display = "none";
+    }
+
+    function syncActive() {
+      for (const btn of buttons) {
+        if (btn.key === "sep") continue;
+        const b = btnEls.get(btn.key);
+        if (b) b.classList.toggle("is-active", btn.isActive(editor.view));
+      }
+    }
+
+    function shouldShow(view: EditorView): boolean {
+      const { state } = view;
+      const { selection } = state;
+      const { empty } = selection;
+      // Only show for non-empty text selections (not node selections)
+      if (empty) return false;
+      if (!selection.$from.parent.isTextblock) return false;
+      return true;
+    }
+
+    return [
+      new Plugin({
+        key: bubbleMenuKey,
+        view(editorView) {
+          create();
+          const dialog = editorView.dom.closest("dialog");
+          if (el) (dialog ?? document.body).appendChild(el);
+
+          return {
+            update(view) {
+              if (shouldShow(view)) {
+                show(view);
+              } else {
+                hide();
+              }
+            },
+            destroy() {
+              el?.remove();
+              el = null;
+            },
+          };
+        },
+      }),
+    ];
+  },
+});

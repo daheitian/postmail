@@ -348,6 +348,11 @@ msgstr "Choose a page…"
 msgid "Click image to view full size"
 msgstr "Click image to view full size"
 
+#. @context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Click to retry all"
+msgstr "Click to retry all"
+
 #. @context: Button to close icon picker
 #: src/ui/shared/CollectionsSidebar.tsx
 #~ msgid "Close"

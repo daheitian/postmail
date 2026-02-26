@@ -117,7 +117,21 @@ function renderNode(node: TiptapNode): string {
       const title = node.attrs?.title
         ? ` title="${escapeHtml(String(node.attrs.title))}"`
         : "";
-      return `<img src="${src}"${alt}${title}>`;
+      const caption = node.attrs?.caption ? String(node.attrs.caption) : "";
+      const layout = node.attrs?.layout ?? "regular";
+      const href = node.attrs?.href ? String(node.attrs.href) : "";
+      const layoutAttr =
+        layout !== "regular"
+          ? ` data-layout="${escapeHtml(String(layout))}"`
+          : "";
+      const imgTag = `<img src="${src}"${alt}${title}>`;
+      const linkedImg = href
+        ? `<a href="${escapeHtml(href)}">${imgTag}</a>`
+        : imgTag;
+      const figcaption = caption
+        ? `<figcaption>${escapeHtml(caption)}</figcaption>`
+        : "";
+      return `<figure${layoutAttr}>${linkedImg}${figcaption}</figure>`;
     }
 
     case "moreBreak":

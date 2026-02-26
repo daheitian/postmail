@@ -55,6 +55,7 @@ const labels: ComposeLabels = {
   addMore: "Add",
   uploading: "Uploading...",
   published: "Published!",
+  retryAll: "Click to retry all",
 };
 
 const collections: ComposeCollection[] = [

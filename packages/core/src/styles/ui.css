@@ -1219,8 +1219,25 @@
     border-radius: var(--media-radius, 0.5rem);
   }
 
-  .compose-attachment-error {
-    background-color: rgba(220, 38, 38, 0.4);
+  .compose-attachment-retry {
+    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    transition: background-color 0.15s;
+  }
+
+  .compose-attachment-retry:hover {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  .compose-attachment-retry svg {
+    opacity: 0.85;
+    transition: opacity 0.15s;
+  }
+
+  .compose-attachment-retry:hover svg {
+    opacity: 1;
   }
 
   .compose-attachment-remove {
@@ -1842,11 +1859,192 @@
     margin: 1em 0;
   }
 
-  .compose-tiptap-body .tiptap img {
-    max-width: 100%;
-    height: auto;
+  /* --- Image figure in editor ------------------------------------------- */
+
+  .tiptap-image-figure {
+    margin: 0.75em 0;
+    position: relative;
+
+    /* Toolbar palette — soft charcoal, not pure black */
+    --_img-toolbar-bg: oklch(0.25 0.01 260 / 0.82);
+    --_img-toolbar-text: #f5f5f5;
+    --_img-toolbar-hover: oklch(1 0 0 / 0.12);
+    --_img-toolbar-active: oklch(1 0 0 / 0.22);
+    --_img-toolbar-sep: oklch(1 0 0 / 0.15);
+  }
+
+  :is(.dark, [data-theme="dark"]) .tiptap-image-figure {
+    --_img-toolbar-bg: oklch(0.32 0.01 260 / 0.88);
+  }
+
+  .tiptap-image-container {
+    position: relative;
     border-radius: 6px;
-    margin: 0.5em 0;
+    border: 2px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  /* Hover hint */
+  .tiptap-image-figure:hover .tiptap-image-container {
+    border-color: var(--site-divider);
+  }
+
+  /* Selected ring */
+  .tiptap-image-figure[data-selected="true"] .tiptap-image-container {
+    border-color: var(--primary);
+  }
+
+  .tiptap-image-figure img {
+    width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+    border-radius: 4px;
+    display: block;
+  }
+
+  /* Layout variants — in compact dialog, wide/full just fill the container */
+  .tiptap-image-figure[data-layout="wide"],
+  .tiptap-image-figure[data-layout="full"] {
+    width: 100%;
+  }
+
+  .tiptap-image-figure[data-layout="full"] .tiptap-image-container {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .tiptap-image-figure[data-layout="full"] img {
+    border-radius: 0;
+  }
+
+  /* Fullscreen editor — enough room for real breakout */
+  .compose-fullscreen .tiptap-image-figure[data-layout="wide"] {
+    width: 1200px;
+    max-width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .compose-fullscreen .tiptap-image-figure[data-layout="full"] {
+    width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .tiptap-image-figure[data-layout="full"] img {
+    border-radius: 0;
+  }
+
+  /* Centered toolbar — hidden until selected */
+  .tiptap-image-toolbar {
+    display: none;
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--_img-toolbar-bg);
+    backdrop-filter: blur(8px);
+    color: var(--_img-toolbar-text);
+    border-radius: 8px;
+    padding: 4px;
+    gap: 2px;
+    align-items: center;
+    z-index: 2;
+  }
+
+  .tiptap-image-figure[data-selected="true"] .tiptap-image-toolbar {
+    display: flex;
+  }
+
+  .tiptap-image-toolbar button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--_img-toolbar-text);
+    border: none;
+    cursor: pointer;
+  }
+
+  .tiptap-image-toolbar button svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .tiptap-image-toolbar button:hover {
+    background: var(--_img-toolbar-hover);
+  }
+
+  .tiptap-image-toolbar button.is-active {
+    background: var(--_img-toolbar-active);
+  }
+
+  .tiptap-toolbar-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--_img-toolbar-sep);
+    flex-shrink: 0;
+  }
+
+  /* Caption bar — shown when selected, directly below image */
+  .tiptap-image-caption-bar {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 0;
+    margin-top: 4px;
+  }
+
+  .tiptap-image-figure[data-selected="true"] .tiptap-image-caption-bar {
+    display: flex;
+  }
+
+  .tiptap-image-caption-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.85rem;
+    color: var(--site-text-secondary);
+    text-align: center;
+  }
+
+  .tiptap-image-alt-btn {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--site-divider);
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .tiptap-image-alt-btn.is-active {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border-color: transparent;
+  }
+
+  /* Static figcaption (shown when not selected) */
+  .tiptap-image-figcaption {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--site-text-secondary);
+    margin-top: 0.4em;
+  }
+
+  .tiptap-image-figcaption:empty {
+    display: none;
+  }
+
+  .tiptap-image-figure[data-selected="true"] .tiptap-image-figcaption {
+    display: none;
   }
 
   .compose-tiptap-body .tiptap a {
@@ -1922,6 +2120,64 @@
 
   .tiptap-slash-item-label {
     flex: 1;
+  }
+
+  /* Bubble menu — floating toolbar on text selection */
+  .tiptap-bubble-menu {
+    position: fixed;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    background: var(--color-foreground);
+    border-radius: 8px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  }
+
+  .tiptap-bubble-menu::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--color-foreground);
+  }
+
+  .tiptap-bubble-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--color-background);
+    cursor: pointer;
+  }
+
+  .tiptap-bubble-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .tiptap-bubble-btn:hover {
+    background: oklch(from var(--color-background) l c h / 0.15);
+  }
+
+  .tiptap-bubble-btn.is-active {
+    background: oklch(from var(--color-background) l c h / 0.22);
+  }
+
+  .tiptap-bubble-sep {
+    width: 1px;
+    height: 16px;
+    background: oklch(from var(--color-background) l c h / 0.2);
+    flex-shrink: 0;
   }
 
   /* Fullscreen editor dialog — enters browser top layer via showModal() */

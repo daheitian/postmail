@@ -150,6 +150,11 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Published!",
       comment: "@context: Toast shown after successful deferred publish",
     }),
+    retryAll: t({
+      message: "Click to retry all",
+      comment:
+        "@context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads",
+    }),
   }).replace(/</g, "\\u003c");
 
   const collectionsJson = JSON.stringify(

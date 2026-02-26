@@ -142,11 +142,7 @@ export class JantComposeEditor extends LitElement {
     if (!this._editor) return;
 
     const placeholderUrl = URL.createObjectURL(file);
-    this._editor
-      .chain()
-      .focus()
-      .setImage({ src: placeholderUrl, alt: file.name })
-      .run();
+    this._editor.chain().focus().setImage({ src: placeholderUrl }).run();
 
     try {
       const formData = new FormData();
@@ -457,6 +453,28 @@ export class JantComposeEditor extends LitElement {
     } else if (this._showAltPanel && this._altPanelIndex > index) {
       this._altPanelIndex = this._altPanelIndex - 1;
     }
+  }
+
+  private _retryAllFailed() {
+    const failed = this._attachments.filter((a) => a.status === "error");
+    if (failed.length === 0) return;
+
+    // Reset failed attachments to pending
+    this._attachments = this._attachments.map((a) =>
+      a.status === "error"
+        ? { ...a, status: "pending" as const, error: null }
+        : a,
+    );
+
+    // Re-dispatch them through the normal upload flow
+    this.dispatchEvent(
+      new CustomEvent("jant:files-selected", {
+        bubbles: true,
+        detail: {
+          files: failed.map((a) => ({ file: a.file, clientId: a.clientId })),
+        },
+      }),
+    );
   }
 
   private _openAltPanel(index: number) {
@@ -890,21 +908,31 @@ export class JantComposeEditor extends LitElement {
         : nothing}
       ${a.status === "error"
         ? html`
-            <div class="compose-attachment-overlay compose-attachment-error">
+            <button
+              type="button"
+              class="compose-attachment-overlay compose-attachment-retry"
+              title="${a.error ?? "Upload failed"}. ${this.labels.retryAll}"
+              @click=${(e: Event) => {
+                e.stopPropagation();
+                this._retryAllFailed();
+              }}
+            >
               <svg
-                class="icon-fine"
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="2"
                 stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                <circle cx="8" cy="8" r="6" />
-                <path d="M10 6L6 10M6 6l4 4" />
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 16h5v5" />
               </svg>
-            </div>
+            </button>
           `
         : nothing}
       <button

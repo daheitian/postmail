@@ -78,11 +78,7 @@ async function uploadAndInsertImage(
 ) {
   // Insert placeholder
   const placeholderUrl = URL.createObjectURL(file);
-  editor
-    .chain()
-    .focus()
-    .setImage({ src: placeholderUrl, alt: file.name })
-    .run();
+  editor.chain().focus().setImage({ src: placeholderUrl }).run();
 
   try {
     const formData = new FormData();

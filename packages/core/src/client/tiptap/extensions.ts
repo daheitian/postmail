@@ -7,10 +7,11 @@
 import type { Extensions } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import Image from "@tiptap/extension-image";
+import { ImageNode } from "./image-node.js";
 import { MoreBreak } from "./more-break.js";
 import { SlashCommands } from "./slash-commands.js";
 import { PasteImage } from "./paste-image.js";
+import { BubbleMenu } from "./bubble-menu.js";
 
 export interface EditorExtensionOptions {
   placeholder?: string;
@@ -32,12 +33,10 @@ export function createEditorExtensions(
     Placeholder.configure({
       placeholder: options.placeholder ?? "Write something…",
     }),
-    Image.configure({
-      inline: false,
-      allowBase64: false,
-    }),
+    ImageNode,
     MoreBreak,
     SlashCommands,
     PasteImage,
+    BubbleMenu,
   ];
 }

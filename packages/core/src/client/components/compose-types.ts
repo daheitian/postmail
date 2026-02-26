@@ -52,6 +52,7 @@ export interface ComposeLabels {
   addMore: string;
   uploading: string;
   published: string;
+  retryAll: string;
 }
 
 export interface ComposeSubmitDetail {

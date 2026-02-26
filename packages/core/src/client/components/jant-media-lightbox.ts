@@ -74,27 +74,45 @@ export class JantMediaLightbox extends LitElement {
     const target = e.target as HTMLElement;
 
     // Find the closest anchor with data-lightbox-index inside [data-post-media]
+    // Media gallery lightbox (existing)
     const anchor = target.closest<HTMLAnchorElement>(
       "[data-post-media] a[data-lightbox-index]",
     );
-    if (!anchor) return;
+    if (anchor) {
+      const group = anchor.closest<HTMLElement>("[data-lightbox-group]");
+      if (!group) return;
 
-    // Find the lightbox group container
-    const group = anchor.closest<HTMLElement>("[data-lightbox-group]");
-    if (!group) return;
+      e.preventDefault();
 
-    e.preventDefault();
-
-    const index = parseInt(anchor.dataset.lightboxIndex ?? "0", 10);
-    try {
-      const images: LightboxImage[] = JSON.parse(
-        group.dataset.lightboxGroup ?? "[]",
-      );
-      if (images.length > 0) {
-        this.open(images, index);
+      const index = parseInt(anchor.dataset.lightboxIndex ?? "0", 10);
+      try {
+        const images: LightboxImage[] = JSON.parse(
+          group.dataset.lightboxGroup ?? "[]",
+        );
+        if (images.length > 0) {
+          this.open(images, index);
+        }
+      } catch {
+        // JSON parse failed — fall through to default link behavior
       }
-    } catch {
-      // JSON parse failed — fall through to default link behavior
+      return;
+    }
+
+    // Inline body images — collect all <img> within the same [data-post-body]
+    const img = target.closest<HTMLImageElement>("[data-post-body] img");
+    if (img) {
+      e.preventDefault();
+      const container = img.closest<HTMLElement>("[data-post-body]");
+      if (!container) return;
+      const allImages = Array.from(
+        container.querySelectorAll<HTMLImageElement>("img"),
+      );
+      const images: LightboxImage[] = allImages.map((i) => ({
+        url: i.src,
+        alt: i.alt || "",
+      }));
+      const index = allImages.indexOf(img);
+      if (images.length > 0) this.open(images, Math.max(0, index));
     }
   };
 

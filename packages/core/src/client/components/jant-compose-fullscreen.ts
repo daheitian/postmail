@@ -93,11 +93,7 @@ export class JantComposeFullscreen extends LitElement {
     if (!this._editor) return;
 
     const placeholderUrl = URL.createObjectURL(file);
-    this._editor
-      .chain()
-      .focus()
-      .setImage({ src: placeholderUrl, alt: file.name })
-      .run();
+    this._editor.chain().focus().setImage({ src: placeholderUrl }).run();
 
     try {
       const formData = new FormData();
