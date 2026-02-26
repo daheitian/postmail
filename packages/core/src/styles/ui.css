@@ -818,7 +818,7 @@
   }
 
   .compose-star-filled {
-    color: var(--primary);
+    color: oklch(0.75 0.15 70);
     transform: scale(1.1);
   }
 
@@ -951,10 +951,15 @@
     cursor: pointer;
     transition: all 0.18s ease;
     flex-shrink: 0;
-    color: rgb(153 153 153);
+    color: var(--site-text-secondary);
   }
 
   .compose-tool-btn:hover {
+    background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-tool-btn-active {
+    color: var(--site-text-primary);
     background-color: var(--site-nav-hover-bg);
   }
 
@@ -1261,11 +1266,11 @@
   }
 
   .compose-attachment-alt-set {
-    color: var(--primary);
+    color: oklch(0.6 0.15 155);
   }
 
   .compose-attachment-alt-set:hover {
-    color: var(--primary);
+    color: oklch(0.6 0.15 155);
     opacity: 0.8;
   }
 

@@ -926,7 +926,8 @@ export class JantComposeEditor extends LitElement {
             </defs>
             <polygon
               points="12 2 14.8 9.2 22.5 9.7 16.8 14.8 18.8 22.3 12 18.2 5.2 22.3 7.2 14.8 1.5 9.7 9.2 9.2"
-              fill="#888"
+              fill="currentColor"
+              opacity="0.45"
               clip-path="url(#half-left)"
             />
             <polygon
