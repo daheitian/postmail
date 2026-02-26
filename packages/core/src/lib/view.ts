@@ -176,7 +176,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     quoteText: post.quoteText ?? undefined,
     format: post.format as Format,
     status: post.status as Status,
-    featured: post.featured === 1,
+    visibility: post.visibility,
     pinned: post.pinned === 1,
     rating: post.rating ?? undefined,
     publishedAt: toISOString(post.publishedAt),

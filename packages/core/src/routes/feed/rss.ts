@@ -22,7 +22,8 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const rssRoutes = new Hono<Env>();
 
 interface FeedOptions {
-  featured?: boolean;
+  visibility?: "featured";
+  excludeUnlisted?: boolean;
   format?: Format;
 }
 
@@ -47,7 +48,8 @@ async function buildFeedData(
   const posts = await c.var.services.posts.list({
     status: "published",
     excludeReplies: true,
-    featured: opts?.featured,
+    visibility: opts?.visibility,
+    excludeUnlisted: opts?.excludeUnlisted,
     format: opts?.format,
     limit: feedLimit,
   });
@@ -97,7 +99,7 @@ function parseFormatQuery(c: Context<Env>): Format | undefined {
 
 // RSS 2.0 — /feed
 rssRoutes.get("/", async (c) => {
-  const feedData = await buildFeedData(c, { featured: true });
+  const feedData = await buildFeedData(c, { visibility: "featured" });
   const xml = defaultRssRenderer(feedData);
 
   return new Response(xml, {
@@ -109,7 +111,7 @@ rssRoutes.get("/", async (c) => {
 
 // Atom — /feed/atom.xml
 rssRoutes.get("/atom.xml", async (c) => {
-  const feedData = await buildFeedData(c, { featured: true });
+  const feedData = await buildFeedData(c, { visibility: "featured" });
   const xml = defaultAtomRenderer(feedData);
 
   return new Response(xml, {
@@ -124,7 +126,7 @@ rssRoutes.get("/atom.xml", async (c) => {
 // RSS 2.0 — /feed/all
 rssRoutes.get("/all", async (c) => {
   const format = parseFormatQuery(c);
-  const feedData = await buildFeedData(c, { format });
+  const feedData = await buildFeedData(c, { excludeUnlisted: true, format });
   const xml = defaultRssRenderer(feedData);
 
   return new Response(xml, {
@@ -137,7 +139,7 @@ rssRoutes.get("/all", async (c) => {
 // Atom — /feed/all/atom.xml
 rssRoutes.get("/all/atom.xml", async (c) => {
   const format = parseFormatQuery(c);
-  const feedData = await buildFeedData(c, { format });
+  const feedData = await buildFeedData(c, { excludeUnlisted: true, format });
   const xml = defaultAtomRenderer(feedData);
 
   return new Response(xml, {

@@ -3,7 +3,7 @@
  *
  * CRUD operations for posts with Thread support.
  * Posts have format (note/link/quote), status (draft/published),
- * featured flag, and pinned flag.
+ * visibility (listed/featured/unlisted), and pinned flag.
  */
 
 import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
@@ -15,7 +15,14 @@ import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary } from "../lib/summary.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
-import type { Format, Status, Post, CreatePost, UpdatePost } from "../types.js";
+import type {
+  Format,
+  Status,
+  Visibility,
+  Post,
+  CreatePost,
+  UpdatePost,
+} from "../types.js";
 import type { PathRegistryService } from "./path-registry.js";
 import { ConflictError } from "../lib/errors.js";
 
@@ -28,11 +35,13 @@ export interface PostDeleteDeps {
 export interface PostFilters {
   format?: Format;
   status?: Status;
-  featured?: boolean;
+  visibility?: Visibility;
   pinned?: boolean;
   collectionId?: number;
   /** Exclude posts that are replies (have threadId set) */
   excludeReplies?: boolean;
+  /** Exclude unlisted posts from results */
+  excludeUnlisted?: boolean;
   includeDeleted?: boolean;
   threadId?: number;
   limit?: number;
@@ -67,10 +76,10 @@ export interface PostService {
    */
   delete(id: number, deps?: PostDeleteDeps): Promise<boolean>;
   getThread(rootId: number): Promise<Post[]>;
-  updateThreadStatusAndFeatured(
+  updateThreadStatusAndVisibility(
     rootId: number,
     status: Status,
-    featured: boolean,
+    visibility: Visibility,
   ): Promise<void>;
   /** Get reply counts for multiple posts */
   getReplyCounts(postIds: number[]): Promise<Map<number, number>>;
@@ -111,8 +120,11 @@ export function createPostService(
     if (filters.status) {
       conditions.push(eq(posts.status, filters.status));
     }
-    if (filters.featured !== undefined) {
-      conditions.push(eq(posts.featured, filters.featured ? 1 : 0));
+    if (filters.visibility !== undefined) {
+      conditions.push(eq(posts.visibility, filters.visibility));
+    }
+    if (filters.excludeUnlisted) {
+      conditions.push(sql`${posts.visibility} != 'unlisted'`);
     }
     if (filters.pinned !== undefined) {
       conditions.push(eq(posts.pinned, filters.pinned ? 1 : 0));
@@ -144,7 +156,7 @@ export function createPostService(
       id: row.id,
       format: row.format as Format,
       status: row.status as Status,
-      featured: row.featured,
+      visibility: row.visibility as Visibility,
       pinned: row.pinned,
       path: row.path,
       title: row.title,
@@ -233,19 +245,19 @@ export function createPostService(
       // Handle thread relationship
       let threadId: number | null = null;
       let status: Status = data.status ?? "published";
-      let featured = data.featured ?? false;
+      let visibility: Visibility = data.visibility ?? "listed";
 
       if (data.replyToId) {
         const parent = await this.getById(data.replyToId);
         if (parent) {
           threadId = parent.threadId ?? parent.id;
-          // Inherit status and featured from root
+          // Inherit status and visibility from root
           const root = parent.threadId
             ? await this.getById(parent.threadId)
             : parent;
           if (root) {
             status = root.status as Status;
-            featured = root.featured === 1;
+            visibility = root.visibility as Visibility;
           }
         }
       }
@@ -264,7 +276,7 @@ export function createPostService(
           .values({
             format: data.format,
             status,
-            featured: featured ? 1 : 0,
+            visibility,
             pinned: data.pinned ? 1 : 0,
             path: data.path ?? null,
             title: data.title ?? null,
@@ -365,19 +377,19 @@ export function createPostService(
         }
       }
 
-      // Handle status/featured change - cascade to thread if this is root
+      // Handle status/visibility change - cascade to thread if this is root
       const statusChanged =
         data.status !== undefined && data.status !== existing.status;
-      const featuredChanged =
-        data.featured !== undefined &&
-        (data.featured ? 1 : 0) !== existing.featured;
+      const visibilityChanged =
+        data.visibility !== undefined &&
+        data.visibility !== existing.visibility;
 
       if (statusChanged) updates.status = data.status;
-      if (featuredChanged) updates.featured = data.featured ? 1 : 0;
+      if (visibilityChanged) updates.visibility = data.visibility;
 
       // Build all write queries for atomic execution via D1 batch
       const needsCascade =
-        (statusChanged || featuredChanged) && !existing.threadId;
+        (statusChanged || visibilityChanged) && !existing.threadId;
       const needsCollectionSync = data.collectionIds !== undefined;
       const hasExtraWrites = needsCascade || needsCollectionSync;
 
@@ -400,13 +412,8 @@ export function createPostService(
             .update(posts)
             .set({
               status: data.status ?? (existing.status as Status),
-              featured: (
-                data.featured !== undefined
-                  ? data.featured
-                  : existing.featured === 1
-              )
-                ? 1
-                : 0,
+              visibility:
+                data.visibility ?? (existing.visibility as Visibility),
               updatedAt: timestamp,
             })
             .where(eq(posts.threadId, id)),
@@ -519,11 +526,11 @@ export function createPostService(
       return rows.map(toPost);
     },
 
-    async updateThreadStatusAndFeatured(rootId, status, featured) {
+    async updateThreadStatusAndVisibility(rootId, status, visibility) {
       const timestamp = now();
       await db
         .update(posts)
-        .set({ status, featured: featured ? 1 : 0, updatedAt: timestamp })
+        .set({ status, visibility, updatedAt: timestamp })
         .where(eq(posts.threadId, rootId));
     },
 

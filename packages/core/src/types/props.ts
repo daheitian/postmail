@@ -2,7 +2,7 @@
  * Page-Level Props & Feed Data Types
  */
 
-import type { Format } from "./constants.js";
+import type { Format, Visibility } from "./constants.js";
 import type { Collection } from "./entities.js";
 import type {
   PostView,
@@ -45,7 +45,7 @@ export interface ArchivePageProps {
   hasMore: boolean;
   nextCursor?: number;
   format?: Format;
-  featured?: boolean;
+  visibility?: Visibility;
 }
 
 /** Props for the search page component */

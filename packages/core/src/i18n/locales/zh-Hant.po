@@ -679,7 +679,7 @@ msgstr ""
 #. @context: Browse filter label
 #. @context: Browse filter label for featured posts
 #. @context: Post badge - featured
-#. @context: Post form checkbox - mark as featured
+#. @context: Visibility option - highlighted on featured page
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -872,6 +872,11 @@ msgstr "連結"
 #. @context: Label for max visible nav links number input
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Links shown in header"
+msgstr ""
+
+#. @context: Visibility option - appears everywhere
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Listed"
 msgstr ""
 
 #. @context: Pagination button - load more items
@@ -1825,6 +1830,13 @@ msgstr "輸入引用..."
 msgid "Typography"
 msgstr ""
 
+#. @context: Post badge - unlisted
+#. @context: Visibility option - hidden from feeds
+#: src/ui/dash/posts/PostForm.tsx
+#: src/ui/dash/StatusBadge.tsx
+msgid "Unlisted"
+msgstr ""
+
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
 #: src/ui/dash/pages/PagesContent.tsx
@@ -1934,6 +1946,11 @@ msgstr "查看"
 #: src/ui/layouts/DashLayout.tsx
 #~ msgid "View Site"
 #~ msgstr "查看網站"
+
+#. @context: Post form field - post visibility
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Visibility"
+msgstr ""
 
 #. @context: Dashboard header link text to visit the public blog
 #. @context: Dashboard header link to visit the public blog

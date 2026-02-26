@@ -1,13 +1,13 @@
 /**
  * Archive Page Route
  *
- * Shows all posts, optionally filtered by format or featured status
+ * Shows all posts, optionally filtered by format or visibility
  */
 
 import { Hono } from "hono";
-import type { Bindings, Format } from "../../types.js";
+import type { Bindings, Format, Visibility } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { FORMATS } from "../../types.js";
+import { FORMATS, VISIBILITIES } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
@@ -24,8 +24,12 @@ archiveRoutes.get("/", async (c) => {
   const formatParam = c.req.query("format") as Format | undefined;
   const format =
     formatParam && FORMATS.includes(formatParam) ? formatParam : undefined;
-  const featuredParam = c.req.query("featured");
-  const featured = featuredParam === "true" ? true : undefined;
+  const visibilityParam = c.req.query("visibility") as Visibility | undefined;
+  const visibility =
+    visibilityParam &&
+    (VISIBILITIES as readonly string[]).includes(visibilityParam)
+      ? visibilityParam
+      : undefined;
 
   // Parse cursor
   const cursorParam = c.req.query("cursor");
@@ -37,7 +41,7 @@ archiveRoutes.get("/", async (c) => {
   const posts = await c.var.services.posts.list({
     format,
     status: "published",
-    featured,
+    visibility,
     excludeReplies: true,
     cursor,
     limit: PAGE_SIZE + 1,
@@ -78,7 +82,7 @@ archiveRoutes.get("/", async (c) => {
         hasMore={hasMore}
         nextCursor={nextCursor}
         format={format}
-        featured={featured}
+        visibility={visibility}
       />
     ),
   });

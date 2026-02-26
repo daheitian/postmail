@@ -115,9 +115,21 @@ export const PostForm: FC<PostFormProps> = ({
       message: "Draft",
       comment: "@context: Post status option",
     }),
-    featuredLabel: t({
+    visibilityLabel: t({
+      message: "Visibility",
+      comment: "@context: Post form field - post visibility",
+    }),
+    visibilityListed: t({
+      message: "Listed",
+      comment: "@context: Visibility option - appears everywhere",
+    }),
+    visibilityFeatured: t({
       message: "Featured",
-      comment: "@context: Post form checkbox - mark as featured",
+      comment: "@context: Visibility option - highlighted on featured page",
+    }),
+    visibilityUnlisted: t({
+      message: "Unlisted",
+      comment: "@context: Visibility option - hidden from feeds",
     }),
     pinnedLabel: t({
       message: "Pinned",
@@ -174,7 +186,7 @@ export const PostForm: FC<PostFormProps> = ({
     url: post?.url ?? "",
     quoteText: post?.quoteText ?? "",
     status: post?.status ?? "published",
-    featured: post?.featured === 1,
+    visibility: post?.visibility ?? "listed",
     pinned: post?.pinned === 1,
     rating: post?.rating ?? 0,
     collectionIds: postCollectionIds,

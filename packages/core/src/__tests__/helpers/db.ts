@@ -125,6 +125,9 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0012: Tiptap columns (summary)
   applyMigration(sqlite, "0012_add_tiptap_columns.sql");
 
+  // Apply 0013: Replace featured with visibility
+  applyMigration(sqlite, "0013_replace_featured_with_visibility.sql");
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

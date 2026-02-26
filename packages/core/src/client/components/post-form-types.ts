@@ -4,6 +4,7 @@
 
 export type PostFormat = "note" | "link" | "quote";
 export type PostStatus = "published" | "draft";
+export type PostVisibility = "listed" | "featured" | "unlisted";
 
 export interface PostFormLabels {
   formatLabel: string;
@@ -25,7 +26,10 @@ export interface PostFormLabels {
   statusLabel: string;
   statusPublished: string;
   statusDraft: string;
-  featuredLabel: string;
+  visibilityLabel: string;
+  visibilityListed: string;
+  visibilityFeatured: string;
+  visibilityUnlisted: string;
   pinnedLabel: string;
   collectionsLabel: string;
   submitLabel: string;
@@ -44,7 +48,7 @@ export interface PostFormInitial {
   url: string;
   quoteText: string;
   status: PostStatus;
-  featured: boolean;
+  visibility: PostVisibility;
   pinned: boolean;
   rating: number;
   collectionIds: number[];
@@ -72,7 +76,7 @@ export interface PostSubmitDetail {
     title?: string;
     body?: string;
     status: PostStatus;
-    featured: boolean;
+    visibility: PostVisibility;
     pinned: boolean;
     url?: string;
     quoteText?: string;

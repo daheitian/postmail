@@ -15,6 +15,7 @@ import type {
   PostSubmitDetail,
   PostFormat,
   PostStatus,
+  PostVisibility,
 } from "./post-form-types.js";
 import { renderPostForm } from "./post-form-template.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
@@ -26,7 +27,7 @@ const DEFAULT_INITIAL: PostFormInitial = {
   url: "",
   quoteText: "",
   status: "published",
-  featured: false,
+  visibility: "listed",
   pinned: false,
   rating: 0,
   collectionIds: [],
@@ -53,7 +54,10 @@ const EMPTY_LABELS: PostFormLabels = {
   statusLabel: "",
   statusPublished: "",
   statusDraft: "",
-  featuredLabel: "",
+  visibilityLabel: "",
+  visibilityListed: "",
+  visibilityFeatured: "",
+  visibilityUnlisted: "",
   pinnedLabel: "",
   collectionsLabel: "",
   submitLabel: "",
@@ -95,7 +99,7 @@ export class JantPostForm extends LitElement {
     _url: { state: true },
     _quoteText: { state: true },
     _status: { state: true },
-    _featured: { state: true },
+    _visibility: { state: true },
     _pinned: { state: true },
     _rating: { state: true },
     _collectionIds: { state: true },
@@ -117,7 +121,7 @@ export class JantPostForm extends LitElement {
   declare _url: string;
   declare _quoteText: string;
   declare _status: PostStatus;
-  declare _featured: boolean;
+  declare _visibility: PostVisibility;
   declare _pinned: boolean;
   declare _rating: number;
   declare _collectionIds: number[];
@@ -149,7 +153,7 @@ export class JantPostForm extends LitElement {
     this._url = "";
     this._quoteText = "";
     this._status = "published";
-    this._featured = false;
+    this._visibility = "listed";
     this._pinned = false;
     this._rating = 0;
     this._collectionIds = [];
@@ -214,7 +218,7 @@ export class JantPostForm extends LitElement {
     this._url = init.url ?? "";
     this._quoteText = init.quoteText ?? "";
     this._status = init.status ?? "published";
-    this._featured = !!init.featured;
+    this._visibility = init.visibility ?? "listed";
     this._pinned = !!init.pinned;
     this._rating = init.rating ?? 0;
     this._collectionIds = [...(init.collectionIds ?? [])];
@@ -306,7 +310,7 @@ export class JantPostForm extends LitElement {
         title: this._title.trim(),
         body: bodyValue,
         status: this._status,
-        featured: this._featured,
+        visibility: this._visibility,
         pinned: this._pinned,
         url: this._url.trim(),
         quoteText: this._quoteText.trim(),

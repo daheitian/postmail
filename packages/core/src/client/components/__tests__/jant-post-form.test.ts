@@ -31,7 +31,10 @@ const labels: PostFormLabels = {
   statusLabel: "Status",
   statusPublished: "Published",
   statusDraft: "Draft",
-  featuredLabel: "Featured",
+  visibilityLabel: "Visibility",
+  visibilityListed: "Listed",
+  visibilityFeatured: "Featured",
+  visibilityUnlisted: "Unlisted",
   pinnedLabel: "Pinned",
   collectionsLabel: "Collections",
   submitLabel: "Publish",
@@ -50,7 +53,7 @@ const initial: PostFormInitial = {
   url: "",
   quoteText: "",
   status: "published",
-  featured: false,
+  visibility: "listed",
   pinned: false,
   rating: 0,
   collectionIds: [],
@@ -128,14 +131,19 @@ describe("JantPostForm", () => {
     };
     el._body = JSON.stringify(el._bodyJson);
 
+    // Set visibility to "featured" via the select dropdown
+    const visibilitySelect =
+      el.querySelectorAll<HTMLSelectElement>("select.select")[2]; // [0]=format, [1]=status, [2]=visibility
+    expect(visibilitySelect).not.toBeNull();
+    if (!visibilitySelect) throw new Error("Visibility select not found");
+    visibilitySelect.value = "featured";
+    visibilitySelect.dispatchEvent(new Event("change", { bubbles: true }));
+
     const checkboxList =
       el.querySelectorAll<HTMLInputElement>("input.checkbox");
     expect(checkboxList.length).toBeGreaterThan(0);
-    const checkbox = checkboxList[0];
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
 
-    const collectionCheckbox = checkboxList.item(2);
+    const collectionCheckbox = checkboxList.item(1);
     expect(collectionCheckbox).not.toBeNull();
     if (!collectionCheckbox) throw new Error("Collection checkbox missing");
     collectionCheckbox.checked = true;
@@ -157,7 +165,7 @@ describe("JantPostForm", () => {
     expect(d.endpoint).toBe("/dash/posts");
     expect(d.data.title).toBe("Sample Post");
     expect(d.data.body).toContain("Hello world");
-    expect(d.data.featured).toBe(true);
+    expect(d.data.visibility).toBe("featured");
     expect(d.data.collectionIds).toEqual([collections[0].id]);
     expect(d.data.mediaIds).toEqual(["m1"]);
   });

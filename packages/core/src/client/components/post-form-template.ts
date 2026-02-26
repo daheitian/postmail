@@ -170,32 +170,39 @@ export function renderPostForm(component: JantPostForm) {
         </select>
       </div>
 
-      <div class="flex gap-4">
-        <label class="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            class="checkbox"
-            .checked=${component._featured}
-            @change=${(e: Event) => {
-              const target = e.target as HTMLInputElement;
-              component._featured = target.checked;
-            }}
-          />
-          ${component.labels.featuredLabel}
-        </label>
-        <label class="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            class="checkbox"
-            .checked=${component._pinned}
-            @change=${(e: Event) => {
-              const target = e.target as HTMLInputElement;
-              component._pinned = target.checked;
-            }}
-          />
-          ${component.labels.pinnedLabel}
-        </label>
+      <div class="field">
+        <label class="label">${component.labels.visibilityLabel}</label>
+        <select
+          class="select"
+          .value=${component._visibility}
+          @change=${(e: Event) => {
+            const target = e.target as HTMLSelectElement;
+            component._visibility =
+              (target.value as typeof component._visibility) ?? "listed";
+          }}
+        >
+          <option value="listed">${component.labels.visibilityListed}</option>
+          <option value="featured">
+            ${component.labels.visibilityFeatured}
+          </option>
+          <option value="unlisted">
+            ${component.labels.visibilityUnlisted}
+          </option>
+        </select>
       </div>
+
+      <label class="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          class="checkbox"
+          .checked=${component._pinned}
+          @change=${(e: Event) => {
+            const target = e.target as HTMLInputElement;
+            component._pinned = target.checked;
+          }}
+        />
+        ${component.labels.pinnedLabel}
+      </label>
 
       ${renderCollections(component)}
 

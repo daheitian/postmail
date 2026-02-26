@@ -231,14 +231,17 @@ describe("CreatePostSchema", () => {
     ).toThrow();
   });
 
-  it("accepts featured as boolean", () => {
-    const result = CreatePostSchema.parse({ ...validPost, featured: true });
-    expect(result.featured).toBe(true);
+  it("accepts visibility values", () => {
+    for (const v of ["listed", "featured", "unlisted"]) {
+      const result = CreatePostSchema.parse({ ...validPost, visibility: v });
+      expect(result.visibility).toBe(v);
+    }
   });
 
-  it("accepts featured as 'on' (transforms to true)", () => {
-    const result = CreatePostSchema.parse({ ...validPost, featured: "on" });
-    expect(result.featured).toBe(true);
+  it("rejects invalid visibility", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, visibility: "hidden" }),
+    ).toThrow();
   });
 
   it("accepts pinned as boolean", () => {

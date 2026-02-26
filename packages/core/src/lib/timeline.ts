@@ -51,6 +51,7 @@ export async function assembleTimeline(
   const totalCount = await c.var.services.posts.count({
     status: "published",
     excludeReplies: true,
+    excludeUnlisted: true,
   });
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -58,6 +59,7 @@ export async function assembleTimeline(
   const posts = await c.var.services.posts.list({
     status: "published",
     excludeReplies: true,
+    excludeUnlisted: true,
     limit: pageSize,
     offset,
   });

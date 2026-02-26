@@ -12,6 +12,7 @@ import { z } from "zod";
 import {
   FORMATS,
   STATUSES,
+  VISIBILITIES,
   SORT_ORDERS,
   NAV_ITEM_TYPES,
   MAX_MEDIA_ATTACHMENTS,
@@ -71,9 +72,7 @@ export const CreatePostSchema = z.object({
   title: z.string().optional(),
   body: z.string().optional(),
   status: StatusSchema.optional(),
-  featured: z
-    .union([z.boolean(), z.literal("on").transform(() => true)])
-    .optional(),
+  visibility: z.enum(VISIBILITIES).optional(),
   pinned: z
     .union([z.boolean(), z.literal("on").transform(() => true)])
     .optional(),

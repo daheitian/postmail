@@ -20,7 +20,11 @@ export const posts = sqliteTable("posts", {
   })
     .notNull()
     .default("published"),
-  featured: integer("featured").notNull().default(0),
+  visibility: text("visibility", {
+    enum: ["listed", "featured", "unlisted"],
+  })
+    .notNull()
+    .default("listed"),
   pinned: integer("pinned").notNull().default(0),
   path: text("path").unique(),
   title: text("title"),

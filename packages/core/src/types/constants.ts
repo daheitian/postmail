@@ -8,6 +8,9 @@ export type Format = (typeof FORMATS)[number];
 export const STATUSES = ["draft", "published"] as const;
 export type Status = (typeof STATUSES)[number];
 
+export const VISIBILITIES = ["listed", "featured", "unlisted"] as const;
+export type Visibility = (typeof VISIBILITIES)[number];
+
 export const SORT_ORDERS = [
   "newest",
   "oldest",

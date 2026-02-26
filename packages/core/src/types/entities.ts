@@ -2,13 +2,19 @@
  * Entity Types (database-level models)
  */
 
-import type { Format, Status, SortOrder, NavItemType } from "./constants.js";
+import type {
+  Format,
+  Status,
+  Visibility,
+  SortOrder,
+  NavItemType,
+} from "./constants.js";
 
 export interface Post {
   id: number;
   format: Format;
   status: Status;
-  featured: number; // 0 | 1
+  visibility: Visibility;
   pinned: number; // 0 | 1
   path: string | null;
   title: string | null;

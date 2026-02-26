@@ -813,7 +813,7 @@ msgstr "Favicon and header icon"
 #. @context: Browse filter label
 #. @context: Browse filter label for featured posts
 #. @context: Post badge - featured
-#. @context: Post form checkbox - mark as featured
+#. @context: Visibility option - highlighted on featured page
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1048,6 +1048,11 @@ msgstr "Links"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Links shown in header"
 msgstr "Links shown in header"
+
+#. @context: Visibility option - appears everywhere
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Listed"
+msgstr "Listed"
 
 #. @context: Pagination button - load more items
 #: src/ui/shared/Pagination.tsx
@@ -2147,12 +2152,12 @@ msgstr "Typography"
 #~ msgid "Un-nav"
 #~ msgstr "Un-nav"
 
-#. @context: Post visibility badge - unlisted
-#. @context: Post visibility option
-#: src/theme/components/PostForm.tsx
-#: src/theme/components/VisibilityBadge.tsx
-#~ msgid "Unlisted"
-#~ msgstr "Unlisted"
+#. @context: Post badge - unlisted
+#. @context: Visibility option - hidden from feeds
+#: src/ui/dash/posts/PostForm.tsx
+#: src/ui/dash/StatusBadge.tsx
+msgid "Unlisted"
+msgstr "Unlisted"
 
 #. @context: Default title for untitled page
 #. @context: Default title for untitled post
@@ -2279,10 +2284,10 @@ msgstr "View"
 #~ msgid "View Site"
 #~ msgstr "View Site"
 
-#. @context: Post form field
-#: src/theme/components/PostForm.tsx
-#~ msgid "Visibility"
-#~ msgstr "Visibility"
+#. @context: Post form field - post visibility
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Visibility"
+msgstr "Visibility"
 
 #. @context: Dashboard header link text to visit the public blog
 #. @context: Dashboard header link to visit the public blog

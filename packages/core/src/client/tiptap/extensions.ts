@@ -19,6 +19,7 @@ import { SlashCommands } from "./slash-commands.js";
 import { PasteImage } from "./paste-image.js";
 import { BubbleMenu } from "./bubble-menu.js";
 import { LinkToolbar } from "./link-toolbar.js";
+import { ExitableMarks } from "./exitable-marks.js";
 
 export interface EditorExtensionOptions {
   placeholder?: string;
@@ -36,7 +37,7 @@ export function createEditorExtensions(
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
-      link: { openOnClick: false, inclusive: false },
+      link: { openOnClick: false, autolink: false },
     }),
     Placeholder.configure({
       placeholder: options.placeholder ?? "Write something…",
@@ -54,5 +55,6 @@ export function createEditorExtensions(
     PasteImage,
     BubbleMenu,
     LinkToolbar,
+    ExitableMarks,
   ];
 }

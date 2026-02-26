@@ -47,7 +47,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   hasMore,
   nextCursor,
   format,
-  featured,
+  visibility,
 }) => {
   const { t } = useLingui();
   const title = format
@@ -65,7 +65,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
             href="/archive"
             class={
               "badge " +
-              (!format && !featured ? "badge-primary" : "badge-outline")
+              (!format && !visibility ? "badge-primary" : "badge-outline")
             }
           >
             {t({
@@ -86,8 +86,11 @@ export const ArchivePage: FC<ArchivePageProps> = ({
             </a>
           ))}
           <a
-            href="/archive?featured=true"
-            class={"badge " + (featured ? "badge-primary" : "badge-outline")}
+            href="/archive?visibility=featured"
+            class={
+              "badge " +
+              (visibility === "featured" ? "badge-primary" : "badge-outline")
+            }
           >
             {t({
               message: "Featured",
@@ -150,8 +153,8 @@ export const ArchivePage: FC<ArchivePageProps> = ({
         baseUrl={
           format
             ? "/archive?format=" + format
-            : featured
-              ? "/archive?featured=true"
+            : visibility
+              ? "/archive?visibility=" + visibility
               : "/archive"
         }
         hasMore={hasMore}

@@ -1,22 +1,22 @@
 /**
  * Status Badge Component
  *
- * Displays badges for post status, featured, and pinned state.
+ * Displays badges for post status, visibility, and pinned state.
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { Status } from "../../types.js";
+import type { Status, Visibility } from "../../types.js";
 
 export interface StatusBadgeProps {
   status: Status;
-  featured?: boolean;
+  visibility?: Visibility;
   pinned?: boolean;
 }
 
 export const StatusBadge: FC<StatusBadgeProps> = ({
   status,
-  featured,
+  visibility,
   pinned,
 }) => {
   const { t } = useLingui();
@@ -40,11 +40,19 @@ export const StatusBadge: FC<StatusBadgeProps> = ({
   return (
     <span class="flex items-center gap-1">
       <span class={statusVariants[status]}>{statusLabels[status]}</span>
-      {featured && (
+      {visibility === "featured" && (
         <span class="badge-primary">
           {t({
             message: "Featured",
             comment: "@context: Post badge - featured",
+          })}
+        </span>
+      )}
+      {visibility === "unlisted" && (
+        <span class="badge-outline">
+          {t({
+            message: "Unlisted",
+            comment: "@context: Post badge - unlisted",
           })}
         </span>
       )}

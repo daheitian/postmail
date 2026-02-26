@@ -32,7 +32,7 @@ function makePost(overrides: Partial<Post> = {}): Post {
     id: 1,
     format: "note",
     status: "published",
-    featured: 0,
+    visibility: "listed" as const,
     pinned: 0,
     path: null,
     title: null,
@@ -236,31 +236,31 @@ describe("toPostView", () => {
     expect(view.quoteText).toBe("Something wise");
   });
 
-  it("maps format, status, featured, and pinned correctly", () => {
+  it("maps format, status, visibility, and pinned correctly", () => {
     const view = toPostView(
       makePostWithMedia({
         format: "link",
         status: "draft",
-        featured: 1,
+        visibility: "featured",
         pinned: 1,
       }),
       EMPTY_CTX,
     );
     expect(view.format).toBe("link");
     expect(view.status).toBe("draft");
-    expect(view.featured).toBe(true);
+    expect(view.visibility).toBe("featured");
     expect(view.pinned).toBe(true);
   });
 
-  it("converts featured=0 and pinned=0 to false", () => {
+  it("maps default visibility and pinned=0", () => {
     const view = toPostView(
       makePostWithMedia({
-        featured: 0,
+        visibility: "listed",
         pinned: 0,
       }),
       EMPTY_CTX,
     );
-    expect(view.featured).toBe(false);
+    expect(view.visibility).toBe("listed");
     expect(view.pinned).toBe(false);
   });
 
@@ -464,7 +464,7 @@ describe("toSearchResultView", () => {
         id: 10,
         format: "link",
         status: "published",
-        featured: 1,
+        visibility: "featured",
         pinned: 0,
         url: "https://example.com",
         path: "my-link",
@@ -474,7 +474,7 @@ describe("toSearchResultView", () => {
     const view = toSearchResultView(result, EMPTY_CTX);
     expect(view.post.format).toBe("link");
     expect(view.post.status).toBe("published");
-    expect(view.post.featured).toBe(true);
+    expect(view.post.visibility).toBe("featured");
     expect(view.post.pinned).toBe(false);
     expect(view.post.url).toBe("https://example.com");
     expect(view.post.permalink).toBe("/my-link");

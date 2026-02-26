@@ -122,7 +122,7 @@ export function defaultSitemapRenderer(data: SitemapData): string {
     .map((post) => {
       const loc = `${siteUrl}${post.permalink}`;
       const lastmod = post.updatedAt.split("T")[0];
-      const priority = post.featured ? "0.8" : "0.6";
+      const priority = post.visibility === "featured" ? "0.8" : "0.6";
 
       return `
   <url>

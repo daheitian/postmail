@@ -2,12 +2,18 @@
  * Operation Types (create/update DTOs)
  */
 
-import type { Format, Status, SortOrder, NavItemType } from "./constants.js";
+import type {
+  Format,
+  Status,
+  Visibility,
+  SortOrder,
+  NavItemType,
+} from "./constants.js";
 
 export interface CreatePost {
   format: Format;
   status?: Status;
-  featured?: boolean;
+  visibility?: Visibility;
   pinned?: boolean;
   path?: string;
   title?: string;
@@ -24,7 +30,7 @@ export interface CreatePost {
 export interface UpdatePost {
   format?: Format;
   status?: Status;
-  featured?: boolean;
+  visibility?: Visibility;
   pinned?: boolean;
   path?: string | null;
   title?: string | null;

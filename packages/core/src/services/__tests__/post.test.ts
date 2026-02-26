@@ -40,7 +40,7 @@ describe("PostService", () => {
       expect(post.format).toBe("note");
       expect(post.body).toBe(body);
       expect(post.status).toBe("published"); // default
-      expect(post.featured).toBe(0);
+      expect(post.visibility).toBe("listed");
       expect(post.pinned).toBe(0);
       expect(post.bodyHtml).toContain("<p>Hello world</p>");
       expect(post.deletedAt).toBeNull();
@@ -66,7 +66,7 @@ describe("PostService", () => {
         title: "My Link",
         body,
         status: "published",
-        featured: true,
+        visibility: "featured",
         pinned: true,
         path: "my-link",
         url: "https://example.com/source",
@@ -77,7 +77,7 @@ describe("PostService", () => {
       expect(post.format).toBe("link");
       expect(post.title).toBe("My Link");
       expect(post.status).toBe("published");
-      expect(post.featured).toBe(1);
+      expect(post.visibility).toBe("featured");
       expect(post.pinned).toBe(1);
       expect(post.path).toBe("my-link");
       expect(post.url).toBe("https://example.com/source");
@@ -307,26 +307,60 @@ describe("PostService", () => {
       expect(published[0]?.status).toBe("published");
     });
 
-    it("filters by featured", async () => {
+    it("filters by visibility", async () => {
       await postService.create({
         format: "note",
         body: "featured post",
-        featured: true,
+        visibility: "featured",
       });
       await postService.create({
         format: "note",
         body: "normal post",
       });
+      await postService.create({
+        format: "note",
+        body: "unlisted post",
+        visibility: "unlisted",
+      });
 
-      const featured = await postService.list({ featured: true });
+      const featured = await postService.list({ visibility: "featured" });
       expect(featured).toHaveLength(1);
-      expect(featured[0]?.featured).toBe(1);
+      expect(featured[0]?.visibility).toBe("featured");
       expect(featured[0]?.body).toBe("featured post");
 
-      const notFeatured = await postService.list({ featured: false });
-      expect(notFeatured).toHaveLength(1);
-      expect(notFeatured[0]?.featured).toBe(0);
-      expect(notFeatured[0]?.body).toBe("normal post");
+      const listed = await postService.list({ visibility: "listed" });
+      expect(listed).toHaveLength(1);
+      expect(listed[0]?.visibility).toBe("listed");
+      expect(listed[0]?.body).toBe("normal post");
+
+      const unlisted = await postService.list({ visibility: "unlisted" });
+      expect(unlisted).toHaveLength(1);
+      expect(unlisted[0]?.visibility).toBe("unlisted");
+      expect(unlisted[0]?.body).toBe("unlisted post");
+    });
+
+    it("excludes unlisted posts when requested", async () => {
+      await postService.create({
+        format: "note",
+        body: "listed post",
+      });
+      await postService.create({
+        format: "note",
+        body: "unlisted post",
+        visibility: "unlisted",
+      });
+      await postService.create({
+        format: "note",
+        body: "featured post",
+        visibility: "featured",
+      });
+
+      const posts = await postService.list({ excludeUnlisted: true });
+      expect(posts).toHaveLength(2);
+      expect(posts.map((p) => p.body).sort()).toEqual([
+        "featured post",
+        "listed post",
+      ]);
     });
 
     it("filters by pinned", async () => {
@@ -466,15 +500,15 @@ describe("PostService", () => {
       expect(count).toBe(1);
     });
 
-    it("filters by featured", async () => {
+    it("filters by visibility", async () => {
       await postService.create({
         format: "note",
         body: "featured",
-        featured: true,
+        visibility: "featured",
       });
       await postService.create({ format: "note", body: "normal" });
 
-      const count = await postService.count({ featured: true });
+      const count = await postService.count({ visibility: "featured" });
       expect(count).toBe(1);
     });
 
@@ -604,19 +638,19 @@ describe("PostService", () => {
       expect(updated?.updatedAt).toBeGreaterThanOrEqual(originalUpdatedAt);
     });
 
-    it("updates featured flag", async () => {
+    it("updates visibility", async () => {
       const post = await postService.create({
         format: "note",
         body: "test",
       });
 
-      expect(post.featured).toBe(0);
+      expect(post.visibility).toBe("listed");
 
       const updated = await postService.update(post.id, {
-        featured: true,
+        visibility: "featured",
       });
 
-      expect(updated?.featured).toBe(1);
+      expect(updated?.visibility).toBe("featured");
     });
 
     it("updates pinned flag", async () => {
@@ -780,11 +814,11 @@ describe("PostService", () => {
       expect(reply.status).toBe("draft");
     });
 
-    it("inherits featured from root post", async () => {
+    it("inherits visibility from root post", async () => {
       const root = await postService.create({
         format: "note",
         body: "root",
-        featured: true,
+        visibility: "featured",
       });
       const reply = await postService.create({
         format: "note",
@@ -792,7 +826,7 @@ describe("PostService", () => {
         replyToId: root.id,
       });
 
-      expect(reply.featured).toBe(1);
+      expect(reply.visibility).toBe("featured");
     });
 
     it("getThread returns all posts in a thread", async () => {
@@ -854,7 +888,7 @@ describe("PostService", () => {
       }
     });
 
-    it("cascades featured changes from root to thread", async () => {
+    it("cascades visibility changes from root to thread", async () => {
       const root = await postService.create({
         format: "note",
         body: "root",
@@ -865,11 +899,11 @@ describe("PostService", () => {
         replyToId: root.id,
       });
 
-      await postService.update(root.id, { featured: true });
+      await postService.update(root.id, { visibility: "featured" });
 
       const thread = await postService.getThread(root.id);
       for (const post of thread) {
-        expect(post.featured).toBe(1);
+        expect(post.visibility).toBe("featured");
       }
     });
   });

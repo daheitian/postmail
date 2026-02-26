@@ -2,7 +2,7 @@
  * View Model Types (render-ready, for theme components)
  */
 
-import type { Format, Status, NavItemType } from "./constants.js";
+import type { Format, Status, Visibility, NavItemType } from "./constants.js";
 import type { Post, Collection } from "./entities.js";
 
 /**
@@ -35,7 +35,7 @@ export interface PostView {
   // Metadata
   format: Format;
   status: Status;
-  featured: boolean;
+  visibility: Visibility;
   pinned: boolean;
   rating?: number;
 

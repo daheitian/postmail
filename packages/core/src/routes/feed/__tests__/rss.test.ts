@@ -62,7 +62,7 @@ describe("RSS Feed Routes", () => {
         title: "Featured Post",
         body: "This is featured",
         status: "published",
-        featured: true,
+        visibility: "featured",
       });
 
       const res = await app.request("/feed");
@@ -115,7 +115,7 @@ describe("RSS Feed Routes", () => {
         title: "Featured Post",
         body: "This is featured",
         status: "published",
-        featured: true,
+        visibility: "featured",
       });
 
       const res = await app.request("/feed/atom.xml");
@@ -145,7 +145,7 @@ describe("RSS Feed Routes", () => {
         title: "Featured Post",
         body: "This is featured",
         status: "published",
-        featured: true,
+        visibility: "featured",
       });
       await services.posts.create({
         format: "note",
@@ -244,7 +244,7 @@ describe("RSS Feed Routes", () => {
         title: "Featured Post",
         body: "This is featured",
         status: "published",
-        featured: true,
+        visibility: "featured",
       });
 
       const res = await app.request("/feed/all/atom.xml");
@@ -294,7 +294,7 @@ describe("RSS Feed Routes", () => {
           title: `Post ${i}`,
           body: `Body ${i}`,
           status: "published",
-          featured: true,
+          visibility: "featured",
         });
       }
 
@@ -371,7 +371,7 @@ describe("RSS Feed Routes", () => {
           title: `Post ${i}`,
           body: `Body ${i}`,
           status: "published",
-          featured: true,
+          visibility: "featured",
         });
       }
 

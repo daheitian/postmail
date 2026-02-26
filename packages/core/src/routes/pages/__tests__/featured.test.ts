@@ -26,24 +26,23 @@ describe("Featured Page - Data Logic", () => {
     await postService.create({
       format: "note",
       body: "Featured post",
-      featured: true,
+      visibility: "featured",
       status: "published",
     });
     await postService.create({
       format: "note",
       body: "Normal post",
-      featured: false,
       status: "published",
     });
     await postService.create({
       format: "note",
       body: "Draft featured",
-      featured: true,
+      visibility: "featured",
       status: "draft",
     });
 
     const posts = await postService.list({
-      featured: true,
+      visibility: "featured",
       status: "published",
       excludeReplies: true,
     });
@@ -60,7 +59,7 @@ describe("Featured Page - Data Logic", () => {
     });
 
     const posts = await postService.list({
-      featured: true,
+      visibility: "featured",
       status: "published",
       excludeReplies: true,
     });
@@ -72,7 +71,7 @@ describe("Featured Page - Data Logic", () => {
     const root = await postService.create({
       format: "note",
       body: "Featured root",
-      featured: true,
+      visibility: "featured",
       status: "published",
     });
 
@@ -84,7 +83,7 @@ describe("Featured Page - Data Logic", () => {
     });
 
     const posts = await postService.list({
-      featured: true,
+      visibility: "featured",
       status: "published",
       excludeReplies: true,
     });

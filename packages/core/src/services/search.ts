@@ -27,7 +27,7 @@ interface RawSearchRow {
   id: number;
   format: string;
   status: string;
-  featured: number;
+  visibility: string;
   pinned: number;
   path: string | null;
   title: string | null;
@@ -97,7 +97,7 @@ export function createSearchService(d1: D1Database): SearchService {
           id: row.id,
           format: row.format as Post["format"],
           status: row.status as Post["status"],
-          featured: row.featured,
+          visibility: row.visibility as Post["visibility"],
           pinned: row.pinned,
           path: row.path,
           title: row.title,

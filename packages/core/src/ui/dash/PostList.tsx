@@ -65,7 +65,7 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
             <FormatBadge type={post.format} />
             <StatusBadge
               status={post.status}
-              featured={post.featured}
+              visibility={post.visibility}
               pinned={post.pinned}
             />
             <span class="text-xs text-muted-foreground">

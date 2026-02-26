@@ -25,7 +25,7 @@ featuredRoutes.get("/", async (c) => {
   }
 
   const posts = await c.var.services.posts.list({
-    featured: true,
+    visibility: "featured",
     status: "published",
     excludeReplies: true,
   });

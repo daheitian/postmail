@@ -28,7 +28,7 @@ homeRoutes.get("/", async (c) => {
   if (navData.homeDefaultView === "featured") {
     // Show featured posts on homepage
     const posts = await c.var.services.posts.list({
-      featured: true,
+      visibility: "featured",
       status: "published",
       excludeReplies: true,
     });
