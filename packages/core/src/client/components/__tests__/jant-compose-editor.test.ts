@@ -235,12 +235,12 @@ describe("JantComposeEditor", () => {
     expect(badge?.textContent).toContain("chars");
   });
 
-  it("media button highlights when attachments are present", async () => {
+  it("media button shows inline add label when attachments are present", async () => {
     const el = await createElement("note");
 
-    // Media button should not be active initially
+    // Media button should not have add style initially
     const mediaBtn = el.querySelector<HTMLButtonElement>(".compose-tool-btn");
-    expect(mediaBtn?.classList.contains("compose-tool-btn-active")).toBe(false);
+    expect(mediaBtn?.classList.contains("compose-tool-btn-add")).toBe(false);
 
     // Add an attachment
     const blob = new Blob(["fake"], { type: "image/png" });
@@ -260,8 +260,13 @@ describe("JantComposeEditor", () => {
 
     const mediaBtnAfter =
       el.querySelector<HTMLButtonElement>(".compose-tool-btn");
-    expect(mediaBtnAfter?.classList.contains("compose-tool-btn-active")).toBe(
+    expect(mediaBtnAfter?.classList.contains("compose-tool-btn-add")).toBe(
       true,
     );
+
+    // Should show inline label, not tooltip
+    const label = mediaBtnAfter?.querySelector(".compose-tool-label");
+    expect(label).not.toBeNull();
+    expect(label?.textContent).toBe("Add");
   });
 });

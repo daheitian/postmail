@@ -135,7 +135,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment: "@context: Hint text in alt text panel",
     }),
     addMore: t({
-      message: "Add More",
+      message: "Add",
       comment: "@context: Add more attachments button",
     }),
     uploading: t({

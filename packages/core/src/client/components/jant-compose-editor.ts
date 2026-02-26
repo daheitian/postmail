@@ -700,7 +700,7 @@ export class JantComposeEditor extends LitElement {
           type="button"
           class=${classMap({
             "compose-tool-btn": true,
-            "compose-tool-btn-active": this._attachments.length > 0,
+            "compose-tool-btn-add": this._attachments.length > 0,
           })}
           @click=${() => this._openFilePicker()}
         >
@@ -720,11 +720,11 @@ export class JantComposeEditor extends LitElement {
             <path d="M2 13l4-4c.6-.6 1.4-.6 2 0l4 4" />
             <path d="M11 11l1.5-1.5c.6-.6 1.4-.6 2 0L16 11" />
           </svg>
-          <span class="compose-tool-tip"
-            >${this._attachments.length > 0
-              ? this.labels.addMore
-              : this.labels.media}</span
-          >
+          ${this._attachments.length > 0
+            ? html`<span class="compose-tool-label"
+                >${this.labels.addMore}</span
+              >`
+            : html`<span class="compose-tool-tip">${this.labels.media}</span>`}
         </button>
 
         <!-- Attached Text -->

@@ -319,10 +319,10 @@ describe("JantComposeDialog", () => {
     expect(editor.querySelector(".compose-attachment-thumb")).not.toBeNull();
     // ALT button should be visible
     expect(editor.querySelector(".compose-attachment-alt")).not.toBeNull();
-    // Media tool button should show "Add" label
+    // Media tool button should show inline "Add" label
     const mediaBtn =
       editor.querySelector<HTMLButtonElement>(".compose-tool-btn");
-    expect(mediaBtn?.querySelector(".compose-tool-tip")?.textContent).toBe(
+    expect(mediaBtn?.querySelector(".compose-tool-label")?.textContent).toBe(
       "Add",
     );
 

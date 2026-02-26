@@ -79,8 +79,8 @@ msgstr "Account"
 
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
-#~ msgid "Add"
-#~ msgstr "Add"
+msgid "Add"
+msgstr "Add"
 
 #. @context: Description in link popover form
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -124,8 +124,8 @@ msgstr "Add Media"
 
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Add More"
-msgstr "Add More"
+#~ msgid "Add More"
+#~ msgstr "Add More"
 
 #. @context: Card title for adding page to nav
 #: src/ui/dash/appearance/NavigationContent.tsx

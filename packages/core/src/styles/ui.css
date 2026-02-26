@@ -949,14 +949,23 @@
     cursor: pointer;
     transition: all 0.18s ease;
     flex-shrink: 0;
-    color: var(--site-text-secondary);
+    color: rgb(153 153 153);
   }
 
   .compose-tool-btn:hover {
     background-color: var(--site-nav-hover-bg);
   }
-  .compose-tool-btn-active {
-    background-color: var(--site-nav-hover-bg);
+
+  .compose-tool-btn-add {
+    width: auto;
+    gap: 4px;
+    padding: 0 10px 0 8px;
+  }
+
+  .compose-tool-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
   }
 
   .compose-tool-sep {
