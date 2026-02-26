@@ -6,7 +6,7 @@
  * Vanilla DOM — positioned via ProseMirror plugin, dialog-aware.
  */
 
-import { Extension } from "@tiptap/core";
+import { Extension, type Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import { isLinkToolbarInputActive } from "./link-toolbar.js";
@@ -31,7 +31,7 @@ interface BubbleBtn {
   isActive: (view: EditorView) => boolean;
 }
 
-function getButtons(editor: Extension["editor"]): BubbleBtn[] {
+function getButtons(editor: Editor): BubbleBtn[] {
   return [
     {
       key: "bold",

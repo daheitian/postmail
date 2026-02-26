@@ -6,7 +6,11 @@
  */
 
 import { Extension } from "@tiptap/core";
-import Suggestion, { type SuggestionOptions } from "@tiptap/suggestion";
+import Suggestion, {
+  type SuggestionOptions,
+  type SuggestionProps,
+  type SuggestionKeyDownProps,
+} from "@tiptap/suggestion";
 import type { Editor, Range } from "@tiptap/core";
 
 interface SlashCommandItem {
@@ -222,21 +226,23 @@ export const SlashCommands = Extension.create({
           );
         },
         render: () => {
+          function getEditorElement(editor: Editor): globalThis.Element | null {
+            const el = editor.options.element;
+            return el instanceof globalThis.Element ? el : null;
+          }
+
           return {
-            onStart: (props: {
-              items: SlashCommandItem[];
-              command: (item: { index: number }) => void;
-              clientRect: (() => globalThis.DOMRect | null) | null;
-              editor: Editor;
-            }) => {
+            onStart: (
+              props: SuggestionProps<SlashCommandItem, { index: number }>,
+            ) => {
               popupEl = createPopup();
               selectedIndex = 0;
               commandFn = props.command;
               renderPopup(props.items, (index) => props.command({ index }));
 
               // Append inside the closest dialog (top-layer) or body
-              const editorEl = props.editor.options.element;
-              const dialog = editorEl.closest("dialog");
+              const editorEl = getEditorElement(props.editor);
+              const dialog = editorEl?.closest("dialog") ?? null;
               (dialog ?? document.body).appendChild(popupEl);
 
               const rect = props.clientRect?.();
@@ -244,22 +250,19 @@ export const SlashCommands = Extension.create({
                 positionPopup(rect, dialog);
               }
             },
-            onUpdate: (props: {
-              items: SlashCommandItem[];
-              command: (item: { index: number }) => void;
-              clientRect: (() => globalThis.DOMRect | null) | null;
-              editor: Editor;
-            }) => {
+            onUpdate: (
+              props: SuggestionProps<SlashCommandItem, { index: number }>,
+            ) => {
               commandFn = props.command;
               renderPopup(props.items, (index) => props.command({ index }));
               const rect = props.clientRect?.();
               if (rect) {
-                const editorEl = props.editor.options.element;
-                const dialog = editorEl.closest("dialog");
+                const editorEl = getEditorElement(props.editor);
+                const dialog = editorEl?.closest("dialog") ?? null;
                 positionPopup(rect, dialog);
               }
             },
-            onKeyDown: (props: { event: globalThis.KeyboardEvent }) => {
+            onKeyDown: (props: SuggestionKeyDownProps) => {
               const { event } = props;
               if (event.key === "ArrowDown") {
                 selectedIndex = (selectedIndex + 1) % filteredItems.length;

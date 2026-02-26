@@ -10,15 +10,13 @@ pnpm = "10.28.2"
 # =============================================================================
 [tasks.ci]
 alias = "check"
-description = "Run all CI checks (lint + typecheck + test + build + i18n + template)"
+description = "Run all CI checks (test + build + i18n + template)"
 run = """
 # Phase 1: Build @jant/core once (Vite lib mode → single dist/index.js)
 # - test-template needs dist/
 pnpm --filter @jant/core build:lib
 
 # Phase 2: Checks (reuse built output, no redundant builds)
-mise run lint
-pnpm -r typecheck
 mise run test
 mise run i18n-check
 
@@ -64,8 +62,12 @@ run = "pnpm -r typecheck"
 # =============================================================================
 [tasks.test]
 alias = "t"
-description = "Run all tests"
-run = "pnpm --filter @jant/core test"
+description = "Run all tests (typecheck + lint + vitest)"
+run = """
+pnpm -r typecheck
+pnpm lint
+pnpm --filter @jant/core test
+"""
 
 [tasks."test:watch"]
 alias = "tw"

@@ -29,6 +29,9 @@ export interface Bindings {
   S3_PUBLIC_URL?: string;
   // Upload
   UPLOAD_MAX_FILE_SIZE?: string;
+  // Summary extraction
+  SUMMARY_MAX_PARAGRAPHS?: string;
+  SUMMARY_MAX_CHARS?: string;
   // RSS feed
   RSS_FEED_LIMIT?: string;
 }

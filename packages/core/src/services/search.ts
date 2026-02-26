@@ -35,6 +35,7 @@ interface RawSearchRow {
   body: string | null;
   body_html: string | null;
   quote_text: string | null;
+  summary: string | null;
   rating: number | null;
   collection_id: number | null;
   reply_to_id: number | null;
@@ -105,6 +106,7 @@ export function createSearchService(d1: D1Database): SearchService {
           body: row.body,
           bodyHtml: row.body_html,
           quoteText: row.quote_text,
+          summary: row.summary,
           rating: row.rating,
           replyToId: row.reply_to_id,
           threadId: row.thread_id,

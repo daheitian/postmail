@@ -8,6 +8,14 @@
 
 import { Node } from "@tiptap/core";
 
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    moreBreak: {
+      insertMoreBreak: () => ReturnType;
+    };
+  }
+}
+
 export const MoreBreak = Node.create({
   name: "moreBreak",
   group: "block",
