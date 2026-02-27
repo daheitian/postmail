@@ -550,6 +550,8 @@ msgstr "顯示在所有文章和頁面的底部。支持Markdown。"
 #. @context: Button to exit reorder mode
 #. @context: Close attached text panel
 #. @context: Close media picker button
+#. @context: Compose button - update existing post
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -603,6 +605,11 @@ msgstr "編輯"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Edit Page"
 msgstr "編輯頁面"
+
+#. @context: Compose dialog header title in edit mode
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Edit post"
+msgstr ""
 
 #. @context: Page heading
 #: src/routes/dash/posts.tsx
@@ -1934,8 +1941,10 @@ msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
 #. @context: Button to view page on public site
 #. @context: Button to view post
 #. @context: Button to view post on public site
+#. @context: Toast action button to view the published post
 #: src/routes/dash/pages.tsx
 #: src/routes/dash/posts.tsx
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx

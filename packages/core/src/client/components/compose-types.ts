@@ -52,7 +52,10 @@ export interface ComposeLabels {
   addMore: string;
   uploading: string;
   published: string;
+  view: string;
   retryAll: string;
+  editPost: string;
+  update: string;
 }
 
 export interface ComposeSubmitDetail {
@@ -68,6 +71,7 @@ export interface ComposeSubmitDetail {
   mediaIds: string[];
   mediaAlts: Record<string, string>;
   attachedText: string;
+  editPostId?: string;
 }
 
 export interface ComposeCollection {

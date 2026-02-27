@@ -13,6 +13,7 @@ import {
   parseValidated,
 } from "../../lib/schemas.js";
 import { assertFound, parseIntParam, NotFoundError } from "../../lib/errors.js";
+import { decode } from "../../lib/sqid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -33,7 +34,7 @@ const CollectionReorderSchema = z.object({
 });
 
 const PostAssignSchema = z.object({
-  postId: z.number().int().positive(),
+  postId: z.union([z.number().int().positive(), z.string().min(1)]),
 });
 
 // List collections (includes post counts and dividers)
@@ -134,9 +135,12 @@ collectionsApiRoutes.post("/:id/posts", requireAuthApi(), async (c) => {
   assertFound(await c.var.services.collections.getById(id), "Collection");
 
   const body = parseValidated(PostAssignSchema, await c.req.json());
-  assertFound(await c.var.services.posts.getById(body.postId), "Post");
+  const postId =
+    typeof body.postId === "string" ? decode(body.postId) : body.postId;
+  if (postId === null) return c.json({ error: "Invalid post ID" }, 400);
+  assertFound(await c.var.services.posts.getById(postId), "Post");
 
-  await c.var.services.collections.addPost(id, body.postId);
+  await c.var.services.collections.addPost(id, postId);
 
   return c.json({ success: true }, 201);
 });
@@ -147,7 +151,18 @@ collectionsApiRoutes.delete(
   requireAuthApi(),
   async (c) => {
     const id = parseIntParam(c.req.param("id"));
-    const postId = parseIntParam(c.req.param("postId"));
+    const rawPostId = c.req.param("postId");
+
+    // Accept either numeric ID or sqid string
+    let postId: number;
+    const parsed = parseInt(rawPostId, 10);
+    if (!isNaN(parsed) && String(parsed) === rawPostId) {
+      postId = parsed;
+    } else {
+      const decoded = decode(rawPostId);
+      if (decoded === null) return c.json({ error: "Invalid post ID" }, 400);
+      postId = decoded;
+    }
 
     await c.var.services.collections.removePost(id, postId);
 

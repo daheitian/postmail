@@ -34,3 +34,4 @@ import "./client/page-slug-bridge.js";
 import "./client/components/jant-nav-manager.js";
 import "./client/nav-manager-bridge.js";
 import "./client/components/jant-media-lightbox.js";
+import "./client/components/jant-post-menu.js";

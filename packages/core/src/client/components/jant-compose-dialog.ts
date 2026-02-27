@@ -35,6 +35,7 @@ export class JantComposeDialog extends LitElement {
     _altPanelOpen: { state: true },
     _altPanelIndex: { state: true },
     _attachedPanelOpen: { state: true },
+    _editPostId: { state: true },
   };
 
   declare collections: ComposeCollection[];
@@ -50,6 +51,7 @@ export class JantComposeDialog extends LitElement {
   declare _altPanelOpen: boolean;
   declare _altPanelIndex: number;
   declare _attachedPanelOpen: boolean;
+  declare _editPostId: string | null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -71,6 +73,7 @@ export class JantComposeDialog extends LitElement {
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
     this._attachedPanelOpen = false;
+    this._editPostId = null;
   }
 
   private get _editor(): JantComposeEditor | null {
@@ -88,7 +91,54 @@ export class JantComposeDialog extends LitElement {
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
     this._attachedPanelOpen = false;
+    this._editPostId = null;
     this._editor?.reset();
+  }
+
+  async openEdit(sqid: string) {
+    this.reset();
+
+    const res = await fetch(`/api/posts/${sqid}`);
+    if (!res.ok) return;
+    const post = await res.json();
+
+    this._editPostId = sqid;
+    this._format = post.format;
+
+    // Pre-fill collection memberships if present
+    if (post.collectionIds?.length) {
+      this._collectionIds = post.collectionIds;
+    }
+
+    // Wait for Lit to render with the new format before populating editor
+    await this.updateComplete;
+
+    this._editor?.populate({
+      format: post.format,
+      title: post.title ?? undefined,
+      bodyJson: post.body ?? undefined,
+      url: post.url ?? undefined,
+      quoteText: post.quoteText ?? undefined,
+      quoteAuthor:
+        post.format === "quote" ? (post.title ?? undefined) : undefined,
+      rating: post.rating ?? undefined,
+      media: (post.mediaAttachments ?? []).map(
+        (m: {
+          id: string;
+          previewUrl: string;
+          alt?: string;
+          mimeType: string;
+        }) => ({
+          id: m.id,
+          previewUrl: m.previewUrl,
+          alt: m.alt,
+          mimeType: m.mimeType,
+        }),
+      ),
+    });
+
+    this.closest("dialog")?.showModal();
+    globalThis.requestAnimationFrame(() => this._editor?.focusInput());
   }
 
   set loading(v: boolean) {
@@ -134,6 +184,7 @@ export class JantComposeDialog extends LitElement {
       mediaIds,
       mediaAlts,
       attachedText: editorData.attachedText,
+      editPostId: this._editPostId ?? undefined,
     };
   }
 
@@ -302,34 +353,40 @@ export class JantComposeDialog extends LitElement {
         </button>
 
         <div class="compose-dialog-header-center">
-          <div class="compose-segmented">
-            <div
-              class=${classMap({
-                "compose-format-pill": true,
-                "compose-format-pill-link": this._format === "link",
-                "compose-format-pill-quote": this._format === "quote",
-              })}
-            ></div>
-            ${formats.map(
-              (f) => html`
-                <button
-                  type="button"
-                  class=${classMap({
-                    "compose-segmented-item": true,
-                    "compose-segmented-item-active": this._format === f,
-                  })}
-                  @click=${() => {
-                    this._format = f;
-                    globalThis.requestAnimationFrame(() =>
-                      this._editor?.focusInput(),
-                    );
-                  }}
-                >
-                  ${formatLabels[f]}
-                </button>
-              `,
-            )}
-          </div>
+          ${this._editPostId
+            ? html`<span class="compose-dialog-title"
+                >${this.labels.editPost}</span
+              >`
+            : html`
+                <div class="compose-segmented">
+                  <div
+                    class=${classMap({
+                      "compose-format-pill": true,
+                      "compose-format-pill-link": this._format === "link",
+                      "compose-format-pill-quote": this._format === "quote",
+                    })}
+                  ></div>
+                  ${formats.map(
+                    (f) => html`
+                      <button
+                        type="button"
+                        class=${classMap({
+                          "compose-segmented-item": true,
+                          "compose-segmented-item-active": this._format === f,
+                        })}
+                        @click=${() => {
+                          this._format = f;
+                          globalThis.requestAnimationFrame(() =>
+                            this._editor?.focusInput(),
+                          );
+                        }}
+                      >
+                        ${formatLabels[f]}
+                      </button>
+                    `,
+                  )}
+                </div>
+              `}
         </div>
 
         <div class="flex items-center gap-0.5 shrink-0">
@@ -713,7 +770,7 @@ export class JantComposeDialog extends LitElement {
                   <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                 </svg>`
               : nothing}
-            ${this.labels.post}
+            ${this._editPostId ? this.labels.update : this.labels.post}
           </button>
         </div>
         ${this._renderAttachedPanel()} ${this._renderAltPanel()}

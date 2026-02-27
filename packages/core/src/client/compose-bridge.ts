@@ -12,8 +12,10 @@ import type { JantComposeEditor } from "./components/jant-compose-editor.js";
 import { ImageProcessor } from "./image-processor.js";
 import {
   showToast,
+  showToastWithAction,
   showPersistentToast,
   replaceWithAutoClose,
+  replaceWithAutoCloseAction,
 } from "./toast.js";
 
 // ── Upload manager ──────────────────────────────────────────────────
@@ -115,6 +117,24 @@ document.addEventListener("jant:files-selected", (e: Event) => {
 
 // ── Submit handler ──────────────────────────────────────────────────
 
+/** Build the JSON body for both create and update requests */
+function buildPostBody(detail: ComposeSubmitDetail) {
+  return {
+    format: detail.format,
+    title: detail.title || undefined,
+    body: detail.body || undefined,
+    url: detail.url || undefined,
+    quoteText: detail.quoteText || undefined,
+    status: detail.status,
+    rating: detail.rating || undefined,
+    collectionIds:
+      detail.collectionIds.length > 0 ? detail.collectionIds : undefined,
+    mediaIds: detail.mediaIds.length > 0 ? detail.mediaIds : undefined,
+    mediaAlts:
+      Object.keys(detail.mediaAlts).length > 0 ? detail.mediaAlts : undefined,
+  };
+}
+
 document.addEventListener("jant:compose-submit", async (e: Event) => {
   const event = e as CustomEvent<ComposeSubmitDetail>;
   const detail = event.detail;
@@ -129,28 +149,17 @@ document.addEventListener("jant:compose-submit", async (e: Event) => {
   composeEl.loading = true;
 
   try {
-    const res = await fetch("/compose", {
-      method: "POST",
+    const isEdit = !!detail.editPostId;
+    const endpoint = isEdit ? `/api/posts/${detail.editPostId}` : "/compose";
+    const method = isEdit ? "PUT" : "POST";
+
+    const res = await fetch(endpoint, {
+      method,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({
-        format: detail.format,
-        title: detail.title || undefined,
-        body: detail.body || undefined,
-        url: detail.url || undefined,
-        quoteText: detail.quoteText || undefined,
-        status: detail.status,
-        rating: detail.rating || undefined,
-        collectionIds:
-          detail.collectionIds.length > 0 ? detail.collectionIds : undefined,
-        mediaIds: detail.mediaIds.length > 0 ? detail.mediaIds : undefined,
-        mediaAlts:
-          Object.keys(detail.mediaAlts).length > 0
-            ? detail.mediaAlts
-            : undefined,
-      }),
+      body: JSON.stringify(buildPostBody(detail)),
     });
 
     if (!res.ok) {
@@ -159,16 +168,38 @@ document.addEventListener("jant:compose-submit", async (e: Event) => {
       return;
     }
 
+    if (isEdit) {
+      showToast("Post updated.");
+      dialog?.close();
+      (document.activeElement as HTMLElement)?.blur();
+      composeEl.reset();
+      globalThis.location.reload();
+      return;
+    }
+
     const data = await res.json();
+    const labels = composeEl.labels;
 
     if (data.status === "draft") {
       showToast(data.toast ?? "Draft saved.");
-    } else if (data.status === "published" && data.cardHtml) {
-      const timeline = document.getElementById("timeline-items");
-      if (timeline) {
-        document.getElementById("empty-timeline")?.remove();
-        timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
+    } else if (data.status === "published") {
+      // Only insert into timeline on the latest page
+      if (data.cardHtml) {
+        const timeline = document.querySelector<HTMLElement>(
+          '[data-page="home"] #timeline-items',
+        );
+        if (timeline) {
+          document.getElementById("empty-timeline")?.remove();
+          timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
+        }
       }
+
+      const publishedMsg = labels?.published ?? "Published!";
+      const viewLabel = labels?.view ?? "View";
+      showToastWithAction(publishedMsg, {
+        label: viewLabel,
+        href: data.permalink,
+      });
     }
 
     dialog?.close();
@@ -230,26 +261,23 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       }
     }
 
-    // POST to /compose
-    const res = await fetch("/compose", {
-      method: "POST",
+    const isEdit = !!detail.editPostId;
+    const endpoint = isEdit ? `/api/posts/${detail.editPostId}` : "/compose";
+    const method = isEdit ? "PUT" : "POST";
+
+    const bodyPayload = buildPostBody({
+      ...detail,
+      mediaIds: allMediaIds,
+      mediaAlts,
+    });
+
+    const res = await fetch(endpoint, {
+      method,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify({
-        format: detail.format,
-        title: detail.title || undefined,
-        body: detail.body || undefined,
-        url: detail.url || undefined,
-        quoteText: detail.quoteText || undefined,
-        status: detail.status,
-        rating: detail.rating || undefined,
-        collectionIds:
-          detail.collectionIds.length > 0 ? detail.collectionIds : undefined,
-        mediaIds: allMediaIds.length > 0 ? allMediaIds : undefined,
-        mediaAlts: Object.keys(mediaAlts).length > 0 ? mediaAlts : undefined,
-      }),
+      body: JSON.stringify(bodyPayload),
     });
 
     if (!res.ok) {
@@ -262,20 +290,34 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       return;
     }
 
-    const data = await res.json();
-
-    if (data.status === "published" && data.cardHtml) {
-      const timeline = document.getElementById("timeline-items");
-      if (timeline) {
-        document.getElementById("empty-timeline")?.remove();
-        timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
-      }
+    if (isEdit) {
+      replaceWithAutoClose("compose-deferred", "Post updated.");
+      globalThis.location.reload();
+      return;
     }
 
-    replaceWithAutoClose(
-      "compose-deferred",
-      data.status === "draft" ? (data.toast ?? "Draft saved.") : publishedMsg,
-    );
+    const data = await res.json();
+
+    if (data.status === "published") {
+      // Only insert into timeline on the latest page
+      if (data.cardHtml) {
+        const timeline = document.querySelector<HTMLElement>(
+          '[data-page="home"] #timeline-items',
+        );
+        if (timeline) {
+          document.getElementById("empty-timeline")?.remove();
+          timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
+        }
+      }
+
+      const viewLabel = labels?.view ?? "View";
+      replaceWithAutoCloseAction("compose-deferred", publishedMsg, {
+        label: viewLabel,
+        href: data.permalink,
+      });
+    } else {
+      replaceWithAutoClose("compose-deferred", data.toast ?? "Draft saved.");
+    }
   } catch {
     replaceWithAutoClose("compose-deferred", "Something went wrong", "error");
   }

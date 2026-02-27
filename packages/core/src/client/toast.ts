@@ -43,6 +43,37 @@ export function showToast(
 }
 
 /**
+ * Show a toast with an action link.
+ *
+ * @param message - Text to display
+ * @param action - Action link with label and href
+ * @param type - Visual style: "success" (default) or "error"
+ *
+ * @example
+ * showToastWithAction("Post published.", { label: "View", href: "/p/abc" });
+ */
+export function showToastWithAction(
+  message: string,
+  action: { label: string; href: string },
+  type: "success" | "error" = "success",
+): void {
+  if (!message) return;
+
+  const container = document.getElementById("toast-container");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span><a href="${action.href}" class="toast-action">${action.label}</a>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("toast-out");
+    toast.addEventListener("animationend", () => toast.remove());
+  }, 3000);
+}
+
+/**
  * Show a persistent toast that stays until explicitly dismissed.
  *
  * @param id - Unique identifier for updating/dismissing later
@@ -126,6 +157,38 @@ export function replaceWithAutoClose(
 
   toast.className = `toast toast-${type}`;
   toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span>`;
+
+  setTimeout(() => {
+    toast.classList.add("toast-out");
+    toast.addEventListener("animationend", () => toast.remove());
+  }, 3000);
+}
+
+/**
+ * Replace a persistent toast with an auto-dismissing one that has an action link.
+ *
+ * @param id - The toast identifier
+ * @param message - New message text
+ * @param action - Action link with label and href
+ * @param type - Visual style: "success" (default) or "error"
+ *
+ * @example
+ * replaceWithAutoCloseAction("upload", "Post published.", { label: "View", href: "/p/abc" });
+ */
+export function replaceWithAutoCloseAction(
+  id: string,
+  message: string,
+  action: { label: string; href: string },
+  type: "success" | "error" = "success",
+): void {
+  const toast = document.getElementById(`toast-${id}`);
+  if (!toast) {
+    showToastWithAction(message, action, type);
+    return;
+  }
+
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span><a href="${action.href}" class="toast-action">${action.label}</a>`;
 
   setTimeout(() => {
     toast.classList.add("toast-out");

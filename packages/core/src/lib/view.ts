@@ -114,7 +114,8 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
  * @returns Render-ready PostView with pre-computed fields
  */
 export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
-  const permalink = post.path ? `/${post.path}` : `/p/${encode(post.id)}`;
+  const sqid = encode(post.id);
+  const permalink = post.path ? `/${post.path}` : `/p/${sqid}`;
 
   // Pre-compute excerpt from raw body
   let excerpt: string | undefined;
@@ -165,6 +166,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
 
   return {
     id: post.id,
+    sqid,
     permalink,
     path: post.path ?? undefined,
     title: post.title ?? undefined,

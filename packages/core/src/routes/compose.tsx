@@ -22,6 +22,7 @@ import {
 } from "../lib/view.js";
 import { buildMediaMap } from "../lib/media-helpers.js";
 import { TimelineItemFromPost } from "../ui/feed/TimelineItem.js";
+import { encode } from "../lib/sqid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -173,7 +174,8 @@ composeRoutes.post("/", async (c) => {
     }
 
     const cardHtml = await buildTimelineCard(c, post, data.mediaIds);
-    return c.json({ status: "published" as const, cardHtml });
+    const permalink = post.path ? `/${post.path}` : `/p/${encode(post.id)}`;
+    return c.json({ status: "published" as const, cardHtml, permalink });
   }
 
   // ── SSE response mode (used by Datastar) ─────────────────────────

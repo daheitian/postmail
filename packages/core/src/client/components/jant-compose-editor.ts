@@ -323,6 +323,61 @@ export class JantComposeEditor extends LitElement {
     };
   }
 
+  /** Pre-fill all fields for edit mode */
+  populate(data: {
+    format: string;
+    title?: string;
+    bodyJson?: string;
+    url?: string;
+    quoteText?: string;
+    quoteAuthor?: string;
+    rating?: number;
+    media?: Array<{
+      id: string;
+      previewUrl: string;
+      alt?: string;
+      mimeType: string;
+    }>;
+  }) {
+    if (data.title) this._title = data.title;
+    if (data.url) this._url = data.url;
+    if (data.quoteText) this._quoteText = data.quoteText;
+    if (data.quoteAuthor) this._quoteAuthor = data.quoteAuthor;
+    if (data.rating && data.rating > 0) {
+      this._rating = data.rating;
+      this._showRating = true;
+    }
+    if (data.title && data.format === "note") {
+      this._showTitle = true;
+    }
+
+    // Parse body JSON and set editor content
+    if (data.bodyJson) {
+      try {
+        const parsed = JSON.parse(data.bodyJson) as JSONContent;
+        this._bodyJson = parsed;
+        if (this._editor) {
+          this._editor.commands.setContent(parsed);
+        }
+      } catch {
+        // Body is not valid JSON — ignore
+      }
+    }
+
+    // Convert media attachments to ComposeAttachment[] with status "done"
+    if (data.media?.length) {
+      this._attachments = data.media.map((m) => ({
+        clientId: crypto.randomUUID(),
+        file: new File([], "existing", { type: m.mimeType }),
+        previewUrl: m.previewUrl,
+        status: "done" as const,
+        mediaId: m.id,
+        alt: m.alt ?? "",
+        error: null,
+      }));
+    }
+  }
+
   /** Updates editor content and title from fullscreen close */
   setEditorState(json: JSONContent | null, title: string) {
     this._bodyJson = json;

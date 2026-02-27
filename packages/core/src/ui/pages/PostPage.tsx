@@ -14,10 +14,14 @@ export const PostPage: FC<PostPageProps> = ({ post }) => {
 
   return (
     <article
-      class="h-entry py-6"
+      class="h-entry post-menu-target py-6"
       data-page="post"
       data-post
       data-format={post.format}
+      data-post-id={post.sqid}
+      data-post-permalink={post.permalink}
+      {...(post.pinned ? { "data-post-pinned": "" } : {})}
+      data-post-visibility={post.visibility}
     >
       {post.title && (
         <h1 class="p-name text-2xl font-semibold mb-4">{post.title}</h1>
@@ -38,18 +42,38 @@ export const PostPage: FC<PostPageProps> = ({ post }) => {
       )}
 
       <footer
-        class="mt-6 pt-4 border-t text-sm text-muted-foreground"
+        class="mt-6 pt-4 border-t text-sm text-muted-foreground post-menu-footer"
         data-post-meta
       >
-        <time class="dt-published" datetime={post.publishedAt}>
-          {post.publishedAtFormatted}
-        </time>
-        <a href={post.permalink} class="u-url ml-4">
-          {t({
-            message: "Permalink",
-            comment: "@context: Link to permanent URL of post",
-          })}
-        </a>
+        <div>
+          <time class="dt-published" datetime={post.publishedAt}>
+            {post.publishedAtFormatted}
+          </time>
+          <a href={post.permalink} class="u-url ml-4">
+            {t({
+              message: "Permalink",
+              comment: "@context: Link to permanent URL of post",
+            })}
+          </a>
+        </div>
+        <button
+          type="button"
+          class="post-menu-trigger"
+          aria-label="More actions"
+          data-post-menu-trigger
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <circle cx="5" cy="12" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="19" cy="12" r="2" />
+          </svg>
+        </button>
       </footer>
     </article>
   );

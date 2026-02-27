@@ -660,6 +660,8 @@ msgstr "Displayed at the bottom of all posts and pages. Markdown supported."
 #. @context: Button to exit reorder mode
 #. @context: Close attached text panel
 #. @context: Close media picker button
+#. @context: Compose button - update existing post
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -723,6 +725,11 @@ msgstr "Edit"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Edit Page"
 msgstr "Edit Page"
+
+#. @context: Compose dialog header title in edit mode
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Edit post"
+msgstr "Edit post"
 
 #. @context: Page heading
 #: src/routes/dash/posts.tsx
@@ -2266,8 +2273,10 @@ msgstr "Use this URL to embed the media in your posts."
 #. @context: Button to view page on public site
 #. @context: Button to view post
 #. @context: Button to view post on public site
+#. @context: Toast action button to view the published post
 #: src/routes/dash/pages.tsx
 #: src/routes/dash/posts.tsx
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx

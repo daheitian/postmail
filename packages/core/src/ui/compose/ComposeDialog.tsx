@@ -150,10 +150,22 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Published!",
       comment: "@context: Toast shown after successful deferred publish",
     }),
+    view: t({
+      message: "View",
+      comment: "@context: Toast action button to view the published post",
+    }),
     retryAll: t({
       message: "Click to retry all",
       comment:
         "@context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads",
+    }),
+    editPost: t({
+      message: "Edit post",
+      comment: "@context: Compose dialog header title in edit mode",
+    }),
+    update: t({
+      message: "Done",
+      comment: "@context: Compose button - update existing post",
     }),
   }).replace(/</g, "\\u003c");
 

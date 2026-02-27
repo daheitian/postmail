@@ -311,6 +311,65 @@
   }
 
   /* =========================================================================
+   * Post Menu (More button + dropdown)
+   * ========================================================================= */
+
+  .post-menu-target {
+    position: relative;
+  }
+
+  .post-menu-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  .post-menu-trigger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    transition:
+      background-color 0.12s,
+      color 0.12s;
+    flex-shrink: 0;
+  }
+
+  .post-menu-trigger:hover {
+    background-color: var(--site-nav-hover-bg);
+    color: var(--site-text-primary);
+  }
+
+  /* Always visible for authenticated users */
+  body[data-authenticated] .post-menu-trigger {
+    display: flex;
+  }
+
+  .post-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+  }
+
+  .post-menu-collections {
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .post-menu-collections [role="menuitem"] {
+    padding-left: 1.75rem;
+    font-size: var(--text-xs);
+  }
+
+  /* =========================================================================
    * Compose Prompt Bar ("What's new?" at top of content)
    * ========================================================================= */
 
@@ -498,6 +557,11 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+  }
+
+  .compose-dialog-title {
+    font-weight: 600;
+    font-size: var(--text-base);
   }
 
   .compose-dialog-header-btn {

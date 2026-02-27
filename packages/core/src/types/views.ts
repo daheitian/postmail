@@ -12,6 +12,8 @@ import type { Post, Collection } from "./entities.js";
 export interface PostView {
   // Identity
   id: number;
+  /** Sqid-encoded ID for client-side API calls */
+  sqid: string;
   /** Pre-computed permalink: "/{path}" if path set, otherwise "/p/{sqid}" */
   permalink: string;
   /** Custom URL path, if set. Supports multi-level paths (e.g. "2024/my-post") */

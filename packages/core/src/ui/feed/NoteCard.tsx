@@ -15,9 +15,13 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
 
   return (
     <article
-      class={`h-entry${compact ? " feed-compact" : ""}`}
+      class={`h-entry post-menu-target${compact ? " feed-compact" : ""}`}
       data-post
       data-format="note"
+      data-post-id={post.sqid}
+      data-post-permalink={post.permalink}
+      {...(post.pinned ? { "data-post-pinned": "" } : {})}
+      data-post-visibility={post.visibility}
     >
       {isArticle && (
         <h2
@@ -48,7 +52,7 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
           Continue →
         </a>
       )}
-      <footer class="mt-2" data-post-meta>
+      <footer class="post-menu-footer" data-post-meta>
         <a
           href={post.permalink}
           class="u-url text-xs text-muted-foreground hover:underline"
@@ -57,6 +61,24 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
             {post.publishedAtFormatted}
           </time>
         </a>
+        <button
+          type="button"
+          class="post-menu-trigger"
+          aria-label="More actions"
+          data-post-menu-trigger
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <circle cx="5" cy="12" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="19" cy="12" r="2" />
+          </svg>
+        </button>
       </footer>
     </article>
   );

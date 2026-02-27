@@ -56,7 +56,10 @@ const labels: ComposeLabels = {
   addMore: "Add",
   uploading: "Uploading...",
   published: "Published!",
+  view: "View",
   retryAll: "Click to retry all",
+  editPost: "Edit post",
+  update: "Done",
 };
 
 const collections: ComposeCollection[] = [
