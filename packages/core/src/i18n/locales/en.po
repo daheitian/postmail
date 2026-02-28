@@ -632,7 +632,9 @@ msgstr "Description (optional)"
 msgid "Design"
 msgstr "Design"
 
+#. @context: Confirm close dialog - discard button
 #. @context: More menu - discard post
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "Discard"
@@ -1779,6 +1781,11 @@ msgstr "Save as Draft"
 msgid "Save CSS"
 msgstr "Save CSS"
 
+#. @context: Confirm close dialog - save draft button
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save Draft"
+msgstr "Save Draft"
+
 #. @context: Button to save profile
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "Save Profile"
@@ -2353,6 +2360,11 @@ msgstr "Write your first post"
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
 msgstr "Wrong email or password. Check your credentials and try again."
+
+#. @context: Confirm close dialog title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "You have unsaved changes"
+msgstr "You have unsaved changes"
 
 #. @context: Empty state message when no media exists
 #: src/ui/dash/media/MediaListContent.tsx

@@ -183,12 +183,16 @@ document.addEventListener("jant:compose-submit", async (e: Event) => {
     if (data.status === "draft") {
       showToast(data.toast ?? "Draft saved.");
     } else if (data.status === "published") {
-      // Only insert into timeline on the latest page
+      // Only insert into timeline on the first page of the latest feed
       if (data.cardHtml) {
         const timeline = document.querySelector<HTMLElement>(
           '[data-page="home"] #timeline-items',
         );
-        if (timeline) {
+        const pageParam = new URLSearchParams(globalThis.location.search).get(
+          "page",
+        );
+        const isFirstPage = !pageParam || pageParam === "1";
+        if (timeline && isFirstPage) {
           document.getElementById("empty-timeline")?.remove();
           timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
         }
@@ -299,12 +303,16 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     const data = await res.json();
 
     if (data.status === "published") {
-      // Only insert into timeline on the latest page
+      // Only insert into timeline on the first page of the latest feed
       if (data.cardHtml) {
         const timeline = document.querySelector<HTMLElement>(
           '[data-page="home"] #timeline-items',
         );
-        if (timeline) {
+        const pageParam = new URLSearchParams(globalThis.location.search).get(
+          "page",
+        );
+        const isFirstPage = !pageParam || pageParam === "1";
+        if (timeline && isFirstPage) {
           document.getElementById("empty-timeline")?.remove();
           timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
         }

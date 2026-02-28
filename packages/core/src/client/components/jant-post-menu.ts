@@ -487,7 +487,7 @@ export class JantPostMenu extends LitElement {
     const isFeatured = this._data.visibility === "featured";
     const isPinned = this._data.pinned;
 
-    const style = `position:fixed;z-index:100;right:${document.documentElement.clientWidth - this._x}px;${
+    const wrapperStyle = `position:fixed;z-index:100;right:${document.documentElement.clientWidth - this._x}px;${
       this._openAbove
         ? `bottom:${window.innerHeight - this._y + 6}px;`
         : `top:${this._y + 6}px;`
@@ -495,8 +495,8 @@ export class JantPostMenu extends LitElement {
 
     return html`
       <div class="post-menu-backdrop" @click=${() => this.#close()}></div>
-      <div class="dropdown-menu" style=${style}>
-        <div data-popover aria-hidden="false" class="min-w-52 right-0">
+      <div class="dropdown-menu" style=${wrapperStyle}>
+        <div data-popover aria-hidden="false" class="!static min-w-52">
           <div role="menu">
             <div role="menuitem" @click=${() => this.#edit()}>
               ${this.#iconEdit()} Edit

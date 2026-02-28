@@ -7,10 +7,27 @@
  */
 
 :root {
-  /* Typography */
-  --font-body: system-ui, sans-serif;
+  /* Typography — Font families */
+  --font-body:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   --font-heading: var(--font-body);
-  --font-mono: ui-monospace, monospace;
+  --font-serif:
+    ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, Georgia,
+    "Times New Roman", Times, "Songti SC", "Noto Serif CJK SC", "STSong",
+    "SimSun", serif;
+  --font-mono:
+    ui-monospace, Menlo, Monaco, Consolas, "Cascadia Code", "Courier New",
+    monospace;
+
+  /* Typography — Font weights */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
   --text-sm: 0.8125rem;
   --text-base: 0.9375rem;
   --text-lg: 1.0625rem;

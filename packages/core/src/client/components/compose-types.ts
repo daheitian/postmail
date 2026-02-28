@@ -56,6 +56,9 @@ export interface ComposeLabels {
   retryAll: string;
   editPost: string;
   update: string;
+  confirmCloseTitle: string;
+  confirmCloseSave: string;
+  confirmCloseDiscard: string;
 }
 
 export interface ComposeSubmitDetail {

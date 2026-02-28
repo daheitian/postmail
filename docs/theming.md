@@ -82,6 +82,41 @@ Themes are defined through CSS variables:
 }
 ```
 
+## Typography Tokens
+
+Font families and weights are controlled through CSS custom properties defined in `styles/tokens.css`.
+
+### Font Families
+
+| Token            | Default                       | Purpose                          |
+| ---------------- | ----------------------------- | -------------------------------- |
+| `--font-body`    | System sans-serif stack + CJK | Body text, inputs, UI labels     |
+| `--font-heading` | `var(--font-body)`            | Headings, site logo              |
+| `--font-serif`   | System serif stack + CJK      | Serif accents (e.g. dash header) |
+| `--font-mono`    | System monospace stack        | Code blocks, pre-formatted text  |
+
+Font themes (Dashboard > Settings > Typography) override `--font-heading` and `--font-body` with curated pairings. `--font-serif` and `--font-mono` remain independent.
+
+### Font Weights
+
+| Token            | Value | Typical use                |
+| ---------------- | ----- | -------------------------- |
+| `--fw-light`     | 300   | Reserved for light accents |
+| `--fw-regular`   | 400   | Body text, default         |
+| `--fw-medium`    | 500   | Labels, active nav items   |
+| `--fw-semibold`  | 600   | Headings, buttons, titles  |
+| `--fw-bold`      | 700   | Strong emphasis            |
+| `--fw-extrabold` | 800   | Site logo                  |
+
+Override these tokens to adjust typographic weight globally. For example, to make the entire UI feel lighter:
+
+```css
+:root {
+  --fw-medium: 400;
+  --fw-semibold: 500;
+}
+```
+
 ## Custom Theme
 
 Create your own theme by adding CSS to your project:

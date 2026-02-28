@@ -167,6 +167,18 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Done",
       comment: "@context: Compose button - update existing post",
     }),
+    confirmCloseTitle: t({
+      message: "You have unsaved changes",
+      comment: "@context: Confirm close dialog title",
+    }),
+    confirmCloseSave: t({
+      message: "Save Draft",
+      comment: "@context: Confirm close dialog - save draft button",
+    }),
+    confirmCloseDiscard: t({
+      message: "Discard",
+      comment: "@context: Confirm close dialog - discard button",
+    }),
   }).replace(/</g, "\\u003c");
 
   const collectionsJson = JSON.stringify(
@@ -181,7 +193,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
     <dialog
       id="compose-dialog"
       class="compose-dialog"
-      onclick="event.target === this && this.close()"
+      onclick="event.target === this && this.querySelector('jant-compose-dialog')?.requestClose()"
     >
       <jant-compose-dialog
         collections={collectionsJson}

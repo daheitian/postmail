@@ -532,7 +532,9 @@ msgstr "描述（可選）"
 msgid "Design"
 msgstr ""
 
+#. @context: Confirm close dialog - discard button
 #. @context: More menu - discard post
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "丟棄"
@@ -1512,6 +1514,11 @@ msgstr "儲存為草稿"
 msgid "Save CSS"
 msgstr "儲存 CSS"
 
+#. @context: Confirm close dialog - save draft button
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save Draft"
+msgstr ""
+
 #. @context: Button to save profile
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "Save Profile"
@@ -2010,6 +2017,11 @@ msgstr ""
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
+msgstr ""
+
+#. @context: Confirm close dialog title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "You have unsaved changes"
 msgstr ""
 
 #. @context: Empty state message when no media exists

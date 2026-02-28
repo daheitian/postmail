@@ -60,6 +60,9 @@ const labels: ComposeLabels = {
   retryAll: "Click to retry all",
   editPost: "Edit post",
   update: "Done",
+  confirmCloseTitle: "You have unsaved changes",
+  confirmCloseSave: "Save Draft",
+  confirmCloseDiscard: "Discard",
 };
 
 const collections: ComposeCollection[] = [
@@ -543,5 +546,158 @@ describe("JantComposeDialog", () => {
     ).toBeDefined();
 
     URL.revokeObjectURL(previewUrl);
+  });
+
+  // ── Close confirmation ─────────────────────────────────────────────
+
+  it("requestClose on empty form closes immediately without confirmation", async () => {
+    const el = await createElement();
+
+    // Ensure no confirmation panel appears
+    el.requestClose();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(el.querySelector(".compose-confirm-panel")).toBeNull();
+  });
+
+  it("requestClose with content shows confirmation panel", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Some text" }] },
+      ],
+    };
+    await editor.updateComplete;
+
+    el.requestClose();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(true);
+    expect(el.querySelector(".compose-confirm-panel")).not.toBeNull();
+    expect(el.querySelector(".compose-confirm-title")?.textContent).toBe(
+      "You have unsaved changes",
+    );
+  });
+
+  it("confirm save draft dispatches submit with draft status", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Draft me" }] },
+      ],
+    };
+    await editor.updateComplete;
+
+    el.requestClose();
+    await el.updateComplete;
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    const saveBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-confirm-save"),
+      "expected save draft button",
+    );
+    saveBtn.click();
+    await el.updateComplete;
+
+    expect(receivedDetail).not.toBeNull();
+    expect((receivedDetail as unknown as ComposeSubmitDetail).status).toBe(
+      "draft",
+    );
+    expect(el._confirmPanelOpen).toBe(false);
+  });
+
+  it("confirm discard closes and resets", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Will discard" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    el.requestClose();
+    await el.updateComplete;
+
+    const discardBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-confirm-discard"),
+      "expected discard button",
+    );
+    discardBtn.click();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(el._format).toBe("note");
+    expect(el._collectionIds).toEqual([]);
+  });
+
+  it("attachments detected as content for confirmation", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    const blob = new Blob(["fake-image"], { type: "image/png" });
+    const file = new File([blob], "test.png", { type: "image/png" });
+    const previewUrl = URL.createObjectURL(blob);
+
+    editor._attachments = [
+      {
+        clientId: "test-id-1",
+        file,
+        previewUrl,
+        status: "done",
+        mediaId: "media-1",
+        alt: "",
+        error: null,
+      },
+    ];
+    await editor.updateComplete;
+
+    el.requestClose();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(true);
+    expect(el.querySelector(".compose-confirm-panel")).not.toBeNull();
+
+    URL.revokeObjectURL(previewUrl);
+  });
+
+  it("rating detected as content for confirmation", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._rating = 3;
+    await editor.updateComplete;
+
+    el.requestClose();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(true);
   });
 });

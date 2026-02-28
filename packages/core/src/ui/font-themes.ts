@@ -29,7 +29,7 @@ export interface FontTheme {
 
 /** System sans-serif stack */
 const SANS =
-  'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+  'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
 
 /**
  * Editorial serif stack
@@ -38,7 +38,7 @@ const SANS =
  * Charter (macOS); Cambria / Sitka Text (Windows); Georgia (universal)
  */
 const EDITORIAL_SERIF =
-  'ui-serif, "Iowan Old Style", Charter, "Bitstream Charter", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
+  'ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
 
 /**
  * Classical serif stack

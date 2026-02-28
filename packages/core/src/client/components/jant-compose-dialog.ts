@@ -35,6 +35,7 @@ export class JantComposeDialog extends LitElement {
     _altPanelOpen: { state: true },
     _altPanelIndex: { state: true },
     _attachedPanelOpen: { state: true },
+    _confirmPanelOpen: { state: true },
     _editPostId: { state: true },
   };
 
@@ -51,6 +52,7 @@ export class JantComposeDialog extends LitElement {
   declare _altPanelOpen: boolean;
   declare _altPanelIndex: number;
   declare _attachedPanelOpen: boolean;
+  declare _confirmPanelOpen: boolean;
   declare _editPostId: string | null;
 
   createRenderRoot() {
@@ -73,6 +75,7 @@ export class JantComposeDialog extends LitElement {
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
     this._attachedPanelOpen = false;
+    this._confirmPanelOpen = false;
     this._editPostId = null;
   }
 
@@ -91,6 +94,7 @@ export class JantComposeDialog extends LitElement {
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
     this._attachedPanelOpen = false;
+    this._confirmPanelOpen = false;
     this._editPostId = null;
     this._editor?.reset();
   }
@@ -147,6 +151,40 @@ export class JantComposeDialog extends LitElement {
 
   private _closeDialog() {
     this.closest("dialog")?.close();
+  }
+
+  private _hasContent(): boolean {
+    const editor = this._editor;
+    if (!editor) return false;
+
+    const data = editor.getData();
+    if (data.body) return true;
+    if (data.title.trim()) return true;
+    if (data.url.trim()) return true;
+    if (data.quoteText.trim()) return true;
+    if (data.quoteAuthor.trim()) return true;
+    if (data.attachedText.trim()) return true;
+    if (data.rating > 0) return true;
+    if (data.attachments.length > 0) return true;
+    if (this._collectionIds.length > 0) return true;
+
+    return false;
+  }
+
+  requestClose() {
+    if (this._loading || this._confirmPanelOpen) return;
+    if (this._hasContent()) {
+      this._confirmPanelOpen = true;
+    } else {
+      this._closeDialog();
+    }
+  }
+
+  private _discardAndClose() {
+    this._confirmPanelOpen = false;
+    this._closeDialog();
+    (document.activeElement as HTMLElement)?.blur();
+    this.reset();
   }
 
   private _buildSubmitDetail(
@@ -250,6 +288,12 @@ export class JantComposeDialog extends LitElement {
       "jant:fullscreen-close",
       this._handleFullscreenClose as EventListener,
     );
+
+    // Intercept native dialog cancel (ESC) to route through requestClose
+    const dialog = this.closest("dialog");
+    if (dialog) {
+      dialog.addEventListener("cancel", this._handleDialogCancel);
+    }
   }
 
   disconnectedCallback() {
@@ -265,7 +309,21 @@ export class JantComposeDialog extends LitElement {
       "jant:fullscreen-close",
       this._handleFullscreenClose as EventListener,
     );
+
+    const dialog = this.closest("dialog");
+    if (dialog) {
+      dialog.removeEventListener("cancel", this._handleDialogCancel);
+    }
   }
+
+  private _handleDialogCancel = (e: Event) => {
+    e.preventDefault();
+    if (this._confirmPanelOpen) {
+      this._discardAndClose();
+    } else {
+      this.requestClose();
+    }
+  };
 
   private _handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
@@ -347,7 +405,7 @@ export class JantComposeDialog extends LitElement {
         <button
           type="button"
           class="compose-dialog-cancel"
-          @click=${() => this._closeDialog()}
+          @click=${() => this.requestClose()}
         >
           ${this.labels.cancel}
         </button>
@@ -461,8 +519,8 @@ export class JantComposeDialog extends LitElement {
                   type="button"
                   class="compose-dropdown-item compose-dropdown-item-danger"
                   @click=${() => {
-                    this._closeDialog();
                     this._showMoreMenu = false;
+                    this._discardAndClose();
                   }}
                 >
                   ${this.labels.discard}
@@ -737,6 +795,37 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _renderConfirmPanel() {
+    if (!this._confirmPanelOpen) return nothing;
+
+    return html`
+      <div class="compose-confirm-panel">
+        <div class="compose-confirm-content">
+          <p class="compose-confirm-title">${this.labels.confirmCloseTitle}</p>
+          <div class="compose-confirm-actions">
+            <button
+              type="button"
+              class="compose-confirm-save"
+              @click=${() => {
+                this._confirmPanelOpen = false;
+                this._submit("draft");
+              }}
+            >
+              ${this.labels.confirmCloseSave}
+            </button>
+            <button
+              type="button"
+              class="compose-confirm-discard"
+              @click=${() => this._discardAndClose()}
+            >
+              ${this.labels.confirmCloseDiscard}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     return html`
       <div class="compose-dialog-inner">
@@ -774,6 +863,7 @@ export class JantComposeDialog extends LitElement {
           </button>
         </div>
         ${this._renderAttachedPanel()} ${this._renderAltPanel()}
+        ${this._renderConfirmPanel()}
       </div>
     `;
   }

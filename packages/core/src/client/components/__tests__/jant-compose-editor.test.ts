@@ -66,6 +66,9 @@ const labels: ComposeLabels = {
   retryAll: "Click to retry all",
   editPost: "Edit post",
   update: "Done",
+  confirmCloseTitle: "You have unsaved changes",
+  confirmCloseSave: "Save Draft",
+  confirmCloseDiscard: "Discard",
 };
 
 async function createElement(
