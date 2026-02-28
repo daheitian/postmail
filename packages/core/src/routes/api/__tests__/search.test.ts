@@ -2,6 +2,19 @@ import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { searchApiRoutes } from "../search.js";
 
+/** Wraps plain text in a minimal valid TipTap JSON document. */
+function tiptapDoc(text: string): string {
+  return JSON.stringify({
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text }],
+      },
+    ],
+  });
+}
+
 describe("Search API Routes", () => {
   it("returns 400 when query is missing", async () => {
     const { app } = createTestApp({ fts: true });
@@ -40,7 +53,7 @@ describe("Search API Routes", () => {
 
     await services.posts.create({
       format: "note",
-      body: "Testing search functionality in jant",
+      body: tiptapDoc("Testing search functionality in jant"),
     });
 
     const res = await app.request("/api/search?q=jant");

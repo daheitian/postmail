@@ -32,6 +32,7 @@ import {
 } from "./time.js";
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
 import { getHtmlExcerpt } from "./excerpt.js";
+import { highlightText } from "./search-snippet.js";
 
 // =============================================================================
 // Media Context
@@ -309,26 +310,57 @@ export function toNavItemViews(
 
 /**
  * Converts a SearchResult to a SearchResultView with PostView.
+ *
+ * @param result - Raw search result with post and FTS metadata
+ * @param ctx - Media context for URL computation
+ * @param query - Original search query for client-side title/quote highlighting
  */
 export function toSearchResultView(
   result: SearchResult,
   ctx: MediaContext,
+  query?: string,
 ): SearchResultView {
+  const post = toPostViewFromPost(result.post, ctx);
+
+  let titleHighlighted: string | undefined;
+  let quoteHighlighted: string | undefined;
+
+  if (query) {
+    if (post.title) {
+      titleHighlighted = highlightText(post.title, query);
+    }
+    if (post.quoteText) {
+      // Truncate before highlighting to avoid splitting inside <mark> tags
+      const truncated =
+        post.quoteText.length > 120
+          ? post.quoteText.slice(0, 120) + "..."
+          : post.quoteText;
+      quoteHighlighted = highlightText(truncated, query);
+    }
+  }
+
   return {
-    post: toPostViewFromPost(result.post, ctx),
+    post,
     rank: result.rank,
     snippet: result.snippet,
+    titleHighlighted,
+    quoteHighlighted,
   };
 }
 
 /**
  * Batch converts SearchResult[] to SearchResultView[].
+ *
+ * @param results - Raw search results
+ * @param ctx - Media context for URL computation
+ * @param query - Original search query for title/quote highlighting
  */
 export function toSearchResultViews(
   results: SearchResult[],
   ctx: MediaContext,
+  query?: string,
 ): SearchResultView[] {
-  return results.map((r) => toSearchResultView(r, ctx));
+  return results.map((r) => toSearchResultView(r, ctx, query));
 }
 
 // =============================================================================

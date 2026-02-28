@@ -21,6 +21,7 @@ export interface Post {
   url: string | null;
   body: string | null;
   bodyHtml: string | null;
+  bodyText: string | null;
   quoteText: string | null;
   summary: string | null;
   rating: number | null;

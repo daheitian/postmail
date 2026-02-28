@@ -41,6 +41,72 @@ function extractPlainText(node: TiptapNode): string {
  * const summary = extractSummary(body, 5, 500);
  * ```
  */
+/**
+ * Content-bearing TipTap node types whose text should be indexed for search.
+ * Block-level containers (bulletList, orderedList, table, etc.) are included
+ * because they recurse into child nodes that carry text.
+ */
+const SEARCHABLE_TYPES = new Set([
+  "doc",
+  "paragraph",
+  "heading",
+  "codeBlock",
+  "bulletList",
+  "orderedList",
+  "listItem",
+  "blockquote",
+  "table",
+  "tableRow",
+  "tableCell",
+  "tableHeader",
+  "text",
+  "hardBreak",
+]);
+
+/**
+ * Recursively extracts all searchable plain text from a TipTap JSON body string.
+ *
+ * Used for FTS indexing — includes text from paragraphs, headings, code blocks,
+ * lists, blockquotes, and tables. Skips non-textual nodes (image, moreBreak,
+ * horizontalRule). Block-level nodes are joined with spaces for better trigram
+ * matching.
+ *
+ * @param bodyJson - TipTap JSON string (the `body` column)
+ * @returns Plain text for FTS indexing, or null if parsing fails or doc is empty
+ *
+ * @example
+ * ```ts
+ * const text = extractBodyText(body);
+ * // "Hello world Some code here"
+ * ```
+ */
+export function extractBodyText(bodyJson: string): string | null {
+  let doc: TiptapNode;
+  try {
+    doc = JSON.parse(bodyJson) as TiptapNode;
+  } catch {
+    return null;
+  }
+
+  if (doc.type !== "doc" || !doc.content) return null;
+
+  function collectText(node: TiptapNode): string {
+    if (!SEARCHABLE_TYPES.has(node.type)) return "";
+    if (node.type === "text") return node.text ?? "";
+    if (node.type === "hardBreak") return " ";
+    if (!node.content) return "";
+    return node.content.map(collectText).join(" ");
+  }
+
+  const parts: string[] = [];
+  for (const child of doc.content) {
+    const text = collectText(child).trim();
+    if (text) parts.push(text);
+  }
+
+  return parts.length > 0 ? parts.join(" ") : null;
+}
+
 export function extractSummary(
   bodyJson: string,
   maxParagraphs: number,

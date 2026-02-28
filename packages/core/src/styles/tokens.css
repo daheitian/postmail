@@ -71,6 +71,10 @@
   --site-media-outline: var(--border);
   --site-divider: var(--border);
 
+  /* Search highlight */
+  --search-mark-bg: oklch(0.92 0.14 90 / 0.55);
+  --search-mark-color: oklch(0.35 0.09 70);
+
   /* Dashboard */
   --dash-bg: oklch(0.97 0.005 80);
   --dash-card-radius: 10px;
@@ -78,6 +82,8 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
+    --search-mark-color: oklch(0.92 0.08 90);
     --dash-bg: oklch(0.2 0.005 80);
   }
 }

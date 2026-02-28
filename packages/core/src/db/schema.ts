@@ -31,6 +31,7 @@ export const posts = sqliteTable("posts", {
   url: text("url"),
   body: text("body"),
   bodyHtml: text("body_html"),
+  bodyText: text("body_text"),
   quoteText: text("quote_text"),
   summary: text("summary"),
   rating: integer("rating"),

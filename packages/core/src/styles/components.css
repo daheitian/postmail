@@ -5,6 +5,20 @@
  * AFTER Tailwind is initialized in the user's CSS entry.
  */
 
+/* Search result highlight */
+mark {
+  background-color: var(--search-mark-bg);
+  color: var(--search-mark-color);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+.search-snippet {
+  font-size: var(--text-sm);
+  color: var(--muted-foreground);
+  line-height: var(--leading);
+}
+
 /* Icon stroke width — CSS property overrides SVG presentational attributes */
 svg[stroke-width] {
   stroke-width: var(--icon-stroke);

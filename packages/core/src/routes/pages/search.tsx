@@ -50,7 +50,7 @@ searchRoutes.get("/", async (c) => {
 
   // Transform to View Models
   const mediaCtx = createMediaContext(c.var.appConfig);
-  const resultViews = toSearchResultViews(results, mediaCtx);
+  const resultViews = toSearchResultViews(results, mediaCtx, query);
 
   return renderPublicPage(c, {
     title: query

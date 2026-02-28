@@ -34,6 +34,7 @@ interface RawSearchRow {
   url: string | null;
   body: string | null;
   body_html: string | null;
+  body_text: string | null;
   quote_text: string | null;
   summary: string | null;
   rating: number | null;
@@ -105,6 +106,7 @@ export function createSearchService(d1: D1Database): SearchService {
           url: row.url,
           body: row.body,
           bodyHtml: row.body_html,
+          bodyText: row.body_text,
           quoteText: row.quote_text,
           summary: row.summary,
           rating: row.rating,

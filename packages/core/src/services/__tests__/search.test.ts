@@ -6,6 +6,19 @@ import { createPathRegistryService } from "../path-registry.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 
+/** Wraps plain text in a minimal valid TipTap JSON document. */
+function tiptapDoc(text: string): string {
+  return JSON.stringify({
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text }],
+      },
+    ],
+  });
+}
+
 describe("SearchService", () => {
   let db: Database;
   let sqlite: BetterSqlite3.Database;
@@ -56,11 +69,11 @@ describe("SearchService", () => {
   it("finds posts by content", async () => {
     await postService.create({
       format: "note",
-      body: "Hello world from jant",
+      body: tiptapDoc("Hello world from jant"),
     });
     await postService.create({
       format: "note",
-      body: "Another post entirely",
+      body: tiptapDoc("Another post entirely"),
     });
 
     const d1 = createMockD1(sqlite);
@@ -68,14 +81,14 @@ describe("SearchService", () => {
 
     const results = await searchService.search("jant");
     expect(results.length).toBeGreaterThanOrEqual(1);
-    expect(results[0]?.post.body).toContain("jant");
+    expect(results[0]?.post.bodyText).toContain("jant");
   });
 
   it("finds posts by title", async () => {
     await postService.create({
       format: "note",
       title: "Introduction to TypeScript",
-      body: "Some article body",
+      body: tiptapDoc("Some article body"),
     });
 
     const d1 = createMockD1(sqlite);
@@ -89,11 +102,11 @@ describe("SearchService", () => {
   it("respects status filter", async () => {
     await postService.create({
       format: "note",
-      body: "published post about testing",
+      body: tiptapDoc("published post about testing"),
     });
     await postService.create({
       format: "note",
-      body: "draft post about testing",
+      body: tiptapDoc("draft post about testing"),
       status: "draft",
     });
 
@@ -110,7 +123,7 @@ describe("SearchService", () => {
   it("excludes deleted posts", async () => {
     const post = await postService.create({
       format: "note",
-      body: "deleted post with unique search term xyzzy",
+      body: tiptapDoc("deleted post with unique search term xyzzy"),
     });
     await postService.delete(post.id);
 
@@ -125,7 +138,7 @@ describe("SearchService", () => {
     for (let i = 0; i < 5; i++) {
       await postService.create({
         format: "note",
-        body: `searchable post number ${i}`,
+        body: tiptapDoc(`searchable post number ${i}`),
       });
     }
 
@@ -134,5 +147,34 @@ describe("SearchService", () => {
 
     const limited = await searchService.search("searchable", { limit: 2 });
     expect(limited.length).toBeLessThanOrEqual(2);
+  });
+
+  it("finds link posts by URL", async () => {
+    await postService.create({
+      format: "link",
+      title: "Example Site",
+      url: "https://example.com/article",
+    });
+
+    const d1 = createMockD1(sqlite);
+    const searchService = createSearchService(d1);
+
+    const results = await searchService.search("example.com");
+    expect(results.length).toBeGreaterThanOrEqual(1);
+    expect(results[0]?.post.url).toContain("example.com");
+  });
+
+  it("does not match TipTap JSON structural tokens", async () => {
+    await postService.create({
+      format: "note",
+      body: tiptapDoc("Hello world"),
+    });
+
+    const d1 = createMockD1(sqlite);
+    const searchService = createSearchService(d1);
+
+    // "paragraph" is a JSON key in TipTap but not user content
+    const results = await searchService.search("paragraph");
+    expect(results).toHaveLength(0);
   });
 });

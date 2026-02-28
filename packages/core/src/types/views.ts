@@ -127,7 +127,12 @@ export interface SearchResult {
 export interface SearchResultView {
   post: PostView;
   rank: number;
+  /** FTS5 snippet from body_text column with <mark> tags */
   snippet?: string;
+  /** Title with matched query terms wrapped in <mark> */
+  titleHighlighted?: string;
+  /** quoteText (truncated) with matched query terms wrapped in <mark> */
+  quoteHighlighted?: string;
 }
 
 /**

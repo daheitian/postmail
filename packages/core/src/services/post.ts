@@ -12,7 +12,7 @@ import type { Database } from "../db/index.js";
 import { posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
-import { extractSummary } from "../lib/summary.js";
+import { extractSummary, extractBodyText } from "../lib/summary.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import type {
@@ -163,6 +163,7 @@ export function createPostService(
       url: row.url,
       body: row.body,
       bodyHtml: row.bodyHtml,
+      bodyText: row.bodyText,
       quoteText: row.quoteText,
       summary: row.summary,
       rating: row.rating,
@@ -231,6 +232,7 @@ export function createPostService(
       const timestamp = now();
 
       const bodyHtml = data.body ? renderTiptapJson(data.body) : null;
+      const bodyText = data.body ? extractBodyText(data.body) : null;
 
       // Generate summary for titled notes with body content
       let summary: string | null = null;
@@ -283,6 +285,7 @@ export function createPostService(
             url: data.url ?? null,
             body: data.body ?? null,
             bodyHtml,
+            bodyText,
             quoteText: data.quoteText ?? null,
             summary,
             rating: data.rating ?? null,
@@ -359,6 +362,7 @@ export function createPostService(
       if (data.body !== undefined) {
         updates.body = data.body;
         updates.bodyHtml = data.body ? renderTiptapJson(data.body) : null;
+        updates.bodyText = data.body ? extractBodyText(data.body) : null;
       }
 
       // Recompute summary when body, title, or format change
