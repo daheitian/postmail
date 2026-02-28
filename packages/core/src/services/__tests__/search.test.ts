@@ -164,6 +164,22 @@ describe("SearchService", () => {
     expect(results[0]?.post.url).toContain("example.com");
   });
 
+  it("finds posts with short queries (< 3 chars) via LIKE fallback", async () => {
+    await postService.create({
+      format: "note",
+      body: tiptapDoc("自由软件"),
+    });
+
+    const d1 = createMockD1(sqlite);
+    const searchService = createSearchService(d1);
+
+    // "自由" is 2 Chinese characters — below trigram minimum, uses LIKE
+    const results = await searchService.search("自由");
+    expect(results.length).toBeGreaterThanOrEqual(1);
+    // LIKE fallback returns no snippet
+    expect(results[0]?.snippet).toBeUndefined();
+  });
+
   it("does not match TipTap JSON structural tokens", async () => {
     await postService.create({
       format: "note",
