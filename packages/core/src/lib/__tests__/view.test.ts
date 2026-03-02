@@ -409,13 +409,13 @@ describe("toMediaView", () => {
     expect(view.posterUrl).toBe("/media/2025/01/abc-poster.webp");
   });
 
-  it("computes posterUrl with CDN public URL", () => {
+  it("computes posterUrl with CDN public URL and image transform", () => {
     const media = makeMedia({
       posterKey: "media/2025/01/abc-poster.webp",
     });
     const view = toMediaView(media, CTX_WITH_URLS);
     expect(view.posterUrl).toBe(
-      "https://cdn.example.com/media/2025/01/abc-poster.webp",
+      "https://example.com/cdn-cgi/image/width=640,quality=80,format=auto,fit=scale-down/https://cdn.example.com/media/2025/01/abc-poster.webp",
     );
   });
 

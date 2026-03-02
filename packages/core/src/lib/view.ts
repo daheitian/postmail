@@ -91,8 +91,16 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
       })
     : url;
 
-  const posterUrl = media.posterKey
+  const posterRawUrl = media.posterKey
     ? getMediaUrl(media.posterKey, publicUrl)
+    : undefined;
+  const posterUrl = posterRawUrl
+    ? getImageUrl(posterRawUrl, ctx.imageTransformUrl, {
+        width: 640,
+        quality: 80,
+        format: "auto",
+        fit: "scale-down",
+      })
     : undefined;
 
   return {
