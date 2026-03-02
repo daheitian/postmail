@@ -51,6 +51,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
       width: v.width,
       height: v.height,
       mimeType: v.mimeType,
+      posterUrl: v.posterUrl || undefined,
     })),
   ];
 
@@ -133,8 +134,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                 }
               >
                 <video
-                  src={v.url}
-                  preload="metadata"
+                  preload="none"
                   muted
                   playsinline
                   poster={v.posterUrl || vPlaceholder}

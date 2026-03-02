@@ -45,15 +45,20 @@ function isSupported(): boolean {
 }
 
 /**
- * Extract a poster frame and compute its blurhash from a video file.
+ * Extract a poster frame, blurhash, and source dimensions from a video file.
  * Seeks to `min(duration × 0.1, 3s)` and captures the frame.
+ * Also returns the original video dimensions so the caller can compute
+ * the correct output size without opening a second Input instance.
  *
  * @param file - Source video file
- * @returns Poster blob (640px-wide WebP) and blurhash string, or empty on failure
+ * @returns Poster blob (640px-wide WebP), blurhash string, and source dimensions
  */
-async function extractPoster(
-  file: File,
-): Promise<{ poster?: Blob; blurhash?: string }> {
+async function extractPoster(file: File): Promise<{
+  poster?: Blob;
+  blurhash?: string;
+  sourceWidth?: number;
+  sourceHeight?: number;
+}> {
   const input = new Input({
     source: new BlobSource(file),
     formats: ALL_FORMATS,
@@ -62,12 +67,15 @@ async function extractPoster(
     const videoTrack = await input.getPrimaryVideoTrack();
     if (!videoTrack) return {};
 
+    const sourceWidth = videoTrack.displayWidth;
+    const sourceHeight = videoTrack.displayHeight;
+
     const duration = await input.computeDuration();
     const seekTime = Math.min(duration * 0.1, 3);
 
     const sink = new CanvasSink(videoTrack);
     const wrapped = await sink.getCanvas(seekTime);
-    if (!wrapped) return {};
+    if (!wrapped) return { sourceWidth, sourceHeight };
 
     const canvas = wrapped.canvas as HTMLCanvasElement;
 
@@ -82,7 +90,7 @@ async function extractPoster(
     posterCanvas.width = pw;
     posterCanvas.height = ph;
     const pCtx = posterCanvas.getContext("2d");
-    if (!pCtx) return {};
+    if (!pCtx) return { sourceWidth, sourceHeight };
     pCtx.drawImage(canvas, 0, 0, pw, ph);
 
     const poster = await new Promise<Blob | undefined>((resolve) => {
@@ -102,13 +110,13 @@ async function extractPoster(
     bhCanvas.width = bw;
     bhCanvas.height = bh;
     const bhCtx = bhCanvas.getContext("2d");
-    if (!bhCtx) return { poster };
+    if (!bhCtx) return { poster, sourceWidth, sourceHeight };
     bhCtx.drawImage(canvas, 0, 0, bw, bh);
 
     const imageData = bhCtx.getImageData(0, 0, bw, bh);
     const blurhash = encode(imageData.data, bw, bh, 4, 3);
 
-    return { poster, blurhash };
+    return { poster, blurhash, sourceWidth, sourceHeight };
   } catch {
     return {};
   } finally {
@@ -128,10 +136,28 @@ async function processToFile(
   file: File,
   onProgress?: (progress: number) => void,
 ): Promise<VideoProcessResult> {
-  // Extract poster + blurhash first (separate Input instance)
-  const { poster, blurhash } = await extractPoster(file);
+  // Extract poster + blurhash + source dimensions (separate Input instance,
+  // so the transcoding Input below starts with clean demuxer state).
+  const { poster, blurhash, sourceWidth, sourceHeight } =
+    await extractPoster(file);
 
-  // Transcode to MP4 H.264/AAC
+  // Compute output size preserving the original aspect ratio
+  let width = MAX_WIDTH;
+  let height = MAX_HEIGHT;
+  if (sourceWidth && sourceHeight) {
+    const scale = Math.min(
+      MAX_WIDTH / sourceWidth,
+      MAX_HEIGHT / sourceHeight,
+      1,
+    );
+    width = Math.round(sourceWidth * scale);
+    height = Math.round(sourceHeight * scale);
+  }
+  // H.264 requires even dimensions
+  width += width % 2;
+  height += height % 2;
+
+  // Transcode to MP4 H.264/AAC (fresh Input — not shared with extractPoster)
   const input = new Input({
     source: new BlobSource(file),
     formats: ALL_FORMATS,
@@ -148,8 +174,8 @@ async function processToFile(
       output,
       video: {
         codec: "avc",
-        width: MAX_WIDTH,
-        height: MAX_HEIGHT,
+        width,
+        height,
         fit: "contain",
         bitrate: QUALITY_HIGH,
       },
@@ -166,18 +192,6 @@ async function processToFile(
 
     const buffer = target.buffer;
     if (!buffer) throw new Error("Video processing produced no output");
-
-    // Determine output dimensions from video track
-    const videoTrack = await input.getPrimaryVideoTrack();
-    let width = MAX_WIDTH;
-    let height = MAX_HEIGHT;
-    if (videoTrack) {
-      const srcW = videoTrack.displayWidth;
-      const srcH = videoTrack.displayHeight;
-      const scale = Math.min(MAX_WIDTH / srcW, MAX_HEIGHT / srcH, 1);
-      width = Math.round(srcW * scale);
-      height = Math.round(srcH * scale);
-    }
 
     const originalName = file.name.replace(/\.[^.]+$/, "");
     const mp4File = new File([buffer], `${originalName}.mp4`, {

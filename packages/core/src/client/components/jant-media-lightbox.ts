@@ -17,6 +17,7 @@ interface LightboxImage {
   width?: number;
   height?: number;
   mimeType?: string;
+  posterUrl?: string;
 }
 
 export class JantMediaLightbox extends LitElement {
@@ -197,6 +198,7 @@ export class JantMediaLightbox extends LitElement {
             ? html`<video
                 class="media-lightbox-video"
                 src=${img.url}
+                poster=${img.posterUrl ?? ""}
                 controls
                 autoplay
                 playsinline

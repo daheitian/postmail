@@ -132,11 +132,23 @@ async function handleUpload(
       }
 
       const statusEl = document.getElementById("upload-status");
-      const result = await VideoProcessor.processToFile(file, (progress) => {
+      const processPromise = VideoProcessor.processToFile(file, (progress) => {
         if (statusEl) {
           statusEl.textContent = `${processingText} ${Math.round(progress * 100)}%`;
         }
       });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                "Video processing timed out. Try a shorter or smaller video.",
+              ),
+            ),
+          120_000,
+        ),
+      );
+      const result = await Promise.race([processPromise, timeoutPromise]);
       toUpload = result.file;
       width = result.width;
       height = result.height;
@@ -206,6 +218,7 @@ async function handleUpload(
   } catch (err) {
     const message = err instanceof Error ? err.message : errorText;
     showPlaceholderError(placeholder, file.name, message);
+    showToast(message, "error");
   }
 
   // Reset file input so the same file can be re-selected
