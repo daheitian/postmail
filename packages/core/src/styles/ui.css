@@ -1248,27 +1248,9 @@
     border-radius: var(--media-radius, 0.5rem);
   }
 
-  .compose-progress-ring {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .compose-progress-ring svg {
-    display: block;
-  }
-
-  .compose-progress-ring circle:last-of-type {
-    transition: stroke-dashoffset 0.2s ease-out;
-  }
-
-  .compose-progress-label {
-    position: absolute;
-    font-size: 8px;
-    font-weight: 600;
-    color: white;
-    line-height: 1;
+  /* Allow tooltip to overflow the thumb on error */
+  .compose-attachment-thumb:has(.compose-attachment-retry) {
+    overflow: visible;
   }
 
   .compose-attachment-retry {
@@ -1277,6 +1259,11 @@
     border: none;
     padding: 0;
     transition: background-color 0.15s;
+  }
+
+  /* Tooltip inside dialog needs higher z-index to escape stacking contexts */
+  .compose-attachment-retry [data-tooltip]:before {
+    z-index: 10000;
   }
 
   .compose-attachment-retry:hover {

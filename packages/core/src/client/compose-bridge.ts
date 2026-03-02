@@ -182,88 +182,6 @@ function buildPostBody(detail: ComposeSubmitDetail) {
   };
 }
 
-document.addEventListener("jant:compose-submit", async (e: Event) => {
-  const event = e as CustomEvent<ComposeSubmitDetail>;
-  const detail = event.detail;
-  const dialog = document.getElementById(
-    "compose-dialog",
-  ) as HTMLDialogElement | null;
-  const composeEl = document.querySelector(
-    "jant-compose-dialog",
-  ) as JantComposeDialog | null;
-
-  if (!composeEl) return;
-  composeEl.loading = true;
-
-  try {
-    const isEdit = !!detail.editPostId;
-    const endpoint = isEdit ? `/api/posts/${detail.editPostId}` : "/compose";
-    const method = isEdit ? "PUT" : "POST";
-
-    const res = await fetch(endpoint, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(buildPostBody(detail)),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      showToast(data.error ?? "Something went wrong", "error");
-      return;
-    }
-
-    if (isEdit) {
-      showToast("Post updated.");
-      dialog?.close();
-      (document.activeElement as HTMLElement)?.blur();
-      composeEl.reset();
-      globalThis.location.reload();
-      return;
-    }
-
-    const data = await res.json();
-    const labels = composeEl.labels;
-
-    if (data.status === "draft") {
-      showToast(data.toast ?? "Draft saved.");
-    } else if (data.status === "published") {
-      // Only insert into timeline on the first page of the latest feed
-      if (data.cardHtml) {
-        const timeline = document.querySelector<HTMLElement>(
-          '[data-page="home"] #timeline-items',
-        );
-        const pageParam = new URLSearchParams(globalThis.location.search).get(
-          "page",
-        );
-        const isFirstPage = !pageParam || pageParam === "1";
-        if (timeline && isFirstPage) {
-          document.getElementById("empty-timeline")?.remove();
-          timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
-        }
-      }
-
-      const publishedMsg = labels?.published ?? "Published!";
-      const viewLabel = labels?.view ?? "View";
-      showToastWithAction(publishedMsg, {
-        label: viewLabel,
-        href: data.permalink,
-      });
-    }
-
-    dialog?.close();
-    // Prevent browser from restoring focus to the trigger button
-    (document.activeElement as HTMLElement)?.blur();
-    composeEl.reset();
-  } catch {
-    showToast("Something went wrong", "error");
-  } finally {
-    composeEl.loading = false;
-  }
-});
-
 // ── Deferred submit handler ─────────────────────────────────────────
 
 interface DeferredDetail extends ComposeSubmitDetail {
@@ -281,9 +199,31 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   const labels = composeEl?.labels;
   const uploadingMsg = labels?.uploading ?? "Uploading...";
   const publishedMsg = labels?.published ?? "Published!";
+  const hasPending = detail.pendingAttachments.length > 0;
 
-  // Show persistent toast
-  showPersistentToast("compose-deferred", uploadingMsg);
+  // Show persistent toast only when uploads are still in flight
+  if (hasPending) {
+    showPersistentToast("compose-deferred", uploadingMsg);
+  }
+
+  /** Show result toast — replaces persistent toast if one exists, otherwise shows a new one */
+  const toastMsg = (msg: string, type: "success" | "error" = "success") => {
+    if (hasPending) {
+      replaceWithAutoClose("compose-deferred", msg, type);
+    } else {
+      showToast(msg, type);
+    }
+  };
+  const toastAction = (
+    msg: string,
+    action: { label: string; href: string },
+  ) => {
+    if (hasPending) {
+      replaceWithAutoCloseAction("compose-deferred", msg, action);
+    } else {
+      showToastWithAction(msg, action);
+    }
+  };
 
   try {
     // Wait for all pending uploads to complete
@@ -293,6 +233,13 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       .filter((p): p is Promise<string | null> => p !== undefined);
 
     const results = await Promise.all(pendingPromises);
+
+    // If any pending upload failed, abort the post
+    const failedCount = results.filter((id) => id === null).length;
+    if (failedCount > 0) {
+      toastMsg("Upload failed. Post not created.", "error");
+      return;
+    }
 
     // Merge newly completed mediaIds with already-done ones
     const newMediaIds = results.filter((id): id is string => id !== null);
@@ -333,16 +280,12 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
     if (!res.ok) {
       const data = await res.json();
-      replaceWithAutoClose(
-        "compose-deferred",
-        data.error ?? "Something went wrong",
-        "error",
-      );
+      toastMsg(data.error ?? "Something went wrong", "error");
       return;
     }
 
     if (isEdit) {
-      replaceWithAutoClose("compose-deferred", "Post updated.");
+      toastMsg("Post updated.");
       globalThis.location.reload();
       return;
     }
@@ -366,14 +309,14 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       }
 
       const viewLabel = labels?.view ?? "View";
-      replaceWithAutoCloseAction("compose-deferred", publishedMsg, {
+      toastAction(publishedMsg, {
         label: viewLabel,
         href: data.permalink,
       });
     } else {
-      replaceWithAutoClose("compose-deferred", data.toast ?? "Draft saved.");
+      toastMsg(data.toast ?? "Draft saved.");
     }
   } catch {
-    replaceWithAutoClose("compose-deferred", "Something went wrong", "error");
+    toastMsg("Something went wrong", "error");
   }
 });

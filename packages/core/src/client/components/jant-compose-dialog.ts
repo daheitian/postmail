@@ -235,39 +235,27 @@ export class JantComposeDialog extends LitElement {
     const editor = this._editor;
     if (!editor) return;
 
-    const attachments = editor._attachments ?? [];
-    const hasPending = attachments.some(
-      (a) => a.status === "pending" || a.status === "uploading",
-    );
-
     const detail = this._buildSubmitDetail(status);
     if (!detail) return;
 
-    if (hasPending) {
-      // Deferred submit: close dialog, let bridge finish uploads and post
-      this.dispatchEvent(
-        new CustomEvent("jant:compose-submit-deferred", {
-          bubbles: true,
-          detail: {
-            ...detail,
-            pendingAttachments: attachments.filter(
-              (a) => a.status === "pending" || a.status === "uploading",
-            ),
-          },
-        }),
-      );
-      this._closeDialog();
-      // Prevent browser from restoring focus to the trigger button
-      (document.activeElement as HTMLElement)?.blur();
-      this.reset();
-    } else {
-      this.dispatchEvent(
-        new CustomEvent("jant:compose-submit", {
-          bubbles: true,
-          detail,
-        }),
-      );
-    }
+    const attachments = editor._attachments ?? [];
+    const pendingAttachments = attachments.filter(
+      (a) =>
+        a.status === "pending" ||
+        a.status === "processing" ||
+        a.status === "uploading",
+    );
+
+    this.dispatchEvent(
+      new CustomEvent("jant:compose-submit-deferred", {
+        bubbles: true,
+        detail: { ...detail, pendingAttachments },
+      }),
+    );
+    this._closeDialog();
+    // Prevent browser from restoring focus to the trigger button
+    (document.activeElement as HTMLElement)?.blur();
+    this.reset();
   }
 
   private _toggleCollection(id: number) {

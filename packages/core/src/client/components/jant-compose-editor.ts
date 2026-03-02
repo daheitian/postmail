@@ -860,41 +860,6 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
-  private _renderProgressRing(progress: number) {
-    const radius = 14;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference * (1 - Math.min(progress, 1));
-    const pct = Math.round(progress * 100);
-
-    return html`
-      <div class="compose-progress-ring">
-        <svg viewBox="0 0 36 36" width="36" height="36">
-          <circle
-            cx="18"
-            cy="18"
-            r="${radius}"
-            fill="none"
-            stroke="rgba(255,255,255,0.25)"
-            stroke-width="3"
-          />
-          <circle
-            cx="18"
-            cy="18"
-            r="${radius}"
-            fill="none"
-            stroke="white"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-dasharray="${circumference}"
-            stroke-dashoffset="${offset}"
-            transform="rotate(-90 18 18)"
-          />
-        </svg>
-        <span class="compose-progress-label">${pct}%</span>
-      </div>
-    `;
-  }
-
   private _renderAttachmentPreview(a: ComposeAttachment) {
     const category = this._getCategory(a);
 
@@ -980,54 +945,40 @@ export class JantComposeEditor extends LitElement {
 
   private _renderAttachmentOverlay(a: ComposeAttachment, index: number) {
     return html`
-      ${a.status === "processing"
-        ? html`
-            <div class="compose-attachment-overlay">
-              ${this._renderProgressRing(a.progress ?? 0)}
-            </div>
-          `
-        : a.status === "pending" || a.status === "uploading"
-          ? html`
-              <div class="compose-attachment-overlay">
-                <svg
-                  class="animate-spin size-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  style="stroke-width: 2.5"
-                  stroke-linecap="round"
-                >
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                </svg>
-              </div>
-            `
-          : nothing}
       ${a.status === "error"
         ? html`
             <button
               type="button"
               class="compose-attachment-overlay compose-attachment-retry"
-              title="${a.error ?? "Upload failed"}. ${this.labels.retryAll}"
               @click=${(e: Event) => {
                 e.stopPropagation();
                 this._retryAllFailed();
               }}
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+              <span
+                data-tooltip="${a.error ?? "Upload failed"}"
+                data-side="bottom"
               >
-                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-                <path d="M3 3v5h5" />
-                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-                <path d="M16 16h5v5" />
-              </svg>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                  />
+                  <path d="M3 3v5h5" />
+                  <path
+                    d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"
+                  />
+                  <path d="M16 16h5v5" />
+                </svg>
+              </span>
             </button>
           `
         : nothing}

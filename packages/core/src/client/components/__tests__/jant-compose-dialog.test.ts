@@ -137,7 +137,7 @@ describe("JantComposeDialog", () => {
     );
   });
 
-  it("submit dispatches jant:compose-submit with correct payload", async () => {
+  it("submit dispatches jant:compose-submit-deferred with correct payload", async () => {
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
@@ -151,9 +151,13 @@ describe("JantComposeDialog", () => {
     };
     await editor.updateComplete;
 
-    let receivedDetail: ComposeSubmitDetail | null = null;
-    el.addEventListener("jant:compose-submit", (event) => {
-      const customEvent = event as CustomEvent<ComposeSubmitDetail>;
+    let receivedDetail:
+      | (ComposeSubmitDetail & { pendingAttachments: unknown[] })
+      | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      const customEvent = event as CustomEvent<
+        ComposeSubmitDetail & { pendingAttachments: unknown[] }
+      >;
       receivedDetail = customEvent.detail;
     });
 
@@ -164,13 +168,16 @@ describe("JantComposeDialog", () => {
     ).click();
 
     expect(receivedDetail).not.toBeNull();
-    const detail = receivedDetail as unknown as ComposeSubmitDetail;
+    const detail = receivedDetail as unknown as ComposeSubmitDetail & {
+      pendingAttachments: unknown[];
+    };
     expect(detail.format).toBe("note");
     expect(detail.body).toContain("Hello world");
     expect(detail.status).toBe("published");
     expect(detail.collectionIds).toEqual([]);
     expect(detail.mediaIds).toEqual([]);
     expect(detail.mediaAlts).toEqual({});
+    expect(detail.pendingAttachments).toEqual([]);
   });
 
   it("collection selector toggles IDs", async () => {
@@ -240,7 +247,7 @@ describe("JantComposeDialog", () => {
     expect(actionRow).not.toBeNull();
   });
 
-  it("draft button dispatches submit with draft status", async () => {
+  it("draft button dispatches submit-deferred with draft status", async () => {
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
@@ -258,7 +265,7 @@ describe("JantComposeDialog", () => {
     await editor.updateComplete;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
-    el.addEventListener("jant:compose-submit", (event) => {
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
       const customEvent = event as CustomEvent<ComposeSubmitDetail>;
       receivedDetail = customEvent.detail;
     });
@@ -281,7 +288,7 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     let dispatched = false;
-    el.addEventListener("jant:compose-submit", () => {
+    el.addEventListener("jant:compose-submit-deferred", () => {
       dispatched = true;
     });
 
@@ -474,9 +481,13 @@ describe("JantComposeDialog", () => {
     };
     await editor.updateComplete;
 
-    let receivedDetail: ComposeSubmitDetail | null = null;
-    el.addEventListener("jant:compose-submit", (event) => {
-      const customEvent = event as CustomEvent<ComposeSubmitDetail>;
+    let receivedDetail:
+      | (ComposeSubmitDetail & { pendingAttachments: unknown[] })
+      | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      const customEvent = event as CustomEvent<
+        ComposeSubmitDetail & { pendingAttachments: unknown[] }
+      >;
       receivedDetail = customEvent.detail;
     });
 
@@ -486,9 +497,12 @@ describe("JantComposeDialog", () => {
     ).click();
 
     expect(receivedDetail).not.toBeNull();
-    const detail = receivedDetail as unknown as ComposeSubmitDetail;
+    const detail = receivedDetail as unknown as ComposeSubmitDetail & {
+      pendingAttachments: unknown[];
+    };
     expect(detail.mediaIds).toEqual(["media-1"]);
     expect(detail.mediaAlts).toEqual({ "media-1": "A test image" });
+    expect(detail.pendingAttachments).toEqual([]);
 
     URL.revokeObjectURL(previewUrl);
   });
@@ -532,23 +546,15 @@ describe("JantComposeDialog", () => {
       deferredEvent = event as CustomEvent;
     });
 
-    // Prevent dialog.close() from throwing (no parent dialog in test)
-    let submitEvent: CustomEvent | null = null;
-    el.addEventListener("jant:compose-submit", (event) => {
-      submitEvent = event as CustomEvent;
-    });
-
     requireElement(
       el.querySelector<HTMLButtonElement>(".compose-post-btn"),
       "expected post button",
     ).click();
 
-    // Should have dispatched deferred, not regular submit
     expect(deferredEvent).not.toBeNull();
-    expect(submitEvent).toBeNull();
     expect(
       (deferredEvent as unknown as CustomEvent).detail.pendingAttachments,
-    ).toBeDefined();
+    ).toHaveLength(1);
 
     URL.revokeObjectURL(previewUrl);
   });
@@ -590,7 +596,7 @@ describe("JantComposeDialog", () => {
     );
   });
 
-  it("confirm save draft dispatches submit with draft status", async () => {
+  it("confirm save draft dispatches submit-deferred with draft status", async () => {
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
@@ -608,7 +614,7 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
-    el.addEventListener("jant:compose-submit", (event) => {
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
       receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
     });
 
