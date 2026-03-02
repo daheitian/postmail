@@ -9,6 +9,7 @@
 import type { FC } from "hono/jsx";
 import type { MediaView } from "../../types.js";
 import { getMediaCategory } from "../../lib/upload.js";
+import { blurhashToDataUrl } from "../../lib/blurhash-placeholder.js";
 
 export interface MediaGalleryProps {
   attachments: MediaView[];
@@ -76,6 +77,9 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
             const itemWidth = singleVisual
               ? undefined
               : `${Math.round(320 * Math.min(Math.max(aspectRatio, 0.6), 1.6))}px`;
+            const placeholder = img.blurhash
+              ? blurhashToDataUrl(img.blurhash)
+              : undefined;
 
             return (
               <a
@@ -83,19 +87,30 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                 href={img.url}
                 data-lightbox-index={index}
                 class={`${singleVisual ? "" : "shrink-0 snap-start"} block rounded-lg overflow-hidden`}
-                style={
-                  singleVisual
-                    ? undefined
-                    : { width: itemWidth, maxWidth: "85%" }
-                }
+                style={{
+                  ...(singleVisual
+                    ? {}
+                    : { width: itemWidth, maxWidth: "85%" }),
+                  ...(placeholder
+                    ? {
+                        backgroundImage: `url(${placeholder})`,
+                        backgroundSize: "cover",
+                      }
+                    : {}),
+                }}
               >
                 <img
                   src={img.thumbnailUrl}
                   alt={img.altText || ""}
+                  style={
+                    singleVisual && img.width && img.height
+                      ? { aspectRatio: `${img.width}/${img.height}` }
+                      : undefined
+                  }
                   class={
                     singleVisual
-                      ? "rounded-lg max-w-full max-h-96 h-auto object-contain"
-                      : "h-80 w-full object-cover"
+                      ? "rounded-lg max-w-full max-h-96 h-auto object-contain bg-transparent"
+                      : "h-80 w-full object-cover bg-transparent"
                   }
                   loading="lazy"
                 />
@@ -104,6 +119,9 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
           })}
           {videos.map((v, vIdx) => {
             const lightboxIndex = images.length + vIdx;
+            const vPlaceholder = v.blurhash
+              ? blurhashToDataUrl(v.blurhash)
+              : undefined;
             return (
               <a
                 key={v.id}
@@ -119,6 +137,12 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                   preload="metadata"
                   muted
                   playsinline
+                  poster={v.posterUrl || vPlaceholder}
+                  style={
+                    singleVisual && v.width && v.height
+                      ? { aspectRatio: `${v.width}/${v.height}` }
+                      : undefined
+                  }
                   class={singleVisual ? "max-h-96" : "h-80 w-full object-cover"}
                 />
                 <div class="media-video-play-overlay">

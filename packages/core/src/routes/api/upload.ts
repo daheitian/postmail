@@ -184,6 +184,24 @@ uploadApiRoutes.post("/", async (c) => {
       contentType: file.type,
     });
 
+    // Read optional client-side metadata
+    const widthRaw = parseInt(formData.get("width") as string) || undefined;
+    const heightRaw = parseInt(formData.get("height") as string) || undefined;
+    const blurhashRaw = (formData.get("blurhash") as string) || undefined;
+
+    // Upload poster frame for videos (if provided by client)
+    let posterKey: string | undefined;
+    const posterFile = formData.get("poster") as File | null;
+    if (posterFile && file.type.startsWith("video/")) {
+      const date = new Date();
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      posterKey = `media/${year}/${month}/${id}-poster.webp`;
+      await storage.put(posterKey, posterFile.stream(), {
+        contentType: "image/webp",
+      });
+    }
+
     // Save to database
     const media = await c.var.services.media.create({
       id,
@@ -193,6 +211,11 @@ uploadApiRoutes.post("/", async (c) => {
       size: file.size,
       storageKey,
       provider: c.var.appConfig.storageDriver,
+      width: widthRaw && widthRaw > 0 ? widthRaw : undefined,
+      height: heightRaw && heightRaw > 0 ? heightRaw : undefined,
+      blurhash:
+        blurhashRaw && blurhashRaw.length < 200 ? blurhashRaw : undefined,
+      posterKey,
     });
 
     // SSE response for Datastar

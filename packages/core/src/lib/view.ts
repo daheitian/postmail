@@ -91,6 +91,10 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
       })
     : url;
 
+  const posterUrl = media.posterKey
+    ? getMediaUrl(media.posterKey, publicUrl)
+    : undefined;
+
   return {
     id: media.id,
     url,
@@ -100,6 +104,8 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
     width: media.width ?? undefined,
     height: media.height ?? undefined,
     size: media.size,
+    blurhash: media.blurhash ?? undefined,
+    posterUrl,
   };
 }
 
@@ -163,6 +169,8 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     altText: m.alt ?? undefined,
     width: m.width ?? undefined,
     height: m.height ?? undefined,
+    blurhash: m.blurhash ?? undefined,
+    posterUrl: m.posterUrl ?? undefined,
   }));
 
   return {

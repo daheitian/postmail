@@ -15,6 +15,7 @@ import type {
   ComposeFormat,
   ComposeLabels,
   ComposeAttachment,
+  AttachedTextItem,
 } from "./compose-types.js";
 import {
   UPLOAD_ACCEPT,
@@ -38,8 +39,7 @@ export class JantComposeEditor extends LitElement {
     _rating: { state: true },
     _showTitle: { state: true },
     _showRating: { state: true },
-    _attachedText: { state: true },
-    _showAttachedText: { state: true },
+    _attachedTexts: { state: true },
     _attachments: { state: true },
     _showAltPanel: { state: true },
     _altPanelIndex: { state: true },
@@ -57,8 +57,7 @@ export class JantComposeEditor extends LitElement {
   declare _rating: number;
   declare _showTitle: boolean;
   declare _showRating: boolean;
-  declare _attachedText: string;
-  declare _showAttachedText: boolean;
+  declare _attachedTexts: AttachedTextItem[];
   declare _attachments: ComposeAttachment[];
   declare _showAltPanel: boolean;
   declare _altPanelIndex: number;
@@ -89,8 +88,7 @@ export class JantComposeEditor extends LitElement {
     this._rating = 0;
     this._showTitle = false;
     this._showRating = false;
-    this._attachedText = "";
-    this._showAttachedText = false;
+    this._attachedTexts = [];
     this._attachments = [];
     this._showAltPanel = false;
     this._altPanelIndex = 0;
@@ -195,7 +193,7 @@ export class JantComposeEditor extends LitElement {
     const body = this._bodyJson ? JSON.stringify(this._bodyJson) : "";
     const shared = {
       rating: this._rating,
-      attachedText: this._attachedText,
+      attachedTexts: this._attachedTexts,
       attachments: this._attachments,
     };
 
@@ -240,8 +238,7 @@ export class JantComposeEditor extends LitElement {
     this._rating = 0;
     this._showTitle = false;
     this._showRating = false;
-    this._attachedText = "";
-    this._showAttachedText = false;
+    this._attachedTexts = [];
     // Revoke preview URLs before clearing
     for (const a of this._attachments) {
       URL.revokeObjectURL(a.previewUrl);
@@ -260,6 +257,12 @@ export class JantComposeEditor extends LitElement {
   ) {
     this._attachments = this._attachments.map((a) =>
       a.clientId === clientId ? { ...a, status, mediaId, error } : a,
+    );
+  }
+
+  updateAttachmentProgress(clientId: string, progress: number) {
+    this._attachments = this._attachments.map((a) =>
+      a.clientId === clientId ? { ...a, progress } : a,
     );
   }
 
@@ -371,6 +374,7 @@ export class JantComposeEditor extends LitElement {
         file: new File([], "existing", { type: m.mimeType }),
         previewUrl: m.previewUrl,
         status: "done" as const,
+        progress: null,
         mediaId: m.id,
         alt: m.alt ?? "",
         error: null,
@@ -391,19 +395,56 @@ export class JantComposeEditor extends LitElement {
     }
   }
 
+  private static SUMMARY_LENGTH = 100;
+
+  private _computeSummary(text: string): string {
+    const plain = text.replace(/\s+/g, " ").trim();
+    if (plain.length <= JantComposeEditor.SUMMARY_LENGTH) return plain;
+    return plain.slice(0, JantComposeEditor.SUMMARY_LENGTH) + "…";
+  }
+
   private _openAttachedText() {
-    this._showAttachedText = true;
+    const item: AttachedTextItem = {
+      clientId: crypto.randomUUID(),
+      text: "",
+      summary: "",
+    };
+    this._attachedTexts = [...this._attachedTexts, item];
+    const index = this._attachedTexts.length - 1;
     this.dispatchEvent(
-      new CustomEvent("jant:attached-panel-open", { bubbles: true }),
+      new CustomEvent("jant:attached-panel-open", {
+        bubbles: true,
+        detail: { index },
+      }),
     );
   }
 
-  updateAttachedText(value: string) {
-    this._attachedText = value;
+  private _editAttachedText(index: number) {
+    this.dispatchEvent(
+      new CustomEvent("jant:attached-panel-open", {
+        bubbles: true,
+        detail: { index },
+      }),
+    );
   }
 
-  closeAttachedPanel() {
-    this._showAttachedText = false;
+  private _removeAttachedText(index: number) {
+    this._attachedTexts = this._attachedTexts.filter((_, i) => i !== index);
+  }
+
+  updateAttachedText(index: number, value: string) {
+    this._attachedTexts = this._attachedTexts.map((item, i) =>
+      i === index
+        ? { ...item, text: value, summary: this._computeSummary(value) }
+        : item,
+    );
+  }
+
+  closeAttachedPanel(index: number) {
+    const item = this._attachedTexts[index];
+    if (item && item.text.trim() === "") {
+      this._attachedTexts = this._attachedTexts.filter((_, i) => i !== index);
+    }
   }
 
   private _onInput(field: string, e: Event) {
@@ -465,6 +506,7 @@ export class JantComposeEditor extends LitElement {
         file,
         previewUrl,
         status: "pending",
+        progress: null,
         mediaId: null,
         alt: "",
         error: null,
@@ -517,7 +559,7 @@ export class JantComposeEditor extends LitElement {
     // Reset failed attachments to pending
     this._attachments = this._attachments.map((a) =>
       a.status === "error"
-        ? { ...a, status: "pending" as const, error: null }
+        ? { ...a, status: "pending" as const, progress: null, error: null }
         : a,
     );
 
@@ -818,44 +860,37 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
-  private _renderAttachedBadge() {
-    if (this._attachedText.trim().length === 0 || this._showAttachedText)
-      return nothing;
+  private _renderProgressRing(progress: number) {
+    const radius = 14;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference * (1 - Math.min(progress, 1));
+    const pct = Math.round(progress * 100);
+
     return html`
-      <div
-        class="compose-attached-badge"
-        @click=${() => this._openAttachedText()}
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 18 18"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.3"
-          stroke-linecap="round"
-          class="text-muted-foreground icon-fine"
-        >
-          <rect x="3" y="2" width="12" height="14" rx="2" />
-          <line x1="6" y1="6" x2="12" y2="6" />
-          <line x1="6" y1="9" x2="12" y2="9" />
-          <line x1="6" y1="12" x2="9.5" y2="12" />
+      <div class="compose-progress-ring">
+        <svg viewBox="0 0 36 36" width="36" height="36">
+          <circle
+            cx="18"
+            cy="18"
+            r="${radius}"
+            fill="none"
+            stroke="rgba(255,255,255,0.25)"
+            stroke-width="3"
+          />
+          <circle
+            cx="18"
+            cy="18"
+            r="${radius}"
+            fill="none"
+            stroke="white"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-dasharray="${circumference}"
+            stroke-dashoffset="${offset}"
+            transform="rotate(-90 18 18)"
+          />
         </svg>
-        <span class="text-xs font-medium">${this.labels.attachedText}</span>
-        <span class="text-xs text-muted-foreground"
-          >· ${this._attachedText.length.toLocaleString()} chars</span
-        >
-        <div class="flex-1"></div>
-        <button
-          type="button"
-          class="compose-attached-badge-dismiss"
-          @click=${(e: Event) => {
-            e.stopPropagation();
-            this._attachedText = "";
-          }}
-        >
-          ✕
-        </button>
+        <span class="compose-progress-label">${pct}%</span>
       </div>
     `;
   }
@@ -945,22 +980,28 @@ export class JantComposeEditor extends LitElement {
 
   private _renderAttachmentOverlay(a: ComposeAttachment, index: number) {
     return html`
-      ${a.status === "pending" || a.status === "uploading"
+      ${a.status === "processing"
         ? html`
             <div class="compose-attachment-overlay">
-              <svg
-                class="animate-spin size-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                style="stroke-width: 2.5"
-                stroke-linecap="round"
-              >
-                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-              </svg>
+              ${this._renderProgressRing(a.progress ?? 0)}
             </div>
           `
-        : nothing}
+        : a.status === "pending" || a.status === "uploading"
+          ? html`
+              <div class="compose-attachment-overlay">
+                <svg
+                  class="animate-spin size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  style="stroke-width: 2.5"
+                  stroke-linecap="round"
+                >
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                </svg>
+              </div>
+            `
+          : nothing}
       ${a.status === "error"
         ? html`
             <button
@@ -1000,8 +1041,53 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
+  private _renderAttachedTextCard(item: AttachedTextItem, index: number) {
+    return html`
+      <div class="compose-attachment">
+        <div
+          class="compose-attachment-thumb"
+          @click=${() => this._editAttachedText(index)}
+        >
+          <div class="compose-attachment-text-card">
+            <div class="compose-attachment-file-icon">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+              >
+                <rect x="3" y="2" width="12" height="14" rx="2" />
+                <line x1="6" y1="6" x2="12" y2="6" />
+                <line x1="6" y1="9" x2="12" y2="9" />
+                <line x1="6" y1="12" x2="9.5" y2="12" />
+              </svg>
+            </div>
+            <span class="compose-attachment-text-summary">${item.summary}</span>
+            <span class="compose-attachment-file-size"
+              >${item.text.length.toLocaleString()} chars</span
+            >
+          </div>
+          <button
+            type="button"
+            class="compose-attachment-remove"
+            @click=${(e: Event) => {
+              e.stopPropagation();
+              this._removeAttachedText(index);
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   private _renderAttachments() {
-    if (this._attachments.length === 0) return nothing;
+    if (this._attachments.length === 0 && this._attachedTexts.length === 0)
+      return nothing;
 
     return html`
       <div class="compose-attachments">
@@ -1062,12 +1148,15 @@ export class JantComposeEditor extends LitElement {
             </div>
           `;
         })}
+        ${this._attachedTexts.map((item, i) =>
+          this._renderAttachedTextCard(item, i),
+        )}
       </div>
     `;
   }
 
   private _renderToolsRow() {
-    const hasAttached = this._attachedText.trim().length > 0;
+    const hasAttached = this._attachedTexts.length > 0;
     return html`
       <div class="compose-tools-row">
         <!-- Media / Add -->
@@ -1108,9 +1197,9 @@ export class JantComposeEditor extends LitElement {
           type="button"
           class=${classMap({
             "compose-tool-btn": true,
-            "compose-tool-btn-active": hasAttached,
+            "compose-tool-btn-add": hasAttached,
           })}
-          title=${this.labels.attachedText}
+          title=${hasAttached ? "" : this.labels.attachedText}
           @click=${() => this._openAttachedText()}
         >
           <svg
@@ -1128,6 +1217,11 @@ export class JantComposeEditor extends LitElement {
             <line x1="6" y1="9" x2="12" y2="9" />
             <line x1="6" y1="12" x2="9.5" y2="12" />
           </svg>
+          ${hasAttached
+            ? html`<span class="compose-tool-label"
+                >${this.labels.addMore}</span
+              >`
+            : nothing}
         </button>
 
         <!-- Rate -->
@@ -1293,8 +1387,7 @@ export class JantComposeEditor extends LitElement {
           : this.format === "link"
             ? this._renderLinkFields()
             : this._renderQuoteFields()}
-        ${this._renderStarRating()} ${this._renderAttachedBadge()}
-        ${this._renderAttachments()}
+        ${this._renderStarRating()} ${this._renderAttachments()}
       </section>
       ${this._renderToolsRow()}
     `;

@@ -10,6 +10,8 @@ import type { ComposeAttachment } from "./components/compose-types.js";
 import type { JantComposeDialog } from "./components/jant-compose-dialog.js";
 import type { JantComposeEditor } from "./components/jant-compose-editor.js";
 import { ImageProcessor } from "./image-processor.js";
+import { VideoProcessor } from "./video-processor.js";
+import { extractMediaMetadata } from "./media-metadata.js";
 import {
   showToast,
   showToastWithAction,
@@ -36,17 +38,62 @@ async function uploadFile(
   editor: JantComposeEditor | null,
 ): Promise<string | null> {
   try {
+    let toUpload: File;
+    let width: number | undefined;
+    let height: number | undefined;
+    let blurhash: string | undefined;
+    let poster: Blob | undefined;
+
+    if (file.type.startsWith("video/")) {
+      // Video: transcode with mediabunny (requires WebCodecs)
+      if (!VideoProcessor.isSupported()) {
+        editor?.updateAttachmentStatus(
+          clientId,
+          "error",
+          null,
+          "Your browser doesn't support video processing. Use Chrome or Edge to upload videos.",
+        );
+        return null;
+      }
+
+      editor?.updateAttachmentStatus(clientId, "processing", null, null);
+      const result = await VideoProcessor.processToFile(file, (progress) => {
+        editor?.updateAttachmentProgress(clientId, progress);
+      });
+      toUpload = result.file;
+      width = result.width;
+      height = result.height;
+      blurhash = result.blurhash;
+      poster = result.poster;
+    } else if (file.type.startsWith("image/")) {
+      // Image: resize + convert to WebP
+      const result = await ImageProcessor.processToFile(file);
+      toUpload = result.file;
+      width = result.width;
+      height = result.height;
+    } else {
+      toUpload = file;
+    }
+
     // Update status to uploading
     editor?.updateAttachmentStatus(clientId, "uploading", null, null);
 
-    // Process images (resize, convert to WebP); upload non-images as-is
-    const toUpload = file.type.startsWith("image/")
-      ? await ImageProcessor.processToFile(file)
-      : file;
+    // Extract metadata for non-video files (video metadata comes from VideoProcessor)
+    if (!file.type.startsWith("video/")) {
+      const meta = await extractMediaMetadata(toUpload);
+      width ??= meta.width;
+      height ??= meta.height;
+      blurhash ??= meta.blurhash;
+      poster ??= meta.poster;
+    }
 
     // Upload to server
     const formData = new FormData();
     formData.append("file", toUpload);
+    if (width) formData.append("width", String(width));
+    if (height) formData.append("height", String(height));
+    if (blurhash) formData.append("blurhash", blurhash);
+    if (poster) formData.append("poster", poster, "poster.webp");
 
     const res = await fetch("/api/upload", {
       method: "POST",

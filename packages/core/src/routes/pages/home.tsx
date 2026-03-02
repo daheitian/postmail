@@ -43,7 +43,7 @@ homeRoutes.get("/", async (c) => {
     });
   }
 
-  // Default: show latest posts
+  // Default: show latest posts (pinned posts sort to top via service layer)
   const pageParam = c.req.query("page");
   const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
 
@@ -51,22 +51,12 @@ homeRoutes.get("/", async (c) => {
     page,
   });
 
-  // Fetch pinned posts
-  const pinnedPosts = await c.var.services.posts.list({
-    pinned: true,
-    status: "published",
-    excludeReplies: true,
-  });
-  const mediaCtx = createMediaContext(c.var.appConfig);
-  const pinnedItems = toPostViewsFromPosts(pinnedPosts, mediaCtx);
-
   return renderPublicPage(c, {
     title: navData.siteName,
     navData,
     content: (
       <HomePage
         items={items}
-        pinnedItems={pinnedItems}
         currentPage={currentPage}
         totalPages={totalPages}
       />

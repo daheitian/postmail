@@ -8,6 +8,7 @@
 
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { uploadWithMetadata } from "../upload-with-metadata.js";
 
 const pasteImagePluginKey = new PluginKey("pasteImage");
 
@@ -81,19 +82,7 @@ async function uploadAndInsertImage(
   editor.chain().focus().setImage({ src: placeholderUrl }).run();
 
   try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status}`);
-    }
-
-    const data = (await response.json()) as { url: string };
+    const data = await uploadWithMetadata(file);
 
     // Replace placeholder URL with actual URL in the document
     const { doc } = editor.state;

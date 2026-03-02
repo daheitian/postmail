@@ -70,6 +70,7 @@ export interface CreateMediaData {
   alt?: string;
   position?: number;
   blurhash?: string;
+  posterKey?: string;
 }
 
 export function createMediaService(db: Database): MediaService {
@@ -88,6 +89,7 @@ export function createMediaService(db: Database): MediaService {
       alt: row.alt,
       position: row.position,
       blurhash: row.blurhash,
+      posterKey: row.posterKey,
       createdAt: row.createdAt,
     };
   }
@@ -202,6 +204,7 @@ export function createMediaService(db: Database): MediaService {
           alt: data.alt ?? null,
           position: data.position ?? 0,
           blurhash: data.blurhash ?? null,
+          posterKey: data.posterKey ?? null,
           createdAt: timestamp,
         })
         .returning();
@@ -256,6 +259,12 @@ export function createMediaService(db: Database): MediaService {
           // eslint-disable-next-line no-console -- Error logging is intentional
           console.error("Storage delete error:", err);
         });
+        if (record.posterKey) {
+          await storage.delete(record.posterKey).catch((err) => {
+            // eslint-disable-next-line no-console -- Error logging is intentional
+            console.error("Storage delete poster error:", err);
+          });
+        }
       }
 
       await db.delete(media).where(eq(media.id, id));
@@ -267,9 +276,12 @@ export function createMediaService(db: Database): MediaService {
 
       if (storage) {
         const records = await this.getByIds(ids);
+        const keys = records.flatMap((r) =>
+          r.posterKey ? [r.storageKey, r.posterKey] : [r.storageKey],
+        );
         await Promise.all(
-          records.map((r) =>
-            storage.delete(r.storageKey).catch((err) => {
+          keys.map((key) =>
+            storage.delete(key).catch((err) => {
               // eslint-disable-next-line no-console -- Error logging is intentional
               console.error("Storage delete error:", err);
             }),

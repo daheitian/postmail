@@ -13,6 +13,7 @@ import type { Editor, JSONContent } from "@tiptap/core";
 import type { ComposeLabels } from "./compose-types.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 import { getSlashCommands } from "../tiptap/slash-commands.js";
+import { uploadWithMetadata } from "../upload-with-metadata.js";
 
 export class JantComposeFullscreen extends LitElement {
   static properties = {
@@ -96,14 +97,7 @@ export class JantComposeFullscreen extends LitElement {
     this._editor.chain().focus().setImage({ src: placeholderUrl }).run();
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
-      const data = (await response.json()) as { url: string };
+      const data = await uploadWithMetadata(file);
 
       // Replace placeholder with real URL
       const { doc } = this._editor.state;

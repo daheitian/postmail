@@ -128,13 +128,25 @@ function calculateDimensions(
   };
 }
 
+export interface ProcessResult {
+  blob: Blob;
+  width: number;
+  height: number;
+}
+
+export interface ProcessToFileResult {
+  file: File;
+  width: number;
+  height: number;
+}
+
 /**
  * Process image file
  */
 async function process(
   file: File,
   options: ProcessOptions = {},
-): Promise<Blob> {
+): Promise<ProcessResult> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
 
   // Read file buffer for EXIF
@@ -185,11 +197,11 @@ async function process(
   ctx.restore();
 
   // Export as WebP
-  return new Promise((resolve, reject) => {
+  const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          resolve(blob);
+      (b) => {
+        if (b) {
+          resolve(b);
         } else {
           reject(new Error("Failed to create blob"));
         }
@@ -198,6 +210,8 @@ async function process(
       opts.quality,
     );
   });
+
+  return { blob, width, height };
 }
 
 /**
@@ -206,14 +220,18 @@ async function process(
 async function processToFile(
   file: File,
   options: ProcessOptions = {},
-): Promise<File> {
-  const blob = await process(file, options);
+): Promise<ProcessToFileResult> {
+  const { blob, width, height } = await process(file, options);
 
   // Generate new filename with .webp extension
   const originalName = file.name.replace(/\.[^.]+$/, "");
   const newName = `${originalName}.webp`;
 
-  return new File([blob], newName, { type: "image/webp" });
+  return {
+    file: new File([blob], newName, { type: "image/webp" }),
+    width,
+    height,
+  };
 }
 
 export const ImageProcessor = { process, processToFile };

@@ -122,6 +122,10 @@ export function MediaListContent({
         data-on:submit__prevent="@post('/api/upload', {contentType: 'form'})"
       >
         <input id="upload-file-input" type="file" name="file" />
+        <input id="upload-poster-input" type="file" name="poster" />
+        <input id="upload-width" type="hidden" name="width" />
+        <input id="upload-height" type="hidden" name="height" />
+        <input id="upload-blurhash" type="hidden" name="blurhash" />
       </form>
 
       {/* Header */}

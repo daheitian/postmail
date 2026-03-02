@@ -11,6 +11,7 @@
 import { Node, type Editor } from "@tiptap/core";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import type { EditorView } from "@tiptap/pm/view";
+import { uploadWithMetadata } from "../upload-with-metadata.js";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -307,14 +308,7 @@ class ImageNodeView {
       const file = input.files?.[0];
       if (!file) return;
       try {
-        const formData = new FormData();
-        formData.append("file", file);
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
-        const data = (await response.json()) as { url: string };
+        const data = await uploadWithMetadata(file);
         this.updateAttrs({ src: data.url });
       } catch {
         // Upload failed — keep current image

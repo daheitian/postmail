@@ -54,12 +54,16 @@ export function buildMediaMap(
               fit: "scale-down",
             })
           : mediaUrl;
+        const posterUrl = m.posterKey
+          ? getMediaUrl(m.posterKey, publicUrl)
+          : null;
         return {
           id: m.id,
           url: mediaUrl,
           previewUrl,
           alt: m.alt,
           blurhash: m.blurhash,
+          posterUrl,
           width: m.width,
           height: m.height,
           position: m.position,

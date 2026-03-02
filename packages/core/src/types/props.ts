@@ -19,7 +19,6 @@ import type {
 /** Props for the home page component */
 export interface HomePageProps {
   items: TimelineItemView[];
-  pinnedItems: PostView[];
   currentPage: number;
   totalPages: number;
 }

@@ -23,6 +23,11 @@ msgstr "/* 您的自定义 CSS 在这里 */"
 #~ msgid "← Back to Collections"
 #~ msgstr "← 返回收藏夹"
 
+#. @context: Pagination previous page
+#: src/ui/pages/HomePage.tsx
+#~ msgid "← Newer"
+#~ msgstr ""
+
 #. @context: Add alt text label under attachment thumbnail
 #: src/ui/compose/ComposeDialog.tsx
 msgid "+ ALT"
@@ -1206,6 +1211,11 @@ msgstr ""
 msgid "Nothing published yet. Write your first post to get started."
 msgstr ""
 
+#. @context: Pagination next page
+#: src/ui/pages/HomePage.tsx
+#~ msgid "Older →"
+#~ msgstr ""
+
 #. @context: Collection sort order option
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Oldest first"
@@ -2023,6 +2033,11 @@ msgstr ""
 #: src/ui/compose/ComposeDialog.tsx
 msgid "You have unsaved changes"
 msgstr ""
+
+#. @context: Error when browser lacks WebCodecs API for video processing
+#: src/client/compose-bridge.ts src/client/media-upload.ts
+#~ msgid "Your browser doesn't support video processing. Use Chrome or Edge to upload videos."
+#~ msgstr "您的浏览器不支持视频处理，请使用 Chrome 或 Edge 上传视频。"
 
 #. @context: Empty state message when no media exists
 #: src/ui/dash/media/MediaListContent.tsx

@@ -49,11 +49,13 @@ function toMediaAttachment(
     format: "auto",
     fit: "scale-down",
   });
+  const posterUrl = m.posterKey ? getMediaUrl(m.posterKey, publicUrl) : null;
 
   return {
     id: m.id,
     url,
     previewUrl,
+    posterUrl,
     alt: m.alt,
     blurhash: m.blurhash,
     width: m.width,

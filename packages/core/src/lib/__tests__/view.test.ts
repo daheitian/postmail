@@ -75,6 +75,7 @@ function makeMedia(overrides: Partial<Media> = {}): Media {
     alt: "A photo",
     position: 0,
     blurhash: null,
+    posterKey: null,
     createdAt: 1706745600,
     ...overrides,
   };
@@ -284,6 +285,7 @@ describe("toPostView", () => {
             previewUrl: "/media/abc-thumb.webp",
             alt: "Photo",
             blurhash: null,
+            posterUrl: null,
             width: 800,
             height: 600,
             position: 0,
@@ -302,7 +304,32 @@ describe("toPostView", () => {
       altText: "Photo",
       width: 800,
       height: 600,
+      blurhash: undefined,
+      posterUrl: undefined,
     });
+  });
+
+  it("passes blurhash from media attachments to MediaView", () => {
+    const view = toPostView(
+      makePostWithMedia({
+        mediaAttachments: [
+          {
+            id: "abc",
+            url: "/media/abc.webp",
+            previewUrl: "/media/abc-thumb.webp",
+            alt: null,
+            blurhash: "LEHV6nWB2yk8pyo0adR*.7kCMdnj",
+            posterUrl: null,
+            width: 800,
+            height: 600,
+            position: 0,
+            mimeType: "image/webp",
+          },
+        ],
+      }),
+      EMPTY_CTX,
+    );
+    expect(view.media[0]?.blurhash).toBe("LEHV6nWB2yk8pyo0adR*.7kCMdnj");
   });
 });
 
@@ -347,21 +374,55 @@ describe("toMediaView", () => {
     expect(view.url).toContain("s3.example.com");
   });
 
-  it("maps alt text and dimensions", () => {
-    const view = toMediaView(makeMedia(), EMPTY_CTX);
+  it("maps alt text, dimensions, and blurhash", () => {
+    const view = toMediaView(
+      makeMedia({ blurhash: "LEHV6nWB2yk8pyo0adR*.7kCMdnj" }),
+      EMPTY_CTX,
+    );
     expect(view.altText).toBe("A photo");
     expect(view.width).toBe(1920);
     expect(view.height).toBe(1080);
     expect(view.mimeType).toBe("image/webp");
     expect(view.size).toBe(12345);
+    expect(view.blurhash).toBe("LEHV6nWB2yk8pyo0adR*.7kCMdnj");
   });
 
-  it("handles null alt and dimensions", () => {
-    const media = makeMedia({ alt: null, width: null, height: null });
+  it("handles null alt, dimensions, and blurhash", () => {
+    const media = makeMedia({
+      alt: null,
+      width: null,
+      height: null,
+      blurhash: null,
+    });
     const view = toMediaView(media, EMPTY_CTX);
     expect(view.altText).toBeUndefined();
     expect(view.width).toBeUndefined();
     expect(view.height).toBeUndefined();
+    expect(view.blurhash).toBeUndefined();
+  });
+
+  it("computes posterUrl from posterKey", () => {
+    const media = makeMedia({
+      posterKey: "media/2025/01/abc-poster.webp",
+    });
+    const view = toMediaView(media, EMPTY_CTX);
+    expect(view.posterUrl).toBe("/media/2025/01/abc-poster.webp");
+  });
+
+  it("computes posterUrl with CDN public URL", () => {
+    const media = makeMedia({
+      posterKey: "media/2025/01/abc-poster.webp",
+    });
+    const view = toMediaView(media, CTX_WITH_URLS);
+    expect(view.posterUrl).toBe(
+      "https://cdn.example.com/media/2025/01/abc-poster.webp",
+    );
+  });
+
+  it("returns undefined posterUrl when posterKey is null", () => {
+    const media = makeMedia({ posterKey: null });
+    const view = toMediaView(media, EMPTY_CTX);
+    expect(view.posterUrl).toBeUndefined();
   });
 });
 

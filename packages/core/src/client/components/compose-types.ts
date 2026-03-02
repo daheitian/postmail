@@ -11,10 +11,17 @@ export interface ComposeAttachment {
   clientId: string;
   file: File;
   previewUrl: string;
-  status: "pending" | "uploading" | "done" | "error";
+  status: "pending" | "processing" | "uploading" | "done" | "error";
+  progress: number | null;
   mediaId: string | null;
   alt: string;
   error: string | null;
+}
+
+export interface AttachedTextItem {
+  clientId: string;
+  text: string;
+  summary: string;
 }
 
 export interface ComposeLabels {
@@ -73,7 +80,7 @@ export interface ComposeSubmitDetail {
   collectionIds: number[];
   mediaIds: string[];
   mediaAlts: Record<string, string>;
-  attachedText: string;
+  attachedTexts: AttachedTextItem[];
   editPostId?: string;
 }
 

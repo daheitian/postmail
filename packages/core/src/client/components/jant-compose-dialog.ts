@@ -35,6 +35,7 @@ export class JantComposeDialog extends LitElement {
     _altPanelOpen: { state: true },
     _altPanelIndex: { state: true },
     _attachedPanelOpen: { state: true },
+    _attachedTextIndex: { state: true },
     _confirmPanelOpen: { state: true },
     _editPostId: { state: true },
   };
@@ -52,6 +53,7 @@ export class JantComposeDialog extends LitElement {
   declare _altPanelOpen: boolean;
   declare _altPanelIndex: number;
   declare _attachedPanelOpen: boolean;
+  declare _attachedTextIndex: number;
   declare _confirmPanelOpen: boolean;
   declare _editPostId: string | null;
 
@@ -75,6 +77,7 @@ export class JantComposeDialog extends LitElement {
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
     this._attachedPanelOpen = false;
+    this._attachedTextIndex = 0;
     this._confirmPanelOpen = false;
     this._editPostId = null;
   }
@@ -94,6 +97,7 @@ export class JantComposeDialog extends LitElement {
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
     this._attachedPanelOpen = false;
+    this._attachedTextIndex = 0;
     this._confirmPanelOpen = false;
     this._editPostId = null;
     this._editor?.reset();
@@ -163,7 +167,7 @@ export class JantComposeDialog extends LitElement {
     if (data.url.trim()) return true;
     if (data.quoteText.trim()) return true;
     if (data.quoteAuthor.trim()) return true;
-    if (data.attachedText.trim()) return true;
+    if (data.attachedTexts.length > 0) return true;
     if (data.rating > 0) return true;
     if (data.attachments.length > 0) return true;
     if (this._collectionIds.length > 0) return true;
@@ -221,7 +225,7 @@ export class JantComposeDialog extends LitElement {
       collectionIds: [...this._collectionIds],
       mediaIds,
       mediaAlts,
-      attachedText: editorData.attachedText,
+      attachedTexts: editorData.attachedTexts,
       editPostId: this._editPostId ?? undefined,
     };
   }
@@ -371,7 +375,9 @@ export class JantComposeDialog extends LitElement {
     }
   };
 
-  private _handleAttachedPanelOpen = () => {
+  private _handleAttachedPanelOpen = (e: Event) => {
+    const detail = (e as CustomEvent<{ index: number }>).detail;
+    this._attachedTextIndex = detail.index;
     this._attachedPanelOpen = true;
     this.updateComplete.then(() => {
       this.querySelector<HTMLTextAreaElement>(
@@ -382,12 +388,12 @@ export class JantComposeDialog extends LitElement {
 
   private _onAttachedTextInput(e: Event) {
     const value = (e.target as HTMLTextAreaElement).value;
-    this._editor?.updateAttachedText(value);
+    this._editor?.updateAttachedText(this._attachedTextIndex, value);
   }
 
   private _closeAttachedPanel() {
     this._attachedPanelOpen = false;
-    this._editor?.closeAttachedPanel();
+    this._editor?.closeAttachedPanel(this._attachedTextIndex);
   }
 
   // ── Render helpers ────────────────────────────────────────────────
@@ -665,7 +671,8 @@ export class JantComposeDialog extends LitElement {
   private _renderAttachedPanel() {
     if (!this._attachedPanelOpen) return nothing;
     const editor = this._editor;
-    const attachedText = editor?._attachedText ?? "";
+    const item = editor?._attachedTexts[this._attachedTextIndex];
+    const attachedText = item?.text ?? "";
 
     return html`
       <div class="compose-attached-panel">

@@ -10,6 +10,8 @@
  */
 
 import { ImageProcessor } from "./image-processor.js";
+import { VideoProcessor } from "./video-processor.js";
+import { extractMediaMetadata } from "./media-metadata.js";
 import { validateUploadFile } from "../lib/upload.js";
 import { showToast } from "./toast.js";
 
@@ -111,10 +113,53 @@ async function handleUpload(
   grid.prepend(placeholder);
 
   try {
-    // Process images client-side (resize, convert to WebP); upload non-images as-is
-    const toUpload = file.type.startsWith("image/")
-      ? await ImageProcessor.processToFile(file)
-      : file;
+    let toUpload: File;
+    let width: number | undefined;
+    let height: number | undefined;
+    let blurhash: string | undefined;
+    let poster: Blob | undefined;
+
+    if (file.type.startsWith("video/")) {
+      // Video: transcode with mediabunny (requires WebCodecs)
+      if (!VideoProcessor.isSupported()) {
+        showPlaceholderError(
+          placeholder,
+          file.name,
+          "Your browser doesn't support video processing. Use Chrome or Edge to upload videos.",
+        );
+        input.value = "";
+        return;
+      }
+
+      const statusEl = document.getElementById("upload-status");
+      const result = await VideoProcessor.processToFile(file, (progress) => {
+        if (statusEl) {
+          statusEl.textContent = `${processingText} ${Math.round(progress * 100)}%`;
+        }
+      });
+      toUpload = result.file;
+      width = result.width;
+      height = result.height;
+      blurhash = result.blurhash;
+      poster = result.poster;
+    } else if (file.type.startsWith("image/")) {
+      // Image: resize + convert to WebP
+      const result = await ImageProcessor.processToFile(file);
+      toUpload = result.file;
+      width = result.width;
+      height = result.height;
+    } else {
+      toUpload = file;
+    }
+
+    // Extract metadata for non-video files (video metadata comes from VideoProcessor)
+    if (!file.type.startsWith("video/")) {
+      const meta = await extractMediaMetadata(toUpload);
+      width ??= meta.width;
+      height ??= meta.height;
+      blurhash ??= meta.blurhash;
+      poster ??= meta.poster;
+    }
 
     // Update status
     const statusEl = document.getElementById("upload-status");
@@ -132,6 +177,29 @@ async function handleUpload(
     const dt = new DataTransfer();
     dt.items.add(toUpload);
     formInput.files = dt.files;
+
+    // Set metadata on hidden inputs
+    const setHiddenValue = (id: string, value: string) => {
+      const el = document.getElementById(id) as HTMLInputElement | null;
+      if (el) el.value = value;
+    };
+    if (width) setHiddenValue("upload-width", String(width));
+    if (height) setHiddenValue("upload-height", String(height));
+    if (blurhash) setHiddenValue("upload-blurhash", blurhash);
+
+    // Set poster file on hidden input (for video uploads)
+    if (poster) {
+      const posterInput = document.getElementById(
+        "upload-poster-input",
+      ) as HTMLInputElement | null;
+      if (posterInput) {
+        const posterDt = new DataTransfer();
+        posterDt.items.add(
+          new File([poster], "poster.webp", { type: "image/webp" }),
+        );
+        posterInput.files = posterDt.files;
+      }
+    }
 
     // Trigger Datastar-intercepted form submission
     form.requestSubmit();

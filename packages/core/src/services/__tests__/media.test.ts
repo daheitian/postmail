@@ -47,6 +47,17 @@ describe("MediaService", () => {
       expect(media.alt).toBeNull();
       expect(media.position).toBe(0);
       expect(media.blurhash).toBeNull();
+      expect(media.posterKey).toBeNull();
+    });
+
+    it("creates media with posterKey", async () => {
+      const media = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/2025/01/video.mp4",
+        posterKey: "media/2025/01/video-poster.webp",
+      });
+
+      expect(media.posterKey).toBe("media/2025/01/video-poster.webp");
     });
 
     it("creates media with optional alt text", async () => {
@@ -469,6 +480,27 @@ describe("MediaService", () => {
       const result = await mediaService.delete("nonexistent");
       expect(result).toBe(false);
     });
+
+    it("deletes poster from storage when posterKey exists", async () => {
+      const media = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/2025/01/vid.mp4",
+        posterKey: "media/2025/01/vid-poster.webp",
+      });
+
+      const deletedKeys: string[] = [];
+      const mockStorage = {
+        delete: async (key: string) => {
+          deletedKeys.push(key);
+        },
+        put: async () => {},
+        get: async () => null,
+      };
+
+      await mediaService.delete(media.id, mockStorage as never);
+      expect(deletedKeys).toContain("media/2025/01/vid.mp4");
+      expect(deletedKeys).toContain("media/2025/01/vid-poster.webp");
+    });
   });
 
   describe("deleteByIds", () => {
@@ -499,6 +531,33 @@ describe("MediaService", () => {
       await mediaService.deleteByIds([]);
 
       expect(await mediaService.getById(m1.id)).not.toBeNull();
+    });
+
+    it("deletes poster keys from storage", async () => {
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/a.mp4",
+        posterKey: "media/a-poster.webp",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/b.jpg",
+      });
+
+      const deletedKeys: string[] = [];
+      const mockStorage = {
+        delete: async (key: string) => {
+          deletedKeys.push(key);
+        },
+        put: async () => {},
+        get: async () => null,
+      };
+
+      await mediaService.deleteByIds([m1.id, m2.id], mockStorage as never);
+      expect(deletedKeys).toContain("media/a.mp4");
+      expect(deletedKeys).toContain("media/a-poster.webp");
+      expect(deletedKeys).toContain("media/b.jpg");
+      expect(deletedKeys).toHaveLength(3);
     });
   });
 });

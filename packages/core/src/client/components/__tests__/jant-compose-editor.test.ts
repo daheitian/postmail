@@ -166,11 +166,13 @@ describe("JantComposeEditor", () => {
     expect(el._rating).toBe(0);
   });
 
-  it("dispatches attached panel open event", async () => {
+  it("dispatches attached panel open event and creates new item", async () => {
     const el = await createElement("note");
 
-    const events: Event[] = [];
-    el.addEventListener("jant:attached-panel-open", (e) => events.push(e));
+    const events: CustomEvent[] = [];
+    el.addEventListener("jant:attached-panel-open", (e) =>
+      events.push(e as CustomEvent),
+    );
 
     // Click attached text tool button
     const toolBtns =
@@ -184,7 +186,9 @@ describe("JantComposeEditor", () => {
     await el.updateComplete;
 
     expect(events).toHaveLength(1);
-    expect(el._showAttachedText).toBe(true);
+    expect(events[0].detail.index).toBe(0);
+    expect(el._attachedTexts).toHaveLength(1);
+    expect(el._attachedTexts[0].text).toBe("");
   });
 
   it("shows title toggle only in note mode", async () => {
@@ -208,13 +212,20 @@ describe("JantComposeEditor", () => {
       ],
     };
     el._rating = 4;
-    el._attachedText = "Some attached text";
+    el._attachedTexts = [
+      {
+        clientId: "t1",
+        text: "Some attached text",
+        summary: "Some attached text",
+      },
+    ];
 
     const data = el.getData();
     expect(data.title).toBe("Test Title");
     expect(data.body).toContain("Test Body");
     expect(data.rating).toBe(4);
-    expect(data.attachedText).toBe("Some attached text");
+    expect(data.attachedTexts).toHaveLength(1);
+    expect(data.attachedTexts[0].text).toBe("Some attached text");
     expect(data.url).toBe("");
     expect(data.quoteText).toBe("");
     expect(data.quoteAuthor).toBe("");
@@ -258,8 +269,7 @@ describe("JantComposeEditor", () => {
     };
     el._rating = 3;
     el._showRating = true;
-    el._attachedText = "text";
-    el._showAttachedText = true;
+    el._attachedTexts = [{ clientId: "t1", text: "text", summary: "text" }];
 
     el.reset();
 
@@ -267,18 +277,24 @@ describe("JantComposeEditor", () => {
     expect(el._bodyJson).toBeNull();
     expect(el._rating).toBe(0);
     expect(el._showRating).toBe(false);
-    expect(el._attachedText).toBe("");
-    expect(el._showAttachedText).toBe(false);
+    expect(el._attachedTexts).toEqual([]);
   });
 
-  it("shows attached text badge when text is present", async () => {
+  it("shows attached text card in attachment strip", async () => {
     const el = await createElement("note");
-    el._attachedText = "Some content here";
+    el._attachedTexts = [
+      {
+        clientId: "t1",
+        text: "Some content here",
+        summary: "Some content here",
+      },
+    ];
     await el.updateComplete;
 
-    const badge = el.querySelector(".compose-attached-badge");
-    expect(badge).not.toBeNull();
-    expect(badge?.textContent).toContain("chars");
+    const card = el.querySelector(".compose-attachment-text-card");
+    expect(card).not.toBeNull();
+    expect(card?.textContent).toContain("chars");
+    expect(card?.textContent).toContain("Some content here");
   });
 
   it("media button shows inline add label when attachments are present", async () => {
@@ -297,6 +313,7 @@ describe("JantComposeEditor", () => {
         file,
         previewUrl: URL.createObjectURL(blob),
         status: "done",
+        progress: null,
         mediaId: "m1",
         alt: "",
         error: null,

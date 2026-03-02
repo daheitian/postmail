@@ -35,6 +35,11 @@ msgstr "/* Your custom CSS here */"
 #~ msgid "← Back to home"
 #~ msgstr "← Back to home"
 
+#. @context: Pagination previous page
+#: src/ui/pages/HomePage.tsx
+#~ msgid "← Newer"
+#~ msgstr "← Newer"
+
 #. @context: Add alt text label under attachment thumbnail
 #: src/ui/compose/ComposeDialog.tsx
 msgid "+ ALT"
@@ -1416,6 +1421,11 @@ msgstr "Nothing here yet."
 msgid "Nothing published yet. Write your first post to get started."
 msgstr "Nothing published yet. Write your first post to get started."
 
+#. @context: Pagination next page
+#: src/ui/pages/HomePage.tsx
+#~ msgid "Older →"
+#~ msgstr "Older →"
+
 #. @context: Collection sort order option
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Oldest first"
@@ -2365,6 +2375,11 @@ msgstr "Wrong email or password. Check your credentials and try again."
 #: src/ui/compose/ComposeDialog.tsx
 msgid "You have unsaved changes"
 msgstr "You have unsaved changes"
+
+#. @context: Error when browser lacks WebCodecs API for video processing
+#: src/client/compose-bridge.ts src/client/media-upload.ts
+#~ msgid "Your browser doesn't support video processing. Use Chrome or Edge to upload videos."
+#~ msgstr "Your browser doesn't support video processing. Use Chrome or Edge to upload videos."
 
 #. @context: Empty state message when no media exists
 #: src/ui/dash/media/MediaListContent.tsx

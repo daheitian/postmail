@@ -898,41 +898,6 @@
     margin-left: 4px;
   }
 
-  /* --- Attached text badge ------------------------------------------------ */
-
-  .compose-attached-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 14px;
-    background-color: var(--site-nav-hover-bg);
-    border-radius: 10px;
-    padding: 8px 12px;
-    cursor: pointer;
-    animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-    transition: opacity 0.15s ease;
-  }
-
-  .compose-attached-badge:hover {
-    opacity: 0.85;
-  }
-
-  .compose-attached-badge-dismiss {
-    border: none;
-    background: transparent;
-    color: var(--site-text-secondary);
-    cursor: pointer;
-    font-size: 0.75rem;
-    padding: 0 2px;
-    line-height: 1;
-    opacity: 0.6;
-    transition: opacity 0.15s ease;
-  }
-
-  .compose-attached-badge-dismiss:hover {
-    opacity: 1;
-  }
-
   /* --- Attached text overlay panel ---------------------------------------- */
 
   .compose-attached-panel {
@@ -1283,6 +1248,29 @@
     border-radius: var(--media-radius, 0.5rem);
   }
 
+  .compose-progress-ring {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .compose-progress-ring svg {
+    display: block;
+  }
+
+  .compose-progress-ring circle:last-of-type {
+    transition: stroke-dashoffset 0.2s ease-out;
+  }
+
+  .compose-progress-label {
+    position: absolute;
+    font-size: 8px;
+    font-weight: 600;
+    color: white;
+    line-height: 1;
+  }
+
   .compose-attachment-retry {
     background-color: rgba(0, 0, 0, 0.5);
     cursor: pointer;
@@ -1414,6 +1402,38 @@
   .compose-attachment-file-size {
     font-size: 0.625rem;
     color: var(--site-text-secondary);
+  }
+
+  /* --- Attached text card (compose: inline text attachment) ----------------- */
+
+  .compose-attachment-text-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 160px;
+    min-height: 100px;
+    padding: 12px;
+    background-color: var(--site-nav-hover-bg);
+    border-radius: var(--media-radius, 0.5rem);
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .compose-attachment:not(:only-child) .compose-attachment-text-card {
+    min-height: 200px;
+  }
+
+  .compose-attachment-text-summary {
+    font-size: 0.6875rem;
+    line-height: 1.45;
+    color: var(--site-text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
   }
 
   /* --- Close confirmation overlay panel ----------------------------------- */
@@ -1867,6 +1887,12 @@
       max-height: 85vh;
       border-radius: 0;
     }
+  }
+
+  /* --- Blurhash placeholder: loaded image covers background -------------- */
+
+  [data-post-media] img {
+    background: transparent;
   }
 
   /* =========================================================================

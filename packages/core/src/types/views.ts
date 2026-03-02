@@ -92,6 +92,8 @@ export interface MediaView {
   width?: number;
   height?: number;
   size?: number;
+  blurhash?: string;
+  posterUrl?: string;
 }
 
 /**

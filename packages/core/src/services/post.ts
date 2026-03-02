@@ -206,7 +206,7 @@ export function createPostService(
         .select()
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(desc(posts.publishedAt), desc(posts.id))
+        .orderBy(desc(posts.pinned), desc(posts.publishedAt), desc(posts.id))
         .limit(filters.limit ?? 100);
 
       if (filters.offset !== undefined) {

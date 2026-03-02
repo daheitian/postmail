@@ -13,7 +13,6 @@ import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
-import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -35,22 +34,12 @@ latestRoutes.get("/", async (c) => {
     page,
   });
 
-  // Fetch pinned posts
-  const pinnedPosts = await c.var.services.posts.list({
-    pinned: true,
-    status: "published",
-    excludeReplies: true,
-  });
-  const mediaCtx = createMediaContext(c.var.appConfig);
-  const pinnedItems = toPostViewsFromPosts(pinnedPosts, mediaCtx);
-
   return renderPublicPage(c, {
     title: `Latest - ${navData.siteName}`,
     navData,
     content: (
       <HomePage
         items={items}
-        pinnedItems={pinnedItems}
         currentPage={currentPage}
         totalPages={totalPages}
       />
