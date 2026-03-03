@@ -6,6 +6,7 @@
  */
 
 import type { JSONContent } from "@tiptap/core";
+import type { CollectionFormLabels } from "./collection-types.js";
 
 export type ComposeFormat = "note" | "link" | "quote";
 
@@ -91,6 +92,8 @@ export interface ComposeLabels {
   draftsEmpty: string;
   deleteDraft: string;
   draftDeleted: string;
+  addCollection: string;
+  collectionFormLabels: CollectionFormLabels;
 }
 
 export interface ComposeSubmitDetail {

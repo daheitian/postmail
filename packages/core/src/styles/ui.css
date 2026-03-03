@@ -318,6 +318,36 @@
     position: relative;
   }
 
+  /* --- Post status badges (pinned / featured) ----------------------------- */
+
+  .post-status-badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--site-text-secondary);
+  }
+
+  .post-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .post-status-badge svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+
+  .post-status-separator {
+    user-select: none;
+  }
+
   .post-menu-footer {
     display: flex;
     justify-content: space-between;
@@ -499,6 +529,11 @@
 
   .compose-dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  .compose-dialog jant-compose-dialog {
+    display: block;
+    position: relative;
   }
 
   .compose-dialog-inner {
@@ -1071,6 +1106,46 @@
   .compose-collection-select [data-popover] [role="listbox"] {
     max-height: 12rem;
     overflow-y: auto;
+  }
+
+  .compose-collection-add-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--site-border-light);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    color: var(--site-text-secondary);
+    transition: color 0.15s ease;
+  }
+
+  .compose-collection-add-action:hover {
+    color: var(--site-text-primary);
+  }
+
+  .compose-add-collection-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background-color: var(--site-elevated-bg);
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+    /* Size to fit the collection form — not constrained by compose-dialog-inner */
+    min-height: 480px;
+    max-height: calc(100dvh - var(--compose-margin-top) - 20px);
+  }
+
+  .compose-add-collection-form form {
+    padding: 16px;
+  }
+
+  /* Hide the form's built-in submit/cancel row — header has Done button.
+     !important needed to override Tailwind utility-layer `flex` on the element. */
+  .compose-add-collection-form form > :last-child:not(.field) {
+    display: none !important;
   }
 
   .compose-post-btn {

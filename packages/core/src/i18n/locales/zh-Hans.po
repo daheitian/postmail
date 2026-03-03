@@ -85,6 +85,11 @@ msgstr "添加替代文本"
 #~ msgid "Add an existing page to your navigation"
 #~ msgstr "将现有页面添加到您的导航中"
 
+#. @context: Action to create a new collection from compose
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add Collection"
+msgstr ""
+
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements."
@@ -243,11 +248,13 @@ msgstr "博客头像"
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
+#. @context: Button to cancel form
 #. @context: Button to cancel settings changes
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #. @context: Confirm close action sheet - cancel and return to editor
 #: src/routes/dash/redirects.tsx
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/PageForm.tsx
@@ -542,6 +549,8 @@ msgid "Describe this for people with visual impairments..."
 msgstr "为视力障碍人士描述这一内容..."
 
 #. @context: Collection form field
+#. @context: Collection form field
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Description (optional)"
 msgstr "描述（可选）"
@@ -660,6 +669,8 @@ msgid "Emoji"
 msgstr ""
 
 #. @context: Emoji picker tab label
+#. @context: Emoji picker tab label
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Emojis"
 msgstr ""
@@ -794,6 +805,8 @@ msgid "Helps screen readers describe the image"
 msgstr ""
 
 #. @context: Collection sort order option
+#. @context: Collection sort order option
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Highest rated"
 msgstr "最高评分"
@@ -809,6 +822,8 @@ msgstr ""
 #~ msgstr "图标（可选）"
 
 #. @context: Icon picker tab label
+#. @context: Icon picker tab label
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Icons"
 msgstr ""
@@ -933,6 +948,8 @@ msgid "Lowercase letters, numbers, and hyphens only"
 msgstr "仅允许小写字母、数字和连字符"
 
 #. @context: Collection sort order option
+#. @context: Collection sort order option
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Lowest rated"
 msgstr "最低评分"
@@ -987,6 +1004,8 @@ msgid "More links"
 msgstr "更多链接"
 
 #. @context: Collection title placeholder
+#. @context: Collection title placeholder
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "My Collection"
 msgstr "我的收藏"
@@ -1071,6 +1090,8 @@ msgid "New Redirect"
 msgstr "新重定向"
 
 #. @context: Collection sort order option
+#. @context: Collection sort order option
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Newest first"
 msgstr "最新优先"
@@ -1246,6 +1267,8 @@ msgstr ""
 #~ msgstr ""
 
 #. @context: Collection sort order option
+#. @context: Collection sort order option
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Oldest first"
 msgstr "最旧的在前"
@@ -1497,9 +1520,11 @@ msgid "Redirects"
 msgstr "重定向"
 
 #. @context: Button to remove icon
+#. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
 #. @context: Remove page from navigation
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -1530,10 +1555,12 @@ msgid "Reset Password"
 msgstr "重置密码"
 
 #. @context: Button to save collection
+#. @context: Button to save collection
 #. @context: Button to save settings
 #. @context: Button to save settings changes
 #. @context: Confirm close action sheet - save draft button
 #. @context: Save nav item changes
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -1592,11 +1619,15 @@ msgid "Search"
 msgstr "搜索"
 
 #. @context: Emoji picker search placeholder
+#. @context: Emoji picker search placeholder
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Search emojis..."
 msgstr ""
 
 #. @context: Icon picker search placeholder
+#. @context: Icon picker search placeholder
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Search icons..."
 msgstr "搜索图标..."
@@ -1691,7 +1722,9 @@ msgid "Site Name"
 msgstr "网站名称"
 
 #. @context: Collection form field
+#. @context: Collection form field
 #. @context: Page form field label - URL slug
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/PageForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
@@ -1713,6 +1746,8 @@ msgid "Something doesn't look right. Check the form and try again."
 msgstr ""
 
 #. @context: Collection form field
+#. @context: Collection form field
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Sort Order"
 msgstr "排序顺序"
@@ -1857,9 +1892,11 @@ msgid "Time Zone"
 msgstr "时区"
 
 #. @context: Collection form field
+#. @context: Collection form field
 #. @context: Compose note title placeholder
 #. @context: Compose toolbar - title tooltip
 #. @context: Page form field label - title
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/PageForm.tsx
@@ -1987,6 +2024,8 @@ msgid "URL redirects"
 msgstr ""
 
 #. @context: Collection path help text
+#. @context: Collection path help text
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL安全标识符（小写字母、数字、连字符）。对于CJK标题，slug将在服务器上自动生成。"
@@ -2058,6 +2097,8 @@ msgid "What's on your mind..."
 msgstr "你在想什么..."
 
 #. @context: Collection description placeholder
+#. @context: Collection description placeholder
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "What's this collection about?"
 msgstr "这个系列是关于什么的？"

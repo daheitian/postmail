@@ -75,6 +75,27 @@ const labels: ComposeLabels = {
   draftsEmpty: "No drafts yet. Save a draft to find it here.",
   deleteDraft: "Delete Draft",
   draftDeleted: "Draft deleted.",
+  addCollection: "Add Collection",
+  collectionFormLabels: {
+    titleLabel: "Title",
+    titlePlaceholder: "My Collection",
+    slugLabel: "Slug",
+    slugHelp: "URL-safe identifier",
+    descriptionLabel: "Description (optional)",
+    descriptionPlaceholder: "What's this collection about?",
+    removeIcon: "Remove",
+    iconsTab: "Icons",
+    emojisTab: "Emojis",
+    searchIconsPlaceholder: "Search icons...",
+    searchEmojisPlaceholder: "Search emojis...",
+    sortOrderLabel: "Sort Order",
+    sortNewest: "Newest first",
+    sortOldest: "Oldest first",
+    sortRatingDesc: "Highest rated",
+    sortRatingAsc: "Lowest rated",
+    submitLabel: "Save",
+    cancelLabel: "Cancel",
+  },
 };
 
 async function createElement(

@@ -19,10 +19,12 @@ import type {
   ComposeAttachment,
   DraftItem,
 } from "./compose-types.js";
+import type { CollectionSubmitDetail } from "./collection-types.js";
 import { showToast } from "../toast.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
 import { getMediaCategory } from "../../lib/upload.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
+import { renderCollectionIcon } from "../../lib/icons.js";
 
 export class JantComposeDialog extends LitElement {
   static properties = {
@@ -48,6 +50,7 @@ export class JantComposeDialog extends LitElement {
     _draftsLoading: { state: true },
     _draftsError: { state: true },
     _draftMenuOpenId: { state: true },
+    _addCollectionPanelOpen: { state: true },
   };
 
   declare collections: ComposeCollection[];
@@ -72,6 +75,7 @@ export class JantComposeDialog extends LitElement {
   declare _draftsLoading: boolean;
   declare _draftsError: string | null;
   declare _draftMenuOpenId: string | null;
+  declare _addCollectionPanelOpen: boolean;
 
   private _attachedEditor: Editor | null = null;
   private _attachedTextSnapshot: JSONContent | null = null;
@@ -106,6 +110,7 @@ export class JantComposeDialog extends LitElement {
     this._draftsLoading = false;
     this._draftsError = null;
     this._draftMenuOpenId = null;
+    this._addCollectionPanelOpen = false;
   }
 
   private get _editor(): JantComposeEditor | null {
@@ -132,6 +137,7 @@ export class JantComposeDialog extends LitElement {
     this._draftsLoading = false;
     this._draftsError = null;
     this._draftMenuOpenId = null;
+    this._addCollectionPanelOpen = false;
     this._confirmForDrafts = false;
     this._destroyAttachedEditor();
     this._editor?.reset();
@@ -398,7 +404,9 @@ export class JantComposeDialog extends LitElement {
     if (ke.key === "Escape") {
       ke.preventDefault();
       ke.stopPropagation();
-      if (this._draftMenuOpenId) {
+      if (this._addCollectionPanelOpen) {
+        this._addCollectionPanelOpen = false;
+      } else if (this._draftMenuOpenId) {
         this._draftMenuOpenId = null;
       } else if (this._draftsPanelOpen) {
         this._closeDraftsPanel();
@@ -918,14 +926,11 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _renderCollectionSelector() {
-    if (!this.collections || this.collections.length === 0) {
-      return html`<div class="flex-1"></div>`;
-    }
-
+    const collections = this.collections ?? [];
     const search = this._collectionSearch.toLowerCase();
     const filtered = search
-      ? this.collections.filter((c) => c.title.toLowerCase().includes(search))
-      : this.collections;
+      ? collections.filter((c) => c.title.toLowerCase().includes(search))
+      : collections;
     const selectedCount = this._collectionIds.length;
 
     return html`
@@ -988,37 +993,43 @@ export class JantComposeDialog extends LitElement {
             data-side="top"
             aria-hidden=${this._showCollection ? "false" : "true"}
           >
-            <header>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <input
-                type="text"
-                role="combobox"
-                placeholder=${this.labels.searchCollections}
-                autocomplete="off"
-                autocorrect="off"
-                spellcheck="false"
-                .value=${this._collectionSearch}
-                @input=${(e: Event) => {
-                  this._collectionSearch = (e.target as HTMLInputElement).value;
-                }}
-              />
-            </header>
+            ${collections.length > 0
+              ? html`<header>
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                  <input
+                    type="text"
+                    role="combobox"
+                    placeholder=${this.labels.searchCollections}
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                    .value=${this._collectionSearch}
+                    @input=${(e: Event) => {
+                      this._collectionSearch = (
+                        e.target as HTMLInputElement
+                      ).value;
+                    }}
+                  />
+                </header>`
+              : nothing}
             <div
               role="listbox"
               aria-multiselectable="true"
-              data-empty=${this.labels.noCollections}
+              data-empty=${filtered.length === 0 && search
+                ? this.labels.noCollections
+                : nothing}
             >
               ${filtered.map(
                 (col) => html`
@@ -1041,7 +1052,124 @@ export class JantComposeDialog extends LitElement {
                 `,
               )}
             </div>
+            <div
+              class="compose-collection-add-action"
+              @click=${() => {
+                this._showCollection = false;
+                this._collectionSearch = "";
+                this._addCollectionPanelOpen = true;
+              }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M8 3v10M3 8h10" />
+              </svg>
+              ${this.labels.addCollection}
+            </div>
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Add Collection panel ────────────────────────────────────────
+
+  private async _handleAddCollectionSubmit(e: Event) {
+    const event = e as CustomEvent<CollectionSubmitDetail>;
+    event.stopPropagation();
+
+    const detail = event.detail;
+    if (!detail) return;
+
+    const formEl = this.querySelector("jant-collection-form") as
+      | (HTMLElement & { loading: boolean })
+      | null;
+    if (formEl) formEl.loading = true;
+
+    try {
+      const res = await fetch("/api/collections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(detail.data),
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const created = await res.json();
+      const newCollection: ComposeCollection = {
+        id: created.id,
+        title: created.title,
+        iconHtml: renderCollectionIcon(created.icon, { size: 16 }),
+      };
+
+      this.collections = [...this.collections, newCollection];
+      this._collectionIds = [...this._collectionIds, created.id];
+      this._addCollectionPanelOpen = false;
+      showToast(this.labels.collectionFormLabels.submitLabel);
+    } catch {
+      showToast("Failed to create collection. Try again.", "error");
+    } finally {
+      if (formEl) formEl.loading = false;
+    }
+  }
+
+  private _submitAddCollectionForm() {
+    const form = this.querySelector<HTMLFormElement>(
+      ".compose-add-collection-panel form",
+    );
+    if (form) form.requestSubmit();
+  }
+
+  private _renderAddCollectionPanel() {
+    if (!this._addCollectionPanelOpen) return nothing;
+
+    const initial = {
+      title: "",
+      slug: "",
+      description: "",
+      sortOrder: "newest",
+      icon: "",
+    };
+
+    return html`
+      <div class="compose-add-collection-panel">
+        <div class="compose-alt-header">
+          <button
+            type="button"
+            class="compose-attached-cancel"
+            @click=${() => {
+              this._addCollectionPanelOpen = false;
+            }}
+          >
+            ${this.labels.cancel}
+          </button>
+          <span class="compose-alt-title">${this.labels.addCollection}</span>
+          <button
+            type="button"
+            class="compose-post-btn ml-auto"
+            @click=${() => this._submitAddCollectionForm()}
+          >
+            ${this.labels.done}
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto">
+          <jant-collection-form
+            class="compose-add-collection-form"
+            .labels=${this.labels.collectionFormLabels}
+            .initial=${initial}
+            action="/api/collections"
+            cancel-href="javascript:void(0)"
+            @jant:collection-submit=${(e: Event) =>
+              this._handleAddCollectionSubmit(e)}
+          ></jant-collection-form>
         </div>
       </div>
     `;
@@ -1229,6 +1357,7 @@ export class JantComposeDialog extends LitElement {
         ${this._renderAttachedPanel()} ${this._renderAltPanel()}
         ${this._renderDraftsPanel()} ${this._renderConfirmPanel()}
       </div>
+      ${this._renderAddCollectionPanel()}
     `;
   }
 }
