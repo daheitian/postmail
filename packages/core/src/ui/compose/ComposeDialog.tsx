@@ -168,16 +168,25 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment: "@context: Compose button - update existing post",
     }),
     confirmCloseTitle: t({
-      message: "You have unsaved changes",
-      comment: "@context: Confirm close dialog title",
+      message: "Save to drafts?",
+      comment: "@context: Confirm close action sheet title",
+    }),
+    confirmCloseSubtitle: t({
+      message: "Save to drafts to edit and post at a later time.",
+      comment: "@context: Confirm close action sheet subtitle",
     }),
     confirmCloseSave: t({
-      message: "Save Draft",
-      comment: "@context: Confirm close dialog - save draft button",
+      message: "Save",
+      comment: "@context: Confirm close action sheet - save draft button",
+    }),
+    confirmCloseCancel: t({
+      message: "Cancel",
+      comment:
+        "@context: Confirm close action sheet - cancel and return to editor",
     }),
     confirmCloseDiscard: t({
-      message: "Discard",
-      comment: "@context: Confirm close dialog - discard button",
+      message: "Don't save",
+      comment: "@context: Confirm close action sheet - discard button",
     }),
   }).replace(/</g, "\\u003c");
 

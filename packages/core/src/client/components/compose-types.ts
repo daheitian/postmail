@@ -64,7 +64,9 @@ export interface ComposeLabels {
   editPost: string;
   update: string;
   confirmCloseTitle: string;
+  confirmCloseSubtitle: string;
   confirmCloseSave: string;
+  confirmCloseCancel: string;
   confirmCloseDiscard: string;
 }
 

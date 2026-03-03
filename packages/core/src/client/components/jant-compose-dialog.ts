@@ -176,7 +176,12 @@ export class JantComposeDialog extends LitElement {
   }
 
   requestClose() {
-    if (this._loading || this._confirmPanelOpen) return;
+    if (this._loading) return;
+    if (this._confirmPanelOpen) {
+      this._confirmPanelOpen = false;
+      this.updateComplete.then(() => this._editor?.focusInput());
+      return;
+    }
     if (this._hasContent()) {
       this._confirmPanelOpen = true;
     } else {
@@ -310,16 +315,20 @@ export class JantComposeDialog extends LitElement {
 
   private _handleDialogCancel = (e: Event) => {
     e.preventDefault();
-    if (this._confirmPanelOpen) {
-      this._discardAndClose();
-    } else {
-      this.requestClose();
-    }
+    this.requestClose();
   };
 
   private _handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
-    if ((ke.metaKey || ke.ctrlKey) && ke.key === "Enter") {
+    if (ke.key === "Escape") {
+      ke.preventDefault();
+      ke.stopPropagation();
+      this.requestClose();
+    } else if (ke.key === "Enter" && this._confirmPanelOpen) {
+      ke.preventDefault();
+      this._confirmPanelOpen = false;
+      this._submit("draft");
+    } else if ((ke.metaKey || ke.ctrlKey) && ke.key === "Enter") {
       e.preventDefault();
       this._submit("published");
     }
@@ -795,27 +804,39 @@ export class JantComposeDialog extends LitElement {
 
     return html`
       <div class="compose-confirm-panel">
-        <div class="compose-confirm-content">
-          <p class="compose-confirm-title">${this.labels.confirmCloseTitle}</p>
-          <div class="compose-confirm-actions">
-            <button
-              type="button"
-              class="compose-confirm-save"
-              @click=${() => {
-                this._confirmPanelOpen = false;
-                this._submit("draft");
-              }}
-            >
-              ${this.labels.confirmCloseSave}
-            </button>
-            <button
-              type="button"
-              class="compose-confirm-discard"
-              @click=${() => this._discardAndClose()}
-            >
-              ${this.labels.confirmCloseDiscard}
-            </button>
+        <div class="compose-confirm-sheet">
+          <div class="compose-confirm-header">
+            <p class="compose-confirm-title">
+              ${this.labels.confirmCloseTitle}
+            </p>
+            <p class="compose-confirm-subtitle">
+              ${this.labels.confirmCloseSubtitle}
+            </p>
           </div>
+          <button
+            type="button"
+            class="compose-confirm-action compose-confirm-save"
+            @click=${() => {
+              this._confirmPanelOpen = false;
+              this._submit("draft");
+            }}
+          >
+            ${this.labels.confirmCloseSave}
+          </button>
+          <button
+            type="button"
+            class="compose-confirm-action compose-confirm-discard"
+            @click=${() => this._discardAndClose()}
+          >
+            ${this.labels.confirmCloseDiscard}
+          </button>
+          <button
+            type="button"
+            class="compose-confirm-action compose-confirm-cancel"
+            @click=${() => this.requestClose()}
+          >
+            ${this.labels.confirmCloseCancel}
+          </button>
         </div>
       </div>
     `;

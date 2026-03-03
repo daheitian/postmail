@@ -305,7 +305,9 @@ msgstr "Blog Avatar"
 #. @context: Button to cancel form
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
+#. @context: Confirm close action sheet - cancel and return to editor
 #: src/routes/dash/redirects.tsx
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
@@ -420,6 +422,11 @@ msgstr "Confirm Password"
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Content"
 msgstr "Content"
+
+#. @context: Confirm close dialog - cancel and return to editor
+#: src/ui/compose/ComposeDialog.tsx
+#~ msgid "Continue Editing"
+#~ msgstr "Continue Editing"
 
 #. @context: Button to copy Markdown to clipboard
 #. @context: Button to copy URL to clipboard
@@ -637,9 +644,7 @@ msgstr "Description (optional)"
 msgid "Design"
 msgstr "Design"
 
-#. @context: Confirm close dialog - discard button
 #. @context: More menu - discard post
-#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "Discard"
@@ -663,6 +668,11 @@ msgstr "Display avatar in my site header"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "Displayed at the bottom of all posts and pages. Markdown supported."
+
+#. @context: Confirm close action sheet - discard button
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Don't save"
+msgstr "Don't save"
 
 #. @context: Button to exit reorder mode
 #. @context: Close attached text panel
@@ -1764,7 +1774,9 @@ msgstr "Reset Password"
 
 #. @context: Button to save collection
 #. @context: Button to save settings
+#. @context: Confirm close action sheet - save draft button
 #. @context: Save nav item changes
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -1793,8 +1805,8 @@ msgstr "Save CSS"
 
 #. @context: Confirm close dialog - save draft button
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Save Draft"
-msgstr "Save Draft"
+#~ msgid "Save Draft"
+#~ msgstr "Save Draft"
 
 #. @context: Button to save profile
 #: src/ui/dash/settings/AccountContent.tsx
@@ -1805,6 +1817,16 @@ msgstr "Save Profile"
 #: src/ui/dash/settings/GeneralContent.tsx
 #~ msgid "Save Settings"
 #~ msgstr "Save Settings"
+
+#. @context: Confirm close action sheet subtitle
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save to drafts to edit and post at a later time."
+msgstr "Save to drafts to edit and post at a later time."
+
+#. @context: Confirm close action sheet title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save to drafts?"
+msgstr "Save to drafts?"
 
 #. @context: Toast after saving a collection
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -2373,8 +2395,8 @@ msgstr "Wrong email or password. Check your credentials and try again."
 
 #. @context: Confirm close dialog title
 #: src/ui/compose/ComposeDialog.tsx
-msgid "You have unsaved changes"
-msgstr "You have unsaved changes"
+#~ msgid "You have unsaved changes"
+#~ msgstr "You have unsaved changes"
 
 #. @context: Error when browser lacks WebCodecs API for video processing
 #: src/client/compose-bridge.ts src/client/media-upload.ts

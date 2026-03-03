@@ -60,6 +60,8 @@
   --icon-stroke-fine: 1.5;
 
   /* Derived color tokens (from BaseCoat variables) */
+  --site-accent: var(--primary);
+  --site-accent-text: var(--primary-foreground);
   --site-column-outline: var(--border);
   --site-threadline: var(--border);
   --site-page-bg: var(--background);

@@ -30,6 +30,8 @@ These principles explain _why_ the codebase is structured the way it is. When yo
 
 - **Fail fast**: missing required config should crash at startup with a clear error, not silently degrade at runtime.
 
+- **Keyboard-first interactions**: every dialog, panel, and overlay must support standard keyboard shortcuts — `Escape` to close/cancel, `Enter` to confirm the primary action, `Tab` for focus navigation. Never rely solely on mouse/touch. Note that `<dialog>` native cancel events may not fire when inner elements (e.g. TipTap/ProseMirror) intercept `Escape` at the keydown level; always handle keyboard events directly on the component in addition to native dialog events.
+
 ### Hard Constraints
 
 Non-negotiable regardless of context:

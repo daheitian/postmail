@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import type {
   ComposeLabels,
   ComposeCollection,
@@ -60,9 +60,11 @@ const labels: ComposeLabels = {
   retryAll: "Click to retry all",
   editPost: "Edit post",
   update: "Done",
-  confirmCloseTitle: "You have unsaved changes",
-  confirmCloseSave: "Save Draft",
-  confirmCloseDiscard: "Discard",
+  confirmCloseTitle: "Save to drafts?",
+  confirmCloseSubtitle: "Save to drafts to edit and post at a later time.",
+  confirmCloseSave: "Save",
+  confirmCloseCancel: "Cancel",
+  confirmCloseDiscard: "Don't save",
 };
 
 const collections: ComposeCollection[] = [
@@ -592,7 +594,7 @@ describe("JantComposeDialog", () => {
     expect(el._confirmPanelOpen).toBe(true);
     expect(el.querySelector(".compose-confirm-panel")).not.toBeNull();
     expect(el.querySelector(".compose-confirm-title")?.textContent).toBe(
-      "You have unsaved changes",
+      "Save to drafts?",
     );
   });
 
@@ -630,6 +632,82 @@ describe("JantComposeDialog", () => {
       "draft",
     );
     expect(el._confirmPanelOpen).toBe(false);
+  });
+
+  it("confirm cancel returns to editor without closing", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Keep editing" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    el.requestClose();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(true);
+
+    const cancelBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-confirm-cancel"),
+      "expected cancel button",
+    );
+    const focusSpy = vi.spyOn(editor, "focusInput");
+    cancelBtn.click();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(focusSpy).toHaveBeenCalled();
+    // Editor content should be preserved
+    expect(editor._bodyJson).toEqual({
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Keep editing" }],
+        },
+      ],
+    });
+  });
+
+  it("requestClose on confirm panel dismisses it (Escape = Cancel)", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Esc test" }] },
+      ],
+    };
+    await editor.updateComplete;
+
+    el.requestClose();
+    await el.updateComplete;
+    expect(el._confirmPanelOpen).toBe(true);
+
+    // Second requestClose (same path as Escape via dialog oncancel)
+    el.requestClose();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(false);
+    // Content should be preserved (not discarded)
+    expect(editor._bodyJson).toEqual({
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Esc test" }] },
+      ],
+    });
   });
 
   it("confirm discard closes and resets", async () => {

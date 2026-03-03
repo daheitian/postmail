@@ -245,7 +245,9 @@ msgstr "部落格頭像"
 #. @context: Button to cancel form
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
+#. @context: Confirm close action sheet - cancel and return to editor
 #: src/routes/dash/redirects.tsx
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
@@ -350,6 +352,11 @@ msgstr "確認密碼"
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Content"
 msgstr "內容"
+
+#. @context: Confirm close dialog - cancel and return to editor
+#: src/ui/compose/ComposeDialog.tsx
+#~ msgid "Continue Editing"
+#~ msgstr ""
 
 #. @context: Button to copy Markdown to clipboard
 #. @context: Button to copy URL to clipboard
@@ -537,9 +544,7 @@ msgstr "描述（可選）"
 msgid "Design"
 msgstr ""
 
-#. @context: Confirm close dialog - discard button
 #. @context: More menu - discard post
-#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "丟棄"
@@ -553,6 +558,11 @@ msgstr "在我的網站標頭中顯示頭像"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "顯示在所有文章和頁面的底部。支持Markdown。"
+
+#. @context: Confirm close action sheet - discard button
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Don't save"
+msgstr ""
 
 #. @context: Button to exit reorder mode
 #. @context: Close attached text panel
@@ -1502,7 +1512,9 @@ msgstr "重設密碼"
 
 #. @context: Button to save collection
 #. @context: Button to save settings
+#. @context: Confirm close action sheet - save draft button
 #. @context: Save nav item changes
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -1526,13 +1538,23 @@ msgstr "儲存 CSS"
 
 #. @context: Confirm close dialog - save draft button
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Save Draft"
-msgstr ""
+#~ msgid "Save Draft"
+#~ msgstr ""
 
 #. @context: Button to save profile
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "Save Profile"
 msgstr "保存個人資料"
+
+#. @context: Confirm close action sheet subtitle
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save to drafts to edit and post at a later time."
+msgstr ""
+
+#. @context: Confirm close action sheet title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save to drafts?"
+msgstr ""
 
 #. @context: Toast after saving a collection
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -2031,8 +2053,8 @@ msgstr ""
 
 #. @context: Confirm close dialog title
 #: src/ui/compose/ComposeDialog.tsx
-msgid "You have unsaved changes"
-msgstr ""
+#~ msgid "You have unsaved changes"
+#~ msgstr ""
 
 #. @context: Error when browser lacks WebCodecs API for video processing
 #: src/client/compose-bridge.ts src/client/media-upload.ts

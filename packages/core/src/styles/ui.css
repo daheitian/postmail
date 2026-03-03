@@ -1423,13 +1423,13 @@
     word-break: break-word;
   }
 
-  /* --- Close confirmation overlay panel ----------------------------------- */
+  /* --- Close confirmation action sheet (Threads-style) -------------------- */
 
   .compose-confirm-panel {
     position: absolute;
     inset: 0;
     z-index: 60;
-    background-color: var(--site-elevated-bg);
+    background-color: oklch(from var(--site-text-primary) l c h / 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1437,61 +1437,62 @@
     animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .compose-confirm-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding: 32px 24px;
+  .compose-confirm-sheet {
+    width: min(300px, calc(100% - 48px));
+    background-color: var(--site-elevated-bg);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px oklch(0 0 0 / 0.12);
+  }
+
+  .compose-confirm-header {
+    padding: 24px 20px 16px;
     text-align: center;
   }
 
   .compose-confirm-title {
     font-size: var(--text-base);
-    font-weight: var(--fw-semibold);
+    font-weight: var(--fw-bold);
     color: var(--site-text-primary);
     letter-spacing: -0.01em;
   }
 
-  .compose-confirm-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    min-width: 180px;
+  .compose-confirm-subtitle {
+    margin-top: 8px;
+    font-size: var(--text-sm);
+    color: var(--site-text-secondary);
+    line-height: var(--leading);
+  }
+
+  .compose-confirm-action {
+    display: block;
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-top: 1px solid var(--site-divider);
+    background: transparent;
+    font-size: var(--text-base);
+    font-family: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.12s;
+  }
+
+  .compose-confirm-action:hover {
+    background-color: var(--site-nav-hover-bg);
   }
 
   .compose-confirm-save {
-    width: 100%;
-    padding: 10px 24px;
-    border-radius: 999px;
-    border: none;
-    background-color: var(--site-accent);
-    color: var(--site-accent-text, #fff);
-    font-size: var(--text-sm);
     font-weight: var(--fw-semibold);
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-
-  .compose-confirm-save:hover {
-    opacity: 0.85;
+    color: var(--site-text-primary);
   }
 
   .compose-confirm-discard {
-    padding: 6px 16px;
-    border-radius: 999px;
-    border: none;
-    background: transparent;
     color: var(--color-destructive, #ef4444);
-    font-size: var(--text-sm);
-    font-weight: var(--fw-medium);
-    cursor: pointer;
-    transition: opacity 0.15s;
   }
 
-  .compose-confirm-discard:hover {
-    opacity: 0.7;
+  .compose-confirm-cancel {
+    color: var(--site-text-secondary);
   }
 
   /* --- Alt text overlay panel (Threads-style, covers entire dialog) ------- */
