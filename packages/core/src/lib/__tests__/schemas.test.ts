@@ -232,7 +232,7 @@ describe("CreatePostSchema", () => {
   });
 
   it("accepts visibility values", () => {
-    for (const v of ["listed", "featured", "unlisted"]) {
+    for (const v of ["public", "featured", "unlisted"]) {
       const result = CreatePostSchema.parse({ ...validPost, visibility: v });
       expect(result.visibility).toBe(v);
     }

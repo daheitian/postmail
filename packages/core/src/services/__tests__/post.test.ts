@@ -40,7 +40,7 @@ describe("PostService", () => {
       expect(post.format).toBe("note");
       expect(post.body).toBe(body);
       expect(post.status).toBe("published"); // default
-      expect(post.visibility).toBe("listed");
+      expect(post.visibility).toBe("public");
       expect(post.pinned).toBe(0);
       expect(post.bodyHtml).toContain("<p>Hello world</p>");
       expect(post.deletedAt).toBeNull();
@@ -328,10 +328,10 @@ describe("PostService", () => {
       expect(featured[0]?.visibility).toBe("featured");
       expect(featured[0]?.body).toBe("featured post");
 
-      const listed = await postService.list({ visibility: "listed" });
-      expect(listed).toHaveLength(1);
-      expect(listed[0]?.visibility).toBe("listed");
-      expect(listed[0]?.body).toBe("normal post");
+      const publicPosts = await postService.list({ visibility: "public" });
+      expect(publicPosts).toHaveLength(1);
+      expect(publicPosts[0]?.visibility).toBe("public");
+      expect(publicPosts[0]?.body).toBe("normal post");
 
       const unlisted = await postService.list({ visibility: "unlisted" });
       expect(unlisted).toHaveLength(1);
@@ -342,7 +342,7 @@ describe("PostService", () => {
     it("excludes unlisted posts when requested", async () => {
       await postService.create({
         format: "note",
-        body: "listed post",
+        body: "public post",
       });
       await postService.create({
         format: "note",
@@ -359,7 +359,7 @@ describe("PostService", () => {
       expect(posts).toHaveLength(2);
       expect(posts.map((p) => p.body).sort()).toEqual([
         "featured post",
-        "listed post",
+        "public post",
       ]);
     });
 
@@ -644,7 +644,7 @@ describe("PostService", () => {
         body: "test",
       });
 
-      expect(post.visibility).toBe("listed");
+      expect(post.visibility).toBe("public");
 
       const updated = await postService.update(post.id, {
         visibility: "featured",

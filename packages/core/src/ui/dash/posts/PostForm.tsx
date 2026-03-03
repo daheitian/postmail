@@ -119,8 +119,8 @@ export const PostForm: FC<PostFormProps> = ({
       message: "Visibility",
       comment: "@context: Post form field - post visibility",
     }),
-    visibilityListed: t({
-      message: "Listed",
+    visibilityPublic: t({
+      message: "Public",
       comment: "@context: Visibility option - appears everywhere",
     }),
     visibilityFeatured: t({
@@ -186,7 +186,7 @@ export const PostForm: FC<PostFormProps> = ({
     url: post?.url ?? "",
     quoteText: post?.quoteText ?? "",
     status: post?.status ?? "published",
-    visibility: post?.visibility ?? "listed",
+    visibility: post?.visibility ?? "public",
     pinned: post?.pinned === 1,
     rating: post?.rating ?? 0,
     collectionIds: postCollectionIds,

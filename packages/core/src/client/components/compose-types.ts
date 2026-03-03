@@ -19,6 +19,8 @@ export interface ComposeAttachment {
   mediaId: string | null;
   alt: string;
   error: string | null;
+  /** Text content preview for text files (first ~100 chars) */
+  summary: string | null;
 }
 
 export interface AttachedTextItem {

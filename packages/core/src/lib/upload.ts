@@ -38,8 +38,12 @@ const DOCUMENT_MIME_TYPES = ["application/pdf"] as const;
 const TEXT_MIME_TYPES = [
   "text/plain",
   "text/markdown",
+  "text/csv",
   "text/x-tiptap+json",
 ] as const;
+
+/** MIME types allowed for upload — archives */
+const ARCHIVE_MIME_TYPES = ["application/zip"] as const;
 
 /** All allowed MIME types */
 const ALLOWED_UPLOAD_TYPES = [
@@ -48,6 +52,7 @@ const ALLOWED_UPLOAD_TYPES = [
   ...AUDIO_MIME_TYPES,
   ...DOCUMENT_MIME_TYPES,
   ...TEXT_MIME_TYPES,
+  ...ARCHIVE_MIME_TYPES,
 ] as const;
 
 /**
@@ -62,7 +67,13 @@ export const UPLOAD_ACCEPT = (ALLOWED_UPLOAD_TYPES as readonly string[]).join(
   ",",
 );
 
-export type MediaCategory = "image" | "video" | "audio" | "document" | "text";
+export type MediaCategory =
+  | "image"
+  | "video"
+  | "audio"
+  | "document"
+  | "text"
+  | "archive";
 
 /**
  * Returns the media category for a given MIME type.
@@ -83,9 +94,11 @@ export function getMediaCategory(mimeType: string): MediaCategory | null {
   if (
     mimeType === "text/plain" ||
     mimeType === "text/markdown" ||
+    mimeType === "text/csv" ||
     mimeType === "text/x-tiptap+json"
   )
     return "text";
+  if (mimeType === "application/zip") return "archive";
   return null;
 }
 

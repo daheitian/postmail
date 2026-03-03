@@ -109,7 +109,7 @@ export class JantPostMenu extends LitElement {
         sqid,
         permalink: article.dataset.postPermalink ?? "",
         pinned: article.hasAttribute("data-post-pinned"),
-        visibility: article.dataset.postVisibility ?? "listed",
+        visibility: article.dataset.postVisibility ?? "public",
       };
 
       // Position relative to trigger
@@ -167,7 +167,7 @@ export class JantPostMenu extends LitElement {
   async #toggleFeature() {
     if (!this._data) return;
     const newVisibility =
-      this._data.visibility === "featured" ? "listed" : "featured";
+      this._data.visibility === "featured" ? "public" : "featured";
 
     try {
       const res = await fetch(`/api/posts/${this._data.sqid}`, {

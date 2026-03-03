@@ -205,10 +205,12 @@ uploadApiRoutes.post("/", async (c) => {
     // Read optional summary (provided for text attachments)
     let summary = (formData.get("summary") as string) || undefined;
 
-    // Auto-extract summary for plain text and markdown uploads
+    // Auto-extract summary for plain text, markdown, and CSV uploads
     if (
       !summary &&
-      (file.type === "text/plain" || file.type === "text/markdown")
+      (file.type === "text/plain" ||
+        file.type === "text/markdown" ||
+        file.type === "text/csv")
     ) {
       try {
         const textContent = await file.text();

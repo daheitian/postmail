@@ -1109,8 +1109,8 @@ msgstr "Links shown in header"
 
 #. @context: Visibility option - appears everywhere
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Listed"
-msgstr "Listed"
+#~ msgid "Listed"
+#~ msgstr "Listed"
 
 #. @context: Pagination button - load more items
 #: src/ui/shared/Pagination.tsx
@@ -1699,6 +1699,11 @@ msgstr "Profile updated."
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Profile, password"
 msgstr "Profile, password"
+
+#. @context: Visibility option - appears everywhere
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Public"
+msgstr "Public"
 
 #. @context: Button to publish new post
 #: src/ui/dash/posts/PostForm.tsx

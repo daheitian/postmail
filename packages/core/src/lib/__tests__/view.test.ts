@@ -32,7 +32,7 @@ function makePost(overrides: Partial<Post> = {}): Post {
     id: 1,
     format: "note",
     status: "published",
-    visibility: "listed" as const,
+    visibility: "public" as const,
     pinned: 0,
     path: null,
     title: null,
@@ -256,12 +256,12 @@ describe("toPostView", () => {
   it("maps default visibility and pinned=0", () => {
     const view = toPostView(
       makePostWithMedia({
-        visibility: "listed",
+        visibility: "public",
         pinned: 0,
       }),
       EMPTY_CTX,
     );
-    expect(view.visibility).toBe("listed");
+    expect(view.visibility).toBe("public");
     expect(view.pinned).toBe(false);
   });
 

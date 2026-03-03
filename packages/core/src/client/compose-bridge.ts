@@ -20,6 +20,7 @@ import {
   replaceWithAutoCloseAction,
 } from "./toast.js";
 import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
+import { getMediaCategory } from "../lib/upload.js";
 
 // ── Upload manager ──────────────────────────────────────────────────
 
@@ -99,6 +100,20 @@ async function uploadFile(
       return result.id;
     }
 
+    // For text-category files, read content and include summary
+    let summary: string | undefined;
+    const category = getMediaCategory(file.type);
+    if (category === "text" && file.type !== "text/x-tiptap+json") {
+      try {
+        const textContent = await file.text();
+        const trimmed = textContent.replace(/\s+/g, " ").trim();
+        summary =
+          trimmed.length <= 100 ? trimmed : trimmed.slice(0, 100) + "\u2026";
+      } catch {
+        // Ignore — summary is optional
+      }
+    }
+
     // Small files: existing single-request upload
     const formData = new FormData();
     formData.append("file", toUpload);
@@ -106,6 +121,7 @@ async function uploadFile(
     if (height) formData.append("height", String(height));
     if (blurhash) formData.append("blurhash", blurhash);
     if (poster) formData.append("poster", poster, "poster.webp");
+    if (summary) formData.append("summary", summary);
 
     const res = await fetch("/api/upload", {
       method: "POST",

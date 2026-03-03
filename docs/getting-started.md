@@ -61,12 +61,12 @@ Every post has a visibility level:
 
 | Level        | What it means                                 |
 | ------------ | --------------------------------------------- |
+| **Public**   | Normal publish, visible everywhere (default)  |
 | **Featured** | Highlighted content, appears in main RSS feed |
-| **Quiet**    | Normal publish, lower profile (default)       |
 | **Unlisted** | Only accessible via direct link               |
 | **Draft**    | Work in progress, not published               |
 
-Default is "quiet" to reduce publishing anxiety. Opt-in to "featured" for posts you're proud of.
+Default is "public". Opt-in to "featured" for posts you're proud of.
 
 ## Threads
 

@@ -378,6 +378,7 @@ describe("JantComposeEditor", () => {
         mediaId: "m1",
         alt: "",
         error: null,
+        summary: null,
       },
     ];
     await el.updateComplete;

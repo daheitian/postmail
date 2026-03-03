@@ -27,7 +27,7 @@ const DEFAULT_INITIAL: PostFormInitial = {
   url: "",
   quoteText: "",
   status: "published",
-  visibility: "listed",
+  visibility: "public",
   pinned: false,
   rating: 0,
   collectionIds: [],
@@ -55,7 +55,7 @@ const EMPTY_LABELS: PostFormLabels = {
   statusPublished: "",
   statusDraft: "",
   visibilityLabel: "",
-  visibilityListed: "",
+  visibilityPublic: "",
   visibilityFeatured: "",
   visibilityUnlisted: "",
   pinnedLabel: "",
@@ -153,7 +153,7 @@ export class JantPostForm extends LitElement {
     this._url = "";
     this._quoteText = "";
     this._status = "published";
-    this._visibility = "listed";
+    this._visibility = "public";
     this._pinned = false;
     this._rating = 0;
     this._collectionIds = [];
@@ -218,7 +218,7 @@ export class JantPostForm extends LitElement {
     this._url = init.url ?? "";
     this._quoteText = init.quoteText ?? "";
     this._status = init.status ?? "published";
-    this._visibility = init.visibility ?? "listed";
+    this._visibility = init.visibility ?? "public";
     this._pinned = !!init.pinned;
     this._rating = init.rating ?? 0;
     this._collectionIds = [...(init.collectionIds ?? [])];

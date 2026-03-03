@@ -934,8 +934,8 @@ msgstr ""
 
 #. @context: Visibility option - appears everywhere
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Listed"
-msgstr ""
+#~ msgid "Listed"
+#~ msgstr ""
 
 #. @context: Pagination button - load more items
 #: src/ui/shared/Pagination.tsx
@@ -1458,6 +1458,11 @@ msgstr ""
 #. @context: Settings item description for account
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Profile, password"
+msgstr ""
+
+#. @context: Visibility option - appears everywhere
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Public"
 msgstr ""
 
 #. @context: Button to publish new post

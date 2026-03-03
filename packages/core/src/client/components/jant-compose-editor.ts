@@ -357,6 +357,8 @@ export class JantComposeEditor extends LitElement {
       previewUrl: string;
       alt?: string;
       mimeType: string;
+      originalName?: string;
+      summary?: string;
     }>;
     textAttachments?: Array<{
       bodyJson: string;
@@ -394,13 +396,14 @@ export class JantComposeEditor extends LitElement {
     if (data.media?.length) {
       const attachments = data.media.map((m) => ({
         clientId: crypto.randomUUID(),
-        file: new File([], "existing", { type: m.mimeType }),
+        file: new File([], m.originalName ?? "existing", { type: m.mimeType }),
         previewUrl: m.previewUrl,
         status: "done" as const,
         progress: null,
         mediaId: m.id,
         alt: m.alt ?? "",
         error: null,
+        summary: m.summary ?? null,
       }));
       this._attachments = attachments;
       this._attachmentOrder = attachments.map((a) => a.clientId);
@@ -594,6 +597,7 @@ export class JantComposeEditor extends LitElement {
         mediaId: null,
         alt: "",
         error: null,
+        summary: null,
       });
       files.push({ file, clientId });
     }
@@ -605,6 +609,19 @@ export class JantComposeEditor extends LitElement {
       ...this._attachmentOrder,
       ...newAttachments.map((a) => a.clientId),
     ];
+
+    // Extract summaries for text-category files asynchronously
+    for (const att of newAttachments) {
+      const category = getMediaCategory(att.file.type);
+      if (category === "text") {
+        att.file.text().then((content) => {
+          const summary = this._computeSummary(content);
+          this._attachments = this._attachments.map((a) =>
+            a.clientId === att.clientId ? { ...a, summary } : a,
+          );
+        });
+      }
+    }
 
     this.dispatchEvent(
       new CustomEvent("jant:files-selected", {
@@ -1028,6 +1045,67 @@ export class JantComposeEditor extends LitElement {
       `;
     }
 
+    if (category === "text") {
+      return html`
+        <div class="compose-attachment-file-card">
+          <div class="compose-attachment-file-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <line x1="10" y1="9" x2="8" y2="9" />
+            </svg>
+          </div>
+          <span class="compose-attachment-file-name">${a.file.name}</span>
+          ${a.summary
+            ? html`<span class="compose-attachment-text-summary"
+                >${a.summary}</span
+              >`
+            : nothing}
+        </div>
+      `;
+    }
+
+    if (category === "archive") {
+      return html`
+        <div class="compose-attachment-file-card">
+          <div class="compose-attachment-file-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 8v13H3V3h12l6 5z" />
+              <path d="M9 3v18" />
+              <path d="M9 12h3" />
+              <path d="M9 15h3" />
+            </svg>
+          </div>
+          <span class="compose-attachment-file-name">${a.file.name}</span>
+          <span class="compose-attachment-file-size"
+            >${this._formatSize(a.file.size)}</span
+          >
+        </div>
+      `;
+    }
+
     // Default: image
     return html`
       <div class="compose-attachment-thumb">
@@ -1126,7 +1204,11 @@ export class JantComposeEditor extends LitElement {
 
   private _renderMediaAttachment(a: ComposeAttachment, i: number) {
     const category = this._getCategory(a);
-    const isFileCard = category === "audio" || category === "document";
+    const isFileCard =
+      category === "audio" ||
+      category === "document" ||
+      category === "text" ||
+      category === "archive";
 
     return html`
       <div class="compose-attachment">

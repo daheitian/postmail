@@ -178,10 +178,10 @@ export function renderPostForm(component: JantPostForm) {
           @change=${(e: Event) => {
             const target = e.target as HTMLSelectElement;
             component._visibility =
-              (target.value as typeof component._visibility) ?? "listed";
+              (target.value as typeof component._visibility) ?? "public";
           }}
         >
-          <option value="listed">${component.labels.visibilityListed}</option>
+          <option value="public">${component.labels.visibilityPublic}</option>
           <option value="featured">
             ${component.labels.visibilityFeatured}
           </option>

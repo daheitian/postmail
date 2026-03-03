@@ -35,7 +35,7 @@
 - [ ] 新增列：`format`（'note' | 'link' | 'quote'）, `status`（'draft' | 'published'）, `featured`（boolean）, `pinned`（boolean）, `rating`（integer 1-5）, `quote_text`, `collection_id`（FK）, `body`, `body_html`, `url`
 - [ ] 数据迁移映射：
   - `type` → `format`：article → note, image → note, note → note, link → link, quote → quote
-  - `visibility` → `status` + `featured`：featured → published + featured=1, quiet → published, unlisted → published, draft → draft
+  - `visibility` → `status` + `featured`：featured → published + featured=1, public → published, unlisted → published, draft → draft
   - `content` → `body`, `content_html` → `body_html`
   - `source_url` → `url`
   - `source_name` → 丢弃（quote 的归属信息已在 title 中）

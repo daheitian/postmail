@@ -3,7 +3,7 @@
  *
  * CRUD operations for posts with Thread support.
  * Posts have format (note/link/quote), status (draft/published),
- * visibility (listed/featured/unlisted), and pinned flag.
+ * visibility (public/featured/unlisted), and pinned flag.
  */
 
 import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
@@ -247,7 +247,7 @@ export function createPostService(
       // Handle thread relationship
       let threadId: number | null = null;
       let status: Status = data.status ?? "published";
-      let visibility: Visibility = data.visibility ?? "listed";
+      let visibility: Visibility = data.visibility ?? "public";
 
       if (data.replyToId) {
         const parent = await this.getById(data.replyToId);

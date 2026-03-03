@@ -394,6 +394,7 @@ describe("JantComposeDialog", () => {
         mediaId: "media-1",
         alt: "",
         error: null,
+        summary: null,
       },
     ];
     editor._attachmentOrder = ["test-id-1"];
@@ -435,6 +436,7 @@ describe("JantComposeDialog", () => {
         mediaId: "media-1",
         alt: "",
         error: null,
+        summary: null,
       },
     ];
     editor._attachmentOrder = ["test-id-1"];
@@ -474,6 +476,7 @@ describe("JantComposeDialog", () => {
         mediaId: "media-1",
         alt: "",
         error: null,
+        summary: null,
       },
     ];
     editor._attachmentOrder = ["test-id-1"];
@@ -526,6 +529,7 @@ describe("JantComposeDialog", () => {
         mediaId: "media-1",
         alt: "A test image",
         error: null,
+        summary: null,
       },
     ];
     editor._bodyJson = {
@@ -586,6 +590,7 @@ describe("JantComposeDialog", () => {
         mediaId: null,
         alt: "Alt for pending",
         error: null,
+        summary: null,
       },
     ];
     editor._bodyJson = {
@@ -1033,6 +1038,7 @@ describe("JantComposeDialog", () => {
         mediaId: "media-1",
         alt: "",
         error: null,
+        summary: null,
       },
     ];
     await editor.updateComplete;

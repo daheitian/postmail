@@ -28,7 +28,7 @@ GET /api/posts
 **Query Parameters:**
 
 - `type` (optional): Filter by post type (`note`, `article`, `link`, `quote`, `image`, `page`)
-- `visibility` (optional): Filter by visibility (`featured`, `quiet`, `unlisted`, `draft`)
+- `visibility` (optional): Filter by visibility (`featured`, `public`, `unlisted`, `draft`)
 - `cursor` (optional): Pagination cursor (sqid format)
 - `limit` (optional): Number of posts to return (default: 100, max: 100)
 
@@ -114,7 +114,7 @@ POST /api/posts
 
 - `type`: One of `note`, `article`, `link`, `quote`, `image`, `page`
 - `content`: Post content (Markdown)
-- `visibility`: One of `featured`, `quiet`, `unlisted`, `draft`
+- `visibility`: One of `featured`, `public`, `unlisted`, `draft`
 
 **Optional Fields:**
 
