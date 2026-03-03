@@ -68,6 +68,8 @@ export function buildMediaMap(
           height: m.height,
           position: m.position,
           mimeType: m.mimeType,
+          originalName: m.originalName,
+          size: m.size,
         };
       }),
     );

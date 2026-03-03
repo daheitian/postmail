@@ -31,8 +31,11 @@ postRoutes.get("/:id", async (c) => {
     return c.notFound();
   }
 
-  // Batch load media attachments
-  const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
+  // Batch load media and text attachments
+  const [rawMediaMap, textAttachments] = await Promise.all([
+    c.var.services.media.getByPostIds([post.id]),
+    c.var.services.postTexts.getByPostId(post.id),
+  ]);
   const mediaCtx = createMediaContext(c.var.appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -43,7 +46,11 @@ postRoutes.get("/:id", async (c) => {
 
   // Transform to View Model
   const postView = toPostView(
-    { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
+    {
+      ...post,
+      mediaAttachments: mediaMap.get(post.id) ?? [],
+      textAttachments,
+    },
     mediaCtx,
   );
 

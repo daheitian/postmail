@@ -35,9 +35,13 @@ export const PostPage: FC<PostPageProps> = ({ post }) => {
         />
       )}
 
-      {post.media.length > 0 && (
+      {(post.media.length > 0 ||
+        (post.textAttachments && post.textAttachments.length > 0)) && (
         <div class="mt-4" data-post-media>
-          <MediaGallery attachments={post.media} />
+          <MediaGallery
+            attachments={post.media}
+            textAttachments={post.textAttachments}
+          />
         </div>
       )}
 

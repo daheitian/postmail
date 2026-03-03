@@ -73,10 +73,23 @@ export interface MediaAttachment {
   height: number | null;
   position: number;
   mimeType: string;
+  originalName: string;
+  size: number;
+}
+
+export interface PostText {
+  id: number;
+  postId: number;
+  bodyJson: string;
+  bodyHtml: string;
+  summary: string;
+  position: number;
+  createdAt: number;
 }
 
 export interface PostWithMedia extends Post {
   mediaAttachments: MediaAttachment[];
+  textAttachments?: PostText[];
 }
 
 export interface Collection {

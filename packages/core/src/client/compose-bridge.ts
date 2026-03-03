@@ -180,6 +180,14 @@ document.addEventListener("jant:files-selected", (e: Event) => {
 
 /** Build the JSON body for both create and update requests */
 function buildPostBody(detail: ComposeSubmitDetail) {
+  // Convert attached texts: filter out empty items and stringify bodyJson
+  const attachedTexts = detail.attachedTexts
+    .filter((t) => t.bodyJson !== null)
+    .map((t) => ({
+      bodyJson: JSON.stringify(t.bodyJson),
+      summary: t.summary,
+    }));
+
   return {
     format: detail.format,
     title: detail.title || undefined,
@@ -193,6 +201,7 @@ function buildPostBody(detail: ComposeSubmitDetail) {
     mediaIds: detail.mediaIds.length > 0 ? detail.mediaIds : undefined,
     mediaAlts:
       Object.keys(detail.mediaAlts).length > 0 ? detail.mediaAlts : undefined,
+    attachedTexts: attachedTexts.length > 0 ? attachedTexts : undefined,
   };
 }
 

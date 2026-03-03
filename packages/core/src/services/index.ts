@@ -21,6 +21,7 @@ import {
   createPathRegistryService,
   type PathRegistryService,
 } from "./path-registry.js";
+import { createPostTextService, type PostTextService } from "./post-text.js";
 
 export interface Services {
   settings: SettingsService;
@@ -33,6 +34,7 @@ export interface Services {
   navItems: NavItemService;
   auth: AuthService;
   pathRegistry: PathRegistryService;
+  postTexts: PostTextService;
 }
 
 export function createServices(db: Database, d1: D1Database): Services {
@@ -49,6 +51,7 @@ export function createServices(db: Database, d1: D1Database): Services {
     search: createSearchService(d1),
     navItems: createNavItemService(db),
     auth: createAuthService(db, settings),
+    postTexts: createPostTextService(db),
   };
 }
 
@@ -62,3 +65,4 @@ export type { SearchService, SearchResult, SearchOptions } from "./search.js";
 export type { NavItemService } from "./navigation.js";
 export type { AuthService } from "./auth.js";
 export type { PathRegistryService, OwnerType } from "./path-registry.js";
+export type { PostTextService } from "./post-text.js";

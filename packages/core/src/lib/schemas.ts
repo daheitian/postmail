@@ -87,6 +87,15 @@ export const CreatePostSchema = z.object({
   publishedAt: z.number().int().positive().optional(),
   mediaIds: z.array(z.string()).max(MAX_MEDIA_ATTACHMENTS).optional(),
   mediaAlts: z.record(z.string(), z.string()).optional(),
+  attachedTexts: z
+    .array(
+      z.object({
+        bodyJson: z.string().min(1),
+        summary: z.string(),
+      }),
+    )
+    .max(10)
+    .optional(),
 });
 
 /**

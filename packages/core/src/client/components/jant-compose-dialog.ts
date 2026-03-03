@@ -183,6 +183,12 @@ export class JantComposeDialog extends LitElement {
           mimeType: m.mimeType,
         }),
       ),
+      textAttachments: (post.textAttachments ?? []).map(
+        (t: { bodyJson: string; summary: string }) => ({
+          bodyJson: t.bodyJson,
+          summary: t.summary,
+        }),
+      ),
     });
 
     this.closest("dialog")?.showModal();
@@ -615,6 +621,12 @@ export class JantComposeDialog extends LitElement {
           previewUrl: m.previewUrl,
           alt: m.alt,
           mimeType: m.mimeType,
+        }),
+      ),
+      textAttachments: (post.textAttachments ?? []).map(
+        (t: { bodyJson: string; summary: string }) => ({
+          bodyJson: t.bodyJson,
+          summary: t.summary,
         }),
       ),
     });

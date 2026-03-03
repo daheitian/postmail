@@ -357,6 +357,10 @@ export class JantComposeEditor extends LitElement {
       alt?: string;
       mimeType: string;
     }>;
+    textAttachments?: Array<{
+      bodyJson: string;
+      summary: string;
+    }>;
   }) {
     if (data.title) this._title = data.title;
     if (data.url) this._url = data.url;
@@ -385,7 +389,7 @@ export class JantComposeEditor extends LitElement {
 
     // Convert media attachments to ComposeAttachment[] with status "done"
     if (data.media?.length) {
-      this._attachments = data.media.map((m) => ({
+      const attachments = data.media.map((m) => ({
         clientId: crypto.randomUUID(),
         file: new File([], "existing", { type: m.mimeType }),
         previewUrl: m.previewUrl,
@@ -395,6 +399,31 @@ export class JantComposeEditor extends LitElement {
         alt: m.alt ?? "",
         error: null,
       }));
+      this._attachments = attachments;
+      this._attachmentOrder = attachments.map((a) => a.clientId);
+    }
+
+    // Restore attached texts from server data
+    if (data.textAttachments?.length) {
+      const texts: AttachedTextItem[] = data.textAttachments.map((t) => {
+        let parsed: JSONContent | null = null;
+        try {
+          parsed = JSON.parse(t.bodyJson) as JSONContent;
+        } catch {
+          // Invalid JSON — leave as null
+        }
+        return {
+          clientId: crypto.randomUUID(),
+          bodyJson: parsed,
+          summary: t.summary,
+        };
+      });
+      this._attachedTexts = texts;
+      // Add text clientIds to attachment order after media
+      this._attachmentOrder = [
+        ...this._attachmentOrder,
+        ...texts.map((t) => t.clientId),
+      ];
     }
   }
 

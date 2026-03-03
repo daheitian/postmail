@@ -60,6 +60,9 @@ export interface PostView {
   replyToId?: number;
   threadRootId?: number;
 
+  // Attached texts
+  textAttachments?: AttachedTextView[];
+
   // Raw content (for forms/editing, not typical theme use)
   body?: string;
 }
@@ -94,6 +97,16 @@ export interface MediaView {
   size?: number;
   blurhash?: string;
   posterUrl?: string;
+  originalName?: string;
+}
+
+/**
+ * Render-ready attached text for theme components.
+ */
+export interface AttachedTextView {
+  id: number;
+  bodyHtml: string;
+  summary: string;
 }
 
 /**

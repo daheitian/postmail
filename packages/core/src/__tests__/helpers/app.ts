@@ -18,6 +18,7 @@ import { createSearchService } from "../../services/search.js";
 import { createNavItemService } from "../../services/navigation.js";
 import { createAuthService } from "../../services/auth.js";
 import { createPathRegistryService } from "../../services/path-registry.js";
+import { createPostTextService } from "../../services/post-text.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
@@ -58,6 +59,7 @@ export function createTestApp(options: TestAppOptions = {}) {
     search: createSearchService(mockD1),
     navItems: createNavItemService(db),
     auth: createAuthService(db, settingsService),
+    postTexts: createPostTextService(db),
   };
 
   const app = new Hono<Env>();

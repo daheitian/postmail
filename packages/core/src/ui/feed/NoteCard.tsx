@@ -41,11 +41,16 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
           dangerouslySetInnerHTML={{ __html: displayHtml }}
         />
       )}
-      {!compact && post.media.length > 0 && (
-        <div class="mt-3" data-post-media>
-          <MediaGallery attachments={post.media} />
-        </div>
-      )}
+      {!compact &&
+        (post.media.length > 0 ||
+          (post.textAttachments && post.textAttachments.length > 0)) && (
+          <div class="mt-3" data-post-media>
+            <MediaGallery
+              attachments={post.media}
+              textAttachments={post.textAttachments}
+            />
+          </div>
+        )}
       {!compact && isArticle && post.summaryHasMore && (
         <a
           href={`${post.permalink}#continue`}

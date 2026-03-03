@@ -18,6 +18,7 @@ import type {
   SearchResult,
   SearchResultView,
   ArchiveGroup,
+  AttachedTextView,
   Format,
   Status,
   NavItemType,
@@ -177,9 +178,21 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     altText: m.alt ?? undefined,
     width: m.width ?? undefined,
     height: m.height ?? undefined,
+    size: m.size ?? undefined,
     blurhash: m.blurhash ?? undefined,
     posterUrl: m.posterUrl ?? undefined,
+    originalName: m.originalName ?? undefined,
   }));
+
+  // Convert text attachments
+  const textAttachments: AttachedTextView[] | undefined =
+    post.textAttachments && post.textAttachments.length > 0
+      ? post.textAttachments.map((t) => ({
+          id: t.id,
+          bodyHtml: t.bodyHtml,
+          summary: t.summary,
+        }))
+      : undefined;
 
   return {
     id: post.id,
@@ -204,6 +217,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     publishedAtRelative: formatRelativeTime(post.publishedAt),
     updatedAt: toISOString(post.updatedAt),
     media,
+    textAttachments,
     replyToId: post.replyToId ?? undefined,
     threadRootId: post.threadId ?? undefined,
     body: post.body ?? undefined,

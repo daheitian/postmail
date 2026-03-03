@@ -68,9 +68,12 @@ export async function assembleTimeline(
     return { items: [], currentPage: page, totalPages };
   }
 
-  // Batch load media attachments
+  // Batch load media and text attachments
   const postIds = posts.map((p) => p.id);
-  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
+  const [rawMediaMap, textAttachmentMap] = await Promise.all([
+    c.var.services.media.getByPostIds(postIds),
+    c.var.services.postTexts.getByPostIds(postIds),
+  ]);
   const mediaCtx = createMediaContext(c.var.appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -109,7 +112,11 @@ export async function assembleTimeline(
   // Assemble timeline items with View Models
   const items: TimelineItemView[] = posts.map((post) => {
     const postView = toPostView(
-      { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
+      {
+        ...post,
+        mediaAttachments: mediaMap.get(post.id) ?? [],
+        textAttachments: textAttachmentMap.get(post.id),
+      },
       mediaCtx,
     );
 
