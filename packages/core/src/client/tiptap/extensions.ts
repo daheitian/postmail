@@ -7,6 +7,7 @@
 import type { Extensions } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import { Markdown } from "tiptap-markdown";
 import {
   Table,
   TableRow,
@@ -41,6 +42,10 @@ export function createEditorExtensions(
     }),
     Placeholder.configure({
       placeholder: options.placeholder ?? "Write something…",
+    }),
+    Markdown.configure({
+      transformPastedText: true,
+      transformCopiedText: false,
     }),
     Table.configure({
       resizable: false,

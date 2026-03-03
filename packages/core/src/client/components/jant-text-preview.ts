@@ -59,6 +59,8 @@ export class JantTextPreview extends LitElement {
     this._loading = true;
     this._open = true;
 
+    document.body.style.overflow = "hidden";
+
     await this.updateComplete;
     this.querySelector<HTMLDialogElement>(".text-preview-dialog")?.showModal();
 
@@ -85,6 +87,7 @@ export class JantTextPreview extends LitElement {
 
   #close() {
     this.querySelector<HTMLDialogElement>(".text-preview-dialog")?.close();
+    document.body.style.overflow = "";
     this._open = false;
     this._html = "";
   }

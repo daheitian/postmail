@@ -2084,6 +2084,47 @@
     color: var(--site-text-secondary);
   }
 
+  /* --- Text attachment card (icon + excerpt) ------------------------------ */
+
+  .media-text-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    text-decoration: none;
+    color: var(--site-text-primary);
+    border-radius: var(--media-radius, 0.5rem);
+    background-color: var(--site-nav-hover-bg);
+    border: 1px solid var(--site-divider);
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+
+  .media-text-card:hover {
+    filter: brightness(0.95);
+  }
+
+  .media-text-card-icon {
+    flex-shrink: 0;
+    color: var(--site-text-link);
+  }
+
+  .media-text-card-excerpt {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    color: var(--site-text-secondary);
+    text-align: center;
+    word-break: break-word;
+  }
+
   /* --- Lightbox video ----------------------------------------------------- */
 
   .media-lightbox-video {
@@ -2132,11 +2173,11 @@
     position: relative;
     background-color: var(--color-background);
     border-radius: var(--radius-lg);
-    max-width: min(640px, 90vw);
+    width: min(560px, 88vw);
+    aspect-ratio: 3 / 4;
     max-height: 80vh;
-    width: 100%;
     overflow-y: auto;
-    padding: var(--space-lg);
+    padding: var(--space-xl);
     box-shadow: var(--shadow-lg);
   }
 
@@ -2171,14 +2212,16 @@
   }
 
   .text-preview-body {
+    padding-top: var(--space-sm);
     line-height: 1.7;
     color: var(--color-foreground);
   }
 
   @media (max-width: 640px) {
     .text-preview-content {
-      max-width: 100vw;
-      max-height: 90vh;
+      width: 100vw;
+      aspect-ratio: auto;
+      max-height: 85vh;
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       margin-top: auto;
     }

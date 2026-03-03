@@ -41,11 +41,11 @@ const DocumentIcon = () => (
   </svg>
 );
 
-/** Text icon SVG (file with text lines) */
-const TextIcon = () => (
+/** Text icon SVG — horizontal lines representing text content */
+const TextIcon = ({ size = 24 }: { size?: number }) => (
   <svg
-    width="24"
-    height="24"
+    width={`${size}`}
+    height={`${size}`}
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -132,10 +132,14 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
     firstItem !== undefined &&
     (firstItem._kind === "image" || firstItem._kind === "video");
 
+  // When text/document attachments are mixed with visuals, use a compact row
+  const hasNonVisual = texts.length > 0 || documents.length > 0;
+  const COMPACT_HEIGHT = 160;
+
   // Row height adapts to the first visual item's aspect ratio
-  const ROW_MIN = 240;
-  const ROW_MAX = 400;
-  let rowHeight = 320;
+  const ROW_MIN = hasNonVisual ? 140 : 240;
+  const ROW_MAX = hasNonVisual ? 200 : 400;
+  let rowHeight = hasNonVisual ? COMPACT_HEIGHT : 320;
   if (!singleVisual && galleryItems.length > 1) {
     const firstVisual = galleryItems.find(
       (item) => item._kind === "image" || item._kind === "video",
@@ -151,9 +155,9 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
     }
   }
 
-  // Document/text card width: 3:4 portrait aspect ratio
-  const CARD_RATIO = 3 / 4;
-  const cardWidth = Math.round(rowHeight * CARD_RATIO);
+  // Document card: 3:4 portrait, same height as row
+  const DOC_RATIO = 3 / 4;
+  const docCardWidth = Math.round(rowHeight * DOC_RATIO);
 
   return (
     <>
@@ -272,7 +276,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                   rel="noopener noreferrer"
                   class="media-gallery-card shrink-0 snap-start"
                   style={{
-                    width: `${cardWidth}px`,
+                    width: `${docCardWidth}px`,
                     height: `${rowHeight}px`,
                   }}
                 >
@@ -293,26 +297,24 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
               );
             }
 
-            // Text card — item._kind === "text" after all other branches
+            // Text card — same height as row, compact tile
             return (
               <button
                 key={item.id}
                 type="button"
                 data-text-preview-id={item.id}
-                class="media-gallery-card shrink-0 snap-start"
+                class="media-text-card shrink-0 snap-start"
                 style={{
-                  width: `${cardWidth}px`,
+                  width: `${rowHeight}px`,
                   height: `${rowHeight}px`,
                 }}
               >
-                <div class="media-gallery-card-inner">
-                  <div class="media-gallery-card-icon">
-                    <TextIcon />
-                  </div>
-                  <span class="media-gallery-card-name">
-                    {item.summary || item.originalName || "Attached text"}
-                  </span>
+                <div class="media-text-card-icon">
+                  <TextIcon size={28} />
                 </div>
+                <span class="media-text-card-excerpt">
+                  {item.summary || item.originalName || "Attached text"}
+                </span>
               </button>
             );
           })}
