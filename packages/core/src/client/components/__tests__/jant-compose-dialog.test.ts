@@ -223,12 +223,14 @@ describe("JantComposeDialog", () => {
     el._format = "link";
     el._collectionIds = [1, 2];
     el._loading = true;
+    el._draftSourceId = "abc123";
 
     el.reset();
 
     expect(el._format).toBe("note");
     expect(el._collectionIds).toEqual([]);
     expect(el._loading).toBe(false);
+    expect(el._draftSourceId).toBeNull();
   });
 
   it("loading state disables submit button", async () => {
@@ -769,6 +771,220 @@ describe("JantComposeDialog", () => {
     expect(el._confirmPanelOpen).toBe(false);
     expect(el._format).toBe("note");
     expect(el._collectionIds).toEqual([]);
+  });
+
+  it("loaded draft shows format switcher and Post button, not edit mode", async () => {
+    const el = await createElement();
+
+    // Simulate what _loadDraft sets (without fetching)
+    el._draftSourceId = "draft123";
+    el._format = "note";
+    await el.updateComplete;
+
+    // Format switcher should be visible (not "Edit post" title)
+    expect(el.querySelector(".compose-segmented")).not.toBeNull();
+    expect(el.querySelector(".compose-dialog-title")).toBeNull();
+
+    // Button should say "Post", not "Done"
+    const postBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected post button",
+    );
+    expect(postBtn.textContent?.trim()).toBe("Post");
+  });
+
+  it("discard on loaded draft sends DELETE request", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    // Simulate loaded draft with content
+    el._draftSourceId = "draft456";
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Draft content" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(null, { status: 200 }));
+
+    el.requestClose();
+    await el.updateComplete;
+
+    // Click "Don't save" (discard)
+    const discardBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-confirm-discard"),
+      "expected discard button",
+    );
+    discardBtn.click();
+    await el.updateComplete;
+
+    expect(fetchSpy).toHaveBeenCalledWith("/api/posts/draft456", {
+      method: "DELETE",
+    });
+
+    fetchSpy.mockRestore();
+  });
+
+  it("submit from loaded draft includes draftSourceId as editPostId", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    el._draftSourceId = "draft789";
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Publish this draft" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected post button",
+    ).click();
+
+    expect(receivedDetail).not.toBeNull();
+    expect((receivedDetail as unknown as ComposeSubmitDetail).editPostId).toBe(
+      "draft789",
+    );
+    expect((receivedDetail as unknown as ComposeSubmitDetail).status).toBe(
+      "published",
+    );
+  });
+
+  it("draft button confirm save dispatches draft then opens drafts panel", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Save then browse" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ posts: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    // Click draft button → confirm panel
+    const draftBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-dialog-header-btn"),
+      "expected draft button",
+    );
+    draftBtn.click();
+    await el.updateComplete;
+    expect(el._confirmPanelOpen).toBe(true);
+
+    // Click "Save"
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-confirm-save"),
+      "expected save button",
+    ).click();
+    await el.updateComplete;
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    // Draft submitted
+    expect(receivedDetail).not.toBeNull();
+    expect((receivedDetail as unknown as ComposeSubmitDetail).status).toBe(
+      "draft",
+    );
+    // Drafts panel opened instead of dialog closing
+    expect(el._draftsPanelOpen).toBe(true);
+    expect(el._confirmPanelOpen).toBe(false);
+
+    fetchSpy.mockRestore();
+  });
+
+  it("draft button confirm discard opens drafts panel without saving", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Discard then browse" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ posts: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    let submitFired = false;
+    el.addEventListener("jant:compose-submit-deferred", () => {
+      submitFired = true;
+    });
+
+    // Click draft button → confirm panel
+    const draftBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-dialog-header-btn"),
+      "expected draft button",
+    );
+    draftBtn.click();
+    await el.updateComplete;
+
+    // Click "Don't save"
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-confirm-discard"),
+      "expected discard button",
+    ).click();
+    await el.updateComplete;
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    // No submit dispatched
+    expect(submitFired).toBe(false);
+    // Drafts panel opened
+    expect(el._draftsPanelOpen).toBe(true);
+    expect(el._confirmPanelOpen).toBe(false);
+
+    fetchSpy.mockRestore();
   });
 
   it("attachments detected as content for confirmation", async () => {

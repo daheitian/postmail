@@ -192,8 +192,20 @@ export class JantComposeEditor extends LitElement {
     }
   }
 
+  private _isEmptyDoc(json: JSONContent): boolean {
+    if (!json.content || json.content.length === 0) return true;
+    return json.content.every(
+      (node) =>
+        node.type === "paragraph" &&
+        (!node.content || node.content.length === 0),
+    );
+  }
+
   getData() {
-    const body = this._bodyJson ? JSON.stringify(this._bodyJson) : "";
+    const body =
+      this._bodyJson && !this._isEmptyDoc(this._bodyJson)
+        ? JSON.stringify(this._bodyJson)
+        : "";
     const shared = {
       rating: this._rating,
       attachedTexts: this._attachedTexts,

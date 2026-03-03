@@ -42,6 +42,7 @@ export class JantComposeDialog extends LitElement {
     _attachedTextIndex: { state: true },
     _confirmPanelOpen: { state: true },
     _editPostId: { state: true },
+    _draftSourceId: { state: true },
     _draftsPanelOpen: { state: true },
     _drafts: { state: true },
     _draftsLoading: { state: true },
@@ -65,6 +66,7 @@ export class JantComposeDialog extends LitElement {
   declare _attachedTextIndex: number;
   declare _confirmPanelOpen: boolean;
   declare _editPostId: string | null;
+  declare _draftSourceId: string | null;
   declare _draftsPanelOpen: boolean;
   declare _drafts: DraftItem[];
   declare _draftsLoading: boolean;
@@ -73,6 +75,7 @@ export class JantComposeDialog extends LitElement {
 
   private _attachedEditor: Editor | null = null;
   private _attachedTextSnapshot: JSONContent | null = null;
+  private _confirmForDrafts = false;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -97,6 +100,7 @@ export class JantComposeDialog extends LitElement {
     this._attachedTextIndex = 0;
     this._confirmPanelOpen = false;
     this._editPostId = null;
+    this._draftSourceId = null;
     this._draftsPanelOpen = false;
     this._drafts = [];
     this._draftsLoading = false;
@@ -122,11 +126,13 @@ export class JantComposeDialog extends LitElement {
     this._attachedTextIndex = 0;
     this._confirmPanelOpen = false;
     this._editPostId = null;
+    this._draftSourceId = null;
     this._draftsPanelOpen = false;
     this._drafts = [];
     this._draftsLoading = false;
     this._draftsError = null;
     this._draftMenuOpenId = null;
+    this._confirmForDrafts = false;
     this._destroyAttachedEditor();
     this._editor?.reset();
   }
@@ -208,10 +214,12 @@ export class JantComposeDialog extends LitElement {
     if (this._loading) return;
     if (this._confirmPanelOpen) {
       this._confirmPanelOpen = false;
+      this._confirmForDrafts = false;
       this.updateComplete.then(() => this._editor?.focusInput());
       return;
     }
     if (this._hasContent()) {
+      this._confirmForDrafts = false;
       this._confirmPanelOpen = true;
     } else {
       this._closeDialog();
@@ -219,10 +227,42 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _discardAndClose() {
+    if (this._draftSourceId) {
+      const sqid = this._draftSourceId;
+      fetch(`/api/posts/${sqid}`, { method: "DELETE" }).catch(() => {});
+      showToast(this.labels.draftDeleted);
+    }
     this._confirmPanelOpen = false;
     this._closeDialog();
     (document.activeElement as HTMLElement)?.blur();
     this.reset();
+  }
+
+  private _handleConfirmSave() {
+    if (this._confirmForDrafts) {
+      this._dispatchSubmit("draft");
+      this._confirmPanelOpen = false;
+      this.reset();
+      this._openDraftsPanel();
+    } else {
+      this._confirmPanelOpen = false;
+      this._submit("draft");
+    }
+  }
+
+  private _handleConfirmDiscard() {
+    if (this._confirmForDrafts) {
+      if (this._draftSourceId) {
+        const sqid = this._draftSourceId;
+        fetch(`/api/posts/${sqid}`, { method: "DELETE" }).catch(() => {});
+        showToast(this.labels.draftDeleted);
+      }
+      this._confirmPanelOpen = false;
+      this.reset();
+      this._openDraftsPanel();
+    } else {
+      this._discardAndClose();
+    }
   }
 
   private _buildSubmitDetail(
@@ -260,17 +300,17 @@ export class JantComposeDialog extends LitElement {
       mediaIds,
       mediaAlts,
       attachedTexts: editorData.attachedTexts,
-      editPostId: this._editPostId ?? undefined,
+      editPostId: this._editPostId ?? this._draftSourceId ?? undefined,
     };
   }
 
-  private _submit(status: "published" | "draft") {
-    if (this._loading) return;
+  private _dispatchSubmit(status: "published" | "draft"): boolean {
+    if (this._loading) return false;
     const editor = this._editor;
-    if (!editor) return;
+    if (!editor) return false;
 
     const detail = this._buildSubmitDetail(status);
-    if (!detail) return;
+    if (!detail) return false;
 
     const attachments = editor._attachments ?? [];
     const pendingAttachments = attachments.filter(
@@ -286,6 +326,11 @@ export class JantComposeDialog extends LitElement {
         detail: { ...detail, pendingAttachments },
       }),
     );
+    return true;
+  }
+
+  private _submit(status: "published" | "draft") {
+    if (!this._dispatchSubmit(status)) return;
     this._closeDialog();
     // Prevent browser from restoring focus to the trigger button
     (document.activeElement as HTMLElement)?.blur();
@@ -364,8 +409,7 @@ export class JantComposeDialog extends LitElement {
       }
     } else if (ke.key === "Enter" && this._confirmPanelOpen) {
       ke.preventDefault();
-      this._confirmPanelOpen = false;
-      this._submit("draft");
+      this._handleConfirmSave();
     } else if ((ke.metaKey || ke.ctrlKey) && ke.key === "Enter") {
       e.preventDefault();
       this._submit("published");
@@ -473,6 +517,7 @@ export class JantComposeDialog extends LitElement {
   private _handleDraftButtonClick() {
     if (this._loading) return;
     if (this._hasContent()) {
+      this._confirmForDrafts = true;
       this._confirmPanelOpen = true;
     } else {
       this._openDraftsPanel();
@@ -533,7 +578,7 @@ export class JantComposeDialog extends LitElement {
     if (!res.ok) return;
     const post = await res.json();
 
-    this._editPostId = sqid;
+    this._draftSourceId = sqid;
     this._format = post.format;
 
     if (post.collectionIds?.length) {
@@ -1122,17 +1167,14 @@ export class JantComposeDialog extends LitElement {
           <button
             type="button"
             class="compose-confirm-action compose-confirm-save"
-            @click=${() => {
-              this._confirmPanelOpen = false;
-              this._submit("draft");
-            }}
+            @click=${() => this._handleConfirmSave()}
           >
             ${this.labels.confirmCloseSave}
           </button>
           <button
             type="button"
             class="compose-confirm-action compose-confirm-discard"
-            @click=${() => this._discardAndClose()}
+            @click=${() => this._handleConfirmDiscard()}
           >
             ${this.labels.confirmCloseDiscard}
           </button>
