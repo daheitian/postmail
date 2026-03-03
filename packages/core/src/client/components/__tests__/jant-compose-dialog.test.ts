@@ -396,6 +396,7 @@ describe("JantComposeDialog", () => {
         error: null,
       },
     ];
+    editor._attachmentOrder = ["test-id-1"];
     await editor.updateComplete;
 
     // Thumbnail strip should be visible
@@ -436,6 +437,7 @@ describe("JantComposeDialog", () => {
         error: null,
       },
     ];
+    editor._attachmentOrder = ["test-id-1"];
     await editor.updateComplete;
 
     // Click remove button
@@ -474,6 +476,7 @@ describe("JantComposeDialog", () => {
         error: null,
       },
     ];
+    editor._attachmentOrder = ["test-id-1"];
     await editor.updateComplete;
 
     // Click ALT button

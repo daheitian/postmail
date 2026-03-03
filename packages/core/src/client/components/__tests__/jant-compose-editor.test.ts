@@ -253,6 +253,7 @@ describe("JantComposeEditor", () => {
           ],
         },
         summary: "Some attached text",
+        bodyHtml: "<p>Some attached text</p>",
       },
     ];
 
@@ -318,6 +319,7 @@ describe("JantComposeEditor", () => {
           ],
         },
         summary: "text",
+        bodyHtml: "<p>text</p>",
       },
     ];
 
@@ -345,6 +347,7 @@ describe("JantComposeEditor", () => {
           ],
         },
         summary: "Some content here",
+        bodyHtml: "<p>Some content here</p>",
       },
     ];
     el._attachmentOrder = ["t1"];

@@ -210,6 +210,7 @@ export class JantComposeEditor extends LitElement {
       rating: this._rating,
       attachedTexts: this._attachedTexts,
       attachments: this._attachments,
+      attachmentOrder: this._attachmentOrder,
     };
 
     switch (this.format) {
@@ -359,7 +360,9 @@ export class JantComposeEditor extends LitElement {
     }>;
     textAttachments?: Array<{
       bodyJson: string;
+      bodyHtml?: string;
       summary: string;
+      mediaId?: string;
     }>;
   }) {
     if (data.title) this._title = data.title;
@@ -415,7 +418,9 @@ export class JantComposeEditor extends LitElement {
         return {
           clientId: crypto.randomUUID(),
           bodyJson: parsed,
+          bodyHtml: t.bodyHtml ?? "",
           summary: t.summary,
+          mediaId: t.mediaId,
         };
       });
       this._attachedTexts = texts;
@@ -452,6 +457,7 @@ export class JantComposeEditor extends LitElement {
     const item: AttachedTextItem = {
       clientId: crypto.randomUUID(),
       bodyJson: null,
+      bodyHtml: "",
       summary: "",
     };
     this._attachedTexts = [...this._attachedTexts, item];
@@ -484,11 +490,20 @@ export class JantComposeEditor extends LitElement {
     }
   }
 
-  updateAttachedText(index: number, bodyJson: JSONContent | null) {
+  updateAttachedText(
+    index: number,
+    bodyJson: JSONContent | null,
+    bodyHtml?: string,
+  ) {
     const plainText = this._extractPlainText(bodyJson);
     this._attachedTexts = this._attachedTexts.map((item, i) =>
       i === index
-        ? { ...item, bodyJson, summary: this._computeSummary(plainText) }
+        ? {
+            ...item,
+            bodyJson,
+            bodyHtml: bodyHtml ?? "",
+            summary: this._computeSummary(plainText),
+          }
         : item,
     );
   }

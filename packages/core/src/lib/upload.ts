@@ -34,12 +34,20 @@ const AUDIO_MIME_TYPES = [
 /** MIME types allowed for upload — documents */
 const DOCUMENT_MIME_TYPES = ["application/pdf"] as const;
 
+/** MIME types allowed for upload — text */
+const TEXT_MIME_TYPES = [
+  "text/plain",
+  "text/markdown",
+  "text/x-tiptap+json",
+] as const;
+
 /** All allowed MIME types */
 const ALLOWED_UPLOAD_TYPES = [
   ...IMAGE_MIME_TYPES,
   ...VIDEO_MIME_TYPES,
   ...AUDIO_MIME_TYPES,
   ...DOCUMENT_MIME_TYPES,
+  ...TEXT_MIME_TYPES,
 ] as const;
 
 /**
@@ -54,7 +62,7 @@ export const UPLOAD_ACCEPT = (ALLOWED_UPLOAD_TYPES as readonly string[]).join(
   ",",
 );
 
-export type MediaCategory = "image" | "video" | "audio" | "document";
+export type MediaCategory = "image" | "video" | "audio" | "document" | "text";
 
 /**
  * Returns the media category for a given MIME type.
@@ -64,7 +72,7 @@ export type MediaCategory = "image" | "video" | "audio" | "document";
  * @example
  * ```ts
  * getMediaCategory("video/mp4"); // "video"
- * getMediaCategory("text/plain"); // null
+ * getMediaCategory("text/plain"); // "text"
  * ```
  */
 export function getMediaCategory(mimeType: string): MediaCategory | null {
@@ -72,6 +80,12 @@ export function getMediaCategory(mimeType: string): MediaCategory | null {
   if (mimeType.startsWith("video/")) return "video";
   if (mimeType.startsWith("audio/")) return "audio";
   if (mimeType === "application/pdf") return "document";
+  if (
+    mimeType === "text/plain" ||
+    mimeType === "text/markdown" ||
+    mimeType === "text/x-tiptap+json"
+  )
+    return "text";
   return null;
 }
 

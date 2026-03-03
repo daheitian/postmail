@@ -161,6 +161,47 @@ export class JantComposeDialog extends LitElement {
     // Wait for Lit to render with the new format before populating editor
     await this.updateComplete;
 
+    // Separate text media items from other media attachments
+    const allMedia = post.mediaAttachments ?? [];
+    const nonTextMedia = allMedia.filter(
+      (m: { mimeType: string }) => !m.mimeType.startsWith("text/"),
+    );
+    const textMedia = allMedia.filter(
+      (m: { mimeType: string }) => m.mimeType === "text/x-tiptap+json",
+    );
+
+    // Fetch text content for TipTap text media items (stored as { json, html } envelope)
+    const textAttachments = await Promise.all(
+      textMedia.map(
+        async (m: { id: string; url: string; summary?: string }) => {
+          try {
+            const textRes = await fetch(`/api/media/${m.id}/content`);
+            if (textRes.ok) {
+              const raw = await textRes.text();
+              const envelope = JSON.parse(raw) as {
+                json?: unknown;
+                html?: string;
+              };
+              return {
+                bodyJson: JSON.stringify(envelope.json ?? {}),
+                bodyHtml: envelope.html ?? "",
+                summary: m.summary ?? "",
+                mediaId: m.id,
+              };
+            }
+          } catch {
+            // Fetch failed — skip
+          }
+          return {
+            bodyJson: "{}",
+            bodyHtml: "",
+            summary: m.summary ?? "",
+            mediaId: m.id,
+          };
+        },
+      ),
+    );
+
     this._editor?.populate({
       format: post.format,
       title: post.title ?? undefined,
@@ -170,7 +211,7 @@ export class JantComposeDialog extends LitElement {
       quoteAuthor:
         post.format === "quote" ? (post.title ?? undefined) : undefined,
       rating: post.rating ?? undefined,
-      media: (post.mediaAttachments ?? []).map(
+      media: nonTextMedia.map(
         (m: {
           id: string;
           previewUrl: string;
@@ -183,12 +224,7 @@ export class JantComposeDialog extends LitElement {
           mimeType: m.mimeType,
         }),
       ),
-      textAttachments: (post.textAttachments ?? []).map(
-        (t: { bodyJson: string; summary: string }) => ({
-          bodyJson: t.bodyJson,
-          summary: t.summary,
-        }),
-      ),
+      textAttachments,
     });
 
     this.closest("dialog")?.showModal();
@@ -299,6 +335,15 @@ export class JantComposeDialog extends LitElement {
       }
     }
 
+    // Capture clientId → mediaId for all done attachments now,
+    // because the editor will be reset before the deferred handler runs
+    const mediaClientMap: Record<string, string> = {};
+    for (const a of attachments) {
+      if (a.mediaId) {
+        mediaClientMap[a.clientId] = a.mediaId;
+      }
+    }
+
     return {
       format: this._format,
       title: editorData.title,
@@ -312,6 +357,8 @@ export class JantComposeDialog extends LitElement {
       mediaIds,
       mediaAlts,
       attachedTexts: editorData.attachedTexts,
+      attachmentOrder: editorData.attachmentOrder ?? [],
+      mediaClientMap,
       editPostId: this._editPostId ?? this._draftSourceId ?? undefined,
     };
   }
@@ -510,7 +557,8 @@ export class JantComposeDialog extends LitElement {
   private _doneAttachedPanel() {
     if (this._attachedEditor) {
       const json = this._attachedEditor.getJSON();
-      this._editor?.updateAttachedText(this._attachedTextIndex, json);
+      const html = this._attachedEditor.getHTML();
+      this._editor?.updateAttachedText(this._attachedTextIndex, json, html);
     }
     this._destroyAttachedEditor();
     this._attachedPanelOpen = false;
@@ -601,6 +649,47 @@ export class JantComposeDialog extends LitElement {
 
     await this.updateComplete;
 
+    // Separate text media items from other media attachments
+    const allMedia = post.mediaAttachments ?? [];
+    const nonTextMedia = allMedia.filter(
+      (m: { mimeType: string }) => !m.mimeType.startsWith("text/"),
+    );
+    const textMedia = allMedia.filter(
+      (m: { mimeType: string }) => m.mimeType === "text/x-tiptap+json",
+    );
+
+    // Fetch text content for TipTap text media items (stored as { json, html } envelope)
+    const textAttachments = await Promise.all(
+      textMedia.map(
+        async (m: { id: string; url: string; summary?: string }) => {
+          try {
+            const textRes = await fetch(`/api/media/${m.id}/content`);
+            if (textRes.ok) {
+              const raw = await textRes.text();
+              const envelope = JSON.parse(raw) as {
+                json?: unknown;
+                html?: string;
+              };
+              return {
+                bodyJson: JSON.stringify(envelope.json ?? {}),
+                bodyHtml: envelope.html ?? "",
+                summary: m.summary ?? "",
+                mediaId: m.id,
+              };
+            }
+          } catch {
+            // Fetch failed — skip
+          }
+          return {
+            bodyJson: "{}",
+            bodyHtml: "",
+            summary: m.summary ?? "",
+            mediaId: m.id,
+          };
+        },
+      ),
+    );
+
     this._editor?.populate({
       format: post.format,
       title: post.title ?? undefined,
@@ -610,7 +699,7 @@ export class JantComposeDialog extends LitElement {
       quoteAuthor:
         post.format === "quote" ? (post.title ?? undefined) : undefined,
       rating: post.rating ?? undefined,
-      media: (post.mediaAttachments ?? []).map(
+      media: nonTextMedia.map(
         (m: {
           id: string;
           previewUrl: string;
@@ -623,12 +712,7 @@ export class JantComposeDialog extends LitElement {
           mimeType: m.mimeType,
         }),
       ),
-      textAttachments: (post.textAttachments ?? []).map(
-        (t: { bodyJson: string; summary: string }) => ({
-          bodyJson: t.bodyJson,
-          summary: t.summary,
-        }),
-      ),
+      textAttachments,
     });
 
     globalThis.requestAnimationFrame(() => this._editor?.focusInput());
@@ -939,6 +1023,7 @@ export class JantComposeDialog extends LitElement {
 
   private _renderCollectionSelector() {
     const collections = this.collections ?? [];
+    if (collections.length === 0) return html`<div class="flex-1"></div>`;
     const search = this._collectionSearch.toLowerCase();
     const filtered = search
       ? collections.filter((c) => c.title.toLowerCase().includes(search))

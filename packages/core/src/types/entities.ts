@@ -59,7 +59,9 @@ export interface Media {
   position: number;
   blurhash: string | null;
   posterKey: string | null;
+  summary: string | null;
   createdAt: number;
+  updatedAt: number;
 }
 
 export interface MediaAttachment {
@@ -75,21 +77,11 @@ export interface MediaAttachment {
   mimeType: string;
   originalName: string;
   size: number;
-}
-
-export interface PostText {
-  id: number;
-  postId: number;
-  bodyJson: string;
-  bodyHtml: string;
-  summary: string;
-  position: number;
-  createdAt: number;
+  summary: string | null;
 }
 
 export interface PostWithMedia extends Post {
   mediaAttachments: MediaAttachment[];
-  textAttachments?: PostText[];
 }
 
 export interface Collection {

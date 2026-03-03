@@ -68,12 +68,9 @@ export async function assembleTimeline(
     return { items: [], currentPage: page, totalPages };
   }
 
-  // Batch load media and text attachments
+  // Batch load media
   const postIds = posts.map((p) => p.id);
-  const [rawMediaMap, textAttachmentMap] = await Promise.all([
-    c.var.services.media.getByPostIds(postIds),
-    c.var.services.postTexts.getByPostIds(postIds),
-  ]);
+  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
   const mediaCtx = createMediaContext(c.var.appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -115,7 +112,6 @@ export async function assembleTimeline(
       {
         ...post,
         mediaAttachments: mediaMap.get(post.id) ?? [],
-        textAttachments: textAttachmentMap.get(post.id),
       },
       mediaCtx,
     );

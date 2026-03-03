@@ -81,23 +81,9 @@ export const media = sqliteTable("media", {
   position: integer("position").notNull().default(0),
   blurhash: text("blurhash"),
   posterKey: text("poster_key"),
+  summary: text("summary"),
   createdAt: integer("created_at").notNull(),
-});
-
-// =============================================================================
-// Post Texts (attached text content)
-// =============================================================================
-
-export const postTexts = sqliteTable("post_texts", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  postId: integer("post_id")
-    .notNull()
-    .references(() => posts.id, { onDelete: "cascade" }),
-  bodyJson: text("body_json").notNull(),
-  bodyHtml: text("body_html").notNull(),
-  summary: text("summary").notNull(),
-  position: integer("position").notNull().default(0),
-  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull().default(0),
 });
 
 // =============================================================================

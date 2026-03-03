@@ -38,6 +38,7 @@ Non-negotiable regardless of context:
 
 - **No DB in routes**: routes must never contain direct DB calls, raw SQL, or import DB drivers. All data access goes through `src/services/`.
 - **No business logic in routes**: routes must not orchestrate multi-service operations, coordinate side effects, or duplicate logic that belongs in a service. If two routes would need the same logic, it must live in a service method.
+- **Migrations are append-only and generated**: never edit or replace an existing migration file in `src/db/migrations/`. Applied migrations are tracked by filename — changing their content causes drift between the migration history and the actual database state, breaking local and production environments. Always create a new migration file for schema changes, even if the previous migration was recently added. For example, to undo migration `0016`, create `0017` with the reverse DDL rather than rewriting `0016`. Never hand-write migration SQL — always update the Drizzle schema in `src/db/schema.ts` first, then run `drizzle-kit generate` (via `mise run db-generate`) to produce the migration file. Hand-written SQL risks diverging from the schema definition and missing edge cases the tooling handles automatically.
 - **Relative imports only**: no `@/` path aliases anywhere in the codebase.
 - **Data attributes with care**: `data-page`, `data-post`, `data-format`, etc. are consumed by themes and external scripts. Design them thoughtfully and update all references when changing.
 

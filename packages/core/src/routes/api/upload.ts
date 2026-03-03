@@ -202,6 +202,22 @@ uploadApiRoutes.post("/", async (c) => {
       });
     }
 
+    // Read optional summary (provided for text attachments)
+    let summary = (formData.get("summary") as string) || undefined;
+
+    // Auto-extract summary for plain text and markdown uploads
+    if (
+      !summary &&
+      (file.type === "text/plain" || file.type === "text/markdown")
+    ) {
+      try {
+        const textContent = await file.text();
+        summary = textContent.slice(0, 100).trim() || undefined;
+      } catch {
+        // Ignore — summary is optional
+      }
+    }
+
     // Save to database
     const media = await c.var.services.media.create({
       id,
@@ -216,6 +232,7 @@ uploadApiRoutes.post("/", async (c) => {
       blurhash:
         blurhashRaw && blurhashRaw.length < 200 ? blurhashRaw : undefined,
       posterKey,
+      summary,
     });
 
     // SSE response for Datastar

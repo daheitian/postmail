@@ -130,6 +130,34 @@ export function createApp(): App {
   // Health check
   app.get("/health", (c) => c.json({ status: "ok" }));
 
+  // Fetch text media content by ID (same-origin proxy to avoid CORS with CDN URLs)
+  app.get("/api/media/:id/content", async (c) => {
+    const media = await c.var.services.media.getById(c.req.param("id"));
+    if (!media) return c.notFound();
+
+    const storage = c.var.storage;
+    if (!storage) return c.notFound();
+
+    const object = await storage.get(media.storageKey);
+    if (!object) return c.notFound();
+
+    const headers = new Headers();
+    headers.set(
+      "Content-Type",
+      object.contentType || "application/octet-stream",
+    );
+    // Use updatedAt as ETag so browsers can cache but revalidate on change
+    const etag = `"${media.updatedAt}"`;
+    headers.set("Cache-Control", "public, no-cache");
+    headers.set("ETag", etag);
+
+    if (c.req.header("If-None-Match") === etag) {
+      return new Response(null, { status: 304, headers });
+    }
+
+    return new Response(object.body, { headers });
+  });
+
   // Media files from storage (path matches storage key: media/YYYY/MM/uuid.ext)
   app.get("/media/*", async (c) => {
     const storage = c.var.storage;

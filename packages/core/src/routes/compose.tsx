@@ -57,10 +57,7 @@ async function buildTimelineCard(
   let postView;
 
   if (mediaIds && mediaIds.length > 0) {
-    const [rawMediaMap, textAttachments] = await Promise.all([
-      c.var.services.media.getByPostIds([post.id]),
-      c.var.services.postTexts.getByPostId(post.id),
-    ]);
+    const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
     const mediaMap = buildMediaMap(
       rawMediaMap,
       mediaCtx.r2PublicUrl,
@@ -71,17 +68,11 @@ async function buildTimelineCard(
       {
         ...post,
         mediaAttachments: mediaMap.get(post.id) ?? [],
-        textAttachments,
       },
       mediaCtx,
     );
   } else {
-    // Still load text attachments even without media
-    const textAttachments = await c.var.services.postTexts.getByPostId(post.id);
-    postView = toPostView(
-      { ...post, mediaAttachments: [], textAttachments },
-      mediaCtx,
-    );
+    postView = toPostView({ ...post, mediaAttachments: [] }, mediaCtx);
   }
 
   return (
@@ -163,11 +154,6 @@ composeRoutes.post("/", async (c) => {
         altEntries.map(([id, alt]) => c.var.services.media.updateAlt(id, alt)),
       );
     }
-  }
-
-  // Save attached texts if provided
-  if (data.attachedTexts && data.attachedTexts.length > 0) {
-    await c.var.services.postTexts.replaceForPost(post.id, data.attachedTexts);
   }
 
   const isDraft = (data.status ?? "published") === "draft";

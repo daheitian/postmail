@@ -8,13 +8,12 @@
  */
 
 import type { FC } from "hono/jsx";
-import type { MediaView, AttachedTextView } from "../../types.js";
+import type { MediaView } from "../../types.js";
 import { getMediaCategory } from "../../lib/upload.js";
 import { blurhashToDataUrl } from "../../lib/blurhash-placeholder.js";
 
 export interface MediaGalleryProps {
   attachments: MediaView[];
-  textAttachments?: AttachedTextView[];
 }
 
 function formatSize(bytes: number): string {
@@ -62,12 +61,8 @@ const TextIcon = () => (
   </svg>
 );
 
-export const MediaGallery: FC<MediaGalleryProps> = ({
-  attachments,
-  textAttachments,
-}) => {
-  const hasTextAttachments = textAttachments && textAttachments.length > 0;
-  if (attachments.length === 0 && !hasTextAttachments) return null;
+export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
+  if (attachments.length === 0) return null;
 
   const images = attachments.filter(
     (a) => getMediaCategory(a.mimeType) === "image",
@@ -80,6 +75,9 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
   );
   const documents = attachments.filter(
     (a) => getMediaCategory(a.mimeType) === "document",
+  );
+  const texts = attachments.filter(
+    (a) => getMediaCategory(a.mimeType) === "text",
   );
 
   // Build lightbox group from images + videos (documents/texts don't use lightbox)
@@ -104,7 +102,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
   type GalleryItem =
     | (MediaView & { _kind: "image" | "video"; _lbIdx: number })
     | (MediaView & { _kind: "document" })
-    | { _kind: "text"; _text: AttachedTextView };
+    | (MediaView & { _kind: "text" });
 
   const galleryItems: GalleryItem[] = [
     ...images.map(
@@ -122,11 +120,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
     ...documents.map(
       (d) => ({ ...d, _kind: "document" as const }) as GalleryItem,
     ),
-    ...(hasTextAttachments
-      ? textAttachments.map(
-          (t) => ({ _kind: "text" as const, _text: t }) as GalleryItem,
-        )
-      : []),
+    ...texts.map((t) => ({ ...t, _kind: "text" as const }) as GalleryItem),
   ];
 
   const hasGalleryItems = galleryItems.length > 0;
@@ -300,11 +294,11 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
             }
 
             // Text card — item._kind === "text" after all other branches
-            const text = (item as { _kind: "text"; _text: AttachedTextView })
-              ._text;
             return (
-              <div
-                key={`text-${text.id}`}
+              <button
+                key={item.id}
+                type="button"
+                data-text-preview-id={item.id}
                 class="media-gallery-card shrink-0 snap-start"
                 style={{
                   width: `${cardWidth}px`,
@@ -316,10 +310,10 @@ export const MediaGallery: FC<MediaGalleryProps> = ({
                     <TextIcon />
                   </div>
                   <span class="media-gallery-card-name">
-                    {text.summary || "Attached text"}
+                    {item.summary || item.originalName || "Attached text"}
                   </span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>

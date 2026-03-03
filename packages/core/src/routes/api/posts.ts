@@ -62,6 +62,7 @@ function toMediaAttachment(
     height: m.height,
     position: m.position,
     mimeType: m.mimeType,
+    summary: m.summary,
   };
 }
 
@@ -107,10 +108,7 @@ postsApiRoutes.get("/:id", async (c) => {
 
   const post = assertFound(await c.var.services.posts.getById(id), "Post");
 
-  const [mediaList, textAttachments] = await Promise.all([
-    c.var.services.media.getByPostId(post.id),
-    c.var.services.postTexts.getByPostId(post.id),
-  ]);
+  const mediaList = await c.var.services.media.getByPostId(post.id);
   const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
 
   return c.json({
@@ -119,12 +117,6 @@ postsApiRoutes.get("/:id", async (c) => {
     mediaAttachments: mediaList.map((m) =>
       toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
     ),
-    textAttachments: textAttachments.map((t) => ({
-      id: t.id,
-      bodyJson: t.bodyJson,
-      bodyHtml: t.bodyHtml,
-      summary: t.summary,
-    })),
   });
 });
 
@@ -166,11 +158,6 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   // Attach media
   if (body.mediaIds && body.mediaIds.length > 0) {
     await c.var.services.media.attachToPost(post.id, body.mediaIds);
-  }
-
-  // Save attached texts
-  if (body.attachedTexts && body.attachedTexts.length > 0) {
-    await c.var.services.postTexts.replaceForPost(post.id, body.attachedTexts);
   }
 
   const mediaList = await c.var.services.media.getByPostId(post.id);
@@ -230,14 +217,6 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   // Update media attachments if provided (including empty array to clear)
   if (body.mediaIds !== undefined) {
     await c.var.services.media.attachToPost(post.id, body.mediaIds);
-  }
-
-  // Update attached texts if provided (including empty array to clear)
-  if (body.attachedTexts !== undefined) {
-    await c.var.services.postTexts.replaceForPost(
-      post.id,
-      body.attachedTexts ?? [],
-    );
   }
 
   const mediaList = await c.var.services.media.getByPostId(post.id);

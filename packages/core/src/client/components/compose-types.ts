@@ -24,7 +24,11 @@ export interface ComposeAttachment {
 export interface AttachedTextItem {
   clientId: string;
   bodyJson: JSONContent | null;
+  /** Pre-rendered HTML from TipTap, used for preview on the public page */
+  bodyHtml: string;
   summary: string;
+  /** Set for already-persisted text media items (edit mode) */
+  mediaId?: string;
 }
 
 export interface DraftItem {
@@ -110,6 +114,10 @@ export interface ComposeSubmitDetail {
   mediaIds: string[];
   mediaAlts: Record<string, string>;
   attachedTexts: AttachedTextItem[];
+  /** Interleaved order of media clientIds + text clientIds */
+  attachmentOrder: string[];
+  /** clientId → mediaId for already-uploaded file attachments (captured at submit time) */
+  mediaClientMap: Record<string, string>;
   editPostId?: string;
 }
 

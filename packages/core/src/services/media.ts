@@ -71,6 +71,7 @@ export interface CreateMediaData {
   position?: number;
   blurhash?: string;
   posterKey?: string;
+  summary?: string;
 }
 
 export function createMediaService(db: Database): MediaService {
@@ -90,7 +91,9 @@ export function createMediaService(db: Database): MediaService {
       position: row.position,
       blurhash: row.blurhash,
       posterKey: row.posterKey,
+      summary: row.summary,
       createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
     };
   }
 
@@ -205,7 +208,9 @@ export function createMediaService(db: Database): MediaService {
           position: data.position ?? 0,
           blurhash: data.blurhash ?? null,
           posterKey: data.posterKey ?? null,
+          summary: data.summary ?? null,
           createdAt: timestamp,
+          updatedAt: timestamp,
         })
         .returning();
 
@@ -214,9 +219,10 @@ export function createMediaService(db: Database): MediaService {
     },
 
     async attachToPost(postId, mediaIds) {
+      const timestamp = now();
       const clearQuery = db
         .update(media)
-        .set({ postId: null, position: 0 })
+        .set({ postId: null, position: 0, updatedAt: timestamp })
         .where(eq(media.postId, postId));
 
       const validIds = mediaIds.filter((id): id is string => Boolean(id));
@@ -230,7 +236,7 @@ export function createMediaService(db: Database): MediaService {
       const attachQueries = validIds.map((mediaId, i) =>
         db
           .update(media)
-          .set({ postId, position: i })
+          .set({ postId, position: i, updatedAt: timestamp })
           .where(eq(media.id, mediaId)),
       );
       await db.batch([clearQuery, ...attachQueries] as [
@@ -247,7 +253,10 @@ export function createMediaService(db: Database): MediaService {
     },
 
     async updateAlt(id, alt) {
-      await db.update(media).set({ alt }).where(eq(media.id, id));
+      await db
+        .update(media)
+        .set({ alt, updatedAt: now() })
+        .where(eq(media.id, id));
     },
 
     async delete(id, storage) {

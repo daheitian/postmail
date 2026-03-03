@@ -70,6 +70,7 @@ export function buildMediaMap(
           mimeType: m.mimeType,
           originalName: m.originalName,
           size: m.size,
+          summary: m.summary,
         };
       }),
     );

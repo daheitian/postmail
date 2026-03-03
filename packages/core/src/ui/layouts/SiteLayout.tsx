@@ -229,6 +229,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       )}
 
       <jant-media-lightbox />
+      <jant-text-preview />
       {isAuthenticated && <jant-post-menu />}
       {isAuthenticated && (
         <ComposeDialog

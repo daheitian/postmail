@@ -167,8 +167,11 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0015: add poster_key to media
   applyMigration(sqlite, "0015_add_media_poster_key.sql");
 
-  // Apply 0016: post_texts table
+  // Apply 0016: add summary column to media
   applyMigration(sqlite, "0016_add_post_texts.sql");
+
+  // Apply 0017: add updated_at to media
+  applyMigration(sqlite, "0017_nice_ozymandias.sql");
 
   const db = drizzle(sqlite, { schema });
 
