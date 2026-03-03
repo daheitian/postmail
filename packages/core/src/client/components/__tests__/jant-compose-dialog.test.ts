@@ -654,9 +654,9 @@ describe("JantComposeDialog", () => {
 
     expect(el._confirmPanelOpen).toBe(true);
     expect(el.querySelector(".compose-confirm-panel")).not.toBeNull();
-    expect(el.querySelector(".compose-confirm-title")?.textContent).toBe(
-      "Save to drafts?",
-    );
+    expect(
+      el.querySelector(".compose-confirm-title")?.textContent?.trim(),
+    ).toBe("Save to drafts?");
   });
 
   it("confirm save draft dispatches submit-deferred with draft status", async () => {
