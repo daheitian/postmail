@@ -139,6 +139,7 @@ async function handleAvatarUpload(
       input.dataset.textError || "Upload failed. Please try again.";
     const container = document.getElementById("toast-container");
     if (container) {
+      if (!container.matches(":popover-open")) container.showPopover();
       const toast = document.createElement("div");
       toast.className = "toast toast-error";
       toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg><span>${errorMsg}</span>`;

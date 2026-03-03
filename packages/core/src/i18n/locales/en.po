@@ -366,8 +366,8 @@ msgstr "Click image to view full size"
 
 #. @context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Click to retry all"
-msgstr "Click to retry all"
+#~ msgid "Click to retry all"
+#~ msgstr "Click to retry all"
 
 #. @context: Button to close icon picker
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -2095,6 +2095,11 @@ msgstr "system"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "System links"
 msgstr "System links"
+
+#. @context: Label on failed upload overlay button, tells user tapping retries the upload
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Tap to retry"
+msgstr "Tap to retry"
 
 #. @context: Attached text panel title
 #: src/ui/compose/ComposeDialog.tsx

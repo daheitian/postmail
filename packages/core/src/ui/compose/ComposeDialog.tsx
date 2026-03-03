@@ -161,9 +161,9 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment: "@context: Toast action button to view the published post",
     }),
     retryAll: t({
-      message: "Click to retry all",
+      message: "Tap to retry",
       comment:
-        "@context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads",
+        "@context: Label on failed upload overlay button, tells user tapping retries the upload",
     }),
     editPost: t({
       message: "Edit post",

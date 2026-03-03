@@ -64,7 +64,7 @@ const labels: ComposeLabels = {
   uploading: "Uploading...",
   published: "Published!",
   view: "View",
-  retryAll: "Click to retry all",
+  retryAll: "Tap to retry",
   editPost: "Edit post",
   update: "Done",
   confirmCloseTitle: "Save to drafts?",

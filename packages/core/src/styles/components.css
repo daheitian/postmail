@@ -42,7 +42,17 @@ svg[stroke-width].icon-fine {
 /* Toast notifications */
 @layer components {
   .toast-container {
-    @apply fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none;
+    @apply fixed flex flex-col gap-2 pointer-events-none;
+    /* Override browser popover defaults for both idle and open states */
+    @apply inset-auto border-none bg-transparent p-0 m-0 overflow-visible;
+    top: 1rem;
+    right: 1rem;
+
+    &:popover-open {
+      @apply inset-auto border-none bg-transparent p-0 m-0 overflow-visible;
+      top: 1rem;
+      right: 1rem;
+    }
   }
 
   .toast {

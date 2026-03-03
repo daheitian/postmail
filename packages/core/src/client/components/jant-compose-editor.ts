@@ -1004,10 +1004,7 @@ export class JantComposeEditor extends LitElement {
                 this._retryAllFailed();
               }}
             >
-              <span
-                data-tooltip="${a.error ?? "Upload failed"}"
-                data-side="bottom"
-              >
+              <span class="compose-retry-content">
                 <svg
                   width="20"
                   height="20"
@@ -1027,6 +1024,7 @@ export class JantComposeEditor extends LitElement {
                   />
                   <path d="M16 16h5v5" />
                 </svg>
+                <span class="compose-retry-label">${this.labels.retryAll}</span>
               </span>
             </button>
           `

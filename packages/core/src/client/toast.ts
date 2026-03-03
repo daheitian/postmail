@@ -5,6 +5,13 @@
  * Appends a temporary notification to `#toast-container`.
  */
 
+/** Ensure the toast container is in the top layer (above <dialog> etc.) */
+function ensureTopLayer(container: HTMLElement): void {
+  if (!container.matches(":popover-open")) {
+    container.showPopover();
+  }
+}
+
 const TOAST_ICONS = {
   success:
     '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>',
@@ -30,6 +37,8 @@ export function showToast(
 
   const container = document.getElementById("toast-container");
   if (!container) return;
+
+  ensureTopLayer(container);
 
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
@@ -62,6 +71,8 @@ export function showToastWithAction(
   const container = document.getElementById("toast-container");
   if (!container) return;
 
+  ensureTopLayer(container);
+
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
   toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span><a href="${action.href}" class="toast-action">${action.label}</a>`;
@@ -91,6 +102,8 @@ export function showPersistentToast(
 ): HTMLElement | null {
   const container = document.getElementById("toast-container");
   if (!container) return null;
+
+  ensureTopLayer(container);
 
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;

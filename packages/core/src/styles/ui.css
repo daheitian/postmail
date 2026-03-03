@@ -1331,38 +1331,39 @@
     border-radius: var(--media-radius, 0.5rem);
   }
 
-  /* Allow tooltip to overflow the thumb on error */
-  .compose-attachment-thumb:has(.compose-attachment-retry) {
-    overflow: visible;
-  }
-
   .compose-attachment-retry {
     background-color: rgba(0, 0, 0, 0.5);
     cursor: pointer;
     border: none;
-    padding: 0;
+    padding: 8px;
     transition: background-color 0.15s;
-  }
-
-  /* Tooltip inside dialog needs higher z-index to escape stacking contexts,
-     and must wrap long error messages instead of truncating */
-  .compose-attachment-retry [data-tooltip]:before {
-    z-index: 10000;
-    white-space: normal;
-    text-wrap: balance;
   }
 
   .compose-attachment-retry:hover {
     background-color: rgba(0, 0, 0, 0.6);
   }
 
-  .compose-attachment-retry svg {
+  .compose-retry-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .compose-retry-content svg {
     opacity: 0.85;
     transition: opacity 0.15s;
   }
 
-  .compose-attachment-retry:hover svg {
+  .compose-attachment-retry:hover .compose-retry-content svg {
     opacity: 1;
+  }
+
+  .compose-retry-label {
+    font-size: 11px;
+    line-height: 1.3;
+    text-align: center;
+    opacity: 0.9;
   }
 
   .compose-attachment-remove {

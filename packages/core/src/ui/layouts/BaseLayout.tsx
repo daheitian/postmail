@@ -113,11 +113,11 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         {...(isAuthenticated ? { "data-authenticated": true } : {})}
       >
         {content}
-        <div id="toast-container" class="toast-container">
+        <div id="toast-container" class="toast-container" popover="manual">
           {toast && (
             <div
               class={`toast ${toast.type === "error" ? "toast-error" : "toast-success"}`}
-              data-init="history.replaceState({}, '', location.pathname); setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)"
+              data-init="el.closest('[popover]').showPopover(); history.replaceState({}, '', location.pathname); setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)"
             >
               {toast.type === "error" ? (
                 <svg

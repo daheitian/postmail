@@ -301,8 +301,8 @@ msgstr "点击图片查看完整尺寸"
 
 #. @context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Click to retry all"
-msgstr ""
+#~ msgid "Click to retry all"
+#~ msgstr ""
 
 #. @context: Button to close icon picker
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -1793,6 +1793,11 @@ msgstr "系统"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "System links"
 msgstr "系统链接"
+
+#. @context: Label on failed upload overlay button, tells user tapping retries the upload
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Tap to retry"
+msgstr ""
 
 #. @context: Attached text panel title
 #: src/ui/compose/ComposeDialog.tsx

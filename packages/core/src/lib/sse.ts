@@ -147,7 +147,7 @@ function buildToastHtml(message: string, type: "success" | "error"): string {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
-  return `<div class="toast ${cls}" data-init="setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)">${icon}<span>${escapedMessage}</span>${closeBtn}</div>`;
+  return `<div class="toast ${cls}" data-init="el.closest('[popover]')?.showPopover(); setTimeout(() => { el.classList.add('toast-out'); el.addEventListener('animationend', () => el.remove()) }, 3000)">${icon}<span>${escapedMessage}</span>${closeBtn}</div>`;
 }
 
 // ---------------------------------------------------------------------------
