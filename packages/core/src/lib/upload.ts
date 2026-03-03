@@ -113,19 +113,40 @@ export function validateUploadFile(
   file: File,
   options: ValidateUploadOptions,
 ): string | null {
+  return validateUploadFileMetadata(file.type, file.size, options);
+}
+
+/**
+ * Validates file metadata (type and size) without requiring a File object.
+ * Used by the multipart upload initiation endpoint which receives JSON metadata.
+ *
+ * @param contentType - The MIME type of the file
+ * @param size - The file size in bytes
+ * @param options - Validation constraints
+ * @returns null if valid, error message string if invalid
+ * @example
+ * ```ts
+ * const error = validateUploadFileMetadata("image/jpeg", 1024000, { maxFileSizeMB: 500 });
+ * ```
+ */
+export function validateUploadFileMetadata(
+  contentType: string,
+  size: number,
+  options: ValidateUploadOptions,
+): string | null {
   if (options?.imagesOnly) {
-    if (!isImageMimeType(file.type)) {
+    if (!isImageMimeType(contentType)) {
       return "File type not allowed.";
     }
   } else if (
     !ALLOWED_UPLOAD_TYPES.includes(
-      file.type as (typeof ALLOWED_UPLOAD_TYPES)[number],
+      contentType as (typeof ALLOWED_UPLOAD_TYPES)[number],
     )
   ) {
     return "File type not allowed.";
   }
   const maxMB = options.maxFileSizeMB;
-  if (file.size > maxMB * 1024 * 1024) {
+  if (size > maxMB * 1024 * 1024) {
     return `File too large (max ${maxMB}MB).`;
   }
   return null;

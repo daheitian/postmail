@@ -6,6 +6,18 @@
 
 import type { Bindings } from "../types.js";
 
+/** Tracks an in-progress multipart upload */
+export interface MultipartUploadSession {
+  uploadId: string;
+  key: string;
+}
+
+/** Represents a successfully uploaded part */
+export interface UploadedPart {
+  partNumber: number;
+  etag: string;
+}
+
 /**
  * Common interface for storage operations.
  *
@@ -27,6 +39,56 @@ export interface StorageDriver {
 
   /** Delete a file from storage */
   delete(key: string): Promise<void>;
+
+  /** Start a multipart upload (optional — R2 only) */
+  createMultipartUpload?(
+    key: string,
+    opts?: { contentType?: string },
+  ): Promise<MultipartUploadSession>;
+
+  /** Upload a single part of a multipart upload */
+  uploadPart?(
+    key: string,
+    uploadId: string,
+    partNumber: number,
+    body: ReadableStream | ArrayBuffer | Uint8Array,
+  ): Promise<UploadedPart>;
+
+  /** Finalize a multipart upload by combining all parts */
+  completeMultipartUpload?(
+    key: string,
+    uploadId: string,
+    parts: UploadedPart[],
+  ): Promise<void>;
+
+  /** Cancel a multipart upload and discard uploaded parts */
+  abortMultipartUpload?(key: string, uploadId: string): Promise<void>;
+}
+
+/**
+ * Type guard that checks whether a storage driver supports multipart uploads.
+ *
+ * @param driver - The storage driver to check
+ * @returns true if all multipart methods are present
+ */
+export function supportsMultipart(
+  driver: StorageDriver,
+): driver is StorageDriver &
+  Required<
+    Pick<
+      StorageDriver,
+      | "createMultipartUpload"
+      | "uploadPart"
+      | "completeMultipartUpload"
+      | "abortMultipartUpload"
+    >
+  > {
+  return (
+    typeof driver.createMultipartUpload === "function" &&
+    typeof driver.uploadPart === "function" &&
+    typeof driver.completeMultipartUpload === "function" &&
+    typeof driver.abortMultipartUpload === "function"
+  );
 }
 
 /**
@@ -56,6 +118,31 @@ export function createR2Driver(r2: R2Bucket): StorageDriver {
 
     async delete(key) {
       await r2.delete(key);
+    },
+
+    async createMultipartUpload(key, opts) {
+      const upload = await r2.createMultipartUpload(key, {
+        httpMetadata: opts?.contentType
+          ? { contentType: opts.contentType }
+          : undefined,
+      });
+      return { uploadId: upload.uploadId, key: upload.key };
+    },
+
+    async uploadPart(key, uploadId, partNumber, body) {
+      const upload = r2.resumeMultipartUpload(key, uploadId);
+      const part = await upload.uploadPart(partNumber, body);
+      return { partNumber: part.partNumber, etag: part.etag };
+    },
+
+    async completeMultipartUpload(key, uploadId, parts) {
+      const upload = r2.resumeMultipartUpload(key, uploadId);
+      await upload.complete(parts);
+    },
+
+    async abortMultipartUpload(key, uploadId) {
+      const upload = r2.resumeMultipartUpload(key, uploadId);
+      await upload.abort();
     },
   };
 }

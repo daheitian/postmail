@@ -40,6 +40,7 @@ import { navItemsApiRoutes } from "./routes/api/nav-items.js";
 import { collectionsApiRoutes } from "./routes/api/collections.js";
 import { settingsApiRoutes } from "./routes/api/settings.js";
 import { uploadApiRoutes } from "./routes/api/upload.js";
+import { multipartUploadApiRoutes } from "./routes/api/upload-multipart.js";
 import { searchApiRoutes } from "./routes/api/search.js";
 // Routes - Compose
 import { composeRoutes } from "./routes/compose.js";
@@ -246,7 +247,8 @@ export function createApp(): App {
   app.route("/dash/media", dashMediaRoutes);
   app.route("/dash/settings", dashSettingsRoutes);
   app.route("/dash/settings/redirects", dashRedirectsRoutes);
-  // Protected API routes
+  // Protected API routes (multipart must be registered before base upload)
+  app.route("/api/upload/multipart", multipartUploadApiRoutes);
   app.route("/api/upload", uploadApiRoutes);
   app.route("/api/search", searchApiRoutes);
 

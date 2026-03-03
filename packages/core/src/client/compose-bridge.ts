@@ -19,6 +19,7 @@ import {
   replaceWithAutoClose,
   replaceWithAutoCloseAction,
 } from "./toast.js";
+import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
 
 // ── Upload manager ──────────────────────────────────────────────────
 
@@ -87,7 +88,18 @@ async function uploadFile(
       poster ??= meta.poster;
     }
 
-    // Upload to server
+    // Large files: use multipart upload to avoid Worker body size limit
+    if (toUpload.size >= MULTIPART_THRESHOLD) {
+      const result = await uploadMultipart({
+        file: toUpload,
+        metadata: { width, height, blurhash, poster },
+        onProgress: (p) => editor?.updateAttachmentProgress(clientId, p),
+      });
+      editor?.updateAttachmentStatus(clientId, "done", result.id, null);
+      return result.id;
+    }
+
+    // Small files: existing single-request upload
     const formData = new FormData();
     formData.append("file", toUpload);
     if (width) formData.append("width", String(width));

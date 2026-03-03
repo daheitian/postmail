@@ -14,6 +14,7 @@ import { VideoProcessor } from "./video-processor.js";
 import { extractMediaMetadata } from "./media-metadata.js";
 import { validateUploadFile } from "../lib/upload.js";
 import { showToast } from "./toast.js";
+import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
 
 /**
  * Format file size for display
@@ -177,7 +178,22 @@ async function handleUpload(
     const statusEl = document.getElementById("upload-status");
     if (statusEl) statusEl.textContent = uploadingText;
 
-    // Set processed file on hidden form input via DataTransfer API
+    // Large files: use multipart upload to avoid Worker body size limit
+    if (toUpload.size >= MULTIPART_THRESHOLD) {
+      await uploadMultipart({
+        file: toUpload,
+        metadata: { width, height, blurhash, poster },
+        onProgress: (p) => {
+          const el = document.getElementById("upload-status");
+          if (el) el.textContent = `${uploadingText} ${Math.round(p * 100)}%`;
+        },
+      });
+      // Reload to show the new media in the grid
+      globalThis.location.reload();
+      return;
+    }
+
+    // Small files: existing Datastar form submission path
     const formInput = document.getElementById(
       "upload-file-input",
     ) as HTMLInputElement | null;
