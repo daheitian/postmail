@@ -71,6 +71,7 @@ export interface ComposeLabels {
   collection: string;
   searchCollections: string;
   noCollections: string;
+  emptyCollections: string;
   post: string;
   addAlt: string;
   addAltTitle: string;

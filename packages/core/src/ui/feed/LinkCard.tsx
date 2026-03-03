@@ -29,7 +29,7 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       data-post-visibility={post.visibility}
     >
-      {!compact && <PostStatusBadges post={post} />}
+      {!compact && <PostStatusBadges />}
       {domain && (
         <div class="text-xs text-muted-foreground mb-1 flex items-center gap-1">
           <svg

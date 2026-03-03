@@ -25,7 +25,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       data-post-visibility={post.visibility}
     >
-      {!compact && <PostStatusBadges post={post} />}
+      {!compact && <PostStatusBadges />}
       {post.quoteText && (
         <blockquote class="feed-quote">
           <div

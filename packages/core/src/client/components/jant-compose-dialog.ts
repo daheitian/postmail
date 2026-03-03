@@ -1027,8 +1027,10 @@ export class JantComposeDialog extends LitElement {
             <div
               role="listbox"
               aria-multiselectable="true"
-              data-empty=${filtered.length === 0 && search
-                ? this.labels.noCollections
+              data-empty=${filtered.length === 0
+                ? search
+                  ? this.labels.noCollections
+                  : this.labels.emptyCollections
                 : nothing}
             >
               ${filtered.map(

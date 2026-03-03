@@ -319,23 +319,39 @@
   }
 
   /* --- Post status badges (pinned / featured) ----------------------------- */
+  /* Visibility driven by parent article's data attributes so the post menu
+     can toggle badges instantly without a page reload. */
 
   .post-status-badges {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 6px;
     margin-bottom: 4px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--site-text-secondary);
+    color: var(--site-text-placeholder);
+  }
+
+  /* Show the container when at least one status is active */
+  article[data-post-pinned] .post-status-badges,
+  article[data-post-visibility="featured"] .post-status-badges {
+    display: flex;
   }
 
   .post-status-badge {
-    display: inline-flex;
+    display: none;
     align-items: center;
     gap: 4px;
+  }
+
+  article[data-post-pinned] .post-status-pinned {
+    display: inline-flex;
+  }
+
+  article[data-post-visibility="featured"] .post-status-featured {
+    display: inline-flex;
   }
 
   .post-status-badge svg {
@@ -344,8 +360,15 @@
     flex-shrink: 0;
   }
 
+  /* Dot separator — only visible when both pinned AND featured */
   .post-status-separator {
+    display: none;
     user-select: none;
+  }
+
+  article[data-post-pinned][data-post-visibility="featured"]
+    .post-status-separator {
+    display: inline;
   }
 
   .post-menu-footer {
@@ -1321,9 +1344,12 @@
     transition: background-color 0.15s;
   }
 
-  /* Tooltip inside dialog needs higher z-index to escape stacking contexts */
+  /* Tooltip inside dialog needs higher z-index to escape stacking contexts,
+     and must wrap long error messages instead of truncating */
   .compose-attachment-retry [data-tooltip]:before {
     z-index: 10000;
+    white-space: normal;
+    text-wrap: balance;
   }
 
   .compose-attachment-retry:hover {

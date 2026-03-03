@@ -24,7 +24,7 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       data-post-visibility={post.visibility}
     >
-      {!compact && <PostStatusBadges post={post} />}
+      {!compact && <PostStatusBadges />}
       {isArticle && (
         <h2
           class={`p-name font-semibold ${compact ? "text-sm" : "text-base"} mb-1`}

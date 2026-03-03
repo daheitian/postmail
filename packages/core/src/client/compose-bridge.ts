@@ -116,6 +116,7 @@ async function uploadFile(
       const data = await res.json();
       const error = data.error ?? "Upload failed";
       editor?.updateAttachmentStatus(clientId, "error", null, error);
+      showToast(error, "error");
       return null;
     }
 
@@ -125,6 +126,7 @@ async function uploadFile(
     return mediaId;
   } catch {
     editor?.updateAttachmentStatus(clientId, "error", null, "Upload failed");
+    showToast("Upload failed", "error");
     return null;
   }
 }

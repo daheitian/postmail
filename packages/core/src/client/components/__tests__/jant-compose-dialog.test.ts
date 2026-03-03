@@ -48,6 +48,7 @@ const labels: ComposeLabels = {
   collection: "Collection",
   searchCollections: "Search...",
   noCollections: "No collections found.",
+  emptyCollections: "Create a collection to get started.",
   post: "Post",
   addAlt: "+ ALT",
   addAltTitle: "Add alt text",

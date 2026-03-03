@@ -403,6 +403,11 @@ msgstr ""
 msgid "Couldn't update your profile. Try again in a moment."
 msgstr ""
 
+#. @context: Compose collection combobox empty state when no collections exist
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Create a collection to get started."
+msgstr ""
+
 #. @context: Button to save new collection
 #: src/ui/dash/collections/CollectionForm.tsx
 #~ msgid "Create Collection"
@@ -1150,7 +1155,7 @@ msgstr ""
 msgid "No file selected. Choose a file to upload."
 msgstr ""
 
-#. @context: Compose collection combobox empty state
+#. @context: Compose collection combobox empty state when search has no results
 #: src/ui/compose/ComposeDialog.tsx
 msgid "No matching collections."
 msgstr ""

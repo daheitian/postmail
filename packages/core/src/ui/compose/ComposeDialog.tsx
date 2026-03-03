@@ -116,7 +116,13 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
     }),
     noCollections: t({
       message: "No matching collections.",
-      comment: "@context: Compose collection combobox empty state",
+      comment:
+        "@context: Compose collection combobox empty state when search has no results",
+    }),
+    emptyCollections: t({
+      message: "Create a collection to get started.",
+      comment:
+        "@context: Compose collection combobox empty state when no collections exist",
     }),
     post: t({
       message: "Post",
