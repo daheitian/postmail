@@ -176,7 +176,8 @@ export class JantComposeDialog extends LitElement {
     if (data.attachedTexts.some((t) => t.bodyJson !== null)) return true;
     if (data.rating > 0) return true;
     if (data.attachments.length > 0) return true;
-    if (this._collectionIds.length > 0) return true;
+    // Collection selection alone isn't content — it's metadata that
+    // only matters when paired with actual post content above.
 
     return false;
   }
