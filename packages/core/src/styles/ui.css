@@ -911,47 +911,32 @@
     animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
-  .compose-attached-charcount {
-    position: absolute;
-    right: 12px;
-  }
-
-  @media (min-width: 700px) {
-    .compose-attached-charcount {
-      right: 16px;
-    }
-  }
-
-  .compose-attached-panel-back {
+  .compose-attached-cancel {
     border: none;
     background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
     cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: var(--fw-medium);
     color: var(--site-text-secondary);
+    padding: 4px 8px;
+    border-radius: 6px;
     transition: color 0.15s ease;
   }
 
-  .compose-attached-panel-back:hover {
+  .compose-attached-cancel:hover {
     color: var(--site-text-primary);
   }
 
-  .compose-attached-textarea {
+  .compose-attached-tiptap {
     flex: 1;
-    font-size: 0.84rem;
-    line-height: 1.65;
-    letter-spacing: 0.005em;
+    min-height: 0;
     overflow-y: auto;
   }
 
-  .compose-attached-textarea::-webkit-scrollbar {
+  .compose-attached-tiptap::-webkit-scrollbar {
     width: 3px;
   }
-  .compose-attached-textarea::-webkit-scrollbar-thumb {
+  .compose-attached-tiptap::-webkit-scrollbar-thumb {
     background-color: var(--site-divider);
     border-radius: 4px;
   }

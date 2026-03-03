@@ -5,6 +5,8 @@
  * Lit Web Components, and the compose bridge script.
  */
 
+import type { JSONContent } from "@tiptap/core";
+
 export type ComposeFormat = "note" | "link" | "quote";
 
 export interface ComposeAttachment {
@@ -20,7 +22,7 @@ export interface ComposeAttachment {
 
 export interface AttachedTextItem {
   clientId: string;
-  text: string;
+  bodyJson: JSONContent | null;
   summary: string;
 }
 

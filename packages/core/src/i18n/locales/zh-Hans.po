@@ -177,8 +177,8 @@ msgstr "档案馆"
 
 #. @context: Attached text panel title
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Attached Text"
-msgstr "附加文本"
+#~ msgid "Attached Text"
+#~ msgstr "附加文本"
 
 #. @context: Error toast when authentication system is unavailable
 #: src/routes/auth/signin.tsx
@@ -1732,6 +1732,11 @@ msgstr "系统"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "System links"
 msgstr "系统链接"
+
+#. @context: Attached text panel title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Text attachment"
+msgstr ""
 
 #. @context: Error toast when selected font theme is not valid
 #: src/routes/dash/settings.tsx

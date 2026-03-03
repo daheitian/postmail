@@ -190,7 +190,7 @@ describe("JantComposeEditor", () => {
     expect(events).toHaveLength(1);
     expect(events[0].detail.index).toBe(0);
     expect(el._attachedTexts).toHaveLength(1);
-    expect(el._attachedTexts[0].text).toBe("");
+    expect(el._attachedTexts[0].bodyJson).toBeNull();
   });
 
   it("shows title toggle only in note mode", async () => {
@@ -217,7 +217,15 @@ describe("JantComposeEditor", () => {
     el._attachedTexts = [
       {
         clientId: "t1",
-        text: "Some attached text",
+        bodyJson: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Some attached text" }],
+            },
+          ],
+        },
         summary: "Some attached text",
       },
     ];
@@ -227,7 +235,7 @@ describe("JantComposeEditor", () => {
     expect(data.body).toContain("Test Body");
     expect(data.rating).toBe(4);
     expect(data.attachedTexts).toHaveLength(1);
-    expect(data.attachedTexts[0].text).toBe("Some attached text");
+    expect(data.attachedTexts[0].bodyJson).not.toBeNull();
     expect(data.url).toBe("");
     expect(data.quoteText).toBe("");
     expect(data.quoteAuthor).toBe("");
@@ -271,7 +279,21 @@ describe("JantComposeEditor", () => {
     };
     el._rating = 3;
     el._showRating = true;
-    el._attachedTexts = [{ clientId: "t1", text: "text", summary: "text" }];
+    el._attachedTexts = [
+      {
+        clientId: "t1",
+        bodyJson: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "text" }],
+            },
+          ],
+        },
+        summary: "text",
+      },
+    ];
 
     el.reset();
 
@@ -287,15 +309,23 @@ describe("JantComposeEditor", () => {
     el._attachedTexts = [
       {
         clientId: "t1",
-        text: "Some content here",
+        bodyJson: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Some content here" }],
+            },
+          ],
+        },
         summary: "Some content here",
       },
     ];
+    el._attachmentOrder = ["t1"];
     await el.updateComplete;
 
     const card = el.querySelector(".compose-attachment-text-card");
     expect(card).not.toBeNull();
-    expect(card?.textContent).toContain("chars");
     expect(card?.textContent).toContain("Some content here");
   });
 

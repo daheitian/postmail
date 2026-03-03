@@ -41,6 +41,7 @@ export class JantComposeEditor extends LitElement {
     _showRating: { state: true },
     _attachedTexts: { state: true },
     _attachments: { state: true },
+    _attachmentOrder: { state: true },
     _showAltPanel: { state: true },
     _altPanelIndex: { state: true },
     _showEmojiPicker: { state: true },
@@ -59,6 +60,7 @@ export class JantComposeEditor extends LitElement {
   declare _showRating: boolean;
   declare _attachedTexts: AttachedTextItem[];
   declare _attachments: ComposeAttachment[];
+  declare _attachmentOrder: string[];
   declare _showAltPanel: boolean;
   declare _altPanelIndex: number;
   declare _showEmojiPicker: boolean;
@@ -90,6 +92,7 @@ export class JantComposeEditor extends LitElement {
     this._showRating = false;
     this._attachedTexts = [];
     this._attachments = [];
+    this._attachmentOrder = [];
     this._showAltPanel = false;
     this._altPanelIndex = 0;
     this._showEmojiPicker = false;
@@ -244,6 +247,7 @@ export class JantComposeEditor extends LitElement {
       URL.revokeObjectURL(a.previewUrl);
     }
     this._attachments = [];
+    this._attachmentOrder = [];
     this._showAltPanel = false;
     this._altPanelIndex = 0;
     this.closeEmojiPicker();
@@ -406,10 +410,11 @@ export class JantComposeEditor extends LitElement {
   private _openAttachedText() {
     const item: AttachedTextItem = {
       clientId: crypto.randomUUID(),
-      text: "",
+      bodyJson: null,
       summary: "",
     };
     this._attachedTexts = [...this._attachedTexts, item];
+    this._attachmentOrder = [...this._attachmentOrder, item.clientId];
     const index = this._attachedTexts.length - 1;
     this.dispatchEvent(
       new CustomEvent("jant:attached-panel-open", {
@@ -429,31 +434,54 @@ export class JantComposeEditor extends LitElement {
   }
 
   private _removeAttachedText(index: number) {
+    const removed = this._attachedTexts[index];
     this._attachedTexts = this._attachedTexts.filter((_, i) => i !== index);
+    if (removed) {
+      this._attachmentOrder = this._attachmentOrder.filter(
+        (id) => id !== removed.clientId,
+      );
+    }
   }
 
-  updateAttachedText(index: number, value: string) {
+  updateAttachedText(index: number, bodyJson: JSONContent | null) {
+    const plainText = this._extractPlainText(bodyJson);
     this._attachedTexts = this._attachedTexts.map((item, i) =>
       i === index
-        ? { ...item, text: value, summary: this._computeSummary(value) }
+        ? { ...item, bodyJson, summary: this._computeSummary(plainText) }
         : item,
     );
   }
 
   closeAttachedPanel(index: number) {
     const item = this._attachedTexts[index];
-    if (item && item.text.trim() === "") {
+    if (item && !this._hasAttachedTextContent(item.bodyJson)) {
       this._attachedTexts = this._attachedTexts.filter((_, i) => i !== index);
+      this._attachmentOrder = this._attachmentOrder.filter(
+        (id) => id !== item.clientId,
+      );
     }
+  }
+
+  private _hasAttachedTextContent(bodyJson: JSONContent | null): boolean {
+    if (!bodyJson) return false;
+    return this._extractPlainText(bodyJson).trim().length > 0;
+  }
+
+  private _extractPlainText(json: JSONContent | null): string {
+    if (!json) return "";
+    let text = "";
+    const walk = (node: JSONContent) => {
+      if (node.text) text += node.text;
+      if (node.content) node.content.forEach(walk);
+    };
+    walk(json);
+    return text;
   }
 
   private _onInput(field: string, e: Event) {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
     (this as Record<string, unknown>)[field] = target.value;
-    if (
-      target.tagName === "TEXTAREA" &&
-      !target.classList.contains("compose-attached-textarea")
-    ) {
+    if (target.tagName === "TEXTAREA") {
       this._autoResize(target as HTMLElement);
     }
   }
@@ -517,6 +545,10 @@ export class JantComposeEditor extends LitElement {
     if (newAttachments.length === 0) return;
 
     this._attachments = [...this._attachments, ...newAttachments];
+    this._attachmentOrder = [
+      ...this._attachmentOrder,
+      ...newAttachments.map((a) => a.clientId),
+    ];
 
     this.dispatchEvent(
       new CustomEvent("jant:files-selected", {
@@ -538,6 +570,11 @@ export class JantComposeEditor extends LitElement {
             mediaId: attachment.mediaId,
           },
         }),
+      );
+    }
+    if (attachment) {
+      this._attachmentOrder = this._attachmentOrder.filter(
+        (id) => id !== attachment.clientId,
       );
     }
     this._attachments = this._attachments.filter((_, i) => i !== index);
@@ -1017,9 +1054,6 @@ export class JantComposeEditor extends LitElement {
               </svg>
             </div>
             <span class="compose-attachment-text-summary">${item.summary}</span>
-            <span class="compose-attachment-file-size"
-              >${item.text.length.toLocaleString()} chars</span
-            >
           </div>
           <button
             type="button"
@@ -1036,72 +1070,91 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
+  private _renderMediaAttachment(a: ComposeAttachment, i: number) {
+    const category = this._getCategory(a);
+    const isFileCard = category === "audio" || category === "document";
+
+    return html`
+      <div class="compose-attachment">
+        ${isFileCard
+          ? html`
+              <div class="compose-attachment-thumb">
+                ${this._renderAttachmentPreview(a)}
+                ${this._renderAttachmentOverlay(a, i)}
+              </div>
+            `
+          : html`
+              <div class="compose-attachment-thumb">
+                ${category === "video"
+                  ? html`
+                      <video
+                        src=${a.previewUrl}
+                        class="compose-attachment-img"
+                        preload="metadata"
+                        muted
+                      ></video>
+                      <div class="compose-attachment-play-icon">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="white"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    `
+                  : html`
+                      <img
+                        src=${a.previewUrl}
+                        alt=""
+                        class="compose-attachment-img"
+                      />
+                    `}
+                ${this._renderAttachmentOverlay(a, i)}
+              </div>
+            `}
+        <button
+          type="button"
+          class=${classMap({
+            "compose-attachment-alt": true,
+            "compose-attachment-alt-set": a.alt.length > 0,
+          })}
+          @click=${() => this._openAltPanel(i)}
+        >
+          ${a.alt.length > 0 ? "ALT" : "+ ALT"}
+        </button>
+      </div>
+    `;
+  }
+
   private _renderAttachments() {
     if (this._attachments.length === 0 && this._attachedTexts.length === 0)
       return nothing;
 
     return html`
       <div class="compose-attachments">
-        ${this._attachments.map((a, i) => {
-          const category = this._getCategory(a);
-          const isFileCard = category === "audio" || category === "document";
-
-          return html`
-            <div class="compose-attachment">
-              ${isFileCard
-                ? html`
-                    <div class="compose-attachment-thumb">
-                      ${this._renderAttachmentPreview(a)}
-                      ${this._renderAttachmentOverlay(a, i)}
-                    </div>
-                  `
-                : html`
-                    <div class="compose-attachment-thumb">
-                      ${category === "video"
-                        ? html`
-                            <video
-                              src=${a.previewUrl}
-                              class="compose-attachment-img"
-                              preload="metadata"
-                              muted
-                            ></video>
-                            <div class="compose-attachment-play-icon">
-                              <svg
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="white"
-                              >
-                                <path d="M8 5v14l11-7z" />
-                              </svg>
-                            </div>
-                          `
-                        : html`
-                            <img
-                              src=${a.previewUrl}
-                              alt=""
-                              class="compose-attachment-img"
-                            />
-                          `}
-                      ${this._renderAttachmentOverlay(a, i)}
-                    </div>
-                  `}
-              <button
-                type="button"
-                class=${classMap({
-                  "compose-attachment-alt": true,
-                  "compose-attachment-alt-set": a.alt.length > 0,
-                })}
-                @click=${() => this._openAltPanel(i)}
-              >
-                ${a.alt.length > 0 ? "ALT" : "+ ALT"}
-              </button>
-            </div>
-          `;
+        ${this._attachmentOrder.map((clientId) => {
+          const mediaIndex = this._attachments.findIndex(
+            (a) => a.clientId === clientId,
+          );
+          if (mediaIndex !== -1) {
+            return this._renderMediaAttachment(
+              this._attachments[mediaIndex],
+              mediaIndex,
+            );
+          }
+          const textIndex = this._attachedTexts.findIndex(
+            (t) => t.clientId === clientId,
+          );
+          if (textIndex !== -1) {
+            return this._renderAttachedTextCard(
+              this._attachedTexts[textIndex],
+              textIndex,
+            );
+          }
+          return nothing;
         })}
-        ${this._attachedTexts.map((item, i) =>
-          this._renderAttachedTextCard(item, i),
-        )}
       </div>
     `;
   }

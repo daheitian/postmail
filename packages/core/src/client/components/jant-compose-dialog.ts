@@ -10,6 +10,7 @@
 import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import type { Editor, JSONContent } from "@tiptap/core";
 import type {
   ComposeFormat,
   ComposeLabels,
@@ -19,6 +20,7 @@ import type {
 } from "./compose-types.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
 import { getMediaCategory } from "../../lib/upload.js";
+import { createTiptapEditor } from "../tiptap/create-editor.js";
 
 export class JantComposeDialog extends LitElement {
   static properties = {
@@ -56,6 +58,9 @@ export class JantComposeDialog extends LitElement {
   declare _attachedTextIndex: number;
   declare _confirmPanelOpen: boolean;
   declare _editPostId: string | null;
+
+  private _attachedEditor: Editor | null = null;
+  private _attachedTextSnapshot: JSONContent | null = null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -100,6 +105,7 @@ export class JantComposeDialog extends LitElement {
     this._attachedTextIndex = 0;
     this._confirmPanelOpen = false;
     this._editPostId = null;
+    this._destroyAttachedEditor();
     this._editor?.reset();
   }
 
@@ -167,7 +173,7 @@ export class JantComposeDialog extends LitElement {
     if (data.url.trim()) return true;
     if (data.quoteText.trim()) return true;
     if (data.quoteAuthor.trim()) return true;
-    if (data.attachedTexts.length > 0) return true;
+    if (data.attachedTexts.some((t) => t.bodyJson !== null)) return true;
     if (data.rating > 0) return true;
     if (data.attachments.length > 0) return true;
     if (this._collectionIds.length > 0) return true;
@@ -306,6 +312,7 @@ export class JantComposeDialog extends LitElement {
       "jant:fullscreen-close",
       this._handleFullscreenClose as EventListener,
     );
+    this._destroyAttachedEditor();
 
     const dialog = this.closest("dialog");
     if (dialog) {
@@ -323,7 +330,11 @@ export class JantComposeDialog extends LitElement {
     if (ke.key === "Escape") {
       ke.preventDefault();
       ke.stopPropagation();
-      this.requestClose();
+      if (this._attachedPanelOpen) {
+        this._cancelAttachedPanel();
+      } else {
+        this.requestClose();
+      }
     } else if (ke.key === "Enter" && this._confirmPanelOpen) {
       ke.preventDefault();
       this._confirmPanelOpen = false;
@@ -377,20 +388,57 @@ export class JantComposeDialog extends LitElement {
     this._attachedTextIndex = detail.index;
     this._attachedPanelOpen = true;
     this.updateComplete.then(() => {
-      this.querySelector<HTMLTextAreaElement>(
-        ".compose-attached-textarea",
-      )?.focus();
+      const container = this.querySelector<HTMLElement>(
+        ".compose-attached-tiptap",
+      );
+      if (!container) return;
+      const item = this._editor?._attachedTexts[this._attachedTextIndex];
+      const content = item?.bodyJson ?? null;
+      this._attachedTextSnapshot = content
+        ? JSON.parse(JSON.stringify(content))
+        : null;
+      this._attachedEditor = createTiptapEditor({
+        element: container,
+        placeholder: this.labels.attachedTextPlaceholder,
+        content,
+      });
+      this._attachedEditor.commands.focus();
     });
   };
 
-  private _onAttachedTextInput(e: Event) {
-    const value = (e.target as HTMLTextAreaElement).value;
-    this._editor?.updateAttachedText(this._attachedTextIndex, value);
+  private _isAttachedTextDirty(): boolean {
+    if (!this._attachedEditor) return false;
+    return (
+      JSON.stringify(this._attachedEditor.getJSON()) !==
+      JSON.stringify(this._attachedTextSnapshot)
+    );
   }
 
-  private _closeAttachedPanel() {
+  private _destroyAttachedEditor() {
+    if (this._attachedEditor) {
+      this._attachedEditor.destroy();
+      this._attachedEditor = null;
+    }
+    this._attachedTextSnapshot = null;
+  }
+
+  private _doneAttachedPanel() {
+    if (this._attachedEditor) {
+      const json = this._attachedEditor.getJSON();
+      this._editor?.updateAttachedText(this._attachedTextIndex, json);
+    }
+    this._destroyAttachedEditor();
     this._attachedPanelOpen = false;
     this._editor?.closeAttachedPanel(this._attachedTextIndex);
+  }
+
+  private _cancelAttachedPanel() {
+    if (this._isAttachedTextDirty()) {
+      if (!globalThis.confirm("Discard changes?")) return;
+    }
+    // Revert to snapshot — don't save current editor content
+    this._destroyAttachedEditor();
+    this._attachedPanelOpen = false;
   }
 
   // ── Render helpers ────────────────────────────────────────────────
@@ -667,59 +715,28 @@ export class JantComposeDialog extends LitElement {
 
   private _renderAttachedPanel() {
     if (!this._attachedPanelOpen) return nothing;
-    const editor = this._editor;
-    const item = editor?._attachedTexts[this._attachedTextIndex];
-    const attachedText = item?.text ?? "";
 
     return html`
       <div class="compose-attached-panel">
         <div class="compose-alt-header">
           <button
             type="button"
-            class="compose-attached-panel-back"
-            @click=${() => this._closeAttachedPanel()}
+            class="compose-attached-cancel"
+            @click=${() => this._cancelAttachedPanel()}
           >
-            <svg
-              class="icon-fine"
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M11 3L6 8l5 5" />
-            </svg>
+            ${this.labels.cancel}
           </button>
           <span class="compose-alt-title">${this.labels.attachedText}</span>
-          ${attachedText.length > 0
-            ? html`<span
-                class="compose-attached-charcount text-xs text-muted-foreground tracking-wide"
-                >${attachedText.length.toLocaleString()} chars</span
-              >`
-            : nothing}
-        </div>
-        <div class="flex-1 p-4 overflow-hidden flex flex-col">
-          <textarea
-            .value=${attachedText}
-            @input=${(e: Event) => this._onAttachedTextInput(e)}
-            class="compose-input compose-attached-textarea"
-            placeholder=${this.labels.attachedTextPlaceholder}
-          ></textarea>
-        </div>
-        <div class="compose-alt-footer">
-          <span class="text-xs text-muted-foreground"
-            >${this.labels.attachedTextHint}</span
-          >
           <button
             type="button"
-            class="compose-post-btn"
-            @click=${() => this._closeAttachedPanel()}
+            class="compose-post-btn ml-auto"
+            @click=${() => this._doneAttachedPanel()}
           >
             ${this.labels.done}
           </button>
+        </div>
+        <div class="flex-1 p-4 overflow-hidden flex flex-col">
+          <div class="compose-attached-tiptap compose-tiptap-body"></div>
         </div>
       </div>
     `;

@@ -74,7 +74,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment: "@context: Compose quote source link placeholder",
     }),
     attachedText: t({
-      message: "Attached Text",
+      message: "Text attachment",
       comment: "@context: Attached text panel title",
     }),
     attachedTextPlaceholder: t({
