@@ -188,6 +188,19 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Don't save",
       comment: "@context: Confirm close action sheet - discard button",
     }),
+    drafts: t({ message: "Drafts", comment: "@context: Drafts panel title" }),
+    draftsEmpty: t({
+      message: "No drafts yet. Save a draft to find it here.",
+      comment: "@context: Drafts panel empty state",
+    }),
+    deleteDraft: t({
+      message: "Delete Draft",
+      comment: "@context: Draft item action",
+    }),
+    draftDeleted: t({
+      message: "Draft deleted.",
+      comment: "@context: Toast after draft deletion",
+    }),
   }).replace(/</g, "\\u003c");
 
   const collectionsJson = JSON.stringify(

@@ -17,7 +17,9 @@ import type {
   ComposeCollection,
   ComposeSubmitDetail,
   ComposeAttachment,
+  DraftItem,
 } from "./compose-types.js";
+import { showToast } from "../toast.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
 import { getMediaCategory } from "../../lib/upload.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
@@ -40,6 +42,11 @@ export class JantComposeDialog extends LitElement {
     _attachedTextIndex: { state: true },
     _confirmPanelOpen: { state: true },
     _editPostId: { state: true },
+    _draftsPanelOpen: { state: true },
+    _drafts: { state: true },
+    _draftsLoading: { state: true },
+    _draftsError: { state: true },
+    _draftMenuOpenId: { state: true },
   };
 
   declare collections: ComposeCollection[];
@@ -58,6 +65,11 @@ export class JantComposeDialog extends LitElement {
   declare _attachedTextIndex: number;
   declare _confirmPanelOpen: boolean;
   declare _editPostId: string | null;
+  declare _draftsPanelOpen: boolean;
+  declare _drafts: DraftItem[];
+  declare _draftsLoading: boolean;
+  declare _draftsError: string | null;
+  declare _draftMenuOpenId: string | null;
 
   private _attachedEditor: Editor | null = null;
   private _attachedTextSnapshot: JSONContent | null = null;
@@ -85,6 +97,11 @@ export class JantComposeDialog extends LitElement {
     this._attachedTextIndex = 0;
     this._confirmPanelOpen = false;
     this._editPostId = null;
+    this._draftsPanelOpen = false;
+    this._drafts = [];
+    this._draftsLoading = false;
+    this._draftsError = null;
+    this._draftMenuOpenId = null;
   }
 
   private get _editor(): JantComposeEditor | null {
@@ -105,6 +122,11 @@ export class JantComposeDialog extends LitElement {
     this._attachedTextIndex = 0;
     this._confirmPanelOpen = false;
     this._editPostId = null;
+    this._draftsPanelOpen = false;
+    this._drafts = [];
+    this._draftsLoading = false;
+    this._draftsError = null;
+    this._draftMenuOpenId = null;
     this._destroyAttachedEditor();
     this._editor?.reset();
   }
@@ -331,7 +353,11 @@ export class JantComposeDialog extends LitElement {
     if (ke.key === "Escape") {
       ke.preventDefault();
       ke.stopPropagation();
-      if (this._attachedPanelOpen) {
+      if (this._draftMenuOpenId) {
+        this._draftMenuOpenId = null;
+      } else if (this._draftsPanelOpen) {
+        this._closeDraftsPanel();
+      } else if (this._attachedPanelOpen) {
         this._cancelAttachedPanel();
       } else {
         this.requestClose();
@@ -442,6 +468,268 @@ export class JantComposeDialog extends LitElement {
     this._attachedPanelOpen = false;
   }
 
+  // ── Drafts panel ─────────────────────────────────────────────────
+
+  private _handleDraftButtonClick() {
+    if (this._loading) return;
+    if (this._hasContent()) {
+      this._confirmPanelOpen = true;
+    } else {
+      this._openDraftsPanel();
+    }
+  }
+
+  private async _openDraftsPanel() {
+    this._draftsPanelOpen = true;
+    this._draftsLoading = true;
+    this._draftsError = null;
+    this._draftMenuOpenId = null;
+
+    try {
+      const res = await fetch("/api/posts?status=draft&limit=50");
+      if (!res.ok) throw new Error("Failed to load drafts");
+      const json = await res.json();
+      const posts = json.posts ?? json;
+      this._drafts = (posts as Record<string, unknown>[]).map(
+        (p): DraftItem => ({
+          sqid: p.sqid as string,
+          format: p.format as ComposeFormat,
+          title: (p.title as string) ?? null,
+          bodyText: (p.bodyText as string) ?? null,
+          bodyHtml: (p.bodyHtml as string) ?? null,
+          url: (p.url as string) ?? null,
+          quoteText: (p.quoteText as string) ?? null,
+          updatedAt: p.updatedAt as number,
+          mediaAttachments: (
+            (p.mediaAttachments as DraftItem["mediaAttachments"]) ?? []
+          ).map((m) => ({
+            id: m.id,
+            previewUrl: m.previewUrl,
+            alt: m.alt,
+            mimeType: m.mimeType,
+          })),
+        }),
+      );
+    } catch {
+      this._draftsError = "Could not load drafts. Try again.";
+      this._drafts = [];
+    } finally {
+      this._draftsLoading = false;
+    }
+  }
+
+  private _closeDraftsPanel() {
+    this._draftsPanelOpen = false;
+    this._draftMenuOpenId = null;
+    this.updateComplete.then(() => this._editor?.focusInput());
+  }
+
+  private async _loadDraft(sqid: string) {
+    this._draftsPanelOpen = false;
+    this._draftMenuOpenId = null;
+    this.reset();
+
+    const res = await fetch(`/api/posts/${sqid}`);
+    if (!res.ok) return;
+    const post = await res.json();
+
+    this._editPostId = sqid;
+    this._format = post.format;
+
+    if (post.collectionIds?.length) {
+      this._collectionIds = post.collectionIds;
+    }
+
+    await this.updateComplete;
+
+    this._editor?.populate({
+      format: post.format,
+      title: post.title ?? undefined,
+      bodyJson: post.body ?? undefined,
+      url: post.url ?? undefined,
+      quoteText: post.quoteText ?? undefined,
+      quoteAuthor:
+        post.format === "quote" ? (post.title ?? undefined) : undefined,
+      rating: post.rating ?? undefined,
+      media: (post.mediaAttachments ?? []).map(
+        (m: {
+          id: string;
+          previewUrl: string;
+          alt?: string;
+          mimeType: string;
+        }) => ({
+          id: m.id,
+          previewUrl: m.previewUrl,
+          alt: m.alt,
+          mimeType: m.mimeType,
+        }),
+      ),
+    });
+
+    globalThis.requestAnimationFrame(() => this._editor?.focusInput());
+  }
+
+  private async _deleteDraft(sqid: string) {
+    this._draftMenuOpenId = null;
+    this._drafts = this._drafts.filter((d) => d.sqid !== sqid);
+
+    try {
+      const res = await fetch(`/api/posts/${sqid}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      showToast(this.labels.draftDeleted);
+    } catch {
+      showToast("Failed to delete draft. Try again.", "error");
+      this._openDraftsPanel();
+    }
+  }
+
+  private _formatDraftDate(timestamp: number): string {
+    const now = Date.now() / 1000;
+    const diff = now - timestamp;
+    if (diff < 60) return "now";
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
+    const d = new Date(timestamp * 1000);
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+
+  private _getDraftPreview(draft: DraftItem): string | null {
+    if (draft.bodyText) return draft.bodyText;
+    if (draft.title) return draft.title;
+    if (draft.quoteText) return draft.quoteText;
+    if (draft.url) return draft.url;
+    return null;
+  }
+
+  private _renderDraftsPanel() {
+    if (!this._draftsPanelOpen) return nothing;
+
+    return html`
+      <div class="compose-drafts-panel">
+        <div class="compose-alt-header">
+          <button
+            type="button"
+            class="compose-attached-panel-back"
+            @click=${() => this._closeDraftsPanel()}
+          >
+            <svg
+              class="icon-fine"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 3L6 8l5 5" />
+            </svg>
+          </button>
+          <span class="compose-alt-title">${this.labels.drafts}</span>
+        </div>
+        ${this._draftsLoading
+          ? html`<div class="compose-drafts-loading">
+              <svg
+                class="animate-spin size-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            </div>`
+          : this._draftsError
+            ? html`<div class="compose-drafts-empty">${this._draftsError}</div>`
+            : this._drafts.length === 0
+              ? html`<div class="compose-drafts-empty">
+                  ${this.labels.draftsEmpty}
+                </div>`
+              : html`<div class="compose-drafts-list">
+                  ${this._drafts.map(
+                    (draft, i) => html`
+                      ${i > 0
+                        ? html`<div class="compose-drafts-divider"></div>`
+                        : nothing}
+                      ${this._renderDraftItem(draft)}
+                    `,
+                  )}
+                </div>`}
+      </div>
+    `;
+  }
+
+  private _renderDraftItem(draft: DraftItem) {
+    const preview = this._getDraftPreview(draft);
+
+    return html`
+      <div
+        class="compose-draft-item"
+        @click=${() => this._loadDraft(draft.sqid)}
+      >
+        <div class="compose-draft-content">
+          ${preview
+            ? html`<div class="compose-draft-preview">${preview}</div>`
+            : html`<div
+                class="compose-draft-preview compose-draft-preview-empty"
+              >
+                Empty draft
+              </div>`}
+          <div class="compose-draft-meta">
+            ${this._formatDraftDate(draft.updatedAt)}
+          </div>
+        </div>
+        <div class="relative">
+          ${this._draftMenuOpenId === draft.sqid
+            ? html`<div
+                class="compose-dropdown-backdrop"
+                @click=${(e: Event) => {
+                  e.stopPropagation();
+                  this._draftMenuOpenId = null;
+                }}
+              ></div>`
+            : nothing}
+          <button
+            type="button"
+            class="compose-draft-more"
+            @click=${(e: Event) => {
+              e.stopPropagation();
+              this._draftMenuOpenId =
+                this._draftMenuOpenId === draft.sqid ? null : draft.sqid;
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="4" cy="8" r="1.2" />
+              <circle cx="8" cy="8" r="1.2" />
+              <circle cx="12" cy="8" r="1.2" />
+            </svg>
+          </button>
+          ${this._draftMenuOpenId === draft.sqid
+            ? html`
+                <div class="compose-dropdown compose-dropdown-right">
+                  <button
+                    type="button"
+                    class="compose-dropdown-item compose-dropdown-item-danger"
+                    @click=${(e: Event) => {
+                      e.stopPropagation();
+                      this._deleteDraft(draft.sqid);
+                    }}
+                  >
+                    ${this.labels.deleteDraft}
+                  </button>
+                </div>
+              `
+            : nothing}
+        </div>
+      </div>
+    `;
+  }
+
   // ── Render helpers ────────────────────────────────────────────────
 
   private _renderHeader() {
@@ -505,7 +793,7 @@ export class JantComposeDialog extends LitElement {
             class="compose-dialog-header-btn"
             title=${this.labels.saveDraft}
             ?disabled=${this._loading}
-            @click=${() => this._submit("draft")}
+            @click=${() => this._handleDraftButtonClick()}
           >
             <svg
               class="icon-fine"
@@ -897,7 +1185,7 @@ export class JantComposeDialog extends LitElement {
           </button>
         </div>
         ${this._renderAttachedPanel()} ${this._renderAltPanel()}
-        ${this._renderConfirmPanel()}
+        ${this._renderDraftsPanel()} ${this._renderConfirmPanel()}
       </div>
     `;
   }

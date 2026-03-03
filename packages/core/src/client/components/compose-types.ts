@@ -26,6 +26,23 @@ export interface AttachedTextItem {
   summary: string;
 }
 
+export interface DraftItem {
+  sqid: string;
+  format: ComposeFormat;
+  title: string | null;
+  bodyText: string | null;
+  bodyHtml: string | null;
+  url: string | null;
+  quoteText: string | null;
+  updatedAt: number;
+  mediaAttachments: {
+    id: string;
+    previewUrl: string;
+    alt: string | null;
+    mimeType: string;
+  }[];
+}
+
 export interface ComposeLabels {
   cancel: string;
   note: string;
@@ -70,6 +87,10 @@ export interface ComposeLabels {
   confirmCloseSave: string;
   confirmCloseCancel: string;
   confirmCloseDiscard: string;
+  drafts: string;
+  draftsEmpty: string;
+  deleteDraft: string;
+  draftDeleted: string;
 }
 
 export interface ComposeSubmitDetail {

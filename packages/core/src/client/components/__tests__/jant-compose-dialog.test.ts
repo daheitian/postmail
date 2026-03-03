@@ -65,6 +65,10 @@ const labels: ComposeLabels = {
   confirmCloseSave: "Save",
   confirmCloseCancel: "Cancel",
   confirmCloseDiscard: "Don't save",
+  drafts: "Drafts",
+  draftsEmpty: "No drafts yet. Save a draft to find it here.",
+  deleteDraft: "Delete Draft",
+  draftDeleted: "Draft deleted.",
 };
 
 const collections: ComposeCollection[] = [
@@ -249,7 +253,7 @@ describe("JantComposeDialog", () => {
     expect(actionRow).not.toBeNull();
   });
 
-  it("draft button dispatches submit-deferred with draft status", async () => {
+  it("draft button with content shows confirm panel", async () => {
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
@@ -266,22 +270,47 @@ describe("JantComposeDialog", () => {
     };
     await editor.updateComplete;
 
-    let receivedDetail: ComposeSubmitDetail | null = null;
-    el.addEventListener("jant:compose-submit-deferred", (event) => {
-      const customEvent = event as CustomEvent<ComposeSubmitDetail>;
-      receivedDetail = customEvent.detail;
-    });
-
-    // Click the draft header button
+    // Click the draft header button — should show confirm panel
     const draftBtn = requireElement(
       el.querySelector<HTMLButtonElement>(".compose-dialog-header-btn"),
       "expected draft button",
     );
     draftBtn.click();
+    await el.updateComplete;
 
-    expect(receivedDetail).not.toBeNull();
-    const detail = receivedDetail as unknown as ComposeSubmitDetail;
-    expect(detail.status).toBe("draft");
+    expect(el._confirmPanelOpen).toBe(true);
+    expect(el.querySelector(".compose-confirm-panel")).not.toBeNull();
+  });
+
+  it("draft button without content opens drafts panel", async () => {
+    const el = await createElement();
+
+    // Mock fetch for drafts list
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ posts: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    // Click the draft header button — should open drafts panel
+    const draftBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-dialog-header-btn"),
+      "expected draft button",
+    );
+    draftBtn.click();
+    await el.updateComplete;
+
+    expect(el._draftsPanelOpen).toBe(true);
+
+    // Wait for fetch to resolve
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    expect(el._draftsLoading).toBe(false);
+    expect(el.querySelector(".compose-drafts-panel")).not.toBeNull();
+
+    fetchSpy.mockRestore();
   });
 
   it("does not dispatch submit when loading", async () => {

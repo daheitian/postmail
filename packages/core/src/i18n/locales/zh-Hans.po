@@ -243,6 +243,7 @@ msgstr "博客头像"
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
+#. @context: Button to cancel settings changes
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #. @context: Confirm close action sheet - cancel and return to editor
@@ -251,6 +252,7 @@ msgstr "博客头像"
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Cancel"
@@ -489,6 +491,11 @@ msgstr "仪表板"
 msgid "Delete"
 msgstr "删除"
 
+#. @context: Draft item action
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Delete Draft"
+msgstr ""
+
 #. @context: Button to delete media
 #: src/ui/dash/media/ViewMediaContent.tsx
 msgid "Delete Media"
@@ -584,6 +591,11 @@ msgstr "完成"
 msgid "Draft"
 msgstr "草稿"
 
+#. @context: Toast after draft deletion
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Draft deleted."
+msgstr ""
+
 #. @context: Toast after saving a draft post
 #. @context: Toast after saving a draft post
 #: src/routes/compose.tsx
@@ -591,8 +603,10 @@ msgstr "草稿"
 msgid "Draft saved."
 msgstr "草稿已保存。"
 
+#. @context: Drafts panel title
 #. @context: Post status label
 #: src/routes/dash/index.tsx
+#: src/ui/compose/ComposeDialog.tsx
 msgid "Drafts"
 msgstr "草稿"
 
@@ -1083,6 +1097,11 @@ msgstr "下一页"
 msgid "No collections yet. Start one to organize posts by topic."
 msgstr ""
 
+#. @context: Drafts panel empty state
+#: src/ui/compose/ComposeDialog.tsx
+msgid "No drafts yet. Save a draft to find it here."
+msgstr ""
+
 #. @context: Empty state message on featured page
 #: src/ui/pages/FeaturedPage.tsx
 #~ msgid "No featured posts yet."
@@ -1512,10 +1531,12 @@ msgstr "重置密码"
 
 #. @context: Button to save collection
 #. @context: Button to save settings
+#. @context: Button to save settings changes
 #. @context: Confirm close action sheet - save draft button
 #. @context: Save nav item changes
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Save"

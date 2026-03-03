@@ -71,6 +71,10 @@ const labels: ComposeLabels = {
   confirmCloseSave: "Save",
   confirmCloseCancel: "Cancel",
   confirmCloseDiscard: "Don't save",
+  drafts: "Drafts",
+  draftsEmpty: "No drafts yet. Save a draft to find it here.",
+  deleteDraft: "Delete Draft",
+  draftDeleted: "Draft deleted.",
 };
 
 async function createElement(

@@ -50,6 +50,14 @@ export function AvatarContent({
       message: "Upload failed. Please try again.",
       comment: "@context: Error message when avatar upload fails",
     }),
+    save: t({
+      message: "Save",
+      comment: "@context: Button to save settings changes",
+    }),
+    cancel: t({
+      message: "Cancel",
+      comment: "@context: Button to cancel settings changes",
+    }),
   }).replace(/</g, "\\u003c");
 
   return (
