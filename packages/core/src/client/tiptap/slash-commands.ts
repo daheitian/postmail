@@ -305,10 +305,8 @@ function positionPopup(
 function installClickOutside() {
   outsideClickHandler = (e: MouseEvent) => {
     if (!popupEl || popupEl.contains(e.target as Node)) return;
-    // Let clicks inside the editor be handled by ProseMirror naturally
-    if (editorRef?.view.dom.contains(e.target as Node)) return;
-    // Click outside both popup and editor — dismiss by deleting the trigger text
-    // so the suggestion plugin deactivates via onExit
+    // Click anywhere outside the popup (including inside the editor) — dismiss
+    // by deleting the trigger text so the suggestion plugin deactivates via onExit
     if (editorRef && currentRange) {
       const { state, view } = editorRef;
       view.dispatch(state.tr.delete(currentRange.from, currentRange.to));
