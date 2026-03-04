@@ -44,6 +44,7 @@ const labels: PostFormLabels = {
   mediaDialogLoading: "Loading...",
   submitSuccessMessage: "Saved!",
   submitErrorMessage: "Failed.",
+  draftFallbackMessage: "Couldn't publish. Saved as draft.",
 };
 
 const initial: PostFormInitial = {

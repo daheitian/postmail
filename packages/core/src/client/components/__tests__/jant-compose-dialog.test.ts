@@ -70,6 +70,8 @@ const labels: ComposeLabels = {
   draftsEmpty: "No drafts yet. Save a draft to find it here.",
   deleteDraft: "Delete Draft",
   draftDeleted: "Draft deleted.",
+  publishFailedDraft: "Couldn't publish. Saved as draft.",
+  uploadFailedDraft: "Some uploads failed. Saved as draft.",
   addCollection: "Add Collection",
   collectionFormLabels: {
     titleLabel: "Title",

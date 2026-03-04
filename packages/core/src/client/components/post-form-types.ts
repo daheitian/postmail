@@ -39,6 +39,7 @@ export interface PostFormLabels {
   mediaDialogLoading: string;
   submitSuccessMessage: string;
   submitErrorMessage: string;
+  draftFallbackMessage: string;
 }
 
 export interface PostFormInitial {

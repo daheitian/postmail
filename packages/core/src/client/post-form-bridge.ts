@@ -6,7 +6,10 @@
  * - `jant:post-load-media` → fetch media picker HTML and manage selections
  */
 
-import type { PostSubmitDetail } from "./components/post-form-types.js";
+import type {
+  PostSubmitDetail,
+  PostFormLabels,
+} from "./components/post-form-types.js";
 import type { JantPostForm } from "./components/jant-post-form.js";
 import { showToast } from "./toast.js";
 
@@ -57,6 +60,50 @@ async function handlePostSubmit(event: Event) {
       } catch {
         // Ignore JSON parse failure; keep fallback message.
       }
+
+      // Auto-save as draft when a new publish fails
+      if (detail.data.status === "published" && !detail.isEdit) {
+        try {
+          const retryRes = await fetch(detail.endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ ...detail.data, status: "draft" }),
+          });
+
+          if (retryRes.ok) {
+            const retryJson = await retryRes.json();
+            const labelsAttr = formEl.getAttribute("labels");
+            let fallbackMsg = "Couldn't publish. Saved as draft.";
+            if (labelsAttr) {
+              try {
+                const parsed = JSON.parse(
+                  labelsAttr,
+                ) as Partial<PostFormLabels>;
+                if (parsed.draftFallbackMessage)
+                  fallbackMsg = parsed.draftFallbackMessage;
+              } catch {
+                // Ignore parse failure; use default message
+              }
+            }
+            showToast(fallbackMsg);
+
+            if (
+              retryJson?.status === "redirect" &&
+              typeof retryJson.url === "string"
+            ) {
+              window.location.href = retryJson.url;
+              return;
+            }
+            return;
+          }
+        } catch {
+          // Retry failed — fall through to show original error
+        }
+      }
+
       throw new Error(message);
     }
 

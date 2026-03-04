@@ -101,6 +101,8 @@ export interface ComposeLabels {
   draftsEmpty: string;
   deleteDraft: string;
   draftDeleted: string;
+  publishFailedDraft: string;
+  uploadFailedDraft: string;
   addCollection: string;
   collectionFormLabels: CollectionFormLabels;
 }

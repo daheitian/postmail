@@ -177,6 +177,11 @@ export const PostForm: FC<PostFormProps> = ({
       message: "Couldn't save your post. Try again in a moment.",
       comment: "@context: Toast when post save fails",
     }),
+    draftFallbackMessage: t({
+      message: "Couldn't publish. Saved as draft.",
+      comment:
+        "@context: Toast when publish fails and post is auto-saved as draft",
+    }),
   }).replace(/</g, "\\u003c");
 
   const initial = JSON.stringify({

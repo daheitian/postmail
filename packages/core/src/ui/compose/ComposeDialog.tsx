@@ -207,6 +207,16 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Draft deleted.",
       comment: "@context: Toast after draft deletion",
     }),
+    publishFailedDraft: t({
+      message: "Couldn't publish. Saved as draft.",
+      comment:
+        "@context: Toast when publish fails and post is auto-saved as draft",
+    }),
+    uploadFailedDraft: t({
+      message: "Some uploads failed. Saved as draft.",
+      comment:
+        "@context: Toast when uploads fail and post is auto-saved as draft",
+    }),
     addCollection: t({
       message: "Add Collection",
       comment: "@context: Action to create a new collection from compose",

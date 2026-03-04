@@ -67,6 +67,7 @@ const EMPTY_LABELS: PostFormLabels = {
   mediaDialogLoading: "",
   submitSuccessMessage: "",
   submitErrorMessage: "",
+  draftFallbackMessage: "",
 };
 
 function parseJson<T>(value: unknown, fallback: T): T {

@@ -456,6 +456,13 @@ msgstr "Couldn't create your account. Check the details and try again."
 msgid "Couldn't delete. Try again in a moment."
 msgstr "Couldn't delete. Try again in a moment."
 
+#. @context: Toast when publish fails and post is auto-saved as draft
+#. @context: Toast when publish fails and post is auto-saved as draft
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Couldn't publish. Saved as draft."
+msgstr "Couldn't publish. Saved as draft."
+
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Couldn't save your post. Try again in a moment."
@@ -2026,6 +2033,11 @@ msgstr "Site Name"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "Slug"
+
+#. @context: Toast when uploads fail and post is auto-saved as draft
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Some uploads failed. Saved as draft."
+msgstr "Some uploads failed. Saved as draft."
 
 #. @context: Fallback validation error for compose form
 #. @context: Fallback validation error for page form

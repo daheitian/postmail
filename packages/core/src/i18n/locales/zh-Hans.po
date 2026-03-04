@@ -386,6 +386,13 @@ msgstr ""
 msgid "Couldn't delete. Try again in a moment."
 msgstr ""
 
+#. @context: Toast when publish fails and post is auto-saved as draft
+#. @context: Toast when publish fails and post is auto-saved as draft
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Couldn't publish. Saved as draft."
+msgstr ""
+
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Couldn't save your post. Try again in a moment."
@@ -1739,6 +1746,11 @@ msgstr "网站名称"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "缩略名"
+
+#. @context: Toast when uploads fail and post is auto-saved as draft
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Some uploads failed. Saved as draft."
+msgstr ""
 
 #. @context: Fallback validation error for compose form
 #. @context: Fallback validation error for page form

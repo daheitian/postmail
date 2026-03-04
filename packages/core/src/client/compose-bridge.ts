@@ -299,6 +299,9 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     }
   };
 
+  const isEdit = !!detail.editPostId;
+  let draftFallback: "upload" | "server" | null = null;
+
   try {
     // Wait for all pending uploads to complete
     const pendingClientIds = detail.pendingAttachments.map((a) => a.clientId);
@@ -308,11 +311,17 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
     const results = await Promise.all(pendingPromises);
 
-    // If any pending upload failed, abort the post
+    // If any pending upload failed:
+    // - For new publishes: filter out failed uploads and save as draft
+    // - Otherwise: abort
     const failedCount = results.filter((id) => id === null).length;
     if (failedCount > 0) {
-      toastMsg("Upload failed. Post not created.", "error");
-      return;
+      if (detail.status === "published" && !isEdit) {
+        draftFallback = "upload";
+      } else {
+        toastMsg("Upload failed. Post not created.", "error");
+        return;
+      }
     }
 
     // Merge newly completed mediaIds with already-done ones
@@ -370,12 +379,12 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       ];
     }
 
-    const isEdit = !!detail.editPostId;
     const endpoint = isEdit ? `/api/posts/${detail.editPostId}` : "/compose";
     const method = isEdit ? "PUT" : "POST";
 
     const bodyPayload = buildPostBody({
       ...detail,
+      status: draftFallback ? "draft" : detail.status,
       mediaIds: allMediaIds,
       mediaAlts,
     });
@@ -390,6 +399,29 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     });
 
     if (!res.ok) {
+      // Server error on a new publish: retry as draft
+      if (detail.status === "published" && !isEdit && !draftFallback) {
+        const retryPayload = { ...bodyPayload, status: "draft" };
+        const retryRes = await fetch(endpoint, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(retryPayload),
+        });
+
+        if (retryRes.ok) {
+          draftFallback = "server";
+          const retryData = await retryRes.json();
+          const fallbackMsg =
+            labels?.publishFailedDraft ?? "Couldn't publish. Saved as draft.";
+          toastMsg(fallbackMsg);
+          if (retryData.toast) toastMsg(retryData.toast);
+          return;
+        }
+      }
+
       const data = await res.json();
       toastMsg(data.error ?? "Something went wrong", "error");
       return;
@@ -398,6 +430,14 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     if (isEdit) {
       toastMsg("Post updated.");
       globalThis.location.reload();
+      return;
+    }
+
+    // Upload fallback: show specific message instead of normal flow
+    if (draftFallback === "upload") {
+      const fallbackMsg =
+        labels?.uploadFailedDraft ?? "Some uploads failed. Saved as draft.";
+      toastMsg(fallbackMsg);
       return;
     }
 
