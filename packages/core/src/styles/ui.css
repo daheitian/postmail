@@ -2888,5 +2888,6 @@
 
   .compose-fullscreen .compose-tiptap-body .tiptap {
     min-height: 400px;
+    padding-bottom: 100px;
   }
 }

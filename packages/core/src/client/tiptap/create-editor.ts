@@ -28,6 +28,10 @@ export function createTiptapEditor(options: CreateEditorOptions): Editor {
       placeholder: options.placeholder,
     }),
     content: options.content ?? undefined,
+    editorProps: {
+      scrollMargin: { top: 5, right: 5, bottom: 80, left: 5 },
+      scrollThreshold: { top: 5, right: 5, bottom: 80, left: 5 },
+    },
     onUpdate: ({ editor }) => {
       options.onUpdate?.(editor.getJSON());
     },
