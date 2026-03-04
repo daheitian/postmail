@@ -727,6 +727,11 @@ msgstr "Draft"
 msgid "Draft deleted."
 msgstr "Draft deleted."
 
+#. @context: Toast shown when a local draft is restored on compose open
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Draft restored."
+msgstr "Draft restored."
+
 #. @context: Toast after saving a draft post
 #. @context: Toast after saving a draft post
 #: src/routes/compose.tsx

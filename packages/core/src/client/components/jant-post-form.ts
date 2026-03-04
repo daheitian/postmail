@@ -132,6 +132,13 @@ export class JantPostForm extends LitElement {
   _editor: Editor | null = null;
   _bodyJson: JSONContent | null = null;
   #initialized = false;
+  #dirty = false;
+  #onBeforeUnload = (e: globalThis.BeforeUnloadEvent) => {
+    if (this.#dirty) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  };
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -204,8 +211,14 @@ export class JantPostForm extends LitElement {
     return this.querySelector("#post-media-picker");
   }
 
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener("beforeunload", this.#onBeforeUnload);
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
+    window.removeEventListener("beforeunload", this.#onBeforeUnload);
     this._editor?.destroy();
     this._editor = null;
     this.closeMediaPicker();
@@ -254,11 +267,40 @@ export class JantPostForm extends LitElement {
     });
   }
 
+  /** Content-relevant properties for dirty tracking */
+  static #CONTENT_PROPS = new Set([
+    "_format",
+    "_title",
+    "_body",
+    "_url",
+    "_quoteText",
+    "_status",
+    "_visibility",
+    "_pinned",
+    "_rating",
+    "_collectionIds",
+    "_mediaIds",
+  ]);
+
   protected updated(changed: Map<string, unknown>) {
     super.updated(changed);
     if (!this._editor) {
       this.initEditor();
     }
+
+    // Mark dirty when user changes content after initial load
+    if (this.#initialized && !changed.has("initial")) {
+      for (const key of changed.keys()) {
+        if (JantPostForm.#CONTENT_PROPS.has(key as string)) {
+          this.#dirty = true;
+          break;
+        }
+      }
+    }
+  }
+
+  clearDirty() {
+    this.#dirty = false;
   }
 
   handleInput(field: "_title" | "_body" | "_url" | "_quoteText", e: Event) {

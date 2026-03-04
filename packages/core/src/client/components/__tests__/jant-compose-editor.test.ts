@@ -79,6 +79,7 @@ const labels: ComposeLabels = {
   publishFailedDraft: "Couldn't publish. Saved as draft.",
   uploadFailedDraft: "Some uploads failed. Saved as draft.",
   addCollection: "Add Collection",
+  draftRestored: "Draft restored.",
   collectionFormLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",

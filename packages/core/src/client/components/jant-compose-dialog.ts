@@ -18,6 +18,7 @@ import type {
   ComposeSubmitDetail,
   ComposeAttachment,
   DraftItem,
+  LocalDraft,
 } from "./compose-types.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import { showToast } from "../toast.js";
@@ -80,6 +81,9 @@ export class JantComposeDialog extends LitElement {
   private _attachedEditor: Editor | null = null;
   private _attachedTextSnapshot: JSONContent | null = null;
   private _confirmForDrafts = false;
+  private _draftSaveTimer: ReturnType<typeof setTimeout> | null = null;
+  private _draftRestored = false;
+  #dirty = false;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -117,6 +121,17 @@ export class JantComposeDialog extends LitElement {
     return this.querySelector("jant-compose-editor");
   }
 
+  protected updated(changed: Map<string, unknown>) {
+    super.updated(changed);
+    if (changed.has("_format") || changed.has("_collectionIds")) {
+      this.#dirty = true;
+      // Schedule draft auto-save for new-post mode only
+      if (!this._editPostId && !this._draftSourceId) {
+        this._scheduleDraftSave();
+      }
+    }
+  }
+
   reset() {
     this._format = "note";
     this._status = "published";
@@ -139,6 +154,7 @@ export class JantComposeDialog extends LitElement {
     this._draftMenuOpenId = null;
     this._addCollectionPanelOpen = false;
     this._confirmForDrafts = false;
+    this.#dirty = false;
     this._destroyAttachedEditor();
     this._editor?.reset();
   }
@@ -228,7 +244,10 @@ export class JantComposeDialog extends LitElement {
     });
 
     this.closest("dialog")?.showModal();
-    globalThis.requestAnimationFrame(() => this._editor?.focusInput());
+    globalThis.requestAnimationFrame(() => {
+      this._editor?.focusInput();
+      this.#dirty = false;
+    });
   }
 
   set loading(v: boolean) {
@@ -280,6 +299,7 @@ export class JantComposeDialog extends LitElement {
       fetch(`/api/posts/${sqid}`, { method: "DELETE" }).catch(() => {});
       showToast(this.labels.draftDeleted);
     }
+    this._clearDraftFromStorage();
     this._confirmPanelOpen = false;
     this._closeDialog();
     (document.activeElement as HTMLElement)?.blur();
@@ -389,6 +409,7 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _submit(status: "published" | "draft") {
+    this._clearDraftFromStorage();
     if (!this._dispatchSubmit(status)) return;
     this._closeDialog();
     // Prevent browser from restoring focus to the trigger button
@@ -413,11 +434,18 @@ export class JantComposeDialog extends LitElement {
       "jant:attached-panel-open",
       this._handleAttachedPanelOpen,
     );
+    this.addEventListener(
+      "jant:compose-content-changed",
+      this._onContentChanged,
+    );
     // Listen on document — fullscreen element lives on document.body, outside the dialog
     document.addEventListener(
       "jant:fullscreen-close",
       this._handleFullscreenClose as EventListener,
     );
+
+    // Flush pending draft save before page unload (covers refresh/close mid-debounce)
+    window.addEventListener("beforeunload", this._onBeforeUnload);
 
     // Intercept native dialog cancel (ESC) to route through requestClose
     const dialog = this.closest("dialog");
@@ -435,11 +463,17 @@ export class JantComposeDialog extends LitElement {
       "jant:attached-panel-open",
       this._handleAttachedPanelOpen,
     );
+    this.removeEventListener(
+      "jant:compose-content-changed",
+      this._onContentChanged,
+    );
     document.removeEventListener(
       "jant:fullscreen-close",
       this._handleFullscreenClose as EventListener,
     );
+    window.removeEventListener("beforeunload", this._onBeforeUnload);
     this._destroyAttachedEditor();
+    this._cancelDraftSaveTimer();
 
     const dialog = this.closest("dialog");
     if (dialog) {
@@ -715,7 +749,10 @@ export class JantComposeDialog extends LitElement {
       textAttachments,
     });
 
-    globalThis.requestAnimationFrame(() => this._editor?.focusInput());
+    globalThis.requestAnimationFrame(() => {
+      this._editor?.focusInput();
+      this.#dirty = false;
+    });
   }
 
   private async _deleteDraft(sqid: string) {
@@ -749,6 +786,161 @@ export class JantComposeDialog extends LitElement {
     if (draft.quoteText) return draft.quoteText;
     if (draft.url) return draft.url;
     return null;
+  }
+
+  // ── Local draft auto-save (globalThis.localStorage) ──────────────────────────
+
+  private static _DRAFT_KEY = "jant:compose-draft";
+  private static _DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+  private _onContentChanged = () => {
+    this.#dirty = true;
+    // Schedule localStorage auto-save for new-post mode only
+    if (!this._editPostId && !this._draftSourceId) {
+      this._scheduleDraftSave();
+    }
+  };
+
+  private _cancelDraftSaveTimer() {
+    if (this._draftSaveTimer !== null) {
+      clearTimeout(this._draftSaveTimer);
+      this._draftSaveTimer = null;
+    }
+  }
+
+  private _scheduleDraftSave() {
+    this._cancelDraftSaveTimer();
+    this._draftSaveTimer = setTimeout(() => this._saveDraftToStorage(), 1000);
+  }
+
+  /** Flush pending draft save and warn on unsaved changes before page unload */
+  private _onBeforeUnload = (e: globalThis.BeforeUnloadEvent) => {
+    // Flush any pending debounced draft save
+    if (this._draftSaveTimer !== null) {
+      this._cancelDraftSaveTimer();
+      this._saveDraftToStorage();
+    }
+    // Warn if the dialog is open with unsaved modifications
+    const dialog = this.closest("dialog");
+    if (dialog?.open && this.#dirty) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  };
+
+  private _saveDraftToStorage() {
+    const editor = this._editor;
+    if (!editor) return;
+
+    const data = editor.getData();
+    const hasContent =
+      !!data.body ||
+      !!data.title.trim() ||
+      !!data.url.trim() ||
+      !!data.quoteText.trim() ||
+      !!data.quoteAuthor.trim() ||
+      data.rating > 0 ||
+      data.attachedTexts.some((t) => t.bodyJson !== null);
+
+    if (!hasContent) {
+      globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+      return;
+    }
+
+    const draft: LocalDraft = {
+      format: this._format,
+      title: data.title,
+      bodyJson: editor._bodyJson,
+      url: data.url,
+      quoteText: data.quoteText,
+      quoteAuthor: data.quoteAuthor,
+      rating: data.rating,
+      showTitle: editor._showTitle,
+      showRating: editor._showRating,
+      collectionIds: [...this._collectionIds],
+      attachedTexts: data.attachedTexts.map((t) => ({
+        clientId: t.clientId,
+        bodyJson: t.bodyJson,
+        bodyHtml: t.bodyHtml,
+        summary: t.summary,
+      })),
+      savedAt: Date.now(),
+    };
+
+    try {
+      globalThis.localStorage.setItem(
+        JantComposeDialog._DRAFT_KEY,
+        JSON.stringify(draft),
+      );
+    } catch {
+      // Storage full or unavailable — silently ignore
+    }
+  }
+
+  private _clearDraftFromStorage() {
+    this._cancelDraftSaveTimer();
+    globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+  }
+
+  async restoreLocalDraft() {
+    // Don't restore if already in edit or draft-load mode
+    if (this._editPostId || this._draftSourceId) return;
+    // Don't restore if the editor already has content (e.g. reopened dialog)
+    if (this._hasContent()) return;
+
+    let raw: string | null;
+    try {
+      raw = globalThis.localStorage.getItem(JantComposeDialog._DRAFT_KEY);
+    } catch {
+      return;
+    }
+    if (!raw) return;
+
+    let draft: LocalDraft;
+    try {
+      draft = JSON.parse(raw) as LocalDraft;
+    } catch {
+      globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+      return;
+    }
+
+    // Discard stale drafts
+    if (Date.now() - draft.savedAt > JantComposeDialog._DRAFT_MAX_AGE) {
+      globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
+      return;
+    }
+
+    this._format = draft.format;
+    this._collectionIds = [...(draft.collectionIds ?? [])];
+
+    await this.updateComplete;
+
+    const textAttachments = draft.attachedTexts
+      ?.filter((t) => t.bodyJson !== null)
+      .map((t) => ({
+        bodyJson: JSON.stringify(t.bodyJson),
+        bodyHtml: t.bodyHtml,
+        summary: t.summary,
+      }));
+
+    this._editor?.populate({
+      format: draft.format,
+      title: draft.title || undefined,
+      bodyJson: draft.bodyJson ? JSON.stringify(draft.bodyJson) : undefined,
+      url: draft.url || undefined,
+      quoteText: draft.quoteText || undefined,
+      quoteAuthor: draft.quoteAuthor || undefined,
+      rating: draft.rating || undefined,
+      showTitle: draft.showTitle,
+      showRating: draft.showRating,
+      textAttachments: textAttachments?.length ? textAttachments : undefined,
+    });
+
+    this._draftRestored = true;
+    showToast(this.labels.draftRestored);
+    globalThis.requestAnimationFrame(() => {
+      this.#dirty = false;
+    });
   }
 
   private _renderDraftsPanel() {

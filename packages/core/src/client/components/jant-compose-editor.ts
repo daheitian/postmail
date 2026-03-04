@@ -347,6 +347,19 @@ export class JantComposeEditor extends LitElement {
     this._editor = null;
   }
 
+  /** Content-relevant properties that trigger a change event for draft auto-save */
+  private static _CONTENT_PROPS = new Set([
+    "_title",
+    "_bodyJson",
+    "_url",
+    "_quoteText",
+    "_quoteAuthor",
+    "_rating",
+    "_showTitle",
+    "_showRating",
+    "_attachedTexts",
+  ]);
+
   protected updated(changed: Map<string, unknown>) {
     super.updated(changed);
 
@@ -361,6 +374,16 @@ export class JantComposeEditor extends LitElement {
       // Schedule init after Lit re-renders the new template
       this.updateComplete.then(() => this._initEditor());
     }
+
+    // Notify parent dialog of content changes for draft auto-save
+    for (const key of changed.keys()) {
+      if (JantComposeEditor._CONTENT_PROPS.has(key as string)) {
+        this.dispatchEvent(
+          new Event("jant:compose-content-changed", { bubbles: true }),
+        );
+        break;
+      }
+    }
   }
 
   /** Returns Tiptap editor content and title for fullscreen handoff */
@@ -372,7 +395,7 @@ export class JantComposeEditor extends LitElement {
     };
   }
 
-  /** Pre-fill all fields for edit mode */
+  /** Pre-fill all fields for edit mode or draft restore */
   populate(data: {
     format: string;
     title?: string;
@@ -381,6 +404,8 @@ export class JantComposeEditor extends LitElement {
     quoteText?: string;
     quoteAuthor?: string;
     rating?: number;
+    showTitle?: boolean;
+    showRating?: boolean;
     media?: Array<{
       id: string;
       previewUrl: string;
@@ -405,9 +430,9 @@ export class JantComposeEditor extends LitElement {
       this._rating = data.rating;
       this._showRating = true;
     }
-    if (data.title && data.format === "note") {
-      this._showTitle = true;
-    }
+    if (data.showTitle !== undefined) this._showTitle = data.showTitle;
+    else if (data.title && data.format === "note") this._showTitle = true;
+    if (data.showRating !== undefined) this._showRating = data.showRating;
 
     // Parse body JSON and set editor content
     if (data.bodyJson) {

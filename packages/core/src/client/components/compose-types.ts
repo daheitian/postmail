@@ -52,6 +52,26 @@ export interface DraftItem {
   }[];
 }
 
+export interface LocalDraft {
+  format: ComposeFormat;
+  title: string;
+  bodyJson: JSONContent | null;
+  url: string;
+  quoteText: string;
+  quoteAuthor: string;
+  rating: number;
+  showTitle: boolean;
+  showRating: boolean;
+  collectionIds: number[];
+  attachedTexts: Array<{
+    clientId: string;
+    bodyJson: JSONContent | null;
+    bodyHtml: string;
+    summary: string;
+  }>;
+  savedAt: number;
+}
+
 export interface ComposeLabels {
   cancel: string;
   note: string;
@@ -104,6 +124,7 @@ export interface ComposeLabels {
   publishFailedDraft: string;
   uploadFailedDraft: string;
   addCollection: string;
+  draftRestored: string;
   collectionFormLabels: CollectionFormLabels;
 }
 

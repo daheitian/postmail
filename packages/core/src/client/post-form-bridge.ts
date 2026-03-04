@@ -94,9 +94,11 @@ async function handlePostSubmit(event: Event) {
               retryJson?.status === "redirect" &&
               typeof retryJson.url === "string"
             ) {
+              formEl.clearDirty();
               window.location.href = retryJson.url;
               return;
             }
+            formEl.clearDirty();
             return;
           }
         } catch {
@@ -110,10 +112,12 @@ async function handlePostSubmit(event: Event) {
     const json = await res.json();
 
     if (json?.status === "redirect" && typeof json.url === "string") {
+      formEl.clearDirty();
       window.location.href = json.url;
       return;
     }
 
+    formEl.clearDirty();
     showToast(detail.messages.success);
   } catch (err) {
     const message =

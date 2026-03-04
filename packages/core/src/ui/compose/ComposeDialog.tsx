@@ -221,6 +221,11 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Add Collection",
       comment: "@context: Action to create a new collection from compose",
     }),
+    draftRestored: t({
+      message: "Draft restored.",
+      comment:
+        "@context: Toast shown when a local draft is restored on compose open",
+    }),
     collectionFormLabels: {
       titleLabel: t({
         message: "Title",
