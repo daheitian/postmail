@@ -1209,40 +1209,36 @@ export class JantComposeDialog extends LitElement {
             ? html`<span class="compose-dialog-title"
                 >${this.labels.editPost}</span
               >`
-            : this._replyToId
-              ? html`<span class="compose-dialog-title"
-                  >${this.labels.reply}</span
-                >`
-              : html`
-                  <div class="compose-segmented">
-                    <div
-                      class=${classMap({
-                        "compose-format-pill": true,
-                        "compose-format-pill-link": this._format === "link",
-                        "compose-format-pill-quote": this._format === "quote",
-                      })}
-                    ></div>
-                    ${formats.map(
-                      (f) => html`
-                        <button
-                          type="button"
-                          class=${classMap({
-                            "compose-segmented-item": true,
-                            "compose-segmented-item-active": this._format === f,
-                          })}
-                          @click=${() => {
-                            this._format = f;
-                            globalThis.requestAnimationFrame(() =>
-                              this._editor?.focusInput(),
-                            );
-                          }}
-                        >
-                          ${formatLabels[f]}
-                        </button>
-                      `,
-                    )}
-                  </div>
-                `}
+            : html`
+                <div class="compose-segmented">
+                  <div
+                    class=${classMap({
+                      "compose-format-pill": true,
+                      "compose-format-pill-link": this._format === "link",
+                      "compose-format-pill-quote": this._format === "quote",
+                    })}
+                  ></div>
+                  ${formats.map(
+                    (f) => html`
+                      <button
+                        type="button"
+                        class=${classMap({
+                          "compose-segmented-item": true,
+                          "compose-segmented-item-active": this._format === f,
+                        })}
+                        @click=${() => {
+                          this._format = f;
+                          globalThis.requestAnimationFrame(() =>
+                            this._editor?.focusInput(),
+                          );
+                        }}
+                      >
+                        ${formatLabels[f]}
+                      </button>
+                    `,
+                  )}
+                </div>
+              `}
         </div>
 
         <div class="flex items-center gap-0.5 shrink-0">
