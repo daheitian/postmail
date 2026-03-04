@@ -2041,14 +2041,18 @@
     overflow: hidden;
     background-color: var(--site-nav-hover-bg);
     border: 1px solid var(--site-divider);
-    transition:
-      background-color 0.15s,
-      border-color 0.15s;
+    transition: background-color 0.15s;
   }
 
-  a.media-gallery-card:hover {
-    background-color: var(--site-bg-secondary, var(--site-nav-hover-bg));
-    border-color: var(--site-text-secondary);
+  a.media-gallery-card:hover,
+  button.media-gallery-card:hover {
+    background-color: var(--site-divider);
+  }
+
+  button.media-gallery-card {
+    cursor: pointer;
+    font: inherit;
+    text-align: inherit;
   }
 
   .media-gallery-card-inner {
@@ -2068,13 +2072,13 @@
     opacity: 0.6;
   }
 
-  .media-gallery-card-name {
-    font-size: var(--text-sm);
-    font-weight: var(--fw-medium);
-    line-height: 1.3;
+  .media-gallery-card-summary {
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    color: var(--site-text-secondary);
     overflow: hidden;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     word-break: break-word;
   }
@@ -2082,47 +2086,6 @@
   .media-gallery-card-meta {
     font-size: 0.6875rem;
     color: var(--site-text-secondary);
-  }
-
-  /* --- Text attachment card (icon + excerpt) ------------------------------ */
-
-  .media-text-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px;
-    text-decoration: none;
-    color: var(--site-text-primary);
-    border-radius: var(--media-radius, 0.5rem);
-    background-color: var(--site-nav-hover-bg);
-    border: 1px solid var(--site-divider);
-    cursor: pointer;
-    transition:
-      border-color 0.15s,
-      box-shadow 0.15s;
-  }
-
-  .media-text-card:hover {
-    filter: brightness(0.95);
-  }
-
-  .media-text-card-icon {
-    flex-shrink: 0;
-    color: var(--site-text-link);
-  }
-
-  .media-text-card-excerpt {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    font-size: 0.6875rem;
-    line-height: 1.4;
-    color: var(--site-text-secondary);
-    text-align: center;
-    word-break: break-word;
   }
 
   /* --- Lightbox video ----------------------------------------------------- */

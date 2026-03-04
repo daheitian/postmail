@@ -10,6 +10,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import type {
   ComposeFormat,
@@ -848,6 +849,39 @@ export class JantComposeEditor extends LitElement {
     return `${parseFloat((count / 1_000_000).toFixed(1))}M chars`;
   }
 
+  private _renderFileIcon(mimeType: string, size: number) {
+    const doc = `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>`;
+
+    let inner: string;
+    if (mimeType === "application/pdf") {
+      inner = `<text x="12" y="16.5" text-anchor="middle" fill="currentColor" stroke="none" font-size="6" font-weight="700" font-family="system-ui, sans-serif">PDF</text>`;
+    } else if (mimeType === "text/markdown") {
+      inner = `<text x="12" y="16.5" text-anchor="middle" fill="currentColor" stroke="none" font-size="10" font-weight="700" font-family="system-ui, sans-serif">#</text>`;
+    } else if (mimeType === "text/csv") {
+      inner = `<line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="8" y1="18" x2="16" y2="18"/><line x1="10.7" y1="12" x2="10.7" y2="18"/><line x1="13.3" y1="12" x2="13.3" y2="18"/>`;
+    } else if (mimeType === "application/zip") {
+      inner = `<line x1="12" y1="10" x2="12" y2="11.5"/><line x1="12" y1="13" x2="12" y2="14.5"/><line x1="12" y1="16" x2="12" y2="17.5"/>`;
+    } else if (mimeType === "text/x-tiptap+json") {
+      inner = `<line x1="16" y1="11" x2="8" y2="11"/><line x1="16" y1="14" x2="8" y2="14"/><line x1="12" y1="17" x2="8" y2="17"/>`;
+    } else {
+      // Plain text default — 3 text lines
+      inner = `<line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>`;
+    }
+
+    return html`<svg
+      width="${size}"
+      height="${size}"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      ${unsafeSVG(doc + inner)}
+    </svg>`;
+  }
+
   // ── Render helpers ────────────────────────────────────────────────
 
   private _renderNoteFields() {
@@ -1031,23 +1065,7 @@ export class JantComposeEditor extends LitElement {
       return html`
         <div class="compose-attachment-file-card">
           <div class="compose-attachment-file-icon">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-              />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-            </svg>
+            ${this._renderFileIcon(a.file.type, 20)}
           </div>
           <span class="compose-attachment-file-name">${a.file.name}</span>
           <span class="compose-attachment-file-size"
@@ -1061,24 +1079,7 @@ export class JantComposeEditor extends LitElement {
       return html`
         <div class="compose-attachment-file-card">
           <div class="compose-attachment-file-icon">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-              />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-              <line x1="10" y1="9" x2="8" y2="9" />
-            </svg>
+            ${this._renderFileIcon(a.file.type, 20)}
           </div>
           <span class="compose-attachment-file-name">${a.file.name}</span>
           ${a.summary
@@ -1099,21 +1100,7 @@ export class JantComposeEditor extends LitElement {
       return html`
         <div class="compose-attachment-file-card">
           <div class="compose-attachment-file-icon">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M21 8v13H3V3h12l6 5z" />
-              <path d="M9 3v18" />
-              <path d="M9 12h3" />
-              <path d="M9 15h3" />
-            </svg>
+            ${this._renderFileIcon(a.file.type, 20)}
           </div>
           <span class="compose-attachment-file-name">${a.file.name}</span>
           <span class="compose-attachment-file-size"
@@ -1187,20 +1174,7 @@ export class JantComposeEditor extends LitElement {
         >
           <div class="compose-attachment-text-card">
             <div class="compose-attachment-file-icon">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 18 18"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.3"
-                stroke-linecap="round"
-              >
-                <rect x="3" y="2" width="12" height="14" rx="2" />
-                <line x1="6" y1="6" x2="12" y2="6" />
-                <line x1="6" y1="9" x2="12" y2="9" />
-                <line x1="6" y1="12" x2="9.5" y2="12" />
-              </svg>
+              ${this._renderFileIcon("text/x-tiptap+json", 20)}
             </div>
             <span class="compose-attachment-text-summary">${item.summary}</span>
             ${item.bodyJson

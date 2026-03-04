@@ -30,44 +30,126 @@ export function formatChars(count: number): string {
   return `${parseFloat((count / 1_000_000).toFixed(1))}M chars`;
 }
 
-/** Document icon SVG (file with lines) */
-const DocumentIcon = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" y1="13" x2="8" y2="13" />
-    <line x1="16" y1="17" x2="8" y2="17" />
-  </svg>
-);
+/**
+ * Format-specific file icon. Each MIME type gets a visually distinct icon
+ * built on the same document silhouette base.
+ */
+const FileIcon = ({
+  mimeType,
+  size = 24,
+}: {
+  mimeType: string;
+  size?: number;
+}) => {
+  const base = {
+    width: `${size}`,
+    height: `${size}`,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-width": "1.5",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+  } as const;
 
-/** Text icon SVG — horizontal lines representing text content */
-const TextIcon = ({ size = 24 }: { size?: number }) => (
-  <svg
-    width={`${size}`}
-    height={`${size}`}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" y1="13" x2="8" y2="13" />
-    <line x1="16" y1="17" x2="8" y2="17" />
-    <line x1="10" y1="9" x2="8" y2="9" />
-  </svg>
-);
+  // PDF — bold "PDF" label
+  if (mimeType === "application/pdf") {
+    return (
+      <svg {...base}>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <text
+          x="12"
+          y="16.5"
+          text-anchor="middle"
+          fill="currentColor"
+          stroke="none"
+          font-size="6"
+          font-weight="700"
+          font-family="system-ui, sans-serif"
+        >
+          PDF
+        </text>
+      </svg>
+    );
+  }
+
+  // Markdown — "#" heading symbol
+  if (mimeType === "text/markdown") {
+    return (
+      <svg {...base}>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <text
+          x="12"
+          y="16.5"
+          text-anchor="middle"
+          fill="currentColor"
+          stroke="none"
+          font-size="10"
+          font-weight="700"
+          font-family="system-ui, sans-serif"
+        >
+          #
+        </text>
+      </svg>
+    );
+  }
+
+  // CSV — 3x2 grid/table
+  if (mimeType === "text/csv") {
+    return (
+      <svg {...base}>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        {/* Horizontal lines */}
+        <line x1="8" y1="12" x2="16" y2="12" />
+        <line x1="8" y1="15" x2="16" y2="15" />
+        <line x1="8" y1="18" x2="16" y2="18" />
+        {/* Vertical dividers */}
+        <line x1="10.7" y1="12" x2="10.7" y2="18" />
+        <line x1="13.3" y1="12" x2="13.3" y2="18" />
+      </svg>
+    );
+  }
+
+  // ZIP — vertical zipper dashes
+  if (mimeType === "application/zip") {
+    return (
+      <svg {...base}>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="12" y1="10" x2="12" y2="11.5" />
+        <line x1="12" y1="13" x2="12" y2="14.5" />
+        <line x1="12" y1="16" x2="12" y2="17.5" />
+      </svg>
+    );
+  }
+
+  // Tiptap JSON — notepad with paragraph lines
+  if (mimeType === "text/x-tiptap+json") {
+    return (
+      <svg {...base}>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="11" x2="8" y2="11" />
+        <line x1="16" y1="14" x2="8" y2="14" />
+        <line x1="12" y1="17" x2="8" y2="17" />
+      </svg>
+    );
+  }
+
+  // Plain text (default) — 3 horizontal text lines
+  return (
+    <svg {...base}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <line x1="10" y1="9" x2="8" y2="9" />
+    </svg>
+  );
+};
 
 export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
   if (attachments.length === 0) return null;
@@ -290,9 +372,9 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                 >
                   <div class="media-gallery-card-inner">
                     <div class="media-gallery-card-icon">
-                      <DocumentIcon />
+                      <FileIcon mimeType={item.mimeType} />
                     </div>
-                    <span class="media-gallery-card-name">
+                    <span class="media-gallery-card-summary">
                       {item.originalName || item.altText || "Document"}
                     </span>
                     {item.size != null && (
@@ -305,29 +387,31 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
               );
             }
 
-            // Text card — same height as row, compact tile
+            // Text card — 3:4 portrait, matching document cards
             return (
               <button
                 key={item.id}
                 type="button"
                 data-text-preview-id={item.id}
-                class="media-text-card shrink-0 snap-start"
+                class="media-gallery-card shrink-0 snap-start"
                 style={{
-                  width: `${rowHeight}px`,
+                  width: `${docCardWidth}px`,
                   height: `${rowHeight}px`,
                 }}
               >
-                <div class="media-text-card-icon">
-                  <TextIcon size={28} />
-                </div>
-                <span class="media-text-card-excerpt">
-                  {item.summary || item.originalName || "Attached text"}
-                </span>
-                {typeof item.chars === "number" && item.chars > 0 && (
-                  <span class="media-gallery-card-meta">
-                    {formatChars(item.chars)}
+                <div class="media-gallery-card-inner">
+                  <div class="media-gallery-card-icon">
+                    <FileIcon mimeType={item.mimeType} />
+                  </div>
+                  <span class="media-gallery-card-summary">
+                    {item.summary || item.originalName || "Attached text"}
                   </span>
-                )}
+                  {typeof item.chars === "number" && item.chars > 0 && (
+                    <span class="media-gallery-card-meta">
+                      {formatChars(item.chars)}
+                    </span>
+                  )}
+                </div>
               </button>
             );
           })}
