@@ -28,12 +28,12 @@ import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
  * ```
  */
 export function buildMediaMap(
-  rawMediaMap: Map<number, Media[]>,
+  rawMediaMap: Map<string, Media[]>,
   r2PublicUrl?: string,
   imageTransformUrl?: string,
   s3PublicUrl?: string,
-): Map<number, MediaAttachment[]> {
-  const mediaMap = new Map<number, MediaAttachment[]>();
+): Map<string, MediaAttachment[]> {
+  const mediaMap = new Map<string, MediaAttachment[]>();
   for (const [postId, mediaList] of rawMediaMap) {
     mediaMap.set(
       postId,

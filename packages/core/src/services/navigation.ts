@@ -5,6 +5,7 @@
  */
 
 import { eq, asc, sql } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { navItems } from "../db/schema.js";
 import { now } from "../lib/time.js";
@@ -17,12 +18,12 @@ import type {
 
 export interface NavItemService {
   list(): Promise<NavItem[]>;
-  getById(id: number): Promise<NavItem | null>;
+  getById(id: string): Promise<NavItem | null>;
   create(data: CreateNavItem): Promise<NavItem>;
-  update(id: number, data: UpdateNavItem): Promise<NavItem | null>;
-  delete(id: number): Promise<boolean>;
-  deleteByPageId(pageId: number): Promise<boolean>;
-  reorder(ids: number[]): Promise<void>;
+  update(id: string, data: UpdateNavItem): Promise<NavItem | null>;
+  delete(id: string): Promise<boolean>;
+  deleteByPageId(pageId: string): Promise<boolean>;
+  reorder(ids: string[]): Promise<void>;
 }
 
 export function createNavItemService(db: Database): NavItemService {
@@ -58,6 +59,7 @@ export function createNavItemService(db: Database): NavItemService {
     },
 
     async create(data) {
+      const id = uuidv7();
       const timestamp = now();
 
       let position = data.position;
@@ -72,6 +74,7 @@ export function createNavItemService(db: Database): NavItemService {
       const result = await db
         .insert(navItems)
         .values({
+          id,
           type: data.type,
           label: data.label,
           url: data.url,

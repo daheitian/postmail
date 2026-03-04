@@ -5,6 +5,7 @@
  */
 
 import { eq } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { redirects } from "../db/schema.js";
 import { now } from "../lib/time.js";
@@ -16,7 +17,7 @@ import { ConflictError } from "../lib/errors.js";
 export interface RedirectService {
   getByPath(fromPath: string): Promise<Redirect | null>;
   create(fromPath: string, toPath: string, type?: 301 | 302): Promise<Redirect>;
-  delete(id: number): Promise<boolean>;
+  delete(id: string): Promise<boolean>;
   list(): Promise<Redirect[]>;
 }
 
@@ -46,6 +47,7 @@ export function createRedirectService(
     },
 
     async create(fromPath, toPath, type = 301) {
+      const id = uuidv7();
       const timestamp = now();
       const normalizedFrom = normalizePath(fromPath);
 
@@ -64,6 +66,7 @@ export function createRedirectService(
       const result = await db
         .insert(redirects)
         .values({
+          id,
           fromPath: normalizedFrom,
           toPath,
           type,

@@ -1831,6 +1831,11 @@ msgstr "Remove Divider"
 msgid "Reorder"
 msgstr "Reorder"
 
+#. @context: Compose button - reply to post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Reply"
+msgstr "Reply"
+
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
 #: src/routes/auth/reset.tsx
@@ -1997,6 +2002,16 @@ msgstr "Settings updated."
 #: src/ui/feed/ThreadPreview.tsx
 msgid "Show {remainingCount} more {0}"
 msgstr "Show {remainingCount} more {0}"
+
+#. @context: Collapse reply context
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Show less"
+msgstr "Show less"
+
+#. @context: Expand reply context
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Show more"
+msgstr "Show more"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading

@@ -31,9 +31,8 @@ archiveRoutes.get("/", async (c) => {
       ? visibilityParam
       : undefined;
 
-  // Parse cursor
-  const cursorParam = c.req.query("cursor");
-  const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
+  // Parse cursor (UUID string)
+  const cursor = c.req.query("cursor") || undefined;
 
   const navData = await getNavigationData(c);
 

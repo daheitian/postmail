@@ -42,7 +42,7 @@ export interface FeaturedPageProps {
 export interface ArchivePageProps {
   groups: ArchiveGroup[];
   hasMore: boolean;
-  nextCursor?: number;
+  nextCursor?: string;
   format?: Format;
   visibility?: Visibility;
 }
@@ -61,7 +61,7 @@ export interface CollectionPageProps {
   collection: Collection;
   items: TimelineItemView[];
   hasMore: boolean;
-  nextCursor?: number;
+  nextCursor?: string;
 }
 
 /** Props for the collections list page component */

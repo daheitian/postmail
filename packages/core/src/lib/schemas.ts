@@ -80,10 +80,10 @@ export const CreatePostSchema = z.object({
   quoteText: z.string().optional(),
   rating: RatingSchema,
   collectionIds: z
-    .array(z.coerce.number().int().positive())
+    .array(z.string().min(1))
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  replyToId: z.string().optional(), // Sqid format
+  replyToId: z.string().optional(),
   publishedAt: z.number().int().positive().optional(),
   mediaIds: z.array(z.string()).max(MAX_MEDIA_ATTACHMENTS).optional(),
   mediaAlts: z.record(z.string(), z.string()).optional(),
@@ -125,7 +125,7 @@ export const CreateNavItemSchema = z.object({
   type: NavItemTypeSchema,
   label: z.string().min(1),
   url: z.string().min(1),
-  pageId: z.coerce.number().int().positive().optional(),
+  pageId: z.string().min(1).optional(),
   position: z.coerce.number().int().min(0).optional(),
 });
 
@@ -228,7 +228,7 @@ export function normalizeSlug(s: string): string {
  * Reorder request schema for simple ID-based reordering
  */
 export const ReorderSchema = z.object({
-  ids: z.array(z.coerce.number().int().positive()),
+  ids: z.array(z.string().min(1)),
 });
 
 // =============================================================================

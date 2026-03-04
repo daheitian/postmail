@@ -90,7 +90,7 @@ export async function assembleTimeline(
   );
 
   // Batch load media for preview replies
-  const previewReplyIds: number[] = [];
+  const previewReplyIds: string[] = [];
   for (const replies of threadPreviews.values()) {
     for (const reply of replies) {
       previewReplyIds.push(reply.id);

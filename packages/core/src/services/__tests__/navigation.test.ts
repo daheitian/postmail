@@ -30,7 +30,8 @@ describe("NavItemService", () => {
       expect(item.url).toBe("/");
       expect(item.pageId).toBeNull();
       expect(item.position).toBe(0);
-      expect(item.id).toBe(1);
+      expect(typeof item.id).toBe("string");
+      expect(item.id.length).toBeGreaterThan(0);
     });
 
     it("creates a page-type nav item with pageId", async () => {
@@ -103,7 +104,9 @@ describe("NavItemService", () => {
     });
 
     it("returns null for non-existent ID", async () => {
-      const found = await navItemService.getById(9999);
+      const found = await navItemService.getById(
+        "00000000-0000-0000-0000-000000009999",
+      );
       expect(found).toBeNull();
     });
   });
@@ -229,7 +232,10 @@ describe("NavItemService", () => {
     });
 
     it("returns null for non-existent ID", async () => {
-      const result = await navItemService.update(9999, { label: "Nope" });
+      const result = await navItemService.update(
+        "00000000-0000-0000-0000-000000009999",
+        { label: "Nope" },
+      );
       expect(result).toBeNull();
     });
   });
@@ -250,7 +256,9 @@ describe("NavItemService", () => {
     });
 
     it("returns false for non-existent ID", async () => {
-      const result = await navItemService.delete(9999);
+      const result = await navItemService.delete(
+        "00000000-0000-0000-0000-000000009999",
+      );
       expect(result).toBe(false);
     });
   });

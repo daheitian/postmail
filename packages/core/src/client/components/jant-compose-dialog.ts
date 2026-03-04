@@ -27,6 +27,11 @@ import { getMediaCategory } from "../../lib/upload.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 
+interface ReplyToData {
+  contentHtml: string;
+  dateText: string;
+}
+
 export class JantComposeDialog extends LitElement {
   static properties = {
     collections: { type: Array },
@@ -52,6 +57,9 @@ export class JantComposeDialog extends LitElement {
     _draftsError: { state: true },
     _draftMenuOpenId: { state: true },
     _addCollectionPanelOpen: { state: true },
+    _replyToId: { state: true },
+    _replyToData: { state: true },
+    _replyExpanded: { state: true },
   };
 
   declare collections: ComposeCollection[];
@@ -60,7 +68,7 @@ export class JantComposeDialog extends LitElement {
   declare _format: ComposeFormat;
   declare _status: "published" | "draft";
   declare _loading: boolean;
-  declare _collectionIds: number[];
+  declare _collectionIds: string[];
   declare _showCollection: boolean;
   declare _showMoreMenu: boolean;
   declare _collectionSearch: string;
@@ -77,6 +85,9 @@ export class JantComposeDialog extends LitElement {
   declare _draftsError: string | null;
   declare _draftMenuOpenId: string | null;
   declare _addCollectionPanelOpen: boolean;
+  declare _replyToId: string | null;
+  declare _replyToData: ReplyToData | null;
+  declare _replyExpanded: boolean;
 
   private _attachedEditor: Editor | null = null;
   private _attachedTextSnapshot: JSONContent | null = null;
@@ -115,6 +126,9 @@ export class JantComposeDialog extends LitElement {
     this._draftsError = null;
     this._draftMenuOpenId = null;
     this._addCollectionPanelOpen = false;
+    this._replyToId = null;
+    this._replyToData = null;
+    this._replyExpanded = false;
   }
 
   private get _editor(): JantComposeEditor | null {
@@ -126,7 +140,7 @@ export class JantComposeDialog extends LitElement {
     if (changed.has("_format") || changed.has("_collectionIds")) {
       this.#dirty = true;
       // Schedule draft auto-save for new-post mode only
-      if (!this._editPostId && !this._draftSourceId) {
+      if (!this._editPostId && !this._draftSourceId && !this._replyToId) {
         this._scheduleDraftSave();
       }
     }
@@ -153,20 +167,23 @@ export class JantComposeDialog extends LitElement {
     this._draftsError = null;
     this._draftMenuOpenId = null;
     this._addCollectionPanelOpen = false;
+    this._replyToId = null;
+    this._replyToData = null;
+    this._replyExpanded = false;
     this._confirmForDrafts = false;
     this.#dirty = false;
     this._destroyAttachedEditor();
     this._editor?.reset();
   }
 
-  async openEdit(sqid: string) {
+  async openEdit(id: string) {
     this.reset();
 
-    const res = await fetch(`/api/posts/${sqid}`);
+    const res = await fetch(`/api/posts/${id}`);
     if (!res.ok) return;
     const post = await res.json();
 
-    this._editPostId = sqid;
+    this._editPostId = id;
     this._format = post.format;
 
     // Pre-fill collection memberships if present
@@ -250,6 +267,23 @@ export class JantComposeDialog extends LitElement {
     });
   }
 
+  /**
+   * Open compose dialog in reply mode.
+   *
+   * @param id - Base58-encoded ID of the post being replied to
+   * @param replyData - Pre-captured content from the DOM (avoids API fetch)
+   */
+  async openReply(id: string, replyData?: ReplyToData) {
+    this.reset();
+    this._replyToId = id;
+    this._replyToData = replyData ?? null;
+    this._format = "note";
+
+    this.closest("dialog")?.showModal();
+    await this.updateComplete;
+    this._editor?.focusInput();
+  }
+
   set loading(v: boolean) {
     this._loading = v;
   }
@@ -286,17 +320,23 @@ export class JantComposeDialog extends LitElement {
       return;
     }
     if (this._hasContent()) {
-      this._confirmForDrafts = false;
-      this._confirmPanelOpen = true;
+      if (this._replyToId) {
+        // Reply mode: no draft support — just confirm discard
+        this._discardAndClose();
+      } else {
+        this._confirmForDrafts = false;
+        this._confirmPanelOpen = true;
+      }
     } else {
       this._closeDialog();
+      this.reset();
     }
   }
 
   private _discardAndClose() {
     if (this._draftSourceId) {
-      const sqid = this._draftSourceId;
-      fetch(`/api/posts/${sqid}`, { method: "DELETE" }).catch(() => {});
+      const id = this._draftSourceId;
+      fetch(`/api/posts/${id}`, { method: "DELETE" }).catch(() => {});
       showToast(this.labels.draftDeleted);
     }
     this._clearDraftFromStorage();
@@ -321,8 +361,8 @@ export class JantComposeDialog extends LitElement {
   private _handleConfirmDiscard() {
     if (this._confirmForDrafts) {
       if (this._draftSourceId) {
-        const sqid = this._draftSourceId;
-        fetch(`/api/posts/${sqid}`, { method: "DELETE" }).catch(() => {});
+        const id = this._draftSourceId;
+        fetch(`/api/posts/${id}`, { method: "DELETE" }).catch(() => {});
         showToast(this.labels.draftDeleted);
       }
       this._confirmPanelOpen = false;
@@ -380,6 +420,7 @@ export class JantComposeDialog extends LitElement {
       attachmentOrder: editorData.attachmentOrder ?? [],
       mediaClientMap,
       editPostId: this._editPostId ?? this._draftSourceId ?? undefined,
+      replyToId: this._replyToId ?? undefined,
     };
   }
 
@@ -417,7 +458,7 @@ export class JantComposeDialog extends LitElement {
     this.reset();
   }
 
-  private _toggleCollection(id: number) {
+  private _toggleCollection(id: string) {
     if (this._collectionIds.includes(id)) {
       this._collectionIds = this._collectionIds.filter((cid) => cid !== id);
     } else {
@@ -633,7 +674,7 @@ export class JantComposeDialog extends LitElement {
       const posts = json.posts ?? json;
       this._drafts = (posts as Record<string, unknown>[]).map(
         (p): DraftItem => ({
-          sqid: p.sqid as string,
+          id: p.id as string,
           format: p.format as ComposeFormat,
           title: (p.title as string) ?? null,
           bodyText: (p.bodyText as string) ?? null,
@@ -665,16 +706,16 @@ export class JantComposeDialog extends LitElement {
     this.updateComplete.then(() => this._editor?.focusInput());
   }
 
-  private async _loadDraft(sqid: string) {
+  private async _loadDraft(id: string) {
     this._draftsPanelOpen = false;
     this._draftMenuOpenId = null;
     this.reset();
 
-    const res = await fetch(`/api/posts/${sqid}`);
+    const res = await fetch(`/api/posts/${id}`);
     if (!res.ok) return;
     const post = await res.json();
 
-    this._draftSourceId = sqid;
+    this._draftSourceId = id;
     this._format = post.format;
 
     if (post.collectionIds?.length) {
@@ -755,12 +796,12 @@ export class JantComposeDialog extends LitElement {
     });
   }
 
-  private async _deleteDraft(sqid: string) {
+  private async _deleteDraft(id: string) {
     this._draftMenuOpenId = null;
-    this._drafts = this._drafts.filter((d) => d.sqid !== sqid);
+    this._drafts = this._drafts.filter((d) => d.id !== id);
 
     try {
-      const res = await fetch(`/api/posts/${sqid}`, { method: "DELETE" });
+      const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       showToast(this.labels.draftDeleted);
     } catch {
@@ -796,7 +837,7 @@ export class JantComposeDialog extends LitElement {
   private _onContentChanged = () => {
     this.#dirty = true;
     // Schedule localStorage auto-save for new-post mode only
-    if (!this._editPostId && !this._draftSourceId) {
+    if (!this._editPostId && !this._draftSourceId && !this._replyToId) {
       this._scheduleDraftSave();
     }
   };
@@ -1009,10 +1050,7 @@ export class JantComposeDialog extends LitElement {
     const preview = this._getDraftPreview(draft);
 
     return html`
-      <div
-        class="compose-draft-item"
-        @click=${() => this._loadDraft(draft.sqid)}
-      >
+      <div class="compose-draft-item" @click=${() => this._loadDraft(draft.id)}>
         <div class="compose-draft-content">
           ${preview
             ? html`<div class="compose-draft-preview">${preview}</div>`
@@ -1026,7 +1064,7 @@ export class JantComposeDialog extends LitElement {
           </div>
         </div>
         <div class="relative">
-          ${this._draftMenuOpenId === draft.sqid
+          ${this._draftMenuOpenId === draft.id
             ? html`<div
                 class="compose-dropdown-backdrop"
                 @click=${(e: Event) => {
@@ -1041,7 +1079,7 @@ export class JantComposeDialog extends LitElement {
             @click=${(e: Event) => {
               e.stopPropagation();
               this._draftMenuOpenId =
-                this._draftMenuOpenId === draft.sqid ? null : draft.sqid;
+                this._draftMenuOpenId === draft.id ? null : draft.id;
             }}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -1050,7 +1088,7 @@ export class JantComposeDialog extends LitElement {
               <circle cx="12" cy="8" r="1.2" />
             </svg>
           </button>
-          ${this._draftMenuOpenId === draft.sqid
+          ${this._draftMenuOpenId === draft.id
             ? html`
                 <div class="compose-dropdown compose-dropdown-right">
                   <button
@@ -1058,7 +1096,7 @@ export class JantComposeDialog extends LitElement {
                     class="compose-dropdown-item compose-dropdown-item-danger"
                     @click=${(e: Event) => {
                       e.stopPropagation();
-                      this._deleteDraft(draft.sqid);
+                      this._deleteDraft(draft.id);
                     }}
                   >
                     ${this.labels.deleteDraft}
@@ -1066,6 +1104,48 @@ export class JantComposeDialog extends LitElement {
                 </div>
               `
             : nothing}
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Reply context rendering ──────────────────────────────────────
+
+  private _renderReplyContext() {
+    if (!this._replyToId || !this._replyToData) return nothing;
+
+    const { contentHtml, dateText } = this._replyToData;
+    const isExpanded = this._replyExpanded;
+
+    return html`
+      <div class="compose-reply-wrapper">
+        <div class="compose-thread-line"></div>
+        <div class="flex-1 min-w-0">
+          <div
+            class=${classMap({
+              "compose-reply-context": true,
+              expanded: isExpanded,
+            })}
+          >
+            <div class="compose-reply-context-body">
+              ${unsafeHTML(contentHtml)}
+            </div>
+            ${!isExpanded
+              ? html`<div class="compose-reply-fade"></div>`
+              : nothing}
+          </div>
+          <div class="compose-reply-meta">
+            ${dateText ? html`<span>${dateText}</span><span>·</span>` : nothing}
+            <button
+              type="button"
+              class="compose-reply-toggle"
+              @click=${() => {
+                this._replyExpanded = !this._replyExpanded;
+              }}
+            >
+              ${isExpanded ? this.labels.showLess : this.labels.showMore}
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -1096,62 +1176,67 @@ export class JantComposeDialog extends LitElement {
             ? html`<span class="compose-dialog-title"
                 >${this.labels.editPost}</span
               >`
-            : html`
-                <div class="compose-segmented">
-                  <div
-                    class=${classMap({
-                      "compose-format-pill": true,
-                      "compose-format-pill-link": this._format === "link",
-                      "compose-format-pill-quote": this._format === "quote",
-                    })}
-                  ></div>
-                  ${formats.map(
-                    (f) => html`
-                      <button
-                        type="button"
-                        class=${classMap({
-                          "compose-segmented-item": true,
-                          "compose-segmented-item-active": this._format === f,
-                        })}
-                        @click=${() => {
-                          this._format = f;
-                          globalThis.requestAnimationFrame(() =>
-                            this._editor?.focusInput(),
-                          );
-                        }}
-                      >
-                        ${formatLabels[f]}
-                      </button>
-                    `,
-                  )}
-                </div>
-              `}
+            : this._replyToId
+              ? html`<span class="compose-dialog-title"
+                  >${this.labels.reply}</span
+                >`
+              : html`
+                  <div class="compose-segmented">
+                    <div
+                      class=${classMap({
+                        "compose-format-pill": true,
+                        "compose-format-pill-link": this._format === "link",
+                        "compose-format-pill-quote": this._format === "quote",
+                      })}
+                    ></div>
+                    ${formats.map(
+                      (f) => html`
+                        <button
+                          type="button"
+                          class=${classMap({
+                            "compose-segmented-item": true,
+                            "compose-segmented-item-active": this._format === f,
+                          })}
+                          @click=${() => {
+                            this._format = f;
+                            globalThis.requestAnimationFrame(() =>
+                              this._editor?.focusInput(),
+                            );
+                          }}
+                        >
+                          ${formatLabels[f]}
+                        </button>
+                      `,
+                    )}
+                  </div>
+                `}
         </div>
 
         <div class="flex items-center gap-0.5 shrink-0">
-          <button
-            type="button"
-            class="compose-dialog-header-btn"
-            title=${this.labels.saveDraft}
-            ?disabled=${this._loading}
-            @click=${() => this._handleDraftButtonClick()}
-          >
-            <svg
-              class="icon-fine"
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M14 2.5L15.5 4 7 12.5l-3 .5.5-3L14 2.5z" />
-              <path d="M4 15h10" />
-            </svg>
-          </button>
-
+          ${this._replyToId
+            ? nothing
+            : html`<button
+                type="button"
+                class="compose-dialog-header-btn"
+                title=${this.labels.saveDraft}
+                ?disabled=${this._loading}
+                @click=${() => this._handleDraftButtonClick()}
+              >
+                <svg
+                  class="icon-fine"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M14 2.5L15.5 4 7 12.5l-3 .5.5-3L14 2.5z" />
+                  <path d="M4 15h10" />
+                </svg>
+              </button>`}
           ${this._renderMoreMenu()}
         </div>
       </header>
@@ -1185,17 +1270,19 @@ export class JantComposeDialog extends LitElement {
         ${this._showMoreMenu
           ? html`
               <div class="compose-dropdown compose-dropdown-right">
-                <button
-                  type="button"
-                  class="compose-dropdown-item"
-                  @click=${() => {
-                    this._submit("draft");
-                    this._showMoreMenu = false;
-                  }}
-                >
-                  ${this.labels.saveAsDraft}
-                </button>
-                <div class="compose-dropdown-divider"></div>
+                ${this._replyToId
+                  ? nothing
+                  : html`<button
+                        type="button"
+                        class="compose-dropdown-item"
+                        @click=${() => {
+                          this._submit("draft");
+                          this._showMoreMenu = false;
+                        }}
+                      >
+                        ${this.labels.saveAsDraft}
+                      </button>
+                      <div class="compose-dropdown-divider"></div>`}
                 <button
                   type="button"
                   class="compose-dropdown-item compose-dropdown-item-danger"
@@ -1609,10 +1696,16 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _getSubmitLabel(): string {
+    if (this._editPostId) return this.labels.update;
+    if (this._replyToId) return this.labels.reply;
+    return this.labels.post;
+  }
+
   render() {
     return html`
       <div class="compose-dialog-inner">
-        ${this._renderHeader()}
+        ${this._renderHeader()} ${this._renderReplyContext()}
         <jant-compose-editor
           .format=${this._format}
           .labels=${this.labels}
@@ -1642,7 +1735,7 @@ export class JantComposeDialog extends LitElement {
                   <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                 </svg>`
               : nothing}
-            ${this._editPostId ? this.labels.update : this.labels.post}
+            ${this._getSubmitLabel()}
           </button>
         </div>
         ${this._renderAttachedPanel()} ${this._renderAltPanel()}

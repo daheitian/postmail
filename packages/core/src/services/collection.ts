@@ -5,6 +5,7 @@
  */
 
 import { eq, asc, sql, desc, and } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import {
   collections,
@@ -21,33 +22,33 @@ import type {
 } from "../types.js";
 
 export interface CollectionService {
-  getById(id: number): Promise<Collection | null>;
+  getById(id: string): Promise<Collection | null>;
   getBySlug(slug: string): Promise<Collection | null>;
   list(): Promise<Collection[]>;
   create(data: CreateCollection): Promise<Collection>;
-  update(id: number, data: UpdateCollection): Promise<Collection | null>;
-  delete(id: number): Promise<boolean>;
-  reorder(ids: number[]): Promise<void>;
-  /** Reorder mixed collections and dividers using prefixed IDs (e.g. "c-1", "d-2") */
+  update(id: string, data: UpdateCollection): Promise<Collection | null>;
+  delete(id: string): Promise<boolean>;
+  reorder(ids: string[]): Promise<void>;
+  /** Reorder mixed collections and dividers using prefixed IDs (e.g. "c-<uuid>", "d-<uuid>") */
   reorderAll(items: string[]): Promise<void>;
   /** Create a standalone divider with auto-assigned position */
   createDivider(): Promise<CollectionDivider>;
   /** Delete a divider by ID */
-  deleteDivider(id: number): Promise<boolean>;
+  deleteDivider(id: string): Promise<boolean>;
   /** List all dividers ordered by position */
   listDividers(): Promise<CollectionDivider[]>;
   /** Get post count per collection */
-  getPostCounts(): Promise<Map<number, number>>;
+  getPostCounts(): Promise<Map<string, number>>;
   /** Add a post to a collection */
-  addPost(collectionId: number, postId: number): Promise<void>;
+  addPost(collectionId: string, postId: string): Promise<void>;
   /** Remove a post from a collection */
-  removePost(collectionId: number, postId: number): Promise<void>;
+  removePost(collectionId: string, postId: string): Promise<void>;
   /** Get all collections a post belongs to */
-  getCollectionsByPostId(postId: number): Promise<Collection[]>;
+  getCollectionsByPostId(postId: string): Promise<Collection[]>;
   /** Get all post IDs in a collection */
-  getPostIds(collectionId: number): Promise<number[]>;
+  getPostIds(collectionId: string): Promise<string[]>;
   /** Sync a post's collection memberships (replace all with given IDs) */
-  syncPostCollections(postId: number, collectionIds: number[]): Promise<void>;
+  syncPostCollections(postId: string, collectionIds: string[]): Promise<void>;
 }
 
 export function createCollectionService(db: Database): CollectionService {
@@ -104,6 +105,7 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async create(data) {
+      const id = uuidv7();
       const timestamp = now();
 
       let position = data.position;
@@ -118,6 +120,7 @@ export function createCollectionService(db: Database): CollectionService {
       const result = await db
         .insert(collections)
         .values({
+          id,
           slug: data.slug,
           title: data.title,
           description: data.description ?? null,
@@ -160,7 +163,10 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async delete(id) {
-      // Junction table entries are cleaned up by ON DELETE CASCADE
+      // Clean up junction table entries manually (no FK CASCADE with text PKs)
+      await db
+        .delete(postCollections)
+        .where(eq(postCollections.collectionId, id));
       const result = await db
         .delete(collections)
         .where(eq(collections.id, id))
@@ -177,8 +183,9 @@ export function createCollectionService(db: Database): CollectionService {
       if (items.length === 0) return;
       const timestamp = now();
       const queries = items.map((item, i) => {
-        const [prefix, idStr] = item.split("-");
-        const id = Number(idStr);
+        // Prefix is always a single char ("c" or "d"), followed by "-"
+        const prefix = item[0];
+        const id = item.slice(2);
         if (prefix === "d") {
           return db
             .update(collectionDividers)
@@ -196,6 +203,7 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async createDivider() {
+      const id = uuidv7();
       const timestamp = now();
 
       const maxResult = await db.all<{ maxPos: number }>(
@@ -207,6 +215,7 @@ export function createCollectionService(db: Database): CollectionService {
       const result = await db
         .insert(collectionDividers)
         .values({
+          id,
           position,
           createdAt: timestamp,
           updatedAt: timestamp,
@@ -246,7 +255,7 @@ export function createCollectionService(db: Database): CollectionService {
         )
         .groupBy(postCollections.collectionId);
 
-      const counts = new Map<number, number>();
+      const counts = new Map<string, number>();
       for (const row of rows) {
         counts.set(row.collectionId, row.count);
       }

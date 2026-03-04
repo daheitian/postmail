@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { navItemsApiRoutes } from "../nav-items.js";
+import { toUid } from "../../../lib/uid.js";
 
 describe("Nav Items API Routes", () => {
   describe("GET /api/nav-items", () => {
@@ -121,11 +122,11 @@ describe("Nav Items API Routes", () => {
         url: "/second",
       });
 
-      // Reverse order
+      // Reverse order (encode UUIDs to Base58 UIDs for the API)
       const res = await app.request("/api/nav-items/reorder", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: [item2.id, item1.id] }),
+        body: JSON.stringify({ ids: [toUid(item2.id), toUid(item1.id)] }),
       });
 
       expect(res.status).toBe(200);
@@ -146,7 +147,7 @@ describe("Nav Items API Routes", () => {
         url: "/old",
       });
 
-      const res = await app.request(`/api/nav-items/${item.id}`, {
+      const res = await app.request(`/api/nav-items/${toUid(item.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ label: "New Label" }),
@@ -161,11 +162,14 @@ describe("Nav Items API Routes", () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);
 
-      const res = await app.request("/api/nav-items/9999", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: "test" }),
-      });
+      const res = await app.request(
+        `/api/nav-items/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ label: "test" }),
+        },
+      );
 
       expect(res.status).toBe(404);
     });
@@ -182,7 +186,7 @@ describe("Nav Items API Routes", () => {
         url: "/delete",
       });
 
-      const res = await app.request(`/api/nav-items/${item.id}`, {
+      const res = await app.request(`/api/nav-items/${toUid(item.id)}`, {
         method: "DELETE",
       });
 
@@ -199,7 +203,7 @@ describe("Nav Items API Routes", () => {
         url: "/delete",
       });
 
-      const res = await app.request(`/api/nav-items/${item.id}`, {
+      const res = await app.request(`/api/nav-items/${toUid(item.id)}`, {
         method: "DELETE",
       });
 
@@ -212,9 +216,10 @@ describe("Nav Items API Routes", () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);
 
-      const res = await app.request("/api/nav-items/9999", {
-        method: "DELETE",
-      });
+      const res = await app.request(
+        `/api/nav-items/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        { method: "DELETE" },
+      );
 
       expect(res.status).toBe(404);
     });

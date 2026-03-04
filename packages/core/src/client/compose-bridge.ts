@@ -192,6 +192,36 @@ document.addEventListener("jant:files-selected", (e: Event) => {
   }
 });
 
+// ── Reply trigger handler ───────────────────────────────────────────
+
+document.addEventListener("click", (e: MouseEvent) => {
+  const trigger = (e.target as HTMLElement).closest<HTMLButtonElement>(
+    "[data-reply-trigger]",
+  );
+  if (!trigger) return;
+
+  const article = trigger.closest<HTMLElement>("article[data-post]");
+  if (!article) return;
+
+  const postId = article.dataset.postId;
+  if (!postId) return;
+
+  // Capture rendered content from the DOM — reuses server-rendered cards
+  // (NoteCard, LinkCard, QuoteCard) with all formats, media, and attachments
+  const clone = article.cloneNode(true) as HTMLElement;
+  clone.querySelector("[data-post-meta]")?.remove();
+  clone.querySelector(".post-status-badges")?.remove();
+  const contentHtml = clone.innerHTML;
+
+  const timeEl = article.querySelector<HTMLElement>("time.dt-published");
+  const dateText = timeEl?.textContent?.trim() ?? "";
+
+  const dialog = document.querySelector(
+    "jant-compose-dialog",
+  ) as JantComposeDialog | null;
+  dialog?.openReply(postId, { contentHtml, dateText });
+});
+
 // ── Submit handler ──────────────────────────────────────────────────
 
 /** Build the JSON body for both create and update requests */
@@ -209,6 +239,7 @@ function buildPostBody(detail: ComposeSubmitDetail) {
     mediaIds: detail.mediaIds.length > 0 ? detail.mediaIds : undefined,
     mediaAlts:
       Object.keys(detail.mediaAlts).length > 0 ? detail.mediaAlts : undefined,
+    replyToId: detail.replyToId || undefined,
   };
 }
 

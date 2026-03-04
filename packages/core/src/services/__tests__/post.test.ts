@@ -36,7 +36,10 @@ describe("PostService", () => {
         body,
       });
 
-      expect(post.id).toBe(1);
+      expect(typeof post.id).toBe("string");
+      expect(post.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+      );
       expect(post.format).toBe("note");
       expect(post.body).toBe(body);
       expect(post.status).toBe("published"); // default
@@ -134,7 +137,7 @@ describe("PostService", () => {
       expect(post.publishedAt).toBe(customTime);
     });
 
-    it("creates incrementing IDs", async () => {
+    it("creates unique UUIDv7 IDs that sort chronologically", async () => {
       const post1 = await postService.create({
         format: "note",
         body: "first",
@@ -144,7 +147,9 @@ describe("PostService", () => {
         body: "second",
       });
 
-      expect(post2.id).toBeGreaterThan(post1.id);
+      expect(post1.id).not.toBe(post2.id);
+      // UUIDv7 strings sort chronologically
+      expect(post2.id > post1.id).toBe(true);
     });
 
     it("creates a quote post", async () => {

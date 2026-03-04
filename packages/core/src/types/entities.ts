@@ -11,7 +11,7 @@ import type {
 } from "./constants.js";
 
 export interface Post {
-  id: number;
+  id: string;
   format: Format;
   status: Status;
   visibility: Visibility;
@@ -25,8 +25,8 @@ export interface Post {
   quoteText: string | null;
   summary: string | null;
   rating: number | null;
-  replyToId: number | null;
-  threadId: number | null;
+  replyToId: string | null;
+  threadId: string | null;
   deletedAt: number | null;
   publishedAt: number;
   createdAt: number;
@@ -34,7 +34,7 @@ export interface Post {
 }
 
 export interface Page {
-  id: number;
+  id: string;
   slug: string;
   title: string | null;
   body: string | null;
@@ -46,7 +46,7 @@ export interface Page {
 
 export interface Media {
   id: string; // UUIDv7
-  postId: number | null;
+  postId: string | null;
   filename: string;
   originalName: string;
   mimeType: string;
@@ -87,7 +87,7 @@ export interface PostWithMedia extends Post {
 }
 
 export interface Collection {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   description: string | null;
@@ -99,30 +99,30 @@ export interface Collection {
 }
 
 export interface CollectionDivider {
-  id: number;
+  id: string;
   position: number;
   createdAt: number;
   updatedAt: number;
 }
 
 export interface PostCollection {
-  postId: number;
-  collectionId: number;
+  postId: string;
+  collectionId: string;
 }
 
 export interface NavItem {
-  id: number;
+  id: string;
   type: NavItemType;
   label: string;
   url: string;
-  pageId: number | null;
+  pageId: string | null;
   position: number;
   createdAt: number;
   updatedAt: number;
 }
 
 export interface Redirect {
-  id: number;
+  id: string;
   fromPath: string;
   toPath: string;
   type: 301 | 302;

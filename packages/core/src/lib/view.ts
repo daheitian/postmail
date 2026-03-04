@@ -23,7 +23,7 @@ import type {
   NavItemType,
   AppConfig,
 } from "../types.js";
-import { encode } from "./sqid.js";
+import { toUid } from "./uid.js";
 import {
   toISOString,
   formatDate,
@@ -130,8 +130,8 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
  * @returns Render-ready PostView with pre-computed fields
  */
 export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
-  const sqid = encode(post.id);
-  const permalink = post.path ? `/${post.path}` : `/p/${sqid}`;
+  const id = toUid(post.id);
+  const permalink = post.path ? `/${post.path}` : `/p/${id}`;
 
   // Pre-compute excerpt from raw body
   let excerpt: string | undefined;
@@ -187,8 +187,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
   }));
 
   return {
-    id: post.id,
-    sqid,
+    id,
     permalink,
     path: post.path ?? undefined,
     title: post.title ?? undefined,
@@ -209,8 +208,8 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     publishedAtRelative: formatRelativeTime(post.publishedAt),
     updatedAt: toISOString(post.updatedAt),
     media,
-    replyToId: post.replyToId ?? undefined,
-    threadRootId: post.threadId ?? undefined,
+    replyToId: post.replyToId ? toUid(post.replyToId) : undefined,
+    threadRootId: post.threadId ? toUid(post.threadId) : undefined,
     body: post.body ?? undefined,
   };
 }
@@ -251,7 +250,7 @@ export function toPostViewsFromPosts(
  */
 export function toPageView(page: Page): PageView {
   return {
-    id: page.id,
+    id: toUid(page.id),
     slug: page.slug,
     title: page.title ?? undefined,
     bodyHtml: page.bodyHtml ?? undefined,
@@ -300,11 +299,11 @@ export function toNavItemView(
   }
 
   return {
-    id: item.id,
+    id: toUid(item.id),
     type: item.type as NavItemType,
     label,
     url,
-    pageId: item.pageId ?? undefined,
+    pageId: item.pageId ? toUid(item.pageId) : undefined,
     isActive,
     isExternal,
   };

@@ -19,7 +19,7 @@ import {
   CrudPageHeader,
   ActionButtons,
 } from "../../ui/dash/index.js";
-import * as sqid from "../../lib/sqid.js";
+import { toUid, fromUid } from "../../lib/uid.js";
 import { dsRedirect } from "../../lib/sse.js";
 import {
   CreatePostSchema,
@@ -135,7 +135,7 @@ postsRoutes.post("/", async (c) => {
     await c.var.services.media.attachToPost(post.id, body.mediaIds);
   }
 
-  const redirectUrl = `/dash/posts/${sqid.encode(post.id)}`;
+  const redirectUrl = `/dash/posts/${toUid(post.id)}`;
   if (wantsJson) {
     return c.json({ status: "redirect" as const, url: redirectUrl });
   }
@@ -155,7 +155,7 @@ function ViewPostContent({ post }: { post: PostView }) {
       <div class="flex items-center justify-between mb-6">
         <h1 class="text-2xl font-semibold">{post.title || defaultTitle}</h1>
         <ActionButtons
-          editHref={`/dash/posts/${sqid.encode(post.id)}/edit`}
+          editHref={`/dash/posts/${post.id}/edit`}
           editLabel={t({
             message: "Edit",
             comment: "@context: Button to edit post",
@@ -195,7 +195,7 @@ function EditPostContent({
   imageTransformUrl?: string;
   s3PublicUrl?: string;
   collections: Collection[];
-  postCollectionIds: number[];
+  postCollectionIds: string[];
 }) {
   const { t } = useLingui();
   return (
@@ -205,14 +205,14 @@ function EditPostContent({
       </h1>
       <PostForm
         post={post}
-        action={`/dash/posts/${sqid.encode(post.id)}`}
+        action={`/dash/posts/${toUid(post.id)}`}
         mediaAttachments={mediaAttachments}
         r2PublicUrl={r2PublicUrl}
         imageTransformUrl={imageTransformUrl}
         s3PublicUrl={s3PublicUrl}
         collections={collections}
         postCollectionIds={postCollectionIds}
-        cancelHref={`/dash/posts/${sqid.encode(post.id)}`}
+        cancelHref={`/dash/posts/${toUid(post.id)}`}
       />
     </>
   );
@@ -220,7 +220,7 @@ function EditPostContent({
 
 // View single post
 postsRoutes.get("/:id", async (c) => {
-  const id = sqid.decode(c.req.param("id"));
+  const id = fromUid(c.req.param("id"));
   if (!id) return c.notFound();
 
   const post = await c.var.services.posts.getById(id);
@@ -248,7 +248,7 @@ postsRoutes.get("/:id", async (c) => {
 
 // Edit post form
 postsRoutes.get("/:id/edit", async (c) => {
-  const id = sqid.decode(c.req.param("id"));
+  const id = fromUid(c.req.param("id"));
   if (!id) return c.notFound();
 
   const post = await c.var.services.posts.getById(id);
@@ -286,7 +286,7 @@ postsRoutes.get("/:id/edit", async (c) => {
 
 // Update post
 postsRoutes.post("/:id", async (c) => {
-  const id = sqid.decode(c.req.param("id"));
+  const id = fromUid(c.req.param("id"));
   if (!id) return c.notFound();
 
   const wantsJson = c.req.header("Accept")?.includes("application/json");
@@ -316,7 +316,7 @@ postsRoutes.post("/:id", async (c) => {
     await c.var.services.media.attachToPost(id, body.mediaIds);
   }
 
-  const redirectUrl = `/dash/posts/${sqid.encode(id)}`;
+  const redirectUrl = `/dash/posts/${toUid(id)}`;
   if (wantsJson) {
     return c.json({ status: "redirect" as const, url: redirectUrl });
   }
@@ -326,7 +326,7 @@ postsRoutes.post("/:id", async (c) => {
 
 // Delete post
 postsRoutes.post("/:id/delete", async (c) => {
-  const id = sqid.decode(c.req.param("id"));
+  const id = fromUid(c.req.param("id"));
   if (!id) return c.notFound();
 
   await c.var.services.posts.delete(id, {

@@ -141,6 +141,13 @@
       "when": 1772604673113,
       "tag": "0019_lovely_ben_urich",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1772780400000,
+      "tag": "0020_uuid_migration",
+      "breakpoints": true
     }
   ]
 }

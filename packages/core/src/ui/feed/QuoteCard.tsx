@@ -20,7 +20,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
       class={`h-entry post-menu-target${compact ? " feed-compact" : ""}`}
       data-post
       data-format="quote"
-      data-post-id={post.sqid}
+      data-post-id={post.id}
       data-post-permalink={post.permalink}
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       data-post-visibility={post.visibility}
@@ -68,24 +68,47 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
             {post.publishedAtFormatted}
           </time>
         </a>
-        <button
-          type="button"
-          class="post-menu-trigger"
-          aria-label="More actions"
-          data-post-menu-trigger
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="currentColor"
+        <div class="post-menu-actions">
+          <button
+            type="button"
+            class="reply-trigger"
+            aria-label="Reply"
+            data-reply-trigger
           >
-            <circle cx="5" cy="12" r="2" />
-            <circle cx="12" cy="12" r="2" />
-            <circle cx="19" cy="12" r="2" />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="9 17 4 12 9 7" />
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            class="post-menu-trigger"
+            aria-label="More actions"
+            data-post-menu-trigger
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <circle cx="5" cy="12" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="19" cy="12" r="2" />
+            </svg>
+          </button>
+        </div>
       </footer>
     </article>
   );

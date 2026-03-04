@@ -19,7 +19,7 @@ export interface CollectionsSidebarProps {
   dividers: CollectionDivider[];
   activeSlug?: string;
   isAuthenticated?: boolean;
-  postCounts?: Map<number, number>;
+  postCounts?: Map<string, number>;
 }
 
 export const CollectionsSidebar: FC<CollectionsSidebarProps> = ({
@@ -123,7 +123,7 @@ const AuthenticatedSidebar: FC<{
   collections: Collection[];
   dividers: CollectionDivider[];
   activeSlug?: string;
-  postCounts?: Map<number, number>;
+  postCounts?: Map<string, number>;
 }> = ({ collections, dividers, activeSlug, postCounts }) => {
   const { t } = useLingui();
 

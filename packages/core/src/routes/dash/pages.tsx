@@ -13,6 +13,7 @@ import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { PageForm, ActionButtons, DangerZone } from "../../ui/dash/index.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { CreatePageSchema } from "../../lib/schemas.js";
+import { parseIdParam } from "../../lib/errors.js";
 import { PagesContent } from "../../ui/dash/pages/PagesContent.js";
 import { getI18n } from "../../i18n/index.js";
 
@@ -165,8 +166,7 @@ pagesRoutes.post("/", async (c) => {
 });
 
 pagesRoutes.get("/:id", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.notFound();
+  const id = parseIdParam(c.req.param("id"));
 
   const page = await c.var.services.pages.getById(id);
   if (!page) return c.notFound();
@@ -186,8 +186,7 @@ pagesRoutes.get("/:id", async (c) => {
 });
 
 pagesRoutes.get("/:id/edit", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.notFound();
+  const id = parseIdParam(c.req.param("id"));
 
   const page = await c.var.services.pages.getById(id);
   if (!page) return c.notFound();
@@ -208,8 +207,7 @@ pagesRoutes.get("/:id/edit", async (c) => {
 
 pagesRoutes.post("/:id", async (c) => {
   const i18n = getI18n(c);
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.notFound();
+  const id = parseIdParam(c.req.param("id"));
 
   const raw = await c.req.json();
   const parsed = CreatePageSchema.safeParse(raw);
@@ -237,8 +235,7 @@ pagesRoutes.post("/:id", async (c) => {
 });
 
 pagesRoutes.post("/:id/delete", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) return c.notFound();
+  const id = parseIdParam(c.req.param("id"));
 
   await c.var.services.pages.delete(id);
   return dsRedirect("/dash/pages");

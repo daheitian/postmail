@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { pagesApiRoutes } from "../pages.js";
+import { toUid } from "../../../lib/uid.js";
 
 describe("Pages API Routes", () => {
   describe("GET /api/pages", () => {
@@ -39,7 +40,7 @@ describe("Pages API Routes", () => {
         title: "About Us",
       });
 
-      const res = await app.request(`/api/pages/${page.id}`);
+      const res = await app.request(`/api/pages/${toUid(page.id)}`);
       expect(res.status).toBe(200);
 
       const body = await res.json();
@@ -51,7 +52,7 @@ describe("Pages API Routes", () => {
       const { app } = createTestApp();
       app.route("/api/pages", pagesApiRoutes);
 
-      const res = await app.request("/api/pages/abc");
+      const res = await app.request("/api/pages/!!invalid!!");
       expect(res.status).toBe(400);
     });
 
@@ -59,7 +60,9 @@ describe("Pages API Routes", () => {
       const { app } = createTestApp();
       app.route("/api/pages", pagesApiRoutes);
 
-      const res = await app.request("/api/pages/9999");
+      const res = await app.request(
+        `/api/pages/${toUid("00000000-0000-0000-0000-000000009999")}`,
+      );
       expect(res.status).toBe(404);
     });
   });
@@ -123,7 +126,7 @@ describe("Pages API Routes", () => {
         title: "About",
       });
 
-      const res = await app.request(`/api/pages/${page.id}`, {
+      const res = await app.request(`/api/pages/${toUid(page.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "Updated" }),
@@ -141,7 +144,7 @@ describe("Pages API Routes", () => {
         title: "About",
       });
 
-      const res = await app.request(`/api/pages/${page.id}`, {
+      const res = await app.request(`/api/pages/${toUid(page.id)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "Updated About" }),
@@ -156,11 +159,14 @@ describe("Pages API Routes", () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/pages", pagesApiRoutes);
 
-      const res = await app.request("/api/pages/9999", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: "test" }),
-      });
+      const res = await app.request(
+        `/api/pages/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: "test" }),
+        },
+      );
 
       expect(res.status).toBe(404);
     });
@@ -176,7 +182,7 @@ describe("Pages API Routes", () => {
         title: "About",
       });
 
-      const res = await app.request(`/api/pages/${page.id}`, {
+      const res = await app.request(`/api/pages/${toUid(page.id)}`, {
         method: "DELETE",
       });
 
@@ -192,7 +198,7 @@ describe("Pages API Routes", () => {
         title: "About",
       });
 
-      const res = await app.request(`/api/pages/${page.id}`, {
+      const res = await app.request(`/api/pages/${toUid(page.id)}`, {
         method: "DELETE",
       });
 
@@ -208,9 +214,12 @@ describe("Pages API Routes", () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/pages", pagesApiRoutes);
 
-      const res = await app.request("/api/pages/9999", {
-        method: "DELETE",
-      });
+      const res = await app.request(
+        `/api/pages/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       expect(res.status).toBe(404);
     });

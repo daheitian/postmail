@@ -6,7 +6,7 @@ import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { PostPage } from "../../ui/pages/PostPage.js";
-import * as sqid from "../../lib/sqid.js";
+import { fromUid } from "../../lib/uid.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
@@ -19,8 +19,8 @@ export const postRoutes = new Hono<Env>();
 postRoutes.get("/:id", async (c) => {
   const paramId = c.req.param("id");
 
-  // Decode sqid to numeric ID
-  const id = sqid.decode(paramId);
+  // Decode Base58 UID to UUID
+  const id = fromUid(paramId);
   if (!id) return c.notFound();
 
   const post = await c.var.services.posts.getById(id);

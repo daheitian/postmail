@@ -12,8 +12,8 @@ import {
   SortOrderSchema,
   parseValidated,
 } from "../../lib/schemas.js";
-import { assertFound, parseIntParam, NotFoundError } from "../../lib/errors.js";
-import { decode } from "../../lib/sqid.js";
+import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
+import { fromUid, toUid } from "../../lib/uid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -29,12 +29,12 @@ const UpdateCollectionSchema = CreateCollectionSchema.partial().extend({
 
 // Route-specific schemas (not shared domain schemas)
 const CollectionReorderSchema = z.object({
-  ids: z.array(z.number().int().positive()).optional(),
-  items: z.array(z.string().regex(/^[cd]-\d+$/)).optional(),
+  ids: z.array(z.string().min(1)).optional(),
+  items: z.array(z.string().regex(/^[cd]-.+$/)).optional(),
 });
 
 const PostAssignSchema = z.object({
-  postId: z.union([z.number().int().positive(), z.string().min(1)]),
+  postId: z.string().min(1),
 });
 
 // List collections (includes post counts and dividers)
@@ -48,33 +48,34 @@ collectionsApiRoutes.get("/", async (c) => {
   return c.json({
     collections: collections.map((col) => ({
       ...col,
+      id: toUid(col.id),
       postCount: postCounts.get(col.id) ?? 0,
     })),
-    dividers,
+    dividers: dividers.map((d) => ({ ...d, id: toUid(d.id) })),
   });
 });
 
 // Create divider (requires auth) — must be before /:id
 collectionsApiRoutes.post("/dividers", requireAuthApi(), async (c) => {
   const divider = await c.var.services.collections.createDivider();
-  return c.json(divider, 201);
+  return c.json({ ...divider, id: toUid(divider.id) }, 201);
 });
 
 // Delete divider (requires auth) — must be before /:id
 collectionsApiRoutes.delete("/dividers/:id", requireAuthApi(), async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
   await c.var.services.collections.deleteDivider(id);
   return c.json({ success: true });
 });
 
 // Get single collection
 collectionsApiRoutes.get("/:id", async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
   const collection = assertFound(
     await c.var.services.collections.getById(id),
     "Collection",
   );
-  return c.json(collection);
+  return c.json({ ...collection, id: toUid(collection.id) });
 });
 
 // Reorder collections (requires auth) — must be before /:id
@@ -82,12 +83,30 @@ collectionsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
   const body = parseValidated(CollectionReorderSchema, await c.req.json());
 
   if (body.items) {
-    await c.var.services.collections.reorderAll(body.items);
+    // Items are prefixed with "c-" or "d-" followed by Base58 UID
+    const decodedItems = body.items.map((item) => {
+      const prefix = item[0];
+      const uid = item.slice(2);
+      const uuid = fromUid(uid);
+      if (!uuid) throw new Error("Invalid ID in reorder items");
+      return `${prefix}-${uuid}`;
+    });
+    await c.var.services.collections.reorderAll(decodedItems);
   } else if (body.ids) {
-    await c.var.services.collections.reorder(body.ids);
+    const decodedIds = body.ids.map((uid) => {
+      const uuid = fromUid(uid);
+      if (!uuid) throw new Error("Invalid ID in reorder ids");
+      return uuid;
+    });
+    await c.var.services.collections.reorder(decodedIds);
   }
   const collections = await c.var.services.collections.list();
-  return c.json({ collections });
+  return c.json({
+    collections: collections.map((col) => ({
+      ...col,
+      id: toUid(col.id),
+    })),
+  });
 });
 
 // Create collection (requires auth)
@@ -103,12 +122,12 @@ collectionsApiRoutes.post("/", requireAuthApi(), async (c) => {
     position: body.position,
   });
 
-  return c.json(collection, 201);
+  return c.json({ ...collection, id: toUid(collection.id) }, 201);
 });
 
 // Update collection (requires auth)
 collectionsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
   const body = parseValidated(UpdateCollectionSchema, await c.req.json());
 
   const collection = assertFound(
@@ -116,12 +135,12 @@ collectionsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
     "Collection",
   );
 
-  return c.json(collection);
+  return c.json({ ...collection, id: toUid(collection.id) });
 });
 
 // Delete collection (requires auth)
 collectionsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
 
   const success = await c.var.services.collections.delete(id);
   if (!success) throw new NotFoundError("Collection");
@@ -131,13 +150,12 @@ collectionsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
 
 // Add a post to a collection (requires auth)
 collectionsApiRoutes.post("/:id/posts", requireAuthApi(), async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
   assertFound(await c.var.services.collections.getById(id), "Collection");
 
   const body = parseValidated(PostAssignSchema, await c.req.json());
-  const postId =
-    typeof body.postId === "string" ? decode(body.postId) : body.postId;
-  if (postId === null) return c.json({ error: "Invalid post ID" }, 400);
+  const postId = fromUid(body.postId);
+  if (!postId) return c.json({ error: "Invalid post ID" }, 400);
   assertFound(await c.var.services.posts.getById(postId), "Post");
 
   await c.var.services.collections.addPost(id, postId);
@@ -150,19 +168,9 @@ collectionsApiRoutes.delete(
   "/:id/posts/:postId",
   requireAuthApi(),
   async (c) => {
-    const id = parseIntParam(c.req.param("id"));
-    const rawPostId = c.req.param("postId");
-
-    // Accept either numeric ID or sqid string
-    let postId: number;
-    const parsed = parseInt(rawPostId, 10);
-    if (!isNaN(parsed) && String(parsed) === rawPostId) {
-      postId = parsed;
-    } else {
-      const decoded = decode(rawPostId);
-      if (decoded === null) return c.json({ error: "Invalid post ID" }, 400);
-      postId = decoded;
-    }
+    const id = parseIdParam(c.req.param("id"));
+    const postId = fromUid(c.req.param("postId"));
+    if (!postId) return c.json({ error: "Invalid post ID" }, 400);
 
     await c.var.services.collections.removePost(id, postId);
 

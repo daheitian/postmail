@@ -178,6 +178,47 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0019: add chars column to media
   applyMigration(sqlite, "0019_lovely_ben_urich.sql");
 
+  // Apply 0020: UUIDv7 migration (drop + recreate with text PKs)
+  const m20 = readFileSync(
+    resolve(MIGRATIONS_DIR, "0020_uuid_migration.sql"),
+    "utf-8",
+  );
+  for (const stmt of m20.split("--> statement-breakpoint")) {
+    const trimmed = stmt.trim();
+    if (!trimmed) continue;
+    const isFts = trimmed.includes("posts_fts");
+    if (!options?.fts && isFts) continue;
+    try {
+      sqlite.exec(trimmed);
+    } catch {
+      // Handle trigram tokenizer failure for FTS virtual table
+      if (options?.fts && trimmed.includes("CREATE VIRTUAL TABLE")) {
+        sqlite.exec(`
+          CREATE VIRTUAL TABLE IF NOT EXISTS posts_fts USING fts5(
+            title,
+            body_text,
+            quote_text,
+            url,
+            content='posts'
+          );
+        `);
+      }
+      // Ignore DROP TRIGGER/TABLE IF EXISTS failures silently
+      else if (
+        !trimmed.startsWith("DROP TRIGGER") &&
+        !trimmed.startsWith("DROP TABLE")
+      ) {
+        throw new Error(`Migration 0020 failed: ${trimmed.slice(0, 100)}`);
+      }
+    }
+  }
+
+  // Restore unique composite index dropped by 0020 migration
+  // (was originally in 0010 but not re-created in 0020)
+  sqlite.exec(
+    "CREATE UNIQUE INDEX IF NOT EXISTS idx_post_collections_pk ON post_collections (post_id, collection_id)",
+  );
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

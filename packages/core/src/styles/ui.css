@@ -406,6 +406,41 @@
     display: flex;
   }
 
+  .post-menu-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .reply-trigger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    transition:
+      background-color 0.12s,
+      color 0.12s;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  .reply-trigger:hover {
+    background-color: var(--site-nav-hover-bg);
+    color: var(--site-text-primary);
+    opacity: 1;
+  }
+
+  body[data-authenticated] .reply-trigger {
+    display: flex;
+  }
+
   .post-menu-backdrop {
     position: fixed;
     inset: 0;
@@ -1580,6 +1615,95 @@
 
   .compose-confirm-cancel {
     color: var(--site-text-secondary);
+  }
+
+  /* --- Reply context in compose dialog ----------------------------------- */
+
+  .compose-reply-wrapper {
+    display: flex;
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .compose-thread-line {
+    width: 1.5px;
+    flex-shrink: 0;
+    margin-left: 4px;
+    background: linear-gradient(to bottom, #c8c2b6, transparent);
+  }
+
+  .compose-reply-context {
+    flex: 1;
+    min-width: 0;
+    max-height: 140px;
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.3s ease;
+  }
+
+  .compose-reply-context.expanded {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .compose-reply-context-body {
+    font-size: var(--text-xs);
+    color: var(--site-text-secondary);
+    line-height: 1.5;
+  }
+
+  /* Scale down cloned card content to be smaller than the compose editor */
+  .compose-reply-context-body h2 {
+    font-size: var(--text-sm);
+    margin-bottom: 2px;
+  }
+
+  .compose-reply-context-body .prose,
+  .compose-reply-context-body .e-content {
+    font-size: inherit;
+  }
+
+  .compose-reply-context-body .feed-quote {
+    font-size: inherit;
+  }
+
+  .compose-reply-context-body img,
+  .compose-reply-context-body video {
+    max-height: 120px;
+    border-radius: 6px;
+  }
+
+  .compose-reply-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    background: linear-gradient(transparent, var(--site-elevated-bg));
+    pointer-events: none;
+  }
+
+  .compose-reply-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+    font-size: var(--text-xs);
+    color: var(--site-text-secondary);
+  }
+
+  .compose-reply-toggle {
+    border: none;
+    background: transparent;
+    color: var(--site-text-secondary);
+    cursor: pointer;
+    font-size: var(--text-xs);
+    padding: 0;
+    font-family: inherit;
+  }
+
+  .compose-reply-toggle:hover {
+    color: var(--site-text-primary);
   }
 
   /* --- Alt text overlay panel (Threads-style, covers entire dialog) ------- */

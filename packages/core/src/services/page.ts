@@ -5,6 +5,7 @@
  */
 
 import { eq, desc, sql, and } from "drizzle-orm";
+import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { pages, navItems } from "../db/schema.js";
 import { now } from "../lib/time.js";
@@ -18,13 +19,13 @@ export interface PageFilters {
 }
 
 export interface PageService {
-  getById(id: number): Promise<Page | null>;
+  getById(id: string): Promise<Page | null>;
   getBySlug(slug: string): Promise<Page | null>;
   list(filters?: PageFilters): Promise<Page[]>;
   listNotInNav(): Promise<Page[]>;
   create(data: CreatePage): Promise<Page>;
-  update(id: number, data: UpdatePage): Promise<Page | null>;
-  delete(id: number): Promise<boolean>;
+  update(id: string, data: UpdatePage): Promise<Page | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 /** Check if an error (or any of its causes) is a SQLite UNIQUE constraint violation */
@@ -107,10 +108,10 @@ export function createPageService(
     },
 
     async create(data) {
-      // Validate and reserve path before DB insert — throws friendly
-      // ConflictError/ValidationError instead of a raw UNIQUE constraint error.
-      // Uses placeholder owner ID; corrected to real ID after insert.
-      await pathRegistry.claim(data.slug, "page", 0);
+      const id = uuidv7();
+
+      // Validate and reserve path before DB insert
+      await pathRegistry.claim(data.slug, "page", id);
 
       const timestamp = now();
       const bodyHtml = data.body ? renderMarkdown(data.body) : null;
@@ -120,6 +121,7 @@ export function createPageService(
         const result = await db
           .insert(pages)
           .values({
+            id,
             slug: data.slug,
             title: data.title ?? null,
             body: data.body ?? null,
@@ -140,10 +142,6 @@ export function createPageService(
         }
         throw err;
       }
-
-      // Update registry with actual page ID
-      await pathRegistry.release(data.slug);
-      await pathRegistry.claim(data.slug, "page", page.id);
 
       return page;
     },
@@ -208,7 +206,8 @@ export function createPageService(
     async delete(id) {
       // Release path registry entries for this page
       await pathRegistry.releaseByOwner("page", id);
-      // nav_items with page_id FK have ON DELETE CASCADE, so they auto-delete
+      // Clean up nav items manually (no FK CASCADE with text PKs)
+      await db.delete(navItems).where(eq(navItems.pageId, id));
       const result = await db.delete(pages).where(eq(pages.id, id)).returning();
       return result.length > 0;
     },

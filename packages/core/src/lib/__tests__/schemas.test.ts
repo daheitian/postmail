@@ -286,12 +286,18 @@ describe("CreatePostSchema", () => {
     expect(result.rating).toBeUndefined();
   });
 
-  it("accepts optional collectionIds as array of positive integers", () => {
+  it("accepts optional collectionIds as array of non-empty strings", () => {
     const result = CreatePostSchema.parse({
       ...validPost,
-      collectionIds: [1, 2, 3],
+      collectionIds: ["col-1", "col-2", "col-3"],
     });
-    expect(result.collectionIds).toEqual([1, 2, 3]);
+    expect(result.collectionIds).toEqual(["col-1", "col-2", "col-3"]);
+  });
+
+  it("rejects collectionIds with empty strings", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, collectionIds: [""] }),
+    ).toThrow();
   });
 
   it("accepts empty string collectionIds (transforms to undefined)", () => {

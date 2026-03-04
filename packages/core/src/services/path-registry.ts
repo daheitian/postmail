@@ -20,7 +20,7 @@ export type OwnerType = "page" | "post" | "redirect";
 export interface PathRegistryEntry {
   path: string;
   ownerType: OwnerType;
-  ownerId: number;
+  ownerId: string;
   createdAt: number;
 }
 
@@ -37,7 +37,7 @@ export interface PathRegistryService {
   claim(
     path: string,
     ownerType: OwnerType,
-    ownerId: number,
+    ownerId: string,
   ): Promise<PathRegistryEntry>;
 
   /**
@@ -53,7 +53,7 @@ export interface PathRegistryService {
    * @param ownerType - The type of entity
    * @param ownerId - The ID of the entity
    */
-  releaseByOwner(ownerType: OwnerType, ownerId: number): Promise<void>;
+  releaseByOwner(ownerType: OwnerType, ownerId: string): Promise<void>;
 
   /**
    * Look up a path in the registry.

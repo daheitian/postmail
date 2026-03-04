@@ -30,7 +30,8 @@ describe("RedirectService", () => {
       expect(redirect.fromPath).toBe("old-path"); // normalizePath removes leading slash
       expect(redirect.toPath).toBe("/new-path");
       expect(redirect.type).toBe(301);
-      expect(redirect.id).toBe(1);
+      expect(typeof redirect.id).toBe("string");
+      expect(redirect.id.length).toBeGreaterThan(0);
     });
 
     it("creates a 302 redirect", async () => {
@@ -97,7 +98,9 @@ describe("RedirectService", () => {
     });
 
     it("returns false for non-existent ID", async () => {
-      const result = await redirectService.delete(9999);
+      const result = await redirectService.delete(
+        "00000000-0000-0000-0000-000000009999",
+      );
       expect(result).toBe(false);
     });
   });

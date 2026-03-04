@@ -61,7 +61,7 @@ export {
 
 // Utilities
 export * as time from "./lib/time.js";
-export * as sqid from "./lib/sqid.js";
+export * as uid from "./lib/uid.js";
 export * as url from "./lib/url.js";
 export * as markdown from "./lib/markdown.js";
 

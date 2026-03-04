@@ -21,8 +21,8 @@ export interface CreatePost {
   body?: string;
   quoteText?: string;
   rating?: number;
-  collectionIds?: number[];
-  replyToId?: number;
+  collectionIds?: string[];
+  replyToId?: string;
   publishedAt?: number;
   mediaIds?: string[];
 }
@@ -38,7 +38,7 @@ export interface UpdatePost {
   body?: string | null;
   quoteText?: string | null;
   rating?: number | null;
-  collectionIds?: number[];
+  collectionIds?: string[];
   publishedAt?: number;
   mediaIds?: string[];
 }
@@ -61,7 +61,7 @@ export interface CreateNavItem {
   type: NavItemType;
   label: string;
   url: string;
-  pageId?: number;
+  pageId?: string;
   position?: number;
 }
 
@@ -69,7 +69,7 @@ export interface UpdateNavItem {
   type?: NavItemType;
   label?: string;
   url?: string;
-  pageId?: number | null;
+  pageId?: string | null;
   position?: number;
 }
 

@@ -24,7 +24,8 @@ describe("CollectionService", () => {
         title: "My Collection",
       });
 
-      expect(collection.id).toBe(1);
+      expect(typeof collection.id).toBe("string");
+      expect(collection.id.length).toBeGreaterThan(0);
       expect(collection.slug).toBe("my-collection");
       expect(collection.title).toBe("My Collection");
       expect(collection.description).toBeNull();
@@ -94,7 +95,9 @@ describe("CollectionService", () => {
     });
 
     it("returns null for non-existent ID", async () => {
-      const found = await collectionService.getById(9999);
+      const found = await collectionService.getById(
+        "00000000-0000-0000-0000-000000009999",
+      );
       expect(found).toBeNull();
     });
   });
@@ -243,7 +246,10 @@ describe("CollectionService", () => {
     });
 
     it("returns null for non-existent collection", async () => {
-      const result = await collectionService.update(9999, { title: "X" });
+      const result = await collectionService.update(
+        "00000000-0000-0000-0000-000000009999",
+        { title: "X" },
+      );
       expect(result).toBeNull();
     });
   });
@@ -290,7 +296,9 @@ describe("CollectionService", () => {
     });
 
     it("returns false for non-existent collection", async () => {
-      const result = await collectionService.delete(9999);
+      const result = await collectionService.delete(
+        "00000000-0000-0000-0000-000000009999",
+      );
       expect(result).toBe(false);
     });
   });
@@ -542,7 +550,8 @@ describe("CollectionService", () => {
     it("creates a divider with auto-assigned position", async () => {
       const divider = await collectionService.createDivider();
 
-      expect(divider.id).toBe(1);
+      expect(typeof divider.id).toBe("string");
+      expect(divider.id.length).toBeGreaterThan(0);
       expect(divider.position).toBe(0);
       expect(divider.createdAt).toBeGreaterThan(0);
       expect(divider.updatedAt).toBeGreaterThan(0);
@@ -586,7 +595,9 @@ describe("CollectionService", () => {
     });
 
     it("returns false for non-existent divider", async () => {
-      const result = await collectionService.deleteDivider(9999);
+      const result = await collectionService.deleteDivider(
+        "00000000-0000-0000-0000-000000009999",
+      );
       expect(result).toBe(false);
     });
   });

@@ -5,7 +5,6 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { PostView } from "../../types.js";
-import * as sqid from "../../lib/sqid.js";
 import { StatusBadge } from "./StatusBadge.js";
 import { FormatBadge } from "./FormatBadge.js";
 import { EmptyState } from "../shared/EmptyState.js";
@@ -42,7 +41,7 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
           key={post.id}
           actions={
             <ActionButtons
-              editHref={`/dash/posts/${sqid.encode(post.id)}/edit`}
+              editHref={`/dash/posts/${post.id}/edit`}
               editLabel={t({
                 message: "Edit",
                 comment: "@context: Button to edit post",
@@ -52,7 +51,7 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
                 message: "View",
                 comment: "@context: Button to view post on public site",
               })}
-              deleteAction={`/dash/posts/${sqid.encode(post.id)}/delete`}
+              deleteAction={`/dash/posts/${post.id}/delete`}
               deleteConfirm={t({
                 message: "Delete this post permanently? This can't be undone.",
                 comment:
@@ -73,7 +72,7 @@ export const PostList: FC<PostListProps> = ({ posts }) => {
             </span>
           </div>
           <a
-            href={`/dash/posts/${sqid.encode(post.id)}`}
+            href={`/dash/posts/${post.id}`}
             class="font-medium hover:underline"
           >
             {post.title ||

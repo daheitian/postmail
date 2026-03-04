@@ -5,7 +5,7 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import * as sqid from "../../lib/sqid.js";
+import { toUid } from "../../lib/uid.js";
 import { ValidationError, ExternalServiceError } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -36,13 +36,13 @@ searchApiRoutes.get("/", async (c) => {
     return c.json({
       query,
       results: results.map((r) => ({
-        id: sqid.encode(r.post.id),
+        id: toUid(r.post.id),
         format: r.post.format,
         title: r.post.title,
         path: r.post.path,
         snippet: r.snippet,
         publishedAt: r.post.publishedAt,
-        url: r.post.path ? `/${r.post.path}` : `/p/${sqid.encode(r.post.id)}`,
+        url: r.post.path ? `/${r.post.path}` : `/p/${toUid(r.post.id)}`,
       })),
       count: results.length,
     });

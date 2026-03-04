@@ -11,10 +11,9 @@ import type { Post, Collection } from "./entities.js";
  */
 export interface PostView {
   // Identity
-  id: number;
-  /** Sqid-encoded ID for client-side API calls */
-  sqid: string;
-  /** Pre-computed permalink: "/{path}" if path set, otherwise "/p/{sqid}" */
+  /** Base58-encoded UUIDv7 identifier */
+  id: string;
+  /** Pre-computed permalink: "/{path}" if path set, otherwise "/p/{id}" */
   permalink: string;
   /** Custom URL path, if set. Supports multi-level paths (e.g. "2024/my-post") */
   path?: string;
@@ -57,8 +56,10 @@ export interface PostView {
   media: MediaView[];
 
   // Thread context
-  replyToId?: number;
-  threadRootId?: number;
+  /** Base58-encoded UUIDv7 of the parent post */
+  replyToId?: string;
+  /** Base58-encoded UUIDv7 of the thread root post */
+  threadRootId?: string;
 
   // Raw content (for forms/editing, not typical theme use)
   body?: string;
@@ -68,7 +69,8 @@ export interface PostView {
  * Render-ready page data for theme components.
  */
 export interface PageView {
-  id: number;
+  /** Base58-encoded UUIDv7 identifier */
+  id: string;
   slug: string;
   title?: string;
   bodyHtml?: string;
@@ -104,11 +106,13 @@ export interface MediaView {
  * Active/external state pre-computed.
  */
 export interface NavItemView {
-  id: number;
+  /** Base58-encoded UUIDv7 identifier */
+  id: string;
   type: NavItemType;
   label: string;
   url: string;
-  pageId?: number;
+  /** Base58-encoded UUIDv7 of linked page */
+  pageId?: string;
   /** Pre-computed based on currentPath */
   isActive: boolean;
   /** Pre-computed: starts with http(s):// */

@@ -12,7 +12,7 @@ import {
   StatusSchema,
   parseValidated,
 } from "../../lib/schemas.js";
-import { assertFound, parseIntParam, NotFoundError } from "../../lib/errors.js";
+import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -33,7 +33,7 @@ pagesApiRoutes.get("/", async (c) => {
 
 // Get single page
 pagesApiRoutes.get("/:id", async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
   const page = assertFound(await c.var.services.pages.getById(id), "Page");
   return c.json(page);
 });
@@ -54,7 +54,7 @@ pagesApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Update page (requires auth)
 pagesApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
   const body = parseValidated(UpdatePageSchema, await c.req.json());
 
   const page = assertFound(await c.var.services.pages.update(id, body), "Page");
@@ -64,7 +64,7 @@ pagesApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
 // Delete page (requires auth)
 pagesApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
 
   const success = await c.var.services.pages.delete(id);
   if (!success) throw new NotFoundError("Page");

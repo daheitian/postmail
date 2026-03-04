@@ -18,7 +18,7 @@ import { getI18n } from "../i18n/index.js";
 import { toPostView, createMediaContext } from "../lib/view.js";
 import { buildMediaMap } from "../lib/media-helpers.js";
 import { TimelineItemFromPost } from "../ui/feed/TimelineItem.js";
-import { encode } from "../lib/sqid.js";
+import { toUid, fromUid } from "../lib/uid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -122,6 +122,22 @@ composeRoutes.post("/", async (c) => {
     }
   }
 
+  // Decode replyToId from Base58 to UUID
+  let replyToId: string | undefined;
+  if (data.replyToId) {
+    replyToId = fromUid(data.replyToId) ?? undefined;
+  }
+
+  // Decode collectionIds from Base58 to UUID
+  let collectionIds: string[] | undefined;
+  if (data.collectionIds?.length) {
+    collectionIds = data.collectionIds.map((cid) => {
+      const uuid = fromUid(cid);
+      if (!uuid) throw new ValidationError("Invalid collection ID");
+      return uuid;
+    });
+  }
+
   const post = await c.var.services.posts.create(
     {
       format: data.format,
@@ -131,9 +147,8 @@ composeRoutes.post("/", async (c) => {
       url: data.url || undefined,
       quoteText: data.quoteText || undefined,
       rating: data.rating || undefined,
-      collectionIds: data.collectionIds?.length
-        ? data.collectionIds
-        : undefined,
+      collectionIds,
+      replyToId,
     },
     {
       maxParagraphs: c.var.appConfig.summaryMaxParagraphs,
@@ -173,7 +188,7 @@ composeRoutes.post("/", async (c) => {
     }
 
     const cardHtml = await buildTimelineCard(c, post, data.mediaIds);
-    const permalink = post.path ? `/${post.path}` : `/p/${encode(post.id)}`;
+    const permalink = post.path ? `/${post.path}` : `/p/${toUid(post.id)}`;
     return c.json({ status: "published" as const, cardHtml, permalink });
   }
 

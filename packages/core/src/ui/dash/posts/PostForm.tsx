@@ -23,7 +23,7 @@ export interface PostFormProps {
   imageTransformUrl?: string;
   s3PublicUrl?: string;
   collections?: Collection[];
-  postCollectionIds?: number[];
+  postCollectionIds?: string[];
   cancelHref?: string;
 }
 

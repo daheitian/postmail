@@ -26,7 +26,7 @@ export interface SearchService {
 }
 
 interface RawSearchRow {
-  id: number;
+  id: string;
   format: string;
   status: string;
   visibility: string;
@@ -40,9 +40,9 @@ interface RawSearchRow {
   quote_text: string | null;
   summary: string | null;
   rating: number | null;
-  collection_id: number | null;
-  reply_to_id: number | null;
-  thread_id: number | null;
+  collection_id: string | null;
+  reply_to_id: string | null;
+  thread_id: string | null;
   deleted_at: number | null;
   published_at: number;
   created_at: number;
@@ -108,7 +108,7 @@ export function createSearchService(d1: D1Database): SearchService {
         posts_fts.rank AS rank,
         snippet(posts_fts, 1, '<mark>', '</mark>', '...', 32) AS snippet
       FROM posts_fts
-      JOIN posts ON posts.id = posts_fts.rowid
+      JOIN posts ON posts.rowid = posts_fts.rowid
       WHERE posts_fts MATCH ?
         AND posts.deleted_at IS NULL
         AND posts.status IN (${statusPlaceholders})

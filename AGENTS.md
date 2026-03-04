@@ -60,7 +60,7 @@ Non-negotiable regardless of context:
 - **Types**: public exports in `src/types.ts`; definitions in `src/types/`.
 - **Schemas**: shared domain schemas in `src/lib/schemas.ts`; route-specific schemas colocated with routes.
 - **Routes**: `xxxRoutes` suffix (`postsRoutes`, `dashIndexRoutes`).
-- **Time**: Unix timestamps (seconds) via `lib/time.ts`. **IDs**: Sqids for URLs (`/p/jR3k`), integers in DB.
+- **Time**: Unix timestamps (seconds) via `lib/time.ts`. **IDs**: UUIDv7 in DB (text), Base58-encoded for URLs and API (`/p/2Vk8j...`). UUIDs are internal-only; all user-facing output uses Base58 via `lib/uid.ts`.
 - **Soft delete**: posts use `deleted_at`.
 - **Library functions**: include JSDoc with `@param`, `@returns`, `@example`.
 

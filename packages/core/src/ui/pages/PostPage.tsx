@@ -18,7 +18,7 @@ export const PostPage: FC<PostPageProps> = ({ post }) => {
       data-page="post"
       data-post
       data-format={post.format}
-      data-post-id={post.sqid}
+      data-post-id={post.id}
       data-post-permalink={post.permalink}
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       data-post-visibility={post.visibility}

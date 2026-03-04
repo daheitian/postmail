@@ -8,6 +8,7 @@
 
 import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
+import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
@@ -37,15 +38,15 @@ export interface PostFilters {
   status?: Status;
   visibility?: Visibility;
   pinned?: boolean;
-  collectionId?: number;
+  collectionId?: string;
   /** Exclude posts that are replies (have threadId set) */
   excludeReplies?: boolean;
   /** Exclude unlisted posts from results */
   excludeUnlisted?: boolean;
   includeDeleted?: boolean;
-  threadId?: number;
+  threadId?: string;
   limit?: number;
-  cursor?: number; // post id for cursor pagination
+  cursor?: string; // post id for cursor pagination (UUIDv7 sorts chronologically)
   offset?: number; // offset for page-based pagination
 }
 
@@ -56,14 +57,14 @@ export interface SummaryConfig {
 }
 
 export interface PostService {
-  getById(id: number): Promise<Post | null>;
+  getById(id: string): Promise<Post | null>;
   getByPath(path: string): Promise<Post | null>;
   list(filters?: PostFilters): Promise<Post[]>;
   /** Count posts matching filters (ignores cursor, offset, limit) */
   count(filters?: PostFilters): Promise<number>;
   create(data: CreatePost, summaryConfig?: SummaryConfig): Promise<Post>;
   update(
-    id: number,
+    id: string,
     data: UpdatePost,
     summaryConfig?: SummaryConfig,
   ): Promise<Post | null>;
@@ -74,20 +75,20 @@ export interface PostService {
    * @param id - Post ID
    * @param deps - Media service and optional storage driver for file cleanup
    */
-  delete(id: number, deps?: PostDeleteDeps): Promise<boolean>;
-  getThread(rootId: number): Promise<Post[]>;
+  delete(id: string, deps?: PostDeleteDeps): Promise<boolean>;
+  getThread(rootId: string): Promise<Post[]>;
   updateThreadStatusAndVisibility(
-    rootId: number,
+    rootId: string,
     status: Status,
     visibility: Visibility,
   ): Promise<void>;
   /** Get reply counts for multiple posts */
-  getReplyCounts(postIds: number[]): Promise<Map<number, number>>;
+  getReplyCounts(postIds: string[]): Promise<Map<string, number>>;
   /** Get preview replies for multiple thread roots */
   getThreadPreviews(
-    rootIds: number[],
+    rootIds: string[],
     previewCount?: number,
-  ): Promise<Map<number, Post[]>>;
+  ): Promise<Map<string, Post[]>>;
 }
 
 /** Check if an error (or any of its causes) is a SQLite UNIQUE constraint violation */
@@ -229,6 +230,7 @@ export function createPostService(
     },
 
     async create(data, summaryConfig) {
+      const id = uuidv7();
       const timestamp = now();
 
       const bodyHtml = data.body ? renderTiptapJson(data.body) : null;
@@ -245,7 +247,7 @@ export function createPostService(
       }
 
       // Handle thread relationship
-      let threadId: number | null = null;
+      let threadId: string | null = null;
       let status: Status = data.status ?? "published";
       let visibility: Visibility = data.visibility ?? "public";
 
@@ -264,11 +266,9 @@ export function createPostService(
         }
       }
 
-      // Validate path availability before DB insert — throws friendly
-      // ConflictError/ValidationError instead of a raw UNIQUE constraint error.
-      // Uses placeholder owner ID; corrected to real ID after insert.
+      // Validate path availability before DB insert
       if (data.path) {
-        await pathRegistry.claim(data.path, "post", 0);
+        await pathRegistry.claim(data.path, "post", id);
       }
 
       let result;
@@ -276,6 +276,7 @@ export function createPostService(
         result = await db
           .insert(posts)
           .values({
+            id,
             format: data.format,
             status,
             visibility,
@@ -306,12 +307,6 @@ export function createPostService(
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
       const post = toPost(result[0]!);
-
-      // Update registry with actual post ID
-      if (post.path) {
-        await pathRegistry.release(post.path);
-        await pathRegistry.claim(post.path, "post", post.id);
-      }
 
       // Sync collection memberships if provided
       if (data.collectionIds && data.collectionIds.length > 0) {
@@ -466,7 +461,7 @@ export function createPostService(
 
       // Clean up media for all affected posts
       if (deps?.media) {
-        let postIds: number[];
+        let postIds: string[];
         if (!existing.threadId) {
           const thread = await this.getThread(id);
           postIds = thread.map((p) => p.id);
@@ -550,7 +545,7 @@ export function createPostService(
         .where(and(inArray(posts.threadId, postIds), isNull(posts.deletedAt)))
         .groupBy(posts.threadId);
 
-      const counts = new Map<number, number>();
+      const counts = new Map<string, number>();
       for (const row of rows) {
         if (row.threadId !== null) {
           counts.set(row.threadId, row.count);
@@ -568,7 +563,7 @@ export function createPostService(
         .where(and(inArray(posts.threadId, rootIds), isNull(posts.deletedAt)))
         .orderBy(posts.threadId, posts.createdAt);
 
-      const result = new Map<number, Post[]>();
+      const result = new Map<string, Post[]>();
       for (const row of rows) {
         const post = toPost(row);
         if (post.threadId === null) continue;

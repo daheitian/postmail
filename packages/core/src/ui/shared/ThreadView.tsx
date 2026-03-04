@@ -7,14 +7,14 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { Post } from "../../types.js";
-import * as sqid from "../../lib/sqid.js";
+import { toUid } from "../../lib/uid.js";
 import * as time from "../../lib/time.js";
 
 export interface ThreadViewProps {
   /** All posts in the thread, ordered by createdAt */
   posts: Post[];
   /** ID of the currently viewed post (to highlight) */
-  currentPostId: number;
+  currentPostId: string;
 }
 
 const ThreadPost: FC<{
@@ -35,7 +35,7 @@ const ThreadPost: FC<{
       {post.title && (
         <h2 class="p-name text-lg font-medium mb-2">
           <a
-            href={`${post.path ? `/${post.path}` : `/p/${sqid.encode(post.id)}`}`}
+            href={`${post.path ? `/${post.path}` : `/p/${toUid(post.id)}`}`}
             class="u-url hover:underline"
           >
             {post.title}
@@ -65,7 +65,7 @@ const ThreadPost: FC<{
         )}
         {!isCurrent && (
           <a
-            href={`${post.path ? `/${post.path}` : `/p/${sqid.encode(post.id)}`}`}
+            href={`${post.path ? `/${post.path}` : `/p/${toUid(post.id)}`}`}
             class="text-xs hover:underline"
           >
             {t({

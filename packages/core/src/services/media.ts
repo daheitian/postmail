@@ -23,8 +23,8 @@ export interface MediaFilters {
 export interface MediaService {
   getById(id: string): Promise<Media | null>;
   getByIds(ids: string[]): Promise<Media[]>;
-  getByPostId(postId: number): Promise<Media[]>;
-  getByPostIds(postIds: number[]): Promise<Map<number, Media[]>>;
+  getByPostId(postId: string): Promise<Media[]>;
+  getByPostIds(postIds: string[]): Promise<Map<string, Media[]>>;
   list(filters?: MediaFilters): Promise<Media[]>;
   create(data: CreateMediaData): Promise<Media>;
   /**
@@ -51,14 +51,14 @@ export interface MediaService {
    */
   deleteByIds(ids: string[], storage?: StorageDriver | null): Promise<void>;
   getByStorageKey(storageKey: string): Promise<Media | null>;
-  attachToPost(postId: number, mediaIds: string[]): Promise<void>;
-  detachFromPost(postId: number): Promise<void>;
+  attachToPost(postId: string, mediaIds: string[]): Promise<void>;
+  detachFromPost(postId: string): Promise<void>;
   updateAlt(id: string, alt: string): Promise<void>;
 }
 
 export interface CreateMediaData {
   id?: string;
-  postId?: number;
+  postId?: string;
   filename: string;
   originalName: string;
   mimeType: string;
@@ -125,7 +125,7 @@ export function createMediaService(db: Database): MediaService {
     },
 
     async getByPostIds(postIds) {
-      const result = new Map<number, Media[]>();
+      const result = new Map<string, Media[]>();
       if (postIds.length === 0) return result;
 
       const rows = await db

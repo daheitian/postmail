@@ -11,7 +11,7 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 // =============================================================================
 
 export const posts = sqliteTable("posts", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   format: text("format", {
     enum: ["note", "link", "quote"],
   }).notNull(),
@@ -35,8 +35,8 @@ export const posts = sqliteTable("posts", {
   quoteText: text("quote_text"),
   summary: text("summary"),
   rating: integer("rating"),
-  replyToId: integer("reply_to_id"),
-  threadId: integer("thread_id"),
+  replyToId: text("reply_to_id"),
+  threadId: text("thread_id"),
   deletedAt: integer("deleted_at"),
   publishedAt: integer("published_at").notNull(),
   createdAt: integer("created_at").notNull(),
@@ -48,7 +48,7 @@ export const posts = sqliteTable("posts", {
 // =============================================================================
 
 export const pages = sqliteTable("pages", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   title: text("title"),
   body: text("body"),
@@ -68,7 +68,7 @@ export const pages = sqliteTable("pages", {
 
 export const media = sqliteTable("media", {
   id: text("id").primaryKey(), // UUIDv7
-  postId: integer("post_id").references(() => posts.id),
+  postId: text("post_id"),
   filename: text("filename").notNull(),
   originalName: text("original_name").notNull(),
   mimeType: text("mime_type").notNull(),
@@ -92,7 +92,7 @@ export const media = sqliteTable("media", {
 // =============================================================================
 
 export const collections = sqliteTable("collections", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
   description: text("description"),
@@ -112,7 +112,7 @@ export const collections = sqliteTable("collections", {
 // =============================================================================
 
 export const collectionDividers = sqliteTable("collection_dividers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   position: integer("position").notNull().default(0),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
@@ -123,12 +123,8 @@ export const collectionDividers = sqliteTable("collection_dividers", {
 // =============================================================================
 
 export const postCollections = sqliteTable("post_collections", {
-  postId: integer("post_id")
-    .notNull()
-    .references(() => posts.id, { onDelete: "cascade" }),
-  collectionId: integer("collection_id")
-    .notNull()
-    .references(() => collections.id, { onDelete: "cascade" }),
+  postId: text("post_id").notNull(),
+  collectionId: text("collection_id").notNull(),
 });
 
 // =============================================================================
@@ -136,7 +132,7 @@ export const postCollections = sqliteTable("post_collections", {
 // =============================================================================
 
 export const navItems = sqliteTable("nav_items", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   type: text("type", {
     enum: ["page", "link", "system"],
   })
@@ -144,9 +140,7 @@ export const navItems = sqliteTable("nav_items", {
     .default("link"),
   label: text("label").notNull(),
   url: text("url").notNull(),
-  pageId: integer("page_id").references(() => pages.id, {
-    onDelete: "cascade",
-  }),
+  pageId: text("page_id"),
   position: integer("position").notNull().default(0),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
@@ -157,7 +151,7 @@ export const navItems = sqliteTable("nav_items", {
 // =============================================================================
 
 export const redirects = sqliteTable("redirects", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   fromPath: text("from_path").notNull().unique(),
   toPath: text("to_path").notNull(),
   type: integer("type", { mode: "number" }).notNull().default(301),
@@ -171,7 +165,7 @@ export const redirects = sqliteTable("redirects", {
 export const pathRegistry = sqliteTable("path_registry", {
   path: text("path").primaryKey(),
   ownerType: text("owner_type").notNull(),
-  ownerId: integer("owner_id").notNull(),
+  ownerId: text("owner_id").notNull(),
   createdAt: integer("created_at").notNull(),
 });
 

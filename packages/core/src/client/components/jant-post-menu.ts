@@ -11,14 +11,14 @@ import { LitElement, html, nothing } from "lit";
 import { showToast } from "../toast.js";
 
 interface PostMenuData {
-  sqid: string;
+  id: string;
   permalink: string;
   pinned: boolean;
   visibility: string;
 }
 
 interface CollectionItem {
-  id: number;
+  id: string;
   title: string;
   slug: string;
 }
@@ -96,17 +96,17 @@ export class JantPostMenu extends LitElement {
       const article = trigger.closest<HTMLElement>("article[data-post]");
       if (!article) return;
 
-      const sqid = article.dataset.postId;
-      if (!sqid) return;
+      const postId = article.dataset.postId;
+      if (!postId) return;
 
       // Toggle: close if same post, open if different
-      if (this._open && this._data?.sqid === sqid) {
+      if (this._open && this._data?.id === postId) {
         this.#close();
         return;
       }
 
       this._data = {
-        sqid,
+        id: postId,
         permalink: article.dataset.postPermalink ?? "",
         pinned: article.hasAttribute("data-post-pinned"),
         visibility: article.dataset.postVisibility ?? "public",
@@ -150,7 +150,7 @@ export class JantPostMenu extends LitElement {
 
   async #edit() {
     if (!this._data) return;
-    const sqid = this._data.sqid;
+    const postId = this._data.id;
     this.#close();
 
     const dialog = document.getElementById(
@@ -160,7 +160,7 @@ export class JantPostMenu extends LitElement {
       | import("./jant-compose-dialog.js").JantComposeDialog
       | null;
     if (composeEl) {
-      await composeEl.openEdit(sqid);
+      await composeEl.openEdit(postId);
     }
   }
 
@@ -170,7 +170,7 @@ export class JantPostMenu extends LitElement {
       this._data.visibility === "featured" ? "public" : "featured";
 
     try {
-      const res = await fetch(`/api/posts/${this._data.sqid}`, {
+      const res = await fetch(`/api/posts/${this._data.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ visibility: newVisibility }),
@@ -179,7 +179,7 @@ export class JantPostMenu extends LitElement {
 
       // Update article's data attribute
       const article = document.querySelector<HTMLElement>(
-        `article[data-post-id="${this._data.sqid}"]`,
+        `article[data-post-id="${this._data.id}"]`,
       );
       if (article) article.dataset.postVisibility = newVisibility;
       this._data = { ...this._data, visibility: newVisibility };
@@ -198,7 +198,7 @@ export class JantPostMenu extends LitElement {
     const newPinned = !this._data.pinned;
 
     try {
-      const res = await fetch(`/api/posts/${this._data.sqid}`, {
+      const res = await fetch(`/api/posts/${this._data.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pinned: newPinned }),
@@ -207,7 +207,7 @@ export class JantPostMenu extends LitElement {
 
       // Update article's data attribute
       const article = document.querySelector<HTMLElement>(
-        `article[data-post-id="${this._data.sqid}"]`,
+        `article[data-post-id="${this._data.id}"]`,
       );
       if (article) {
         if (newPinned) {
@@ -231,14 +231,14 @@ export class JantPostMenu extends LitElement {
       return;
 
     try {
-      const res = await fetch(`/api/posts/${this._data.sqid}`, {
+      const res = await fetch(`/api/posts/${this._data.id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error();
 
       // Remove article from DOM
       const article = document.querySelector<HTMLElement>(
-        `article[data-post-id="${this._data.sqid}"]`,
+        `article[data-post-id="${this._data.id}"]`,
       );
       // Remove the feed item wrapper if it exists, otherwise the article itself
       const feedItem = article?.closest(".feed-item");
@@ -281,13 +281,13 @@ export class JantPostMenu extends LitElement {
     }
   }
 
-  async #addToCollection(collectionId: number) {
+  async #addToCollection(collectionId: string) {
     if (!this._data) return;
     try {
       const res = await fetch(`/api/collections/${collectionId}/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId: this._data.sqid }),
+        body: JSON.stringify({ postId: this._data.id }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);

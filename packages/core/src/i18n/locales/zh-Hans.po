@@ -1569,6 +1569,11 @@ msgstr ""
 msgid "Reorder"
 msgstr ""
 
+#. @context: Compose button - reply to post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Reply"
+msgstr ""
+
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
 #: src/routes/auth/reset.tsx
@@ -1715,6 +1720,16 @@ msgstr ""
 #: src/ui/feed/ThreadPreview.tsx
 msgid "Show {remainingCount} more {0}"
 msgstr "显示 {remainingCount} 个更多 {0}"
+
+#. @context: Collapse reply context
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Show less"
+msgstr ""
+
+#. @context: Expand reply context
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Show more"
+msgstr ""
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading

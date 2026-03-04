@@ -16,48 +16,52 @@ describe("PathRegistryService", () => {
 
   describe("claim", () => {
     it("claims a path successfully", async () => {
-      const entry = await pathRegistry.claim("about", "page", 1);
+      const entry = await pathRegistry.claim("about", "page", "uuid-page-1");
 
       expect(entry.path).toBe("about");
       expect(entry.ownerType).toBe("page");
-      expect(entry.ownerId).toBe(1);
+      expect(entry.ownerId).toBe("uuid-page-1");
       expect(entry.createdAt).toBeGreaterThan(0);
     });
 
     it("normalizes the path before claiming", async () => {
-      const entry = await pathRegistry.claim("  /About/  ", "page", 1);
+      const entry = await pathRegistry.claim(
+        "  /About/  ",
+        "page",
+        "uuid-page-1",
+      );
       expect(entry.path).toBe("about");
     });
 
     it("rejects reserved paths", async () => {
-      await expect(pathRegistry.claim("dash", "page", 1)).rejects.toThrow(
-        ValidationError,
-      );
-      await expect(pathRegistry.claim("api", "page", 1)).rejects.toThrow(
-        ValidationError,
-      );
-      await expect(pathRegistry.claim("search", "page", 1)).rejects.toThrow(
-        ValidationError,
-      );
+      await expect(
+        pathRegistry.claim("dash", "page", "uuid-page-1"),
+      ).rejects.toThrow(ValidationError);
+      await expect(
+        pathRegistry.claim("api", "page", "uuid-page-1"),
+      ).rejects.toThrow(ValidationError);
+      await expect(
+        pathRegistry.claim("search", "page", "uuid-page-1"),
+      ).rejects.toThrow(ValidationError);
     });
 
     it("rejects reserved paths regardless of casing", async () => {
-      await expect(pathRegistry.claim("DASH", "page", 1)).rejects.toThrow(
-        ValidationError,
-      );
+      await expect(
+        pathRegistry.claim("DASH", "page", "uuid-page-1"),
+      ).rejects.toThrow(ValidationError);
     });
 
     it("throws ConflictError when path is already claimed by another entity", async () => {
-      await pathRegistry.claim("about", "page", 1);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
 
-      await expect(pathRegistry.claim("about", "post", 2)).rejects.toThrow(
-        ConflictError,
-      );
+      await expect(
+        pathRegistry.claim("about", "post", "uuid-post-2"),
+      ).rejects.toThrow(ConflictError);
     });
 
     it("is idempotent for the same owner", async () => {
-      const first = await pathRegistry.claim("about", "page", 1);
-      const second = await pathRegistry.claim("about", "page", 1);
+      const first = await pathRegistry.claim("about", "page", "uuid-page-1");
+      const second = await pathRegistry.claim("about", "page", "uuid-page-1");
 
       expect(second.path).toBe(first.path);
       expect(second.ownerType).toBe(first.ownerType);
@@ -65,14 +69,18 @@ describe("PathRegistryService", () => {
     });
 
     it("allows multi-level paths", async () => {
-      const entry = await pathRegistry.claim("2024/01/my-post", "post", 1);
+      const entry = await pathRegistry.claim(
+        "2024/01/my-post",
+        "post",
+        "uuid-post-1",
+      );
       expect(entry.path).toBe("2024/01/my-post");
     });
   });
 
   describe("release", () => {
     it("releases a claimed path", async () => {
-      await pathRegistry.claim("about", "page", 1);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
       await pathRegistry.release("about");
 
       const entry = await pathRegistry.getByPath("about");
@@ -80,7 +88,7 @@ describe("PathRegistryService", () => {
     });
 
     it("normalizes the path before releasing", async () => {
-      await pathRegistry.claim("about", "page", 1);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
       await pathRegistry.release("  /About/  ");
 
       const entry = await pathRegistry.getByPath("about");
@@ -95,11 +103,11 @@ describe("PathRegistryService", () => {
 
   describe("releaseByOwner", () => {
     it("releases all paths for a specific owner", async () => {
-      await pathRegistry.claim("about", "page", 1);
-      await pathRegistry.claim("contact", "page", 1);
-      await pathRegistry.claim("blog", "page", 2);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
+      await pathRegistry.claim("contact", "page", "uuid-page-1");
+      await pathRegistry.claim("blog", "page", "uuid-page-2");
 
-      await pathRegistry.releaseByOwner("page", 1);
+      await pathRegistry.releaseByOwner("page", "uuid-page-1");
 
       expect(await pathRegistry.getByPath("about")).toBeNull();
       expect(await pathRegistry.getByPath("contact")).toBeNull();
@@ -108,10 +116,10 @@ describe("PathRegistryService", () => {
     });
 
     it("does not affect other owner types", async () => {
-      await pathRegistry.claim("about", "page", 1);
-      await pathRegistry.claim("my-post", "post", 1);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
+      await pathRegistry.claim("my-post", "post", "uuid-post-1");
 
-      await pathRegistry.releaseByOwner("page", 1);
+      await pathRegistry.releaseByOwner("page", "uuid-page-1");
 
       expect(await pathRegistry.getByPath("about")).toBeNull();
       expect(await pathRegistry.getByPath("my-post")).not.toBeNull();
@@ -120,16 +128,16 @@ describe("PathRegistryService", () => {
 
   describe("getByPath", () => {
     it("returns entry for claimed path", async () => {
-      await pathRegistry.claim("about", "page", 1);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
 
       const entry = await pathRegistry.getByPath("about");
       expect(entry).not.toBeNull();
       expect(entry?.ownerType).toBe("page");
-      expect(entry?.ownerId).toBe(1);
+      expect(entry?.ownerId).toBe("uuid-page-1");
     });
 
     it("normalizes the lookup path", async () => {
-      await pathRegistry.claim("about", "page", 1);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
 
       const entry = await pathRegistry.getByPath("  /About/  ");
       expect(entry).not.toBeNull();
@@ -152,12 +160,12 @@ describe("PathRegistryService", () => {
     });
 
     it("returns false for claimed paths", async () => {
-      await pathRegistry.claim("about", "page", 1);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
       expect(await pathRegistry.isAvailable("about")).toBe(false);
     });
 
     it("returns true after a path is released", async () => {
-      await pathRegistry.claim("about", "page", 1);
+      await pathRegistry.claim("about", "page", "uuid-page-1");
       await pathRegistry.release("about");
       expect(await pathRegistry.isAvailable("about")).toBe(true);
     });

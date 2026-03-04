@@ -20,6 +20,7 @@ import type {
   SearchResult,
   Post,
 } from "../../types.js";
+import { toUid } from "../uid.js";
 
 const EMPTY_CTX: MediaContext = {};
 const CTX_WITH_URLS: MediaContext = {
@@ -27,9 +28,19 @@ const CTX_WITH_URLS: MediaContext = {
   imageTransformUrl: "https://example.com/cdn-cgi/image",
 };
 
+// UUIDv7 constants for test fixtures
+const UUID_1 = "019cb943-b2c0-76e3-ade2-209415e74da5";
+const UUID_2 = "019cb943-b2c0-76e3-ade2-209415e74da6";
+const UUID_3 = "019cb943-b2c0-76e3-ade2-209415e74da7";
+const UUID_POST = "019cb943-c000-7000-8000-000000000001";
+const UUID_NAV_1 = "019cb943-d000-7000-8000-000000000001";
+const UUID_NAV_2 = "019cb943-d000-7000-8000-000000000002";
+const UUID_NAV_3 = "019cb943-d000-7000-8000-000000000003";
+const UUID_PAGE = "019cb943-e000-7000-8000-000000000005";
+
 function makePost(overrides: Partial<Post> = {}): Post {
   return {
-    id: 1,
+    id: UUID_1,
     format: "note",
     status: "published",
     visibility: "public" as const,
@@ -39,7 +50,9 @@ function makePost(overrides: Partial<Post> = {}): Post {
     url: null,
     body: "Hello world",
     bodyHtml: "<p>Hello world</p>",
+    bodyText: null,
     quoteText: null,
+    summary: null,
     rating: null,
     replyToId: null,
     threadId: null,
@@ -63,7 +76,7 @@ function makePostWithMedia(
 function makeMedia(overrides: Partial<Media> = {}): Media {
   return {
     id: "01902a9f-1a2b-7c3d",
-    postId: 1,
+    postId: UUID_1,
     filename: "image.webp",
     originalName: "photo.jpg",
     mimeType: "image/webp",
@@ -76,14 +89,17 @@ function makeMedia(overrides: Partial<Media> = {}): Media {
     position: 0,
     blurhash: null,
     posterKey: null,
+    summary: null,
+    chars: null,
     createdAt: 1706745600,
+    updatedAt: 1706745600,
     ...overrides,
   };
 }
 
 function makeNavItem(overrides: Partial<NavItem> = {}): NavItem {
   return {
-    id: 1,
+    id: UUID_NAV_1,
     type: "link",
     label: "Home",
     url: "/",
@@ -101,20 +117,23 @@ function makeNavItem(overrides: Partial<NavItem> = {}): NavItem {
 
 describe("toPostView", () => {
   it("generates permalink from post id when no path", () => {
-    const post = makePostWithMedia({ id: 123, path: null });
+    const post = makePostWithMedia({ id: UUID_POST, path: null });
     const view = toPostView(post, EMPTY_CTX);
     expect(view.permalink).toMatch(/^\/p\/.+$/);
     expect(view.permalink.length).toBeGreaterThan(3);
   });
 
   it("generates permalink from path when path is set", () => {
-    const post = makePostWithMedia({ id: 123, path: "my-post" });
+    const post = makePostWithMedia({ id: UUID_POST, path: "my-post" });
     const view = toPostView(post, EMPTY_CTX);
     expect(view.permalink).toBe("/my-post");
   });
 
   it("generates permalink from multi-level path", () => {
-    const post = makePostWithMedia({ id: 123, path: "2024/01/my-post" });
+    const post = makePostWithMedia({
+      id: UUID_POST,
+      path: "2024/01/my-post",
+    });
     const view = toPostView(post, EMPTY_CTX);
     expect(view.permalink).toBe("/2024/01/my-post");
   });
@@ -290,6 +309,10 @@ describe("toPostView", () => {
             height: 600,
             position: 0,
             mimeType: "image/webp",
+            originalName: "photo.jpg",
+            size: 5000,
+            summary: null,
+            chars: null,
           },
         ],
       }),
@@ -306,6 +329,10 @@ describe("toPostView", () => {
       height: 600,
       blurhash: undefined,
       posterUrl: undefined,
+      originalName: "photo.jpg",
+      size: 5000,
+      summary: undefined,
+      chars: undefined,
     });
   });
 
@@ -324,6 +351,10 @@ describe("toPostView", () => {
             height: 600,
             position: 0,
             mimeType: "image/webp",
+            originalName: "photo.jpg",
+            size: 5000,
+            summary: null,
+            chars: null,
           },
         ],
       }),
@@ -335,11 +366,14 @@ describe("toPostView", () => {
 
 describe("toPostViews", () => {
   it("converts multiple posts", () => {
-    const posts = [makePostWithMedia({ id: 1 }), makePostWithMedia({ id: 2 })];
+    const posts = [
+      makePostWithMedia({ id: UUID_1 }),
+      makePostWithMedia({ id: UUID_2 }),
+    ];
     const views = toPostViews(posts, EMPTY_CTX);
     expect(views).toHaveLength(2);
-    expect(views[0]).toHaveProperty("id", 1);
-    expect(views[1]).toHaveProperty("id", 2);
+    expect(views[0]).toHaveProperty("id", toUid(UUID_1));
+    expect(views[1]).toHaveProperty("id", toUid(UUID_2));
   });
 });
 
@@ -474,9 +508,12 @@ describe("toNavItemView", () => {
   });
 
   it("includes type and pageId in view", () => {
-    const view = toNavItemView(makeNavItem({ type: "page", pageId: 5 }), "/");
+    const view = toNavItemView(
+      makeNavItem({ type: "page", pageId: UUID_PAGE }),
+      "/",
+    );
     expect(view.type).toBe("page");
-    expect(view.pageId).toBe(5);
+    expect(view.pageId).toBe(toUid(UUID_PAGE));
   });
 
   it("converts null pageId to undefined", () => {
@@ -488,9 +525,9 @@ describe("toNavItemView", () => {
 describe("toNavItemViews", () => {
   it("converts multiple items", () => {
     const items = [
-      makeNavItem({ id: 1, url: "/" }),
-      makeNavItem({ id: 2, url: "/archive" }),
-      makeNavItem({ id: 3, url: "https://github.com" }),
+      makeNavItem({ id: UUID_NAV_1, url: "/" }),
+      makeNavItem({ id: UUID_NAV_2, url: "/archive" }),
+      makeNavItem({ id: UUID_NAV_3, url: "https://github.com" }),
     ];
     const views = toNavItemViews(items, "/archive");
     expect(views).toHaveLength(3);
@@ -507,12 +544,12 @@ describe("toNavItemViews", () => {
 describe("toSearchResultView", () => {
   it("wraps post in PostView", () => {
     const result: SearchResult = {
-      post: makePost({ id: 42, title: "Test" }),
+      post: makePost({ id: UUID_POST, title: "Test" }),
       rank: 1.5,
       snippet: "...matching <b>text</b>...",
     };
     const view = toSearchResultView(result, EMPTY_CTX);
-    expect(view.post.id).toBe(42);
+    expect(view.post.id).toBe(toUid(UUID_POST));
     expect(view.post.title).toBe("Test");
     expect(view.post.permalink).toBeDefined();
     expect(view.rank).toBe(1.5);
@@ -522,7 +559,7 @@ describe("toSearchResultView", () => {
   it("uses new post fields in search result view", () => {
     const result: SearchResult = {
       post: makePost({
-        id: 10,
+        id: UUID_POST,
         format: "link",
         status: "published",
         visibility: "featured",
@@ -550,10 +587,10 @@ describe("toArchiveGroups", () => {
   it("converts grouped map to ArchiveGroup array", () => {
     const grouped = new Map<string, Post[]>();
     grouped.set("2024-02", [
-      makePost({ id: 1, publishedAt: 1706745600 }),
-      makePost({ id: 2, publishedAt: 1706832000 }),
+      makePost({ id: UUID_1, publishedAt: 1706745600 }),
+      makePost({ id: UUID_2, publishedAt: 1706832000 }),
     ]);
-    grouped.set("2024-01", [makePost({ id: 3, publishedAt: 1704067200 })]);
+    grouped.set("2024-01", [makePost({ id: UUID_3, publishedAt: 1704067200 })]);
 
     const groups = toArchiveGroups(grouped, EMPTY_CTX);
     expect(groups).toHaveLength(2);
@@ -572,7 +609,7 @@ describe("toArchiveGroups", () => {
 
   it("converts posts to PostView within groups", () => {
     const grouped = new Map<string, Post[]>();
-    grouped.set("2024-02", [makePost({ id: 1 })]);
+    grouped.set("2024-02", [makePost({ id: UUID_1 })]);
 
     const groups = toArchiveGroups(grouped, EMPTY_CTX);
     const post = groups[0]?.posts[0];

@@ -217,6 +217,18 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment:
         "@context: Toast when uploads fail and post is auto-saved as draft",
     }),
+    reply: t({
+      message: "Reply",
+      comment: "@context: Compose button - reply to post",
+    }),
+    showMore: t({
+      message: "Show more",
+      comment: "@context: Expand reply context",
+    }),
+    showLess: t({
+      message: "Show less",
+      comment: "@context: Collapse reply context",
+    }),
     addCollection: t({
       message: "Add Collection",
       comment: "@context: Action to create a new collection from compose",

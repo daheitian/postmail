@@ -12,6 +12,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { DashLayout } from "../../ui/layouts/DashLayout.js";
 import { EmptyState, ListItemRow, ActionButtons } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
+import { parseIdParam } from "../../lib/errors.js";
 import { RedirectTypeSchema, parseValidated } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -254,10 +255,8 @@ redirectsRoutes.post("/", async (c) => {
 
 // Delete redirect
 redirectsRoutes.post("/:id/delete", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (!isNaN(id)) {
-    await c.var.services.redirects.delete(id);
-  }
+  const id = parseIdParam(c.req.param("id"));
+  await c.var.services.redirects.delete(id);
 
   return dsRedirect("/dash/settings/redirects");
 });

@@ -12,7 +12,8 @@ import {
   ReorderSchema,
   parseValidated,
 } from "../../lib/schemas.js";
-import { assertFound, parseIntParam, NotFoundError } from "../../lib/errors.js";
+import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
+import { fromUid } from "../../lib/uid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -20,7 +21,7 @@ export const navItemsApiRoutes = new Hono<Env>();
 
 // API update schema extends shared schema with nullable pageId for explicit clearing
 const UpdateNavItemSchema = CreateNavItemSchema.partial().extend({
-  pageId: z.number().int().positive().nullable().optional(),
+  pageId: z.string().nullable().optional(),
 });
 
 // List nav items
@@ -33,7 +34,14 @@ navItemsApiRoutes.get("/", async (c) => {
 navItemsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
   const body = parseValidated(ReorderSchema, await c.req.json());
 
-  await c.var.services.navItems.reorder(body.ids);
+  // Decode Base58 IDs to UUIDs
+  const decodedIds = body.ids.map((uid) => {
+    const uuid = fromUid(uid);
+    if (!uuid) throw new Error("Invalid ID in reorder");
+    return uuid;
+  });
+
+  await c.var.services.navItems.reorder(decodedIds);
   const items = await c.var.services.navItems.list();
   return c.json({ navItems: items });
 });
@@ -42,11 +50,17 @@ navItemsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
 navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
   const body = parseValidated(CreateNavItemSchema, await c.req.json());
 
+  // Decode pageId from Base58 to UUID if provided
+  let pageId: string | undefined;
+  if (body.pageId) {
+    pageId = fromUid(body.pageId) ?? undefined;
+  }
+
   const item = await c.var.services.navItems.create({
     type: body.type as NavItemType,
     label: body.label,
     url: body.url,
-    pageId: body.pageId,
+    pageId,
     position: body.position,
   });
 
@@ -55,11 +69,19 @@ navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Update nav item (requires auth)
 navItemsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
   const body = parseValidated(UpdateNavItemSchema, await c.req.json());
 
+  // Decode pageId from Base58 to UUID if provided
+  let pageId: string | null | undefined;
+  if (body.pageId === null) {
+    pageId = null;
+  } else if (body.pageId) {
+    pageId = fromUid(body.pageId) ?? undefined;
+  }
+
   const item = assertFound(
-    await c.var.services.navItems.update(id, body),
+    await c.var.services.navItems.update(id, { ...body, pageId }),
     "Nav item",
   );
 
@@ -68,7 +90,7 @@ navItemsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
 // Delete nav item (requires auth)
 navItemsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseIntParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"));
 
   const success = await c.var.services.navItems.delete(id);
   if (!success) throw new NotFoundError("Nav item");

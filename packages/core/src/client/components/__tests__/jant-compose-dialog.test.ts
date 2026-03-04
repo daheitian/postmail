@@ -74,6 +74,9 @@ const labels: ComposeLabels = {
   uploadFailedDraft: "Some uploads failed. Saved as draft.",
   addCollection: "Add Collection",
   draftRestored: "Draft restored.",
+  reply: "Reply",
+  showMore: "Show more",
+  showLess: "Show less",
   collectionFormLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",
@@ -97,8 +100,8 @@ const labels: ComposeLabels = {
 };
 
 const collections: ComposeCollection[] = [
-  { id: 1, title: "Books", iconHtml: "" },
-  { id: 2, title: "Movies", iconHtml: "<span>🎬</span>" },
+  { id: "col-1", title: "Books", iconHtml: "" },
+  { id: "col-2", title: "Movies", iconHtml: "<span>🎬</span>" },
 ];
 
 async function createElement(
@@ -230,23 +233,23 @@ describe("JantComposeDialog", () => {
     // Select first collection
     options[0].click();
     await el.updateComplete;
-    expect(el._collectionIds).toEqual([1]);
+    expect(el._collectionIds).toEqual(["col-1"]);
 
     // Select second collection
     options[1].click();
     await el.updateComplete;
-    expect(el._collectionIds).toEqual([1, 2]);
+    expect(el._collectionIds).toEqual(["col-1", "col-2"]);
 
     // Deselect first
     options[0].click();
     await el.updateComplete;
-    expect(el._collectionIds).toEqual([2]);
+    expect(el._collectionIds).toEqual(["col-2"]);
   });
 
   it("reset restores initial state", async () => {
     const el = await createElement();
     el._format = "link";
-    el._collectionIds = [1, 2];
+    el._collectionIds = ["col-1", "col-2"];
     el._loading = true;
     el._draftSourceId = "abc123";
 

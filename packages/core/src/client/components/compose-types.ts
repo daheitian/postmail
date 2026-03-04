@@ -36,7 +36,7 @@ export interface AttachedTextItem {
 }
 
 export interface DraftItem {
-  sqid: string;
+  id: string;
   format: ComposeFormat;
   title: string | null;
   bodyText: string | null;
@@ -62,7 +62,7 @@ export interface LocalDraft {
   rating: number;
   showTitle: boolean;
   showRating: boolean;
-  collectionIds: number[];
+  collectionIds: string[];
   attachedTexts: Array<{
     clientId: string;
     bodyJson: JSONContent | null;
@@ -125,6 +125,9 @@ export interface ComposeLabels {
   uploadFailedDraft: string;
   addCollection: string;
   draftRestored: string;
+  reply: string;
+  showMore: string;
+  showLess: string;
   collectionFormLabels: CollectionFormLabels;
 }
 
@@ -137,7 +140,7 @@ export interface ComposeSubmitDetail {
   quoteAuthor: string;
   status: "published" | "draft";
   rating: number;
-  collectionIds: number[];
+  collectionIds: string[];
   mediaIds: string[];
   mediaAlts: Record<string, string>;
   attachedTexts: AttachedTextItem[];
@@ -146,10 +149,11 @@ export interface ComposeSubmitDetail {
   /** clientId → mediaId for already-uploaded file attachments (captured at submit time) */
   mediaClientMap: Record<string, string>;
   editPostId?: string;
+  replyToId?: string;
 }
 
 export interface ComposeCollection {
-  id: number;
+  id: string;
   title: string;
   iconHtml: string;
 }
