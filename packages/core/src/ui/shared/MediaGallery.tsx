@@ -227,8 +227,8 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
   const COMPACT_HEIGHT = 160;
 
   // Row height adapts to the first visual item's aspect ratio
-  const ROW_MIN = hasNonVisual ? 140 : 240;
-  const ROW_MAX = hasNonVisual ? 200 : 400;
+  const ROW_MIN = hasNonVisual ? 160 : 240;
+  const ROW_MAX = hasNonVisual ? 240 : 400;
   let rowHeight = hasNonVisual ? COMPACT_HEIGHT : 320;
   if (!singleVisual && galleryItems.length > 1) {
     const firstVisual = galleryItems.find(
