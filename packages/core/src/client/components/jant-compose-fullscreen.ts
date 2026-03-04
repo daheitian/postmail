@@ -12,7 +12,6 @@ import { LitElement, html, nothing } from "lit";
 import type { Editor, JSONContent } from "@tiptap/core";
 import type { ComposeLabels } from "./compose-types.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
-import { getSlashCommands } from "../tiptap/slash-commands.js";
 import { uploadWithMetadata } from "../upload-with-metadata.js";
 
 export class JantComposeFullscreen extends LitElement {
@@ -21,14 +20,12 @@ export class JantComposeFullscreen extends LitElement {
     _open: { state: true },
     _title: { state: true },
     _showTitle: { state: true },
-    _actionsOpen: { state: true },
   };
 
   declare labels: ComposeLabels;
   declare _open: boolean;
   declare _title: string;
   declare _showTitle: boolean;
-  declare _actionsOpen: boolean;
 
   private _editor: Editor | null = null;
   private _content: JSONContent | null = null;
@@ -44,7 +41,6 @@ export class JantComposeFullscreen extends LitElement {
     this._open = false;
     this._title = "";
     this._showTitle = false;
-    this._actionsOpen = false;
   }
 
   connectedCallback() {
@@ -155,7 +151,6 @@ export class JantComposeFullscreen extends LitElement {
     // Always show title in fullscreen — it's the primary editing surface
     this._showTitle = true;
     this._open = true;
-    this._actionsOpen = false;
     // Show as modal (top layer) and init editor after render
     this.updateComplete.then(() => {
       const dialog = this.querySelector<HTMLDialogElement>(
@@ -215,51 +210,10 @@ export class JantComposeFullscreen extends LitElement {
     );
   }
 
-  private _toggleActions() {
-    this._actionsOpen = !this._actionsOpen;
-  }
-
-  private _executeCommand(index: number) {
-    const commands = getSlashCommands();
-    const item = commands[index];
-    if (!item || !this._editor) {
-      this._actionsOpen = false;
-      return;
-    }
-
-    // Image command: trigger file picker directly
-    if (item.label === "Image") {
-      this._actionsOpen = false;
-      this._triggerImagePicker();
-      return;
-    }
-
-    const { from, to } = this._editor.state.selection;
-    item.command(this._editor, { from, to });
-    this._actionsOpen = false;
-  }
-
-  private _renderActionsMenu() {
-    if (!this._actionsOpen) return nothing;
-    const commands = getSlashCommands();
-    return html`
-      <div class="tiptap-slash-menu compose-fullscreen-plus-dropdown">
-        ${commands.map(
-          (item, i) => html`
-            <div
-              class="tiptap-slash-item"
-              @mousedown=${(e: Event) => {
-                e.preventDefault();
-                this._executeCommand(i);
-              }}
-            >
-              <span class="tiptap-slash-item-icon">${item.icon}</span>
-              <span class="tiptap-slash-item-label">${item.label}</span>
-            </div>
-          `,
-        )}
-      </div>
-    `;
+  /** Insert "/" at cursor to trigger the slash command popup */
+  private _insertSlash() {
+    if (!this._editor) return;
+    this._editor.chain().focus().insertContent("/").run();
   }
 
   render() {
@@ -269,27 +223,24 @@ export class JantComposeFullscreen extends LitElement {
       <dialog class="compose-fullscreen-dialog" @cancel=${this._onDialogCancel}>
         <div class="compose-fullscreen">
           <div class="compose-fullscreen-toolbar">
-            <div class="compose-fullscreen-plus-menu">
-              <button
-                type="button"
-                class="compose-tool-btn"
-                @click=${() => this._toggleActions()}
+            <button
+              type="button"
+              class="compose-tool-btn"
+              @click=${() => this._insertSlash()}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                >
-                  <line x1="9" y1="3" x2="9" y2="15" />
-                  <line x1="3" y1="9" x2="15" y2="9" />
-                </svg>
-              </button>
-              ${this._renderActionsMenu()}
-            </div>
+                <line x1="9" y1="3" x2="9" y2="15" />
+                <line x1="3" y1="9" x2="15" y2="9" />
+              </svg>
+            </button>
             <div class="flex-1"></div>
             <button
               type="button"

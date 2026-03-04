@@ -2621,16 +2621,17 @@
     border-radius: 8px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
     padding: 4px;
-    min-width: 200px;
+    min-width: 220px;
     max-height: 320px;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .tiptap-slash-item {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.875rem;
@@ -2647,11 +2648,23 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    font-size: 0.8rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: var(--site-nav-hover-bg);
     color: var(--site-text-secondary);
     flex-shrink: 0;
+  }
+
+  .tiptap-slash-item-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .tiptap-slash-item.is-selected .tiptap-slash-item-icon,
+  .tiptap-slash-item:hover .tiptap-slash-item-icon {
+    background: var(--site-divider);
+    color: var(--site-text-primary);
   }
 
   .tiptap-slash-item-label {
@@ -2912,16 +2925,5 @@
 
   .compose-fullscreen .compose-tiptap-body .tiptap {
     min-height: 400px;
-  }
-
-  .compose-fullscreen-plus-menu {
-    position: relative;
-  }
-
-  .compose-fullscreen-plus-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: 4px;
   }
 }
