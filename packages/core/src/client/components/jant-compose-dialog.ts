@@ -140,7 +140,7 @@ export class JantComposeDialog extends LitElement {
     if (changed.has("_format") || changed.has("_collectionIds")) {
       this.#dirty = true;
       // Schedule draft auto-save for new-post mode only
-      if (!this._editPostId && !this._draftSourceId && !this._replyToId) {
+      if (!this._editPostId && !this._draftSourceId) {
         this._scheduleDraftSave();
       }
     }
@@ -284,6 +284,30 @@ export class JantComposeDialog extends LitElement {
     this._editor?.focusInput();
   }
 
+  /**
+   * Fetch parent post from API to populate reply context preview.
+   * Falls back gracefully if the parent is unavailable (deleted, etc.).
+   */
+  private async _fetchReplyContext(replyToId: string) {
+    try {
+      const res = await fetch(`/api/posts/${replyToId}`);
+      if (!res.ok) return;
+      const post = await res.json();
+      const dateText = post.publishedAt
+        ? new Date(post.publishedAt * 1000).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+          })
+        : "";
+      this._replyToData = {
+        contentHtml: (post.bodyHtml as string) ?? "",
+        dateText,
+      };
+    } catch {
+      // Parent unavailable — reply mode still works, just no preview
+    }
+  }
+
   set loading(v: boolean) {
     this._loading = v;
   }
@@ -320,13 +344,8 @@ export class JantComposeDialog extends LitElement {
       return;
     }
     if (this._hasContent()) {
-      if (this._replyToId) {
-        // Reply mode: no draft support — just confirm discard
-        this._discardAndClose();
-      } else {
-        this._confirmForDrafts = false;
-        this._confirmPanelOpen = true;
-      }
+      this._confirmForDrafts = false;
+      this._confirmPanelOpen = true;
     } else {
       this._closeDialog();
       this.reset();
@@ -681,6 +700,7 @@ export class JantComposeDialog extends LitElement {
           bodyHtml: (p.bodyHtml as string) ?? null,
           url: (p.url as string) ?? null,
           quoteText: (p.quoteText as string) ?? null,
+          replyToId: (p.replyToId as string) ?? null,
           updatedAt: p.updatedAt as number,
           mediaAttachments: (
             (p.mediaAttachments as DraftItem["mediaAttachments"]) ?? []
@@ -720,6 +740,12 @@ export class JantComposeDialog extends LitElement {
 
     if (post.collectionIds?.length) {
       this._collectionIds = post.collectionIds;
+    }
+
+    // Restore reply context if this draft was a reply
+    if (post.replyToId) {
+      this._replyToId = post.replyToId;
+      await this._fetchReplyContext(post.replyToId);
     }
 
     await this.updateComplete;
@@ -837,7 +863,7 @@ export class JantComposeDialog extends LitElement {
   private _onContentChanged = () => {
     this.#dirty = true;
     // Schedule localStorage auto-save for new-post mode only
-    if (!this._editPostId && !this._draftSourceId && !this._replyToId) {
+    if (!this._editPostId && !this._draftSourceId) {
       this._scheduleDraftSave();
     }
   };
@@ -899,6 +925,7 @@ export class JantComposeDialog extends LitElement {
       showTitle: editor._showTitle,
       showRating: editor._showRating,
       collectionIds: [...this._collectionIds],
+      replyToId: this._replyToId,
       attachedTexts: data.attachedTexts.map((t) => ({
         clientId: t.clientId,
         bodyJson: t.bodyJson,
@@ -953,6 +980,12 @@ export class JantComposeDialog extends LitElement {
 
     this._format = draft.format;
     this._collectionIds = [...(draft.collectionIds ?? [])];
+
+    // Restore reply context if this draft was a reply
+    if (draft.replyToId) {
+      this._replyToId = draft.replyToId;
+      await this._fetchReplyContext(draft.replyToId);
+    }
 
     await this.updateComplete;
 
@@ -1213,30 +1246,28 @@ export class JantComposeDialog extends LitElement {
         </div>
 
         <div class="flex items-center gap-0.5 shrink-0">
-          ${this._replyToId
-            ? nothing
-            : html`<button
-                type="button"
-                class="compose-dialog-header-btn"
-                title=${this.labels.saveDraft}
-                ?disabled=${this._loading}
-                @click=${() => this._handleDraftButtonClick()}
-              >
-                <svg
-                  class="icon-fine"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.3"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M14 2.5L15.5 4 7 12.5l-3 .5.5-3L14 2.5z" />
-                  <path d="M4 15h10" />
-                </svg>
-              </button>`}
+          <button
+            type="button"
+            class="compose-dialog-header-btn"
+            title=${this.labels.saveDraft}
+            ?disabled=${this._loading}
+            @click=${() => this._handleDraftButtonClick()}
+          >
+            <svg
+              class="icon-fine"
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M14 2.5L15.5 4 7 12.5l-3 .5.5-3L14 2.5z" />
+              <path d="M4 15h10" />
+            </svg>
+          </button>
           ${this._renderMoreMenu()}
         </div>
       </header>
@@ -1270,19 +1301,17 @@ export class JantComposeDialog extends LitElement {
         ${this._showMoreMenu
           ? html`
               <div class="compose-dropdown compose-dropdown-right">
-                ${this._replyToId
-                  ? nothing
-                  : html`<button
-                        type="button"
-                        class="compose-dropdown-item"
-                        @click=${() => {
-                          this._submit("draft");
-                          this._showMoreMenu = false;
-                        }}
-                      >
-                        ${this.labels.saveAsDraft}
-                      </button>
-                      <div class="compose-dropdown-divider"></div>`}
+                <button
+                  type="button"
+                  class="compose-dropdown-item"
+                  @click=${() => {
+                    this._submit("draft");
+                    this._showMoreMenu = false;
+                  }}
+                >
+                  ${this.labels.saveAsDraft}
+                </button>
+                <div class="compose-dropdown-divider"></div>
                 <button
                   type="button"
                   class="compose-dropdown-item compose-dropdown-item-danger"

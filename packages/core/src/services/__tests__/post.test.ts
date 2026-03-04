@@ -819,6 +819,23 @@ describe("PostService", () => {
       expect(reply.status).toBe("draft");
     });
 
+    it("preserves draft status when reply explicitly requests it", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+        status: "published",
+      });
+      const reply = await postService.create({
+        format: "note",
+        body: "reply",
+        status: "draft",
+        replyToId: root.id,
+      });
+
+      expect(reply.status).toBe("draft");
+      expect(reply.threadId).toBe(root.id);
+    });
+
     it("inherits visibility from root post", async () => {
       const root = await postService.create({
         format: "note",

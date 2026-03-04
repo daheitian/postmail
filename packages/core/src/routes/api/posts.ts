@@ -89,6 +89,8 @@ postsApiRoutes.get("/", async (c) => {
     posts: posts.map((p) => ({
       ...p,
       id: toUid(p.id),
+      replyToId: p.replyToId ? toUid(p.replyToId) : null,
+      threadId: p.threadId ? toUid(p.threadId) : null,
       mediaAttachments: (mediaMap.get(p.id) ?? []).map((m) =>
         toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
       ),
@@ -117,6 +119,8 @@ postsApiRoutes.get("/:id", async (c) => {
   return c.json({
     ...post,
     id: toUid(post.id),
+    replyToId: post.replyToId ? toUid(post.replyToId) : null,
+    threadId: post.threadId ? toUid(post.threadId) : null,
     collectionIds,
     mediaAttachments: mediaList.map((m) =>
       toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
@@ -183,6 +187,8 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
     {
       ...post,
       id: toUid(post.id),
+      replyToId: post.replyToId ? toUid(post.replyToId) : null,
+      threadId: post.threadId ? toUid(post.threadId) : null,
       mediaAttachments: mediaList.map((m) =>
         toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
       ),
@@ -249,6 +255,8 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   return c.json({
     ...post,
     id: toUid(post.id),
+    replyToId: post.replyToId ? toUid(post.replyToId) : null,
+    threadId: post.threadId ? toUid(post.threadId) : null,
     mediaAttachments: mediaList.map((m) =>
       toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
     ),

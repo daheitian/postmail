@@ -260,7 +260,9 @@ export function createPostService(
             ? await this.getById(parent.threadId)
             : parent;
           if (root) {
-            status = root.status as Status;
+            if (data.status !== "draft") {
+              status = root.status as Status;
+            }
             visibility = root.visibility as Visibility;
           }
         }

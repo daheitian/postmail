@@ -43,6 +43,7 @@ export interface DraftItem {
   bodyHtml: string | null;
   url: string | null;
   quoteText: string | null;
+  replyToId: string | null;
   updatedAt: number;
   mediaAttachments: {
     id: string;
@@ -63,6 +64,7 @@ export interface LocalDraft {
   showTitle: boolean;
   showRating: boolean;
   collectionIds: string[];
+  replyToId: string | null;
   attachedTexts: Array<{
     clientId: string;
     bodyJson: JSONContent | null;
