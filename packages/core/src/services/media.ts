@@ -72,6 +72,7 @@ export interface CreateMediaData {
   blurhash?: string;
   posterKey?: string;
   summary?: string;
+  chars?: number;
 }
 
 export function createMediaService(db: Database): MediaService {
@@ -92,6 +93,7 @@ export function createMediaService(db: Database): MediaService {
       blurhash: row.blurhash,
       posterKey: row.posterKey,
       summary: row.summary,
+      chars: row.chars,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -209,6 +211,7 @@ export function createMediaService(db: Database): MediaService {
           blurhash: data.blurhash ?? null,
           posterKey: data.posterKey ?? null,
           summary: data.summary ?? null,
+          chars: data.chars ?? null,
           createdAt: timestamp,
           updatedAt: timestamp,
         })

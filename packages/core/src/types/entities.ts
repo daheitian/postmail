@@ -60,6 +60,7 @@ export interface Media {
   blurhash: string | null;
   posterKey: string | null;
   summary: string | null;
+  chars: number | null;
   createdAt: number;
   updatedAt: number;
 }
@@ -78,6 +79,7 @@ export interface MediaAttachment {
   originalName: string;
   size: number;
   summary: string | null;
+  chars: number | null;
 }
 
 export interface PostWithMedia extends Post {

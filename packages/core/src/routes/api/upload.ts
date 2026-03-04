@@ -179,8 +179,55 @@ uploadApiRoutes.post("/", async (c) => {
   const { id, filename, storageKey } = generateStorageKey(file.name);
 
   try {
-    // Upload to storage
-    await storage.put(storageKey, file.stream(), {
+    // Read optional summary (provided for text attachments)
+    let summary = (formData.get("summary") as string) || undefined;
+    let chars: number | undefined;
+    // Buffer for text files — file.stream() may not work after file.text()
+    let textBuffer: Uint8Array | undefined;
+
+    // Extract summary and char count BEFORE consuming the stream for storage,
+    // because file.text() may not work after file.stream() is consumed.
+    if (
+      file.type === "text/plain" ||
+      file.type === "text/markdown" ||
+      file.type === "text/csv"
+    ) {
+      try {
+        const textContent = await file.text();
+        textBuffer = new TextEncoder().encode(textContent);
+        chars = textContent.length;
+        if (!summary) {
+          summary = textContent.slice(0, 100).trim() || undefined;
+        }
+      } catch {
+        // Ignore — summary and chars are optional
+      }
+    } else if (file.type === "text/x-tiptap+json") {
+      try {
+        const raw = await file.text();
+        textBuffer = new TextEncoder().encode(raw);
+        const envelope = JSON.parse(raw) as {
+          json?: { content?: unknown[] };
+          html?: string;
+        };
+        // Walk the TipTap JSON tree to extract plain text
+        if (envelope.json) {
+          let text = "";
+          const walk = (node: Record<string, unknown>) => {
+            if (typeof node.text === "string") text += node.text;
+            if (Array.isArray(node.content))
+              (node.content as Record<string, unknown>[]).forEach(walk);
+          };
+          walk(envelope.json as Record<string, unknown>);
+          chars = text.length;
+        }
+      } catch {
+        // Ignore — chars is optional
+      }
+    }
+
+    // Upload to storage — use buffered bytes for text files (stream may be consumed)
+    await storage.put(storageKey, textBuffer ?? file.stream(), {
       contentType: file.type,
     });
 
@@ -202,24 +249,6 @@ uploadApiRoutes.post("/", async (c) => {
       });
     }
 
-    // Read optional summary (provided for text attachments)
-    let summary = (formData.get("summary") as string) || undefined;
-
-    // Auto-extract summary for plain text, markdown, and CSV uploads
-    if (
-      !summary &&
-      (file.type === "text/plain" ||
-        file.type === "text/markdown" ||
-        file.type === "text/csv")
-    ) {
-      try {
-        const textContent = await file.text();
-        summary = textContent.slice(0, 100).trim() || undefined;
-      } catch {
-        // Ignore — summary is optional
-      }
-    }
-
     // Save to database
     const media = await c.var.services.media.create({
       id,
@@ -235,6 +264,7 @@ uploadApiRoutes.post("/", async (c) => {
         blurhashRaw && blurhashRaw.length < 200 ? blurhashRaw : undefined,
       posterKey,
       summary,
+      chars,
     });
 
     // SSE response for Datastar

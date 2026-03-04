@@ -82,6 +82,7 @@ export const media = sqliteTable("media", {
   blurhash: text("blurhash"),
   posterKey: text("poster_key"),
   summary: text("summary"),
+  chars: integer("chars"),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull().default(0),
 });

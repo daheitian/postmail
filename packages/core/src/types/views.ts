@@ -96,6 +96,7 @@ export interface MediaView {
   posterUrl?: string;
   originalName?: string;
   summary?: string;
+  chars?: number;
 }
 
 /**

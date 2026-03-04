@@ -359,6 +359,7 @@ export class JantComposeEditor extends LitElement {
       mimeType: string;
       originalName?: string;
       summary?: string;
+      chars?: number;
     }>;
     textAttachments?: Array<{
       bodyJson: string;
@@ -404,6 +405,7 @@ export class JantComposeEditor extends LitElement {
         alt: m.alt ?? "",
         error: null,
         summary: m.summary ?? null,
+        chars: m.chars ?? null,
       }));
       this._attachments = attachments;
       this._attachmentOrder = attachments.map((a) => a.clientId);
@@ -598,6 +600,7 @@ export class JantComposeEditor extends LitElement {
         alt: "",
         error: null,
         summary: null,
+        chars: null,
       });
       files.push({ file, clientId });
     }
@@ -610,14 +613,15 @@ export class JantComposeEditor extends LitElement {
       ...newAttachments.map((a) => a.clientId),
     ];
 
-    // Extract summaries for text-category files asynchronously
+    // Extract summaries and char counts for text-category files asynchronously
     for (const att of newAttachments) {
       const category = getMediaCategory(att.file.type);
       if (category === "text") {
         att.file.text().then((content) => {
           const summary = this._computeSummary(content);
+          const chars = content.length;
           this._attachments = this._attachments.map((a) =>
-            a.clientId === att.clientId ? { ...a, summary } : a,
+            a.clientId === att.clientId ? { ...a, summary, chars } : a,
           );
         });
       }
@@ -834,6 +838,14 @@ export class JantComposeEditor extends LitElement {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  private _formatChars(count: number): string {
+    if (count < 1000) return `${count} chars`;
+    if (count < 1_000_000) {
+      return `${parseFloat((count / 1000).toFixed(1))}k chars`;
+    }
+    return `${parseFloat((count / 1_000_000).toFixed(1))}M chars`;
   }
 
   // ── Render helpers ────────────────────────────────────────────────
@@ -1074,6 +1086,11 @@ export class JantComposeEditor extends LitElement {
                 >${a.summary}</span
               >`
             : nothing}
+          ${typeof a.chars === "number" && a.chars > 0
+            ? html`<span class="compose-attachment-file-size"
+                >${this._formatChars(a.chars)}</span
+              >`
+            : nothing}
         </div>
       `;
     }
@@ -1186,6 +1203,13 @@ export class JantComposeEditor extends LitElement {
               </svg>
             </div>
             <span class="compose-attachment-text-summary">${item.summary}</span>
+            ${item.bodyJson
+              ? html`<span class="compose-attachment-file-size"
+                  >${this._formatChars(
+                    this._extractPlainText(item.bodyJson).length,
+                  )}</span
+                >`
+              : nothing}
           </div>
           <button
             type="button"

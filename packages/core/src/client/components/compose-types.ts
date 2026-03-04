@@ -21,6 +21,8 @@ export interface ComposeAttachment {
   error: string | null;
   /** Text content preview for text files (first ~100 chars) */
   summary: string | null;
+  /** Character count of text content */
+  chars: number | null;
 }
 
 export interface AttachedTextItem {

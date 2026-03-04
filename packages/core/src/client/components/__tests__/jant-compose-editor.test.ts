@@ -379,6 +379,7 @@ describe("JantComposeEditor", () => {
         alt: "",
         error: null,
         summary: null,
+        chars: null,
       },
     ];
     await el.updateComplete;

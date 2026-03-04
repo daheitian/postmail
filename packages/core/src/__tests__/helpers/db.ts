@@ -173,6 +173,11 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0017: add updated_at to media
   applyMigration(sqlite, "0017_nice_ozymandias.sql");
 
+  // Skip 0018 (posts table rebuild) — breaks FTS triggers in test environment
+
+  // Apply 0019: add chars column to media
+  applyMigration(sqlite, "0019_lovely_ben_urich.sql");
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

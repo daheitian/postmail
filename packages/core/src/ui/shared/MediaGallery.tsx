@@ -22,6 +22,14 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+export function formatChars(count: number): string {
+  if (count < 1000) return `${count} chars`;
+  if (count < 1_000_000) {
+    return `${parseFloat((count / 1000).toFixed(1))}k chars`;
+  }
+  return `${parseFloat((count / 1_000_000).toFixed(1))}M chars`;
+}
+
 /** Document icon SVG (file with lines) */
 const DocumentIcon = () => (
   <svg
@@ -315,6 +323,11 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                 <span class="media-text-card-excerpt">
                   {item.summary || item.originalName || "Attached text"}
                 </span>
+                {typeof item.chars === "number" && item.chars > 0 && (
+                  <span class="media-gallery-card-meta">
+                    {formatChars(item.chars)}
+                  </span>
+                )}
               </button>
             );
           })}

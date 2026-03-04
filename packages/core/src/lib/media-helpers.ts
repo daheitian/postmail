@@ -71,6 +71,7 @@ export function buildMediaMap(
           originalName: m.originalName,
           size: m.size,
           summary: m.summary,
+          chars: m.chars,
         };
       }),
     );
