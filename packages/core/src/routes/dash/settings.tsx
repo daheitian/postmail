@@ -3,7 +3,7 @@
  *
  * Unified settings hub — root page with iOS-style grouped list,
  * plus sub-pages for General, Avatar, Navigation, Color Theme,
- * Font Theme, Custom CSS, and Account.
+ * Font Theme, Custom CSS, and Password.
  */
 
 import { Hono } from "hono";
@@ -599,7 +599,7 @@ settingsRoutes.post("/custom-css", async (c) => {
 });
 
 // ===========================================================================
-// Account
+// Password
 // ===========================================================================
 
 settingsRoutes.get("/account", async (c) => {
@@ -608,14 +608,14 @@ settingsRoutes.get("/account", async (c) => {
   return c.html(
     <DashLayout
       c={c}
-      title="Account"
+      title="Password"
       siteName={siteName}
       siteAvatarUrl={c.var.appConfig.siteAvatarUrl}
       currentPath="/dash/settings"
       breadcrumb={{
         parent: "Settings",
         parentHref: "/dash/settings",
-        current: "Account",
+        current: "Password",
       }}
     >
       <AccountContent />

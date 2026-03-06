@@ -76,8 +76,6 @@ msgid "About this blog"
 msgstr "About this blog"
 
 #. @context: Settings group label for account settings
-#. @context: Settings item — account settings
-#: src/ui/dash/settings/SettingsRootContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
 msgstr "Account"
@@ -331,6 +329,11 @@ msgstr "Cancel"
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "Change Password"
 msgstr "Change Password"
+
+#. @context: Settings item description for password
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Change your sign-in password"
+msgstr "Change your sign-in password"
 
 #. @context: Font theme settings description
 #: src/ui/dash/settings/AppearanceContent.tsx
@@ -1549,10 +1552,12 @@ msgstr "Page title..."
 msgid "Pages"
 msgstr "Pages"
 
+#. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/signin.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Password"
 msgstr "Password"
 
@@ -1709,8 +1714,8 @@ msgstr "Processing..."
 
 #. @context: Settings item description for account
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Profile, password"
-msgstr "Profile, password"
+#~ msgid "Profile, password"
+#~ msgstr "Profile, password"
 
 #. @context: Visibility option - appears everywhere
 #: src/ui/dash/posts/PostForm.tsx

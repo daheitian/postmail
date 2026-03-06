@@ -59,8 +59,6 @@ msgid "About this blog"
 msgstr "关于这个博客"
 
 #. @context: Settings group label for account settings
-#. @context: Settings item — account settings
-#: src/ui/dash/settings/SettingsRootContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
 msgstr "账户"
@@ -271,6 +269,11 @@ msgstr "取消"
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "Change Password"
 msgstr "更改密码"
+
+#. @context: Settings item description for password
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Change your sign-in password"
+msgstr ""
 
 #. @context: Font theme settings description
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -1334,10 +1337,12 @@ msgstr "页面标题..."
 msgid "Pages"
 msgstr "页面"
 
+#. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/signin.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Password"
 msgstr "密码"
 
@@ -1469,8 +1474,8 @@ msgstr "处理中..."
 
 #. @context: Settings item description for account
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Profile, password"
-msgstr ""
+#~ msgid "Profile, password"
+#~ msgstr ""
 
 #. @context: Visibility option - appears everywhere
 #: src/ui/dash/posts/PostForm.tsx

@@ -1,5 +1,5 @@
 /**
- * Account settings: password change form
+ * Password settings: change sign-in password
  */
 
 import { useLingui } from "@lingui/react/macro";
