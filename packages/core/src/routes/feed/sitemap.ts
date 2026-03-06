@@ -6,11 +6,7 @@ import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { defaultSitemapRenderer } from "../../lib/feed.js";
-import {
-  createMediaContext,
-  toPostViewsFromPosts,
-  toPageView,
-} from "../../lib/view.js";
+import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -27,20 +23,13 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
     limit: 1000,
   });
 
-  // Fetch published pages
-  const publishedPages = await c.var.services.pages.list({
-    status: "published",
-  });
-
   // Transform to View Models
   const mediaCtx = createMediaContext(appConfig);
   const postViews = toPostViewsFromPosts(posts, mediaCtx);
-  const pageViews = publishedPages.map(toPageView);
 
   const xml = defaultSitemapRenderer({
     siteUrl,
     posts: postViews,
-    pages: pageViews,
   });
 
   return new Response(xml, {

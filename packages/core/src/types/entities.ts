@@ -33,17 +33,6 @@ export interface Post {
   updatedAt: number;
 }
 
-export interface Page {
-  id: string;
-  slug: string;
-  title: string | null;
-  body: string | null;
-  bodyHtml: string | null;
-  status: Status;
-  createdAt: number;
-  updatedAt: number;
-}
-
 export interface Media {
   id: string; // UUIDv7
   postId: string | null;
@@ -115,7 +104,6 @@ export interface NavItem {
   type: NavItemType;
   label: string;
   url: string;
-  pageId: string | null;
   position: number;
   createdAt: number;
   updatedAt: number;

@@ -1,7 +1,7 @@
 /**
  * Path Registry Service
  *
- * Central registry for URL path ownership. Every entity (page, post, redirect)
+ * Central registry for URL path ownership. Every entity (post, redirect)
  * that claims a URL path registers it here. The table's PRIMARY KEY on path
  * provides DB-level uniqueness. Reserved system paths are rejected at the
  * service layer.
@@ -15,7 +15,7 @@ import { normalizePath } from "../lib/url.js";
 import { isReservedPath } from "../lib/constants.js";
 import { ValidationError, ConflictError } from "../lib/errors.js";
 
-export type OwnerType = "page" | "post" | "redirect";
+export type OwnerType = "post" | "redirect";
 
 export interface PathRegistryEntry {
   path: string;

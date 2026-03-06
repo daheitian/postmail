@@ -28,14 +28,12 @@ import { collectionsPageRoutes } from "./routes/pages/collections.js";
 // Routes - Dashboard
 import { dashIndexRoutes } from "./routes/dash/index.js";
 import { postsRoutes as dashPostsRoutes } from "./routes/dash/posts.js";
-import { pagesRoutes as dashPagesRoutes } from "./routes/dash/pages.js";
 import { mediaRoutes as dashMediaRoutes } from "./routes/dash/media.js";
 import { settingsRoutes as dashSettingsRoutes } from "./routes/dash/settings.js";
 import { redirectsRoutes as dashRedirectsRoutes } from "./routes/dash/redirects.js";
 
 // Routes - API
 import { postsApiRoutes } from "./routes/api/posts.js";
-import { pagesApiRoutes } from "./routes/api/pages.js";
 import { navItemsApiRoutes } from "./routes/api/nav-items.js";
 import { collectionsApiRoutes } from "./routes/api/collections.js";
 import { settingsApiRoutes } from "./routes/api/settings.js";
@@ -257,7 +255,6 @@ export function createApp(): App {
 
   // API Routes
   app.route("/api/posts", postsApiRoutes);
-  app.route("/api/pages", pagesApiRoutes);
   app.route("/api/nav-items", navItemsApiRoutes);
   app.route("/api/collections", collectionsApiRoutes);
   app.route("/api/settings", settingsApiRoutes);
@@ -271,7 +268,6 @@ export function createApp(): App {
   app.use("/dash/*", requireAuth());
   app.route("/dash", dashIndexRoutes);
   app.route("/dash/posts", dashPostsRoutes);
-  app.route("/dash/pages", dashPagesRoutes);
   app.route("/dash/media", dashMediaRoutes);
   app.route("/dash/settings", dashSettingsRoutes);
   app.route("/dash/settings/redirects", dashRedirectsRoutes);

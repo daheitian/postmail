@@ -200,31 +200,11 @@ setupRoutes.post("/setup", async (c) => {
       }
     }
 
-    // Seed default navigation items (order: Collections, About, Archive, RSS, Dashboard)
+    // Seed default navigation items (order: Collections, Archive, RSS, Dashboard)
     await c.var.services.navItems.create({
       type: "link",
       label: "Collections",
       url: "/c",
-    });
-
-    const aboutPage = await c.var.services.pages.create({
-      slug: "about",
-      title: "About",
-      body: [
-        "Welcome to my corner of the internet.",
-        "",
-        "This is a place where I share my thoughts, ideas, and things I find interesting. Feel free to look around and get to know what this site is all about.",
-        "",
-        "If you'd like to get in touch, don't hesitate to reach out.",
-      ].join("\n"),
-      status: "published",
-    });
-
-    await c.var.services.navItems.create({
-      type: "page",
-      label: "About",
-      url: "/about",
-      pageId: aboutPage.id,
     });
 
     await c.var.services.navItems.create({

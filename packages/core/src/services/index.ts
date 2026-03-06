@@ -7,7 +7,6 @@
 import type { Database } from "../db/index.js";
 import { createSettingsService, type SettingsService } from "./settings.js";
 import { createPostService, type PostService } from "./post.js";
-import { createPageService, type PageService } from "./page.js";
 import { createRedirectService, type RedirectService } from "./redirect.js";
 import { createMediaService, type MediaService } from "./media.js";
 import {
@@ -25,7 +24,6 @@ import {
 export interface Services {
   settings: SettingsService;
   posts: PostService;
-  pages: PageService;
   redirects: RedirectService;
   media: MediaService;
   collections: CollectionService;
@@ -42,7 +40,6 @@ export function createServices(db: Database, d1: D1Database): Services {
     settings,
     pathRegistry,
     posts: createPostService(db, pathRegistry),
-    pages: createPageService(db, pathRegistry),
     redirects: createRedirectService(db, pathRegistry),
     media: createMediaService(db),
     collections: createCollectionService(db),
@@ -54,7 +51,6 @@ export function createServices(db: Database, d1: D1Database): Services {
 
 export type { SettingsService } from "./settings.js";
 export type { PostService, PostFilters, PostDeleteDeps } from "./post.js";
-export type { PageService, PageFilters } from "./page.js";
 export type { RedirectService } from "./redirect.js";
 export type { MediaService, MediaFilters } from "./media.js";
 export type { CollectionService } from "./collection.js";

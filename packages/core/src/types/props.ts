@@ -6,7 +6,6 @@ import type { Format, Visibility } from "./constants.js";
 import type { Collection } from "./entities.js";
 import type {
   PostView,
-  PageView,
   TimelineItemView,
   SearchResultView,
   ArchiveGroup,
@@ -26,11 +25,6 @@ export interface HomePageProps {
 /** Props for the single post page component */
 export interface PostPageProps {
   post: PostView;
-}
-
-/** Props for the custom page component */
-export interface SinglePageProps {
-  page: PageView;
 }
 
 /** Props for the featured page component */
@@ -86,7 +80,6 @@ export interface FeedData {
 export interface SitemapData {
   siteUrl: string;
   posts: PostView[];
-  pages: PageView[];
 }
 
 // =============================================================================

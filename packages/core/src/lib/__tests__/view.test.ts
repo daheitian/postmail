@@ -36,7 +36,6 @@ const UUID_POST = "019cb943-c000-7000-8000-000000000001";
 const UUID_NAV_1 = "019cb943-d000-7000-8000-000000000001";
 const UUID_NAV_2 = "019cb943-d000-7000-8000-000000000002";
 const UUID_NAV_3 = "019cb943-d000-7000-8000-000000000003";
-const UUID_PAGE = "019cb943-e000-7000-8000-000000000005";
 
 function makePost(overrides: Partial<Post> = {}): Post {
   return {
@@ -103,7 +102,6 @@ function makeNavItem(overrides: Partial<NavItem> = {}): NavItem {
     type: "link",
     label: "Home",
     url: "/",
-    pageId: null,
     position: 0,
     createdAt: 1706745600,
     updatedAt: 1706745600,
@@ -507,18 +505,9 @@ describe("toNavItemView", () => {
     expect(view.isActive).toBe(false);
   });
 
-  it("includes type and pageId in view", () => {
-    const view = toNavItemView(
-      makeNavItem({ type: "page", pageId: UUID_PAGE }),
-      "/",
-    );
-    expect(view.type).toBe("page");
-    expect(view.pageId).toBe(toUid(UUID_PAGE));
-  });
-
-  it("converts null pageId to undefined", () => {
-    const view = toNavItemView(makeNavItem({ pageId: null }), "/");
-    expect(view.pageId).toBeUndefined();
+  it("includes type in view", () => {
+    const view = toNavItemView(makeNavItem({ type: "system" }), "/");
+    expect(view.type).toBe("system");
   });
 });
 

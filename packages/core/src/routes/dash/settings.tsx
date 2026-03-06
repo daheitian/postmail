@@ -371,10 +371,7 @@ settingsRoutes.post("/avatar/display", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/navigation", async (c) => {
-  const [navItems, availablePages] = await Promise.all([
-    c.var.services.navItems.list(),
-    c.var.services.pages.listNotInNav(),
-  ]);
+  const navItems = await c.var.services.navItems.list();
   const siteName = c.var.appConfig.siteName;
   const headerNavMaxVisible = c.var.appConfig.headerNavMaxVisible;
   const homeDefaultView = c.var.appConfig.homeDefaultView;
@@ -394,7 +391,6 @@ settingsRoutes.get("/navigation", async (c) => {
     >
       <NavigationContent
         navItems={navItems}
-        availablePages={availablePages}
         headerNavMaxVisible={headerNavMaxVisible}
         homeDefaultView={homeDefaultView}
         siteName={siteName}

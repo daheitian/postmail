@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createRedirectService } from "../redirect.js";
-import { createPageService } from "../page.js";
 import { createPostService } from "../post.js";
 import { createPathRegistryService } from "../path-registry.js";
 import { ConflictError } from "../../lib/errors.js";
@@ -10,7 +9,6 @@ import type { Database } from "../../db/index.js";
 describe("RedirectService", () => {
   let db: Database;
   let redirectService: ReturnType<typeof createRedirectService>;
-  let pageService: ReturnType<typeof createPageService>;
   let postService: ReturnType<typeof createPostService>;
   let pathRegistry: ReturnType<typeof createPathRegistryService>;
 
@@ -19,7 +17,6 @@ describe("RedirectService", () => {
     db = testDb.db as unknown as Database;
     pathRegistry = createPathRegistryService(db);
     redirectService = createRedirectService(db, pathRegistry);
-    pageService = createPageService(db, pathRegistry);
     postService = createPostService(db, pathRegistry);
   });
 
@@ -122,14 +119,6 @@ describe("RedirectService", () => {
   });
 
   describe("path registry integration", () => {
-    it("rejects redirect that conflicts with a page", async () => {
-      await pageService.create({ slug: "about", title: "About" });
-
-      await expect(
-        redirectService.create("/about", "/new-about"),
-      ).rejects.toThrow(ConflictError);
-    });
-
     it("rejects redirect that conflicts with a post path", async () => {
       await postService.create({
         format: "note",

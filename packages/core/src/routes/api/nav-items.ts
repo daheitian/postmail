@@ -3,7 +3,6 @@
  */
 
 import { Hono } from "hono";
-import { z } from "zod";
 import type { Bindings, NavItemType } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
@@ -19,10 +18,7 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const navItemsApiRoutes = new Hono<Env>();
 
-// API update schema extends shared schema with nullable pageId for explicit clearing
-const UpdateNavItemSchema = CreateNavItemSchema.partial().extend({
-  pageId: z.string().nullable().optional(),
-});
+const UpdateNavItemSchema = CreateNavItemSchema.partial();
 
 // List nav items
 navItemsApiRoutes.get("/", async (c) => {
@@ -50,17 +46,10 @@ navItemsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
 navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
   const body = parseValidated(CreateNavItemSchema, await c.req.json());
 
-  // Decode pageId from Base58 to UUID if provided
-  let pageId: string | undefined;
-  if (body.pageId) {
-    pageId = fromUid(body.pageId) ?? undefined;
-  }
-
   const item = await c.var.services.navItems.create({
     type: body.type as NavItemType,
     label: body.label,
     url: body.url,
-    pageId,
     position: body.position,
   });
 
@@ -72,16 +61,8 @@ navItemsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   const id = parseIdParam(c.req.param("id"));
   const body = parseValidated(UpdateNavItemSchema, await c.req.json());
 
-  // Decode pageId from Base58 to UUID if provided
-  let pageId: string | null | undefined;
-  if (body.pageId === null) {
-    pageId = null;
-  } else if (body.pageId) {
-    pageId = fromUid(body.pageId) ?? undefined;
-  }
-
   const item = assertFound(
-    await c.var.services.navItems.update(id, { ...body, pageId }),
+    await c.var.services.navItems.update(id, body),
     "Nav item",
   );
 

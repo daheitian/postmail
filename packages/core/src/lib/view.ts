@@ -8,11 +8,9 @@
 import type {
   Post,
   PostWithMedia,
-  Page,
   Media,
   MediaView,
   PostView,
-  PageView,
   NavItemView,
   NavItem,
   SearchResult,
@@ -242,25 +240,6 @@ export function toPostViewsFromPosts(
 }
 
 // =============================================================================
-// Page Conversions
-// =============================================================================
-
-/**
- * Converts a Page to a render-ready PageView.
- */
-export function toPageView(page: Page): PageView {
-  return {
-    id: toUid(page.id),
-    slug: page.slug,
-    title: page.title ?? undefined,
-    bodyHtml: page.bodyHtml ?? undefined,
-    status: page.status as Status,
-    createdAt: toISOString(page.createdAt),
-    updatedAt: toISOString(page.updatedAt),
-  };
-}
-
-// =============================================================================
 // Navigation Conversions
 // =============================================================================
 
@@ -303,7 +282,6 @@ export function toNavItemView(
     type: item.type as NavItemType,
     label,
     url,
-    pageId: item.pageId ? toUid(item.pageId) : undefined,
     isActive,
     isExternal,
   };

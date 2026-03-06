@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPostService } from "../post.js";
-import { createPageService } from "../page.js";
 import { createPathRegistryService } from "../path-registry.js";
 import { ValidationError, ConflictError } from "../../lib/errors.js";
 import type { Database } from "../../db/index.js";
@@ -9,7 +8,6 @@ import type { Database } from "../../db/index.js";
 describe("PostService", () => {
   let db: Database;
   let postService: ReturnType<typeof createPostService>;
-  let pageService: ReturnType<typeof createPageService>;
   let pathRegistry: ReturnType<typeof createPathRegistryService>;
 
   beforeEach(() => {
@@ -17,7 +15,6 @@ describe("PostService", () => {
     db = testDb.db as unknown as Database;
     pathRegistry = createPathRegistryService(db);
     postService = createPostService(db, pathRegistry);
-    pageService = createPageService(db, pathRegistry);
   });
 
   describe("create", () => {
@@ -1013,8 +1010,8 @@ describe("PostService", () => {
       expect(await pathRegistry.isAvailable("test")).toBe(true);
     });
 
-    it("rejects path that conflicts with a page slug", async () => {
-      await pageService.create({ slug: "about", title: "About" });
+    it("rejects path that conflicts with an existing path registry entry", async () => {
+      await pathRegistry.claim("about", "redirect", "some-id");
 
       await expect(
         postService.create({ format: "note", body: "test", path: "about" }),

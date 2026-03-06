@@ -125,8 +125,8 @@ msgstr "添加媒體"
 
 #. @context: Section heading for adding page to nav
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Add page to navigation"
-msgstr ""
+#~ msgid "Add page to navigation"
+#~ msgstr ""
 
 #. @context: Section heading for adding nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -145,8 +145,8 @@ msgstr "所有"
 
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "All pages are already in navigation."
-msgstr ""
+#~ msgid "All pages are already in navigation."
+#~ msgstr ""
 
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -242,7 +242,6 @@ msgstr "返回"
 msgid "Blog Avatar"
 msgstr "部落格頭像"
 
-#. @context: Button to cancel and go back
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
@@ -255,7 +254,6 @@ msgstr "部落格頭像"
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -287,8 +285,8 @@ msgstr ""
 
 #. @context: Placeholder for page select combobox trigger
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Choose a page…"
-msgstr ""
+#~ msgid "Choose a page…"
+#~ msgstr ""
 
 #. @context: Button to open icon picker
 #. @context: Icon picker dialog title
@@ -358,9 +356,7 @@ msgstr "確認新密碼"
 msgid "Confirm Password"
 msgstr "確認密碼"
 
-#. @context: Page form field label - content
 #. @context: Post form field
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Content"
 msgstr "內容"
@@ -425,13 +421,13 @@ msgstr ""
 
 #. @context: Link at bottom of page combobox to create a new page
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Create page"
-msgstr ""
+#~ msgid "Create page"
+#~ msgstr ""
 
 #. @context: Button to create new page
 #: src/ui/dash/PageForm.tsx
-msgid "Create Page"
-msgstr "創建頁面"
+#~ msgid "Create Page"
+#~ msgstr "創建頁面"
 
 #. @context: Button to save new redirect
 #: src/routes/dash/redirects.tsx
@@ -525,8 +521,8 @@ msgstr "刪除媒體"
 
 #. @context: Button to delete page
 #: src/routes/dash/pages.tsx
-msgid "Delete Page"
-msgstr "刪除頁面"
+#~ msgid "Delete Page"
+#~ msgstr "刪除頁面"
 
 #. @context: Confirm dialog for deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -606,10 +602,8 @@ msgstr ""
 msgid "Done"
 msgstr "完成"
 
-#. @context: Page status option - draft
 #. @context: Post status badge - draft
 #. @context: Post status option
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Draft"
@@ -640,15 +634,11 @@ msgid "Drafts"
 msgstr "草稿"
 
 #. @context: Button to edit item
-#. @context: Button to edit page
-#. @context: Button to edit page
 #. @context: Button to edit post
 #. @context: Button to edit post
 #. @context: Per-collection edit action
-#: src/routes/dash/pages.tsx
 #: src/routes/dash/posts.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Edit"
@@ -659,12 +649,10 @@ msgstr "編輯"
 #~ msgid "Edit Collection"
 #~ msgstr "編輯收藏集"
 
-#. @context: Edit page main heading
 #. @context: Link to edit the page
-#: src/routes/dash/pages.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Edit Page"
-msgstr "編輯頁面"
+#~ msgid "Edit Page"
+#~ msgstr "編輯頁面"
 
 #. @context: Compose dialog header title in edit mode
 #: src/ui/compose/ComposeDialog.tsx
@@ -964,8 +952,8 @@ msgstr "載入中..."
 
 #. @context: Page slug validation message
 #: src/ui/dash/PageForm.tsx
-msgid "Lowercase letters, numbers, and hyphens only"
-msgstr "僅限小寫字母、數字和連字符"
+#~ msgid "Lowercase letters, numbers, and hyphens only"
+#~ msgstr "僅限小寫字母、數字和連字符"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1081,8 +1069,8 @@ msgstr "新收藏集"
 #. @context: New page main heading
 #: src/routes/dash/pages.tsx
 #: src/ui/dash/pages/PagesContent.tsx
-msgid "New Page"
-msgstr "新頁面"
+#~ msgid "New Page"
+#~ msgstr "新頁面"
 
 #. @context: Password form field
 #. @context: Password reset form field
@@ -1177,8 +1165,8 @@ msgstr ""
 
 #. @context: Empty state when page search has no results
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "No matching pages."
-msgstr ""
+#~ msgid "No matching pages."
+#~ msgstr ""
 
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
@@ -1197,8 +1185,13 @@ msgstr ""
 
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "No navigation items yet. Add pages, links, or enable system items below."
-msgstr "尚未有導航項目。請在下方添加頁面、鏈接或啟用系統項目。"
+msgid "No navigation items yet. Add links or enable system items below."
+msgstr ""
+
+#. @context: Empty state for navigation items
+#: src/ui/dash/appearance/NavigationContent.tsx
+#~ msgid "No navigation items yet. Add pages, links, or enable system items below."
+#~ msgstr "尚未有導航項目。請在下方添加頁面、鏈接或啟用系統項目。"
 
 #. @context: Empty state when page search has no results
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1207,8 +1200,8 @@ msgstr "尚未有導航項目。請在下方添加頁面、鏈接或啟用系統
 
 #. @context: Empty state for pages list
 #: src/ui/dash/pages/PagesContent.tsx
-msgid "No pages yet. Create one to add static content to your site."
-msgstr ""
+#~ msgid "No pages yet. Create one to add static content to your site."
+#~ msgstr ""
 
 #. @context: Empty state for pages list
 #: src/ui/dash/pages/PagesContent.tsx
@@ -1307,13 +1300,13 @@ msgstr "已保存順序"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "page"
-msgstr "頁面"
+#~ msgid "page"
+#~ msgstr "頁面"
 
 #. @context: Default page heading when untitled
 #: src/routes/dash/pages.tsx
-msgid "Page"
-msgstr "頁面"
+#~ msgid "Page"
+#~ msgstr "頁面"
 
 #. @context: Pagination - current page indicator
 #: src/ui/shared/Pagination.tsx
@@ -1322,20 +1315,18 @@ msgstr "頁面 {page}"
 
 #. @context: Page content placeholder
 #: src/ui/dash/PageForm.tsx
-msgid "Page content (Markdown supported)..."
-msgstr "頁面內容（支持Markdown）..."
+#~ msgid "Page content (Markdown supported)..."
+#~ msgstr "頁面內容（支持Markdown）..."
 
 #. @context: Page title placeholder
 #: src/ui/dash/PageForm.tsx
-msgid "Page title..."
-msgstr "頁面標題..."
+#~ msgid "Page title..."
+#~ msgstr "頁面標題..."
 
 #. @context: Dashboard navigation - pages management
-#. @context: Pages main heading
-#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/layouts/DashLayout.tsx
-msgid "Pages"
-msgstr "頁面"
+#~ msgid "Pages"
+#~ msgstr "頁面"
 
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
@@ -1487,12 +1478,10 @@ msgstr ""
 msgid "Publish"
 msgstr "發佈"
 
-#. @context: Page status option - published
 #. @context: Post status badge - published
 #. @context: Post status label
 #. @context: Post status option
 #: src/routes/dash/index.tsx
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
@@ -1500,8 +1489,8 @@ msgstr "已發佈"
 
 #. @context: Page status helper text
 #: src/ui/dash/PageForm.tsx
-msgid "Published pages are accessible via their slug. Drafts are not visible."
-msgstr "已發佈的頁面可以通過其標識符訪問。草稿不可見。"
+#~ msgid "Published pages are accessible via their slug. Drafts are not visible."
+#~ msgstr "已發佈的頁面可以通過其標識符訪問。草稿不可見。"
 
 #. @context: Toast shown after successful deferred publish
 #: src/ui/compose/ComposeDialog.tsx
@@ -1550,7 +1539,7 @@ msgstr "重定向"
 #. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
-#. @context: Remove page from navigation
+#. @context: Remove system item from navigation
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
@@ -1666,8 +1655,8 @@ msgstr "搜尋圖示..."
 
 #. @context: Placeholder for page search input in combobox
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Search pages…"
-msgstr ""
+#~ msgid "Search pages…"
+#~ msgstr ""
 
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx
@@ -1767,9 +1756,7 @@ msgstr "網站名稱"
 
 #. @context: Collection form field
 #. @context: Collection form field
-#. @context: Page form field label - URL slug
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/PageForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "縮略名"
@@ -1780,8 +1767,6 @@ msgid "Some uploads failed. Saved as draft."
 msgstr ""
 
 #. @context: Fallback validation error for compose form
-#. @context: Fallback validation error for page form
-#. @context: Fallback validation error for page form
 #. @context: Fallback validation error for password reset form
 #. @context: Fallback validation error for setup form
 #. @context: Fallback validation error for sign-in form
@@ -1789,8 +1774,6 @@ msgstr ""
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/signin.tsx
 #: src/routes/compose.tsx
-#: src/routes/dash/pages.tsx
-#: src/routes/dash/pages.tsx
 msgid "Something doesn't look right. Check the form and try again."
 msgstr ""
 
@@ -1806,9 +1789,7 @@ msgstr "排序順序"
 msgid "Source link (optional)"
 msgstr "來源連結（選填）"
 
-#. @context: Page form field label - publish status
 #. @context: Post form field
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Status"
 msgstr "狀態"
@@ -1887,8 +1868,8 @@ msgstr "被引用的文本..."
 
 #. @context: Page slug helper text
 #: src/ui/dash/PageForm.tsx
-msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
-msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
+#~ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
+#~ msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
@@ -1949,11 +1930,9 @@ msgstr "時區"
 #. @context: Collection form field
 #. @context: Compose note title placeholder
 #. @context: Compose toolbar - title tooltip
-#. @context: Page form field label - title
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/PageForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Title"
 msgstr "標題"
@@ -1970,8 +1949,13 @@ msgstr "到路徑"
 
 #. @context: Description for system nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
-msgstr "切換內建導航項目。啟用的項目會與頁面和連結一起顯示在您的導航中。"
+msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside links."
+msgstr ""
+
+#. @context: Description for system nav toggles
+#: src/ui/dash/appearance/NavigationContent.tsx
+#~ msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
+#~ msgstr "切換內建導航項目。啟用的項目會與頁面和連結一起顯示在您的導航中。"
 
 #. @context: Button to expand/collapse nav item edit
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -2000,9 +1984,7 @@ msgstr ""
 msgid "Unlisted"
 msgstr ""
 
-#. @context: Default title for untitled page
 #. @context: Default title for untitled post
-#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "Untitled"
 msgstr "無標題"
@@ -2019,8 +2001,8 @@ msgstr "更新"
 
 #. @context: Button to update existing page
 #: src/ui/dash/PageForm.tsx
-msgid "Update Page"
-msgstr "更新頁面"
+#~ msgid "Update Page"
+#~ msgstr "更新頁面"
 
 #. @context: Button to upload media file
 #: src/ui/dash/media/MediaListContent.tsx
@@ -2095,16 +2077,12 @@ msgid "Use this URL to embed the media in your posts."
 msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
 
 #. @context: Button to view item on public site
-#. @context: Button to view page on public site
-#. @context: Button to view page on public site
 #. @context: Button to view post
 #. @context: Button to view post on public site
 #. @context: Toast action button to view the published post
-#: src/routes/dash/pages.tsx
 #: src/routes/dash/posts.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "View"
 msgstr "查看"

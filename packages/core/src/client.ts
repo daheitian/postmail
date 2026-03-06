@@ -30,7 +30,6 @@ import "./client/components/jant-collection-sidebar.js";
 import "./client/collection-form-bridge.js";
 import "./client/components/jant-post-form.js";
 import "./client/post-form-bridge.js";
-import "./client/page-slug-bridge.js";
 import "./client/components/jant-nav-manager.js";
 import "./client/nav-manager-bridge.js";
 import "./client/components/jant-media-lightbox.js";

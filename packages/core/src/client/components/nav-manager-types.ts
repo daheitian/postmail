@@ -4,10 +4,9 @@
 
 export interface NavManagerItem {
   id: number;
-  type: "page" | "link" | "system";
+  type: "link" | "system";
   label: string;
   url: string;
-  pageId: number | null;
 }
 
 export interface SystemNavConfig {
@@ -17,17 +16,10 @@ export interface SystemNavConfig {
   description: string;
 }
 
-export interface AvailablePage {
-  id: number;
-  title: string;
-  slug: string;
-}
-
 export interface NavManagerLabels {
   preview: string;
   navigationItems: string;
   emptyState: string;
-  page: string;
   link: string;
   system: string;
   toggleEdit: string;
@@ -35,7 +27,6 @@ export interface NavManagerLabels {
   url: string;
   save: string;
   delete: string;
-  editPage: string;
   remove: string;
   orderSaved: string;
   labelRequired: string;
@@ -43,15 +34,9 @@ export interface NavManagerLabels {
   deleteFailed: string;
   systemLinks: string;
   systemLinksDescription: string;
-  addPageToNavigation: string;
   addCustomLinkToNavigation: string;
-  choosePage: string;
-  searchPages: string;
-  noPagesFound: string;
   addLink: string;
   addLinkDescription: string;
-  allPagesInNav: string;
-  createPage: string;
   urlPlaceholder: string;
   labelAndUrlRequired: string;
   maxVisibleLinks: string;

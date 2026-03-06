@@ -112,11 +112,11 @@ export function defaultAtomRenderer(data: FeedData): string {
 /**
  * Default Sitemap renderer.
  *
- * @param data - Sitemap data with PostView[] and PageView[]
+ * @param data - Sitemap data with PostView[]
  * @returns Sitemap XML string
  */
 export function defaultSitemapRenderer(data: SitemapData): string {
-  const { siteUrl, posts, pages } = data;
+  const { siteUrl, posts } = data;
 
   const postUrls = posts
     .map((post) => {
@@ -133,20 +133,6 @@ export function defaultSitemapRenderer(data: SitemapData): string {
     })
     .join("");
 
-  const pageUrls = pages
-    .map((page) => {
-      const loc = `${siteUrl}/${page.slug}`;
-      const lastmod = page.updatedAt.split("T")[0];
-
-      return `
-  <url>
-    <loc>${loc}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <priority>0.7</priority>
-  </url>`;
-    })
-    .join("");
-
   const homepageUrl = `
   <url>
     <loc>${siteUrl}/</loc>
@@ -158,6 +144,5 @@ export function defaultSitemapRenderer(data: SitemapData): string {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${homepageUrl}
   ${postUrls}
-  ${pageUrls}
 </urlset>`;
 }

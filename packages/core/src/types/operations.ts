@@ -43,25 +43,10 @@ export interface UpdatePost {
   mediaIds?: string[];
 }
 
-export interface CreatePage {
-  slug: string;
-  title?: string;
-  body?: string;
-  status?: Status;
-}
-
-export interface UpdatePage {
-  slug?: string;
-  title?: string | null;
-  body?: string | null;
-  status?: Status;
-}
-
 export interface CreateNavItem {
   type: NavItemType;
   label: string;
   url: string;
-  pageId?: string;
   position?: number;
 }
 
@@ -69,7 +54,6 @@ export interface UpdateNavItem {
   type?: NavItemType;
   label?: string;
   url?: string;
-  pageId?: string | null;
   position?: number;
 }
 

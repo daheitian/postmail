@@ -19,7 +19,7 @@ export const SORT_ORDERS = [
 ] as const;
 export type SortOrder = (typeof SORT_ORDERS)[number];
 
-export const NAV_ITEM_TYPES = ["page", "link", "system"] as const;
+export const NAV_ITEM_TYPES = ["link", "system"] as const;
 export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
 
 export const SYSTEM_NAV_KEYS = {

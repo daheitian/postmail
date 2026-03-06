@@ -1,7 +1,7 @@
 /**
  * Nav Item Service (v2)
  *
- * Manages navigation items (page links and external links)
+ * Manages navigation items (external links and system links)
  */
 
 import { eq, asc, sql } from "drizzle-orm";
@@ -22,7 +22,6 @@ export interface NavItemService {
   create(data: CreateNavItem): Promise<NavItem>;
   update(id: string, data: UpdateNavItem): Promise<NavItem | null>;
   delete(id: string): Promise<boolean>;
-  deleteByPageId(pageId: string): Promise<boolean>;
   reorder(ids: string[]): Promise<void>;
 }
 
@@ -33,7 +32,6 @@ export function createNavItemService(db: Database): NavItemService {
       type: row.type as NavItemType,
       label: row.label,
       url: row.url,
-      pageId: row.pageId,
       position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -78,7 +76,6 @@ export function createNavItemService(db: Database): NavItemService {
           type: data.type,
           label: data.label,
           url: data.url,
-          pageId: data.pageId ?? null,
           position,
           createdAt: timestamp,
           updatedAt: timestamp,
@@ -104,7 +101,6 @@ export function createNavItemService(db: Database): NavItemService {
           ...(data.type !== undefined && { type: data.type }),
           ...(data.label !== undefined && { label: data.label }),
           ...(data.url !== undefined && { url: data.url }),
-          ...(data.pageId !== undefined && { pageId: data.pageId }),
           ...(data.position !== undefined && { position: data.position }),
           updatedAt: timestamp,
         })
@@ -118,14 +114,6 @@ export function createNavItemService(db: Database): NavItemService {
       const result = await db
         .delete(navItems)
         .where(eq(navItems.id, id))
-        .returning();
-      return result.length > 0;
-    },
-
-    async deleteByPageId(pageId) {
-      const result = await db
-        .delete(navItems)
-        .where(eq(navItems.pageId, pageId))
         .returning();
       return result.length > 0;
     },

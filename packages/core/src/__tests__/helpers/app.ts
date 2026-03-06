@@ -9,7 +9,6 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { createTestDatabase } from "./db.js";
 import { createPostService } from "../../services/post.js";
-import { createPageService } from "../../services/page.js";
 import { createSettingsService } from "../../services/settings.js";
 import { createRedirectService } from "../../services/redirect.js";
 import { createMediaService } from "../../services/media.js";
@@ -49,7 +48,6 @@ export function createTestApp(options: TestAppOptions = {}) {
   const pathRegistryService = createPathRegistryService(db);
   const services = {
     posts: createPostService(db, pathRegistryService),
-    pages: createPageService(db, pathRegistryService),
     settings: settingsService,
     pathRegistry: pathRegistryService,
     redirects: createRedirectService(db, pathRegistryService),

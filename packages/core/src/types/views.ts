@@ -66,20 +66,6 @@ export interface PostView {
 }
 
 /**
- * Render-ready page data for theme components.
- */
-export interface PageView {
-  /** Base58-encoded UUIDv7 identifier */
-  id: string;
-  slug: string;
-  title?: string;
-  bodyHtml?: string;
-  status: Status;
-  createdAt: string;
-  updatedAt: string;
-}
-
-/**
  * Render-ready media data for theme components.
  * URLs are pre-computed -- no lib/ imports needed.
  */
@@ -111,8 +97,6 @@ export interface NavItemView {
   type: NavItemType;
   label: string;
   url: string;
-  /** Base58-encoded UUIDv7 of linked page */
-  pageId?: string;
   /** Pre-computed based on currentPath */
   isActive: boolean;
   /** Pre-computed: starts with http(s):// */

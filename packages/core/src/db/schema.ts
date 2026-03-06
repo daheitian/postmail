@@ -44,25 +44,6 @@ export const posts = sqliteTable("posts", {
 });
 
 // =============================================================================
-// Pages
-// =============================================================================
-
-export const pages = sqliteTable("pages", {
-  id: text("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
-  title: text("title"),
-  body: text("body"),
-  bodyHtml: text("body_html"),
-  status: text("status", {
-    enum: ["draft", "published"],
-  })
-    .notNull()
-    .default("published"),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
-
-// =============================================================================
 // Media
 // =============================================================================
 
@@ -134,13 +115,12 @@ export const postCollections = sqliteTable("post_collections", {
 export const navItems = sqliteTable("nav_items", {
   id: text("id").primaryKey(),
   type: text("type", {
-    enum: ["page", "link", "system"],
+    enum: ["link", "system"],
   })
     .notNull()
     .default("link"),
   label: text("label").notNull(),
   url: text("url").notNull(),
-  pageId: text("page_id"),
   position: integer("position").notNull().default(0),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),

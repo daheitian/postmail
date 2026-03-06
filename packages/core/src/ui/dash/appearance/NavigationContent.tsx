@@ -3,7 +3,7 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
-import type { NavItem, Page, SystemNavKey } from "../../../types.js";
+import type { NavItem, SystemNavKey } from "../../../types.js";
 import { SYSTEM_NAV_KEYS } from "../../../types.js";
 import type {
   NavManagerLabels,
@@ -26,13 +26,11 @@ const SYSTEM_DESCRIPTIONS: Record<SystemNavKey, string> = {
 
 export function NavigationContent({
   navItems,
-  availablePages,
   headerNavMaxVisible,
   homeDefaultView,
   siteName,
 }: {
   navItems: NavItem[];
-  availablePages: Page[];
   headerNavMaxVisible: number;
   homeDefaultView: string;
   siteName: string;
@@ -45,7 +43,6 @@ export function NavigationContent({
     type: item.type,
     label: item.label,
     url: item.url,
-    pageId: item.pageId,
   }));
 
   // Build system nav config array for the Lit component
@@ -56,13 +53,6 @@ export function NavigationContent({
     defaultLabel: SYSTEM_NAV_KEYS[key].defaultLabel,
     url: SYSTEM_NAV_KEYS[key].url,
     description: SYSTEM_DESCRIPTIONS[key],
-  }));
-
-  // Serialize available pages for the Lit component
-  const pagesData = availablePages.map((page) => ({
-    id: page.id,
-    title: page.title,
-    slug: page.slug,
   }));
 
   const labels: NavManagerLabels = {
@@ -76,10 +66,9 @@ export function NavigationContent({
     }),
     emptyState: t({
       message:
-        "No navigation items yet. Add pages, links, or enable system items below.",
+        "No navigation items yet. Add links or enable system items below.",
       comment: "@context: Empty state for navigation items",
     }),
-    page: t({ message: "page", comment: "@context: Nav item type badge" }),
     link: t({ message: "link", comment: "@context: Nav item type badge" }),
     system: t({
       message: "system",
@@ -102,13 +91,9 @@ export function NavigationContent({
       message: "Delete",
       comment: "@context: Delete nav item",
     }),
-    editPage: t({
-      message: "Edit Page",
-      comment: "@context: Link to edit the page",
-    }),
     remove: t({
       message: "Remove",
-      comment: "@context: Remove page from navigation",
+      comment: "@context: Remove system item from navigation",
     }),
     orderSaved: t({
       message: "Order saved",
@@ -132,28 +117,12 @@ export function NavigationContent({
     }),
     systemLinksDescription: t({
       message:
-        "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links.",
+        "Toggle built-in navigation items. Enabled items appear in your navigation alongside links.",
       comment: "@context: Description for system nav toggles",
-    }),
-    addPageToNavigation: t({
-      message: "Add page to navigation",
-      comment: "@context: Section heading for adding page to nav",
     }),
     addCustomLinkToNavigation: t({
       message: "Add custom link to navigation",
       comment: "@context: Section heading for adding custom link to nav",
-    }),
-    choosePage: t({
-      message: "Choose a page…",
-      comment: "@context: Placeholder for page select combobox trigger",
-    }),
-    searchPages: t({
-      message: "Search pages…",
-      comment: "@context: Placeholder for page search input in combobox",
-    }),
-    noPagesFound: t({
-      message: "No matching pages.",
-      comment: "@context: Empty state when page search has no results",
     }),
     addLink: t({
       message: "Add Link",
@@ -162,14 +131,6 @@ export function NavigationContent({
     addLinkDescription: t({
       message: "Add a custom link to any URL",
       comment: "@context: Description in link popover form",
-    }),
-    allPagesInNav: t({
-      message: "All pages are already in navigation.",
-      comment: "@context: Message when no pages available to add",
-    }),
-    createPage: t({
-      message: "Create page",
-      comment: "@context: Link at bottom of page combobox to create a new page",
     }),
     urlPlaceholder: "/archive or https://...",
     maxVisibleLinks: t({
@@ -222,7 +183,6 @@ export function NavigationContent({
         items={escapeJson(itemsData)}
         labels={escapeJson(labels)}
         system-nav-items={escapeJson(systemNavData)}
-        available-pages={escapeJson(pagesData)}
         site-name={siteName}
         max-visible={headerNavMaxVisible}
         home-default-view={homeDefaultView}

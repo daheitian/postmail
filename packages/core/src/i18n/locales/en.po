@@ -142,8 +142,8 @@ msgstr "Add Media"
 
 #. @context: Section heading for adding page to nav
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Add page to navigation"
-msgstr "Add page to navigation"
+#~ msgid "Add page to navigation"
+#~ msgstr "Add page to navigation"
 
 #. @context: Button to add page to navigation
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
@@ -167,8 +167,8 @@ msgstr "All"
 
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "All pages are already in navigation."
-msgstr "All pages are already in navigation."
+#~ msgid "All pages are already in navigation."
+#~ msgstr "All pages are already in navigation."
 
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -302,7 +302,6 @@ msgstr "Back"
 msgid "Blog Avatar"
 msgstr "Blog Avatar"
 
-#. @context: Button to cancel and go back
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
@@ -315,7 +314,6 @@ msgstr "Blog Avatar"
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -352,8 +350,8 @@ msgstr "Choose a new password."
 
 #. @context: Placeholder for page select combobox trigger
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Choose a page…"
-msgstr "Choose a page…"
+#~ msgid "Choose a page…"
+#~ msgstr "Choose a page…"
 
 #. @context: Button to open icon picker
 #. @context: Icon picker dialog title
@@ -428,9 +426,7 @@ msgstr "Confirm New Password"
 msgid "Confirm Password"
 msgstr "Confirm Password"
 
-#. @context: Page form field label - content
 #. @context: Post form field
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Content"
 msgstr "Content"
@@ -500,13 +496,13 @@ msgstr "Create a collection to get started."
 
 #. @context: Link at bottom of page combobox to create a new page
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Create page"
-msgstr "Create page"
+#~ msgid "Create page"
+#~ msgstr "Create page"
 
 #. @context: Button to create new page
 #: src/ui/dash/PageForm.tsx
-msgid "Create Page"
-msgstr "Create Page"
+#~ msgid "Create Page"
+#~ msgstr "Create Page"
 
 #. @context: Button to save new redirect
 #: src/routes/dash/redirects.tsx
@@ -625,8 +621,8 @@ msgstr "Delete Media"
 
 #. @context: Button to delete page
 #: src/routes/dash/pages.tsx
-msgid "Delete Page"
-msgstr "Delete Page"
+#~ msgid "Delete Page"
+#~ msgstr "Delete Page"
 
 #. @context: Confirm dialog for deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -716,10 +712,8 @@ msgstr "Don't save"
 msgid "Done"
 msgstr "Done"
 
-#. @context: Page status option - draft
 #. @context: Post status badge - draft
 #. @context: Post status option
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Draft"
@@ -755,15 +749,11 @@ msgstr "Drafts"
 #~ msgstr "e.g. The Verge, John Doe"
 
 #. @context: Button to edit item
-#. @context: Button to edit page
-#. @context: Button to edit page
 #. @context: Button to edit post
 #. @context: Button to edit post
 #. @context: Per-collection edit action
-#: src/routes/dash/pages.tsx
 #: src/routes/dash/posts.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Edit"
@@ -779,12 +769,10 @@ msgstr "Edit"
 #~ msgid "Edit Link"
 #~ msgstr "Edit Link"
 
-#. @context: Edit page main heading
 #. @context: Link to edit the page
-#: src/routes/dash/pages.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Edit Page"
-msgstr "Edit Page"
+#~ msgid "Edit Page"
+#~ msgstr "Edit Page"
 
 #. @context: Compose dialog header title in edit mode
 #: src/ui/compose/ComposeDialog.tsx
@@ -1139,8 +1127,8 @@ msgstr "Loading..."
 
 #. @context: Page slug validation message
 #: src/ui/dash/PageForm.tsx
-msgid "Lowercase letters, numbers, and hyphens only"
-msgstr "Lowercase letters, numbers, and hyphens only"
+#~ msgid "Lowercase letters, numbers, and hyphens only"
+#~ msgstr "Lowercase letters, numbers, and hyphens only"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1271,8 +1259,8 @@ msgstr "New Collection"
 #. @context: New page main heading
 #: src/routes/dash/pages.tsx
 #: src/ui/dash/pages/PagesContent.tsx
-msgid "New Page"
-msgstr "New Page"
+#~ msgid "New Page"
+#~ msgstr "New Page"
 
 #. @context: Password form field
 #. @context: Password reset form field
@@ -1367,8 +1355,8 @@ msgstr "No matching collections."
 
 #. @context: Empty state when page search has no results
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "No matching pages."
-msgstr "No matching pages."
+#~ msgid "No matching pages."
+#~ msgstr "No matching pages."
 
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
@@ -1387,8 +1375,13 @@ msgstr "No media attached."
 
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "No navigation items yet. Add pages, links, or enable system items below."
-msgstr "No navigation items yet. Add pages, links, or enable system items below."
+msgid "No navigation items yet. Add links or enable system items below."
+msgstr "No navigation items yet. Add links or enable system items below."
+
+#. @context: Empty state for navigation items
+#: src/ui/dash/appearance/NavigationContent.tsx
+#~ msgid "No navigation items yet. Add pages, links, or enable system items below."
+#~ msgstr "No navigation items yet. Add pages, links, or enable system items below."
 
 #. @context: Empty state message
 #: src/routes/dash/navigation.tsx
@@ -1412,8 +1405,8 @@ msgstr "No navigation items yet. Add pages, links, or enable system items below.
 
 #. @context: Empty state for pages list
 #: src/ui/dash/pages/PagesContent.tsx
-msgid "No pages yet. Create one to add static content to your site."
-msgstr "No pages yet. Create one to add static content to your site."
+#~ msgid "No pages yet. Create one to add static content to your site."
+#~ msgstr "No pages yet. Create one to add static content to your site."
 
 #. @context: Empty state for pages list
 #: src/ui/dash/pages/PagesContent.tsx
@@ -1522,13 +1515,13 @@ msgstr "Order saved"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "page"
-msgstr "page"
+#~ msgid "page"
+#~ msgstr "page"
 
 #. @context: Default page heading when untitled
 #: src/routes/dash/pages.tsx
-msgid "Page"
-msgstr "Page"
+#~ msgid "Page"
+#~ msgstr "Page"
 
 #. @context: Pagination - current page indicator
 #: src/ui/shared/Pagination.tsx
@@ -1537,20 +1530,18 @@ msgstr "Page {page}"
 
 #. @context: Page content placeholder
 #: src/ui/dash/PageForm.tsx
-msgid "Page content (Markdown supported)..."
-msgstr "Page content (Markdown supported)..."
+#~ msgid "Page content (Markdown supported)..."
+#~ msgstr "Page content (Markdown supported)..."
 
 #. @context: Page title placeholder
 #: src/ui/dash/PageForm.tsx
-msgid "Page title..."
-msgstr "Page title..."
+#~ msgid "Page title..."
+#~ msgstr "Page title..."
 
 #. @context: Dashboard navigation - pages management
-#. @context: Pages main heading
-#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/layouts/DashLayout.tsx
-msgid "Pages"
-msgstr "Pages"
+#~ msgid "Pages"
+#~ msgstr "Pages"
 
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
@@ -1727,12 +1718,10 @@ msgstr "Public"
 msgid "Publish"
 msgstr "Publish"
 
-#. @context: Page status option - published
 #. @context: Post status badge - published
 #. @context: Post status label
 #. @context: Post status option
 #: src/routes/dash/index.tsx
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
@@ -1745,8 +1734,8 @@ msgstr "Published"
 
 #. @context: Page status helper text
 #: src/ui/dash/PageForm.tsx
-msgid "Published pages are accessible via their slug. Drafts are not visible."
-msgstr "Published pages are accessible via their slug. Drafts are not visible."
+#~ msgid "Published pages are accessible via their slug. Drafts are not visible."
+#~ msgstr "Published pages are accessible via their slug. Drafts are not visible."
 
 #. @context: Toast shown after successful deferred publish
 #: src/ui/compose/ComposeDialog.tsx
@@ -1812,7 +1801,7 @@ msgstr "Redirects"
 #. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove media attachment button
-#. @context: Remove page from navigation
+#. @context: Remove system item from navigation
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
@@ -1943,8 +1932,8 @@ msgstr "Search icons..."
 
 #. @context: Placeholder for page search input in combobox
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Search pages…"
-msgstr "Search pages…"
+#~ msgid "Search pages…"
+#~ msgstr "Search pages…"
 
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx
@@ -2054,9 +2043,7 @@ msgstr "Site Name"
 
 #. @context: Collection form field
 #. @context: Collection form field
-#. @context: Page form field label - URL slug
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/PageForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "Slug"
@@ -2067,8 +2054,6 @@ msgid "Some uploads failed. Saved as draft."
 msgstr "Some uploads failed. Saved as draft."
 
 #. @context: Fallback validation error for compose form
-#. @context: Fallback validation error for page form
-#. @context: Fallback validation error for page form
 #. @context: Fallback validation error for password reset form
 #. @context: Fallback validation error for setup form
 #. @context: Fallback validation error for sign-in form
@@ -2076,8 +2061,6 @@ msgstr "Some uploads failed. Saved as draft."
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/signin.tsx
 #: src/routes/compose.tsx
-#: src/routes/dash/pages.tsx
-#: src/routes/dash/pages.tsx
 msgid "Something doesn't look right. Check the form and try again."
 msgstr "Something doesn't look right. Check the form and try again."
 
@@ -2103,9 +2086,7 @@ msgstr "Source link (optional)"
 #~ msgid "Source URL (optional)"
 #~ msgstr "Source URL (optional)"
 
-#. @context: Page form field label - publish status
 #. @context: Post form field
-#: src/ui/dash/PageForm.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Status"
 msgstr "Status"
@@ -2189,8 +2170,8 @@ msgstr "The text being quoted..."
 
 #. @context: Page slug helper text
 #: src/ui/dash/PageForm.tsx
-msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
-msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens."
+#~ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
+#~ msgstr "The URL path for this page. Use lowercase letters, numbers, and hyphens."
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
@@ -2266,11 +2247,9 @@ msgstr "Time Zone"
 #. @context: Collection form field
 #. @context: Compose note title placeholder
 #. @context: Compose toolbar - title tooltip
-#. @context: Page form field label - title
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/PageForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Title"
 msgstr "Title"
@@ -2287,8 +2266,13 @@ msgstr "To Path"
 
 #. @context: Description for system nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
-msgstr "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
+msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside links."
+msgstr "Toggle built-in navigation items. Enabled items appear in your navigation alongside links."
+
+#. @context: Description for system nav toggles
+#: src/ui/dash/appearance/NavigationContent.tsx
+#~ msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
+#~ msgstr "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
 
 #. @context: Button to expand/collapse nav item edit
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -2322,9 +2306,7 @@ msgstr "Typography"
 msgid "Unlisted"
 msgstr "Unlisted"
 
-#. @context: Default title for untitled page
 #. @context: Default title for untitled post
-#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "Untitled"
 msgstr "Untitled"
@@ -2341,8 +2323,8 @@ msgstr "Update"
 
 #. @context: Button to update existing page
 #: src/ui/dash/PageForm.tsx
-msgid "Update Page"
-msgstr "Update Page"
+#~ msgid "Update Page"
+#~ msgstr "Update Page"
 
 #. @context: Button to upload media file
 #: src/ui/dash/media/MediaListContent.tsx
@@ -2427,16 +2409,12 @@ msgid "Use this URL to embed the media in your posts."
 msgstr "Use this URL to embed the media in your posts."
 
 #. @context: Button to view item on public site
-#. @context: Button to view page on public site
-#. @context: Button to view page on public site
 #. @context: Button to view post
 #. @context: Button to view post on public site
 #. @context: Toast action button to view the published post
-#: src/routes/dash/pages.tsx
 #: src/routes/dash/posts.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/pages/PagesContent.tsx
 #: src/ui/dash/PostList.tsx
 msgid "View"
 msgstr "View"

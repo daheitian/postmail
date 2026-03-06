@@ -1,20 +1,16 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../../__tests__/helpers/db.js";
-import { createPageService } from "../../../services/page.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createNavItemService } from "../../../services/navigation.js";
-import { createPathRegistryService } from "../../../services/path-registry.js";
 import type { Database } from "../../../db/index.js";
-import type { PageService } from "../../../services/page.js";
 import type { SettingsService } from "../../../services/settings.js";
 import type { NavItemService } from "../../../services/navigation.js";
 
 /**
- * Reproduces the seed logic from POST /setup to verify the default About page
- * and navigation items are created correctly.
+ * Reproduces the seed logic from POST /setup to verify the default
+ * navigation items are created correctly.
  */
 async function runSetupSeed(services: {
-  pages: PageService;
   settings: SettingsService;
   navItems: NavItemService;
 }) {
@@ -30,31 +26,20 @@ async function runSetupSeed(services: {
     label: "Archive",
     url: "/archive",
   });
-
-  const aboutPage = await services.pages.create({
-    slug: "about",
-    title: "About",
-    body: [
-      "Welcome to my corner of the internet.",
-      "",
-      "This is a place where I share my thoughts, ideas, and things I find interesting. Feel free to look around and get to know what this site is all about.",
-      "",
-      "If you'd like to get in touch, don't hesitate to reach out.",
-    ].join("\n"),
-    status: "published",
-  });
-
   await services.navItems.create({
-    type: "page",
-    label: "About",
-    url: "/about",
-    pageId: aboutPage.id,
+    type: "system",
+    label: "RSS",
+    url: "/feed",
+  });
+  await services.navItems.create({
+    type: "system",
+    label: "Dashboard",
+    url: "/dash",
   });
 }
 
 describe("Setup seed logic", () => {
   let services: {
-    pages: PageService;
     settings: SettingsService;
     navItems: NavItemService;
   };
@@ -63,57 +48,32 @@ describe("Setup seed logic", () => {
     const testDb = createTestDatabase();
     const db = testDb.db as unknown as Database;
     services = {
-      pages: createPageService(db, createPathRegistryService(db)),
       settings: createSettingsService(db),
       navItems: createNavItemService(db),
     };
   });
 
-  it("creates a default About page with correct content", async () => {
-    await runSetupSeed(services);
-
-    const aboutPage = await services.pages.getBySlug("about");
-    expect(aboutPage).not.toBeNull();
-    expect(aboutPage?.title).toBe("About");
-    expect(aboutPage?.status).toBe("published");
-    expect(aboutPage?.body).toContain("Welcome to my corner of the internet");
-    expect(aboutPage?.bodyHtml).toBeTruthy();
-  });
-
-  it("adds About page to navigation as a page-type nav item", async () => {
-    await runSetupSeed(services);
-
-    const aboutPage = await services.pages.getBySlug("about");
-    const navItemsList = await services.navItems.list();
-
-    const aboutNavItem = navItemsList.find(
-      (item) => item.pageId === aboutPage?.id,
-    );
-    expect(aboutNavItem).toBeDefined();
-    expect(aboutNavItem?.type).toBe("page");
-    expect(aboutNavItem?.label).toBe("About");
-    expect(aboutNavItem?.url).toBe("/about");
-  });
-
-  it("creates three nav items total: Collections, Archive, About", async () => {
+  it("creates four nav items: Collections, Archive, RSS, Dashboard", async () => {
     await runSetupSeed(services);
 
     const navItemsList = await services.navItems.list();
-    expect(navItemsList).toHaveLength(3);
+    expect(navItemsList).toHaveLength(4);
 
     const labels = navItemsList.map((item) => item.label);
     expect(labels).toContain("Collections");
     expect(labels).toContain("Archive");
-    expect(labels).toContain("About");
+    expect(labels).toContain("RSS");
+    expect(labels).toContain("Dashboard");
   });
 
-  it("renders About page body as HTML", async () => {
+  it("creates link and system type nav items", async () => {
     await runSetupSeed(services);
 
-    const aboutPage = await services.pages.getBySlug("about");
-    expect(aboutPage?.bodyHtml).toContain("<p>");
-    expect(aboutPage?.bodyHtml).toContain(
-      "Welcome to my corner of the internet",
-    );
+    const navItemsList = await services.navItems.list();
+    const linkItems = navItemsList.filter((item) => item.type === "link");
+    const systemItems = navItemsList.filter((item) => item.type === "system");
+
+    expect(linkItems).toHaveLength(2);
+    expect(systemItems).toHaveLength(2);
   });
 });

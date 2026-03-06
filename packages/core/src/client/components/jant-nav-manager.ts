@@ -5,7 +5,7 @@
  * - Renders a preview bar that reflects current item order
  * - Sortable list with inline edit/delete panels
  * - SortableJS drag-and-drop reorder with immediate preview update
- * - Add page/link forms
+ * - Add link forms
  * - System nav item toggles with immediate list/preview update
  * - Dispatches events for update/delete (handled by bridge)
  *
@@ -17,7 +17,6 @@ import type { PropertyValueMap } from "lit";
 import Sortable from "sortablejs";
 import { showToast } from "../toast.js";
 import type {
-  AvailablePage,
   NavManagerItem,
   NavManagerLabels,
   NavManagerUpdateDetail,
@@ -30,7 +29,6 @@ export class JantNavManager extends LitElement {
     items: { type: Array },
     labels: { type: Object },
     systemNavItems: { type: Array, attribute: "system-nav-items" },
-    availablePages: { type: Array, attribute: "available-pages" },
     siteName: { type: String, attribute: "site-name" },
     maxVisible: { type: Number, attribute: "max-visible" },
     homeDefaultView: { type: String, attribute: "home-default-view" },
@@ -41,20 +39,15 @@ export class JantNavManager extends LitElement {
     _editUrl: { state: true },
     _togglingKeys: { state: true },
     _showOverflow: { state: true },
-    _showPagePicker: { state: true },
     _showLinkForm: { state: true },
     _newLinkLabel: { state: true },
     _newLinkUrl: { state: true },
-    _availablePages: { state: true },
-    _addingPageId: { state: true },
     _addingLink: { state: true },
-    _pageSearchQuery: { state: true },
   };
 
   declare items: NavManagerItem[];
   declare labels: NavManagerLabels;
   declare systemNavItems: SystemNavConfig[];
-  declare availablePages: AvailablePage[];
   declare siteName: string;
   declare maxVisible: number;
   declare homeDefaultView: string;
@@ -66,26 +59,16 @@ export class JantNavManager extends LitElement {
   /** Keys currently mid-request (to disable switch during toggle) */
   declare _togglingKeys: Set<string>;
   declare _showOverflow: boolean;
-  declare _showPagePicker: boolean;
   declare _showLinkForm: boolean;
   declare _newLinkLabel: string;
   declare _newLinkUrl: string;
-  declare _availablePages: AvailablePage[];
-  /** Page ID currently being added (to disable its button) */
-  declare _addingPageId: number | null;
   declare _addingLink: boolean;
-  declare _pageSearchQuery: string;
 
   #sortable: { destroy(): void } | null = null;
   #initialized = false;
   #closeOverflow = () => {
     this._showOverflow = false;
     document.removeEventListener("click", this.#closeOverflow);
-  };
-  #closePagePicker = () => {
-    this._showPagePicker = false;
-    this._pageSearchQuery = "";
-    document.removeEventListener("click", this.#closePagePicker);
   };
   #closeLinkForm = () => {
     this._showLinkForm = false;
@@ -102,7 +85,6 @@ export class JantNavManager extends LitElement {
     this.items = [];
     this.labels = {} as NavManagerLabels;
     this.systemNavItems = [];
-    this.availablePages = [];
     this.siteName = "";
     this.maxVisible = 2;
     this.homeDefaultView = "latest";
@@ -113,23 +95,16 @@ export class JantNavManager extends LitElement {
     this._editUrl = "";
     this._togglingKeys = new Set();
     this._showOverflow = false;
-    this._showPagePicker = false;
     this._showLinkForm = false;
     this._newLinkLabel = "";
     this._newLinkUrl = "";
-    this._availablePages = [];
-    this._addingPageId = null;
     this._addingLink = false;
-    this._pageSearchQuery = "";
   }
 
   protected update(changedProperties: PropertyValueMap<JantNavManager>): void {
     if (!this.#initialized || changedProperties.has("items")) {
       this._items = [...(this.items ?? [])];
       this.#initialized = true;
-    }
-    if (changedProperties.has("availablePages" as keyof JantNavManager)) {
-      this._availablePages = [...(this.availablePages ?? [])];
     }
     super.update(changedProperties);
   }
@@ -143,7 +118,6 @@ export class JantNavManager extends LitElement {
     this.#sortable?.destroy();
     this.#sortable = null;
     document.removeEventListener("click", this.#closeOverflow);
-    document.removeEventListener("click", this.#closePagePicker);
     document.removeEventListener("click", this.#closeLinkForm);
   }
 
@@ -281,40 +255,8 @@ export class JantNavManager extends LitElement {
   }
 
   // ===========================================================================
-  // Add page / link handlers
+  // Add link handler
   // ===========================================================================
-
-  async #handleAddPage(page: AvailablePage) {
-    this._addingPageId = page.id;
-    try {
-      const res = await fetch("/api/nav-items", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          type: "page",
-          label: page.title || page.slug,
-          url: `/${page.slug}`,
-          pageId: page.id,
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const created: NavManagerItem = await res.json();
-      this.#sortable?.destroy();
-      this.#sortable = null;
-      this._items = [...this._items, created];
-      this._availablePages = this._availablePages.filter(
-        (p) => p.id !== page.id,
-      );
-    } catch {
-      showToast(this.labels.saveFailed, "error");
-    } finally {
-      this._addingPageId = null;
-    }
-  }
 
   async #handleAddLink() {
     const label = this._newLinkLabel.trim();
@@ -533,12 +475,7 @@ export class JantNavManager extends LitElement {
   }
 
   #renderTypeBadge(type: string) {
-    const label =
-      type === "page"
-        ? this.labels.page
-        : type === "system"
-          ? this.labels.system
-          : this.labels.link;
+    const label = type === "system" ? this.labels.system : this.labels.link;
     return html`<span class="badge-secondary">${label}</span>`;
   }
 
@@ -587,29 +524,6 @@ export class JantNavManager extends LitElement {
             >
               ${this.labels.save}
             </button>
-          </div>
-        </div>
-      `;
-    }
-
-    if (item.type === "page") {
-      return html`
-        <div class="nav-item-edit">
-          <div class="flex items-center justify-between">
-            <button
-              type="button"
-              class="btn-sm-ghost text-destructive"
-              @click=${() => this.#handleDelete(item)}
-            >
-              ${this.labels.remove}
-            </button>
-            ${item.pageId
-              ? html`<a
-                  href=${`/dash/pages/${item.pageId}/edit`}
-                  class="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >${this.labels.editPage} &rarr;</a
-                >`
-              : nothing}
           </div>
         </div>
       `;
@@ -718,193 +632,6 @@ export class JantNavManager extends LitElement {
         </div>
         ${this.#renderEditPanel(item)}
       </div>
-    `;
-  }
-
-  #renderAddArea() {
-    return html`
-      ${this.#renderAddPageSection()} ${this.#renderAddLinkSection()}
-    `;
-  }
-
-  #renderAddPageSection() {
-    const query = this._pageSearchQuery.toLowerCase();
-    const filteredPages = query
-      ? this._availablePages.filter((p) =>
-          (p.title || p.slug).toLowerCase().includes(query),
-        )
-      : this._availablePages;
-
-    return html`
-      <section class="mt-8">
-        <h2 class="text-lg font-semibold mb-3">
-          ${this.labels.addPageToNavigation}
-        </h2>
-        <div id="nav-page-select" class="select">
-          <button
-            type="button"
-            class="btn-outline w-full sm:w-[280px]"
-            id="nav-page-select-trigger"
-            aria-haspopup="listbox"
-            aria-expanded=${this._showPagePicker}
-            aria-controls="nav-page-select-listbox"
-            @click=${(e: Event) => {
-              e.stopPropagation();
-              this._showPagePicker = !this._showPagePicker;
-              this._pageSearchQuery = "";
-              if (this._showPagePicker) {
-                setTimeout(() => {
-                  document.addEventListener("click", this.#closePagePicker);
-                  this.querySelector<HTMLInputElement>(
-                    "#nav-page-search",
-                  )?.focus();
-                });
-              } else {
-                document.removeEventListener("click", this.#closePagePicker);
-              }
-            }}
-          >
-            <span class="truncate">${this.labels.choosePage}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-muted-foreground opacity-50 shrink-0"
-            >
-              <path d="m7 15 5 5 5-5" />
-              <path d="m7 9 5-5 5 5" />
-            </svg>
-          </button>
-          ${this._showPagePicker
-            ? html`
-                <div
-                  id="nav-page-select-popover"
-                  data-popover
-                  aria-hidden="false"
-                  class="w-full sm:w-[280px]"
-                  @click=${(e: Event) => e.stopPropagation()}
-                >
-                  <header>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.3-4.3" />
-                    </svg>
-                    <input
-                      type="text"
-                      id="nav-page-search"
-                      .value=${this._pageSearchQuery}
-                      placeholder=${this.labels.searchPages}
-                      autocomplete="off"
-                      autocorrect="off"
-                      spellcheck="false"
-                      aria-autocomplete="list"
-                      role="combobox"
-                      aria-expanded="true"
-                      aria-controls="nav-page-select-listbox"
-                      aria-labelledby="nav-page-select-trigger"
-                      @input=${(e: Event) => {
-                        this._pageSearchQuery = (
-                          e.target as HTMLInputElement
-                        ).value;
-                      }}
-                    />
-                  </header>
-                  <div
-                    role="listbox"
-                    id="nav-page-select-listbox"
-                    aria-orientation="vertical"
-                    aria-labelledby="nav-page-select-trigger"
-                    data-empty=${this.labels.noPagesFound}
-                  >
-                    ${filteredPages.length > 0
-                      ? html`<div class="max-h-64 overflow-y-auto scrollbar">
-                          ${filteredPages.map(
-                            (page) => html`
-                              <div
-                                role="option"
-                                data-value=${page.id}
-                                @click=${() => {
-                                  this._showPagePicker = false;
-                                  this._pageSearchQuery = "";
-                                  document.removeEventListener(
-                                    "click",
-                                    this.#closePagePicker,
-                                  );
-                                  this.#handleAddPage(page);
-                                }}
-                              >
-                                ${page.title || page.slug}
-                              </div>
-                            `,
-                          )}
-                          <hr role="separator" />
-                          <a href="/dash/pages/new" role="option">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            >
-                              <circle cx="12" cy="12" r="10" />
-                              <path d="M8 12h8" />
-                              <path d="M12 8v8" />
-                            </svg>
-                            ${this.labels.createPage}
-                          </a>
-                        </div>`
-                      : html`<div
-                            class="py-6 text-center text-sm text-muted-foreground"
-                          >
-                            ${this._availablePages.length === 0
-                              ? this.labels.allPagesInNav
-                              : this.labels.noPagesFound}
-                          </div>
-                          <hr role="separator" />
-                          <a href="/dash/pages/new" role="option">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            >
-                              <circle cx="12" cy="12" r="10" />
-                              <path d="M8 12h8" />
-                              <path d="M12 8v8" />
-                            </svg>
-                            ${this.labels.createPage}
-                          </a>`}
-                  </div>
-                </div>
-              `
-            : nothing}
-        </div>
-      </section>
     `;
   }
 
@@ -1118,7 +845,7 @@ export class JantNavManager extends LitElement {
             `}
       </section>
 
-      ${this.#renderAddArea()} ${this.#renderSystemToggles()}
+      ${this.#renderAddLinkSection()} ${this.#renderSystemToggles()}
     `;
   }
 }

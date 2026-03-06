@@ -1,20 +1,16 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createNavItemService } from "../navigation.js";
-import { createPageService } from "../page.js";
-import { createPathRegistryService } from "../path-registry.js";
 import type { Database } from "../../db/index.js";
 
 describe("NavItemService", () => {
   let db: Database;
   let navItemService: ReturnType<typeof createNavItemService>;
-  let pageService: ReturnType<typeof createPageService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
     navItemService = createNavItemService(db);
-    pageService = createPageService(db, createPathRegistryService(db));
   });
 
   describe("create", () => {
@@ -28,26 +24,9 @@ describe("NavItemService", () => {
       expect(item.type).toBe("link");
       expect(item.label).toBe("Home");
       expect(item.url).toBe("/");
-      expect(item.pageId).toBeNull();
       expect(item.position).toBe(0);
       expect(typeof item.id).toBe("string");
       expect(item.id.length).toBeGreaterThan(0);
-    });
-
-    it("creates a page-type nav item with pageId", async () => {
-      const page = await pageService.create({ slug: "about", title: "About" });
-
-      const item = await navItemService.create({
-        type: "page",
-        label: "About",
-        url: "/about",
-        pageId: page.id,
-      });
-
-      expect(item.type).toBe("page");
-      expect(item.label).toBe("About");
-      expect(item.url).toBe("/about");
-      expect(item.pageId).toBe(page.id);
     });
 
     it("auto-increments position for subsequent items", async () => {
@@ -131,7 +110,7 @@ describe("NavItemService", () => {
         position: 0,
       });
       await navItemService.create({
-        type: "page",
+        type: "link",
         label: "B",
         url: "/b",
         position: 1,
@@ -145,25 +124,21 @@ describe("NavItemService", () => {
     });
 
     it("returns items with correct types", async () => {
-      const page = await pageService.create({ slug: "about", title: "About" });
-
       await navItemService.create({
         type: "link",
         label: "External",
         url: "https://example.com",
       });
       await navItemService.create({
-        type: "page",
-        label: "About",
-        url: "/about",
-        pageId: page.id,
+        type: "system",
+        label: "Dashboard",
+        url: "/dash",
       });
 
       const items = await navItemService.list();
       expect(items).toHaveLength(2);
       expect(items[0]?.type).toBe("link");
-      expect(items[1]?.type).toBe("page");
-      expect(items[1]?.pageId).toBe(page.id);
+      expect(items[1]?.type).toBe("system");
     });
   });
 
@@ -197,24 +172,6 @@ describe("NavItemService", () => {
 
       expect(updated?.url).toBe("/posts");
       expect(updated?.label).toBe("Blog");
-    });
-
-    it("updates a nav item's type", async () => {
-      const page = await pageService.create({ slug: "about", title: "About" });
-
-      const created = await navItemService.create({
-        type: "link",
-        label: "About",
-        url: "/about",
-      });
-
-      const updated = await navItemService.update(created.id, {
-        type: "page",
-        pageId: page.id,
-      });
-
-      expect(updated?.type).toBe("page");
-      expect(updated?.pageId).toBe(page.id);
     });
 
     it("updates updatedAt timestamp", async () => {

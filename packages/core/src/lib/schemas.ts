@@ -95,37 +95,12 @@ export const CreatePostSchema = z.object({
 export const UpdatePostSchema = CreatePostSchema.partial();
 
 /**
- * API request body schema for creating a page
- */
-export const CreatePageSchema = z.object({
-  slug: z
-    .string()
-    .min(1)
-    .transform(normalizeSlug)
-    .pipe(
-      z
-        .string()
-        .min(1)
-        .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
-    ),
-  title: z.string().optional(),
-  body: z.string().optional(),
-  status: StatusSchema.optional(),
-});
-
-/**
- * API request body schema for updating a page
- */
-export const UpdatePageSchema = CreatePageSchema.partial();
-
-/**
  * API request body schema for creating a navigation item
  */
 export const CreateNavItemSchema = z.object({
   type: NavItemTypeSchema,
   label: z.string().min(1),
   url: z.string().min(1),
-  pageId: z.string().min(1).optional(),
   position: z.coerce.number().int().min(0).optional(),
 });
 
@@ -299,7 +274,7 @@ export function validateMediaCount(mediaIds: string[]): string | null {
  * @returns Validated data
  * @example
  * ```ts
- * const body = parseValidated(CreatePageSchema, await c.req.json());
+ * const body = parseValidated(CreatePostSchema, await c.req.json());
  * ```
  */
 export function parseValidated<T>(schema: z.ZodSchema<T>, data: unknown): T {

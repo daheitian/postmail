@@ -6,7 +6,6 @@ import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createMediaService } from "../../../services/media.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createPostService } from "../../../services/post.js";
-import { createPageService } from "../../../services/page.js";
 import { createRedirectService } from "../../../services/redirect.js";
 import { createCollectionService } from "../../../services/collection.js";
 import { createSearchService } from "../../../services/search.js";
@@ -151,7 +150,6 @@ function createTestAppWithStorage(options: {
   const pathRegistryService = createPathRegistryService(db);
   const services = {
     posts: createPostService(db, pathRegistryService),
-    pages: createPageService(db, pathRegistryService),
     settings: settingsService,
     pathRegistry: pathRegistryService,
     redirects: createRedirectService(db, pathRegistryService),

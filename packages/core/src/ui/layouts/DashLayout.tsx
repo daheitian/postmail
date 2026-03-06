@@ -83,15 +83,6 @@ function DashLayoutContent({
             <span class="dash-header-nav-sep" aria-hidden="true">
               &middot;
             </span>
-            <a href="/dash/pages" class={navClass(/^\/dash\/pages/)}>
-              {t({
-                message: "Pages",
-                comment: "@context: Dashboard navigation - pages management",
-              })}
-            </a>
-            <span class="dash-header-nav-sep" aria-hidden="true">
-              &middot;
-            </span>
             <a href="/dash/settings" class={navClass(/^\/dash\/settings/)}>
               {t({
                 message: "Settings",
