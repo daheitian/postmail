@@ -24,7 +24,7 @@ export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
 
 export const SYSTEM_NAV_KEYS = {
   rss: { defaultLabel: "RSS", url: "/feed" },
-  dashboard: { defaultLabel: "Dashboard", url: "/dash" },
+  settings: { defaultLabel: "Settings", url: "/settings" },
   collections: { defaultLabel: "Collections", url: "/c" },
   archive: { defaultLabel: "Archive", url: "/archive" },
 } as const;

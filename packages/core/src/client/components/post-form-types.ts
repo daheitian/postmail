@@ -1,5 +1,5 @@
 /**
- * Shared type definitions for the dashboard post form Lit component.
+ * Shared type definitions for the post form Lit component.
  */
 
 export type PostFormat = "note" | "link" | "quote";
@@ -13,6 +13,9 @@ export interface PostFormLabels {
   quoteOption: string;
   titleLabel: string;
   titlePlaceholder: string;
+  slugLabel: string;
+  slugPlaceholder: string;
+  slugHelp: string;
   bodyLabel: string;
   bodyPlaceholder: string;
   urlLabel: string;
@@ -45,6 +48,7 @@ export interface PostFormLabels {
 export interface PostFormInitial {
   format: PostFormat;
   title: string;
+  slug: string;
   body: string;
   url: string;
   quoteText: string;
@@ -75,6 +79,7 @@ export interface PostSubmitDetail {
   data: {
     format: PostFormat;
     title?: string;
+    slug?: string;
     body?: string;
     status: PostStatus;
     visibility: PostVisibility;

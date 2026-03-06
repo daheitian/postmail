@@ -15,7 +15,7 @@
  * - envOnly: true -> Environment-only (ENV > Default)
  */
 export const CONFIG_FIELDS = {
-  // User-configurable (can be modified in dashboard)
+  // User-configurable (can be modified in settings)
   SITE_NAME: {
     defaultValue: "Jant",
     envOnly: false,
@@ -110,8 +110,12 @@ export const CONFIG_FIELDS = {
     defaultValue: "500",
     envOnly: true,
   },
+  SLUG_ID_LENGTH: {
+    defaultValue: "5",
+    envOnly: true,
+  },
 
-  // Internal settings (DB-only, not configurable via env or dashboard)
+  // Internal settings (DB-only, not configurable via env or settings UI)
   THEME: {
     defaultValue: "",
     envOnly: false,
@@ -221,6 +225,10 @@ export interface AppConfig {
   pageSize: number;
   rssFeedLimit: number;
 
+  // Slug (ENV only)
+  /** Length of random IDs used in auto-generated slugs. Defaults to 5. */
+  slugIdLength: number;
+
   // Demo (ENV only)
   demoEmail: string;
   demoPassword: string;
@@ -238,7 +246,7 @@ export interface AppConfig {
   siteAvatarUrl: string;
   faviconVersion: string;
 
-  // Dashboard form placeholders (ENV > Default, without DB)
+  // Settings form placeholders (ENV > Default, without DB)
   fallbacks: {
     siteName: string;
     siteDescription: string;

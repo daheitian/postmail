@@ -51,12 +51,12 @@ msgstr "+ ALT"
 #~ msgstr "1 reply"
 
 #. @context: Redirect type option
-#: src/routes/dash/redirects.tsx
+#: src/routes/dash/custom-urls.tsx
 msgid "301 (Permanent)"
 msgstr "301 (Permanent)"
 
 #. @context: Redirect type option
-#: src/routes/dash/redirects.tsx
+#: src/routes/dash/custom-urls.tsx
 msgid "302 (Temporary)"
 msgstr "302 (Temporary)"
 
@@ -190,6 +190,11 @@ msgstr "All"
 #~ msgid "Appearance"
 #~ msgstr "Appearance"
 
+#. @context: Appearance settings description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Applies to your entire site, including admin pages. All themes support dark mode."
+msgstr "Applies to your entire site, including admin pages. All themes support dark mode."
+
 #. @context: Archive page title
 #: src/ui/pages/ArchivePage.tsx
 msgid "Archive"
@@ -259,6 +264,16 @@ msgstr "Authentication isn't set up. Check your server config."
 msgid "Author (optional)"
 msgstr "Author (optional)"
 
+#. @context: Post slug help text
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Auto-generated from title if left empty"
+msgstr "Auto-generated from title if left empty"
+
+#. @context: Post slug placeholder
+#: src/ui/dash/posts/PostForm.tsx
+msgid "auto-generated-from-title"
+msgstr "auto-generated-from-title"
+
 #. @context: Settings item — avatar settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Avatar"
@@ -310,7 +325,7 @@ msgstr "Blog Avatar"
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #. @context: Confirm close action sheet - cancel and return to editor
-#: src/routes/dash/redirects.tsx
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
@@ -376,6 +391,8 @@ msgstr "Click image to view full size"
 #~ msgstr "Close"
 
 #. @context: Compose collection selector trigger label
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Collection"
 msgstr "Collection"
@@ -489,6 +506,11 @@ msgstr "Create a collection to get started."
 #~ msgid "Create Collection"
 #~ msgstr "Create Collection"
 
+#. @context: Button to save new custom URL
+#: src/routes/dash/custom-urls.tsx
+msgid "Create Custom URL"
+msgstr "Create Custom URL"
+
 #. @context: Button to save new navigation link
 #: src/ui/dash/pages/LinkFormContent.tsx
 #~ msgid "Create Link"
@@ -506,8 +528,8 @@ msgstr "Create a collection to get started."
 
 #. @context: Button to save new redirect
 #: src/routes/dash/redirects.tsx
-msgid "Create Redirect"
-msgstr "Create Redirect"
+#~ msgid "Create Redirect"
+#~ msgstr "Create Redirect"
 
 #. @context: Setup page description
 #: src/routes/auth/setup.tsx
@@ -576,6 +598,13 @@ msgstr "Custom styling"
 #~ msgid "Custom URL path. Leave empty to use default /p/ID format."
 #~ msgstr "Custom URL path. Leave empty to use default /p/ID format."
 
+#. @context: Settings item — custom URL settings
+#. @context: Settings section heading
+#: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Custom URLs"
+msgstr "Custom URLs"
+
 #. @context: Section heading for dangerous/destructive actions
 #: src/ui/dash/DangerZone.tsx
 msgid "Danger Zone"
@@ -585,19 +614,19 @@ msgstr "Danger Zone"
 #. @context: Dashboard navigation - dashboard home
 #: src/routes/dash/index.tsx
 #: src/ui/layouts/DashLayout.tsx
-msgid "Dashboard"
-msgstr "Dashboard"
+#~ msgid "Dashboard"
+#~ msgstr "Dashboard"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
 #~ msgid "Default Homepage View"
 #~ msgstr "Default Homepage View"
 
+#. @context: Button to delete custom URL
 #. @context: Button to delete item
-#. @context: Button to delete redirect
 #. @context: Delete collection action
 #. @context: Delete nav item
-#: src/routes/dash/redirects.tsx
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -671,6 +700,11 @@ msgstr "Description (optional)"
 msgid "Design"
 msgstr "Design"
 
+#. @context: Redirect destination field
+#: src/routes/dash/custom-urls.tsx
+msgid "Destination"
+msgstr "Destination"
+
 #. @context: More menu - discard post
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
@@ -737,8 +771,6 @@ msgid "Draft saved."
 msgstr "Draft saved."
 
 #. @context: Drafts panel title
-#. @context: Post status label
-#: src/routes/dash/index.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Drafts"
 msgstr "Drafts"
@@ -750,9 +782,7 @@ msgstr "Drafts"
 
 #. @context: Button to edit item
 #. @context: Button to edit post
-#. @context: Button to edit post
 #. @context: Per-collection edit action
-#: src/routes/dash/posts.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/PostList.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -781,8 +811,8 @@ msgstr "Edit post"
 
 #. @context: Page heading
 #: src/routes/dash/posts.tsx
-msgid "Edit Post"
-msgstr "Edit Post"
+#~ msgid "Edit Post"
+#~ msgstr "Edit Post"
 
 #. @context: Edit page page title
 #. @context: Page title for editing collection
@@ -816,6 +846,11 @@ msgstr "Emoji"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Emojis"
 msgstr "Emojis"
+
+#. @context: Settings item description for sign out
+#: src/ui/dash/settings/SettingsRootContent.tsx
+#~ msgid "End your current session"
+#~ msgstr "End your current session"
 
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
@@ -933,8 +968,8 @@ msgstr "Found 1 result"
 
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
-msgid "From Path"
-msgstr "From Path"
+#~ msgid "From Path"
+#~ msgstr "From Path"
 
 #. @context: Settings item — general settings
 #. @context: Settings section heading
@@ -1173,8 +1208,8 @@ msgstr "Media"
 
 #. @context: Dashboard header menu button
 #: src/ui/layouts/DashLayout.tsx
-msgid "Menu"
-msgstr "Menu"
+#~ msgid "Menu"
+#~ msgstr "Menu"
 
 #. @context: Aria-label for more button
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -1237,13 +1272,22 @@ msgstr "Navigation Preview"
 
 #. @context: Help text with link
 #: src/routes/dash/index.tsx
-msgid "Need help? Visit the <0>documentation</0>"
-msgstr "Need help? Visit the <0>documentation</0>"
+#~ msgid "Need help? Visit the <0>documentation</0>"
+#~ msgstr "Need help? Visit the <0>documentation</0>"
 
 #. @context: Tooltip/aria for add collection button
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "New Collection"
 msgstr "New Collection"
+
+#. @context: Button to create new custom URL
+#. @context: Button to create new custom URL
+#. @context: Page heading
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+msgid "New Custom URL"
+msgstr "New Custom URL"
 
 #. @context: Button to add divider between collections
 #: src/ui/dash/collections/CollectionsListContent.tsx
@@ -1275,8 +1319,8 @@ msgstr "New Password"
 #: src/routes/dash/index.tsx
 #: src/routes/dash/posts.tsx
 #: src/routes/dash/posts.tsx
-msgid "New Post"
-msgstr "New Post"
+#~ msgid "New Post"
+#~ msgstr "New Post"
 
 #. @context: Button to create new redirect
 #. @context: Button to create new redirect
@@ -1284,8 +1328,8 @@ msgstr "New Post"
 #: src/routes/dash/redirects.tsx
 #: src/routes/dash/redirects.tsx
 #: src/routes/dash/redirects.tsx
-msgid "New Redirect"
-msgstr "New Redirect"
+#~ msgid "New Redirect"
+#~ msgstr "New Redirect"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1315,6 +1359,11 @@ msgstr "Next"
 #: src/ui/pages/CollectionsPage.tsx
 msgid "No collections yet. Start one to organize posts by topic."
 msgstr "No collections yet. Start one to organize posts by topic."
+
+#. @context: Empty state message
+#: src/routes/dash/custom-urls.tsx
+msgid "No custom URLs yet. Create one to add redirects or custom paths for posts."
+msgstr "No custom URLs yet. Create one to add redirects or custom paths for posts."
 
 #. @context: Drafts panel empty state
 #: src/ui/compose/ComposeDialog.tsx
@@ -1440,8 +1489,8 @@ msgstr "No posts match this filter."
 
 #. @context: Empty state message
 #: src/routes/dash/redirects.tsx
-msgid "No redirects yet. Create one to forward traffic from old URLs."
-msgstr "No redirects yet. Create one to forward traffic from old URLs."
+#~ msgid "No redirects yet. Create one to forward traffic from old URLs."
+#~ msgstr "No redirects yet. Create one to forward traffic from old URLs."
 
 #. @context: Search empty results
 #: src/ui/pages/SearchPage.tsx
@@ -1588,10 +1637,10 @@ msgstr ""
 msgid "Paste a URL..."
 msgstr "Paste a URL..."
 
-#. @context: Page form field label - URL path
-#: src/theme/components/PageForm.tsx
-#~ msgid "Path"
-#~ msgstr "Path"
+#. @context: Custom URL form field
+#: src/routes/dash/custom-urls.tsx
+msgid "Path"
+msgstr "Path"
 
 #. @context: Navigation URL help text
 #: src/ui/dash/pages/LinkFormContent.tsx
@@ -1618,8 +1667,8 @@ msgstr "Pinned"
 #~ msgstr "post"
 
 #. @context: Compose button - publish post
-#. @context: Default post title
-#: src/routes/dash/posts.tsx
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post"
 msgstr "Post"
@@ -1661,8 +1710,8 @@ msgstr "Post updated."
 
 #. @context: Dashboard heading
 #: src/routes/dash/posts.tsx
-msgid "Posts"
-msgstr "Posts"
+#~ msgid "Posts"
+#~ msgstr "Posts"
 
 #. @context: Collection posts section heading
 #: src/ui/dash/collections/ViewCollectionContent.tsx
@@ -1719,9 +1768,7 @@ msgid "Publish"
 msgstr "Publish"
 
 #. @context: Post status badge - published
-#. @context: Post status label
 #. @context: Post status option
-#: src/routes/dash/index.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
@@ -1744,8 +1791,8 @@ msgstr "Published!"
 
 #. @context: Dashboard section title
 #: src/routes/dash/index.tsx
-msgid "Quick Actions"
-msgstr "Quick Actions"
+#~ msgid "Quick Actions"
+#~ msgstr "Quick Actions"
 
 #. @context: Post visibility badge - normal
 #: src/theme/components/VisibilityBadge.tsx
@@ -1790,12 +1837,25 @@ msgstr "Rate"
 #~ msgid "Rating"
 #~ msgstr "Rating"
 
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
+msgid "Redirect"
+msgstr "Redirect"
+
+#. @context: Redirect type field
+#: src/routes/dash/custom-urls.tsx
+msgid "Redirect Type"
+msgstr "Redirect Type"
+
 #. @context: Settings item — redirects settings
-#. @context: Settings section heading
-#: src/routes/dash/redirects.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Redirects"
-msgstr "Redirects"
+#~ msgid "Redirects"
+#~ msgstr "Redirects"
+
+#. @context: Settings item description for custom URLs
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Redirects and custom paths"
+msgstr "Redirects and custom paths"
 
 #. @context: Button to remove icon
 #. @context: Button to remove icon
@@ -1971,8 +2031,8 @@ msgstr "SEO settings updated."
 
 #. @context: Dashboard navigation - site settings
 #: src/ui/layouts/DashLayout.tsx
-msgid "Settings"
-msgstr "Settings"
+#~ msgid "Settings"
+#~ msgstr "Settings"
 
 #. @context: Toast after saving general settings
 #: src/routes/dash/settings.tsx
@@ -2014,8 +2074,8 @@ msgstr "Show more"
 msgid "Sign In"
 msgstr "Sign In"
 
-#. @context: Dashboard menu item to sign out
-#: src/ui/layouts/DashLayout.tsx
+#. @context: Settings link — sign out action
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sign Out"
 msgstr "Sign Out"
 
@@ -2047,6 +2107,11 @@ msgstr "Site Name"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "Slug"
+
+#. @context: Post form field - URL slug
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Slug (optional)"
+msgstr "Slug (optional)"
 
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
@@ -2126,6 +2191,11 @@ msgstr "System links"
 msgid "Tap to retry"
 msgstr "Tap to retry"
 
+#. @context: Custom URL target slug field
+#: src/routes/dash/custom-urls.tsx
+msgid "Target Slug"
+msgstr "Target Slug"
+
 #. @context: Attached text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Text attachment"
@@ -2141,15 +2211,20 @@ msgstr "That font theme isn't available. Pick another one."
 msgid "That theme isn't available. Pick another one."
 msgstr "That theme isn't available. Pick another one."
 
+#. @context: Custom URL path help text
+#: src/routes/dash/custom-urls.tsx
+msgid "The custom URL path (without leading slash)"
+msgstr "The custom URL path (without leading slash)"
+
 #. @context: Redirect to path help text
 #: src/routes/dash/redirects.tsx
-msgid "The destination path or URL"
-msgstr "The destination path or URL"
+#~ msgid "The destination path or URL"
+#~ msgstr "The destination path or URL"
 
 #. @context: Redirect from path help text
 #: src/routes/dash/redirects.tsx
-msgid "The path to redirect from"
-msgstr "The path to redirect from"
+#~ msgid "The path to redirect from"
+#~ msgstr "The path to redirect from"
 
 #. @context: Font theme preview sentence for body text
 #. @context: Font theme preview sentence for headings
@@ -2162,6 +2237,11 @@ msgstr "The quick brown fox jumps over the lazy dog."
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "The rest will be tucked into a ··· menu"
 msgstr "The rest will be tucked into a ··· menu"
+
+#. @context: Custom URL target slug help text
+#: src/routes/dash/custom-urls.tsx
+msgid "The slug of the target post or collection"
+msgstr "The slug of the target post or collection"
 
 #. @context: Quote text placeholder
 #: src/ui/dash/posts/PostForm.tsx
@@ -2220,8 +2300,8 @@ msgstr "This reset link is no longer valid. Request a new one to continue."
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "This will theme both your site and your dashboard. All color themes support dark mode."
-msgstr "This will theme both your site and your dashboard. All color themes support dark mode."
+#~ msgid "This will theme both your site and your dashboard. All color themes support dark mode."
+#~ msgstr "This will theme both your site and your dashboard. All color themes support dark mode."
 
 #. @context: Thread view indicator - first post in thread
 #: src/ui/shared/ThreadView.tsx
@@ -2261,8 +2341,8 @@ msgstr "Title (optional)"
 
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
-msgid "To Path"
-msgstr "To Path"
+#~ msgid "To Path"
+#~ msgstr "To Path"
 
 #. @context: Description for system nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -2279,8 +2359,8 @@ msgstr "Toggle built-in navigation items. Enabled items appear in your navigatio
 msgid "Toggle edit panel"
 msgstr "Toggle edit panel"
 
-#. @context: Redirect form field
-#: src/routes/dash/redirects.tsx
+#. @context: Custom URL form field
+#: src/routes/dash/custom-urls.tsx
 msgid "Type"
 msgstr "Type"
 
@@ -2383,8 +2463,8 @@ msgstr "URL (optional)"
 
 #. @context: Settings item description for redirects
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "URL redirects"
-msgstr "URL redirects"
+#~ msgid "URL redirects"
+#~ msgstr "URL redirects"
 
 #. @context: Collection path help text
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -2409,10 +2489,8 @@ msgid "Use this URL to embed the media in your posts."
 msgstr "Use this URL to embed the media in your posts."
 
 #. @context: Button to view item on public site
-#. @context: Button to view post
 #. @context: Button to view post on public site
 #. @context: Toast action button to view the published post
-#: src/routes/dash/posts.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/PostList.tsx
@@ -2440,8 +2518,8 @@ msgstr "Visibility"
 #: src/ui/layouts/DashLayout.tsx
 #: src/ui/layouts/DashLayout.tsx
 #: src/ui/layouts/DashLayout.tsx
-msgid "Visit Blog"
-msgstr "Visit Blog"
+#~ msgid "Visit Blog"
+#~ msgstr "Visit Blog"
 
 #. @context: Dashboard menu item to visit the public site
 #: src/ui/layouts/DashLayout.tsx

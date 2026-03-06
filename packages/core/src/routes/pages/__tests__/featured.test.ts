@@ -9,7 +9,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createPostService } from "../../../services/post.js";
-import { createPathRegistryService } from "../../../services/path-registry.js";
 import type { Database } from "../../../db/index.js";
 
 describe("Featured Page - Data Logic", () => {
@@ -19,7 +18,7 @@ describe("Featured Page - Data Logic", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    postService = createPostService(db, createPathRegistryService(db));
+    postService = createPostService(db, { slugIdLength: 5 });
   });
 
   it("returns only featured published posts", async () => {

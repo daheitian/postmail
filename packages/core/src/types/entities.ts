@@ -16,7 +16,7 @@ export interface Post {
   status: Status;
   visibility: Visibility;
   pinned: number; // 0 | 1
-  path: string | null;
+  slug: string;
   title: string | null;
   url: string | null;
   body: string | null;
@@ -109,11 +109,13 @@ export interface NavItem {
   updatedAt: number;
 }
 
-export interface Redirect {
+export interface CustomUrl {
   id: string;
-  fromPath: string;
-  toPath: string;
-  type: 301 | 302;
+  path: string;
+  targetType: "post" | "collection" | "redirect";
+  targetId: string | null;
+  toPath: string | null;
+  redirectType: 301 | 302 | null;
   createdAt: number;
 }
 

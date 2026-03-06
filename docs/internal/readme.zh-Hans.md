@@ -54,7 +54,7 @@
 - 没有 featured / rating / format / pinned 概念
 - 有 `status` 字段（`draft` / `published`），与 Post 一致
 - 有固定 URL：`/{slug}`，用户必须自定义 slug，仅支持单级
-- 在 `/dash` 后台创建和管理
+- 在 `/settings` 后台创建和管理
 - 同样存储 `body` 和 `body_html`
 
 **示例**：`/about`、`/now`、`/uses`
@@ -157,10 +157,10 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 作者名       About  Featured  Archive  Collections  📡  🔍
 ```
 
-- 导航链接由用户通过 nav_items 自定义配置，支持三种类型：`page`（关联页面）、`link`（任意 URL）、`system`（系统内置：RSS、Dashboard、Collections、Archive）
+- 导航链接由用户通过 nav_items 自定义配置，支持三种类型：`page`（关联页面）、`link`（任意 URL）、`system`（系统内置：RSS、Settings、Collections、Archive）
 - 🔍 点击弹出搜索弹窗
-- 登录后导航栏右侧出现头像，点击弹出菜单（Dashboard、New Post、Logout）
-- 未登录的博主直接访问 `/dash` 进入登录页
+- 登录后导航栏显示 Settings 链接；未登录时显示 Sign in
+- 未登录的博主直接访问 `/signin` 进入登录页
 
 ### 3.3 首页 Timeline
 
@@ -228,9 +228,9 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 - `page` — 指向一个 Page（自动关联，Page 删除时 nav_item 也级联删除）
 - `link` — 任意 URL（/c、/featured、/archive、/c/reading、外部链接，都是 link）
-- `system` — 系统内置链接（RSS `/feed`、Dashboard `/dash`、Collections `/c`、Archive `/archive`），label 可自定义
+- `system` — 系统内置链接（RSS `/feed`、Settings `/settings`、Collections `/c`、Archive `/archive`），label 可自定义
 
-**后台管理**（`/dash/appearance`，外观设置的导航子页面）：
+**后台管理**（`/settings/navigation`，设置的导航子页面）：
 
 - 已添加到导航的项目（page、link、system 类型混合），可拖拽排序
 - 支持添加 Page、任意链接、系统链接
@@ -269,22 +269,24 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 5.3 后台路由
 
-| URL                        | 功能                                             |
-| -------------------------- | ------------------------------------------------ |
-| `/dash`                    | 仪表盘                                           |
-| `/dash/posts`              | 帖子管理                                         |
-| `/dash/pages`              | 页面管理                                         |
-| `/dash/media`              | 媒体库                                           |
-| `/dash/appearance`         | 外观设置（导航、颜色主题、字体主题、自定义 CSS） |
-| `/dash/settings`           | 站点设置（通用设置、账号设置）                   |
-| `/dash/settings/redirects` | 重定向管理                                       |
+| URL                     | 功能                         |
+| ----------------------- | ---------------------------- |
+| `/settings`             | 设置首页                     |
+| `/settings/general`     | 通用设置（名称、描述、语言） |
+| `/settings/avatar`      | 头像设置                     |
+| `/settings/navigation`  | 导航管理                     |
+| `/settings/color-theme` | 颜色主题                     |
+| `/settings/font-theme`  | 字体主题                     |
+| `/settings/custom-css`  | 自定义 CSS                   |
+| `/settings/custom-urls` | 自定义 URL 与重定向          |
+| `/settings/account`     | 密码修改                     |
 
 ### 5.4 重定向与路径注册
 
 **重定向**：支持 301（永久）和 302（临时）重定向。两种来源：
 
 - **自动**：Page 或 Collection 修改 slug 时，系统自动为旧路径创建 301 重定向
-- **手动**：用户在后台（`/dash/settings/redirects`）自行创建，用于短链接、旧站迁移等场景
+- **手动**：用户在后台（`/settings/custom-urls`）自行创建，用于短链接、旧站迁移等场景
 
 **路径注册**（Path Registry）：`path_registry` 表作为所有 URL 路径的唯一归属来源，确保 Page slug、Post 自定义路径、重定向之间不会冲突。通过主键约束在数据库层面保证唯一性。
 
@@ -312,7 +314,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 内置 7 种颜色方案：notepad, halloween, panda, beach, gameboy, grayscale, sonnet。不选择时使用 BaseCoat 默认样式。
 
-通过 CSS 变量实现，自动支持 light/dark mode。使用 `:root:root` 和 `:root.dark` 选择器确保主题覆盖优先级高于 BaseCoat 默认值。在后台 `/dash/appearance` 切换。
+通过 CSS 变量实现，自动支持 light/dark mode。使用 `:root:root` 和 `:root.dark` 选择器确保主题覆盖优先级高于 BaseCoat 默认值。在 `/settings/color-theme` 切换。
 
 ### 7.2 字体主题
 
@@ -326,7 +328,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 7.3 自定义 CSS
 
-后台 `/dash/appearance` 的 Advanced 页面支持用户自定义 CSS，可覆盖任何 CSS 变量或样式。
+`/settings/custom-css` 页面支持用户自定义 CSS，可覆盖任何 CSS 变量或样式。
 
 ## 8. 配置系统
 

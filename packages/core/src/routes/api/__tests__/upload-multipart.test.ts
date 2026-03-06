@@ -6,12 +6,11 @@ import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createMediaService } from "../../../services/media.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createPostService } from "../../../services/post.js";
-import { createRedirectService } from "../../../services/redirect.js";
+import { createCustomUrlService } from "../../../services/custom-url.js";
 import { createCollectionService } from "../../../services/collection.js";
 import { createSearchService } from "../../../services/search.js";
 import { createNavItemService } from "../../../services/navigation.js";
 import { createAuthService } from "../../../services/auth.js";
-import { createPathRegistryService } from "../../../services/path-registry.js";
 import { errorHandler } from "../../../middleware/error-handler.js";
 import { createI18n } from "../../../i18n/i18n.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
@@ -147,12 +146,10 @@ function createTestAppWithStorage(options: {
   const mockD1 = createMockD1(sqlite);
 
   const settingsService = createSettingsService(db);
-  const pathRegistryService = createPathRegistryService(db);
   const services = {
-    posts: createPostService(db, pathRegistryService),
+    posts: createPostService(db, { slugIdLength: 5 }),
     settings: settingsService,
-    pathRegistry: pathRegistryService,
-    redirects: createRedirectService(db, pathRegistryService),
+    customUrls: createCustomUrlService(db),
     media: createMediaService(db),
     collections: createCollectionService(db),
     search: createSearchService(mockD1),

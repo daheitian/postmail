@@ -91,7 +91,7 @@ export interface SSEStream {
    *
    * @example
    * ```ts
-   * await stream.redirect('/dash/posts');
+   * await stream.redirect('/settings');
    * ```
    */
   redirect(url: string): void;
@@ -193,7 +193,7 @@ function formatEvent(eventType: string, dataLines: readonly string[]): string {
  * // With cookie forwarding (for auth)
  * app.post("/signin", (c) => {
  *   return sse(c, async (stream) => {
- *     await stream.redirect('/dash');
+ *     await stream.redirect('/settings');
  *   }, { headers: { 'Set-Cookie': cookieValue } });
  * });
  * ```
@@ -304,10 +304,10 @@ export function sse(
  *
  * @example
  * ```ts
- * return dsRedirect("/dash/posts");
+ * return dsRedirect("/settings");
  *
  * // With cookie forwarding (for auth)
- * return dsRedirect("/dash", { headers: authResponse.headers });
+ * return dsRedirect("/settings", { headers: authResponse.headers });
  * ```
  */
 export function dsRedirect(

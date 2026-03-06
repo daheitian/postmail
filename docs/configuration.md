@@ -1,6 +1,6 @@
 # Configuration
 
-Jant is configured through environment variables and dashboard settings.
+Jant is configured through environment variables and settings.
 
 ## Environment Variables
 
@@ -106,7 +106,7 @@ For automatic thumbnail generation and image optimization:
 
 > **Why?** Cloudflare Image Transformations can only transform images on the same domain by default. If the domain in `IMAGE_TRANSFORM_URL` doesn't match where the images are served, transformations will fail.
 
-When enabled, the dashboard displays optimized thumbnails instead of full images. Without this setting, original images are shown (still works fine).
+When enabled, the settings page displays optimized thumbnails instead of full images. Without this setting, original images are shown (still works fine).
 
 **Note:** Images are automatically processed client-side before upload:
 
@@ -116,6 +116,14 @@ When enabled, the dashboard displays optimized thumbnails instead of full images
 - Converted to WebP at 85% quality
 
 Video, audio, and PDF files are uploaded as-is without processing.
+
+### Slugs (Optional)
+
+| Variable         | Default | Description                                                    |
+| ---------------- | ------- | -------------------------------------------------------------- |
+| `SLUG_ID_LENGTH` | `5`     | Length of auto-generated random slugs for posts without titles |
+
+When a post has a title, the slug is derived from it (e.g., "Hello World" becomes `hello-world`). When there's no title, a random alphanumeric slug of this length is generated (e.g., `a3k9m`). If a title-based slug conflicts, a random suffix of this length is appended.
 
 ### Upload Limits (Optional)
 
@@ -130,9 +138,9 @@ Images are always limited to 10MB. This setting controls the limit for video, au
 UPLOAD_MAX_FILE_SIZE = "500"  # Allow up to 500MB uploads
 ```
 
-## Dashboard Settings
+## Settings
 
-These can be changed in `/dash/settings`:
+These can be changed in `/settings`:
 
 | Setting            | Description                             |
 | ------------------ | --------------------------------------- |
@@ -147,7 +155,7 @@ These paths are reserved by Jant and cannot be used as page slugs:
 
 ```
 featured, signin, signout, setup, dash, api, feed, search, archive,
-notes, articles, links, quotes, media, pages, p, c, static, assets
+notes, articles, links, quotes, media, pages, c, static, assets
 ```
 
 ## Configuration Files
@@ -164,7 +172,7 @@ compatibility_date = "2024-01-01"
 [vars]
 SITE_URL = "https://myblog.com"
 
-# Optional: Site configuration (can be overridden in dashboard)
+# Optional: Site configuration (can be overridden in settings)
 # SITE_NAME = "My Blog"
 # SITE_DESCRIPTION = "A personal blog"
 # SITE_LANGUAGE = "en"

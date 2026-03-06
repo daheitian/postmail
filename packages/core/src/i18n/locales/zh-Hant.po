@@ -34,12 +34,12 @@ msgid "+ ALT"
 msgstr "+ ALT"
 
 #. @context: Redirect type option
-#: src/routes/dash/redirects.tsx
+#: src/routes/dash/custom-urls.tsx
 msgid "301 (Permanent)"
 msgstr "301（永久）"
 
 #. @context: Redirect type option
-#: src/routes/dash/redirects.tsx
+#: src/routes/dash/custom-urls.tsx
 msgid "302 (Temporary)"
 msgstr "302（臨時）"
 
@@ -163,6 +163,11 @@ msgstr "所有"
 #~ msgid "Appearance"
 #~ msgstr "外觀"
 
+#. @context: Appearance settings description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Applies to your entire site, including admin pages. All themes support dark mode."
+msgstr ""
+
 #. @context: Archive page title
 #: src/ui/pages/ArchivePage.tsx
 msgid "Archive"
@@ -208,6 +213,16 @@ msgstr ""
 msgid "Author (optional)"
 msgstr "作者（可選）"
 
+#. @context: Post slug help text
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Auto-generated from title if left empty"
+msgstr ""
+
+#. @context: Post slug placeholder
+#: src/ui/dash/posts/PostForm.tsx
+msgid "auto-generated-from-title"
+msgstr ""
+
 #. @context: Settings item — avatar settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Avatar"
@@ -250,7 +265,7 @@ msgstr "部落格頭像"
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
 #. @context: Confirm close action sheet - cancel and return to editor
-#: src/routes/dash/redirects.tsx
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
@@ -311,6 +326,8 @@ msgstr "點擊圖片以查看完整大小"
 #~ msgstr "關閉"
 
 #. @context: Compose collection selector trigger label
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Collection"
 msgstr "集合"
@@ -419,6 +436,11 @@ msgstr ""
 #~ msgid "Create Collection"
 #~ msgstr "創建收藏夾"
 
+#. @context: Button to save new custom URL
+#: src/routes/dash/custom-urls.tsx
+msgid "Create Custom URL"
+msgstr ""
+
 #. @context: Link at bottom of page combobox to create a new page
 #: src/ui/dash/appearance/NavigationContent.tsx
 #~ msgid "Create page"
@@ -431,8 +453,8 @@ msgstr ""
 
 #. @context: Button to save new redirect
 #: src/routes/dash/redirects.tsx
-msgid "Create Redirect"
-msgstr "建立重定向"
+#~ msgid "Create Redirect"
+#~ msgstr "建立重定向"
 
 #. @context: Setup page description
 #: src/routes/auth/setup.tsx
@@ -481,6 +503,13 @@ msgstr ""
 msgid "Custom styling"
 msgstr ""
 
+#. @context: Settings item — custom URL settings
+#. @context: Settings section heading
+#: src/routes/dash/custom-urls.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Custom URLs"
+msgstr ""
+
 #. @context: Section heading for dangerous/destructive actions
 #: src/ui/dash/DangerZone.tsx
 msgid "Danger Zone"
@@ -490,19 +519,19 @@ msgstr "危險區域"
 #. @context: Dashboard navigation - dashboard home
 #: src/routes/dash/index.tsx
 #: src/ui/layouts/DashLayout.tsx
-msgid "Dashboard"
-msgstr "儀表板"
+#~ msgid "Dashboard"
+#~ msgstr "儀表板"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
 #~ msgid "Default Homepage View"
 #~ msgstr "預設首頁視圖"
 
+#. @context: Button to delete custom URL
 #. @context: Button to delete item
-#. @context: Button to delete redirect
 #. @context: Delete collection action
 #. @context: Delete nav item
-#: src/routes/dash/redirects.tsx
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -571,6 +600,11 @@ msgstr "描述（可選）"
 msgid "Design"
 msgstr ""
 
+#. @context: Redirect destination field
+#: src/routes/dash/custom-urls.tsx
+msgid "Destination"
+msgstr ""
+
 #. @context: More menu - discard post
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
@@ -627,17 +661,13 @@ msgid "Draft saved."
 msgstr "草稿已保存。"
 
 #. @context: Drafts panel title
-#. @context: Post status label
-#: src/routes/dash/index.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Drafts"
 msgstr "草稿"
 
 #. @context: Button to edit item
 #. @context: Button to edit post
-#. @context: Button to edit post
 #. @context: Per-collection edit action
-#: src/routes/dash/posts.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/PostList.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -661,8 +691,8 @@ msgstr ""
 
 #. @context: Page heading
 #: src/routes/dash/posts.tsx
-msgid "Edit Post"
-msgstr "編輯文章"
+#~ msgid "Edit Post"
+#~ msgstr "編輯文章"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
@@ -682,6 +712,11 @@ msgstr ""
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Emojis"
 msgstr ""
+
+#. @context: Settings item description for sign out
+#: src/ui/dash/settings/SettingsRootContent.tsx
+#~ msgid "End your current session"
+#~ msgstr ""
 
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
@@ -787,8 +822,8 @@ msgstr "找到 1 個結果"
 
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
-msgid "From Path"
-msgstr "來源路徑"
+#~ msgid "From Path"
+#~ msgstr "來源路徑"
 
 #. @context: Settings item — general settings
 #. @context: Settings section heading
@@ -998,8 +1033,8 @@ msgstr "媒體"
 
 #. @context: Dashboard header menu button
 #: src/ui/layouts/DashLayout.tsx
-msgid "Menu"
-msgstr "菜單"
+#~ msgid "Menu"
+#~ msgstr "菜單"
 
 #. @context: Aria-label for more button
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -1052,13 +1087,22 @@ msgstr ""
 
 #. @context: Help text with link
 #: src/routes/dash/index.tsx
-msgid "Need help? Visit the <0>documentation</0>"
-msgstr "需要幫助嗎？請訪問<0>文檔</0>。"
+#~ msgid "Need help? Visit the <0>documentation</0>"
+#~ msgstr "需要幫助嗎？請訪問<0>文檔</0>。"
 
 #. @context: Tooltip/aria for add collection button
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "New Collection"
 msgstr "新收藏集"
+
+#. @context: Button to create new custom URL
+#. @context: Button to create new custom URL
+#. @context: Page heading
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+#: src/routes/dash/custom-urls.tsx
+msgid "New Custom URL"
+msgstr ""
 
 #. @context: Button to add divider between collections
 #: src/ui/dash/collections/CollectionsListContent.tsx
@@ -1085,8 +1129,8 @@ msgstr "新密碼"
 #: src/routes/dash/index.tsx
 #: src/routes/dash/posts.tsx
 #: src/routes/dash/posts.tsx
-msgid "New Post"
-msgstr "新帖子"
+#~ msgid "New Post"
+#~ msgstr "新帖子"
 
 #. @context: Button to create new redirect
 #. @context: Button to create new redirect
@@ -1094,8 +1138,8 @@ msgstr "新帖子"
 #: src/routes/dash/redirects.tsx
 #: src/routes/dash/redirects.tsx
 #: src/routes/dash/redirects.tsx
-msgid "New Redirect"
-msgstr "新重定向"
+#~ msgid "New Redirect"
+#~ msgstr "新重定向"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1124,6 +1168,11 @@ msgstr "下一頁"
 #. @context: Empty state message on collections page
 #: src/ui/pages/CollectionsPage.tsx
 msgid "No collections yet. Start one to organize posts by topic."
+msgstr ""
+
+#. @context: Empty state message
+#: src/routes/dash/custom-urls.tsx
+msgid "No custom URLs yet. Create one to add redirects or custom paths for posts."
 msgstr ""
 
 #. @context: Drafts panel empty state
@@ -1235,8 +1284,8 @@ msgstr ""
 
 #. @context: Empty state message
 #: src/routes/dash/redirects.tsx
-msgid "No redirects yet. Create one to forward traffic from old URLs."
-msgstr ""
+#~ msgid "No redirects yet. Create one to forward traffic from old URLs."
+#~ msgstr ""
 
 #. @context: Search empty results
 #: src/ui/pages/SearchPage.tsx
@@ -1373,6 +1422,11 @@ msgstr ""
 msgid "Paste a URL..."
 msgstr "粘貼一個網址..."
 
+#. @context: Custom URL form field
+#: src/routes/dash/custom-urls.tsx
+msgid "Path"
+msgstr ""
+
 #. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
 #: src/ui/pages/PostPage.tsx
@@ -1388,8 +1442,8 @@ msgid "Pinned"
 msgstr "置頂"
 
 #. @context: Compose button - publish post
-#. @context: Default post title
-#: src/routes/dash/posts.tsx
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post"
 msgstr "文章"
@@ -1421,8 +1475,8 @@ msgstr ""
 
 #. @context: Dashboard heading
 #: src/routes/dash/posts.tsx
-msgid "Posts"
-msgstr "文章"
+#~ msgid "Posts"
+#~ msgstr "文章"
 
 #. @context: Collection posts section heading
 #: src/ui/dash/collections/ViewCollectionContent.tsx
@@ -1479,9 +1533,7 @@ msgid "Publish"
 msgstr "發佈"
 
 #. @context: Post status badge - published
-#. @context: Post status label
 #. @context: Post status option
-#: src/routes/dash/index.tsx
 #: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
@@ -1499,8 +1551,8 @@ msgstr "已發佈！"
 
 #. @context: Dashboard section title
 #: src/routes/dash/index.tsx
-msgid "Quick Actions"
-msgstr "快速操作"
+#~ msgid "Quick Actions"
+#~ msgstr "快速操作"
 
 #. @context: Compose format tab
 #. @context: Post format badge - quote
@@ -1528,12 +1580,25 @@ msgstr "引用"
 msgid "Rate"
 msgstr "評分"
 
+#. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
+msgid "Redirect"
+msgstr ""
+
+#. @context: Redirect type field
+#: src/routes/dash/custom-urls.tsx
+msgid "Redirect Type"
+msgstr ""
+
 #. @context: Settings item — redirects settings
-#. @context: Settings section heading
-#: src/routes/dash/redirects.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Redirects"
-msgstr "重定向"
+#~ msgid "Redirects"
+#~ msgstr "重定向"
+
+#. @context: Settings item description for custom URLs
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Redirects and custom paths"
+msgstr ""
 
 #. @context: Button to remove icon
 #. @context: Button to remove icon
@@ -1694,8 +1759,8 @@ msgstr ""
 
 #. @context: Dashboard navigation - site settings
 #: src/ui/layouts/DashLayout.tsx
-msgid "Settings"
-msgstr "設定"
+#~ msgid "Settings"
+#~ msgstr "設定"
 
 #. @context: Toast after saving general settings
 #: src/routes/dash/settings.tsx
@@ -1732,8 +1797,8 @@ msgstr ""
 msgid "Sign In"
 msgstr "登入"
 
-#. @context: Dashboard menu item to sign out
-#: src/ui/layouts/DashLayout.tsx
+#. @context: Settings link — sign out action
+#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sign Out"
 msgstr "登出"
 
@@ -1760,6 +1825,11 @@ msgstr "網站名稱"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "縮略名"
+
+#. @context: Post form field - URL slug
+#: src/ui/dash/posts/PostForm.tsx
+msgid "Slug (optional)"
+msgstr ""
 
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
@@ -1824,6 +1894,11 @@ msgstr "系統連結"
 msgid "Tap to retry"
 msgstr ""
 
+#. @context: Custom URL target slug field
+#: src/routes/dash/custom-urls.tsx
+msgid "Target Slug"
+msgstr ""
+
 #. @context: Attached text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Text attachment"
@@ -1839,15 +1914,20 @@ msgstr ""
 msgid "That theme isn't available. Pick another one."
 msgstr ""
 
+#. @context: Custom URL path help text
+#: src/routes/dash/custom-urls.tsx
+msgid "The custom URL path (without leading slash)"
+msgstr ""
+
 #. @context: Redirect to path help text
 #: src/routes/dash/redirects.tsx
-msgid "The destination path or URL"
-msgstr "目的地路徑或 URL"
+#~ msgid "The destination path or URL"
+#~ msgstr "目的地路徑或 URL"
 
 #. @context: Redirect from path help text
 #: src/routes/dash/redirects.tsx
-msgid "The path to redirect from"
-msgstr "重定向來源的路徑"
+#~ msgid "The path to redirect from"
+#~ msgstr "重定向來源的路徑"
 
 #. @context: Font theme preview sentence for body text
 #. @context: Font theme preview sentence for headings
@@ -1859,6 +1939,11 @@ msgstr "敏捷的棕色狐狸跳過懶惰的狗。"
 #. @context: Description for max visible nav links, explains overflow behavior
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "The rest will be tucked into a ··· menu"
+msgstr ""
+
+#. @context: Custom URL target slug help text
+#: src/routes/dash/custom-urls.tsx
+msgid "The slug of the target post or collection"
 msgstr ""
 
 #. @context: Quote text placeholder
@@ -1903,8 +1988,8 @@ msgstr ""
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "This will theme both your site and your dashboard. All color themes support dark mode."
-msgstr "這將為您的網站和儀表板設置主題。所有顏色主題都支持深色模式。"
+#~ msgid "This will theme both your site and your dashboard. All color themes support dark mode."
+#~ msgstr "這將為您的網站和儀表板設置主題。所有顏色主題都支持深色模式。"
 
 #. @context: Thread view indicator - first post in thread
 #: src/ui/shared/ThreadView.tsx
@@ -1944,8 +2029,8 @@ msgstr "標題（選填）"
 
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
-msgid "To Path"
-msgstr "到路徑"
+#~ msgid "To Path"
+#~ msgstr "到路徑"
 
 #. @context: Description for system nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1962,8 +2047,8 @@ msgstr ""
 msgid "Toggle edit panel"
 msgstr "切換編輯面板"
 
-#. @context: Redirect form field
-#: src/routes/dash/redirects.tsx
+#. @context: Custom URL form field
+#: src/routes/dash/custom-urls.tsx
 msgid "Type"
 msgstr "類型"
 
@@ -2056,8 +2141,8 @@ msgstr "網址（可選）"
 
 #. @context: Settings item description for redirects
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "URL redirects"
-msgstr ""
+#~ msgid "URL redirects"
+#~ msgstr ""
 
 #. @context: Collection path help text
 #. @context: Collection path help text
@@ -2077,10 +2162,8 @@ msgid "Use this URL to embed the media in your posts."
 msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
 
 #. @context: Button to view item on public site
-#. @context: Button to view post
 #. @context: Button to view post on public site
 #. @context: Toast action button to view the published post
-#: src/routes/dash/posts.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/PostList.tsx
@@ -2103,8 +2186,8 @@ msgstr ""
 #: src/ui/layouts/DashLayout.tsx
 #: src/ui/layouts/DashLayout.tsx
 #: src/ui/layouts/DashLayout.tsx
-msgid "Visit Blog"
-msgstr ""
+#~ msgid "Visit Blog"
+#~ msgstr ""
 
 #. @context: Dashboard menu item to visit the public site
 #: src/ui/layouts/DashLayout.tsx

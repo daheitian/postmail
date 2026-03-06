@@ -48,6 +48,15 @@ export const NavItemTypeSchema = z.enum(NAV_ITEM_TYPES);
 export const RedirectTypeSchema = z.enum(["301", "302"]);
 
 /**
+ * Custom URL target type enum schema
+ */
+export const CustomUrlTargetTypeSchema = z.enum([
+  "post",
+  "collection",
+  "redirect",
+]);
+
+/**
  * Rating schema (1-5 integer)
  */
 export const RatingSchema = z.coerce
@@ -64,9 +73,16 @@ export const RatingSchema = z.coerce
  */
 export const CreatePostSchema = z.object({
   format: FormatSchema,
-  path: z
+  slug: z
     .string()
-    .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\/[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/)
+    .min(1)
+    .transform(normalizeSlug)
+    .pipe(
+      z
+        .string()
+        .min(1)
+        .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+    )
     .optional()
     .or(z.literal("").transform(() => undefined)),
   title: z.string().optional(),
@@ -134,6 +150,17 @@ export const CreateCollectionSchema = z.object({
  * API request body schema for updating a collection
  */
 export const UpdateCollectionSchema = CreateCollectionSchema.partial();
+
+/**
+ * API request body schema for creating a custom URL
+ */
+export const CreateCustomUrlSchema = z.object({
+  path: z.string().min(1),
+  targetType: CustomUrlTargetTypeSchema,
+  targetId: z.string().optional(),
+  toPath: z.string().optional(),
+  redirectType: RedirectTypeSchema.optional(),
+});
 
 // =============================================================================
 // Auth Schemas

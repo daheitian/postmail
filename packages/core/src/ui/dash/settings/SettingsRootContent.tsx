@@ -90,7 +90,7 @@ export function SettingsRootContent() {
         </div>
         <div class="settings-group">
           <SettingsItem
-            href="/dash/settings/general"
+            href="/settings/general"
             icon={ICONS.settings}
             color={COLORS.blue}
             name={t({
@@ -115,7 +115,7 @@ export function SettingsRootContent() {
         </div>
         <div class="settings-group">
           <SettingsItem
-            href="/dash/settings/avatar"
+            href="/settings/avatar"
             icon={ICONS.image}
             color={COLORS.purple}
             name={t({
@@ -128,7 +128,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/dash/settings/navigation"
+            href="/settings/navigation"
             icon={ICONS.menu}
             color={COLORS.green}
             name={t({
@@ -141,7 +141,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/dash/settings/color-theme"
+            href="/settings/color-theme"
             icon={ICONS.palette}
             color={COLORS.orange}
             name={t({
@@ -154,7 +154,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/dash/settings/font-theme"
+            href="/settings/font-theme"
             icon={ICONS.type}
             color={COLORS.pink}
             name={t({
@@ -167,7 +167,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/dash/settings/custom-css"
+            href="/settings/custom-css"
             icon={ICONS.code}
             color={COLORS.indigo}
             name={t({
@@ -192,16 +192,16 @@ export function SettingsRootContent() {
         </div>
         <div class="settings-group">
           <SettingsItem
-            href="/dash/settings/redirects"
+            href="/settings/custom-urls"
             icon={ICONS.arrowRightLeft}
             color={COLORS.amber}
             name={t({
-              message: "Redirects",
-              comment: "@context: Settings item — redirects settings",
+              message: "Custom URLs",
+              comment: "@context: Settings item — custom URL settings",
             })}
             description={t({
-              message: "URL redirects",
-              comment: "@context: Settings item description for redirects",
+              message: "Redirects and custom paths",
+              comment: "@context: Settings item description for custom URLs",
             })}
           />
         </div>
@@ -217,7 +217,7 @@ export function SettingsRootContent() {
         </div>
         <div class="settings-group">
           <SettingsItem
-            href="/dash/settings/account"
+            href="/settings/account"
             icon={ICONS.lock}
             color={COLORS.gray}
             name={t({
@@ -230,6 +230,19 @@ export function SettingsRootContent() {
             })}
           />
         </div>
+      </div>
+
+      {/* Sign Out */}
+      <div class="pt-2">
+        <a
+          href="/signout"
+          class="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {t({
+            message: "Sign Out",
+            comment: "@context: Settings link — sign out action",
+          })}
+        </a>
       </div>
     </div>
   );

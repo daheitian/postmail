@@ -59,8 +59,8 @@ Non-negotiable regardless of context:
 - `packages/core`: library + dev environment (Vite HMR). `sites/demo`: demo site + user template source (via `@create-jant` annotations).
 - **Types**: public exports in `src/types.ts`; definitions in `src/types/`.
 - **Schemas**: shared domain schemas in `src/lib/schemas.ts`; route-specific schemas colocated with routes.
-- **Routes**: `xxxRoutes` suffix (`postsRoutes`, `dashIndexRoutes`).
-- **Time**: Unix timestamps (seconds) via `lib/time.ts`. **IDs**: UUIDv7 in DB (text), Base58-encoded for URLs and API (`/p/2Vk8j...`). UUIDs are internal-only; all user-facing output uses Base58 via `lib/uid.ts`.
+- **Routes**: `xxxRoutes` suffix (`postsRoutes`, `settingsRoutes`).
+- **Time**: Unix timestamps (seconds) via `lib/time.ts`. **IDs**: UUIDv7 in DB (text), Base58-encoded for admin URLs and API. **Post URLs**: slug-based (`/{slug}`). Slugs are auto-generated from title (via `lib/slug.ts`) or as random alphanumeric IDs (via `lib/nanoid.ts`). Custom URL overrides are managed through the `custom_urls` table. Collections use `/c/{slug}`. `SLUG_ID_LENGTH` env var controls random slug length (default: 5).
 - **Soft delete**: posts use `deleted_at`.
 - **Library functions**: include JSDoc with `@param`, `@returns`, `@example`.
 
@@ -72,7 +72,7 @@ All user-facing strings use `t()` with a `@context:` comment for translators:
 import { useLingui } from "@lingui/react/macro";
 
 const { t } = useLingui();
-return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
+return <h1>{t({ message: "Settings", comment: "@context: Page title" })}</h1>;
 ```
 
 ### Tech Stack

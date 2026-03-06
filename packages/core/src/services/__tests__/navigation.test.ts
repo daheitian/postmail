@@ -131,8 +131,8 @@ describe("NavItemService", () => {
       });
       await navItemService.create({
         type: "system",
-        label: "Dashboard",
-        url: "/dash",
+        label: "Settings",
+        url: "/settings",
       });
 
       const items = await navItemService.list();

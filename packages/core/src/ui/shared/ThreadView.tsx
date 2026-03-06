@@ -7,7 +7,6 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { Post } from "../../types.js";
-import { toUid } from "../../lib/uid.js";
 import * as time from "../../lib/time.js";
 
 export interface ThreadViewProps {
@@ -34,10 +33,7 @@ const ThreadPost: FC<{
     >
       {post.title && (
         <h2 class="p-name text-lg font-medium mb-2">
-          <a
-            href={`${post.path ? `/${post.path}` : `/p/${toUid(post.id)}`}`}
-            class="u-url hover:underline"
-          >
+          <a href={`/${post.slug}`} class="u-url hover:underline">
             {post.title}
           </a>
         </h2>
@@ -64,10 +60,7 @@ const ThreadPost: FC<{
           </span>
         )}
         {!isCurrent && (
-          <a
-            href={`${post.path ? `/${post.path}` : `/p/${toUid(post.id)}`}`}
-            class="text-xs hover:underline"
-          >
+          <a href={`/${post.slug}`} class="text-xs hover:underline">
             {t({
               message: "Permalink",
               comment: "@context: Link to individual post in thread",

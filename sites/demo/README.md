@@ -22,7 +22,7 @@ Deploy to Cloudflare instantly — no local setup required:
 ### After deploy
 
 1. Visit your site at the URL shown in the Cloudflare dashboard (e.g. `https://<project>.<account>.workers.dev`)
-2. Go to `/dash` to set up your admin account
+2. Go to `/setup` to set up your admin account
 3. If you set `SITE_URL` to a custom domain, add it in: Cloudflare dashboard → Workers & Pages → your worker → Settings → Domains & Routes → Add Custom Domain
 4. If you left `SITE_URL` empty, set it to your `*.workers.dev` URL: Cloudflare dashboard → Workers & Pages → your worker → Settings → Variables and Secrets
 

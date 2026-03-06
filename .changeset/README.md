@@ -26,7 +26,7 @@ This will guide you through:
 
 Good changeset summaries:
 
-- "Add dark mode support to dashboard"
+- "Add dark mode support to settings"
 - "Fix image upload failing on large files"
 - "BREAKING: Remove deprecated `Post.slug` field"
 

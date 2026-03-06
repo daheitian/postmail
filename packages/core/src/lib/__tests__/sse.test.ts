@@ -3,20 +3,20 @@ import { dsRedirect, dsToast, dsSignals } from "../sse.js";
 
 describe("dsRedirect", () => {
   it("returns a Response with text/html content-type", () => {
-    const res = dsRedirect("/dash");
+    const res = dsRedirect("/settings");
     expect(res.headers.get("Content-Type")).toBe("text/html");
   });
 
   it("includes Datastar headers for append mode", () => {
-    const res = dsRedirect("/dash");
+    const res = dsRedirect("/settings");
     expect(res.headers.get("Datastar-Mode")).toBe("append");
     expect(res.headers.get("Datastar-Selector")).toBe("body");
   });
 
   it("body contains redirect script with correct URL", async () => {
-    const res = dsRedirect("/dash/posts");
+    const res = dsRedirect("/settings/general");
     const body = await res.text();
-    expect(body).toContain("window.location.href='/dash/posts'");
+    expect(body).toContain("window.location.href='/settings/general'");
   });
 
   it("escapes single quotes in URL", async () => {
@@ -26,7 +26,7 @@ describe("dsRedirect", () => {
   });
 
   it("merges additional headers from plain object", () => {
-    const res = dsRedirect("/dash", {
+    const res = dsRedirect("/settings", {
       headers: { "Set-Cookie": "session=abc" },
     });
     expect(res.headers.get("Set-Cookie")).toBe("session=abc");
@@ -37,7 +37,7 @@ describe("dsRedirect", () => {
     const headers = new Headers();
     headers.append("set-cookie", "session=abc; Path=/; HttpOnly");
     headers.append("set-cookie", "data=xyz; Path=/; Max-Age=300");
-    const res = dsRedirect("/dash", { headers });
+    const res = dsRedirect("/settings", { headers });
     const cookies = res.headers.getSetCookie();
     expect(cookies).toHaveLength(2);
     expect(cookies[0]).toBe("session=abc; Path=/; HttpOnly");

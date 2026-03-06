@@ -441,7 +441,7 @@ Wrap user-facing strings with the `t()` function and always include a context co
 import { useLingui } from "@lingui/react/macro";
 
 const { t } = useLingui();
-return <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>;
+return <h1>{t({ message: "Settings", comment: "@context: Page title" })}</h1>;
 ```
 
 **Important**: The import from `@lingui/react/macro` is intentional — the SWC plugin rewrites it to `@jant/core/i18n` at compile time, which Vite resolves to source during bundling. Do not change this import path.

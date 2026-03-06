@@ -39,7 +39,7 @@
   --content-gap: 1rem;
   --space-xl: 2rem;
 
-  /* Sidebar layout (dashboard + site sidebar pages) */
+  /* Sidebar layout (admin + site sidebar pages) */
   --sidebar-width: 12rem;
   --sidebar-gap: 2rem;
 
@@ -77,7 +77,7 @@
   --search-mark-bg: oklch(0.92 0.14 90 / 0.55);
   --search-mark-color: oklch(0.35 0.09 70);
 
-  /* Dashboard */
+  /* Admin */
   --dash-bg: oklch(0.97 0.005 80);
   --dash-card-radius: 10px;
 }

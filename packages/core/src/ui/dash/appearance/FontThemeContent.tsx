@@ -20,7 +20,7 @@ export function FontThemeContent({
         /</g,
         "\\u003c",
       )}
-      data-on:change="@post('/dash/settings/font-theme')"
+      data-on:change="@post('/settings/font-theme')"
       class="max-w-3xl"
     >
       <fieldset>

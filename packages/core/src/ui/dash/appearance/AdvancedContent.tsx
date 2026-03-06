@@ -12,7 +12,7 @@ export function AdvancedContent({ customCSS }: { customCSS: string }) {
   return (
     <form
       data-signals={cssSignals}
-      data-on:submit__prevent="@post('/dash/settings/custom-css')"
+      data-on:submit__prevent="@post('/settings/custom-css')"
       data-indicator="_cssLoading"
       class="max-w-3xl"
     >

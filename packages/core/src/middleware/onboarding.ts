@@ -51,7 +51,7 @@ function shouldRedirect(path: string): boolean {
     path === "/" ||
     path === "/signin" ||
     path === "/reset" ||
-    path.startsWith("/dash")
+    path.startsWith("/settings")
   );
 }
 

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPostService } from "../post.js";
-import { createPathRegistryService } from "../path-registry.js";
 import type { Database } from "../../db/index.js";
 
 describe("PostService - Timeline features", () => {
@@ -11,7 +10,7 @@ describe("PostService - Timeline features", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    postService = createPostService(db, createPathRegistryService(db));
+    postService = createPostService(db, { slugIdLength: 5 });
   });
 
   describe("format filter", () => {

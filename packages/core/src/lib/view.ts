@@ -129,7 +129,7 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
  */
 export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
   const id = toUid(post.id);
-  const permalink = post.path ? `/${post.path}` : `/p/${id}`;
+  const permalink = `/${post.slug}`;
 
   // Pre-compute excerpt from raw body
   let excerpt: string | undefined;
@@ -187,7 +187,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
   return {
     id,
     permalink,
-    path: post.path ?? undefined,
+    slug: post.slug,
     title: post.title ?? undefined,
     bodyHtml: bodyHtmlWithAnchor ?? undefined,
     excerpt,
@@ -248,7 +248,7 @@ export function toPostViewsFromPosts(
  *
  * @param item - Raw nav item from database
  * @param currentPath - Current URL path for active state
- * @param isAuthenticated - Whether the user is logged in (affects system dashboard item)
+ * @param isAuthenticated - Whether the user is logged in (affects system settings item)
  */
 export function toNavItemView(
   item: NavItem,
@@ -258,9 +258,13 @@ export function toNavItemView(
   let url = item.url;
   let label = item.label;
 
-  // System dashboard item: resolve URL and label based on auth
-  if (item.type === "system" && item.url === "/dash") {
-    url = isAuthenticated ? "/dash" : "/signin";
+  // System settings item: resolve URL and label based on auth
+  // Also handles legacy "/dash" URLs from existing DB data
+  if (
+    item.type === "system" &&
+    (item.url === "/settings" || item.url === "/dash")
+  ) {
+    url = isAuthenticated ? "/settings" : "/signin";
     if (!isAuthenticated) {
       label = "Sign in";
     }

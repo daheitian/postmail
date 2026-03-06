@@ -1,7 +1,7 @@
 /**
  * List Item Row Component
  *
- * Provides consistent layout for list items in dashboard CRUD pages.
+ * Provides consistent layout for list items in admin CRUD pages.
  * Handles responsive spacing, overflow, and action button placement.
  */
 

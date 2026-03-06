@@ -87,7 +87,7 @@ export class JantSettingsAvatar extends LitElement {
       new CustomEvent("jant:settings-save", {
         bubbles: true,
         detail: {
-          endpoint: "/dash/settings/avatar/display",
+          endpoint: "/settings/avatar/display",
           data: { showHeaderAvatar: this._showInHeader ? "true" : "" },
           section: "avatar-display",
         },
@@ -101,7 +101,7 @@ export class JantSettingsAvatar extends LitElement {
     this.dispatchEvent(
       new CustomEvent("jant:avatar-remove", {
         bubbles: true,
-        detail: { endpoint: "/dash/settings/avatar/remove" },
+        detail: { endpoint: "/settings/avatar/remove" },
       }),
     );
   }
@@ -146,7 +146,7 @@ export class JantSettingsAvatar extends LitElement {
             ${this._renderPreview()}
             <div class="flex flex-col gap-2">
               <form
-                action="/dash/settings/avatar"
+                action="/settings/avatar"
                 method="post"
                 enctype="multipart/form-data"
                 class="inline"

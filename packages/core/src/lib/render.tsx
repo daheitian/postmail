@@ -8,7 +8,7 @@
 import type { Context } from "hono";
 import type { Child } from "hono/jsx";
 import type { SiteLayoutProps } from "../types.js";
-import { BaseLayout } from "../ui/layouts/BaseLayout.js";
+import { BaseLayout, type ToastProps } from "../ui/layouts/BaseLayout.js";
 import { SiteLayout } from "../ui/layouts/SiteLayout.js";
 import type { NavigationData } from "./navigation.js";
 
@@ -23,6 +23,8 @@ export interface RenderPublicPageOptions {
   content: Child;
   /** Optional sidebar content for sidebar layout */
   sidebar?: Child;
+  /** Optional toast notification */
+  toast?: ToastProps;
 }
 
 /**
@@ -43,7 +45,7 @@ export interface RenderPublicPageOptions {
  * ```
  */
 export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
-  const { title, description, navData, content, sidebar } = options;
+  const { title, description, navData, content, sidebar, toast } = options;
 
   // Use siteDescription as meta description fallback when not explicitly provided
   const metaDescription = description || navData.siteDescription || undefined;
@@ -78,6 +80,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
       faviconVersion={faviconVersion}
       noindex={noindex}
       isAuthenticated={navData.isAuthenticated}
+      toast={toast}
     >
       <SiteLayout {...layoutProps}>{content}</SiteLayout>
     </BaseLayout>,

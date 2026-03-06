@@ -18,6 +18,9 @@ const labels: PostFormLabels = {
   quoteOption: "Quote",
   titleLabel: "Title",
   titlePlaceholder: "Title...",
+  slugLabel: "Slug",
+  slugPlaceholder: "auto-generated",
+  slugHelp: "Auto-generated from title",
   bodyLabel: "Body",
   bodyPlaceholder: "Body...",
   urlLabel: "URL",
@@ -50,6 +53,7 @@ const labels: PostFormLabels = {
 const initial: PostFormInitial = {
   format: "note",
   title: "",
+  slug: "",
   body: "",
   url: "",
   quoteText: "",
@@ -78,7 +82,7 @@ async function createElement(
   el.initial = { ...initial };
   el.collections = [...collections];
   el.media = [...media];
-  el.action = "/dash/posts";
+  el.action = "/compose";
   Object.assign(el, overrides);
   document.body.appendChild(el);
   await el.updateComplete;
@@ -163,7 +167,7 @@ describe("JantPostForm", () => {
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as PostSubmitDetail;
-    expect(d.endpoint).toBe("/dash/posts");
+    expect(d.endpoint).toBe("/compose");
     expect(d.data.title).toBe("Sample Post");
     expect(d.data.body).toContain("Hello world");
     expect(d.data.visibility).toBe("featured");

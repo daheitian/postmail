@@ -200,7 +200,7 @@ setupRoutes.post("/setup", async (c) => {
       }
     }
 
-    // Seed default navigation items (order: Collections, Archive, RSS, Dashboard)
+    // Seed default navigation items (order: Collections, Archive, RSS, Settings)
     await c.var.services.navItems.create({
       type: "link",
       label: "Collections",
@@ -221,8 +221,8 @@ setupRoutes.post("/setup", async (c) => {
 
     await c.var.services.navItems.create({
       type: "system",
-      label: "Dashboard",
-      url: "/dash",
+      label: "Settings",
+      url: "/settings",
     });
 
     return dsRedirect("/signin?setup");

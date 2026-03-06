@@ -127,7 +127,7 @@ svg[stroke-width].icon-fine {
   }
 }
 
-/* Dashboard header */
+/* Admin header */
 @layer components {
   .dash-header {
     padding: 20px 0 0;
@@ -341,7 +341,7 @@ svg[stroke-width].icon-fine {
   }
 }
 
-/* Dashboard scoped font rules */
+/* Admin scoped font rules */
 @layer components {
   .dash-heading {
     font-family: var(--font-serif);

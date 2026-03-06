@@ -219,6 +219,34 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     "CREATE UNIQUE INDEX IF NOT EXISTS idx_post_collections_pk ON post_collections (post_id, collection_id)",
   );
 
+  // Apply 0021: drop pages table references
+  applyMigration(sqlite, "0021_real_baron_zemo.sql");
+
+  // Apply 0022: slug-based routing (drop path_registry/redirects, add custom_urls, rename path→slug)
+  const m22 = readFileSync(
+    resolve(MIGRATIONS_DIR, "0022_large_luminals.sql"),
+    "utf-8",
+  );
+  for (const stmt of m22.split("--> statement-breakpoint")) {
+    const trimmed = stmt.trim();
+    if (!trimmed) continue;
+    // Skip FTS trigger statements if FTS not requested
+    const isFts = trimmed.includes("posts_fts") || trimmed.includes("TRIGGER");
+    if (!options?.fts && isFts) continue;
+    try {
+      sqlite.exec(trimmed);
+    } catch {
+      // Ignore DROP INDEX/TABLE/TRIGGER failures
+      if (
+        !trimmed.startsWith("DROP INDEX") &&
+        !trimmed.startsWith("DROP TABLE") &&
+        !trimmed.startsWith("DROP TRIGGER")
+      ) {
+        throw new Error(`Migration 0022 failed: ${trimmed.slice(0, 100)}`);
+      }
+    }
+  }
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

@@ -31,8 +31,8 @@ function createApp(complete: boolean) {
 
   // Register routes for testing
   app.get("/", (c) => c.text("Home"));
-  app.get("/dash", (c) => c.text("Dashboard"));
-  app.get("/dash/posts", (c) => c.text("Posts"));
+  app.get("/settings", (c) => c.text("Settings"));
+  app.get("/settings/general", (c) => c.text("General"));
   app.get("/archive", (c) => c.text("Archive"));
   app.get("/p/abc", (c) => c.text("Post"));
   app.get("/setup", (c) => c.text("Setup"));
@@ -63,16 +63,18 @@ describe("requireOnboarding", () => {
       expect(res.headers.get("Location")).toBe("/setup");
     });
 
-    it("redirects /dash to /setup when onboarding not complete", async () => {
+    it("redirects /settings to /setup when onboarding not complete", async () => {
       const { app } = createApp(false);
-      const res = await app.request("/dash", { redirect: "manual" });
+      const res = await app.request("/settings", { redirect: "manual" });
       expect(res.status).toBe(302);
       expect(res.headers.get("Location")).toBe("/setup");
     });
 
-    it("redirects /dash/* to /setup when onboarding not complete", async () => {
+    it("redirects /settings/* to /setup when onboarding not complete", async () => {
       const { app } = createApp(false);
-      const res = await app.request("/dash/posts", { redirect: "manual" });
+      const res = await app.request("/settings/general", {
+        redirect: "manual",
+      });
       expect(res.status).toBe(302);
       expect(res.headers.get("Location")).toBe("/setup");
     });
@@ -105,7 +107,7 @@ describe("requireOnboarding", () => {
     await app.request("/");
     expect(getCallCount()).toBe(1);
 
-    await app.request("/dash");
+    await app.request("/settings");
     expect(getCallCount()).toBe(1); // still 1 — cached
   });
 
@@ -115,7 +117,7 @@ describe("requireOnboarding", () => {
     await app.request("/", { redirect: "manual" });
     expect(getCallCount()).toBe(1);
 
-    await app.request("/dash", { redirect: "manual" });
+    await app.request("/settings", { redirect: "manual" });
     expect(getCallCount()).toBe(2); // queried again
   });
 

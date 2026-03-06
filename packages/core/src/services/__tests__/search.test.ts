@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createSearchService } from "../search.js";
 import { createPostService } from "../post.js";
-import { createPathRegistryService } from "../path-registry.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 
@@ -47,7 +46,7 @@ describe("SearchService", () => {
     const testDb = createTestDatabase({ fts: true });
     db = testDb.db as unknown as Database;
     sqlite = testDb.sqlite;
-    postService = createPostService(db, createPathRegistryService(db));
+    postService = createPostService(db, { slugIdLength: 5 });
   });
 
   it("returns empty results for empty query", async () => {

@@ -51,7 +51,7 @@ export function createI18n(locale: Locale): I18n {
  * import { getI18n } from "../i18n/index.js";
  *
  * const i18n = getI18n(c);
- * const title = i18n._(msg({ message: "Dashboard", comment: "@context: Page title" }));
+ * const title = i18n._(msg({ message: "Settings", comment: "@context: Page title" }));
  */
 export function getI18n(c: { get(key: "i18n"): I18n }): I18n {
   return c.get("i18n");

@@ -1,7 +1,7 @@
 /**
  * CRUD Page Header Component
  *
- * Provides consistent header layout for dashboard CRUD list pages
+ * Provides consistent header layout for admin CRUD list pages
  * with title and primary action button
  */
 

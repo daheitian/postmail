@@ -13,10 +13,10 @@ export interface PostView {
   // Identity
   /** Base58-encoded UUIDv7 identifier */
   id: string;
-  /** Pre-computed permalink: "/{path}" if path set, otherwise "/p/{id}" */
+  /** Pre-computed permalink: "/{slug}" */
   permalink: string;
-  /** Custom URL path, if set. Supports multi-level paths (e.g. "2024/my-post") */
-  path?: string;
+  /** Post slug */
+  slug: string;
 
   // Content
   title?: string;

@@ -33,8 +33,8 @@ async function runSetupSeed(services: {
   });
   await services.navItems.create({
     type: "system",
-    label: "Dashboard",
-    url: "/dash",
+    label: "Settings",
+    url: "/settings",
   });
 }
 
@@ -53,7 +53,7 @@ describe("Setup seed logic", () => {
     };
   });
 
-  it("creates four nav items: Collections, Archive, RSS, Dashboard", async () => {
+  it("creates four nav items: Collections, Archive, RSS, Settings", async () => {
     await runSetupSeed(services);
 
     const navItemsList = await services.navItems.list();
@@ -63,7 +63,7 @@ describe("Setup seed logic", () => {
     expect(labels).toContain("Collections");
     expect(labels).toContain("Archive");
     expect(labels).toContain("RSS");
-    expect(labels).toContain("Dashboard");
+    expect(labels).toContain("Settings");
   });
 
   it("creates link and system type nav items", async () => {

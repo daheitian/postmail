@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createCollectionService } from "../collection.js";
 import { createPostService } from "../post.js";
-import { createPathRegistryService } from "../path-registry.js";
 import type { Database } from "../../db/index.js";
 
 describe("CollectionService", () => {
@@ -14,7 +13,7 @@ describe("CollectionService", () => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
     collectionService = createCollectionService(db);
-    postService = createPostService(db, createPathRegistryService(db));
+    postService = createPostService(db, { slugIdLength: 5 });
   });
 
   describe("create", () => {

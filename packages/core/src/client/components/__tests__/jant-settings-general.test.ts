@@ -188,7 +188,7 @@ describe("JantSettingsGeneral", () => {
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
-    expect(d.endpoint).toBe("/dash/settings/general");
+    expect(d.endpoint).toBe("/settings/general");
     expect(d.section).toBe("general");
     expect(d.data.siteName).toBe("New Name");
   });
@@ -255,7 +255,7 @@ describe("JantSettingsGeneral", () => {
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
-    expect(d.endpoint).toBe("/dash/settings/general");
+    expect(d.endpoint).toBe("/settings/general");
     expect(d.section).toBe("general");
     expect(d.data.siteFooter).toBe("New footer");
   });
@@ -286,7 +286,7 @@ describe("JantSettingsGeneral", () => {
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
-    expect(d.endpoint).toBe("/dash/settings/general/seo");
+    expect(d.endpoint).toBe("/settings/general/seo");
     expect(d.section).toBe("seo");
   });
 

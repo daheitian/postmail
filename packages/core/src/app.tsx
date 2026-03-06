@@ -16,7 +16,6 @@ import { resetRoutes } from "./routes/auth/reset.js";
 
 // Routes - Pages
 import { homeRoutes } from "./routes/pages/home.js";
-import { postRoutes } from "./routes/pages/post.js";
 import { pageRoutes } from "./routes/pages/page.js";
 import { collectionRoutes } from "./routes/pages/collection.js";
 import { archiveRoutes } from "./routes/pages/archive.js";
@@ -25,12 +24,9 @@ import { featuredRoutes } from "./routes/pages/featured.js";
 import { latestRoutes } from "./routes/pages/latest.js";
 import { collectionsPageRoutes } from "./routes/pages/collections.js";
 
-// Routes - Dashboard
-import { dashIndexRoutes } from "./routes/dash/index.js";
-import { postsRoutes as dashPostsRoutes } from "./routes/dash/posts.js";
-import { mediaRoutes as dashMediaRoutes } from "./routes/dash/media.js";
-import { settingsRoutes as dashSettingsRoutes } from "./routes/dash/settings.js";
-import { redirectsRoutes as dashRedirectsRoutes } from "./routes/dash/redirects.js";
+// Routes - Settings (admin)
+import { settingsRoutes } from "./routes/dash/settings.js";
+import { customUrlsRoutes } from "./routes/dash/custom-urls.js";
 
 // Routes - API
 import { postsApiRoutes } from "./routes/api/posts.js";
@@ -106,7 +102,11 @@ export function createApp(): App {
     // Note: Drizzle ORM doesn't officially support D1DatabaseSession yet (issue #2226)
     // but it works at runtime. We use type assertion as a temporary workaround.
     const db = createDatabase(session as unknown as D1Database);
-    c.set("services", createServices(db, session as unknown as D1Database));
+    const slugIdLength = parseInt(c.env.SLUG_ID_LENGTH ?? "5", 10) || 5;
+    c.set(
+      "services",
+      createServices(db, session as unknown as D1Database, { slugIdLength }),
+    );
     c.set("storage", createStorageDriver(c.env));
 
     const baseURL = c.env.SITE_URL || new URL(c.req.url).origin;
@@ -231,7 +231,7 @@ export function createApp(): App {
     await next();
   });
 
-  // Redirect middleware
+  // Redirect middleware — only handles redirect-type custom URLs
   app.use("*", async (c, next) => {
     const path = new URL(c.req.url).pathname;
     // Skip redirect check for API routes and static assets
@@ -239,9 +239,9 @@ export function createApp(): App {
       return next();
     }
 
-    const redirect = await c.var.services.redirects.getByPath(path);
-    if (redirect) {
-      return c.redirect(redirect.toPath, redirect.type);
+    const customUrl = await c.var.services.customUrls.getByPath(path.slice(1));
+    if (customUrl?.targetType === "redirect" && customUrl.toPath) {
+      return c.redirect(customUrl.toPath, customUrl.redirectType ?? 301);
     }
 
     await next();
@@ -264,13 +264,21 @@ export function createApp(): App {
   app.route("/", signinRoutes);
   app.route("/", resetRoutes);
 
-  // Dashboard routes (protected)
-  app.use("/dash/*", requireAuth());
-  app.route("/dash", dashIndexRoutes);
-  app.route("/dash/posts", dashPostsRoutes);
-  app.route("/dash/media", dashMediaRoutes);
-  app.route("/dash/settings", dashSettingsRoutes);
-  app.route("/dash/settings/redirects", dashRedirectsRoutes);
+  // Settings routes (protected)
+  app.use("/settings/*", requireAuth());
+  app.use("/settings", requireAuth());
+  app.route("/settings/custom-urls", customUrlsRoutes);
+  app.route("/settings", settingsRoutes);
+
+  // Backward compat: redirect old /dash/* URLs to new paths
+  app.get("/dash/settings/*", (c) => {
+    const newPath = c.req.path.replace("/dash/settings", "/settings");
+    return c.redirect(newPath, 301);
+  });
+  app.get("/dash/settings", (c) => c.redirect("/settings", 301));
+  app.get("/dash/*", (c) => c.redirect("/settings", 301));
+  app.get("/dash", (c) => c.redirect("/settings", 301));
+
   // Protected API routes (multipart must be registered before base upload)
   app.route("/api/upload/multipart", multipartUploadApiRoutes);
   app.route("/api/upload", uploadApiRoutes);
@@ -290,7 +298,6 @@ export function createApp(): App {
   app.route("/latest", latestRoutes);
   app.route("/c", collectionsPageRoutes);
   app.route("/c", collectionRoutes);
-  app.route("/p", postRoutes);
   app.route("/", homeRoutes);
 
   // Custom page catch-all (must be last)

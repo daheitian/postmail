@@ -18,7 +18,7 @@ import { getI18n } from "../i18n/index.js";
 import { toPostView, createMediaContext } from "../lib/view.js";
 import { buildMediaMap } from "../lib/media-helpers.js";
 import { TimelineItemFromPost } from "../ui/feed/TimelineItem.js";
-import { toUid, fromUid } from "../lib/uid.js";
+import { fromUid } from "../lib/uid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -188,7 +188,7 @@ composeRoutes.post("/", async (c) => {
     }
 
     const cardHtml = await buildTimelineCard(c, post, data.mediaIds);
-    const permalink = post.path ? `/${post.path}` : `/p/${toUid(post.id)}`;
+    const permalink = `/${post.slug}`;
     return c.json({ status: "published" as const, cardHtml, permalink });
   }
 

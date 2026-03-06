@@ -88,7 +88,7 @@ export function ColorThemeContent({
   return (
     <div
       data-signals={themeSignals}
-      data-on:change="@post('/dash/settings/color-theme')"
+      data-on:change="@post('/settings/color-theme')"
       class="max-w-3xl"
     >
       <fieldset>
@@ -101,7 +101,7 @@ export function ColorThemeContent({
         <p class="text-sm text-muted-foreground mb-4">
           {t({
             message:
-              "This will theme both your site and your dashboard. All color themes support dark mode.",
+              "Applies to your entire site, including admin pages. All themes support dark mode.",
             comment: "@context: Appearance settings description",
           })}
         </p>

@@ -8,7 +8,6 @@ describe("RESERVED_PATHS", () => {
     expect(RESERVED_PATHS).toContain("feed");
     expect(RESERVED_PATHS).toContain("signin");
     expect(RESERVED_PATHS).toContain("search");
-    expect(RESERVED_PATHS).toContain("p");
     expect(RESERVED_PATHS).toContain("c");
   });
 });

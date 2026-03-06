@@ -40,7 +40,7 @@ Jant uses CSS variables for theming, making it easy to customize colors while ma
 
 ## Built-in Themes
 
-Select a theme in `/dash/settings`:
+Select a theme in `/settings`:
 
 - **default** - Clean and neutral
 - **ocean** - Cool blues
@@ -95,7 +95,7 @@ Font families and weights are controlled through CSS custom properties defined i
 | `--font-serif`   | System serif stack + CJK      | Serif accents (e.g. dash header) |
 | `--font-mono`    | System monospace stack        | Code blocks, pre-formatted text  |
 
-Font themes (Dashboard > Settings > Typography) override `--font-heading` and `--font-body` with curated pairings. `--font-serif` and `--font-mono` remain independent.
+Font themes (Settings > Typography) override `--font-heading` and `--font-body` with curated pairings. `--font-serif` and `--font-mono` remain independent.
 
 ### Font Weights
 
@@ -154,7 +154,7 @@ Data attributes on HTML elements are a **stable, versioned public API** for CSS 
 | `data-post-media`    | media div      | Target post media             |
 | `data-feed`          | feed container | Target feed                   |
 
-Users can inject arbitrary CSS via Dashboard > Settings > Appearance. Stored in database, injected in `<head>` with highest priority.
+Users can inject arbitrary CSS via Settings > Appearance. Stored in database, injected in `<head>` with highest priority.
 
 ## CSS Priority (lowest to highest)
 
@@ -163,7 +163,7 @@ Users can inject arbitrary CSS via Dashboard > Settings > Appearance. Stored in 
 3. Component styles (`styles/ui.css`)
 4. Selected color theme (`:root:root` specificity)
 5. `cssVariables` from `createApp()` config
-6. Custom CSS injection from dashboard
+6. Custom CSS injection from settings
 
 ## Component Styling
 

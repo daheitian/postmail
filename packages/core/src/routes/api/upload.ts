@@ -69,13 +69,9 @@ function renderMediaCard(
             loading="lazy"
           />
         </button>
-        <a
-          href="/dash/media/${media.id}"
-          class="block mt-2 text-xs truncate hover:underline"
-          title="${media.originalName}"
-        >
+        <span class="block mt-2 text-xs truncate" title="${media.originalName}">
           ${media.originalName}
-        </a>
+        </span>
         <div class="text-xs text-muted-foreground">${sizeStr}</div>
       </div>
     `.toString();
@@ -83,23 +79,18 @@ function renderMediaCard(
 
   return html`
     <div class="group relative" data-media-id="${media.id}">
-      <a
-        href="/dash/media/${media.id}"
-        class="block aspect-square bg-muted rounded-lg overflow-hidden border hover:border-primary"
+      <div
+        class="block aspect-square bg-muted rounded-lg overflow-hidden border"
       >
         <div
           class="w-full h-full flex items-center justify-center text-muted-foreground"
         >
           <span class="text-xs">${media.mimeType}</span>
         </div>
-      </a>
-      <a
-        href="/dash/media/${media.id}"
-        class="block mt-2 text-xs truncate hover:underline"
-        title="${media.originalName}"
-      >
+      </div>
+      <span class="block mt-2 text-xs truncate" title="${media.originalName}">
         ${media.originalName}
-      </a>
+      </span>
       <div class="text-xs text-muted-foreground">${sizeStr}</div>
     </div>
   `.toString();

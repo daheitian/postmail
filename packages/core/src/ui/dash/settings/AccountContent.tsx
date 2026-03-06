@@ -11,7 +11,7 @@ export function AccountContent() {
     <div class="flex flex-col max-w-lg">
       <form
         data-signals="{currentPassword: '', newPassword: '', confirmPassword: ''}"
-        data-on:submit__prevent="@post('/dash/settings/password')"
+        data-on:submit__prevent="@post('/settings/password')"
         data-indicator="_passwordLoading"
       >
         <h2 class="text-lg font-semibold mb-4">

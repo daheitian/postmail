@@ -6,7 +6,6 @@ import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createPostService } from "../../../services/post.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createMediaService } from "../../../services/media.js";
-import { createPathRegistryService } from "../../../services/path-registry.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
 import { rssRoutes } from "../rss.js";
 
@@ -16,10 +15,7 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
   const { db } = createTestDatabase();
 
   const services = {
-    posts: createPostService(
-      db as never,
-      createPathRegistryService(db as never),
-    ),
+    posts: createPostService(db as never, { slugIdLength: 5 }),
     settings: createSettingsService(db as never),
     media: createMediaService(db as never),
   };

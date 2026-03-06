@@ -24,7 +24,7 @@
  *
  *   return (
  *     <div>
- *       <h1>{t({ message: "Dashboard", comment: "@context: Page title" })}</h1>
+ *       <h1>{t({ message: "Settings", comment: "@context: Page title" })}</h1>
  *       <Trans comment="@context: Help text">
  *         Read the <a href="/docs">documentation</a>
  *       </Trans>

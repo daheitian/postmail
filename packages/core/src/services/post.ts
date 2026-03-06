@@ -10,10 +10,11 @@ import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
-import { posts, postCollections } from "../db/schema.js";
+import { posts, postCollections, customUrls } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
+import { generatePostSlug } from "../lib/slug.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import type {
@@ -24,7 +25,6 @@ import type {
   CreatePost,
   UpdatePost,
 } from "../types.js";
-import type { PathRegistryService } from "./path-registry.js";
 import { ConflictError } from "../lib/errors.js";
 
 /** Dependencies for operations that coordinate with other services */
@@ -58,7 +58,7 @@ export interface SummaryConfig {
 
 export interface PostService {
   getById(id: string): Promise<Post | null>;
-  getByPath(path: string): Promise<Post | null>;
+  getBySlug(slug: string): Promise<Post | null>;
   list(filters?: PostFilters): Promise<Post[]>;
   /** Count posts matching filters (ignores cursor, offset, limit) */
   count(filters?: PostFilters): Promise<number>;
@@ -112,8 +112,25 @@ function isUniqueConstraintError(err: unknown): boolean {
 
 export function createPostService(
   db: Database,
-  pathRegistry: PathRegistryService,
+  config: { slugIdLength: number },
 ): PostService {
+  /** Check if a slug is available (not used by posts or custom_urls) */
+  async function isSlugAvailable(slug: string): Promise<boolean> {
+    const existingPost = await db
+      .select()
+      .from(posts)
+      .where(and(eq(posts.slug, slug), isNull(posts.deletedAt)))
+      .limit(1);
+    if (existingPost.length > 0) return false;
+
+    const existingCustomUrl = await db
+      .select()
+      .from(customUrls)
+      .where(eq(customUrls.path, slug))
+      .limit(1);
+    return existingCustomUrl.length === 0;
+  }
+
   /** Build WHERE conditions from filters (shared by list and count) */
   function buildFilterConditions(filters: PostFilters) {
     const conditions = [];
@@ -159,7 +176,7 @@ export function createPostService(
       status: row.status as Status,
       visibility: row.visibility as Visibility,
       pinned: row.pinned,
-      path: row.path,
+      slug: row.slug,
       title: row.title,
       url: row.url,
       body: row.body,
@@ -187,11 +204,11 @@ export function createPostService(
       return result[0] ? toPost(result[0]) : null;
     },
 
-    async getByPath(path) {
+    async getBySlug(slug) {
       const result = await db
         .select()
         .from(posts)
-        .where(and(eq(posts.path, path), isNull(posts.deletedAt)))
+        .where(and(eq(posts.slug, slug), isNull(posts.deletedAt)))
         .limit(1);
       return result[0] ? toPost(result[0]) : null;
     },
@@ -268,10 +285,13 @@ export function createPostService(
         }
       }
 
-      // Validate path availability before DB insert
-      if (data.path) {
-        await pathRegistry.claim(data.path, "post", id);
-      }
+      // Generate slug
+      const slug = await generatePostSlug({
+        slug: data.slug,
+        title: data.title,
+        idLength: config.slugIdLength,
+        isAvailable: isSlugAvailable,
+      });
 
       let result;
       try {
@@ -283,7 +303,7 @@ export function createPostService(
             status,
             visibility,
             pinned: data.pinned ? 1 : 0,
-            path: data.path ?? null,
+            slug,
             title: data.title ?? null,
             url: data.url ?? null,
             body: data.body ?? null,
@@ -300,9 +320,8 @@ export function createPostService(
           })
           .returning();
       } catch (err) {
-        if (data.path) await pathRegistry.release(data.path);
         if (isUniqueConstraintError(err)) {
-          throw new ConflictError(`Path "${data.path}" is already in use`);
+          throw new ConflictError(`Slug "${slug}" is already in use`);
         }
         throw err;
       }
@@ -327,27 +346,22 @@ export function createPostService(
       const existing = await this.getById(id);
       if (!existing) return null;
 
-      // Handle path changes in the registry before modifying the post
-      const pathChanging =
-        data.path !== undefined && data.path !== existing.path;
-      if (pathChanging) {
-        // Claim new path (if non-null) before releasing old
-        if (data.path) {
-          await pathRegistry.claim(data.path, "post", id);
-        }
-        // Release old path (if it existed)
-        if (existing.path) {
-          await pathRegistry.release(existing.path);
-        }
-      }
-
       const timestamp = now();
       const updates: Partial<typeof posts.$inferInsert> = {
         updatedAt: timestamp,
       };
 
+      // Handle slug change
+      if (data.slug !== undefined && data.slug !== existing.slug) {
+        // Validate new slug availability
+        const available = await isSlugAvailable(data.slug);
+        if (!available) {
+          throw new ConflictError(`Slug "${data.slug}" is already in use`);
+        }
+        updates.slug = data.slug;
+      }
+
       if (data.format !== undefined) updates.format = data.format;
-      if (data.path !== undefined) updates.path = data.path;
       if (data.title !== undefined) updates.title = data.title;
       if (data.url !== undefined) updates.url = data.url;
       if (data.quoteText !== undefined) updates.quoteText = data.quoteText;
@@ -479,19 +493,6 @@ export function createPostService(
             deps.storage,
           );
         }
-      }
-
-      // Release paths from registry
-      if (!existing.threadId) {
-        // Thread root: release paths for all posts in thread
-        const thread = await this.getThread(id);
-        for (const post of thread) {
-          if (post.path) {
-            await pathRegistry.release(post.path);
-          }
-        }
-      } else if (existing.path) {
-        await pathRegistry.release(existing.path);
       }
 
       const timestamp = now();

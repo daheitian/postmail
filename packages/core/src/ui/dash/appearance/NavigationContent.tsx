@@ -15,7 +15,7 @@ import type {
 
 const SYSTEM_DESCRIPTIONS: Record<SystemNavKey, string> = {
   rss: "Add a link to your RSS feed",
-  dashboard: "Shows 'Dashboard' when logged in, 'Sign in' when logged out",
+  settings: "Shows 'Settings' when logged in, 'Sign in' when logged out",
   collections: "Link to your collections page",
   archive: "Link to the post archive",
 };

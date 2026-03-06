@@ -2,7 +2,7 @@
  * Icon Catalog
  *
  * Curated subset of Lucide icons organized by category.
- * Used by the dashboard icon picker to keep the response payload small.
+ * Used by the settings icon picker to keep the response payload small.
  */
 
 /** Curated icon names (kebab-case) organized by category */

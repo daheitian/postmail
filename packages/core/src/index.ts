@@ -21,7 +21,7 @@ export type {
   PostWithMedia,
   Collection,
   NavItem,
-  Redirect,
+  CustomUrl,
   Setting,
   CreatePost,
   UpdatePost,

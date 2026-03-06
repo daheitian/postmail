@@ -179,7 +179,7 @@ describe("JantSettingsAvatar", () => {
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
-    expect(d.endpoint).toBe("/dash/settings/avatar/display");
+    expect(d.endpoint).toBe("/settings/avatar/display");
     expect(d.section).toBe("avatar-display");
     expect(d.data.showHeaderAvatar).toBe("true");
   });
@@ -201,7 +201,7 @@ describe("JantSettingsAvatar", () => {
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as AvatarRemoveDetail;
-    expect(d.endpoint).toBe("/dash/settings/avatar/remove");
+    expect(d.endpoint).toBe("/settings/avatar/remove");
   });
 
   it("saved() resets dirty state", async () => {

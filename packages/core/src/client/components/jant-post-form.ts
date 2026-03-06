@@ -1,5 +1,5 @@
 /**
- * Dashboard Post Form
+ * Post Form
  *
  * Light DOM Lit component that manages post create/edit form state.
  * Dispatches `jant:post-submit` for the bridge to handle networking.
@@ -23,6 +23,7 @@ import { createTiptapEditor } from "../tiptap/create-editor.js";
 const DEFAULT_INITIAL: PostFormInitial = {
   format: "note",
   title: "",
+  slug: "",
   body: "",
   url: "",
   quoteText: "",
@@ -41,6 +42,9 @@ const EMPTY_LABELS: PostFormLabels = {
   quoteOption: "",
   titleLabel: "",
   titlePlaceholder: "",
+  slugLabel: "",
+  slugPlaceholder: "",
+  slugHelp: "",
   bodyLabel: "",
   bodyPlaceholder: "",
   urlLabel: "",
@@ -93,9 +97,12 @@ export class JantPostForm extends LitElement {
     action: { type: String },
     cancelHref: { type: String, attribute: "cancel-href" },
     mediaPickerUrl: { type: String, attribute: "media-picker-url" },
+    siteUrl: { type: String, attribute: "site-url" },
     isEdit: { type: Boolean, attribute: "is-edit" },
     _format: { state: true },
     _title: { state: true },
+    _slug: { state: true },
+    _slugManuallyEdited: { state: true },
     _body: { state: true },
     _url: { state: true },
     _quoteText: { state: true },
@@ -115,9 +122,12 @@ export class JantPostForm extends LitElement {
   declare action: string;
   declare cancelHref: string;
   declare mediaPickerUrl: string;
+  declare siteUrl: string;
   declare isEdit: boolean;
   declare _format: PostFormat;
   declare _title: string;
+  declare _slug: string;
+  declare _slugManuallyEdited: boolean;
   declare _body: string;
   declare _url: string;
   declare _quoteText: string;
@@ -152,11 +162,14 @@ export class JantPostForm extends LitElement {
     this.collections = [];
     this.media = [];
     this.action = "";
-    this.cancelHref = "/dash/posts";
-    this.mediaPickerUrl = "/dash/media/picker";
+    this.cancelHref = "/";
+    this.mediaPickerUrl = "";
+    this.siteUrl = "";
     this.isEdit = false;
     this._format = "note";
     this._title = "";
+    this._slug = "";
+    this._slugManuallyEdited = false;
     this._body = "";
     this._url = "";
     this._quoteText = "";
@@ -228,6 +241,8 @@ export class JantPostForm extends LitElement {
     const init = this.initial ?? DEFAULT_INITIAL;
     this._format = init.format ?? "note";
     this._title = init.title ?? "";
+    this._slug = init.slug ?? "";
+    this._slugManuallyEdited = Boolean(init.slug);
     this._body = init.body ?? "";
     this._url = init.url ?? "";
     this._quoteText = init.quoteText ?? "";
@@ -271,6 +286,7 @@ export class JantPostForm extends LitElement {
   static #CONTENT_PROPS = new Set([
     "_format",
     "_title",
+    "_slug",
     "_body",
     "_url",
     "_quoteText",
@@ -303,9 +319,30 @@ export class JantPostForm extends LitElement {
     this.#dirty = false;
   }
 
-  handleInput(field: "_title" | "_body" | "_url" | "_quoteText", e: Event) {
+  handleInput(
+    field: "_title" | "_slug" | "_body" | "_url" | "_quoteText",
+    e: Event,
+  ) {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
     (this as unknown as Record<string, string>)[field] = target.value;
+  }
+
+  handleTitleInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this._title = target.value;
+    // Auto-generate slug from title if user hasn't manually edited it
+    if (!this._slugManuallyEdited) {
+      this._slug = target.value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    }
+  }
+
+  handleSlugInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this._slug = target.value;
+    this._slugManuallyEdited = true;
   }
 
   toggleCollection(id: number) {
@@ -351,6 +388,7 @@ export class JantPostForm extends LitElement {
       data: {
         format: this._format,
         title: this._title.trim(),
+        slug: this._slug.trim() || undefined,
         body: bodyValue,
         status: this._status,
         visibility: this._visibility,

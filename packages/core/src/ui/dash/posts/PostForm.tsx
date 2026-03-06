@@ -18,6 +18,7 @@ import { renderCollectionIcon } from "../../../lib/icons.js";
 export interface PostFormProps {
   post?: Post;
   action: string;
+  siteUrl?: string;
   mediaAttachments?: Media[];
   r2PublicUrl?: string;
   imageTransformUrl?: string;
@@ -30,6 +31,7 @@ export interface PostFormProps {
 export const PostForm: FC<PostFormProps> = ({
   post,
   action,
+  siteUrl = "",
   mediaAttachments = [],
   r2PublicUrl,
   imageTransformUrl,
@@ -65,6 +67,18 @@ export const PostForm: FC<PostFormProps> = ({
     titlePlaceholder: t({
       message: "Post title...",
       comment: "@context: Post title placeholder",
+    }),
+    slugLabel: t({
+      message: "Slug (optional)",
+      comment: "@context: Post form field - URL slug",
+    }),
+    slugPlaceholder: t({
+      message: "auto-generated-from-title",
+      comment: "@context: Post slug placeholder",
+    }),
+    slugHelp: t({
+      message: "Auto-generated from title if left empty",
+      comment: "@context: Post slug help text",
     }),
     bodyLabel: t({
       message: "Content",
@@ -187,6 +201,7 @@ export const PostForm: FC<PostFormProps> = ({
   const initial = JSON.stringify({
     format: post?.format ?? "note",
     title: post?.title ?? "",
+    slug: post?.slug ?? "",
     body: post?.body ?? "",
     url: post?.url ?? "",
     quoteText: post?.quoteText ?? "",
@@ -240,6 +255,7 @@ export const PostForm: FC<PostFormProps> = ({
       media={media}
       collections={collectionOptions}
       media-picker-url="/dash/media/picker"
+      site-url={siteUrl}
       is-edit={isEdit ? "true" : undefined}
     >
       <div class="flex flex-col gap-4 max-w-2xl">

@@ -42,6 +42,8 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
 }) => {
   const { t } = useLingui();
   const maxVisible = headerNavMaxVisible ?? 3;
+  const overflowLinks = links.slice(maxVisible);
+  const hasActiveOverflow = overflowLinks.some((l) => l.isActive);
 
   const latestHref = homeDefaultView === "featured" ? "/latest" : "/";
   const featuredHref = homeDefaultView === "featured" ? "/" : "/featured";
@@ -94,12 +96,12 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                   {links.slice(0, maxVisible).map((link) => (
                     <HeaderLink key={link.id} link={link} />
                   ))}
-                  {links.length > maxVisible && (
+                  {overflowLinks.length > 0 && (
                     <div class="dropdown-menu site-header-more">
                       <button
                         type="button"
                         id="site-nav-more-trigger"
-                        class="site-header-more-btn"
+                        class={`site-header-more-btn ${hasActiveOverflow ? "site-header-more-btn-active" : ""}`}
                         aria-haspopup="menu"
                         aria-controls="site-nav-more-menu"
                         aria-expanded="false"
@@ -132,11 +134,16 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                           id="site-nav-more-menu"
                           aria-labelledby="site-nav-more-trigger"
                         >
-                          {links.slice(maxVisible).map((link) => (
+                          {overflowLinks.map((link) => (
                             <a
                               key={link.id}
                               href={link.url}
                               role="menuitem"
+                              class={
+                                link.isActive
+                                  ? "site-header-menuitem-active"
+                                  : undefined
+                              }
                               {...(link.isExternal
                                 ? {
                                     target: "_blank",

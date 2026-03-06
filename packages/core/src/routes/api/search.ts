@@ -39,10 +39,10 @@ searchApiRoutes.get("/", async (c) => {
         id: toUid(r.post.id),
         format: r.post.format,
         title: r.post.title,
-        path: r.post.path,
+        slug: r.post.slug,
         snippet: r.snippet,
         publishedAt: r.post.publishedAt,
-        url: r.post.path ? `/${r.post.path}` : `/p/${toUid(r.post.id)}`,
+        url: `/${r.post.slug}`,
       })),
       count: results.length,
     });

@@ -107,8 +107,26 @@ export function renderPostForm(component: JantPostForm) {
           class="input"
           placeholder=${component.labels.titlePlaceholder}
           .value=${component._title}
-          @input=${(e: Event) => component.handleInput("_title", e)}
+          @input=${(e: Event) => component.handleTitleInput(e)}
         />
+      </div>
+
+      <div class="field">
+        <label class="label">${component.labels.slugLabel}</label>
+        <input
+          type="text"
+          class="input"
+          placeholder=${component.labels.slugPlaceholder}
+          .value=${component._slug}
+          @input=${(e: Event) => component.handleSlugInput(e)}
+        />
+        ${component._slug
+          ? html`<p class="text-xs text-muted-foreground mt-1">
+              ${component.siteUrl}/${component._slug}
+            </p>`
+          : html`<p class="text-xs text-muted-foreground mt-1">
+              ${component.labels.slugHelp}
+            </p>`}
       </div>
 
       <div class="field">

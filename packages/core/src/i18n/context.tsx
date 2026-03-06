@@ -63,7 +63,7 @@ export const I18nProvider: FC<I18nProviderProps> = ({ c, children }) => {
  *
  *   return (
  *     <div>
- *       <h1>{_(t({ message: "Dashboard", comment: "@context: Page title" }))}</h1>
+ *       <h1>{_(t({ message: "Settings", comment: "@context: Page title" }))}</h1>
  *     </div>
  *   );
  * }
@@ -72,7 +72,7 @@ export const I18nProvider: FC<I18nProviderProps> = ({ c, children }) => {
  * Or use the i18n instance directly:
  * ```tsx
  * const { i18n } = useLingui();
- * i18n._(t({ message: "Dashboard", comment: "@context: Page title" }))
+ * i18n._(t({ message: "Settings", comment: "@context: Page title" }))
  * ```
  */
 export function useLingui() {

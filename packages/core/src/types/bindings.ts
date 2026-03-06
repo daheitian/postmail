@@ -32,6 +32,8 @@ export interface Bindings {
   // Summary extraction
   SUMMARY_MAX_PARAGRAPHS?: string;
   SUMMARY_MAX_CHARS?: string;
+  // Slug generation
+  SLUG_ID_LENGTH?: string;
   // RSS feed
   RSS_FEED_LIMIT?: string;
 }

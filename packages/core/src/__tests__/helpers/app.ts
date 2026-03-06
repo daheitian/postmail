@@ -10,13 +10,12 @@ import type { AppVariables } from "../../types/app-context.js";
 import { createTestDatabase } from "./db.js";
 import { createPostService } from "../../services/post.js";
 import { createSettingsService } from "../../services/settings.js";
-import { createRedirectService } from "../../services/redirect.js";
+import { createCustomUrlService } from "../../services/custom-url.js";
 import { createMediaService } from "../../services/media.js";
 import { createCollectionService } from "../../services/collection.js";
 import { createSearchService } from "../../services/search.js";
 import { createNavItemService } from "../../services/navigation.js";
 import { createAuthService } from "../../services/auth.js";
-import { createPathRegistryService } from "../../services/path-registry.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
@@ -45,12 +44,10 @@ export function createTestApp(options: TestAppOptions = {}) {
   const mockD1 = createMockD1(sqlite);
 
   const settingsService = createSettingsService(db);
-  const pathRegistryService = createPathRegistryService(db);
   const services = {
-    posts: createPostService(db, pathRegistryService),
+    posts: createPostService(db, { slugIdLength: 5 }),
     settings: settingsService,
-    pathRegistry: pathRegistryService,
-    redirects: createRedirectService(db, pathRegistryService),
+    customUrls: createCustomUrlService(db),
     media: createMediaService(db),
     collections: createCollectionService(db),
     search: createSearchService(mockD1),

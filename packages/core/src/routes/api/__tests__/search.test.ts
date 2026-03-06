@@ -63,7 +63,7 @@ describe("Search API Routes", () => {
     expect(body.query).toBe("jant");
     expect(body.results.length).toBeGreaterThanOrEqual(1);
     expect(body.count).toBeGreaterThanOrEqual(1);
-    expect(body.results[0].url).toMatch(/^\/p\//);
+    expect(body.results[0].url).toMatch(/^\/[a-z0-9]/);
   });
 
   it("returns empty results for non-matching query", async () => {

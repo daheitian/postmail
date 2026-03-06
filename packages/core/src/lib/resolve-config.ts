@@ -140,6 +140,9 @@ export function resolveConfig(
     summaryMaxParagraphs: parseInt(env.SUMMARY_MAX_PARAGRAPHS ?? "5", 10) || 5,
     summaryMaxChars: parseInt(env.SUMMARY_MAX_CHARS ?? "500", 10) || 500,
 
+    // Slug (ENV only)
+    slugIdLength: parseInt(env.SLUG_ID_LENGTH ?? "5", 10) || 5,
+
     // Pagination/Feed (ENV only)
     pageSize: parseInt(env.PAGE_SIZE ?? "20", 10) || 20,
     rssFeedLimit: parseInt(env.RSS_FEED_LIMIT ?? "50", 10) || 50,
@@ -161,7 +164,7 @@ export function resolveConfig(
     siteAvatarUrl,
     faviconVersion: allSettings["SITE_FAVICON_VERSION"] ?? "",
 
-    // Dashboard form placeholders (ENV > Default, without DB)
+    // Settings form placeholders (ENV > Default, without DB)
     fallbacks: {
       siteName: resolveFallback("SITE_NAME", env),
       siteDescription: resolveFallback("SITE_DESCRIPTION", env),

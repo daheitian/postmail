@@ -17,7 +17,7 @@
 ```tsx
 <form
   data-signals={JSON.stringify({ title: "" })}
-  data-on:submit__prevent="@post('/dash/posts')"
+  data-on:submit__prevent="@post('/settings/general')"
   data-indicator="_loading"
   class="flex flex-col gap-4"
 >
@@ -47,10 +47,10 @@
 import { dsRedirect, dsToast, dsSignals } from "../lib/sse.js";
 
 // Redirect (Datastar detects text/html -> patch-elements)
-return dsRedirect("/dash/posts");
+return dsRedirect("/settings");
 
 // Redirect with cookie forwarding (e.g. auth)
-return dsRedirect("/dash", { headers: { "Set-Cookie": cookie } });
+return dsRedirect("/settings", { headers: { "Set-Cookie": cookie } });
 
 // Toast notification
 return dsToast("Settings saved successfully.");

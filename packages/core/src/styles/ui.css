@@ -153,8 +153,17 @@
     background-color: var(--site-nav-hover-bg);
   }
 
+  .site-header-more-btn-active {
+    color: var(--site-text-primary);
+  }
+
   .site-header-more [data-popover] {
     min-width: 170px;
+  }
+
+  .site-header-menuitem-active {
+    color: var(--site-text-primary);
+    font-weight: 500;
   }
 
   /* --- Browse filter tabs ------------------------------------------------- */

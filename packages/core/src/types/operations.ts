@@ -15,7 +15,7 @@ export interface CreatePost {
   status?: Status;
   visibility?: Visibility;
   pinned?: boolean;
-  path?: string;
+  slug?: string;
   title?: string;
   url?: string;
   body?: string;
@@ -32,7 +32,7 @@ export interface UpdatePost {
   status?: Status;
   visibility?: Visibility;
   pinned?: boolean;
-  path?: string | null;
+  slug?: string;
   title?: string | null;
   url?: string | null;
   body?: string | null;

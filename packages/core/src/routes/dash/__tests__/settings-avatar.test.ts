@@ -38,7 +38,7 @@ function createMockFile(
   };
 }
 
-describe("Dashboard Settings - Avatar Upload Logic", () => {
+describe("Settings - Avatar Upload Logic", () => {
   let db: Database;
   let settingsService: ReturnType<typeof createSettingsService>;
   let mediaService: ReturnType<typeof createMediaService>;

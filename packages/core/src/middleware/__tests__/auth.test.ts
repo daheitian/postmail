@@ -28,11 +28,11 @@ describe("requireAuth", () => {
       c.set("auth", createMockAuth(true));
       await next();
     });
-    app.get("/dash", requireAuth(), (c) => c.text("Dashboard"));
+    app.get("/settings", requireAuth(), (c) => c.text("Settings"));
 
-    const res = await app.request("/dash");
+    const res = await app.request("/settings");
     expect(res.status).toBe(200);
-    expect(await res.text()).toBe("Dashboard");
+    expect(await res.text()).toBe("Settings");
   });
 
   it("redirects unauthenticated requests to /signin", async () => {
@@ -41,9 +41,9 @@ describe("requireAuth", () => {
       c.set("auth", createMockAuth(false));
       await next();
     });
-    app.get("/dash", requireAuth(), (c) => c.text("Dashboard"));
+    app.get("/settings", requireAuth(), (c) => c.text("Settings"));
 
-    const res = await app.request("/dash", { redirect: "manual" });
+    const res = await app.request("/settings", { redirect: "manual" });
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toBe("/signin");
   });
@@ -54,9 +54,9 @@ describe("requireAuth", () => {
       c.set("auth", createMockAuth(false));
       await next();
     });
-    app.get("/dash", requireAuth("/login"), (c) => c.text("Dashboard"));
+    app.get("/settings", requireAuth("/login"), (c) => c.text("Settings"));
 
-    const res = await app.request("/dash", { redirect: "manual" });
+    const res = await app.request("/settings", { redirect: "manual" });
     expect(res.status).toBe(302);
     expect(res.headers.get("Location")).toBe("/login");
   });

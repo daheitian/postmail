@@ -1,20 +1,16 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPostService } from "../post.js";
-import { createPathRegistryService } from "../path-registry.js";
-import { ValidationError, ConflictError } from "../../lib/errors.js";
 import type { Database } from "../../db/index.js";
 
 describe("PostService", () => {
   let db: Database;
   let postService: ReturnType<typeof createPostService>;
-  let pathRegistry: ReturnType<typeof createPathRegistryService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    pathRegistry = createPathRegistryService(db);
-    postService = createPostService(db, pathRegistry);
+    postService = createPostService(db, { slugIdLength: 5 });
   });
 
   describe("create", () => {
@@ -68,7 +64,7 @@ describe("PostService", () => {
         status: "published",
         visibility: "featured",
         pinned: true,
-        path: "my-link",
+        slug: "my-link",
         url: "https://example.com/source",
         quoteText: "A notable quote",
         rating: 5,
@@ -79,7 +75,7 @@ describe("PostService", () => {
       expect(post.status).toBe("published");
       expect(post.visibility).toBe("featured");
       expect(post.pinned).toBe(1);
-      expect(post.path).toBe("my-link");
+      expect(post.slug).toBe("my-link");
       expect(post.url).toBe("https://example.com/source");
       expect(post.quoteText).toBe("A notable quote");
       expect(post.rating).toBe(5);
@@ -203,21 +199,21 @@ describe("PostService", () => {
     });
   });
 
-  describe("getByPath", () => {
-    it("returns a post by path", async () => {
+  describe("getBySlug", () => {
+    it("returns a post by slug", async () => {
       await postService.create({
         format: "note",
         body: "About page",
-        path: "about",
+        slug: "about",
       });
 
-      const found = await postService.getByPath("about");
+      const found = await postService.getBySlug("about");
       expect(found).not.toBeNull();
-      expect(found?.path).toBe("about");
+      expect(found?.slug).toBe("about");
     });
 
-    it("returns null for non-existent path", async () => {
-      const found = await postService.getByPath("nonexistent");
+    it("returns null for non-existent slug", async () => {
+      const found = await postService.getBySlug("nonexistent");
       expect(found).toBeNull();
     });
 
@@ -225,24 +221,12 @@ describe("PostService", () => {
       const post = await postService.create({
         format: "note",
         body: "test",
-        path: "test-page",
+        slug: "test-page",
       });
       await postService.delete(post.id);
 
-      const found = await postService.getByPath("test-page");
+      const found = await postService.getBySlug("test-page");
       expect(found).toBeNull();
-    });
-
-    it("finds a post with a multi-level path", async () => {
-      await postService.create({
-        format: "note",
-        body: "Blog migration",
-        path: "2024/01/my-post",
-      });
-
-      const found = await postService.getByPath("2024/01/my-post");
-      expect(found).not.toBeNull();
-      expect(found?.path).toBe("2024/01/my-post");
     });
   });
 
@@ -670,18 +654,18 @@ describe("PostService", () => {
       expect(updated?.pinned).toBe(1);
     });
 
-    it("updates path", async () => {
+    it("updates slug", async () => {
       const post = await postService.create({
         format: "note",
         body: "test",
-        path: "old-path",
+        slug: "old-slug",
       });
 
       const updated = await postService.update(post.id, {
-        path: "new-path",
+        slug: "new-slug",
       });
 
-      expect(updated?.path).toBe("new-path");
+      expect(updated?.slug).toBe("new-slug");
     });
 
     it("updates quoteText and rating", async () => {
@@ -983,101 +967,6 @@ describe("PostService", () => {
 
       const counts = await postService.getReplyCounts([root.id]);
       expect(counts.get(root.id)).toBe(1);
-    });
-  });
-
-  describe("path registry integration", () => {
-    it("claims path on create", async () => {
-      const post = await postService.create({
-        format: "note",
-        body: "test",
-        path: "my-post",
-      });
-
-      const entry = await pathRegistry.getByPath("my-post");
-      expect(entry).not.toBeNull();
-      expect(entry?.ownerType).toBe("post");
-      expect(entry?.ownerId).toBe(post.id);
-    });
-
-    it("does not claim when no path provided", async () => {
-      await postService.create({
-        format: "note",
-        body: "test",
-      });
-
-      // No path registry entries should exist
-      expect(await pathRegistry.isAvailable("test")).toBe(true);
-    });
-
-    it("rejects path that conflicts with an existing path registry entry", async () => {
-      await pathRegistry.claim("about", "redirect", "some-id");
-
-      await expect(
-        postService.create({ format: "note", body: "test", path: "about" }),
-      ).rejects.toThrow(ConflictError);
-    });
-
-    it("rejects reserved path on create", async () => {
-      await expect(
-        postService.create({ format: "note", body: "test", path: "dash" }),
-      ).rejects.toThrow(ValidationError);
-    });
-
-    it("releases old path and claims new on update", async () => {
-      const post = await postService.create({
-        format: "note",
-        body: "test",
-        path: "old-path",
-      });
-
-      await postService.update(post.id, { path: "new-path" });
-
-      expect(await pathRegistry.isAvailable("old-path")).toBe(true);
-      expect(await pathRegistry.isAvailable("new-path")).toBe(false);
-    });
-
-    it("releases path when cleared to null on update", async () => {
-      const post = await postService.create({
-        format: "note",
-        body: "test",
-        path: "my-path",
-      });
-
-      await postService.update(post.id, { path: null });
-
-      expect(await pathRegistry.isAvailable("my-path")).toBe(true);
-    });
-
-    it("releases path on soft-delete", async () => {
-      const post = await postService.create({
-        format: "note",
-        body: "test",
-        path: "my-path",
-      });
-
-      await postService.delete(post.id);
-
-      expect(await pathRegistry.isAvailable("my-path")).toBe(true);
-    });
-
-    it("releases paths for all thread posts on root delete", async () => {
-      const root = await postService.create({
-        format: "note",
-        body: "root",
-        path: "thread-root",
-      });
-      await postService.create({
-        format: "note",
-        body: "reply",
-        path: "thread-reply",
-        replyToId: root.id,
-      });
-
-      await postService.delete(root.id);
-
-      expect(await pathRegistry.isAvailable("thread-root")).toBe(true);
-      expect(await pathRegistry.isAvailable("thread-reply")).toBe(true);
     });
   });
 });

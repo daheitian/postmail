@@ -120,7 +120,7 @@ async function handleAvatarUpload(
     formData.append("appleTouch", png180, "apple-touch-icon.png");
 
     // Upload
-    const response = await fetch("/dash/settings/avatar", {
+    const response = await fetch("/settings/avatar", {
       method: "POST",
       body: formData,
     });
@@ -130,7 +130,7 @@ async function handleAvatarUpload(
     }
 
     // Redirect on success
-    window.location.href = "/dash/settings?saved";
+    window.location.href = "/settings?saved";
   } catch {
     // Restore button text on error
     if (label) label.textContent = originalText;

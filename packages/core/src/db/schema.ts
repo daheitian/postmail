@@ -26,7 +26,7 @@ export const posts = sqliteTable("posts", {
     .notNull()
     .default("public"),
   pinned: integer("pinned").notNull().default(0),
-  path: text("path").unique(),
+  slug: text("slug").notNull().unique(),
   title: text("title"),
   url: text("url"),
   body: text("body"),
@@ -127,25 +127,16 @@ export const navItems = sqliteTable("nav_items", {
 });
 
 // =============================================================================
-// Redirects
+// Custom URLs (replaces redirects + path_registry)
 // =============================================================================
 
-export const redirects = sqliteTable("redirects", {
+export const customUrls = sqliteTable("custom_urls", {
   id: text("id").primaryKey(),
-  fromPath: text("from_path").notNull().unique(),
-  toPath: text("to_path").notNull(),
-  type: integer("type", { mode: "number" }).notNull().default(301),
-  createdAt: integer("created_at").notNull(),
-});
-
-// =============================================================================
-// Path Registry (URL path ownership)
-// =============================================================================
-
-export const pathRegistry = sqliteTable("path_registry", {
-  path: text("path").primaryKey(),
-  ownerType: text("owner_type").notNull(),
-  ownerId: text("owner_id").notNull(),
+  path: text("path").notNull().unique(),
+  targetType: text("target_type").notNull(), // "post" | "collection" | "redirect"
+  targetId: text("target_id"),
+  toPath: text("to_path"),
+  redirectType: integer("redirect_type"),
   createdAt: integer("created_at").notNull(),
 });
 

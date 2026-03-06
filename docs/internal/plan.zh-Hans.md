@@ -184,7 +184,7 @@
 - [ ] `archive.tsx`：?format= 替代 ?type=，新增 ?featured= 支持
 - [ ] `search.tsx`：适配新字段
 
-**后台路由**（`routes/dash/`）：
+**后台路由**（`routes/dash/settings.tsx`）：
 
 - [ ] `posts.tsx`：format 替代 type，status/featured/pinned 替代 visibility，新增 rating/collection_id 字段
 - [ ] `pages.tsx`：改用 PageService，整合 nav_items 管理 UI
@@ -243,7 +243,7 @@
 - [ ] 注册 PageService
 - [ ] 注册 NavItemService（替代 NavigationLinkService）
 - [ ] 挂载新路由（pages API, nav-items API）
-- [ ] 删除旧路由（/dash/navigation）
+- [ ] 删除旧路由（/settings/navigation 重构）
 - [ ] 更新 ThemeComponents 默认值
 
 ---
@@ -256,7 +256,7 @@
 
 - [ ] `SiteLayout.tsx`：移除侧边栏，全站单栏布局
 - [ ] 导航栏：作者名在左，nav_items 链接 + 搜索在右
-- [ ] 登录后导航栏右侧出现头像，点击弹出菜单（Dashboard、New Post、Logout）
+- [ ] 登录后导航栏显示 Settings 链接
 - [ ] 移动优先，桌面端窄栏居中
 - [ ] 无限滚动，无 footer
 
@@ -270,7 +270,7 @@
 
 ### 2.3 发帖弹窗
 
-- [ ] 弹窗形式（参考 Threads），独立于 /dash
+- [ ] 弹窗形式（参考 Threads），独立于后台
 - [ ] Format 切换（Note / Link / Quote）
 - [ ] 通用工具栏：📎 媒体、⭐ 评分、📂 Collection
 - [ ] 标题输入框（灰色小字弱化）
@@ -340,14 +340,13 @@
 - [ ] `/feed/all?format=note` 按 format 筛选
 - [ ] `/c/{slug}/feed` Collection feed
 
-### 2.10 /dash/pages 整合导航管理
+### 2.10 导航管理整合
 
 参考 Pika.page 的导航管理设计：
 
 - [ ] 上半区：已添加到导航的项目（page 和 link 类型混合），可拖拽排序
 - [ ] 下半区：未添加到导航的 Page，可一键添加
 - [ ] 支持添加任意外部链接
-- [ ] 删除 `/dash/navigation` 路由
 
 ### 2.11 Link 富媒体渲染
 
@@ -409,7 +408,7 @@
 3. /featured (2.5) + /c (2.6) — 新页面
 4. Collection 增强 (2.7) — 排序、RSS、组合语法
 5. Archive + Feed 增强 (2.8, 2.9) — 筛选功能
-6. /dash/pages 整合导航 (2.10) — 后台优化
+6. 导航管理整合 (2.10) — 后台优化
 7. 发帖弹窗 (2.3) — 发布体验
 8. Link 富媒体 (2.11) + Rating (2.12) — 内容增强
 9. 搜索弹窗 (2.13) — 搜索体验
