@@ -40,7 +40,7 @@ const SetupContent: FC = () => {
         </header>
         <section>
           <form
-            data-signals="{name: '', email: '', password: '', _timezone: ''}"
+            data-signals="{siteName: '', email: '', password: '', _timezone: ''}"
             data-init="$_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''"
             data-on:submit__prevent="@post('/setup')"
             data-indicator="_loading"
@@ -49,16 +49,16 @@ const SetupContent: FC = () => {
             <div class="field">
               <label class="label">
                 {t({
-                  message: "Your Name",
-                  comment: "@context: Setup form field - user name",
+                  message: "Site Name",
+                  comment: "@context: Setup form field - site name",
                 })}
               </label>
               <input
                 type="text"
-                data-bind="name"
+                data-bind="siteName"
                 class="input"
                 required
-                placeholder="John Doe"
+                placeholder="My Blog"
               />
             </div>
             <div class="field">
@@ -154,7 +154,7 @@ setupRoutes.post("/setup", async (c) => {
     return dsToast(errorMsg, "error");
   }
 
-  const { name, email, password } = parsed.data;
+  const { siteName, email, password } = parsed.data;
 
   if (!c.var.auth) {
     return dsToast(
@@ -171,7 +171,7 @@ setupRoutes.post("/setup", async (c) => {
 
   try {
     const signUpResponse = await c.var.auth.api.signUpEmail({
-      body: { name, email, password },
+      body: { name: siteName.trim(), email, password },
     });
 
     if (!signUpResponse || "error" in signUpResponse) {
@@ -188,6 +188,9 @@ setupRoutes.post("/setup", async (c) => {
     }
 
     await c.var.services.settings.completeOnboarding();
+
+    // Save site name
+    await c.var.services.settings.set("SITE_NAME", siteName.trim());
 
     // Save auto-detected timezone
     if (browserTimezone) {

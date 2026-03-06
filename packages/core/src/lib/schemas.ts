@@ -168,7 +168,7 @@ export const UpdateCollectionSchema = CreateCollectionSchema.partial();
  * Setup form validation schema
  */
 export const SetupSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  siteName: z.string().min(1, "Site name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });

@@ -45,8 +45,8 @@ msgstr "302（临时）"
 
 #. @context: Error toast when display name is empty
 #: src/routes/dash/settings.tsx
-msgid "A display name is required."
-msgstr ""
+#~ msgid "A display name is required."
+#~ msgstr ""
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -407,8 +407,8 @@ msgstr ""
 
 #. @context: Error toast when profile update fails
 #: src/routes/dash/settings.tsx
-msgid "Couldn't update your profile. Try again in a moment."
-msgstr ""
+#~ msgid "Couldn't update your profile. Try again in a moment."
+#~ msgstr ""
 
 #. @context: Compose collection combobox empty state when no collections exist
 #: src/ui/compose/ComposeDialog.tsx
@@ -1029,8 +1029,8 @@ msgstr "我的收藏"
 
 #. @context: Account settings form field
 #: src/ui/dash/settings/AccountContent.tsx
-msgid "Name"
-msgstr "姓名"
+#~ msgid "Name"
+#~ msgstr "姓名"
 
 #. @context: Error toast when display name is empty
 #: src/routes/dash/settings.tsx
@@ -1454,8 +1454,8 @@ msgstr "处理中..."
 
 #. @context: Account settings section heading
 #: src/ui/dash/settings/AccountContent.tsx
-msgid "Profile"
-msgstr "个人资料"
+#~ msgid "Profile"
+#~ msgstr "个人资料"
 
 #. @context: Toast after saving user profile
 #: src/routes/dash/settings.tsx
@@ -1464,8 +1464,8 @@ msgstr "个人资料"
 
 #. @context: Toast after saving user profile
 #: src/routes/dash/settings.tsx
-msgid "Profile updated."
-msgstr ""
+#~ msgid "Profile updated."
+#~ msgstr ""
 
 #. @context: Settings item description for account
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1618,8 +1618,8 @@ msgstr "保存 CSS"
 
 #. @context: Button to save profile
 #: src/ui/dash/settings/AccountContent.tsx
-msgid "Save Profile"
-msgstr "保存个人资料"
+#~ msgid "Save Profile"
+#~ msgstr "保存个人资料"
 
 #. @context: Confirm close action sheet subtitle
 #: src/ui/compose/ComposeDialog.tsx
@@ -1754,6 +1754,8 @@ msgid "Site Footer"
 msgstr "网站页脚"
 
 #. @context: Settings form field
+#. @context: Setup form field - site name
+#: src/routes/auth/setup.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Site Name"
 msgstr "网站名称"
@@ -2182,8 +2184,8 @@ msgstr ""
 
 #. @context: Setup form field - user name
 #: src/routes/auth/setup.tsx
-msgid "Your Name"
-msgstr "您的姓名"
+#~ msgid "Your Name"
+#~ msgstr "您的姓名"
 
 #. @context: Compose thoughts placeholder
 #: src/ui/compose/ComposeDialog.tsx

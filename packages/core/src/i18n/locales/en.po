@@ -62,8 +62,8 @@ msgstr "302 (Temporary)"
 
 #. @context: Error toast when display name is empty
 #: src/routes/dash/settings.tsx
-msgid "A display name is required."
-msgstr "A display name is required."
+#~ msgid "A display name is required."
+#~ msgstr "A display name is required."
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -477,8 +477,8 @@ msgstr "Couldn't save. Try again in a moment."
 
 #. @context: Error toast when profile update fails
 #: src/routes/dash/settings.tsx
-msgid "Couldn't update your profile. Try again in a moment."
-msgstr "Couldn't update your profile. Try again in a moment."
+#~ msgid "Couldn't update your profile. Try again in a moment."
+#~ msgstr "Couldn't update your profile. Try again in a moment."
 
 #. @context: Compose collection combobox empty state when no collections exist
 #: src/ui/compose/ComposeDialog.tsx
@@ -1214,8 +1214,8 @@ msgstr "My Collection"
 
 #. @context: Account settings form field
 #: src/ui/dash/settings/AccountContent.tsx
-msgid "Name"
-msgstr "Name"
+#~ msgid "Name"
+#~ msgstr "Name"
 
 #. @context: Error toast when display name is empty
 #: src/routes/dash/settings.tsx
@@ -1694,8 +1694,8 @@ msgstr "Processing..."
 
 #. @context: Account settings section heading
 #: src/ui/dash/settings/AccountContent.tsx
-msgid "Profile"
-msgstr "Profile"
+#~ msgid "Profile"
+#~ msgstr "Profile"
 
 #. @context: Toast after saving user profile
 #: src/routes/dash/settings.tsx
@@ -1704,8 +1704,8 @@ msgstr "Profile"
 
 #. @context: Toast after saving user profile
 #: src/routes/dash/settings.tsx
-msgid "Profile updated."
-msgstr "Profile updated."
+#~ msgid "Profile updated."
+#~ msgstr "Profile updated."
 
 #. @context: Settings item description for account
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1885,8 +1885,8 @@ msgstr "Save CSS"
 
 #. @context: Button to save profile
 #: src/ui/dash/settings/AccountContent.tsx
-msgid "Save Profile"
-msgstr "Save Profile"
+#~ msgid "Save Profile"
+#~ msgstr "Save Profile"
 
 #. @context: Button to save settings
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2041,6 +2041,8 @@ msgid "Site Footer"
 msgstr "Site Footer"
 
 #. @context: Settings form field
+#. @context: Setup form field - site name
+#: src/routes/auth/setup.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Site Name"
 msgstr "Site Name"
@@ -2524,8 +2526,8 @@ msgstr "Your media library is empty. Upload your first file to get started."
 
 #. @context: Setup form field - user name
 #: src/routes/auth/setup.tsx
-msgid "Your Name"
-msgstr "Your Name"
+#~ msgid "Your Name"
+#~ msgstr "Your Name"
 
 #. @context: Section heading for navigation items
 #: src/ui/dash/pages/UnifiedPagesContent.tsx

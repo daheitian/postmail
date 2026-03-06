@@ -111,6 +111,12 @@ settingsRoutes.post("/general", async (c) => {
       fallbackSiteName: c.var.appConfig.fallbacks.siteName,
     });
 
+  // Sync user.name with site name (better-auth requires this field)
+  await c.var.auth.api.updateUser({
+    body: { name: displayName },
+    headers: c.req.raw.headers,
+  });
+
   // ── JSON response mode (used by Lit settings bridge) ──────────────
   const wantsJson = c.req.header("accept")?.includes("application/json");
   if (wantsJson) {
@@ -598,11 +604,6 @@ settingsRoutes.post("/custom-css", async (c) => {
 
 settingsRoutes.get("/account", async (c) => {
   const siteName = c.var.appConfig.siteName;
-  const session = await c.var.auth.api.getSession({
-    headers: c.req.raw.headers,
-  });
-  const userName = session?.user?.name ?? "";
-  const saved = c.req.query("saved") !== undefined;
 
   return c.html(
     <DashLayout
@@ -616,54 +617,9 @@ settingsRoutes.get("/account", async (c) => {
         parentHref: "/dash/settings",
         current: "Account",
       }}
-      toast={saved ? { message: "Profile updated." } : undefined}
     >
-      <AccountContent userName={userName} />
+      <AccountContent />
     </DashLayout>,
-  );
-});
-
-settingsRoutes.post("/account", async (c) => {
-  const i18n = getI18n(c);
-  const body = await c.req.json<{ userName: string }>();
-  const name = body.userName?.trim();
-
-  if (!name) {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "A display name is required.",
-          comment: "@context: Error toast when display name is empty",
-        }),
-      ),
-      "error",
-    );
-  }
-
-  try {
-    await c.var.auth.api.updateUser({
-      body: { name },
-      headers: c.req.raw.headers,
-    });
-  } catch {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "Couldn't update your profile. Try again in a moment.",
-          comment: "@context: Error toast when profile update fails",
-        }),
-      ),
-      "error",
-    );
-  }
-
-  return dsToast(
-    i18n._(
-      msg({
-        message: "Profile updated.",
-        comment: "@context: Toast after saving user profile",
-      }),
-    ),
   );
 });
 
