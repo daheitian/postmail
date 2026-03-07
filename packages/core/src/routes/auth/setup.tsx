@@ -15,6 +15,7 @@ import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SetupSchema } from "../../lib/schemas.js";
 import { mapIanaToTimezone } from "../../lib/timezones.js";
 import { getI18n, baseLocale } from "../../i18n/index.js";
+import { detectLocaleFromHeader } from "../../i18n/detect.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -40,8 +41,8 @@ const SetupContent: FC = () => {
         </header>
         <section>
           <form
-            data-signals="{siteName: '', email: '', password: '', _timezone: ''}"
-            data-init="$_timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''"
+            data-signals="{siteName: '', email: '', password: '', timezone: '', language: ''}"
+            data-init="$timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; $language = navigator.language || ''"
             data-on:submit__prevent="@post('/setup')"
             data-indicator="_loading"
             class="flex flex-col gap-4"
@@ -139,7 +140,8 @@ setupRoutes.post("/setup", async (c) => {
 
   const body = await c.req.json<Record<string, string>>();
   const parsed = SetupSchema.safeParse(body);
-  const browserTimezone = body._timezone;
+  const browserTimezone = body.timezone;
+  const browserLanguage = body.language;
 
   if (!parsed.success) {
     const errorMsg =
@@ -200,10 +202,12 @@ setupRoutes.post("/setup", async (c) => {
       }
     }
 
-    // Save auto-detected language
-    const detectedLang = c.get("lang");
-    if (detectedLang !== baseLocale) {
-      await c.var.services.settings.set("SITE_LANGUAGE", detectedLang);
+    // Save auto-detected language from browser's navigator.language
+    if (browserLanguage) {
+      const detectedLang = detectLocaleFromHeader(browserLanguage);
+      if (detectedLang !== baseLocale) {
+        await c.var.services.settings.set("SITE_LANGUAGE", detectedLang);
+      }
     }
 
     // Seed default navigation items (order: Collections, Archive, RSS, Settings)

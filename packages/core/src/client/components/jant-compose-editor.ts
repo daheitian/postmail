@@ -1110,6 +1110,9 @@ export class JantComposeEditor extends LitElement {
             </svg>
           </div>
           <span class="compose-attachment-file-name">${a.file.name}</span>
+          <span class="compose-attachment-file-size"
+            >${this._formatSize(a.file.size)}</span
+          >
         </div>
       `;
     }
@@ -1298,16 +1301,20 @@ export class JantComposeEditor extends LitElement {
                 ${this._renderAttachmentOverlay(a, i)}
               </div>
             `}
-        <button
-          type="button"
-          class=${classMap({
-            "compose-attachment-alt": true,
-            "compose-attachment-alt-set": a.alt.length > 0,
-          })}
-          @click=${() => this._openAltPanel(i)}
-        >
-          ${a.alt.length > 0 ? "ALT" : "+ ALT"}
-        </button>
+        ${category === "image"
+          ? html`
+              <button
+                type="button"
+                class=${classMap({
+                  "compose-attachment-alt": true,
+                  "compose-attachment-alt-set": a.alt.length > 0,
+                })}
+                @click=${() => this._openAltPanel(i)}
+              >
+                ${a.alt.length > 0 ? "ALT" : "+ ALT"}
+              </button>
+            `
+          : nothing}
       </div>
     `;
   }
@@ -1575,7 +1582,7 @@ export class JantComposeEditor extends LitElement {
           : this.format === "link"
             ? this._renderLinkFields()
             : this._renderQuoteFields()}
-        ${this._renderStarRating()} ${this._renderAttachments()}
+        ${this._renderAttachments()} ${this._renderStarRating()}
       </section>
       ${this._renderToolsRow()}
     `;
