@@ -14,7 +14,7 @@ import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SetupSchema } from "../../lib/schemas.js";
 import { mapIanaToTimezone } from "../../lib/timezones.js";
-import { getI18n } from "../../i18n/index.js";
+import { getI18n, baseLocale } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -198,6 +198,12 @@ setupRoutes.post("/setup", async (c) => {
       if (tz !== "UTC") {
         await c.var.services.settings.set("TIME_ZONE", tz);
       }
+    }
+
+    // Save auto-detected language
+    const detectedLang = c.get("lang");
+    if (detectedLang !== baseLocale) {
+      await c.var.services.settings.set("SITE_LANGUAGE", detectedLang);
     }
 
     // Seed default navigation items (order: Collections, Archive, RSS, Settings)

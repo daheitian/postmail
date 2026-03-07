@@ -10,7 +10,7 @@
  * ```
  */
 
-import type { FeedData, SitemapData } from "../types.js";
+import type { FeedData, PostView, SitemapData } from "../types.js";
 
 /**
  * Escape special XML characters.
@@ -22,6 +22,53 @@ function escapeXml(str: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
+}
+
+/**
+ * Render a star rating as HTML for feed content.
+ */
+function renderRatingHtml(rating: number): string {
+  const filled = "★".repeat(rating);
+  const empty = "☆".repeat(5 - rating);
+  return `<p>${filled}${empty} ${rating}/5</p>`;
+}
+
+/**
+ * Build the full HTML content for a feed item, combining format-specific
+ * fields (quote text, source URL) with body and rating.
+ */
+function buildFeedContent(post: PostView): string {
+  const parts: string[] = [];
+
+  if (post.format === "quote" && post.quoteText) {
+    const attribution = post.title || post.url || "";
+    const cite = post.url ? ` cite="${escapeXml(post.url)}"` : "";
+    parts.push(
+      `<blockquote${cite}><p>${escapeXml(post.quoteText)}</p></blockquote>`,
+    );
+    if (attribution) {
+      const source = post.url
+        ? `<a href="${escapeXml(post.url)}">${escapeXml(post.title || "Source")}</a>`
+        : escapeXml(attribution);
+      parts.push(`<p>— ${source}</p>`);
+    }
+  }
+
+  if (post.format === "link" && post.url) {
+    parts.push(
+      `<p><a href="${escapeXml(post.url)}">${escapeXml(post.url)}</a></p>`,
+    );
+  }
+
+  if (post.bodyHtml) {
+    parts.push(post.bodyHtml);
+  }
+
+  if (post.rating && post.rating > 0) {
+    parts.push(renderRatingHtml(post.rating));
+  }
+
+  return parts.join("\n");
 }
 
 /**
@@ -51,7 +98,7 @@ export function defaultRssRenderer(data: FeedData): string {
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
-      <description><![CDATA[${post.bodyHtml || ""}]]></description>${enclosure}
+      <description><![CDATA[${buildFeedContent(post)}]]></description>${enclosure}
     </item>`;
     })
     .join("");
@@ -90,7 +137,7 @@ export function defaultAtomRenderer(data: FeedData): string {
     <id>${link}</id>
     <published>${post.publishedAt}</published>
     <updated>${post.updatedAt}</updated>
-    <content type="html"><![CDATA[${post.bodyHtml || ""}]]></content>
+    <content type="html"><![CDATA[${buildFeedContent(post)}]]></content>
   </entry>`;
     })
     .join("");

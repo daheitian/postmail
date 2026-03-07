@@ -61,6 +61,7 @@ export const media = sqliteTable("media", {
   alt: text("alt"),
   position: integer("position").notNull().default(0),
   blurhash: text("blurhash"),
+  waveform: text("waveform"),
   posterKey: text("poster_key"),
   summary: text("summary"),
   chars: integer("chars"),

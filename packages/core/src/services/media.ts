@@ -70,6 +70,7 @@ export interface CreateMediaData {
   alt?: string;
   position?: number;
   blurhash?: string;
+  waveform?: string;
   posterKey?: string;
   summary?: string;
   chars?: number;
@@ -91,6 +92,7 @@ export function createMediaService(db: Database): MediaService {
       alt: row.alt,
       position: row.position,
       blurhash: row.blurhash,
+      waveform: row.waveform,
       posterKey: row.posterKey,
       summary: row.summary,
       chars: row.chars,
@@ -209,6 +211,7 @@ export function createMediaService(db: Database): MediaService {
           alt: data.alt ?? null,
           position: data.position ?? 0,
           blurhash: data.blurhash ?? null,
+          waveform: data.waveform ?? null,
           posterKey: data.posterKey ?? null,
           summary: data.summary ?? null,
           chars: data.chars ?? null,

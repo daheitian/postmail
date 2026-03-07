@@ -12,6 +12,7 @@
 
 import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "../../types.js";
+import { StarRating } from "../shared/StarRating.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
 export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
@@ -59,6 +60,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />
       )}
+      {!compact && <StarRating rating={post.rating} />}
       <footer class="post-menu-footer" data-post-meta>
         <a
           href={post.permalink}

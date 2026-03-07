@@ -2,8 +2,8 @@
  * Client-side Multipart Upload Helper
  *
  * Transparently handles chunked uploads for files that exceed the
- * Cloudflare Workers 100MB request body limit. Used by both compose-bridge
- * and media-upload when a file is larger than MULTIPART_THRESHOLD.
+ * Cloudflare Workers 100MB request body limit. Used by compose-bridge
+ * when a file is larger than MULTIPART_THRESHOLD.
  */
 
 /** Files at or above this size use multipart upload (95MB, below 100MB Worker limit) */
@@ -26,6 +26,7 @@ export interface MultipartUploadOptions {
     width?: number;
     height?: number;
     blurhash?: string;
+    waveform?: string;
     poster?: Blob;
   };
   onProgress?: (progress: number) => void;
@@ -54,6 +55,7 @@ export async function uploadMultipart(
       width: metadata.width,
       height: metadata.height,
       blurhash: metadata.blurhash,
+      waveform: metadata.waveform,
     }),
   });
 

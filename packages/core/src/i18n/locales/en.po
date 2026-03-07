@@ -295,8 +295,8 @@ msgstr "Avatar display updated."
 
 #. @context: Button to go back to media list
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Back"
-msgstr "Back"
+#~ msgid "Back"
+#~ msgstr "Back"
 
 #. @context: Navigation link back to home page
 #. @context: Navigation link back to home page
@@ -377,8 +377,8 @@ msgstr "Choose a new password."
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Click image to view full size"
-msgstr "Click image to view full size"
+#~ msgid "Click image to view full size"
+#~ msgstr "Click image to view full size"
 
 #. @context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads
 #: src/ui/compose/ComposeDialog.tsx
@@ -457,8 +457,8 @@ msgstr "Content"
 #. @context: Button to copy URL to clipboard
 #: src/ui/dash/media/ViewMediaContent.tsx
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Copy"
-msgstr "Copy"
+#~ msgid "Copy"
+#~ msgstr "Copy"
 
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
@@ -645,8 +645,8 @@ msgstr "Delete Draft"
 
 #. @context: Button to delete media
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Delete Media"
-msgstr "Delete Media"
+#~ msgid "Delete Media"
+#~ msgstr "Delete Media"
 
 #. @context: Button to delete page
 #: src/routes/dash/pages.tsx
@@ -1038,8 +1038,8 @@ msgstr "Icons"
 
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx
-msgid "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
-msgstr "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
+#~ msgid "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
+#~ msgstr "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
 
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx
@@ -1174,8 +1174,8 @@ msgstr "Lowest rated"
 
 #. @context: Media detail section - Markdown snippet
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Markdown"
-msgstr "Markdown"
+#~ msgid "Markdown"
+#~ msgstr "Markdown"
 
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1198,10 +1198,8 @@ msgstr "Max visible links saved"
 #~ msgstr "Max Visible Nav Links"
 
 #. @context: Compose toolbar - media tooltip
-#. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Media"
 msgstr "Media"
@@ -1720,8 +1718,8 @@ msgstr "Post updated."
 
 #. @context: Media detail section - preview
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Preview"
-msgstr "Preview"
+#~ msgid "Preview"
+#~ msgstr "Preview"
 
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
@@ -1731,8 +1729,6 @@ msgid "Previous"
 msgstr "Previous"
 
 #. @context: Avatar upload button text while generating favicon variants
-#. @context: Upload status - processing
-#: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "Processing..."
@@ -2260,8 +2256,8 @@ msgstr "This collection is empty. Add posts from the editor."
 
 #. @context: Warning message before deleting media
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "This file will be permanently removed from storage. Posts using it will show a broken link."
-msgstr "This file will be permanently removed from storage. Posts using it will show a broken link."
+#~ msgid "This file will be permanently removed from storage. Posts using it will show a broken link."
+#~ msgstr "This file will be permanently removed from storage. Posts using it will show a broken link."
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2408,8 +2404,8 @@ msgstr "Update"
 
 #. @context: Button to upload media file
 #: src/ui/dash/media/MediaListContent.tsx
-msgid "Upload"
-msgstr "Upload"
+#~ msgid "Upload"
+#~ msgstr "Upload"
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2418,10 +2414,8 @@ msgstr "Upload Avatar"
 
 #. @context: Error toast when avatar upload fails
 #. @context: Error when file upload fails
-#. @context: Upload error message
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
-#: src/ui/dash/media/MediaListContent.tsx
 msgid "Upload didn't go through. Try again in a moment."
 msgstr "Upload didn't go through. Try again in a moment."
 
@@ -2442,17 +2436,13 @@ msgstr "Upload failed. Please try again."
 
 #. @context: Avatar upload button text while uploading
 #. @context: Toast shown during background upload
-#. @context: Upload status - uploading
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Uploading..."
 msgstr "Uploading..."
 
-#. @context: Media detail section - URL
 #. @context: Nav item URL field
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/media/ViewMediaContent.tsx
 msgid "URL"
 msgstr "URL"
 
@@ -2485,8 +2475,8 @@ msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug 
 
 #. @context: Media URL helper text
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Use this URL to embed the media in your posts."
-msgstr "Use this URL to embed the media in your posts."
+#~ msgid "Use this URL to embed the media in your posts."
+#~ msgstr "Use this URL to embed the media in your posts."
 
 #. @context: Button to view item on public site
 #. @context: Button to view post on public site
@@ -2582,8 +2572,8 @@ msgstr "Wrong email or password. Check your credentials and try again."
 
 #. @context: Empty state message when no media exists
 #: src/ui/dash/media/MediaListContent.tsx
-msgid "Your media library is empty. Upload your first file to get started."
-msgstr "Your media library is empty. Upload your first file to get started."
+#~ msgid "Your media library is empty. Upload your first file to get started."
+#~ msgstr "Your media library is empty. Upload your first file to get started."
 
 #. @context: Setup form field - user name
 #: src/routes/auth/setup.tsx

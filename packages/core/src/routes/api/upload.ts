@@ -226,6 +226,7 @@ uploadApiRoutes.post("/", async (c) => {
     const widthRaw = parseInt(formData.get("width") as string) || undefined;
     const heightRaw = parseInt(formData.get("height") as string) || undefined;
     const blurhashRaw = (formData.get("blurhash") as string) || undefined;
+    const waveformRaw = (formData.get("waveform") as string) || undefined;
 
     // Upload poster frame for videos (if provided by client)
     let posterKey: string | undefined;
@@ -253,6 +254,8 @@ uploadApiRoutes.post("/", async (c) => {
       height: heightRaw && heightRaw > 0 ? heightRaw : undefined,
       blurhash:
         blurhashRaw && blurhashRaw.length < 200 ? blurhashRaw : undefined,
+      waveform:
+        waveformRaw && waveformRaw.length < 2000 ? waveformRaw : undefined,
       posterKey,
       summary,
       chars,

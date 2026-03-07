@@ -111,6 +111,7 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
     height: media.height ?? undefined,
     size: media.size,
     blurhash: media.blurhash ?? undefined,
+    waveform: media.waveform ?? undefined,
     posterUrl,
     chars: media.chars ?? undefined,
   };
@@ -178,6 +179,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     height: m.height ?? undefined,
     size: m.size ?? undefined,
     blurhash: m.blurhash ?? undefined,
+    waveform: m.waveform ?? undefined,
     posterUrl: m.posterUrl ?? undefined,
     originalName: m.originalName ?? undefined,
     summary: m.summary ?? undefined,

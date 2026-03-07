@@ -81,6 +81,7 @@ export interface MediaView {
   height?: number;
   size?: number;
   blurhash?: string;
+  waveform?: string;
   posterUrl?: string;
   originalName?: string;
   summary?: string;

@@ -112,8 +112,8 @@ const FileIcon = ({
     );
   }
 
-  // ZIP — vertical zipper dashes
-  if (mimeType === "application/zip") {
+  // Archive — vertical zipper dashes
+  if (getMediaCategory(mimeType) === "archive") {
     return (
       <svg {...base}>
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -162,10 +162,12 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
   const audios = attachments.filter(
     (a) => getMediaCategory(a.mimeType) === "audio",
   );
-  // Audio is included in the gallery row (not separate)
+  // Everything that isn't image/video/audio/text renders as a document card
   const documents = attachments.filter((a) => {
     const cat = getMediaCategory(a.mimeType);
-    return cat === "document" || cat === "archive";
+    return (
+      cat !== "image" && cat !== "video" && cat !== "audio" && cat !== "text"
+    );
   });
   const texts = attachments.filter(
     (a) => getMediaCategory(a.mimeType) === "text",
@@ -363,49 +365,90 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
 
             if (item._kind === "audio") {
               const audioName = item.originalName || item.altText || "Audio";
-              const audioSize = item.size != null ? formatSize(item.size) : "";
               return (
-                <jant-audio-card
+                <div
                   key={item.id}
-                  class="media-gallery-card shrink-0 snap-start"
+                  class={`media-gallery-card media-audio-card shrink-0 snap-start${item.waveform ? " has-waveform" : ""}`}
                   style={{
                     width: `${docCardWidth}px`,
                     height: `${rowHeight}px`,
                   }}
-                  data-src={item.url}
-                  data-type={item.mimeType}
-                  data-name={audioName}
-                  data-size={audioSize}
                 >
-                  {/* SSR fallback — replaced by Lit on upgrade */}
-                  <div class="media-gallery-card-inner">
-                    <div class="media-gallery-card-icon">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                  {/* Hidden audio element — JS controls it */}
+                  <audio preload="none" class="media-audio-el">
+                    <source src={item.url} type={item.mimeType} />
+                  </audio>
+
+                  {/* Artwork area */}
+                  <div class="media-audio-artwork">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M9 18V5l12-2v13" />
+                      <circle cx="6" cy="18" r="3" />
+                      <circle cx="18" cy="16" r="3" />
+                    </svg>
+                  </div>
+
+                  {/* Bottom control strip */}
+                  <div class="media-audio-controls">
+                    {/* Range fallback — hidden when waveform loads */}
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      value="0"
+                      class="media-audio-range"
+                      data-audio-range
+                      aria-label="Seek"
+                    />
+                    {/* Waveform canvas — replaces range after first play */}
+                    <canvas
+                      class="media-audio-waveform"
+                      data-audio-waveform
+                      data-audio-peaks={item.waveform || undefined}
+                    />
+
+                    {/* Title + play button row */}
+                    <div class="media-audio-row">
+                      <div class="media-audio-info">
+                        <div class="media-audio-title" title={audioName}>
+                          {audioName}
+                        </div>
+                        <div class="media-audio-time" data-audio-time>
+                          0:00
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        class="media-audio-play-btn"
+                        data-audio-play
+                        aria-label="Play"
                       >
-                        <path d="M9 18V5l12-2v13" />
-                        <circle cx="6" cy="18" r="3" />
-                        <circle cx="18" cy="16" r="3" />
-                      </svg>
-                    </div>
-                    <span class="media-gallery-card-summary">{audioName}</span>
-                    {audioSize && (
-                      <span class="media-gallery-card-meta">{audioSize}</span>
-                    )}
-                    <div class="media-audio-play-overlay">
-                      <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
+                        <svg
+                          class="media-audio-icon-play"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                        <svg
+                          class="media-audio-icon-pause"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M6 4h4v16H6zM14 4h4v16h-4z" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
-                </jant-audio-card>
+                </div>
               );
             }
 

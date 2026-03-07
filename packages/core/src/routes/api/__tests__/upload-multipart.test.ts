@@ -273,7 +273,7 @@ describe("multipart upload API routes", () => {
   });
 
   describe("initiate", () => {
-    it("rejects invalid file types", async () => {
+    it("accepts any file type", async () => {
       const { app } = createTestAppWithStorage({
         authenticated: true,
         storage: createMockMultipartStorage(),
@@ -284,13 +284,13 @@ describe("multipart upload API routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          filename: "malware.exe",
+          filename: "file.exe",
           contentType: "application/x-msdownload",
           size: 100_000_000,
         }),
       });
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(200);
     });
 
     it("returns session id and uploadId on success", async () => {

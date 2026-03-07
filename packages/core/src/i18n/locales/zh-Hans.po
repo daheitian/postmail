@@ -244,8 +244,8 @@ msgstr ""
 
 #. @context: Button to go back to media list
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Back"
-msgstr "返回"
+#~ msgid "Back"
+#~ msgstr "返回"
 
 #. @context: Dashboard header link to go back to the public site
 #: src/ui/layouts/DashLayout.tsx
@@ -312,8 +312,8 @@ msgstr ""
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Click image to view full size"
-msgstr "点击图片查看完整尺寸"
+#~ msgid "Click image to view full size"
+#~ msgstr "点击图片查看完整尺寸"
 
 #. @context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads
 #: src/ui/compose/ComposeDialog.tsx
@@ -387,8 +387,8 @@ msgstr "内容"
 #. @context: Button to copy URL to clipboard
 #: src/ui/dash/media/ViewMediaContent.tsx
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Copy"
-msgstr "复制"
+#~ msgid "Copy"
+#~ msgstr "复制"
 
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
@@ -545,8 +545,8 @@ msgstr ""
 
 #. @context: Button to delete media
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Delete Media"
-msgstr "删除媒体"
+#~ msgid "Delete Media"
+#~ msgstr "删除媒体"
 
 #. @context: Button to delete page
 #: src/routes/dash/pages.tsx
@@ -873,8 +873,8 @@ msgstr ""
 
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx
-msgid "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
-msgstr ""
+#~ msgid "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
+#~ msgstr ""
 
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx
@@ -999,8 +999,8 @@ msgstr "最低评分"
 
 #. @context: Media detail section - Markdown snippet
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Markdown"
-msgstr "Markdown"
+#~ msgid "Markdown"
+#~ msgstr "Markdown"
 
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1023,10 +1023,8 @@ msgstr ""
 #~ msgstr "最大可见导航链接"
 
 #. @context: Compose toolbar - media tooltip
-#. @context: Media main heading
 #. @context: Post form field - media attachments
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/posts/PostForm.tsx
 msgid "Media"
 msgstr "媒体"
@@ -1485,8 +1483,8 @@ msgstr ""
 
 #. @context: Media detail section - preview
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Preview"
-msgstr "预览"
+#~ msgid "Preview"
+#~ msgstr "预览"
 
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
@@ -1496,8 +1494,6 @@ msgid "Previous"
 msgstr "上一页"
 
 #. @context: Avatar upload button text while generating favicon variants
-#. @context: Upload status - processing
-#: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "处理中..."
@@ -1963,8 +1959,8 @@ msgstr ""
 
 #. @context: Warning message before deleting media
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "This file will be permanently removed from storage. Posts using it will show a broken link."
-msgstr ""
+#~ msgid "This file will be permanently removed from storage. Posts using it will show a broken link."
+#~ msgstr ""
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2091,8 +2087,8 @@ msgstr "更新"
 
 #. @context: Button to upload media file
 #: src/ui/dash/media/MediaListContent.tsx
-msgid "Upload"
-msgstr "上传"
+#~ msgid "Upload"
+#~ msgstr "上传"
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2101,10 +2097,8 @@ msgstr "上传头像"
 
 #. @context: Error toast when avatar upload fails
 #. @context: Error when file upload fails
-#. @context: Upload error message
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
-#: src/ui/dash/media/MediaListContent.tsx
 msgid "Upload didn't go through. Try again in a moment."
 msgstr ""
 
@@ -2120,17 +2114,13 @@ msgstr "上传失败。请再试一次。"
 
 #. @context: Avatar upload button text while uploading
 #. @context: Toast shown during background upload
-#. @context: Upload status - uploading
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/media/MediaListContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Uploading..."
 msgstr "上传中..."
 
-#. @context: Media detail section - URL
 #. @context: Nav item URL field
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/media/ViewMediaContent.tsx
 msgid "URL"
 msgstr "网址"
 
@@ -2158,8 +2148,8 @@ msgstr "URL安全标识符（小写字母、数字、连字符）。对于CJK标
 
 #. @context: Media URL helper text
 #: src/ui/dash/media/ViewMediaContent.tsx
-msgid "Use this URL to embed the media in your posts."
-msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
+#~ msgid "Use this URL to embed the media in your posts."
+#~ msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
 
 #. @context: Button to view item on public site
 #. @context: Button to view post on public site
@@ -2245,8 +2235,8 @@ msgstr ""
 
 #. @context: Empty state message when no media exists
 #: src/ui/dash/media/MediaListContent.tsx
-msgid "Your media library is empty. Upload your first file to get started."
-msgstr ""
+#~ msgid "Your media library is empty. Upload your first file to get started."
+#~ msgstr ""
 
 #. @context: Setup form field - user name
 #: src/routes/auth/setup.tsx

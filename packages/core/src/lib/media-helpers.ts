@@ -63,6 +63,7 @@ export function buildMediaMap(
           previewUrl,
           alt: m.alt,
           blurhash: m.blurhash,
+          waveform: m.waveform,
           posterUrl,
           width: m.width,
           height: m.height,

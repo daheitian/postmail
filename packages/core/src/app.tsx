@@ -157,14 +157,77 @@ export function createApp(): App {
   });
 
   // Media files from storage (path matches storage key: media/YYYY/MM/uuid.ext)
+  // Supports HTTP Range requests for seekable audio/video playback.
   app.get("/media/*", async (c) => {
     const storage = c.var.storage;
     if (!storage) {
       return c.notFound();
     }
 
-    // The storage key is the full path without the leading "/"
     const storageKey = c.req.path.slice(1);
+    const rangeHeader = c.req.header("Range");
+
+    // First fetch without range to get the total size
+    if (rangeHeader) {
+      // Get total size via a full request first
+      const full = await storage.get(storageKey);
+      if (!full) return c.notFound();
+
+      const totalSize = full.size;
+      if (!totalSize) {
+        // Driver doesn't report size — fall back to full response
+        const headers = new Headers();
+        headers.set(
+          "Content-Type",
+          full.contentType || "application/octet-stream",
+        );
+        headers.set("Cache-Control", "public, max-age=31536000, immutable");
+        return new Response(full.body, { headers });
+      }
+
+      // Cancel the full stream — we'll re-fetch with the range
+      await full.body.cancel();
+
+      // Parse "bytes=START-END" (END is optional)
+      const match = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader);
+      if (!match) {
+        return new Response("Invalid Range", {
+          status: 416,
+          headers: { "Content-Range": `bytes */${totalSize}` },
+        });
+      }
+
+      const start = parseInt(match[1] ?? "0", 10);
+      const end = match[2]
+        ? Math.min(parseInt(match[2], 10), totalSize - 1)
+        : totalSize - 1;
+
+      if (start > end || start >= totalSize) {
+        return new Response("Range Not Satisfiable", {
+          status: 416,
+          headers: { "Content-Range": `bytes */${totalSize}` },
+        });
+      }
+
+      const rangeObj = await storage.get(storageKey, {
+        range: { offset: start, length: end - start + 1 },
+      });
+      if (!rangeObj) return c.notFound();
+
+      const headers = new Headers();
+      headers.set(
+        "Content-Type",
+        rangeObj.contentType || "application/octet-stream",
+      );
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("Accept-Ranges", "bytes");
+      headers.set("Content-Range", `bytes ${start}-${end}/${totalSize}`);
+      headers.set("Content-Length", String(end - start + 1));
+
+      return new Response(rangeObj.body, { status: 206, headers });
+    }
+
+    // No Range header — serve full file
     const object = await storage.get(storageKey);
     if (!object) {
       return c.notFound();
@@ -176,6 +239,10 @@ export function createApp(): App {
       object.contentType || "application/octet-stream",
     );
     headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    headers.set("Accept-Ranges", "bytes");
+    if (object.size) {
+      headers.set("Content-Length", String(object.size));
+    }
 
     return new Response(object.body, { headers });
   });

@@ -247,6 +247,9 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     }
   }
 
+  // Apply 0023: add waveform column to media
+  applyMigration(sqlite, "0023_quick_lord_hawal.sql");
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

@@ -5,6 +5,7 @@
 import type { MiddlewareHandler } from "hono";
 import type { I18n } from "@lingui/core";
 import { createI18n, isLocale, baseLocale, type Locale } from "./i18n.js";
+import { detectLocaleFromHeader } from "./detect.js";
 declare module "hono" {
   interface ContextVariableMap {
     lang: Locale;
@@ -30,6 +31,11 @@ export function i18nMiddleware(): MiddlewareHandler {
       const siteLang = allSettings["SITE_LANGUAGE"];
       if (siteLang && isLocale(siteLang)) {
         lang = siteLang;
+      } else {
+        const acceptLanguage = c.req.header("Accept-Language");
+        if (acceptLanguage) {
+          lang = detectLocaleFromHeader(acceptLanguage);
+        }
       }
     }
 

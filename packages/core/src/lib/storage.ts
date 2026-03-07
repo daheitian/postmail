@@ -32,10 +32,15 @@ export interface StorageDriver {
     opts?: { contentType?: string },
   ): Promise<void>;
 
-  /** Retrieve a file from storage. Returns null if not found. */
+  /** Retrieve a file (or byte range) from storage. Returns null if not found. */
   get(
     key: string,
-  ): Promise<{ body: ReadableStream; contentType?: string } | null>;
+    opts?: { range?: { offset: number; length: number } },
+  ): Promise<{
+    body: ReadableStream;
+    contentType?: string;
+    size?: number;
+  } | null>;
 
   /** Delete a file from storage */
   delete(key: string): Promise<void>;
@@ -107,12 +112,16 @@ export function createR2Driver(r2: R2Bucket): StorageDriver {
       });
     },
 
-    async get(key) {
-      const object = await r2.get(key);
+    async get(key, opts) {
+      const object = await r2.get(
+        key,
+        opts?.range ? { range: opts.range } : undefined,
+      );
       if (!object) return null;
       return {
         body: object.body,
         contentType: object.httpMetadata?.contentType ?? undefined,
+        size: object.size,
       };
     },
 
@@ -171,7 +180,14 @@ interface PutObjectInput {
   ContentType?: string;
 }
 
-/** Input for GetObject / DeleteObject */
+/** Input for GetObject */
+interface GetObjectInput {
+  Bucket: string;
+  Key: string;
+  Range?: string;
+}
+
+/** Input for DeleteObject */
 interface ObjectKeyInput {
   Bucket: string;
   Key: string;
@@ -181,13 +197,14 @@ interface ObjectKeyInput {
 interface S3GetObjectOutput {
   Body?: { transformToWebStream(): ReadableStream };
   ContentType?: string;
+  ContentLength?: number;
 }
 
 /** Lazy-loaded S3 client bundle */
 interface S3ClientBundle {
   send: (command: unknown) => Promise<unknown>;
   PutObjectCommand: S3CommandCtor<PutObjectInput>;
-  GetObjectCommand: S3CommandCtor<ObjectKeyInput>;
+  GetObjectCommand: S3CommandCtor<GetObjectInput>;
   DeleteObjectCommand: S3CommandCtor<ObjectKeyInput>;
   bucket: string;
 }
@@ -265,18 +282,22 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
       await s3.send(command);
     },
 
-    async get(key) {
+    async get(key, opts) {
       const s3 = await getClient();
       try {
         const command = new s3.GetObjectCommand({
           Bucket: s3.bucket,
           Key: key,
+          Range: opts?.range
+            ? `bytes=${opts.range.offset}-${opts.range.offset + opts.range.length - 1}`
+            : undefined,
         });
         const response = (await s3.send(command)) as S3GetObjectOutput;
         if (!response.Body) return null;
         return {
           body: response.Body.transformToWebStream(),
           contentType: response.ContentType ?? undefined,
+          size: response.ContentLength ?? undefined,
         };
       } catch (err: unknown) {
         // NoSuchKey → return null instead of throwing

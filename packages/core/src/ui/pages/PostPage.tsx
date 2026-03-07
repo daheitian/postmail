@@ -8,6 +8,7 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { PostPageProps } from "../../types.js";
 import { MediaGallery } from "../shared/MediaGallery.js";
+import { StarRating } from "../shared/StarRating.js";
 
 export const PostPage: FC<PostPageProps> = ({ post }) => {
   const { t } = useLingui();
@@ -40,6 +41,8 @@ export const PostPage: FC<PostPageProps> = ({ post }) => {
           <MediaGallery attachments={post.media} />
         </div>
       )}
+
+      <StarRating rating={post.rating} />
 
       <footer
         class="mt-6 pt-4 border-t text-sm text-muted-foreground post-menu-footer"

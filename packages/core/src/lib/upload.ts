@@ -6,100 +6,191 @@
 
 import { uuidv7 } from "uuidv7";
 
-/** MIME types allowed for upload — images */
+/** MIME types — images */
 const IMAGE_MIME_TYPES = [
   "image/jpeg",
   "image/png",
   "image/gif",
   "image/webp",
   "image/svg+xml",
+  "image/avif",
+  "image/bmp",
+  "image/x-icon",
 ] as const;
 
-/** MIME types allowed for upload — video */
+/** MIME types — video */
 const VIDEO_MIME_TYPES = [
   "video/mp4",
   "video/webm",
   "video/quicktime",
+  "video/x-msvideo",
+  "video/x-matroska",
+  "video/mpeg",
+  "video/3gpp",
+  "video/x-flv",
+  "video/ogg",
 ] as const;
 
-/** MIME types allowed for upload — audio */
+/** MIME types — audio */
 const AUDIO_MIME_TYPES = [
   "audio/mpeg",
   "audio/ogg",
   "audio/wav",
   "audio/mp4",
   "audio/x-m4a",
+  "audio/flac",
+  "audio/aac",
+  "audio/webm",
+  "audio/x-aiff",
+  "audio/opus",
+  "audio/3gpp",
+  "audio/midi",
 ] as const;
 
-/** MIME types allowed for upload — documents */
-const DOCUMENT_MIME_TYPES = ["application/pdf"] as const;
+/** MIME types — documents (books, PDFs) */
+const DOCUMENT_MIME_TYPES = [
+  "application/pdf",
+  "application/epub+zip",
+  "application/x-mobipocket-ebook",
+  "application/vnd.amazon.ebook",
+] as const;
 
-/** MIME types allowed for upload — text */
+/** MIME types — office documents */
+const OFFICE_MIME_TYPES = [
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.oasis.opendocument.text",
+  "application/vnd.oasis.opendocument.spreadsheet",
+  "application/vnd.oasis.opendocument.presentation",
+  "application/vnd.apple.pages",
+  "application/vnd.apple.numbers",
+  "application/vnd.apple.keynote",
+] as const;
+
+/** MIME types — text & structured data */
 const TEXT_MIME_TYPES = [
   "text/plain",
   "text/markdown",
   "text/csv",
   "text/x-tiptap+json",
+  "text/html",
+  "text/css",
+  "text/javascript",
+  "text/xml",
+  "text/rtf",
+  "text/tab-separated-values",
+  "text/calendar",
+  "application/json",
+  "application/xml",
+  "application/yaml",
+  "application/toml",
 ] as const;
 
-/** MIME types allowed for upload — archives */
-const ARCHIVE_MIME_TYPES = ["application/zip"] as const;
-
-/** All allowed MIME types */
-const ALLOWED_UPLOAD_TYPES = [
-  ...IMAGE_MIME_TYPES,
-  ...VIDEO_MIME_TYPES,
-  ...AUDIO_MIME_TYPES,
-  ...DOCUMENT_MIME_TYPES,
-  ...TEXT_MIME_TYPES,
-  ...ARCHIVE_MIME_TYPES,
+/** MIME types — archives */
+const ARCHIVE_MIME_TYPES = [
+  "application/zip",
+  "application/x-tar",
+  "application/gzip",
+  "application/x-bzip2",
+  "application/x-7z-compressed",
+  "application/x-rar-compressed",
+  "application/zstd",
 ] as const;
+
+/** MIME types — fonts */
+const FONT_MIME_TYPES = [
+  "font/ttf",
+  "font/otf",
+  "font/woff",
+  "font/woff2",
+] as const;
+
+/** MIME types — 3D & design */
+const THREE_D_MIME_TYPES = [
+  "model/gltf+json",
+  "model/gltf-binary",
+  "model/obj",
+  "application/x-figma",
+  "image/vnd.dxf",
+] as const;
+
+/** MIME types — data & code */
+const CODE_MIME_TYPES = [
+  "application/sql",
+  "application/wasm",
+  "application/x-ipynb+json",
+  "application/x-sh",
+  "application/x-python-code",
+] as const;
+
+/** Lookup table from MIME type to category */
+const MIME_CATEGORY_MAP = new Map<string, MediaCategory>([
+  ...IMAGE_MIME_TYPES.map((t) => [t, "image" as const] as const),
+  ...VIDEO_MIME_TYPES.map((t) => [t, "video" as const] as const),
+  ...AUDIO_MIME_TYPES.map((t) => [t, "audio" as const] as const),
+  ...DOCUMENT_MIME_TYPES.map((t) => [t, "document" as const] as const),
+  ...OFFICE_MIME_TYPES.map((t) => [t, "office" as const] as const),
+  ...TEXT_MIME_TYPES.map((t) => [t, "text" as const] as const),
+  ...ARCHIVE_MIME_TYPES.map((t) => [t, "archive" as const] as const),
+  ...FONT_MIME_TYPES.map((t) => [t, "font" as const] as const),
+  ...THREE_D_MIME_TYPES.map((t) => [t, "3d" as const] as const),
+  ...CODE_MIME_TYPES.map((t) => [t, "code" as const] as const),
+]);
 
 /**
- * Accept string for file inputs, covering all allowed upload types.
+ * Accept string for file inputs. Accepts all file types.
  *
  * @example
  * ```ts
  * <input type="file" accept={UPLOAD_ACCEPT} />
  * ```
  */
-export const UPLOAD_ACCEPT = (ALLOWED_UPLOAD_TYPES as readonly string[]).join(
-  ",",
-);
+export const UPLOAD_ACCEPT = "*/*";
 
 export type MediaCategory =
   | "image"
   | "video"
   | "audio"
   | "document"
+  | "office"
   | "text"
-  | "archive";
+  | "archive"
+  | "font"
+  | "3d"
+  | "code";
 
 /**
  * Returns the media category for a given MIME type.
+ * Unrecognized types default to "archive".
  *
  * @param mimeType - The MIME type to classify
- * @returns The media category, or null if the MIME type is not supported
+ * @returns The media category
  * @example
  * ```ts
  * getMediaCategory("video/mp4"); // "video"
  * getMediaCategory("text/plain"); // "text"
+ * getMediaCategory("application/octet-stream"); // "archive"
  * ```
  */
-export function getMediaCategory(mimeType: string): MediaCategory | null {
+export function getMediaCategory(mimeType: string): MediaCategory {
+  // Exact match from known types
+  const exact = MIME_CATEGORY_MAP.get(mimeType);
+  if (exact) return exact;
+
+  // Prefix-based fallback for unknown subtypes
   if (mimeType.startsWith("image/")) return "image";
   if (mimeType.startsWith("video/")) return "video";
   if (mimeType.startsWith("audio/")) return "audio";
-  if (mimeType === "application/pdf") return "document";
-  if (
-    mimeType === "text/plain" ||
-    mimeType === "text/markdown" ||
-    mimeType === "text/csv" ||
-    mimeType === "text/x-tiptap+json"
-  )
-    return "text";
-  if (mimeType === "application/zip") return "archive";
-  return null;
+  if (mimeType.startsWith("font/")) return "font";
+  if (mimeType.startsWith("model/")) return "3d";
+  if (mimeType.startsWith("text/")) return "text";
+
+  // Unknown types default to archive
+  return "archive";
 }
 
 /**
@@ -146,6 +237,7 @@ export function validateUploadFile(
 /**
  * Validates file metadata (type and size) without requiring a File object.
  * Used by the multipart upload initiation endpoint which receives JSON metadata.
+ * All MIME types are accepted; unrecognized types are categorized as archive.
  *
  * @param contentType - The MIME type of the file
  * @param size - The file size in bytes
@@ -165,12 +257,6 @@ export function validateUploadFileMetadata(
     if (!isImageMimeType(contentType)) {
       return "File type not allowed.";
     }
-  } else if (
-    !ALLOWED_UPLOAD_TYPES.includes(
-      contentType as (typeof ALLOWED_UPLOAD_TYPES)[number],
-    )
-  ) {
-    return "File type not allowed.";
   }
   const maxMB = options.maxFileSizeMB;
   if (size > maxMB * 1024 * 1024) {

@@ -12,7 +12,10 @@ import type { JantComposeEditor } from "./components/jant-compose-editor.js";
 import { AudioProcessor } from "./audio-processor.js";
 import { ImageProcessor } from "./image-processor.js";
 import { VideoProcessor } from "./video-processor.js";
-import { extractMediaMetadata } from "./media-metadata.js";
+import {
+  extractMediaMetadata,
+  extractAudioWaveform,
+} from "./media-metadata.js";
 import {
   showToast,
   showToastWithAction,
@@ -45,6 +48,7 @@ async function uploadFile(
     let width: number | undefined;
     let height: number | undefined;
     let blurhash: string | undefined;
+    let waveform: string | undefined;
     let poster: Blob | undefined;
 
     if (file.type.startsWith("video/")) {
@@ -80,6 +84,13 @@ async function uploadFile(
         return null;
       }
 
+      // Extract waveform from the original file before AudioProcessor runs
+      try {
+        waveform = await extractAudioWaveform(file);
+      } catch {
+        // Waveform extraction is best-effort
+      }
+
       editor?.updateAttachmentStatus(clientId, "processing", null, null);
       const result = await AudioProcessor.processToFile(file, (progress) => {
         editor?.updateAttachmentProgress(clientId, progress);
@@ -99,11 +110,13 @@ async function uploadFile(
     editor?.updateAttachmentStatus(clientId, "uploading", null, null);
 
     // Extract metadata for non-video files (video metadata comes from VideoProcessor)
+    // Audio waveform is already extracted above (before AudioProcessor runs).
     if (!file.type.startsWith("video/")) {
       const meta = await extractMediaMetadata(toUpload);
       width ??= meta.width;
       height ??= meta.height;
       blurhash ??= meta.blurhash;
+      waveform ??= meta.waveform;
       poster ??= meta.poster;
     }
 
@@ -111,7 +124,7 @@ async function uploadFile(
     if (toUpload.size >= MULTIPART_THRESHOLD) {
       const result = await uploadMultipart({
         file: toUpload,
-        metadata: { width, height, blurhash, poster },
+        metadata: { width, height, blurhash, waveform, poster },
         onProgress: (p) => editor?.updateAttachmentProgress(clientId, p),
       });
       editor?.updateAttachmentStatus(clientId, "done", result.id, null);
@@ -138,6 +151,7 @@ async function uploadFile(
     if (width) formData.append("width", String(width));
     if (height) formData.append("height", String(height));
     if (blurhash) formData.append("blurhash", blurhash);
+    if (waveform) formData.append("waveform", waveform);
     if (poster) formData.append("poster", poster, "poster.webp");
     if (summary) formData.append("summary", summary);
 

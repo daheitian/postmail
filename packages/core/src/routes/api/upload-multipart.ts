@@ -41,6 +41,7 @@ interface MultipartSession {
   width?: number;
   height?: number;
   blurhash?: string;
+  waveform?: string;
   posterKey?: string;
   parts: UploadedPart[];
   createdAt: number;
@@ -71,6 +72,7 @@ const InitiateSchema = z.object({
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
   blurhash: z.string().max(200).optional(),
+  waveform: z.string().max(2000).optional(),
 });
 
 const CompleteSchema = z.object({
@@ -125,6 +127,7 @@ multipartUploadApiRoutes.post("/", async (c) => {
     width: data.width,
     height: data.height,
     blurhash: data.blurhash,
+    waveform: data.waveform,
     parts: [],
     createdAt: Date.now(),
   });
@@ -202,6 +205,7 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     width: session.width && session.width > 0 ? session.width : undefined,
     height: session.height && session.height > 0 ? session.height : undefined,
     blurhash: session.blurhash,
+    waveform: session.waveform,
     posterKey: session.posterKey,
   });
 

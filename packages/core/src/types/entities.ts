@@ -47,6 +47,7 @@ export interface Media {
   alt: string | null;
   position: number;
   blurhash: string | null;
+  waveform: string | null;
   posterKey: string | null;
   summary: string | null;
   chars: number | null;
@@ -60,6 +61,7 @@ export interface MediaAttachment {
   previewUrl: string;
   alt: string | null;
   blurhash: string | null;
+  waveform: string | null;
   posterUrl: string | null;
   width: number | null;
   height: number | null;

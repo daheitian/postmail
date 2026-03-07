@@ -884,7 +884,7 @@ export class JantComposeEditor extends LitElement {
 
   // ── Helpers ──────────────────────────────────────────────────────
 
-  private _getCategory(a: ComposeAttachment): MediaCategory | null {
+  private _getCategory(a: ComposeAttachment): MediaCategory {
     return getMediaCategory(a.file.type);
   }
 
@@ -912,7 +912,7 @@ export class JantComposeEditor extends LitElement {
       inner = `<text x="12" y="16.5" text-anchor="middle" fill="currentColor" stroke="none" font-size="10" font-weight="700" font-family="system-ui, sans-serif">#</text>`;
     } else if (mimeType === "text/csv") {
       inner = `<line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="8" y1="18" x2="16" y2="18"/><line x1="10.7" y1="12" x2="10.7" y2="18"/><line x1="13.3" y1="12" x2="13.3" y2="18"/>`;
-    } else if (mimeType === "application/zip") {
+    } else if (getMediaCategory(mimeType) === "archive") {
       inner = `<line x1="12" y1="10" x2="12" y2="11.5"/><line x1="12" y1="13" x2="12" y2="14.5"/><line x1="12" y1="16" x2="12" y2="17.5"/>`;
     } else if (mimeType === "text/x-tiptap+json") {
       inner = `<line x1="16" y1="11" x2="8" y2="11"/><line x1="16" y1="14" x2="8" y2="14"/><line x1="12" y1="17" x2="8" y2="17"/>`;
@@ -1149,7 +1149,8 @@ export class JantComposeEditor extends LitElement {
       `;
     }
 
-    if (category === "archive") {
+    // Default for non-visual types: generic file card (archive, office, font, 3d, code, etc.)
+    if (category !== "image") {
       return html`
         <div class="compose-attachment-file-card">
           <div class="compose-attachment-file-icon">
@@ -1163,7 +1164,7 @@ export class JantComposeEditor extends LitElement {
       `;
     }
 
-    // Default: image
+    // Image
     return html`
       <div class="compose-attachment-thumb">
         <img src=${a.previewUrl} alt="" class="compose-attachment-img" />
@@ -1255,11 +1256,7 @@ export class JantComposeEditor extends LitElement {
 
   private _renderMediaAttachment(a: ComposeAttachment, i: number) {
     const category = this._getCategory(a);
-    const isFileCard =
-      category === "audio" ||
-      category === "document" ||
-      category === "text" ||
-      category === "archive";
+    const isFileCard = category !== "image" && category !== "video";
 
     return html`
       <div class="compose-attachment">

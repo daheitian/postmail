@@ -56,6 +56,7 @@ export {
   isValidLanguage,
   getLanguageDisplayName,
   getSupportedLanguages,
+  detectLocaleFromHeader,
 } from "./detect.js";
 
 // Hono middleware
