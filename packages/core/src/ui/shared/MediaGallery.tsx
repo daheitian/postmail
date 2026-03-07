@@ -2,9 +2,8 @@
  * Media Gallery Component
  *
  * Renders media attachments in a unified horizontal row: images with
- * lightbox support, videos with play overlay, documents as styled card
- * tiles, and attached texts as summary cards. Audio renders as compact
- * player cards below the gallery row.
+ * lightbox support, videos with play overlay, audio/documents as 3:4
+ * styled card tiles, and attached texts as summary cards.
  */
 
 import type { FC } from "hono/jsx";
@@ -163,6 +162,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
   const audios = attachments.filter(
     (a) => getMediaCategory(a.mimeType) === "audio",
   );
+  // Audio is included in the gallery row (not separate)
   const documents = attachments.filter((a) => {
     const cat = getMediaCategory(a.mimeType);
     return cat === "document" || cat === "archive";
@@ -193,7 +193,8 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
   type GalleryItem =
     | (MediaView & { _kind: "image" | "video"; _lbIdx: number })
     | (MediaView & { _kind: "document" })
-    | (MediaView & { _kind: "text" });
+    | (MediaView & { _kind: "text" })
+    | (MediaView & { _kind: "audio" });
 
   const galleryItems: GalleryItem[] = [
     ...images.map(
@@ -208,6 +209,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
           _lbIdx: images.length + i,
         }) as GalleryItem,
     ),
+    ...audios.map((a) => ({ ...a, _kind: "audio" as const }) as GalleryItem),
     ...documents.map(
       (d) => ({ ...d, _kind: "document" as const }) as GalleryItem,
     ),
@@ -223,8 +225,9 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
     firstItem !== undefined &&
     (firstItem._kind === "image" || firstItem._kind === "video");
 
-  // When text/document attachments are mixed with visuals, use a compact row
-  const hasNonVisual = texts.length > 0 || documents.length > 0;
+  // When non-visual attachments are mixed with visuals, use a compact row
+  const hasNonVisual =
+    texts.length > 0 || documents.length > 0 || audios.length > 0;
   const COMPACT_HEIGHT = 160;
 
   // Row height adapts to the first visual item's aspect ratio
@@ -358,6 +361,54 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
               );
             }
 
+            if (item._kind === "audio") {
+              const audioName = item.originalName || item.altText || "Audio";
+              const audioSize = item.size != null ? formatSize(item.size) : "";
+              return (
+                <jant-audio-card
+                  key={item.id}
+                  class="media-gallery-card shrink-0 snap-start"
+                  style={{
+                    width: `${docCardWidth}px`,
+                    height: `${rowHeight}px`,
+                  }}
+                  data-src={item.url}
+                  data-type={item.mimeType}
+                  data-name={audioName}
+                  data-size={audioSize}
+                >
+                  {/* SSR fallback — replaced by Lit on upgrade */}
+                  <div class="media-gallery-card-inner">
+                    <div class="media-gallery-card-icon">
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M9 18V5l12-2v13" />
+                        <circle cx="6" cy="18" r="3" />
+                        <circle cx="18" cy="16" r="3" />
+                      </svg>
+                    </div>
+                    <span class="media-gallery-card-summary">{audioName}</span>
+                    {audioSize && (
+                      <span class="media-gallery-card-meta">{audioSize}</span>
+                    )}
+                    <div class="media-audio-play-overlay">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                  </div>
+                </jant-audio-card>
+              );
+            }
+
             if (item._kind === "document") {
               return (
                 <a
@@ -418,34 +469,6 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
           })}
         </div>
       )}
-
-      {/* Audio cards (remain below the gallery — they need inline players) */}
-      {audios.map((a) => (
-        <div key={a.id} class="media-audio-card">
-          <div class="media-audio-icon">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9 18V5l12-2v13" />
-              <circle cx="6" cy="18" r="3" />
-              <circle cx="18" cy="16" r="3" />
-            </svg>
-          </div>
-          {a.altText && <span class="media-audio-name">{a.altText}</span>}
-          <div class="media-audio-player">
-            <audio controls preload="metadata">
-              <source src={a.url} type={a.mimeType} />
-            </audio>
-          </div>
-        </div>
-      ))}
     </>
   );
 };

@@ -32,6 +32,7 @@ import "./client/components/jant-post-form.js";
 import "./client/post-form-bridge.js";
 import "./client/components/jant-nav-manager.js";
 import "./client/nav-manager-bridge.js";
+import "./client/components/jant-audio-card.js";
 import "./client/components/jant-media-lightbox.js";
 import "./client/components/jant-text-preview.js";
 import "./client/components/jant-post-menu.js";
