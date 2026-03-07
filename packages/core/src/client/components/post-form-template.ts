@@ -1,6 +1,91 @@
 import { html, nothing } from "lit";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import type { JantPostForm } from "./jant-post-form.js";
+import type { PostMediaItem } from "./post-form-types.js";
+import { getMediaCategory } from "../../lib/upload.js";
+
+function renderFileIcon(mimeType: string) {
+  const doc = `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>`;
+
+  let inner: string;
+  if (mimeType === "application/pdf") {
+    inner = `<text x="12" y="16.5" text-anchor="middle" fill="currentColor" stroke="none" font-size="6" font-weight="700" font-family="system-ui, sans-serif">PDF</text>`;
+  } else if (mimeType === "text/markdown") {
+    inner = `<text x="12" y="16.5" text-anchor="middle" fill="currentColor" stroke="none" font-size="10" font-weight="700" font-family="system-ui, sans-serif">#</text>`;
+  } else if (mimeType === "text/csv") {
+    inner = `<line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="8" y1="18" x2="16" y2="18"/><line x1="10.7" y1="12" x2="10.7" y2="18"/><line x1="13.3" y1="12" x2="13.3" y2="18"/>`;
+  } else if (mimeType === "application/zip") {
+    inner = `<line x1="12" y1="10" x2="12" y2="11.5"/><line x1="12" y1="13" x2="12" y2="14.5"/><line x1="12" y1="16" x2="12" y2="17.5"/>`;
+  } else if (mimeType.startsWith("audio/")) {
+    return html`<svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      ${unsafeSVG(
+        `<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>`,
+      )}
+    </svg>`;
+  } else if (mimeType.startsWith("video/")) {
+    return html`<svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      ${unsafeSVG(
+        `<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>`,
+      )}
+    </svg>`;
+  } else {
+    inner = `<line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/>`;
+  }
+
+  return html`<svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    ${unsafeSVG(doc + inner)}
+  </svg>`;
+}
+
+function renderMediaThumb(item: PostMediaItem) {
+  const category = getMediaCategory(item.mimeType);
+
+  if (category === "image") {
+    return html`<img
+      src=${item.thumbUrl}
+      alt=${item.alt}
+      class="w-full h-full object-cover rounded-lg border"
+      loading="lazy"
+    />`;
+  }
+
+  return html`<div
+    class="w-full h-full rounded-lg border bg-muted flex flex-col items-center justify-center gap-1 p-1 text-muted-foreground"
+  >
+    ${renderFileIcon(item.mimeType)}
+    <span class="text-[10px] leading-tight text-center truncate w-full px-1"
+      >${item.originalName}</span
+    >
+  </div>`;
+}
 
 function renderMediaList(component: JantPostForm) {
   const { media, labels, _mediaIds } = component;
@@ -32,12 +117,7 @@ function renderMediaList(component: JantPostForm) {
       }
 
       return html`<div class="relative group aspect-square" data-media-id=${id}>
-        <img
-          src=${item.thumbUrl}
-          alt=${item.alt}
-          class="w-full h-full object-cover rounded-lg border"
-          loading="lazy"
-        />
+        ${renderMediaThumb(item)}
         <button
           type="button"
           class="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-black/60 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"

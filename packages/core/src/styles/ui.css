@@ -1490,21 +1490,24 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-width: 120px;
-    min-height: 100px;
+    gap: 8px;
+    width: 120px;
+    height: 160px;
     padding: 16px 12px;
     background-color: var(--site-nav-hover-bg);
+    border: 1px solid var(--site-divider);
     border-radius: var(--media-radius, 0.5rem);
     text-align: center;
   }
 
   .compose-attachment:not(:only-child) .compose-attachment-file-card {
-    min-height: 200px;
+    width: 150px;
+    height: 200px;
   }
 
   .compose-attachment-file-icon {
     color: var(--site-text-secondary);
+    opacity: 0.6;
   }
 
   .compose-attachment-file-name {
@@ -1529,18 +1532,20 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    width: 160px;
-    min-height: 100px;
+    gap: 8px;
+    width: 120px;
+    height: 160px;
     padding: 12px;
     background-color: var(--site-nav-hover-bg);
+    border: 1px solid var(--site-divider);
     border-radius: var(--media-radius, 0.5rem);
     text-align: center;
     cursor: pointer;
   }
 
   .compose-attachment:not(:only-child) .compose-attachment-text-card {
-    min-height: 200px;
+    width: 150px;
+    height: 200px;
   }
 
   .compose-attachment-text-summary {

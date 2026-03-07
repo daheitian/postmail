@@ -163,9 +163,10 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
   const audios = attachments.filter(
     (a) => getMediaCategory(a.mimeType) === "audio",
   );
-  const documents = attachments.filter(
-    (a) => getMediaCategory(a.mimeType) === "document",
-  );
+  const documents = attachments.filter((a) => {
+    const cat = getMediaCategory(a.mimeType);
+    return cat === "document" || cat === "archive";
+  });
   const texts = attachments.filter(
     (a) => getMediaCategory(a.mimeType) === "text",
   );

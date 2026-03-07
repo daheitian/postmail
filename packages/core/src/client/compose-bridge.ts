@@ -9,6 +9,7 @@ import type { ComposeSubmitDetail } from "./components/compose-types.js";
 import type { ComposeAttachment } from "./components/compose-types.js";
 import type { JantComposeDialog } from "./components/jant-compose-dialog.js";
 import type { JantComposeEditor } from "./components/jant-compose-editor.js";
+import { AudioProcessor } from "./audio-processor.js";
 import { ImageProcessor } from "./image-processor.js";
 import { VideoProcessor } from "./video-processor.js";
 import { extractMediaMetadata } from "./media-metadata.js";
@@ -67,6 +68,23 @@ async function uploadFile(
       height = result.height;
       blurhash = result.blurhash;
       poster = result.poster;
+    } else if (file.type.startsWith("audio/")) {
+      // Audio: transcode to AAC (.m4a) (requires WebCodecs)
+      if (!AudioProcessor.isSupported()) {
+        editor?.updateAttachmentStatus(
+          clientId,
+          "error",
+          null,
+          "Your browser doesn't support audio processing. Use Chrome or Edge to upload audio.",
+        );
+        return null;
+      }
+
+      editor?.updateAttachmentStatus(clientId, "processing", null, null);
+      const result = await AudioProcessor.processToFile(file, (progress) => {
+        editor?.updateAttachmentProgress(clientId, progress);
+      });
+      toUpload = result.file;
     } else if (file.type.startsWith("image/")) {
       // Image: resize + convert to WebP
       const result = await ImageProcessor.processToFile(file);

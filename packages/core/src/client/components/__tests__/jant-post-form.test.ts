@@ -71,7 +71,13 @@ const collections: PostCollectionOption[] = [
 ];
 
 const media: PostMediaItem[] = [
-  { id: "m1", thumbUrl: "https://cdn.example.com/m1.jpg", alt: "Media 1" },
+  {
+    id: "m1",
+    thumbUrl: "https://cdn.example.com/m1.jpg",
+    alt: "Media 1",
+    mimeType: "image/jpeg",
+    originalName: "photo.jpg",
+  },
 ];
 
 async function createElement(

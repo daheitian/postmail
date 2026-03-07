@@ -9,6 +9,7 @@
  * 5. Triggers form.requestSubmit() — Datastar handles upload + SSE response
  */
 
+import { AudioProcessor } from "./audio-processor.js";
 import { ImageProcessor } from "./image-processor.js";
 import { VideoProcessor } from "./video-processor.js";
 import { extractMediaMetadata } from "./media-metadata.js";
@@ -155,6 +156,35 @@ async function handleUpload(
       height = result.height;
       blurhash = result.blurhash;
       poster = result.poster;
+    } else if (file.type.startsWith("audio/")) {
+      // Audio: transcode to AAC (.m4a) (requires WebCodecs)
+      if (!AudioProcessor.isSupported()) {
+        showPlaceholderError(
+          placeholder,
+          file.name,
+          "Your browser doesn't support audio processing. Use Chrome or Edge to upload audio.",
+        );
+        input.value = "";
+        return;
+      }
+
+      const statusEl = document.getElementById("upload-status");
+      const processPromise = AudioProcessor.processToFile(file, (progress) => {
+        if (statusEl) {
+          statusEl.textContent = `${processingText} ${Math.round(progress * 100)}%`;
+        }
+      });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () =>
+            reject(
+              new Error("Audio processing timed out. Try a smaller file."),
+            ),
+          120_000,
+        ),
+      );
+      const result = await Promise.race([processPromise, timeoutPromise]);
+      toUpload = result.file;
     } else if (file.type.startsWith("image/")) {
       // Image: resize + convert to WebP
       const result = await ImageProcessor.processToFile(file);

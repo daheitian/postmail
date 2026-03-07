@@ -71,6 +71,8 @@ export interface PostMediaItem {
   id: string;
   thumbUrl: string;
   alt: string;
+  mimeType: string;
+  originalName: string;
 }
 
 export interface PostSubmitDetail {

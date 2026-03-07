@@ -14,6 +14,7 @@ import {
   getPublicUrlForProvider,
 } from "../../../lib/image.js";
 import { renderCollectionIcon } from "../../../lib/icons.js";
+import { isImageMimeType } from "../../../lib/upload.js";
 
 export interface PostFormProps {
   post?: Post;
@@ -221,16 +222,20 @@ export const PostForm: FC<PostFormProps> = ({
         s3PublicUrl,
       );
       const mediaUrl = getMediaUrl(m.storageKey, pUrl);
-      const thumbUrl = getImageUrl(mediaUrl, imageTransformUrl, {
-        width: 150,
-        quality: 80,
-        format: "auto",
-        fit: "cover",
-      });
+      const thumbUrl = isImageMimeType(m.mimeType)
+        ? getImageUrl(mediaUrl, imageTransformUrl, {
+            width: 150,
+            quality: 80,
+            format: "auto",
+            fit: "cover",
+          })
+        : mediaUrl;
       return {
         id: m.id,
         thumbUrl,
         alt: m.alt || m.originalName,
+        mimeType: m.mimeType,
+        originalName: m.originalName,
       };
     }),
   ).replace(/</g, "\\u003c");
