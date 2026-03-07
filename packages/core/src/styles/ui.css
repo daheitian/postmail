@@ -281,31 +281,49 @@
     background-position: center;
   }
 
-  /* Thread reply container with vertical connector line */
-  .feed-replies {
+  /* Thread group: timeline layout — vertical line with dot markers */
+  .thread-group {
     position: relative;
-    margin-left: 16px;
-    padding-left: 16px;
-    margin-top: 8px;
+    padding-left: 24px;
   }
 
-  .feed-replies::before {
+  /* Continuous vertical line through dot centers */
+  .thread-group::before {
     content: "";
     position: absolute;
-    left: 0;
+    left: 5px;
     top: 0;
     bottom: 0;
     width: 2px;
     background-color: var(--site-threadline);
   }
 
-  /* Individual reply in thread */
-  .feed-reply {
-    padding: 12px 0;
+  /* Individual post in a thread group */
+  .thread-item {
+    position: relative;
+    padding: 8px 0;
   }
 
-  .feed-reply + .feed-reply {
-    border-top: var(--card-border-width) solid var(--site-divider);
+  .thread-item:first-child {
+    padding-top: 0;
+  }
+
+  .thread-item:last-child {
+    padding-bottom: 0;
+  }
+
+  /* Dot marker at each post position */
+  .thread-item::before {
+    content: "";
+    position: absolute;
+    left: -24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--site-threadline);
+    z-index: 1;
   }
 
   /* Compact text for thread replies */

@@ -1,7 +1,7 @@
 /**
  * Thread View Component
  *
- * Displays a thread of posts with reply chain visualization
+ * Flat sibling layout with a continuous vertical line connecting all posts.
  */
 
 import type { FC } from "hono/jsx";
@@ -19,17 +19,12 @@ export interface ThreadViewProps {
 const ThreadPost: FC<{
   post: Post;
   isCurrent: boolean;
-  isRoot: boolean;
-}> = ({ post, isCurrent, isRoot }) => {
+}> = ({ post, isCurrent }) => {
   const { t } = useLingui();
   return (
     <article
       id={`post-${post.id}`}
-      class={`h-entry p-4 rounded-lg border ${
-        isCurrent
-          ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-          : "border-border hover:border-muted-foreground/30"
-      }`}
+      class={`h-entry ${isCurrent ? "bg-primary/5 rounded-lg p-3" : ""}`}
     >
       {post.title && (
         <h2 class="p-name text-lg font-medium mb-2">
@@ -51,14 +46,6 @@ const ThreadPost: FC<{
         >
           {time.formatDate(post.publishedAt)}
         </time>
-        {isRoot && (
-          <span class="text-xs">
-            {t({
-              message: "Thread start",
-              comment: "@context: Thread view indicator - first post in thread",
-            })}
-          </span>
-        )}
         {!isCurrent && (
           <a href={`/${post.slug}`} class="text-xs hover:underline">
             {t({
@@ -79,13 +66,12 @@ export const ThreadView: FC<ThreadViewProps> = ({ posts, currentPostId }) => {
   }
 
   const rootPost = posts[0];
-  const isThread = posts.length > 1;
 
   // Single post, no thread
-  if (!isThread) {
+  if (posts.length <= 1) {
     return (
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Early return for empty array at line 73 guarantees posts[0] exists
-      <ThreadPost post={rootPost!} isCurrent={true} isRoot={false} />
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Early return for empty array at line 68 guarantees posts[0] exists
+      <ThreadPost post={rootPost!} isCurrent={true} />
     );
   }
 
@@ -105,22 +91,10 @@ export const ThreadView: FC<ThreadViewProps> = ({ posts, currentPostId }) => {
     <div class="thread-view">
       <div class="mb-4 text-sm text-muted-foreground">{threadLabel}</div>
 
-      <div class="flex flex-col gap-3">
-        {posts.map((post, index) => (
-          <div key={post.id} class="relative">
-            {/* Connection line */}
-            {index > 0 && (
-              <div class="absolute left-6 -top-3 w-0.5 h-3 bg-border" />
-            )}
-            {index < posts.length - 1 && (
-              <div class="absolute left-6 -bottom-3 w-0.5 h-3 bg-border" />
-            )}
-
-            <ThreadPost
-              post={post}
-              isCurrent={post.id === currentPostId}
-              isRoot={index === 0}
-            />
+      <div class="thread-group">
+        {posts.map((post) => (
+          <div key={post.id} class="thread-item">
+            <ThreadPost post={post} isCurrent={post.id === currentPostId} />
           </div>
         ))}
       </div>

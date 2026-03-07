@@ -2301,8 +2301,8 @@ msgstr "This reset link is no longer valid. Request a new one to continue."
 
 #. @context: Thread view indicator - first post in thread
 #: src/ui/shared/ThreadView.tsx
-msgid "Thread start"
-msgstr "Thread start"
+#~ msgid "Thread start"
+#~ msgstr "Thread start"
 
 #. @context: Thread view header - multiple posts
 #: src/ui/shared/ThreadView.tsx
