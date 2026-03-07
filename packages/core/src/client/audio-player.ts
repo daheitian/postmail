@@ -315,16 +315,38 @@ function previewCanvasSeek(canvas: HTMLCanvasElement, e: PointerEvent) {
   }
 }
 
-/** Commit canvas seek to the audio element. */
-function commitCanvasSeek(canvas: HTMLCanvasElement) {
+/** Commit canvas seek and start playback if paused. */
+async function commitCanvasSeek(canvas: HTMLCanvasElement) {
   const card = canvas.closest<HTMLElement>(".media-audio-card");
   if (!card) return;
   const audio = getAudio(card);
   if (!audio) return;
 
-  const dur = audio.duration;
-  if (isFinite(dur) && dur > 0) {
-    audio.currentTime = seekRatio * dur;
+  if (audio.paused) {
+    // Not playing — start playback first (loads audio if preload="none"),
+    // then seek once duration is available.
+    if (activeCard && activeCard !== card) stopAll();
+    activeCard = card;
+    card.classList.add("is-playing");
+    try {
+      await audio.play();
+    } catch {
+      card.classList.remove("is-playing");
+      activeCard = null;
+      return;
+    }
+    const dur = audio.duration;
+    if (isFinite(dur) && dur > 0) {
+      audio.currentTime = seekRatio * dur;
+    }
+    rafId = requestAnimationFrame(tick);
+    loadWaveform(card);
+  } else {
+    // Already playing — just seek
+    const dur = audio.duration;
+    if (isFinite(dur) && dur > 0) {
+      audio.currentTime = seekRatio * dur;
+    }
   }
 }
 
