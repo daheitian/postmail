@@ -18,10 +18,8 @@ import {
 } from "./media-metadata.js";
 import {
   showToast,
-  showToastWithAction,
   showPersistentToast,
   replaceWithAutoClose,
-  replaceWithAutoCloseAction,
 } from "./toast.js";
 import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
 import { getMediaCategory } from "../lib/upload.js";
@@ -335,7 +333,6 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   // Get labels for toast messages
   const labels = composeEl?.labels;
   const uploadingMsg = labels?.uploading ?? "Uploading...";
-  const publishedMsg = labels?.published ?? "Published!";
   const hasPending = detail.pendingAttachments.length > 0;
 
   // Show persistent toast only when uploads are still in flight
@@ -351,17 +348,6 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       showToast(msg, type);
     }
   };
-  const toastAction = (
-    msg: string,
-    action: { label: string; href: string },
-  ) => {
-    if (hasPending) {
-      replaceWithAutoCloseAction("compose-deferred", msg, action);
-    } else {
-      showToastWithAction(msg, action);
-    }
-  };
-
   const isEdit = !!detail.editPostId;
   let draftFallback: "upload" | "server" | null = null;
 
@@ -507,26 +493,9 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     const data = await res.json();
 
     if (data.status === "published") {
-      // Only insert into timeline on the first page of the latest feed
-      if (data.cardHtml) {
-        const timeline = document.querySelector<HTMLElement>(
-          '[data-page="home"] #timeline-items',
-        );
-        const pageParam = new URLSearchParams(globalThis.location.search).get(
-          "page",
-        );
-        const isFirstPage = !pageParam || pageParam === "1";
-        if (timeline && isFirstPage) {
-          document.getElementById("empty-timeline")?.remove();
-          timeline.insertAdjacentHTML("afterbegin", data.cardHtml);
-        }
-      }
-
-      const viewLabel = labels?.view ?? "View";
-      toastAction(publishedMsg, {
-        label: viewLabel,
-        href: data.permalink,
-      });
+      // Reload the page so the timeline picks up the new post via a
+      // full assembleTimeline() pass (correct thread previews, filters, etc.)
+      globalThis.location.reload();
     } else {
       toastMsg(data.toast ?? "Draft saved.");
     }

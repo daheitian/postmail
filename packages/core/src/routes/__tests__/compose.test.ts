@@ -32,10 +32,9 @@ describe("Compose Routes", () => {
       expect(res.headers.get("Content-Type")).toBe("text/event-stream");
 
       const text = await res.text();
-      // SSE prepends the card to the timeline
+      // SSE closes the compose dialog and resets signals
       expect(text).toContain("datastar-patch-elements");
-      expect(text).toContain('data-format="note"');
-      expect(text).toContain("selector #timeline-items");
+      expect(text).toContain("compose-dialog");
 
       // Verify post was created
       const posts = await services.posts.list();
@@ -62,9 +61,6 @@ describe("Compose Routes", () => {
       expect(res.status).toBe(200);
       expect(res.headers.get("Content-Type")).toBe("text/event-stream");
 
-      const text = await res.text();
-      expect(text).toContain('data-format="link"');
-
       const posts = await services.posts.list();
       expect(posts).toHaveLength(1);
       expect(posts[0].format).toBe("link");
@@ -88,9 +84,6 @@ describe("Compose Routes", () => {
 
       expect(res.status).toBe(200);
       expect(res.headers.get("Content-Type")).toBe("text/event-stream");
-
-      const text = await res.text();
-      expect(text).toContain('data-format="quote"');
 
       const posts = await services.posts.list();
       expect(posts).toHaveLength(1);
@@ -230,7 +223,7 @@ describe("Compose Routes", () => {
 
       const data = await res.json();
       expect(data.status).toBe("published");
-      expect(data.cardHtml).toContain('data-format="note"');
+      expect(data.permalink).toBeDefined();
 
       const posts = await services.posts.list();
       expect(posts).toHaveLength(1);

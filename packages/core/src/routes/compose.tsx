@@ -2,22 +2,19 @@
  * Compose Route
  *
  * Handles post creation from the public-site compose dialog.
- * Published posts are prepended to the homepage timeline via SSE.
+ * On publish the client reloads the page to pick up the new post.
  * Drafts close the dialog and show a confirmation toast.
  */
 
-import { Hono, type Context } from "hono";
+import { Hono } from "hono";
 import { msg } from "@lingui/core/macro";
-import type { Bindings, Post } from "../types.js";
+import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { requireAuth } from "../middleware/auth.js";
 import { CreatePostSchema } from "../lib/schemas.js";
 import { ValidationError } from "../lib/errors.js";
 import { sse, dsToast } from "../lib/sse.js";
 import { getI18n } from "../i18n/index.js";
-import { toPostView, createMediaContext } from "../lib/view.js";
-import { buildMediaMap } from "../lib/media-helpers.js";
-import { TimelineItemFromPost } from "../ui/feed/TimelineItem.js";
 import { fromUid } from "../lib/uid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -46,42 +43,6 @@ const INITIAL_SIGNALS = {
 /** Script fragment that closes the compose dialog and self-removes */
 const CLOSE_DIALOG_SCRIPT =
   "<script data-effect=\"el.remove()\">document.getElementById('compose-dialog').close()</script>";
-
-/** Build a timeline card HTML string for a newly created post */
-async function buildTimelineCard(
-  c: Context<Env>,
-  post: Post,
-  mediaIds: string[] | undefined,
-): Promise<string> {
-  const mediaCtx = createMediaContext(c.var.appConfig);
-  let postView;
-
-  if (mediaIds && mediaIds.length > 0) {
-    const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
-    const mediaMap = buildMediaMap(
-      rawMediaMap,
-      mediaCtx.r2PublicUrl,
-      mediaCtx.imageTransformUrl,
-      mediaCtx.s3PublicUrl,
-    );
-    postView = toPostView(
-      {
-        ...post,
-        mediaAttachments: mediaMap.get(post.id) ?? [],
-      },
-      mediaCtx,
-    );
-  } else {
-    postView = toPostView({ ...post, mediaAttachments: [] }, mediaCtx);
-  }
-
-  return (
-    <div>
-      <TimelineItemFromPost post={postView} />
-      <hr class="feed-divider" />
-    </div>
-  ).toString();
-}
 
 composeRoutes.post("/", async (c) => {
   const i18n = getI18n(c);
@@ -187,9 +148,7 @@ composeRoutes.post("/", async (c) => {
       });
     }
 
-    const cardHtml = await buildTimelineCard(c, post, data.mediaIds);
-    const permalink = `/${post.slug}`;
-    return c.json({ status: "published" as const, cardHtml, permalink });
+    return c.json({ status: "published" as const, permalink: `/${post.slug}` });
   }
 
   // ── SSE response mode (used by Datastar) ─────────────────────────
@@ -211,13 +170,7 @@ composeRoutes.post("/", async (c) => {
     });
   }
 
-  const cardHtml = await buildTimelineCard(c, post, data.mediaIds);
-
   return sse(c, async (stream) => {
-    await stream.patchElements(cardHtml, {
-      mode: "prepend",
-      selector: "#timeline-items",
-    });
     await stream.patchElements(CLOSE_DIALOG_SCRIPT, {
       mode: "append",
       selector: "body",
