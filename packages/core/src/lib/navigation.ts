@@ -83,7 +83,7 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
 
   // Only load collections when authenticated (for compose dialog)
   if (isAuthenticated) {
-    collections = await c.var.services.collections.list();
+    collections = await c.var.services.collections.listByRecentActivity();
   }
 
   return {

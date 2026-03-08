@@ -5,7 +5,7 @@
  * Sidebar ordering is managed through the sidebar_items table with fractional indexing.
  */
 
-import { eq, asc, sql, and, inArray } from "drizzle-orm";
+import { eq, asc, sql, and, inArray, desc } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
@@ -24,6 +24,8 @@ export interface CollectionService {
   getById(id: string): Promise<Collection | null>;
   getBySlug(slug: string): Promise<Collection | null>;
   list(): Promise<Collection[]>;
+  /** List collections sorted by most recent post addition (for compose dialog) */
+  listByRecentActivity(): Promise<Collection[]>;
   create(data: CreateCollection): Promise<Collection>;
   update(id: string, data: UpdateCollection): Promise<Collection | null>;
   delete(id: string): Promise<boolean>;
@@ -119,6 +121,22 @@ export function createCollectionService(db: Database): CollectionService {
         .from(collections)
         .orderBy(asc(collections.createdAt));
       return rows.map(toCollection);
+    },
+
+    async listByRecentActivity() {
+      const lastAddedAt = sql<
+        number | null
+      >`MAX(${postCollections.createdAt})`.as("last_added_at");
+      const rows = await db
+        .select({ collection: collections, lastAddedAt })
+        .from(collections)
+        .leftJoin(
+          postCollections,
+          eq(collections.id, postCollections.collectionId),
+        )
+        .groupBy(collections.id)
+        .orderBy(desc(sql`last_added_at`), asc(collections.createdAt));
+      return rows.map((r) => toCollection(r.collection));
     },
 
     async create(data) {
