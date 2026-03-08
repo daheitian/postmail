@@ -22,6 +22,13 @@
       "when": 1772973467110,
       "tag": "0002_complex_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1772973888182,
+      "tag": "0003_quick_johnny_blaze",
+      "breakpoints": true
     }
   ]
 }

@@ -215,19 +215,15 @@ export const settings = sqliteTable("setting", {
 // API Tokens
 // =============================================================================
 
-export const apiTokens = sqliteTable(
-  "api_token",
-  {
-    id: text("id").primaryKey(), // UUIDv7
-    name: text("name").notNull(), // User-assigned label
-    tokenHash: text("token_hash").notNull(), // SHA-256 hex
-    prefix: text("prefix").notNull(), // First 8 hex chars for display
-    lastUsedAt: integer("last_used_at"), // Unix seconds, null if never used
-    createdAt: integer("created_at").notNull(),
-    updatedAt: integer("updated_at").notNull(),
-  },
-  (table) => [index("idx_api_token_token_hash").on(table.tokenHash)],
-);
+export const apiTokens = sqliteTable("api_token", {
+  id: text("id").primaryKey(), // UUIDv7
+  name: text("name").notNull(), // User-assigned label
+  tokenHash: text("token_hash").notNull().unique(), // SHA-256 hex
+  prefix: text("prefix").notNull(), // First 8 hex chars for display
+  lastUsedAt: integer("last_used_at"), // Unix seconds, null if never used
+  createdAt: integer("created_at").notNull(),
+  updatedAt: integer("updated_at").notNull(),
+});
 
 // =============================================================================
 // better-auth tables
