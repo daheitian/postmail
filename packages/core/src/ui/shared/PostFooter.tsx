@@ -80,7 +80,11 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail }) => {
     >
       <div class="post-footer-meta">
         {detail ? (
-          <time class="dt-published" datetime={post.publishedAt}>
+          <time
+            class="dt-published"
+            datetime={post.publishedAt}
+            title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
+          >
             {post.publishedAtFormatted}
           </time>
         ) : (
@@ -88,7 +92,11 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail }) => {
             href={post.permalink}
             class="u-url text-xs text-muted-foreground hover:underline"
           >
-            <time class="dt-published" datetime={post.publishedAt}>
+            <time
+              class="dt-published"
+              datetime={post.publishedAt}
+              title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
+            >
               {post.publishedAtFormatted}
             </time>
           </a>

@@ -459,10 +459,13 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
   const variant = getTileVariant(post);
   const firstImage = post.media.find((m) => m.mimeType.startsWith("image/"));
   const text = getTileText(post);
+  const formatLabel = getFormatLabel(post.format);
 
   return (
     <a
       href={post.permalink}
+      target="_blank"
+      rel="noopener"
       class={`archive-tile archive-tile-${variant}`}
       data-post
       data-format={post.format}
@@ -483,6 +486,14 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
           <span class="archive-tile-text-clamp">{text}</span>
         </div>
       )}
+
+      {/* Hover overlay: date + format */}
+      <div class="archive-tile-overlay">
+        <span class="archive-tile-overlay-date">
+          {post.publishedAtFormatted}
+        </span>
+        <span class="archive-tile-overlay-format">{formatLabel}</span>
+      </div>
     </a>
   );
 };
