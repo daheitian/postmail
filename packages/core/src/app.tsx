@@ -337,15 +337,6 @@ export function createApp(): App {
   app.route("/settings/custom-urls", customUrlsRoutes);
   app.route("/settings", settingsRoutes);
 
-  // Backward compat: redirect old /dash/* URLs to new paths
-  app.get("/dash/settings/*", (c) => {
-    const newPath = c.req.path.replace("/dash/settings", "/settings");
-    return c.redirect(newPath, 301);
-  });
-  app.get("/dash/settings", (c) => c.redirect("/settings", 301));
-  app.get("/dash/*", (c) => c.redirect("/settings", 301));
-  app.get("/dash", (c) => c.redirect("/settings", 301));
-
   // Protected API routes (multipart must be registered before base upload)
   app.route("/api/upload/multipart", multipartUploadApiRoutes);
   app.route("/api/upload", uploadApiRoutes);

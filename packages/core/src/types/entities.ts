@@ -126,3 +126,11 @@ export interface Setting {
   value: string;
   updatedAt: number;
 }
+
+/** Latest-reply context for a thread root, used in timeline display */
+export interface ThreadTimelineContext {
+  latestReply: Post;
+  /** Parent of latestReply, only if it's not the root */
+  parentReply: Post | null;
+  totalReplyCount: number;
+}

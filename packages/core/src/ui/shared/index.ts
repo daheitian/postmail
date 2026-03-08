@@ -9,4 +9,3 @@ export {
   type PagePaginationProps,
 } from "./Pagination.js";
 export { getPageNumbers } from "../../lib/pagination.js";
-export { ThreadView, type ThreadViewProps } from "./ThreadView.js";

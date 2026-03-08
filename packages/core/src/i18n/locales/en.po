@@ -18,6 +18,12 @@ msgstr ""
 #~ msgid "{count} replies"
 #~ msgstr "{count} replies"
 
+#. @context: Link showing count of hidden thread posts between root and latest
+#. placeholder {0}: hiddenCount === 1 ? "post" : "posts"
+#: src/ui/feed/ThreadPreview.tsx
+msgid "{hiddenCount} more {0}"
+msgstr "{hiddenCount} more {0}"
+
 #. @context: Custom CSS textarea placeholder
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "/* Your custom CSS here */"
@@ -127,8 +133,8 @@ msgstr "Add Link"
 
 #. @context: Button to open media picker
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Add Media"
-msgstr "Add Media"
+#~ msgid "Add Media"
+#~ msgstr "Add Media"
 
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
@@ -266,13 +272,13 @@ msgstr "Author (optional)"
 
 #. @context: Post slug help text
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Auto-generated from title if left empty"
-msgstr "Auto-generated from title if left empty"
+#~ msgid "Auto-generated from title if left empty"
+#~ msgstr "Auto-generated from title if left empty"
 
 #. @context: Post slug placeholder
 #: src/ui/dash/posts/PostForm.tsx
-msgid "auto-generated-from-title"
-msgstr "auto-generated-from-title"
+#~ msgid "auto-generated-from-title"
+#~ msgstr "auto-generated-from-title"
 
 #. @context: Settings item — avatar settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -320,7 +326,6 @@ msgstr "Blog Avatar"
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
-#. @context: Button to cancel form
 #. @context: Button to cancel settings changes
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
@@ -329,7 +334,6 @@ msgstr "Blog Avatar"
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -413,8 +417,8 @@ msgstr "Collections"
 
 #. @context: Post form field - assign to collections
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Collections (optional)"
-msgstr "Collections (optional)"
+#~ msgid "Collections (optional)"
+#~ msgstr "Collections (optional)"
 
 #. @context: Appearance settings heading
 #. @context: Settings item description for color theme
@@ -445,8 +449,8 @@ msgstr "Confirm Password"
 
 #. @context: Post form field
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Content"
-msgstr "Content"
+#~ msgid "Content"
+#~ msgstr "Content"
 
 #. @context: Confirm close dialog - cancel and return to editor
 #: src/ui/compose/ComposeDialog.tsx
@@ -473,16 +477,14 @@ msgid "Couldn't delete. Try again in a moment."
 msgstr "Couldn't delete. Try again in a moment."
 
 #. @context: Toast when publish fails and post is auto-saved as draft
-#. @context: Toast when publish fails and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/posts/PostForm.tsx
 msgid "Couldn't publish. Saved as draft."
 msgstr "Couldn't publish. Saved as draft."
 
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Couldn't save your post. Try again in a moment."
-msgstr "Couldn't save your post. Try again in a moment."
+#~ msgid "Couldn't save your post. Try again in a moment."
+#~ msgstr "Couldn't save your post. Try again in a moment."
 
 #. @context: Error toast when nav save fails
 #. @context: Toast when save fails
@@ -660,8 +662,8 @@ msgstr "Delete this collection permanently? Posts inside won't be removed."
 
 #. @context: Confirmation dialog when deleting a post from the list
 #: src/ui/dash/PostList.tsx
-msgid "Delete this post permanently? This can't be undone."
-msgstr "Delete this post permanently? This can't be undone."
+#~ msgid "Delete this post permanently? This can't be undone."
+#~ msgstr "Delete this post permanently? This can't be undone."
 
 #. @context: Toast after deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -737,18 +739,14 @@ msgstr "Don't save"
 
 #. @context: Button to exit reorder mode
 #. @context: Close attached text panel
-#. @context: Close media picker button
 #. @context: Compose button - update existing post
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Done"
 msgstr "Done"
 
 #. @context: Post status badge - draft
-#. @context: Post status option
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Draft"
 msgstr "Draft"
@@ -781,10 +779,8 @@ msgstr "Drafts"
 #~ msgstr "e.g. The Verge, John Doe"
 
 #. @context: Button to edit item
-#. @context: Button to edit post
 #. @context: Per-collection edit action
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/PostList.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Edit"
 msgstr "Edit"
@@ -905,11 +901,9 @@ msgstr "Favicon and header icon"
 #. @context: Browse filter label
 #. @context: Browse filter label for featured posts
 #. @context: Post badge - featured
-#. @context: Visibility option - highlighted on featured page
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
@@ -947,8 +941,8 @@ msgstr "Font Theme"
 
 #. @context: Post form field - post format
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Format"
-msgstr "Format"
+#~ msgid "Format"
+#~ msgstr "Format"
 
 #. @context: Search results count - multiple
 #. placeholder {0}: String(results.length)
@@ -1127,10 +1121,8 @@ msgstr "link"
 #. @context: Compose format tab
 #. @context: Post format badge - link
 #. @context: Post format label - link
-#. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/FormatBadge.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Link"
 msgstr "Link"
@@ -1157,8 +1149,8 @@ msgstr "Load more"
 
 #. @context: Loading state for media picker
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Loading..."
-msgstr "Loading..."
+#~ msgid "Loading..."
+#~ msgstr "Loading..."
 
 #. @context: Page slug validation message
 #: src/ui/dash/PageForm.tsx
@@ -1198,9 +1190,7 @@ msgstr "Max visible links saved"
 #~ msgstr "Max Visible Nav Links"
 
 #. @context: Compose toolbar - media tooltip
-#. @context: Post form field - media attachments
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/posts/PostForm.tsx
 msgid "Media"
 msgstr "Media"
 
@@ -1407,8 +1397,8 @@ msgstr "No matching collections."
 
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
-msgid "No media attached."
-msgstr "No media attached."
+#~ msgid "No media attached."
+#~ msgstr "No media attached."
 
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
@@ -1508,10 +1498,8 @@ msgstr "No results. Try different keywords."
 #. @context: Compose format tab
 #. @context: Post format badge - note
 #. @context: Post format label - note
-#. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/FormatBadge.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Note"
 msgstr "Note"
@@ -1528,8 +1516,8 @@ msgstr "Nothing here yet."
 
 #. @context: Empty state message when no posts exist
 #: src/ui/dash/PostList.tsx
-msgid "Nothing published yet. Write your first post to get started."
-msgstr "Nothing published yet. Write your first post to get started."
+#~ msgid "Nothing published yet. Write your first post to get started."
+#~ msgstr "Nothing published yet. Write your first post to get started."
 
 #. @context: Pagination next page
 #: src/ui/pages/HomePage.tsx
@@ -1645,16 +1633,12 @@ msgstr "Path"
 #~ msgid "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 #~ msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 
-#. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
 #: src/ui/pages/PostPage.tsx
-#: src/ui/shared/ThreadView.tsx
 msgid "Permalink"
 msgstr "Permalink"
 
 #. @context: Post badge - pinned
-#. @context: Post form checkbox - pin to top
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Pinned"
 msgstr "Pinned"
@@ -1678,13 +1662,13 @@ msgstr "Post"
 
 #. @context: Toast after creating post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Post published."
-msgstr "Post published."
+#~ msgid "Post published."
+#~ msgstr "Post published."
 
 #. @context: Post title placeholder
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Post title..."
-msgstr "Post title..."
+#~ msgid "Post title..."
+#~ msgstr "Post title..."
 
 #. @context: Toast after editing post
 #: src/ui/dash/posts/PostForm.tsx
@@ -1693,8 +1677,8 @@ msgstr "Post title..."
 
 #. @context: Toast after editing post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Post updated."
-msgstr "Post updated."
+#~ msgid "Post updated."
+#~ msgstr "Post updated."
 
 #. @context: Compose loading text while posting
 #: src/ui/compose/ComposeDialog.tsx
@@ -1755,17 +1739,15 @@ msgstr "Processing..."
 
 #. @context: Visibility option - appears everywhere
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Public"
-msgstr "Public"
+#~ msgid "Public"
+#~ msgstr "Public"
 
 #. @context: Button to publish new post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Publish"
-msgstr "Publish"
+#~ msgid "Publish"
+#~ msgstr "Publish"
 
 #. @context: Post status badge - published
-#. @context: Post status option
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
 msgstr "Published"
@@ -1803,18 +1785,16 @@ msgstr "Published!"
 #. @context: Compose format tab
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
-#. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/FormatBadge.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Quote"
 msgstr "Quote"
 
 #. @context: Post form field - quoted text
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Quote Text"
-msgstr "Quote Text"
+#~ msgid "Quote Text"
+#~ msgstr "Quote Text"
 
 #. @context: Post format label plural - quotes
 #: src/ui/pages/ArchivePage.tsx
@@ -1856,11 +1836,9 @@ msgstr "Redirects and custom paths"
 #. @context: Button to remove icon
 #. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
-#. @context: Remove media attachment button
 #. @context: Remove system item from navigation
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Remove"
@@ -2003,8 +1981,8 @@ msgstr "Search..."
 
 #. @context: Media picker dialog title
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Select Media"
-msgstr "Select Media"
+#~ msgid "Select Media"
+#~ msgstr "Select Media"
 
 #. @context: Settings section heading for SEO
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2048,18 +2026,19 @@ msgstr "Settings updated."
 #~ msgstr "Setup"
 
 #. @context: Link to show remaining thread replies
-#. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
 #: src/ui/feed/ThreadPreview.tsx
-msgid "Show {remainingCount} more {0}"
-msgstr "Show {remainingCount} more {0}"
+#~ msgid "Show {remainingCount} more {0}"
+#~ msgstr "Show {remainingCount} more {0}"
 
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Show less"
 msgstr "Show less"
 
+#. @context: Button to expand faded thread context
 #. @context: Expand reply context
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/feed/ThreadPreview.tsx
 msgid "Show more"
 msgstr "Show more"
 
@@ -2106,8 +2085,8 @@ msgstr "Slug"
 
 #. @context: Post form field - URL slug
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Slug (optional)"
-msgstr "Slug (optional)"
+#~ msgid "Slug (optional)"
+#~ msgstr "Slug (optional)"
 
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
@@ -2149,8 +2128,8 @@ msgstr "Source link (optional)"
 
 #. @context: Post form field
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Status"
-msgstr "Status"
+#~ msgid "Status"
+#~ msgstr "Status"
 
 #. @context: Error when file storage is not set up
 #: src/routes/api/upload.ts
@@ -2241,8 +2220,8 @@ msgstr "The slug of the target post or collection"
 
 #. @context: Quote text placeholder
 #: src/ui/dash/posts/PostForm.tsx
-msgid "The text being quoted..."
-msgstr "The text being quoted..."
+#~ msgid "The text being quoted..."
+#~ msgstr "The text being quoted..."
 
 #. @context: Page slug helper text
 #: src/ui/dash/PageForm.tsx
@@ -2306,13 +2285,13 @@ msgstr "This reset link is no longer valid. Request a new one to continue."
 
 #. @context: Thread view header - multiple posts
 #: src/ui/shared/ThreadView.tsx
-msgid "Thread with {count} posts"
-msgstr "Thread with {count} posts"
+#~ msgid "Thread with {count} posts"
+#~ msgstr "Thread with {count} posts"
 
 #. @context: Thread view header - single post
 #: src/ui/shared/ThreadView.tsx
-msgid "Thread with 1 post"
-msgstr "Thread with 1 post"
+#~ msgid "Thread with 1 post"
+#~ msgstr "Thread with 1 post"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2332,8 +2311,8 @@ msgstr "Title"
 
 #. @context: Post form field
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Title (optional)"
-msgstr "Title (optional)"
+#~ msgid "Title (optional)"
+#~ msgstr "Title (optional)"
 
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
@@ -2376,21 +2355,19 @@ msgstr "Typography"
 #~ msgstr "Un-nav"
 
 #. @context: Post badge - unlisted
-#. @context: Visibility option - hidden from feeds
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Unlisted"
 msgstr "Unlisted"
 
 #. @context: Default title for untitled post
 #: src/ui/dash/PostList.tsx
-msgid "Untitled"
-msgstr "Untitled"
+#~ msgid "Untitled"
+#~ msgstr "Untitled"
 
 #. @context: Button to update existing post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Update"
-msgstr "Update"
+#~ msgid "Update"
+#~ msgstr "Update"
 
 #. @context: Button to save collection changes
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -2448,8 +2425,8 @@ msgstr "URL"
 
 #. @context: Post form field - source URL
 #: src/ui/dash/posts/PostForm.tsx
-msgid "URL (optional)"
-msgstr "URL (optional)"
+#~ msgid "URL (optional)"
+#~ msgstr "URL (optional)"
 
 #. @context: Settings item description for redirects
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -2479,11 +2456,9 @@ msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug 
 #~ msgstr "Use this URL to embed the media in your posts."
 
 #. @context: Button to view item on public site
-#. @context: Button to view post on public site
 #. @context: Toast action button to view the published post
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/PostList.tsx
 msgid "View"
 msgstr "View"
 
@@ -2499,8 +2474,8 @@ msgstr "View"
 
 #. @context: Post form field - post visibility
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Visibility"
-msgstr "Visibility"
+#~ msgid "Visibility"
+#~ msgstr "Visibility"
 
 #. @context: Dashboard header link text to visit the public blog
 #. @context: Dashboard header link to visit the public blog
@@ -2527,9 +2502,7 @@ msgstr "Welcome to Jant"
 #~ msgstr "What's new?"
 
 #. @context: Compose prompt placeholder text
-#. @context: Post content placeholder
 #: src/ui/compose/ComposePrompt.tsx
-#: src/ui/dash/posts/PostForm.tsx
 msgid "What's on your mind?"
 msgstr "What's on your mind?"
 
@@ -2552,8 +2525,8 @@ msgstr "When off, visitors see your latest posts first"
 
 #. @context: Button in empty state to create first post
 #: src/ui/dash/PostList.tsx
-msgid "Write your first post"
-msgstr "Write your first post"
+#~ msgid "Write your first post"
+#~ msgstr "Write your first post"
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx

@@ -35,3 +35,4 @@ import "./client/audio-player.js";
 import "./client/components/jant-media-lightbox.js";
 import "./client/components/jant-text-preview.js";
 import "./client/components/jant-post-menu.js";
+import "./client/thread-context.js";

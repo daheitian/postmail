@@ -56,7 +56,7 @@ describe("Timeline data assembly", () => {
     expect(items[0]?.post.mediaAttachments).toEqual([]);
   });
 
-  it("identifies thread roots and builds thread previews", async () => {
+  it("identifies thread roots and builds thread context", async () => {
     const root = await postService.create({
       format: "note",
       body: "Thread root",
@@ -89,10 +89,12 @@ describe("Timeline data assembly", () => {
     expect(threadRootIds).toEqual([root.id]);
     expect(replyCounts.get(root.id)).toBe(2);
 
-    const threadPreviews = await postService.getThreadPreviews(threadRootIds);
-    const replies = threadPreviews.get(root.id);
-    expect(replies).toHaveLength(2);
-    expect(replies?.[0]?.body).toBe("Reply 1");
+    const threadContexts =
+      await postService.getThreadTimelineContext(threadRootIds);
+    const ctx = threadContexts.get(root.id);
+    expect(ctx).toBeDefined();
+    expect(ctx?.latestReply.body).toBe("Reply 2");
+    expect(ctx?.totalReplyCount).toBe(2);
 
     // Assemble items
     const rawMediaMap = await mediaService.getByPostIds(postIds);
@@ -104,18 +106,20 @@ describe("Timeline data assembly", () => {
         mediaAttachments: mediaMap.get(post.id) ?? [],
       };
 
-      const replyCount = replyCounts.get(post.id) ?? 0;
-      const previewReplies = threadPreviews.get(post.id);
+      const threadCtx = threadContexts.get(post.id);
 
-      if (replyCount > 0 && previewReplies) {
+      if (threadCtx) {
         return {
           post: postWithMedia,
           threadPreview: {
-            replies: previewReplies.map((r) => ({
-              ...r,
+            latestReply: {
+              ...threadCtx.latestReply,
               mediaAttachments: [],
-            })),
-            totalReplyCount: replyCount,
+            },
+            parentReply: threadCtx.parentReply
+              ? { ...threadCtx.parentReply, mediaAttachments: [] }
+              : undefined,
+            totalReplyCount: threadCtx.totalReplyCount,
           },
         };
       }
@@ -125,7 +129,7 @@ describe("Timeline data assembly", () => {
 
     expect(items).toHaveLength(1);
     expect(items[0]?.threadPreview).toBeDefined();
-    expect(items[0]?.threadPreview?.replies).toHaveLength(2);
+    expect(items[0]?.threadPreview?.latestReply.body).toBe("Reply 2");
     expect(items[0]?.threadPreview?.totalReplyCount).toBe(2);
   });
 

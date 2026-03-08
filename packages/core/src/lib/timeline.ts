@@ -9,7 +9,7 @@ import type { Context } from "hono";
 import type { Bindings, TimelineItemView } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
-import { createMediaContext, toPostView, toPostViews } from "./view.js";
+import { createMediaContext, toPostView } from "./view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -83,23 +83,22 @@ export async function assembleTimeline(
   const replyCounts = await c.var.services.posts.getReplyCounts(postIds);
   const threadRootIds = postIds.filter((id) => (replyCounts.get(id) ?? 0) > 0);
 
-  // Batch load thread previews
-  const threadPreviews = await c.var.services.posts.getThreadPreviews(
-    threadRootIds,
-    3,
-  );
+  // Batch load thread timeline context (latest reply + parent)
+  const threadContexts =
+    await c.var.services.posts.getThreadTimelineContext(threadRootIds);
 
-  // Batch load media for preview replies
-  const previewReplyIds: string[] = [];
-  for (const replies of threadPreviews.values()) {
-    for (const reply of replies) {
-      previewReplyIds.push(reply.id);
+  // Batch load media for context posts (latestReply + parentReply)
+  const contextPostIds: string[] = [];
+  for (const ctx of threadContexts.values()) {
+    contextPostIds.push(ctx.latestReply.id);
+    if (ctx.parentReply) {
+      contextPostIds.push(ctx.parentReply.id);
     }
   }
-  const previewMediaMap =
-    previewReplyIds.length > 0
+  const contextMediaMap =
+    contextPostIds.length > 0
       ? buildMediaMap(
-          await c.var.services.media.getByPostIds(previewReplyIds),
+          await c.var.services.media.getByPostIds(contextPostIds),
           mediaCtx.r2PublicUrl,
           mediaCtx.imageTransformUrl,
           mediaCtx.s3PublicUrl,
@@ -116,21 +115,34 @@ export async function assembleTimeline(
       mediaCtx,
     );
 
-    const replyCount = replyCounts.get(post.id) ?? 0;
-    const previewReplies = threadPreviews.get(post.id);
+    const threadCtx = threadContexts.get(post.id);
 
-    if (replyCount > 0 && previewReplies) {
+    if (threadCtx) {
+      const latestReplyView = toPostView(
+        {
+          ...threadCtx.latestReply,
+          mediaAttachments: contextMediaMap.get(threadCtx.latestReply.id) ?? [],
+        },
+        mediaCtx,
+      );
+
+      const parentReplyView = threadCtx.parentReply
+        ? toPostView(
+            {
+              ...threadCtx.parentReply,
+              mediaAttachments:
+                contextMediaMap.get(threadCtx.parentReply.id) ?? [],
+            },
+            mediaCtx,
+          )
+        : undefined;
+
       return {
         post: postView,
         threadPreview: {
-          replies: toPostViews(
-            previewReplies.map((r) => ({
-              ...r,
-              mediaAttachments: previewMediaMap.get(r.id) ?? [],
-            })),
-            mediaCtx,
-          ),
-          totalReplyCount: replyCount,
+          latestReply: latestReplyView,
+          parentReply: parentReplyView,
+          totalReplyCount: threadCtx.totalReplyCount,
         },
       };
     }

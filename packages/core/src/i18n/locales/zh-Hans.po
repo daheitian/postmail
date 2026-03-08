@@ -13,6 +13,12 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. @context: Link showing count of hidden thread posts between root and latest
+#. placeholder {0}: hiddenCount === 1 ? "post" : "posts"
+#: src/ui/feed/ThreadPreview.tsx
+msgid "{hiddenCount} more {0}"
+msgstr ""
+
 #. @context: Custom CSS textarea placeholder
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "/* Your custom CSS here */"
@@ -110,8 +116,8 @@ msgstr "添加链接"
 
 #. @context: Button to open media picker
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Add Media"
-msgstr "添加媒体"
+#~ msgid "Add Media"
+#~ msgstr "添加媒体"
 
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
@@ -215,13 +221,13 @@ msgstr "作者（可选）"
 
 #. @context: Post slug help text
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Auto-generated from title if left empty"
-msgstr ""
+#~ msgid "Auto-generated from title if left empty"
+#~ msgstr ""
 
 #. @context: Post slug placeholder
 #: src/ui/dash/posts/PostForm.tsx
-msgid "auto-generated-from-title"
-msgstr ""
+#~ msgid "auto-generated-from-title"
+#~ msgstr ""
 
 #. @context: Settings item — avatar settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -260,7 +266,6 @@ msgstr "博客头像"
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel form
-#. @context: Button to cancel form
 #. @context: Button to cancel settings changes
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
@@ -269,7 +274,6 @@ msgstr "博客头像"
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -343,8 +347,8 @@ msgstr "收藏夹"
 
 #. @context: Post form field - assign to collections
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Collections (optional)"
-msgstr "集合（可选）"
+#~ msgid "Collections (optional)"
+#~ msgstr "集合（可选）"
 
 #. @context: Appearance settings heading
 #. @context: Settings item description for color theme
@@ -375,8 +379,8 @@ msgstr "确认密码"
 
 #. @context: Post form field
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Content"
-msgstr "内容"
+#~ msgid "Content"
+#~ msgstr "内容"
 
 #. @context: Confirm close dialog - cancel and return to editor
 #: src/ui/compose/ComposeDialog.tsx
@@ -403,16 +407,14 @@ msgid "Couldn't delete. Try again in a moment."
 msgstr ""
 
 #. @context: Toast when publish fails and post is auto-saved as draft
-#. @context: Toast when publish fails and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/posts/PostForm.tsx
 msgid "Couldn't publish. Saved as draft."
 msgstr ""
 
 #. @context: Toast when post save fails
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Couldn't save your post. Try again in a moment."
-msgstr ""
+#~ msgid "Couldn't save your post. Try again in a moment."
+#~ msgstr ""
 
 #. @context: Error toast when nav save fails
 #. @context: Toast when save fails
@@ -560,8 +562,8 @@ msgstr ""
 
 #. @context: Confirmation dialog when deleting a post from the list
 #: src/ui/dash/PostList.tsx
-msgid "Delete this post permanently? This can't be undone."
-msgstr ""
+#~ msgid "Delete this post permanently? This can't be undone."
+#~ msgstr ""
 
 #. @context: Toast after deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -627,18 +629,14 @@ msgstr ""
 
 #. @context: Button to exit reorder mode
 #. @context: Close attached text panel
-#. @context: Close media picker button
 #. @context: Compose button - update existing post
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Done"
 msgstr "完成"
 
 #. @context: Post status badge - draft
-#. @context: Post status option
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Draft"
 msgstr "草稿"
@@ -666,10 +664,8 @@ msgid "Drafts"
 msgstr "草稿"
 
 #. @context: Button to edit item
-#. @context: Button to edit post
 #. @context: Per-collection edit action
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/PostList.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Edit"
 msgstr "编辑"
@@ -771,11 +767,9 @@ msgstr ""
 #. @context: Browse filter label
 #. @context: Browse filter label for featured posts
 #. @context: Post badge - featured
-#. @context: Visibility option - highlighted on featured page
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
@@ -806,8 +800,8 @@ msgstr "字体主题"
 
 #. @context: Post form field - post format
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Format"
-msgstr "格式"
+#~ msgid "Format"
+#~ msgstr "格式"
 
 #. @context: Search results count - multiple
 #. placeholder {0}: String(results.length)
@@ -952,10 +946,8 @@ msgstr "链接"
 #. @context: Compose format tab
 #. @context: Post format badge - link
 #. @context: Post format label - link
-#. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/FormatBadge.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Link"
 msgstr "链接"
@@ -982,8 +974,8 @@ msgstr "加载更多"
 
 #. @context: Loading state for media picker
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Loading..."
-msgstr "加载中..."
+#~ msgid "Loading..."
+#~ msgstr "加载中..."
 
 #. @context: Page slug validation message
 #: src/ui/dash/PageForm.tsx
@@ -1023,9 +1015,7 @@ msgstr ""
 #~ msgstr "最大可见导航链接"
 
 #. @context: Compose toolbar - media tooltip
-#. @context: Post form field - media attachments
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/posts/PostForm.tsx
 msgid "Media"
 msgstr "媒体"
 
@@ -1217,8 +1207,8 @@ msgstr ""
 
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
-msgid "No media attached."
-msgstr ""
+#~ msgid "No media attached."
+#~ msgstr ""
 
 #. @context: Post form media empty state
 #: src/ui/dash/posts/PostForm.tsx
@@ -1298,10 +1288,8 @@ msgstr ""
 #. @context: Compose format tab
 #. @context: Post format badge - note
 #. @context: Post format label - note
-#. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/FormatBadge.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Note"
 msgstr "注意"
@@ -1318,8 +1306,8 @@ msgstr ""
 
 #. @context: Empty state message when no posts exist
 #: src/ui/dash/PostList.tsx
-msgid "Nothing published yet. Write your first post to get started."
-msgstr ""
+#~ msgid "Nothing published yet. Write your first post to get started."
+#~ msgstr ""
 
 #. @context: Pagination next page
 #: src/ui/pages/HomePage.tsx
@@ -1425,16 +1413,12 @@ msgstr "粘贴一个网址..."
 msgid "Path"
 msgstr ""
 
-#. @context: Link to individual post in thread
 #. @context: Link to permanent URL of post
 #: src/ui/pages/PostPage.tsx
-#: src/ui/shared/ThreadView.tsx
 msgid "Permalink"
 msgstr "永久链接"
 
 #. @context: Post badge - pinned
-#. @context: Post form checkbox - pin to top
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Pinned"
 msgstr "已固定"
@@ -1453,13 +1437,13 @@ msgstr "帖子"
 
 #. @context: Toast after creating post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Post published."
-msgstr ""
+#~ msgid "Post published."
+#~ msgstr ""
 
 #. @context: Post title placeholder
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Post title..."
-msgstr "帖子标题..."
+#~ msgid "Post title..."
+#~ msgstr "帖子标题..."
 
 #. @context: Toast after editing post
 #: src/ui/dash/posts/PostForm.tsx
@@ -1468,8 +1452,8 @@ msgstr "帖子标题..."
 
 #. @context: Toast after editing post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Post updated."
-msgstr ""
+#~ msgid "Post updated."
+#~ msgstr ""
 
 #. @context: Dashboard heading
 #: src/routes/dash/posts.tsx
@@ -1520,17 +1504,15 @@ msgstr "处理中..."
 
 #. @context: Visibility option - appears everywhere
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Public"
-msgstr ""
+#~ msgid "Public"
+#~ msgstr ""
 
 #. @context: Button to publish new post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Publish"
-msgstr "发布"
+#~ msgid "Publish"
+#~ msgstr "发布"
 
 #. @context: Post status badge - published
-#. @context: Post status option
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
 msgstr "已发布"
@@ -1553,18 +1535,16 @@ msgstr "已发布！"
 #. @context: Compose format tab
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
-#. @context: Post format option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/FormatBadge.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Quote"
 msgstr "引用"
 
 #. @context: Post form field - quoted text
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Quote Text"
-msgstr "引用文本"
+#~ msgid "Quote Text"
+#~ msgstr "引用文本"
 
 #. @context: Post format label plural - quotes
 #: src/ui/pages/ArchivePage.tsx
@@ -1599,11 +1579,9 @@ msgstr ""
 #. @context: Button to remove icon
 #. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
-#. @context: Remove media attachment button
 #. @context: Remove system item from navigation
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Remove"
@@ -1731,8 +1709,8 @@ msgstr "搜索..."
 
 #. @context: Media picker dialog title
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Select Media"
-msgstr "选择媒体"
+#~ msgid "Select Media"
+#~ msgstr "选择媒体"
 
 #. @context: Settings section heading for SEO
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1771,18 +1749,19 @@ msgid "Settings updated."
 msgstr ""
 
 #. @context: Link to show remaining thread replies
-#. placeholder {0}: remainingCount === 1 ? "reply" : "replies"
 #: src/ui/feed/ThreadPreview.tsx
-msgid "Show {remainingCount} more {0}"
-msgstr "显示 {remainingCount} 个更多 {0}"
+#~ msgid "Show {remainingCount} more {0}"
+#~ msgstr "显示 {remainingCount} 个更多 {0}"
 
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Show less"
 msgstr ""
 
+#. @context: Button to expand faded thread context
 #. @context: Expand reply context
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/feed/ThreadPreview.tsx
 msgid "Show more"
 msgstr ""
 
@@ -1824,8 +1803,8 @@ msgstr "缩略名"
 
 #. @context: Post form field - URL slug
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Slug (optional)"
-msgstr ""
+#~ msgid "Slug (optional)"
+#~ msgstr ""
 
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
@@ -1857,8 +1836,8 @@ msgstr "来源链接（可选）"
 
 #. @context: Post form field
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Status"
-msgstr "状态"
+#~ msgid "Status"
+#~ msgstr "状态"
 
 #. @context: Error when file storage is not set up
 #: src/routes/api/upload.ts
@@ -1944,8 +1923,8 @@ msgstr ""
 
 #. @context: Quote text placeholder
 #: src/ui/dash/posts/PostForm.tsx
-msgid "The text being quoted..."
-msgstr "被引用的文本..."
+#~ msgid "The text being quoted..."
+#~ msgstr "被引用的文本..."
 
 #. @context: Page slug helper text
 #: src/ui/dash/PageForm.tsx
@@ -1994,13 +1973,13 @@ msgstr ""
 
 #. @context: Thread view header - multiple posts
 #: src/ui/shared/ThreadView.tsx
-msgid "Thread with {count} posts"
-msgstr "包含 {count} 条帖子的话题"
+#~ msgid "Thread with {count} posts"
+#~ msgstr "包含 {count} 条帖子的话题"
 
 #. @context: Thread view header - single post
 #: src/ui/shared/ThreadView.tsx
-msgid "Thread with 1 post"
-msgstr "包含 1 条帖子的话题"
+#~ msgid "Thread with 1 post"
+#~ msgstr "包含 1 条帖子的话题"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2020,8 +1999,8 @@ msgstr "标题"
 
 #. @context: Post form field
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Title (optional)"
-msgstr "标题（可选）"
+#~ msgid "Title (optional)"
+#~ msgstr "标题（可选）"
 
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
@@ -2059,21 +2038,19 @@ msgid "Typography"
 msgstr ""
 
 #. @context: Post badge - unlisted
-#. @context: Visibility option - hidden from feeds
-#: src/ui/dash/posts/PostForm.tsx
 #: src/ui/dash/StatusBadge.tsx
 msgid "Unlisted"
 msgstr ""
 
 #. @context: Default title for untitled post
 #: src/ui/dash/PostList.tsx
-msgid "Untitled"
-msgstr "无标题"
+#~ msgid "Untitled"
+#~ msgstr "无标题"
 
 #. @context: Button to update existing post
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Update"
-msgstr "更新"
+#~ msgid "Update"
+#~ msgstr "更新"
 
 #. @context: Button to save collection changes
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -2126,8 +2103,8 @@ msgstr "网址"
 
 #. @context: Post form field - source URL
 #: src/ui/dash/posts/PostForm.tsx
-msgid "URL (optional)"
-msgstr "网址（可选）"
+#~ msgid "URL (optional)"
+#~ msgstr "网址（可选）"
 
 #. @context: Settings item description for redirects
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -2152,11 +2129,9 @@ msgstr "URL安全标识符（小写字母、数字、连字符）。对于CJK标
 #~ msgstr "使用此 URL 将媒体嵌入到您的帖子中。"
 
 #. @context: Button to view item on public site
-#. @context: Button to view post on public site
 #. @context: Toast action button to view the published post
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/dash/PostList.tsx
 msgid "View"
 msgstr "查看"
 
@@ -2167,8 +2142,8 @@ msgstr "查看"
 
 #. @context: Post form field - post visibility
 #: src/ui/dash/posts/PostForm.tsx
-msgid "Visibility"
-msgstr ""
+#~ msgid "Visibility"
+#~ msgstr ""
 
 #. @context: Dashboard header link text to visit the public blog
 #. @context: Dashboard header link to visit the public blog
@@ -2190,9 +2165,7 @@ msgid "Welcome to Jant"
 msgstr "欢迎来到Jant"
 
 #. @context: Compose prompt placeholder text
-#. @context: Post content placeholder
 #: src/ui/compose/ComposePrompt.tsx
-#: src/ui/dash/posts/PostForm.tsx
 msgid "What's on your mind?"
 msgstr "你在想什么？"
 
@@ -2215,8 +2188,8 @@ msgstr ""
 
 #. @context: Button in empty state to create first post
 #: src/ui/dash/PostList.tsx
-msgid "Write your first post"
-msgstr ""
+#~ msgid "Write your first post"
+#~ msgstr ""
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx

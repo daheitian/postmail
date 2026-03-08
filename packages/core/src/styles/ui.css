@@ -331,6 +331,58 @@
     @apply text-sm;
   }
 
+  /* Faded thread ancestor context */
+  .thread-context-faded {
+    position: relative;
+    max-height: 140px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .thread-context-faded.expanded {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .thread-context-fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 32px;
+    background: linear-gradient(transparent, var(--site-page-bg));
+    pointer-events: none;
+  }
+
+  .thread-context-faded.expanded .thread-context-fade {
+    display: none;
+  }
+
+  .thread-context-toggle {
+    display: block;
+    padding: 4px 0;
+    margin-bottom: 4px;
+    cursor: pointer;
+    background: none;
+    border: none;
+  }
+
+  .thread-context-toggle.hidden {
+    display: none;
+  }
+
+  /* Thread detail: current post highlight + scroll margin */
+  .thread-detail-item {
+    scroll-margin-top: 80px;
+  }
+
+  .thread-detail-current {
+    background-color: color-mix(in srgb, var(--primary) 5%, transparent);
+    border-radius: var(--radius);
+    padding: 12px;
+    margin: -12px;
+  }
+
   /* Quote block styling */
   .feed-quote {
     padding-left: 12px;

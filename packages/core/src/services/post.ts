@@ -24,6 +24,7 @@ import type {
   Post,
   CreatePost,
   UpdatePost,
+  ThreadTimelineContext,
 } from "../types.js";
 import { ConflictError } from "../lib/errors.js";
 
@@ -89,6 +90,10 @@ export interface PostService {
     rootIds: string[],
     previewCount?: number,
   ): Promise<Map<string, Post[]>>;
+  /** Get latest-reply context for multiple thread roots (for timeline display) */
+  getThreadTimelineContext(
+    rootIds: string[],
+  ): Promise<Map<string, ThreadTimelineContext>>;
 }
 
 /** Check if an error (or any of its causes) is a SQLite UNIQUE constraint violation */
@@ -579,6 +584,49 @@ export function createPostService(
           result.set(post.threadId, [post]);
         }
       }
+      return result;
+    },
+
+    async getThreadTimelineContext(rootIds) {
+      if (rootIds.length === 0) return new Map();
+
+      // Fetch all non-deleted replies ordered by thread, newest first
+      const rows = await db
+        .select()
+        .from(posts)
+        .where(and(inArray(posts.threadId, rootIds), isNull(posts.deletedAt)))
+        .orderBy(posts.threadId, desc(posts.createdAt));
+
+      // Group by threadId, extract latest reply + its parent + count
+      const grouped = new Map<string, Post[]>();
+      for (const row of rows) {
+        const post = toPost(row);
+        if (post.threadId === null) continue;
+        const list = grouped.get(post.threadId);
+        if (list) {
+          list.push(post);
+        } else {
+          grouped.set(post.threadId, [post]);
+        }
+      }
+
+      const result = new Map<string, ThreadTimelineContext>();
+      for (const [threadId, replies] of grouped) {
+        // replies are ordered newest-first; first element is the latest
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- grouped only contains non-empty arrays
+        const latestReply = replies[0]!;
+        const totalReplyCount = replies.length;
+
+        // Find parent of latestReply if it's not the root
+        let parentReply: Post | null = null;
+        if (latestReply.replyToId && latestReply.replyToId !== threadId) {
+          parentReply =
+            replies.find((r) => r.id === latestReply.replyToId) ?? null;
+        }
+
+        result.set(threadId, { latestReply, parentReply, totalReplyCount });
+      }
+
       return result;
     },
   };

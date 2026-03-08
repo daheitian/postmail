@@ -1,12 +1,12 @@
 /**
  * Catch-all Route
  *
- * Resolves slug → post and custom URL → post/collection.
+ * Resolves slug -> post and custom URL -> post/collection.
  * Must be registered last.
  *
  * Resolution order:
- * 1. Direct slug match in posts → check for custom URL override → 301 or serve
- * 2. Custom URL match → serve post or collection
+ * 1. Direct slug match in posts -> check for custom URL override -> 301 or serve
+ * 2. Custom URL match -> serve post or collection
  * 3. Not found
  */
 
@@ -25,8 +25,16 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const pageRoutes = new Hono<Env>();
 
 async function renderPost(c: Context<Env>, post: Post) {
-  const rawMediaMap = await c.var.services.media.getByPostIds([post.id]);
   const mediaCtx = createMediaContext(c.var.appConfig);
+
+  // Load the full thread if this post is part of one
+  const threadRootId = post.threadId ?? post.id;
+  const threadPosts = await c.var.services.posts.getThread(threadRootId);
+
+  // Batch load media for all thread posts (or just this post if solo)
+  const allPostIds =
+    threadPosts.length > 1 ? threadPosts.map((p) => p.id) : [post.id];
+  const rawMediaMap = await c.var.services.media.getByPostIds(allPostIds);
   const mediaMap = buildMediaMap(
     rawMediaMap,
     mediaCtx.r2PublicUrl,
@@ -39,6 +47,17 @@ async function renderPost(c: Context<Env>, post: Post) {
     mediaCtx,
   );
 
+  // Build thread post views if this is a multi-post thread
+  const threadPostViews =
+    threadPosts.length > 1
+      ? threadPosts.map((tp) =>
+          toPostView(
+            { ...tp, mediaAttachments: mediaMap.get(tp.id) ?? [] },
+            mediaCtx,
+          ),
+        )
+      : undefined;
+
   const navData = await getNavigationData(c);
   const title = post.title || navData.siteName;
 
@@ -46,7 +65,7 @@ async function renderPost(c: Context<Env>, post: Post) {
     title,
     description: post.body?.slice(0, 160),
     navData,
-    content: <PostPage post={postView} />,
+    content: <PostPage post={postView} threadPosts={threadPostViews} />,
   });
 }
 
@@ -58,7 +77,7 @@ pageRoutes.get("/*", async (c) => {
   // 1. Direct slug match
   const post = await c.var.services.posts.getBySlug(fullPath);
   if (post && post.status !== "draft") {
-    // Check for custom URL override → 301 redirect to canonical
+    // Check for custom URL override -> 301 redirect to canonical
     const override = await c.var.services.customUrls.getByTarget(
       "post",
       post.id,
@@ -80,7 +99,7 @@ pageRoutes.get("/*", async (c) => {
       }
     }
     if (customUrl.targetType === "collection" && customUrl.targetId) {
-      // Collection custom URLs are not handled here — they use /c/ prefix
+      // Collection custom URLs are not handled here -- they use /c/ prefix
       // This is a placeholder for future collection custom URL support
     }
   }

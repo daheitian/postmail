@@ -25,6 +25,7 @@ export interface HomePageProps {
 /** Props for the single post page component */
 export interface PostPageProps {
   post: PostView;
+  threadPosts?: PostView[];
 }
 
 /** Props for the featured page component */
@@ -95,7 +96,8 @@ export interface TimelineCardProps {
 /** Props for thread inline preview */
 export interface ThreadPreviewProps {
   rootPost: PostView;
-  previewReplies: PostView[];
+  latestReply: PostView;
+  parentReply?: PostView;
   totalReplyCount: number;
 }
 

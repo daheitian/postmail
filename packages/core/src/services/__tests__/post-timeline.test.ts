@@ -192,6 +192,133 @@ describe("PostService - Timeline features", () => {
     });
   });
 
+  describe("getThreadTimelineContext", () => {
+    it("returns empty map for empty input", async () => {
+      const result = await postService.getThreadTimelineContext([]);
+      expect(result.size).toBe(0);
+    });
+
+    it("returns latestReply with no parentReply for a 2-post thread", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+      });
+      const reply = await postService.create({
+        format: "note",
+        body: "only reply",
+        replyToId: root.id,
+      });
+
+      const result = await postService.getThreadTimelineContext([root.id]);
+      const ctx = result.get(root.id);
+      expect(ctx).toBeDefined();
+      expect(ctx?.latestReply.id).toBe(reply.id);
+      expect(ctx?.parentReply).toBeNull();
+      expect(ctx?.totalReplyCount).toBe(1);
+    });
+
+    it("returns latestReply + parentReply for a 3-post thread", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+      });
+      const reply1 = await postService.create({
+        format: "note",
+        body: "reply 1",
+        replyToId: root.id,
+      });
+      const reply2 = await postService.create({
+        format: "note",
+        body: "reply 2",
+        replyToId: reply1.id,
+      });
+
+      const result = await postService.getThreadTimelineContext([root.id]);
+      const ctx = result.get(root.id);
+      expect(ctx).toBeDefined();
+      expect(ctx?.latestReply.id).toBe(reply2.id);
+      expect(ctx?.parentReply?.id).toBe(reply1.id);
+      expect(ctx?.totalReplyCount).toBe(2);
+    });
+
+    it("returns correct totalReplyCount for 4+ post thread", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+      });
+      let prev = root;
+      for (let i = 0; i < 5; i++) {
+        prev = await postService.create({
+          format: "note",
+          body: `reply ${i}`,
+          replyToId: prev.id,
+        });
+      }
+
+      const result = await postService.getThreadTimelineContext([root.id]);
+      const ctx = result.get(root.id);
+      expect(ctx).toBeDefined();
+      expect(ctx?.latestReply.body).toBe("reply 4");
+      expect(ctx?.parentReply?.body).toBe("reply 3");
+      expect(ctx?.totalReplyCount).toBe(5);
+    });
+
+    it("excludes deleted replies", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+      });
+      const reply1 = await postService.create({
+        format: "note",
+        body: "reply 1",
+        replyToId: root.id,
+      });
+      const reply2 = await postService.create({
+        format: "note",
+        body: "reply 2",
+        replyToId: reply1.id,
+      });
+
+      // Delete the latest reply — reply1 should become the latest
+      await postService.delete(reply2.id);
+
+      const result = await postService.getThreadTimelineContext([root.id]);
+      const ctx = result.get(root.id);
+      expect(ctx).toBeDefined();
+      expect(ctx?.latestReply.id).toBe(reply1.id);
+      expect(ctx?.totalReplyCount).toBe(1);
+    });
+
+    it("handles multiple roots in batch", async () => {
+      const root1 = await postService.create({
+        format: "note",
+        body: "root 1",
+      });
+      const root2 = await postService.create({
+        format: "note",
+        body: "root 2",
+      });
+      const r1Reply = await postService.create({
+        format: "note",
+        body: "reply to root 1",
+        replyToId: root1.id,
+      });
+      const r2Reply = await postService.create({
+        format: "note",
+        body: "reply to root 2",
+        replyToId: root2.id,
+      });
+
+      const result = await postService.getThreadTimelineContext([
+        root1.id,
+        root2.id,
+      ]);
+      expect(result.size).toBe(2);
+      expect(result.get(root1.id)?.latestReply.id).toBe(r1Reply.id);
+      expect(result.get(root2.id)?.latestReply.id).toBe(r2Reply.id);
+    });
+  });
+
   describe("timeline assembly", () => {
     it("fetches published non-reply posts for the timeline", async () => {
       const root = await postService.create({
