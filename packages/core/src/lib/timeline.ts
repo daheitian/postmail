@@ -79,6 +79,10 @@ export async function assembleTimeline(
     mediaCtx.s3PublicUrl,
   );
 
+  // Batch load collections for main posts
+  const collectionsMap =
+    await c.var.services.collections.getCollectionsByPostIds(postIds);
+
   // Get reply counts to identify thread roots
   const replyCounts = await c.var.services.posts.getReplyCounts(postIds);
   const threadRootIds = postIds.filter((id) => (replyCounts.get(id) ?? 0) > 0);
@@ -113,6 +117,7 @@ export async function assembleTimeline(
         mediaAttachments: mediaMap.get(post.id) ?? [],
       },
       mediaCtx,
+      collectionsMap.get(post.id),
     );
 
     const threadCtx = threadContexts.get(post.id);

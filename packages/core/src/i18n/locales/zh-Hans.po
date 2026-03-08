@@ -923,7 +923,7 @@ msgid "Path"
 msgstr "路径"
 
 #. @context: Link to permanent URL of post
-#: src/ui/pages/PostPage.tsx
+#: src/ui/shared/PostFooter.tsx
 msgid "Permalink"
 msgstr "永久链接"
 

@@ -77,13 +77,52 @@ export class JantPostMenu extends LitElement {
 
   #handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
-    if (ke.key === "Escape" && this._open) {
-      this.#close();
+    if (ke.key === "Escape") {
+      // Close collection popovers first
+      const openPopover = document.querySelector(
+        "[data-collection-popover].open",
+      );
+      if (openPopover) {
+        openPopover.classList.remove("open");
+        return;
+      }
+      if (this._open) {
+        this.#close();
+      }
     }
   };
 
   #handleDocumentClick = (e: Event) => {
     const target = e.target as HTMLElement;
+
+    // Collection popover toggle
+    const popoverTrigger = target.closest<HTMLElement>(
+      "[data-collection-popover-trigger]",
+    );
+    if (popoverTrigger) {
+      e.preventDefault();
+      e.stopPropagation();
+      const popover = popoverTrigger.parentElement?.querySelector<HTMLElement>(
+        "[data-collection-popover]",
+      );
+      if (popover) {
+        popover.classList.toggle("open");
+      }
+      return;
+    }
+
+    // Click inside a collection popover — don't close it
+    if (target.closest("[data-collection-popover]")) {
+      return;
+    }
+
+    // Close any open collection popovers on outside click
+    const openPopover = document.querySelector(
+      "[data-collection-popover].open",
+    );
+    if (openPopover) {
+      openPopover.classList.remove("open");
+    }
 
     // Clicking a trigger button
     const trigger = target.closest<HTMLButtonElement>(

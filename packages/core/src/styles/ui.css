@@ -457,6 +457,112 @@
     margin-top: 4px;
   }
 
+  .post-footer-detail {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--site-divider);
+    font-size: 14px;
+    color: var(--site-text-secondary);
+  }
+
+  .post-footer-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .post-collection-tags {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    position: relative;
+  }
+
+  .post-footer-detail .post-collection-tags {
+    font-size: 14px;
+  }
+
+  .post-collection-sep {
+    color: var(--site-text-secondary);
+    user-select: none;
+  }
+
+  .post-collection-icon {
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+  }
+
+  .post-collection-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--site-text-secondary);
+    text-decoration: none;
+  }
+
+  .post-collection-tag:hover {
+    color: var(--site-text-primary);
+  }
+
+  .post-collection-more-wrap {
+    position: relative;
+  }
+
+  .post-collection-more {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: inherit;
+    color: var(--site-text-secondary);
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  .post-collection-more:hover {
+    color: var(--site-text-primary);
+  }
+
+  .post-collection-popover {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 50;
+    flex-direction: column;
+    min-width: 160px;
+    padding: 4px;
+    border-radius: 6px;
+    background: var(--site-elevated-bg);
+    border: 1px solid var(--site-divider);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .post-collection-popover.open {
+    display: flex;
+  }
+
+  .post-collection-popover-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--site-text-secondary);
+    text-decoration: none;
+  }
+
+  .post-collection-popover-item:hover {
+    background: var(--site-nav-hover-bg);
+    color: var(--site-text-primary);
+  }
+
   /* --- Post star rating (read-only) -------------------------------------- */
 
   .post-rating {

@@ -9,6 +9,7 @@ import type { FC } from "hono/jsx";
 import type { TimelineCardProps } from "../../types.js";
 import { MediaGallery } from "../shared/MediaGallery.js";
 import { StarRating } from "../shared/StarRating.js";
+import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
 export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
@@ -56,57 +57,7 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
         </a>
       )}
       {!compact && <StarRating rating={post.rating} />}
-      <footer class="post-menu-footer" data-post-meta>
-        <a
-          href={post.permalink}
-          class="u-url text-xs text-muted-foreground hover:underline"
-        >
-          <time class="dt-published" datetime={post.publishedAt}>
-            {post.publishedAtFormatted}
-          </time>
-        </a>
-        <div class="post-menu-actions">
-          <button
-            type="button"
-            class="reply-trigger"
-            aria-label="Reply"
-            data-reply-trigger
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="9 17 4 12 9 7" />
-              <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            class="post-menu-trigger"
-            aria-label="More actions"
-            data-post-menu-trigger
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <circle cx="5" cy="12" r="2" />
-              <circle cx="12" cy="12" r="2" />
-              <circle cx="19" cy="12" r="2" />
-            </svg>
-          </button>
-        </div>
-      </footer>
+      <PostFooter post={post} />
     </article>
   );
 };

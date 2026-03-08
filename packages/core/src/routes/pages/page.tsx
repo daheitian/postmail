@@ -42,9 +42,14 @@ async function renderPost(c: Context<Env>, post: Post) {
     mediaCtx.s3PublicUrl,
   );
 
+  // Batch load collections for all posts
+  const collectionsMap =
+    await c.var.services.collections.getCollectionsByPostIds(allPostIds);
+
   const postView = toPostView(
     { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
     mediaCtx,
+    collectionsMap.get(post.id),
   );
 
   // Build thread post views if this is a multi-post thread
@@ -54,6 +59,7 @@ async function renderPost(c: Context<Env>, post: Post) {
           toPostView(
             { ...tp, mediaAttachments: mediaMap.get(tp.id) ?? [] },
             mediaCtx,
+            collectionsMap.get(tp.id),
           ),
         )
       : undefined;

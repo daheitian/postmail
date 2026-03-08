@@ -5,7 +5,7 @@
  * Sidebar ordering is managed through the sidebar_items table with fractional indexing.
  */
 
-import { eq, asc, sql, and } from "drizzle-orm";
+import { eq, asc, sql, and, inArray } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
@@ -50,6 +50,10 @@ export interface CollectionService {
   removePost(collectionId: string, postId: string): Promise<void>;
   /** Get all collections a post belongs to */
   getCollectionsByPostId(postId: string): Promise<Collection[]>;
+  /** Batch get collections for multiple posts */
+  getCollectionsByPostIds(
+    postIds: string[],
+  ): Promise<Map<string, Collection[]>>;
   /** Get all post IDs in a collection */
   getPostIds(collectionId: string): Promise<string[]>;
   /** Sync a post's collection memberships (replace all with given IDs) */
@@ -322,6 +326,31 @@ export function createCollectionService(db: Database): CollectionService {
         .orderBy(asc(collections.createdAt));
 
       return rows.map((r) => toCollection(r.collection));
+    },
+
+    async getCollectionsByPostIds(postIds) {
+      const result = new Map<string, Collection[]>();
+      if (postIds.length === 0) return result;
+
+      const rows = await db
+        .select({
+          postId: postCollections.postId,
+          collection: collections,
+        })
+        .from(postCollections)
+        .innerJoin(
+          collections,
+          eq(postCollections.collectionId, collections.id),
+        )
+        .where(inArray(postCollections.postId, postIds))
+        .orderBy(asc(collections.createdAt));
+
+      for (const row of rows) {
+        const existing = result.get(row.postId) ?? [];
+        existing.push(toCollection(row.collection));
+        result.set(row.postId, existing);
+      }
+      return result;
     },
 
     async getPostIds(collectionId) {

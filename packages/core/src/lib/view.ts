@@ -11,11 +11,13 @@ import type {
   Media,
   MediaView,
   PostView,
+  CollectionTagView,
   NavItemView,
   NavItem,
   SearchResult,
   SearchResultView,
   ArchiveGroup,
+  Collection,
   Format,
   Status,
   NavItemType,
@@ -30,6 +32,7 @@ import {
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
 import { getHtmlExcerpt } from "./excerpt.js";
 import { highlightText } from "./search-snippet.js";
+import { renderCollectionIcon } from "./icons.js";
 
 // =============================================================================
 // Media Context
@@ -125,9 +128,14 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
  *
  * @param post - Post with media attachments from database
  * @param _ctx - Media context with URL configuration
+ * @param postCollections - Optional collections this post belongs to
  * @returns Render-ready PostView with pre-computed fields
  */
-export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
+export function toPostView(
+  post: PostWithMedia,
+  _ctx: MediaContext,
+  postCollections?: Collection[],
+): PostView {
   const id = post.id;
   const permalink = `/${post.slug}`;
 
@@ -166,6 +174,12 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
       }
     }
   }
+
+  // Convert collection tags
+  const collections: CollectionTagView[] = (postCollections ?? []).map((c) => {
+    const iconHtml = renderCollectionIcon(c.icon, { size: 12 }) || undefined;
+    return { slug: c.slug, title: c.title, iconHtml };
+  });
 
   // Convert media attachments
   const media: MediaView[] = post.mediaAttachments.map((m) => ({
@@ -207,6 +221,7 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     publishedAtRelative: formatRelativeTime(post.publishedAt),
     updatedAt: toISOString(post.updatedAt),
     media,
+    collections,
     replyToId: post.replyToId ?? undefined,
     threadRootId: post.threadId ?? undefined,
     body: post.body ?? undefined,

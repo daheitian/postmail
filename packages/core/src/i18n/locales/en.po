@@ -1715,7 +1715,7 @@ msgstr "Path"
 #~ msgstr "Path (e.g. /archive) or full URL (e.g. https://example.com)"
 
 #. @context: Link to permanent URL of post
-#: src/ui/pages/PostPage.tsx
+#: src/ui/shared/PostFooter.tsx
 msgid "Permalink"
 msgstr "Permalink"
 

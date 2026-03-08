@@ -6,6 +6,17 @@ import type { Format, Status, Visibility, NavItemType } from "./constants.js";
 import type { Post, Collection } from "./entities.js";
 
 /**
+ * Render-ready collection tag for display in post footers.
+ * Pre-computed at the viewmodel layer -- no lib/ imports needed.
+ */
+export interface CollectionTagView {
+  slug: string;
+  title: string;
+  /** Pre-rendered icon HTML (SVG or emoji span) */
+  iconHtml?: string;
+}
+
+/**
  * Render-ready post data for theme components.
  * All fields are pre-computed -- no lib/ imports needed.
  */
@@ -54,6 +65,9 @@ export interface PostView {
 
   // Media -- URLs pre-computed
   media: MediaView[];
+
+  // Collections this post belongs to
+  collections: CollectionTagView[];
 
   // Thread context
   /** UUIDv7 of the parent post */
