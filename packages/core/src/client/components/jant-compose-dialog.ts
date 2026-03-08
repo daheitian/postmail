@@ -518,8 +518,8 @@ export class JantComposeDialog extends LitElement {
     if (!first) return "";
     if (ids.length === 1) return first.title;
     return this.labels.collectionCountLabel
-      .replace("{name}", first.title)
-      .replace("{count}", String(ids.length - 1));
+      .replace("%name%", first.title)
+      .replace("%count%", String(ids.length - 1));
   }
 
   connectedCallback() {

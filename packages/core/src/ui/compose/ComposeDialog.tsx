@@ -254,9 +254,9 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment: "@context: Action to create a new collection from compose",
     }),
     collectionCountLabel: t({
-      message: "{name} + {count} more",
+      message: "%name% + %count% more",
       comment:
-        "@context: Compose collection trigger label when multiple collections selected. {name} is the first collection name, {count} is how many more",
+        "@context: Compose collection trigger label when multiple collections selected. %name% is the first collection name, %count% is how many more",
     }),
     draftRestored: t({
       message: "Draft restored.",
