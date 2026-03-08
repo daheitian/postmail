@@ -439,7 +439,9 @@ msgstr "Design"
 msgid "Destination"
 msgstr "Destination"
 
+#. @context: Confirm close action sheet - discard changes button for editing published post
 #. @context: More menu - discard post
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "Discard"
@@ -453,6 +455,11 @@ msgstr "Display avatar in my site header"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "Displayed at the bottom of all posts and pages. Markdown supported."
+
+#. @context: Confirm close action sheet subtitle when editing a published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Do you want to publish your changes or discard them?"
+msgstr "Do you want to publish your changes or discard them?"
 
 #. @context: Confirm close action sheet - discard button
 #: src/ui/compose/ComposeDialog.tsx
@@ -979,6 +986,11 @@ msgstr "Previous"
 msgid "Processing..."
 msgstr "Processing..."
 
+#. @context: Confirm close action sheet - publish update button for editing published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Publish"
+msgstr "Publish"
+
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
@@ -1476,6 +1488,11 @@ msgstr "When off, visitors see your latest posts first"
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
 msgstr "Wrong email or password. Check your credentials and try again."
+
+#. @context: Confirm close action sheet title when editing a published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "You have unsaved changes"
+msgstr "You have unsaved changes"
 
 #. @context: Compose thoughts placeholder
 #: src/ui/compose/ComposeDialog.tsx

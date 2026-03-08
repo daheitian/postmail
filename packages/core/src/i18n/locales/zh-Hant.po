@@ -439,7 +439,9 @@ msgstr "設計"
 msgid "Destination"
 msgstr "目的地"
 
+#. @context: Confirm close action sheet - discard changes button for editing published post
 #. @context: More menu - discard post
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "放棄"
@@ -453,6 +455,11 @@ msgstr "在我的網站標頭顯示頭像"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "顯示於所有文章與頁面的底部。支援 Markdown."
+
+#. @context: Confirm close action sheet subtitle when editing a published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Do you want to publish your changes or discard them?"
+msgstr ""
 
 #. @context: Confirm close action sheet - discard button
 #: src/ui/compose/ComposeDialog.tsx
@@ -979,6 +986,11 @@ msgstr "上一頁"
 msgid "Processing..."
 msgstr "處理中..."
 
+#. @context: Confirm close action sheet - publish update button for editing published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Publish"
+msgstr ""
+
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
@@ -1476,6 +1488,11 @@ msgstr "關閉時, 訪客會先看到你的最新文章"
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
 msgstr "電子郵件或密碼錯誤。請檢查您的登入資訊後重試。"
+
+#. @context: Confirm close action sheet title when editing a published post
+#: src/ui/compose/ComposeDialog.tsx
+msgid "You have unsaved changes"
+msgstr ""
 
 #. @context: Compose thoughts placeholder
 #: src/ui/compose/ComposeDialog.tsx

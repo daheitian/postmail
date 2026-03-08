@@ -194,6 +194,26 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Don't save",
       comment: "@context: Confirm close action sheet - discard button",
     }),
+    confirmEditTitle: t({
+      message: "You have unsaved changes",
+      comment:
+        "@context: Confirm close action sheet title when editing a published post",
+    }),
+    confirmEditSubtitle: t({
+      message: "Do you want to publish your changes or discard them?",
+      comment:
+        "@context: Confirm close action sheet subtitle when editing a published post",
+    }),
+    confirmEditPublish: t({
+      message: "Publish",
+      comment:
+        "@context: Confirm close action sheet - publish update button for editing published post",
+    }),
+    confirmEditDiscard: t({
+      message: "Discard",
+      comment:
+        "@context: Confirm close action sheet - discard changes button for editing published post",
+    }),
     drafts: t({ message: "Drafts", comment: "@context: Drafts panel title" }),
     draftsEmpty: t({
       message: "No drafts yet. Save a draft to find it here.",

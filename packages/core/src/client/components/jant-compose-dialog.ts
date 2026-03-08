@@ -394,6 +394,10 @@ export class JantComposeDialog extends LitElement {
       this._confirmPanelOpen = false;
       this.reset();
       this._openDraftsPanel();
+    } else if (this._editPostId) {
+      // Editing a published post — publish the update directly
+      this._confirmPanelOpen = false;
+      this._submit("published");
     } else {
       this._confirmPanelOpen = false;
       this._submit("draft");
@@ -1278,28 +1282,30 @@ export class JantComposeDialog extends LitElement {
         </div>
 
         <div class="flex items-center gap-0.5 shrink-0">
-          <button
-            type="button"
-            class="compose-dialog-header-btn"
-            title=${this.labels.saveDraft}
-            ?disabled=${this._loading}
-            @click=${() => this._handleDraftButtonClick()}
-          >
-            <svg
-              class="icon-fine"
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M14 2.5L15.5 4 7 12.5l-3 .5.5-3L14 2.5z" />
-              <path d="M4 15h10" />
-            </svg>
-          </button>
+          ${this._editPostId
+            ? nothing
+            : html`<button
+                type="button"
+                class="compose-dialog-header-btn"
+                title=${this.labels.saveDraft}
+                ?disabled=${this._loading}
+                @click=${() => this._handleDraftButtonClick()}
+              >
+                <svg
+                  class="icon-fine"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M14 2.5L15.5 4 7 12.5l-3 .5.5-3L14 2.5z" />
+                  <path d="M4 15h10" />
+                </svg>
+              </button>`}
           ${this._renderMoreMenu()}
         </div>
       </header>
@@ -1719,30 +1725,40 @@ export class JantComposeDialog extends LitElement {
   private _renderConfirmPanel() {
     if (!this._confirmPanelOpen) return nothing;
 
+    const isEdit = !!this._editPostId;
+    const title = isEdit
+      ? this.labels.confirmEditTitle
+      : this.labels.confirmCloseTitle;
+    const subtitle = isEdit
+      ? this.labels.confirmEditSubtitle
+      : this.labels.confirmCloseSubtitle;
+    const saveLabel = isEdit
+      ? this.labels.confirmEditPublish
+      : this.labels.confirmCloseSave;
+    const discardLabel = isEdit
+      ? this.labels.confirmEditDiscard
+      : this.labels.confirmCloseDiscard;
+
     return html`
       <div class="compose-confirm-panel">
         <div class="compose-confirm-sheet">
           <div class="compose-confirm-header">
-            <p class="compose-confirm-title">
-              ${this.labels.confirmCloseTitle}
-            </p>
-            <p class="compose-confirm-subtitle">
-              ${this.labels.confirmCloseSubtitle}
-            </p>
+            <p class="compose-confirm-title">${title}</p>
+            <p class="compose-confirm-subtitle">${subtitle}</p>
           </div>
           <button
             type="button"
             class="compose-confirm-action compose-confirm-save"
             @click=${() => this._handleConfirmSave()}
           >
-            ${this.labels.confirmCloseSave}
+            ${saveLabel}
           </button>
           <button
             type="button"
             class="compose-confirm-action compose-confirm-discard"
             @click=${() => this._handleConfirmDiscard()}
           >
-            ${this.labels.confirmCloseDiscard}
+            ${discardLabel}
           </button>
           <button
             type="button"
