@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
 import { requireAuth, requireAuthApi } from "../auth.js";
 import { errorHandler } from "../error-handler.js";
@@ -19,6 +19,17 @@ function createMockAuth(authenticated: boolean) {
           : null,
     },
   } as AppVariables["auth"];
+}
+
+function createMockApiTokenService(validToken?: string) {
+  const tokenId = "token-id-1";
+  return {
+    verify: vi.fn(async (raw: string) => (raw === validToken ? tokenId : null)),
+    updateLastUsed: vi.fn(async () => {}),
+    create: vi.fn(),
+    list: vi.fn(),
+    delete: vi.fn(),
+  };
 }
 
 describe("requireAuth", () => {
@@ -63,11 +74,14 @@ describe("requireAuth", () => {
 });
 
 describe("requireAuthApi", () => {
-  it("allows authenticated requests", async () => {
+  it("allows authenticated requests via session", async () => {
     const app = new Hono<Env>();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(true));
+      c.set("services", {
+        apiTokens: createMockApiTokenService(),
+      } as AppVariables["services"]);
       await next();
     });
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
@@ -79,11 +93,14 @@ describe("requireAuthApi", () => {
     expect(body.data).toBe("secret");
   });
 
-  it("returns 401 for unauthenticated requests", async () => {
+  it("returns 401 for unauthenticated requests without Bearer token", async () => {
     const app = new Hono<Env>();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: createMockApiTokenService(),
+      } as AppVariables["services"]);
       await next();
     });
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
@@ -107,11 +124,86 @@ describe("requireAuthApi", () => {
           },
         },
       } as AppVariables["auth"]);
+      c.set("services", {
+        apiTokens: createMockApiTokenService(),
+      } as AppVariables["services"]);
       await next();
     });
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
     const res = await app.request("/api/data");
     expect(res.status).toBe(401);
+  });
+
+  it("allows requests with valid Bearer token when session auth fails", async () => {
+    const validToken = "jnt_abc123";
+    const mockApiTokens = createMockApiTokenService(validToken);
+
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: mockApiTokens,
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
+
+    const res = await app.request("/api/data", {
+      headers: { Authorization: `Bearer ${validToken}` },
+    });
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.data).toBe("secret");
+
+    expect(mockApiTokens.verify).toHaveBeenCalledWith(validToken);
+    expect(mockApiTokens.updateLastUsed).toHaveBeenCalledWith("token-id-1");
+  });
+
+  it("returns 401 for invalid Bearer token", async () => {
+    const mockApiTokens = createMockApiTokenService("jnt_valid");
+
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: mockApiTokens,
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
+
+    const res = await app.request("/api/data", {
+      headers: { Authorization: "Bearer jnt_invalid" },
+    });
+    expect(res.status).toBe(401);
+
+    expect(mockApiTokens.verify).toHaveBeenCalledWith("jnt_invalid");
+  });
+
+  it("prefers session auth over Bearer token", async () => {
+    const mockApiTokens = createMockApiTokenService("jnt_valid");
+
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.set("auth", createMockAuth(true));
+      c.set("services", {
+        apiTokens: mockApiTokens,
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
+
+    const res = await app.request("/api/data", {
+      headers: { Authorization: "Bearer jnt_valid" },
+    });
+    expect(res.status).toBe(200);
+
+    // Should not check the token since session auth succeeded
+    expect(mockApiTokens.verify).not.toHaveBeenCalled();
   });
 });

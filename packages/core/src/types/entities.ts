@@ -127,6 +127,15 @@ export interface Setting {
   updatedAt: number;
 }
 
+export interface ApiToken {
+  id: string;
+  name: string;
+  prefix: string;
+  lastUsedAt: number | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
 /** Latest-reply context for a thread root, used in timeline display */
 export interface ThreadTimelineContext {
   latestReply: Post;

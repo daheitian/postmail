@@ -4,12 +4,29 @@ This document describes the REST API endpoints available in Jant.
 
 ## Authentication
 
-All POST, PUT, and DELETE endpoints require authentication using session cookies from better-auth.
+All POST, PUT, and DELETE endpoints require authentication. Two methods are supported:
 
-To authenticate:
+### Session Cookies (Web UI)
 
 1. Sign in via `/signin` (web UI)
 2. Use the session cookie in subsequent API requests
+
+### Bearer Tokens (API)
+
+For programmatic access (scripts, shortcuts, CI/CD), generate an API token in **Settings > API Tokens** and pass it as a Bearer token:
+
+```
+Authorization: Bearer jnt_YOUR_TOKEN
+```
+
+Example:
+
+```bash
+curl https://your-site.com/api/posts \
+  -H "Authorization: Bearer jnt_YOUR_TOKEN"
+```
+
+Tokens grant full API access (same as session auth). The token is shown only once at creation — store it securely.
 
 Unauthenticated requests to protected endpoints will receive a `401 Unauthorized` response.
 

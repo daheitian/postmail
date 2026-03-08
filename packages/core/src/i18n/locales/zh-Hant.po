@@ -69,6 +69,11 @@ msgstr "關於這個部落格"
 msgid "Account"
 msgstr "帳戶"
 
+#. @context: Heading for list of active API tokens
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Active Tokens"
+msgstr ""
+
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add"
@@ -149,6 +154,11 @@ msgstr "進階"
 msgid "All"
 msgstr "所有"
 
+#. @context: Description after API reference link
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "all available endpoints and request formats."
+msgstr ""
+
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
 #~ msgid "All pages are already in navigation."
@@ -163,6 +173,18 @@ msgstr "所有"
 #: src/ui/compose/ComposeDialog.tsx
 #~ msgid "Alt text improves accessibility"
 #~ msgstr "替代文字改善可及性"
+
+#. @context: Link to API documentation
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "API reference"
+msgstr ""
+
+#. @context: Settings item — API token settings
+#. @context: Settings section heading
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "API Tokens"
+msgstr ""
 
 #. @context: Dashboard navigation - appearance settings
 #: src/ui/layouts/DashLayout.tsx
@@ -257,6 +279,11 @@ msgstr ""
 #: src/ui/layouts/DashLayout.tsx
 #~ msgid "Back to site"
 #~ msgstr ""
+
+#. @context: Settings item description for API tokens
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Bearer tokens for scripts and automation"
+msgstr ""
 
 #. @context: Settings section heading for avatar
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -394,6 +421,11 @@ msgstr "確認密碼"
 #~ msgid "Copy"
 #~ msgstr "複製"
 
+#. @context: Warning to copy newly created API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Copy your token now — it won't be shown again."
+msgstr ""
+
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
 #: src/routes/auth/setup.tsx
@@ -433,6 +465,11 @@ msgstr ""
 msgid "Create a collection to get started."
 msgstr ""
 
+#. @context: Label for curl example
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Create a post with curl:"
+msgstr ""
+
 #. @context: Button to save new collection
 #: src/ui/dash/collections/CollectionForm.tsx
 #~ msgid "Create Collection"
@@ -467,6 +504,12 @@ msgstr "建立您的管理員帳戶。"
 #: src/ui/dash/PostList.tsx
 #~ msgid "Create your first post"
 #~ msgstr "創建你的第一篇帖子"
+
+#. @context: Token creation date
+#. placeholder {0}: formatDate(token.createdAt)
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Created {0}"
+msgstr ""
 
 #. @context: Password form field
 #: src/ui/dash/settings/AccountContent.tsx
@@ -663,6 +706,11 @@ msgstr "草稿已保存。"
 msgid "Drafts"
 msgstr "草稿"
 
+#. @context: Placeholder for API token name input
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "e.g. iOS Shortcuts"
+msgstr ""
+
 #. @context: Button to edit item
 #. @context: Per-collection edit action
 #: src/ui/dash/ActionButtons.tsx
@@ -826,6 +874,11 @@ msgstr "找到 1 個結果"
 msgid "General"
 msgstr "一般設定"
 
+#. @context: Button to create new API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Generate Token"
+msgstr ""
+
 #. @context: Compose link title placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Give it a title..."
@@ -927,6 +980,12 @@ msgstr "標籤是必需的"
 msgid "Language"
 msgstr "語言"
 
+#. @context: Token last used date
+#. placeholder {0}: formatDate(token.lastUsedAt)
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Last used {0}"
+msgstr ""
+
 #. @context: Browse filter for latest posts
 #. @context: Browse filter label
 #. @context: Browse filter label
@@ -960,6 +1019,11 @@ msgstr "連結"
 #. @context: Label for max visible nav links number input
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Links shown in header"
+msgstr ""
+
+#. @context: Label for list posts curl example
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "List posts:"
 msgstr ""
 
 #. @context: Visibility option - appears everywhere
@@ -1614,6 +1678,16 @@ msgstr ""
 msgid "Reset Password"
 msgstr "重設密碼"
 
+#. @context: Button to revoke API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Revoke"
+msgstr ""
+
+#. @context: Confirm dialog for revoking API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Revoke this token? Any scripts using it will stop working."
+msgstr ""
+
 #. @context: Button to save collection
 #. @context: Button to save collection
 #. @context: Button to save settings
@@ -1706,6 +1780,11 @@ msgstr "搜尋帖子..."
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Search..."
 msgstr "搜尋..."
+
+#. @context: Link text to API documentation
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#~ msgid "See the API reference for all available endpoints."
+#~ msgstr ""
 
 #. @context: Media picker dialog title
 #: src/ui/dash/posts/PostForm.tsx
@@ -2022,6 +2101,16 @@ msgstr ""
 msgid "Toggle edit panel"
 msgstr "切換編輯面板"
 
+#. @context: API token name field label
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Token name"
+msgstr ""
+
+#. @context: API tokens description
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
+msgstr ""
+
 #. @context: Custom URL form field
 #: src/routes/dash/custom-urls.tsx
 msgid "Type"
@@ -2117,6 +2206,11 @@ msgstr "網址"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL安全識別碼（小寫、數字、連字符）。對於CJK標題，slug將在伺服器上自動生成。"
+
+#. @context: Heading for API token usage examples
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Usage"
+msgstr ""
 
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx

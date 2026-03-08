@@ -16,6 +16,7 @@ import {
 import { createSearchService, type SearchService } from "./search.js";
 import { createNavItemService, type NavItemService } from "./navigation.js";
 import { createAuthService, type AuthService } from "./auth.js";
+import { createApiTokenService, type ApiTokenService } from "./api-token.js";
 
 export interface Services {
   settings: SettingsService;
@@ -26,6 +27,7 @@ export interface Services {
   search: SearchService;
   navItems: NavItemService;
   auth: AuthService;
+  apiTokens: ApiTokenService;
 }
 
 export function createServices(
@@ -45,6 +47,7 @@ export function createServices(
     search: createSearchService(d1),
     navItems: createNavItemService(db),
     auth: createAuthService(db, settings),
+    apiTokens: createApiTokenService(db),
   };
 }
 
@@ -56,3 +59,4 @@ export type { CollectionService } from "./collection.js";
 export type { SearchService, SearchResult, SearchOptions } from "./search.js";
 export type { NavItemService } from "./navigation.js";
 export type { AuthService } from "./auth.js";
+export type { ApiTokenService } from "./api-token.js";

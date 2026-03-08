@@ -61,6 +61,7 @@ const ICONS = {
   code: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
   arrowRightLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>`,
   lock: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  key: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>`,
 };
 
 // oklch-based colors for icon backgrounds
@@ -72,6 +73,7 @@ const COLORS = {
   pink: "oklch(0.6 0.2 350)",
   indigo: "oklch(0.5 0.2 275)",
   amber: "oklch(0.6 0.16 75)",
+  teal: "oklch(0.55 0.15 185)",
   gray: "oklch(0.55 0.01 250)",
 };
 
@@ -202,6 +204,19 @@ export function SettingsRootContent() {
             description={t({
               message: "Redirects and custom paths",
               comment: "@context: Settings item description for custom URLs",
+            })}
+          />
+          <SettingsItem
+            href="/settings/api-tokens"
+            icon={ICONS.key}
+            color={COLORS.teal}
+            name={t({
+              message: "API Tokens",
+              comment: "@context: Settings item — API token settings",
+            })}
+            description={t({
+              message: "Bearer tokens for scripts and automation",
+              comment: "@context: Settings item description for API tokens",
             })}
           />
         </div>

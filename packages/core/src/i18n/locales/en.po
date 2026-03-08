@@ -86,6 +86,11 @@ msgstr "About this blog"
 msgid "Account"
 msgstr "Account"
 
+#. @context: Heading for list of active API tokens
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Active Tokens"
+msgstr "Active Tokens"
+
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add"
@@ -171,6 +176,11 @@ msgstr "Advanced"
 msgid "All"
 msgstr "All"
 
+#. @context: Description after API reference link
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "all available endpoints and request formats."
+msgstr "all available endpoints and request formats."
+
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
 #~ msgid "All pages are already in navigation."
@@ -190,6 +200,18 @@ msgstr "All"
 #: src/ui/compose/ComposeDialog.tsx
 #~ msgid "Alt text improves accessibility"
 #~ msgstr "Alt text improves accessibility"
+
+#. @context: Link to API documentation
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "API reference"
+msgstr "API reference"
+
+#. @context: Settings item — API token settings
+#. @context: Settings section heading
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "API Tokens"
+msgstr "API Tokens"
 
 #. @context: Dashboard navigation - appearance settings
 #: src/ui/layouts/DashLayout.tsx
@@ -317,6 +339,11 @@ msgstr "Avatar display updated."
 #: src/ui/layouts/DashLayout.tsx
 #~ msgid "Back to site"
 #~ msgstr "Back to site"
+
+#. @context: Settings item description for API tokens
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Bearer tokens for scripts and automation"
+msgstr "Bearer tokens for scripts and automation"
 
 #. @context: Settings section heading for avatar
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -464,6 +491,11 @@ msgstr "Confirm Password"
 #~ msgid "Copy"
 #~ msgstr "Copy"
 
+#. @context: Warning to copy newly created API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Copy your token now — it won't be shown again."
+msgstr "Copy your token now — it won't be shown again."
+
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
 #: src/routes/auth/setup.tsx
@@ -502,6 +534,11 @@ msgstr "Couldn't save. Try again in a moment."
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Create a collection to get started."
 msgstr "Create a collection to get started."
+
+#. @context: Label for curl example
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Create a post with curl:"
+msgstr "Create a post with curl:"
 
 #. @context: Button to save new collection
 #: src/ui/dash/collections/CollectionForm.tsx
@@ -547,6 +584,12 @@ msgstr "Create your admin account."
 #: src/ui/dash/PostList.tsx
 #~ msgid "Create your first post"
 #~ msgstr "Create your first post"
+
+#. @context: Token creation date
+#. placeholder {0}: formatDate(token.createdAt)
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Created {0}"
+msgstr "Created {0}"
 
 #. @context: Password form field
 #: src/ui/dash/settings/AccountContent.tsx
@@ -773,6 +816,11 @@ msgstr "Draft saved."
 msgid "Drafts"
 msgstr "Drafts"
 
+#. @context: Placeholder for API token name input
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "e.g. iOS Shortcuts"
+msgstr "e.g. iOS Shortcuts"
+
 #. @context: Source name placeholder
 #: src/theme/components/PostForm.tsx
 #~ msgid "e.g. The Verge, John Doe"
@@ -972,6 +1020,11 @@ msgstr "Found 1 result"
 msgid "General"
 msgstr "General"
 
+#. @context: Button to create new API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Generate Token"
+msgstr "Generate Token"
+
 #. @context: Compose link title placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Give it a title..."
@@ -1097,6 +1150,12 @@ msgstr "Label is required"
 msgid "Language"
 msgstr "Language"
 
+#. @context: Token last used date
+#. placeholder {0}: formatDate(token.lastUsedAt)
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Last used {0}"
+msgstr "Last used {0}"
+
 #. @context: Browse filter for latest posts
 #. @context: Browse filter label
 #. @context: Browse filter label
@@ -1136,6 +1195,11 @@ msgstr "Links"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Links shown in header"
 msgstr "Links shown in header"
+
+#. @context: Label for list posts curl example
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "List posts:"
+msgstr "List posts:"
 
 #. @context: Visibility option - appears everywhere
 #: src/ui/dash/posts/PostForm.tsx
@@ -1871,6 +1935,16 @@ msgstr "Reply"
 msgid "Reset Password"
 msgstr "Reset Password"
 
+#. @context: Button to revoke API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Revoke"
+msgstr "Revoke"
+
+#. @context: Confirm dialog for revoking API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Revoke this token? Any scripts using it will stop working."
+msgstr "Revoke this token? Any scripts using it will stop working."
+
 #. @context: Button to save collection
 #. @context: Button to save collection
 #. @context: Button to save settings
@@ -1978,6 +2052,11 @@ msgstr "Search posts..."
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Search..."
 msgstr "Search..."
+
+#. @context: Link text to API documentation
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#~ msgid "See the API reference for all available endpoints."
+#~ msgstr "See the API reference for all available endpoints."
 
 #. @context: Media picker dialog title
 #: src/ui/dash/posts/PostForm.tsx
@@ -2334,6 +2413,16 @@ msgstr "Toggle built-in navigation items. Enabled items appear in your navigatio
 msgid "Toggle edit panel"
 msgstr "Toggle edit panel"
 
+#. @context: API token name field label
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Token name"
+msgstr "Token name"
+
+#. @context: API tokens description
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
+msgstr "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
+
 #. @context: Custom URL form field
 #: src/routes/dash/custom-urls.tsx
 msgid "Type"
@@ -2444,6 +2533,11 @@ msgstr "URL"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
+
+#. @context: Heading for API token usage examples
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Usage"
+msgstr "Usage"
 
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx

@@ -169,6 +169,13 @@
       "when": 1772894265731,
       "tag": "0023_quick_lord_hawal",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1772959238491,
+      "tag": "0024_silky_franklin_richards",
+      "breakpoints": true
     }
   ]
 }

@@ -250,6 +250,9 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0023: add waveform column to media
   applyMigration(sqlite, "0023_quick_lord_hawal.sql");
 
+  // Apply 0024: add api_tokens table
+  applyMigration(sqlite, "0024_silky_franklin_richards.sql");
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

@@ -16,6 +16,7 @@ import { createCollectionService } from "../../services/collection.js";
 import { createSearchService } from "../../services/search.js";
 import { createNavItemService } from "../../services/navigation.js";
 import { createAuthService } from "../../services/auth.js";
+import { createApiTokenService } from "../../services/api-token.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
@@ -53,6 +54,7 @@ export function createTestApp(options: TestAppOptions = {}) {
     search: createSearchService(mockD1),
     navItems: createNavItemService(db),
     auth: createAuthService(db, settingsService),
+    apiTokens: createApiTokenService(db),
   };
 
   const app = new Hono<Env>();

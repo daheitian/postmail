@@ -3,7 +3,7 @@
  *
  * Unified settings hub — root page with iOS-style grouped list,
  * plus sub-pages for General, Avatar, Navigation, Color Theme,
- * Font Theme, Custom CSS, and Password.
+ * Font Theme, Custom CSS, Password, and API Tokens.
  */
 
 import { Hono } from "hono";
@@ -29,6 +29,7 @@ import { NavigationContent } from "../../ui/dash/appearance/NavigationContent.js
 import { ColorThemeContent } from "../../ui/dash/appearance/ColorThemeContent.js";
 import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
 import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
+import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -658,4 +659,54 @@ settingsRoutes.post("/password", async (c) => {
       confirmPassword: "",
     });
   });
+});
+
+// ===========================================================================
+// API Tokens
+// ===========================================================================
+
+settingsRoutes.get("/api-tokens", async (c) => {
+  const tokens = await c.var.services.apiTokens.list();
+  const navData = await getNavigationData(c);
+  const siteUrl = c.env.SITE_URL;
+
+  return renderPublicPage(c, {
+    title: `API Tokens - ${navData.siteName}`,
+    navData,
+    content: (
+      <>
+        <AdminBreadcrumb
+          parent="Settings"
+          parentHref="/settings"
+          current="API Tokens"
+        />
+        <ApiTokensContent tokens={tokens} siteUrl={siteUrl} />
+      </>
+    ),
+  });
+});
+
+settingsRoutes.post("/api-tokens", async (c) => {
+  const body = await c.req.json<{ tokenName: string }>();
+  const name = body.tokenName?.trim();
+
+  if (!name) {
+    return dsToast("Token name is required.", "error");
+  }
+
+  const { plaintext } = await c.var.services.apiTokens.create(name);
+
+  return sse(c, async (stream) => {
+    await stream.patchSignals({
+      _newPlaintext: plaintext,
+      tokenName: "",
+    });
+  });
+});
+
+settingsRoutes.post("/api-tokens/:id/delete", async (c) => {
+  const id = c.req.param("id");
+  await c.var.services.apiTokens.delete(id);
+
+  return dsRedirect("/settings/api-tokens");
 });
