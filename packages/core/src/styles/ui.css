@@ -415,7 +415,7 @@
 
   /* Show the container when at least one status is active */
   article[data-post-pinned] .post-status-badges,
-  article[data-post-visibility="featured"] .post-status-badges,
+  article[data-post-featured] .post-status-badges,
   article[data-post-visibility="private"] .post-status-badges {
     display: flex;
   }
@@ -430,7 +430,7 @@
     display: inline-flex;
   }
 
-  article[data-post-visibility="featured"] .post-status-featured {
+  article[data-post-featured] .post-status-featured {
     display: inline-flex;
   }
 
@@ -450,8 +450,7 @@
     user-select: none;
   }
 
-  article[data-post-pinned][data-post-visibility="featured"]
-    .post-status-separator {
+  article[data-post-pinned][data-post-featured] .post-status-separator {
     display: inline;
   }
 

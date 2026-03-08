@@ -62,6 +62,7 @@ export class JantComposeDialog extends LitElement {
     _replyToData: { state: true },
     _replyExpanded: { state: true },
     _visibility: { state: true },
+    _featured: { state: true },
     _showVisibilityMenu: { state: true },
   };
 
@@ -92,6 +93,7 @@ export class JantComposeDialog extends LitElement {
   declare _replyToData: ReplyToData | null;
   declare _replyExpanded: boolean;
   declare _visibility: ComposeVisibility;
+  declare _featured: boolean;
   declare _showVisibilityMenu: boolean;
 
   private _attachedEditor: Editor | null = null;
@@ -135,6 +137,7 @@ export class JantComposeDialog extends LitElement {
     this._replyToData = null;
     this._replyExpanded = false;
     this._visibility = "public";
+    this._featured = false;
     this._showVisibilityMenu = false;
   }
 
@@ -178,6 +181,7 @@ export class JantComposeDialog extends LitElement {
     this._replyToData = null;
     this._replyExpanded = false;
     this._visibility = "public";
+    this._featured = false;
     this._showVisibilityMenu = false;
     this._confirmForDrafts = false;
     this.#dirty = false;
@@ -471,6 +475,7 @@ export class JantComposeDialog extends LitElement {
       quoteAuthor: editorData.quoteAuthor,
       status,
       visibility: this._visibility,
+      featured: this._featured || undefined,
       rating: editorData.rating,
       collectionIds: [...this._collectionIds],
       mediaIds,
@@ -1877,7 +1882,11 @@ export class JantComposeDialog extends LitElement {
                   type="button"
                   class="compose-dropdown-item"
                   role="menuitem"
-                  @click=${() => this._submitWithVisibility("featured")}
+                  @click=${() => {
+                    this._featured = true;
+                    this._showVisibilityMenu = false;
+                    this.updateComplete.then(() => this._submit("published"));
+                  }}
                 >
                   <svg
                     width="16"

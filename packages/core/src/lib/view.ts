@@ -135,6 +135,7 @@ export function toPostView(
   post: PostWithMedia,
   _ctx: MediaContext,
   postCollections?: Collection[],
+  threadRootPermalink?: string,
 ): PostView {
   const id = post.id;
   const permalink = `/${post.slug}`;
@@ -214,6 +215,7 @@ export function toPostView(
     status: post.status as Status,
     visibility: post.visibility,
     pinned: post.pinnedAt !== null,
+    featured: post.featuredAt !== null,
     rating: post.rating ?? undefined,
     publishedAt: toISOString(post.publishedAt),
     publishedAtFormatted: formatDate(post.publishedAt),
@@ -224,6 +226,7 @@ export function toPostView(
     collections,
     replyToId: post.replyToId ?? undefined,
     threadRootId: post.threadId ?? undefined,
+    threadRootPermalink,
     body: post.body ?? undefined,
   };
 }
@@ -241,8 +244,17 @@ export function toPostViews(
 /**
  * Converts a bare Post (no media) to a PostView with empty media array.
  */
-export function toPostViewFromPost(post: Post, ctx: MediaContext): PostView {
-  return toPostView({ ...post, mediaAttachments: [] }, ctx);
+export function toPostViewFromPost(
+  post: Post,
+  ctx: MediaContext,
+  threadRootPermalink?: string,
+): PostView {
+  return toPostView(
+    { ...post, mediaAttachments: [] },
+    ctx,
+    undefined,
+    threadRootPermalink,
+  );
 }
 
 /**
@@ -251,8 +263,14 @@ export function toPostViewFromPost(post: Post, ctx: MediaContext): PostView {
 export function toPostViewsFromPosts(
   posts: Post[],
   ctx: MediaContext,
+  threadRootPermalinkMap?: Map<string, string>,
 ): PostView[] {
-  return posts.map((p) => toPostViewFromPost(p, ctx));
+  return posts.map((p) => {
+    const rootPermalink = p.threadId
+      ? threadRootPermalinkMap?.get(p.threadId)
+      : undefined;
+    return toPostViewFromPost(p, ctx, rootPermalink);
+  });
 }
 
 // =============================================================================

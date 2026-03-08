@@ -22,7 +22,7 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const rssRoutes = new Hono<Env>();
 
 interface FeedOptions {
-  visibility?: "featured";
+  featured?: boolean;
   excludeUnlisted?: boolean;
   excludePrivate?: boolean;
   format?: Format;
@@ -49,7 +49,7 @@ async function buildFeedData(
   const posts = await c.var.services.posts.list({
     status: "published",
     excludeReplies: true,
-    visibility: opts?.visibility,
+    featured: opts?.featured,
     excludeUnlisted: opts?.excludeUnlisted,
     excludePrivate: opts?.excludePrivate ?? true,
     format: opts?.format,
@@ -101,7 +101,7 @@ function parseFormatQuery(c: Context<Env>): Format | undefined {
 
 // RSS 2.0 — /feed
 rssRoutes.get("/", async (c) => {
-  const feedData = await buildFeedData(c, { visibility: "featured" });
+  const feedData = await buildFeedData(c, { featured: true });
   const xml = defaultRssRenderer(feedData);
 
   return new Response(xml, {
@@ -113,7 +113,7 @@ rssRoutes.get("/", async (c) => {
 
 // Atom — /feed/atom.xml
 rssRoutes.get("/atom.xml", async (c) => {
-  const feedData = await buildFeedData(c, { visibility: "featured" });
+  const feedData = await buildFeedData(c, { featured: true });
   const xml = defaultAtomRenderer(feedData);
 
   return new Response(xml, {

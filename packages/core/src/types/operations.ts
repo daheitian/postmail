@@ -15,6 +15,7 @@ export interface CreatePost {
   status?: Status;
   visibility?: Visibility;
   pinned?: boolean;
+  featured?: boolean;
   slug?: string;
   title?: string;
   url?: string;
@@ -32,6 +33,7 @@ export interface UpdatePost {
   status?: Status;
   visibility?: Visibility;
   pinned?: boolean;
+  featured?: boolean;
   slug?: string;
   title?: string | null;
   url?: string | null;

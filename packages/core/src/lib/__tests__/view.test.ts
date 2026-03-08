@@ -42,6 +42,7 @@ function makePost(overrides: Partial<Post> = {}): Post {
     status: "published",
     visibility: "public" as const,
     pinnedAt: null,
+    featuredAt: null,
     slug: "test-post",
     title: null,
     url: null,
@@ -237,20 +238,22 @@ describe("toPostView", () => {
     expect(view.quoteText).toBe("Something wise");
   });
 
-  it("maps format, status, visibility, and pinned correctly", () => {
+  it("maps format, status, visibility, pinned, and featured correctly", () => {
     const view = toPostView(
       makePostWithMedia({
         format: "link",
         status: "draft",
-        visibility: "featured",
+        visibility: "public",
         pinnedAt: 1706745600,
+        featuredAt: 1706745600,
       }),
       EMPTY_CTX,
     );
     expect(view.format).toBe("link");
     expect(view.status).toBe("draft");
-    expect(view.visibility).toBe("featured");
+    expect(view.visibility).toBe("public");
     expect(view.pinned).toBe(true);
+    expect(view.featured).toBe(true);
   });
 
   it("maps default visibility and pinnedAt=null", () => {
@@ -534,8 +537,9 @@ describe("toSearchResultView", () => {
         id: UUID_POST,
         format: "link",
         status: "published",
-        visibility: "featured",
+        visibility: "public",
         pinnedAt: null,
+        featuredAt: 1706745600,
         url: "https://example.com",
         slug: "my-link",
       }),
@@ -544,7 +548,8 @@ describe("toSearchResultView", () => {
     const view = toSearchResultView(result, EMPTY_CTX);
     expect(view.post.format).toBe("link");
     expect(view.post.status).toBe("published");
-    expect(view.post.visibility).toBe("featured");
+    expect(view.post.visibility).toBe("public");
+    expect(view.post.featured).toBe(true);
     expect(view.post.pinned).toBe(false);
     expect(view.post.url).toBe("https://example.com");
     expect(view.post.permalink).toBe("/my-link");

@@ -25,14 +25,30 @@ featuredRoutes.get("/", async (c) => {
   }
 
   const posts = await c.var.services.posts.list({
-    visibility: "featured",
+    featured: true,
     status: "published",
-    excludeReplies: true,
     excludePrivate: !navData.isAuthenticated,
   });
 
   const mediaCtx = createMediaContext(c.var.appConfig);
-  const postViews = toPostViewsFromPosts(posts, mediaCtx);
+
+  // Build thread root permalink map for reply posts
+  const threadRootIds = [
+    ...new Set(
+      posts.filter((p) => p.threadId).map((p) => p.threadId as string),
+    ),
+  ];
+  const rootPermalinkMap = new Map<string, string>();
+  if (threadRootIds.length > 0) {
+    const roots = await Promise.all(
+      threadRootIds.map((id) => c.var.services.posts.getById(id)),
+    );
+    for (const root of roots) {
+      if (root) rootPermalinkMap.set(root.id, `/${root.slug}`);
+    }
+  }
+
+  const postViews = toPostViewsFromPosts(posts, mediaCtx, rootPermalinkMap);
 
   // Convert to timeline items (simple — no thread previews)
   const items = postViews.map((post) => ({ post }));

@@ -211,10 +211,21 @@ describe("CreatePostSchema", () => {
   });
 
   it("accepts visibility values", () => {
-    for (const v of ["public", "featured", "unlisted"]) {
+    for (const v of ["public", "unlisted", "private"]) {
       const result = CreatePostSchema.parse({ ...validPost, visibility: v });
       expect(result.visibility).toBe(v);
     }
+  });
+
+  it("accepts featured as boolean", () => {
+    const result = CreatePostSchema.parse({ ...validPost, featured: true });
+    expect(result.featured).toBe(true);
+  });
+
+  it("rejects featured as non-boolean (other than 'on')", () => {
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, featured: "invalid" }),
+    ).toThrow();
   });
 
   it("rejects invalid visibility", () => {

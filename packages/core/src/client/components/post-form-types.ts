@@ -4,7 +4,7 @@
 
 export type PostFormat = "note" | "link" | "quote";
 export type PostStatus = "published" | "draft";
-export type PostVisibility = "public" | "featured" | "unlisted";
+export type PostVisibility = "public" | "unlisted";
 
 export interface PostFormLabels {
   formatLabel: string;
@@ -31,7 +31,6 @@ export interface PostFormLabels {
   statusDraft: string;
   visibilityLabel: string;
   visibilityPublic: string;
-  visibilityFeatured: string;
   visibilityUnlisted: string;
   pinnedLabel: string;
   collectionsLabel: string;

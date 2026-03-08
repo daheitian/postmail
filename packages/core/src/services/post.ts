@@ -3,7 +3,7 @@
  *
  * CRUD operations for posts with Thread support.
  * Posts have format (note/link/quote), status (draft/published),
- * visibility (public/featured/unlisted), and pinnedAt timestamp.
+ * visibility (public/unlisted/private), featuredAt, and pinnedAt timestamp.
  */
 
 import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
@@ -40,6 +40,7 @@ export interface PostFilters {
   status?: Status;
   visibility?: Visibility;
   pinned?: boolean;
+  featured?: boolean;
   collectionId?: string;
   /** Exclude posts that are replies (have threadId set) */
   excludeReplies?: boolean;
@@ -172,6 +173,13 @@ export function createPostService(
           : isNull(posts.pinnedAt),
       );
     }
+    if (filters.featured !== undefined) {
+      conditions.push(
+        filters.featured
+          ? sql`${posts.featuredAt} IS NOT NULL`
+          : isNull(posts.featuredAt),
+      );
+    }
     if (filters.format) {
       conditions.push(eq(posts.format, filters.format));
     }
@@ -222,6 +230,7 @@ export function createPostService(
       status: row.status as Status,
       visibility: row.visibility as Visibility,
       pinnedAt: row.pinnedAt,
+      featuredAt: row.featuredAt,
       slug: row.slug,
       title: row.title,
       url: row.url,
@@ -273,7 +282,9 @@ export function createPostService(
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(
           desc(posts.pinnedAt),
-          desc(posts.lastActivityAt),
+          filters.featured
+            ? desc(posts.featuredAt)
+            : desc(posts.lastActivityAt),
           desc(posts.id),
         )
         .limit(filters.limit ?? 100);
@@ -354,6 +365,7 @@ export function createPostService(
             status,
             visibility,
             pinnedAt: data.pinned ? timestamp : null,
+            featuredAt: data.featured ? timestamp : null,
             slug,
             title: data.title ?? null,
             url: data.url ?? null,
@@ -431,6 +443,8 @@ export function createPostService(
         updates.publishedAt = data.publishedAt;
       if (data.pinned !== undefined)
         updates.pinnedAt = data.pinned ? now() : null;
+      if (data.featured !== undefined)
+        updates.featuredAt = data.featured ? now() : null;
 
       if (data.body !== undefined) {
         updates.body = data.body;

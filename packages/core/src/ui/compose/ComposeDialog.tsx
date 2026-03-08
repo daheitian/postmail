@@ -244,7 +244,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
     publishFeatured: t({
       message: "Post as Featured",
       comment:
-        "@context: Compose dropdown option - publish post with featured visibility, pinned to top of feed",
+        "@context: Compose dropdown option - publish post and mark it as featured",
     }),
     publishUnlisted: t({
       message: "Post Unlisted",

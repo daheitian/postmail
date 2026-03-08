@@ -141,7 +141,7 @@ export interface ComposeLabels {
   collectionFormLabels: CollectionFormLabels;
 }
 
-export type ComposeVisibility = "public" | "featured" | "unlisted" | "private";
+export type ComposeVisibility = "public" | "unlisted" | "private";
 
 export interface ComposeSubmitDetail {
   format: ComposeFormat;
@@ -161,6 +161,7 @@ export interface ComposeSubmitDetail {
   attachmentOrder: string[];
   /** clientId → mediaId for already-uploaded file attachments (captured at submit time) */
   mediaClientMap: Record<string, string>;
+  featured?: boolean;
   editPostId?: string;
   replyToId?: string;
 }

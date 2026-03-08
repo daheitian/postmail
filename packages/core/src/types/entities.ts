@@ -17,6 +17,7 @@ export interface Post {
   status: Status;
   visibility: Visibility;
   pinnedAt: number | null;
+  featuredAt: number | null;
   slug: string;
   title: string | null;
   url: string | null;

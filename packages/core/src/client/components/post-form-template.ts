@@ -280,9 +280,6 @@ export function renderPostForm(component: JantPostForm) {
           }}
         >
           <option value="public">${component.labels.visibilityPublic}</option>
-          <option value="featured">
-            ${component.labels.visibilityFeatured}
-          </option>
           <option value="unlisted">
             ${component.labels.visibilityUnlisted}
           </option>

@@ -49,6 +49,7 @@ export interface PostView {
   status: Status;
   visibility: Visibility;
   pinned: boolean;
+  featured: boolean;
   rating?: number;
 
   // Time -- pre-formatted
@@ -74,6 +75,8 @@ export interface PostView {
   replyToId?: string;
   /** UUIDv7 of the thread root post */
   threadRootId?: string;
+  /** Permalink of the thread root post (for "in thread" link on featured replies) */
+  threadRootPermalink?: string;
 
   // Raw content (for forms/editing, not typical theme use)
   body?: string;

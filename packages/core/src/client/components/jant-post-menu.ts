@@ -19,6 +19,7 @@ interface PostMenuData {
   id: string;
   permalink: string;
   pinned: boolean;
+  featured: boolean;
   visibility: string;
   isReply: boolean;
 }
@@ -196,6 +197,7 @@ export class JantPostMenu extends LitElement {
         id: postId,
         permalink: article.dataset.postPermalink ?? "",
         pinned: article.hasAttribute("data-post-pinned"),
+        featured: article.hasAttribute("data-post-featured"),
         visibility: article.dataset.postVisibility ?? "public",
         isReply: article.hasAttribute("data-post-reply"),
       };
@@ -281,11 +283,41 @@ export class JantPostMenu extends LitElement {
 
       const messages: Record<string, string> = {
         public: "Post made public.",
-        featured: "Post featured.",
         unlisted: "Post unlisted.",
         private: "Post made private.",
       };
       showToast(messages[newVisibility] ?? "Visibility updated.");
+    } catch {
+      showToast("Could not update post. Try again.", "error");
+    }
+    this.#close();
+  }
+
+  async #setFeatured(featured: boolean) {
+    if (!this._data) return;
+
+    try {
+      const res = await fetch(`/api/posts/${this._data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ featured }),
+      });
+      if (!res.ok) throw new Error();
+
+      // Update article's data attribute
+      const article = document.querySelector<HTMLElement>(
+        `article[data-post-id="${this._data.id}"]`,
+      );
+      if (article) {
+        if (featured) {
+          article.setAttribute("data-post-featured", "");
+        } else {
+          article.removeAttribute("data-post-featured");
+        }
+      }
+      this._data = { ...this._data, featured };
+
+      showToast(featured ? "Post featured." : "Post unfeatured.");
     } catch {
       showToast("Could not update post. Try again.", "error");
     }
@@ -884,6 +916,7 @@ export class JantPostMenu extends LitElement {
     if (!this._data) return nothing;
     const visibility = this._data.visibility;
     const isPinned = this._data.pinned;
+    const isFeatured = this._data.featured;
 
     return html`
       <div role="menu">
@@ -896,6 +929,13 @@ export class JantPostMenu extends LitElement {
         <div role="menuitem" @click=${() => this.#openCollectionPicker()}>
           ${this.#iconCollection()} Add to collection
         </div>
+        ${isFeatured
+          ? html`<div role="menuitem" @click=${() => this.#setFeatured(false)}>
+              ${this.#iconHeartOff()} Unfeature
+            </div>`
+          : html`<div role="menuitem" @click=${() => this.#setFeatured(true)}>
+              ${this.#iconHeart()} Feature
+            </div>`}
         ${this._data.isReply
           ? nothing
           : html`
@@ -907,19 +947,6 @@ export class JantPostMenu extends LitElement {
                     ${this.#iconGlobe()} Make Public
                   </div>`
                 : nothing}
-              ${visibility !== "featured"
-                ? html`<div
-                    role="menuitem"
-                    @click=${() => this.#setVisibility("featured")}
-                  >
-                    ${this.#iconHeart()} Feature
-                  </div>`
-                : html`<div
-                    role="menuitem"
-                    @click=${() => this.#setVisibility("public")}
-                  >
-                    ${this.#iconHeartOff()} Unfeature
-                  </div>`}
               ${visibility !== "unlisted"
                 ? html`<div
                     role="menuitem"

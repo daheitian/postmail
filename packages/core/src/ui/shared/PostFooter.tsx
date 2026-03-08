@@ -109,6 +109,19 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail }) => {
             })}
           </a>
         )}
+        {post.threadRootPermalink && (
+          <span class="post-collection-sep" aria-hidden="true">
+            &middot;
+          </span>
+        )}
+        {post.threadRootPermalink && (
+          <a
+            href={post.threadRootPermalink}
+            class="text-xs text-muted-foreground hover:underline"
+          >
+            In thread &rarr;
+          </a>
+        )}
         <CollectionTags collections={post.collections} />
       </div>
       <div class="post-menu-actions">

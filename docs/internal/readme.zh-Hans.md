@@ -88,7 +88,7 @@
 
 **规则**：
 
-- Thread 内所有帖子继承 root 的 status 和 featured
+- Thread 内所有帖子继承 root 的 status 和 visibility（featured 独立设置，不继承）
 - 删除 root = 整个 Thread 软删除
 - 删除中间帖 = 子帖保留
 

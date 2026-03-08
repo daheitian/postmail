@@ -11,12 +11,14 @@ import type { Status, Visibility } from "../../types.js";
 export interface StatusBadgeProps {
   status: Status;
   visibility?: Visibility;
+  featured?: boolean;
   pinned?: boolean;
 }
 
 export const StatusBadge: FC<StatusBadgeProps> = ({
   status,
   visibility,
+  featured,
   pinned,
 }) => {
   const { t } = useLingui();
@@ -40,7 +42,7 @@ export const StatusBadge: FC<StatusBadgeProps> = ({
   return (
     <span class="flex items-center gap-1">
       <span class={statusVariants[status]}>{statusLabels[status]}</span>
-      {visibility === "featured" && (
+      {featured && (
         <span class="badge-primary">
           {t({
             message: "Featured",

@@ -30,11 +30,12 @@ export const posts = sqliteTable(
       .notNull()
       .default("published"),
     visibility: text("visibility", {
-      enum: ["public", "featured", "unlisted", "private"],
+      enum: ["public", "unlisted", "private"],
     })
       .notNull()
       .default("public"),
     pinnedAt: integer("pinned_at"),
+    featuredAt: integer("featured_at"),
     slug: text("slug").notNull().unique(),
     title: text("title"),
     url: text("url"),

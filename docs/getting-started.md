@@ -59,18 +59,20 @@ Photos with optional captions.
 
 Every post has a visibility level:
 
-| Level        | What it means                                 |
-| ------------ | --------------------------------------------- |
-| **Public**   | Normal publish, visible everywhere (default)  |
-| **Featured** | Highlighted content, appears in main RSS feed |
-| **Unlisted** | Only accessible via direct link               |
-| **Draft**    | Work in progress, not published               |
+| Level        | What it means                                |
+| ------------ | -------------------------------------------- |
+| **Public**   | Normal publish, visible everywhere (default) |
+| **Unlisted** | Only accessible via direct link              |
+| **Private**  | Only visible when logged in                  |
+| **Draft**    | Work in progress, not published              |
 
-Default is "public". Opt-in to "featured" for posts you're proud of.
+### Featured
+
+Featured is an independent curation flag, not a visibility level. Any post (including thread replies) can be featured. Featured posts appear in the main RSS feed (`/feed`) and on the Featured page. Feature a post from the post menu or use "Post as Featured" in the compose dialog.
 
 ## Threads
 
-Reply to your own posts to create connected threads. The entire thread shares the same visibility.
+Reply to your own posts to create connected threads. The thread shares the root post's visibility, but featured status is independent — you can feature individual replies.
 
 ## Collections
 

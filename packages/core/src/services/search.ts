@@ -31,6 +31,7 @@ interface RawSearchRow {
   status: string;
   visibility: string;
   pinned_at: number | null;
+  featured_at: number | null;
   slug: string;
   title: string | null;
   url: string | null;
@@ -60,6 +61,7 @@ function mapRow(row: RawSearchRow): SearchResult {
       status: row.status as Post["status"],
       visibility: row.visibility as Post["visibility"],
       pinnedAt: row.pinned_at,
+      featuredAt: row.featured_at,
       slug: row.slug,
       title: row.title,
       url: row.url,

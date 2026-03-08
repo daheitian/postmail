@@ -45,7 +45,7 @@ GET /api/posts
 **Query Parameters:**
 
 - `type` (optional): Filter by post type (`note`, `article`, `link`, `quote`, `image`, `page`)
-- `visibility` (optional): Filter by visibility (`featured`, `public`, `unlisted`, `draft`)
+- `visibility` (optional): Filter by visibility (`public`, `unlisted`, `private`)
 - `cursor` (optional): Pagination cursor (sqid format)
 - `limit` (optional): Number of posts to return (default: 100, max: 100)
 
@@ -61,7 +61,8 @@ GET /api/posts
       "title": "Post Title",
       "content": "Post content",
       "contentHtml": "<p>Post content</p>",
-      "visibility": "featured",
+      "visibility": "public",
+      "featured": true,
       "publishedAt": 1704067200,
       "createdAt": 1704067200,
       "updatedAt": 1704067200
@@ -91,7 +92,8 @@ GET /api/posts/:id
   "title": "Post Title",
   "content": "Post content",
   "contentHtml": "<p>Post content</p>",
-  "visibility": "featured",
+  "visibility": "public",
+  "featured": true,
   "publishedAt": 1704067200,
   "createdAt": 1704067200,
   "updatedAt": 1704067200
@@ -118,7 +120,8 @@ POST /api/posts
   "type": "note",
   "title": "Post Title",
   "content": "Post content",
-  "visibility": "featured",
+  "visibility": "public",
+  "featured": true,
   "sourceUrl": "https://example.com",
   "sourceName": "Example Source",
   "path": "custom-url-path",
@@ -131,7 +134,7 @@ POST /api/posts
 
 - `type`: One of `note`, `article`, `link`, `quote`, `image`, `page`
 - `content`: Post content (Markdown)
-- `visibility`: One of `featured`, `public`, `unlisted`, `draft`
+- `visibility`: One of `public`, `unlisted`, `private`
 
 **Optional Fields:**
 
@@ -152,7 +155,8 @@ POST /api/posts
   "title": "Post Title",
   "content": "Post content",
   "contentHtml": "<p>Post content</p>",
-  "visibility": "featured",
+  "visibility": "public",
+  "featured": true,
   "publishedAt": 1704067200,
   "createdAt": 1704067200,
   "updatedAt": 1704067200

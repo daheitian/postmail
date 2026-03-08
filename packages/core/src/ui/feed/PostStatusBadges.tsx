@@ -4,7 +4,7 @@
  * Renders pinned / featured indicators at the top of a post card.
  * All badges are always rendered in the DOM; visibility is driven by CSS
  * selectors on the parent article's data attributes (data-post-pinned,
- * data-post-visibility="featured"). This lets the post menu toggle
+ * data-post-featured). This lets the post menu toggle
  * badges instantly without a page reload.
  */
 

@@ -62,7 +62,8 @@ describe("PostService", () => {
         title: "My Link",
         body,
         status: "published",
-        visibility: "featured",
+        visibility: "public",
+        featured: true,
         pinned: true,
         slug: "my-link",
         url: "https://example.com/source",
@@ -73,7 +74,8 @@ describe("PostService", () => {
       expect(post.format).toBe("link");
       expect(post.title).toBe("My Link");
       expect(post.status).toBe("published");
-      expect(post.visibility).toBe("featured");
+      expect(post.visibility).toBe("public");
+      expect(post.featuredAt).toBeTypeOf("number");
       expect(post.pinnedAt).toBeTypeOf("number");
       expect(post.slug).toBe("my-link");
       expect(post.url).toBe("https://example.com/source");
@@ -296,33 +298,55 @@ describe("PostService", () => {
     it("filters by visibility", async () => {
       await postService.create({
         format: "note",
-        body: "featured post",
-        visibility: "featured",
-      });
-      await postService.create({
-        format: "note",
-        body: "normal post",
+        body: "public post",
       });
       await postService.create({
         format: "note",
         body: "unlisted post",
         visibility: "unlisted",
       });
-
-      const featured = await postService.list({ visibility: "featured" });
-      expect(featured).toHaveLength(1);
-      expect(featured[0]?.visibility).toBe("featured");
-      expect(featured[0]?.body).toBe("featured post");
+      await postService.create({
+        format: "note",
+        body: "private post",
+        visibility: "private",
+      });
 
       const publicPosts = await postService.list({ visibility: "public" });
       expect(publicPosts).toHaveLength(1);
       expect(publicPosts[0]?.visibility).toBe("public");
-      expect(publicPosts[0]?.body).toBe("normal post");
+      expect(publicPosts[0]?.body).toBe("public post");
 
       const unlisted = await postService.list({ visibility: "unlisted" });
       expect(unlisted).toHaveLength(1);
       expect(unlisted[0]?.visibility).toBe("unlisted");
       expect(unlisted[0]?.body).toBe("unlisted post");
+
+      const privatePosts = await postService.list({ visibility: "private" });
+      expect(privatePosts).toHaveLength(1);
+      expect(privatePosts[0]?.visibility).toBe("private");
+      expect(privatePosts[0]?.body).toBe("private post");
+    });
+
+    it("filters by featured", async () => {
+      await postService.create({
+        format: "note",
+        body: "featured post",
+        featured: true,
+      });
+      await postService.create({
+        format: "note",
+        body: "normal post",
+      });
+
+      const featured = await postService.list({ featured: true });
+      expect(featured).toHaveLength(1);
+      expect(featured[0]?.featuredAt).toBeTypeOf("number");
+      expect(featured[0]?.body).toBe("featured post");
+
+      const notFeatured = await postService.list({ featured: false });
+      expect(notFeatured).toHaveLength(1);
+      expect(notFeatured[0]?.featuredAt).toBeNull();
+      expect(notFeatured[0]?.body).toBe("normal post");
     });
 
     it("excludes unlisted posts when requested", async () => {
@@ -338,11 +362,12 @@ describe("PostService", () => {
       await postService.create({
         format: "note",
         body: "featured post",
-        visibility: "featured",
+        featured: true,
       });
 
       const posts = await postService.list({ excludeUnlisted: true });
       expect(posts).toHaveLength(2);
+      // Featured posts have visibility "public", so both public and featured appear
       expect(posts.map((p) => p.body).sort()).toEqual([
         "featured post",
         "public post",
@@ -362,11 +387,12 @@ describe("PostService", () => {
       await postService.create({
         format: "note",
         body: "featured post",
-        visibility: "featured",
+        featured: true,
       });
 
       const posts = await postService.list({ excludePrivate: true });
       expect(posts).toHaveLength(2);
+      // Featured posts have visibility "public", so both public and featured appear
       expect(posts.map((p) => p.body).sort()).toEqual([
         "featured post",
         "public post",
@@ -513,13 +539,28 @@ describe("PostService", () => {
     it("filters by visibility", async () => {
       await postService.create({
         format: "note",
-        body: "featured",
-        visibility: "featured",
+        body: "unlisted",
+        visibility: "unlisted",
       });
       await postService.create({ format: "note", body: "normal" });
 
-      const count = await postService.count({ visibility: "featured" });
+      const count = await postService.count({ visibility: "unlisted" });
       expect(count).toBe(1);
+    });
+
+    it("filters by featured", async () => {
+      await postService.create({
+        format: "note",
+        body: "featured",
+        featured: true,
+      });
+      await postService.create({ format: "note", body: "normal" });
+
+      const featuredCount = await postService.count({ featured: true });
+      expect(featuredCount).toBe(1);
+
+      const notFeaturedCount = await postService.count({ featured: false });
+      expect(notFeaturedCount).toBe(1);
     });
 
     it("excludes deleted posts by default", async () => {
@@ -657,10 +698,31 @@ describe("PostService", () => {
       expect(post.visibility).toBe("public");
 
       const updated = await postService.update(post.id, {
-        visibility: "featured",
+        visibility: "unlisted",
       });
 
-      expect(updated?.visibility).toBe("featured");
+      expect(updated?.visibility).toBe("unlisted");
+    });
+
+    it("updates featured flag", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: "test",
+      });
+
+      expect(post.featuredAt).toBeNull();
+
+      const featured = await postService.update(post.id, {
+        featured: true,
+      });
+
+      expect(featured?.featuredAt).toBeTypeOf("number");
+
+      const unfeatured = await postService.update(post.id, {
+        featured: false,
+      });
+
+      expect(unfeatured?.featuredAt).toBeNull();
     });
 
     it("updates pinned flag", async () => {
@@ -845,7 +907,7 @@ describe("PostService", () => {
       const root = await postService.create({
         format: "note",
         body: "root",
-        visibility: "featured",
+        visibility: "unlisted",
       });
       const reply = await postService.create({
         format: "note",
@@ -853,7 +915,26 @@ describe("PostService", () => {
         replyToId: root.id,
       });
 
-      expect(reply.visibility).toBe("featured");
+      expect(reply.visibility).toBe("unlisted");
+    });
+
+    it("does not inherit featuredAt from root post", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+        featured: true,
+      });
+
+      expect(root.featuredAt).toBeTypeOf("number");
+
+      const reply = await postService.create({
+        format: "note",
+        body: "reply",
+        replyToId: root.id,
+      });
+
+      // featuredAt is an independent property — replies should NOT inherit it
+      expect(reply.featuredAt).toBeNull();
     });
 
     it("getThread returns all posts in a thread", async () => {
@@ -926,11 +1007,11 @@ describe("PostService", () => {
         replyToId: root.id,
       });
 
-      await postService.update(root.id, { visibility: "featured" });
+      await postService.update(root.id, { visibility: "unlisted" });
 
       const thread = await postService.getThread(root.id);
       for (const post of thread) {
-        expect(post.visibility).toBe("featured");
+        expect(post.visibility).toBe("unlisted");
       }
     });
 
@@ -946,10 +1027,31 @@ describe("PostService", () => {
       });
 
       await expect(
-        postService.update(reply.id, { visibility: "featured" }),
+        postService.update(reply.id, { visibility: "unlisted" }),
       ).rejects.toThrow(
         "Cannot change visibility of a thread reply. Update the root post instead.",
       );
+    });
+
+    it("allows featuring a thread reply", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+      });
+      const reply = await postService.create({
+        format: "note",
+        body: "reply",
+        replyToId: root.id,
+      });
+
+      // Featured is independent of visibility — replies can be featured
+      const updated = await postService.update(reply.id, { featured: true });
+      expect(updated?.featuredAt).toBeTypeOf("number");
+
+      const unfeatured = await postService.update(reply.id, {
+        featured: false,
+      });
+      expect(unfeatured?.featuredAt).toBeNull();
     });
 
     it("rejects pinning a thread reply", async () => {

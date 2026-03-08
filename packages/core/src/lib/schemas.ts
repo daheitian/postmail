@@ -92,6 +92,7 @@ export const CreatePostSchema = z.object({
   pinned: z
     .union([z.boolean(), z.literal("on").transform(() => true)])
     .optional(),
+  featured: z.boolean().optional(),
   url: z.url().optional().or(z.literal("")),
   quoteText: z.string().optional(),
   rating: RatingSchema,

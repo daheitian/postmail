@@ -24,6 +24,7 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
       data-post-id={post.id}
       data-post-permalink={post.permalink}
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
+      {...(post.featured ? { "data-post-featured": "" } : {})}
       data-post-visibility={post.visibility}
       {...(post.threadRootId ? { "data-post-reply": "" } : {})}
     >

@@ -43,6 +43,13 @@
       "when": 1773005237586,
       "tag": "0005_white_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1773007147589,
+      "tag": "0006_easy_thanos",
+      "breakpoints": true
     }
   ]
 }
