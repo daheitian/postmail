@@ -153,70 +153,47 @@ const FileIcon = ({
 export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
   if (attachments.length === 0) return null;
 
-  const images = attachments.filter(
-    (a) => getMediaCategory(a.mimeType) === "image",
-  );
-  const videos = attachments.filter(
-    (a) => getMediaCategory(a.mimeType) === "video",
-  );
-  const audios = attachments.filter(
-    (a) => getMediaCategory(a.mimeType) === "audio",
-  );
-  // Everything that isn't image/video/audio/text renders as a document card
-  const documents = attachments.filter((a) => {
+  // Category checks for layout decisions
+  const hasNonVisualAttachment = attachments.some((a) => {
     const cat = getMediaCategory(a.mimeType);
-    return (
-      cat !== "image" && cat !== "video" && cat !== "audio" && cat !== "text"
-    );
+    return cat !== "image" && cat !== "video";
   });
-  const texts = attachments.filter(
-    (a) => getMediaCategory(a.mimeType) === "text",
-  );
 
-  // Build lightbox group from images + videos (documents/texts don't use lightbox)
-  const lightboxItems = [
-    ...images.map((img) => ({
-      url: img.url,
-      alt: img.altText || "",
-      width: img.width,
-      height: img.height,
-    })),
-    ...videos.map((v) => ({
-      url: v.url,
-      alt: v.altText || "",
-      width: v.width,
-      height: v.height,
-      mimeType: v.mimeType,
-      posterUrl: v.posterUrl || undefined,
-    })),
-  ];
+  // Build lightbox group from images + videos in position order
+  // (documents/texts don't use lightbox)
+  const lightboxItems = attachments
+    .filter((a) => {
+      const cat = getMediaCategory(a.mimeType);
+      return cat === "image" || cat === "video";
+    })
+    .map((a) => ({
+      url: a.url,
+      alt: a.altText || "",
+      width: a.width,
+      height: a.height,
+      ...(getMediaCategory(a.mimeType) === "video"
+        ? { mimeType: a.mimeType, posterUrl: a.posterUrl || undefined }
+        : {}),
+    }));
 
-  // Merge images + videos into display order (images first, then videos)
+  // Build gallery items preserving position order from the database
   type GalleryItem =
     | (MediaView & { _kind: "image" | "video"; _lbIdx: number })
     | (MediaView & { _kind: "document" })
     | (MediaView & { _kind: "text" })
     | (MediaView & { _kind: "audio" });
 
-  const galleryItems: GalleryItem[] = [
-    ...images.map(
-      (img, i) =>
-        ({ ...img, _kind: "image" as const, _lbIdx: i }) as GalleryItem,
-    ),
-    ...videos.map(
-      (v, i) =>
-        ({
-          ...v,
-          _kind: "video" as const,
-          _lbIdx: images.length + i,
-        }) as GalleryItem,
-    ),
-    ...audios.map((a) => ({ ...a, _kind: "audio" as const }) as GalleryItem),
-    ...documents.map(
-      (d) => ({ ...d, _kind: "document" as const }) as GalleryItem,
-    ),
-    ...texts.map((t) => ({ ...t, _kind: "text" as const }) as GalleryItem),
-  ];
+  let lbIdx = 0;
+  const galleryItems: GalleryItem[] = attachments.map((a) => {
+    const cat = getMediaCategory(a.mimeType);
+    if (cat === "image" || cat === "video") {
+      return { ...a, _kind: cat, _lbIdx: lbIdx++ } as GalleryItem;
+    }
+    if (cat === "audio")
+      return { ...a, _kind: "audio" as const } as GalleryItem;
+    if (cat === "text") return { ...a, _kind: "text" as const } as GalleryItem;
+    return { ...a, _kind: "document" as const } as GalleryItem;
+  });
 
   const hasGalleryItems = galleryItems.length > 0;
   const singleItem = galleryItems.length === 1;
@@ -228,8 +205,7 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
     (firstItem._kind === "image" || firstItem._kind === "video");
 
   // When non-visual attachments are mixed with visuals, use a compact row
-  const hasNonVisual =
-    texts.length > 0 || documents.length > 0 || audios.length > 0;
+  const hasNonVisual = hasNonVisualAttachment;
   const COMPACT_HEIGHT = 160;
 
   // Row height adapts to the first visual item's aspect ratio
