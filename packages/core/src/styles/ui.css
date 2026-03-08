@@ -1669,31 +1669,68 @@
 
   /* --- Reply context in compose dialog ----------------------------------- */
 
-  .compose-reply-wrapper {
+  /* Thread layout: wraps reply context + editor with a continuous thread line */
+  .compose-thread-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Continuous vertical line through the rail */
+  .compose-thread-layout::before {
+    content: "";
+    position: absolute;
+    left: 21px; /* 16px padding + 5px to center in 12px dot */
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--site-threadline);
+    z-index: 0;
+  }
+
+  /* Row containing dot + reply context */
+  .compose-reply-row {
     display: flex;
     gap: 12px;
     padding: 0 16px;
   }
 
-  .compose-thread-line {
-    position: relative;
-    width: 2px;
-    flex-shrink: 0;
-    margin-left: 5px;
-    background-color: var(--site-threadline);
+  /* Row containing dot + editor */
+  .compose-editor-row {
+    display: flex;
+    gap: 12px;
+    padding: 0 16px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
 
-  /* Dot marker vertically centered on the parent post */
-  .compose-thread-line::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  .compose-editor-row > jant-compose-editor {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Reduce editor body left padding — the thread rail already provides indent */
+  .compose-editor-row .compose-body {
+    padding-left: 0;
+  }
+
+  /* Dot marker for thread positions */
+  .compose-thread-dot {
     width: 12px;
     height: 12px;
     border-radius: 50%;
     background-color: var(--site-threadline);
+    flex-shrink: 0;
+    align-self: center;
+    z-index: 1;
   }
 
   .compose-reply-context {
@@ -1751,7 +1788,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 16px 0 35px;
+    padding: 4px 16px 0 40px;
     font-size: var(--text-xs);
     color: var(--site-text-secondary);
   }

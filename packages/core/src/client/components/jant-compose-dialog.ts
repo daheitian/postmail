@@ -1151,8 +1151,8 @@ export class JantComposeDialog extends LitElement {
     const isExpanded = this._replyExpanded;
 
     return html`
-      <div class="compose-reply-wrapper">
-        <div class="compose-thread-line"></div>
+      <div class="compose-reply-row">
+        <div class="compose-thread-dot"></div>
         <div
           class=${classMap({
             "compose-reply-context": true,
@@ -1726,14 +1726,27 @@ export class JantComposeDialog extends LitElement {
   }
 
   render() {
+    const isReply = !!(this._replyToId && this._replyToData);
+    const editor = html`<jant-compose-editor
+      .format=${this._format}
+      .labels=${this.labels}
+      .uploadMaxFileSize=${this.uploadMaxFileSize}
+    ></jant-compose-editor>`;
+
     return html`
       <div class="compose-dialog-inner">
-        ${this._renderHeader()} ${this._renderReplyContext()}
-        <jant-compose-editor
-          .format=${this._format}
-          .labels=${this.labels}
-          .uploadMaxFileSize=${this.uploadMaxFileSize}
-        ></jant-compose-editor>
+        ${this._renderHeader()}
+        ${isReply
+          ? html`
+              <div class="compose-thread-layout">
+                ${this._renderReplyContext()}
+                <div class="compose-editor-row">
+                  <div class="compose-thread-dot"></div>
+                  ${editor}
+                </div>
+              </div>
+            `
+          : editor}
 
         <div class="compose-action-row">
           ${this._renderCollectionSelector()}
