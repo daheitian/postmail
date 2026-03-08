@@ -279,6 +279,14 @@ export class JantComposeEditor extends LitElement {
     );
   }
 
+  updateAttachmentPreview(clientId: string, file: File) {
+    this._attachments = this._attachments.map((a) => {
+      if (a.clientId !== clientId) return a;
+      URL.revokeObjectURL(a.previewUrl);
+      return { ...a, file, previewUrl: URL.createObjectURL(file) };
+    });
+  }
+
   updateAttachmentProgress(clientId: string, progress: number) {
     this._attachments = this._attachments.map((a) =>
       a.clientId === clientId ? { ...a, progress } : a,
@@ -687,6 +695,11 @@ export class JantComposeEditor extends LitElement {
         detail: { files },
       }),
     );
+  }
+
+  removeAttachment(clientId: string) {
+    const index = this._attachments.findIndex((a) => a.clientId === clientId);
+    if (index !== -1) this._removeAttachment(index);
   }
 
   private _removeAttachment(index: number) {
@@ -1291,13 +1304,30 @@ export class JantComposeEditor extends LitElement {
                         </svg>
                       </div>
                     `
-                  : html`
-                      <img
-                        src=${a.previewUrl}
-                        alt=""
-                        class="compose-attachment-img"
-                      />
-                    `}
+                  : a.status === "processing"
+                    ? html`
+                        <div class="compose-attachment-processing">
+                          <svg
+                            class="animate-spin size-5"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              d="M12 2a10 10 0 1 0 10 10"
+                              stroke-linecap="round"
+                            />
+                          </svg>
+                        </div>
+                      `
+                    : html`
+                        <img
+                          src=${a.previewUrl}
+                          alt=""
+                          class="compose-attachment-img"
+                        />
+                      `}
                 ${this._renderAttachmentOverlay(a, i)}
               </div>
             `}

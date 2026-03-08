@@ -94,12 +94,36 @@ async function uploadFile(
         editor?.updateAttachmentProgress(clientId, progress);
       });
       toUpload = result.file;
-    } else if (file.type.startsWith("image/")) {
-      // Image: resize + convert to WebP
-      const result = await ImageProcessor.processToFile(file);
-      toUpload = result.file;
-      width = result.width;
-      height = result.height;
+    } else if (
+      file.type.startsWith("image/") ||
+      /\.heic$/i.test(file.name) ||
+      /\.heif$/i.test(file.name)
+    ) {
+      // Image: convert HEIC/HEIF if needed, then resize + convert to WebP
+      let imageFile = file;
+      try {
+        const { isHeic, heicTo } = await import("heic-to");
+        if (await isHeic(file)) {
+          editor?.updateAttachmentStatus(clientId, "processing", null, null);
+          const blob = await heicTo({
+            blob: file,
+            type: "image/jpeg",
+            quality: 0.92,
+          });
+          imageFile = new File([blob], file.name.replace(/\.heic$/i, ".jpg"), {
+            type: "image/jpeg",
+          });
+          editor?.updateAttachmentPreview(clientId, imageFile);
+        }
+        const result = await ImageProcessor.processToFile(imageFile);
+        toUpload = result.file;
+        width = result.width;
+        height = result.height;
+      } catch {
+        editor?.removeAttachment(clientId);
+        showToast("Image format not supported.", "error");
+        return null;
+      }
     } else {
       toUpload = file;
     }

@@ -186,6 +186,7 @@ npx lingui-po-translate \
   --targetLng=zh-Hans \
   --targetFormat=po \
   --service=openai \
+  --debug \
   --serviceConfig="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
   --baseUrl="${CUSTOM_OPENAI_BASE_URL:-https://api.openai.com/v1}"
 """
