@@ -10,6 +10,7 @@ import {
   integer,
   primaryKey,
   foreignKey,
+  index,
 } from "drizzle-orm/sqlite-core";
 
 // =============================================================================
@@ -51,8 +52,20 @@ export const posts = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
-    foreignKey({ columns: [table.replyToId], foreignColumns: [table.id] }),
-    foreignKey({ columns: [table.threadId], foreignColumns: [table.id] }),
+    foreignKey({
+      columns: [table.replyToId],
+      foreignColumns: [table.id],
+    }).onDelete("set null"),
+    foreignKey({
+      columns: [table.threadId],
+      foreignColumns: [table.id],
+    }).onDelete("set null"),
+    index("idx_post_thread_id").on(table.threadId),
+    index("idx_post_status_deleted_published").on(
+      table.status,
+      table.deletedAt,
+      table.publishedAt,
+    ),
   ],
 );
 
@@ -60,27 +73,36 @@ export const posts = sqliteTable(
 // Media
 // =============================================================================
 
-export const media = sqliteTable("media", {
-  id: text("id").primaryKey(), // UUIDv7
-  postId: text("post_id").references(() => posts.id),
-  filename: text("filename").notNull(),
-  originalName: text("original_name").notNull(),
-  mimeType: text("mime_type").notNull(),
-  size: integer("size").notNull(),
-  storageKey: text("storage_key").notNull(),
-  provider: text("provider").notNull().default("r2"),
-  width: integer("width"),
-  height: integer("height"),
-  alt: text("alt"),
-  position: integer("position").notNull().default(0),
-  blurhash: text("blurhash"),
-  waveform: text("waveform"),
-  posterKey: text("poster_key"),
-  summary: text("summary"),
-  chars: integer("chars"),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const media = sqliteTable(
+  "media",
+  {
+    id: text("id").primaryKey(), // UUIDv7
+    postId: text("post_id").references(() => posts.id, {
+      onDelete: "set null",
+    }),
+    filename: text("filename").notNull(),
+    originalName: text("original_name").notNull(),
+    mimeType: text("mime_type").notNull(),
+    size: integer("size").notNull(),
+    storageKey: text("storage_key").notNull(),
+    provider: text("provider").notNull().default("r2"),
+    width: integer("width"),
+    height: integer("height"),
+    alt: text("alt"),
+    position: integer("position").notNull().default(0),
+    blurhash: text("blurhash"),
+    waveform: text("waveform"),
+    posterKey: text("poster_key"),
+    summary: text("summary"),
+    chars: integer("chars"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    index("idx_media_post_id_position").on(table.postId, table.position),
+    index("idx_media_storage_key").on(table.storageKey),
+  ],
+);
 
 // =============================================================================
 // Collections
@@ -105,14 +127,20 @@ export const collections = sqliteTable("collection", {
 // Sidebar Items (unified ordering for collections + dividers)
 // =============================================================================
 
-export const sidebarItems = sqliteTable("sidebar_item", {
-  id: text("id").primaryKey(),
-  type: text("type", { enum: ["collection", "divider"] }).notNull(),
-  collectionId: text("collection_id").references(() => collections.id),
-  position: text("position").notNull().default("a0"),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const sidebarItems = sqliteTable(
+  "sidebar_item",
+  {
+    id: text("id").primaryKey(),
+    type: text("type", { enum: ["collection", "divider"] }).notNull(),
+    collectionId: text("collection_id").references(() => collections.id, {
+      onDelete: "cascade",
+    }),
+    position: text("position").notNull().default("a0"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [index("idx_sidebar_item_collection_id").on(table.collectionId)],
+);
 
 // =============================================================================
 // Post-Collection Junction Table (M:N)
@@ -123,13 +151,16 @@ export const postCollections = sqliteTable(
   {
     postId: text("post_id")
       .notNull()
-      .references(() => posts.id),
+      .references(() => posts.id, { onDelete: "cascade" }),
     collectionId: text("collection_id")
       .notNull()
-      .references(() => collections.id),
+      .references(() => collections.id, { onDelete: "cascade" }),
     createdAt: integer("created_at").notNull(),
   },
-  (table) => [primaryKey({ columns: [table.postId, table.collectionId] })],
+  (table) => [
+    primaryKey({ columns: [table.postId, table.collectionId] }),
+    index("idx_post_collection_collection_id").on(table.collectionId),
+  ],
 );
 
 // =============================================================================
@@ -154,15 +185,21 @@ export const navItems = sqliteTable("nav_item", {
 // Custom URLs (replaces redirects + path_registry)
 // =============================================================================
 
-export const customUrls = sqliteTable("custom_url", {
-  id: text("id").primaryKey(),
-  path: text("path").notNull().unique(),
-  targetType: text("target_type").notNull(), // "post" | "collection" | "redirect"
-  targetId: text("target_id"),
-  toPath: text("to_path"),
-  redirectType: integer("redirect_type"),
-  createdAt: integer("created_at").notNull(),
-});
+export const customUrls = sqliteTable(
+  "custom_url",
+  {
+    id: text("id").primaryKey(),
+    path: text("path").notNull().unique(),
+    targetType: text("target_type", {
+      enum: ["post", "collection", "redirect"],
+    }).notNull(),
+    targetId: text("target_id"),
+    toPath: text("to_path"),
+    redirectType: integer("redirect_type"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [index("idx_custom_url_target_id").on(table.targetId)],
+);
 
 // =============================================================================
 // Settings (Key-Value)
@@ -178,15 +215,19 @@ export const settings = sqliteTable("setting", {
 // API Tokens
 // =============================================================================
 
-export const apiTokens = sqliteTable("api_token", {
-  id: text("id").primaryKey(), // UUIDv7
-  name: text("name").notNull(), // User-assigned label
-  tokenHash: text("token_hash").notNull(), // SHA-256 hex
-  prefix: text("prefix").notNull(), // First 8 hex chars for display
-  lastUsedAt: integer("last_used_at"), // Unix seconds, null if never used
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const apiTokens = sqliteTable(
+  "api_token",
+  {
+    id: text("id").primaryKey(), // UUIDv7
+    name: text("name").notNull(), // User-assigned label
+    tokenHash: text("token_hash").notNull(), // SHA-256 hex
+    prefix: text("prefix").notNull(), // First 8 hex chars for display
+    lastUsedAt: integer("last_used_at"), // Unix seconds, null if never used
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [index("idx_api_token_token_hash").on(table.tokenHash)],
+);
 
 // =============================================================================
 // better-auth tables

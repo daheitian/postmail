@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "prevId": "e139d66a-b2f6-4d15-9c0e-0dfa69edb0dc",
+  "id": "b83f67fb-9ea6-48d8-93e9-4e59f64919b6",
+  "prevId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
   "tables": {
     "account": {
       "name": "account",
@@ -168,7 +168,13 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_api_token_token_hash": {
+          "name": "idx_api_token_token_hash",
+          "columns": ["token_hash"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -305,6 +311,11 @@
           "name": "custom_url_path_unique",
           "columns": ["path"],
           "isUnique": true
+        },
+        "idx_custom_url_target_id": {
+          "name": "idx_custom_url_target_id",
+          "columns": ["target_id"],
+          "isUnique": false
         }
       },
       "foreignKeys": {},
@@ -451,7 +462,18 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_media_post_id_position": {
+          "name": "idx_media_post_id_position",
+          "columns": ["post_id", "position"],
+          "isUnique": false
+        },
+        "idx_media_storage_key": {
+          "name": "idx_media_storage_key",
+          "columns": ["storage_key"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "media_post_id_post_id_fk": {
           "name": "media_post_id_post_id_fk",
@@ -459,7 +481,7 @@
           "tableTo": "post",
           "columnsFrom": ["post_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -553,7 +575,13 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_post_collection_collection_id": {
+          "name": "idx_post_collection_collection_id",
+          "columns": ["collection_id"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "post_collection_post_id_post_id_fk": {
           "name": "post_collection_post_id_post_id_fk",
@@ -561,7 +589,7 @@
           "tableTo": "post",
           "columnsFrom": ["post_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "post_collection_collection_id_collection_id_fk": {
@@ -570,7 +598,7 @@
           "tableTo": "collection",
           "columnsFrom": ["collection_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -734,6 +762,16 @@
           "name": "post_slug_unique",
           "columns": ["slug"],
           "isUnique": true
+        },
+        "idx_post_thread_id": {
+          "name": "idx_post_thread_id",
+          "columns": ["thread_id"],
+          "isUnique": false
+        },
+        "idx_post_status_deleted_published": {
+          "name": "idx_post_status_deleted_published",
+          "columns": ["status", "deleted_at", "published_at"],
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -743,7 +781,7 @@
           "tableTo": "post",
           "columnsFrom": ["reply_to_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         },
         "post_thread_id_post_id_fk": {
@@ -752,7 +790,7 @@
           "tableTo": "post",
           "columnsFrom": ["thread_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -920,7 +958,13 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_sidebar_item_collection_id": {
+          "name": "idx_sidebar_item_collection_id",
+          "columns": ["collection_id"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "sidebar_item_collection_id_collection_id_fk": {
           "name": "sidebar_item_collection_id_collection_id_fk",
@@ -928,7 +972,7 @@
           "tableTo": "collection",
           "columnsFrom": ["collection_id"],
           "columnsTo": ["id"],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

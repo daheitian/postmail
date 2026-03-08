@@ -15,6 +15,13 @@
       "when": 1772965706201,
       "tag": "0001_fts_setup",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1772973467110,
+      "tag": "0002_complex_white_tiger",
+      "breakpoints": true
     }
   ]
 }
