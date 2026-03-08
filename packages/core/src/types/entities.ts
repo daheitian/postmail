@@ -30,6 +30,7 @@ export interface Post {
   threadId: string | null;
   deletedAt: number | null;
   publishedAt: number;
+  lastActivityAt: number;
   createdAt: number;
   updatedAt: number;
 }

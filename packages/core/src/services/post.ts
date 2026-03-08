@@ -235,6 +235,7 @@ export function createPostService(
       threadId: row.threadId,
       deletedAt: row.deletedAt,
       publishedAt: row.publishedAt,
+      lastActivityAt: row.lastActivityAt ?? row.publishedAt,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -270,7 +271,11 @@ export function createPostService(
         .select()
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(desc(posts.pinnedAt), desc(posts.publishedAt), desc(posts.id))
+        .orderBy(
+          desc(posts.pinnedAt),
+          desc(posts.lastActivityAt),
+          desc(posts.id),
+        )
         .limit(filters.limit ?? 100);
 
       if (filters.offset !== undefined) {
@@ -361,6 +366,7 @@ export function createPostService(
             replyToId: data.replyToId ?? null,
             threadId,
             publishedAt: data.publishedAt ?? timestamp,
+            lastActivityAt: data.publishedAt ?? timestamp,
             createdAt: timestamp,
             updatedAt: timestamp,
           })
@@ -384,6 +390,14 @@ export function createPostService(
             createdAt: timestamp,
           })),
         );
+      }
+
+      // Bump thread root's lastActivityAt when creating a reply
+      if (threadId) {
+        await db
+          .update(posts)
+          .set({ lastActivityAt: data.publishedAt ?? timestamp })
+          .where(eq(posts.id, threadId));
       }
 
       return post;
@@ -440,11 +454,18 @@ export function createPostService(
         }
       }
 
-      // Thread replies inherit visibility from root — reject direct changes
-      if (data.visibility !== undefined && existing.threadId) {
-        throw new ConflictError(
-          "Cannot change visibility of a thread reply. Update the root post instead.",
-        );
+      // Thread replies inherit visibility/pinned from root — reject direct changes
+      if (existing.threadId) {
+        if (data.visibility !== undefined) {
+          throw new ConflictError(
+            "Cannot change visibility of a thread reply. Update the root post instead.",
+          );
+        }
+        if (data.pinned !== undefined) {
+          throw new ConflictError(
+            "Cannot pin a thread reply. Pin the root post instead.",
+          );
+        }
       }
 
       // Handle status/visibility change - cascade to thread if this is root
@@ -560,10 +581,40 @@ export function createPostService(
           .set({ deletedAt: timestamp, updatedAt: timestamp })
           .where(or(eq(posts.id, id), eq(posts.threadId, id)));
       } else {
+        // Soft-delete the single reply
         await db
           .update(posts)
           .set({ deletedAt: timestamp, updatedAt: timestamp })
           .where(eq(posts.id, id));
+
+        // Recalculate thread root's lastActivityAt
+        const latestReply = await db
+          .select({ publishedAt: posts.publishedAt })
+          .from(posts)
+          .where(
+            and(
+              eq(posts.threadId, existing.threadId),
+              isNull(posts.deletedAt),
+              sql`${posts.id} != ${id}`,
+            ),
+          )
+          .orderBy(desc(posts.publishedAt))
+          .limit(1);
+
+        // Fall back to root's own publishedAt when no replies remain
+        const rootPost = await db
+          .select({ publishedAt: posts.publishedAt })
+          .from(posts)
+          .where(eq(posts.id, existing.threadId))
+          .limit(1);
+
+        const newActivity =
+          latestReply[0]?.publishedAt ?? rootPost[0]?.publishedAt ?? timestamp;
+
+        await db
+          .update(posts)
+          .set({ lastActivityAt: newActivity })
+          .where(eq(posts.id, existing.threadId));
       }
 
       return true;

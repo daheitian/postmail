@@ -937,10 +937,12 @@ export class JantPostMenu extends LitElement {
                   </div>`
                 : nothing}
             `}
-        <div role="menuitem" @click=${() => this.#togglePin()}>
-          ${isPinned ? this.#iconPinOff() : this.#iconPin()}
-          ${isPinned ? "Unpin" : "Pin this post"}
-        </div>
+        ${this._data.isReply
+          ? nothing
+          : html`<div role="menuitem" @click=${() => this.#togglePin()}>
+              ${isPinned ? this.#iconPinOff() : this.#iconPin()}
+              ${isPinned ? "Unpin" : "Pin this post"}
+            </div>`}
 
         <hr role="separator" />
 

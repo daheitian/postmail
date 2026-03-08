@@ -951,6 +951,24 @@ describe("PostService", () => {
         "Cannot change visibility of a thread reply. Update the root post instead.",
       );
     });
+
+    it("rejects pinning a thread reply", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+      });
+      const reply = await postService.create({
+        format: "note",
+        body: "reply",
+        replyToId: root.id,
+      });
+
+      await expect(
+        postService.update(reply.id, { pinned: true }),
+      ).rejects.toThrow(
+        "Cannot pin a thread reply. Pin the root post instead.",
+      );
+    });
   });
 
   describe("getReplyCounts", () => {
@@ -1009,6 +1027,102 @@ describe("PostService", () => {
 
       const counts = await postService.getReplyCounts([root.id]);
       expect(counts.get(root.id)).toBe(1);
+    });
+  });
+
+  describe("lastActivityAt (thread bump-to-top)", () => {
+    it("sets lastActivityAt equal to publishedAt for non-thread posts", async () => {
+      const post = await postService.create({
+        format: "note",
+        body: "standalone",
+        publishedAt: 5000,
+      });
+
+      expect(post.lastActivityAt).toBe(5000);
+    });
+
+    it("updates root lastActivityAt when a reply is created", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+        publishedAt: 1000,
+      });
+      expect(root.lastActivityAt).toBe(1000);
+
+      await postService.create({
+        format: "note",
+        body: "reply",
+        replyToId: root.id,
+        publishedAt: 9000,
+      });
+
+      const updatedRoot = await postService.getById(root.id);
+      expect(updatedRoot?.lastActivityAt).toBe(9000);
+    });
+
+    it("list returns thread root bumped to top after reply", async () => {
+      const oldPost = await postService.create({
+        format: "note",
+        body: "old thread root",
+        publishedAt: 1000,
+      });
+      await postService.create({
+        format: "note",
+        body: "newer standalone",
+        publishedAt: 5000,
+      });
+
+      // Reply to old post with a newer timestamp — should bump it above standalone
+      await postService.create({
+        format: "note",
+        body: "reply",
+        replyToId: oldPost.id,
+        publishedAt: 9000,
+      });
+
+      const listed = await postService.list({ excludeReplies: true });
+      expect(listed[0]?.body).toBe("old thread root");
+      expect(listed[1]?.body).toBe("newer standalone");
+    });
+
+    it("recalculates root lastActivityAt when a reply is deleted", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+        publishedAt: 1000,
+      });
+      const reply1 = await postService.create({
+        format: "note",
+        body: "reply1",
+        replyToId: root.id,
+        publishedAt: 3000,
+      });
+      await postService.create({
+        format: "note",
+        body: "reply2",
+        replyToId: root.id,
+        publishedAt: 5000,
+      });
+
+      // Root should be bumped to latest reply
+      let updatedRoot = await postService.getById(root.id);
+      expect(updatedRoot?.lastActivityAt).toBe(5000);
+
+      // Delete the latest reply — root should fall back to reply1's time
+      const reply2 = (await postService.list({ threadId: root.id })).find(
+        (p) => p.body === "reply2",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- test setup guarantees reply2 exists
+      await postService.delete(reply2!.id);
+
+      updatedRoot = await postService.getById(root.id);
+      expect(updatedRoot?.lastActivityAt).toBe(3000);
+
+      // Delete the remaining reply — root should fall back to its own publishedAt
+      await postService.delete(reply1.id);
+
+      updatedRoot = await postService.getById(root.id);
+      expect(updatedRoot?.lastActivityAt).toBe(1000);
     });
   });
 });

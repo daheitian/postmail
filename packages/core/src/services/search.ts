@@ -45,6 +45,7 @@ interface RawSearchRow {
   thread_id: string | null;
   deleted_at: number | null;
   published_at: number;
+  last_activity_at: number | null;
   created_at: number;
   updated_at: number;
   rank: number;
@@ -72,6 +73,7 @@ function mapRow(row: RawSearchRow): SearchResult {
       threadId: row.thread_id,
       deletedAt: row.deleted_at,
       publishedAt: row.published_at,
+      lastActivityAt: row.last_activity_at ?? row.published_at,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     },

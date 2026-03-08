@@ -48,6 +48,7 @@ export const posts = sqliteTable(
     threadId: text("thread_id"),
     deletedAt: integer("deleted_at"),
     publishedAt: integer("published_at").notNull(),
+    lastActivityAt: integer("last_activity_at"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
@@ -65,6 +66,11 @@ export const posts = sqliteTable(
       table.status,
       table.deletedAt,
       table.publishedAt,
+    ),
+    index("idx_post_status_deleted_activity").on(
+      table.status,
+      table.deletedAt,
+      table.lastActivityAt,
     ),
   ],
 );
