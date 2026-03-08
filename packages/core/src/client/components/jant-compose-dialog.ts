@@ -485,6 +485,16 @@ export class JantComposeDialog extends LitElement {
     }
   }
 
+  private _selectedCollectionLabel(collections: ComposeCollection[]): string {
+    const ids = this._collectionIds;
+    const first = collections.find((c) => c.id === ids[0]);
+    if (!first) return "";
+    if (ids.length === 1) return first.title;
+    return this.labels.collectionCountLabel
+      .replace("{name}", first.title)
+      .replace("{count}", String(ids.length - 1));
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener("keydown", this._handleKeydown);
@@ -1325,7 +1335,6 @@ export class JantComposeDialog extends LitElement {
 
   private _renderCollectionSelector() {
     const collections = this.collections ?? [];
-    if (collections.length === 0) return html`<div class="flex-1"></div>`;
     const search = this._collectionSearch.toLowerCase();
     const filtered = search
       ? collections.filter((c) => c.title.toLowerCase().includes(search))
@@ -1369,8 +1378,8 @@ export class JantComposeDialog extends LitElement {
               <path d="M6 5V4a1 1 0 011-1h4a1 1 0 011 1v1" />
             </svg>
             ${selectedCount > 0
-              ? html`<span class="badge compose-collection-badge"
-                  >${selectedCount}</span
+              ? html`<span class="compose-collection-label"
+                  >${this._selectedCollectionLabel(collections)}</span
                 >`
               : html`<span>${this.labels.collection}</span>`}
             <svg

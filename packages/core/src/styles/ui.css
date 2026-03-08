@@ -1244,12 +1244,11 @@
     background-color: var(--site-nav-hover-bg);
   }
 
-  .compose-collection-badge {
-    font-size: 0.6875rem;
-    min-width: 1.125rem;
-    height: 1.125rem;
-    padding: 0 4px;
-    line-height: 1.125rem;
+  .compose-collection-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
   }
 
   .compose-collection-select [data-popover] {
@@ -1261,6 +1260,14 @@
   .compose-collection-select [data-popover] [role="listbox"] {
     max-height: 12rem;
     overflow-y: auto;
+  }
+
+  .compose-collection-select [data-popover] [role="option"] {
+    cursor: pointer;
+  }
+
+  .compose-collection-select [data-popover] [role="option"]:hover {
+    background-color: var(--site-nav-hover-bg);
   }
 
   .compose-collection-add-action {
@@ -2623,10 +2630,18 @@
     box-shadow: var(--shadow-lg);
   }
 
-  .text-preview-close {
+  .text-preview-toolbar {
     position: sticky;
     top: 0;
-    float: right;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    padding-bottom: var(--space-sm);
+  }
+
+  .text-preview-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2637,12 +2652,19 @@
     color: var(--color-muted-foreground);
     border: none;
     cursor: pointer;
-    z-index: 1;
-    margin-left: auto;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
   }
 
-  .text-preview-close:hover {
+  .text-preview-btn:hover {
     background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
+
+  .text-preview-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
   }
 
   .text-preview-loading {

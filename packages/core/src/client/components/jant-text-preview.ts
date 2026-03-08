@@ -11,17 +11,23 @@
 
 import { LitElement, html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { showToast } from "../toast.js";
+import { jsonToMarkdown } from "../tiptap/create-editor.js";
 
 export class JantTextPreview extends LitElement {
   static properties = {
     _open: { state: true },
     _html: { state: true },
     _loading: { state: true },
+    _copied: { state: true },
   };
 
   declare _open: boolean;
   declare _html: string;
   declare _loading: boolean;
+  declare _copied: boolean;
+  /** Raw text for the copy button (markdown / plain text source) */
+  #rawText = "";
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -33,6 +39,7 @@ export class JantTextPreview extends LitElement {
     this._open = false;
     this._html = "";
     this._loading = false;
+    this._copied = false;
   }
 
   connectedCallback() {
@@ -70,16 +77,23 @@ export class JantTextPreview extends LitElement {
 
       const raw = await res.text();
 
-      // Try parsing as { json, html } envelope
+      // Try parsing as { json, html } envelope (TipTap rich text)
       try {
-        const envelope = JSON.parse(raw) as { html?: string };
+        const envelope = JSON.parse(raw) as {
+          json?: import("@tiptap/core").JSONContent;
+          html?: string;
+        };
         this._html = envelope.html || "";
+        // Serialize JSON → markdown via headless TipTap editor
+        this.#rawText = envelope.json ? jsonToMarkdown(envelope.json) : "";
       } catch {
-        // Not JSON — treat as raw HTML or plain text
+        // Not JSON — raw markdown / plain text, copy as-is
+        this.#rawText = raw;
         this._html = `<pre>${raw.replace(/</g, "&lt;")}</pre>`;
       }
     } catch {
       this._html = "<p>Failed to load content.</p>";
+      this.#rawText = "";
     } finally {
       this._loading = false;
     }
@@ -90,6 +104,22 @@ export class JantTextPreview extends LitElement {
     document.body.style.overflow = "";
     this._open = false;
     this._html = "";
+    this.#rawText = "";
+    this._copied = false;
+  }
+
+  async #copy() {
+    if (!this.#rawText) return;
+    try {
+      await globalThis.navigator.clipboard.writeText(this.#rawText);
+      this._copied = true;
+      showToast("Copied.");
+      setTimeout(() => {
+        this._copied = false;
+      }, 2000);
+    } catch {
+      showToast("Could not copy.", "error");
+    }
   }
 
   #handleKeydown = (e: globalThis.KeyboardEvent) => {
@@ -119,24 +149,63 @@ export class JantTextPreview extends LitElement {
         }}
       >
         <div class="text-preview-content">
-          <button
-            type="button"
-            class="text-preview-close"
-            @click=${() => this.#close()}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+          <div class="text-preview-toolbar">
+            <button
+              type="button"
+              class="text-preview-btn"
+              @click=${() => this.#copy()}
+              ?disabled=${this._loading || !this.#rawText}
+              title="Copy"
             >
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
+              ${this._copied
+                ? html`<svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>`
+                : html`<svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect width="14" height="14" x="8" y="8" rx="2" />
+                    <path
+                      d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+                    />
+                  </svg>`}
+            </button>
+            <button
+              type="button"
+              class="text-preview-btn"
+              @click=${() => this.#close()}
+              title="Close"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M18 6 6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           ${this._loading
             ? html`<div class="text-preview-loading">
                 <svg

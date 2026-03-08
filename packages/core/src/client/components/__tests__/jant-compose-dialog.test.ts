@@ -73,6 +73,7 @@ const labels: ComposeLabels = {
   publishFailedDraft: "Couldn't publish. Saved as draft.",
   uploadFailedDraft: "Some uploads failed. Saved as draft.",
   addCollection: "Add Collection",
+  collectionCountLabel: "{name} + {count} more",
   draftRestored: "Draft restored.",
   reply: "Reply",
   showMore: "Show more",
@@ -273,12 +274,11 @@ describe("JantComposeDialog", () => {
     expect(postBtn.disabled).toBe(true);
   });
 
-  it("renders without collections", async () => {
+  it("renders collection selector even without collections", async () => {
     const el = await createElement([]);
 
-    // No collection trigger
-    expect(el.querySelector(".compose-collection-trigger")).toBeNull();
-    // Spacer div present instead
+    // Collection trigger is still shown so users can create new collections
+    expect(el.querySelector(".compose-collection-trigger")).not.toBeNull();
     const actionRow = el.querySelector(".compose-action-row");
     expect(actionRow).not.toBeNull();
   });

@@ -11,6 +11,7 @@
 import type { FC } from "hono/jsx";
 import type { Collection } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
+import { toUid } from "../../lib/uid.js";
 import { useLingui } from "@lingui/react/macro";
 
 export interface ComposeDialogProps {
@@ -233,6 +234,11 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Add Collection",
       comment: "@context: Action to create a new collection from compose",
     }),
+    collectionCountLabel: t({
+      message: "{name} + {count} more",
+      comment:
+        "@context: Compose collection trigger label when multiple collections selected. {name} is the first collection name, {count} is how many more",
+    }),
     draftRestored: t({
       message: "Draft restored.",
       comment:
@@ -317,7 +323,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
 
   const collectionsJson = JSON.stringify(
     (collections ?? []).map((c) => ({
-      id: c.id,
+      id: toUid(c.id),
       title: c.title,
       iconHtml: renderCollectionIcon(c.icon, { size: 16 }),
     })),

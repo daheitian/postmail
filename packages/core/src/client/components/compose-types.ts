@@ -126,6 +126,7 @@ export interface ComposeLabels {
   publishFailedDraft: string;
   uploadFailedDraft: string;
   addCollection: string;
+  collectionCountLabel: string;
   draftRestored: string;
   reply: string;
   showMore: string;

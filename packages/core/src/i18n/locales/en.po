@@ -24,6 +24,11 @@ msgstr ""
 msgid "{hiddenCount} more {0}"
 msgstr "{hiddenCount} more {0}"
 
+#. @context: Compose collection trigger label when multiple collections selected. {name} is the first collection name, {count} is how many more
+#: src/ui/compose/ComposeDialog.tsx
+msgid "{name} + {count} more"
+msgstr "{name} + {count} more"
+
 #. @context: Custom CSS textarea placeholder
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "/* Your custom CSS here */"
