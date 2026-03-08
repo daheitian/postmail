@@ -530,7 +530,6 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
   const bgImage = getTileBgImage(post);
   const badge = getTileBadge(post);
   const { title, summary } = getTileText(post);
-  const formatLabel = getFormatLabel(post.format);
   const hasBg = variant === "image" || variant === "mixed";
   const cornerBadge = badge?.position === "corner" ? badge : undefined;
   const hasContent = variant !== "image" || cornerBadge;
@@ -558,7 +557,17 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
       {hasContent && (
         <div class="archive-tile-content">
           {variant !== "image" && title && (
-            <span class="archive-tile-title">{title}</span>
+            <span class="archive-tile-title">
+              {post.format === "link" && (
+                <span
+                  class="archive-tile-link-indicator"
+                  dangerouslySetInnerHTML={{
+                    __html: getIconSvg("external-link") ?? "",
+                  }}
+                />
+              )}
+              {title}
+            </span>
           )}
           {variant !== "image" && summary && (
             <span class="archive-tile-summary">{summary}</span>
@@ -582,13 +591,8 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
         />
       )}
 
-      {/* Hover overlay: date + format */}
-      <div class="archive-tile-overlay">
-        <span class="archive-tile-overlay-date">
-          {post.publishedAtFormatted}
-        </span>
-        <span class="archive-tile-overlay-format">{formatLabel}</span>
-      </div>
+      {/* Hover date label */}
+      <span class="archive-tile-date">{post.publishedAtFormatted}</span>
     </a>
   );
 };

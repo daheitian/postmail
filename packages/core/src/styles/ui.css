@@ -3551,8 +3551,7 @@
     position: relative;
     left: 50%;
     margin-left: -50vw;
-    padding: 16px 12px;
-    background: var(--muted);
+    padding: 16px var(--site-padding);
   }
 
   .archive-grid {
@@ -3575,48 +3574,64 @@
     aspect-ratio: 1;
     overflow: hidden;
     border-radius: 6px;
-    transition: opacity 0.15s ease;
+    transition:
+      border-color 0.2s ease,
+      opacity 0.15s ease;
     display: block;
     text-decoration: none;
     color: inherit;
-    background: var(--card);
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.06),
-      0 1px 3px rgba(0, 0, 0, 0.1);
+    background: var(--secondary);
+    border: 1px solid var(--border);
   }
 
-  /* Hover overlay */
-  .archive-tile-overlay {
+  .archive-tile:hover {
+    border-color: var(--site-accent);
+  }
+
+  /* Hover date label (bottom-left) */
+  .archive-tile-date {
     position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    background: rgba(0, 0, 0, 0.65);
-    color: #fff;
+    bottom: 6px;
+    right: 6px;
+    z-index: 1;
+    font-size: 0.625rem;
+    font-weight: var(--fw-medium);
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--background);
+    color: var(--site-text-secondary);
     opacity: 0;
-    transition: opacity 0.2s ease;
-    z-index: 2;
-    border-radius: inherit;
+    transition: opacity 0.15s ease;
     pointer-events: none;
   }
 
-  .archive-tile:hover .archive-tile-overlay {
+  .archive-tile:hover .archive-tile-date {
     opacity: 1;
   }
 
-  .archive-tile-overlay-date {
-    font-size: 0.75rem;
-    font-weight: var(--fw-medium);
+  .archive-tile-mixed .archive-tile-date,
+  .archive-tile-image .archive-tile-date {
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
   }
 
-  .archive-tile-overlay-format {
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.75;
+  /* Inline link format indicator (before title text) */
+  .archive-tile-link-indicator {
+    display: inline;
+    vertical-align: middle;
+    margin-right: 3px;
+    color: var(--muted-foreground);
+  }
+
+  .archive-tile-link-indicator > svg {
+    display: inline;
+    width: 11px;
+    height: 11px;
+    vertical-align: -1px;
+  }
+
+  .archive-tile-mixed .archive-tile-link-indicator {
+    color: rgba(255, 255, 255, 0.7);
   }
 
   /* Centered video play overlay */
@@ -3645,10 +3660,11 @@
     height: 36px;
   }
 
-  /* Badge row pinned to bottom of content */
+  /* Badge row pinned to bottom-right of content */
   .archive-tile-badge-row {
     flex-shrink: 0;
     margin-top: auto;
+    align-self: flex-start;
     line-height: 0;
     color: var(--muted-foreground);
   }
@@ -3721,6 +3737,10 @@
 
   /* --- Text tile ---------------------------------------------------------- */
 
+  .archive-tile-text {
+    background: var(--card);
+  }
+
   .archive-tile-text .archive-tile-content {
     justify-content: flex-start;
     padding: 12px;
@@ -3775,6 +3795,10 @@
 
   /* --- Quote tile: centered italic text ----------------------------------- */
 
+  .archive-tile-quote {
+    background: var(--accent);
+  }
+
   .archive-tile-quote .archive-tile-content {
     justify-content: center;
     align-items: center;
@@ -3793,9 +3817,11 @@
 
   .archive-month-header {
     grid-column: 1 / -1;
-    font-size: var(--text-sm);
+    font-size: 0.6875rem;
     font-weight: var(--fw-semibold);
-    color: var(--site-text-primary);
+    color: var(--site-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     padding: 20px 2px 4px;
   }
 
