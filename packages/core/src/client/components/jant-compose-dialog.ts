@@ -337,12 +337,35 @@ export class JantComposeDialog extends LitElement {
 
   requestClose() {
     if (this._loading) return;
+
+    // Dismiss any open dropdowns first
+    if (this._showCollection) {
+      this._showCollection = false;
+      this._collectionSearch = "";
+    }
+    if (this._showMoreMenu) {
+      this._showMoreMenu = false;
+    }
+
     if (this._confirmPanelOpen) {
       this._confirmPanelOpen = false;
       this._confirmForDrafts = false;
       this.updateComplete.then(() => this._editor?.focusInput());
       return;
     }
+
+    // In edit mode, only prompt if actual changes were made
+    if (this._editPostId) {
+      if (this.#dirty) {
+        this._confirmForDrafts = false;
+        this._confirmPanelOpen = true;
+      } else {
+        this._closeDialog();
+        this.reset();
+      }
+      return;
+    }
+
     if (this._hasContent()) {
       this._confirmForDrafts = false;
       this._confirmPanelOpen = true;
@@ -561,7 +584,12 @@ export class JantComposeDialog extends LitElement {
     if (ke.key === "Escape") {
       ke.preventDefault();
       ke.stopPropagation();
-      if (this._addCollectionPanelOpen) {
+      if (this._showCollection) {
+        this._showCollection = false;
+        this._collectionSearch = "";
+      } else if (this._showMoreMenu) {
+        this._showMoreMenu = false;
+      } else if (this._addCollectionPanelOpen) {
         this._addCollectionPanelOpen = false;
       } else if (this._draftMenuOpenId) {
         this._draftMenuOpenId = null;
