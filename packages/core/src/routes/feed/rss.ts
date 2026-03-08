@@ -24,6 +24,7 @@ export const rssRoutes = new Hono<Env>();
 interface FeedOptions {
   visibility?: "featured";
   excludeUnlisted?: boolean;
+  excludePrivate?: boolean;
   format?: Format;
 }
 
@@ -50,6 +51,7 @@ async function buildFeedData(
     excludeReplies: true,
     visibility: opts?.visibility,
     excludeUnlisted: opts?.excludeUnlisted,
+    excludePrivate: opts?.excludePrivate ?? true,
     format: opts?.format,
     limit: feedLimit,
   });

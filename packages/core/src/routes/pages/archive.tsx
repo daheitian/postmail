@@ -81,10 +81,13 @@ archiveRoutes.get("/", async (c) => {
 
   // --- Build filters --------------------------------------------------------
 
+  const navData = await getNavigationData(c);
+
   const filters: PostFilters = {
     format,
     status: "published",
     excludeReplies: true,
+    excludePrivate: !navData.isAuthenticated,
     collectionId,
     publishedAfter,
     publishedBefore,
@@ -94,9 +97,8 @@ archiveRoutes.get("/", async (c) => {
 
   // --- Parallel data fetches ------------------------------------------------
 
-  const [navData, totalCount, posts, availableYears, allCollections] =
-    await Promise.all([
-      getNavigationData(c),
+  const [totalCount, posts, availableYears, allCollections] = await Promise.all(
+    [
       services.posts.count(filters),
       services.posts.list({
         ...filters,
@@ -108,7 +110,8 @@ archiveRoutes.get("/", async (c) => {
         excludeReplies: true,
       }),
       services.collections.list(),
-    ]);
+    ],
+  );
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 

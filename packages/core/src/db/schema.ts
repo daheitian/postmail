@@ -30,7 +30,7 @@ export const posts = sqliteTable(
       .notNull()
       .default("published"),
     visibility: text("visibility", {
-      enum: ["public", "featured", "unlisted"],
+      enum: ["public", "featured", "unlisted", "private"],
     })
       .notNull()
       .default("public"),

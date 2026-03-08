@@ -40,18 +40,21 @@ export interface TimelineResult {
  */
 export async function assembleTimeline(
   c: Context<Env>,
-  options?: { page?: number },
+  options?: { page?: number; isAuthenticated?: boolean },
 ): Promise<TimelineResult> {
   const pageSize = c.var.appConfig.pageSize;
 
   const page = Math.max(1, options?.page ?? 1);
   const offset = (page - 1) * pageSize;
 
+  const excludePrivate = !(options?.isAuthenticated ?? false);
+
   // Get total count for pagination
   const totalCount = await c.var.services.posts.count({
     status: "published",
     excludeReplies: true,
     excludeUnlisted: true,
+    excludePrivate,
   });
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -60,6 +63,7 @@ export async function assembleTimeline(
     status: "published",
     excludeReplies: true,
     excludeUnlisted: true,
+    excludePrivate,
     limit: pageSize,
     offset,
   });

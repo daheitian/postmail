@@ -82,6 +82,7 @@ const labels: ComposeLabels = {
   reply: "Reply",
   publishFeatured: "Post as Featured",
   publishUnlisted: "Post Unlisted",
+  publishPrivate: "Post as Private",
   showMore: "Show more",
   showLess: "Show less",
   collectionFormLabels: {

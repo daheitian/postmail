@@ -415,7 +415,8 @@
 
   /* Show the container when at least one status is active */
   article[data-post-pinned] .post-status-badges,
-  article[data-post-visibility="featured"] .post-status-badges {
+  article[data-post-visibility="featured"] .post-status-badges,
+  article[data-post-visibility="private"] .post-status-badges {
     display: flex;
   }
 
@@ -433,19 +434,28 @@
     display: inline-flex;
   }
 
+  article[data-post-visibility="private"] .post-status-private {
+    display: inline-flex;
+  }
+
   .post-status-badge svg {
     width: 12px;
     height: 12px;
     flex-shrink: 0;
   }
 
-  /* Dot separator — only visible when both pinned AND featured */
+  /* Dot separator — only visible when pinned AND (featured or private) */
   .post-status-separator {
     display: none;
     user-select: none;
   }
 
   article[data-post-pinned][data-post-visibility="featured"]
+    .post-status-separator {
+    display: inline;
+  }
+
+  article[data-post-pinned][data-post-visibility="private"]
     .post-status-separator {
     display: inline;
   }

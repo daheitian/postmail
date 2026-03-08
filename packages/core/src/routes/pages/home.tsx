@@ -31,6 +31,7 @@ homeRoutes.get("/", async (c) => {
       visibility: "featured",
       status: "published",
       excludeReplies: true,
+      excludePrivate: !navData.isAuthenticated,
     });
     const mediaCtx = createMediaContext(c.var.appConfig);
     const postViews = toPostViewsFromPosts(posts, mediaCtx);
@@ -49,6 +50,7 @@ homeRoutes.get("/", async (c) => {
 
   const { items, currentPage, totalPages } = await assembleTimeline(c, {
     page,
+    isAuthenticated: navData.isAuthenticated,
   });
 
   return renderPublicPage(c, {

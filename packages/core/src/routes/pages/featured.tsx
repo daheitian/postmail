@@ -28,6 +28,7 @@ featuredRoutes.get("/", async (c) => {
     visibility: "featured",
     status: "published",
     excludeReplies: true,
+    excludePrivate: !navData.isAuthenticated,
   });
 
   const mediaCtx = createMediaContext(c.var.appConfig);

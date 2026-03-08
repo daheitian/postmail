@@ -83,6 +83,11 @@ pageRoutes.get("/*", async (c) => {
   // 1. Direct slug match
   const post = await c.var.services.posts.getBySlug(fullPath);
   if (post && post.status !== "draft") {
+    // Private posts require authentication
+    if (post.visibility === "private") {
+      const navData = await getNavigationData(c);
+      if (!navData.isAuthenticated) return c.notFound();
+    }
     // Check for custom URL override -> 301 redirect to canonical
     const override = await c.var.services.customUrls.getByTarget(
       "post",
@@ -101,6 +106,11 @@ pageRoutes.get("/*", async (c) => {
     if (customUrl.targetType === "post" && customUrl.targetId) {
       const targetPost = await c.var.services.posts.getById(customUrl.targetId);
       if (targetPost && targetPost.status !== "draft") {
+        // Private posts require authentication
+        if (targetPost.visibility === "private") {
+          const navData = await getNavigationData(c);
+          if (!navData.isAuthenticated) return c.notFound();
+        }
         return renderPost(c, targetPost);
       }
     }

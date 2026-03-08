@@ -349,6 +349,30 @@ describe("PostService", () => {
       ]);
     });
 
+    it("excludes private posts when excludePrivate is set", async () => {
+      await postService.create({
+        format: "note",
+        body: "public post",
+      });
+      await postService.create({
+        format: "note",
+        body: "private post",
+        visibility: "private",
+      });
+      await postService.create({
+        format: "note",
+        body: "featured post",
+        visibility: "featured",
+      });
+
+      const posts = await postService.list({ excludePrivate: true });
+      expect(posts).toHaveLength(2);
+      expect(posts.map((p) => p.body).sort()).toEqual([
+        "featured post",
+        "public post",
+      ]);
+    });
+
     it("filters by pinned", async () => {
       await postService.create({
         format: "note",
@@ -908,6 +932,24 @@ describe("PostService", () => {
       for (const post of thread) {
         expect(post.visibility).toBe("featured");
       }
+    });
+
+    it("rejects visibility changes on thread replies", async () => {
+      const root = await postService.create({
+        format: "note",
+        body: "root",
+      });
+      const reply = await postService.create({
+        format: "note",
+        body: "reply",
+        replyToId: root.id,
+      });
+
+      await expect(
+        postService.update(reply.id, { visibility: "featured" }),
+      ).rejects.toThrow(
+        "Cannot change visibility of a thread reply. Update the root post instead.",
+      );
     });
   });
 

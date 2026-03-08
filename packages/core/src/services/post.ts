@@ -45,6 +45,8 @@ export interface PostFilters {
   excludeReplies?: boolean;
   /** Exclude unlisted posts from results */
   excludeUnlisted?: boolean;
+  /** Exclude private posts from results */
+  excludePrivate?: boolean;
   includeDeleted?: boolean;
   threadId?: string;
   /** Unix timestamp (inclusive) — only posts published at or after this time */
@@ -159,6 +161,9 @@ export function createPostService(
     }
     if (filters.excludeUnlisted) {
       conditions.push(sql`${posts.visibility} != 'unlisted'`);
+    }
+    if (filters.excludePrivate) {
+      conditions.push(sql`${posts.visibility} != 'private'`);
     }
     if (filters.pinned !== undefined) {
       conditions.push(
@@ -433,6 +438,13 @@ export function createPostService(
         } else {
           updates.summary = null;
         }
+      }
+
+      // Thread replies inherit visibility from root — reject direct changes
+      if (data.visibility !== undefined && existing.threadId) {
+        throw new ConflictError(
+          "Cannot change visibility of a thread reply. Update the root post instead.",
+        );
       }
 
       // Handle status/visibility change - cascade to thread if this is root

@@ -20,6 +20,7 @@ interface PostMenuData {
   permalink: string;
   pinned: boolean;
   visibility: string;
+  isReply: boolean;
 }
 
 interface CollectionItem {
@@ -196,6 +197,7 @@ export class JantPostMenu extends LitElement {
         permalink: article.dataset.postPermalink ?? "",
         pinned: article.hasAttribute("data-post-pinned"),
         visibility: article.dataset.postVisibility ?? "public",
+        isReply: article.hasAttribute("data-post-reply"),
       };
 
       // Position relative to trigger
@@ -259,10 +261,8 @@ export class JantPostMenu extends LitElement {
     }
   }
 
-  async #toggleFeature() {
+  async #setVisibility(newVisibility: string) {
     if (!this._data) return;
-    const newVisibility =
-      this._data.visibility === "featured" ? "public" : "featured";
 
     try {
       const res = await fetch(`/api/posts/${this._data.id}`, {
@@ -279,9 +279,13 @@ export class JantPostMenu extends LitElement {
       if (article) article.dataset.postVisibility = newVisibility;
       this._data = { ...this._data, visibility: newVisibility };
 
-      showToast(
-        newVisibility === "featured" ? "Post featured." : "Post unfeatured.",
-      );
+      const messages: Record<string, string> = {
+        public: "Post made public.",
+        featured: "Post featured.",
+        unlisted: "Post unlisted.",
+        private: "Post made private.",
+      };
+      showToast(messages[newVisibility] ?? "Visibility updated.");
     } catch {
       showToast("Could not update post. Try again.", "error");
     }
@@ -632,6 +636,63 @@ export class JantPostMenu extends LitElement {
     </svg>`;
   }
 
+  // Lucide: globe (make public)
+  #iconGlobe() {
+    return html`<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </svg>`;
+  }
+
+  // Lucide: link-2-off (unlisted)
+  #iconLinkOff() {
+    return html`<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M9 17H7A5 5 0 0 1 7 7" />
+      <path d="M15 7h2a5 5 0 0 1 4 8" />
+      <line x1="8" x2="12" y1="12" y2="12" />
+      <line x1="2" x2="22" y1="2" y2="22" />
+    </svg>`;
+  }
+
+  // Lucide: eye-off (private)
+  #iconEyeOff() {
+    return html`<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path
+        d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"
+      />
+      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+      <path
+        d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"
+      />
+      <path d="m2 2 20 20" />
+    </svg>`;
+  }
+
   #iconLink() {
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
@@ -821,7 +882,7 @@ export class JantPostMenu extends LitElement {
 
   #renderMenu() {
     if (!this._data) return nothing;
-    const isFeatured = this._data.visibility === "featured";
+    const visibility = this._data.visibility;
     const isPinned = this._data.pinned;
 
     return html`
@@ -835,10 +896,47 @@ export class JantPostMenu extends LitElement {
         <div role="menuitem" @click=${() => this.#openCollectionPicker()}>
           ${this.#iconCollection()} Add to collection
         </div>
-        <div role="menuitem" @click=${() => this.#toggleFeature()}>
-          ${isFeatured ? this.#iconHeartOff() : this.#iconHeart()}
-          ${isFeatured ? "Unfeature" : "Feature this post"}
-        </div>
+        ${this._data.isReply
+          ? nothing
+          : html`
+              ${visibility !== "public"
+                ? html`<div
+                    role="menuitem"
+                    @click=${() => this.#setVisibility("public")}
+                  >
+                    ${this.#iconGlobe()} Make Public
+                  </div>`
+                : nothing}
+              ${visibility !== "featured"
+                ? html`<div
+                    role="menuitem"
+                    @click=${() => this.#setVisibility("featured")}
+                  >
+                    ${this.#iconHeart()} Feature
+                  </div>`
+                : html`<div
+                    role="menuitem"
+                    @click=${() => this.#setVisibility("public")}
+                  >
+                    ${this.#iconHeartOff()} Unfeature
+                  </div>`}
+              ${visibility !== "unlisted"
+                ? html`<div
+                    role="menuitem"
+                    @click=${() => this.#setVisibility("unlisted")}
+                  >
+                    ${this.#iconLinkOff()} Make Unlisted
+                  </div>`
+                : nothing}
+              ${visibility !== "private"
+                ? html`<div
+                    role="menuitem"
+                    @click=${() => this.#setVisibility("private")}
+                  >
+                    ${this.#iconEyeOff()} Make Private
+                  </div>`
+                : nothing}
+            `}
         <div role="menuitem" @click=${() => this.#togglePin()}>
           ${isPinned ? this.#iconPinOff() : this.#iconPin()}
           ${isPinned ? "Unpin" : "Pin this post"}

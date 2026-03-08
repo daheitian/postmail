@@ -26,6 +26,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
       data-post-permalink={post.permalink}
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       data-post-visibility={post.visibility}
+      {...(post.threadRootId ? { "data-post-reply": "" } : {})}
     >
       {!compact && <PostStatusBadges />}
       {post.quoteText && (

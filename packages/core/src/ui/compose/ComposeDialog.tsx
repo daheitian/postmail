@@ -251,6 +251,11 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       comment:
         "@context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed",
     }),
+    publishPrivate: t({
+      message: "Post as Private",
+      comment:
+        "@context: Compose dropdown option - publish post visible only when logged in",
+    }),
     showMore: t({
       message: "Show more",
       comment: "@context: Expand reply context",

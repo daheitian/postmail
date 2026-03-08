@@ -20,6 +20,7 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
   const posts = await c.var.services.posts.list({
     status: "published",
     excludeReplies: true,
+    excludePrivate: true,
     limit: 1000,
   });
 

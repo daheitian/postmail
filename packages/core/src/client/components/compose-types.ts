@@ -135,12 +135,13 @@ export interface ComposeLabels {
   reply: string;
   publishFeatured: string;
   publishUnlisted: string;
+  publishPrivate: string;
   showMore: string;
   showLess: string;
   collectionFormLabels: CollectionFormLabels;
 }
 
-export type ComposeVisibility = "public" | "featured" | "unlisted";
+export type ComposeVisibility = "public" | "featured" | "unlisted" | "private";
 
 export interface ComposeSubmitDetail {
   format: ComposeFormat;

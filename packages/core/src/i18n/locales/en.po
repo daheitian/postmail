@@ -979,6 +979,11 @@ msgstr "Post"
 msgid "Post as Featured"
 msgstr "Post as Featured"
 
+#. @context: Compose dropdown option - publish post visible only when logged in
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post as Private"
+msgstr "Post as Private"
+
 #. @context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post Unlisted"

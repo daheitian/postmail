@@ -24,18 +24,19 @@ collectionRoutes.get("/:slug", async (c) => {
   if (!collection) return c.notFound();
 
   // Fetch posts, all collections, sidebar items, and post counts in parallel
+  const navData = await getNavigationData(c);
+
   const [posts, allCollections, sidebarItems, postCounts] = await Promise.all([
     c.var.services.posts.list({
       collectionId: collection.id,
       status: "published",
       excludeReplies: true,
+      excludePrivate: !navData.isAuthenticated,
     }),
     c.var.services.collections.list(),
     c.var.services.collections.listSidebarItems(),
     c.var.services.collections.getPostCounts(),
   ]);
-
-  const navData = await getNavigationData(c);
 
   // Batch-load media for posts
   const postIds = posts.map((p) => p.id);
@@ -94,6 +95,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
     collectionId: collection.id,
     status: "published",
     excludeReplies: true,
+    excludePrivate: true,
     limit: feedLimit,
   });
 
