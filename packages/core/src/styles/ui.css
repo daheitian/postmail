@@ -3581,11 +3581,11 @@
     text-decoration: none;
     color: inherit;
     background: var(--secondary);
-    border: 1px solid var(--border);
+    border: 1px solid oklch(from var(--border) l c h / 0.5);
   }
 
   .archive-tile:hover {
-    border-color: var(--site-accent);
+    border-color: var(--border);
   }
 
   /* Hover date label (bottom-left) */
