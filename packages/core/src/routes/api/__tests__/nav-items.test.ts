@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { navItemsApiRoutes } from "../nav-items.js";
-import { toUid } from "../../../lib/uid.js";
 
 describe("Nav Items API Routes", () => {
   describe("GET /api/nav-items", () => {
@@ -115,12 +114,12 @@ describe("Nav Items API Routes", () => {
       });
 
       // Move Third between First and Second
-      const res = await app.request(`/api/nav-items/${toUid(item3.id)}/move`, {
+      const res = await app.request(`/api/nav-items/${item3.id}/move`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          after: toUid(item1.id),
-          before: toUid(item2.id),
+          after: item1.id,
+          before: item2.id,
         }),
       });
 
@@ -137,7 +136,7 @@ describe("Nav Items API Routes", () => {
       app.route("/api/nav-items", navItemsApiRoutes);
 
       const res = await app.request(
-        `/api/nav-items/${toUid("00000000-0000-0000-0000-000000009999")}/move`,
+        `/api/nav-items/${"00000000-0000-0000-0000-000000009999"}/move`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -160,7 +159,7 @@ describe("Nav Items API Routes", () => {
         url: "/old",
       });
 
-      const res = await app.request(`/api/nav-items/${toUid(item.id)}`, {
+      const res = await app.request(`/api/nav-items/${item.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ label: "New Label" }),
@@ -176,7 +175,7 @@ describe("Nav Items API Routes", () => {
       app.route("/api/nav-items", navItemsApiRoutes);
 
       const res = await app.request(
-        `/api/nav-items/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        `/api/nav-items/${"00000000-0000-0000-0000-000000009999"}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -199,7 +198,7 @@ describe("Nav Items API Routes", () => {
         url: "/delete",
       });
 
-      const res = await app.request(`/api/nav-items/${toUid(item.id)}`, {
+      const res = await app.request(`/api/nav-items/${item.id}`, {
         method: "DELETE",
       });
 
@@ -216,7 +215,7 @@ describe("Nav Items API Routes", () => {
         url: "/delete",
       });
 
-      const res = await app.request(`/api/nav-items/${toUid(item.id)}`, {
+      const res = await app.request(`/api/nav-items/${item.id}`, {
         method: "DELETE",
       });
 
@@ -230,7 +229,7 @@ describe("Nav Items API Routes", () => {
       app.route("/api/nav-items", navItemsApiRoutes);
 
       const res = await app.request(
-        `/api/nav-items/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        `/api/nav-items/${"00000000-0000-0000-0000-000000009999"}`,
         { method: "DELETE" },
       );
 

@@ -11,7 +11,6 @@
 import type { FC } from "hono/jsx";
 import type { Collection } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
-import { toUid } from "../../lib/uid.js";
 import { useLingui } from "@lingui/react/macro";
 
 export interface ComposeDialogProps {
@@ -323,7 +322,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
 
   const collectionsJson = JSON.stringify(
     (collections ?? []).map((c) => ({
-      id: toUid(c.id),
+      id: c.id,
       title: c.title,
       iconHtml: renderCollectionIcon(c.icon, { size: 16 }),
     })),

@@ -9,7 +9,6 @@ import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { CreateNavItemSchema, parseValidated } from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
-import { fromUid } from "../../lib/uid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -33,11 +32,12 @@ navItemsApiRoutes.put("/:id/move", requireAuthApi(), async (c) => {
   const id = parseIdParam(c.req.param("id"));
   const body = parseValidated(MoveSchema, await c.req.json());
 
-  const afterId = body.after ? fromUid(body.after) : null;
-  const beforeId = body.before ? fromUid(body.before) : null;
-
   const item = assertFound(
-    await c.var.services.navItems.move(id, afterId ?? null, beforeId ?? null),
+    await c.var.services.navItems.move(
+      id,
+      body.after ?? null,
+      body.before ?? null,
+    ),
     "Nav item",
   );
 

@@ -13,7 +13,6 @@ import {
   parseValidated,
 } from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
-import { fromUid, toUid } from "../../lib/uid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -46,28 +45,16 @@ collectionsApiRoutes.get("/", async (c) => {
   return c.json({
     collections: collections.map((col) => ({
       ...col,
-      id: toUid(col.id),
       postCount: postCounts.get(col.id) ?? 0,
     })),
-    sidebarItems: sidebarItems.map((item) => ({
-      ...item,
-      id: toUid(item.id),
-      collectionId: item.collectionId ? toUid(item.collectionId) : null,
-    })),
+    sidebarItems,
   });
 });
 
 // Create sidebar item (divider) — must be before /:id
 collectionsApiRoutes.post("/sidebar-items", requireAuthApi(), async (c) => {
   const item = await c.var.services.collections.createSidebarItem("divider");
-  return c.json(
-    {
-      ...item,
-      id: toUid(item.id),
-      collectionId: item.collectionId ? toUid(item.collectionId) : null,
-    },
-    201,
-  );
+  return c.json(item, 201);
 });
 
 // Move sidebar item — must be before /:id
@@ -78,23 +65,16 @@ collectionsApiRoutes.put(
     const id = parseIdParam(c.req.param("id"));
     const body = parseValidated(MoveSchema, await c.req.json());
 
-    const afterId = body.after ? fromUid(body.after) : null;
-    const beforeId = body.before ? fromUid(body.before) : null;
-
     const item = assertFound(
       await c.var.services.collections.moveSidebarItem(
         id,
-        afterId ?? null,
-        beforeId ?? null,
+        body.after ?? null,
+        body.before ?? null,
       ),
       "Sidebar item",
     );
 
-    return c.json({
-      ...item,
-      id: toUid(item.id),
-      collectionId: item.collectionId ? toUid(item.collectionId) : null,
-    });
+    return c.json(item);
   },
 );
 
@@ -116,7 +96,7 @@ collectionsApiRoutes.get("/:id", async (c) => {
     await c.var.services.collections.getById(id),
     "Collection",
   );
-  return c.json({ ...collection, id: toUid(collection.id) });
+  return c.json(collection);
 });
 
 // Create collection (requires auth)
@@ -131,7 +111,7 @@ collectionsApiRoutes.post("/", requireAuthApi(), async (c) => {
     sortOrder: body.sortOrder as SortOrder | undefined,
   });
 
-  return c.json({ ...collection, id: toUid(collection.id) }, 201);
+  return c.json(collection, 201);
 });
 
 // Update collection (requires auth)
@@ -144,7 +124,7 @@ collectionsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
     "Collection",
   );
 
-  return c.json({ ...collection, id: toUid(collection.id) });
+  return c.json(collection);
 });
 
 // Delete collection (requires auth)
@@ -163,11 +143,9 @@ collectionsApiRoutes.post("/:id/posts", requireAuthApi(), async (c) => {
   assertFound(await c.var.services.collections.getById(id), "Collection");
 
   const body = parseValidated(PostAssignSchema, await c.req.json());
-  const postId = fromUid(body.postId);
-  if (!postId) return c.json({ error: "Invalid post ID" }, 400);
-  assertFound(await c.var.services.posts.getById(postId), "Post");
+  assertFound(await c.var.services.posts.getById(body.postId), "Post");
 
-  await c.var.services.collections.addPost(id, postId);
+  await c.var.services.collections.addPost(id, body.postId);
 
   return c.json({ success: true }, 201);
 });
@@ -178,8 +156,7 @@ collectionsApiRoutes.delete(
   requireAuthApi(),
   async (c) => {
     const id = parseIdParam(c.req.param("id"));
-    const postId = fromUid(c.req.param("postId"));
-    if (!postId) return c.json({ error: "Invalid post ID" }, 400);
+    const postId = parseIdParam(c.req.param("postId"));
 
     await c.var.services.collections.removePost(id, postId);
 

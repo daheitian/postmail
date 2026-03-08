@@ -20,8 +20,6 @@ import type {
   SearchResult,
   Post,
 } from "../../types.js";
-import { toUid } from "../uid.js";
-
 const EMPTY_CTX: MediaContext = {};
 const CTX_WITH_URLS: MediaContext = {
   r2PublicUrl: "https://cdn.example.com",
@@ -355,8 +353,8 @@ describe("toPostViews", () => {
     ];
     const views = toPostViews(posts, EMPTY_CTX);
     expect(views).toHaveLength(2);
-    expect(views[0]).toHaveProperty("id", toUid(UUID_1));
-    expect(views[1]).toHaveProperty("id", toUid(UUID_2));
+    expect(views[0]).toHaveProperty("id", UUID_1);
+    expect(views[1]).toHaveProperty("id", UUID_2);
   });
 });
 
@@ -523,7 +521,7 @@ describe("toSearchResultView", () => {
       snippet: "...matching <b>text</b>...",
     };
     const view = toSearchResultView(result, EMPTY_CTX);
-    expect(view.post.id).toBe(toUid(UUID_POST));
+    expect(view.post.id).toBe(UUID_POST);
     expect(view.post.title).toBe("Test");
     expect(view.post.permalink).toBeDefined();
     expect(view.rank).toBe(1.5);

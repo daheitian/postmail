@@ -15,7 +15,6 @@ import { CreatePostSchema } from "../lib/schemas.js";
 import { ValidationError } from "../lib/errors.js";
 import { sse, dsToast } from "../lib/sse.js";
 import { getI18n } from "../i18n/index.js";
-import { fromUid } from "../lib/uid.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -83,22 +82,6 @@ composeRoutes.post("/", async (c) => {
     }
   }
 
-  // Decode replyToId from Base58 to UUID
-  let replyToId: string | undefined;
-  if (data.replyToId) {
-    replyToId = fromUid(data.replyToId) ?? undefined;
-  }
-
-  // Decode collectionIds from Base58 to UUID
-  let collectionIds: string[] | undefined;
-  if (data.collectionIds?.length) {
-    collectionIds = data.collectionIds.map((cid) => {
-      const uuid = fromUid(cid);
-      if (!uuid) throw new ValidationError("Invalid collection ID");
-      return uuid;
-    });
-  }
-
   const post = await c.var.services.posts.create(
     {
       format: data.format,
@@ -108,8 +91,8 @@ composeRoutes.post("/", async (c) => {
       url: data.url || undefined,
       quoteText: data.quoteText || undefined,
       rating: data.rating || undefined,
-      collectionIds,
-      replyToId,
+      collectionIds: data.collectionIds,
+      replyToId: data.replyToId,
     },
     {
       maxParagraphs: c.var.appConfig.summaryMaxParagraphs,

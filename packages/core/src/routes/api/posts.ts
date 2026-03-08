@@ -5,7 +5,6 @@
 import { Hono } from "hono";
 import type { Bindings, Format, Status, Media } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { toUid, fromUid } from "../../lib/uid.js";
 import {
   CreatePostSchema,
   UpdatePostSchema,
@@ -17,11 +16,7 @@ import {
   getImageUrl,
   getPublicUrlForProvider,
 } from "../../lib/image.js";
-import {
-  assertFound,
-  NotFoundError,
-  ValidationError,
-} from "../../lib/errors.js";
+import { assertFound, NotFoundError, parseIdParam } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -76,7 +71,7 @@ postsApiRoutes.get("/", async (c) => {
   const posts = await c.var.services.posts.list({
     format,
     status: status ?? "published",
-    cursor: cursor ? (fromUid(cursor) ?? undefined) : undefined,
+    cursor: cursor ?? undefined,
     limit,
   });
 
@@ -88,23 +83,19 @@ postsApiRoutes.get("/", async (c) => {
   return c.json({
     posts: posts.map((p) => ({
       ...p,
-      id: toUid(p.id),
-      replyToId: p.replyToId ? toUid(p.replyToId) : null,
-      threadId: p.threadId ? toUid(p.threadId) : null,
       mediaAttachments: (mediaMap.get(p.id) ?? []).map((m) =>
         toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
       ),
     })),
 
     nextCursor:
-      posts.length === limit ? toUid(posts[posts.length - 1]?.id ?? "") : null,
+      posts.length === limit ? (posts[posts.length - 1]?.id ?? null) : null,
   });
 });
 
 // Get single post
 postsApiRoutes.get("/:id", async (c) => {
-  const id = fromUid(c.req.param("id"));
-  if (!id) throw new ValidationError("Invalid ID");
+  const id = parseIdParam(c.req.param("id"));
 
   const post = assertFound(await c.var.services.posts.getById(id), "Post");
 
@@ -114,13 +105,10 @@ postsApiRoutes.get("/:id", async (c) => {
   // Get collection IDs for this post
   const postCollections =
     await c.var.services.collections.getCollectionsByPostId(post.id);
-  const collectionIds = postCollections.map((col) => toUid(col.id));
+  const collectionIds = postCollections.map((col) => col.id);
 
   return c.json({
     ...post,
-    id: toUid(post.id),
-    replyToId: post.replyToId ? toUid(post.replyToId) : null,
-    threadId: post.threadId ? toUid(post.threadId) : null,
     collectionIds,
     mediaAttachments: mediaList.map((m) =>
       toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
@@ -137,22 +125,6 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
     await c.var.services.media.validateIds(body.mediaIds);
   }
 
-  // Decode replyToId from Base58 to UUID
-  let replyToId: string | undefined;
-  if (body.replyToId) {
-    replyToId = fromUid(body.replyToId) ?? undefined;
-  }
-
-  // Decode collectionIds from Base58 to UUID
-  let collectionIds: string[] | undefined;
-  if (body.collectionIds?.length) {
-    collectionIds = body.collectionIds.map((cid) => {
-      const uuid = fromUid(cid);
-      if (!uuid) throw new ValidationError("Invalid collection ID");
-      return uuid;
-    });
-  }
-
   const post = await c.var.services.posts.create(
     {
       format: body.format,
@@ -165,8 +137,8 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
       url: body.url || undefined,
       quoteText: body.quoteText,
       rating: body.rating || undefined,
-      collectionIds,
-      replyToId,
+      collectionIds: body.collectionIds,
+      replyToId: body.replyToId,
       publishedAt: body.publishedAt,
     },
     {
@@ -186,9 +158,6 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   return c.json(
     {
       ...post,
-      id: toUid(post.id),
-      replyToId: post.replyToId ? toUid(post.replyToId) : null,
-      threadId: post.threadId ? toUid(post.threadId) : null,
       mediaAttachments: mediaList.map((m) =>
         toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
       ),
@@ -199,24 +168,13 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Update post (requires auth)
 postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = fromUid(c.req.param("id"));
-  if (!id) throw new ValidationError("Invalid ID");
+  const id = parseIdParam(c.req.param("id"));
 
   const body = parseValidated(UpdatePostSchema, await c.req.json());
 
   // Validate media IDs if provided
   if (body.mediaIds !== undefined) {
     await c.var.services.media.validateIds(body.mediaIds);
-  }
-
-  // Decode collectionIds from Base58 to UUID
-  let collectionIds: string[] | undefined;
-  if (body.collectionIds?.length) {
-    collectionIds = body.collectionIds.map((cid) => {
-      const uuid = fromUid(cid);
-      if (!uuid) throw new ValidationError("Invalid collection ID");
-      return uuid;
-    });
   }
 
   const post = assertFound(
@@ -233,7 +191,7 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
         url: body.url,
         quoteText: body.quoteText,
         rating: body.rating || undefined,
-        collectionIds,
+        collectionIds: body.collectionIds,
         publishedAt: body.publishedAt,
       },
       {
@@ -254,9 +212,6 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
   return c.json({
     ...post,
-    id: toUid(post.id),
-    replyToId: post.replyToId ? toUid(post.replyToId) : null,
-    threadId: post.threadId ? toUid(post.threadId) : null,
     mediaAttachments: mediaList.map((m) =>
       toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
     ),
@@ -265,8 +220,7 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
 // Delete post (requires auth)
 postsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = fromUid(c.req.param("id"));
-  if (!id) throw new ValidationError("Invalid ID");
+  const id = parseIdParam(c.req.param("id"));
 
   const success = await c.var.services.posts.delete(id, {
     media: c.var.services.media,

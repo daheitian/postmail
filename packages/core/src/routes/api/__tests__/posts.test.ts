@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { postsApiRoutes } from "../posts.js";
-import { toUid } from "../../../lib/uid.js";
 
 describe("Posts API Routes", () => {
   describe("GET /api/posts", () => {
@@ -115,14 +114,12 @@ describe("Posts API Routes", () => {
         format: "note",
         body: "test post",
       });
-      const id = toUid(post.id);
-
-      const res = await app.request(`/api/posts/${id}`);
+      const res = await app.request(`/api/posts/${post.id}`);
       expect(res.status).toBe(200);
 
       const body = await res.json();
       expect(body.body).toBe("test post");
-      expect(body.id).toBe(id);
+      expect(body.id).toBe(post.id);
     });
 
     it("includes mediaAttachments in single post response", async () => {
@@ -144,7 +141,7 @@ describe("Posts API Routes", () => {
 
       await services.media.attachToPost(post.id, [media.id]);
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`);
+      const res = await app.request(`/api/posts/${post.id}`);
       const body = await res.json();
 
       expect(body.mediaAttachments).toHaveLength(1);
@@ -164,7 +161,7 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const res = await app.request(
-        `/api/posts/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        "/api/posts/00000000-0000-0000-0000-000000009999",
       );
       expect(res.status).toBe(404);
     });
@@ -305,7 +302,7 @@ describe("Posts API Routes", () => {
         body: "original",
       });
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`, {
+      const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body: "updated" }),
@@ -323,7 +320,7 @@ describe("Posts API Routes", () => {
         body: "original",
       });
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`, {
+      const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body: "updated" }),
@@ -362,7 +359,7 @@ describe("Posts API Routes", () => {
         storageKey: "media/2025/01/b.jpg",
       });
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`, {
+      const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mediaIds: [m2.id] }),
@@ -393,7 +390,7 @@ describe("Posts API Routes", () => {
 
       await services.media.attachToPost(post.id, [m1.id]);
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`, {
+      const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body: "updated content" }),
@@ -410,7 +407,7 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const res = await app.request(
-        `/api/posts/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        "/api/posts/00000000-0000-0000-0000-000000009999",
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -430,7 +427,7 @@ describe("Posts API Routes", () => {
         body: "test",
       });
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`, {
+      const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ format: "invalid-type" }),
@@ -450,7 +447,7 @@ describe("Posts API Routes", () => {
         body: "test",
       });
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`, {
+      const res = await app.request(`/api/posts/${post.id}`, {
         method: "DELETE",
       });
 
@@ -466,7 +463,7 @@ describe("Posts API Routes", () => {
         body: "to be deleted",
       });
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`, {
+      const res = await app.request(`/api/posts/${post.id}`, {
         method: "DELETE",
       });
 
@@ -484,7 +481,7 @@ describe("Posts API Routes", () => {
       app.route("/api/posts", postsApiRoutes);
 
       const res = await app.request(
-        `/api/posts/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        "/api/posts/00000000-0000-0000-0000-000000009999",
         {
           method: "DELETE",
         },
@@ -519,7 +516,7 @@ describe("Posts API Routes", () => {
 
       await services.media.attachToPost(post.id, [m1.id, m2.id]);
 
-      const res = await app.request(`/api/posts/${toUid(post.id)}`, {
+      const res = await app.request(`/api/posts/${post.id}`, {
         method: "DELETE",
       });
 
@@ -562,7 +559,7 @@ describe("Posts API Routes", () => {
       await services.media.attachToPost(root.id, [rootMedia.id]);
       await services.media.attachToPost(reply.id, [replyMedia.id]);
 
-      const res = await app.request(`/api/posts/${toUid(root.id)}`, {
+      const res = await app.request(`/api/posts/${root.id}`, {
         method: "DELETE",
       });
 

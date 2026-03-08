@@ -21,7 +21,6 @@ import type {
   NavItemType,
   AppConfig,
 } from "../types.js";
-import { toUid } from "./uid.js";
 import {
   toISOString,
   formatDate,
@@ -129,7 +128,7 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
  * @returns Render-ready PostView with pre-computed fields
  */
 export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
-  const id = toUid(post.id);
+  const id = post.id;
   const permalink = `/${post.slug}`;
 
   // Pre-compute excerpt from raw body
@@ -208,8 +207,8 @@ export function toPostView(post: PostWithMedia, _ctx: MediaContext): PostView {
     publishedAtRelative: formatRelativeTime(post.publishedAt),
     updatedAt: toISOString(post.updatedAt),
     media,
-    replyToId: post.replyToId ? toUid(post.replyToId) : undefined,
-    threadRootId: post.threadId ? toUid(post.threadId) : undefined,
+    replyToId: post.replyToId ?? undefined,
+    threadRootId: post.threadId ?? undefined,
     body: post.body ?? undefined,
   };
 }
@@ -284,7 +283,7 @@ export function toNavItemView(
   }
 
   return {
-    id: toUid(item.id),
+    id: item.id,
     type: item.type as NavItemType,
     label,
     url,

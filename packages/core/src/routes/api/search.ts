@@ -5,7 +5,6 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { toUid } from "../../lib/uid.js";
 import { ValidationError, ExternalServiceError } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -36,7 +35,7 @@ searchApiRoutes.get("/", async (c) => {
     return c.json({
       query,
       results: results.map((r) => ({
-        id: toUid(r.post.id),
+        id: r.post.id,
         format: r.post.format,
         title: r.post.title,
         slug: r.post.slug,

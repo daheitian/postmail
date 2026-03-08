@@ -5,8 +5,6 @@
  * Services throw these; the error handler middleware maps them to HTTP responses.
  */
 
-import { fromUid } from "./uid.js";
-
 /**
  * Base class for all domain errors.
  * Each subclass maps to a specific HTTP status code.
@@ -99,21 +97,23 @@ export function assertFound<T>(
   return value;
 }
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
- * Parse a route parameter as a Base58-encoded UID, returning the underlying UUID.
- * Throws ValidationError if the UID is invalid.
+ * Validates a route parameter as a UUID.
+ * Throws ValidationError if the format is invalid.
  *
- * @param value - Base58-encoded UID from the route
- * @returns UUID string (dash-format)
+ * @param value - UUID string from the route
+ * @returns The validated UUID string
  * @example
  * ```ts
  * const id = parseIdParam(c.req.param("id"));
  * ```
  */
 export function parseIdParam(value: string): string {
-  const uuid = fromUid(value);
-  if (!uuid) {
+  if (!UUID_RE.test(value)) {
     throw new ValidationError("Invalid ID");
   }
-  return uuid;
+  return value;
 }

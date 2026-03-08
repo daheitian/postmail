@@ -61,7 +61,8 @@ Non-negotiable regardless of context:
 - **Schemas**: shared domain schemas in `src/lib/schemas.ts`; route-specific schemas colocated with routes.
 - **Routes**: `xxxRoutes` suffix (`postsRoutes`, `settingsRoutes`).
 - **DB table names**: always singular (`post`, `collection`, `custom_url`), never plural.
-- **Time**: Unix timestamps (seconds) via `lib/time.ts`. **IDs**: UUIDv7 in DB (text), Base58-encoded for admin URLs and API. **Post URLs**: slug-based (`/{slug}`). Slugs are auto-generated from title (via `lib/slug.ts`) or as random alphanumeric IDs (via `lib/nanoid.ts`). Custom URL overrides are managed through the `custom_urls` table. Collections use `/c/{slug}`. `SLUG_ID_LENGTH` env var controls random slug length (default: 5).
+- **Time**: Unix timestamps (seconds) via `lib/time.ts`.
+- **IDs**: UUIDv7 (text) everywhere — DB, API, URLs. **Post URLs**: slug-based (`/{slug}`). Slugs are auto-generated from title (via `lib/slug.ts`) or as random alphanumeric IDs (via `lib/nanoid.ts`). Custom URL overrides are managed through the `custom_urls` table. Collections use `/c/{slug}`. `SLUG_ID_LENGTH` env var controls random slug length (default: 5).
 - **Soft delete**: posts use `deleted_at`.
 - **Library functions**: include JSDoc with `@param`, `@returns`, `@example`.
 

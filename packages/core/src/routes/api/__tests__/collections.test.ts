@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { collectionsApiRoutes } from "../collections.js";
-import { toUid } from "../../../lib/uid.js";
 
 describe("Collections API Routes", () => {
   describe("GET /api/collections", () => {
@@ -40,7 +39,7 @@ describe("Collections API Routes", () => {
 
       expect(body.sidebarItems).toHaveLength(1);
       expect(body.sidebarItems[0].type).toBe("collection");
-      expect(body.sidebarItems[0].collectionId).toBe(toUid(col.id));
+      expect(body.sidebarItems[0].collectionId).toBe(col.id);
     });
   });
 
@@ -54,7 +53,7 @@ describe("Collections API Routes", () => {
         title: "Tech Articles",
       });
 
-      const res = await app.request(`/api/collections/${toUid(col.id)}`);
+      const res = await app.request(`/api/collections/${col.id}`);
       expect(res.status).toBe(200);
 
       const body = await res.json();
@@ -75,7 +74,7 @@ describe("Collections API Routes", () => {
       app.route("/api/collections", collectionsApiRoutes);
 
       const res = await app.request(
-        `/api/collections/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        `/api/collections/${"00000000-0000-0000-0000-000000009999"}`,
       );
       expect(res.status).toBe(404);
     });
@@ -140,7 +139,7 @@ describe("Collections API Routes", () => {
         title: "Tech",
       });
 
-      const res = await app.request(`/api/collections/${toUid(col.id)}`, {
+      const res = await app.request(`/api/collections/${col.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: "Technology" }),
@@ -156,7 +155,7 @@ describe("Collections API Routes", () => {
       app.route("/api/collections", collectionsApiRoutes);
 
       const res = await app.request(
-        `/api/collections/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        `/api/collections/${"00000000-0000-0000-0000-000000009999"}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -178,7 +177,7 @@ describe("Collections API Routes", () => {
         title: "Tech",
       });
 
-      const res = await app.request(`/api/collections/${toUid(col.id)}`, {
+      const res = await app.request(`/api/collections/${col.id}`, {
         method: "DELETE",
       });
 
@@ -194,7 +193,7 @@ describe("Collections API Routes", () => {
         title: "Tech",
       });
 
-      const res = await app.request(`/api/collections/${toUid(col.id)}`, {
+      const res = await app.request(`/api/collections/${col.id}`, {
         method: "DELETE",
       });
 
@@ -211,7 +210,7 @@ describe("Collections API Routes", () => {
       app.route("/api/collections", collectionsApiRoutes);
 
       const res = await app.request(
-        `/api/collections/${toUid("00000000-0000-0000-0000-000000009999")}`,
+        `/api/collections/${"00000000-0000-0000-0000-000000009999"}`,
         { method: "DELETE" },
       );
 
@@ -244,7 +243,7 @@ describe("Collections API Routes", () => {
       const item = await services.collections.createSidebarItem("divider");
 
       const res = await app.request(
-        `/api/collections/sidebar-items/${toUid(item.id)}`,
+        `/api/collections/sidebar-items/${item.id}`,
         { method: "DELETE" },
       );
 
@@ -271,13 +270,13 @@ describe("Collections API Routes", () => {
 
       // Move C between A and B
       const res = await app.request(
-        `/api/collections/sidebar-items/${toUid(itemC?.id ?? "")}/move`,
+        `/api/collections/sidebar-items/${itemC?.id ?? ""}/move`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            after: toUid(itemA?.id ?? ""),
-            before: toUid(itemB?.id ?? ""),
+            after: itemA?.id ?? "",
+            before: itemB?.id ?? "",
           }),
         },
       );
@@ -305,10 +304,10 @@ describe("Collections API Routes", () => {
         body: "test",
       });
 
-      const res = await app.request(`/api/collections/${toUid(col.id)}/posts`, {
+      const res = await app.request(`/api/collections/${col.id}/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId: toUid(post.id) }),
+        body: JSON.stringify({ postId: post.id }),
       });
 
       expect(res.status).toBe(201);
@@ -327,11 +326,11 @@ describe("Collections API Routes", () => {
       });
 
       const res = await app.request(
-        `/api/collections/${toUid("00000000-0000-0000-0000-000000009999")}/posts`,
+        `/api/collections/${"00000000-0000-0000-0000-000000009999"}/posts`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ postId: toUid(post.id) }),
+          body: JSON.stringify({ postId: post.id }),
         },
       );
 
@@ -347,11 +346,11 @@ describe("Collections API Routes", () => {
         title: "Tech",
       });
 
-      const res = await app.request(`/api/collections/${toUid(col.id)}/posts`, {
+      const res = await app.request(`/api/collections/${col.id}/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          postId: toUid("00000000-0000-0000-0000-000000000001"),
+          postId: "00000000-0000-0000-0000-000000000001",
         }),
       });
 
@@ -376,7 +375,7 @@ describe("Collections API Routes", () => {
       await services.collections.addPost(col.id, post.id);
 
       const res = await app.request(
-        `/api/collections/${toUid(col.id)}/posts/${toUid(post.id)}`,
+        `/api/collections/${col.id}/posts/${post.id}`,
         { method: "DELETE" },
       );
 

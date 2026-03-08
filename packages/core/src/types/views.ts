@@ -11,7 +11,7 @@ import type { Post, Collection } from "./entities.js";
  */
 export interface PostView {
   // Identity
-  /** Base58-encoded UUIDv7 identifier */
+  /** UUIDv7 identifier */
   id: string;
   /** Pre-computed permalink: "/{slug}" */
   permalink: string;
@@ -56,9 +56,9 @@ export interface PostView {
   media: MediaView[];
 
   // Thread context
-  /** Base58-encoded UUIDv7 of the parent post */
+  /** UUIDv7 of the parent post */
   replyToId?: string;
-  /** Base58-encoded UUIDv7 of the thread root post */
+  /** UUIDv7 of the thread root post */
   threadRootId?: string;
 
   // Raw content (for forms/editing, not typical theme use)
@@ -93,7 +93,7 @@ export interface MediaView {
  * Active/external state pre-computed.
  */
 export interface NavItemView {
-  /** Base58-encoded UUIDv7 identifier */
+  /** UUIDv7 identifier */
   id: string;
   type: NavItemType;
   label: string;

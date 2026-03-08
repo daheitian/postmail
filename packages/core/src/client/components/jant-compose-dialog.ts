@@ -270,7 +270,7 @@ export class JantComposeDialog extends LitElement {
   /**
    * Open compose dialog in reply mode.
    *
-   * @param id - Base58-encoded ID of the post being replied to
+   * @param id - UUID of the post being replied to
    * @param replyData - Pre-captured content from the DOM (avoids API fetch)
    */
   async openReply(id: string, replyData?: ReplyToData) {
