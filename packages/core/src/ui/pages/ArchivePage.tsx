@@ -119,11 +119,99 @@ function getMediaTypeLabel(prefix: string): string {
   return labels[prefix] ?? prefix;
 }
 
-/** Render a Lucide icon inline (sized for badges). */
-const BadgeIcon: FC<{ name: string }> = ({ name }) => {
+// =============================================================================
+// Select Components
+// =============================================================================
+
+/** Chevron indicator for select triggers. */
+const SelectChevron: FC = () => {
+  const svg = getIconSvg("chevron-down");
+  if (!svg) return null;
+  return (
+    <span
+      class="text-muted-foreground opacity-50 shrink-0 [&>svg]:size-3.5"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+};
+
+/** Icon inside a select option (muted color, fixed size). */
+const OptionIcon: FC<{ name: string }> = ({ name }) => {
   const svg = getIconSvg(name);
   if (!svg) return null;
-  return <span class="badge-icon" dangerouslySetInnerHTML={{ __html: svg }} />;
+  return (
+    <span
+      class="text-muted-foreground [&>svg]:size-4 shrink-0"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+};
+
+interface NavSelectOption {
+  label: string;
+  value: string;
+  icon?: string;
+}
+
+/**
+ * BaseCoat select that navigates to a URL on change.
+ * Each option's data-value is the target URL.
+ * Requires client/archive-nav.js for the change → navigate bridge.
+ */
+const NavSelect: FC<{
+  id: string;
+  options: NavSelectOption[];
+  currentValue: string;
+}> = ({ id, options, currentValue }) => {
+  // Always falls back to first option; options array is never empty in practice.
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guaranteed by caller
+  const current = options.find((o) => o.value === currentValue) ?? options[0]!;
+
+  const renderContent = (opt: NavSelectOption) =>
+    opt.icon ? (
+      <span class="flex items-center gap-2">
+        <OptionIcon name={opt.icon} />
+        {opt.label}
+      </span>
+    ) : (
+      opt.label
+    );
+
+  return (
+    <div id={id} class="select archive-nav-select">
+      <button
+        type="button"
+        class="btn-outline"
+        id={`${id}-trigger`}
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls={`${id}-listbox`}
+      >
+        <span class="truncate">{renderContent(current)}</span>
+        <SelectChevron />
+      </button>
+      <div id={`${id}-popover`} data-popover aria-hidden="true">
+        <div
+          role="listbox"
+          id={`${id}-listbox`}
+          aria-orientation="vertical"
+          aria-labelledby={`${id}-trigger`}
+        >
+          {options.map((opt) => (
+            <div
+              key={opt.value}
+              role="option"
+              data-value={opt.value}
+              aria-selected={opt.value === currentValue ? "true" : undefined}
+            >
+              {renderContent(opt)}
+            </div>
+          ))}
+        </div>
+      </div>
+      <input type="hidden" name={`${id}-value`} value={currentValue} />
+    </div>
+  );
 };
 
 // =============================================================================
@@ -137,187 +225,176 @@ const FilterBar: FC<{
 }> = ({ filters, availableYears, availableCollections }) => {
   const { t } = useLingui();
   const activeCount = countActiveFilters(filters);
+  const currentUrl = buildFilterUrl(filters, {});
+
+  // --- Year options ---------------------------------------------------------
+
+  const yearOptions: NavSelectOption[] = [
+    {
+      label: t({
+        message: "All years",
+        comment: "@context: Archive filter - year dropdown default",
+      }),
+      value: buildFilterUrl(
+        { ...filters, year: undefined },
+        { year: undefined },
+      ),
+    },
+    ...availableYears.map((year) => ({
+      label: String(year),
+      value: buildFilterUrl(filters, { year }),
+    })),
+  ];
+
+  // --- Collection options ---------------------------------------------------
+
+  const collectionOptions: NavSelectOption[] = [
+    {
+      label: t({
+        message: "All collections",
+        comment: "@context: Archive filter - collection dropdown default",
+      }),
+      value: buildFilterUrl(
+        {
+          ...filters,
+          collectionSlug: undefined,
+          collectionTitle: undefined,
+        },
+        { collectionSlug: undefined, collectionTitle: undefined },
+      ),
+    },
+    ...availableCollections.map((col) => ({
+      label: col.title,
+      value: buildFilterUrl(filters, { collectionSlug: col.slug }),
+    })),
+  ];
+
+  // --- Format options -------------------------------------------------------
+
+  const formatOptions: NavSelectOption[] = [
+    {
+      label: t({
+        message: "All formats",
+        comment: "@context: Archive filter - all formats select option",
+      }),
+      value: buildFilterUrl(
+        { ...filters, format: undefined, hasTitle: undefined },
+        { format: undefined, hasTitle: undefined },
+      ),
+    },
+    ...FORMATS.map((f) => ({
+      label: getFormatLabelPlural(f),
+      value: buildFilterUrl(filters, {
+        format: f,
+        hasTitle: f === "note" ? filters.hasTitle : undefined,
+      }),
+    })),
+  ];
+
+  // --- Title options (only when format = note) ------------------------------
+
+  const titleOptions: NavSelectOption[] = [
+    {
+      label: t({
+        message: "Any",
+        comment: "@context: Archive filter - all notes regardless of title",
+      }),
+      value: buildFilterUrl(
+        { ...filters, hasTitle: undefined },
+        { hasTitle: undefined },
+      ),
+    },
+    {
+      label: t({
+        message: "Titled",
+        comment: "@context: Archive filter - notes that have a title",
+      }),
+      icon: "heading",
+      value: buildFilterUrl(filters, { hasTitle: true }),
+    },
+    {
+      label: t({
+        message: "Untitled",
+        comment: "@context: Archive filter - notes without a title",
+      }),
+      icon: "text",
+      value: buildFilterUrl(filters, { hasTitle: false }),
+    },
+  ];
+
+  // --- Media options (icon select) ------------------------------------------
+
+  const mediaOptions: NavSelectOption[] = [
+    {
+      label: t({
+        message: "All media",
+        comment: "@context: Archive filter - all media types select option",
+      }),
+      value: buildFilterUrl(
+        { ...filters, mediaTypes: undefined },
+        { mediaTypes: undefined },
+      ),
+    },
+    ...ARCHIVE_MEDIA_TYPES.map((mt) => ({
+      label: getMediaTypeLabel(mt),
+      icon: MEDIA_TYPE_ICONS[mt] ?? "file",
+      value: buildFilterUrl(filters, { mediaTypes: [mt] }),
+    })),
+  ];
 
   return (
     <div class="archive-filters">
-      {/* Row 1: Year, Collection, Format chips, Clear */}
-      <div class="archive-filters-row">
-        {/* Year dropdown */}
-        {availableYears.length > 0 && (
-          <select
-            class="archive-filter-select"
-            onchange="window.location.href=this.value"
-          >
-            <option
-              value={buildFilterUrl(
-                { ...filters, year: undefined },
-                { year: undefined },
-              )}
-              selected={!filters.year}
-            >
-              {t({
-                message: "All years",
-                comment: "@context: Archive filter - year dropdown default",
-              })}
-            </option>
-            {availableYears.map((year) => (
-              <option
-                key={year}
-                value={buildFilterUrl(filters, { year })}
-                selected={filters.year === year}
-              >
-                {year}
-              </option>
-            ))}
-          </select>
-        )}
+      {/* Content filters */}
+      {availableYears.length > 0 && (
+        <NavSelect
+          id="af-year"
+          options={yearOptions}
+          currentValue={currentUrl}
+        />
+      )}
+      {availableCollections.length > 0 && (
+        <NavSelect
+          id="af-collection"
+          options={collectionOptions}
+          currentValue={currentUrl}
+        />
+      )}
+      <NavSelect
+        id="af-format"
+        options={formatOptions}
+        currentValue={currentUrl}
+      />
+      {filters.format === "note" && (
+        <NavSelect
+          id="af-title"
+          options={titleOptions}
+          currentValue={currentUrl}
+        />
+      )}
 
-        {/* Collection dropdown */}
-        {availableCollections.length > 0 && (
-          <select
-            class="archive-filter-select"
-            onchange="window.location.href=this.value"
-          >
-            <option
-              value={buildFilterUrl(
-                {
-                  ...filters,
-                  collectionSlug: undefined,
-                  collectionTitle: undefined,
-                },
-                { collectionSlug: undefined, collectionTitle: undefined },
-              )}
-              selected={!filters.collectionSlug}
-            >
-              {t({
-                message: "All collections",
-                comment:
-                  "@context: Archive filter - collection dropdown default",
-              })}
-            </option>
-            {availableCollections.map((col) => (
-              <option
-                key={col.slug}
-                value={buildFilterUrl(filters, { collectionSlug: col.slug })}
-                selected={filters.collectionSlug === col.slug}
-              >
-                {col.title}
-              </option>
-            ))}
-          </select>
-        )}
+      {/* Separator */}
+      {ARCHIVE_MEDIA_TYPES.length > 0 && (
+        <div class="archive-filters-sep" aria-hidden="true" />
+      )}
 
-        {/* Format chips */}
-        <a
-          href={buildFilterUrl(
-            { ...filters, format: undefined, hasTitle: undefined },
-            { format: undefined, hasTitle: undefined },
-          )}
-          class={!filters.format ? "badge-secondary" : "badge-outline"}
-        >
+      {/* Media filter */}
+      {ARCHIVE_MEDIA_TYPES.length > 0 && (
+        <NavSelect
+          id="af-media"
+          options={mediaOptions}
+          currentValue={currentUrl}
+        />
+      )}
+
+      {/* Clear all */}
+      {activeCount > 0 && (
+        <a href="/archive" class="archive-filter-clear">
           {t({
-            message: "All",
-            comment: "@context: Archive filter - all formats",
-          })}
+            message: "Clear",
+            comment: "@context: Archive filter - clear all filters",
+          })}{" "}
+          ({activeCount})
         </a>
-        {FORMATS.map((f) => (
-          <a
-            key={f}
-            href={buildFilterUrl(filters, {
-              format: f,
-              // Clear hasTitle when switching away from note
-              hasTitle: f === "note" ? filters.hasTitle : undefined,
-            })}
-            class={filters.format === f ? "badge-secondary" : "badge-outline"}
-          >
-            {getFormatLabelPlural(f)}
-          </a>
-        ))}
-
-        {/* Clear filters */}
-        {activeCount > 0 && (
-          <a href="/archive" class="archive-filter-clear">
-            {t({
-              message: "Clear",
-              comment: "@context: Archive filter - clear all filters",
-            })}{" "}
-            ({activeCount})
-          </a>
-        )}
-      </div>
-
-      {/* Divider + Row 2 (media chips and note sub-filters) */}
-      {(ARCHIVE_MEDIA_TYPES.length > 0 || filters.format === "note") && (
-        <>
-          <div class="archive-filters-divider" />
-          <div class="archive-filters-row">
-            {/* Media type chips (multi-select toggle) */}
-            {ARCHIVE_MEDIA_TYPES.map((mt) => {
-              const isActive = filters.mediaTypes?.includes(mt) ?? false;
-              let nextMediaTypes: string[];
-              if (isActive) {
-                nextMediaTypes = (filters.mediaTypes ?? []).filter(
-                  (m) => m !== mt,
-                );
-              } else {
-                nextMediaTypes = [...(filters.mediaTypes ?? []), mt];
-              }
-              return (
-                <a
-                  key={mt}
-                  href={buildFilterUrl(filters, {
-                    mediaTypes:
-                      nextMediaTypes.length > 0 ? nextMediaTypes : undefined,
-                  })}
-                  class={isActive ? "badge-secondary" : "badge-outline"}
-                >
-                  <BadgeIcon name={MEDIA_TYPE_ICONS[mt] ?? "file"} />
-                  {getMediaTypeLabel(mt)}
-                </a>
-              );
-            })}
-
-            {/* Note sub-filter: Has Title / No Title */}
-            {filters.format === "note" && (
-              <>
-                <span class="text-muted-foreground text-xs">|</span>
-                <a
-                  href={buildFilterUrl(filters, {
-                    hasTitle: filters.hasTitle === true ? undefined : true,
-                  })}
-                  class={
-                    filters.hasTitle === true
-                      ? "badge-secondary"
-                      : "badge-outline"
-                  }
-                >
-                  <BadgeIcon name="heading" />
-                  {t({
-                    message: "Titled",
-                    comment:
-                      "@context: Archive filter - notes that have a title",
-                  })}
-                </a>
-                <a
-                  href={buildFilterUrl(filters, {
-                    hasTitle: filters.hasTitle === false ? undefined : false,
-                  })}
-                  class={
-                    filters.hasTitle === false
-                      ? "badge-secondary"
-                      : "badge-outline"
-                  }
-                >
-                  <BadgeIcon name="text" />
-                  {t({
-                    message: "Untitled",
-                    comment: "@context: Archive filter - notes without a title",
-                  })}
-                </a>
-              </>
-            )}
-          </div>
-        </>
       )}
     </div>
   );

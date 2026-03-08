@@ -27,7 +27,7 @@
     "build:lib": "vite build --config vite.config.worker.ts",
     "typecheck": "tsc -b --noEmit",
     "db:generate": "drizzle-kit generate",
-    "i18n:extract": "lingui extract",
+    "i18n:extract": "lingui extract --clean",
     "i18n:compile": "lingui compile --typescript",
     "i18n:build": "pnpm i18n:extract && pnpm i18n:compile",
     "dev": "pnpm db:migrate:local && vite dev",

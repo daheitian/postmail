@@ -3502,59 +3502,27 @@
    * Archive Page
    * ========================================================================= */
 
-  .badge-icon {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  .badge-icon svg {
-    width: 0.75rem;
-    height: 0.75rem;
-  }
+  /* --- Filter bar (single row of BaseCoat selects) ----------------------- */
 
   .archive-filters {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-
-  .archive-filters-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
   }
 
-  .archive-filters-divider {
-    width: 100%;
-    height: 1px;
-    background: var(--site-border);
-    margin: 0;
-  }
-
-  .archive-filter-select {
-    appearance: none;
-    background: var(--site-bg);
-    border: 1px solid var(--site-border);
-    border-radius: 9999px;
-    padding: 4px 28px 4px 12px;
+  .archive-nav-select > button {
+    height: 2rem;
+    padding-inline: 0.5rem;
     font-size: var(--text-sm);
-    color: var(--site-text-primary);
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    line-height: 1.5;
+    gap: 0.25rem;
   }
 
-  :is(.dark, [data-theme="dark"]) .archive-filter-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  }
-
-  .archive-filter-select:focus {
-    outline: 2px solid var(--site-accent);
-    outline-offset: 1px;
+  .archive-filters-sep {
+    width: 1px;
+    height: 1.25rem;
+    background: var(--border);
+    flex-shrink: 0;
   }
 
   .archive-filter-clear {
