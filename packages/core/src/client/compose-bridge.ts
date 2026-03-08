@@ -287,6 +287,7 @@ function buildPostBody(detail: ComposeSubmitDetail) {
     url: detail.url || undefined,
     quoteText: detail.quoteText || undefined,
     status: detail.status,
+    visibility: detail.visibility || undefined,
     rating: detail.rating || undefined,
     collectionIds:
       detail.collectionIds.length > 0 ? detail.collectionIds : undefined,

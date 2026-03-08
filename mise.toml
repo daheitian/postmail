@@ -288,6 +288,14 @@ echo "Done! jant.me has been seeded from seed-site.sql."
 """
 
 # =============================================================================
+# Code Generation
+# =============================================================================
+[tasks.generate-icons]
+alias = "gi"
+description = "Generate ALL_ICON_NAMES in icon-catalog.ts from lucide-static"
+run = "npx tsx scripts/generate-icon-catalog.ts"
+
+# =============================================================================
 # Utilities
 # =============================================================================
 [tasks.reset-password]

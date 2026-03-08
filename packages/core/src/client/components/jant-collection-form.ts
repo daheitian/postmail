@@ -23,7 +23,7 @@ import {
   renderCollectionIcon,
   getIconSvg,
 } from "../../lib/icons.js";
-import { ICON_CATALOG } from "../../lib/icon-catalog.js";
+import { ICON_CATALOG, ALL_ICON_NAMES } from "../../lib/icon-catalog.js";
 import { EMOJI_CATALOG } from "../../lib/emoji-catalog.js";
 import { slugify } from "../lazy-slugify.js";
 import type {
@@ -84,6 +84,16 @@ export class JantCollectionForm extends LitElement {
   declare _loading: boolean;
 
   #initialized = false;
+  #svgCache = new Map<string, string>();
+
+  #getCachedSvg(name: string): string | null {
+    const cached = this.#svgCache.get(name);
+    if (cached !== undefined) return cached;
+    const svg = getIconSvg(name);
+    if (svg) this.#svgCache.set(name, svg);
+    return svg;
+  }
+
   #closePickerHandler = (e: Event) => {
     const target = e.target as HTMLElement | null;
     if (!target) return;
@@ -217,20 +227,39 @@ export class JantCollectionForm extends LitElement {
 
   #filteredCatalog(): CatalogCategory[] {
     const q = this._iconSearch.trim().toLowerCase();
-    const result: CatalogCategory[] = [];
-    for (const [category, names] of Object.entries(ICON_CATALOG)) {
-      const icons = names
-        .filter((name) => (q ? name.includes(q) : true))
-        .map((name) => {
-          const svg = getIconSvg(name);
-          return svg ? { name, svg } : null;
-        })
-        .filter((icon): icon is { name: string; svg: string } => Boolean(icon));
-      if (icons.length > 0) {
-        result.push({ name: category, icons });
+
+    if (!q) {
+      // No search → show curated categories
+      const result: CatalogCategory[] = [];
+      for (const [category, names] of Object.entries(ICON_CATALOG)) {
+        const icons = names
+          .map((name) => {
+            const svg = this.#getCachedSvg(name);
+            return svg ? { name, svg } : null;
+          })
+          .filter((icon): icon is { name: string; svg: string } =>
+            Boolean(icon),
+          );
+        if (icons.length > 0) {
+          result.push({ name: category, icons });
+        }
       }
+      return result;
     }
-    return result;
+
+    // Search → filter ALL icon names
+    const matching = ALL_ICON_NAMES.filter((name) => name.includes(q));
+    if (matching.length === 0) return [];
+
+    const icons = matching
+      .map((name) => {
+        const svg = this.#getCachedSvg(name);
+        return svg ? { name, svg } : null;
+      })
+      .filter((icon): icon is { name: string; svg: string } => Boolean(icon));
+
+    if (icons.length === 0) return [];
+    return [{ name: "results", icons }];
   }
 
   #filteredEmojiCatalog(): EmojiCategory[] {

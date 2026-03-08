@@ -974,6 +974,16 @@ msgstr "Pinned"
 msgid "Post"
 msgstr "Post"
 
+#. @context: Compose dropdown option - publish post with featured visibility, pinned to top of feed
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post as Featured"
+msgstr "Post as Featured"
+
+#. @context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post Unlisted"
+msgstr "Post Unlisted"
+
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
 #: src/ui/shared/Pagination.tsx

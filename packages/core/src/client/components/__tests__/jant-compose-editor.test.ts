@@ -86,6 +86,8 @@ const labels: ComposeLabels = {
   collectionCountLabel: "%name% + %count% more",
   draftRestored: "Draft restored.",
   reply: "Reply",
+  publishFeatured: "Post as Featured",
+  publishUnlisted: "Post Unlisted",
   showMore: "Show more",
   showLess: "Show less",
   collectionFormLabels: {

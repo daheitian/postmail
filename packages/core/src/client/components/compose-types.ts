@@ -133,10 +133,14 @@ export interface ComposeLabels {
   collectionCountLabel: string;
   draftRestored: string;
   reply: string;
+  publishFeatured: string;
+  publishUnlisted: string;
   showMore: string;
   showLess: string;
   collectionFormLabels: CollectionFormLabels;
 }
+
+export type ComposeVisibility = "public" | "featured" | "unlisted";
 
 export interface ComposeSubmitDetail {
   format: ComposeFormat;
@@ -146,6 +150,7 @@ export interface ComposeSubmitDetail {
   quoteText: string;
   quoteAuthor: string;
   status: "published" | "draft";
+  visibility: ComposeVisibility;
   rating: number;
   collectionIds: string[];
   mediaIds: string[];

@@ -1596,6 +1596,65 @@
     cursor: not-allowed;
   }
 
+  .compose-publish-group {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  .compose-publish-main {
+    font-size: 0.84rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.02em;
+    color: var(--site-elevated-bg);
+    background-color: var(--site-text-primary);
+    border: none;
+    border-radius: 10px 0 0 10px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  @media (min-width: 700px) {
+    .compose-publish-main {
+      padding: 8px 20px;
+    }
+  }
+
+  .compose-publish-main:hover {
+    opacity: 0.85;
+  }
+  .compose-publish-main:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .compose-publish-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--site-elevated-bg);
+    background-color: var(--site-text-primary);
+    border: none;
+    border-left: 1px solid
+      color-mix(in srgb, var(--site-elevated-bg) 20%, transparent);
+    border-radius: 0 10px 10px 0;
+    padding: 8px 6px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .compose-publish-toggle:hover {
+    opacity: 0.85;
+  }
+  .compose-publish-toggle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   /* --- Dropdowns ---------------------------------------------------------- */
 
   .compose-dropdown-backdrop {

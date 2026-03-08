@@ -13,6 +13,7 @@ import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import type {
   ComposeFormat,
+  ComposeVisibility,
   ComposeLabels,
   ComposeCollection,
   ComposeSubmitDetail,
@@ -60,6 +61,8 @@ export class JantComposeDialog extends LitElement {
     _replyToId: { state: true },
     _replyToData: { state: true },
     _replyExpanded: { state: true },
+    _visibility: { state: true },
+    _showVisibilityMenu: { state: true },
   };
 
   declare collections: ComposeCollection[];
@@ -88,6 +91,8 @@ export class JantComposeDialog extends LitElement {
   declare _replyToId: string | null;
   declare _replyToData: ReplyToData | null;
   declare _replyExpanded: boolean;
+  declare _visibility: ComposeVisibility;
+  declare _showVisibilityMenu: boolean;
 
   private _attachedEditor: Editor | null = null;
   private _attachedTextSnapshot: JSONContent | null = null;
@@ -129,6 +134,8 @@ export class JantComposeDialog extends LitElement {
     this._replyToId = null;
     this._replyToData = null;
     this._replyExpanded = false;
+    this._visibility = "public";
+    this._showVisibilityMenu = false;
   }
 
   private get _editor(): JantComposeEditor | null {
@@ -170,6 +177,8 @@ export class JantComposeDialog extends LitElement {
     this._replyToId = null;
     this._replyToData = null;
     this._replyExpanded = false;
+    this._visibility = "public";
+    this._showVisibilityMenu = false;
     this._confirmForDrafts = false;
     this.#dirty = false;
     this._destroyAttachedEditor();
@@ -346,6 +355,9 @@ export class JantComposeDialog extends LitElement {
     if (this._showMoreMenu) {
       this._showMoreMenu = false;
     }
+    if (this._showVisibilityMenu) {
+      this._showVisibilityMenu = false;
+    }
 
     if (this._confirmPanelOpen) {
       this._confirmPanelOpen = false;
@@ -458,6 +470,7 @@ export class JantComposeDialog extends LitElement {
       quoteText: editorData.quoteText,
       quoteAuthor: editorData.quoteAuthor,
       status,
+      visibility: this._visibility,
       rating: editorData.rating,
       collectionIds: [...this._collectionIds],
       mediaIds,
@@ -593,6 +606,8 @@ export class JantComposeDialog extends LitElement {
         this._collectionSearch = "";
       } else if (this._showMoreMenu) {
         this._showMoreMenu = false;
+      } else if (this._showVisibilityMenu) {
+        this._showVisibilityMenu = false;
       } else if (this._addCollectionPanelOpen) {
         this._addCollectionPanelOpen = false;
       } else if (this._draftMenuOpenId) {
@@ -1778,6 +1793,141 @@ export class JantComposeDialog extends LitElement {
     return this.labels.post;
   }
 
+  private _submitWithVisibility(visibility: ComposeVisibility) {
+    this._visibility = visibility;
+    this._showVisibilityMenu = false;
+    // Wait for state to update before submitting
+    this.updateComplete.then(() => this._submit("published"));
+  }
+
+  private _renderPublishButton() {
+    const spinner = html`<svg
+      class="animate-spin size-4"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      role="status"
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>`;
+
+    // In edit mode or reply mode, show a simple button (no visibility split)
+    if (this._editPostId || this._replyToId) {
+      return html`
+        <button
+          type="button"
+          class="compose-post-btn"
+          ?disabled=${this._loading}
+          @click=${() => this._submit("published")}
+        >
+          ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
+        </button>
+      `;
+    }
+
+    return html`
+      <div class="compose-publish-group">
+        ${this._showVisibilityMenu
+          ? html`<div
+              class="compose-dropdown-backdrop"
+              @click=${() => {
+                this._showVisibilityMenu = false;
+              }}
+            ></div>`
+          : nothing}
+        <button
+          type="button"
+          class="compose-publish-main"
+          ?disabled=${this._loading}
+          @click=${() => this._submit("published")}
+        >
+          ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
+        </button>
+        <button
+          type="button"
+          class="compose-publish-toggle"
+          ?disabled=${this._loading}
+          aria-haspopup="menu"
+          aria-expanded=${this._showVisibilityMenu}
+          @click=${() => {
+            this._showVisibilityMenu = !this._showVisibilityMenu;
+          }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        ${this._showVisibilityMenu
+          ? html`
+              <div class="compose-dropdown compose-dropdown-right" role="menu">
+                <button
+                  type="button"
+                  class="compose-dropdown-item"
+                  role="menuitem"
+                  @click=${() => this._submitWithVisibility("featured")}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    />
+                  </svg>
+                  ${this.labels.publishFeatured}
+                </button>
+                <button
+                  type="button"
+                  class="compose-dropdown-item"
+                  role="menuitem"
+                  @click=${() => this._submitWithVisibility("unlisted")}
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"
+                    />
+                    <path
+                      d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"
+                    />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                  ${this.labels.publishUnlisted}
+                </button>
+              </div>
+            `
+          : nothing}
+      </div>
+    `;
+  }
+
   render() {
     const isReply = !!(this._replyToId && this._replyToData);
     const editor = html`<jant-compose-editor
@@ -1802,30 +1952,7 @@ export class JantComposeDialog extends LitElement {
           : editor}
 
         <div class="compose-action-row">
-          ${this._renderCollectionSelector()}
-          <button
-            type="button"
-            class="compose-post-btn"
-            ?disabled=${this._loading}
-            @click=${() => this._submit("published")}
-          >
-            ${this._loading
-              ? html`<svg
-                  class="animate-spin size-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  role="status"
-                >
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                </svg>`
-              : nothing}
-            ${this._getSubmitLabel()}
-          </button>
+          ${this._renderCollectionSelector()} ${this._renderPublishButton()}
         </div>
         ${this._renderAttachedPanel()} ${this._renderAltPanel()}
         ${this._renderDraftsPanel()} ${this._renderConfirmPanel()}

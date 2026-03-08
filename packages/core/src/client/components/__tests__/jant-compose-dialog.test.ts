@@ -80,6 +80,8 @@ const labels: ComposeLabels = {
   collectionCountLabel: "%name% + %count% more",
   draftRestored: "Draft restored.",
   reply: "Reply",
+  publishFeatured: "Post as Featured",
+  publishUnlisted: "Post Unlisted",
   showMore: "Show more",
   showLess: "Show less",
   collectionFormLabels: {
@@ -141,9 +143,9 @@ describe("JantComposeDialog", () => {
     expect(segmentedItems[1].textContent?.trim()).toBe("Link");
     expect(segmentedItems[2].textContent?.trim()).toBe("Quote");
 
-    // Post button present
+    // Post button present (split button with visibility dropdown)
     const postBtn = requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
       "expected post button",
     );
     expect(postBtn.textContent?.trim()).toBe("Post");
@@ -202,7 +204,7 @@ describe("JantComposeDialog", () => {
 
     // Click post button
     requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
       "expected post button",
     ).click();
 
@@ -213,6 +215,7 @@ describe("JantComposeDialog", () => {
     expect(detail.format).toBe("note");
     expect(detail.body).toContain("Hello world");
     expect(detail.status).toBe("published");
+    expect(detail.visibility).toBe("public");
     expect(detail.collectionIds).toEqual([]);
     expect(detail.mediaIds).toEqual([]);
     expect(detail.mediaAlts).toEqual({});
@@ -272,7 +275,7 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     const postBtn = requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
       "expected post button",
     );
     expect(postBtn.disabled).toBe(true);
@@ -358,7 +361,7 @@ describe("JantComposeDialog", () => {
     });
 
     const postBtn = requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
       "expected post button",
     );
     postBtn.click();
@@ -371,7 +374,7 @@ describe("JantComposeDialog", () => {
     el._loading = true;
     await el.updateComplete;
 
-    const spinner = el.querySelector(".compose-post-btn .animate-spin");
+    const spinner = el.querySelector(".compose-publish-main .animate-spin");
     expect(spinner).not.toBeNull();
   });
 
@@ -568,7 +571,7 @@ describe("JantComposeDialog", () => {
     });
 
     requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
       "expected post button",
     ).click();
 
@@ -625,7 +628,7 @@ describe("JantComposeDialog", () => {
     });
 
     requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
       "expected post button",
     ).click();
 
@@ -832,7 +835,7 @@ describe("JantComposeDialog", () => {
 
     // Button should say "Post", not "Done"
     const postBtn = requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
       "expected post button",
     );
     expect(postBtn.textContent?.trim()).toBe("Post");
@@ -905,7 +908,7 @@ describe("JantComposeDialog", () => {
     });
 
     requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
       "expected post button",
     ).click();
 

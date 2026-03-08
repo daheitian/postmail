@@ -241,6 +241,16 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
       message: "Reply",
       comment: "@context: Compose button - reply to post",
     }),
+    publishFeatured: t({
+      message: "Post as Featured",
+      comment:
+        "@context: Compose dropdown option - publish post with featured visibility, pinned to top of feed",
+    }),
+    publishUnlisted: t({
+      message: "Post Unlisted",
+      comment:
+        "@context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed",
+    }),
     showMore: t({
       message: "Show more",
       comment: "@context: Expand reply context",
