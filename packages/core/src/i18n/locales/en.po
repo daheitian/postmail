@@ -134,11 +134,6 @@ msgstr "All media"
 msgid "All years"
 msgstr "All years"
 
-#. @context: Archive filter - all notes regardless of title
-#: src/ui/pages/ArchivePage.tsx
-msgid "Any"
-msgstr "Any"
-
 #. @context: Link to API documentation
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "API reference"

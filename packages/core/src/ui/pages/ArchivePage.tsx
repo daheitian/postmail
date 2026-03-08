@@ -151,6 +151,8 @@ interface NavSelectOption {
   label: string;
   value: string;
   icon?: string;
+  /** Indent level for sub-items (e.g. "Titled Notes" under "Notes"). */
+  indent?: boolean;
 }
 
 /**
@@ -162,7 +164,9 @@ const NavSelect: FC<{
   id: string;
   options: NavSelectOption[];
   currentValue: string;
-}> = ({ id, options, currentValue }) => {
+  /** Extra class on the trigger button (e.g. a fixed width like "w-32"). */
+  triggerClass?: string;
+}> = ({ id, options, currentValue, triggerClass }) => {
   // Always falls back to first option; options array is never empty in practice.
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guaranteed by caller
   const current = options.find((o) => o.value === currentValue) ?? options[0]!;
@@ -181,7 +185,7 @@ const NavSelect: FC<{
     <div id={id} class="select archive-nav-select">
       <button
         type="button"
-        class="btn-outline"
+        class={`btn-outline${triggerClass ? ` ${triggerClass}` : ""}`}
         id={`${id}-trigger`}
         aria-haspopup="listbox"
         aria-expanded="false"
@@ -203,6 +207,7 @@ const NavSelect: FC<{
               role="option"
               data-value={opt.value}
               aria-selected={opt.value === currentValue ? "true" : undefined}
+              class={opt.indent ? "pl-4" : undefined}
             >
               {renderContent(opt)}
             </div>
@@ -269,7 +274,7 @@ const FilterBar: FC<{
     })),
   ];
 
-  // --- Format options -------------------------------------------------------
+  // --- Format options (Notes split into All / Titled / Untitled) -----------
 
   const formatOptions: NavSelectOption[] = [
     {
@@ -282,35 +287,25 @@ const FilterBar: FC<{
         { format: undefined, hasTitle: undefined },
       ),
     },
-    ...FORMATS.map((f) => ({
-      label: getFormatLabelPlural(f),
-      value: buildFilterUrl(filters, {
-        format: f,
-        hasTitle: f === "note" ? filters.hasTitle : undefined,
-      }),
-    })),
-  ];
-
-  // --- Title options (only when format = note) ------------------------------
-
-  const titleOptions: NavSelectOption[] = [
+    // Notes — parent + two indented sub-options
     {
-      label: t({
-        message: "Any",
-        comment: "@context: Archive filter - all notes regardless of title",
+      label: getFormatLabelPlural("note"),
+      value: buildFilterUrl(filters, {
+        format: "note",
+        hasTitle: undefined,
       }),
-      value: buildFilterUrl(
-        { ...filters, hasTitle: undefined },
-        { hasTitle: undefined },
-      ),
     },
     {
       label: t({
         message: "Titled",
         comment: "@context: Archive filter - notes that have a title",
       }),
-      icon: "heading",
-      value: buildFilterUrl(filters, { hasTitle: true }),
+      icon: "type",
+      indent: true,
+      value: buildFilterUrl(filters, {
+        format: "note",
+        hasTitle: true,
+      }),
     },
     {
       label: t({
@@ -318,8 +313,17 @@ const FilterBar: FC<{
         comment: "@context: Archive filter - notes without a title",
       }),
       icon: "text",
-      value: buildFilterUrl(filters, { hasTitle: false }),
+      indent: true,
+      value: buildFilterUrl(filters, {
+        format: "note",
+        hasTitle: false,
+      }),
     },
+    // Links, Quotes
+    ...FORMATS.filter((f) => f !== "note").map((f) => ({
+      label: getFormatLabelPlural(f),
+      value: buildFilterUrl(filters, { format: f, hasTitle: undefined }),
+    })),
   ];
 
   // --- Media options (icon select) ------------------------------------------
@@ -350,6 +354,7 @@ const FilterBar: FC<{
           id="af-year"
           options={yearOptions}
           currentValue={currentUrl}
+          triggerClass="w-28"
         />
       )}
       {availableCollections.length > 0 && (
@@ -357,20 +362,15 @@ const FilterBar: FC<{
           id="af-collection"
           options={collectionOptions}
           currentValue={currentUrl}
+          triggerClass="w-36"
         />
       )}
       <NavSelect
         id="af-format"
         options={formatOptions}
         currentValue={currentUrl}
+        triggerClass="w-28"
       />
-      {filters.format === "note" && (
-        <NavSelect
-          id="af-title"
-          options={titleOptions}
-          currentValue={currentUrl}
-        />
-      )}
 
       {/* Separator */}
       {ARCHIVE_MEDIA_TYPES.length > 0 && (
@@ -383,6 +383,7 @@ const FilterBar: FC<{
           id="af-media"
           options={mediaOptions}
           currentValue={currentUrl}
+          triggerClass="w-28"
         />
       )}
 
