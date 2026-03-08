@@ -7,9 +7,13 @@
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { ArchivePageProps, ArchiveFilters } from "../../types.js";
+import type {
+  ArchivePageProps,
+  ArchiveFilters,
+  MediaKind,
+} from "../../types.js";
 import type { PostView } from "../../types/views.js";
-import { FORMATS, ARCHIVE_MEDIA_TYPES } from "../../types.js";
+import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { getIconSvg } from "../../lib/icons.js";
 import { PagePagination } from "../shared/Pagination.js";
 
@@ -30,8 +34,8 @@ function buildFilterUrl(
   if (merged.year) params.set("year", String(merged.year));
   if (merged.collectionSlug) params.set("collection", merged.collectionSlug);
   if (merged.format) params.set("format", merged.format);
-  if (merged.mediaTypes && merged.mediaTypes.length > 0) {
-    params.set("media", merged.mediaTypes.join(","));
+  if (merged.mediaKinds && merged.mediaKinds.length > 0) {
+    params.set("media", merged.mediaKinds.join(","));
   }
   if (merged.hasTitle !== undefined) {
     params.set("hasTitle", merged.hasTitle ? "1" : "0");
@@ -39,17 +43,6 @@ function buildFilterUrl(
 
   const qs = params.toString();
   return qs ? `/archive?${qs}` : "/archive";
-}
-
-/** Count active filters (for the "Clear" button). */
-function countActiveFilters(filters: ArchiveFilters): number {
-  let count = 0;
-  if (filters.year) count++;
-  if (filters.collectionSlug) count++;
-  if (filters.format) count++;
-  if (filters.mediaTypes && filters.mediaTypes.length > 0) count++;
-  if (filters.hasTitle !== undefined) count++;
-  return count;
 }
 
 // =============================================================================
@@ -88,35 +81,40 @@ function getFormatLabelPlural(format: string): string {
   return labels[format] ?? format + "s";
 }
 
-/** Icon name mapping for media type prefixes. */
-const MEDIA_TYPE_ICONS: Record<string, string> = {
-  "image/": "image",
-  "video/": "video",
-  "audio/": "music",
-  "application/": "file",
+/** Icon name mapping for media kinds. */
+const MEDIA_KIND_ICONS: Record<MediaKind, string> = {
+  image: "image",
+  video: "video",
+  audio: "music",
+  text: "file-text",
+  document: "file",
 };
 
-function getMediaTypeLabel(prefix: string): string {
+function getMediaKindLabel(kind: MediaKind): string {
   const { t } = useLingui();
-  const labels: Record<string, string> = {
-    "image/": t({
+  const labels: Record<MediaKind, string> = {
+    image: t({
       message: "Images",
       comment: "@context: Archive media filter - images",
     }),
-    "video/": t({
+    video: t({
       message: "Video",
       comment: "@context: Archive media filter - video",
     }),
-    "audio/": t({
+    audio: t({
       message: "Audio",
       comment: "@context: Archive media filter - audio",
     }),
-    "application/": t({
+    text: t({
+      message: "Text",
+      comment: "@context: Archive media filter - text files",
+    }),
+    document: t({
       message: "Files",
       comment: "@context: Archive media filter - files/documents",
     }),
   };
-  return labels[prefix] ?? prefix;
+  return labels[kind] ?? kind;
 }
 
 // =============================================================================
@@ -229,7 +227,6 @@ const FilterBar: FC<{
   availableCollections: { slug: string; title: string }[];
 }> = ({ filters, availableYears, availableCollections }) => {
   const { t } = useLingui();
-  const activeCount = countActiveFilters(filters);
   const currentUrl = buildFilterUrl(filters, {});
 
   // --- Year options ---------------------------------------------------------
@@ -326,25 +323,11 @@ const FilterBar: FC<{
     })),
   ];
 
-  // --- Media options (icon select) ------------------------------------------
-
-  const mediaOptions: NavSelectOption[] = [
-    {
-      label: t({
-        message: "All media",
-        comment: "@context: Archive filter - all media types select option",
-      }),
-      value: buildFilterUrl(
-        { ...filters, mediaTypes: undefined },
-        { mediaTypes: undefined },
-      ),
-    },
-    ...ARCHIVE_MEDIA_TYPES.map((mt) => ({
-      label: getMediaTypeLabel(mt),
-      icon: MEDIA_TYPE_ICONS[mt] ?? "file",
-      value: buildFilterUrl(filters, { mediaTypes: [mt] }),
-    })),
-  ];
+  const activeKinds = filters.mediaKinds ?? [];
+  const mediaPlaceholder = t({
+    message: "All media",
+    comment: "@context: Archive filter - all media types select option",
+  });
 
   return (
     <div class="archive-filters">
@@ -373,30 +356,66 @@ const FilterBar: FC<{
       />
 
       {/* Separator */}
-      {ARCHIVE_MEDIA_TYPES.length > 0 && (
-        <div class="archive-filters-sep" aria-hidden="true" />
-      )}
+      <div class="archive-filters-sep" aria-hidden="true" />
 
-      {/* Media filter */}
-      {ARCHIVE_MEDIA_TYPES.length > 0 && (
-        <NavSelect
-          id="af-media"
-          options={mediaOptions}
-          currentValue={currentUrl}
-          triggerClass="w-28"
+      {/* Media kind multi-select */}
+      <div
+        id="af-media"
+        class="select archive-nav-multiselect"
+        data-placeholder={mediaPlaceholder}
+        data-filter-key="media"
+      >
+        <button
+          type="button"
+          class="btn-outline w-32"
+          id="af-media-trigger"
+          aria-haspopup="listbox"
+          aria-expanded="false"
+          aria-controls="af-media-listbox"
+        >
+          <span class="truncate">
+            {activeKinds.length > 0
+              ? activeKinds.map((k) => getMediaKindLabel(k)).join(", ")
+              : mediaPlaceholder}
+          </span>
+          <SelectChevron />
+        </button>
+        <div id="af-media-popover" data-popover aria-hidden="true">
+          <div
+            role="listbox"
+            id="af-media-listbox"
+            aria-orientation="vertical"
+            aria-labelledby="af-media-trigger"
+            aria-multiselectable="true"
+          >
+            {MEDIA_KINDS.map((kind) => {
+              const label = getMediaKindLabel(kind);
+              const icon = MEDIA_KIND_ICONS[kind];
+              return (
+                <div
+                  key={kind}
+                  role="option"
+                  data-value={kind}
+                  data-label={label}
+                  aria-selected={
+                    activeKinds.includes(kind) ? "true" : undefined
+                  }
+                >
+                  <span class="flex items-center gap-2">
+                    <OptionIcon name={icon} />
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <input
+          type="hidden"
+          name="af-media-value"
+          value={JSON.stringify(activeKinds)}
         />
-      )}
-
-      {/* Clear all */}
-      {activeCount > 0 && (
-        <a href="/archive" class="archive-filter-clear">
-          {t({
-            message: "Clear",
-            comment: "@context: Archive filter - clear all filters",
-          })}{" "}
-          ({activeCount})
-        </a>
-      )}
+      </div>
     </div>
   );
 };

@@ -21,6 +21,7 @@ import type {
   Format,
   Status,
   Visibility,
+  MediaKind,
   Post,
   CreatePost,
   UpdatePost,
@@ -50,8 +51,8 @@ export interface PostFilters {
   publishedAfter?: number;
   /** Unix timestamp (exclusive) — only posts published before this time */
   publishedBefore?: number;
-  /** MIME prefixes (e.g. ["image/", "video/"]). AND logic: post must have media matching every prefix. */
-  mediaTypes?: string[];
+  /** Media kinds to filter by (OR logic: post has media of ANY selected kind). */
+  mediaKinds?: MediaKind[];
   /** Filter by title presence */
   hasTitle?: boolean;
   limit?: number;
@@ -190,12 +191,11 @@ export function createPostService(
     if (filters.publishedBefore !== undefined) {
       conditions.push(sql`${posts.publishedAt} < ${filters.publishedBefore}`);
     }
-    if (filters.mediaTypes && filters.mediaTypes.length > 0) {
-      for (const prefix of filters.mediaTypes) {
-        conditions.push(
-          sql`${posts.id} IN (SELECT post_id FROM media WHERE mime_type LIKE ${prefix + "%"})`,
-        );
-      }
+    if (filters.mediaKinds && filters.mediaKinds.length > 0) {
+      const placeholders = filters.mediaKinds.map((k) => sql`${k}`);
+      conditions.push(
+        sql`${posts.id} IN (SELECT post_id FROM media WHERE media_kind IN (${sql.join(placeholders, sql`, `)}))`,
+      );
     }
     if (filters.hasTitle !== undefined) {
       if (filters.hasTitle) {

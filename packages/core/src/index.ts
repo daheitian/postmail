@@ -55,7 +55,7 @@ export {
   NAV_ITEM_TYPES,
   MAX_MEDIA_ATTACHMENTS,
   MAX_PINNED_POSTS,
-  ARCHIVE_MEDIA_TYPES,
+  MEDIA_KINDS,
 } from "./types.js";
 
 // Utilities

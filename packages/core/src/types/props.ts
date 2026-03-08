@@ -2,7 +2,7 @@
  * Page-Level Props & Feed Data Types
  */
 
-import type { Format } from "./constants.js";
+import type { Format, MediaKind } from "./constants.js";
 import type { Collection } from "./entities.js";
 import type {
   PostView,
@@ -39,7 +39,7 @@ export interface ArchiveFilters {
   collectionSlug?: string;
   collectionTitle?: string;
   format?: Format;
-  mediaTypes?: string[];
+  mediaKinds?: MediaKind[];
   hasTitle?: boolean;
 }
 

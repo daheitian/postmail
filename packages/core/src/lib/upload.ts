@@ -5,6 +5,7 @@
  */
 
 import { uuidv7 } from "uuidv7";
+import type { MediaKind } from "../types/constants.js";
 
 /** MIME types — images */
 const IMAGE_MIME_TYPES = [
@@ -191,6 +192,32 @@ export function getMediaCategory(mimeType: string): MediaCategory {
 
   // Unknown types default to archive
   return "archive";
+}
+
+/**
+ * Maps a MIME type to one of the five media kind categories.
+ * image/video/audio/text pass through; everything else becomes "document".
+ *
+ * @param mimeType - The MIME type to classify
+ * @returns The media kind
+ * @example
+ * ```ts
+ * toMediaKind("image/jpeg"); // "image"
+ * toMediaKind("application/pdf"); // "document"
+ * toMediaKind("text/plain"); // "text"
+ * ```
+ */
+export function toMediaKind(mimeType: string): MediaKind {
+  const category = getMediaCategory(mimeType);
+  switch (category) {
+    case "image":
+    case "video":
+    case "audio":
+    case "text":
+      return category;
+    default:
+      return "document";
+  }
 }
 
 /**

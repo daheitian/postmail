@@ -10,7 +10,8 @@ import type { Database } from "../db/index.js";
 import { media } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type { StorageDriver } from "../lib/storage.js";
-import type { Media } from "../types.js";
+import { toMediaKind } from "../lib/upload.js";
+import type { Media, MediaKind } from "../types.js";
 import { MAX_MEDIA_ATTACHMENTS } from "../types.js";
 import { ValidationError } from "../lib/errors.js";
 
@@ -74,6 +75,7 @@ export interface CreateMediaData {
   posterKey?: string;
   summary?: string;
   chars?: number;
+  mediaKind?: MediaKind;
 }
 
 export function createMediaService(db: Database): MediaService {
@@ -96,6 +98,7 @@ export function createMediaService(db: Database): MediaService {
       posterKey: row.posterKey,
       summary: row.summary,
       chars: row.chars,
+      mediaKind: row.mediaKind as MediaKind,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -194,6 +197,7 @@ export function createMediaService(db: Database): MediaService {
     async create(data) {
       const id = data.id ?? uuidv7();
       const timestamp = now();
+      const mediaKind = data.mediaKind ?? toMediaKind(data.mimeType);
 
       const result = await db
         .insert(media)
@@ -215,6 +219,7 @@ export function createMediaService(db: Database): MediaService {
           posterKey: data.posterKey ?? null,
           summary: data.summary ?? null,
           chars: data.chars ?? null,
+          mediaKind,
           createdAt: timestamp,
           updatedAt: timestamp,
         })

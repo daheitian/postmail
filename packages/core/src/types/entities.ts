@@ -8,6 +8,7 @@ import type {
   Visibility,
   SortOrder,
   NavItemType,
+  MediaKind,
 } from "./constants.js";
 
 export interface Post {
@@ -51,6 +52,7 @@ export interface Media {
   posterKey: string | null;
   summary: string | null;
   chars: number | null;
+  mediaKind: MediaKind;
   createdAt: number;
   updatedAt: number;
 }

@@ -95,12 +95,14 @@ export const media = sqliteTable(
     posterKey: text("poster_key"),
     summary: text("summary"),
     chars: integer("chars"),
+    mediaKind: text("media_kind").notNull().default("document"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
     index("idx_media_post_id_position").on(table.postId, table.position),
     index("idx_media_storage_key").on(table.storageKey),
+    index("idx_media_media_kind").on(table.mediaKind),
   ],
 );
 

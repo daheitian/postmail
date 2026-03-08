@@ -134,7 +134,7 @@ If you notice code contradicting this document, think about which side is correc
 
 ### Common Pitfalls
 
-- Combining `.btn` with variant classes (`.btn-outline`, `.btn-ghost`, etc.) — BaseCoat variants are self-contained and combining produces broken styles.
+- Combining `.btn` or `.badge` with variant classes (`.btn-outline`, `.btn-ghost`, `.badge-outline`, etc.) — BaseCoat variants are self-contained and combining produces broken styles.
 - Importing from `@lingui/react` instead of `@lingui/react/macro` — the macro enables compile-time message extraction.
 - Editing `packages/create-jant/template/` — this is auto-generated and will be overwritten.
 - Putting multi-service orchestration in route handlers — if two routes need the same sequence of service calls, extract it into a service method. Routes should be thin adapters: parse request → call service → format response.

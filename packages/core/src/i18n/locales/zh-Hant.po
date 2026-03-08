@@ -127,7 +127,7 @@ msgstr "所有格式"
 #. @context: Archive filter - all media types select option
 #: src/ui/pages/ArchivePage.tsx
 msgid "All media"
-msgstr "所有媒體"
+msgstr ""
 
 #. @context: Archive filter - year dropdown default
 #: src/ui/pages/ArchivePage.tsx
@@ -236,11 +236,6 @@ msgstr "為您的網站選擇字型配對。所有選項皆使用系統字型以
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
 msgstr "請選擇新密碼."
-
-#. @context: Archive filter - clear all filters
-#: src/ui/pages/ArchivePage.tsx
-msgid "Clear"
-msgstr "清除"
 
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL type option
@@ -1268,6 +1263,11 @@ msgstr "輕觸以重試"
 #: src/routes/dash/custom-urls.tsx
 msgid "Target Slug"
 msgstr "目標網址別名"
+
+#. @context: Archive media filter - text files
+#: src/ui/pages/ArchivePage.tsx
+msgid "Text"
+msgstr "文字檔"
 
 #. @context: Attached text panel title
 #: src/ui/compose/ComposeDialog.tsx

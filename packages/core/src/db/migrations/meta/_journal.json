@@ -29,6 +29,13 @@
       "when": 1772973888182,
       "tag": "0003_quick_johnny_blaze",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1772990226835,
+      "tag": "0004_spicy_albert_cleary",
+      "breakpoints": true
     }
   ]
 }

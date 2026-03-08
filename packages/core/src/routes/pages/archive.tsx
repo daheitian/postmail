@@ -7,10 +7,15 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, Format, PostWithMedia } from "../../types.js";
+import type {
+  Bindings,
+  Format,
+  MediaKind,
+  PostWithMedia,
+} from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import type { ArchiveFilters } from "../../types/props.js";
-import { FORMATS, ARCHIVE_MEDIA_TYPES } from "../../types.js";
+import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
@@ -43,10 +48,12 @@ archiveRoutes.get("/", async (c) => {
   const collectionSlug = c.req.query("collection") || undefined;
 
   const mediaParam = c.req.query("media") || undefined;
-  const mediaTypes = mediaParam
-    ? mediaParam
+  const mediaKinds = mediaParam
+    ? (mediaParam
         .split(",")
-        .filter((m) => (ARCHIVE_MEDIA_TYPES as readonly string[]).includes(m))
+        .filter((m): m is MediaKind =>
+          (MEDIA_KINDS as readonly string[]).includes(m),
+        ) as MediaKind[])
     : undefined;
 
   const hasTitleParam = c.req.query("hasTitle");
@@ -81,7 +88,7 @@ archiveRoutes.get("/", async (c) => {
     collectionId,
     publishedAfter,
     publishedBefore,
-    mediaTypes: mediaTypes && mediaTypes.length > 0 ? mediaTypes : undefined,
+    mediaKinds: mediaKinds && mediaKinds.length > 0 ? mediaKinds : undefined,
     hasTitle,
   };
 
@@ -142,7 +149,7 @@ archiveRoutes.get("/", async (c) => {
     collectionSlug,
     collectionTitle: collection?.title,
     format,
-    mediaTypes: mediaTypes && mediaTypes.length > 0 ? mediaTypes : undefined,
+    mediaKinds: mediaKinds && mediaKinds.length > 0 ? mediaKinds : undefined,
     hasTitle,
   };
 
