@@ -23,7 +23,7 @@ import {
   renderCollectionIcon,
   getIconSvg,
 } from "../../lib/icons.js";
-import { ICON_CATALOG, ALL_ICON_NAMES } from "../../lib/icon-catalog.js";
+import { ALL_ICON_NAMES, ALL_ICON_CATEGORIES } from "../../lib/icon-catalog.js";
 import { EMOJI_CATALOG } from "../../lib/emoji-catalog.js";
 import { slugify } from "../lazy-slugify.js";
 import type {
@@ -225,29 +225,35 @@ export class JantCollectionForm extends LitElement {
     return "";
   }
 
+  #allIconsByCategory: CatalogCategory[] | null = null;
+
+  #getAllIconsByCategory(): CatalogCategory[] {
+    if (this.#allIconsByCategory) return this.#allIconsByCategory;
+    const result: CatalogCategory[] = [];
+    for (const [category, names] of Object.entries(ALL_ICON_CATEGORIES)) {
+      const icons = names
+        .map((name) => {
+          const svg = this.#getCachedSvg(name);
+          return svg ? { name, svg } : null;
+        })
+        .filter((icon): icon is { name: string; svg: string } => Boolean(icon));
+      if (icons.length > 0) {
+        result.push({ name: category, icons });
+      }
+    }
+    this.#allIconsByCategory = result;
+    return result;
+  }
+
   #filteredCatalog(): CatalogCategory[] {
     const q = this._iconSearch.trim().toLowerCase();
 
     if (!q) {
-      // No search → show curated categories
-      const result: CatalogCategory[] = [];
-      for (const [category, names] of Object.entries(ICON_CATALOG)) {
-        const icons = names
-          .map((name) => {
-            const svg = this.#getCachedSvg(name);
-            return svg ? { name, svg } : null;
-          })
-          .filter((icon): icon is { name: string; svg: string } =>
-            Boolean(icon),
-          );
-        if (icons.length > 0) {
-          result.push({ name: category, icons });
-        }
-      }
-      return result;
+      // No search → show all icons grouped by official category
+      return this.#getAllIconsByCategory();
     }
 
-    // Search → filter ALL icon names
+    // Search → filter ALL icon names + category names
     const matching = ALL_ICON_NAMES.filter((name) => name.includes(q));
     if (matching.length === 0) return [];
 
@@ -408,6 +414,7 @@ export class JantCollectionForm extends LitElement {
                   type="button"
                   class=${`flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent transition-colors${this._iconName === icon.name && this._iconSvg === icon.svg && !this._iconEmoji ? " ring-2 ring-primary" : ""}`}
                   data-icon-name=${icon.name}
+                  title=${icon.name}
                   style=${`color:${this._iconColor}`}
                   @click=${() => this.#selectIcon(icon.name, icon.svg)}
                 >
@@ -518,7 +525,7 @@ export class JantCollectionForm extends LitElement {
         </div>
 
         <!-- Grid -->
-        <div class="overflow-y-auto max-h-56">
+        <div class="overflow-y-auto max-h-80">
           ${isIconsTab ? this.#renderIconsGrid() : this.#renderEmojisGrid()}
         </div>
 

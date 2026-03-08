@@ -1655,6 +1655,12 @@
     cursor: not-allowed;
   }
 
+  .compose-publish-group .compose-dropdown {
+    bottom: calc(100% + 6px);
+    top: auto;
+    right: 0;
+  }
+
   /* --- Dropdowns ---------------------------------------------------------- */
 
   .compose-dropdown-backdrop {

@@ -1872,7 +1872,7 @@ export class JantComposeDialog extends LitElement {
         </button>
         ${this._showVisibilityMenu
           ? html`
-              <div class="compose-dropdown compose-dropdown-right" role="menu">
+              <div class="compose-dropdown" role="menu">
                 <button
                   type="button"
                   class="compose-dropdown-item"
@@ -1889,8 +1889,8 @@ export class JantComposeDialog extends LitElement {
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   >
-                    <polygon
-                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    <path
+                      d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
                     />
                   </svg>
                   ${this.labels.publishFeatured}
@@ -1911,13 +1911,9 @@ export class JantComposeDialog extends LitElement {
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   >
-                    <path
-                      d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"
-                    />
-                    <path
-                      d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"
-                    />
-                    <line x1="1" y1="1" x2="23" y2="23" />
+                    <path d="M9 17H7A5 5 0 0 1 7 7h2" />
+                    <path d="M15 7h2a5 5 0 1 1 0 10h-2" />
+                    <line x1="8" x2="16" y1="12" y2="12" />
                   </svg>
                   ${this.labels.publishUnlisted}
                 </button>
