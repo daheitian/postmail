@@ -33,5 +33,12 @@ export type SystemNavKey = keyof typeof SYSTEM_NAV_KEYS;
 export const MAX_MEDIA_ATTACHMENTS = 20;
 export const MAX_PINNED_POSTS = 3;
 
+export const ARCHIVE_MEDIA_TYPES = [
+  "image/",
+  "video/",
+  "audio/",
+  "application/",
+] as const;
+
 export const STORAGE_DRIVERS = ["r2", "s3"] as const;
 export type StorageDriver = (typeof STORAGE_DRIVERS)[number];

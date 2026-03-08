@@ -119,6 +119,16 @@ msgstr "所有"
 msgid "all available endpoints and request formats."
 msgstr "所有可用的端点和请求格式。"
 
+#. @context: Archive filter - collection dropdown default
+#: src/ui/pages/ArchivePage.tsx
+msgid "All collections"
+msgstr ""
+
+#. @context: Archive filter - year dropdown default
+#: src/ui/pages/ArchivePage.tsx
+msgid "All years"
+msgstr ""
+
 #. @context: Link to API documentation
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "API reference"
@@ -140,6 +150,11 @@ msgstr "适用于您整个网站，包括管理页面。所有主题都支持暗
 #: src/ui/pages/ArchivePage.tsx
 msgid "Archive"
 msgstr "档案馆"
+
+#. @context: Archive media filter - audio
+#: src/ui/pages/ArchivePage.tsx
+msgid "Audio"
+msgstr ""
 
 #. @context: Error toast when authentication secret is missing from server config
 #: src/routes/auth/setup.tsx
@@ -216,6 +231,11 @@ msgstr "选择一个字体搭配用于您的网站。所有选项都使用系统
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
 msgstr "选择一个新密码。"
+
+#. @context: Archive filter - clear all filters
+#: src/ui/pages/ArchivePage.tsx
+msgid "Clear"
+msgstr ""
 
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL type option
@@ -526,7 +546,6 @@ msgstr "条目"
 msgid "Favicon and header icon"
 msgstr "网站图标和标题图标"
 
-#. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
 #. @context: Browse filter label
 #. @context: Browse filter label
@@ -537,7 +556,6 @@ msgstr "网站图标和标题图标"
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
-#: src/ui/pages/ArchivePage.tsx
 msgid "Featured"
 msgstr "精选"
 
@@ -552,6 +570,11 @@ msgstr "文件存储未设置。请检查您的服务器配置。"
 #: src/routes/api/upload.ts
 msgid "File uploaded."
 msgstr "文件已上传。"
+
+#. @context: Archive media filter - files/documents
+#: src/ui/pages/ArchivePage.tsx
+msgid "Files"
+msgstr ""
 
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -591,6 +614,11 @@ msgstr "生成令牌"
 msgid "Give it a title..."
 msgstr "给它一个标题..."
 
+#. @context: Archive filter - notes with title
+#: src/ui/pages/ArchivePage.tsx
+#~ msgid "Has title"
+#~ msgstr ""
+
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Header links, featured"
@@ -619,6 +647,11 @@ msgstr "主页视图已保存"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Icons"
 msgstr "图标"
+
+#. @context: Archive media filter - images
+#: src/ui/pages/ArchivePage.tsx
+msgid "Images"
+msgstr ""
 
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -829,15 +862,25 @@ msgstr "没有匹配的集合。"
 msgid "No navigation items yet. Add links or enable system items below."
 msgstr "尚未有导航项。请在下面添加链接或启用系统项。"
 
+#. @context: Archive empty state with filters
+#: src/ui/pages/ArchivePage.tsx
+msgid "No posts match these filters. Try adjusting your selection or clear all filters."
+msgstr ""
+
 #. @context: Archive empty state
 #: src/ui/pages/ArchivePage.tsx
-msgid "No posts match this filter."
-msgstr "没有帖子符合此筛选条件。"
+#~ msgid "No posts match this filter."
+#~ msgstr "没有帖子符合此筛选条件。"
 
 #. @context: Search empty results
 #: src/ui/pages/SearchPage.tsx
 msgid "No results. Try different keywords."
 msgstr "没有结果。尝试不同的关键词。"
+
+#. @context: Archive filter - notes without title
+#: src/ui/pages/ArchivePage.tsx
+#~ msgid "No title"
+#~ msgstr ""
 
 #. @context: Compose format tab
 #. @context: Post format badge - note
@@ -1309,6 +1352,11 @@ msgstr "时区"
 msgid "Title"
 msgstr "标题"
 
+#. @context: Archive filter - notes that have a title
+#: src/ui/pages/ArchivePage.tsx
+msgid "Titled"
+msgstr "有标题"
+
 #. @context: Description for system nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside links."
@@ -1348,6 +1396,11 @@ msgstr "排版"
 #: src/ui/dash/StatusBadge.tsx
 msgid "Unlisted"
 msgstr "未列出"
+
+#. @context: Archive filter - notes without a title
+#: src/ui/pages/ArchivePage.tsx
+msgid "Untitled"
+msgstr "无标题"
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -1389,6 +1442,11 @@ msgstr "URL安全标识符（小写字母、数字、连字符）。对于CJK标
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
 msgstr "使用方法"
+
+#. @context: Archive media filter - video
+#: src/ui/pages/ArchivePage.tsx
+msgid "Video"
+msgstr ""
 
 #. @context: Button to view item on public site
 #. @context: Toast action button to view the published post

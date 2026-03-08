@@ -37,6 +37,8 @@ export type {
   SearchResultView,
   TimelineItemView,
   ArchiveGroup,
+  // Page props
+  ArchiveFilters,
   // Feed types
   FeedData,
   SitemapData,
@@ -53,6 +55,7 @@ export {
   NAV_ITEM_TYPES,
   MAX_MEDIA_ATTACHMENTS,
   MAX_PINNED_POSTS,
+  ARCHIVE_MEDIA_TYPES,
 } from "./types.js";
 
 // Utilities
@@ -70,6 +73,7 @@ export {
   toNavItemViews,
   toSearchResultView,
   toArchiveGroups,
+  toArchiveGroupsWithMedia,
 } from "./lib/view.js";
 export type { MediaContext } from "./lib/view.js";
 

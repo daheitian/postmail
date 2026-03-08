@@ -1,76 +1,155 @@
 /**
  * Archive Page Route
  *
- * Shows all posts, optionally filtered by format or visibility
+ * Tumblr-style archive grid with rich filtering:
+ * year, collection, format, media types, title presence.
+ * Page-based pagination with media-enriched post tiles.
  */
 
 import { Hono } from "hono";
-import type { Bindings, Format, Visibility } from "../../types.js";
+import type { Bindings, Format, PostWithMedia } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { FORMATS, VISIBILITIES } from "../../types.js";
+import type { ArchiveFilters } from "../../types/props.js";
+import { FORMATS, ARCHIVE_MEDIA_TYPES } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { createMediaContext, toArchiveGroups } from "../../lib/view.js";
+import {
+  createMediaContext,
+  toArchiveGroupsWithMedia,
+} from "../../lib/view.js";
+import { buildMediaMap } from "../../lib/media-helpers.js";
+import type { PostFilters } from "../../services/post.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 60;
 
 export const archiveRoutes = new Hono<Env>();
 
-// Archive page - all posts
 archiveRoutes.get("/", async (c) => {
+  const { services, appConfig } = c.var;
+
+  // --- Parse query params ---------------------------------------------------
+
   const formatParam = c.req.query("format") as Format | undefined;
   const format =
     formatParam && FORMATS.includes(formatParam) ? formatParam : undefined;
-  const visibilityParam = c.req.query("visibility") as Visibility | undefined;
-  const visibility =
-    visibilityParam &&
-    (VISIBILITIES as readonly string[]).includes(visibilityParam)
-      ? visibilityParam
-      : undefined;
 
-  // Parse cursor (UUID string)
-  const cursor = c.req.query("cursor") || undefined;
+  const yearParam = c.req.query("year");
+  const year = yearParam ? parseInt(yearParam, 10) : undefined;
+  const validYear = year && !isNaN(year) && year > 1970 ? year : undefined;
 
-  const navData = await getNavigationData(c);
+  const collectionSlug = c.req.query("collection") || undefined;
 
-  // Fetch one extra to check for more
-  const posts = await c.var.services.posts.list({
+  const mediaParam = c.req.query("media") || undefined;
+  const mediaTypes = mediaParam
+    ? mediaParam
+        .split(",")
+        .filter((m) => (ARCHIVE_MEDIA_TYPES as readonly string[]).includes(m))
+    : undefined;
+
+  const hasTitleParam = c.req.query("hasTitle");
+  const hasTitle =
+    hasTitleParam === "1" ? true : hasTitleParam === "0" ? false : undefined;
+
+  const pageParam = c.req.query("page");
+  const currentPage = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+
+  // --- Resolve collection slug to ID ----------------------------------------
+
+  const collection = collectionSlug
+    ? await services.collections.getBySlug(collectionSlug)
+    : undefined;
+  const collectionId = collection?.id;
+
+  // --- Build timestamp range for year filter --------------------------------
+
+  let publishedAfter: number | undefined;
+  let publishedBefore: number | undefined;
+  if (validYear) {
+    publishedAfter = Date.UTC(validYear, 0, 1) / 1000;
+    publishedBefore = Date.UTC(validYear + 1, 0, 1) / 1000;
+  }
+
+  // --- Build filters --------------------------------------------------------
+
+  const filters: PostFilters = {
     format,
     status: "published",
-    visibility,
     excludeReplies: true,
-    cursor,
-    limit: PAGE_SIZE + 1,
-  });
+    collectionId,
+    publishedAfter,
+    publishedBefore,
+    mediaTypes: mediaTypes && mediaTypes.length > 0 ? mediaTypes : undefined,
+    hasTitle,
+  };
 
-  const hasMore = posts.length > PAGE_SIZE;
-  const displayPosts = hasMore ? posts.slice(0, PAGE_SIZE) : posts;
+  // --- Parallel data fetches ------------------------------------------------
 
-  // Get next cursor
-  const nextCursor =
-    hasMore && displayPosts.length > 0
-      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Length check above guarantees element exists
-        displayPosts[displayPosts.length - 1]!.id
-      : undefined;
+  const [navData, totalCount, posts, availableYears, allCollections] =
+    await Promise.all([
+      getNavigationData(c),
+      services.posts.count(filters),
+      services.posts.list({
+        ...filters,
+        limit: PAGE_SIZE,
+        offset: (currentPage - 1) * PAGE_SIZE,
+      }),
+      services.posts.getDistinctYears({
+        status: "published",
+        excludeReplies: true,
+      }),
+      services.collections.list(),
+    ]);
 
-  // Group posts by year-month
-  const grouped = new Map<string, typeof displayPosts>();
-  for (const post of displayPosts) {
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  // --- Batch-load media for posts -------------------------------------------
+
+  const postIds = posts.map((p) => p.id);
+  const rawMediaMap = await services.media.getByPostIds(postIds);
+  const mediaCtx = createMediaContext(appConfig);
+  const mediaMap = buildMediaMap(
+    rawMediaMap,
+    mediaCtx.r2PublicUrl,
+    mediaCtx.imageTransformUrl,
+    mediaCtx.s3PublicUrl,
+  );
+
+  // --- Group posts by year-month with media ---------------------------------
+
+  const grouped = new Map<string, PostWithMedia[]>();
+  for (const post of posts) {
     const date = new Date(post.publishedAt * 1000);
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     if (!grouped.has(key)) {
       grouped.set(key, []);
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Map.set() above guarantees key exists
-    grouped.get(key)!.push(post);
+    grouped.get(key)!.push({
+      ...post,
+      mediaAttachments: mediaMap.get(post.id) ?? [],
+    });
   }
 
-  // Transform to View Models
-  const mediaCtx = createMediaContext(c.var.appConfig);
-  const groups = toArchiveGroups(grouped, mediaCtx);
+  const groups = toArchiveGroupsWithMedia(grouped, mediaCtx);
+
+  // --- Build active filter state for UI -------------------------------------
+
+  const archiveFilters: ArchiveFilters = {
+    year: validYear,
+    collectionSlug,
+    collectionTitle: collection?.title,
+    format,
+    mediaTypes: mediaTypes && mediaTypes.length > 0 ? mediaTypes : undefined,
+    hasTitle,
+  };
+
+  const availableCollectionsList = allCollections.map((col) => ({
+    slug: col.slug,
+    title: col.title,
+  }));
 
   return renderPublicPage(c, {
     title: `Archive - ${navData.siteName}`,
@@ -78,10 +157,11 @@ archiveRoutes.get("/", async (c) => {
     content: (
       <ArchivePage
         groups={groups}
-        hasMore={hasMore}
-        nextCursor={nextCursor}
-        format={format}
-        visibility={visibility}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        filters={archiveFilters}
+        availableYears={availableYears}
+        availableCollections={availableCollectionsList}
       />
     ),
   });

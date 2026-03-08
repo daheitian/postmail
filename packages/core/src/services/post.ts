@@ -46,6 +46,14 @@ export interface PostFilters {
   excludeUnlisted?: boolean;
   includeDeleted?: boolean;
   threadId?: string;
+  /** Unix timestamp (inclusive) — only posts published at or after this time */
+  publishedAfter?: number;
+  /** Unix timestamp (exclusive) — only posts published before this time */
+  publishedBefore?: number;
+  /** MIME prefixes (e.g. ["image/", "video/"]). AND logic: post must have media matching every prefix. */
+  mediaTypes?: string[];
+  /** Filter by title presence */
+  hasTitle?: boolean;
   limit?: number;
   cursor?: string; // post id for cursor pagination (UUIDv7 sorts chronologically)
   offset?: number; // offset for page-based pagination
@@ -94,6 +102,8 @@ export interface PostService {
   getThreadTimelineContext(
     rootIds: string[],
   ): Promise<Map<string, ThreadTimelineContext>>;
+  /** Get distinct years that have published posts */
+  getDistinctYears(filters?: PostFilters): Promise<number[]>;
 }
 
 /** Check if an error (or any of its causes) is a SQLite UNIQUE constraint violation */
@@ -173,6 +183,28 @@ export function createPostService(
     }
     if (!filters.includeDeleted) {
       conditions.push(isNull(posts.deletedAt));
+    }
+    if (filters.publishedAfter !== undefined) {
+      conditions.push(sql`${posts.publishedAt} >= ${filters.publishedAfter}`);
+    }
+    if (filters.publishedBefore !== undefined) {
+      conditions.push(sql`${posts.publishedAt} < ${filters.publishedBefore}`);
+    }
+    if (filters.mediaTypes && filters.mediaTypes.length > 0) {
+      for (const prefix of filters.mediaTypes) {
+        conditions.push(
+          sql`${posts.id} IN (SELECT post_id FROM media WHERE mime_type LIKE ${prefix + "%"})`,
+        );
+      }
+    }
+    if (filters.hasTitle !== undefined) {
+      if (filters.hasTitle) {
+        conditions.push(
+          sql`${posts.title} IS NOT NULL AND ${posts.title} != ''`,
+        );
+      } else {
+        conditions.push(sql`(${posts.title} IS NULL OR ${posts.title} = '')`);
+      }
     }
 
     return conditions;
@@ -635,6 +667,23 @@ export function createPostService(
       }
 
       return result;
+    },
+
+    async getDistinctYears(filters = {}) {
+      const conditions = buildFilterConditions(filters);
+
+      const rows = await db
+        .select({
+          year: sql<string>`strftime('%Y', ${posts.publishedAt}, 'unixepoch')`.as(
+            "year",
+          ),
+        })
+        .from(posts)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .groupBy(sql`strftime('%Y', ${posts.publishedAt}, 'unixepoch')`)
+        .orderBy(desc(sql`strftime('%Y', ${posts.publishedAt}, 'unixepoch')`));
+
+      return rows.map((r) => parseInt(r.year, 10));
     },
   };
 }

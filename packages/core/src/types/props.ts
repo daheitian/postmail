@@ -2,7 +2,7 @@
  * Page-Level Props & Feed Data Types
  */
 
-import type { Format, Visibility } from "./constants.js";
+import type { Format } from "./constants.js";
 import type { Collection } from "./entities.js";
 import type {
   PostView,
@@ -33,13 +33,24 @@ export interface FeaturedPageProps {
   items: TimelineItemView[];
 }
 
+/** Filters currently active on the archive page */
+export interface ArchiveFilters {
+  year?: number;
+  collectionSlug?: string;
+  collectionTitle?: string;
+  format?: Format;
+  mediaTypes?: string[];
+  hasTitle?: boolean;
+}
+
 /** Props for the archive page component */
 export interface ArchivePageProps {
   groups: ArchiveGroup[];
-  hasMore: boolean;
-  nextCursor?: string;
-  format?: Format;
-  visibility?: Visibility;
+  currentPage: number;
+  totalPages: number;
+  filters: ArchiveFilters;
+  availableYears: number[];
+  availableCollections: { slug: string; title: string }[];
 }
 
 /** Props for the search page component */

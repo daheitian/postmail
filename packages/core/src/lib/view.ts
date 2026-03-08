@@ -412,3 +412,36 @@ export function toArchiveGroups(
   }
   return groups;
 }
+
+/**
+ * Converts a grouped PostWithMedia map to typed ArchiveGroup[].
+ * Unlike toArchiveGroups, this preserves media attachments on each post.
+ *
+ * @param grouped - Map of "YYYY-MM" keys to PostWithMedia arrays
+ * @param ctx - Media context for URL computation
+ * @returns ArchiveGroup[] with full media data on each PostView
+ */
+export function toArchiveGroupsWithMedia(
+  grouped: Map<string, PostWithMedia[]>,
+  ctx: MediaContext,
+): ArchiveGroup[] {
+  const groups: ArchiveGroup[] = [];
+  for (const [yearMonth, posts] of grouped) {
+    const [year, month] = yearMonth.split("-");
+    if (!year || !month) continue;
+
+    const date = new Date(parseInt(year, 10), parseInt(month, 10) - 1);
+    const label = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+    });
+
+    groups.push({
+      year,
+      month,
+      label,
+      posts: toPostViews(posts, ctx),
+    });
+  }
+  return groups;
+}

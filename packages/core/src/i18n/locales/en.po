@@ -186,6 +186,11 @@ msgstr "All"
 msgid "all available endpoints and request formats."
 msgstr "all available endpoints and request formats."
 
+#. @context: Archive filter - collection dropdown default
+#: src/ui/pages/ArchivePage.tsx
+msgid "All collections"
+msgstr "All collections"
+
 #. @context: Message when no pages available to add
 #: src/ui/dash/appearance/NavigationContent.tsx
 #~ msgid "All pages are already in navigation."
@@ -200,6 +205,11 @@ msgstr "all available endpoints and request formats."
 #: src/ui/dash/pages/UnifiedPagesContent.tsx
 #~ msgid "All pages are in your navigation."
 #~ msgstr "All pages are in your navigation."
+
+#. @context: Archive filter - year dropdown default
+#: src/ui/pages/ArchivePage.tsx
+msgid "All years"
+msgstr "All years"
 
 #. @context: Hint text in alt text panel
 #: src/ui/compose/ComposeDialog.tsx
@@ -271,6 +281,11 @@ msgstr "Archive"
 #: src/ui/compose/ComposeDialog.tsx
 #~ msgid "Attached Text"
 #~ msgstr "Attached Text"
+
+#. @context: Archive media filter - audio
+#: src/ui/pages/ArchivePage.tsx
+msgid "Audio"
+msgstr "Audio"
 
 #. @context: Error toast when authentication system is unavailable
 #: src/routes/auth/signin.tsx
@@ -410,6 +425,11 @@ msgstr "Choose a new password."
 #: src/ui/shared/CollectionsSidebar.tsx
 #~ msgid "Choose Icon"
 #~ msgstr "Choose Icon"
+
+#. @context: Archive filter - clear all filters
+#: src/ui/pages/ArchivePage.tsx
+msgid "Clear"
+msgstr "Clear"
 
 #. @context: Hint to click image for lightbox
 #: src/ui/dash/media/ViewMediaContent.tsx
@@ -960,7 +980,6 @@ msgstr "entry"
 msgid "Favicon and header icon"
 msgstr "Favicon and header icon"
 
-#. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
 #. @context: Browse filter label
 #. @context: Browse filter label
@@ -971,7 +990,6 @@ msgstr "Favicon and header icon"
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
-#: src/ui/pages/ArchivePage.tsx
 msgid "Featured"
 msgstr "Featured"
 
@@ -986,6 +1004,11 @@ msgstr "File storage isn't set up. Check your server config."
 #: src/routes/api/upload.ts
 msgid "File uploaded."
 msgstr "File uploaded."
+
+#. @context: Archive media filter - files/documents
+#: src/ui/pages/ArchivePage.tsx
+msgid "Files"
+msgstr "Files"
 
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -1047,6 +1070,11 @@ msgstr "Generate Token"
 msgid "Give it a title..."
 msgstr "Give it a title..."
 
+#. @context: Archive filter - notes with title
+#: src/ui/pages/ArchivePage.tsx
+#~ msgid "Has title"
+#~ msgstr "Has title"
+
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Header links, featured"
@@ -1095,10 +1123,10 @@ msgstr "Icons"
 #~ msgid "Image"
 #~ msgstr "Image"
 
-#. @context: Post type label plural - images
-#: src/themes/threads/pages/ArchivePage.tsx
-#~ msgid "Images"
-#~ msgstr "Images"
+#. @context: Archive media filter - images
+#: src/ui/pages/ArchivePage.tsx
+msgid "Images"
+msgstr "Images"
 
 #. @context: Media upload instructions - auto optimization
 #: src/ui/dash/media/MediaListContent.tsx
@@ -1541,10 +1569,15 @@ msgstr "No navigation items yet. Add links or enable system items below."
 #~ msgid "No posts in this collection."
 #~ msgstr "No posts in this collection."
 
+#. @context: Archive empty state with filters
+#: src/ui/pages/ArchivePage.tsx
+msgid "No posts match these filters. Try adjusting your selection or clear all filters."
+msgstr "No posts match these filters. Try adjusting your selection or clear all filters."
+
 #. @context: Archive empty state
 #: src/ui/pages/ArchivePage.tsx
-msgid "No posts match this filter."
-msgstr "No posts match this filter."
+#~ msgid "No posts match this filter."
+#~ msgstr "No posts match this filter."
 
 #. @context: Empty state message on home page
 #: src/ui/pages/HomePage.tsx
@@ -1570,6 +1603,11 @@ msgstr "No posts match this filter."
 #: src/ui/pages/SearchPage.tsx
 msgid "No results. Try different keywords."
 msgstr "No results. Try different keywords."
+
+#. @context: Archive filter - notes without title
+#: src/ui/pages/ArchivePage.tsx
+#~ msgid "No title"
+#~ msgstr "No title"
 
 #. @context: No rating selected
 #: src/ui/compose/ComposeDialog.tsx
@@ -2410,6 +2448,11 @@ msgstr "Title"
 #~ msgid "Title (optional)"
 #~ msgstr "Title (optional)"
 
+#. @context: Archive filter - notes that have a title
+#: src/ui/pages/ArchivePage.tsx
+msgid "Titled"
+msgstr "Titled"
+
 #. @context: Redirect form field
 #: src/routes/dash/redirects.tsx
 #~ msgid "To Path"
@@ -2465,10 +2508,10 @@ msgstr "Typography"
 msgid "Unlisted"
 msgstr "Unlisted"
 
-#. @context: Default title for untitled post
-#: src/ui/dash/PostList.tsx
-#~ msgid "Untitled"
-#~ msgstr "Untitled"
+#. @context: Archive filter - notes without a title
+#: src/ui/pages/ArchivePage.tsx
+msgid "Untitled"
+msgstr "Untitled"
 
 #. @context: Button to update existing post
 #: src/ui/dash/posts/PostForm.tsx
@@ -2565,6 +2608,11 @@ msgstr "Usage"
 #: src/ui/dash/media/ViewMediaContent.tsx
 #~ msgid "Use this URL to embed the media in your posts."
 #~ msgstr "Use this URL to embed the media in your posts."
+
+#. @context: Archive media filter - video
+#: src/ui/pages/ArchivePage.tsx
+msgid "Video"
+msgstr "Video"
 
 #. @context: Button to view item on public site
 #. @context: Toast action button to view the published post
