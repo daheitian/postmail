@@ -15,7 +15,7 @@ export interface Post {
   format: Format;
   status: Status;
   visibility: Visibility;
-  pinned: number; // 0 | 1
+  pinnedAt: number | null;
   slug: string;
   title: string | null;
   url: string | null;

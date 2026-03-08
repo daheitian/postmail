@@ -25,7 +25,7 @@ export const posts = sqliteTable("posts", {
   })
     .notNull()
     .default("public"),
-  pinned: integer("pinned").notNull().default(0),
+  pinnedAt: integer("pinned_at"),
   slug: text("slug").notNull().unique(),
   title: text("title"),
   url: text("url"),

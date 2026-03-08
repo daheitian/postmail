@@ -183,6 +183,13 @@
       "when": 1773100800000,
       "tag": "0025_sidebar_items",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "6",
+      "when": 1772963702810,
+      "tag": "0026_equal_vapor",
+      "breakpoints": true
     }
   ]
 }

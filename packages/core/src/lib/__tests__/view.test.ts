@@ -43,7 +43,7 @@ function makePost(overrides: Partial<Post> = {}): Post {
     format: "note",
     status: "published",
     visibility: "public" as const,
-    pinned: 0,
+    pinnedAt: null,
     slug: "test-post",
     title: null,
     url: null,
@@ -245,7 +245,7 @@ describe("toPostView", () => {
         format: "link",
         status: "draft",
         visibility: "featured",
-        pinned: 1,
+        pinnedAt: 1706745600,
       }),
       EMPTY_CTX,
     );
@@ -255,11 +255,11 @@ describe("toPostView", () => {
     expect(view.pinned).toBe(true);
   });
 
-  it("maps default visibility and pinned=0", () => {
+  it("maps default visibility and pinnedAt=null", () => {
     const view = toPostView(
       makePostWithMedia({
         visibility: "public",
-        pinned: 0,
+        pinnedAt: null,
       }),
       EMPTY_CTX,
     );
@@ -537,7 +537,7 @@ describe("toSearchResultView", () => {
         format: "link",
         status: "published",
         visibility: "featured",
-        pinned: 0,
+        pinnedAt: null,
         url: "https://example.com",
         slug: "my-link",
       }),

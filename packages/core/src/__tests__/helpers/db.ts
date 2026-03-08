@@ -256,6 +256,29 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0025: sidebar_items + fractional indexing
   applyMigration(sqlite, "0025_sidebar_items.sql");
 
+  // Apply 0026: rename pinned → pinned_at (nullable timestamp)
+  // This migration rebuilds the posts table (DROP + RENAME), which implicitly
+  // drops FTS triggers attached to the old table. Recreate them if needed.
+  applyMigration(sqlite, "0026_equal_vapor.sql");
+  if (options?.fts) {
+    sqlite.exec(`
+      CREATE TRIGGER IF NOT EXISTS posts_ai AFTER INSERT ON posts BEGIN
+        INSERT INTO posts_fts(rowid, title, body_text, quote_text, url)
+        VALUES (new.rowid, new.title, new.body_text, new.quote_text, new.url);
+      END;
+      CREATE TRIGGER IF NOT EXISTS posts_ad AFTER DELETE ON posts BEGIN
+        INSERT INTO posts_fts(posts_fts, rowid, title, body_text, quote_text, url)
+        VALUES ('delete', old.rowid, old.title, old.body_text, old.quote_text, old.url);
+      END;
+      CREATE TRIGGER IF NOT EXISTS posts_au AFTER UPDATE ON posts BEGIN
+        INSERT INTO posts_fts(posts_fts, rowid, title, body_text, quote_text, url)
+        VALUES ('delete', old.rowid, old.title, old.body_text, old.quote_text, old.url);
+        INSERT INTO posts_fts(rowid, title, body_text, quote_text, url)
+        VALUES (new.rowid, new.title, new.body_text, new.quote_text, new.url);
+      END;
+    `);
+  }
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

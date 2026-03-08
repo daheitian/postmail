@@ -3,7 +3,7 @@
  *
  * CRUD operations for posts with Thread support.
  * Posts have format (note/link/quote), status (draft/published),
- * visibility (public/featured/unlisted), and pinned flag.
+ * visibility (public/featured/unlisted), and pinnedAt timestamp.
  */
 
 import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
@@ -150,7 +150,11 @@ export function createPostService(
       conditions.push(sql`${posts.visibility} != 'unlisted'`);
     }
     if (filters.pinned !== undefined) {
-      conditions.push(eq(posts.pinned, filters.pinned ? 1 : 0));
+      conditions.push(
+        filters.pinned
+          ? sql`${posts.pinnedAt} IS NOT NULL`
+          : isNull(posts.pinnedAt),
+      );
     }
     if (filters.format) {
       conditions.push(eq(posts.format, filters.format));
@@ -180,7 +184,7 @@ export function createPostService(
       format: row.format as Format,
       status: row.status as Status,
       visibility: row.visibility as Visibility,
-      pinned: row.pinned,
+      pinnedAt: row.pinnedAt,
       slug: row.slug,
       title: row.title,
       url: row.url,
@@ -229,7 +233,7 @@ export function createPostService(
         .select()
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(desc(posts.pinned), desc(posts.publishedAt), desc(posts.id))
+        .orderBy(desc(posts.pinnedAt), desc(posts.publishedAt), desc(posts.id))
         .limit(filters.limit ?? 100);
 
       if (filters.offset !== undefined) {
@@ -307,7 +311,7 @@ export function createPostService(
             format: data.format,
             status,
             visibility,
-            pinned: data.pinned ? 1 : 0,
+            pinnedAt: data.pinned ? timestamp : null,
             slug,
             title: data.title ?? null,
             url: data.url ?? null,
@@ -373,7 +377,8 @@ export function createPostService(
       if (data.rating !== undefined) updates.rating = data.rating;
       if (data.publishedAt !== undefined)
         updates.publishedAt = data.publishedAt;
-      if (data.pinned !== undefined) updates.pinned = data.pinned ? 1 : 0;
+      if (data.pinned !== undefined)
+        updates.pinnedAt = data.pinned ? now() : null;
 
       if (data.body !== undefined) {
         updates.body = data.body;
@@ -595,7 +600,7 @@ export function createPostService(
         .select()
         .from(posts)
         .where(and(inArray(posts.threadId, rootIds), isNull(posts.deletedAt)))
-        .orderBy(posts.threadId, desc(posts.createdAt));
+        .orderBy(posts.threadId, desc(posts.createdAt), desc(posts.id));
 
       // Group by threadId, extract latest reply + its parent + count
       const grouped = new Map<string, Post[]>();

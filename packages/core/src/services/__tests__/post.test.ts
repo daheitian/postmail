@@ -37,7 +37,7 @@ describe("PostService", () => {
       expect(post.body).toBe(body);
       expect(post.status).toBe("published"); // default
       expect(post.visibility).toBe("public");
-      expect(post.pinned).toBe(0);
+      expect(post.pinnedAt).toBeNull();
       expect(post.bodyHtml).toContain("<p>Hello world</p>");
       expect(post.deletedAt).toBeNull();
     });
@@ -74,7 +74,7 @@ describe("PostService", () => {
       expect(post.title).toBe("My Link");
       expect(post.status).toBe("published");
       expect(post.visibility).toBe("featured");
-      expect(post.pinned).toBe(1);
+      expect(post.pinnedAt).toBeTypeOf("number");
       expect(post.slug).toBe("my-link");
       expect(post.url).toBe("https://example.com/source");
       expect(post.quoteText).toBe("A notable quote");
@@ -362,12 +362,12 @@ describe("PostService", () => {
 
       const pinned = await postService.list({ pinned: true });
       expect(pinned).toHaveLength(1);
-      expect(pinned[0]?.pinned).toBe(1);
+      expect(pinned[0]?.pinnedAt).toBeTypeOf("number");
       expect(pinned[0]?.body).toBe("pinned post");
 
       const notPinned = await postService.list({ pinned: false });
       expect(notPinned).toHaveLength(1);
-      expect(notPinned[0]?.pinned).toBe(0);
+      expect(notPinned[0]?.pinnedAt).toBeNull();
       expect(notPinned[0]?.body).toBe("normal post");
     });
 
@@ -645,13 +645,13 @@ describe("PostService", () => {
         body: "test",
       });
 
-      expect(post.pinned).toBe(0);
+      expect(post.pinnedAt).toBeNull();
 
       const updated = await postService.update(post.id, {
         pinned: true,
       });
 
-      expect(updated?.pinned).toBe(1);
+      expect(updated?.pinnedAt).toBeTypeOf("number");
     });
 
     it("updates slug", async () => {
