@@ -14,6 +14,7 @@ declare module "sortablejs" {
   interface SortableOptions {
     animation?: number;
     handle?: string;
+    onStart?: (event: SortableEvent) => void;
     onEnd?: (event: SortableEvent) => void;
   }
 

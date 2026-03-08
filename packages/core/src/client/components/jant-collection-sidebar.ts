@@ -57,6 +57,7 @@ export class JantCollectionSidebar extends LitElement {
 
   #sortable: { destroy(): void } | null = null;
   #initialized = false;
+  #revertNextSibling: Node | null = null;
 
   #closeMoreMenu = () => {
     this._showMoreMenu = false;
@@ -148,6 +149,11 @@ export class JantCollectionSidebar extends LitElement {
     this.#sortable = Sortable.create(list, {
       animation: 150,
       handle: "[data-drag-handle]",
+      onStart: (evt) => {
+        // Capture the exact next sibling (including comment/marker nodes)
+        // so the DOM revert restores the element between the correct Lit markers.
+        this.#revertNextSibling = evt.item.nextSibling;
+      },
       onEnd: (evt) => {
         // Read new order from DOM BEFORE reverting
         const els = [
@@ -157,17 +163,21 @@ export class JantCollectionSidebar extends LitElement {
           .map((el) => el.dataset.sidebarItem)
           .filter((id): id is string => id !== undefined);
 
-        // Revert SortableJS DOM manipulation so Lit can re-render cleanly
+        // Revert SortableJS DOM manipulation so Lit can re-render cleanly.
+        // Use the captured nextSibling (which includes Lit's comment markers)
+        // to restore the element to its exact original position. Using
+        // list.children (element-only) would skip comment nodes and misalign
+        // Lit's internal template markers, leaving orphaned DOM nodes.
         const { item, oldIndex, newIndex } = evt;
         if (oldIndex != null && newIndex != null && oldIndex !== newIndex) {
           item.parentNode?.removeChild(item);
-          const children = list.children;
-          if (oldIndex >= children.length) {
-            list.appendChild(item);
+          if (this.#revertNextSibling) {
+            list.insertBefore(item, this.#revertNextSibling);
           } else {
-            list.insertBefore(item, children[oldIndex]);
+            list.appendChild(item);
           }
         }
+        this.#revertNextSibling = null;
 
         // Destroy sortable so it doesn't fight Lit's re-render
         this.#sortable?.destroy();
