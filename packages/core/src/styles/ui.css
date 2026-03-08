@@ -1676,10 +1676,24 @@
   }
 
   .compose-thread-line {
-    width: 1.5px;
+    position: relative;
+    width: 2px;
     flex-shrink: 0;
-    margin-left: 4px;
-    background: linear-gradient(to bottom, #c8c2b6, transparent);
+    margin-left: 5px;
+    background-color: var(--site-threadline);
+  }
+
+  /* Dot marker vertically centered on the parent post */
+  .compose-thread-line::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--site-threadline);
   }
 
   .compose-reply-context {
@@ -1737,7 +1751,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding-top: 4px;
+    padding: 4px 16px 0 35px;
     font-size: var(--text-xs);
     color: var(--site-text-secondary);
   }

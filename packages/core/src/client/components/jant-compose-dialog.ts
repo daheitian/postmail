@@ -1153,33 +1153,31 @@ export class JantComposeDialog extends LitElement {
     return html`
       <div class="compose-reply-wrapper">
         <div class="compose-thread-line"></div>
-        <div class="flex-1 min-w-0">
-          <div
-            class=${classMap({
-              "compose-reply-context": true,
-              expanded: isExpanded,
-            })}
-          >
-            <div class="compose-reply-context-body">
-              ${unsafeHTML(contentHtml)}
-            </div>
-            ${!isExpanded
-              ? html`<div class="compose-reply-fade"></div>`
-              : nothing}
+        <div
+          class=${classMap({
+            "compose-reply-context": true,
+            expanded: isExpanded,
+          })}
+        >
+          <div class="compose-reply-context-body">
+            ${unsafeHTML(contentHtml)}
           </div>
-          <div class="compose-reply-meta">
-            ${dateText ? html`<span>${dateText}</span><span>·</span>` : nothing}
-            <button
-              type="button"
-              class="compose-reply-toggle"
-              @click=${() => {
-                this._replyExpanded = !this._replyExpanded;
-              }}
-            >
-              ${isExpanded ? this.labels.showLess : this.labels.showMore}
-            </button>
-          </div>
+          ${!isExpanded
+            ? html`<div class="compose-reply-fade"></div>`
+            : nothing}
         </div>
+      </div>
+      <div class="compose-reply-meta">
+        ${dateText ? html`<span>${dateText}</span><span>·</span>` : nothing}
+        <button
+          type="button"
+          class="compose-reply-toggle"
+          @click=${() => {
+            this._replyExpanded = !this._replyExpanded;
+          }}
+        >
+          ${isExpanded ? this.labels.showLess : this.labels.showMore}
+        </button>
       </div>
     `;
   }
