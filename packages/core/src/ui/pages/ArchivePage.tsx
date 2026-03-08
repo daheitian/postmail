@@ -15,6 +15,7 @@ import type {
 import type { PostView } from "../../types/views.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { getIconSvg } from "../../lib/icons.js";
+import { toMediaKind } from "../../lib/upload.js";
 import { PagePagination } from "../shared/Pagination.js";
 
 // =============================================================================
@@ -425,19 +426,81 @@ const FilterBar: FC<{
 // =============================================================================
 
 /**
- * Determine tile variant based on post content:
- * - quote: centered italic text
- * - image: image fills tile (no text)
- * - mixed: image bg + text overlay
- * - text: plain text preview
+ * Determine tile variant based on post content and media.
+ *
+ * Background image priority:
+ * 1. First attachment is video → video poster/thumbnail as bg
+ * 2. Otherwise, if post has any image → first image as bg
+ * 3. No visual media → text-only
+ *
+ * Combined with quote format detection and text overlay logic.
  */
 function getTileVariant(post: PostView): "text" | "image" | "mixed" | "quote" {
+  const firstMedia = post.media[0];
+  const firstKind = firstMedia ? toMediaKind(firstMedia.mimeType) : undefined;
   const hasImage = post.media.some((m) => m.mimeType.startsWith("image/"));
 
-  if (post.format === "quote") return "quote";
-  if (hasImage && (post.title || post.excerpt)) return "mixed";
-  if (hasImage) return "image";
+  // Video first attachment → use poster as visual bg
+  const hasVisualBg =
+    firstKind === "video" && firstMedia
+      ? !!(firstMedia.posterUrl || firstMedia.thumbnailUrl)
+      : hasImage;
+
+  if (post.format === "quote") {
+    return hasVisualBg ? "mixed" : "quote";
+  }
+  if (hasVisualBg && (post.title || post.excerpt)) return "mixed";
+  if (hasVisualBg) return "image";
   return "text";
+}
+
+/**
+ * Resolve the background image URL for a tile.
+ *
+ * Priority:
+ * 1. First attachment is video → posterUrl or thumbnailUrl
+ * 2. Otherwise → first image attachment's thumbnailUrl
+ */
+function getTileBgImage(
+  post: PostView,
+): { url: string; alt: string } | undefined {
+  const firstMedia = post.media[0];
+  if (firstMedia) {
+    const firstKind = toMediaKind(firstMedia.mimeType);
+    if (firstKind === "video") {
+      const src = firstMedia.posterUrl ?? firstMedia.thumbnailUrl;
+      if (src) return { url: src, alt: firstMedia.altText ?? "" };
+    }
+  }
+  // Fallback: first image in media list
+  const firstImage = post.media.find((m) => m.mimeType.startsWith("image/"));
+  if (firstImage)
+    return { url: firstImage.thumbnailUrl, alt: firstImage.altText ?? "" };
+  return undefined;
+}
+
+/**
+ * Resolve a media-kind badge icon for the tile corner.
+ *
+ * - Video → circle-play (centered, large)
+ * - Audio/text/document (first attachment) → small corner icon
+ * - Image-only → no badge
+ */
+function getTileBadge(
+  post: PostView,
+): { icon: string; position: "center" | "corner" } | undefined {
+  const firstMedia = post.media[0];
+  if (!firstMedia) return undefined;
+  const kind = toMediaKind(firstMedia.mimeType);
+
+  if (kind === "video") return { icon: "circle-play", position: "center" };
+  if (kind === "audio")
+    return { icon: MEDIA_KIND_ICONS.audio, position: "corner" };
+  if (kind === "text")
+    return { icon: MEDIA_KIND_ICONS.text, position: "corner" };
+  if (kind === "document")
+    return { icon: MEDIA_KIND_ICONS.document, position: "corner" };
+  return undefined;
 }
 
 /** Strip HTML tags to get plain text for tile previews. */
@@ -445,21 +508,32 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
 }
 
-function getTileText(post: PostView): string {
-  if (post.title) return post.title;
-  if (post.format === "quote" && post.quoteText) return post.quoteText;
+function getTileText(post: PostView): { title?: string; summary: string } {
+  if (post.title) {
+    // Titled note: show title + body summary
+    const summary = post.bodyHtml
+      ? stripHtml(post.bodyHtml).slice(0, 200)
+      : (post.url ?? "");
+    return { title: post.title, summary };
+  }
+  if (post.format === "quote" && post.quoteText)
+    return { summary: post.quoteText };
   // bodyHtml is rendered HTML; strip tags for a readable plain-text preview.
   // Avoid post.excerpt which is derived from raw Tiptap JSON.
-  if (post.bodyHtml) return stripHtml(post.bodyHtml).slice(0, 200);
-  if (post.url) return post.url;
-  return getFormatLabel(post.format);
+  if (post.bodyHtml) return { summary: stripHtml(post.bodyHtml).slice(0, 200) };
+  if (post.url) return { summary: post.url };
+  return { summary: getFormatLabel(post.format) };
 }
 
 const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
   const variant = getTileVariant(post);
-  const firstImage = post.media.find((m) => m.mimeType.startsWith("image/"));
-  const text = getTileText(post);
+  const bgImage = getTileBgImage(post);
+  const badge = getTileBadge(post);
+  const { title, summary } = getTileText(post);
   const formatLabel = getFormatLabel(post.format);
+  const hasBg = variant === "image" || variant === "mixed";
+  const cornerBadge = badge?.position === "corner" ? badge : undefined;
+  const hasContent = variant !== "image" || cornerBadge;
 
   return (
     <a
@@ -470,21 +544,42 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
       data-post
       data-format={post.format}
     >
-      {/* Background image for image/mixed tiles */}
-      {firstImage && (variant === "image" || variant === "mixed") && (
+      {/* Background image (from image or video poster) */}
+      {bgImage && hasBg && (
         <img
           class="archive-tile-bg"
-          src={firstImage.thumbnailUrl}
-          alt={firstImage.altText ?? ""}
+          src={bgImage.url}
+          alt={bgImage.alt}
           loading="lazy"
         />
       )}
 
-      {/* Text content */}
-      {variant !== "image" && (
+      {/* Content: title + summary + badge row */}
+      {hasContent && (
         <div class="archive-tile-content">
-          <span class="archive-tile-text-clamp">{text}</span>
+          {variant !== "image" && title && (
+            <span class="archive-tile-title">{title}</span>
+          )}
+          {variant !== "image" && summary && (
+            <span class="archive-tile-summary">{summary}</span>
+          )}
+          {cornerBadge && (
+            <span
+              class="archive-tile-badge-row"
+              dangerouslySetInnerHTML={{
+                __html: getIconSvg(cornerBadge.icon) ?? "",
+              }}
+            />
+          )}
         </div>
+      )}
+
+      {/* Centered video play overlay */}
+      {badge?.position === "center" && (
+        <span
+          class="archive-tile-badge archive-tile-badge-center"
+          dangerouslySetInnerHTML={{ __html: getIconSvg(badge.icon) ?? "" }}
+        />
       )}
 
       {/* Hover overlay: date + format */}

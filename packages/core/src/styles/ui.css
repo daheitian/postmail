@@ -3619,6 +3619,53 @@
     opacity: 0.75;
   }
 
+  /* Centered video play overlay */
+  .archive-tile-badge {
+    position: absolute;
+    z-index: 1;
+    line-height: 0;
+    pointer-events: none;
+  }
+
+  .archive-tile-badge > svg {
+    display: block;
+  }
+
+  .archive-tile-badge-center {
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.5));
+  }
+
+  .archive-tile-badge-center > svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Badge row pinned to bottom of content */
+  .archive-tile-badge-row {
+    flex-shrink: 0;
+    margin-top: auto;
+    line-height: 0;
+    color: var(--muted-foreground);
+  }
+
+  .archive-tile-badge-row > svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Badge row on image-bg tiles: white */
+  .archive-tile-mixed .archive-tile-badge-row,
+  .archive-tile-image .archive-tile-badge-row {
+    position: relative;
+    color: rgba(255, 255, 255, 0.8);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  }
+
   .archive-tile-bg {
     position: absolute;
     inset: 0;
@@ -3637,30 +3684,65 @@
     overflow: hidden;
   }
 
-  .archive-tile-text-clamp {
+  .archive-tile-title {
     display: -webkit-box;
-    -webkit-line-clamp: 5;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: var(--fw-semibold);
+    line-height: 1.4;
+    margin-bottom: 2px;
+  }
+
+  .archive-tile-summary {
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
     font-size: 0.75rem;
     line-height: 1.45;
+    mask-image: linear-gradient(
+      to bottom,
+      #000 calc(100% - 1.2em),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 calc(100% - 1.2em),
+      transparent
+    );
   }
+
+  /* Muted summary when title is present */
+  .archive-tile-title + .archive-tile-summary {
+    color: var(--muted-foreground);
+  }
+
+  /* --- Text tile ---------------------------------------------------------- */
 
   .archive-tile-text .archive-tile-content {
     justify-content: flex-start;
     padding: 12px;
   }
 
-  .archive-tile-text .archive-tile-text-clamp {
+  .archive-tile-text .archive-tile-title {
     color: var(--site-text-primary);
   }
 
-  /* Image tile: image fills tile, no text */
-  .archive-tile-image .archive-tile-content {
-    padding: 0;
+  .archive-tile-text .archive-tile-summary {
+    color: var(--site-text-primary);
   }
 
-  /* Mixed tile: image bg + gradient + white text */
+  /* --- Image tile: badge row only, pinned to bottom ----------------------- */
+
+  .archive-tile-image .archive-tile-content {
+    justify-content: flex-end;
+    padding: 8px;
+  }
+
+  /* --- Mixed tile: image bg + gradient + white text ----------------------- */
+
   .archive-tile-mixed .archive-tile-content::before {
     content: "";
     position: absolute;
@@ -3673,13 +3755,26 @@
     pointer-events: none;
   }
 
-  .archive-tile-mixed .archive-tile-text-clamp {
+  .archive-tile-mixed .archive-tile-title,
+  .archive-tile-mixed .archive-tile-summary {
     position: relative;
     color: #fff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    /* Override flex-fill: fixed 2 lines on image bg */
+    flex: none;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 
-  /* Quote tile: centered italic text */
+  .archive-tile-mixed .archive-tile-title + .archive-tile-summary {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* --- Quote tile: centered italic text ----------------------------------- */
+
   .archive-tile-quote .archive-tile-content {
     justify-content: center;
     align-items: center;
@@ -3687,11 +3782,11 @@
     padding: 14px;
   }
 
-  .archive-tile-quote .archive-tile-text-clamp {
+  .archive-tile-quote .archive-tile-summary {
+    flex: unset;
     font-style: italic;
     font-family: var(--font-heading);
     color: var(--site-text-primary);
-    -webkit-line-clamp: 4;
   }
 
   /* --- Month header in grid ------------------------------------------------ */
