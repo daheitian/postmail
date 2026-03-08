@@ -3,7 +3,7 @@
  */
 
 export interface NavManagerItem {
-  id: number;
+  id: string;
   type: "link" | "system";
   label: string;
   url: string;
@@ -50,11 +50,11 @@ export interface NavManagerLabels {
 }
 
 export interface NavManagerUpdateDetail {
-  id: number;
+  id: string;
   label: string;
   url?: string;
 }
 
 export interface NavManagerDeleteDetail {
-  id: number;
+  id: string;
 }

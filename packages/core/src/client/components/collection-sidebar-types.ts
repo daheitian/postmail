@@ -25,21 +25,19 @@ export interface CollectionSidebarLabels {
 }
 
 export interface SidebarCollection {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   description: string | null;
   icon: string | null;
   sortOrder: string;
-  position: number;
   postCount: number;
 }
 
-export interface SidebarDivider {
-  id: number;
-  position: number;
+export interface ClientSidebarItem {
+  id: string;
+  type: "collection" | "divider";
+  collectionId: string | null;
+  position: string;
+  collection?: SidebarCollection;
 }
-
-export type SidebarItem =
-  | { kind: "collection"; data: SidebarCollection }
-  | { kind: "divider"; data: SidebarDivider };

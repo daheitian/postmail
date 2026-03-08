@@ -253,6 +253,9 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   // Apply 0024: add api_tokens table
   applyMigration(sqlite, "0024_silky_franklin_richards.sql");
 
+  // Apply 0025: sidebar_items + fractional indexing
+  applyMigration(sqlite, "0025_sidebar_items.sql");
+
   const db = drizzle(sqlite, { schema });
 
   // Polyfill D1 batch() for test compatibility.

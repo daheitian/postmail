@@ -47,14 +47,14 @@ export interface CreateNavItem {
   type: NavItemType;
   label: string;
   url: string;
-  position?: number;
+  position?: string;
 }
 
 export interface UpdateNavItem {
   type?: NavItemType;
   label?: string;
   url?: string;
-  position?: number;
+  position?: string;
 }
 
 export interface CreateCollection {
@@ -63,7 +63,6 @@ export interface CreateCollection {
   description?: string;
   icon?: string;
   sortOrder?: SortOrder;
-  position?: number;
 }
 
 export interface UpdateCollection {
@@ -72,5 +71,4 @@ export interface UpdateCollection {
   description?: string | null;
   icon?: string | null;
   sortOrder?: SortOrder;
-  position?: number;
 }

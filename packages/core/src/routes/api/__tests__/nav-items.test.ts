@@ -93,21 +93,8 @@ describe("Nav Items API Routes", () => {
     });
   });
 
-  describe("PUT /api/nav-items/reorder", () => {
-    it("returns 401 when not authenticated", async () => {
-      const { app } = createTestApp({ authenticated: false });
-      app.route("/api/nav-items", navItemsApiRoutes);
-
-      const res = await app.request("/api/nav-items/reorder", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: [1, 2] }),
-      });
-
-      expect(res.status).toBe(401);
-    });
-
-    it("reorders nav items when authenticated", async () => {
+  describe("PUT /api/nav-items/:id/move", () => {
+    it("moves a nav item between two others", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);
 
@@ -121,18 +108,44 @@ describe("Nav Items API Routes", () => {
         label: "Second",
         url: "/second",
       });
+      const item3 = await services.navItems.create({
+        type: "link",
+        label: "Third",
+        url: "/third",
+      });
 
-      // Reverse order (encode UUIDs to Base58 UIDs for the API)
-      const res = await app.request("/api/nav-items/reorder", {
+      // Move Third between First and Second
+      const res = await app.request(`/api/nav-items/${toUid(item3.id)}/move`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: [toUid(item2.id), toUid(item1.id)] }),
+        body: JSON.stringify({
+          after: toUid(item1.id),
+          before: toUid(item2.id),
+        }),
       });
 
       expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.navItems[0].label).toBe("Second");
-      expect(body.navItems[1].label).toBe("First");
+
+      const items = await services.navItems.list();
+      expect(items[0]?.label).toBe("First");
+      expect(items[1]?.label).toBe("Third");
+      expect(items[2]?.label).toBe("Second");
+    });
+
+    it("returns 404 for non-existent item", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const res = await app.request(
+        `/api/nav-items/${toUid("00000000-0000-0000-0000-000000009999")}/move`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ after: null, before: null }),
+        },
+      );
+
+      expect(res.status).toBe(404);
     });
   });
 

@@ -2,7 +2,7 @@
  * Collection Sidebar Component
  *
  * Manages collections in the public /c page sidebar for authenticated users:
- * - Renders collections + dividers as an interleaved sorted list
+ * - Renders sidebar items (collections + dividers) from a single pre-ordered list
  * - Dropdown menus for "More" (reorder, add divider) and per-collection edit
  * - SortableJS drag-and-drop reorder mode
  * - Create/edit collection dialogs embedding <jant-collection-form>
@@ -25,26 +25,12 @@ import type { CollectionSubmitDetail } from "./collection-types.js";
 import type {
   CollectionSidebarLabels,
   SidebarCollection,
-  SidebarDivider,
-  SidebarItem,
+  ClientSidebarItem,
 } from "./collection-sidebar-types.js";
-
-function interleaveItems(
-  collections: SidebarCollection[],
-  dividers: SidebarDivider[],
-): SidebarItem[] {
-  const items: SidebarItem[] = [
-    ...collections.map((c) => ({ kind: "collection", data: c }) as SidebarItem),
-    ...dividers.map((d) => ({ kind: "divider", data: d }) as SidebarItem),
-  ];
-  items.sort((a, b) => a.data.position - b.data.position);
-  return items;
-}
 
 export class JantCollectionSidebar extends LitElement {
   static properties = {
-    collections: { type: Array },
-    dividers: { type: Array },
+    "sidebar-items": { type: Array },
     labels: { type: Object },
     activeSlug: { type: String, attribute: "active-slug" },
 
@@ -57,18 +43,17 @@ export class JantCollectionSidebar extends LitElement {
     _showItemMenuId: { state: true },
   };
 
-  declare collections: SidebarCollection[];
-  declare dividers: SidebarDivider[];
+  declare "sidebar-items": ClientSidebarItem[];
   declare labels: CollectionSidebarLabels;
   declare activeSlug: string;
 
-  declare _items: SidebarItem[];
+  declare _items: ClientSidebarItem[];
   declare _reorderMode: boolean;
   declare _dialogMode: "create" | "edit" | null;
   declare _editingCollection: SidebarCollection | null;
   declare _showMoreMenu: boolean;
-  declare _hoveringId: number | null;
-  declare _showItemMenuId: number | null;
+  declare _hoveringId: string | null;
+  declare _showItemMenuId: string | null;
 
   #sortable: { destroy(): void } | null = null;
   #initialized = false;
@@ -90,8 +75,7 @@ export class JantCollectionSidebar extends LitElement {
 
   constructor() {
     super();
-    this.collections = [];
-    this.dividers = [];
+    this["sidebar-items"] = [];
     this.labels = {} as CollectionSidebarLabels;
     this.activeSlug = "";
 
@@ -109,13 +93,9 @@ export class JantCollectionSidebar extends LitElement {
   ): void {
     if (
       !this.#initialized ||
-      changedProperties.has("collections") ||
-      changedProperties.has("dividers")
+      changedProperties.has("sidebar-items" as keyof JantCollectionSidebar)
     ) {
-      this._items = interleaveItems(
-        this.collections ?? [],
-        this.dividers ?? [],
-      );
+      this._items = [...(this["sidebar-items"] ?? [])];
       this.#initialized = true;
     }
     super.update(changedProperties);
@@ -138,9 +118,20 @@ export class JantCollectionSidebar extends LitElement {
       const res = await fetch("/api/collections");
       if (!res.ok) return;
       const json = await res.json();
-      this.collections = json.collections;
-      this.dividers = json.dividers;
-      // update triggers via the `update` lifecycle
+
+      // Build collection lookup from response
+      const collectionMap = new Map<string, SidebarCollection>();
+      for (const col of json.collections) {
+        collectionMap.set(col.id, col);
+      }
+
+      // Map sidebar items, enriching with collection data
+      this._items = (json.sidebarItems as ClientSidebarItem[]).map((item) => ({
+        ...item,
+        collection: item.collectionId
+          ? collectionMap.get(item.collectionId)
+          : undefined,
+      }));
     } catch {
       // silent — stale list is acceptable
     }
@@ -162,7 +153,7 @@ export class JantCollectionSidebar extends LitElement {
         const els = [
           ...list.querySelectorAll<HTMLElement>("[data-sidebar-item]"),
         ];
-        const items = els
+        const orderedIds = els
           .map((el) => el.dataset.sidebarItem)
           .filter((id): id is string => id !== undefined);
 
@@ -182,31 +173,30 @@ export class JantCollectionSidebar extends LitElement {
         this.#sortable?.destroy();
         this.#sortable = null;
 
+        // Find the moved item
+        const movedId = newIndex != null ? orderedIds[newIndex] : undefined;
+        if (!movedId) return;
+
+        // Compute after/before neighbors
+        const movedIdx = orderedIds.indexOf(movedId);
+        const afterId = movedIdx > 0 ? orderedIds[movedIdx - 1] : null;
+        const beforeId =
+          movedIdx < orderedIds.length - 1 ? orderedIds[movedIdx + 1] : null;
+
         // Update internal state — rebuild items in new order
-        const collectionMap = new Map(
-          (this.collections ?? []).map((c) => [`c-${c.id}`, c]),
-        );
-        const dividerMap = new Map(
-          (this.dividers ?? []).map((d) => [`d-${d.id}`, d]),
-        );
+        const itemMap = new Map(this._items.map((i) => [i.id, i]));
+        this._items = orderedIds
+          .map((id) => itemMap.get(id))
+          .filter((i): i is ClientSidebarItem => i !== undefined);
 
-        const newItems: SidebarItem[] = [];
-        for (const prefixed of items) {
-          if (prefixed.startsWith("c-")) {
-            const col = collectionMap.get(prefixed);
-            if (col) newItems.push({ kind: "collection", data: col });
-          } else if (prefixed.startsWith("d-")) {
-            const div = dividerMap.get(prefixed);
-            if (div) newItems.push({ kind: "divider", data: div });
-          }
-        }
-        this._items = newItems;
-
-        // Persist to server
-        fetch("/api/collections/reorder", {
+        // Persist to server — single item move
+        fetch(`/api/collections/sidebar-items/${movedId}/move`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items }),
+          body: JSON.stringify({
+            after: afterId ?? null,
+            before: beforeId ?? null,
+          }),
         }).then((res) => {
           if (res.ok) showToast(this.labels.orderSaved);
           else showToast(this.labels.saveFailed, "error");
@@ -242,7 +232,7 @@ export class JantCollectionSidebar extends LitElement {
     this._showMoreMenu = false;
     document.removeEventListener("click", this.#closeMoreMenu);
     try {
-      const res = await fetch("/api/collections/dividers", {
+      const res = await fetch("/api/collections/sidebar-items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -253,16 +243,14 @@ export class JantCollectionSidebar extends LitElement {
     }
   }
 
-  async #deleteDivider(id: number) {
+  async #deleteDivider(id: string) {
     try {
-      const res = await fetch(`/api/collections/dividers/${id}`, {
+      const res = await fetch(`/api/collections/sidebar-items/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       // Remove locally for instant feedback
-      this._items = this._items.filter(
-        (item) => !(item.kind === "divider" && item.data.id === id),
-      );
+      this._items = this._items.filter((item) => item.id !== id);
     } catch {
       showToast(this.labels.saveFailed, "error");
     }
@@ -510,13 +498,16 @@ export class JantCollectionSidebar extends LitElement {
     `;
   }
 
-  #renderCollectionItem(col: SidebarCollection) {
+  #renderCollectionItem(item: ClientSidebarItem) {
+    const col = item.collection;
+    if (!col) return nothing;
+
     const isActive = col.slug === this.activeSlug;
 
     if (this._reorderMode) {
       return html`
         <div
-          data-sidebar-item="c-${col.id}"
+          data-sidebar-item="${item.id}"
           class="flex items-center gap-2 px-3 py-2 text-sm rounded-md"
         >
           <div class="cursor-grab text-muted-foreground" data-drag-handle>
@@ -551,16 +542,16 @@ export class JantCollectionSidebar extends LitElement {
 
     return html`
       <div
-        data-sidebar-item="c-${col.id}"
+        data-sidebar-item="${item.id}"
         class=${classMap({
           "group relative": true,
-          "z-50": this._showItemMenuId === col.id,
+          "z-50": this._showItemMenuId === item.id,
         })}
         @mouseenter=${() => {
-          this._hoveringId = col.id;
+          this._hoveringId = item.id;
         }}
         @mouseleave=${() => {
-          if (this._hoveringId === col.id) this._hoveringId = null;
+          if (this._hoveringId === item.id) this._hoveringId = null;
         }}
       >
         <a
@@ -579,15 +570,18 @@ export class JantCollectionSidebar extends LitElement {
           </span>
           <span class="truncate">${col.title}</span>
         </a>
-        ${this._hoveringId === col.id || this._showItemMenuId === col.id
-          ? this.#renderItemMenu(col)
+        ${this._hoveringId === item.id || this._showItemMenuId === item.id
+          ? this.#renderItemMenu(item)
           : nothing}
       </div>
     `;
   }
 
-  #renderItemMenu(col: SidebarCollection) {
-    const isOpen = this._showItemMenuId === col.id;
+  #renderItemMenu(item: ClientSidebarItem) {
+    const col = item.collection;
+    if (!col) return nothing;
+
+    const isOpen = this._showItemMenuId === item.id;
 
     return html`
       <div class="absolute right-1 top-1/2 -translate-y-1/2">
@@ -601,7 +595,7 @@ export class JantCollectionSidebar extends LitElement {
               this._showItemMenuId = null;
               document.removeEventListener("click", this.#closeItemMenu);
             } else {
-              this._showItemMenuId = col.id;
+              this._showItemMenuId = item.id;
               setTimeout(() => {
                 document.addEventListener("click", this.#closeItemMenu);
               });
@@ -651,11 +645,11 @@ export class JantCollectionSidebar extends LitElement {
     `;
   }
 
-  #renderDividerItem(div: SidebarDivider) {
+  #renderDividerItem(item: ClientSidebarItem) {
     if (this._reorderMode) {
       return html`
         <div
-          data-sidebar-item="d-${div.id}"
+          data-sidebar-item="${item.id}"
           class="flex items-center gap-2 px-3 py-1"
         >
           <div class="cursor-grab text-muted-foreground" data-drag-handle>
@@ -683,7 +677,7 @@ export class JantCollectionSidebar extends LitElement {
             type="button"
             class="flex items-center justify-center w-5 h-5 rounded-md text-muted-foreground hover:text-destructive"
             title=${this.labels.deleteDivider}
-            @click=${() => this.#deleteDivider(div.id)}
+            @click=${() => this.#deleteDivider(item.id)}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -705,7 +699,7 @@ export class JantCollectionSidebar extends LitElement {
     }
 
     return html`
-      <div data-sidebar-item="d-${div.id}" class="px-3 py-1">
+      <div data-sidebar-item="${item.id}" class="px-3 py-1">
         <hr class="border-border" />
       </div>
     `;
@@ -786,9 +780,9 @@ export class JantCollectionSidebar extends LitElement {
 
         <div id="sidebar-collections-list" class="flex flex-col">
           ${this._items.map((item) =>
-            item.kind === "collection"
-              ? this.#renderCollectionItem(item.data as SidebarCollection)
-              : this.#renderDividerItem(item.data as SidebarDivider),
+            item.type === "collection"
+              ? this.#renderCollectionItem(item)
+              : this.#renderDividerItem(item),
           )}
         </div>
 

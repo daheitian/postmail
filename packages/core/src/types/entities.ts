@@ -84,14 +84,17 @@ export interface Collection {
   description: string | null;
   icon: string | null;
   sortOrder: SortOrder;
-  position: number;
   createdAt: number;
   updatedAt: number;
 }
 
-export interface CollectionDivider {
+export type SidebarItemType = "collection" | "divider";
+
+export interface SidebarItem {
   id: string;
-  position: number;
+  type: SidebarItemType;
+  collectionId: string | null;
+  position: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -106,7 +109,7 @@ export interface NavItem {
   type: NavItemType;
   label: string;
   url: string;
-  position: number;
+  position: string;
   createdAt: number;
   updatedAt: number;
 }

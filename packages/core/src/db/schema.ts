@@ -84,18 +84,19 @@ export const collections = sqliteTable("collections", {
   })
     .notNull()
     .default("newest"),
-  position: integer("position").notNull().default(0),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
 
 // =============================================================================
-// Collection Dividers (standalone sortable separators)
+// Sidebar Items (unified ordering for collections + dividers)
 // =============================================================================
 
-export const collectionDividers = sqliteTable("collection_dividers", {
+export const sidebarItems = sqliteTable("sidebar_items", {
   id: text("id").primaryKey(),
-  position: integer("position").notNull().default(0),
+  type: text("type", { enum: ["collection", "divider"] }).notNull(),
+  collectionId: text("collection_id"),
+  position: text("position").notNull().default("a0"),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
@@ -122,7 +123,7 @@ export const navItems = sqliteTable("nav_items", {
     .default("link"),
   label: text("label").notNull(),
   url: text("url").notNull(),
-  position: integer("position").notNull().default(0),
+  position: text("position").notNull().default("a0"),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });

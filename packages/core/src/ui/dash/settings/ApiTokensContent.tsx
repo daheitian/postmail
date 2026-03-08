@@ -64,7 +64,7 @@ export function ApiTokensContent({
   return (
     <div
       class="flex flex-col gap-8 max-w-2xl"
-      data-signals="{tokenName: '', _tokenLoading: false, _newPlaintext: ''}"
+      data-signals="{tokenName: '', _tokenLoading: false, _newPlaintext: '', _tokenCopied: false}"
     >
       {/* New token alert — shown after creation via signal patch */}
       <div data-show="$_newPlaintext" style="display:none">
@@ -75,13 +75,26 @@ export function ApiTokensContent({
               comment: "@context: Warning to copy newly created API token",
             })}
           </strong>
-          <section>
-            <code
-              class="bg-muted px-3 py-2 rounded break-all select-all"
-              data-text="$_newPlaintext"
-            >
-              {" "}
-            </code>
+          <section class="mt-2">
+            <div class="flex items-center gap-2">
+              <code
+                class="bg-muted px-3 py-2 rounded break-all select-all flex-1 text-sm"
+                data-text="$_newPlaintext"
+              >
+                {" "}
+              </code>
+              <button
+                type="button"
+                class="btn-sm-outline shrink-0"
+                data-on:click="navigator.clipboard.writeText($_newPlaintext); $_tokenCopied = true"
+                data-text={`$_tokenCopied ? '${t({ message: "Copied", comment: "@context: Feedback after copying API token" })}' : '${t({ message: "Copy Token", comment: "@context: Button to copy API token to clipboard" })}'`}
+              >
+                {t({
+                  message: "Copy Token",
+                  comment: "@context: Button to copy API token to clipboard",
+                })}
+              </button>
+            </div>
           </section>
         </div>
       </div>

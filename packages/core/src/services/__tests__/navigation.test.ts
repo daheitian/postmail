@@ -24,13 +24,13 @@ describe("NavItemService", () => {
       expect(item.type).toBe("link");
       expect(item.label).toBe("Home");
       expect(item.url).toBe("/");
-      expect(item.position).toBe(0);
+      expect(typeof item.position).toBe("string");
       expect(typeof item.id).toBe("string");
       expect(item.id.length).toBeGreaterThan(0);
     });
 
     it("auto-increments position for subsequent items", async () => {
-      await navItemService.create({
+      const first = await navItemService.create({
         type: "link",
         label: "Home",
         url: "/",
@@ -41,7 +41,7 @@ describe("NavItemService", () => {
         url: "/archive",
       });
 
-      expect(second.position).toBe(1);
+      expect(second.position > first.position).toBe(true);
     });
 
     it("uses provided position when specified", async () => {
@@ -49,10 +49,10 @@ describe("NavItemService", () => {
         type: "link",
         label: "Home",
         url: "/",
-        position: 5,
+        position: "z99",
       });
 
-      expect(item.position).toBe(5);
+      expect(item.position).toBe("z99");
     });
 
     it("sets createdAt and updatedAt timestamps", async () => {
@@ -101,19 +101,19 @@ describe("NavItemService", () => {
         type: "link",
         label: "C",
         url: "/c",
-        position: 2,
+        position: "c0",
       });
       await navItemService.create({
         type: "link",
         label: "A",
         url: "/a",
-        position: 0,
+        position: "a0",
       });
       await navItemService.create({
         type: "link",
         label: "B",
         url: "/b",
-        position: 1,
+        position: "b0",
       });
 
       const items = await navItemService.list();
@@ -220,8 +220,8 @@ describe("NavItemService", () => {
     });
   });
 
-  describe("reorder", () => {
-    it("updates positions to match array order", async () => {
+  describe("move", () => {
+    it("moves an item between two others", async () => {
       const a = await navItemService.create({
         type: "link",
         label: "A",
@@ -238,16 +238,74 @@ describe("NavItemService", () => {
         url: "/c",
       });
 
-      // Reverse the order
-      await navItemService.reorder([c.id, b.id, a.id]);
+      // Move C between A and B
+      await navItemService.move(c.id, a.id, b.id);
+
+      const items = await navItemService.list();
+      expect(items[0]?.label).toBe("A");
+      expect(items[1]?.label).toBe("C");
+      expect(items[2]?.label).toBe("B");
+    });
+
+    it("moves an item to the beginning", async () => {
+      const a = await navItemService.create({
+        type: "link",
+        label: "A",
+        url: "/a",
+      });
+      await navItemService.create({
+        type: "link",
+        label: "B",
+        url: "/b",
+      });
+      const c = await navItemService.create({
+        type: "link",
+        label: "C",
+        url: "/c",
+      });
+
+      // Move C before A
+      await navItemService.move(c.id, null, a.id);
 
       const items = await navItemService.list();
       expect(items[0]?.label).toBe("C");
-      expect(items[0]?.position).toBe(0);
-      expect(items[1]?.label).toBe("B");
-      expect(items[1]?.position).toBe(1);
+      expect(items[1]?.label).toBe("A");
+      expect(items[2]?.label).toBe("B");
+    });
+
+    it("moves an item to the end", async () => {
+      const a = await navItemService.create({
+        type: "link",
+        label: "A",
+        url: "/a",
+      });
+      await navItemService.create({
+        type: "link",
+        label: "B",
+        url: "/b",
+      });
+      const c = await navItemService.create({
+        type: "link",
+        label: "C",
+        url: "/c",
+      });
+
+      // Move A after C
+      await navItemService.move(a.id, c.id, null);
+
+      const items = await navItemService.list();
+      expect(items[0]?.label).toBe("B");
+      expect(items[1]?.label).toBe("C");
       expect(items[2]?.label).toBe("A");
-      expect(items[2]?.position).toBe(2);
+    });
+
+    it("returns null for non-existent item", async () => {
+      const result = await navItemService.move(
+        "00000000-0000-0000-0000-000000009999",
+        null,
+        null,
+      );
+      expect(result).toBeNull();
     });
   });
 });

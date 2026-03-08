@@ -117,7 +117,6 @@ export const CreateNavItemSchema = z.object({
   type: NavItemTypeSchema,
   label: z.string().min(1),
   url: z.string().min(1),
-  position: z.coerce.number().int().min(0).optional(),
 });
 
 /**
@@ -143,7 +142,6 @@ export const CreateCollectionSchema = z.object({
   description: z.string().optional(),
   icon: z.string().optional(),
   sortOrder: SortOrderSchema.optional(),
-  position: z.coerce.number().int().min(0).optional(),
 });
 
 /**
@@ -221,17 +219,6 @@ export function normalizeSlug(s: string): string {
     .replace(/-{2,}/g, "-")
     .replace(/^-|-$/g, "");
 }
-
-// =============================================================================
-// Reorder Schemas
-// =============================================================================
-
-/**
- * Reorder request schema for simple ID-based reordering
- */
-export const ReorderSchema = z.object({
-  ids: z.array(z.string().min(1)),
-});
 
 // =============================================================================
 // Form Data Helpers

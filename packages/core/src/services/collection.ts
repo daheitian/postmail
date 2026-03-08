@@ -2,20 +2,19 @@
  * Collection Service (v2)
  *
  * Manages collections. Posts belong to collections via post_collections junction table (M:N).
+ * Sidebar ordering is managed through the sidebar_items table with fractional indexing.
  */
 
-import { eq, asc, sql, desc, and } from "drizzle-orm";
+import { eq, asc, sql, and } from "drizzle-orm";
+import { generateKeyBetween } from "fractional-indexing";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
-import {
-  collections,
-  collectionDividers,
-  postCollections,
-} from "../db/schema.js";
+import { collections, sidebarItems, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type {
   Collection,
-  CollectionDivider,
+  SidebarItem,
+  SidebarItemType,
   CreateCollection,
   UpdateCollection,
   SortOrder,
@@ -28,15 +27,21 @@ export interface CollectionService {
   create(data: CreateCollection): Promise<Collection>;
   update(id: string, data: UpdateCollection): Promise<Collection | null>;
   delete(id: string): Promise<boolean>;
-  reorder(ids: string[]): Promise<void>;
-  /** Reorder mixed collections and dividers using prefixed IDs (e.g. "c-<uuid>", "d-<uuid>") */
-  reorderAll(items: string[]): Promise<void>;
-  /** Create a standalone divider with auto-assigned position */
-  createDivider(): Promise<CollectionDivider>;
-  /** Delete a divider by ID */
-  deleteDivider(id: string): Promise<boolean>;
-  /** List all dividers ordered by position */
-  listDividers(): Promise<CollectionDivider[]>;
+  /** List all sidebar items ordered by position */
+  listSidebarItems(): Promise<SidebarItem[]>;
+  /** Create a sidebar item (collection or divider) */
+  createSidebarItem(
+    type: SidebarItemType,
+    collectionId?: string,
+  ): Promise<SidebarItem>;
+  /** Delete a sidebar item by ID */
+  deleteSidebarItem(id: string): Promise<boolean>;
+  /** Move a sidebar item between two neighbors */
+  moveSidebarItem(
+    id: string,
+    after: string | null,
+    before: string | null,
+  ): Promise<SidebarItem | null>;
   /** Get post count per collection */
   getPostCounts(): Promise<Map<string, number>>;
   /** Add a post to a collection */
@@ -60,21 +65,29 @@ export function createCollectionService(db: Database): CollectionService {
       description: row.description,
       icon: row.icon,
       sortOrder: row.sortOrder as SortOrder,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+
+  function toSidebarItem(row: typeof sidebarItems.$inferSelect): SidebarItem {
+    return {
+      id: row.id,
+      type: row.type as SidebarItemType,
+      collectionId: row.collectionId,
       position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
   }
 
-  function toDivider(
-    row: typeof collectionDividers.$inferSelect,
-  ): CollectionDivider {
-    return {
-      id: row.id,
-      position: row.position,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
+  async function getLastSidebarPosition(): Promise<string | null> {
+    const rows = await db
+      .select({ position: sidebarItems.position })
+      .from(sidebarItems)
+      .orderBy(sql`${sidebarItems.position} DESC`)
+      .limit(1);
+    return rows[0]?.position ?? null;
   }
 
   return {
@@ -100,22 +113,13 @@ export function createCollectionService(db: Database): CollectionService {
       const rows = await db
         .select()
         .from(collections)
-        .orderBy(asc(collections.position), desc(collections.createdAt));
+        .orderBy(asc(collections.createdAt));
       return rows.map(toCollection);
     },
 
     async create(data) {
       const id = uuidv7();
       const timestamp = now();
-
-      let position = data.position;
-      if (position === undefined) {
-        const result = await db.all<{ maxPos: number }>(
-          sql`SELECT COALESCE(MAX(pos), -1) AS maxPos FROM (SELECT position AS pos FROM ${collections} UNION ALL SELECT position AS pos FROM ${collectionDividers})`,
-        );
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- aggregate always returns one row
-        position = result[0]!.maxPos + 1;
-      }
 
       const result = await db
         .insert(collections)
@@ -126,11 +130,22 @@ export function createCollectionService(db: Database): CollectionService {
           description: data.description ?? null,
           icon: data.icon ?? null,
           sortOrder: data.sortOrder ?? "newest",
-          position,
           createdAt: timestamp,
           updatedAt: timestamp,
         })
         .returning();
+
+      // Auto-create a sidebar item for this collection
+      const lastPos = await getLastSidebarPosition();
+      const position = generateKeyBetween(lastPos, null);
+      await db.insert(sidebarItems).values({
+        id: uuidv7(),
+        type: "collection",
+        collectionId: id,
+        position,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
       return toCollection(result[0]!);
@@ -151,7 +166,6 @@ export function createCollectionService(db: Database): CollectionService {
         updates.description = data.description;
       if (data.icon !== undefined) updates.icon = data.icon;
       if (data.sortOrder !== undefined) updates.sortOrder = data.sortOrder;
-      if (data.position !== undefined) updates.position = data.position;
 
       const result = await db
         .update(collections)
@@ -167,6 +181,8 @@ export function createCollectionService(db: Database): CollectionService {
       await db
         .delete(postCollections)
         .where(eq(postCollections.collectionId, id));
+      // Clean up sidebar item for this collection
+      await db.delete(sidebarItems).where(eq(sidebarItems.collectionId, id));
       const result = await db
         .delete(collections)
         .where(eq(collections.id, id))
@@ -174,48 +190,27 @@ export function createCollectionService(db: Database): CollectionService {
       return result.length > 0;
     },
 
-    async reorder(ids) {
-      // Delegate to reorderAll with "c-" prefix for backward compat
-      await this.reorderAll(ids.map((id) => `c-${id}`));
+    async listSidebarItems() {
+      const rows = await db
+        .select()
+        .from(sidebarItems)
+        .orderBy(asc(sidebarItems.position));
+      return rows.map(toSidebarItem);
     },
 
-    async reorderAll(items) {
-      if (items.length === 0) return;
-      const timestamp = now();
-      const queries = items.map((item, i) => {
-        // Prefix is always a single char ("c" or "d"), followed by "-"
-        const prefix = item[0];
-        const id = item.slice(2);
-        if (prefix === "d") {
-          return db
-            .update(collectionDividers)
-            .set({ position: i, updatedAt: timestamp })
-            .where(eq(collectionDividers.id, id));
-        }
-        return db
-          .update(collections)
-          .set({ position: i, updatedAt: timestamp })
-          .where(eq(collections.id, id));
-      });
-      await db.batch(
-        queries as [(typeof queries)[number], ...(typeof queries)[number][]],
-      );
-    },
-
-    async createDivider() {
+    async createSidebarItem(type, collectionId) {
       const id = uuidv7();
       const timestamp = now();
 
-      const maxResult = await db.all<{ maxPos: number }>(
-        sql`SELECT COALESCE(MAX(pos), -1) AS maxPos FROM (SELECT position AS pos FROM ${collections} UNION ALL SELECT position AS pos FROM ${collectionDividers})`,
-      );
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- aggregate always returns one row
-      const position = maxResult[0]!.maxPos + 1;
+      const lastPos = await getLastSidebarPosition();
+      const position = generateKeyBetween(lastPos, null);
 
       const result = await db
-        .insert(collectionDividers)
+        .insert(sidebarItems)
         .values({
           id,
+          type,
+          collectionId: collectionId ?? null,
           position,
           createdAt: timestamp,
           updatedAt: timestamp,
@@ -223,23 +218,58 @@ export function createCollectionService(db: Database): CollectionService {
         .returning();
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toDivider(result[0]!);
+      return toSidebarItem(result[0]!);
     },
 
-    async deleteDivider(id) {
+    async deleteSidebarItem(id) {
       const result = await db
-        .delete(collectionDividers)
-        .where(eq(collectionDividers.id, id))
+        .delete(sidebarItems)
+        .where(eq(sidebarItems.id, id))
         .returning();
       return result.length > 0;
     },
 
-    async listDividers() {
-      const rows = await db
+    async moveSidebarItem(id, afterId, beforeId) {
+      // Look up the item
+      const items = await db
         .select()
-        .from(collectionDividers)
-        .orderBy(asc(collectionDividers.position));
-      return rows.map(toDivider);
+        .from(sidebarItems)
+        .where(eq(sidebarItems.id, id))
+        .limit(1);
+      if (!items[0]) return null;
+
+      // Look up neighbor positions
+      let afterPos: string | null = null;
+      let beforePos: string | null = null;
+
+      if (afterId) {
+        const afterRows = await db
+          .select({ position: sidebarItems.position })
+          .from(sidebarItems)
+          .where(eq(sidebarItems.id, afterId))
+          .limit(1);
+        afterPos = afterRows[0]?.position ?? null;
+      }
+
+      if (beforeId) {
+        const beforeRows = await db
+          .select({ position: sidebarItems.position })
+          .from(sidebarItems)
+          .where(eq(sidebarItems.id, beforeId))
+          .limit(1);
+        beforePos = beforeRows[0]?.position ?? null;
+      }
+
+      const newPosition = generateKeyBetween(afterPos, beforePos);
+      const timestamp = now();
+
+      const result = await db
+        .update(sidebarItems)
+        .set({ position: newPosition, updatedAt: timestamp })
+        .where(eq(sidebarItems.id, id))
+        .returning();
+
+      return result[0] ? toSidebarItem(result[0]) : null;
     },
 
     async getPostCounts() {
@@ -289,7 +319,7 @@ export function createCollectionService(db: Database): CollectionService {
           eq(postCollections.collectionId, collections.id),
         )
         .where(eq(postCollections.postId, postId))
-        .orderBy(asc(collections.position));
+        .orderBy(asc(collections.createdAt));
 
       return rows.map((r) => toCollection(r.collection));
     },

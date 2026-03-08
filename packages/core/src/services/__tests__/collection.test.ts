@@ -39,7 +39,6 @@ describe("CollectionService", () => {
         description: "Posts about technology",
         icon: "laptop",
         sortOrder: "oldest",
-        position: 5,
       });
 
       expect(collection.slug).toBe("tech");
@@ -47,7 +46,6 @@ describe("CollectionService", () => {
       expect(collection.description).toBe("Posts about technology");
       expect(collection.icon).toBe("laptop");
       expect(collection.sortOrder).toBe("oldest");
-      expect(collection.position).toBe(5);
     });
 
     it("sets timestamps", async () => {
@@ -60,23 +58,17 @@ describe("CollectionService", () => {
       expect(collection.updatedAt).toBeGreaterThan(0);
     });
 
-    it("auto-assigns position when not provided", async () => {
-      const first = await collectionService.create({
-        slug: "first",
-        title: "First",
-      });
-      const second = await collectionService.create({
-        slug: "second",
-        title: "Second",
-      });
-      const third = await collectionService.create({
-        slug: "third",
-        title: "Third",
+    it("auto-creates a sidebar item", async () => {
+      const collection = await collectionService.create({
+        slug: "test",
+        title: "Test",
       });
 
-      expect(first.position).toBe(0);
-      expect(second.position).toBe(1);
-      expect(third.position).toBe(2);
+      const sidebarItems = await collectionService.listSidebarItems();
+      expect(sidebarItems).toHaveLength(1);
+      expect(sidebarItems[0]?.type).toBe("collection");
+      expect(sidebarItems[0]?.collectionId).toBe(collection.id);
+      expect(typeof sidebarItems[0]?.position).toBe("string");
     });
   });
 
@@ -130,29 +122,6 @@ describe("CollectionService", () => {
 
       const list = await collectionService.list();
       expect(list).toHaveLength(3);
-    });
-
-    it("orders by position ASC, then createdAt DESC", async () => {
-      const a = await collectionService.create({
-        slug: "a",
-        title: "A",
-        position: 2,
-      });
-      const b = await collectionService.create({
-        slug: "b",
-        title: "B",
-        position: 0,
-      });
-      const c = await collectionService.create({
-        slug: "c",
-        title: "C",
-        position: 1,
-      });
-
-      const list = await collectionService.list();
-      expect(list[0]?.id).toBe(b.id);
-      expect(list[1]?.id).toBe(c.id);
-      expect(list[2]?.id).toBe(a.id);
     });
   });
 
@@ -214,7 +183,7 @@ describe("CollectionService", () => {
       expect(updated?.icon).toBeNull();
     });
 
-    it("updates icon, sortOrder, and position", async () => {
+    it("updates icon and sortOrder", async () => {
       const collection = await collectionService.create({
         slug: "test",
         title: "Test",
@@ -223,12 +192,10 @@ describe("CollectionService", () => {
       const updated = await collectionService.update(collection.id, {
         icon: "rocket",
         sortOrder: "rating_desc",
-        position: 10,
       });
 
       expect(updated?.icon).toBe("rocket");
       expect(updated?.sortOrder).toBe("rating_desc");
-      expect(updated?.position).toBe(10);
     });
 
     it("updates updatedAt timestamp", async () => {
@@ -294,6 +261,23 @@ describe("CollectionService", () => {
       expect(after).toHaveLength(0);
     });
 
+    it("removes sidebar item when collection is deleted", async () => {
+      const collection = await collectionService.create({
+        slug: "test",
+        title: "Test",
+      });
+
+      // Verify sidebar item exists
+      const before = await collectionService.listSidebarItems();
+      expect(before).toHaveLength(1);
+
+      await collectionService.delete(collection.id);
+
+      // Sidebar item should be gone
+      const after = await collectionService.listSidebarItems();
+      expect(after).toHaveLength(0);
+    });
+
     it("returns false for non-existent collection", async () => {
       const result = await collectionService.delete(
         "00000000-0000-0000-0000-000000009999",
@@ -302,52 +286,162 @@ describe("CollectionService", () => {
     });
   });
 
-  describe("reorder", () => {
-    it("updates positions based on array order", async () => {
-      const a = await collectionService.create({ slug: "a", title: "A" });
-      const b = await collectionService.create({ slug: "b", title: "B" });
-      const c = await collectionService.create({ slug: "c", title: "C" });
-
-      // Reverse the order: C, B, A
-      await collectionService.reorder([c.id, b.id, a.id]);
-
-      const reorderedC = await collectionService.getById(c.id);
-      const reorderedB = await collectionService.getById(b.id);
-      const reorderedA = await collectionService.getById(a.id);
-
-      expect(reorderedC?.position).toBe(0);
-      expect(reorderedB?.position).toBe(1);
-      expect(reorderedA?.position).toBe(2);
+  describe("listSidebarItems", () => {
+    it("returns empty array when no items exist", async () => {
+      const items = await collectionService.listSidebarItems();
+      expect(items).toEqual([]);
     });
 
-    it("updates updatedAt when reordering", async () => {
-      const a = await collectionService.create({ slug: "a", title: "A" });
-      const b = await collectionService.create({ slug: "b", title: "B" });
+    it("returns items ordered by position", async () => {
+      await collectionService.create({ slug: "first", title: "First" });
+      await collectionService.create({ slug: "second", title: "Second" });
 
-      await collectionService.reorder([b.id, a.id]);
-
-      const reorderedA = await collectionService.getById(a.id);
-      expect(reorderedA?.updatedAt).toBeGreaterThanOrEqual(a.updatedAt);
+      const items = await collectionService.listSidebarItems();
+      expect(items).toHaveLength(2);
+      expect(items[0]?.type).toBe("collection");
+      expect(items[1]?.type).toBe("collection");
+      // First created should come first (string comparison for fractional indexing)
+      const pos0 = items[0]?.position ?? "";
+      const pos1 = items[1]?.position ?? "";
+      expect(pos0 < pos1).toBe(true);
     });
 
-    it("handles empty array", async () => {
-      await collectionService.reorder([]);
-      // Should not throw
-      const list = await collectionService.list();
-      expect(list).toEqual([]);
+    it("includes dividers", async () => {
+      await collectionService.create({ slug: "a", title: "A" });
+      await collectionService.createSidebarItem("divider");
+      await collectionService.create({ slug: "b", title: "B" });
+
+      const items = await collectionService.listSidebarItems();
+      expect(items).toHaveLength(3);
+      expect(items[0]?.type).toBe("collection");
+      expect(items[1]?.type).toBe("divider");
+      expect(items[2]?.type).toBe("collection");
+    });
+  });
+
+  describe("createSidebarItem", () => {
+    it("creates a divider", async () => {
+      const item = await collectionService.createSidebarItem("divider");
+
+      expect(item.type).toBe("divider");
+      expect(item.collectionId).toBeNull();
+      expect(typeof item.position).toBe("string");
+      expect(item.createdAt).toBeGreaterThan(0);
     });
 
-    it("reflects new order in list()", async () => {
-      const a = await collectionService.create({ slug: "a", title: "A" });
-      const b = await collectionService.create({ slug: "b", title: "B" });
-      const c = await collectionService.create({ slug: "c", title: "C" });
+    it("creates items with incrementing positions", async () => {
+      const first = await collectionService.createSidebarItem("divider");
+      const second = await collectionService.createSidebarItem("divider");
 
-      await collectionService.reorder([c.id, a.id, b.id]);
+      expect(first.position < second.position).toBe(true);
+    });
+  });
 
-      const list = await collectionService.list();
-      expect(list[0]?.id).toBe(c.id);
-      expect(list[1]?.id).toBe(a.id);
-      expect(list[2]?.id).toBe(b.id);
+  describe("deleteSidebarItem", () => {
+    it("deletes a sidebar item", async () => {
+      const item = await collectionService.createSidebarItem("divider");
+      const result = await collectionService.deleteSidebarItem(item.id);
+      expect(result).toBe(true);
+
+      const items = await collectionService.listSidebarItems();
+      expect(items).toHaveLength(0);
+    });
+
+    it("returns false for non-existent item", async () => {
+      const result = await collectionService.deleteSidebarItem(
+        "00000000-0000-0000-0000-000000009999",
+      );
+      expect(result).toBe(false);
+    });
+  });
+
+  describe("moveSidebarItem", () => {
+    it("moves an item between two others", async () => {
+      const col1 = await collectionService.create({ slug: "a", title: "A" });
+      const col2 = await collectionService.create({ slug: "b", title: "B" });
+      const col3 = await collectionService.create({ slug: "c", title: "C" });
+
+      // Get sidebar items (A, B, C order)
+      const items = await collectionService.listSidebarItems();
+      expect(items).toHaveLength(3);
+      const itemA = items.find((i) => i.collectionId === col1.id);
+      const itemB = items.find((i) => i.collectionId === col2.id);
+      const itemC = items.find((i) => i.collectionId === col3.id);
+      expect(itemA).toBeDefined();
+      expect(itemB).toBeDefined();
+      expect(itemC).toBeDefined();
+
+      // Move C between A and B
+      const moved = await collectionService.moveSidebarItem(
+        itemC?.id ?? "",
+        itemA?.id ?? "",
+        itemB?.id ?? "",
+      );
+
+      expect(moved).not.toBeNull();
+
+      // Verify new order: A, C, B
+      const reordered = await collectionService.listSidebarItems();
+      expect(reordered[0]?.collectionId).toBe(col1.id);
+      expect(reordered[1]?.collectionId).toBe(col3.id);
+      expect(reordered[2]?.collectionId).toBe(col2.id);
+    });
+
+    it("moves an item to the beginning", async () => {
+      const col1 = await collectionService.create({ slug: "a", title: "A" });
+      const col2 = await collectionService.create({ slug: "b", title: "B" });
+      const col3 = await collectionService.create({ slug: "c", title: "C" });
+
+      const items = await collectionService.listSidebarItems();
+      const itemA = items.find((i) => i.collectionId === col1.id);
+      const itemC = items.find((i) => i.collectionId === col3.id);
+      expect(itemA).toBeDefined();
+      expect(itemC).toBeDefined();
+
+      // Move C to the beginning (before A, no after)
+      await collectionService.moveSidebarItem(
+        itemC?.id ?? "",
+        null,
+        itemA?.id ?? "",
+      );
+
+      const reordered = await collectionService.listSidebarItems();
+      expect(reordered[0]?.collectionId).toBe(col3.id);
+      expect(reordered[1]?.collectionId).toBe(col1.id);
+      expect(reordered[2]?.collectionId).toBe(col2.id);
+    });
+
+    it("moves an item to the end", async () => {
+      const col1 = await collectionService.create({ slug: "a", title: "A" });
+      const col2 = await collectionService.create({ slug: "b", title: "B" });
+      const col3 = await collectionService.create({ slug: "c", title: "C" });
+
+      const items = await collectionService.listSidebarItems();
+      const itemA = items.find((i) => i.collectionId === col1.id);
+      const itemC = items.find((i) => i.collectionId === col3.id);
+      expect(itemA).toBeDefined();
+      expect(itemC).toBeDefined();
+
+      // Move A to the end (after C, no before)
+      await collectionService.moveSidebarItem(
+        itemA?.id ?? "",
+        itemC?.id ?? "",
+        null,
+      );
+
+      const reordered = await collectionService.listSidebarItems();
+      expect(reordered[0]?.collectionId).toBe(col2.id);
+      expect(reordered[1]?.collectionId).toBe(col3.id);
+      expect(reordered[2]?.collectionId).toBe(col1.id);
+    });
+
+    it("returns null for non-existent item", async () => {
+      const result = await collectionService.moveSidebarItem(
+        "00000000-0000-0000-0000-000000009999",
+        null,
+        null,
+      );
+      expect(result).toBeNull();
     });
   });
 
@@ -486,31 +580,29 @@ describe("CollectionService", () => {
 
   describe("getCollectionsByPostId", () => {
     it("returns all collections a post belongs to", async () => {
-      const col1 = await collectionService.create({
+      await collectionService.create({
         slug: "col1",
         title: "Col 1",
-        position: 0,
       });
-      const col2 = await collectionService.create({
+      await collectionService.create({
         slug: "col2",
         title: "Col 2",
-        position: 1,
       });
 
+      const cols = await collectionService.list();
+      expect(cols).toHaveLength(2);
       const post = await postService.create({
         format: "note",
         body: "test",
       });
 
-      await collectionService.addPost(col1.id, post.id);
-      await collectionService.addPost(col2.id, post.id);
+      await collectionService.addPost(cols[0]?.id ?? "", post.id);
+      await collectionService.addPost(cols[1]?.id ?? "", post.id);
 
       const collections = await collectionService.getCollectionsByPostId(
         post.id,
       );
       expect(collections).toHaveLength(2);
-      expect(collections[0]?.slug).toBe("col1");
-      expect(collections[1]?.slug).toBe("col2");
     });
 
     it("returns empty array for post with no collections", async () => {
@@ -542,130 +634,6 @@ describe("CollectionService", () => {
       expect(ids).toHaveLength(2);
       expect(ids).toContain(p1.id);
       expect(ids).toContain(p2.id);
-    });
-  });
-
-  describe("createDivider", () => {
-    it("creates a divider with auto-assigned position", async () => {
-      const divider = await collectionService.createDivider();
-
-      expect(typeof divider.id).toBe("string");
-      expect(divider.id.length).toBeGreaterThan(0);
-      expect(divider.position).toBe(0);
-      expect(divider.createdAt).toBeGreaterThan(0);
-      expect(divider.updatedAt).toBeGreaterThan(0);
-    });
-
-    it("assigns position after existing collections", async () => {
-      await collectionService.create({ slug: "a", title: "A" }); // position 0
-      await collectionService.create({ slug: "b", title: "B" }); // position 1
-
-      const divider = await collectionService.createDivider();
-      expect(divider.position).toBe(2);
-    });
-
-    it("assigns position after existing dividers", async () => {
-      const d1 = await collectionService.createDivider(); // position 0
-      const d2 = await collectionService.createDivider(); // position 1
-
-      expect(d1.position).toBe(0);
-      expect(d2.position).toBe(1);
-    });
-
-    it("considers both collections and dividers for position", async () => {
-      await collectionService.create({ slug: "a", title: "A" }); // position 0
-      await collectionService.createDivider(); // position 1
-      await collectionService.create({ slug: "b", title: "B" }); // position 2
-
-      const divider = await collectionService.createDivider();
-      expect(divider.position).toBe(3);
-    });
-  });
-
-  describe("deleteDivider", () => {
-    it("deletes a divider by ID", async () => {
-      const divider = await collectionService.createDivider();
-
-      const result = await collectionService.deleteDivider(divider.id);
-      expect(result).toBe(true);
-
-      const list = await collectionService.listDividers();
-      expect(list).toHaveLength(0);
-    });
-
-    it("returns false for non-existent divider", async () => {
-      const result = await collectionService.deleteDivider(
-        "00000000-0000-0000-0000-000000009999",
-      );
-      expect(result).toBe(false);
-    });
-  });
-
-  describe("listDividers", () => {
-    it("returns empty array when no dividers exist", async () => {
-      const list = await collectionService.listDividers();
-      expect(list).toEqual([]);
-    });
-
-    it("returns dividers ordered by position", async () => {
-      const d1 = await collectionService.createDivider();
-      const d2 = await collectionService.createDivider();
-
-      const list = await collectionService.listDividers();
-      expect(list).toHaveLength(2);
-      expect(list[0]?.id).toBe(d1.id);
-      expect(list[1]?.id).toBe(d2.id);
-    });
-  });
-
-  describe("reorderAll", () => {
-    it("handles mixed prefixed IDs correctly", async () => {
-      const a = await collectionService.create({ slug: "a", title: "A" });
-      const b = await collectionService.create({ slug: "b", title: "B" });
-      const d1 = await collectionService.createDivider();
-
-      // Reorder: divider first, then B, then A
-      await collectionService.reorderAll([
-        `d-${d1.id}`,
-        `c-${b.id}`,
-        `c-${a.id}`,
-      ]);
-
-      const dividers = await collectionService.listDividers();
-      expect(dividers[0]?.position).toBe(0);
-
-      const colB = await collectionService.getById(b.id);
-      const colA = await collectionService.getById(a.id);
-      expect(colB?.position).toBe(1);
-      expect(colA?.position).toBe(2);
-    });
-
-    it("handles empty array", async () => {
-      await collectionService.reorderAll([]);
-      // Should not throw
-      const list = await collectionService.list();
-      expect(list).toEqual([]);
-    });
-
-    it("reflects new order in combined list", async () => {
-      const a = await collectionService.create({ slug: "a", title: "A" });
-      const d1 = await collectionService.createDivider();
-      const b = await collectionService.create({ slug: "b", title: "B" });
-
-      // Put divider between B and A
-      await collectionService.reorderAll([
-        `c-${b.id}`,
-        `d-${d1.id}`,
-        `c-${a.id}`,
-      ]);
-
-      const cols = await collectionService.list();
-      const divs = await collectionService.listDividers();
-
-      // B at position 0, divider at 1, A at 2
-      expect(cols.find((c) => c.id === b.id)?.position).toBe(0);
-      expect(divs[0]?.position).toBe(1);
-      expect(cols.find((c) => c.id === a.id)?.position).toBe(2);
     });
   });
 

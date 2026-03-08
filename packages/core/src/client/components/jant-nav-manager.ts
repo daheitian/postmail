@@ -53,7 +53,7 @@ export class JantNavManager extends LitElement {
   declare homeDefaultView: string;
 
   declare _items: NavManagerItem[];
-  declare _editingId: number | null;
+  declare _editingId: string | null;
   declare _editLabel: string;
   declare _editUrl: string;
   /** Keys currently mid-request (to disable switch during toggle) */
@@ -135,7 +135,9 @@ export class JantNavManager extends LitElement {
       onEnd: (evt) => {
         // Read new order from DOM BEFORE reverting
         const els = [...list.querySelectorAll<HTMLElement>("[data-nav-id]")];
-        const ids = els.map((el) => Number(el.dataset.navId));
+        const ids = els
+          .map((el) => el.dataset.navId)
+          .filter((id): id is string => id !== undefined);
 
         // Revert SortableJS DOM manipulation so Lit can re-render cleanly.
         // SortableJS physically moved the element — put it back where it was.
@@ -156,17 +158,28 @@ export class JantNavManager extends LitElement {
         this.#sortable?.destroy();
         this.#sortable = null;
 
+        // Find the moved item and compute neighbors
+        const movedId = newIndex != null ? ids[newIndex] : undefined;
+        if (!movedId) return;
+
+        const movedIdx = ids.indexOf(movedId);
+        const afterId = movedIdx > 0 ? ids[movedIdx - 1] : null;
+        const beforeId = movedIdx < ids.length - 1 ? ids[movedIdx + 1] : null;
+
         // Update internal state so Lit re-renders in the new order
         const itemMap = new Map(this._items.map((i) => [i.id, i]));
         this._items = ids
           .map((id) => itemMap.get(id))
           .filter((i): i is NavManagerItem => i !== undefined);
 
-        // Persist to server
-        fetch("/api/nav-items/reorder", {
+        // Persist to server — single item move
+        fetch(`/api/nav-items/${movedId}/move`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ids }),
+          body: JSON.stringify({
+            after: afterId ?? null,
+            before: beforeId ?? null,
+          }),
         }).then((res) => {
           if (res.ok) showToast(this.labels.orderSaved);
           else showToast(this.labels.saveFailed, "error");

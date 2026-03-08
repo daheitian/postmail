@@ -17,9 +17,9 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const collectionsPageRoutes = new Hono<Env>();
 
 collectionsPageRoutes.get("/", async (c) => {
-  const [allCollections, dividers, postCounts] = await Promise.all([
+  const [allCollections, sidebarItems, postCounts] = await Promise.all([
     c.var.services.collections.list(),
-    c.var.services.collections.listDividers(),
+    c.var.services.collections.listSidebarItems(),
     c.var.services.collections.getPostCounts(),
   ]);
 
@@ -36,7 +36,7 @@ collectionsPageRoutes.get("/", async (c) => {
     sidebar: (
       <CollectionsSidebar
         collections={allCollections}
-        dividers={dividers}
+        sidebarItems={sidebarItems}
         activeSlug={undefined}
         isAuthenticated={navData.isAuthenticated}
         postCounts={postCounts}

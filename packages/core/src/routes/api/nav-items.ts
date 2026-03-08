@@ -3,14 +3,11 @@
  */
 
 import { Hono } from "hono";
+import { z } from "zod";
 import type { Bindings, NavItemType } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import {
-  CreateNavItemSchema,
-  ReorderSchema,
-  parseValidated,
-} from "../../lib/schemas.js";
+import { CreateNavItemSchema, parseValidated } from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
 import { fromUid } from "../../lib/uid.js";
 
@@ -20,26 +17,31 @@ export const navItemsApiRoutes = new Hono<Env>();
 
 const UpdateNavItemSchema = CreateNavItemSchema.partial();
 
+const MoveSchema = z.object({
+  after: z.string().nullable().optional(),
+  before: z.string().nullable().optional(),
+});
+
 // List nav items
 navItemsApiRoutes.get("/", async (c) => {
   const items = await c.var.services.navItems.list();
   return c.json({ navItems: items });
 });
 
-// Reorder nav items (requires auth) — must be before /:id
-navItemsApiRoutes.put("/reorder", requireAuthApi(), async (c) => {
-  const body = parseValidated(ReorderSchema, await c.req.json());
+// Move nav item (requires auth) — must be before /:id
+navItemsApiRoutes.put("/:id/move", requireAuthApi(), async (c) => {
+  const id = parseIdParam(c.req.param("id"));
+  const body = parseValidated(MoveSchema, await c.req.json());
 
-  // Decode Base58 IDs to UUIDs
-  const decodedIds = body.ids.map((uid) => {
-    const uuid = fromUid(uid);
-    if (!uuid) throw new Error("Invalid ID in reorder");
-    return uuid;
-  });
+  const afterId = body.after ? fromUid(body.after) : null;
+  const beforeId = body.before ? fromUid(body.before) : null;
 
-  await c.var.services.navItems.reorder(decodedIds);
-  const items = await c.var.services.navItems.list();
-  return c.json({ navItems: items });
+  const item = assertFound(
+    await c.var.services.navItems.move(id, afterId ?? null, beforeId ?? null),
+    "Nav item",
+  );
+
+  return c.json(item);
 });
 
 // Create nav item (requires auth)
@@ -50,7 +52,6 @@ navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
     type: body.type as NavItemType,
     label: body.label,
     url: body.url,
-    position: body.position,
   });
 
   return c.json(item, 201);

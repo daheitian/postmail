@@ -14,9 +14,10 @@ describe("Collections API Routes", () => {
 
       const body = await res.json();
       expect(body.collections).toEqual([]);
+      expect(body.sidebarItems).toEqual([]);
     });
 
-    it("returns collections with post counts", async () => {
+    it("returns collections with post counts and sidebar items", async () => {
       const { app, services } = createTestApp();
       app.route("/api/collections", collectionsApiRoutes);
 
@@ -36,6 +37,10 @@ describe("Collections API Routes", () => {
       expect(body.collections).toHaveLength(1);
       expect(body.collections[0].slug).toBe("tech");
       expect(body.collections[0].postCount).toBe(1);
+
+      expect(body.sidebarItems).toHaveLength(1);
+      expect(body.sidebarItems[0].type).toBe("collection");
+      expect(body.sidebarItems[0].collectionId).toBe(toUid(col.id));
     });
   });
 
@@ -125,48 +130,6 @@ describe("Collections API Routes", () => {
     });
   });
 
-  describe("PUT /api/collections/reorder", () => {
-    it("returns 401 when not authenticated", async () => {
-      const { app } = createTestApp({ authenticated: false });
-      app.route("/api/collections", collectionsApiRoutes);
-
-      const res = await app.request("/api/collections/reorder", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: [1, 2] }),
-      });
-
-      expect(res.status).toBe(401);
-    });
-
-    it("reorders collections when authenticated", async () => {
-      const { app, services } = createTestApp({ authenticated: true });
-      app.route("/api/collections", collectionsApiRoutes);
-
-      const col1 = await services.collections.create({
-        slug: "first",
-        title: "First",
-      });
-      const col2 = await services.collections.create({
-        slug: "second",
-        title: "Second",
-      });
-
-      const res = await app.request("/api/collections/reorder", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ids: [toUid(col2.id), toUid(col1.id)],
-        }),
-      });
-
-      expect(res.status).toBe(200);
-      const body = await res.json();
-      expect(body.collections[0].slug).toBe("second");
-      expect(body.collections[1].slug).toBe("first");
-    });
-  });
-
   describe("PUT /api/collections/:id", () => {
     it("updates a collection when authenticated", async () => {
       const { app, services } = createTestApp({ authenticated: true });
@@ -253,6 +216,78 @@ describe("Collections API Routes", () => {
       );
 
       expect(res.status).toBe(404);
+    });
+  });
+
+  describe("POST /api/collections/sidebar-items", () => {
+    it("creates a divider sidebar item", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const res = await app.request("/api/collections/sidebar-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body.type).toBe("divider");
+      expect(body.collectionId).toBeNull();
+    });
+  });
+
+  describe("DELETE /api/collections/sidebar-items/:id", () => {
+    it("deletes a sidebar item", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const item = await services.collections.createSidebarItem("divider");
+
+      const res = await app.request(
+        `/api/collections/sidebar-items/${toUid(item.id)}`,
+        { method: "DELETE" },
+      );
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+    });
+  });
+
+  describe("PUT /api/collections/sidebar-items/:id/move", () => {
+    it("moves a sidebar item", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      await services.collections.create({ slug: "a", title: "A" });
+      await services.collections.create({ slug: "b", title: "B" });
+      await services.collections.create({ slug: "c", title: "C" });
+
+      const items = await services.collections.listSidebarItems();
+      expect(items).toHaveLength(3);
+      const itemA = items[0];
+      const itemB = items[1];
+      const itemC = items[2];
+
+      // Move C between A and B
+      const res = await app.request(
+        `/api/collections/sidebar-items/${toUid(itemC?.id ?? "")}/move`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            after: toUid(itemA?.id ?? ""),
+            before: toUid(itemB?.id ?? ""),
+          }),
+        },
+      );
+
+      expect(res.status).toBe(200);
+
+      const reordered = await services.collections.listSidebarItems();
+      expect(reordered[0]?.id).toBe(itemA?.id);
+      expect(reordered[1]?.id).toBe(itemC?.id);
+      expect(reordered[2]?.id).toBe(itemB?.id);
     });
   });
 

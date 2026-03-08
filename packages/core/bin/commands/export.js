@@ -87,7 +87,7 @@ export async function run(argv) {
     ["collections"],
     ["posts", "SELECT * FROM posts WHERE deleted_at IS NULL"],
     ["post_collections"],
-    ["collection_dividers"],
+    ["sidebar_items"],
     ["nav_items"],
     ["media"],
     ["redirects"],

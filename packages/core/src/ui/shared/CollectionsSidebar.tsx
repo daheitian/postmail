@@ -2,13 +2,13 @@
  * Collections Sidebar
  *
  * Shared sidebar navigation for public collection pages.
- * - Anonymous users: static nav with collections and dividers
+ * - Anonymous users: static nav with collections and dividers from sidebar items
  * - Authenticated users: interactive Lit component with CRUD, reorder, divider management
  */
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { Collection, CollectionDivider } from "../../types.js";
+import type { Collection, SidebarItem } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 
 const escapeJson = (data: unknown) =>
@@ -16,7 +16,7 @@ const escapeJson = (data: unknown) =>
 
 export interface CollectionsSidebarProps {
   collections: Collection[];
-  dividers: CollectionDivider[];
+  sidebarItems: SidebarItem[];
   activeSlug?: string;
   isAuthenticated?: boolean;
   postCounts?: Map<string, number>;
@@ -24,7 +24,7 @@ export interface CollectionsSidebarProps {
 
 export const CollectionsSidebar: FC<CollectionsSidebarProps> = ({
   collections,
-  dividers,
+  sidebarItems,
   activeSlug,
   isAuthenticated,
   postCounts,
@@ -33,7 +33,7 @@ export const CollectionsSidebar: FC<CollectionsSidebarProps> = ({
     return (
       <AuthenticatedSidebar
         collections={collections}
-        dividers={dividers}
+        sidebarItems={sidebarItems}
         activeSlug={activeSlug}
         postCounts={postCounts}
       />
@@ -43,7 +43,7 @@ export const CollectionsSidebar: FC<CollectionsSidebarProps> = ({
   return (
     <AnonymousSidebar
       collections={collections}
-      dividers={dividers}
+      sidebarItems={sidebarItems}
       activeSlug={activeSlug}
     />
   );
@@ -55,20 +55,13 @@ export const CollectionsSidebar: FC<CollectionsSidebarProps> = ({
 
 const AnonymousSidebar: FC<{
   collections: Collection[];
-  dividers: CollectionDivider[];
+  sidebarItems: SidebarItem[];
   activeSlug?: string;
-}> = ({ collections, dividers, activeSlug }) => {
+}> = ({ collections, sidebarItems, activeSlug }) => {
   const { t } = useLingui();
 
-  // Interleave collections and dividers by position
-  type Item =
-    | { kind: "collection"; data: Collection }
-    | { kind: "divider"; data: CollectionDivider };
-
-  const items: Item[] = [
-    ...collections.map((c) => ({ kind: "collection" as const, data: c })),
-    ...dividers.map((d) => ({ kind: "divider" as const, data: d })),
-  ].sort((a, b) => a.data.position - b.data.position);
+  // Build collection lookup
+  const collectionMap = new Map(collections.map((c) => [c.id, c]));
 
   return (
     <nav class="flex flex-col gap-1 pt-6">
@@ -78,19 +71,22 @@ const AnonymousSidebar: FC<{
           comment: "@context: Sidebar heading for collections nav",
         })}
       </h2>
-      {items.map((item) => {
-        if (item.kind === "divider") {
+      {sidebarItems.map((item) => {
+        if (item.type === "divider") {
           return (
-            <div key={`d-${item.data.id}`} class="px-3 py-1">
+            <div key={item.id} class="px-3 py-1">
               <hr class="border-border" />
             </div>
           );
         }
-        const col = item.data;
+        const col = item.collectionId
+          ? collectionMap.get(item.collectionId)
+          : undefined;
+        if (!col) return null;
         const isActive = col.slug === activeSlug;
         return (
           <a
-            key={col.id}
+            key={item.id}
             href={`/c/${col.slug}`}
             class={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-md truncate ${
               isActive
@@ -121,21 +117,36 @@ const AnonymousSidebar: FC<{
 
 const AuthenticatedSidebar: FC<{
   collections: Collection[];
-  dividers: CollectionDivider[];
+  sidebarItems: SidebarItem[];
   activeSlug?: string;
   postCounts?: Map<string, number>;
-}> = ({ collections, dividers, activeSlug, postCounts }) => {
+}> = ({ collections, sidebarItems, activeSlug, postCounts }) => {
   const { t } = useLingui();
 
-  const sidebarCollections = collections.map((col) => ({
-    id: col.id,
-    slug: col.slug,
-    title: col.title,
-    description: col.description,
-    icon: col.icon,
-    sortOrder: col.sortOrder,
-    position: col.position,
-    postCount: postCounts?.get(col.id) ?? 0,
+  // Build collection lookup for enriching sidebar items
+  const collectionMap = new Map(
+    collections.map((col) => [
+      col.id,
+      {
+        id: col.id,
+        slug: col.slug,
+        title: col.title,
+        description: col.description,
+        icon: col.icon,
+        sortOrder: col.sortOrder,
+        postCount: postCounts?.get(col.id) ?? 0,
+      },
+    ]),
+  );
+
+  const clientSidebarItems = sidebarItems.map((item) => ({
+    id: item.id,
+    type: item.type,
+    collectionId: item.collectionId,
+    position: item.position,
+    collection: item.collectionId
+      ? collectionMap.get(item.collectionId)
+      : undefined,
   }));
 
   const labels = {
@@ -275,8 +286,7 @@ const AuthenticatedSidebar: FC<{
 
   return (
     <jant-collection-sidebar
-      collections={escapeJson(sidebarCollections)}
-      dividers={escapeJson(dividers)}
+      sidebar-items={escapeJson(clientSidebarItems)}
       labels={escapeJson(labels)}
       active-slug={activeSlug ?? ""}
     />

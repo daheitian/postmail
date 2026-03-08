@@ -414,12 +414,24 @@ msgstr "確認密碼"
 #~ msgid "Continue Editing"
 #~ msgstr ""
 
+#. @context: Feedback after copying API token
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Copied"
+msgstr ""
+
 #. @context: Button to copy Markdown to clipboard
 #. @context: Button to copy URL to clipboard
 #: src/ui/dash/media/ViewMediaContent.tsx
 #: src/ui/dash/media/ViewMediaContent.tsx
 #~ msgid "Copy"
 #~ msgstr "複製"
+
+#. @context: Button to copy API token to clipboard
+#. @context: Button to copy API token to clipboard
+#: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/ApiTokensContent.tsx
+msgid "Copy Token"
+msgstr ""
 
 #. @context: Warning to copy newly created API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
