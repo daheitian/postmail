@@ -3,18 +3,19 @@
 -- Usage: mise run demo-reset (runs this then seed-demo.sql)
 
 -- Clear FTS index first (to avoid trigger issues)
-DELETE FROM posts_fts;
+DELETE FROM post_fts;
+
+-- Clear junction/dependent tables first
+DELETE FROM post_collection;
+DELETE FROM sidebar_item;
+DELETE FROM custom_url;
+DELETE FROM api_token;
 
 -- Clear main tables (order matters for FK constraints)
-DELETE FROM nav_items;
+DELETE FROM nav_item;
 DELETE FROM media;
-DELETE FROM posts;
-DELETE FROM pages;
-DELETE FROM collections;
-DELETE FROM redirects;
+DELETE FROM post;
+DELETE FROM collection;
 
 -- Sessions, users, accounts, and settings are preserved
 -- (seed-demo.sql only contains content data)
-
--- Reset auto-increment counters
-DELETE FROM sqlite_sequence WHERE name IN ('posts', 'pages', 'collections', 'nav_items', 'redirects');

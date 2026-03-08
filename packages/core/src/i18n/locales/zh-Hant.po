@@ -17,22 +17,12 @@ msgstr ""
 #. placeholder {0}: hiddenCount === 1 ? "post" : "posts"
 #: src/ui/feed/ThreadPreview.tsx
 msgid "{hiddenCount} more {0}"
-msgstr ""
+msgstr "{hiddenCount} 個隱藏的 {0}"
 
 #. @context: Custom CSS textarea placeholder
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "/* Your custom CSS here */"
 msgstr "/* 您的自訂 CSS 在這裡 */"
-
-#. @context: Navigation link
-#: src/ui/dash/collections/ViewCollectionContent.tsx
-#~ msgid "← Back to Collections"
-#~ msgstr "← 返回收藏夾"
-
-#. @context: Pagination previous page
-#: src/ui/pages/HomePage.tsx
-#~ msgid "← Newer"
-#~ msgstr ""
 
 #. @context: Add alt text label under attachment thumbnail
 #: src/ui/compose/ComposeDialog.tsx
@@ -48,11 +38,6 @@ msgstr "301（永久）"
 #: src/routes/dash/custom-urls.tsx
 msgid "302 (Temporary)"
 msgstr "302（臨時）"
-
-#. @context: Error toast when display name is empty
-#: src/routes/dash/settings.tsx
-#~ msgid "A display name is required."
-#~ msgstr ""
 
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -72,7 +57,7 @@ msgstr "帳戶"
 #. @context: Heading for list of active API tokens
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Active Tokens"
-msgstr ""
+msgstr "活躍的令牌"
 
 #. @context: Add more attachments button
 #: src/ui/compose/ComposeDialog.tsx
@@ -89,15 +74,10 @@ msgstr "添加自定義連結到任何 URL"
 msgid "Add alt text"
 msgstr "添加替代文字"
 
-#. @context: Card description for page picker
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Add an existing page to your navigation"
-#~ msgstr "將現有頁面添加到您的導航中"
-
 #. @context: Action to create a new collection from compose
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add Collection"
-msgstr ""
+msgstr "新增收藏夾"
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -107,42 +87,17 @@ msgstr "添加自定義 CSS 以覆蓋任何樣式。使用數據屬性，如 [da
 #. @context: Section heading for adding custom link to nav
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add custom link to navigation"
-msgstr ""
+msgstr "將自訂連結添加到導航"
 
 #. @context: Menu action to add a divider
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Add Divider"
-msgstr ""
+msgstr "添加分隔符"
 
 #. @context: Button and heading for adding custom link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Link"
 msgstr "新增連結"
-
-#. @context: Button to open media picker
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Add Media"
-#~ msgstr "添加媒體"
-
-#. @context: Add more attachments button
-#: src/ui/compose/ComposeDialog.tsx
-#~ msgid "Add More"
-#~ msgstr ""
-
-#. @context: Card title for adding page to nav
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Add Page"
-#~ msgstr "新增頁面"
-
-#. @context: Section heading for adding page to nav
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Add page to navigation"
-#~ msgstr ""
-
-#. @context: Section heading for adding nav items
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Add to navigation"
-#~ msgstr "添加到導航"
 
 #. @context: Settings group label for advanced settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -157,133 +112,61 @@ msgstr "所有"
 #. @context: Description after API reference link
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "all available endpoints and request formats."
-msgstr ""
-
-#. @context: Message when no pages available to add
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "All pages are already in navigation."
-#~ msgstr ""
-
-#. @context: Message when no pages available to add
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "All pages are in navigation"
-#~ msgstr "所有頁面都在導航中"
-
-#. @context: Hint text in alt text panel
-#: src/ui/compose/ComposeDialog.tsx
-#~ msgid "Alt text improves accessibility"
-#~ msgstr "替代文字改善可及性"
+msgstr "所有可用的端點和請求格式。"
 
 #. @context: Link to API documentation
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "API reference"
-msgstr ""
+msgstr "API 參考資料"
 
 #. @context: Settings item — API token settings
 #. @context: Settings section heading
 #: src/ui/dash/settings/ApiTokensContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "API Tokens"
-msgstr ""
-
-#. @context: Dashboard navigation - appearance settings
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "Appearance"
-#~ msgstr "外觀"
+msgstr "API 令牌"
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Applies to your entire site, including admin pages. All themes support dark mode."
-msgstr ""
+msgstr "適用於整個網站，包括管理頁面。所有主題都支持深色模式。"
 
 #. @context: Archive page title
 #: src/ui/pages/ArchivePage.tsx
 msgid "Archive"
 msgstr "檔案館"
 
-#. @context: Confirm dialog for deleting a collection
-#: src/ui/shared/CollectionsSidebar.tsx
-#~ msgid "Are you sure you want to delete this collection?"
-#~ msgstr ""
-
-#. @context: Confirmation dialog when deleting a post from the list
-#: src/ui/dash/PostList.tsx
-#~ msgid "Are you sure you want to delete this post? This cannot be undone."
-#~ msgstr "您確定要刪除這篇文章嗎？這個操作無法撤銷。"
-
-#. @context: Attached text panel title
-#: src/ui/compose/ComposeDialog.tsx
-#~ msgid "Attached Text"
-#~ msgstr "附加文本"
-
-#. @context: Error toast when authentication system is unavailable
-#: src/routes/auth/signin.tsx
-#~ msgid "Auth not configured"
-#~ msgstr "身份驗證未配置"
-
 #. @context: Error toast when authentication secret is missing from server config
 #: src/routes/auth/setup.tsx
 msgid "Auth secret is missing. Check your environment variables."
-msgstr ""
-
-#. @context: Error toast when authentication secret is missing from server config
-#: src/routes/auth/setup.tsx
-#~ msgid "AUTH_SECRET not configured"
-#~ msgstr "AUTH_SECRET 未配置"
+msgstr "認證密鑰遺失。請檢查您的環境變數。"
 
 #. @context: Error toast when authentication system is unavailable
 #: src/routes/auth/signin.tsx
 msgid "Authentication isn't set up. Check your server config."
-msgstr ""
+msgstr "身份驗證尚未設置。請檢查您的伺服器配置。"
 
 #. @context: Compose quote author placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Author (optional)"
 msgstr "作者（可選）"
 
-#. @context: Post slug help text
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Auto-generated from title if left empty"
-#~ msgstr ""
-
-#. @context: Post slug placeholder
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "auto-generated-from-title"
-#~ msgstr ""
-
 #. @context: Settings item — avatar settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Avatar"
-msgstr ""
-
-#. @context: Toast after saving avatar display preference
-#. @context: Toast after saving avatar display preference
-#: src/routes/dash/settings.tsx
-#: src/routes/dash/settings.tsx
-#~ msgid "Avatar display setting saved successfully."
-#~ msgstr "頭像顯示設置已成功保存。"
+msgstr "頭像"
 
 #. @context: Toast after saving avatar display preference
 #. @context: Toast after saving avatar display preference
 #: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
 msgid "Avatar display updated."
-msgstr ""
-
-#. @context: Button to go back to media list
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "Back"
-#~ msgstr "返回"
-
-#. @context: Dashboard header link to go back to the public site
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "Back to site"
-#~ msgstr ""
+msgstr "頭像顯示已更新。"
 
 #. @context: Settings item description for API tokens
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Bearer tokens for scripts and automation"
-msgstr ""
+msgstr "用於腳本和自動化的 Bearer 令牌"
 
 #. @context: Settings section heading for avatar
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -317,7 +200,7 @@ msgstr "更改密碼"
 #. @context: Settings item description for password
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Change your sign-in password"
-msgstr ""
+msgstr "更改您的登入密碼"
 
 #. @context: Font theme settings description
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -327,34 +210,7 @@ msgstr "選擇一個字體搭配以供您的網站使用。所有選項均使用
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
-msgstr ""
-
-#. @context: Placeholder for page select combobox trigger
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Choose a page…"
-#~ msgstr ""
-
-#. @context: Button to open icon picker
-#. @context: Icon picker dialog title
-#: src/ui/shared/CollectionsSidebar.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
-#~ msgid "Choose Icon"
-#~ msgstr "選擇圖示"
-
-#. @context: Hint to click image for lightbox
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "Click image to view full size"
-#~ msgstr "點擊圖片以查看完整大小"
-
-#. @context: Tooltip hint on failed upload overlay, tells user clicking retries all failed uploads
-#: src/ui/compose/ComposeDialog.tsx
-#~ msgid "Click to retry all"
-#~ msgstr ""
-
-#. @context: Button to close icon picker
-#: src/ui/shared/CollectionsSidebar.tsx
-#~ msgid "Close"
-#~ msgstr "關閉"
+msgstr "選擇一個新密碼。"
 
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL type option
@@ -371,11 +227,6 @@ msgstr "集合"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Collections"
 msgstr "收藏夾"
-
-#. @context: Post form field - assign to collections
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Collections (optional)"
-#~ msgstr "收藏（可選）"
 
 #. @context: Appearance settings heading
 #. @context: Settings item description for color theme
@@ -404,124 +255,72 @@ msgstr "確認新密碼"
 msgid "Confirm Password"
 msgstr "確認密碼"
 
-#. @context: Post form field
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Content"
-#~ msgstr "內容"
-
-#. @context: Confirm close dialog - cancel and return to editor
-#: src/ui/compose/ComposeDialog.tsx
-#~ msgid "Continue Editing"
-#~ msgstr ""
-
 #. @context: Feedback after copying API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Copied"
-msgstr ""
-
-#. @context: Button to copy Markdown to clipboard
-#. @context: Button to copy URL to clipboard
-#: src/ui/dash/media/ViewMediaContent.tsx
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "Copy"
-#~ msgstr "複製"
+msgstr "已複製"
 
 #. @context: Button to copy API token to clipboard
 #. @context: Button to copy API token to clipboard
 #: src/ui/dash/settings/ApiTokensContent.tsx
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Copy Token"
-msgstr ""
+msgstr "複製令牌"
 
 #. @context: Warning to copy newly created API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Copy your token now — it won't be shown again."
-msgstr ""
+msgstr "立即複製您的令牌 — 它將不會再次顯示。"
 
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/setup.tsx
 msgid "Couldn't create your account. Check the details and try again."
-msgstr ""
+msgstr "無法創建您的帳戶。請檢查詳細信息並重試。"
 
 #. @context: Error toast when nav delete fails
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Couldn't delete. Try again in a moment."
-msgstr ""
+msgstr "無法刪除。請稍後再試。"
 
 #. @context: Toast when publish fails and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Couldn't publish. Saved as draft."
-msgstr ""
-
-#. @context: Toast when post save fails
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Couldn't save your post. Try again in a moment."
-#~ msgstr ""
+msgstr "無法發佈。已儲存為草稿。"
 
 #. @context: Error toast when nav save fails
 #. @context: Toast when save fails
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Couldn't save. Try again in a moment."
-msgstr ""
-
-#. @context: Error toast when profile update fails
-#: src/routes/dash/settings.tsx
-#~ msgid "Couldn't update your profile. Try again in a moment."
-#~ msgstr ""
+msgstr "無法儲存。請稍後再試。"
 
 #. @context: Compose collection combobox empty state when no collections exist
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Create a collection to get started."
-msgstr ""
+msgstr "建立一個收藏以開始使用。"
 
 #. @context: Label for curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Create a post with curl:"
-msgstr ""
-
-#. @context: Button to save new collection
-#: src/ui/dash/collections/CollectionForm.tsx
-#~ msgid "Create Collection"
-#~ msgstr "創建收藏夾"
+msgstr "使用 curl 創建一個帖子："
 
 #. @context: Button to save new custom URL
 #: src/routes/dash/custom-urls.tsx
 msgid "Create Custom URL"
-msgstr ""
-
-#. @context: Link at bottom of page combobox to create a new page
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Create page"
-#~ msgstr ""
-
-#. @context: Button to create new page
-#: src/ui/dash/PageForm.tsx
-#~ msgid "Create Page"
-#~ msgstr "創建頁面"
-
-#. @context: Button to save new redirect
-#: src/routes/dash/redirects.tsx
-#~ msgid "Create Redirect"
-#~ msgstr "建立重定向"
+msgstr "創建自定義網址"
 
 #. @context: Setup page description
 #: src/routes/auth/setup.tsx
 msgid "Create your admin account."
 msgstr "建立您的管理員帳戶。"
 
-#. @context: Button in empty state to create first post
-#: src/ui/dash/PostList.tsx
-#~ msgid "Create your first post"
-#~ msgstr "創建你的第一篇帖子"
-
 #. @context: Token creation date
 #. placeholder {0}: formatDate(token.createdAt)
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Created {0}"
-msgstr ""
+msgstr "已創建 {0}"
 
 #. @context: Password form field
 #: src/ui/dash/settings/AccountContent.tsx
@@ -531,12 +330,7 @@ msgstr "當前密碼"
 #. @context: Error toast when current password verification fails
 #: src/routes/dash/settings.tsx
 msgid "Current password doesn't match. Try again."
-msgstr ""
-
-#. @context: Error toast when current password verification fails
-#: src/routes/dash/settings.tsx
-#~ msgid "Current password is incorrect."
-#~ msgstr "當前密碼不正確。"
+msgstr "當前密碼不匹配。請再試一次。"
 
 #. @context: Appearance settings heading for custom CSS
 #. @context: Settings item — custom CSS settings
@@ -547,42 +341,25 @@ msgstr "自訂 CSS"
 
 #. @context: Toast after saving custom CSS
 #: src/routes/dash/settings.tsx
-#~ msgid "Custom CSS saved successfully."
-#~ msgstr "自訂 CSS 已成功儲存。"
-
-#. @context: Toast after saving custom CSS
-#: src/routes/dash/settings.tsx
 msgid "Custom CSS updated."
-msgstr ""
+msgstr "自訂 CSS 已更新。"
 
 #. @context: Settings item description for custom CSS
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Custom styling"
-msgstr ""
+msgstr "自訂樣式"
 
 #. @context: Settings item — custom URL settings
 #. @context: Settings section heading
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Custom URLs"
-msgstr ""
+msgstr "自訂網址"
 
 #. @context: Section heading for dangerous/destructive actions
 #: src/ui/dash/DangerZone.tsx
 msgid "Danger Zone"
 msgstr "危險區域"
-
-#. @context: Dashboard main heading
-#. @context: Dashboard navigation - dashboard home
-#: src/routes/dash/index.tsx
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "Dashboard"
-#~ msgstr "儀表板"
-
-#. @context: Settings form field
-#: src/ui/dash/settings/GeneralContent.tsx
-#~ msgid "Default Homepage View"
-#~ msgstr "預設首頁視圖"
 
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
@@ -598,47 +375,22 @@ msgstr "刪除"
 #. @context: Draft item action
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Delete Draft"
-msgstr ""
-
-#. @context: Button to delete media
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "Delete Media"
-#~ msgstr "刪除媒體"
-
-#. @context: Button to delete page
-#: src/routes/dash/pages.tsx
-#~ msgid "Delete Page"
-#~ msgstr "刪除頁面"
+msgstr "刪除草稿"
 
 #. @context: Confirm dialog for deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Delete this collection permanently? Posts inside won't be removed."
-msgstr ""
-
-#. @context: Confirmation dialog when deleting a post from the list
-#: src/ui/dash/PostList.tsx
-#~ msgid "Delete this post permanently? This can't be undone."
-#~ msgstr ""
+msgstr "永久刪除此收藏嗎？內部的帖子不會被刪除。"
 
 #. @context: Toast after deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Deleted"
-msgstr ""
-
-#. @context: Warning message before deleting media
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "Deleting this media will remove it permanently from storage."
-#~ msgstr "刪除此媒體將永久從存儲中移除它。"
-
-#. @context: Hint shown on signin page when demo credentials are pre-filled
-#: src/routes/auth/signin.tsx
-#~ msgid "Demo account pre-filled. Just click Sign In."
-#~ msgstr "示範帳戶已預填。只需點擊登入。"
+msgstr "已刪除"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
 msgid "Demo credentials are pre-filled — hit Sign In to continue."
-msgstr ""
+msgstr "演示憑證已預填 - 點擊登錄以繼續。"
 
 #. @context: Alt text textarea placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -655,12 +407,12 @@ msgstr "描述（可選）"
 #. @context: Settings group label for design settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Design"
-msgstr ""
+msgstr "設計"
 
 #. @context: Redirect destination field
 #: src/routes/dash/custom-urls.tsx
 msgid "Destination"
-msgstr ""
+msgstr "目的地"
 
 #. @context: More menu - discard post
 #: src/ui/compose/ComposeDialog.tsx
@@ -680,7 +432,7 @@ msgstr "顯示在所有文章和頁面的底部。支持Markdown。"
 #. @context: Confirm close action sheet - discard button
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Don't save"
-msgstr ""
+msgstr "不儲存"
 
 #. @context: Button to exit reorder mode
 #. @context: Close attached text panel
@@ -699,12 +451,12 @@ msgstr "草稿"
 #. @context: Toast after draft deletion
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Draft deleted."
-msgstr ""
+msgstr "草稿已刪除。"
 
 #. @context: Toast shown when a local draft is restored on compose open
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Draft restored."
-msgstr ""
+msgstr "草稿已恢復。"
 
 #. @context: Toast after saving a draft post
 #. @context: Toast after saving a draft post
@@ -721,7 +473,7 @@ msgstr "草稿"
 #. @context: Placeholder for API token name input
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "e.g. iOS Shortcuts"
-msgstr ""
+msgstr "例如 iOS 快捷指令"
 
 #. @context: Button to edit item
 #. @context: Per-collection edit action
@@ -730,25 +482,10 @@ msgstr ""
 msgid "Edit"
 msgstr "編輯"
 
-#. @context: Page heading
-#: src/ui/dash/collections/CollectionForm.tsx
-#~ msgid "Edit Collection"
-#~ msgstr "編輯收藏集"
-
-#. @context: Link to edit the page
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Edit Page"
-#~ msgstr "編輯頁面"
-
 #. @context: Compose dialog header title in edit mode
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Edit post"
-msgstr ""
-
-#. @context: Page heading
-#: src/routes/dash/posts.tsx
-#~ msgid "Edit Post"
-#~ msgstr "編輯文章"
+msgstr "編輯文章"
 
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
@@ -760,24 +497,14 @@ msgstr "電子郵件"
 #. @context: Compose toolbar - emoji picker tooltip
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Emoji"
-msgstr ""
+msgstr "表情符號"
 
 #. @context: Emoji picker tab label
 #. @context: Emoji picker tab label
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Emojis"
-msgstr ""
-
-#. @context: Settings item description for sign out
-#: src/ui/dash/settings/SettingsRootContent.tsx
-#~ msgid "End your current session"
-#~ msgstr ""
-
-#. @context: Password reset page description
-#: src/routes/auth/reset.tsx
-#~ msgid "Enter your new password."
-#~ msgstr "請輸入您的新密碼。"
+msgstr "表情符號"
 
 #. @context: Plural entry count label
 #: src/ui/pages/CollectionsPage.tsx
@@ -789,37 +516,10 @@ msgstr "條目"
 msgid "entry"
 msgstr "條目"
 
-#. @context: Error toast when account creation fails
-#. @context: Error toast when account creation fails
-#: src/routes/auth/setup.tsx
-#: src/routes/auth/setup.tsx
-#~ msgid "Failed to create account"
-#~ msgstr "無法創建帳戶"
-
-#. @context: Error toast when nav delete fails
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Failed to delete. Please try again."
-#~ msgstr "刪除失敗。請再試一次。"
-
-#. @context: Toast when post save fails
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Failed to save post. Please try again."
-#~ msgstr "無法保存帖子。請再試一次。"
-
-#. @context: Error toast when nav save fails
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Failed to save. Please try again."
-#~ msgstr "保存失敗。請再試一次。"
-
-#. @context: Error toast when profile update fails
-#: src/routes/dash/settings.tsx
-#~ msgid "Failed to update profile."
-#~ msgstr "無法更新個人資料。"
-
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Favicon and header icon"
-msgstr ""
+msgstr "網站圖示和標題圖示"
 
 #. @context: Archive filter - featured posts
 #. @context: Browse filter for featured posts
@@ -841,12 +541,12 @@ msgstr "精選"
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
 msgid "File storage isn't set up. Check your server config."
-msgstr ""
+msgstr "檔案儲存尚未設定。請檢查您的伺服器配置。"
 
 #. @context: Toast after successful file upload
 #: src/routes/api/upload.ts
 msgid "File uploaded."
-msgstr ""
+msgstr "檔案已上傳。"
 
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -857,11 +557,6 @@ msgstr "字型主題"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Font Theme"
 msgstr "字型主題"
-
-#. @context: Post form field - post format
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Format"
-#~ msgstr "格式"
 
 #. @context: Search results count - multiple
 #. placeholder {0}: String(results.length)
@@ -874,11 +569,6 @@ msgstr "找到 {0} 個結果"
 msgid "Found 1 result"
 msgstr "找到 1 個結果"
 
-#. @context: Redirect form field
-#: src/routes/dash/redirects.tsx
-#~ msgid "From Path"
-#~ msgstr "來源路徑"
-
 #. @context: Settings item — general settings
 #. @context: Settings section heading
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -889,7 +579,7 @@ msgstr "一般設定"
 #. @context: Button to create new API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Generate Token"
-msgstr ""
+msgstr "生成令牌"
 
 #. @context: Compose link title placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -899,12 +589,12 @@ msgstr "給它一個標題..."
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Header links, featured"
-msgstr ""
+msgstr "標題連結，精選"
 
 #. @context: Hint text in alt text panel
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Helps screen readers describe the image"
-msgstr ""
+msgstr "幫助螢幕閱讀器描述圖像"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -916,56 +606,14 @@ msgstr "最高評價"
 #. @context: Toast after saving home default view setting
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Home view saved"
-msgstr ""
-
-#. @context: Collection form field
-#: src/ui/shared/CollectionsSidebar.tsx
-#~ msgid "Icon (optional)"
-#~ msgstr "圖示（可選）"
+msgstr "家居視圖已保存"
 
 #. @context: Icon picker tab label
 #. @context: Icon picker tab label
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Icons"
-msgstr ""
-
-#. @context: Media upload instructions - auto optimization
-#: src/ui/dash/media/MediaListContent.tsx
-#~ msgid "Images are automatically optimized (resized, converted to WebP). Video, audio, and PDF files are uploaded as-is (max 200MB)."
-#~ msgstr ""
-
-#. @context: Media upload instructions - auto optimization
-#: src/ui/dash/media/MediaListContent.tsx
-#~ msgid "Images are automatically optimized: resized to max 1920px, converted to WebP, and metadata stripped."
-#~ msgstr "圖片會自動優化：調整大小至最大 1920 像素，轉換為 WebP 格式，並去除元數據。"
-
-#. @context: Error toast when sign-in credentials are wrong
-#: src/routes/auth/signin.tsx
-#~ msgid "Invalid email or password"
-#~ msgstr "無效的電子郵件或密碼"
-
-#. @context: Error toast when selected font theme is not valid
-#: src/routes/dash/settings.tsx
-#~ msgid "Invalid font theme selected."
-#~ msgstr "選擇的字體主題無效。"
-
-#. @context: Fallback validation error for page form
-#. @context: Fallback validation error for page form
-#: src/routes/dash/pages.tsx
-#: src/routes/dash/pages.tsx
-#~ msgid "Invalid input"
-#~ msgstr "無效的輸入"
-
-#. @context: Password reset error heading
-#: src/routes/auth/reset.tsx
-#~ msgid "Invalid or Expired Link"
-#~ msgstr "無效或已過期的連結"
-
-#. @context: Error toast when selected theme is not valid
-#: src/routes/dash/settings.tsx
-#~ msgid "Invalid theme selected."
-#~ msgstr "選擇的主題無效。"
+msgstr "圖示"
 
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -996,7 +644,7 @@ msgstr "語言"
 #. placeholder {0}: formatDate(token.lastUsedAt)
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Last used {0}"
-msgstr ""
+msgstr "最後使用時間 {0}"
 
 #. @context: Browse filter for latest posts
 #. @context: Browse filter label
@@ -1031,32 +679,17 @@ msgstr "連結"
 #. @context: Label for max visible nav links number input
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Links shown in header"
-msgstr ""
+msgstr "標題中顯示的連結"
 
 #. @context: Label for list posts curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "List posts:"
-msgstr ""
-
-#. @context: Visibility option - appears everywhere
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Listed"
-#~ msgstr ""
+msgstr "列表文章："
 
 #. @context: Pagination button - load more items
 #: src/ui/shared/Pagination.tsx
 msgid "Load more"
 msgstr "載入更多"
-
-#. @context: Loading state for media picker
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Loading..."
-#~ msgstr "載入中..."
-
-#. @context: Page slug validation message
-#: src/ui/dash/PageForm.tsx
-#~ msgid "Lowercase letters, numbers, and hyphens only"
-#~ msgstr "僅限小寫字母、數字和連字符"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1065,45 +698,25 @@ msgstr "載入更多"
 msgid "Lowest rated"
 msgstr "最低評價"
 
-#. @context: Media detail section - Markdown snippet
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "Markdown"
-#~ msgstr "Markdown"
-
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Markdown supported"
 msgstr "支援Markdown"
 
-#. @context: Label for max visible nav links number input
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Max visible links"
-#~ msgstr ""
-
 #. @context: Toast after saving max visible nav links setting
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Max visible links saved"
-msgstr ""
-
-#. @context: Settings form field for max visible nav links in header before overflow menu
-#: src/ui/dash/settings/GeneralContent.tsx
-#~ msgid "Max Visible Nav Links"
-#~ msgstr "最大可見導航連結"
+msgstr "已保存最大可見連結數量"
 
 #. @context: Compose toolbar - media tooltip
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Media"
 msgstr "媒體"
 
-#. @context: Dashboard header menu button
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "Menu"
-#~ msgstr "菜單"
-
 #. @context: Aria-label for more button
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "More actions"
-msgstr ""
+msgstr "更多操作"
 
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
@@ -1117,20 +730,10 @@ msgstr "更多連結"
 msgid "My Collection"
 msgstr "我的收藏"
 
-#. @context: Account settings form field
-#: src/ui/dash/settings/AccountContent.tsx
-#~ msgid "Name"
-#~ msgstr "名稱"
-
-#. @context: Error toast when display name is empty
-#: src/routes/dash/settings.tsx
-#~ msgid "Name is required."
-#~ msgstr "名稱是必填的。"
-
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Name, description, language"
-msgstr ""
+msgstr "名稱，描述，語言"
 
 #. @context: Settings item — navigation settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1147,12 +750,7 @@ msgstr "導航項目"
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Navigation Preview"
-msgstr ""
-
-#. @context: Help text with link
-#: src/routes/dash/index.tsx
-#~ msgid "Need help? Visit the <0>documentation</0>"
-#~ msgstr "需要幫助嗎？請訪問<0>文檔</0>。"
+msgstr "導航預覽"
 
 #. @context: Tooltip/aria for add collection button
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -1166,19 +764,7 @@ msgstr "新收藏集"
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
 msgid "New Custom URL"
-msgstr ""
-
-#. @context: Button to add divider between collections
-#: src/ui/dash/collections/CollectionsListContent.tsx
-#~ msgid "New Divider"
-#~ msgstr "新分隔線"
-
-#. @context: Button to create new page
-#. @context: New page main heading
-#: src/routes/dash/pages.tsx
-#: src/ui/dash/pages/PagesContent.tsx
-#~ msgid "New Page"
-#~ msgstr "新頁面"
+msgstr "新自訂網址"
 
 #. @context: Password form field
 #. @context: Password reset form field
@@ -1186,24 +772,6 @@ msgstr ""
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "New Password"
 msgstr "新密碼"
-
-#. @context: Button to create new post
-#. @context: Button to create new post
-#. @context: Page heading
-#: src/routes/dash/index.tsx
-#: src/routes/dash/posts.tsx
-#: src/routes/dash/posts.tsx
-#~ msgid "New Post"
-#~ msgstr "新帖子"
-
-#. @context: Button to create new redirect
-#. @context: Button to create new redirect
-#. @context: Page heading
-#: src/routes/dash/redirects.tsx
-#: src/routes/dash/redirects.tsx
-#: src/routes/dash/redirects.tsx
-#~ msgid "New Redirect"
-#~ msgstr "新重定向"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1219,147 +787,52 @@ msgstr "最新的在前"
 msgid "Next"
 msgstr "下一頁"
 
-#. @context: Compose collection combobox empty state
-#: src/ui/compose/ComposeDialog.tsx
-#~ msgid "No collections found."
-#~ msgstr "找不到任何收藏。"
-
-#. @context: Empty state message on collections page
-#: src/ui/pages/CollectionsPage.tsx
-#~ msgid "No collections yet."
-#~ msgstr "尚未有任何收藏。"
-
 #. @context: Empty state message on collections page
 #: src/ui/pages/CollectionsPage.tsx
 msgid "No collections yet. Start one to organize posts by topic."
-msgstr ""
+msgstr "尚未有任何收藏。開始一個以主題組織帖子。"
 
 #. @context: Empty state message
 #: src/routes/dash/custom-urls.tsx
 msgid "No custom URLs yet. Create one to add redirects or custom paths for posts."
-msgstr ""
+msgstr "尚未有自訂網址。創建一個以添加重定向或自訂文章路徑。"
 
 #. @context: Drafts panel empty state
 #: src/ui/compose/ComposeDialog.tsx
 msgid "No drafts yet. Save a draft to find it here."
-msgstr ""
-
-#. @context: Empty state message on featured page
-#: src/ui/pages/FeaturedPage.tsx
-#~ msgid "No featured posts yet."
-#~ msgstr "尚未有精選文章。"
+msgstr "尚未有草稿。保存一個草稿以便在這裡找到它。"
 
 #. @context: Empty state message on featured page
 #: src/ui/pages/FeaturedPage.tsx
 msgid "No featured posts. Mark a post as featured to highlight it here."
-msgstr ""
-
-#. @context: Error when no file was selected for upload
-#: src/routes/api/upload.ts
-#~ msgid "No file provided"
-#~ msgstr "未提供檔案"
-
-#. @context: Error toast when no file was selected for upload
-#: src/routes/dash/settings.tsx
-#~ msgid "No file provided."
-#~ msgstr "未提供檔案。"
+msgstr "沒有精選文章。將一篇文章標記為精選，以在此處突出顯示。"
 
 #. @context: Error toast when no file was selected for upload
 #. @context: Error when no file was selected for upload
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
 msgid "No file selected. Choose a file to upload."
-msgstr ""
+msgstr "未選擇任何檔案。請選擇一個檔案上傳。"
 
 #. @context: Compose collection combobox empty state when search has no results
 #: src/ui/compose/ComposeDialog.tsx
 msgid "No matching collections."
-msgstr ""
-
-#. @context: Empty state when page search has no results
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "No matching pages."
-#~ msgstr ""
-
-#. @context: Post form media empty state
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "No media attached."
-#~ msgstr ""
-
-#. @context: Post form media empty state
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "No media selected yet."
-#~ msgstr "尚未選擇任何媒體。"
-
-#. @context: Empty state message when no media exists
-#: src/ui/dash/media/MediaListContent.tsx
-#~ msgid "No media uploaded yet."
-#~ msgstr "尚未上傳任何媒體。"
+msgstr "沒有匹配的收藏集。"
 
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "No navigation items yet. Add links or enable system items below."
-msgstr ""
-
-#. @context: Empty state for navigation items
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "No navigation items yet. Add pages, links, or enable system items below."
-#~ msgstr "尚未有導航項目。請在下方添加頁面、鏈接或啟用系統項目。"
-
-#. @context: Empty state when page search has no results
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "No pages found."
-#~ msgstr ""
-
-#. @context: Empty state for pages list
-#: src/ui/dash/pages/PagesContent.tsx
-#~ msgid "No pages yet. Create one to add static content to your site."
-#~ msgstr ""
-
-#. @context: Empty state for pages list
-#: src/ui/dash/pages/PagesContent.tsx
-#~ msgid "No pages yet. Create your first page to get started."
-#~ msgstr "尚未有頁面。創建您的第一個頁面以開始使用。"
-
-#. @context: Archive empty state
-#: src/ui/pages/ArchivePage.tsx
-#~ msgid "No posts found."
-#~ msgstr "未找到任何帖子。"
-
-#. @context: Empty state message
-#: src/ui/pages/CollectionPage.tsx
-#~ msgid "No posts in this collection."
-#~ msgstr "此集合中沒有帖子。"
+msgstr "尚未有導航項目。請在下方添加連結或啟用系統項目。"
 
 #. @context: Archive empty state
 #: src/ui/pages/ArchivePage.tsx
 msgid "No posts match this filter."
-msgstr ""
-
-#. @context: Empty state message on home page
-#: src/ui/pages/HomePage.tsx
-#~ msgid "No posts yet."
-#~ msgstr "尚未有帖子。"
-
-#. @context: Empty state message
-#: src/routes/dash/redirects.tsx
-#~ msgid "No redirects configured."
-#~ msgstr "未配置任何重定向。"
-
-#. @context: Empty state message
-#: src/routes/dash/redirects.tsx
-#~ msgid "No redirects yet. Create one to forward traffic from old URLs."
-#~ msgstr ""
-
-#. @context: Search empty results
-#: src/ui/pages/SearchPage.tsx
-#~ msgid "No results found."
-#~ msgstr "未找到結果。"
+msgstr "沒有帖子符合此篩選條件。"
 
 #. @context: Search empty results
 #: src/ui/pages/SearchPage.tsx
 msgid "No results. Try different keywords."
-msgstr ""
+msgstr "沒有結果。請嘗試不同的關鍵字。"
 
 #. @context: Compose format tab
 #. @context: Post format badge - note
@@ -1378,17 +851,7 @@ msgstr "筆記"
 #. @context: Empty state message on home page
 #: src/ui/pages/HomePage.tsx
 msgid "Nothing here yet."
-msgstr ""
-
-#. @context: Empty state message when no posts exist
-#: src/ui/dash/PostList.tsx
-#~ msgid "Nothing published yet. Write your first post to get started."
-#~ msgstr ""
-
-#. @context: Pagination next page
-#: src/ui/pages/HomePage.tsx
-#~ msgid "Older →"
-#~ msgstr ""
+msgstr "這裡還沒有任何內容。"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1400,7 +863,7 @@ msgstr "最舊的在前"
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Open with Featured posts"
-msgstr ""
+msgstr "以精選文章開啟"
 
 #. @context: Toast after reordering collections
 #. @context: Toast after saving navigation item order
@@ -1409,35 +872,10 @@ msgstr ""
 msgid "Order saved"
 msgstr "已保存順序"
 
-#. @context: Nav item type badge
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "page"
-#~ msgstr "頁面"
-
-#. @context: Default page heading when untitled
-#: src/routes/dash/pages.tsx
-#~ msgid "Page"
-#~ msgstr "頁面"
-
 #. @context: Pagination - current page indicator
 #: src/ui/shared/Pagination.tsx
 msgid "Page {page}"
 msgstr "頁面 {page}"
-
-#. @context: Page content placeholder
-#: src/ui/dash/PageForm.tsx
-#~ msgid "Page content (Markdown supported)..."
-#~ msgstr "頁面內容（支持Markdown）..."
-
-#. @context: Page title placeholder
-#: src/ui/dash/PageForm.tsx
-#~ msgid "Page title..."
-#~ msgstr "頁面標題..."
-
-#. @context: Dashboard navigation - pages management
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "Pages"
-#~ msgstr "頁面"
 
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
@@ -1450,23 +888,13 @@ msgstr "密碼"
 
 #. @context: Toast after changing account password
 #: src/routes/dash/settings.tsx
-#~ msgid "Password changed successfully."
-#~ msgstr "密碼已成功更改。"
-
-#. @context: Toast after changing account password
-#: src/routes/dash/settings.tsx
 msgid "Password changed."
-msgstr ""
-
-#. @context: Error toast when new password and confirmation differ
-#: src/routes/dash/settings.tsx
-#~ msgid "Passwords do not match."
-#~ msgstr "密碼不匹配。"
+msgstr "密碼已更改。"
 
 #. @context: Error toast when new password and confirmation differ
 #: src/routes/dash/settings.tsx
 msgid "Passwords don't match. Make sure both fields are identical."
-msgstr ""
+msgstr "密碼不匹配。請確保兩個欄位相同。"
 
 #. @context: Attached text placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -1487,7 +915,7 @@ msgstr "粘貼一個網址..."
 #. @context: Custom URL form field
 #: src/routes/dash/custom-urls.tsx
 msgid "Path"
-msgstr ""
+msgstr "路徑"
 
 #. @context: Link to permanent URL of post
 #: src/ui/pages/PostPage.tsx
@@ -1506,46 +934,6 @@ msgstr "置頂"
 msgid "Post"
 msgstr "文章"
 
-#. @context: Toast after creating post
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Post published successfully."
-#~ msgstr "發佈文章成功。"
-
-#. @context: Toast after creating post
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Post published."
-#~ msgstr ""
-
-#. @context: Post title placeholder
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Post title..."
-#~ msgstr "文章標題..."
-
-#. @context: Toast after editing post
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Post updated successfully."
-#~ msgstr "帖子已成功更新。"
-
-#. @context: Toast after editing post
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Post updated."
-#~ msgstr ""
-
-#. @context: Dashboard heading
-#: src/routes/dash/posts.tsx
-#~ msgid "Posts"
-#~ msgstr "文章"
-
-#. @context: Collection posts section heading
-#: src/ui/dash/collections/ViewCollectionContent.tsx
-#~ msgid "Posts in Collection ({count})"
-#~ msgstr "收藏中的帖子 ({count})"
-
-#. @context: Media detail section - preview
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "Preview"
-#~ msgstr "預覽"
-
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
 #: src/ui/shared/Pagination.tsx
@@ -1558,55 +946,15 @@ msgstr "上一頁"
 msgid "Processing..."
 msgstr "處理中..."
 
-#. @context: Account settings section heading
-#: src/ui/dash/settings/AccountContent.tsx
-#~ msgid "Profile"
-#~ msgstr "個人資料"
-
-#. @context: Toast after saving user profile
-#: src/routes/dash/settings.tsx
-#~ msgid "Profile saved successfully."
-#~ msgstr "個人資料已成功儲存。"
-
-#. @context: Toast after saving user profile
-#: src/routes/dash/settings.tsx
-#~ msgid "Profile updated."
-#~ msgstr ""
-
-#. @context: Settings item description for account
-#: src/ui/dash/settings/SettingsRootContent.tsx
-#~ msgid "Profile, password"
-#~ msgstr ""
-
-#. @context: Visibility option - appears everywhere
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Public"
-#~ msgstr ""
-
-#. @context: Button to publish new post
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Publish"
-#~ msgstr "發佈"
-
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx
 msgid "Published"
 msgstr "已發佈"
 
-#. @context: Page status helper text
-#: src/ui/dash/PageForm.tsx
-#~ msgid "Published pages are accessible via their slug. Drafts are not visible."
-#~ msgstr "已發佈的頁面可以通過其標識符訪問。草稿不可見。"
-
 #. @context: Toast shown after successful deferred publish
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Published!"
 msgstr "已發佈！"
-
-#. @context: Dashboard section title
-#: src/routes/dash/index.tsx
-#~ msgid "Quick Actions"
-#~ msgstr "快速操作"
 
 #. @context: Compose format tab
 #. @context: Post format badge - quote
@@ -1616,11 +964,6 @@ msgstr "已發佈！"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Quote"
 msgstr "引用"
-
-#. @context: Post form field - quoted text
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Quote Text"
-#~ msgstr "引用文本"
 
 #. @context: Post format label plural - quotes
 #: src/ui/pages/ArchivePage.tsx
@@ -1635,22 +978,17 @@ msgstr "評分"
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
 msgid "Redirect"
-msgstr ""
+msgstr "重定向"
 
 #. @context: Redirect type field
 #: src/routes/dash/custom-urls.tsx
 msgid "Redirect Type"
-msgstr ""
-
-#. @context: Settings item — redirects settings
-#: src/ui/dash/settings/SettingsRootContent.tsx
-#~ msgid "Redirects"
-#~ msgstr "重定向"
+msgstr "重定向類型"
 
 #. @context: Settings item description for custom URLs
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Redirects and custom paths"
-msgstr ""
+msgstr "重定向和自定義路徑"
 
 #. @context: Button to remove icon
 #. @context: Button to remove icon
@@ -1663,25 +1001,20 @@ msgstr ""
 msgid "Remove"
 msgstr "移除"
 
-#. @context: Button to delete a divider
-#: src/ui/dash/collections/CollectionsListContent.tsx
-#~ msgid "Remove divider"
-#~ msgstr "移除分隔線"
-
 #. @context: Tooltip for divider delete button
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Remove Divider"
-msgstr ""
+msgstr "移除分隔線"
 
 #. @context: Menu action to reorder collections
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Reorder"
-msgstr ""
+msgstr "重新排序"
 
 #. @context: Compose button - reply to post
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Reply"
-msgstr ""
+msgstr "回覆"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
@@ -1693,12 +1026,12 @@ msgstr "重設密碼"
 #. @context: Button to revoke API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Revoke"
-msgstr ""
+msgstr "撤銷"
 
 #. @context: Confirm dialog for revoking API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Revoke this token? Any scripts using it will stop working."
-msgstr ""
+msgstr "撤銷此令牌？任何使用它的腳本將停止運作。"
 
 #. @context: Button to save collection
 #. @context: Button to save collection
@@ -1730,30 +1063,20 @@ msgstr "儲存為草稿"
 msgid "Save CSS"
 msgstr "儲存 CSS"
 
-#. @context: Confirm close dialog - save draft button
-#: src/ui/compose/ComposeDialog.tsx
-#~ msgid "Save Draft"
-#~ msgstr ""
-
-#. @context: Button to save profile
-#: src/ui/dash/settings/AccountContent.tsx
-#~ msgid "Save Profile"
-#~ msgstr "保存個人資料"
-
 #. @context: Confirm close action sheet subtitle
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Save to drafts to edit and post at a later time."
-msgstr ""
+msgstr "保存到草稿以便稍後編輯和發佈。"
 
 #. @context: Confirm close action sheet title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Save to drafts?"
-msgstr ""
+msgstr "要保存到草稿嗎？"
 
 #. @context: Toast after saving a collection
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Saved"
-msgstr ""
+msgstr "已儲存"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title
@@ -1769,7 +1092,7 @@ msgstr "搜尋"
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Search emojis..."
-msgstr ""
+msgstr "搜尋表情符號..."
 
 #. @context: Icon picker search placeholder
 #. @context: Icon picker search placeholder
@@ -1777,11 +1100,6 @@ msgstr ""
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Search icons..."
 msgstr "搜尋圖示..."
-
-#. @context: Placeholder for page search input in combobox
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Search pages…"
-#~ msgstr ""
 
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx
@@ -1793,16 +1111,6 @@ msgstr "搜尋帖子..."
 msgid "Search..."
 msgstr "搜尋..."
 
-#. @context: Link text to API documentation
-#: src/ui/dash/settings/ApiTokensContent.tsx
-#~ msgid "See the API reference for all available endpoints."
-#~ msgstr ""
-
-#. @context: Media picker dialog title
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Select Media"
-#~ msgstr "選擇媒體"
-
 #. @context: Settings section heading for SEO
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "SEO"
@@ -1812,49 +1120,27 @@ msgstr "SEO"
 #. @context: Toast after saving SEO settings
 #: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
-#~ msgid "SEO settings saved successfully."
-#~ msgstr "SEO 設定已成功儲存。"
-
-#. @context: Toast after saving SEO settings
-#. @context: Toast after saving SEO settings
-#: src/routes/dash/settings.tsx
-#: src/routes/dash/settings.tsx
 msgid "SEO settings updated."
-msgstr ""
-
-#. @context: Dashboard navigation - site settings
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "Settings"
-#~ msgstr "設定"
-
-#. @context: Toast after saving general settings
-#: src/routes/dash/settings.tsx
-#~ msgid "Settings saved successfully."
-#~ msgstr "設置已成功保存。"
+msgstr "SEO 設定已更新。"
 
 #. @context: Toast after saving general settings
 #. @context: Toast after saving general settings
 #: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
 msgid "Settings updated."
-msgstr ""
-
-#. @context: Link to show remaining thread replies
-#: src/ui/feed/ThreadPreview.tsx
-#~ msgid "Show {remainingCount} more {0}"
-#~ msgstr "顯示 {remainingCount} 個更多 {0}"
+msgstr "設定已更新。"
 
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Show less"
-msgstr ""
+msgstr "顯示較少"
 
 #. @context: Button to expand faded thread context
 #. @context: Expand reply context
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/feed/ThreadPreview.tsx
 msgid "Show more"
-msgstr ""
+msgstr "顯示更多"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
@@ -1871,7 +1157,7 @@ msgstr "登出"
 #. @context: Settings group label for site settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Site"
-msgstr ""
+msgstr "網站"
 
 #. @context: Settings section heading for site footer
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1892,15 +1178,10 @@ msgstr "網站名稱"
 msgid "Slug"
 msgstr "縮略名"
 
-#. @context: Post form field - URL slug
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Slug (optional)"
-#~ msgstr ""
-
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Some uploads failed. Saved as draft."
-msgstr ""
+msgstr "有些上傳失敗。已儲存為草稿。"
 
 #. @context: Fallback validation error for compose form
 #. @context: Fallback validation error for password reset form
@@ -1911,7 +1192,7 @@ msgstr ""
 #: src/routes/auth/signin.tsx
 #: src/routes/compose.tsx
 msgid "Something doesn't look right. Check the form and try again."
-msgstr ""
+msgstr "有些地方看起來不對。請檢查表單並再試一次。"
 
 #. @context: Collection form field
 #. @context: Collection form field
@@ -1924,21 +1205,6 @@ msgstr "排序順序"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Source link (optional)"
 msgstr "來源連結（選填）"
-
-#. @context: Post form field
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Status"
-#~ msgstr "狀態"
-
-#. @context: Error when file storage is not set up
-#: src/routes/api/upload.ts
-#~ msgid "Storage not configured"
-#~ msgstr "儲存未配置"
-
-#. @context: Error toast when file storage is not set up
-#: src/routes/dash/settings.tsx
-#~ msgid "Storage not configured."
-#~ msgstr "儲存空間未配置。"
 
 #. @context: Attached text panel hint
 #: src/ui/compose/ComposeDialog.tsx
@@ -1958,42 +1224,32 @@ msgstr "系統連結"
 #. @context: Label on failed upload overlay button, tells user tapping retries the upload
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Tap to retry"
-msgstr ""
+msgstr "點擊重試"
 
 #. @context: Custom URL target slug field
 #: src/routes/dash/custom-urls.tsx
 msgid "Target Slug"
-msgstr ""
+msgstr "目標網址結尾"
 
 #. @context: Attached text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Text attachment"
-msgstr ""
+msgstr "文本附件"
 
 #. @context: Error toast when selected font theme is not valid
 #: src/routes/dash/settings.tsx
 msgid "That font theme isn't available. Pick another one."
-msgstr ""
+msgstr "該字體主題不可用。請選擇其他主題。"
 
 #. @context: Error toast when selected theme is not valid
 #: src/routes/dash/settings.tsx
 msgid "That theme isn't available. Pick another one."
-msgstr ""
+msgstr "該主題不可用。請選擇另一個。"
 
 #. @context: Custom URL path help text
 #: src/routes/dash/custom-urls.tsx
 msgid "The custom URL path (without leading slash)"
-msgstr ""
-
-#. @context: Redirect to path help text
-#: src/routes/dash/redirects.tsx
-#~ msgid "The destination path or URL"
-#~ msgstr "目的地路徑或 URL"
-
-#. @context: Redirect from path help text
-#: src/routes/dash/redirects.tsx
-#~ msgid "The path to redirect from"
-#~ msgstr "重定向來源的路徑"
+msgstr "自訂 URL 路徑（不包含前導斜線）"
 
 #. @context: Font theme preview sentence for body text
 #. @context: Font theme preview sentence for headings
@@ -2005,32 +1261,17 @@ msgstr "敏捷的棕色狐狸跳過懶惰的狗。"
 #. @context: Description for max visible nav links, explains overflow behavior
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "The rest will be tucked into a ··· menu"
-msgstr ""
+msgstr "其餘的將被收納進一個 ··· 菜單中"
 
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
 msgid "The slug of the target post or collection"
-msgstr ""
-
-#. @context: Quote text placeholder
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "The text being quoted..."
-#~ msgstr "被引用的文本..."
-
-#. @context: Page slug helper text
-#: src/ui/dash/PageForm.tsx
-#~ msgid "The URL path for this page. Use lowercase letters, numbers, and hyphens."
-#~ msgstr "此頁面的 URL 路徑。使用小寫字母、數字和連字符。"
+msgstr "目標文章或集合的網址標識符"
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
-msgstr ""
-
-#. @context: Warning message before deleting media
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "This file will be permanently removed from storage. Posts using it will show a broken link."
-#~ msgstr ""
+msgstr "此集合為空。請從編輯器中添加帖子。"
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2040,37 +1281,12 @@ msgstr "這是用於您的網站圖標和蘋果觸控圖標。為了獲得最佳
 #. @context: Password reset error heading
 #: src/routes/auth/reset.tsx
 msgid "This Link Has Expired"
-msgstr ""
-
-#. @context: Password reset error description
-#: src/routes/auth/reset.tsx
-#~ msgid "This password reset link is invalid or has expired. Please generate a new one."
-#~ msgstr "此密碼重設連結無效或已過期。請生成一個新的連結。"
+msgstr "此連結已過期"
 
 #. @context: Password reset error description
 #: src/routes/auth/reset.tsx
 msgid "This reset link is no longer valid. Request a new one to continue."
-msgstr ""
-
-#. @context: Appearance settings description
-#: src/ui/dash/appearance/ColorThemeContent.tsx
-#~ msgid "This will theme both your site and your dashboard. All color themes support dark mode."
-#~ msgstr "這將為您的網站和儀表板設置主題。所有顏色主題都支持深色模式。"
-
-#. @context: Thread view indicator - first post in thread
-#: src/ui/shared/ThreadView.tsx
-#~ msgid "Thread start"
-#~ msgstr "線程開始"
-
-#. @context: Thread view header - multiple posts
-#: src/ui/shared/ThreadView.tsx
-#~ msgid "Thread with {count} posts"
-#~ msgstr "包含 {count} 則帖子的主題"
-
-#. @context: Thread view header - single post
-#: src/ui/shared/ThreadView.tsx
-#~ msgid "Thread with 1 post"
-#~ msgstr "包含 1 則貼文的主題"
+msgstr "此重置連結不再有效。請求一個新的以繼續。"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2088,25 +1304,10 @@ msgstr "時區"
 msgid "Title"
 msgstr "標題"
 
-#. @context: Post form field
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Title (optional)"
-#~ msgstr "標題（選填）"
-
-#. @context: Redirect form field
-#: src/routes/dash/redirects.tsx
-#~ msgid "To Path"
-#~ msgstr "到路徑"
-
 #. @context: Description for system nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside links."
-msgstr ""
-
-#. @context: Description for system nav toggles
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Toggle built-in navigation items. Enabled items appear in your navigation alongside pages and links."
-#~ msgstr "切換內建導航項目。啟用的項目會與頁面和連結一起顯示在您的導航中。"
+msgstr "切換內建導航項目。啟用的項目會與鏈接一起顯示在您的導航中。"
 
 #. @context: Button to expand/collapse nav item edit
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -2116,12 +1317,12 @@ msgstr "切換編輯面板"
 #. @context: API token name field label
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Token name"
-msgstr ""
+msgstr "令牌名稱"
 
 #. @context: API tokens description
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
-msgstr ""
+msgstr "令牌讓您可以從腳本、快捷方式和其他工具訪問 API，而無需登錄。"
 
 #. @context: Custom URL form field
 #: src/routes/dash/custom-urls.tsx
@@ -2136,37 +1337,12 @@ msgstr "輸入引用..."
 #. @context: Settings item description for font theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Typography"
-msgstr ""
+msgstr "排版"
 
 #. @context: Post badge - unlisted
 #: src/ui/dash/StatusBadge.tsx
 msgid "Unlisted"
-msgstr ""
-
-#. @context: Default title for untitled post
-#: src/ui/dash/PostList.tsx
-#~ msgid "Untitled"
-#~ msgstr "無標題"
-
-#. @context: Button to update existing post
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Update"
-#~ msgstr "更新"
-
-#. @context: Button to save collection changes
-#: src/ui/dash/collections/CollectionForm.tsx
-#~ msgid "Update Collection"
-#~ msgstr "更新收藏集"
-
-#. @context: Button to update existing page
-#: src/ui/dash/PageForm.tsx
-#~ msgid "Update Page"
-#~ msgstr "更新頁面"
-
-#. @context: Button to upload media file
-#: src/ui/dash/media/MediaListContent.tsx
-#~ msgid "Upload"
-#~ msgstr "上傳"
+msgstr "未列出"
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2178,17 +1354,12 @@ msgstr "上傳頭像"
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
 msgid "Upload didn't go through. Try again in a moment."
-msgstr ""
+msgstr "上傳未成功。請稍後再試。"
 
 #. @context: Error message when avatar upload fails
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Upload failed. Please try again."
 msgstr "上傳失敗。請再試一次。"
-
-#. @context: Toast after successful file upload
-#: src/routes/api/upload.ts
-#~ msgid "Upload successful!"
-#~ msgstr "上傳成功！"
 
 #. @context: Avatar upload button text while uploading
 #. @context: Toast shown during background upload
@@ -2202,16 +1373,6 @@ msgstr "上傳中..."
 msgid "URL"
 msgstr "網址"
 
-#. @context: Post form field - source URL
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "URL (optional)"
-#~ msgstr "網址（可選）"
-
-#. @context: Settings item description for redirects
-#: src/ui/dash/settings/SettingsRootContent.tsx
-#~ msgid "URL redirects"
-#~ msgstr ""
-
 #. @context: Collection path help text
 #. @context: Collection path help text
 #: src/ui/compose/ComposeDialog.tsx
@@ -2222,17 +1383,7 @@ msgstr "URL安全識別碼（小寫、數字、連字符）。對於CJK標題，
 #. @context: Heading for API token usage examples
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
-msgstr ""
-
-#. @context: Switch label for setting featured posts as default homepage
-#: src/ui/dash/appearance/NavigationContent.tsx
-#~ msgid "Use Featured as default home view"
-#~ msgstr ""
-
-#. @context: Media URL helper text
-#: src/ui/dash/media/ViewMediaContent.tsx
-#~ msgid "Use this URL to embed the media in your posts."
-#~ msgstr "使用此 URL 將媒體嵌入到您的帖子中。"
+msgstr "使用方法"
 
 #. @context: Button to view item on public site
 #. @context: Toast action button to view the published post
@@ -2240,30 +1391,6 @@ msgstr ""
 #: src/ui/dash/ActionButtons.tsx
 msgid "View"
 msgstr "查看"
-
-#. @context: Dashboard header link to view the public site
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "View Site"
-#~ msgstr "查看網站"
-
-#. @context: Post form field - post visibility
-#: src/ui/dash/posts/PostForm.tsx
-#~ msgid "Visibility"
-#~ msgstr ""
-
-#. @context: Dashboard header link text to visit the public blog
-#. @context: Dashboard header link to visit the public blog
-#. @context: Dashboard header tooltip for visit blog icon on mobile
-#: src/ui/layouts/DashLayout.tsx
-#: src/ui/layouts/DashLayout.tsx
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "Visit Blog"
-#~ msgstr ""
-
-#. @context: Dashboard menu item to visit the public site
-#: src/ui/layouts/DashLayout.tsx
-#~ msgid "Visit Site"
-#~ msgstr ""
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx
@@ -2290,37 +1417,12 @@ msgstr "這個收藏是關於什麼的？"
 #. @context: Description for featured default toggle, explains what happens when off
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "When off, visitors see your latest posts first"
-msgstr ""
-
-#. @context: Button in empty state to create first post
-#: src/ui/dash/PostList.tsx
-#~ msgid "Write your first post"
-#~ msgstr ""
+msgstr "關閉時，訪客將首先看到您的最新帖子"
 
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
-msgstr ""
-
-#. @context: Confirm close dialog title
-#: src/ui/compose/ComposeDialog.tsx
-#~ msgid "You have unsaved changes"
-#~ msgstr ""
-
-#. @context: Error when browser lacks WebCodecs API for video processing
-#: src/client/compose-bridge.ts src/client/media-upload.ts
-#~ msgid "Your browser doesn't support video processing. Use Chrome or Edge to upload videos."
-#~ msgstr "您的瀏覽器不支援影片處理，請使用 Chrome 或 Edge 上傳影片。"
-
-#. @context: Empty state message when no media exists
-#: src/ui/dash/media/MediaListContent.tsx
-#~ msgid "Your media library is empty. Upload your first file to get started."
-#~ msgstr ""
-
-#. @context: Setup form field - user name
-#: src/routes/auth/setup.tsx
-#~ msgid "Your Name"
-#~ msgstr "您的姓名"
+msgstr "錯誤的電子郵件或密碼。請檢查您的憑據並重試。"
 
 #. @context: Compose thoughts placeholder
 #: src/ui/compose/ComposeDialog.tsx

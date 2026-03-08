@@ -280,8 +280,8 @@ export function createCollectionService(db: Database): CollectionService {
         })
         .from(postCollections)
         .innerJoin(
-          sql`posts`,
-          sql`posts.id = ${postCollections.postId} AND posts.deleted_at IS NULL`,
+          sql`post`,
+          sql`post.id = ${postCollections.postId} AND post.deleted_at IS NULL`,
         )
         .groupBy(postCollections.collectionId);
 
@@ -295,7 +295,7 @@ export function createCollectionService(db: Database): CollectionService {
     async addPost(collectionId, postId) {
       await db
         .insert(postCollections)
-        .values({ postId, collectionId })
+        .values({ postId, collectionId, createdAt: now() })
         .onConflictDoNothing();
     },
 
@@ -345,11 +345,13 @@ export function createCollectionService(db: Database): CollectionService {
       const deleteQuery = db
         .delete(postCollections)
         .where(eq(postCollections.postId, postId));
-      const insertQuery = db
-        .insert(postCollections)
-        .values(
-          collectionIds.map((collectionId) => ({ postId, collectionId })),
-        );
+      const insertQuery = db.insert(postCollections).values(
+        collectionIds.map((collectionId) => ({
+          postId,
+          collectionId,
+          createdAt: now(),
+        })),
+      );
       await db.batch([deleteQuery, insertQuery]);
     },
   };

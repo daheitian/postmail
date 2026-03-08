@@ -99,21 +99,21 @@ export function createSearchService(d1: D1Database): SearchService {
     if (!ftsQuery) return [];
 
     const statusPlaceholders = status.map(() => "?").join(", ");
-    const formatFilter = options.format ? "AND posts.format = ?" : "";
+    const formatFilter = options.format ? "AND post.format = ?" : "";
     const formatParams = options.format ? [options.format] : [];
 
     const stmt = d1.prepare(`
       SELECT
-        posts.*,
-        posts_fts.rank AS rank,
-        snippet(posts_fts, 1, '<mark>', '</mark>', '...', 32) AS snippet
-      FROM posts_fts
-      JOIN posts ON posts.rowid = posts_fts.rowid
-      WHERE posts_fts MATCH ?
-        AND posts.deleted_at IS NULL
-        AND posts.status IN (${statusPlaceholders})
+        post.*,
+        post_fts.rank AS rank,
+        snippet(post_fts, 1, '<mark>', '</mark>', '...', 32) AS snippet
+      FROM post_fts
+      JOIN post ON post.rowid = post_fts.rowid
+      WHERE post_fts MATCH ?
+        AND post.deleted_at IS NULL
+        AND post.status IN (${statusPlaceholders})
         ${formatFilter}
-      ORDER BY posts_fts.rank
+      ORDER BY post_fts.rank
       LIMIT ? OFFSET ?
     `);
 
@@ -134,22 +134,22 @@ export function createSearchService(d1: D1Database): SearchService {
     const like = `%${query}%`;
 
     const statusPlaceholders = status.map(() => "?").join(", ");
-    const formatFilter = options.format ? "AND posts.format = ?" : "";
+    const formatFilter = options.format ? "AND post.format = ?" : "";
     const formatParams = options.format ? [options.format] : [];
 
     const stmt = d1.prepare(`
-      SELECT posts.*, 0 AS rank, NULL AS snippet
-      FROM posts
+      SELECT post.*, 0 AS rank, NULL AS snippet
+      FROM post
       WHERE (
         title LIKE ? OR
         body_text LIKE ? OR
         quote_text LIKE ? OR
         url LIKE ?
       )
-      AND posts.deleted_at IS NULL
-      AND posts.status IN (${statusPlaceholders})
+      AND post.deleted_at IS NULL
+      AND post.status IN (${statusPlaceholders})
       ${formatFilter}
-      ORDER BY posts.published_at DESC
+      ORDER BY post.published_at DESC
       LIMIT ? OFFSET ?
     `);
 

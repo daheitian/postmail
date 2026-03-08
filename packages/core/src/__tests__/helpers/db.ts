@@ -1,14 +1,14 @@
 /**
  * Test Database Helper
  *
- * Creates an in-memory SQLite database with all migrations applied (up to v2).
+ * Creates an in-memory SQLite database with all migrations applied.
  * Used for service integration tests.
  */
 
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import * as schema from "../../db/schema.js";
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { resolve } from "path";
 
 const MIGRATIONS_DIR = resolve(import.meta.dirname, "../../db/migrations");
@@ -39,241 +39,64 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   sqlite.pragma("journal_mode = WAL");
   sqlite.pragma("foreign_keys = ON");
 
-  // Apply v1 base migrations (0000-0004)
-  applyMigration(sqlite, "0000_square_wallflower.sql");
-  // Skip 0001 (FTS) — v2 migration will create updated FTS if needed
-  applyMigration(sqlite, "0002_add_media_attachments.sql");
-  applyMigration(sqlite, "0003_add_navigation_links.sql");
-  applyMigration(sqlite, "0004_add_storage_provider.sql");
-
-  // Apply v2 schema migration (0005)
-  // Split FTS-related statements so we can handle them separately
-  const v2Migration = readFileSync(
-    resolve(MIGRATIONS_DIR, "0005_v2_schema_migration.sql"),
-    "utf-8",
+  // Apply the base schema migration (0000_*.sql)
+  const baseFile = readdirSync(MIGRATIONS_DIR).find((f) =>
+    f.startsWith("0000_"),
   );
+  if (!baseFile) throw new Error("Base migration (0000_*) not found");
+  applyMigration(sqlite, baseFile);
 
-  for (const stmt of v2Migration.split("--> statement-breakpoint")) {
-    const trimmed = stmt.trim();
-    if (!trimmed) continue;
-
-    // Skip FTS-related statements if FTS not requested
-    const isFts = trimmed.includes("posts_fts");
-    if (!options?.fts && isFts) continue;
-
-    try {
-      sqlite.exec(trimmed);
-    } catch {
-      // Handle trigram tokenizer failure for FTS virtual table
-      if (options?.fts && trimmed.includes("CREATE VIRTUAL TABLE")) {
-        sqlite.exec(`
-          CREATE VIRTUAL TABLE IF NOT EXISTS posts_fts USING fts5(
-            title,
-            body,
-            quote_text,
-            content='posts',
-            content_rowid='id'
-          );
-        `);
-      }
-      // Ignore DROP TRIGGER/TABLE IF EXISTS failures silently
-      else if (
-        !trimmed.startsWith("DROP TRIGGER") &&
-        !trimmed.startsWith("DROP TABLE")
-      ) {
-        throw new Error(`Migration statement failed: ${trimmed.slice(0, 100)}`);
-      }
-    }
-  }
-
-  // Apply 0006: rename slug to path on posts
-  applyMigration(sqlite, "0006_rename_slug_to_path.sql");
-
-  // Apply 0007: post_collections M:N junction table
-  const m7 = readFileSync(
-    resolve(MIGRATIONS_DIR, "0007_post_collections_m2m.sql"),
-    "utf-8",
-  );
-  for (const stmt of m7.split("--> statement-breakpoint")) {
-    const trimmed = stmt.trim();
-    if (!trimmed) continue;
-    // Skip FTS trigger statements if FTS not requested
-    const isFts = trimmed.includes("posts_fts");
-    if (!options?.fts && isFts) continue;
-    try {
-      sqlite.exec(trimmed);
-    } catch {
-      // Ignore DROP TRIGGER failures silently
-      if (!trimmed.startsWith("DROP TRIGGER")) {
-        throw new Error(`Migration 0007 failed: ${trimmed.slice(0, 100)}`);
-      }
-    }
-  }
-
-  // Apply 0008: collection_dividers table
-  applyMigration(sqlite, "0008_add_collection_dividers.sql");
-
-  // Apply 0009: drop show_divider column from collections
-  applyMigration(sqlite, "0009_drop_collection_show_divider.sql");
-
-  // Apply 0010: performance indexes
-  applyMigration(sqlite, "0010_add_performance_indexes.sql");
-
-  // Apply 0011: path registry
-  applyMigration(sqlite, "0011_add_path_registry.sql");
-
-  // Apply 0012: Tiptap columns (summary)
-  applyMigration(sqlite, "0012_add_tiptap_columns.sql");
-
-  // Apply 0013: Replace featured with visibility
-  applyMigration(sqlite, "0013_replace_featured_with_visibility.sql");
-
-  // Apply 0014: Update FTS to use body_text + url instead of raw body JSON
-  const m14 = readFileSync(
-    resolve(MIGRATIONS_DIR, "0014_update_fts_body_text.sql"),
-    "utf-8",
-  );
-  for (const stmt of m14.split("--> statement-breakpoint")) {
-    const trimmed = stmt.trim();
-    if (!trimmed) continue;
-    const isFts = trimmed.includes("posts_fts");
-    if (!options?.fts && isFts) continue;
-    try {
-      sqlite.exec(trimmed);
-    } catch {
-      // Handle trigram tokenizer failure for FTS virtual table
-      if (options?.fts && trimmed.includes("CREATE VIRTUAL TABLE")) {
-        sqlite.exec(`
-          CREATE VIRTUAL TABLE IF NOT EXISTS posts_fts USING fts5(
-            title,
-            body_text,
-            quote_text,
-            url,
-            content='posts',
-            content_rowid='id'
-          );
-        `);
-      }
-      // Ignore DROP TRIGGER/TABLE IF EXISTS failures silently
-      else if (
-        !trimmed.startsWith("DROP TRIGGER") &&
-        !trimmed.startsWith("DROP TABLE")
-      ) {
-        throw new Error(`Migration 0014 failed: ${trimmed.slice(0, 100)}`);
-      }
-    }
-  }
-
-  // Apply 0015: add poster_key to media
-  applyMigration(sqlite, "0015_add_media_poster_key.sql");
-
-  // Apply 0016: add summary column to media
-  applyMigration(sqlite, "0016_add_post_texts.sql");
-
-  // Apply 0017: add updated_at to media
-  applyMigration(sqlite, "0017_nice_ozymandias.sql");
-
-  // Skip 0018 (posts table rebuild) — breaks FTS triggers in test environment
-
-  // Apply 0019: add chars column to media
-  applyMigration(sqlite, "0019_lovely_ben_urich.sql");
-
-  // Apply 0020: UUIDv7 migration (drop + recreate with text PKs)
-  const m20 = readFileSync(
-    resolve(MIGRATIONS_DIR, "0020_uuid_migration.sql"),
-    "utf-8",
-  );
-  for (const stmt of m20.split("--> statement-breakpoint")) {
-    const trimmed = stmt.trim();
-    if (!trimmed) continue;
-    const isFts = trimmed.includes("posts_fts");
-    if (!options?.fts && isFts) continue;
-    try {
-      sqlite.exec(trimmed);
-    } catch {
-      // Handle trigram tokenizer failure for FTS virtual table
-      if (options?.fts && trimmed.includes("CREATE VIRTUAL TABLE")) {
-        sqlite.exec(`
-          CREATE VIRTUAL TABLE IF NOT EXISTS posts_fts USING fts5(
-            title,
-            body_text,
-            quote_text,
-            url,
-            content='posts'
-          );
-        `);
-      }
-      // Ignore DROP TRIGGER/TABLE IF EXISTS failures silently
-      else if (
-        !trimmed.startsWith("DROP TRIGGER") &&
-        !trimmed.startsWith("DROP TABLE")
-      ) {
-        throw new Error(`Migration 0020 failed: ${trimmed.slice(0, 100)}`);
-      }
-    }
-  }
-
-  // Restore unique composite index dropped by 0020 migration
-  // (was originally in 0010 but not re-created in 0020)
-  sqlite.exec(
-    "CREATE UNIQUE INDEX IF NOT EXISTS idx_post_collections_pk ON post_collections (post_id, collection_id)",
-  );
-
-  // Apply 0021: drop pages table references
-  applyMigration(sqlite, "0021_real_baron_zemo.sql");
-
-  // Apply 0022: slug-based routing (drop path_registry/redirects, add custom_urls, rename path→slug)
-  const m22 = readFileSync(
-    resolve(MIGRATIONS_DIR, "0022_large_luminals.sql"),
-    "utf-8",
-  );
-  for (const stmt of m22.split("--> statement-breakpoint")) {
-    const trimmed = stmt.trim();
-    if (!trimmed) continue;
-    // Skip FTS trigger statements if FTS not requested
-    const isFts = trimmed.includes("posts_fts") || trimmed.includes("TRIGGER");
-    if (!options?.fts && isFts) continue;
-    try {
-      sqlite.exec(trimmed);
-    } catch {
-      // Ignore DROP INDEX/TABLE/TRIGGER failures
-      if (
-        !trimmed.startsWith("DROP INDEX") &&
-        !trimmed.startsWith("DROP TABLE") &&
-        !trimmed.startsWith("DROP TRIGGER")
-      ) {
-        throw new Error(`Migration 0022 failed: ${trimmed.slice(0, 100)}`);
-      }
-    }
-  }
-
-  // Apply 0023: add waveform column to media
-  applyMigration(sqlite, "0023_quick_lord_hawal.sql");
-
-  // Apply 0024: add api_tokens table
-  applyMigration(sqlite, "0024_silky_franklin_richards.sql");
-
-  // Apply 0025: sidebar_items + fractional indexing
-  applyMigration(sqlite, "0025_sidebar_items.sql");
-
-  // Apply 0026: rename pinned → pinned_at (nullable timestamp)
-  // This migration rebuilds the posts table (DROP + RENAME), which implicitly
-  // drops FTS triggers attached to the old table. Recreate them if needed.
-  applyMigration(sqlite, "0026_equal_vapor.sql");
+  // Apply FTS migration if requested
   if (options?.fts) {
+    const ftsFile = readdirSync(MIGRATIONS_DIR).find((f) =>
+      f.startsWith("0001_"),
+    );
+    if (!ftsFile) throw new Error("FTS migration (0001_*) not found");
+
+    const ftsSql = readFileSync(resolve(MIGRATIONS_DIR, ftsFile), "utf-8");
+    for (const stmt of ftsSql.split("--> statement-breakpoint")) {
+      const trimmed = stmt.trim();
+      if (!trimmed) continue;
+      try {
+        sqlite.exec(trimmed);
+      } catch {
+        // Trigram tokenizer may not be available — fall back to default tokenizer
+        if (trimmed.includes("CREATE VIRTUAL TABLE")) {
+          sqlite.exec(`
+            CREATE VIRTUAL TABLE IF NOT EXISTS post_fts USING fts5(
+              title,
+              body_text,
+              quote_text,
+              url,
+              content='post',
+              content_rowid='rowid'
+            );
+          `);
+        }
+        // Ignore trigger failures if virtual table creation failed
+        else if (!trimmed.startsWith("CREATE TRIGGER")) {
+          throw new Error(
+            `FTS migration statement failed: ${trimmed.slice(0, 100)}`,
+          );
+        }
+      }
+    }
+
+    // If trigram fallback was used, triggers need to be created without trigram
+    // Re-create triggers unconditionally (IF NOT EXISTS handles idempotency)
     sqlite.exec(`
-      CREATE TRIGGER IF NOT EXISTS posts_ai AFTER INSERT ON posts BEGIN
-        INSERT INTO posts_fts(rowid, title, body_text, quote_text, url)
+      CREATE TRIGGER IF NOT EXISTS post_ai AFTER INSERT ON post BEGIN
+        INSERT INTO post_fts(rowid, title, body_text, quote_text, url)
         VALUES (new.rowid, new.title, new.body_text, new.quote_text, new.url);
       END;
-      CREATE TRIGGER IF NOT EXISTS posts_ad AFTER DELETE ON posts BEGIN
-        INSERT INTO posts_fts(posts_fts, rowid, title, body_text, quote_text, url)
+      CREATE TRIGGER IF NOT EXISTS post_ad AFTER DELETE ON post BEGIN
+        INSERT INTO post_fts(post_fts, rowid, title, body_text, quote_text, url)
         VALUES ('delete', old.rowid, old.title, old.body_text, old.quote_text, old.url);
       END;
-      CREATE TRIGGER IF NOT EXISTS posts_au AFTER UPDATE ON posts BEGIN
-        INSERT INTO posts_fts(posts_fts, rowid, title, body_text, quote_text, url)
+      CREATE TRIGGER IF NOT EXISTS post_au AFTER UPDATE ON post BEGIN
+        INSERT INTO post_fts(post_fts, rowid, title, body_text, quote_text, url)
         VALUES ('delete', old.rowid, old.title, old.body_text, old.quote_text, old.url);
-        INSERT INTO posts_fts(rowid, title, body_text, quote_text, url)
+        INSERT INTO post_fts(rowid, title, body_text, quote_text, url)
         VALUES (new.rowid, new.title, new.body_text, new.quote_text, new.url);
       END;
     `);

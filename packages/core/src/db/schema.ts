@@ -4,44 +4,57 @@
  * Database schema for Jant v2
  */
 
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  text,
+  integer,
+  primaryKey,
+  foreignKey,
+} from "drizzle-orm/sqlite-core";
 
 // =============================================================================
 // Posts
 // =============================================================================
 
-export const posts = sqliteTable("posts", {
-  id: text("id").primaryKey(),
-  format: text("format", {
-    enum: ["note", "link", "quote"],
-  }).notNull(),
-  status: text("status", {
-    enum: ["draft", "published"],
-  })
-    .notNull()
-    .default("published"),
-  visibility: text("visibility", {
-    enum: ["public", "featured", "unlisted"],
-  })
-    .notNull()
-    .default("public"),
-  pinnedAt: integer("pinned_at"),
-  slug: text("slug").notNull().unique(),
-  title: text("title"),
-  url: text("url"),
-  body: text("body"),
-  bodyHtml: text("body_html"),
-  bodyText: text("body_text"),
-  quoteText: text("quote_text"),
-  summary: text("summary"),
-  rating: integer("rating"),
-  replyToId: text("reply_to_id"),
-  threadId: text("thread_id"),
-  deletedAt: integer("deleted_at"),
-  publishedAt: integer("published_at").notNull(),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const posts = sqliteTable(
+  "post",
+  {
+    id: text("id").primaryKey(),
+    format: text("format", {
+      enum: ["note", "link", "quote"],
+    }).notNull(),
+    status: text("status", {
+      enum: ["draft", "published"],
+    })
+      .notNull()
+      .default("published"),
+    visibility: text("visibility", {
+      enum: ["public", "featured", "unlisted"],
+    })
+      .notNull()
+      .default("public"),
+    pinnedAt: integer("pinned_at"),
+    slug: text("slug").notNull().unique(),
+    title: text("title"),
+    url: text("url"),
+    body: text("body"),
+    bodyHtml: text("body_html"),
+    bodyText: text("body_text"),
+    quoteText: text("quote_text"),
+    summary: text("summary"),
+    rating: integer("rating"),
+    replyToId: text("reply_to_id"),
+    threadId: text("thread_id"),
+    deletedAt: integer("deleted_at"),
+    publishedAt: integer("published_at").notNull(),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    foreignKey({ columns: [table.replyToId], foreignColumns: [table.id] }),
+    foreignKey({ columns: [table.threadId], foreignColumns: [table.id] }),
+  ],
+);
 
 // =============================================================================
 // Media
@@ -49,7 +62,7 @@ export const posts = sqliteTable("posts", {
 
 export const media = sqliteTable("media", {
   id: text("id").primaryKey(), // UUIDv7
-  postId: text("post_id"),
+  postId: text("post_id").references(() => posts.id),
   filename: text("filename").notNull(),
   originalName: text("original_name").notNull(),
   mimeType: text("mime_type").notNull(),
@@ -66,14 +79,14 @@ export const media = sqliteTable("media", {
   summary: text("summary"),
   chars: integer("chars"),
   createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull().default(0),
+  updatedAt: integer("updated_at").notNull(),
 });
 
 // =============================================================================
 // Collections
 // =============================================================================
 
-export const collections = sqliteTable("collections", {
+export const collections = sqliteTable("collection", {
   id: text("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
@@ -92,10 +105,10 @@ export const collections = sqliteTable("collections", {
 // Sidebar Items (unified ordering for collections + dividers)
 // =============================================================================
 
-export const sidebarItems = sqliteTable("sidebar_items", {
+export const sidebarItems = sqliteTable("sidebar_item", {
   id: text("id").primaryKey(),
   type: text("type", { enum: ["collection", "divider"] }).notNull(),
-  collectionId: text("collection_id"),
+  collectionId: text("collection_id").references(() => collections.id),
   position: text("position").notNull().default("a0"),
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
@@ -105,16 +118,25 @@ export const sidebarItems = sqliteTable("sidebar_items", {
 // Post-Collection Junction Table (M:N)
 // =============================================================================
 
-export const postCollections = sqliteTable("post_collections", {
-  postId: text("post_id").notNull(),
-  collectionId: text("collection_id").notNull(),
-});
+export const postCollections = sqliteTable(
+  "post_collection",
+  {
+    postId: text("post_id")
+      .notNull()
+      .references(() => posts.id),
+    collectionId: text("collection_id")
+      .notNull()
+      .references(() => collections.id),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.postId, table.collectionId] })],
+);
 
 // =============================================================================
 // Navigation Items
 // =============================================================================
 
-export const navItems = sqliteTable("nav_items", {
+export const navItems = sqliteTable("nav_item", {
   id: text("id").primaryKey(),
   type: text("type", {
     enum: ["link", "system"],
@@ -132,7 +154,7 @@ export const navItems = sqliteTable("nav_items", {
 // Custom URLs (replaces redirects + path_registry)
 // =============================================================================
 
-export const customUrls = sqliteTable("custom_urls", {
+export const customUrls = sqliteTable("custom_url", {
   id: text("id").primaryKey(),
   path: text("path").notNull().unique(),
   targetType: text("target_type").notNull(), // "post" | "collection" | "redirect"
@@ -146,7 +168,7 @@ export const customUrls = sqliteTable("custom_urls", {
 // Settings (Key-Value)
 // =============================================================================
 
-export const settings = sqliteTable("settings", {
+export const settings = sqliteTable("setting", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
   updatedAt: integer("updated_at").notNull(),
@@ -156,7 +178,7 @@ export const settings = sqliteTable("settings", {
 // API Tokens
 // =============================================================================
 
-export const apiTokens = sqliteTable("api_tokens", {
+export const apiTokens = sqliteTable("api_token", {
   id: text("id").primaryKey(), // UUIDv7
   name: text("name").notNull(), // User-assigned label
   tokenHash: text("token_hash").notNull(), // SHA-256 hex

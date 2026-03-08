@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f188896f-03b0-45f3-9f3e-41d7efa51e45",
-  "prevId": "cbb7781e-68c5-46ba-b73e-cfbcfc08884a",
+  "id": "e139d66a-b2f6-4d15-9c0e-0dfa69edb0dc",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
       "name": "account",
@@ -115,23 +115,43 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "collection_dividers": {
-      "name": "collection_dividers",
+    "api_token": {
+      "name": "api_token",
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
-        "position": {
-          "name": "position",
-          "type": "integer",
+        "name": {
+          "name": "name",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": 0
+          "autoincrement": false
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "prefix": {
+          "name": "prefix",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "last_used_at": {
+          "name": "last_used_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
@@ -154,15 +174,15 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "collections": {
-      "name": "collections",
+    "collection": {
+      "name": "collection",
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "slug": {
           "name": "slug",
@@ -200,14 +220,6 @@
           "autoincrement": false,
           "default": "'newest'"
         },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -224,9 +236,74 @@
         }
       },
       "indexes": {
-        "collections_slug_unique": {
-          "name": "collections_slug_unique",
+        "collection_slug_unique": {
+          "name": "collection_slug_unique",
           "columns": ["slug"],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "custom_url": {
+      "name": "custom_url",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_type": {
+          "name": "target_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "target_id": {
+          "name": "target_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "to_path": {
+          "name": "to_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "redirect_type": {
+          "name": "redirect_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "custom_url_path_unique": {
+          "name": "custom_url_path_unique",
+          "columns": ["path"],
           "isUnique": true
         }
       },
@@ -247,7 +324,7 @@
         },
         "post_id": {
           "name": "post_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -331,6 +408,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "waveform": {
+          "name": "waveform",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "poster_key": {
           "name": "poster_key",
           "type": "text",
@@ -341,6 +425,13 @@
         "summary": {
           "name": "summary",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "chars": {
+          "name": "chars",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -357,16 +448,15 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": 0
+          "autoincrement": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "media_post_id_posts_id_fk": {
-          "name": "media_post_id_posts_id_fk",
+        "media_post_id_post_id_fk": {
+          "name": "media_post_id_post_id_fk",
           "tableFrom": "media",
-          "tableTo": "posts",
+          "tableTo": "post",
           "columnsFrom": ["post_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
@@ -377,15 +467,15 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "nav_items": {
-      "name": "nav_items",
+    "nav_item": {
+      "name": "nav_item",
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "type": {
           "name": "type",
@@ -409,20 +499,13 @@
           "notNull": true,
           "autoincrement": false
         },
-        "page_id": {
-          "name": "page_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "position": {
           "name": "position",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": 0
+          "default": "'a0'"
         },
         "created_at": {
           "name": "created_at",
@@ -440,144 +523,30 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "nav_items_page_id_pages_id_fk": {
-          "name": "nav_items_page_id_pages_id_fk",
-          "tableFrom": "nav_items",
-          "tableTo": "pages",
-          "columnsFrom": ["page_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "pages": {
-      "name": "pages",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "body": {
-          "name": "body",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "body_html": {
-          "name": "body_html",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'published'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "pages_slug_unique": {
-          "name": "pages_slug_unique",
-          "columns": ["slug"],
-          "isUnique": true
-        }
-      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "path_registry": {
-      "name": "path_registry",
-      "columns": {
-        "path": {
-          "name": "path",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "owner_type": {
-          "name": "owner_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "owner_id": {
-          "name": "owner_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "post_collections": {
-      "name": "post_collections",
+    "post_collection": {
+      "name": "post_collection",
       "columns": {
         "post_id": {
           "name": "post_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "collection_id": {
           "name": "collection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -586,38 +555,43 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "post_collections_post_id_posts_id_fk": {
-          "name": "post_collections_post_id_posts_id_fk",
-          "tableFrom": "post_collections",
-          "tableTo": "posts",
+        "post_collection_post_id_post_id_fk": {
+          "name": "post_collection_post_id_post_id_fk",
+          "tableFrom": "post_collection",
+          "tableTo": "post",
           "columnsFrom": ["post_id"],
           "columnsTo": ["id"],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "post_collections_collection_id_collections_id_fk": {
-          "name": "post_collections_collection_id_collections_id_fk",
-          "tableFrom": "post_collections",
-          "tableTo": "collections",
+        "post_collection_collection_id_collection_id_fk": {
+          "name": "post_collection_collection_id_collection_id_fk",
+          "tableFrom": "post_collection",
+          "tableTo": "collection",
           "columnsFrom": ["collection_id"],
           "columnsTo": ["id"],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "post_collection_post_id_collection_id_pk": {
+          "columns": ["post_id", "collection_id"],
+          "name": "post_collection_post_id_collection_id_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "posts": {
-      "name": "posts",
+    "post": {
+      "name": "post",
       "columns": {
         "id": {
           "name": "id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": true
+          "autoincrement": false
         },
         "format": {
           "name": "format",
@@ -642,19 +616,18 @@
           "autoincrement": false,
           "default": "'public'"
         },
-        "pinned": {
-          "name": "pinned",
+        "pinned_at": {
+          "name": "pinned_at",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
+          "notNull": false,
+          "autoincrement": false
         },
-        "path": {
-          "name": "path",
+        "slug": {
+          "name": "slug",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "title": {
@@ -715,14 +688,14 @@
         },
         "reply_to_id": {
           "name": "reply_to_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "thread_id": {
           "name": "thread_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -757,65 +730,32 @@
         }
       },
       "indexes": {
-        "posts_path_unique": {
-          "name": "posts_path_unique",
-          "columns": ["path"],
+        "post_slug_unique": {
+          "name": "post_slug_unique",
+          "columns": ["slug"],
           "isUnique": true
         }
       },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "redirects": {
-      "name": "redirects",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": true
+      "foreignKeys": {
+        "post_reply_to_id_post_id_fk": {
+          "name": "post_reply_to_id_post_id_fk",
+          "tableFrom": "post",
+          "tableTo": "post",
+          "columnsFrom": ["reply_to_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         },
-        "from_path": {
-          "name": "from_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "to_path": {
-          "name": "to_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 301
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+        "post_thread_id_post_id_fk": {
+          "name": "post_thread_id_post_id_fk",
+          "tableFrom": "post",
+          "tableTo": "post",
+          "columnsFrom": ["thread_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
-      "indexes": {
-        "redirects_from_path_unique": {
-          "name": "redirects_from_path_unique",
-          "columns": ["from_path"],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -902,8 +842,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "settings": {
-      "name": "settings",
+    "setting": {
+      "name": "setting",
       "columns": {
         "key": {
           "name": "key",
@@ -929,6 +869,69 @@
       },
       "indexes": {},
       "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "sidebar_item": {
+      "name": "sidebar_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'a0'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "sidebar_item_collection_id_collection_id_fk": {
+          "name": "sidebar_item_collection_id_collection_id_fk",
+          "tableFrom": "sidebar_item",
+          "tableTo": "collection",
+          "columnsFrom": ["collection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}

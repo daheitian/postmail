@@ -54,15 +54,17 @@ const header = `-- =============================================================
 `;
 
 const tables = [
-  ...(!noAuth ? [["settings"], ["user"], ["account"]] : []),
-  ["pages"],
-  ["collections"],
+  ...(!noAuth ? [["setting"], ["user"], ["account"]] : []),
+  ["collection"],
   [
-    "posts",
-    "SELECT * FROM posts WHERE deleted_at IS NULL",
+    "post",
+    "SELECT * FROM post WHERE deleted_at IS NULL",
   ],
-  ["post_collections"],
-  ["nav_items"],
+  ["post_collection"],
+  ["nav_item"],
+  ["sidebar_item"],
+  ["custom_url"],
+  ["api_token"],
 ];
 
 // Include media table only when --no-media is not set

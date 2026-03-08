@@ -162,7 +162,7 @@ export function createPostService(
     if (filters.collectionId !== undefined) {
       // Filter by collection via junction table
       conditions.push(
-        sql`${posts.id} IN (SELECT post_id FROM post_collections WHERE collection_id = ${filters.collectionId})`,
+        sql`${posts.id} IN (SELECT post_id FROM post_collection WHERE collection_id = ${filters.collectionId})`,
       );
     }
     if (filters.threadId) {
@@ -344,6 +344,7 @@ export function createPostService(
           data.collectionIds.map((collectionId) => ({
             postId: post.id,
             collectionId,
+            createdAt: timestamp,
           })),
         );
       }
@@ -463,6 +464,7 @@ export function createPostService(
               data.collectionIds!.map((collectionId) => ({
                 postId: id,
                 collectionId,
+                createdAt: now(),
               })),
             ),
           );

@@ -62,11 +62,13 @@ const resetSql = readFileSync(resolve(__dirname, "reset-site.sql"), "utf-8");
 
 const tables = [
   // settings, user, account are preserved by reset-site.sql — don't export
-  ["posts", "SELECT * FROM posts WHERE deleted_at IS NULL"],
-  ["post_collections"],
-  ["pages"],
-  ["collections"],
-  ["nav_items"],
+  ["post", "SELECT * FROM post WHERE deleted_at IS NULL"],
+  ["post_collection"],
+  ["collection"],
+  ["nav_item"],
+  ["sidebar_item"],
+  ["custom_url"],
+  ["api_token"],
   ["media"],
 ];
 
