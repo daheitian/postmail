@@ -5,10 +5,15 @@
  * Reads post metadata from `data-*` attributes on the closest `article[data-post]`.
  * Uses BaseCoat dropdown-menu component structure for styling.
  * Light DOM only — BaseCoat and Tailwind classes apply directly.
+ *
+ * Includes a collection picker sub-view that replaces the menu content
+ * when "Add to collection" is clicked (multi-select with search).
  */
 
 import { LitElement, html, nothing } from "lit";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { showToast } from "../toast.js";
+import type { CollectionSubmitDetail } from "./collection-types.js";
 
 interface PostMenuData {
   id: string;
@@ -21,6 +26,36 @@ interface CollectionItem {
   id: string;
   title: string;
   slug: string;
+  icon: string | null;
+}
+
+/**
+ * Render a collection icon from its raw DB value (JSON or legacy emoji).
+ * Inline helper to avoid pulling lucide-static into the post-menu bundle.
+ */
+function renderIconHtml(icon: string | null): string {
+  if (!icon) return "";
+  if (icon.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(icon) as {
+        svg?: string;
+        color?: string;
+      };
+      if (typeof parsed.svg === "string") {
+        let svg = parsed.svg
+          .replace(/width="\d+"/, 'width="16"')
+          .replace(/height="\d+"/, 'height="16"');
+        if (parsed.color) {
+          svg = svg.replace(/^<svg/, `<svg style="color: ${parsed.color}"`);
+        }
+        return svg;
+      }
+    } catch {
+      /* not JSON — treat as text */
+    }
+  }
+  // Legacy emoji/text value
+  return `<span>${icon}</span>`;
 }
 
 export class JantPostMenu extends LitElement {
@@ -30,9 +65,12 @@ export class JantPostMenu extends LitElement {
     _x: { state: true },
     _y: { state: true },
     _openAbove: { state: true },
-    _collectionsExpanded: { state: true },
+    _collectionPickerOpen: { state: true },
     _collections: { state: true },
     _collectionsLoading: { state: true },
+    _collectionSearch: { state: true },
+    _postCollectionIds: { state: true },
+    _addCollectionPanelOpen: { state: true },
   };
 
   declare _open: boolean;
@@ -40,10 +78,16 @@ export class JantPostMenu extends LitElement {
   declare _x: number;
   declare _y: number;
   declare _openAbove: boolean;
-  declare _collectionsExpanded: boolean;
+  declare _collectionPickerOpen: boolean;
   declare _collections: CollectionItem[] | null;
   declare _collectionsLoading: boolean;
+  declare _collectionSearch: string;
+  declare _postCollectionIds: string[];
+  declare _addCollectionPanelOpen: boolean;
   declare _triggerEl: HTMLElement | null;
+
+  /** Whether collections were modified during this session (triggers page reload on close) */
+  #collectionsDirty = false;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -57,9 +101,12 @@ export class JantPostMenu extends LitElement {
     this._x = 0;
     this._y = 0;
     this._openAbove = true;
-    this._collectionsExpanded = false;
+    this._collectionPickerOpen = false;
     this._collections = null;
     this._collectionsLoading = false;
+    this._collectionSearch = "";
+    this._postCollectionIds = [];
+    this._addCollectionPanelOpen = false;
     this._triggerEl = null;
   }
 
@@ -161,15 +208,17 @@ export class JantPostMenu extends LitElement {
       this._y = this._openAbove ? rect.top : rect.bottom;
       this._triggerEl = trigger;
       trigger.setAttribute("aria-expanded", "true");
-      this._collectionsExpanded = false;
+      this._collectionPickerOpen = false;
       this._open = true;
       return;
     }
 
-    // Clicking inside the dropdown — don't close
+    // Clicking inside the dropdown — don't close (menu or collection picker)
     if (this._open) {
-      const menu = (e.target as HTMLElement).closest?.("[role='menu']");
-      if (menu) return;
+      const inside = target.closest?.(
+        "[role='menu'], [data-collection-picker]",
+      );
+      if (inside) return;
     }
 
     // Clicking outside — close
@@ -182,7 +231,14 @@ export class JantPostMenu extends LitElement {
     this._triggerEl?.setAttribute("aria-expanded", "false");
     this._triggerEl = null;
     this._open = false;
-    this._collectionsExpanded = false;
+    this._collectionPickerOpen = false;
+    this._addCollectionPanelOpen = false;
+    this._collectionSearch = "";
+
+    if (this.#collectionsDirty) {
+      this.#collectionsDirty = false;
+      window.location.reload();
+    }
   }
 
   // --- Actions ---
@@ -303,43 +359,155 @@ export class JantPostMenu extends LitElement {
     this.#close();
   }
 
-  async #toggleCollections() {
-    this._collectionsExpanded = !this._collectionsExpanded;
-    if (this._collectionsExpanded && !this._collections) {
-      this._collectionsLoading = true;
-      try {
-        const res = await fetch("/api/collections");
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        this._collections = data.collections ?? [];
-      } catch {
-        this._collections = [];
-        showToast("Could not load collections.", "error");
+  async #openCollectionPicker() {
+    if (!this._data) return;
+    const postId = this._data.id;
+    this._collectionPickerOpen = true;
+    this._collectionSearch = "";
+    this._collectionsLoading = true;
+
+    try {
+      const [collectionsRes, postRes] = await Promise.all([
+        fetch("/api/collections"),
+        fetch(`/api/posts/${postId}`),
+      ]);
+
+      if (!collectionsRes.ok) throw new Error();
+      const collectionsData = await collectionsRes.json();
+      this._collections = collectionsData.collections ?? [];
+
+      if (postRes.ok) {
+        const postData = await postRes.json();
+        this._postCollectionIds = postData.collectionIds ?? [];
       }
-      this._collectionsLoading = false;
+    } catch {
+      this._collections = this._collections ?? [];
+      showToast("Could not load collections.", "error");
+    }
+    this._collectionsLoading = false;
+  }
+
+  async #toggleCollection(collectionId: string) {
+    if (!this._data) return;
+    const isSelected = this._postCollectionIds.includes(collectionId);
+
+    try {
+      if (isSelected) {
+        const res = await fetch(
+          `/api/collections/${collectionId}/posts/${this._data.id}`,
+          { method: "DELETE" },
+        );
+        if (!res.ok) throw new Error();
+        this._postCollectionIds = this._postCollectionIds.filter(
+          (id) => id !== collectionId,
+        );
+        this.#collectionsDirty = true;
+        showToast("Removed from collection.");
+      } else {
+        const res = await fetch(`/api/collections/${collectionId}/posts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ postId: this._data.id }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          if (res.status === 409 || body?.error?.includes("already")) {
+            if (!this._postCollectionIds.includes(collectionId)) {
+              this._postCollectionIds = [
+                ...this._postCollectionIds,
+                collectionId,
+              ];
+            }
+            return;
+          }
+          throw new Error();
+        }
+        this._postCollectionIds = [...this._postCollectionIds, collectionId];
+        this.#collectionsDirty = true;
+        showToast("Added to collection.");
+      }
+    } catch {
+      showToast(
+        isSelected
+          ? "Could not remove from collection. Try again."
+          : "Could not add to collection. Try again.",
+        "error",
+      );
     }
   }
 
-  async #addToCollection(collectionId: string) {
-    if (!this._data) return;
+  #openAddCollectionPanel() {
+    this._addCollectionPanelOpen = true;
+  }
+
+  #closeAddCollectionPanel() {
+    this._addCollectionPanelOpen = false;
+  }
+
+  async #handleAddCollectionSubmit(e: Event) {
+    const event = e as CustomEvent<CollectionSubmitDetail>;
+    event.stopPropagation();
+
+    const detail = event.detail;
+    if (!detail) return;
+
+    const formEl = this.querySelector("jant-collection-form") as
+      | (HTMLElement & { loading: boolean })
+      | null;
+    if (formEl) formEl.loading = true;
+
     try {
-      const res = await fetch(`/api/collections/${collectionId}/posts`, {
+      const res = await fetch("/api/collections", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId: this._data.id }),
+        body: JSON.stringify(detail.data),
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        if (res.status === 409 || body?.error?.includes("already")) {
-          showToast("Post is already in this collection.");
-          return;
-        }
-        throw new Error();
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const created = await res.json();
+      const newItem: CollectionItem = {
+        id: created.id,
+        title: created.title,
+        slug: created.slug,
+        icon: created.icon ?? null,
+      };
+
+      this._collections = [...(this._collections ?? []), newItem];
+
+      // Auto-add the post to the newly created collection
+      if (this._data) {
+        await fetch(`/api/collections/${created.id}/posts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ postId: this._data.id }),
+        });
+        this._postCollectionIds = [...this._postCollectionIds, created.id];
       }
-      showToast("Added to collection.");
+
+      this.#collectionsDirty = true;
+      this._addCollectionPanelOpen = false;
+      showToast("Collection created.");
     } catch {
-      showToast("Could not add to collection. Try again.", "error");
+      showToast("Could not create collection. Try again.", "error");
+    } finally {
+      if (formEl) formEl.loading = false;
     }
+  }
+
+  #submitAddCollectionForm() {
+    const form = this.querySelector<HTMLFormElement>(
+      ".post-menu-add-collection-panel form",
+    );
+    if (form) form.requestSubmit();
+  }
+
+  /** Get collection form labels from the compose dialog (already on the page) */
+  #getCollectionFormLabels() {
+    const composeEl = document.querySelector("jant-compose-dialog") as
+      | import("./jant-compose-dialog.js").JantComposeDialog
+      | null;
+    return composeEl?.labels?.collectionFormLabels ?? null;
   }
 
   // --- Icons (inline SVG) ---
@@ -479,52 +647,228 @@ export class JantPostMenu extends LitElement {
     </svg>`;
   }
 
-  #iconChevron() {
-    return html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>`;
-  }
-
   // --- Render ---
 
-  #renderCollections() {
-    if (!this._collectionsExpanded) return nothing;
+  #renderCollectionPicker() {
+    if (this._addCollectionPanelOpen) {
+      return this.#renderAddCollectionPanel();
+    }
+
+    const collections = this._collections ?? [];
+    const search = this._collectionSearch.toLowerCase();
+    const filtered = search
+      ? collections.filter((c) => c.title.toLowerCase().includes(search))
+      : collections;
 
     return html`
-      <div role="group" class="post-menu-collections">
-        ${this._collectionsLoading
-          ? html`<div role="menuitem" aria-disabled="true">Loading...</div>`
-          : this._collections && this._collections.length > 0
-            ? this._collections.map(
-                (c) => html`
-                  <div
-                    role="menuitem"
-                    @click=${() => this.#addToCollection(c.id)}
-                  >
-                    ${c.title}
-                  </div>
-                `,
-              )
-            : html`<div role="menuitem" aria-disabled="true">
-                No collections yet
-              </div>`}
+      <div data-collection-picker class="post-menu-collection-picker">
+        <div class="post-menu-picker-header">
+          <span>Collections</span>
+        </div>
+        ${collections.length > 0
+          ? html`<div class="post-menu-picker-search">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search collections..."
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+                .value=${this._collectionSearch}
+                @input=${(e: Event) => {
+                  this._collectionSearch = (e.target as HTMLInputElement).value;
+                }}
+              />
+            </div>`
+          : nothing}
+        <div
+          class="post-menu-picker-list"
+          role="listbox"
+          aria-multiselectable="true"
+        >
+          ${this._collectionsLoading
+            ? html`<div class="post-menu-picker-empty">Loading...</div>`
+            : filtered.length > 0
+              ? filtered.map((c) => {
+                  const selected = this._postCollectionIds.includes(c.id);
+                  const iconStr = renderIconHtml(c.icon);
+                  return html`
+                    <div
+                      role="option"
+                      aria-selected=${selected ? "true" : "false"}
+                      class="post-menu-picker-option"
+                      @click=${() => this.#toggleCollection(c.id)}
+                    >
+                      ${iconStr
+                        ? html`<span class="post-menu-picker-icon"
+                            >${unsafeHTML(iconStr)}</span
+                          >`
+                        : nothing}
+                      <span class="post-menu-picker-title">${c.title}</span>
+                      ${selected
+                        ? html`<svg
+                            class="post-menu-picker-check"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            width="14"
+                            height="14"
+                          >
+                            <path d="M20 6 9 17l-5-5" />
+                          </svg>`
+                        : nothing}
+                    </div>
+                  `;
+                })
+              : html`<div class="post-menu-picker-empty">
+                  ${search ? "No matching collections" : "No collections yet"}
+                </div>`}
+        </div>
+        <div
+          class="post-menu-picker-add"
+          @click=${() => this.#openAddCollectionPanel()}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M8 3v10M3 8h10" />
+          </svg>
+          Add Collection
+        </div>
+      </div>
+    `;
+  }
+
+  #renderAddCollectionPanel() {
+    const labels = this.#getCollectionFormLabels();
+    if (!labels) return nothing;
+
+    const initial = {
+      title: "",
+      slug: "",
+      description: "",
+      sortOrder: "newest",
+      icon: "",
+    };
+
+    return html`
+      <div data-collection-picker class="post-menu-add-collection-panel">
+        <div class="post-menu-picker-header">
+          <button
+            type="button"
+            class="post-menu-panel-back"
+            @click=${() => this.#closeAddCollectionPanel()}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
+          <span>Add Collection</span>
+          <button
+            type="button"
+            class="post-menu-panel-done"
+            @click=${() => this.#submitAddCollectionForm()}
+          >
+            Done
+          </button>
+        </div>
+        <div class="post-menu-panel-body">
+          <jant-collection-form
+            class="post-menu-collection-form"
+            .labels=${labels}
+            .initial=${initial}
+            action="/api/collections"
+            cancel-href="javascript:void(0)"
+            @jant:collection-submit=${(e: Event) =>
+              this.#handleAddCollectionSubmit(e)}
+          ></jant-collection-form>
+        </div>
+      </div>
+    `;
+  }
+
+  #renderMenu() {
+    if (!this._data) return nothing;
+    const isFeatured = this._data.visibility === "featured";
+    const isPinned = this._data.pinned;
+
+    return html`
+      <div role="menu">
+        <div role="menuitem" @click=${() => this.#edit()}>
+          ${this.#iconEdit()} Edit
+        </div>
+
+        <hr role="separator" />
+
+        <div role="menuitem" @click=${() => this.#openCollectionPicker()}>
+          ${this.#iconCollection()} Add to collection
+        </div>
+        <div role="menuitem" @click=${() => this.#toggleFeature()}>
+          ${isFeatured ? this.#iconHeartOff() : this.#iconHeart()}
+          ${isFeatured ? "Unfeature" : "Feature this post"}
+        </div>
+        <div role="menuitem" @click=${() => this.#togglePin()}>
+          ${isPinned ? this.#iconPinOff() : this.#iconPin()}
+          ${isPinned ? "Unpin" : "Pin this post"}
+        </div>
+
+        <hr role="separator" />
+
+        <div
+          role="menuitem"
+          class="text-destructive! [&_svg]:text-destructive!"
+          @click=${() => this.#delete()}
+        >
+          ${this.#iconTrash()} Delete
+        </div>
+
+        <hr role="separator" />
+
+        <div
+          role="menuitem"
+          class="text-muted-foreground!"
+          @click=${() => this.#copyLink()}
+        >
+          ${this.#iconLink()} Copy link
+        </div>
       </div>
     `;
   }
 
   render() {
     if (!this._open || !this._data) return nothing;
-
-    const isFeatured = this._data.visibility === "featured";
-    const isPinned = this._data.pinned;
 
     const wrapperStyle = `position:fixed;z-index:100;right:${document.documentElement.clientWidth - this._x}px;${
       this._openAbove
@@ -536,49 +880,9 @@ export class JantPostMenu extends LitElement {
       <div class="post-menu-backdrop" @click=${() => this.#close()}></div>
       <div class="dropdown-menu" style=${wrapperStyle}>
         <div data-popover aria-hidden="false" class="!static min-w-52">
-          <div role="menu">
-            <div role="menuitem" @click=${() => this.#edit()}>
-              ${this.#iconEdit()} Edit
-            </div>
-
-            <hr role="separator" />
-
-            <div role="menuitem" @click=${() => this.#toggleCollections()}>
-              ${this._collectionsExpanded
-                ? this.#iconChevron()
-                : this.#iconCollection()}
-              Add to collection
-            </div>
-            ${this.#renderCollections()}
-            <div role="menuitem" @click=${() => this.#toggleFeature()}>
-              ${isFeatured ? this.#iconHeartOff() : this.#iconHeart()}
-              ${isFeatured ? "Unfeature" : "Feature this post"}
-            </div>
-            <div role="menuitem" @click=${() => this.#togglePin()}>
-              ${isPinned ? this.#iconPinOff() : this.#iconPin()}
-              ${isPinned ? "Unpin" : "Pin this post"}
-            </div>
-
-            <hr role="separator" />
-
-            <div
-              role="menuitem"
-              class="text-destructive! [&_svg]:text-destructive!"
-              @click=${() => this.#delete()}
-            >
-              ${this.#iconTrash()} Delete
-            </div>
-
-            <hr role="separator" />
-
-            <div
-              role="menuitem"
-              class="text-muted-foreground!"
-              @click=${() => this.#copyLink()}
-            >
-              ${this.#iconLink()} Copy link
-            </div>
-          </div>
+          ${this._collectionPickerOpen
+            ? this.#renderCollectionPicker()
+            : this.#renderMenu()}
         </div>
       </div>
     `;
