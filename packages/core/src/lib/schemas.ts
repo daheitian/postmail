@@ -18,6 +18,7 @@ import {
   MAX_MEDIA_ATTACHMENTS,
 } from "../types.js";
 import { ValidationError } from "./errors.js";
+import { sanitizeUrl } from "./url.js";
 
 /**
  * Post format enum schema
@@ -94,7 +95,13 @@ const PostFieldsSchema = z.object({
     .union([z.boolean(), z.literal("on").transform(() => true)])
     .optional(),
   featured: z.boolean().optional(),
-  url: z.url().optional().or(z.literal("")),
+  url: z
+    .url()
+    .refine((val) => sanitizeUrl(val) !== "", {
+      message: "URL must use http:, https:, or mailto: protocol",
+    })
+    .optional()
+    .or(z.literal("")),
   quoteText: z.string().optional(),
   rating: RatingSchema,
   collectionIds: z
@@ -135,7 +142,12 @@ export const UpdatePostSchema = refineBodyExclusivity(
 export const CreateNavItemSchema = z.object({
   type: NavItemTypeSchema,
   label: z.string().min(1),
-  url: z.string().min(1),
+  url: z
+    .string()
+    .min(1)
+    .refine((val) => sanitizeUrl(val) !== "", {
+      message: "URL must use http:, https:, or mailto: protocol",
+    }),
 });
 
 /**
