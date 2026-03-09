@@ -6,21 +6,53 @@ All built-in themes support light and dark mode automatically. Your Custom CSS i
 
 ## Color Variables
 
-These control the overall color palette. Override them in Custom CSS to adjust colors.
+Override these in Custom CSS to adjust colors. Most variables come in pairs: a background and its matching foreground (text) color.
 
-| Variable               | What it controls                   |
-| ---------------------- | ---------------------------------- |
-| `--background`         | Page background                    |
-| `--foreground`         | Main text color                    |
-| `--primary`            | Accent color (buttons, links)      |
-| `--primary-foreground` | Text on accent-colored elements    |
-| `--muted`              | Subtle backgrounds (hover, badges) |
-| `--muted-foreground`   | Secondary text (dates, captions)   |
-| `--border`             | Borders and dividers               |
-| `--destructive`        | Danger actions (delete buttons)    |
-| `--success`            | Success indicators (toasts)        |
-| `--search-mark-bg`     | Search result highlight background |
-| `--search-mark-color`  | Search result highlight text       |
+### Core palette
+
+These are the main colors that control the overall look. Changing these affects the entire site.
+
+| Variable                 | What it controls                               |
+| ------------------------ | ---------------------------------------------- |
+| `--background`           | Page background                                |
+| `--foreground`           | Main text color                                |
+| `--primary`              | Accent color (buttons, active states)          |
+| `--primary-foreground`   | Text on primary-colored elements               |
+| `--secondary`            | Secondary buttons, badges                      |
+| `--secondary-foreground` | Text on secondary elements                     |
+| `--muted`                | Subtle backgrounds (hover states, badges)      |
+| `--muted-foreground`     | Secondary text (dates, captions, placeholders) |
+| `--accent`               | Hover/focus backgrounds (menus, nav items)     |
+| `--accent-foreground`    | Text on accent backgrounds                     |
+| `--card`                 | Card/surface background                        |
+| `--card-foreground`      | Text on cards                                  |
+| `--popover`              | Dropdown/popover background                    |
+| `--popover-foreground`   | Text in popovers                               |
+| `--destructive`          | Danger actions (delete buttons, errors)        |
+| `--success`              | Success indicators (toasts)                    |
+| `--border`               | Borders and dividers                           |
+| `--input`                | Input field borders                            |
+| `--ring`                 | Focus ring color                               |
+
+### Site-specific colors
+
+These are derived from the core palette by default. Override them only when you need finer control — for example, making the thread line a different color than the standard border.
+
+| Variable                | Default                   | What it controls                   |
+| ----------------------- | ------------------------- | ---------------------------------- |
+| `--site-accent`         | `var(--primary)`          | Site accent color                  |
+| `--site-accent-text`    | `var(--primary-fg)`       | Text on site accent                |
+| `--site-page-bg`        | `var(--background)`       | Page background                    |
+| `--site-elevated-bg`    | `var(--background)`       | Elevated content areas             |
+| `--site-nav-hover-bg`   | `var(--accent)`           | Navigation hover background        |
+| `--site-text-primary`   | `var(--foreground)`       | Primary text                       |
+| `--site-text-secondary` | `var(--muted-foreground)` | Secondary/caption text             |
+| `--site-divider`        | `var(--border)`           | Content dividers                   |
+| `--site-threadline`     | `var(--border)`           | Thread connection lines            |
+| `--site-column-outline` | `var(--border)`           | Column outline                     |
+| `--site-media-outline`  | `var(--border)`           | Image/video border                 |
+| `--search-mark-bg`      | Yellow highlight          | Search result highlight background |
+| `--search-mark-color`   | Dark text                 | Search result highlight text       |
 
 ### Example: Custom accent color
 
@@ -32,6 +64,14 @@ These control the overall color palette. Override them in Custom CSS to adjust c
 
 .dark {
   --primary: oklch(0.7 0.15 250);
+}
+```
+
+### Example: Custom thread line color
+
+```css
+:root {
+  --site-threadline: oklch(0.8 0.05 250);
 }
 ```
 
@@ -169,4 +209,3 @@ Use `.dark` to target dark mode specifically:
 - Custom CSS has the highest priority and overrides everything, including the selected color theme.
 - Use `oklch()` for colors — it produces more perceptually uniform results than hex or hsl. Example: `oklch(0.6 0.15 250)` is a medium-saturation blue.
 - Test in both light and dark mode. If you override a color variable in `:root`, consider whether `.dark` needs a matching override.
-- The `--site-*` variables (e.g. `--site-accent`, `--site-threadline`) are derived from the base variables above. Override the base variables first; only override `--site-*` variables if you need finer control.

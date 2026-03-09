@@ -149,6 +149,7 @@ If you notice code contradicting this document, think about which side is correc
 - **Datastar patterns and API**: `docs/datastar.md`, `references/datastar/`
 - **BaseCoat components**: `references/basecoat/`
 - **Configuration**: `docs/configuration.md`
-- **Theming and CSS tokens**: `docs/theming.md`
+- **Theming (user-facing)**: `docs/theming.md`
+- **Theming (internal design guide)**: `docs/internal/theming.md`
 - **Releasing**: `docs/RELEASING.md`
 - **Developer onboarding**: `README.md`, `mise tasks`
