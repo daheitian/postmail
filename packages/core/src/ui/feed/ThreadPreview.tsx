@@ -30,7 +30,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
       <div class="thread-context-faded" data-thread-context>
         {/* Root post (compact) */}
         <div class="thread-item">
-          <TimelineItemFromPost post={rootPost} compact />
+          <TimelineItemFromPost post={rootPost} mode="compact" />
         </div>
 
         {/* Hidden posts gap */}
@@ -52,7 +52,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
         {/* Parent of latest reply (compact) */}
         {parentReply && (
           <div class="thread-item">
-            <TimelineItemFromPost post={parentReply} compact />
+            <TimelineItemFromPost post={parentReply} mode="compact" />
           </div>
         )}
 

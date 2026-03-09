@@ -10,6 +10,7 @@ import type {
   TimelineCardProps,
   PostView,
   Format,
+  CardMode,
 } from "../../types.js";
 import { NoteCard } from "./NoteCard.js";
 import { LinkCard } from "./LinkCard.js";
@@ -23,23 +24,23 @@ const CARD_MAP: Record<Format, FC<TimelineCardProps>> = {
 
 interface TimelineItemProps {
   item: TimelineItemView;
-  compact?: boolean;
+  mode?: CardMode;
 }
 
 interface TimelineItemFromPostProps {
   post: PostView;
-  compact?: boolean;
+  mode?: CardMode;
 }
 
-export const TimelineItem: FC<TimelineItemProps> = ({ item, compact }) => {
+export const TimelineItem: FC<TimelineItemProps> = ({ item, mode }) => {
   const Card = CARD_MAP[item.post.format];
-  return <Card post={item.post} compact={compact} />;
+  return <Card post={item.post} mode={mode} />;
 };
 
 export const TimelineItemFromPost: FC<TimelineItemFromPostProps> = ({
   post,
-  compact,
+  mode,
 }) => {
   const Card = CARD_MAP[post.format];
-  return <Card post={post} compact={compact} />;
+  return <Card post={post} mode={mode} />;
 };

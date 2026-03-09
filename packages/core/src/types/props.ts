@@ -98,10 +98,18 @@ export interface SitemapData {
 // Timeline Types
 // =============================================================================
 
+/**
+ * Display mode for timeline cards.
+ * - `compact` — condensed view used in thread previews
+ * - `feed`    — standard timeline card (default)
+ * - `detail`  — full single-post page view
+ */
+export type CardMode = "compact" | "feed" | "detail";
+
 /** Props for per-type timeline cards */
 export interface TimelineCardProps {
   post: PostView;
-  compact?: boolean;
+  mode?: CardMode;
 }
 
 /** Props for thread inline preview */

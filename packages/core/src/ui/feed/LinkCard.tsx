@@ -10,7 +10,10 @@ import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
-export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
+export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
+  const isCompact = mode === "compact";
+  const isDetail = mode === "detail";
+
   // Extract domain from URL for display
   let domain: string | undefined;
   if (post.url) {
@@ -23,7 +26,8 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
 
   return (
     <article
-      class={`h-entry post-menu-target${compact ? " feed-compact" : ""}`}
+      class={`h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : ""}`}
+      {...(isDetail ? { "data-page": "post" } : {})}
       data-post
       data-format="link"
       data-post-id={post.id}
@@ -31,9 +35,9 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       {...(post.featured ? { "data-post-featured": "" } : {})}
       data-post-visibility={post.visibility}
-      {...(post.threadRootId ? { "data-post-reply": "" } : {})}
+      {...(!isDetail && post.threadRootId ? { "data-post-reply": "" } : {})}
     >
-      {!compact && <PostStatusBadges />}
+      {!isCompact && <PostStatusBadges />}
       {domain && (
         <div class="text-xs text-muted-foreground mb-1 flex items-center gap-1">
           <svg
@@ -49,29 +53,41 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, compact }) => {
           <span>{domain}</span>
         </div>
       )}
-      {post.title && (
-        <h2
-          class={`p-name font-semibold ${compact ? "text-sm" : "text-base"} mb-1`}
-        >
-          <a
-            href={post.url || post.permalink}
-            class="u-url hover:underline"
-            target={post.url ? "_blank" : undefined}
-            rel={post.url ? "noopener noreferrer" : undefined}
+      {post.title &&
+        (isDetail ? (
+          <h1 class="p-name text-2xl font-semibold mb-4">
+            <a
+              href={post.url || post.permalink}
+              class="u-url hover:underline"
+              target={post.url ? "_blank" : undefined}
+              rel={post.url ? "noopener noreferrer" : undefined}
+            >
+              {post.title}
+            </a>
+          </h1>
+        ) : (
+          <h2
+            class={`p-name font-semibold ${isCompact ? "text-sm" : "text-base"} mb-1`}
           >
-            {post.title}
-          </a>
-        </h2>
-      )}
-      {!compact && post.bodyHtml && (
+            <a
+              href={post.url || post.permalink}
+              class="u-url hover:underline"
+              target={post.url ? "_blank" : undefined}
+              rel={post.url ? "noopener noreferrer" : undefined}
+            >
+              {post.title}
+            </a>
+          </h2>
+        ))}
+      {!isCompact && post.bodyHtml && (
         <div
           class="e-content prose text-muted-foreground"
           data-post-body
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />
       )}
-      {!compact && <StarRating rating={post.rating} />}
-      <PostFooter post={post} />
+      {!isCompact && <StarRating rating={post.rating} />}
+      <PostFooter post={post} detail={isDetail} />
     </article>
   );
 };

@@ -12,13 +12,16 @@ import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
-export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
+export const NoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
+  const isCompact = mode === "compact";
+  const isDetail = mode === "detail";
   const isArticle = !!post.title;
-  const displayHtml = isArticle ? post.summaryHtml : post.bodyHtml;
+  const displayHtml = isDetail || !isArticle ? post.bodyHtml : post.summaryHtml;
 
   return (
     <article
-      class={`h-entry post-menu-target${compact ? " feed-compact" : ""}`}
+      class={`h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : ""}`}
+      {...(isDetail ? { "data-page": "post" } : {})}
       data-post
       data-format="note"
       data-post-id={post.id}
@@ -26,31 +29,34 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       {...(post.featured ? { "data-post-featured": "" } : {})}
       data-post-visibility={post.visibility}
-      {...(post.threadRootId ? { "data-post-reply": "" } : {})}
+      {...(!isDetail && post.threadRootId ? { "data-post-reply": "" } : {})}
     >
-      {!compact && <PostStatusBadges />}
-      {isArticle && (
-        <h2
-          class={`p-name font-semibold ${compact ? "text-sm" : "text-base"} mb-1`}
-        >
-          <a href={post.permalink} class="u-url hover:underline">
-            {post.title}
-          </a>
-        </h2>
-      )}
+      {!isCompact && <PostStatusBadges />}
+      {isArticle &&
+        (isDetail ? (
+          <h1 class="p-name text-2xl font-semibold mb-4">{post.title}</h1>
+        ) : (
+          <h2
+            class={`p-name font-semibold ${isCompact ? "text-sm" : "text-base"} mb-1`}
+          >
+            <a href={post.permalink} class="u-url hover:underline">
+              {post.title}
+            </a>
+          </h2>
+        ))}
       {displayHtml && (
         <div
-          class={`e-content prose ${compact ? "prose-sm" : isArticle ? "text-muted-foreground" : ""}`}
+          class={`e-content prose ${isCompact ? "prose-sm" : isArticle && !isDetail ? "text-muted-foreground" : ""}`}
           data-post-body
           dangerouslySetInnerHTML={{ __html: displayHtml }}
         />
       )}
-      {!compact && post.media.length > 0 && (
+      {!isCompact && post.media.length > 0 && (
         <div class="mt-3" data-post-media>
           <MediaGallery attachments={post.media} />
         </div>
       )}
-      {!compact && isArticle && post.summaryHasMore && (
+      {!isDetail && !isCompact && isArticle && post.summaryHasMore && (
         <a
           href={`${post.permalink}#continue`}
           class="text-sm text-muted-foreground hover:underline mt-1 inline-block"
@@ -58,8 +64,8 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
           Continue →
         </a>
       )}
-      {!compact && <StarRating rating={post.rating} />}
-      <PostFooter post={post} />
+      {!isCompact && <StarRating rating={post.rating} />}
+      <PostFooter post={post} detail={isDetail} />
     </article>
   );
 };

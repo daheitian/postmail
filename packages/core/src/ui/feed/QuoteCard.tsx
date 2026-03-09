@@ -16,10 +16,14 @@ import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
-export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
+export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
+  const isCompact = mode === "compact";
+  const isDetail = mode === "detail";
+
   return (
     <article
-      class={`h-entry post-menu-target${compact ? " feed-compact" : ""}`}
+      class={`h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : ""}`}
+      {...(isDetail ? { "data-page": "post" } : {})}
       data-post
       data-format="quote"
       data-post-id={post.id}
@@ -27,19 +31,19 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       {...(post.featured ? { "data-post-featured": "" } : {})}
       data-post-visibility={post.visibility}
-      {...(post.threadRootId ? { "data-post-reply": "" } : {})}
+      {...(!isDetail && post.threadRootId ? { "data-post-reply": "" } : {})}
     >
-      {!compact && <PostStatusBadges />}
+      {!isCompact && <PostStatusBadges />}
       {post.quoteText && (
         <blockquote class="feed-quote">
           <div
-            class={`e-content ${compact ? "text-sm" : "text-base"} leading-relaxed`}
+            class={`e-content ${isCompact ? "text-sm" : "text-base"} leading-relaxed`}
           >
             {post.quoteText}
           </div>
         </blockquote>
       )}
-      {!compact && (post.title || post.url) && (
+      {!isCompact && (post.title || post.url) && (
         <div class="mt-2 text-sm text-muted-foreground">
           &mdash;{" "}
           {post.url ? (
@@ -56,15 +60,15 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, compact }) => {
           )}
         </div>
       )}
-      {!compact && post.bodyHtml && (
+      {!isCompact && post.bodyHtml && (
         <div
           class="mt-3 prose text-muted-foreground"
           data-post-body
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />
       )}
-      {!compact && <StarRating rating={post.rating} />}
-      <PostFooter post={post} />
+      {!isCompact && <StarRating rating={post.rating} />}
+      <PostFooter post={post} detail={isDetail} />
     </article>
   );
 };
