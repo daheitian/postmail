@@ -182,21 +182,17 @@ signinRoutes.post("/signin", async (c) => {
   }
 });
 
-signinRoutes.get("/signout", async (c) => {
+signinRoutes.post("/signout", async (c) => {
   if (c.var.auth) {
     try {
       const res = await c.var.auth.api.signOut({
         headers: c.req.raw.headers,
         asResponse: true,
       });
-      const redirect = c.redirect("/");
-      for (const cookie of res.headers.getSetCookie()) {
-        redirect.headers.append("Set-Cookie", cookie);
-      }
-      return redirect;
+      return dsRedirect("/", { headers: res.headers });
     } catch {
       // Ignore signout errors
     }
   }
-  return c.redirect("/");
+  return dsRedirect("/");
 });

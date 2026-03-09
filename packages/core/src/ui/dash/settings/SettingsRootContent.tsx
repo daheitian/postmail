@@ -249,15 +249,16 @@ export function SettingsRootContent() {
 
       {/* Sign Out */}
       <div class="pt-2 text-center">
-        <a
-          href="/signout"
+        <button
+          type="button"
+          data-on:click__prevent="@post('/signout')"
           class="text-sm text-destructive hover:text-destructive/80 transition-colors"
         >
           {t({
             message: "Sign Out",
             comment: "@context: Settings link — sign out action",
           })}
-        </a>
+        </button>
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ function createApp(complete: boolean) {
   app.get("/setup", (c) => c.text("Setup"));
   app.get("/health", (c) => c.text("OK"));
   app.get("/signin", (c) => c.text("Signin"));
-  app.get("/signout", (c) => c.text("Signout"));
+  app.post("/signout", (c) => c.text("Signout"));
   app.get("/reset", (c) => c.text("Reset"));
   app.get("/api/auth/session", (c) => c.json({ ok: true }));
   app.get("/assets/client-B2b-1X3C.js", (c) => c.text("js"));
@@ -138,7 +138,7 @@ describe("requireOnboarding", () => {
 
     it("allows /signout", async () => {
       const { app, getCallCount } = createApp(false);
-      const res = await app.request("/signout");
+      const res = await app.request("/signout", { method: "POST" });
       expect(res.status).toBe(200);
       expect(getCallCount()).toBe(0);
     });
