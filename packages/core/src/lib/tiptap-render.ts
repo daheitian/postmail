@@ -6,6 +6,8 @@
  * Works on Cloudflare Workers and any JS runtime.
  */
 
+import { escapeHtml } from "./html.js";
+
 interface TiptapMark {
   type: string;
   attrs?: Record<string, unknown>;
@@ -17,14 +19,6 @@ interface TiptapNode {
   text?: string;
   marks?: TiptapMark[];
   attrs?: Record<string, unknown>;
-}
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 function renderMarks(text: string, marks: TiptapMark[]): string {
