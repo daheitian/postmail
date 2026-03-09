@@ -315,6 +315,24 @@ describe("CreatePostSchema", () => {
     expect(() => CreatePostSchema.parse({})).toThrow();
     expect(() => CreatePostSchema.parse({ body: "hello" })).toThrow();
   });
+
+  it("accepts bodyMarkdown", () => {
+    const result = CreatePostSchema.parse({
+      format: "note",
+      bodyMarkdown: "Hello **world**",
+    });
+    expect(result.bodyMarkdown).toBe("Hello **world**");
+  });
+
+  it("rejects both body and bodyMarkdown", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        format: "note",
+        body: '{"type":"doc","content":[]}',
+        bodyMarkdown: "Hello",
+      }),
+    ).toThrow("Provide either body or bodyMarkdown, not both");
+  });
 });
 
 describe("UpdatePostSchema", () => {

@@ -10,6 +10,7 @@ port = 9020
 
 [vars]
 SITE_URL = "https://jant.localtest.me"
+PAGE_SIZE = 50
 # R2_PUBLIC_URL = "https://demo-media.jant.me"
 # IMAGE_TRANSFORM_URL = "https://demo-media.jant.me/cdn-cgi/image"
 

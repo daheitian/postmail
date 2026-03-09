@@ -22,14 +22,14 @@ describe("Posts API Routes", () => {
 
       await services.posts.create({
         format: "note",
-        body: "Hello world",
+        bodyMarkdown: "Hello world",
       });
 
       const res = await app.request("/api/posts");
       const body = await res.json();
 
       expect(body.posts).toHaveLength(1);
-      expect(body.posts[0].body).toBe("Hello world");
+      expect(body.posts[0].bodyText).toBe("Hello world");
       expect(body.posts[0].id).toBeTruthy();
     });
 
@@ -39,7 +39,7 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "with media",
+        bodyMarkdown: "with media",
       });
 
       const media = await services.media.create({
@@ -71,11 +71,11 @@ describe("Posts API Routes", () => {
 
       await services.posts.create({
         format: "note",
-        body: "published post",
+        bodyMarkdown: "published post",
       });
       await services.posts.create({
         format: "note",
-        body: "draft post",
+        bodyMarkdown: "draft post",
         status: "draft",
       });
 
@@ -93,7 +93,7 @@ describe("Posts API Routes", () => {
       for (let i = 0; i < 5; i++) {
         await services.posts.create({
           format: "note",
-          body: `post ${i}`,
+          bodyMarkdown: `post ${i}`,
         });
       }
 
@@ -112,13 +112,13 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "test post",
+        bodyMarkdown: "test post",
       });
       const res = await app.request(`/api/posts/${post.id}`);
       expect(res.status).toBe(200);
 
       const body = await res.json();
-      expect(body.body).toBe("test post");
+      expect(body.bodyText).toBe("test post");
       expect(body.id).toBe(post.id);
     });
 
@@ -128,7 +128,7 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "with media",
+        bodyMarkdown: "with media",
       });
 
       const media = await services.media.create({
@@ -177,7 +177,7 @@ describe("Posts API Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "note",
-          body: "test",
+          bodyMarkdown: "test",
         }),
       });
 
@@ -193,16 +193,55 @@ describe("Posts API Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "note",
-          body: "Hello from API",
+          bodyMarkdown: "Hello from API",
         }),
       });
 
       expect(res.status).toBe(201);
 
       const body = await res.json();
-      expect(body.body).toBe("Hello from API");
+      expect(body.bodyText).toBe("Hello from API");
       expect(body.id).toBeTruthy();
       expect(body.mediaAttachments).toEqual([]);
+    });
+
+    it("creates a post with bodyMarkdown", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "note",
+          bodyMarkdown: "Hello **bold** world",
+        }),
+      });
+
+      expect(res.status).toBe(201);
+
+      const body = await res.json();
+      expect(body.bodyText).toContain("Hello");
+      expect(body.bodyHtml).toContain("<strong>bold</strong>");
+    });
+
+    it("returns 400 when both body and bodyMarkdown are provided", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "note",
+          body: '{"type":"doc","content":[]}',
+          bodyMarkdown: "Hello",
+        }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Provide either body or bodyMarkdown");
     });
 
     it("creates a post with mediaIds and attaches them", async () => {
@@ -229,7 +268,7 @@ describe("Posts API Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "note",
-          body: "with images",
+          bodyMarkdown: "with images",
           mediaIds: [m1.id, m2.id],
         }),
       });
@@ -252,7 +291,7 @@ describe("Posts API Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "note",
-          body: "test",
+          bodyMarkdown: "test",
           mediaIds: ["nonexistent-id"],
         }),
       });
@@ -299,13 +338,13 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "original",
+        bodyMarkdown: "original",
       });
 
       const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: "updated" }),
+        body: JSON.stringify({ bodyMarkdown: "updated" }),
       });
 
       expect(res.status).toBe(401);
@@ -317,18 +356,18 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "original",
+        bodyMarkdown: "original",
       });
 
       const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: "updated" }),
+        body: JSON.stringify({ bodyMarkdown: "updated" }),
       });
 
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.body).toBe("updated");
+      expect(body.bodyText).toBe("updated");
       expect(body.mediaAttachments).toEqual([]);
     });
 
@@ -338,7 +377,7 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const m1 = await services.media.create({
@@ -377,7 +416,7 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const m1 = await services.media.create({
@@ -393,7 +432,7 @@ describe("Posts API Routes", () => {
       const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: "updated content" }),
+        body: JSON.stringify({ bodyMarkdown: "updated content" }),
       });
 
       expect(res.status).toBe(200);
@@ -411,7 +450,7 @@ describe("Posts API Routes", () => {
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ body: "test" }),
+          body: JSON.stringify({ bodyMarkdown: "test" }),
         },
       );
 
@@ -424,7 +463,7 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const res = await app.request(`/api/posts/${post.id}`, {
@@ -444,7 +483,7 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const res = await app.request(`/api/posts/${post.id}`, {
@@ -460,7 +499,7 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "to be deleted",
+        bodyMarkdown: "to be deleted",
       });
 
       const res = await app.request(`/api/posts/${post.id}`, {
@@ -496,7 +535,7 @@ describe("Posts API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "with media",
+        bodyMarkdown: "with media",
       });
 
       const m1 = await services.media.create({
@@ -533,11 +572,11 @@ describe("Posts API Routes", () => {
 
       const root = await services.posts.create({
         format: "note",
-        body: "thread root",
+        bodyMarkdown: "thread root",
       });
       const reply = await services.posts.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 

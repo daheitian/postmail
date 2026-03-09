@@ -24,18 +24,18 @@ describe("Featured Page - Data Logic", () => {
   it("returns only featured published posts", async () => {
     await postService.create({
       format: "note",
-      body: "Featured post",
+      bodyMarkdown: "Featured post",
       featured: true,
       status: "published",
     });
     await postService.create({
       format: "note",
-      body: "Normal post",
+      bodyMarkdown: "Normal post",
       status: "published",
     });
     await postService.create({
       format: "note",
-      body: "Draft featured",
+      bodyMarkdown: "Draft featured",
       featured: true,
       status: "draft",
     });
@@ -46,13 +46,13 @@ describe("Featured Page - Data Logic", () => {
     });
 
     expect(posts).toHaveLength(1);
-    expect(posts[0]?.body).toBe("Featured post");
+    expect(posts[0]?.bodyText).toBe("Featured post");
   });
 
   it("returns empty list when no featured posts exist", async () => {
     await postService.create({
       format: "note",
-      body: "Normal post",
+      bodyMarkdown: "Normal post",
       status: "published",
     });
 
@@ -67,14 +67,14 @@ describe("Featured Page - Data Logic", () => {
   it("includes featured reply posts", async () => {
     const root = await postService.create({
       format: "note",
-      body: "Root post",
+      bodyMarkdown: "Root post",
       status: "published",
     });
 
     // Create a reply and feature it independently
     const reply = await postService.create({
       format: "note",
-      body: "Reply to root",
+      bodyMarkdown: "Reply to root",
       replyToId: root.id,
     });
     await postService.update(reply.id, { featured: true });
@@ -85,20 +85,20 @@ describe("Featured Page - Data Logic", () => {
     });
 
     expect(posts).toHaveLength(1);
-    expect(posts[0]?.body).toBe("Reply to root");
+    expect(posts[0]?.bodyText).toBe("Reply to root");
   });
 
   it("featured root and featured reply both appear", async () => {
     const root = await postService.create({
       format: "note",
-      body: "Featured root",
+      bodyMarkdown: "Featured root",
       featured: true,
       status: "published",
     });
 
     const reply = await postService.create({
       format: "note",
-      body: "Featured reply",
+      bodyMarkdown: "Featured reply",
       replyToId: root.id,
     });
     await postService.update(reply.id, { featured: true });

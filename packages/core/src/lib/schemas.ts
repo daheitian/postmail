@@ -69,9 +69,9 @@ export const RatingSchema = z.coerce
   .transform((v) => (v === 0 ? undefined : v));
 
 /**
- * API request body schema for creating a post
+ * Base post fields (shared between create and update schemas)
  */
-export const CreatePostSchema = z.object({
+const PostFieldsSchema = z.object({
   format: FormatSchema,
   slug: z
     .string()
@@ -87,6 +87,7 @@ export const CreatePostSchema = z.object({
     .or(z.literal("").transform(() => undefined)),
   title: z.string().optional(),
   body: z.string().optional(),
+  bodyMarkdown: z.string().optional(),
   status: StatusSchema.optional(),
   visibility: z.enum(VISIBILITIES).optional(),
   pinned: z
@@ -106,10 +107,27 @@ export const CreatePostSchema = z.object({
   mediaAlts: z.record(z.string(), z.string()).optional(),
 });
 
+/** Mutual exclusivity: body and bodyMarkdown cannot both be provided */
+function refineBodyExclusivity<
+  T extends { body?: string; bodyMarkdown?: string },
+>(schema: z.ZodType<T>) {
+  return schema.refine((data) => !(data.body && data.bodyMarkdown), {
+    message: "Provide either body or bodyMarkdown, not both",
+    path: ["bodyMarkdown"],
+  });
+}
+
+/**
+ * API request body schema for creating a post
+ */
+export const CreatePostSchema = refineBodyExclusivity(PostFieldsSchema);
+
 /**
  * API request body schema for updating a post
  */
-export const UpdatePostSchema = CreatePostSchema.partial();
+export const UpdatePostSchema = refineBodyExclusivity(
+  PostFieldsSchema.partial(),
+);
 
 /**
  * API request body schema for creating a navigation item

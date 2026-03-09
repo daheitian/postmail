@@ -20,6 +20,7 @@ export interface CreatePost {
   title?: string;
   url?: string;
   body?: string;
+  bodyMarkdown?: string;
   quoteText?: string;
   rating?: number;
   collectionIds?: string[];
@@ -38,6 +39,7 @@ export interface UpdatePost {
   title?: string | null;
   url?: string | null;
   body?: string | null;
+  bodyMarkdown?: string | null;
   quoteText?: string | null;
   rating?: number | null;
   collectionIds?: string[];

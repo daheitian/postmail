@@ -26,7 +26,7 @@ describe("Collections API Routes", () => {
       });
       const post = await services.posts.create({
         format: "note",
-        body: "tech post",
+        bodyMarkdown: "tech post",
       });
       await services.collections.addPost(col.id, post.id);
 
@@ -301,7 +301,7 @@ describe("Collections API Routes", () => {
       });
       const post = await services.posts.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const res = await app.request(`/api/collections/${col.id}/posts`, {
@@ -322,7 +322,7 @@ describe("Collections API Routes", () => {
 
       const post = await services.posts.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const res = await app.request(
@@ -369,7 +369,7 @@ describe("Collections API Routes", () => {
       });
       const post = await services.posts.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       await services.collections.addPost(col.id, post.id);

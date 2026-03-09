@@ -11,7 +11,7 @@ describe("Compose Routes", () => {
       const res = await app.request("/compose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ format: "note", body: "Hello" }),
+        body: JSON.stringify({ format: "note", bodyMarkdown: "Hello" }),
       });
 
       expect(res.status).toBe(302);
@@ -25,7 +25,7 @@ describe("Compose Routes", () => {
       const res = await app.request("/compose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ format: "note", body: "Hello world" }),
+        body: JSON.stringify({ format: "note", bodyMarkdown: "Hello world" }),
       });
 
       expect(res.status).toBe(200);
@@ -40,7 +40,7 @@ describe("Compose Routes", () => {
       const posts = await services.posts.list();
       expect(posts).toHaveLength(1);
       expect(posts[0].format).toBe("note");
-      expect(posts[0].body).toBe("Hello world");
+      expect(posts[0].bodyText).toBe("Hello world");
       expect(posts[0].status).toBe("published");
     });
 
@@ -53,7 +53,7 @@ describe("Compose Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "link",
-          body: "Check this out",
+          bodyMarkdown: "Check this out",
           url: "https://example.com",
         }),
       });
@@ -76,7 +76,7 @@ describe("Compose Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "quote",
-          body: "Great insight",
+          bodyMarkdown: "Great insight",
           quoteText: "The original quote",
           url: "https://example.com/source",
         }),
@@ -100,7 +100,7 @@ describe("Compose Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "note",
-          body: "Draft content",
+          bodyMarkdown: "Draft content",
           status: "draft",
         }),
       });
@@ -126,7 +126,7 @@ describe("Compose Routes", () => {
       const res = await app.request("/compose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ format: "invalid", body: "Hello" }),
+        body: JSON.stringify({ format: "invalid", bodyMarkdown: "Hello" }),
       });
 
       expect(res.status).toBe(200);
@@ -156,7 +156,7 @@ describe("Compose Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "note",
-          body: "Post with media",
+          bodyMarkdown: "Post with media",
           mediaIds: [media.id],
         }),
       });
@@ -179,7 +179,7 @@ describe("Compose Routes", () => {
       const res = await app.request("/compose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ format: "note", body: "Hello" }),
+        body: JSON.stringify({ format: "note", bodyMarkdown: "Hello" }),
       });
 
       const text = await res.text();
@@ -195,7 +195,7 @@ describe("Compose Routes", () => {
       const res = await app.request("/compose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: "No format" }),
+        body: JSON.stringify({ bodyMarkdown: "No format" }),
       });
 
       expect(res.status).toBe(200);
@@ -215,7 +215,7 @@ describe("Compose Routes", () => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ format: "note", body: "Hello JSON" }),
+        body: JSON.stringify({ format: "note", bodyMarkdown: "Hello JSON" }),
       });
 
       expect(res.status).toBe(200);
@@ -227,7 +227,7 @@ describe("Compose Routes", () => {
 
       const posts = await services.posts.list();
       expect(posts).toHaveLength(1);
-      expect(posts[0].body).toBe("Hello JSON");
+      expect(posts[0].bodyText).toBe("Hello JSON");
     });
 
     it("returns JSON for draft", async () => {
@@ -242,7 +242,7 @@ describe("Compose Routes", () => {
         },
         body: JSON.stringify({
           format: "note",
-          body: "Draft JSON",
+          bodyMarkdown: "Draft JSON",
           status: "draft",
         }),
       });
@@ -267,7 +267,7 @@ describe("Compose Routes", () => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ format: "invalid", body: "Hello" }),
+        body: JSON.stringify({ format: "invalid", bodyMarkdown: "Hello" }),
       });
 
       expect(res.status).toBe(422);

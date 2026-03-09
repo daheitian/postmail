@@ -14,6 +14,7 @@ import { posts, postCollections, customUrls } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
+import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { generatePostSlug } from "../lib/slug.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
@@ -312,14 +313,17 @@ export function createPostService(
       const id = uuidv7();
       const timestamp = now();
 
-      const bodyHtml = data.body ? renderTiptapJson(data.body) : null;
-      const bodyText = data.body ? extractBodyText(data.body) : null;
+      const body = data.bodyMarkdown
+        ? markdownToTiptapJson(data.bodyMarkdown)
+        : (data.body ?? null);
+      const bodyHtml = body ? renderTiptapJson(body) : null;
+      const bodyText = body ? extractBodyText(body) : null;
 
       // Generate summary for titled notes with body content
       let summary: string | null = null;
-      if (data.format === "note" && data.title && data.body && summaryConfig) {
+      if (data.format === "note" && data.title && body && summaryConfig) {
         summary = extractSummary(
-          data.body,
+          body,
           summaryConfig.maxParagraphs,
           summaryConfig.maxChars,
         );
@@ -369,7 +373,7 @@ export function createPostService(
             slug,
             title: data.title ?? null,
             url: data.url ?? null,
-            body: data.body ?? null,
+            body: body ?? null,
             bodyHtml,
             bodyText,
             quoteText: data.quoteText ?? null,
@@ -446,17 +450,31 @@ export function createPostService(
       if (data.featured !== undefined)
         updates.featuredAt = data.featured ? now() : null;
 
-      if (data.body !== undefined) {
-        updates.body = data.body;
-        updates.bodyHtml = data.body ? renderTiptapJson(data.body) : null;
-        updates.bodyText = data.body ? extractBodyText(data.body) : null;
+      if (data.body !== undefined || data.bodyMarkdown !== undefined) {
+        const normalizedBody = data.bodyMarkdown
+          ? markdownToTiptapJson(data.bodyMarkdown)
+          : (data.body ?? null);
+        updates.body = normalizedBody;
+        updates.bodyHtml = normalizedBody
+          ? renderTiptapJson(normalizedBody)
+          : null;
+        updates.bodyText = normalizedBody
+          ? extractBodyText(normalizedBody)
+          : null;
       }
 
       // Recompute summary when body, title, or format change
       if (summaryConfig) {
         const format = data.format ?? (existing.format as Format);
         const title = data.title !== undefined ? data.title : existing.title;
-        const body = data.body !== undefined ? data.body : existing.body;
+        const body =
+          data.bodyMarkdown !== undefined
+            ? data.bodyMarkdown
+              ? markdownToTiptapJson(data.bodyMarkdown)
+              : null
+            : data.body !== undefined
+              ? data.body
+              : existing.body;
         if (format === "note" && title && body) {
           updates.summary = extractSummary(
             body,

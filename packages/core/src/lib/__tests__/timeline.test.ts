@@ -30,7 +30,7 @@ describe("Timeline data assembly", () => {
   it("assembles timeline items with media attachments", async () => {
     const post = await postService.create({
       format: "note",
-      body: "Hello",
+      bodyMarkdown: "Hello",
     });
 
     const posts = await postService.list({
@@ -59,16 +59,16 @@ describe("Timeline data assembly", () => {
   it("identifies thread roots and builds thread context", async () => {
     const root = await postService.create({
       format: "note",
-      body: "Thread root",
+      bodyMarkdown: "Thread root",
     });
     await postService.create({
       format: "note",
-      body: "Reply 1",
+      bodyMarkdown: "Reply 1",
       replyToId: root.id,
     });
     await postService.create({
       format: "note",
-      body: "Reply 2",
+      bodyMarkdown: "Reply 2",
       replyToId: root.id,
     });
 
@@ -93,7 +93,7 @@ describe("Timeline data assembly", () => {
       await postService.getThreadTimelineContext(threadRootIds);
     const ctx = threadContexts.get(root.id);
     expect(ctx).toBeDefined();
-    expect(ctx?.latestReply.body).toBe("Reply 2");
+    expect(ctx?.latestReply.bodyText).toBe("Reply 2");
     expect(ctx?.totalReplyCount).toBe(2);
 
     // Assemble items
@@ -129,18 +129,18 @@ describe("Timeline data assembly", () => {
 
     expect(items).toHaveLength(1);
     expect(items[0]?.threadPreview).toBeDefined();
-    expect(items[0]?.threadPreview?.latestReply.body).toBe("Reply 2");
+    expect(items[0]?.threadPreview?.latestReply.bodyText).toBe("Reply 2");
     expect(items[0]?.threadPreview?.totalReplyCount).toBe(2);
   });
 
   it("excludes replies from top-level list", async () => {
     const root = await postService.create({
       format: "note",
-      body: "Root",
+      bodyMarkdown: "Root",
     });
     await postService.create({
       format: "note",
-      body: "Reply",
+      bodyMarkdown: "Reply",
       replyToId: root.id,
     });
 
@@ -151,7 +151,7 @@ describe("Timeline data assembly", () => {
     });
 
     expect(posts).toHaveLength(1);
-    expect(posts[0]?.body).toBe("Root");
+    expect(posts[0]?.bodyText).toBe("Root");
   });
 
   it("supports cursor pagination for load more", async () => {
@@ -160,7 +160,7 @@ describe("Timeline data assembly", () => {
       posts.push(
         await postService.create({
           format: "note",
-          body: `Post ${i}`,
+          bodyMarkdown: `Post ${i}`,
           publishedAt: 1000 + i,
         }),
       );
@@ -191,7 +191,7 @@ describe("Timeline data assembly", () => {
     for (let i = 0; i < 5; i++) {
       await postService.create({
         format: "note",
-        body: `Post ${i}`,
+        bodyMarkdown: `Post ${i}`,
         publishedAt: 1000 + i,
       });
     }
@@ -206,8 +206,8 @@ describe("Timeline data assembly", () => {
       offset: 0,
     });
     expect(page1).toHaveLength(2);
-    expect(page1[0]?.body).toBe("Post 4");
-    expect(page1[1]?.body).toBe("Post 3");
+    expect(page1[0]?.bodyText).toBe("Post 4");
+    expect(page1[1]?.bodyText).toBe("Post 3");
 
     // Page 2
     const page2 = await postService.list({
@@ -217,8 +217,8 @@ describe("Timeline data assembly", () => {
       offset: 2,
     });
     expect(page2).toHaveLength(2);
-    expect(page2[0]?.body).toBe("Post 2");
-    expect(page2[1]?.body).toBe("Post 1");
+    expect(page2[0]?.bodyText).toBe("Post 2");
+    expect(page2[1]?.bodyText).toBe("Post 1");
 
     // Page 3 (partial)
     const page3 = await postService.list({
@@ -228,14 +228,14 @@ describe("Timeline data assembly", () => {
       offset: 4,
     });
     expect(page3).toHaveLength(1);
-    expect(page3[0]?.body).toBe("Post 0");
+    expect(page3[0]?.bodyText).toBe("Post 0");
   });
 
   it("computes total pages from count", async () => {
     for (let i = 0; i < 5; i++) {
       await postService.create({
         format: "note",
-        body: `Post ${i}`,
+        bodyMarkdown: `Post ${i}`,
       });
     }
 

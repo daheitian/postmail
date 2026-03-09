@@ -82,11 +82,11 @@ Base path: `/api/posts`
 
 Jant has three post formats:
 
-| Format  | Purpose                                                  | Key fields                           |
-| ------- | -------------------------------------------------------- | ------------------------------------ |
-| `note`  | Original content (short thoughts, long articles, images) | `body`, `title` (optional)           |
-| `link`  | Shared reference (articles, tools, videos)               | `url` (important), `body` (optional) |
-| `quote` | Cited text (book excerpts, quotes)                       | `quoteText`, `url` (optional source) |
+| Format  | Purpose                                                  | Key fields                                   |
+| ------- | -------------------------------------------------------- | -------------------------------------------- |
+| `note`  | Original content (short thoughts, long articles, images) | `bodyMarkdown`, `title` (optional)           |
+| `link`  | Shared reference (articles, tools, videos)               | `url` (important), `bodyMarkdown` (optional) |
+| `quote` | Cited text (book excerpts, quotes)                       | `quoteText`, `url` (optional source)         |
 
 ### List Posts
 
@@ -120,7 +120,6 @@ Public. No auth required.
       "slug": "hello-world",
       "title": "Hello World",
       "url": null,
-      "body": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hello world\"}]}]}",
       "bodyHtml": "<p>Hello world</p>",
       "bodyText": "Hello world",
       "quoteText": null,
@@ -190,7 +189,7 @@ POST /api/posts
 {
   "format": "note",
   "title": "My First Post",
-  "body": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hello world!\"}]}]}",
+  "bodyMarkdown": "Hello world!\n\nThis is **bold** and *italic* text.",
   "status": "published",
   "visibility": "public",
   "publishedAt": 1706000000,
@@ -206,7 +205,8 @@ POST /api/posts
 | --------------- | ----------------------------------- | -------- | ----------- | -------------------------------------------------------------------- |
 | `format`        | `note` \| `link` \| `quote`         | **yes**  | —           | Post format                                                          |
 | `title`         | string                              | no       | —           | Post title. Notes with titles render as articles                     |
-| `body`          | string                              | no       | —           | TipTap JSON string (see [Body Format](#body-format))                 |
+| `body`          | string                              | no       | —           | Post content as TipTap JSON (used by the editor UI)                  |
+| `bodyMarkdown`  | string                              | no       | —           | Post content in Markdown (see [Body Format](#body-format))           |
 | `slug`          | string                              | no       | auto        | URL slug. Auto-generated from title or as random ID                  |
 | `status`        | `draft` \| `published`              | no       | `published` |                                                                      |
 | `visibility`    | `public` \| `unlisted` \| `private` | no       | `public`    |                                                                      |
@@ -245,7 +245,7 @@ PUT /api/posts/:id
 ```json
 {
   "title": "Updated Title",
-  "body": "{\"type\":\"doc\",\"content\":[...]}"
+  "bodyMarkdown": "Updated content in **Markdown**."
 }
 ```
 
@@ -275,184 +275,111 @@ DELETE /api/posts/:id
 
 ## Body Format
 
-The `body` field uses [TipTap](https://tiptap.dev/) JSON format (a ProseMirror-based document structure). The server automatically renders it to HTML (`bodyHtml`) and extracts plain text (`bodyText`).
+Post content can be provided in two ways — use one or the other, not both:
 
-### Simple text
+- **`bodyMarkdown`** — Markdown string. The server converts it to the internal document format and renders HTML (`bodyHtml`) and plain text (`bodyText`). **Recommended for API users and scripts.**
+- **`body`** — TipTap JSON string. Used by the built-in editor UI. Only use this if you are working with the TipTap document format directly.
 
-```json
-{
-  "type": "doc",
-  "content": [
-    {
-      "type": "paragraph",
-      "content": [{ "type": "text", "text": "Hello world!" }]
-    }
-  ]
-}
-```
+### Paragraphs
 
-### Multiple paragraphs
+Separate paragraphs with a blank line:
 
-```json
-{
-  "type": "doc",
-  "content": [
-    {
-      "type": "paragraph",
-      "content": [{ "type": "text", "text": "First paragraph." }]
-    },
-    {
-      "type": "paragraph",
-      "content": [{ "type": "text", "text": "Second paragraph." }]
-    }
-  ]
-}
-```
+```markdown
+First paragraph.
 
-### Rich text with formatting
-
-```json
-{
-  "type": "doc",
-  "content": [
-    {
-      "type": "paragraph",
-      "content": [
-        { "type": "text", "text": "This is " },
-        {
-          "type": "text",
-          "text": "bold",
-          "marks": [{ "type": "bold" }]
-        },
-        { "type": "text", "text": " and " },
-        {
-          "type": "text",
-          "text": "italic",
-          "marks": [{ "type": "italic" }]
-        },
-        { "type": "text", "text": " text." }
-      ]
-    }
-  ]
-}
-```
-
-### Links
-
-```json
-{
-  "type": "text",
-  "text": "click here",
-  "marks": [
-    {
-      "type": "link",
-      "attrs": {
-        "href": "https://example.com",
-        "target": "_blank"
-      }
-    }
-  ]
-}
+Second paragraph.
 ```
 
 ### Headings
 
-```json
-{
-  "type": "heading",
-  "attrs": { "level": 2 },
-  "content": [{ "type": "text", "text": "Section Title" }]
-}
+```markdown
+# Heading 1
+
+## Heading 2
+
+### Heading 3
 ```
+
+### Inline formatting
+
+```markdown
+This is **bold** and _italic_ text.
+Use `inline code` for code snippets.
+This is ~~strikethrough~~ text.
+```
+
+### Links
+
+```markdown
+[click here](https://example.com)
+```
+
+### Images
+
+```markdown
+![Alt text](https://example.com/image.png)
+```
+
+For media attachments, use the `/api/upload` endpoint and `mediaIds` instead.
 
 ### Lists
 
-```json
-{
-  "type": "bulletList",
-  "content": [
-    {
-      "type": "listItem",
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [{ "type": "text", "text": "Item 1" }]
-        }
-      ]
-    },
-    {
-      "type": "listItem",
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [{ "type": "text", "text": "Item 2" }]
-        }
-      ]
-    }
-  ]
-}
+```markdown
+- Item 1
+- Item 2
+- Item 3
+
+1. First
+2. Second
+3. Third
 ```
 
-Use `orderedList` for numbered lists.
+### Blockquotes
 
-### Blockquote
-
-```json
-{
-  "type": "blockquote",
-  "content": [
-    {
-      "type": "paragraph",
-      "content": [{ "type": "text", "text": "Quoted text here." }]
-    }
-  ]
-}
+```markdown
+> Quoted text here.
 ```
 
-### Code block
+### Code blocks
 
-```json
-{
-  "type": "codeBlock",
-  "attrs": { "language": "javascript" },
-  "content": [{ "type": "text", "text": "console.log('hello')" }]
-}
+````markdown
+```javascript
+console.log("hello");
+```
+````
+
+### Tables
+
+```markdown
+| Header A | Header B |
+| -------- | -------- |
+| Cell 1   | Cell 2   |
 ```
 
 ### Horizontal rule
 
-```json
-{ "type": "horizontalRule" }
+```markdown
+---
 ```
 
-### Supported marks
+### Read-more break
 
-`bold`, `italic`, `strike`, `code`, `link`
+Insert `<!--more-->` on its own line to mark where the summary should cut off:
 
-### Supported nodes
+```markdown
+Introduction paragraph.
 
-`doc`, `paragraph`, `heading`, `text`, `bulletList`, `orderedList`, `listItem`, `blockquote`, `codeBlock`, `image`, `table`, `tableRow`, `tableCell`, `tableHeader`, `horizontalRule`, `hardBreak`
+<!--more-->
 
-### Converting HTML/Markdown to TipTap JSON
-
-If you're migrating from another platform, you'll need to convert your existing content to TipTap JSON. Options:
-
-1. **Simple text**: Wrap each paragraph in the basic structure shown above
-2. **HTML**: Use the [TipTap npm package](https://tiptap.dev/docs/editor/api/utilities/html) to convert HTML → JSON on the client side
-3. **Markdown**: Convert Markdown → HTML first, then HTML → TipTap JSON
-4. **Plain text shortcut**: For plain text posts, you can build the JSON programmatically:
-
-```javascript
-function textToTiptap(text) {
-  return JSON.stringify({
-    type: "doc",
-    content: text.split("\n\n").map((para) => ({
-      type: "paragraph",
-      content: para ? [{ type: "text", text: para }] : [],
-    })),
-  });
-}
+Rest of the article.
 ```
+
+### Response fields
+
+The API response includes two rendered fields derived from `body`/`bodyMarkdown`:
+
+- **`bodyHtml`** — HTML rendering of the content. Use this for display.
+- **`bodyText`** — Plain text extraction. Use this for search indexing or previews.
 
 ---
 
@@ -1005,7 +932,7 @@ curl -X POST https://your-site.com/api/posts \
   -d '{
     "format": "note",
     "title": "My Old Blog Post",
-    "body": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Content here...\"}]}]}",
+    "bodyMarkdown": "Content from my old blog.\n\nSecond paragraph with **bold** text.",
     "slug": "my-old-blog-post",
     "status": "published",
     "publishedAt": 1609459200,
@@ -1043,20 +970,6 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-// Convert plain text or simple HTML to TipTap JSON
-function textToTiptap(text) {
-  return JSON.stringify({
-    type: "doc",
-    content: text
-      .split("\n\n")
-      .filter(Boolean)
-      .map((para) => ({
-        type: "paragraph",
-        content: [{ type: "text", text: para.trim() }],
-      })),
-  });
-}
-
 // Upload a file and return its ID
 async function uploadFile(filePath) {
   const form = new FormData();
@@ -1072,7 +985,7 @@ async function uploadFile(filePath) {
   return data.id;
 }
 
-// Create a post
+// Create a post — bodyMarkdown is Markdown, the API handles conversion
 async function createPost(post) {
   const res = await fetch(`${API_BASE}/api/posts`, {
     method: "POST",
@@ -1080,7 +993,7 @@ async function createPost(post) {
     body: JSON.stringify({
       format: "note",
       title: post.title,
-      body: textToTiptap(post.content),
+      bodyMarkdown: post.content, // Markdown string
       slug: post.slug,
       status: "published",
       publishedAt: Math.floor(new Date(post.date).getTime() / 1000),

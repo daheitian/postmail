@@ -37,11 +37,11 @@ describe("Collections Listing Page - Data Logic", () => {
     // Add posts to recipes collection via junction table
     const p1 = await postService.create({
       format: "note",
-      body: "Recipe 1",
+      bodyMarkdown: "Recipe 1",
     });
     const p2 = await postService.create({
       format: "note",
-      body: "Recipe 2",
+      bodyMarkdown: "Recipe 2",
     });
     await collectionService.addPost(recipes.id, p1.id);
     await collectionService.addPost(recipes.id, p2.id);
@@ -77,11 +77,11 @@ describe("Collections Listing Page - Data Logic", () => {
 
     const post = await postService.create({
       format: "note",
-      body: "Will be deleted",
+      bodyMarkdown: "Will be deleted",
     });
     const post2 = await postService.create({
       format: "note",
-      body: "Will remain",
+      bodyMarkdown: "Will remain",
     });
 
     await collectionService.addPost(col.id, post.id);

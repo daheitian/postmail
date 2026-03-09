@@ -87,6 +87,7 @@ composeRoutes.post("/", async (c) => {
       format: data.format,
       title: data.title || undefined,
       body: data.body || undefined,
+      bodyMarkdown: data.bodyMarkdown || undefined,
       status: data.status ?? "published",
       visibility: data.visibility || undefined,
       featured: data.featured,

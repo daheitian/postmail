@@ -15,15 +15,15 @@ describe("PostService - Timeline features", () => {
 
   describe("format filter", () => {
     it("filters by format", async () => {
-      await postService.create({ format: "note", body: "a note" });
+      await postService.create({ format: "note", bodyMarkdown: "a note" });
       await postService.create({
         format: "link",
-        body: "a link",
+        bodyMarkdown: "a link",
         url: "https://example.com",
       });
       await postService.create({
         format: "quote",
-        body: "a quote",
+        bodyMarkdown: "a quote",
         quoteText: "something wise",
       });
 
@@ -35,17 +35,17 @@ describe("PostService - Timeline features", () => {
     it("combines format and status filters", async () => {
       await postService.create({
         format: "note",
-        body: "published note",
+        bodyMarkdown: "published note",
         status: "published",
       });
       await postService.create({
         format: "note",
-        body: "draft note",
+        bodyMarkdown: "draft note",
         status: "draft",
       });
       await postService.create({
         format: "link",
-        body: "published link",
+        bodyMarkdown: "published link",
         status: "published",
         url: "https://example.com",
       });
@@ -69,16 +69,16 @@ describe("PostService - Timeline features", () => {
     it("returns preview replies for a thread root", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       await postService.create({
         format: "note",
-        body: "reply 1",
+        bodyMarkdown: "reply 1",
         replyToId: root.id,
       });
       await postService.create({
         format: "note",
-        body: "reply 2",
+        bodyMarkdown: "reply 2",
         replyToId: root.id,
       });
 
@@ -86,19 +86,19 @@ describe("PostService - Timeline features", () => {
       const replies = previews.get(root.id);
       expect(replies).toBeDefined();
       expect(replies).toHaveLength(2);
-      expect(replies?.[0]?.body).toBe("reply 1");
-      expect(replies?.[1]?.body).toBe("reply 2");
+      expect(replies?.[0]?.bodyText).toBe("reply 1");
+      expect(replies?.[1]?.bodyText).toBe("reply 2");
     });
 
     it("limits preview replies to previewCount", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       for (let i = 0; i < 5; i++) {
         await postService.create({
           format: "note",
-          body: `reply ${i}`,
+          bodyMarkdown: `reply ${i}`,
           replyToId: root.id,
         });
       }
@@ -106,19 +106,19 @@ describe("PostService - Timeline features", () => {
       const previews = await postService.getThreadPreviews([root.id], 2);
       const replies = previews.get(root.id);
       expect(replies).toHaveLength(2);
-      expect(replies?.[0]?.body).toBe("reply 0");
-      expect(replies?.[1]?.body).toBe("reply 1");
+      expect(replies?.[0]?.bodyText).toBe("reply 0");
+      expect(replies?.[1]?.bodyText).toBe("reply 1");
     });
 
     it("defaults to 3 preview replies", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       for (let i = 0; i < 5; i++) {
         await postService.create({
           format: "note",
-          body: `reply ${i}`,
+          bodyMarkdown: `reply ${i}`,
           replyToId: root.id,
         });
       }
@@ -131,20 +131,20 @@ describe("PostService - Timeline features", () => {
     it("handles multiple thread roots", async () => {
       const root1 = await postService.create({
         format: "note",
-        body: "root 1",
+        bodyMarkdown: "root 1",
       });
       const root2 = await postService.create({
         format: "note",
-        body: "root 2",
+        bodyMarkdown: "root 2",
       });
       await postService.create({
         format: "note",
-        body: "reply to root 1",
+        bodyMarkdown: "reply to root 1",
         replyToId: root1.id,
       });
       await postService.create({
         format: "note",
-        body: "reply to root 2",
+        bodyMarkdown: "reply to root 2",
         replyToId: root2.id,
       });
 
@@ -160,16 +160,16 @@ describe("PostService - Timeline features", () => {
     it("excludes deleted replies", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply1 = await postService.create({
         format: "note",
-        body: "reply 1",
+        bodyMarkdown: "reply 1",
         replyToId: root.id,
       });
       await postService.create({
         format: "note",
-        body: "reply 2",
+        bodyMarkdown: "reply 2",
         replyToId: root.id,
       });
 
@@ -178,13 +178,13 @@ describe("PostService - Timeline features", () => {
       const previews = await postService.getThreadPreviews([root.id]);
       const replies = previews.get(root.id);
       expect(replies).toHaveLength(1);
-      expect(replies?.[0]?.body).toBe("reply 2");
+      expect(replies?.[0]?.bodyText).toBe("reply 2");
     });
 
     it("returns empty for roots with no replies", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root with no replies",
+        bodyMarkdown: "root with no replies",
       });
 
       const previews = await postService.getThreadPreviews([root.id]);
@@ -201,11 +201,11 @@ describe("PostService - Timeline features", () => {
     it("returns latestReply with no parentReply for a 2-post thread", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply = await postService.create({
         format: "note",
-        body: "only reply",
+        bodyMarkdown: "only reply",
         replyToId: root.id,
       });
 
@@ -220,16 +220,16 @@ describe("PostService - Timeline features", () => {
     it("returns latestReply + parentReply for a 3-post thread", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply1 = await postService.create({
         format: "note",
-        body: "reply 1",
+        bodyMarkdown: "reply 1",
         replyToId: root.id,
       });
       const reply2 = await postService.create({
         format: "note",
-        body: "reply 2",
+        bodyMarkdown: "reply 2",
         replyToId: reply1.id,
       });
 
@@ -244,13 +244,13 @@ describe("PostService - Timeline features", () => {
     it("returns correct totalReplyCount for 4+ post thread", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       let prev = root;
       for (let i = 0; i < 5; i++) {
         prev = await postService.create({
           format: "note",
-          body: `reply ${i}`,
+          bodyMarkdown: `reply ${i}`,
           replyToId: prev.id,
         });
       }
@@ -258,24 +258,24 @@ describe("PostService - Timeline features", () => {
       const result = await postService.getThreadTimelineContext([root.id]);
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
-      expect(ctx?.latestReply.body).toBe("reply 4");
-      expect(ctx?.parentReply?.body).toBe("reply 3");
+      expect(ctx?.latestReply.bodyText).toBe("reply 4");
+      expect(ctx?.parentReply?.bodyText).toBe("reply 3");
       expect(ctx?.totalReplyCount).toBe(5);
     });
 
     it("excludes deleted replies", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply1 = await postService.create({
         format: "note",
-        body: "reply 1",
+        bodyMarkdown: "reply 1",
         replyToId: root.id,
       });
       const reply2 = await postService.create({
         format: "note",
-        body: "reply 2",
+        bodyMarkdown: "reply 2",
         replyToId: reply1.id,
       });
 
@@ -292,20 +292,20 @@ describe("PostService - Timeline features", () => {
     it("handles multiple roots in batch", async () => {
       const root1 = await postService.create({
         format: "note",
-        body: "root 1",
+        bodyMarkdown: "root 1",
       });
       const root2 = await postService.create({
         format: "note",
-        body: "root 2",
+        bodyMarkdown: "root 2",
       });
       const r1Reply = await postService.create({
         format: "note",
-        body: "reply to root 1",
+        bodyMarkdown: "reply to root 1",
         replyToId: root1.id,
       });
       const r2Reply = await postService.create({
         format: "note",
-        body: "reply to root 2",
+        bodyMarkdown: "reply to root 2",
         replyToId: root2.id,
       });
 
@@ -323,18 +323,18 @@ describe("PostService - Timeline features", () => {
     it("fetches published non-reply posts for the timeline", async () => {
       const root = await postService.create({
         format: "note",
-        body: "a published note",
+        bodyMarkdown: "a published note",
         status: "published",
       });
       await postService.create({
         format: "note",
-        body: "a reply",
+        bodyMarkdown: "a reply",
         status: "published",
         replyToId: root.id,
       });
       await postService.create({
         format: "note",
-        body: "a draft",
+        bodyMarkdown: "a draft",
         status: "draft",
       });
 
@@ -345,7 +345,7 @@ describe("PostService - Timeline features", () => {
       });
 
       expect(posts).toHaveLength(1);
-      expect(posts[0]?.body).toBe("a published note");
+      expect(posts[0]?.bodyText).toBe("a published note");
     });
   });
 });

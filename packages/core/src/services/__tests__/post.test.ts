@@ -113,7 +113,7 @@ describe("PostService", () => {
     it("sets publishedAt and timestamps", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       expect(post.publishedAt).toBeGreaterThan(0);
@@ -125,7 +125,7 @@ describe("PostService", () => {
       const customTime = 1706745600;
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
         publishedAt: customTime,
       });
 
@@ -135,11 +135,11 @@ describe("PostService", () => {
     it("creates unique UUIDv7 IDs that sort chronologically", async () => {
       const post1 = await postService.create({
         format: "note",
-        body: "first",
+        bodyMarkdown: "first",
       });
       const post2 = await postService.create({
         format: "note",
-        body: "second",
+        bodyMarkdown: "second",
       });
 
       expect(post1.id).not.toBe(post2.id);
@@ -151,7 +151,7 @@ describe("PostService", () => {
       const post = await postService.create({
         format: "quote",
         quoteText: "To be or not to be",
-        body: "Shakespeare's famous line",
+        bodyMarkdown: "Shakespeare's famous line",
         url: "https://example.com/hamlet",
       });
 
@@ -163,7 +163,7 @@ describe("PostService", () => {
     it("creates a draft post", async () => {
       const post = await postService.create({
         format: "note",
-        body: "draft content",
+        bodyMarkdown: "draft content",
         status: "draft",
       });
 
@@ -175,13 +175,13 @@ describe("PostService", () => {
     it("returns a post by ID", async () => {
       const created = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const found = await postService.getById(created.id);
       expect(found).not.toBeNull();
       expect(found?.id).toBe(created.id);
-      expect(found?.body).toBe("test");
+      expect(found?.bodyText).toBe("test");
     });
 
     it("returns null for non-existent ID", async () => {
@@ -192,7 +192,7 @@ describe("PostService", () => {
     it("excludes soft-deleted posts", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
       await postService.delete(post.id);
 
@@ -205,7 +205,7 @@ describe("PostService", () => {
     it("returns a post by slug", async () => {
       await postService.create({
         format: "note",
-        body: "About page",
+        bodyMarkdown: "About page",
         slug: "about",
       });
 
@@ -222,7 +222,7 @@ describe("PostService", () => {
     it("excludes soft-deleted posts", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
         slug: "test-page",
       });
       await postService.delete(post.id);
@@ -239,9 +239,9 @@ describe("PostService", () => {
     });
 
     it("returns all non-deleted posts", async () => {
-      await postService.create({ format: "note", body: "first" });
-      await postService.create({ format: "note", body: "second" });
-      await postService.create({ format: "note", body: "third" });
+      await postService.create({ format: "note", bodyMarkdown: "first" });
+      await postService.create({ format: "note", bodyMarkdown: "second" });
+      await postService.create({ format: "note", bodyMarkdown: "third" });
 
       const posts = await postService.list();
       expect(posts).toHaveLength(3);
@@ -250,25 +250,25 @@ describe("PostService", () => {
     it("orders by publishedAt descending", async () => {
       await postService.create({
         format: "note",
-        body: "old",
+        bodyMarkdown: "old",
         publishedAt: 1000,
       });
       await postService.create({
         format: "note",
-        body: "new",
+        bodyMarkdown: "new",
         publishedAt: 2000,
       });
 
       const posts = await postService.list();
-      expect(posts[0]?.body).toBe("new");
-      expect(posts[1]?.body).toBe("old");
+      expect(posts[0]?.bodyText).toBe("new");
+      expect(posts[1]?.bodyText).toBe("old");
     });
 
     it("filters by format", async () => {
-      await postService.create({ format: "note", body: "a note" });
+      await postService.create({ format: "note", bodyMarkdown: "a note" });
       await postService.create({
         format: "link",
-        body: "a link",
+        bodyMarkdown: "a link",
         title: "Link",
         url: "https://example.com",
       });
@@ -281,12 +281,12 @@ describe("PostService", () => {
     it("filters by status", async () => {
       await postService.create({
         format: "note",
-        body: "published post",
+        bodyMarkdown: "published post",
         status: "published",
       });
       await postService.create({
         format: "note",
-        body: "draft post",
+        bodyMarkdown: "draft post",
         status: "draft",
       });
 
@@ -298,77 +298,77 @@ describe("PostService", () => {
     it("filters by visibility", async () => {
       await postService.create({
         format: "note",
-        body: "public post",
+        bodyMarkdown: "public post",
       });
       await postService.create({
         format: "note",
-        body: "unlisted post",
+        bodyMarkdown: "unlisted post",
         visibility: "unlisted",
       });
       await postService.create({
         format: "note",
-        body: "private post",
+        bodyMarkdown: "private post",
         visibility: "private",
       });
 
       const publicPosts = await postService.list({ visibility: "public" });
       expect(publicPosts).toHaveLength(1);
       expect(publicPosts[0]?.visibility).toBe("public");
-      expect(publicPosts[0]?.body).toBe("public post");
+      expect(publicPosts[0]?.bodyText).toBe("public post");
 
       const unlisted = await postService.list({ visibility: "unlisted" });
       expect(unlisted).toHaveLength(1);
       expect(unlisted[0]?.visibility).toBe("unlisted");
-      expect(unlisted[0]?.body).toBe("unlisted post");
+      expect(unlisted[0]?.bodyText).toBe("unlisted post");
 
       const privatePosts = await postService.list({ visibility: "private" });
       expect(privatePosts).toHaveLength(1);
       expect(privatePosts[0]?.visibility).toBe("private");
-      expect(privatePosts[0]?.body).toBe("private post");
+      expect(privatePosts[0]?.bodyText).toBe("private post");
     });
 
     it("filters by featured", async () => {
       await postService.create({
         format: "note",
-        body: "featured post",
+        bodyMarkdown: "featured post",
         featured: true,
       });
       await postService.create({
         format: "note",
-        body: "normal post",
+        bodyMarkdown: "normal post",
       });
 
       const featured = await postService.list({ featured: true });
       expect(featured).toHaveLength(1);
       expect(featured[0]?.featuredAt).toBeTypeOf("number");
-      expect(featured[0]?.body).toBe("featured post");
+      expect(featured[0]?.bodyText).toBe("featured post");
 
       const notFeatured = await postService.list({ featured: false });
       expect(notFeatured).toHaveLength(1);
       expect(notFeatured[0]?.featuredAt).toBeNull();
-      expect(notFeatured[0]?.body).toBe("normal post");
+      expect(notFeatured[0]?.bodyText).toBe("normal post");
     });
 
     it("excludes unlisted posts when requested", async () => {
       await postService.create({
         format: "note",
-        body: "public post",
+        bodyMarkdown: "public post",
       });
       await postService.create({
         format: "note",
-        body: "unlisted post",
+        bodyMarkdown: "unlisted post",
         visibility: "unlisted",
       });
       await postService.create({
         format: "note",
-        body: "featured post",
+        bodyMarkdown: "featured post",
         featured: true,
       });
 
       const posts = await postService.list({ excludeUnlisted: true });
       expect(posts).toHaveLength(2);
       // Featured posts have visibility "public", so both public and featured appear
-      expect(posts.map((p) => p.body).sort()).toEqual([
+      expect(posts.map((p) => p.bodyText).sort()).toEqual([
         "featured post",
         "public post",
       ]);
@@ -377,23 +377,23 @@ describe("PostService", () => {
     it("excludes private posts when excludePrivate is set", async () => {
       await postService.create({
         format: "note",
-        body: "public post",
+        bodyMarkdown: "public post",
       });
       await postService.create({
         format: "note",
-        body: "private post",
+        bodyMarkdown: "private post",
         visibility: "private",
       });
       await postService.create({
         format: "note",
-        body: "featured post",
+        bodyMarkdown: "featured post",
         featured: true,
       });
 
       const posts = await postService.list({ excludePrivate: true });
       expect(posts).toHaveLength(2);
       // Featured posts have visibility "public", so both public and featured appear
-      expect(posts.map((p) => p.body).sort()).toEqual([
+      expect(posts.map((p) => p.bodyText).sort()).toEqual([
         "featured post",
         "public post",
       ]);
@@ -402,42 +402,42 @@ describe("PostService", () => {
     it("filters by pinned", async () => {
       await postService.create({
         format: "note",
-        body: "pinned post",
+        bodyMarkdown: "pinned post",
         pinned: true,
       });
       await postService.create({
         format: "note",
-        body: "normal post",
+        bodyMarkdown: "normal post",
       });
 
       const pinned = await postService.list({ pinned: true });
       expect(pinned).toHaveLength(1);
       expect(pinned[0]?.pinnedAt).toBeTypeOf("number");
-      expect(pinned[0]?.body).toBe("pinned post");
+      expect(pinned[0]?.bodyText).toBe("pinned post");
 
       const notPinned = await postService.list({ pinned: false });
       expect(notPinned).toHaveLength(1);
       expect(notPinned[0]?.pinnedAt).toBeNull();
-      expect(notPinned[0]?.body).toBe("normal post");
+      expect(notPinned[0]?.bodyText).toBe("normal post");
     });
 
     it("excludes deleted posts by default", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
-      await postService.create({ format: "note", body: "kept" });
+      await postService.create({ format: "note", bodyMarkdown: "kept" });
       await postService.delete(post.id);
 
       const posts = await postService.list();
       expect(posts).toHaveLength(1);
-      expect(posts[0]?.body).toBe("kept");
+      expect(posts[0]?.bodyText).toBe("kept");
     });
 
     it("includes deleted posts when requested", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
       await postService.delete(post.id);
 
@@ -447,7 +447,7 @@ describe("PostService", () => {
 
     it("supports limit", async () => {
       for (let i = 0; i < 5; i++) {
-        await postService.create({ format: "note", body: `post ${i}` });
+        await postService.create({ format: "note", bodyMarkdown: `post ${i}` });
       }
 
       const posts = await postService.list({ limit: 2 });
@@ -460,7 +460,7 @@ describe("PostService", () => {
         created.push(
           await postService.create({
             format: "note",
-            body: `post ${i}`,
+            bodyMarkdown: `post ${i}`,
             publishedAt: 1000 + i,
           }),
         );
@@ -475,24 +475,24 @@ describe("PostService", () => {
     it("excludes replies when requested", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root post",
+        bodyMarkdown: "root post",
       });
       await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
       const posts = await postService.list({ excludeReplies: true });
       expect(posts).toHaveLength(1);
-      expect(posts[0]?.body).toBe("root post");
+      expect(posts[0]?.bodyText).toBe("root post");
     });
 
     it("supports offset pagination", async () => {
       for (let i = 0; i < 5; i++) {
         await postService.create({
           format: "note",
-          body: `post ${i}`,
+          bodyMarkdown: `post ${i}`,
           publishedAt: 1000 + i,
         });
       }
@@ -500,8 +500,8 @@ describe("PostService", () => {
       // Skip the first 2 posts (newest), get 2 more
       const posts = await postService.list({ limit: 2, offset: 2 });
       expect(posts).toHaveLength(2);
-      expect(posts[0]?.body).toBe("post 2");
-      expect(posts[1]?.body).toBe("post 1");
+      expect(posts[0]?.bodyText).toBe("post 2");
+      expect(posts[1]?.bodyText).toBe("post 1");
     });
   });
 
@@ -512,9 +512,9 @@ describe("PostService", () => {
     });
 
     it("counts all non-deleted posts", async () => {
-      await postService.create({ format: "note", body: "first" });
-      await postService.create({ format: "note", body: "second" });
-      await postService.create({ format: "note", body: "third" });
+      await postService.create({ format: "note", bodyMarkdown: "first" });
+      await postService.create({ format: "note", bodyMarkdown: "second" });
+      await postService.create({ format: "note", bodyMarkdown: "third" });
 
       const count = await postService.count();
       expect(count).toBe(3);
@@ -523,12 +523,12 @@ describe("PostService", () => {
     it("filters by status", async () => {
       await postService.create({
         format: "note",
-        body: "published",
+        bodyMarkdown: "published",
         status: "published",
       });
       await postService.create({
         format: "note",
-        body: "draft",
+        bodyMarkdown: "draft",
         status: "draft",
       });
 
@@ -539,10 +539,10 @@ describe("PostService", () => {
     it("filters by visibility", async () => {
       await postService.create({
         format: "note",
-        body: "unlisted",
+        bodyMarkdown: "unlisted",
         visibility: "unlisted",
       });
-      await postService.create({ format: "note", body: "normal" });
+      await postService.create({ format: "note", bodyMarkdown: "normal" });
 
       const count = await postService.count({ visibility: "unlisted" });
       expect(count).toBe(1);
@@ -551,10 +551,10 @@ describe("PostService", () => {
     it("filters by featured", async () => {
       await postService.create({
         format: "note",
-        body: "featured",
+        bodyMarkdown: "featured",
         featured: true,
       });
-      await postService.create({ format: "note", body: "normal" });
+      await postService.create({ format: "note", bodyMarkdown: "normal" });
 
       const featuredCount = await postService.count({ featured: true });
       expect(featuredCount).toBe(1);
@@ -566,9 +566,9 @@ describe("PostService", () => {
     it("excludes deleted posts by default", async () => {
       const post = await postService.create({
         format: "note",
-        body: "to delete",
+        bodyMarkdown: "to delete",
       });
-      await postService.create({ format: "note", body: "keep" });
+      await postService.create({ format: "note", bodyMarkdown: "keep" });
       await postService.delete(post.id);
 
       const count = await postService.count();
@@ -578,11 +578,11 @@ describe("PostService", () => {
     it("excludes replies when requested", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -627,7 +627,7 @@ describe("PostService", () => {
     it("updates post title", async () => {
       const post = await postService.create({
         format: "link",
-        body: "body",
+        bodyMarkdown: "body",
         title: "Original Title",
         url: "https://example.com",
       });
@@ -642,7 +642,7 @@ describe("PostService", () => {
     it("updates post url", async () => {
       const post = await postService.create({
         format: "link",
-        body: "link post",
+        bodyMarkdown: "link post",
         url: "https://old.com",
       });
 
@@ -656,7 +656,7 @@ describe("PostService", () => {
     it("clears url when set to null", async () => {
       const post = await postService.create({
         format: "link",
-        body: "test",
+        bodyMarkdown: "test",
         url: "https://example.com",
       });
 
@@ -668,14 +668,14 @@ describe("PostService", () => {
     });
 
     it("returns null for non-existent post", async () => {
-      const result = await postService.update(9999, { body: "test" });
+      const result = await postService.update(9999, { bodyMarkdown: "test" });
       expect(result).toBeNull();
     });
 
     it("updates updatedAt timestamp", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
       const originalUpdatedAt = post.updatedAt;
 
@@ -683,7 +683,7 @@ describe("PostService", () => {
       await new Promise((r) => setTimeout(r, 1100));
 
       const updated = await postService.update(post.id, {
-        body: "modified",
+        bodyMarkdown: "modified",
       });
 
       expect(updated?.updatedAt).toBeGreaterThanOrEqual(originalUpdatedAt);
@@ -692,7 +692,7 @@ describe("PostService", () => {
     it("updates visibility", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       expect(post.visibility).toBe("public");
@@ -707,7 +707,7 @@ describe("PostService", () => {
     it("updates featured flag", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       expect(post.featuredAt).toBeNull();
@@ -728,7 +728,7 @@ describe("PostService", () => {
     it("updates pinned flag", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       expect(post.pinnedAt).toBeNull();
@@ -743,7 +743,7 @@ describe("PostService", () => {
     it("updates slug", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
         slug: "old-slug",
       });
 
@@ -775,7 +775,7 @@ describe("PostService", () => {
     it("soft-deletes a post", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const result = await postService.delete(post.id);
@@ -794,11 +794,11 @@ describe("PostService", () => {
     it("cascade deletes thread when deleting root post", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -812,16 +812,16 @@ describe("PostService", () => {
     it("only deletes single post when deleting a reply", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply1 = await postService.create({
         format: "note",
-        body: "reply1",
+        bodyMarkdown: "reply1",
         replyToId: root.id,
       });
       await postService.create({
         format: "note",
-        body: "reply2",
+        bodyMarkdown: "reply2",
         replyToId: root.id,
       });
 
@@ -838,11 +838,11 @@ describe("PostService", () => {
     it("sets threadId on reply to a root post", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -853,16 +853,16 @@ describe("PostService", () => {
     it("inherits threadId from parent in nested replies", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply1 = await postService.create({
         format: "note",
-        body: "reply1",
+        bodyMarkdown: "reply1",
         replyToId: root.id,
       });
       const reply2 = await postService.create({
         format: "note",
-        body: "reply2",
+        bodyMarkdown: "reply2",
         replyToId: reply1.id,
       });
 
@@ -874,12 +874,12 @@ describe("PostService", () => {
     it("inherits status from root post", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
         status: "draft",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -889,12 +889,12 @@ describe("PostService", () => {
     it("preserves draft status when reply explicitly requests it", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
         status: "published",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         status: "draft",
         replyToId: root.id,
       });
@@ -906,12 +906,12 @@ describe("PostService", () => {
     it("inherits visibility from root post", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
         visibility: "unlisted",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -921,7 +921,7 @@ describe("PostService", () => {
     it("does not inherit featuredAt from root post", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
         featured: true,
       });
 
@@ -929,7 +929,7 @@ describe("PostService", () => {
 
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -940,33 +940,33 @@ describe("PostService", () => {
     it("getThread returns all posts in a thread", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       await postService.create({
         format: "note",
-        body: "reply1",
+        bodyMarkdown: "reply1",
         replyToId: root.id,
       });
       await postService.create({
         format: "note",
-        body: "reply2",
+        bodyMarkdown: "reply2",
         replyToId: root.id,
       });
 
       const thread = await postService.getThread(root.id);
       expect(thread).toHaveLength(3);
       // Ordered by createdAt
-      expect(thread[0]?.body).toBe("root");
+      expect(thread[0]?.bodyText).toBe("root");
     });
 
     it("getThread excludes deleted posts", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -979,12 +979,12 @@ describe("PostService", () => {
     it("cascades status changes from root to thread", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
         status: "published",
       });
       await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -999,11 +999,11 @@ describe("PostService", () => {
     it("cascades visibility changes from root to thread", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -1018,11 +1018,11 @@ describe("PostService", () => {
     it("rejects visibility changes on thread replies", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -1036,11 +1036,11 @@ describe("PostService", () => {
     it("allows featuring a thread reply", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -1057,11 +1057,11 @@ describe("PostService", () => {
     it("rejects pinning a thread reply", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
 
@@ -1082,16 +1082,16 @@ describe("PostService", () => {
     it("returns reply counts for posts", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       await postService.create({
         format: "note",
-        body: "reply1",
+        bodyMarkdown: "reply1",
         replyToId: root.id,
       });
       await postService.create({
         format: "note",
-        body: "reply2",
+        bodyMarkdown: "reply2",
         replyToId: root.id,
       });
 
@@ -1102,7 +1102,7 @@ describe("PostService", () => {
     it("returns 0 (missing) for posts without replies", async () => {
       const post = await postService.create({
         format: "note",
-        body: "no replies",
+        bodyMarkdown: "no replies",
       });
 
       const counts = await postService.getReplyCounts([post.id]);
@@ -1112,16 +1112,16 @@ describe("PostService", () => {
     it("excludes deleted replies from count", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
       });
       const reply = await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
       });
       await postService.create({
         format: "note",
-        body: "reply2",
+        bodyMarkdown: "reply2",
         replyToId: root.id,
       });
 
@@ -1136,7 +1136,7 @@ describe("PostService", () => {
     it("sets lastActivityAt equal to publishedAt for non-thread posts", async () => {
       const post = await postService.create({
         format: "note",
-        body: "standalone",
+        bodyMarkdown: "standalone",
         publishedAt: 5000,
       });
 
@@ -1146,14 +1146,14 @@ describe("PostService", () => {
     it("updates root lastActivityAt when a reply is created", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
         publishedAt: 1000,
       });
       expect(root.lastActivityAt).toBe(1000);
 
       await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: root.id,
         publishedAt: 9000,
       });
@@ -1165,43 +1165,43 @@ describe("PostService", () => {
     it("list returns thread root bumped to top after reply", async () => {
       const oldPost = await postService.create({
         format: "note",
-        body: "old thread root",
+        bodyMarkdown: "old thread root",
         publishedAt: 1000,
       });
       await postService.create({
         format: "note",
-        body: "newer standalone",
+        bodyMarkdown: "newer standalone",
         publishedAt: 5000,
       });
 
       // Reply to old post with a newer timestamp — should bump it above standalone
       await postService.create({
         format: "note",
-        body: "reply",
+        bodyMarkdown: "reply",
         replyToId: oldPost.id,
         publishedAt: 9000,
       });
 
       const listed = await postService.list({ excludeReplies: true });
-      expect(listed[0]?.body).toBe("old thread root");
-      expect(listed[1]?.body).toBe("newer standalone");
+      expect(listed[0]?.bodyText).toBe("old thread root");
+      expect(listed[1]?.bodyText).toBe("newer standalone");
     });
 
     it("recalculates root lastActivityAt when a reply is deleted", async () => {
       const root = await postService.create({
         format: "note",
-        body: "root",
+        bodyMarkdown: "root",
         publishedAt: 1000,
       });
       const reply1 = await postService.create({
         format: "note",
-        body: "reply1",
+        bodyMarkdown: "reply1",
         replyToId: root.id,
         publishedAt: 3000,
       });
       await postService.create({
         format: "note",
-        body: "reply2",
+        bodyMarkdown: "reply2",
         replyToId: root.id,
         publishedAt: 5000,
       });
@@ -1212,7 +1212,7 @@ describe("PostService", () => {
 
       // Delete the latest reply — root should fall back to reply1's time
       const reply2 = (await postService.list({ threadId: root.id })).find(
-        (p) => p.body === "reply2",
+        (p) => p.bodyText === "reply2",
       );
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- test setup guarantees reply2 exists
       await postService.delete(reply2!.id);

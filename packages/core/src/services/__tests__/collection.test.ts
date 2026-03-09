@@ -241,7 +241,7 @@ describe("CollectionService", () => {
       });
       const post = await postService.create({
         format: "note",
-        body: "test post",
+        bodyMarkdown: "test post",
       });
 
       await collectionService.addPost(collection.id, post.id);
@@ -463,9 +463,18 @@ describe("CollectionService", () => {
         title: "Col 2",
       });
 
-      const p1 = await postService.create({ format: "note", body: "post 1" });
-      const p2 = await postService.create({ format: "note", body: "post 2" });
-      const p3 = await postService.create({ format: "note", body: "post 3" });
+      const p1 = await postService.create({
+        format: "note",
+        bodyMarkdown: "post 1",
+      });
+      const p2 = await postService.create({
+        format: "note",
+        bodyMarkdown: "post 2",
+      });
+      const p3 = await postService.create({
+        format: "note",
+        bodyMarkdown: "post 3",
+      });
 
       await collectionService.addPost(col1.id, p1.id);
       await collectionService.addPost(col1.id, p2.id);
@@ -484,9 +493,12 @@ describe("CollectionService", () => {
 
       const p1 = await postService.create({
         format: "note",
-        body: "with collection",
+        bodyMarkdown: "with collection",
       });
-      await postService.create({ format: "note", body: "no collection" });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "no collection",
+      });
 
       await collectionService.addPost(col.id, p1.id);
 
@@ -503,11 +515,11 @@ describe("CollectionService", () => {
 
       const post = await postService.create({
         format: "note",
-        body: "will be deleted",
+        bodyMarkdown: "will be deleted",
       });
       const post2 = await postService.create({
         format: "note",
-        body: "still alive",
+        bodyMarkdown: "still alive",
       });
 
       await collectionService.addPost(col.id, post.id);
@@ -529,7 +541,7 @@ describe("CollectionService", () => {
       });
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       await collectionService.addPost(col.id, post.id);
@@ -548,7 +560,7 @@ describe("CollectionService", () => {
       });
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       await collectionService.addPost(col.id, post.id);
@@ -565,7 +577,7 @@ describe("CollectionService", () => {
       });
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       await collectionService.addPost(col.id, post.id);
@@ -593,7 +605,7 @@ describe("CollectionService", () => {
       expect(cols).toHaveLength(2);
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       await collectionService.addPost(cols[0]?.id ?? "", post.id);
@@ -608,7 +620,7 @@ describe("CollectionService", () => {
     it("returns empty array for post with no collections", async () => {
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       const collections = await collectionService.getCollectionsByPostId(
@@ -624,8 +636,14 @@ describe("CollectionService", () => {
         slug: "test",
         title: "Test",
       });
-      const p1 = await postService.create({ format: "note", body: "one" });
-      const p2 = await postService.create({ format: "note", body: "two" });
+      const p1 = await postService.create({
+        format: "note",
+        bodyMarkdown: "one",
+      });
+      const p2 = await postService.create({
+        format: "note",
+        bodyMarkdown: "two",
+      });
 
       await collectionService.addPost(col.id, p1.id);
       await collectionService.addPost(col.id, p2.id);
@@ -654,7 +672,7 @@ describe("CollectionService", () => {
 
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       // Initially in col1 and col2
@@ -681,7 +699,7 @@ describe("CollectionService", () => {
       });
       const post = await postService.create({
         format: "note",
-        body: "test",
+        bodyMarkdown: "test",
       });
 
       await collectionService.addPost(col.id, post.id);

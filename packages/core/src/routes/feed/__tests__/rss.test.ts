@@ -50,13 +50,13 @@ describe("RSS Feed Routes", () => {
       await services.posts.create({
         format: "note",
         title: "Regular Post",
-        body: "Not featured",
+        bodyMarkdown: "Not featured",
         status: "published",
       });
       await services.posts.create({
         format: "note",
         title: "Featured Post",
-        body: "This is featured",
+        bodyMarkdown: "This is featured",
         status: "published",
         featured: true,
       });
@@ -75,7 +75,7 @@ describe("RSS Feed Routes", () => {
       await services.posts.create({
         format: "note",
         title: "Regular Post",
-        body: "Not featured",
+        bodyMarkdown: "Not featured",
         status: "published",
       });
 
@@ -103,13 +103,13 @@ describe("RSS Feed Routes", () => {
       await services.posts.create({
         format: "note",
         title: "Regular Post",
-        body: "Not featured",
+        bodyMarkdown: "Not featured",
         status: "published",
       });
       await services.posts.create({
         format: "note",
         title: "Featured Post",
-        body: "This is featured",
+        bodyMarkdown: "This is featured",
         status: "published",
         featured: true,
       });
@@ -133,20 +133,20 @@ describe("RSS Feed Routes", () => {
       await services.posts.create({
         format: "note",
         title: "Regular Post",
-        body: "Not featured",
+        bodyMarkdown: "Not featured",
         status: "published",
       });
       await services.posts.create({
         format: "note",
         title: "Featured Post",
-        body: "This is featured",
+        bodyMarkdown: "This is featured",
         status: "published",
         featured: true,
       });
       await services.posts.create({
         format: "note",
         title: "Draft Post",
-        body: "Draft",
+        bodyMarkdown: "Draft",
         status: "draft",
       });
 
@@ -165,7 +165,7 @@ describe("RSS Feed Routes", () => {
       await services.posts.create({
         format: "note",
         title: "My Note",
-        body: "A note",
+        bodyMarkdown: "A note",
         status: "published",
       });
       await services.posts.create({
@@ -196,7 +196,7 @@ describe("RSS Feed Routes", () => {
       await services.posts.create({
         format: "note",
         title: "My Note",
-        body: "A note",
+        bodyMarkdown: "A note",
         status: "published",
       });
       await services.posts.create({
@@ -232,13 +232,13 @@ describe("RSS Feed Routes", () => {
       await services.posts.create({
         format: "note",
         title: "Regular Post",
-        body: "Not featured",
+        bodyMarkdown: "Not featured",
         status: "published",
       });
       await services.posts.create({
         format: "note",
         title: "Featured Post",
-        body: "This is featured",
+        bodyMarkdown: "This is featured",
         status: "published",
         featured: true,
       });
@@ -260,7 +260,7 @@ describe("RSS Feed Routes", () => {
       await services.posts.create({
         format: "note",
         title: "My Note",
-        body: "A note",
+        bodyMarkdown: "A note",
         status: "published",
       });
       await services.posts.create({
@@ -288,7 +288,7 @@ describe("RSS Feed Routes", () => {
         await services.posts.create({
           format: "note",
           title: `Post ${i}`,
-          body: `Body ${i}`,
+          bodyMarkdown: `Body ${i}`,
           status: "published",
           featured: true,
         });
@@ -314,7 +314,7 @@ describe("RSS Feed Routes", () => {
         await services.posts.create({
           format: "note",
           title: `Post ${i}`,
-          body: `Body ${i}`,
+          bodyMarkdown: `Body ${i}`,
           status: "published",
         });
       }
@@ -342,7 +342,7 @@ describe("RSS Feed Routes", () => {
         await services.posts.create({
           format: "note",
           title: `Post ${i}`,
-          body: `Body ${i}`,
+          bodyMarkdown: `Body ${i}`,
           status: "published",
         });
       }
@@ -365,7 +365,7 @@ describe("RSS Feed Routes", () => {
         await services.posts.create({
           format: "note",
           title: `Post ${i}`,
-          body: `Body ${i}`,
+          bodyMarkdown: `Body ${i}`,
           status: "published",
           featured: true,
         });
