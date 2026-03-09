@@ -98,7 +98,7 @@ export const CONFIG_FIELDS = {
     defaultValue: "",
     envOnly: true,
   },
-  UPLOAD_MAX_FILE_SIZE: {
+  UPLOAD_MAX_FILE_SIZE_MB: {
     defaultValue: "500",
     envOnly: true,
   },

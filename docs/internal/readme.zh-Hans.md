@@ -38,7 +38,7 @@
 | ----------- | -------------------------------------------------------------- |
 | `title`     | 可选。Note 中为文章标题；Link 中为链接描述；Quote 中为引文来源 |
 | `url`       | Link 中为分享的链接（必填）；Quote 中为引文出处链接（可选）    |
-| `body`      | 可选正文，Markdown 格式                                        |
+| `body`      | 可选正文，TipTap JSON 格式（ProseMirror 结构化文档）           |
 | `body_html` | 写入时由 body 渲染生成，读取时直接使用，避免重复计算           |
 | `media`     | 可选媒体，图片/视频/音频可混合上传                             |
 | `rating`    | 可选评分，1-5 整数                                             |
@@ -157,7 +157,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 作者名       About  Featured  Archive  Collections  📡  🔍
 ```
 
-- 导航链接由用户通过 nav_items 自定义配置，支持三种类型：`page`（关联页面）、`link`（任意 URL）、`system`（系统内置：RSS、Settings、Collections、Archive）
+- 导航链接由用户通过 nav_items 自定义配置，支持两种类型：`link`（任意 URL）、`system`（系统内置：RSS、Settings、Collections、Archive）
 - 🔍 点击弹出搜索弹窗
 - 登录后导航栏显示 Settings 链接；未登录时显示 Sign in
 - 未登录的博主直接访问 `/signin` 进入登录页
@@ -226,14 +226,13 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **类型**：
 
-- `page` — 指向一个 Page（自动关联，Page 删除时 nav_item 也级联删除）
 - `link` — 任意 URL（/c、/featured、/archive、/c/reading、外部链接，都是 link）
 - `system` — 系统内置链接（RSS `/feed`、Settings `/settings`、Collections `/c`、Archive `/archive`），label 可自定义
 
 **后台管理**（`/settings/navigation`，设置的导航子页面）：
 
-- 已添加到导航的项目（page、link、system 类型混合），可拖拽排序
-- 支持添加 Page、任意链接、系统链接
+- 已添加到导航的项目（link、system 类型混合），可拖拽排序
+- 支持添加任意链接、系统链接
 - 支持内联编辑 label 和 URL
 
 ---
@@ -244,7 +243,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 > URL 是产品的一部分。应该简洁、美观、有意义。
 
-帖子默认使用短 ID（如 `/p/jR3k`），也支持可选的自定义 `path`（仅通过 API 设置，支持多级路径如 `2024/01/my-post`，用于博客迁移场景）。Page 和 Collection 由用户自定义 slug。
+帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义 URL 覆盖通过 `custom_urls` 表管理。Collection 使用 `/c/{slug}`。
 
 ### 5.2 前台路由
 
@@ -253,9 +252,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `/`                  | 首页（默认展示最新帖子；`HOME_DEFAULT_VIEW=featured` 时展示精选帖子） |
 | `/latest`            | 最新帖子（当首页已展示最新时，302 重定向到 `/`）                      |
 | `/featured`          | 精选帖子（当首页已展示精选时，302 重定向到 `/`）                      |
-| `/p/{id}`            | 单条帖子                                                              |
-| `/{slug}`            | 独立页面（最低优先级，catch-all）                                     |
-| `/{path}`            | 帖子自定义路径（支持多级，API 设置）                                  |
+| `/{slug}`            | 单条帖子（slug 自动生成或自定义）                                     |
 | `/c/{slug}`          | Collection 帖子列表                                                   |
 | `/c`                 | Collection 列表页                                                     |
 | `/archive`           | 归档（支持 ?format= &featured= 筛选）                                 |
@@ -279,16 +276,17 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `/settings/font-theme`  | 字体主题                     |
 | `/settings/custom-css`  | 自定义 CSS                   |
 | `/settings/custom-urls` | 自定义 URL 与重定向          |
+| `/settings/api-tokens`  | API Token 管理               |
 | `/settings/account`     | 密码修改                     |
 
 ### 5.4 重定向与路径注册
 
 **重定向**：支持 301（永久）和 302（临时）重定向。两种来源：
 
-- **自动**：Page 或 Collection 修改 slug 时，系统自动为旧路径创建 301 重定向
+- **自动**：Post 或 Collection 修改 slug 时，系统自动为旧路径创建 301 重定向
 - **手动**：用户在后台（`/settings/custom-urls`）自行创建，用于短链接、旧站迁移等场景
 
-**路径注册**（Path Registry）：`path_registry` 表作为所有 URL 路径的唯一归属来源，确保 Page slug、Post 自定义路径、重定向之间不会冲突。通过主键约束在数据库层面保证唯一性。
+**自定义 URL**：`custom_urls` 表管理所有自定义路径，支持帖子别名、Collection 别名和重定向。确保 slug 在帖子和自定义 URL 之间不会冲突。
 
 ---
 
@@ -349,14 +347,16 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **环境配置**（`wrangler.toml` / `.dev.vars`）：
 
-| 字段                  | 说明                        |
-| --------------------- | --------------------------- |
-| `AUTH_SECRET`         | 认证密钥（必填）            |
-| `SITE_URL`            | 站点 URL                    |
-| `R2_PUBLIC_URL`       | R2 公开 URL（CDN 直接访问） |
-| `IMAGE_TRANSFORM_URL` | 图片转换 URL                |
-| `STORAGE_DRIVER`      | 存储驱动（r2 / s3）         |
-| `S3_*`                | S3 兼容存储配置             |
+| 字段                      | 说明                             |
+| ------------------------- | -------------------------------- |
+| `AUTH_SECRET`             | 认证密钥（必填）                 |
+| `SITE_URL`                | 站点 URL                         |
+| `R2_PUBLIC_URL`           | R2 公开 URL（CDN 直接访问）      |
+| `IMAGE_TRANSFORM_URL`     | 图片转换 URL                     |
+| `STORAGE_DRIVER`          | 存储驱动（r2 / s3）              |
+| `S3_*`                    | S3 兼容存储配置                  |
+| `SLUG_ID_LENGTH`          | 随机 slug 长度（默认 5）         |
+| `UPLOAD_MAX_FILE_SIZE_MB` | 上传文件大小上限（MB，默认 500） |
 
 ## 9. 技术选型
 

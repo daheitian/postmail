@@ -28,7 +28,7 @@ export interface Bindings {
   S3_REGION?: string;
   S3_PUBLIC_URL?: string;
   // Upload
-  UPLOAD_MAX_FILE_SIZE?: string;
+  UPLOAD_MAX_FILE_SIZE_MB?: string;
   // Summary extraction
   SUMMARY_MAX_PARAGRAPHS?: string;
   SUMMARY_MAX_CHARS?: string;

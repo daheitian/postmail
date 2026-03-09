@@ -127,15 +127,15 @@ When a post has a title, the slug is derived from it (e.g., "Hello World" become
 
 ### Upload Limits (Optional)
 
-| Variable               | Default | Description                                    |
-| ---------------------- | ------- | ---------------------------------------------- |
-| `UPLOAD_MAX_FILE_SIZE` | `200`   | Maximum file size for non-image uploads, in MB |
+| Variable                  | Default | Description                                    |
+| ------------------------- | ------- | ---------------------------------------------- |
+| `UPLOAD_MAX_FILE_SIZE_MB` | `200`   | Maximum file size for non-image uploads, in MB |
 
 Images are always limited to 10MB. This setting controls the limit for video, audio, and PDF uploads.
 
 ```toml
 [vars]
-UPLOAD_MAX_FILE_SIZE = "500"  # Allow up to 500MB uploads
+UPLOAD_MAX_FILE_SIZE_MB = "500"  # Allow up to 500MB uploads
 ```
 
 ## Settings

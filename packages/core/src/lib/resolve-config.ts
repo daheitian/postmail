@@ -134,7 +134,8 @@ export function resolveConfig(
     imageTransformUrl,
 
     // Upload (ENV only)
-    uploadMaxFileSize: parseInt(env.UPLOAD_MAX_FILE_SIZE ?? "500", 10) || 500,
+    uploadMaxFileSize:
+      parseInt(env.UPLOAD_MAX_FILE_SIZE_MB ?? "500", 10) || 500,
 
     // Summary extraction (ENV only)
     summaryMaxParagraphs: parseInt(env.SUMMARY_MAX_PARAGRAPHS ?? "5", 10) || 5,
