@@ -247,7 +247,7 @@ export const user = sqliteTable("user", {
     .notNull()
     .default(false),
   image: text("image"),
-  role: text("role").default("admin"),
+  role: text("role").default("member"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });

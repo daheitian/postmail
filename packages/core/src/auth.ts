@@ -2,7 +2,7 @@
  * Authentication with better-auth
  */
 
-import { betterAuth } from "better-auth";
+import { betterAuth, APIError } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./db/schema.js";
@@ -38,6 +38,24 @@ export function createAuth(
       cookieCache: {
         enabled: true,
         maxAge: 60 * 5, // 5 minutes
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (userData) => {
+            const existing = await db
+              .select({ id: schema.user.id })
+              .from(schema.user)
+              .limit(1);
+            if (existing.length > 0) {
+              throw new APIError("FORBIDDEN", {
+                message: "Registration is closed.",
+              });
+            }
+            return { data: { ...userData, role: "admin" } };
+          },
+        },
       },
     },
   });

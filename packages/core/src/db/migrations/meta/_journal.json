@@ -50,6 +50,13 @@
       "when": 1773007147589,
       "tag": "0006_easy_thanos",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1773074015231,
+      "tag": "0007_abandoned_robbie_robertson",
+      "breakpoints": true
     }
   ]
 }
