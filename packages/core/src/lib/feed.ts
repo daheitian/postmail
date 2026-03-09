@@ -96,14 +96,14 @@ export function defaultRssRenderer(data: FeedData): string {
 
   const items = posts
     .map((post) => {
-      const link = `${siteUrl}${post.permalink}`;
+      const link = escapeXml(`${siteUrl}${post.permalink}`);
       const title = post.title || `Post #${post.id}`;
       const pubDate = new Date(post.publishedAt).toUTCString();
 
       // Add enclosure for first media attachment
       const firstMedia = post.media[0];
       const enclosure = firstMedia
-        ? `\n      <enclosure url="${firstMedia.url}" type="${firstMedia.mimeType}"${firstMedia.size ? ` length="${firstMedia.size}"` : ""}/>`
+        ? `\n      <enclosure url="${escapeXml(firstMedia.url)}" type="${escapeXml(firstMedia.mimeType)}"${firstMedia.size ? ` length="${firstMedia.size}"` : ""}/>`
         : "";
 
       return `
@@ -121,10 +121,10 @@ export function defaultRssRenderer(data: FeedData): string {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeXml(siteName)}</title>
-    <link>${siteUrl}</link>
+    <link>${escapeXml(siteUrl)}</link>
     <description>${escapeXml(siteDescription)}</description>
     <language>${siteLanguage}</language>
-    <atom:link href="${siteUrl}/feed" rel="self" type="application/rss+xml"/>
+    <atom:link href="${escapeXml(siteUrl)}/feed" rel="self" type="application/rss+xml"/>
     ${items}
   </channel>
 </rss>`;
@@ -141,7 +141,7 @@ export function defaultAtomRenderer(data: FeedData): string {
 
   const entries = posts
     .map((post) => {
-      const link = `${siteUrl}${post.permalink}`;
+      const link = escapeXml(`${siteUrl}${post.permalink}`);
       const title = post.title || `Post #${post.id}`;
 
       return `
@@ -162,9 +162,9 @@ export function defaultAtomRenderer(data: FeedData): string {
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>${escapeXml(siteName)}</title>
   <subtitle>${escapeXml(siteDescription)}</subtitle>
-  <link href="${siteUrl}" rel="alternate"/>
-  <link href="${siteUrl}/feed/atom.xml" rel="self"/>
-  <id>${siteUrl}/</id>
+  <link href="${escapeXml(siteUrl)}" rel="alternate"/>
+  <link href="${escapeXml(siteUrl)}/feed/atom.xml" rel="self"/>
+  <id>${escapeXml(siteUrl)}/</id>
   <updated>${now}</updated>
   ${entries}
 </feed>`;
@@ -181,7 +181,7 @@ export function defaultSitemapRenderer(data: SitemapData): string {
 
   const postUrls = posts
     .map((post) => {
-      const loc = `${siteUrl}${post.permalink}`;
+      const loc = escapeXml(`${siteUrl}${post.permalink}`);
       const lastmod = post.updatedAt.split("T")[0];
       const priority = post.featured ? "0.8" : "0.6";
 
@@ -196,7 +196,7 @@ export function defaultSitemapRenderer(data: SitemapData): string {
 
   const homepageUrl = `
   <url>
-    <loc>${siteUrl}/</loc>
+    <loc>${escapeXml(siteUrl)}/</loc>
     <priority>1.0</priority>
     <changefreq>daily</changefreq>
   </url>`;

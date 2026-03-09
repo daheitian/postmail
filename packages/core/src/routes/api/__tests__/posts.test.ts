@@ -4,8 +4,16 @@ import { postsApiRoutes } from "../posts.js";
 
 describe("Posts API Routes", () => {
   describe("GET /api/posts", () => {
+    it("returns 401 when not authenticated", async () => {
+      const { app } = createTestApp({ authenticated: false });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts");
+      expect(res.status).toBe(401);
+    });
+
     it("returns empty list when no posts exist", async () => {
-      const { app } = createTestApp();
+      const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       const res = await app.request("/api/posts");
@@ -17,7 +25,7 @@ describe("Posts API Routes", () => {
     });
 
     it("returns posts with IDs", async () => {
-      const { app, services } = createTestApp();
+      const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       await services.posts.create({
@@ -34,7 +42,7 @@ describe("Posts API Routes", () => {
     });
 
     it("includes mediaAttachments in list response", async () => {
-      const { app, services } = createTestApp();
+      const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
@@ -66,7 +74,7 @@ describe("Posts API Routes", () => {
     });
 
     it("filters by status", async () => {
-      const { app, services } = createTestApp();
+      const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       await services.posts.create({
@@ -87,7 +95,7 @@ describe("Posts API Routes", () => {
     });
 
     it("supports limit parameter", async () => {
-      const { app, services } = createTestApp();
+      const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       for (let i = 0; i < 5; i++) {
@@ -106,8 +114,20 @@ describe("Posts API Routes", () => {
   });
 
   describe("GET /api/posts/:id", () => {
+    it("returns 401 when not authenticated", async () => {
+      const { app, services } = createTestApp({ authenticated: false });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "note",
+        bodyMarkdown: "test post",
+      });
+      const res = await app.request(`/api/posts/${post.id}`);
+      expect(res.status).toBe(401);
+    });
+
     it("returns a post by ID", async () => {
-      const { app, services } = createTestApp();
+      const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
@@ -123,7 +143,7 @@ describe("Posts API Routes", () => {
     });
 
     it("includes mediaAttachments in single post response", async () => {
-      const { app, services } = createTestApp();
+      const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       const post = await services.posts.create({
@@ -149,7 +169,7 @@ describe("Posts API Routes", () => {
     });
 
     it("returns 400 for invalid ID", async () => {
-      const { app } = createTestApp();
+      const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       const res = await app.request("/api/posts/!!invalid!!");
@@ -157,7 +177,7 @@ describe("Posts API Routes", () => {
     });
 
     it("returns 404 for non-existent post", async () => {
-      const { app } = createTestApp();
+      const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
       const res = await app.request(

@@ -19,6 +19,26 @@ const TOAST_ICONS = {
     '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg>',
 };
 
+/** Build toast inner content using safe DOM APIs (icon is trusted, text uses textContent). */
+function setToastContent(
+  toast: HTMLElement,
+  type: "success" | "error",
+  message: string,
+  action?: { label: string; href: string },
+): void {
+  toast.innerHTML = TOAST_ICONS[type];
+  const span = document.createElement("span");
+  span.textContent = message;
+  toast.appendChild(span);
+  if (action) {
+    const a = document.createElement("a");
+    a.href = action.href;
+    a.className = "toast-action";
+    a.textContent = action.label;
+    toast.appendChild(a);
+  }
+}
+
 /**
  * Show a toast notification.
  *
@@ -42,7 +62,7 @@ export function showToast(
 
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span>`;
+  setToastContent(toast, type, message);
   container.appendChild(toast);
 
   setTimeout(() => {
@@ -75,7 +95,7 @@ export function showToastWithAction(
 
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span><a href="${action.href}" class="toast-action">${action.label}</a>`;
+  setToastContent(toast, type, message, action);
   container.appendChild(toast);
 
   setTimeout(() => {
@@ -108,7 +128,7 @@ export function showPersistentToast(
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
   toast.id = `toast-${id}`;
-  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span>`;
+  setToastContent(toast, type, message);
   container.appendChild(toast);
 
   return toast;
@@ -169,7 +189,8 @@ export function replaceWithAutoClose(
   }
 
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span>`;
+  toast.replaceChildren();
+  setToastContent(toast, type, message);
 
   setTimeout(() => {
     toast.classList.add("toast-out");
@@ -201,7 +222,8 @@ export function replaceWithAutoCloseAction(
   }
 
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `${TOAST_ICONS[type]}<span>${message}</span><a href="${action.href}" class="toast-action">${action.label}</a>`;
+  toast.replaceChildren();
+  setToastContent(toast, type, message, action);
 
   setTimeout(() => {
     toast.classList.add("toast-out");

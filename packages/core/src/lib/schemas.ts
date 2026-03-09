@@ -184,7 +184,14 @@ export const UpdateCollectionSchema = CreateCollectionSchema.partial();
  * API request body schema for creating a custom URL
  */
 export const CreateCustomUrlSchema = z.object({
-  path: z.string().min(1),
+  path: z
+    .string()
+    .min(1)
+    .max(512)
+    .regex(
+      /^\/[a-z0-9][a-z0-9\-/]*$/,
+      "Path must start with / and contain only lowercase alphanumeric characters, hyphens, and slashes",
+    ),
   targetType: CustomUrlTargetTypeSchema,
   targetId: z.string().optional(),
   toPath: z.string().optional(),
@@ -201,7 +208,10 @@ export const CreateCustomUrlSchema = z.object({
 export const SetupSchema = z.object({
   siteName: z.string().min(1, "Site name is required"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128),
 });
 
 /**
@@ -209,7 +219,7 @@ export const SetupSchema = z.object({
  */
 export const SigninSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(1, "Password is required").max(128),
 });
 
 /**
@@ -217,7 +227,10 @@ export const SigninSchema = z.object({
  */
 export const ResetPasswordSchema = z
   .object({
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128),
     confirmPassword: z.string().min(1),
     token: z.string().min(1),
   })

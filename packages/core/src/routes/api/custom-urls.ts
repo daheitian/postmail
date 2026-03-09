@@ -14,8 +14,8 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const customUrlsApiRoutes = new Hono<Env>();
 
-// List custom URLs
-customUrlsApiRoutes.get("/", async (c) => {
+// List custom URLs (requires auth)
+customUrlsApiRoutes.get("/", requireAuthApi(), async (c) => {
   const pageParam = c.req.query("page");
   const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
 

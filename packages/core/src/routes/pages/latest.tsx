@@ -32,6 +32,7 @@ latestRoutes.get("/", async (c) => {
 
   const { items, currentPage, totalPages } = await assembleTimeline(c, {
     page,
+    isAuthenticated: navData.isAuthenticated,
   });
 
   return renderPublicPage(c, {

@@ -45,15 +45,23 @@ export function createAuthService(
     if (!stored) return false;
 
     const separatorIndex = stored.lastIndexOf(":");
-    const storedToken = stored.substring(0, separatorIndex);
+    const storedHash = stored.substring(0, separatorIndex);
     const expiry = parseInt(stored.substring(separatorIndex + 1), 10);
     const now = Math.floor(Date.now() / 1000);
 
     if (now > expiry) return false;
 
+    const hashBuffer = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(token),
+    );
+    const tokenHash = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
     const encoder = new TextEncoder();
-    const a = encoder.encode(token);
-    const b = encoder.encode(storedToken);
+    const a = encoder.encode(tokenHash);
+    const b = encoder.encode(storedHash);
     if (a.byteLength !== b.byteLength) return false;
 
     return crypto.subtle.timingSafeEqual(a, b);

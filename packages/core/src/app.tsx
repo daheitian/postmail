@@ -166,6 +166,10 @@ export function createApp(): App {
     }
 
     const storageKey = c.req.path.slice(1);
+    if (storageKey.includes("..") || !storageKey.startsWith("media/")) {
+      return c.notFound();
+    }
+
     const rangeHeader = c.req.header("Range");
 
     // First fetch without range to get the total size

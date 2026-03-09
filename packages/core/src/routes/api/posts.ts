@@ -3,11 +3,14 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, Format, Status, Media } from "../../types.js";
+import type { Bindings, Media } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
+import { z } from "zod";
 import {
   CreatePostSchema,
   UpdatePostSchema,
+  FormatSchema,
+  StatusSchema,
   parseValidated,
 } from "../../lib/schemas.js";
 import { requireAuthApi } from "../../middleware/auth.js";
@@ -61,12 +64,19 @@ function toMediaAttachment(
   };
 }
 
-// List posts
-postsApiRoutes.get("/", async (c) => {
-  const format = c.req.query("format") as Format | undefined;
-  const status = c.req.query("status") as Status | undefined;
-  const cursor = c.req.query("cursor");
-  const limit = parseInt(c.req.query("limit") ?? "100", 10);
+const ListPostsQuerySchema = z.object({
+  format: FormatSchema.optional(),
+  status: StatusSchema.optional(),
+  cursor: z.string().optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional().default(100),
+});
+
+// List posts (requires auth)
+postsApiRoutes.get("/", requireAuthApi(), async (c) => {
+  const { format, status, cursor, limit } = parseValidated(
+    ListPostsQuerySchema,
+    c.req.query(),
+  );
 
   const posts = await c.var.services.posts.list({
     format,
@@ -93,8 +103,8 @@ postsApiRoutes.get("/", async (c) => {
   });
 });
 
-// Get single post
-postsApiRoutes.get("/:id", async (c) => {
+// Get single post (requires auth)
+postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
   const id = parseIdParam(c.req.param("id"));
 
   const post = assertFound(await c.var.services.posts.getById(id), "Post");

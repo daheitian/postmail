@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash } from "node:crypto";
 import { execSync } from "node:child_process";
 import { parseArgs } from "node:util";
 
@@ -24,8 +24,9 @@ export async function run(argv) {
   const flag = values.remote ? "--remote" : "--local";
 
   const token = randomBytes(32).toString("hex");
+  const hash = createHash("sha256").update(token).digest("hex");
   const expiry = Math.floor(Date.now() / 1000) + 15 * 60;
-  const value = `${token}:${expiry}`;
+  const value = `${hash}:${expiry}`;
   const timestamp = Math.floor(Date.now() / 1000);
 
   const sql = `INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES ('PASSWORD_RESET_TOKEN', '${value}', ${timestamp})`;
