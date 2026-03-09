@@ -132,7 +132,7 @@ export interface SSEStream {
 /** Build the redirect script tag for Datastar patch-elements */
 function buildRedirectScript(url: string): string {
   const escapedUrl = url.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-  return `<script data-effect="el.remove()">window.location.href='${escapedUrl}'</script>`;
+  return `<div data-init="window.location.href='${escapedUrl}'; el.remove()"></div>`;
 }
 
 /** Build a toast notification HTML element */

@@ -4,6 +4,9 @@
 
 import { useLingui } from "@lingui/react/macro";
 
+const THEMING_DOCS_URL =
+  "https://github.com/jant-me/jant/blob/main/docs/theming.md";
+
 export function AdvancedContent({ customCSS }: { customCSS: string }) {
   const { t } = useLingui();
 
@@ -28,6 +31,24 @@ export function AdvancedContent({ customCSS }: { customCSS: string }) {
             message:
               "Add custom CSS to override any styles. Use data attributes like [data-page], [data-post], [data-format] to target specific elements.",
             comment: "@context: Custom CSS settings description",
+          })}{" "}
+          <a
+            href={THEMING_DOCS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="underline hover:text-foreground transition-colors"
+          >
+            {t({
+              message: "Theming guide",
+              comment:
+                "@context: Link to theming documentation on Custom CSS page",
+            })}
+          </a>
+          {" — "}
+          {t({
+            message: "available CSS variables, data attributes, and examples.",
+            comment:
+              "@context: Description after theming guide link on Custom CSS page",
           })}
         </p>
         <textarea

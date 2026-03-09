@@ -183,6 +183,11 @@ msgstr "未设置身份验证。请检查您的服务器配置。"
 msgid "Author (optional)"
 msgstr "作者（可选）"
 
+#. @context: Description after theming guide link on Custom CSS page
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "available CSS variables, data attributes, and examples."
+msgstr ""
+
 #. @context: Settings item — avatar settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Avatar"
@@ -370,8 +375,10 @@ msgid "Current password doesn't match. Try again."
 msgstr "当前密码不匹配。请重试。"
 
 #. @context: Appearance settings heading for custom CSS
+#. @context: Link to Custom CSS settings from color theme page
 #. @context: Settings item — custom CSS settings
 #: src/ui/dash/appearance/AdvancedContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Custom CSS"
 msgstr "自定义 CSS"
@@ -708,6 +715,11 @@ msgstr "上次使用 {0}"
 #: src/ui/layouts/SiteLayout.tsx
 msgid "Latest"
 msgstr "最新"
+
+#. @context: Suffix after Custom CSS link on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "lets you override any theme variable."
+msgstr ""
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1373,6 +1385,11 @@ msgstr "其余项目将被收进 ··· 菜单"
 msgid "The slug of the target post or collection"
 msgstr "目标文章或集合的 slug"
 
+#. @context: Link to theming documentation on Custom CSS page
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "Theming guide"
+msgstr ""
+
 #. @context: Description for session management
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "These devices are currently signed in to your account. Revoke any session you don't recognize."
@@ -1521,6 +1538,11 @@ msgstr "视频"
 #: src/ui/dash/ActionButtons.tsx
 msgid "View"
 msgstr "查看"
+
+#. @context: Prefix before Custom CSS link on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Want more control?"
+msgstr ""
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx

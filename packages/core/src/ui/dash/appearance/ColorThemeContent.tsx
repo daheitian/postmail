@@ -103,6 +103,26 @@ export function ColorThemeContent({
             message:
               "Applies to your entire site, including admin pages. All themes support dark mode.",
             comment: "@context: Appearance settings description",
+          })}{" "}
+          {t({
+            message: "Want more control?",
+            comment:
+              "@context: Prefix before Custom CSS link on color theme page",
+          })}{" "}
+          <a
+            href="/settings/custom-css"
+            class="underline hover:text-foreground transition-colors"
+          >
+            {t({
+              message: "Custom CSS",
+              comment:
+                "@context: Link to Custom CSS settings from color theme page",
+            })}
+          </a>{" "}
+          {t({
+            message: "lets you override any theme variable.",
+            comment:
+              "@context: Suffix after Custom CSS link on color theme page",
           })}
         </p>
 

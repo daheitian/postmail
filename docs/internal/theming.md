@@ -1,0 +1,88 @@
+# Theming (Internal)
+
+Design guidelines and implementation details for contributors and AI agents.
+
+For user-facing documentation, see [`docs/theming.md`](../theming.md).
+
+## Design Philosophy: Organic Minimalism
+
+Jant follows an **Organic Minimalism** (Soft UI) design language. Every UI decision should reflect these principles:
+
+### Core Principles
+
+- **Soft over sharp**: Prefer rounded corners, gentle gradients, and subtle shadows over hard edges and flat surfaces. Elements should feel approachable, not mechanical.
+- **Breathe**: Generous whitespace is a feature, not waste. Content needs room to exist comfortably. Never crowd elements.
+- **Quiet depth**: Use soft shadows and layering to create subtle spatial hierarchy. Avoid heavy drop shadows or stark elevation changes.
+- **Natural palette**: Colors should feel muted, warm, and organic. Avoid saturated neon or high-contrast clashes. Think sun-bleached linen, stone, warm fog.
+- **Minimal noise**: Remove anything that doesn't serve the content. No decorative borders, unnecessary dividers, or visual clutter. When in doubt, leave it out.
+- **Gentle motion**: Transitions should be smooth and understated — ease-out curves, short durations. Animation supports comprehension, never demands attention.
+- **Typography-driven hierarchy**: Let font size, weight, and spacing do the work. Avoid relying on color or decoration to establish hierarchy.
+
+### Practical Guidelines
+
+| Aspect      | Do                                                   | Don't                           |
+| ----------- | ---------------------------------------------------- | ------------------------------- |
+| Corners     | Soft radius (`0.5rem`-`1rem`)                        | Sharp 0 or overly pill-shaped   |
+| Shadows     | Diffused, low-opacity (`0 2px 8px rgba(0,0,0,0.06)`) | Hard, high-contrast box shadows |
+| Backgrounds | Subtle off-whites, warm grays                        | Pure `#fff` / `#000`            |
+| Borders     | Thin (`1px`), low-contrast, or omit entirely         | Thick or high-contrast borders  |
+| Spacing     | Generous padding and margins                         | Tight/cramped layouts           |
+| Feedback    | Soft color shifts, gentle scale                      | Flash, shake, or bounce         |
+| Icons       | Thin stroke, rounded joins                           | Heavy/filled, angular           |
+| Text color  | Muted foreground, never pure black                   | `#000` on `#fff`                |
+
+### Anti-Patterns to Avoid
+
+- **Neumorphism excess**: A hint of inner/outer shadow for depth is fine; full neumorphic buttons with dual shadows are too heavy.
+- **Gradient overuse**: Subtle background gradients are welcome; rainbow or multi-stop gradients on UI elements are not.
+- **Over-decoration**: Ornamental lines, badges, or illustrations that don't serve function.
+- **Contrast starvation**: Soft does not mean invisible. Maintain WCAG AA contrast ratios for text readability.
+
+## Implementation
+
+### CSS Priority (lowest to highest)
+
+1. BaseCoat defaults (`:root`)
+2. Design tokens (`styles/tokens.css`)
+3. Component styles (`styles/ui.css`)
+4. Selected color theme (`:root:root` specificity)
+5. `cssVariables` from `createApp()` config
+6. Custom CSS injection from settings
+
+### Component Styling
+
+Jant uses [BaseCoat](https://github.com/hunvreus/basecoat) for UI components. Style components using its class names:
+
+```html
+<button class="btn">Post</button>
+<input class="input" placeholder="What's on your mind?" />
+<div class="card">...</div>
+```
+
+Use Tailwind utilities for layout only:
+
+```html
+<!-- Good: Tailwind for layout -->
+<div class="flex gap-4 mt-2">...</div>
+
+<!-- Avoid: Tailwind for component styling -->
+<button class="bg-blue-500 px-4 py-2 rounded">...</button>
+```
+
+### Adding a New Color Theme
+
+Define themes in `src/ui/color-themes.ts` using `defineTheme()`. Each theme specifies 7 required colors plus optional semantic colors per mode:
+
+- **Required**: `bg`, `fg`, `primary`, `primaryFg`, `muted`, `mutedFg`, `border`
+- **Optional**: `destructive`, `success`, `searchMarkBg`, `searchMarkColor`, `dashBg`
+
+Optional colors fall back to sensible defaults. Override them when the default clashes with the theme's palette (e.g. green `--success` on the Gameboy green theme).
+
+### Animation
+
+Transitions use these CSS variables:
+
+```css
+--transition-fast: 150ms ease-out;
+--transition-base: 200ms ease-out;
+```

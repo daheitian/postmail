@@ -16,7 +16,7 @@ export const ComposePrompt: FC = () => {
       <button
         type="button"
         class="compose-prompt-trigger"
-        onclick="const d=document.getElementById('compose-dialog');const cd=d.querySelector('jant-compose-dialog');cd?.restoreLocalDraft();d.showModal();d.querySelector('jant-compose-editor')?.focusInput()"
+        data-on:click="document.getElementById('compose-dialog').querySelector('jant-compose-dialog')?.restoreLocalDraft(); document.getElementById('compose-dialog').showModal(); document.getElementById('compose-dialog').querySelector('jant-compose-editor')?.focusInput()"
       >
         <span class="compose-prompt-avatar">
           <svg

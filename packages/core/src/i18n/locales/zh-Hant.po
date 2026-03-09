@@ -183,6 +183,11 @@ msgstr "身分驗證尚未設定. 請檢查您的伺服器設定."
 msgid "Author (optional)"
 msgstr "作者 (選填)"
 
+#. @context: Description after theming guide link on Custom CSS page
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "available CSS variables, data attributes, and examples."
+msgstr ""
+
 #. @context: Settings item — avatar settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Avatar"
@@ -370,8 +375,10 @@ msgid "Current password doesn't match. Try again."
 msgstr "目前的密碼不符。請再試一次。"
 
 #. @context: Appearance settings heading for custom CSS
+#. @context: Link to Custom CSS settings from color theme page
 #. @context: Settings item — custom CSS settings
 #: src/ui/dash/appearance/AdvancedContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Custom CSS"
 msgstr "自訂 CSS"
@@ -708,6 +715,11 @@ msgstr "上次使用於 {0}"
 #: src/ui/layouts/SiteLayout.tsx
 msgid "Latest"
 msgstr "最新"
+
+#. @context: Suffix after Custom CSS link on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "lets you override any theme variable."
+msgstr ""
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1373,6 +1385,11 @@ msgstr "其餘項目會被收納到 ··· 選單"
 msgid "The slug of the target post or collection"
 msgstr "目標貼文或集合的 URL slug"
 
+#. @context: Link to theming documentation on Custom CSS page
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "Theming guide"
+msgstr ""
+
 #. @context: Description for session management
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "These devices are currently signed in to your account. Revoke any session you don't recognize."
@@ -1521,6 +1538,11 @@ msgstr "影片"
 #: src/ui/dash/ActionButtons.tsx
 msgid "View"
 msgstr "檢視"
+
+#. @context: Prefix before Custom CSS link on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Want more control?"
+msgstr ""
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx

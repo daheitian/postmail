@@ -367,7 +367,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
     <dialog
       id="compose-dialog"
       class="compose-dialog"
-      onclick="event.target === this && this.querySelector('jant-compose-dialog')?.requestClose()"
+      data-on:click="evt.target === el && el.querySelector('jant-compose-dialog')?.requestClose()"
     >
       <jant-compose-dialog
         collections={collectionsJson}

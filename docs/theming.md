@@ -1,114 +1,58 @@
 # Theming
 
-## Design Philosophy: Organic Minimalism
+Customize how your Jant site looks using CSS variables and the Custom CSS editor in **Settings > Custom CSS**.
 
-Jant follows an **Organic Minimalism** (Soft UI) design language. Every UI decision should reflect these principles:
+All built-in themes support light and dark mode automatically. Your Custom CSS is applied on top of the selected theme, so you can pick a theme as a starting point and fine-tune from there.
 
-### Core Principles
+## Color Variables
 
-- **Soft over sharp**: Prefer rounded corners, gentle gradients, and subtle shadows over hard edges and flat surfaces. Elements should feel approachable, not mechanical.
-- **Breathe**: Generous whitespace is a feature, not waste. Content needs room to exist comfortably. Never crowd elements.
-- **Quiet depth**: Use soft shadows and layering to create subtle spatial hierarchy. Avoid heavy drop shadows or stark elevation changes.
-- **Natural palette**: Colors should feel muted, warm, and organic. Avoid saturated neon or high-contrast clashes. Think sun-bleached linen, stone, warm fog.
-- **Minimal noise**: Remove anything that doesn't serve the content. No decorative borders, unnecessary dividers, or visual clutter. When in doubt, leave it out.
-- **Gentle motion**: Transitions should be smooth and understated — ease-out curves, short durations. Animation supports comprehension, never demands attention.
-- **Typography-driven hierarchy**: Let font size, weight, and spacing do the work. Avoid relying on color or decoration to establish hierarchy.
+These control the overall color palette. Override them in Custom CSS to adjust colors.
 
-### Practical Guidelines
+| Variable               | What it controls                   |
+| ---------------------- | ---------------------------------- |
+| `--background`         | Page background                    |
+| `--foreground`         | Main text color                    |
+| `--primary`            | Accent color (buttons, links)      |
+| `--primary-foreground` | Text on accent-colored elements    |
+| `--muted`              | Subtle backgrounds (hover, badges) |
+| `--muted-foreground`   | Secondary text (dates, captions)   |
+| `--border`             | Borders and dividers               |
+| `--destructive`        | Danger actions (delete buttons)    |
+| `--success`            | Success indicators (toasts)        |
+| `--search-mark-bg`     | Search result highlight background |
+| `--search-mark-color`  | Search result highlight text       |
 
-| Aspect      | Do                                                   | Don't                           |
-| ----------- | ---------------------------------------------------- | ------------------------------- |
-| Corners     | Soft radius (`0.5rem`–`1rem`)                        | Sharp 0 or overly pill-shaped   |
-| Shadows     | Diffused, low-opacity (`0 2px 8px rgba(0,0,0,0.06)`) | Hard, high-contrast box shadows |
-| Backgrounds | Subtle off-whites, warm grays                        | Pure `#fff` / `#000`            |
-| Borders     | Thin (`1px`), low-contrast, or omit entirely         | Thick or high-contrast borders  |
-| Spacing     | Generous padding and margins                         | Tight/cramped layouts           |
-| Feedback    | Soft color shifts, gentle scale                      | Flash, shake, or bounce         |
-| Icons       | Thin stroke, rounded joins                           | Heavy/filled, angular           |
-| Text color  | Muted foreground, never pure black                   | `#000` on `#fff`                |
-
-### Anti-Patterns to Avoid
-
-- **Neumorphism excess**: A hint of inner/outer shadow for depth is fine; full neumorphic buttons with dual shadows are too heavy.
-- **Gradient overuse**: Subtle background gradients are welcome; rainbow or multi-stop gradients on UI elements are not.
-- **Over-decoration**: Ornamental lines, badges, or illustrations that don't serve function.
-- **Contrast starvation**: Soft does not mean invisible. Maintain WCAG AA contrast ratios for text readability.
-
----
-
-Jant uses CSS variables for theming, making it easy to customize colors while maintaining consistency.
-
-## Built-in Themes
-
-Select a theme in `/settings`:
-
-- **default** - Clean and neutral
-- **ocean** - Cool blues
-- **forest** - Natural greens
-- **sunset** - Warm oranges
-- **lavender** - Soft purples
-- **rose** - Pink tones
-- **sand** - Earthy beige
-- **slate** - Professional gray
-- **gameboy** - Retro green
-- **terminal** - Hacker aesthetic
-- **notepad** - Paper-like
-- **nord** - Arctic, blue-gray
-- **dracula** - Dark purple
-- **solarized** - Ethan Schoonover's classic
-
-All themes support both light and dark mode automatically.
-
-## CSS Variables
-
-Themes are defined through CSS variables:
+### Example: Custom accent color
 
 ```css
 :root {
-  --color-bg: #ffffff;
-  --color-text: #1a1a1a;
-  --color-text-muted: #666666;
-  --color-accent: #0066cc;
-  --color-border: #e5e5e5;
-  --color-card-bg: #f9f9f9;
+  --primary: oklch(0.55 0.15 250);
+  --primary-foreground: oklch(0.98 0 0);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #1a1a1a;
-    --color-text: #ffffff;
-    /* ... */
-  }
+.dark {
+  --primary: oklch(0.7 0.15 250);
 }
 ```
 
-## Typography Tokens
+## Typography Variables
 
-Font families and weights are controlled through CSS custom properties defined in `styles/tokens.css`.
+| Variable         | Default               | What it controls             |
+| ---------------- | --------------------- | ---------------------------- |
+| `--font-body`    | System sans-serif     | Body text, inputs, UI labels |
+| `--font-heading` | Same as `--font-body` | Headings, site logo          |
+| `--font-serif`   | System serif          | Serif accents                |
+| `--font-mono`    | System monospace      | Code blocks                  |
+| `--fw-light`     | 300                   | Light accents                |
+| `--fw-regular`   | 400                   | Body text                    |
+| `--fw-medium`    | 500                   | Labels, active nav           |
+| `--fw-semibold`  | 600                   | Headings, buttons            |
+| `--fw-bold`      | 700                   | Strong emphasis              |
+| `--fw-extrabold` | 800                   | Site logo                    |
 
-### Font Families
+Font themes (**Settings > Font Theme**) override `--font-heading` and `--font-body` with curated pairings. You can further override them in Custom CSS.
 
-| Token            | Default                       | Purpose                          |
-| ---------------- | ----------------------------- | -------------------------------- |
-| `--font-body`    | System sans-serif stack + CJK | Body text, inputs, UI labels     |
-| `--font-heading` | `var(--font-body)`            | Headings, site logo              |
-| `--font-serif`   | System serif stack + CJK      | Serif accents (e.g. dash header) |
-| `--font-mono`    | System monospace stack        | Code blocks, pre-formatted text  |
-
-Font themes (Settings > Typography) override `--font-heading` and `--font-body` with curated pairings. `--font-serif` and `--font-mono` remain independent.
-
-### Font Weights
-
-| Token            | Value | Typical use                |
-| ---------------- | ----- | -------------------------- |
-| `--fw-light`     | 300   | Reserved for light accents |
-| `--fw-regular`   | 400   | Body text, default         |
-| `--fw-medium`    | 500   | Labels, active nav items   |
-| `--fw-semibold`  | 600   | Headings, buttons, titles  |
-| `--fw-bold`      | 700   | Strong emphasis            |
-| `--fw-extrabold` | 800   | Site logo                  |
-
-Override these tokens to adjust typographic weight globally. For example, to make the entire UI feel lighter:
+### Example: Lighter typography
 
 ```css
 :root {
@@ -117,87 +61,112 @@ Override these tokens to adjust typographic weight globally. For example, to mak
 }
 ```
 
-## Custom Theme
+## Layout Variables
 
-Create your own theme by adding CSS to your project:
+| Variable         | Default  | What it controls           |
+| ---------------- | -------- | -------------------------- |
+| `--site-width`   | `500px`  | Maximum content width      |
+| `--site-padding` | `1.5rem` | Horizontal padding         |
+| `--content-gap`  | `1rem`   | Spacing between feed items |
+
+### Example: Wider layout
 
 ```css
-/* my-theme.css */
-[data-theme="my-theme"] {
-  --color-bg: #fefefe;
-  --color-text: #333;
-  --color-accent: #ff6600;
-  /* ... */
-}
-
-[data-theme="my-theme"].dark {
-  --color-bg: #1a1a1a;
-  --color-text: #eee;
-  /* ... */
+:root {
+  --site-width: 700px;
 }
 ```
 
-Then set `THEME=my-theme` in settings.
+## Surface Variables
 
-## Data Attributes (Public API)
+| Variable              | Default  | What it controls          |
+| --------------------- | -------- | ------------------------- |
+| `--card-radius`       | `0`      | Post card corner radius   |
+| `--card-padding`      | `1rem`   | Post card inner padding   |
+| `--card-border-width` | `0`      | Post card border          |
+| `--card-shadow`       | `none`   | Post card shadow          |
+| `--media-radius`      | `0.5rem` | Image/video corner radius |
+| `--avatar-size`       | `28px`   | Header avatar size        |
+| `--avatar-radius`     | `50%`    | Avatar corner radius      |
 
-Data attributes on HTML elements are a **stable, versioned public API** for CSS targeting. They MUST NOT be renamed or removed without a major version bump.
-
-| Attribute            | Element        | Purpose                       |
-| -------------------- | -------------- | ----------------------------- |
-| `data-authenticated` | `<body>`       | Auth state for CSS            |
-| `data-page`          | page wrapper   | Page type identifier          |
-| `data-post`          | `<article>`    | Post marker                   |
-| `data-format`        | `<article>`    | Post format (note/link/quote) |
-| `data-post-body`     | content div    | Target post body              |
-| `data-post-meta`     | meta div       | Target post metadata          |
-| `data-post-media`    | media div      | Target post media             |
-| `data-feed`          | feed container | Target feed                   |
-
-Users can inject arbitrary CSS via Settings > Appearance. Stored in database, injected in `<head>` with highest priority.
-
-## CSS Priority (lowest to highest)
-
-1. BaseCoat defaults (`:root`)
-2. Design tokens (`styles/tokens.css`)
-3. Component styles (`styles/ui.css`)
-4. Selected color theme (`:root:root` specificity)
-5. `cssVariables` from `createApp()` config
-6. Custom CSS injection from settings
-
-## Component Styling
-
-Jant uses [BaseCoat](https://github.com/hunvreus/basecoat) for UI components. Style components using its class names:
-
-```html
-<button class="btn">Post</button>
-<input class="input" placeholder="What's on your mind?" />
-<div class="card">...</div>
-```
-
-Use Tailwind utilities for layout only:
-
-```html
-<!-- Good: Tailwind for layout -->
-<div class="flex gap-4 mt-2">...</div>
-
-<!-- Avoid: Tailwind for component styling -->
-<button class="bg-blue-500 px-4 py-2 rounded">...</button>
-```
-
-## Animation
-
-Transitions use these CSS variables:
+### Example: Card-style posts
 
 ```css
---transition-fast: 150ms ease-out;
---transition-base: 200ms ease-out;
-```
-
-Apply to interactive elements:
-
-```css
-.my-element {
-  transition: opacity var(--transition-base);
+:root {
+  --card-radius: 12px;
+  --card-padding: 1.5rem;
+  --card-border-width: 1px;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 ```
+
+## Data Attributes
+
+Target specific pages or elements using data attributes:
+
+| Attribute            | Element        | Values                                                                       |
+| -------------------- | -------------- | ---------------------------------------------------------------------------- |
+| `data-page`          | Page wrapper   | `home`, `post`, `search`, `archive`, `collection`, `collections`, `featured` |
+| `data-post`          | `<article>`    | Present on every post                                                        |
+| `data-format`        | `<article>`    | `note`, `link`, `quote`                                                      |
+| `data-post-body`     | Content div    | Post body text                                                               |
+| `data-post-meta`     | Meta div       | Post metadata (date, tags)                                                   |
+| `data-post-media`    | Media div      | Post images/videos                                                           |
+| `data-post-pinned`   | `<article>`    | Present on pinned posts                                                      |
+| `data-post-featured` | `<article>`    | Present on featured posts                                                    |
+| `data-feed`          | Feed container | Wraps the list of posts                                                      |
+| `data-authenticated` | `<body>`       | Present when logged in                                                       |
+
+### Example: Style only the home page
+
+```css
+[data-page="home"] [data-post] {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.5rem;
+}
+```
+
+### Example: Different styles per post format
+
+```css
+[data-format="quote"] [data-post-body] {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+[data-format="link"] {
+  border-left: 3px solid var(--primary);
+  padding-left: 1rem;
+}
+```
+
+### Example: Highlight pinned posts
+
+```css
+[data-post-pinned] {
+  background: var(--muted);
+  border-radius: 8px;
+  padding: 1rem;
+}
+```
+
+## Dark Mode
+
+Use `.dark` to target dark mode specifically:
+
+```css
+:root {
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.dark {
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+```
+
+## Tips
+
+- Custom CSS has the highest priority and overrides everything, including the selected color theme.
+- Use `oklch()` for colors — it produces more perceptually uniform results than hex or hsl. Example: `oklch(0.6 0.15 250)` is a medium-saturation blue.
+- Test in both light and dark mode. If you override a color variable in `:root`, consider whether `.dark` needs a matching override.
+- The `--site-*` variables (e.g. `--site-accent`, `--site-threadline`) are derived from the base variables above. Override the base variables first; only override `--site-*` variables if you need finer control.

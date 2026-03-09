@@ -41,7 +41,7 @@ const INITIAL_SIGNALS = {
 
 /** Script fragment that closes the compose dialog and self-removes */
 const CLOSE_DIALOG_SCRIPT =
-  "<script data-effect=\"el.remove()\">document.getElementById('compose-dialog').close()</script>";
+  "<div data-init=\"document.getElementById('compose-dialog').close(); el.remove()\"></div>";
 
 composeRoutes.post("/", async (c) => {
   const i18n = getI18n(c);

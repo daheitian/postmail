@@ -183,6 +183,11 @@ msgstr "Authentication isn't set up. Check your server config."
 msgid "Author (optional)"
 msgstr "Author (optional)"
 
+#. @context: Description after theming guide link on Custom CSS page
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "available CSS variables, data attributes, and examples."
+msgstr "available CSS variables, data attributes, and examples."
+
 #. @context: Settings item — avatar settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Avatar"
@@ -370,8 +375,10 @@ msgid "Current password doesn't match. Try again."
 msgstr "Current password doesn't match. Try again."
 
 #. @context: Appearance settings heading for custom CSS
+#. @context: Link to Custom CSS settings from color theme page
 #. @context: Settings item — custom CSS settings
 #: src/ui/dash/appearance/AdvancedContent.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Custom CSS"
 msgstr "Custom CSS"
@@ -708,6 +715,11 @@ msgstr "Last used {0}"
 #: src/ui/layouts/SiteLayout.tsx
 msgid "Latest"
 msgstr "Latest"
+
+#. @context: Suffix after Custom CSS link on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "lets you override any theme variable."
+msgstr "lets you override any theme variable."
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1373,6 +1385,11 @@ msgstr "The rest will be tucked into a ··· menu"
 msgid "The slug of the target post or collection"
 msgstr "The slug of the target post or collection"
 
+#. @context: Link to theming documentation on Custom CSS page
+#: src/ui/dash/appearance/AdvancedContent.tsx
+msgid "Theming guide"
+msgstr "Theming guide"
+
 #. @context: Description for session management
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "These devices are currently signed in to your account. Revoke any session you don't recognize."
@@ -1521,6 +1538,11 @@ msgstr "Video"
 #: src/ui/dash/ActionButtons.tsx
 msgid "View"
 msgstr "View"
+
+#. @context: Prefix before Custom CSS link on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Want more control?"
+msgstr "Want more control?"
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx
