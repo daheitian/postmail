@@ -23,45 +23,10 @@ import {
   generateStorageKey,
 } from "../../lib/upload.js";
 import { supportsMultipart } from "../../lib/storage.js";
-import type { UploadedPart } from "../../lib/storage.js";
-import { ValidationError, NotFoundError } from "../../lib/errors.js";
+import { ValidationError } from "../../lib/errors.js";
 import { parseValidated } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
-
-// ── Session tracking ─────────────────────────────────────────────────
-
-interface MultipartSession {
-  storageKey: string;
-  uploadId: string;
-  filename: string;
-  originalName: string;
-  contentType: string;
-  size: number;
-  width?: number;
-  height?: number;
-  blurhash?: string;
-  waveform?: string;
-  posterKey?: string;
-  parts: UploadedPart[];
-  createdAt: number;
-}
-
-/** In-memory session map. Per-isolate; acceptable for single upload sequences. */
-const sessions = new Map<string, MultipartSession>();
-
-/** Max session age before cleanup (1 hour) */
-const SESSION_MAX_AGE_MS = 60 * 60 * 1000;
-
-/** Lazily purge stale sessions */
-function purgeStale(): void {
-  const cutoff = Date.now() - SESSION_MAX_AGE_MS;
-  for (const [id, session] of sessions) {
-    if (session.createdAt < cutoff) {
-      sessions.delete(id);
-    }
-  }
-}
 
 // ── Schemas ──────────────────────────────────────────────────────────
 
@@ -69,19 +34,36 @@ const InitiateSchema = z.object({
   filename: z.string().min(1),
   contentType: z.string().min(1),
   size: z.number().int().positive(),
-  width: z.number().int().positive().optional(),
-  height: z.number().int().positive().optional(),
-  blurhash: z.string().max(200).optional(),
-  waveform: z.string().max(2000).optional(),
+});
+
+const UploadPartSchema = z.object({
+  storageKey: z.string().min(1),
+  uploadId: z.string().min(1),
 });
 
 const CompleteSchema = z.object({
+  storageKey: z.string().min(1),
+  uploadId: z.string().min(1),
   parts: z.array(
     z.object({
       partNumber: z.number().int().positive(),
       etag: z.string().min(1),
     }),
   ),
+  filename: z.string().min(1),
+  originalName: z.string().min(1),
+  contentType: z.string().min(1),
+  size: z.number().int().positive(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  blurhash: z.string().max(200).optional(),
+  waveform: z.string().max(2000).optional(),
+  posterKey: z.string().optional(),
+});
+
+const AbortSchema = z.object({
+  storageKey: z.string().min(1),
+  uploadId: z.string().min(1),
 });
 
 // ── Routes ───────────────────────────────────────────────────────────
@@ -97,8 +79,6 @@ multipartUploadApiRoutes.post("/", async (c) => {
   if (!storage || !supportsMultipart(storage)) {
     return c.json({ error: "Storage doesn't support multipart uploads." }, 500);
   }
-
-  purgeStale();
 
   const body = await c.req.json();
   const data = parseValidated(InitiateSchema, body);
@@ -117,36 +97,30 @@ multipartUploadApiRoutes.post("/", async (c) => {
     contentType: data.contentType,
   });
 
-  sessions.set(id, {
-    storageKey,
+  return c.json({
+    id,
     uploadId: upload.uploadId,
+    storageKey,
     filename,
     originalName: data.filename,
-    contentType: data.contentType,
-    size: data.size,
-    width: data.width,
-    height: data.height,
-    blurhash: data.blurhash,
-    waveform: data.waveform,
-    parts: [],
-    createdAt: Date.now(),
   });
-
-  return c.json({ id, uploadId: upload.uploadId, storageKey });
 });
 
-// PUT /:id/part?partNumber=N — Upload a single part
+// PUT /:id/part?partNumber=N&storageKey=...&uploadId=... — Upload a single part
 multipartUploadApiRoutes.put("/:id/part", async (c) => {
   const storage = c.var.storage;
   if (!storage || !supportsMultipart(storage)) {
     return c.json({ error: "Storage doesn't support multipart uploads." }, 500);
   }
 
-  const id = c.req.param("id");
-  const session = sessions.get(id);
-  if (!session) {
-    throw new NotFoundError("Upload session");
+  const storageKey = c.req.query("storageKey");
+  const uploadId = c.req.query("uploadId");
+  if (!storageKey || !uploadId) {
+    throw new ValidationError(
+      "storageKey and uploadId query parameters are required",
+    );
   }
+  parseValidated(UploadPartSchema, { storageKey, uploadId });
 
   const partNumberRaw = c.req.query("partNumber");
   if (!partNumberRaw) {
@@ -158,14 +132,7 @@ multipartUploadApiRoutes.put("/:id/part", async (c) => {
   }
 
   const body = await c.req.arrayBuffer();
-  const part = await storage.uploadPart(
-    session.storageKey,
-    session.uploadId,
-    partNumber,
-    body,
-  );
-
-  session.parts.push(part);
+  const part = await storage.uploadPart(storageKey, uploadId, partNumber, body);
 
   return c.json({ partNumber: part.partNumber, etag: part.etag });
 });
@@ -178,45 +145,48 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
   }
 
   const id = c.req.param("id");
-  const session = sessions.get(id);
-  if (!session) {
-    throw new NotFoundError("Upload session");
-  }
-
   const body = await c.req.json();
   const data = parseValidated(CompleteSchema, body);
 
+  // Validate file type and size
+  const validationError = validateUploadFileMetadata(
+    data.contentType,
+    data.size,
+    { maxFileSizeMB: c.var.appConfig.uploadMaxFileSize },
+  );
+  if (validationError) {
+    throw new ValidationError(validationError);
+  }
+
   // Complete the R2 multipart upload
   await storage.completeMultipartUpload(
-    session.storageKey,
-    session.uploadId,
+    data.storageKey,
+    data.uploadId,
     data.parts,
   );
 
   // Create the DB record
   const media = await c.var.services.media.create({
     id,
-    filename: session.filename,
-    originalName: session.originalName,
-    mimeType: session.contentType,
-    size: session.size,
-    storageKey: session.storageKey,
+    filename: data.filename,
+    originalName: data.originalName,
+    mimeType: data.contentType,
+    size: data.size,
+    storageKey: data.storageKey,
     provider: c.var.appConfig.storageDriver,
-    width: session.width && session.width > 0 ? session.width : undefined,
-    height: session.height && session.height > 0 ? session.height : undefined,
-    blurhash: session.blurhash,
-    waveform: session.waveform,
-    posterKey: session.posterKey,
+    width: data.width && data.width > 0 ? data.width : undefined,
+    height: data.height && data.height > 0 ? data.height : undefined,
+    blurhash: data.blurhash,
+    waveform: data.waveform,
+    posterKey: data.posterKey,
   });
-
-  sessions.delete(id);
 
   const mediaPublicUrl = getPublicUrlForProvider(
     c.var.appConfig.storageDriver,
     c.var.appConfig.r2PublicUrl,
     c.var.appConfig.s3PublicUrl,
   );
-  const publicUrl = getMediaUrl(session.storageKey, mediaPublicUrl);
+  const publicUrl = getMediaUrl(data.storageKey, mediaPublicUrl);
 
   return c.json({
     id: media.id,
@@ -234,14 +204,10 @@ multipartUploadApiRoutes.post("/:id/abort", async (c) => {
     return c.json({ error: "Storage doesn't support multipart uploads." }, 500);
   }
 
-  const id = c.req.param("id");
-  const session = sessions.get(id);
-  if (!session) {
-    throw new NotFoundError("Upload session");
-  }
+  const body = await c.req.json();
+  const data = parseValidated(AbortSchema, body);
 
-  await storage.abortMultipartUpload(session.storageKey, session.uploadId);
-  sessions.delete(id);
+  await storage.abortMultipartUpload(data.storageKey, data.uploadId);
 
   return c.json({ success: true });
 });
@@ -254,11 +220,6 @@ multipartUploadApiRoutes.put("/:id/poster", async (c) => {
   }
 
   const id = c.req.param("id");
-  const session = sessions.get(id);
-  if (!session) {
-    throw new NotFoundError("Upload session");
-  }
-
   const formData = await c.req.formData();
   const posterFile = formData.get("poster") as File | null;
   if (!posterFile) {
@@ -273,8 +234,6 @@ multipartUploadApiRoutes.put("/:id/poster", async (c) => {
   await storage.put(posterKey, posterFile.stream(), {
     contentType: "image/webp",
   });
-
-  session.posterKey = posterKey;
 
   return c.json({ posterKey });
 });

@@ -52,10 +52,6 @@ export async function uploadMultipart(
       filename: file.name,
       contentType: file.type,
       size: file.size,
-      width: metadata.width,
-      height: metadata.height,
-      blurhash: metadata.blurhash,
-      waveform: metadata.waveform,
     }),
   });
 
@@ -64,10 +60,18 @@ export async function uploadMultipart(
     throw new Error(data.error ?? "Failed to start upload");
   }
 
-  const { id } = (await initRes.json()) as { id: string };
+  const { id, uploadId, storageKey, filename, originalName } =
+    (await initRes.json()) as {
+      id: string;
+      uploadId: string;
+      storageKey: string;
+      filename: string;
+      originalName: string;
+    };
 
   try {
     // 2. Upload poster if present (small file, single request)
+    let posterKey: string | undefined;
     if (metadata.poster) {
       const posterForm = new FormData();
       posterForm.append("poster", metadata.poster, "poster.webp");
@@ -80,6 +84,9 @@ export async function uploadMultipart(
       if (!posterRes.ok) {
         throw new Error("Failed to upload poster");
       }
+
+      const posterData = (await posterRes.json()) as { posterKey: string };
+      posterKey = posterData.posterKey;
     }
 
     // 3. Slice file into chunks and upload each part
@@ -95,7 +102,7 @@ export async function uploadMultipart(
       const partNumber = i + 1;
 
       const partRes = await fetch(
-        `/api/upload/multipart/${id}/part?partNumber=${partNumber}`,
+        `/api/upload/multipart/${id}/part?partNumber=${partNumber}&storageKey=${encodeURIComponent(storageKey)}&uploadId=${encodeURIComponent(uploadId)}`,
         {
           method: "PUT",
           body: chunk,
@@ -116,11 +123,24 @@ export async function uploadMultipart(
       onProgress?.(uploadedBytes / totalSize);
     }
 
-    // 4. Complete the multipart upload
+    // 4. Complete the multipart upload — send all metadata for DB record
     const completeRes = await fetch(`/api/upload/multipart/${id}/complete`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ parts }),
+      body: JSON.stringify({
+        storageKey,
+        uploadId,
+        parts,
+        filename,
+        originalName,
+        contentType: file.type,
+        size: file.size,
+        width: metadata.width,
+        height: metadata.height,
+        blurhash: metadata.blurhash,
+        waveform: metadata.waveform,
+        posterKey,
+      }),
     });
 
     if (!completeRes.ok) {
@@ -130,9 +150,11 @@ export async function uploadMultipart(
     return (await completeRes.json()) as MultipartUploadResult;
   } catch (err) {
     // Abort on any failure — fire-and-forget cleanup
-    fetch(`/api/upload/multipart/${id}/abort`, { method: "POST" }).catch(
-      () => {},
-    );
+    fetch(`/api/upload/multipart/${id}/abort`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ storageKey, uploadId }),
+    }).catch(() => {});
     throw err;
   }
 }

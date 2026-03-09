@@ -293,7 +293,7 @@ describe("multipart upload API routes", () => {
       expect(res.status).toBe(200);
     });
 
-    it("returns session id and uploadId on success", async () => {
+    it("returns id, uploadId, storageKey, filename on success", async () => {
       const { app } = createTestAppWithStorage({
         authenticated: true,
         storage: createMockMultipartStorage(),
@@ -315,6 +315,8 @@ describe("multipart upload API routes", () => {
       expect(data.id).toBeDefined();
       expect(data.uploadId).toBeDefined();
       expect(data.storageKey).toContain("media/");
+      expect(data.filename).toBeDefined();
+      expect(data.originalName).toBe("big-video.mp4");
     });
   });
 
@@ -343,17 +345,22 @@ describe("multipart upload API routes", () => {
           filename: "large-file.mp4",
           contentType: "video/mp4",
           size: 100_000_000,
-          width: 1920,
-          height: 1080,
         }),
       });
       expect(initRes.status).toBe(200);
-      const { id } = (await initRes.json()) as { id: string };
+      const { id, uploadId, storageKey, filename, originalName } =
+        (await initRes.json()) as {
+          id: string;
+          uploadId: string;
+          storageKey: string;
+          filename: string;
+          originalName: string;
+        };
 
       // Upload a part
       const partBody = new Uint8Array(1024).fill(0xaa);
       const partRes = await app.request(
-        `/api/upload/multipart/${id}/part?partNumber=1`,
+        `/api/upload/multipart/${id}/part?partNumber=1&storageKey=${encodeURIComponent(storageKey)}&uploadId=${encodeURIComponent(uploadId)}`,
         {
           method: "PUT",
           body: partBody,
@@ -374,7 +381,15 @@ describe("multipart upload API routes", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            storageKey,
+            uploadId,
             parts: [{ partNumber: partData.partNumber, etag: partData.etag }],
+            filename,
+            originalName,
+            contentType: "video/mp4",
+            size: 100_000_000,
+            width: 1920,
+            height: 1080,
           }),
         },
       );
@@ -398,7 +413,7 @@ describe("multipart upload API routes", () => {
       });
     });
 
-    it("abort cleans up R2 and session", async () => {
+    it("abort cleans up R2", async () => {
       // Initiate
       const initRes = await app.request("/api/upload/multipart", {
         method: "POST",
@@ -409,40 +424,36 @@ describe("multipart upload API routes", () => {
           size: 200_000_000,
         }),
       });
-      const { id } = (await initRes.json()) as { id: string };
+      const { uploadId, storageKey } = (await initRes.json()) as {
+        id: string;
+        uploadId: string;
+        storageKey: string;
+      };
 
       // Abort
-      const abortRes = await app.request(`/api/upload/multipart/${id}/abort`, {
+      const abortRes = await app.request(`/api/upload/multipart/unused/abort`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storageKey, uploadId }),
       });
       expect(abortRes.status).toBe(200);
-
-      // Session should be gone — further operations should 404
-      const partRes = await app.request(
-        `/api/upload/multipart/${id}/part?partNumber=1`,
-        {
-          method: "PUT",
-          body: new Uint8Array(10),
-        },
-      );
-      expect(partRes.status).toBe(404);
 
       // Verify R2 abort was called
       expect(storage.aborted.size).toBe(1);
     });
 
-    it("returns 404 for unknown session id", async () => {
+    it("returns 400 for part upload with missing storageKey/uploadId", async () => {
       const res = await app.request(
-        "/api/upload/multipart/nonexistent/part?partNumber=1",
+        "/api/upload/multipart/some-id/part?partNumber=1",
         {
           method: "PUT",
           body: new Uint8Array(10),
         },
       );
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(400);
     });
 
-    it("poster upload attaches posterKey to session", async () => {
+    it("poster upload returns posterKey", async () => {
       // Initiate
       const initRes = await app.request("/api/upload/multipart", {
         method: "POST",
@@ -453,7 +464,14 @@ describe("multipart upload API routes", () => {
           size: 100_000_000,
         }),
       });
-      const { id } = (await initRes.json()) as { id: string };
+      const { id, uploadId, storageKey, filename, originalName } =
+        (await initRes.json()) as {
+          id: string;
+          uploadId: string;
+          storageKey: string;
+          filename: string;
+          originalName: string;
+        };
 
       // Upload poster
       const posterBlob = new Blob([new Uint8Array(100)], {
@@ -478,7 +496,7 @@ describe("multipart upload API routes", () => {
 
       // Upload a part and complete to verify posterKey is in the DB record
       const partRes = await app.request(
-        `/api/upload/multipart/${id}/part?partNumber=1`,
+        `/api/upload/multipart/${id}/part?partNumber=1&storageKey=${encodeURIComponent(storageKey)}&uploadId=${encodeURIComponent(uploadId)}`,
         {
           method: "PUT",
           body: new Uint8Array(1024),
@@ -493,7 +511,14 @@ describe("multipart upload API routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          storageKey,
+          uploadId,
           parts: [{ partNumber: partData.partNumber, etag: partData.etag }],
+          filename,
+          originalName,
+          contentType: "video/mp4",
+          size: 100_000_000,
+          posterKey: posterData.posterKey,
         }),
       });
 
