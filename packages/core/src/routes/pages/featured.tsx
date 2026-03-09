@@ -9,7 +9,11 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
+import {
+  createMediaContext,
+  toPostViewsFromPosts,
+  loadThreadRootPermalinks,
+} from "../../lib/view.js";
 import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -32,21 +36,10 @@ featuredRoutes.get("/", async (c) => {
 
   const mediaCtx = createMediaContext(c.var.appConfig);
 
-  // Build thread root permalink map for reply posts
-  const threadRootIds = [
-    ...new Set(
-      posts.filter((p) => p.threadId).map((p) => p.threadId as string),
-    ),
-  ];
-  const rootPermalinkMap = new Map<string, string>();
-  if (threadRootIds.length > 0) {
-    const roots = await Promise.all(
-      threadRootIds.map((id) => c.var.services.posts.getById(id)),
-    );
-    for (const root of roots) {
-      if (root) rootPermalinkMap.set(root.id, `/${root.slug}`);
-    }
-  }
+  const rootPermalinkMap = await loadThreadRootPermalinks(
+    posts,
+    c.var.services.posts.getById.bind(c.var.services.posts),
+  );
 
   const postViews = toPostViewsFromPosts(posts, mediaCtx, rootPermalinkMap);
 

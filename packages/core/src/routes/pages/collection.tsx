@@ -8,7 +8,11 @@ import type { AppVariables } from "../../types/app-context.js";
 import { CollectionPage } from "../../ui/pages/CollectionPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { createMediaContext, toPostViews } from "../../lib/view.js";
+import {
+  createMediaContext,
+  toPostViews,
+  loadThreadRootPermalinks,
+} from "../../lib/view.js";
 import { defaultRssRenderer } from "../../lib/feed.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { CollectionsSidebar } from "../../ui/shared/CollectionsSidebar.js";
@@ -30,7 +34,6 @@ collectionRoutes.get("/:slug", async (c) => {
     c.var.services.posts.list({
       collectionId: collection.id,
       status: "published",
-      excludeReplies: true,
       excludePrivate: !navData.isAuthenticated,
     }),
     c.var.services.collections.list(),
@@ -38,9 +41,15 @@ collectionRoutes.get("/:slug", async (c) => {
     c.var.services.collections.getPostCounts(),
   ]);
 
-  // Batch-load media for posts
+  // Batch-load media and thread root permalinks in parallel
   const postIds = posts.map((p) => p.id);
-  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
+  const [rawMediaMap, rootPermalinkMap] = await Promise.all([
+    c.var.services.media.getByPostIds(postIds),
+    loadThreadRootPermalinks(
+      posts,
+      c.var.services.posts.getById.bind(c.var.services.posts),
+    ),
+  ]);
   const mediaCtx = createMediaContext(c.var.appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -55,6 +64,7 @@ collectionRoutes.get("/:slug", async (c) => {
       mediaAttachments: mediaMap.get(p.id) ?? [],
     })),
     mediaCtx,
+    rootPermalinkMap,
   );
 
   const items = postViews.map((post) => ({ post }));

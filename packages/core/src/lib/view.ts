@@ -233,12 +233,23 @@ export function toPostView(
 
 /**
  * Batch converts PostWithMedia[] to PostView[].
+ *
+ * @param posts - Posts with media attachments
+ * @param ctx - Media context with URL configuration
+ * @param threadRootPermalinkMap - Optional map of thread root ID → permalink
+ * @returns Render-ready PostView[]
  */
 export function toPostViews(
   posts: PostWithMedia[],
   ctx: MediaContext,
+  threadRootPermalinkMap?: Map<string, string>,
 ): PostView[] {
-  return posts.map((p) => toPostView(p, ctx));
+  return posts.map((p) => {
+    const rootPermalink = p.threadId
+      ? threadRootPermalinkMap?.get(p.threadId)
+      : undefined;
+    return toPostView(p, ctx, undefined, rootPermalink);
+  });
 }
 
 /**
@@ -271,6 +282,42 @@ export function toPostViewsFromPosts(
       : undefined;
     return toPostViewFromPost(p, ctx, rootPermalink);
   });
+}
+
+// =============================================================================
+// Thread Helpers
+// =============================================================================
+
+/**
+ * Builds a map of thread root ID → permalink for posts that are thread replies.
+ *
+ * @param posts - Posts to inspect for thread membership
+ * @param getById - Lookup function to fetch a post by ID
+ * @returns Map of thread root ID → permalink string (e.g. `/{slug}`)
+ *
+ * @example
+ * ```ts
+ * const map = await loadThreadRootPermalinks(posts, services.posts.getById);
+ * const views = toPostViews(postsWithMedia, mediaCtx, map);
+ * ```
+ */
+export async function loadThreadRootPermalinks(
+  posts: Post[],
+  getById: (id: string) => Promise<Post | null>,
+): Promise<Map<string, string>> {
+  const threadRootIds = [
+    ...new Set(
+      posts.filter((p) => p.threadId).map((p) => p.threadId as string),
+    ),
+  ];
+  const map = new Map<string, string>();
+  if (threadRootIds.length > 0) {
+    const roots = await Promise.all(threadRootIds.map(getById));
+    for (const root of roots) {
+      if (root) map.set(root.id, `/${root.slug}`);
+    }
+  }
+  return map;
 }
 
 // =============================================================================
