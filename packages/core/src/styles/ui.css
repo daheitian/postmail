@@ -3205,8 +3205,10 @@
     --_img-toolbar-sep: oklch(1 0 0 / 0.15);
   }
 
-  :is(.dark, [data-theme="dark"]) .tiptap-image-figure {
-    --_img-toolbar-bg: oklch(0.32 0.01 260 / 0.88);
+  @media (prefers-color-scheme: dark) {
+    .tiptap-image-figure {
+      --_img-toolbar-bg: oklch(0.32 0.01 260 / 0.88);
+    }
   }
 
   .tiptap-image-container {

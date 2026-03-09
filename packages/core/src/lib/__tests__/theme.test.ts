@@ -23,7 +23,7 @@ describe("buildThemeStyle", () => {
     expect(css).toContain("--font-body:");
     expect(css).toContain("--font-heading:");
     expect(css).toContain("Charter");
-    expect(css).toContain(":root.dark");
+    expect(css).toContain("prefers-color-scheme: dark");
   });
 
   it("font override merges with color theme", () => {

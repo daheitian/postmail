@@ -69,6 +69,16 @@ Use Tailwind utilities for layout only:
 <button class="bg-blue-500 px-4 py-2 rounded">...</button>
 ```
 
+### Dark Mode
+
+Dark mode uses `@media (prefers-color-scheme: dark)` — no JS class toggling. BaseCoat ships with a `.dark` class-based approach, but `preset.css` overrides this:
+
+1. `@custom-variant dark` is redefined to use the media query (for Tailwind `dark:` utilities)
+2. BaseCoat's `.dark { }` variables are mirrored in a `@media` block in `preset.css` (as fallback)
+3. `buildThemeStyle()` outputs theme dark overrides inside `@media (prefers-color-scheme: dark) { :root:root { } }` for higher specificity
+
+**When upgrading BaseCoat**: check if the `.dark { }` variable block changed and update the mirror in `preset.css`.
+
 ### Adding a New Color Theme
 
 Define themes in `src/ui/color-themes.ts` using `defineTheme()`. Each theme specifies 7 required colors plus optional semantic colors per mode:

@@ -192,15 +192,17 @@ Target specific pages or elements using data attributes:
 
 ## Dark Mode
 
-Use `.dark` to target dark mode specifically:
+Jant automatically follows the visitor's system preference (light/dark). Use a media query to set dark-mode-specific values:
 
 ```css
 :root {
   --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.dark {
-  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
 }
 ```
 

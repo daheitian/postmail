@@ -15,7 +15,7 @@ export interface ColorTheme {
   name: string;
   /** CSS variable overrides for :root (light mode) */
   light: Record<string, string>;
-  /** CSS variable overrides for .dark (dark mode) */
+  /** CSS variable overrides for dark mode (prefers-color-scheme: dark) */
   dark: Record<string, string>;
   /** Preview colors (hex) for theme picker cards */
   preview: {

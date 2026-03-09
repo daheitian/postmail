@@ -33,15 +33,16 @@ export function getAvailableThemes(): ColorTheme[] {
  * @param cssVariables - Extra CSS variable overrides
  * @returns CSS string to inject in `<head>`, or empty string if nothing to inject
  *
- * Uses `:root:root` and `:root.dark` selectors for higher specificity than
- * BaseCoat defaults (`:root` and `.dark`). This ensures theme overrides win
- * regardless of source order — important because Vite dev mode injects CSS
- * as `<style>` tags after the theme `<style>`.
+ * Uses `:root:root` for light mode and `@media (prefers-color-scheme: dark)`
+ * with `:root:root` for dark mode, giving higher specificity than BaseCoat
+ * defaults (`:root`). This ensures theme overrides win regardless of source
+ * order — important because Vite dev mode injects CSS as `<style>` tags
+ * after the theme `<style>`.
  *
  * @example
  * ```typescript
  * const css = buildThemeStyle(blueTheme, { "--radius": "0.5rem" });
- * // => ":root:root { --primary: oklch(...); ... }\n:root.dark { ... }"
+ * // => ":root:root { ... }\n@media (prefers-color-scheme: dark) { :root:root { ... } }"
  * ```
  */
 export function buildThemeStyle(
@@ -74,10 +75,12 @@ export function buildThemeStyle(
 
   if (hasDark) {
     const declarations = Object.entries(darkVars)
-      .map(([k, v]) => `  ${k}: ${v};`)
+      .map(([k, v]) => `    ${k}: ${v};`)
       .join("\n");
-    // :root.dark has specificity (0,1,1) > BaseCoat's .dark (0,1,0)
-    parts.push(`:root.dark {\n${declarations}\n}`);
+    // :root:root inside @media has specificity (0,0,2) > preset fallback :root (0,0,1)
+    parts.push(
+      `@media (prefers-color-scheme: dark) {\n  :root:root {\n${declarations}\n  }\n}`,
+    );
   }
 
   return parts.join("\n");
