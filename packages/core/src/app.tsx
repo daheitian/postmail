@@ -36,6 +36,7 @@ import { settingsApiRoutes } from "./routes/api/settings.js";
 import { uploadApiRoutes } from "./routes/api/upload.js";
 import { multipartUploadApiRoutes } from "./routes/api/upload-multipart.js";
 import { searchApiRoutes } from "./routes/api/search.js";
+import { customUrlsApiRoutes } from "./routes/api/custom-urls.js";
 // Routes - Compose
 import { composeRoutes } from "./routes/compose.js";
 
@@ -325,6 +326,7 @@ export function createApp(): App {
   app.route("/api/nav-items", navItemsApiRoutes);
   app.route("/api/collections", collectionsApiRoutes);
   app.route("/api/settings", settingsApiRoutes);
+  app.route("/api/custom-urls", customUrlsApiRoutes);
 
   // Auth routes
   app.route("/", setupRoutes);

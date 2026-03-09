@@ -669,6 +669,123 @@ DELETE /api/collections/:id/posts/:postId
 
 ---
 
+## Custom URLs
+
+Base path: `/api/custom-urls`
+
+Custom URLs let you create aliases for posts/collections or set up redirects — useful for blog migration (e.g. mapping old paths like `/blog/2024/my-post` to a Jant post).
+
+Three target types:
+
+| Type         | Purpose                                          | Key fields                   |
+| ------------ | ------------------------------------------------ | ---------------------------- |
+| `redirect`   | 301/302 redirect to another path or external URL | `toPath`, `redirectType`     |
+| `post`       | Alias path that resolves to a post               | `targetId` (post slug)       |
+| `collection` | Alias path that resolves to a collection         | `targetId` (collection slug) |
+
+### List Custom URLs
+
+```
+GET /api/custom-urls
+```
+
+Public.
+
+**Response (200):**
+
+```json
+{
+  "customUrls": [
+    {
+      "id": "019513e1-...",
+      "path": "blog/old-post",
+      "targetType": "redirect",
+      "targetId": null,
+      "toPath": "/my-new-slug",
+      "redirectType": 301,
+      "createdAt": 1706000000
+    },
+    {
+      "id": "019513e2-...",
+      "path": "2024/01/hello",
+      "targetType": "post",
+      "targetId": "019513a2-...",
+      "toPath": null,
+      "redirectType": null,
+      "createdAt": 1706000000
+    }
+  ]
+}
+```
+
+### Create Custom URL
+
+```
+POST /api/custom-urls
+```
+
+**Auth required.**
+
+```json
+{
+  "path": "blog/old-post",
+  "targetType": "redirect",
+  "toPath": "/my-new-slug",
+  "redirectType": "301"
+}
+```
+
+| Field          | Type                                 | Required                | Description                                 |
+| -------------- | ------------------------------------ | ----------------------- | ------------------------------------------- |
+| `path`         | string                               | **yes**                 | The custom URL path (without leading slash) |
+| `targetType`   | `post` \| `collection` \| `redirect` | **yes**                 | What this path resolves to                  |
+| `targetId`     | string                               | for `post`/`collection` | Slug of the target post or collection       |
+| `toPath`       | string                               | for `redirect`          | Destination path or URL                     |
+| `redirectType` | `"301"` \| `"302"`                   | for `redirect`          | Permanent or temporary redirect             |
+
+**Examples:**
+
+Redirect an old blog path:
+
+```json
+{
+  "path": "blog/2024/my-old-post",
+  "targetType": "redirect",
+  "toPath": "/my-new-slug",
+  "redirectType": "301"
+}
+```
+
+Create an alias for a post (visitor sees `/essays/on-writing` but the post lives at `/on-writing`):
+
+```json
+{
+  "path": "essays/on-writing",
+  "targetType": "post",
+  "targetId": "on-writing"
+}
+```
+
+**Response (201):** Created custom URL object.
+
+**Errors:**
+
+- `400` — reserved path or invalid input
+- `404` — target post/collection slug not found
+- `409` — path conflicts with an existing post slug or custom URL
+
+### Delete Custom URL
+
+```
+DELETE /api/custom-urls/:id
+```
+
+**Auth required.**
+
+**Response (200):** `{ "success": true }`
+
+---
+
 ## Search
 
 ```
