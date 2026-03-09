@@ -7,6 +7,7 @@
  */
 
 import { escapeHtml } from "./html.js";
+import { sanitizeUrl } from "./url.js";
 
 interface TiptapMark {
   type: string;
@@ -39,7 +40,7 @@ function renderMarks(text: string, marks: TiptapMark[]): string {
         result = `<code>${result}</code>`;
         break;
       case "link": {
-        const href = escapeHtml(String(mark.attrs?.href ?? ""));
+        const href = escapeHtml(sanitizeUrl(String(mark.attrs?.href ?? "")));
         const target = mark.attrs?.target
           ? ` target="${escapeHtml(String(mark.attrs.target))}"`
           : "";
@@ -139,7 +140,7 @@ function renderNode(node: TiptapNode): string {
         : "";
       const caption = node.attrs?.caption ? String(node.attrs.caption) : "";
       const layout = node.attrs?.layout ?? "regular";
-      const href = node.attrs?.href ? String(node.attrs.href) : "";
+      const href = node.attrs?.href ? sanitizeUrl(String(node.attrs.href)) : "";
       const layoutAttr =
         layout !== "regular"
           ? ` data-layout="${escapeHtml(String(layout))}"`

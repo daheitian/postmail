@@ -9,16 +9,19 @@ import type { TimelineCardProps } from "../../types.js";
 import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
+import { sanitizeUrl } from "../../lib/url.js";
 
 export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
   const isCompact = mode === "compact";
   const isDetail = mode === "detail";
 
+  const safeUrl = post.url ? sanitizeUrl(post.url) : "";
+
   // Extract domain from URL for display
   let domain: string | undefined;
-  if (post.url) {
+  if (safeUrl) {
     try {
-      domain = new URL(post.url).hostname.replace(/^www\./, "");
+      domain = new URL(safeUrl).hostname.replace(/^www\./, "");
     } catch {
       // Invalid URL, skip domain display
     }
@@ -57,10 +60,10 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
         (isDetail ? (
           <h1 class="p-name text-2xl font-semibold mb-4">
             <a
-              href={post.url || post.permalink}
+              href={safeUrl || post.permalink}
               class="u-url hover:underline"
-              target={post.url ? "_blank" : undefined}
-              rel={post.url ? "noopener noreferrer" : undefined}
+              target={safeUrl ? "_blank" : undefined}
+              rel={safeUrl ? "noopener noreferrer" : undefined}
             >
               {post.title}
             </a>
@@ -70,10 +73,10 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
             class={`p-name font-semibold ${isCompact ? "text-sm" : "text-base"} mb-1`}
           >
             <a
-              href={post.url || post.permalink}
+              href={safeUrl || post.permalink}
               class="u-url hover:underline"
-              target={post.url ? "_blank" : undefined}
-              rel={post.url ? "noopener noreferrer" : undefined}
+              target={safeUrl ? "_blank" : undefined}
+              rel={safeUrl ? "noopener noreferrer" : undefined}
             >
               {post.title}
             </a>

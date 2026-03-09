@@ -97,3 +97,34 @@ export function isFullUrl(str: string): boolean {
 export function slugify(text: string): string {
   return limax(text, { tone: false }).replace(/_/g, "-");
 }
+
+const SAFE_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
+
+/**
+ * Sanitizes a URL by ensuring it uses a safe protocol.
+ *
+ * Returns the URL unchanged if it uses an allowed protocol (http:, https:, mailto:)
+ * or is a relative path. Returns an empty string for dangerous protocols like
+ * `javascript:`, `data:`, or `vbscript:`.
+ *
+ * @param url - The URL string to sanitize
+ * @returns The original URL if safe, or an empty string if the protocol is disallowed
+ *
+ * @example
+ * ```ts
+ * sanitizeUrl("https://example.com");       // "https://example.com"
+ * sanitizeUrl("/about");                     // "/about"
+ * sanitizeUrl("javascript:alert(1)");        // ""
+ * sanitizeUrl("data:text/html,<h1>Hi</h1>"); // ""
+ * ```
+ */
+export function sanitizeUrl(url: string): string {
+  try {
+    const parsed = new URL(url, "https://placeholder.invalid");
+    // Relative URLs resolve against the placeholder and get https: — allow them
+    if (SAFE_URL_PROTOCOLS.has(parsed.protocol)) return url;
+    return "";
+  } catch {
+    return "";
+  }
+}

@@ -49,7 +49,14 @@ export function createAuthService(
     const expiry = parseInt(stored.substring(separatorIndex + 1), 10);
     const now = Math.floor(Date.now() / 1000);
 
-    return token === storedToken && now <= expiry;
+    if (now > expiry) return false;
+
+    const encoder = new TextEncoder();
+    const a = encoder.encode(token);
+    const b = encoder.encode(storedToken);
+    if (a.byteLength !== b.byteLength) return false;
+
+    return crypto.subtle.timingSafeEqual(a, b);
   }
 
   return {

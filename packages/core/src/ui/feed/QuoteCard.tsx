@@ -15,10 +15,12 @@ import type { TimelineCardProps } from "../../types.js";
 import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
+import { sanitizeUrl } from "../../lib/url.js";
 
 export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
   const isCompact = mode === "compact";
   const isDetail = mode === "detail";
+  const safeUrl = post.url ? sanitizeUrl(post.url) : "";
 
   return (
     <article
@@ -43,12 +45,12 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
           </div>
         </blockquote>
       )}
-      {!isCompact && (post.title || post.url) && (
+      {!isCompact && (post.title || safeUrl) && (
         <div class="mt-2 text-sm text-muted-foreground">
           &mdash;{" "}
-          {post.url ? (
+          {safeUrl ? (
             <a
-              href={post.url}
+              href={safeUrl}
               class="hover:underline"
               target="_blank"
               rel="noopener noreferrer"

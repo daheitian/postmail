@@ -25,6 +25,20 @@ function escapeXml(str: string): string {
 }
 
 /**
+ * Escape content for safe embedding inside a CDATA section.
+ *
+ * CDATA sections end at the first `]]>` sequence. If the content contains
+ * `]]>`, we split it by closing the current CDATA section and opening a new
+ * one: `]]>` becomes `]]]]><![CDATA[>`.
+ *
+ * @param str - Raw string to embed in CDATA
+ * @returns String safe to place inside `<![CDATA[...]]>`
+ */
+function escapeCdata(str: string): string {
+  return str.replaceAll("]]>", "]]]]><![CDATA[>");
+}
+
+/**
  * Render a star rating as HTML for feed content.
  */
 function renderRatingHtml(rating: number): string {
@@ -94,11 +108,11 @@ export function defaultRssRenderer(data: FeedData): string {
 
       return `
     <item>
-      <title><![CDATA[${escapeXml(title)}]]></title>
+      <title><![CDATA[${escapeCdata(escapeXml(title))}]]></title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
-      <description><![CDATA[${buildFeedContent(post)}]]></description>${enclosure}
+      <description><![CDATA[${escapeCdata(buildFeedContent(post))}]]></description>${enclosure}
     </item>`;
     })
     .join("");
@@ -137,7 +151,7 @@ export function defaultAtomRenderer(data: FeedData): string {
     <id>${link}</id>
     <published>${post.publishedAt}</published>
     <updated>${post.updatedAt}</updated>
-    <content type="html"><![CDATA[${buildFeedContent(post)}]]></content>
+    <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post))}]]></content>
   </entry>`;
     })
     .join("");
