@@ -7,6 +7,7 @@
  */
 
 import type { Post, Status, Format, SearchResult } from "../types.js";
+import { escapeHtml } from "../lib/html.js";
 
 export type { SearchResult };
 
@@ -80,7 +81,11 @@ function mapRow(row: RawSearchRow): SearchResult {
       updatedAt: row.updated_at,
     },
     rank: row.rank,
-    snippet: row.snippet || undefined,
+    snippet: row.snippet
+      ? escapeHtml(row.snippet)
+          .replaceAll(String.fromCharCode(2), "<mark>")
+          .replaceAll(String.fromCharCode(3), "</mark>")
+      : undefined,
   };
 }
 
@@ -110,7 +115,7 @@ export function createSearchService(d1: D1Database): SearchService {
       SELECT
         post.*,
         post_fts.rank AS rank,
-        snippet(post_fts, 1, '<mark>', '</mark>', '...', 32) AS snippet
+        snippet(post_fts, 1, char(2), char(3), '...', 32) AS snippet
       FROM post_fts
       JOIN post ON post.rowid = post_fts.rowid
       WHERE post_fts MATCH ?

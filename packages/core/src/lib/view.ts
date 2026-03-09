@@ -33,6 +33,7 @@ import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
 import { getHtmlExcerpt } from "./excerpt.js";
 import { highlightText } from "./search-snippet.js";
 import { renderCollectionIcon } from "./icons.js";
+import { escapeHtml } from "./html.js";
 
 // =============================================================================
 // Media Context
@@ -156,7 +157,7 @@ export function toPostView(
       // Use stored summary (generated from Tiptap JSON)
       summaryHtml = post.summary
         .split("\n\n")
-        .map((p) => `<p>${p}</p>`)
+        .map((p) => `<p>${escapeHtml(p)}</p>`)
         .join("");
       summaryHasMore = true;
     } else {

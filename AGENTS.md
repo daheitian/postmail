@@ -41,6 +41,7 @@ Non-negotiable regardless of context:
 - **Migrations are append-only and generated**: never edit or replace an existing migration file in `src/db/migrations/`. Applied migrations are tracked by filename — changing their content causes drift between the migration history and the actual database state, breaking local and production environments. Always create a new migration file for schema changes, even if the previous migration was recently added. For example, to undo migration `0016`, create `0017` with the reverse DDL rather than rewriting `0016`. Never hand-write migration SQL — always update the Drizzle schema in `src/db/schema.ts` first, then run `drizzle-kit generate` (via `mise run db-generate`) to produce the migration file. Hand-written SQL risks diverging from the schema definition and missing edge cases the tooling handles automatically.
 - **Relative imports only**: no `@/` path aliases anywhere in the codebase.
 - **Data attributes with care**: `data-page`, `data-post`, `data-format`, etc. are consumed by themes and external scripts. Design them thoughtfully and update all references when changing.
+- **No raw strings in `dangerouslySetInnerHTML`**: every string passed to `dangerouslySetInnerHTML` must be either (a) HTML produced by a trusted renderer (TipTap, `getHtmlExcerpt`), or (b) plain text that has been passed through `escapeHtml()` first. Never concatenate plain-text fields into HTML strings without escaping. When injecting highlight markers into escaped text, use `escapeHtml()` first, then replace control-character sentinels with `<mark>` tags — never inject `<mark>` directly into unescaped text.
 
 ## Working with the Codebase
 
@@ -138,6 +139,7 @@ If you notice code contradicting this document, think about which side is correc
 - Importing from `@lingui/react` instead of `@lingui/react/macro` — the macro enables compile-time message extraction.
 - Editing `packages/create-jant/template/` — this is auto-generated and will be overwritten.
 - Putting multi-service orchestration in route handlers — if two routes need the same sequence of service calls, extract it into a service method. Routes should be thin adapters: parse request → call service → format response.
+- Passing plain text to `dangerouslySetInnerHTML` without `escapeHtml()` — even single-author content can contain `<`, `>`, `&`. The pattern for safe highlighted output: `escapeHtml(text).replace(/\x02/g, '<mark>').replace(/\x03/g, '</mark>')` where `char(2)`/`char(3)` (STX/ETX) are used as FTS5 snippet markers in SQL.
 
 ### Docs Index
 
