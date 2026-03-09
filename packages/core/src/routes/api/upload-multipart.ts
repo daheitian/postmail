@@ -226,6 +226,12 @@ multipartUploadApiRoutes.put("/:id/poster", async (c) => {
     throw new ValidationError("No poster file provided");
   }
 
+  if (!posterFile.type.startsWith("image/")) {
+    throw new ValidationError(
+      `Invalid file type "${posterFile.type}". Only image files are accepted for poster frames.`,
+    );
+  }
+
   const date = new Date();
   const year = date.getUTCFullYear();
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");

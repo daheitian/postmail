@@ -58,15 +58,24 @@ const SearchResultCard: FC<{ result: SearchResultView }> = ({ result }) => {
         )}
         {(titleHighlighted ?? post.title) && (
           <h3 class="font-semibold text-base mb-1">
-            <a
-              href={post.url || post.permalink}
-              target={post.url ? "_blank" : undefined}
-              rel={post.url ? "noopener noreferrer" : undefined}
-              class="hover:underline"
-              dangerouslySetInnerHTML={{
-                __html: titleHighlighted ?? post.title ?? "",
-              }}
-            />
+            {titleHighlighted ? (
+              <a
+                href={post.url || post.permalink}
+                target={post.url ? "_blank" : undefined}
+                rel={post.url ? "noopener noreferrer" : undefined}
+                class="hover:underline"
+                dangerouslySetInnerHTML={{ __html: titleHighlighted }}
+              />
+            ) : (
+              <a
+                href={post.url || post.permalink}
+                target={post.url ? "_blank" : undefined}
+                rel={post.url ? "noopener noreferrer" : undefined}
+                class="hover:underline"
+              >
+                {post.title}
+              </a>
+            )}
           </h3>
         )}
         {snippet && (
@@ -124,13 +133,17 @@ const SearchResultCard: FC<{ result: SearchResultView }> = ({ result }) => {
     return (
       <article data-post data-format="note">
         <h3 class="font-semibold text-base mb-1">
-          <a
-            href={post.permalink}
-            class="hover:underline"
-            dangerouslySetInnerHTML={{
-              __html: titleHighlighted ?? post.title,
-            }}
-          />
+          {titleHighlighted ? (
+            <a
+              href={post.permalink}
+              class="hover:underline"
+              dangerouslySetInnerHTML={{ __html: titleHighlighted }}
+            />
+          ) : (
+            <a href={post.permalink} class="hover:underline">
+              {post.title}
+            </a>
+          )}
         </h3>
         {snippet && (
           <p

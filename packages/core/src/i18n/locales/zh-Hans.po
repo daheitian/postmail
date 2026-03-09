@@ -55,9 +55,16 @@ msgid "About this blog"
 msgstr "关于此博客"
 
 #. @context: Settings group label for account settings
+#. @context: Settings item — account settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
 msgstr "账户"
+
+#. @context: Settings section heading for active sessions
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Active Sessions"
+msgstr ""
 
 #. @context: Heading for list of active API tokens
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -222,8 +229,8 @@ msgstr "取消"
 msgid "Change Password"
 msgstr "修改密码"
 
-#. @context: Settings item description for password
-#: src/ui/dash/settings/SettingsRootContent.tsx
+#. @context: Settings item description for password change
+#: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Change your sign-in password"
 msgstr "更改您的登录密码"
 
@@ -346,6 +353,11 @@ msgstr "创建您的管理员账户。"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Created {0}"
 msgstr "创建于 {0}"
+
+#. @context: Badge indicating the current active session
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Current"
+msgstr ""
 
 #. @context: Password form field
 #: src/ui/dash/settings/AccountContent.tsx
@@ -738,6 +750,11 @@ msgstr "加载更多"
 msgid "Lowest rated"
 msgstr "评分最低"
 
+#. @context: Settings item description for sessions
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage active sign-in sessions"
+msgstr ""
+
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Markdown supported"
@@ -826,6 +843,11 @@ msgstr "最新在前"
 #: src/ui/shared/Pagination.tsx
 msgid "Next"
 msgstr "下一页"
+
+#. @context: Empty state when no sessions exist (shouldn't normally appear)
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "No active sessions found."
+msgstr ""
 
 #. @context: Empty state message on collections page
 #: src/ui/pages/CollectionsPage.tsx
@@ -922,7 +944,7 @@ msgstr "第 {page} 页"
 #. @context: Setup/signin form field - password
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/signin.tsx
-#: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Password"
 msgstr "密码"
 
@@ -1084,7 +1106,9 @@ msgid "Reset Password"
 msgstr "重置密码"
 
 #. @context: Button to revoke API token
+#. @context: Button to revoke a session
 #: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/SessionsContent.tsx
 msgid "Revoke"
 msgstr "撤销"
 
@@ -1183,6 +1207,16 @@ msgstr "SEO"
 msgid "SEO settings updated."
 msgstr "SEO 设置已更新."
 
+#. @context: Settings item — session management
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Sessions"
+msgstr ""
+
+#. @context: Settings item description for account
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Sessions, password"
+msgstr ""
+
 #. @context: Toast after saving general settings
 #. @context: Toast after saving general settings
 #: src/routes/dash/settings.tsx
@@ -1213,6 +1247,12 @@ msgstr "登录"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sign Out"
 msgstr "退出登录"
+
+#. @context: Session creation date
+#. placeholder {0}: formatDate(session.createdAt)
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Signed in {0}"
+msgstr ""
 
 #. @context: Settings group label for site settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1333,6 +1373,11 @@ msgstr "其余项目将被收进 ··· 菜单"
 msgid "The slug of the target post or collection"
 msgstr "目标文章或集合的 slug"
 
+#. @context: Description for session management
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "These devices are currently signed in to your account. Revoke any session you don't recognize."
+msgstr ""
+
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
@@ -1408,6 +1453,11 @@ msgstr "输入引用..."
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Typography"
 msgstr "排版"
+
+#. @context: Fallback label when session device can't be identified
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Unknown device"
+msgstr ""
 
 #. @context: Post badge - unlisted
 #: src/ui/dash/StatusBadge.tsx

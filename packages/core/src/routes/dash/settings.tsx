@@ -3,7 +3,7 @@
  *
  * Unified settings hub — root page with iOS-style grouped list,
  * plus sub-pages for General, Avatar, Navigation, Color Theme,
- * Font Theme, Custom CSS, Password, and API Tokens.
+ * Font Theme, Custom CSS, Account (Sessions + Password), and API Tokens.
  */
 
 import { Hono } from "hono";
@@ -24,7 +24,12 @@ import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
 import { SettingsRootContent } from "../../ui/dash/settings/SettingsRootContent.js";
 import { GeneralContent } from "../../ui/dash/settings/GeneralContent.js";
 import { AvatarContent } from "../../ui/dash/settings/AvatarContent.js";
+import { AccountMenuContent } from "../../ui/dash/settings/AccountMenuContent.js";
 import { AccountContent } from "../../ui/dash/settings/AccountContent.js";
+import {
+  SessionsContent,
+  type SessionInfo,
+} from "../../ui/dash/settings/SessionsContent.js";
 import { NavigationContent } from "../../ui/dash/appearance/NavigationContent.js";
 import { ColorThemeContent } from "../../ui/dash/appearance/ColorThemeContent.js";
 import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
@@ -578,10 +583,104 @@ settingsRoutes.post("/custom-css", async (c) => {
 });
 
 // ===========================================================================
-// Password
+// Account sub-menu
 // ===========================================================================
 
 settingsRoutes.get("/account", async (c) => {
+  const navData = await getNavigationData(c);
+
+  return renderPublicPage(c, {
+    title: `Account - ${navData.siteName}`,
+    navData,
+    content: (
+      <>
+        <AdminBreadcrumb
+          parent="Settings"
+          parentHref="/settings"
+          current="Account"
+        />
+        <AccountMenuContent />
+      </>
+    ),
+  });
+});
+
+// ===========================================================================
+// Sessions
+// ===========================================================================
+
+settingsRoutes.get("/account/sessions", async (c) => {
+  const navData = await getNavigationData(c);
+
+  // Get current session to mark it
+  const currentSession = await c.var.auth.api.getSession({
+    headers: c.req.raw.headers,
+  });
+  const currentToken = currentSession?.session?.token ?? "";
+
+  // List all active sessions
+  const rawSessions = await c.var.auth.api.listSessions({
+    headers: c.req.raw.headers,
+  });
+
+  const sessions: SessionInfo[] = (rawSessions ?? []).map(
+    (s: {
+      token: string;
+      ipAddress?: string | null;
+      userAgent?: string | null;
+      createdAt: Date;
+    }) => ({
+      token: s.token,
+      ipAddress: s.ipAddress ?? null,
+      userAgent: s.userAgent ?? null,
+      createdAt: Math.floor(new Date(s.createdAt).getTime() / 1000),
+      isCurrent: s.token === currentToken,
+    }),
+  );
+
+  // Sort: current session first, then by creation date descending
+  sessions.sort((a, b) => {
+    if (a.isCurrent) return -1;
+    if (b.isCurrent) return 1;
+    return b.createdAt - a.createdAt;
+  });
+
+  return renderPublicPage(c, {
+    title: `Sessions - ${navData.siteName}`,
+    navData,
+    content: (
+      <>
+        <AdminBreadcrumb
+          parent="Account"
+          parentHref="/settings/account"
+          current="Sessions"
+        />
+        <SessionsContent sessions={sessions} />
+      </>
+    ),
+  });
+});
+
+settingsRoutes.post("/account/sessions/:token/revoke", async (c) => {
+  const token = c.req.param("token");
+
+  try {
+    await c.var.auth.api.revokeSession({
+      body: { token },
+      headers: c.req.raw.headers,
+    });
+  } catch {
+    // Session may already be expired/revoked — still redirect
+  }
+
+  return dsRedirect("/settings/account/sessions");
+});
+
+// ===========================================================================
+// Password
+// ===========================================================================
+
+settingsRoutes.get("/account/password", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
@@ -590,8 +689,8 @@ settingsRoutes.get("/account", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
-          parentHref="/settings"
+          parent="Account"
+          parentHref="/settings/account"
           current="Password"
         />
         <AccountContent />
@@ -600,7 +699,7 @@ settingsRoutes.get("/account", async (c) => {
   });
 });
 
-settingsRoutes.post("/password", async (c) => {
+settingsRoutes.post("/account/password", async (c) => {
   const i18n = getI18n(c);
   const body = await c.req.json<{
     currentPassword: string;

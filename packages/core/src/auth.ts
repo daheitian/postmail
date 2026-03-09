@@ -34,7 +34,7 @@ export function createAuth(
       minPasswordLength: 8,
     },
     session: {
-      expiresIn: 3600 * 24 * 366, // 366 days
+      expiresIn: 3600 * 24 * 30, // 30 days
       cookieCache: {
         enabled: true,
         maxAge: 60 * 5, // 5 minutes

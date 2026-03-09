@@ -49,6 +49,7 @@ import { requireAuth } from "./middleware/auth.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { withConfig } from "./middleware/config.js";
+import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
 
 import { createStorageDriver } from "./lib/storage.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
@@ -123,6 +124,9 @@ export function createApp(): App {
 
     await next();
   });
+
+  // Security headers (CSP, X-Frame-Options, etc.)
+  app.use("*", secureHeadersMiddleware());
 
   // --- Routes that don't need config/theme ---
 

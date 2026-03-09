@@ -20,6 +20,26 @@ import {
 import { ValidationError } from "./errors.js";
 import { sanitizeUrl } from "./url.js";
 
+// =============================================================================
+// Shared Transforms
+// =============================================================================
+
+/**
+ * Strip C0 control characters (except HT, LF, CR) that can break rendering
+ * or interfere with FTS5 highlight sentinels (STX/ETX).
+ */
+// eslint-disable-next-line no-control-regex -- intentionally matching C0 control characters
+const CONTROL_CHAR_RE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
+
+/** Trim, strip control characters, and collapse to undefined when empty. */
+function sanitizeText(maxLength: number) {
+  return z
+    .string()
+    .trim()
+    .max(maxLength)
+    .transform((s) => s.replace(CONTROL_CHAR_RE, "") || undefined);
+}
+
 /**
  * Post format enum schema
  * Based on FORMATS from types.ts
@@ -86,7 +106,9 @@ const PostFieldsSchema = z.object({
     )
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  title: z.string().optional(),
+  title: sanitizeText(300)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   body: z.string().optional(),
   bodyMarkdown: z.string().optional(),
   status: StatusSchema.optional(),
@@ -141,7 +163,7 @@ export const UpdatePostSchema = refineBodyExclusivity(
  */
 export const CreateNavItemSchema = z.object({
   type: NavItemTypeSchema,
-  label: z.string().min(1),
+  label: sanitizeText(100).pipe(z.string().min(1)),
   url: z
     .string()
     .min(1)
@@ -169,9 +191,28 @@ export const CreateCollectionSchema = z.object({
         .min(1)
         .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
     ),
-  title: z.string().min(1),
-  description: z.string().optional(),
-  icon: z.string().optional(),
+  title: sanitizeText(300).pipe(z.string().min(1)),
+  description: sanitizeText(500)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  icon: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || !val.startsWith("{")) return true;
+        try {
+          const parsed = JSON.parse(val) as Record<string, unknown>;
+          if (typeof parsed.color === "string") {
+            return /^#[0-9a-f]{3,6}$/i.test(parsed.color);
+          }
+          return true;
+        } catch {
+          return true; // non-JSON icons (legacy emoji) are fine
+        }
+      },
+      { message: "Icon color must be a valid hex color (e.g. #fff, #ff0000)" },
+    ),
   sortOrder: SortOrderSchema.optional(),
 });
 

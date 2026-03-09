@@ -55,9 +55,16 @@ msgid "About this blog"
 msgstr "About this blog"
 
 #. @context: Settings group label for account settings
+#. @context: Settings item — account settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
 msgstr "Account"
+
+#. @context: Settings section heading for active sessions
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Active Sessions"
+msgstr "Active Sessions"
 
 #. @context: Heading for list of active API tokens
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -222,8 +229,8 @@ msgstr "Cancel"
 msgid "Change Password"
 msgstr "Change Password"
 
-#. @context: Settings item description for password
-#: src/ui/dash/settings/SettingsRootContent.tsx
+#. @context: Settings item description for password change
+#: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Change your sign-in password"
 msgstr "Change your sign-in password"
 
@@ -346,6 +353,11 @@ msgstr "Create your admin account."
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Created {0}"
 msgstr "Created {0}"
+
+#. @context: Badge indicating the current active session
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Current"
+msgstr "Current"
 
 #. @context: Password form field
 #: src/ui/dash/settings/AccountContent.tsx
@@ -738,6 +750,11 @@ msgstr "Load more"
 msgid "Lowest rated"
 msgstr "Lowest rated"
 
+#. @context: Settings item description for sessions
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage active sign-in sessions"
+msgstr "Manage active sign-in sessions"
+
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Markdown supported"
@@ -826,6 +843,11 @@ msgstr "Newest first"
 #: src/ui/shared/Pagination.tsx
 msgid "Next"
 msgstr "Next"
+
+#. @context: Empty state when no sessions exist (shouldn't normally appear)
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "No active sessions found."
+msgstr "No active sessions found."
 
 #. @context: Empty state message on collections page
 #: src/ui/pages/CollectionsPage.tsx
@@ -922,7 +944,7 @@ msgstr "Page {page}"
 #. @context: Setup/signin form field - password
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/signin.tsx
-#: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Password"
 msgstr "Password"
 
@@ -1084,7 +1106,9 @@ msgid "Reset Password"
 msgstr "Reset Password"
 
 #. @context: Button to revoke API token
+#. @context: Button to revoke a session
 #: src/ui/dash/settings/ApiTokensContent.tsx
+#: src/ui/dash/settings/SessionsContent.tsx
 msgid "Revoke"
 msgstr "Revoke"
 
@@ -1183,6 +1207,16 @@ msgstr "SEO"
 msgid "SEO settings updated."
 msgstr "SEO settings updated."
 
+#. @context: Settings item — session management
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Sessions"
+msgstr "Sessions"
+
+#. @context: Settings item description for account
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Sessions, password"
+msgstr "Sessions, password"
+
 #. @context: Toast after saving general settings
 #. @context: Toast after saving general settings
 #: src/routes/dash/settings.tsx
@@ -1213,6 +1247,12 @@ msgstr "Sign In"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sign Out"
 msgstr "Sign Out"
+
+#. @context: Session creation date
+#. placeholder {0}: formatDate(session.createdAt)
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Signed in {0}"
+msgstr "Signed in {0}"
 
 #. @context: Settings group label for site settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1333,6 +1373,11 @@ msgstr "The rest will be tucked into a ··· menu"
 msgid "The slug of the target post or collection"
 msgstr "The slug of the target post or collection"
 
+#. @context: Description for session management
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "These devices are currently signed in to your account. Revoke any session you don't recognize."
+msgstr "These devices are currently signed in to your account. Revoke any session you don't recognize."
+
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
@@ -1408,6 +1453,11 @@ msgstr "Type the quote..."
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Typography"
 msgstr "Typography"
+
+#. @context: Fallback label when session device can't be identified
+#: src/ui/dash/settings/SessionsContent.tsx
+msgid "Unknown device"
+msgstr "Unknown device"
 
 #. @context: Post badge - unlisted
 #: src/ui/dash/StatusBadge.tsx

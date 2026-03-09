@@ -93,7 +93,8 @@ export function parseCollectionIcon(
     if (
       typeof parsed.name === "string" &&
       typeof parsed.svg === "string" &&
-      typeof parsed.color === "string"
+      typeof parsed.color === "string" &&
+      /^#[0-9a-f]{3,6}$/i.test(parsed.color)
     ) {
       return parsed as unknown as CollectionIcon;
     }
@@ -186,7 +187,7 @@ function applyIconSize(svg: string, size: number, color?: string): string {
   let result = svg
     .replace(/width="24"/, `width="${size}"`)
     .replace(/height="24"/, `height="${size}"`);
-  if (color) {
+  if (color && /^#[0-9a-f]{3,6}$/i.test(color)) {
     result = result.replace("<svg", `<svg style="color: ${color}"`);
   }
   return result;
