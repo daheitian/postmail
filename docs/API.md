@@ -616,7 +616,13 @@ Three target types:
 GET /api/custom-urls
 ```
 
-Public.
+Public. Results are sorted by creation date (newest first) and paginated using `DEFAULT_PAGE_SIZE` (100 items per page).
+
+**Query parameters:**
+
+| Parameter | Type    | Required | Default | Description |
+| --------- | ------- | -------- | ------- | ----------- |
+| `page`    | integer | no       | `1`     | Page number |
 
 **Response (200):**
 
@@ -641,7 +647,10 @@ Public.
       "redirectType": null,
       "createdAt": 1706000000
     }
-  ]
+  ],
+  "total": 42,
+  "page": 1,
+  "totalPages": 1
 }
 ```
 

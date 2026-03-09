@@ -5,7 +5,7 @@
  * Manages custom URL mappings for posts, collections, and redirects.
  */
 
-import { eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { customUrls, posts } from "../db/schema.js";
@@ -31,7 +31,8 @@ export interface CustomUrlService {
   ): Promise<CustomUrl | null>;
   create(data: CreateCustomUrl): Promise<CustomUrl>;
   delete(id: string): Promise<boolean>;
-  list(): Promise<CustomUrl[]>;
+  count(): Promise<number>;
+  list(opts?: { limit?: number; offset?: number }): Promise<CustomUrl[]>;
   /** Check if a path is available (not used by custom_urls or posts.slug) */
   isPathAvailable(path: string): Promise<boolean>;
 }
@@ -125,8 +126,22 @@ export function createCustomUrlService(db: Database): CustomUrlService {
       return result.length > 0;
     },
 
-    async list() {
-      const rows = await db.select().from(customUrls);
+    async count() {
+      const result = await db
+        .select({ count: sql<number>`count(*)`.as("count") })
+        .from(customUrls);
+      return result[0]?.count ?? 0;
+    },
+
+    async list(opts) {
+      let q = db
+        .select()
+        .from(customUrls)
+        .orderBy(desc(customUrls.createdAt))
+        .$dynamic();
+      if (opts?.limit !== undefined) q = q.limit(opts.limit);
+      if (opts?.offset !== undefined) q = q.offset(opts.offset);
+      const rows = await q;
       return rows.map(toCustomUrl);
     },
 

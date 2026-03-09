@@ -15,6 +15,8 @@ import { CreateCustomUrlSchema, parseValidated } from "../../lib/schemas.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
+import { PagePagination } from "../../ui/shared/Pagination.js";
+import { DEFAULT_PAGE_SIZE } from "../../lib/constants.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -34,9 +36,13 @@ function targetBadge(targetType: CustomUrl["targetType"]) {
 function CustomUrlsListContent({
   customUrls,
   targetSlugs,
+  currentPage,
+  totalPages,
 }: {
   customUrls: CustomUrl[];
   targetSlugs: Record<string, string>;
+  currentPage: number;
+  totalPages: number;
 }) {
   const { t } = useLingui();
 
@@ -71,41 +77,52 @@ function CustomUrlsListContent({
           ctaHref="/settings/custom-urls/new"
         />
       ) : (
-        <div class="flex flex-col divide-y">
-          {customUrls.map((cu) => (
-            <ListItemRow
-              key={cu.id}
-              actions={
-                <ActionButtons
-                  deleteAction={`/settings/custom-urls/${cu.id}/delete`}
-                  deleteLabel={t({
-                    message: "Delete",
-                    comment: "@context: Button to delete custom URL",
-                  })}
-                />
-              }
-            >
-              <div class="flex items-center gap-2">
-                <code class="text-sm bg-muted px-1 rounded">/{cu.path}</code>
-                <span class="text-muted-foreground">&rarr;</span>
-                {cu.targetType === "redirect" ? (
-                  <code class="text-sm bg-muted px-1 rounded">{cu.toPath}</code>
-                ) : (
-                  <code class="text-sm bg-muted px-1 rounded">
-                    /
-                    {cu.targetId
-                      ? (targetSlugs[cu.targetId] ?? cu.targetId)
-                      : "?"}
-                  </code>
-                )}
-                <span class="badge-outline">{targetBadge(cu.targetType)}</span>
-                {cu.targetType === "redirect" && cu.redirectType && (
-                  <span class="badge-outline">{cu.redirectType}</span>
-                )}
-              </div>
-            </ListItemRow>
-          ))}
-        </div>
+        <>
+          <div class="flex flex-col divide-y">
+            {customUrls.map((cu) => (
+              <ListItemRow
+                key={cu.id}
+                actions={
+                  <ActionButtons
+                    deleteAction={`/settings/custom-urls/${cu.id}/delete`}
+                    deleteLabel={t({
+                      message: "Delete",
+                      comment: "@context: Button to delete custom URL",
+                    })}
+                  />
+                }
+              >
+                <div class="flex items-center gap-2">
+                  <code class="text-sm bg-muted px-1 rounded">/{cu.path}</code>
+                  <span class="text-muted-foreground">&rarr;</span>
+                  {cu.targetType === "redirect" ? (
+                    <code class="text-sm bg-muted px-1 rounded">
+                      {cu.toPath}
+                    </code>
+                  ) : (
+                    <code class="text-sm bg-muted px-1 rounded">
+                      /
+                      {cu.targetId
+                        ? (targetSlugs[cu.targetId] ?? cu.targetId)
+                        : "?"}
+                    </code>
+                  )}
+                  <span class="badge-outline">
+                    {targetBadge(cu.targetType)}
+                  </span>
+                  {cu.targetType === "redirect" && cu.redirectType && (
+                    <span class="badge-outline">{cu.redirectType}</span>
+                  )}
+                </div>
+              </ListItemRow>
+            ))}
+          </div>
+          <PagePagination
+            baseUrl="/settings/custom-urls"
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
+        </>
       )}
     </>
   );
@@ -277,11 +294,22 @@ function NewCustomUrlContent() {
 
 // List custom URLs
 customUrlsRoutes.get("/", async (c) => {
-  const customUrls = await c.var.services.customUrls.list();
+  const pageParam = c.req.query("page");
+  const currentPage = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+
+  const [total, customUrlsList] = await Promise.all([
+    c.var.services.customUrls.count(),
+    c.var.services.customUrls.list({
+      limit: DEFAULT_PAGE_SIZE,
+      offset: (currentPage - 1) * DEFAULT_PAGE_SIZE,
+    }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / DEFAULT_PAGE_SIZE));
 
   // Resolve target UUIDs → slugs for display
   const targetSlugs: Record<string, string> = {};
-  for (const cu of customUrls) {
+  for (const cu of customUrlsList) {
     if (!cu.targetId || cu.targetType === "redirect") continue;
     if (cu.targetType === "post") {
       const post = await c.var.services.posts.getById(cu.targetId);
@@ -305,8 +333,10 @@ customUrlsRoutes.get("/", async (c) => {
           current="Custom URLs"
         />
         <CustomUrlsListContent
-          customUrls={customUrls}
+          customUrls={customUrlsList}
           targetSlugs={targetSlugs}
+          currentPage={currentPage}
+          totalPages={totalPages}
         />
       </>
     ),
