@@ -14,7 +14,11 @@ import type {
   PostWithMedia,
 } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import type { ArchiveFilters, ArchiveVisibility } from "../../types/props.js";
+import type {
+  ArchiveFilters,
+  ArchiveView,
+  ArchiveVisibility,
+} from "../../types/props.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
@@ -56,15 +60,26 @@ archiveRoutes.get("/", async (c) => {
         ) as MediaKind[])
     : undefined;
 
+  const hasMediaParam = c.req.query("hasMedia");
+  const hasMedia =
+    hasMediaParam === "1" ? true : hasMediaParam === "0" ? false : undefined;
+
   const hasTitleParam = c.req.query("hasTitle");
   const hasTitle =
     hasTitleParam === "1" ? true : hasTitleParam === "0" ? false : undefined;
 
   const VALID_VISIBILITIES = ["public", "unlisted", "private", "featured"];
   const visibilityParam = c.req.query("visibility");
+  const visibilityAll = visibilityParam === "all";
   const visibility =
     visibilityParam && VALID_VISIBILITIES.includes(visibilityParam)
       ? (visibilityParam as ArchiveVisibility)
+      : undefined;
+
+  const viewParam = c.req.query("view") as ArchiveView | undefined;
+  const view =
+    viewParam && (viewParam === "grid" || viewParam === "list")
+      ? viewParam
       : undefined;
 
   const pageParam = c.req.query("page");
@@ -94,7 +109,12 @@ archiveRoutes.get("/", async (c) => {
   // Visibility filter is only meaningful when authenticated — unauthenticated
   // users cannot see unlisted or private posts regardless of the query param.
 
-  const effectiveVisibility = navData.isAuthenticated ? visibility : undefined;
+  // Default to "public" when authenticated unless explicitly set to "all"
+  const effectiveVisibility = navData.isAuthenticated
+    ? visibilityAll
+      ? undefined
+      : (visibility ?? "public")
+    : undefined;
 
   const filters: PostFilters = {
     format,
@@ -111,6 +131,7 @@ archiveRoutes.get("/", async (c) => {
     publishedAfter,
     publishedBefore,
     mediaKinds: mediaKinds && mediaKinds.length > 0 ? mediaKinds : undefined,
+    hasMedia,
     hasTitle,
   };
 
@@ -172,8 +193,10 @@ archiveRoutes.get("/", async (c) => {
     collectionTitle: collection?.title,
     format,
     mediaKinds: mediaKinds && mediaKinds.length > 0 ? mediaKinds : undefined,
+    hasMedia,
     hasTitle,
     visibility: effectiveVisibility,
+    view,
   };
 
   const availableCollectionsList = allCollections.map((col) => ({

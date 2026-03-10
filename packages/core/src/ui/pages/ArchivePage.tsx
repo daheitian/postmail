@@ -1,7 +1,7 @@
 /**
  * Archive Page
  *
- * Tumblr-style grid with 2-row filter bar, rich media tiles,
+ * Tumblr-style grid/list with compact chip filter bar,
  * month-based grouping, and page-based pagination.
  */
 
@@ -10,6 +10,7 @@ import { useLingui } from "@lingui/react/macro";
 import type {
   ArchivePageProps,
   ArchiveFilters,
+  ArchiveView,
   ArchiveVisibility,
   MediaKind,
 } from "../../types.js";
@@ -18,6 +19,7 @@ import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { getIconSvg } from "../../lib/icons.js";
 import { toMediaKind } from "../../lib/upload.js";
 import { PagePagination } from "../shared/Pagination.js";
+import { TimelineItemFromPost } from "../feed/TimelineItem.js";
 
 // =============================================================================
 // URL Builder
@@ -39,10 +41,14 @@ function buildFilterUrl(
   if (merged.mediaKinds && merged.mediaKinds.length > 0) {
     params.set("media", merged.mediaKinds.join(","));
   }
+  if (merged.hasMedia !== undefined) {
+    params.set("hasMedia", merged.hasMedia ? "1" : "0");
+  }
   if (merged.hasTitle !== undefined) {
     params.set("hasTitle", merged.hasTitle ? "1" : "0");
   }
   if (merged.visibility) params.set("visibility", merged.visibility);
+  if (merged.view && merged.view !== "grid") params.set("view", merged.view);
 
   const qs = params.toString();
   return qs ? `/archive?${qs}` : "/archive";
@@ -121,79 +127,83 @@ function getMediaKindLabel(kind: MediaKind): string {
 }
 
 // =============================================================================
-// Select Components
+// Shared Icon Helpers
 // =============================================================================
 
-/** Chevron indicator for select triggers. */
-const SelectChevron: FC = () => {
-  const svg = getIconSvg("chevron-down");
-  if (!svg) return null;
-  return (
-    <span
-      class="text-muted-foreground opacity-50 shrink-0 [&>svg]:size-3.5"
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
-  );
-};
-
-/** Icon inside a select option (muted color, fixed size). */
-const OptionIcon: FC<{ name: string }> = ({ name }) => {
+/** Inline SVG icon with specified size class. */
+const Icon: FC<{ name: string; class?: string }> = ({
+  name,
+  class: cls = "[&>svg]:size-4",
+}) => {
   const svg = getIconSvg(name);
   if (!svg) return null;
   return (
     <span
-      class="text-muted-foreground [&>svg]:size-4 shrink-0"
+      class={`shrink-0 inline-flex ${cls}`}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );
 };
 
-interface NavSelectOption {
+/** Chevron indicator for chip triggers. */
+const ChipChevron: FC = () => (
+  <Icon name="chevron-down" class="[&>svg]:size-3 opacity-40" />
+);
+
+// =============================================================================
+// Chip Select Components
+// =============================================================================
+
+interface ChipSelectOption {
   label: string;
   value: string;
   icon?: string;
-  /** Indent level for sub-items (e.g. "Titled Notes" under "Notes"). */
   indent?: boolean;
 }
 
 /**
- * BaseCoat select that navigates to a URL on change.
- * Each option's data-value is the target URL.
- * Requires client/archive-nav.js for the change → navigate bridge.
+ * Compact chip-style dropdown.
+ *
+ * Default state: icon + chevron (no text).
+ * Active state: icon + selected label + ✕ clear button.
  */
-const NavSelect: FC<{
+const ChipSelect: FC<{
   id: string;
-  options: NavSelectOption[];
+  icon: string;
+  options: ChipSelectOption[];
   currentValue: string;
-  /** Extra class on the trigger button (e.g. a fixed width like "w-32"). */
-  triggerClass?: string;
-}> = ({ id, options, currentValue, triggerClass }) => {
-  // Always falls back to first option; options array is never empty in practice.
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guaranteed by caller
-  const current = options.find((o) => o.value === currentValue) ?? options[0]!;
-
-  const renderContent = (opt: NavSelectOption) =>
-    opt.icon ? (
-      <span class="flex items-center gap-2">
-        <OptionIcon name={opt.icon} />
-        {opt.label}
-      </span>
-    ) : (
-      opt.label
-    );
+  clearUrl: string;
+  activeLabel?: string;
+}> = ({ id, icon, options, currentValue, clearUrl, activeLabel }) => {
+  const isActive = !!activeLabel;
 
   return (
-    <div id={id} class="select archive-nav-select">
+    <div
+      id={id}
+      class="archive-chip-select archive-chip-dropdown select"
+      data-select-initialized
+    >
       <button
         type="button"
-        class={`btn-outline${triggerClass ? ` ${triggerClass}` : ""}`}
+        class={`archive-chip${isActive ? " archive-chip-active" : ""}`}
         id={`${id}-trigger`}
         aria-haspopup="listbox"
         aria-expanded="false"
         aria-controls={`${id}-listbox`}
       >
-        <span class="truncate">{renderContent(current)}</span>
-        <SelectChevron />
+        <Icon name={icon} class="[&>svg]:size-4 text-muted-foreground" />
+        {isActive && <span class="archive-chip-label">{activeLabel}</span>}
+        {isActive ? (
+          <a
+            href={clearUrl}
+            class="archive-chip-clear"
+            aria-label="Clear filter"
+          >
+            <Icon name="x" class="[&>svg]:size-3" />
+          </a>
+        ) : (
+          <ChipChevron />
+        )}
       </button>
       <div id={`${id}-popover`} data-popover aria-hidden="true">
         <div
@@ -210,12 +220,157 @@ const NavSelect: FC<{
               aria-selected={opt.value === currentValue ? "true" : undefined}
               class={opt.indent ? "pl-4" : undefined}
             >
-              {renderContent(opt)}
+              {opt.icon ? (
+                <span class="flex items-center gap-2">
+                  <Icon
+                    name={opt.icon}
+                    class="[&>svg]:size-4 text-muted-foreground"
+                  />
+                  {opt.label}
+                </span>
+              ) : (
+                opt.label
+              )}
             </div>
           ))}
         </div>
       </div>
-      <input type="hidden" name={`${id}-value`} value={currentValue} />
+    </div>
+  );
+};
+
+/**
+ * Chip-style multi-select for media kinds.
+ *
+ * "Text only" at the top navigates immediately (mutually exclusive with kinds).
+ * Media kind options are multi-toggle; navigation happens on popover close.
+ * Shows count when multiple kinds are selected.
+ */
+const ChipMediaSelect: FC<{
+  id: string;
+  icon: string;
+  filters: ArchiveFilters;
+  activeLabel?: string;
+  clearUrl: string;
+}> = ({ id, icon, filters: f, activeLabel, clearUrl }) => {
+  const { t } = useLingui();
+  const isActive = !!activeLabel;
+  const activeKinds = f.mediaKinds ?? [];
+
+  const textOnlyUrl = buildFilterUrl(
+    { ...f, mediaKinds: undefined, hasMedia: undefined },
+    { hasMedia: false, mediaKinds: undefined },
+  );
+
+  return (
+    <div
+      id={id}
+      class="archive-chip-select archive-chip-dropdown archive-chip-media select"
+      data-select-initialized
+      data-filter-key="media"
+    >
+      <button
+        type="button"
+        class={`archive-chip${isActive ? " archive-chip-active" : ""}`}
+        id={`${id}-trigger`}
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls={`${id}-listbox`}
+      >
+        <Icon name={icon} class="[&>svg]:size-4 text-muted-foreground" />
+        {isActive && <span class="archive-chip-label">{activeLabel}</span>}
+        {isActive ? (
+          <a
+            href={clearUrl}
+            class="archive-chip-clear"
+            aria-label="Clear filter"
+          >
+            <Icon name="x" class="[&>svg]:size-3" />
+          </a>
+        ) : (
+          <ChipChevron />
+        )}
+      </button>
+      <div id={`${id}-popover`} data-popover aria-hidden="true">
+        <div
+          role="listbox"
+          id={`${id}-listbox`}
+          aria-orientation="vertical"
+          aria-labelledby={`${id}-trigger`}
+          aria-multiselectable="true"
+        >
+          <div
+            role="option"
+            data-value={textOnlyUrl}
+            data-navigate="true"
+            aria-selected={f.hasMedia === false ? "true" : undefined}
+          >
+            <span class="flex items-center gap-2">
+              <Icon name="text" class="[&>svg]:size-4 text-muted-foreground" />
+              {t({
+                message: "Text only",
+                comment:
+                  "@context: Archive media filter - posts without any media attachments",
+              })}
+            </span>
+          </div>
+          <hr class="archive-chip-sep" />
+          {MEDIA_KINDS.filter((k) => k !== "text").map((kind) => {
+            const label = getMediaKindLabel(kind);
+            const kindIcon = MEDIA_KIND_ICONS[kind];
+            return (
+              <div
+                key={kind}
+                role="option"
+                data-value={kind}
+                data-label={label}
+                aria-selected={activeKinds.includes(kind) ? "true" : undefined}
+              >
+                <span class="flex items-center gap-2">
+                  <Icon
+                    name={kindIcon}
+                    class="[&>svg]:size-4 text-muted-foreground"
+                  />
+                  {label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// =============================================================================
+// View Toggle
+// =============================================================================
+
+const ViewToggle: FC<{ filters: ArchiveFilters }> = ({ filters }) => {
+  const currentView: ArchiveView = filters.view ?? "grid";
+  const gridUrl = buildFilterUrl(filters, { view: undefined });
+  const listUrl = buildFilterUrl(filters, { view: "list" });
+
+  return (
+    <div class="archive-view-toggle" role="radiogroup" aria-label="View mode">
+      <a
+        href={gridUrl}
+        class={`archive-view-btn${currentView === "grid" ? " archive-view-btn-active" : ""}`}
+        role="radio"
+        aria-checked={currentView === "grid" ? "true" : "false"}
+        aria-label="Grid view"
+      >
+        <Icon name="layout-grid" class="[&>svg]:size-4" />
+      </a>
+      <a
+        href={listUrl}
+        class={`archive-view-btn${currentView === "list" ? " archive-view-btn-active" : ""}`}
+        role="radio"
+        aria-checked={currentView === "list" ? "true" : "false"}
+        aria-label="List view"
+      >
+        <Icon name="list" class="[&>svg]:size-4" />
+      </a>
     </div>
   );
 };
@@ -261,6 +416,15 @@ const VISIBILITY_ICONS: Record<ArchiveVisibility, string> = {
   featured: "star",
 };
 
+/** Chip icon for each filter dimension. */
+const FILTER_ICONS = {
+  year: "calendar",
+  collection: "monitor",
+  format: "shapes",
+  media: "video",
+  visibility: "scan-eye",
+} as const;
+
 const FilterBar: FC<{
   filters: ArchiveFilters;
   availableYears: number[];
@@ -272,7 +436,7 @@ const FilterBar: FC<{
 
   // --- Year options ---------------------------------------------------------
 
-  const yearOptions: NavSelectOption[] = [
+  const yearOptions: ChipSelectOption[] = [
     {
       label: t({
         message: "All years",
@@ -291,7 +455,7 @@ const FilterBar: FC<{
 
   // --- Collection options ---------------------------------------------------
 
-  const collectionOptions: NavSelectOption[] = [
+  const collectionOptions: ChipSelectOption[] = [
     {
       label: t({
         message: "All collections",
@@ -314,7 +478,21 @@ const FilterBar: FC<{
 
   // --- Format options (Notes split into All / Titled / Untitled) -----------
 
-  const formatOptions: NavSelectOption[] = [
+  const formatActiveLabel = filters.format
+    ? filters.hasTitle === true
+      ? t({
+          message: "Titled",
+          comment: "@context: Archive filter - notes that have a title",
+        })
+      : filters.hasTitle === false
+        ? t({
+            message: "Untitled",
+            comment: "@context: Archive filter - notes without a title",
+          })
+        : getFormatLabelPlural(filters.format)
+    : undefined;
+
+  const formatOptions: ChipSelectOption[] = [
     {
       label: t({
         message: "All formats",
@@ -325,7 +503,6 @@ const FilterBar: FC<{
         { format: undefined, hasTitle: undefined },
       ),
     },
-    // Notes — parent + two indented sub-options
     {
       label: getFormatLabelPlural("note"),
       value: buildFilterUrl(filters, {
@@ -357,7 +534,6 @@ const FilterBar: FC<{
         hasTitle: false,
       }),
     },
-    // Links, Quotes
     ...FORMATS.filter((f) => f !== "note").map((f) => ({
       label: getFormatLabelPlural(f),
       value: buildFilterUrl(filters, { format: f, hasTitle: undefined }),
@@ -366,16 +542,24 @@ const FilterBar: FC<{
 
   // --- Visibility options (authenticated only) --------------------------------
 
-  const visibilityOptions: NavSelectOption[] = [
+  // "All visibility" needs the explicit ?visibility=all param so the route
+  // doesn't default back to "public". Build its URL by appending to the
+  // base URL (which has no visibility param since we merge undefined).
+  const allVisibilityBaseUrl = buildFilterUrl(
+    { ...filters, visibility: undefined },
+    { visibility: undefined },
+  );
+  const allVisibilityUrl = allVisibilityBaseUrl.includes("?")
+    ? `${allVisibilityBaseUrl}&visibility=all`
+    : `${allVisibilityBaseUrl}?visibility=all`;
+
+  const visibilityOptions: ChipSelectOption[] = [
     {
       label: t({
         message: "All visibility",
         comment: "@context: Archive filter - all visibility select option",
       }),
-      value: buildFilterUrl(
-        { ...filters, visibility: undefined },
-        { visibility: undefined },
-      ),
+      value: allVisibilityUrl,
     },
     ...ARCHIVE_VISIBILITIES.map((v) => ({
       label: getVisibilityLabel(v),
@@ -385,131 +569,110 @@ const FilterBar: FC<{
   ];
 
   const activeKinds = filters.mediaKinds ?? [];
-  const mediaPlaceholder = t({
-    message: "All media",
-    comment: "@context: Archive filter - all media types select option",
-  });
+  const mediaActiveLabel =
+    filters.hasMedia === false
+      ? t({
+          message: "Text only",
+          comment:
+            "@context: Archive media filter - posts without any media attachments",
+        })
+      : activeKinds.length === 1
+        ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check guarantees element exists
+          getMediaKindLabel(activeKinds[0]!)
+        : activeKinds.length > 1
+          ? String(activeKinds.length)
+          : undefined;
+  const mediaClearUrl = buildFilterUrl(
+    { ...filters, mediaKinds: undefined, hasMedia: undefined },
+    { mediaKinds: undefined, hasMedia: undefined },
+  );
 
   return (
     <div class="archive-filters">
-      {/* Content filters */}
-      {availableYears.length > 0 && (
-        <NavSelect
-          id="af-year"
-          options={yearOptions}
+      <div class="archive-filters-chips">
+        {availableYears.length > 0 && (
+          <ChipSelect
+            id="af-year"
+            icon={FILTER_ICONS.year}
+            options={yearOptions}
+            currentValue={currentUrl}
+            clearUrl={buildFilterUrl(
+              { ...filters, year: undefined },
+              { year: undefined },
+            )}
+            activeLabel={filters.year ? String(filters.year) : undefined}
+          />
+        )}
+        {availableCollections.length > 0 && (
+          <ChipSelect
+            id="af-collection"
+            icon={FILTER_ICONS.collection}
+            options={collectionOptions}
+            currentValue={currentUrl}
+            clearUrl={buildFilterUrl(
+              {
+                ...filters,
+                collectionSlug: undefined,
+                collectionTitle: undefined,
+              },
+              { collectionSlug: undefined, collectionTitle: undefined },
+            )}
+            activeLabel={filters.collectionTitle}
+          />
+        )}
+        <ChipSelect
+          id="af-format"
+          icon={FILTER_ICONS.format}
+          options={formatOptions}
           currentValue={currentUrl}
-          triggerClass="w-28"
+          clearUrl={buildFilterUrl(
+            { ...filters, format: undefined, hasTitle: undefined },
+            { format: undefined, hasTitle: undefined },
+          )}
+          activeLabel={formatActiveLabel}
         />
-      )}
-      {availableCollections.length > 0 && (
-        <NavSelect
-          id="af-collection"
-          options={collectionOptions}
-          currentValue={currentUrl}
-          triggerClass="w-36"
-        />
-      )}
-      <NavSelect
-        id="af-format"
-        options={formatOptions}
-        currentValue={currentUrl}
-        triggerClass="w-28"
-      />
 
-      {isAuthenticated && (
-        <NavSelect
-          id="af-visibility"
-          options={visibilityOptions}
-          currentValue={currentUrl}
-          triggerClass="w-32"
+        <ChipMediaSelect
+          id="af-media"
+          icon={FILTER_ICONS.media}
+          filters={filters}
+          activeLabel={mediaActiveLabel}
+          clearUrl={mediaClearUrl}
         />
-      )}
 
-      {/* Separator */}
-      <div class="archive-filters-sep" aria-hidden="true" />
-
-      {/* Media kind multi-select */}
-      <div
-        id="af-media"
-        class="select archive-nav-multiselect"
-        data-placeholder={mediaPlaceholder}
-        data-filter-key="media"
-      >
-        <button
-          type="button"
-          class="btn-outline w-32"
-          id="af-media-trigger"
-          aria-haspopup="listbox"
-          aria-expanded="false"
-          aria-controls="af-media-listbox"
-        >
-          <span class="truncate">
-            {activeKinds.length > 0
-              ? activeKinds.map((k) => getMediaKindLabel(k)).join(", ")
-              : mediaPlaceholder}
-          </span>
-          <SelectChevron />
-        </button>
-        <div id="af-media-popover" data-popover aria-hidden="true">
-          <div
-            role="listbox"
-            id="af-media-listbox"
-            aria-orientation="vertical"
-            aria-labelledby="af-media-trigger"
-            aria-multiselectable="true"
-          >
-            {MEDIA_KINDS.map((kind) => {
-              const label = getMediaKindLabel(kind);
-              const icon = MEDIA_KIND_ICONS[kind];
-              return (
-                <div
-                  key={kind}
-                  role="option"
-                  data-value={kind}
-                  data-label={label}
-                  aria-selected={
-                    activeKinds.includes(kind) ? "true" : undefined
-                  }
-                >
-                  <span class="flex items-center gap-2">
-                    <OptionIcon name={icon} />
-                    {label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <input
-          type="hidden"
-          name="af-media-value"
-          value={JSON.stringify(activeKinds)}
-        />
+        {isAuthenticated && (
+          <ChipSelect
+            id="af-visibility"
+            icon={FILTER_ICONS.visibility}
+            options={visibilityOptions}
+            currentValue={currentUrl}
+            clearUrl={allVisibilityUrl}
+            activeLabel={
+              filters.visibility
+                ? getVisibilityLabel(filters.visibility)
+                : undefined
+            }
+          />
+        )}
       </div>
+
+      <ViewToggle filters={filters} />
     </div>
   );
 };
 
 // =============================================================================
-// Archive Tile
+// Archive Tile (Grid View)
 // =============================================================================
 
 /**
  * Determine tile variant based on post content and media.
- *
- * Background image priority:
- * 1. First attachment is video → video poster/thumbnail as bg
- * 2. Otherwise, if post has any image → first image as bg
- * 3. No visual media → text-only
- *
- * Combined with quote format detection and text overlay logic.
  */
 function getTileVariant(post: PostView): "text" | "image" | "mixed" | "quote" {
   const firstMedia = post.media[0];
   const firstKind = firstMedia ? toMediaKind(firstMedia.mimeType) : undefined;
   const hasImage = post.media.some((m) => m.mimeType.startsWith("image/"));
 
-  // Video first attachment → use poster as visual bg
   const hasVisualBg =
     firstKind === "video" && firstMedia
       ? !!(firstMedia.posterUrl || firstMedia.thumbnailUrl)
@@ -525,10 +688,6 @@ function getTileVariant(post: PostView): "text" | "image" | "mixed" | "quote" {
 
 /**
  * Resolve the background image URL for a tile.
- *
- * Priority:
- * 1. First attachment is video → posterUrl or thumbnailUrl
- * 2. Otherwise → first image attachment's thumbnailUrl
  */
 function getTileBgImage(
   post: PostView,
@@ -541,7 +700,6 @@ function getTileBgImage(
       if (src) return { url: src, alt: firstMedia.altText ?? "" };
     }
   }
-  // Fallback: first image in media list
   const firstImage = post.media.find((m) => m.mimeType.startsWith("image/"));
   if (firstImage)
     return { url: firstImage.thumbnailUrl, alt: firstImage.altText ?? "" };
@@ -550,10 +708,6 @@ function getTileBgImage(
 
 /**
  * Resolve a media-kind badge icon for the tile corner.
- *
- * - Video → circle-play (centered, large)
- * - Audio/text/document (first attachment) → small corner icon
- * - Image-only → no badge
  */
 function getTileBadge(
   post: PostView,
@@ -579,7 +733,6 @@ function stripHtml(html: string): string {
 
 function getTileText(post: PostView): { title?: string; summary: string } {
   if (post.title) {
-    // Titled note: show title + body summary
     const summary = post.bodyHtml
       ? stripHtml(post.bodyHtml).slice(0, 200)
       : (post.url ?? "");
@@ -587,8 +740,6 @@ function getTileText(post: PostView): { title?: string; summary: string } {
   }
   if (post.format === "quote" && post.quoteText)
     return { summary: post.quoteText };
-  // bodyHtml is rendered HTML; strip tags for a readable plain-text preview.
-  // Avoid post.excerpt which is derived from raw Tiptap JSON.
   if (post.bodyHtml) return { summary: stripHtml(post.bodyHtml).slice(0, 200) };
   if (post.url) return { summary: post.url };
   return { summary: getFormatLabel(post.format) };
@@ -612,7 +763,6 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
       data-post
       data-format={post.format}
     >
-      {/* Background image (from image or video poster) */}
       {bgImage && hasBg && (
         <img
           class="archive-tile-bg"
@@ -622,7 +772,6 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
         />
       )}
 
-      {/* Content: title + summary + badge row */}
       {hasContent && (
         <div class="archive-tile-content">
           {variant !== "image" && title && (
@@ -652,7 +801,6 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
         </div>
       )}
 
-      {/* Centered video play overlay */}
       {badge?.position === "center" && (
         <span
           class="archive-tile-badge archive-tile-badge-center"
@@ -660,7 +808,6 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
         />
       )}
 
-      {/* Hover date label */}
       <span class="archive-tile-date">{post.publishedAtFormatted}</span>
     </a>
   );
@@ -680,8 +827,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   isAuthenticated,
 }) => {
   const { t } = useLingui();
-
-  // Build the pagination base URL preserving filter params
+  const currentView: ArchiveView = filters.view ?? "grid";
   const paginationBaseUrl = buildFilterUrl(filters, {});
 
   return (
@@ -708,7 +854,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
               comment: "@context: Archive empty state with filters",
             })}
           </p>
-        ) : (
+        ) : currentView === "grid" ? (
           <div class="archive-grid-wrapper">
             <div class="archive-grid">
               {groups.map((group) => (
@@ -723,6 +869,22 @@ export const ArchivePage: FC<ArchivePageProps> = ({
                     <ArchiveTile key={post.id} post={post} />
                   ))}
                 </>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div data-feed>
+            <div class="flex flex-col">
+              {groups.map((group, gi) => (
+                <div key={`list-${group.year}-${group.month}`}>
+                  <div class="archive-list-month-header">{group.label}</div>
+                  {group.posts.map((post, pi) => (
+                    <div key={post.id}>
+                      {(gi > 0 || pi > 0) && <hr class="feed-divider" />}
+                      <TimelineItemFromPost post={post} />
+                    </div>
+                  ))}
+                </div>
               ))}
             </div>
           </div>

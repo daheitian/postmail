@@ -131,11 +131,6 @@ msgstr "所有集合"
 msgid "All formats"
 msgstr "所有格式"
 
-#. @context: Archive filter - all media types select option
-#: src/ui/pages/ArchivePage.tsx
-msgid "All media"
-msgstr ""
-
 #. @context: Archive filter - all visibility select option
 #: src/ui/pages/ArchivePage.tsx
 msgid "All visibility"
@@ -1370,6 +1365,13 @@ msgstr "文本"
 msgid "Text attachment"
 msgstr "文本附件"
 
+#. @context: Archive media filter - posts without any media attachments
+#. @context: Archive media filter - posts without any media attachments
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Text only"
+msgstr ""
+
 #. @context: Error toast when selected font theme is not valid
 #: src/routes/dash/settings.tsx
 msgid "That font theme isn't available. Pick another one."
@@ -1449,6 +1451,8 @@ msgid "Title"
 msgstr "标题"
 
 #. @context: Archive filter - notes that have a title
+#. @context: Archive filter - notes that have a title
+#: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Titled"
 msgstr "有标题"
@@ -1501,6 +1505,8 @@ msgid "Unlisted"
 msgstr "未列出"
 
 #. @context: Archive filter - notes without a title
+#. @context: Archive filter - notes without a title
+#: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Untitled"
 msgstr "无标题"

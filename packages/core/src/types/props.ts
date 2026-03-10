@@ -36,6 +36,9 @@ export interface FeaturedPageProps {
 /** Visibility filter values for the archive page (includes "featured" as a virtual value). */
 export type ArchiveVisibility = "public" | "unlisted" | "private" | "featured";
 
+/** View mode for the archive page. */
+export type ArchiveView = "grid" | "list";
+
 /** Filters currently active on the archive page */
 export interface ArchiveFilters {
   year?: number;
@@ -43,8 +46,10 @@ export interface ArchiveFilters {
   collectionTitle?: string;
   format?: Format;
   mediaKinds?: MediaKind[];
+  hasMedia?: boolean;
   hasTitle?: boolean;
   visibility?: ArchiveVisibility;
+  view?: ArchiveView;
 }
 
 /** Props for the archive page component */

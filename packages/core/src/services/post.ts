@@ -57,6 +57,8 @@ export interface PostFilters {
   publishedBefore?: number;
   /** Media kinds to filter by (OR logic: post has media of ANY selected kind). */
   mediaKinds?: MediaKind[];
+  /** Filter by media presence */
+  hasMedia?: boolean;
   /** Filter by title presence */
   hasTitle?: boolean;
   limit?: number;
@@ -210,6 +212,13 @@ export function createPostService(
       conditions.push(
         sql`${posts.id} IN (SELECT post_id FROM media WHERE media_kind IN (${sql.join(placeholders, sql`, `)}))`,
       );
+    }
+    if (filters.hasMedia !== undefined) {
+      if (filters.hasMedia) {
+        conditions.push(sql`${posts.id} IN (SELECT post_id FROM media)`);
+      } else {
+        conditions.push(sql`${posts.id} NOT IN (SELECT post_id FROM media)`);
+      }
     }
     if (filters.hasTitle !== undefined) {
       if (filters.hasTitle) {

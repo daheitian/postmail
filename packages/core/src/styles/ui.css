@@ -3734,42 +3734,117 @@
 
   .archive-filters {
     display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .archive-filters-chips {
+    display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
   }
 
-  .archive-nav-select > button {
+  /* --- Chip select -------------------------------------------------------- */
+
+  .archive-chip-select {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .archive-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     height: 2rem;
-    padding-inline: 0.5rem;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    background: var(--background);
+    color: var(--site-text-primary);
     font-size: var(--text-sm);
-    gap: 0.25rem;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease;
+    white-space: nowrap;
   }
 
-  .archive-filters-sep {
-    width: 1px;
-    height: 1.25rem;
-    background: var(--border);
+  .archive-chip:hover {
+    background: var(--secondary);
+  }
+
+  .archive-chip-active {
+    padding-right: 6px;
+  }
+
+  .archive-chip-label {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-sm);
+  }
+
+  .archive-chip-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 9999px;
+    color: var(--muted-foreground);
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .archive-chip-clear:hover {
+    background: var(--destructive);
+    color: var(--destructive-foreground);
+  }
+
+  .archive-chip-sep {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 4px -4px;
+  }
+
+  /* --- View toggle -------------------------------------------------------- */
+
+  .archive-view-toggle {
+    display: flex;
+    align-items: center;
+    background: var(--secondary);
+    border-radius: 9999px;
+    padding: 3px;
     flex-shrink: 0;
   }
 
-  .archive-filter-clear {
+  .archive-view-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    border: none;
-    background: transparent;
-    color: var(--site-text-secondary);
-    font-size: var(--text-sm);
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+    color: var(--muted-foreground);
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
   }
 
-  .archive-filter-clear:hover {
+  .archive-view-btn:hover {
     color: var(--site-text-primary);
+  }
+
+  .archive-view-btn-active {
+    background: var(--background);
+    color: var(--site-text-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   /* --- Grid --------------------------------------------------------------- */
@@ -4055,5 +4130,35 @@
 
   .archive-month-header:first-child {
     padding-top: 4px;
+  }
+
+  /* --- List view month headers --------------------------------------------- */
+
+  .archive-list-month-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.75rem;
+    font-weight: var(--fw-semibold);
+    color: var(--site-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 28px 0 0;
+    margin-bottom: 16px;
+    white-space: nowrap;
+  }
+
+  .archive-list-month-header::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--site-text-secondary);
+    flex-shrink: 0;
+    opacity: 0.4;
+  }
+
+  [data-feed] > div > div:first-child .archive-list-month-header {
+    padding-top: 0;
   }
 }
