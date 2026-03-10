@@ -33,6 +33,9 @@ export interface FeaturedPageProps {
   items: TimelineItemView[];
 }
 
+/** Visibility filter values for the archive page (includes "featured" as a virtual value). */
+export type ArchiveVisibility = "public" | "unlisted" | "private" | "featured";
+
 /** Filters currently active on the archive page */
 export interface ArchiveFilters {
   year?: number;
@@ -41,6 +44,7 @@ export interface ArchiveFilters {
   format?: Format;
   mediaKinds?: MediaKind[];
   hasTitle?: boolean;
+  visibility?: ArchiveVisibility;
 }
 
 /** Props for the archive page component */
@@ -51,6 +55,7 @@ export interface ArchivePageProps {
   filters: ArchiveFilters;
   availableYears: number[];
   availableCollections: { slug: string; title: string }[];
+  isAuthenticated: boolean;
 }
 
 /** Props for the search page component */

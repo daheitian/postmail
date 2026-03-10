@@ -10,6 +10,7 @@ import { useLingui } from "@lingui/react/macro";
 import type {
   ArchivePageProps,
   ArchiveFilters,
+  ArchiveVisibility,
   MediaKind,
 } from "../../types.js";
 import type { PostView } from "../../types/views.js";
@@ -41,6 +42,7 @@ function buildFilterUrl(
   if (merged.hasTitle !== undefined) {
     params.set("hasTitle", merged.hasTitle ? "1" : "0");
   }
+  if (merged.visibility) params.set("visibility", merged.visibility);
 
   const qs = params.toString();
   return qs ? `/archive?${qs}` : "/archive";
@@ -222,11 +224,49 @@ const NavSelect: FC<{
 // Filter Bar
 // =============================================================================
 
+const ARCHIVE_VISIBILITIES: ArchiveVisibility[] = [
+  "public",
+  "unlisted",
+  "private",
+  "featured",
+];
+
+function getVisibilityLabel(v: ArchiveVisibility): string {
+  const { t } = useLingui();
+  const labels: Record<ArchiveVisibility, string> = {
+    public: t({
+      message: "Public",
+      comment: "@context: Archive visibility filter - public posts",
+    }),
+    unlisted: t({
+      message: "Unlisted",
+      comment: "@context: Archive visibility filter - unlisted posts",
+    }),
+    private: t({
+      message: "Private",
+      comment: "@context: Archive visibility filter - private posts",
+    }),
+    featured: t({
+      message: "Featured",
+      comment: "@context: Archive visibility filter - featured posts",
+    }),
+  };
+  return labels[v];
+}
+
+const VISIBILITY_ICONS: Record<ArchiveVisibility, string> = {
+  public: "globe",
+  unlisted: "eye-off",
+  private: "lock",
+  featured: "star",
+};
+
 const FilterBar: FC<{
   filters: ArchiveFilters;
   availableYears: number[];
   availableCollections: { slug: string; title: string }[];
-}> = ({ filters, availableYears, availableCollections }) => {
+  isAuthenticated: boolean;
+}> = ({ filters, availableYears, availableCollections, isAuthenticated }) => {
   const { t } = useLingui();
   const currentUrl = buildFilterUrl(filters, {});
 
@@ -324,6 +364,26 @@ const FilterBar: FC<{
     })),
   ];
 
+  // --- Visibility options (authenticated only) --------------------------------
+
+  const visibilityOptions: NavSelectOption[] = [
+    {
+      label: t({
+        message: "All visibility",
+        comment: "@context: Archive filter - all visibility select option",
+      }),
+      value: buildFilterUrl(
+        { ...filters, visibility: undefined },
+        { visibility: undefined },
+      ),
+    },
+    ...ARCHIVE_VISIBILITIES.map((v) => ({
+      label: getVisibilityLabel(v),
+      icon: VISIBILITY_ICONS[v],
+      value: buildFilterUrl(filters, { visibility: v }),
+    })),
+  ];
+
   const activeKinds = filters.mediaKinds ?? [];
   const mediaPlaceholder = t({
     message: "All media",
@@ -355,6 +415,15 @@ const FilterBar: FC<{
         currentValue={currentUrl}
         triggerClass="w-28"
       />
+
+      {isAuthenticated && (
+        <NavSelect
+          id="af-visibility"
+          options={visibilityOptions}
+          currentValue={currentUrl}
+          triggerClass="w-32"
+        />
+      )}
 
       {/* Separator */}
       <div class="archive-filters-sep" aria-hidden="true" />
@@ -608,6 +677,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   filters,
   availableYears,
   availableCollections,
+  isAuthenticated,
 }) => {
   const { t } = useLingui();
 
@@ -625,6 +695,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
           filters={filters}
           availableYears={availableYears}
           availableCollections={availableCollections}
+          isAuthenticated={isAuthenticated}
         />
       </header>
 

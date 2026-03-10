@@ -136,6 +136,11 @@ msgstr "所有格式"
 msgid "All media"
 msgstr ""
 
+#. @context: Archive filter - all visibility select option
+#: src/ui/pages/ArchivePage.tsx
+msgid "All visibility"
+msgstr ""
+
 #. @context: Archive filter - year dropdown default
 #: src/ui/pages/ArchivePage.tsx
 msgid "All years"
@@ -572,6 +577,7 @@ msgstr "条目"
 msgid "Favicon and header icon"
 msgstr "Favicon 和页眉图标"
 
+#. @context: Archive visibility filter - featured posts
 #. @context: Browse filter for featured posts
 #. @context: Browse filter label
 #. @context: Browse filter label
@@ -582,6 +588,7 @@ msgstr "Favicon 和页眉图标"
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
+#: src/ui/pages/ArchivePage.tsx
 msgid "Featured"
 msgstr "精选"
 
@@ -1030,10 +1037,20 @@ msgstr ""
 msgid "Previous"
 msgstr "上一页"
 
+#. @context: Archive visibility filter - private posts
+#: src/ui/pages/ArchivePage.tsx
+msgid "Private"
+msgstr ""
+
 #. @context: Avatar upload button text while generating favicon variants
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Processing..."
 msgstr "处理中..."
+
+#. @context: Archive visibility filter - public posts
+#: src/ui/pages/ArchivePage.tsx
+msgid "Public"
+msgstr ""
 
 #. @context: Confirm close action sheet - publish update button for editing published post
 #: src/ui/compose/ComposeDialog.tsx
@@ -1476,8 +1493,10 @@ msgstr "排版"
 msgid "Unknown device"
 msgstr ""
 
+#. @context: Archive visibility filter - unlisted posts
 #. @context: Post badge - unlisted
 #: src/ui/dash/StatusBadge.tsx
+#: src/ui/pages/ArchivePage.tsx
 msgid "Unlisted"
 msgstr "未列出"
 

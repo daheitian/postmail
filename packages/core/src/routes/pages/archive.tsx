@@ -14,7 +14,7 @@ import type {
   PostWithMedia,
 } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import type { ArchiveFilters } from "../../types/props.js";
+import type { ArchiveFilters, ArchiveVisibility } from "../../types/props.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
@@ -60,6 +60,13 @@ archiveRoutes.get("/", async (c) => {
   const hasTitle =
     hasTitleParam === "1" ? true : hasTitleParam === "0" ? false : undefined;
 
+  const VALID_VISIBILITIES = ["public", "unlisted", "private", "featured"];
+  const visibilityParam = c.req.query("visibility");
+  const visibility =
+    visibilityParam && VALID_VISIBILITIES.includes(visibilityParam)
+      ? (visibilityParam as ArchiveVisibility)
+      : undefined;
+
   const pageParam = c.req.query("page");
   const currentPage = Math.max(1, parseInt(pageParam || "1", 10) || 1);
 
@@ -83,11 +90,23 @@ archiveRoutes.get("/", async (c) => {
 
   const navData = await getNavigationData(c);
 
+  // --- Map visibility filter to service-level filters -------------------------
+  // Visibility filter is only meaningful when authenticated — unauthenticated
+  // users cannot see unlisted or private posts regardless of the query param.
+
+  const effectiveVisibility = navData.isAuthenticated ? visibility : undefined;
+
   const filters: PostFilters = {
     format,
     status: "published",
     excludeReplies: true,
     excludePrivate: !navData.isAuthenticated,
+    excludeUnlisted: !navData.isAuthenticated,
+    ...(effectiveVisibility === "featured"
+      ? { featured: true }
+      : effectiveVisibility
+        ? { visibility: effectiveVisibility }
+        : {}),
     collectionId,
     publishedAfter,
     publishedBefore,
@@ -154,6 +173,7 @@ archiveRoutes.get("/", async (c) => {
     format,
     mediaKinds: mediaKinds && mediaKinds.length > 0 ? mediaKinds : undefined,
     hasTitle,
+    visibility: effectiveVisibility,
   };
 
   const availableCollectionsList = allCollections.map((col) => ({
@@ -172,6 +192,7 @@ archiveRoutes.get("/", async (c) => {
         filters={archiveFilters}
         availableYears={availableYears}
         availableCollections={availableCollectionsList}
+        isAuthenticated={navData.isAuthenticated}
       />
     ),
   });
