@@ -67,11 +67,23 @@ describe("CreatePostSchema", () => {
   });
 
   it("accepts all formats", () => {
-    for (const format of FORMATS) {
-      expect(() =>
-        CreatePostSchema.parse({ ...validPost, format }),
-      ).not.toThrow();
-    }
+    expect(() =>
+      CreatePostSchema.parse({ ...validPost, format: "note" }),
+    ).not.toThrow();
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        format: "link",
+        url: "https://example.com",
+      }),
+    ).not.toThrow();
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        format: "quote",
+        quoteText: "A wise person once said...",
+      }),
+    ).not.toThrow();
   });
 
   it("accepts optional title", () => {
@@ -143,6 +155,7 @@ describe("CreatePostSchema", () => {
   it("accepts valid url", () => {
     const result = CreatePostSchema.parse({
       ...validPost,
+      format: "link",
       url: "https://example.com",
     });
     expect(result.url).toBe("https://example.com");
@@ -244,12 +257,60 @@ describe("CreatePostSchema", () => {
     expect(result.pinned).toBe(true);
   });
 
-  it("accepts optional quoteText", () => {
+  it("accepts optional quoteText for quote posts", () => {
     const result = CreatePostSchema.parse({
       ...validPost,
+      format: "quote",
       quoteText: "A wise person once said...",
     });
     expect(result.quoteText).toBe("A wise person once said...");
+  });
+
+  it("rejects note posts with a URL", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        url: "https://example.com",
+      }),
+    ).toThrow("Notes can't include a URL.");
+  });
+
+  it("rejects note posts with quoted text", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        quoteText: "A wise person once said...",
+      }),
+    ).toThrow("Notes can't include quoted text.");
+  });
+
+  it("rejects link posts without a URL", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        format: "link",
+      }),
+    ).toThrow("Link posts need a URL.");
+  });
+
+  it("rejects link posts with quoted text", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        format: "link",
+        url: "https://example.com",
+        quoteText: "A wise person once said...",
+      }),
+    ).toThrow("Link posts can't include quoted text.");
+  });
+
+  it("rejects quote posts without quoted text", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        format: "quote",
+      }),
+    ).toThrow("Quote posts need quoted text.");
   });
 
   it("accepts optional rating (1-5)", () => {

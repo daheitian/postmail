@@ -6,6 +6,7 @@ import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createMediaService } from "../../../services/media.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createPostService } from "../../../services/post.js";
+import { createPathService } from "../../../services/path.js";
 import { createCustomUrlService } from "../../../services/custom-url.js";
 import { createCollectionService } from "../../../services/collection.js";
 import { createSearchService } from "../../../services/search.js";
@@ -146,12 +147,14 @@ function createTestAppWithStorage(options: {
   const mockD1 = createMockD1(sqlite);
 
   const settingsService = createSettingsService(db);
+  const pathService = createPathService(db);
   const services = {
-    posts: createPostService(db, { slugIdLength: 5 }),
+    paths: pathService,
+    posts: createPostService(db, { slugIdLength: 5 }, pathService),
     settings: settingsService,
-    customUrls: createCustomUrlService(db),
+    customUrls: createCustomUrlService(db, pathService),
     media: createMediaService(db),
-    collections: createCollectionService(db),
+    collections: createCollectionService(db, pathService),
     search: createSearchService(mockD1),
     navItems: createNavItemService(db),
     auth: createAuthService(db, settingsService),

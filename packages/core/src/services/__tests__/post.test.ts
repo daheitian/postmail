@@ -40,9 +40,10 @@ describe("PostService", () => {
       expect(post.pinnedAt).toBeNull();
       expect(post.bodyHtml).toContain("<p>Hello world</p>");
       expect(post.deletedAt).toBeNull();
+      expect(post.threadId).toBe(post.id);
     });
 
-    it("creates a post with all fields", async () => {
+    it("creates a link post with commentary", async () => {
       const body = JSON.stringify({
         type: "doc",
         content: [
@@ -67,7 +68,6 @@ describe("PostService", () => {
         pinned: true,
         slug: "my-link",
         url: "https://example.com/source",
-        quoteText: "A notable quote",
         rating: 5,
       });
 
@@ -79,7 +79,7 @@ describe("PostService", () => {
       expect(post.pinnedAt).toBeTypeOf("number");
       expect(post.slug).toBe("my-link");
       expect(post.url).toBe("https://example.com/source");
-      expect(post.quoteText).toBe("A notable quote");
+      expect(post.quoteText).toBeNull();
       expect(post.rating).toBe(5);
       expect(post.bodyHtml).toContain("<h1>");
     });
@@ -168,6 +168,53 @@ describe("PostService", () => {
       });
 
       expect(post.status).toBe("draft");
+    });
+
+    it("rejects note posts with a URL", async () => {
+      await expect(
+        postService.create({
+          format: "note",
+          url: "https://example.com",
+        }),
+      ).rejects.toThrow("Notes can't include a URL.");
+    });
+
+    it("rejects link posts without a URL", async () => {
+      await expect(
+        postService.create({
+          format: "link",
+          bodyMarkdown: "commentary",
+        }),
+      ).rejects.toThrow("Link posts need a URL.");
+    });
+
+    it("rejects link posts with quoted text", async () => {
+      await expect(
+        postService.create({
+          format: "link",
+          url: "https://example.com",
+          quoteText: "A notable quote",
+        }),
+      ).rejects.toThrow("Link posts can't include quoted text.");
+    });
+
+    it("rejects quote posts without quoted text", async () => {
+      await expect(
+        postService.create({
+          format: "quote",
+          bodyMarkdown: "commentary",
+        }),
+      ).rejects.toThrow("Quote posts need quoted text.");
+    });
+
+    it("rejects replies to missing posts", async () => {
+      await expect(
+        postService.create({
+          format: "note",
+          bodyMarkdown: "reply",
+          replyToId: "00000000-0000-0000-0000-000000009999",
+        }),
+      ).rejects.toThrow("Parent post not found");
     });
   });
 
@@ -653,18 +700,18 @@ describe("PostService", () => {
       expect(updated?.url).toBe("https://new-source.com/path");
     });
 
-    it("clears url when set to null", async () => {
+    it("rejects clearing url from a link post", async () => {
       const post = await postService.create({
         format: "link",
         bodyMarkdown: "test",
         url: "https://example.com",
       });
 
-      const updated = await postService.update(post.id, {
-        url: null,
-      });
-
-      expect(updated?.url).toBeNull();
+      await expect(
+        postService.update(post.id, {
+          url: null,
+        }),
+      ).rejects.toThrow("Link posts need a URL.");
     });
 
     it("returns null for non-existent post", async () => {
@@ -768,6 +815,33 @@ describe("PostService", () => {
 
       expect(updated?.quoteText).toBe("Updated quote");
       expect(updated?.rating).toBe(5);
+    });
+
+    it("rejects switching a note to link without adding a URL", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "test",
+      });
+
+      await expect(
+        postService.update(post.id, {
+          format: "link",
+        }),
+      ).rejects.toThrow("Link posts need a URL.");
+    });
+
+    it("rejects switching a link to note without clearing the URL", async () => {
+      const post = await postService.create({
+        format: "link",
+        bodyMarkdown: "test",
+        url: "https://example.com",
+      });
+
+      await expect(
+        postService.update(post.id, {
+          format: "note",
+        }),
+      ).rejects.toThrow("Notes can't include a URL.");
     });
   });
 

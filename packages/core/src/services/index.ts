@@ -8,6 +8,7 @@ import type { Database } from "../db/index.js";
 import { createSettingsService, type SettingsService } from "./settings.js";
 import { createPostService, type PostService } from "./post.js";
 import { createCustomUrlService, type CustomUrlService } from "./custom-url.js";
+import { createPathService, type PathService } from "./path.js";
 import { createMediaService, type MediaService } from "./media.js";
 import {
   createCollectionService,
@@ -20,6 +21,7 @@ import { createApiTokenService, type ApiTokenService } from "./api-token.js";
 
 export interface Services {
   settings: SettingsService;
+  paths: PathService;
   posts: PostService;
   customUrls: CustomUrlService;
   media: MediaService;
@@ -36,14 +38,20 @@ export function createServices(
   config?: { slugIdLength?: number },
 ): Services {
   const settings = createSettingsService(db);
+  const paths = createPathService(db);
   return {
     settings,
-    posts: createPostService(db, {
-      slugIdLength: config?.slugIdLength ?? 5,
-    }),
-    customUrls: createCustomUrlService(db),
+    paths,
+    posts: createPostService(
+      db,
+      {
+        slugIdLength: config?.slugIdLength ?? 5,
+      },
+      paths,
+    ),
+    customUrls: createCustomUrlService(db, paths),
     media: createMediaService(db),
-    collections: createCollectionService(db),
+    collections: createCollectionService(db, paths),
     search: createSearchService(d1),
     navItems: createNavItemService(db),
     auth: createAuthService(db, settings),
@@ -52,6 +60,7 @@ export function createServices(
 }
 
 export type { SettingsService } from "./settings.js";
+export type { PathService } from "./path.js";
 export type { PostService, PostFilters, PostDeleteDeps } from "./post.js";
 export type { CustomUrlService } from "./custom-url.js";
 export type { MediaService, MediaFilters } from "./media.js";

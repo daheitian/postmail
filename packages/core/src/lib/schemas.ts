@@ -146,10 +146,67 @@ function refineBodyExclusivity<
   });
 }
 
+function hasNonEmptyText(value: string | null | undefined): boolean {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function refineCreatePostFormatShape<
+  T extends { format: string; url?: string; quoteText?: string },
+>(schema: z.ZodType<T>) {
+  return schema.superRefine((data, ctx) => {
+    const hasUrl = hasNonEmptyText(data.url);
+    const hasQuoteText = hasNonEmptyText(data.quoteText);
+
+    if (data.format === "note") {
+      if (hasUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["url"],
+          message: "Notes can't include a URL.",
+        });
+      }
+      if (hasQuoteText) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["quoteText"],
+          message: "Notes can't include quoted text.",
+        });
+      }
+    }
+
+    if (data.format === "link") {
+      if (!hasUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["url"],
+          message: "Link posts need a URL.",
+        });
+      }
+      if (hasQuoteText) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["quoteText"],
+          message: "Link posts can't include quoted text.",
+        });
+      }
+    }
+
+    if (data.format === "quote" && !hasQuoteText) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["quoteText"],
+        message: "Quote posts need quoted text.",
+      });
+    }
+  });
+}
+
 /**
  * API request body schema for creating a post
  */
-export const CreatePostSchema = refineBodyExclusivity(PostFieldsSchema);
+export const CreatePostSchema = refineCreatePostFormatShape(
+  refineBodyExclusivity(PostFieldsSchema),
+);
 
 /**
  * API request body schema for updating a post

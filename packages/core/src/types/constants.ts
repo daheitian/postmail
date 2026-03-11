@@ -44,3 +44,6 @@ export type MediaKind = (typeof MEDIA_KINDS)[number];
 
 export const STORAGE_DRIVERS = ["r2", "s3"] as const;
 export type StorageDriver = (typeof STORAGE_DRIVERS)[number];
+
+export const PATH_KINDS = ["slug", "alias", "redirect"] as const;
+export type PathKind = (typeof PATH_KINDS)[number];

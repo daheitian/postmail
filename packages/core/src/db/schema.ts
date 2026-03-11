@@ -11,7 +11,10 @@ import {
   primaryKey,
   foreignKey,
   index,
+  uniqueIndex,
+  check,
 } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
 // =============================================================================
 // Posts
@@ -36,7 +39,6 @@ export const posts = sqliteTable(
       .default("public"),
     pinnedAt: integer("pinned_at"),
     featuredAt: integer("featured_at"),
-    slug: text("slug").notNull().unique(),
     title: text("title"),
     url: text("url"),
     body: text("body"),
@@ -46,7 +48,7 @@ export const posts = sqliteTable(
     summary: text("summary"),
     rating: integer("rating"),
     replyToId: text("reply_to_id"),
-    threadId: text("thread_id"),
+    threadId: text("thread_id").notNull(),
     deletedAt: integer("deleted_at"),
     publishedAt: integer("published_at").notNull(),
     lastActivityAt: integer("last_activity_at"),
@@ -54,14 +56,50 @@ export const posts = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
+    check(
+      "chk_post_reply_to_not_self",
+      sql`${table.replyToId} IS NULL OR ${table.replyToId} <> ${table.id}`,
+    ),
+    check(
+      "chk_post_thread_shape",
+      sql`(
+        ${table.replyToId} IS NULL
+        AND ${table.threadId} = ${table.id}
+      ) OR (
+        ${table.replyToId} IS NOT NULL
+        AND ${table.threadId} <> ${table.id}
+      )`,
+    ),
+    check(
+      "chk_post_format_shape",
+      sql`(
+        ${table.format} = 'note'
+        AND (${table.url} IS NULL OR trim(${table.url}) = '')
+        AND (${table.quoteText} IS NULL OR trim(${table.quoteText}) = '')
+      ) OR (
+        ${table.format} = 'link'
+        AND ${table.url} IS NOT NULL
+        AND trim(${table.url}) <> ''
+        AND (${table.quoteText} IS NULL OR trim(${table.quoteText}) = '')
+      ) OR (
+        ${table.format} = 'quote'
+        AND ${table.quoteText} IS NOT NULL
+        AND trim(${table.quoteText}) <> ''
+      )`,
+    ),
     foreignKey({
       columns: [table.replyToId],
       foreignColumns: [table.id],
-    }).onDelete("set null"),
+    }),
     foreignKey({
       columns: [table.threadId],
       foreignColumns: [table.id],
-    }).onDelete("set null"),
+    }),
+    foreignKey({
+      columns: [table.replyToId, table.threadId],
+      foreignColumns: [table.id, table.threadId],
+    }),
+    uniqueIndex("uq_post_id_thread_id").on(table.id, table.threadId),
     index("idx_post_thread_id").on(table.threadId),
     index("idx_post_status_deleted_published").on(
       table.status,
@@ -108,7 +146,7 @@ export const media = sqliteTable(
   },
   (table) => [
     index("idx_media_post_id_position").on(table.postId, table.position),
-    index("idx_media_storage_key").on(table.storageKey),
+    uniqueIndex("idx_media_storage_key").on(table.storageKey),
     index("idx_media_media_kind").on(table.mediaKind),
   ],
 );
@@ -119,7 +157,6 @@ export const media = sqliteTable(
 
 export const collections = sqliteTable("collection", {
   id: text("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
   title: text("title").notNull(),
   description: text("description"),
   icon: text("icon"),
@@ -131,6 +168,59 @@ export const collections = sqliteTable("collection", {
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
+
+// =============================================================================
+// Path Registry (slug + alias + redirect)
+// =============================================================================
+
+export const pathRegistry = sqliteTable(
+  "path_registry",
+  {
+    id: text("id").primaryKey(),
+    path: text("path").notNull().unique(),
+    kind: text("kind", {
+      enum: ["slug", "alias", "redirect"],
+    }).notNull(),
+    postId: text("post_id").references(() => posts.id, {
+      onDelete: "cascade",
+    }),
+    collectionId: text("collection_id").references(() => collections.id, {
+      onDelete: "cascade",
+    }),
+    redirectToPath: text("redirect_to_path"),
+    redirectType: integer("redirect_type"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_path_registry_post_slug")
+      .on(table.postId)
+      .where(sql`${table.kind} = 'slug' AND ${table.postId} IS NOT NULL`),
+    uniqueIndex("uq_path_registry_collection_slug")
+      .on(table.collectionId)
+      .where(sql`${table.kind} = 'slug' AND ${table.collectionId} IS NOT NULL`),
+    index("idx_path_registry_post_id").on(table.postId),
+    index("idx_path_registry_collection_id").on(table.collectionId),
+    check(
+      "chk_path_registry_shape",
+      sql`(
+        ${table.kind} IN ('slug', 'alias')
+        AND (
+          (${table.postId} IS NOT NULL AND ${table.collectionId} IS NULL)
+          OR (${table.postId} IS NULL AND ${table.collectionId} IS NOT NULL)
+        )
+        AND ${table.redirectToPath} IS NULL
+        AND ${table.redirectType} IS NULL
+      ) OR (
+        ${table.kind} = 'redirect'
+        AND ${table.postId} IS NULL
+        AND ${table.collectionId} IS NULL
+        AND ${table.redirectToPath} IS NOT NULL
+        AND ${table.redirectType} IN (301, 302)
+      )`,
+    ),
+  ],
+);
 
 // =============================================================================
 // Sidebar Items (unified ordering for collections + dividers)
@@ -148,7 +238,22 @@ export const sidebarItems = sqliteTable(
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
-  (table) => [index("idx_sidebar_item_collection_id").on(table.collectionId)],
+  (table) => [
+    index("idx_sidebar_item_collection_id").on(table.collectionId),
+    uniqueIndex("uq_sidebar_item_collection_once")
+      .on(table.collectionId)
+      .where(
+        sql`${table.type} = 'collection' AND ${table.collectionId} IS NOT NULL`,
+      ),
+    check(
+      "chk_sidebar_item_shape",
+      sql`(
+        ${table.type} = 'collection' AND ${table.collectionId} IS NOT NULL
+      ) OR (
+        ${table.type} = 'divider' AND ${table.collectionId} IS NULL
+      )`,
+    ),
+  ],
 );
 
 // =============================================================================
@@ -189,26 +294,6 @@ export const navItems = sqliteTable("nav_item", {
   createdAt: integer("created_at").notNull(),
   updatedAt: integer("updated_at").notNull(),
 });
-
-// =============================================================================
-// Custom URLs (replaces redirects + path_registry)
-// =============================================================================
-
-export const customUrls = sqliteTable(
-  "custom_url",
-  {
-    id: text("id").primaryKey(),
-    path: text("path").notNull().unique(),
-    targetType: text("target_type", {
-      enum: ["post", "collection", "redirect"],
-    }).notNull(),
-    targetId: text("target_id"),
-    toPath: text("to_path"),
-    redirectType: integer("redirect_type"),
-    createdAt: integer("created_at").notNull(),
-  },
-  (table) => [index("idx_custom_url_target_id").on(table.targetId)],
-);
 
 // =============================================================================
 // Settings (Key-Value)

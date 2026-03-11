@@ -1,19 +1,18 @@
 /**
  * Custom URL Service
  *
- * Unified service replacing redirect + path-registry services.
- * Manages custom URL mappings for posts, collections, and redirects.
+ * Manages non-canonical path records (aliases + redirects) backed by the
+ * shared path_registry table.
  */
 
-import { desc, eq, sql } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
+import { and, desc, eq, ne, sql } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { customUrls, posts } from "../db/schema.js";
-import { now } from "../lib/time.js";
-import { normalizePath } from "../lib/url.js";
+import { pathRegistry } from "../db/schema.js";
 import { isReservedPath } from "../lib/constants.js";
+import { ConflictError, ValidationError } from "../lib/errors.js";
+import { normalizePath } from "../lib/url.js";
 import type { CustomUrl } from "../types.js";
-import { ValidationError, ConflictError } from "../lib/errors.js";
+import { createPathService, type PathService } from "./path.js";
 
 export interface CreateCustomUrl {
   path: string;
@@ -33,30 +32,44 @@ export interface CustomUrlService {
   delete(id: string): Promise<boolean>;
   count(): Promise<number>;
   list(opts?: { limit?: number; offset?: number }): Promise<CustomUrl[]>;
-  /** Check if a path is available (not used by custom_urls or posts.slug) */
+  /** Check if a path is available (not used by slug/alias/redirect records). */
   isPathAvailable(path: string): Promise<boolean>;
 }
 
-export function createCustomUrlService(db: Database): CustomUrlService {
-  function toCustomUrl(row: typeof customUrls.$inferSelect): CustomUrl {
+export function createCustomUrlService(
+  db: Database,
+  paths: PathService = createPathService(db),
+): CustomUrlService {
+  function toCustomUrl(row: typeof pathRegistry.$inferSelect): CustomUrl {
     return {
       id: row.id,
       path: row.path,
-      targetType: row.targetType as CustomUrl["targetType"],
-      targetId: row.targetId,
-      toPath: row.toPath,
-      redirectType: row.redirectType as CustomUrl["redirectType"],
+      targetType:
+        row.kind === "redirect"
+          ? "redirect"
+          : row.postId
+            ? "post"
+            : "collection",
+      targetId: row.postId ?? row.collectionId,
+      toPath: row.redirectToPath ? `/${row.redirectToPath}` : null,
+      redirectType: row.redirectType as 301 | 302 | null,
       createdAt: row.createdAt,
     };
   }
 
+  function normalizeInputPath(path: string): string {
+    return normalizePath(path);
+  }
+
   return {
     async getByPath(path) {
-      const normalized = normalizePath(path);
+      const normalized = normalizeInputPath(path);
       const result = await db
         .select()
-        .from(customUrls)
-        .where(eq(customUrls.path, normalized))
+        .from(pathRegistry)
+        .where(
+          and(eq(pathRegistry.path, normalized), ne(pathRegistry.kind, "slug")),
+        )
         .limit(1);
       return result[0] ? toCustomUrl(result[0]) : null;
     },
@@ -64,18 +77,22 @@ export function createCustomUrlService(db: Database): CustomUrlService {
     async getByTarget(targetType, targetId) {
       const result = await db
         .select()
-        .from(customUrls)
-        .where(eq(customUrls.targetId, targetId))
+        .from(pathRegistry)
+        .where(
+          and(
+            eq(pathRegistry.kind, "alias"),
+            targetType === "post"
+              ? eq(pathRegistry.postId, targetId)
+              : eq(pathRegistry.collectionId, targetId),
+          ),
+        )
+        .orderBy(desc(pathRegistry.createdAt))
         .limit(1);
-      // Filter in JS since we check targetType too
-      const match = result.find((r) => r.targetType === targetType);
-      return match ? toCustomUrl(match) : null;
+      return result[0] ? toCustomUrl(result[0]) : null;
     },
 
     async create(data) {
-      const id = uuidv7();
-      const timestamp = now();
-      const normalized = normalizePath(data.path);
+      const normalized = normalizeInputPath(data.path);
 
       if (isReservedPath(normalized)) {
         throw new ValidationError(
@@ -83,45 +100,60 @@ export function createCustomUrlService(db: Database): CustomUrlService {
         );
       }
 
-      // Check uniqueness in custom_urls
-      const existingCustomUrl = await this.getByPath(normalized);
-      if (existingCustomUrl) {
+      const existing = await paths.getByPath(normalized);
+      if (existing) {
+        if (existing.kind === "slug" && existing.postId) {
+          throw new ConflictError(
+            `Path "${normalized}" conflicts with an existing post slug`,
+          );
+        }
         throw new ConflictError(`Path "${normalized}" is already in use`);
       }
 
-      // Check cross-table uniqueness with posts.slug
-      const existingPost = await db
-        .select()
-        .from(posts)
-        .where(eq(posts.slug, normalized))
-        .limit(1);
-      if (existingPost.length > 0) {
-        throw new ConflictError(
-          `Path "${normalized}" conflicts with an existing post slug`,
-        );
+      if (data.targetType === "redirect") {
+        if (!data.toPath) {
+          throw new ValidationError("Redirect target path is required");
+        }
+        const redirectType = data.redirectType ?? 301;
+        const record = await paths.create({
+          path: normalized,
+          kind: "redirect",
+          redirectToPath: data.toPath ?? null,
+          redirectType,
+        });
+        const row = await db
+          .select()
+          .from(pathRegistry)
+          .where(eq(pathRegistry.id, record.id))
+          .limit(1);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- freshly inserted row exists
+        return toCustomUrl(row[0]!);
       }
 
-      const result = await db
-        .insert(customUrls)
-        .values({
-          id,
-          path: normalized,
-          targetType: data.targetType,
-          targetId: data.targetId ?? null,
-          toPath: data.toPath ?? null,
-          redirectType: data.redirectType ?? null,
-          createdAt: timestamp,
-        })
-        .returning();
+      if (!data.targetId) {
+        throw new ValidationError("Target resource is required");
+      }
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toCustomUrl(result[0]!);
+      const record = await paths.create({
+        path: normalized,
+        kind: "alias",
+        postId: data.targetType === "post" ? (data.targetId ?? null) : null,
+        collectionId:
+          data.targetType === "collection" ? (data.targetId ?? null) : null,
+      });
+      const row = await db
+        .select()
+        .from(pathRegistry)
+        .where(eq(pathRegistry.id, record.id))
+        .limit(1);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- freshly inserted row exists
+      return toCustomUrl(row[0]!);
     },
 
     async delete(id) {
       const result = await db
-        .delete(customUrls)
-        .where(eq(customUrls.id, id))
+        .delete(pathRegistry)
+        .where(and(eq(pathRegistry.id, id), ne(pathRegistry.kind, "slug")))
         .returning();
       return result.length > 0;
     },
@@ -129,15 +161,17 @@ export function createCustomUrlService(db: Database): CustomUrlService {
     async count() {
       const result = await db
         .select({ count: sql<number>`count(*)`.as("count") })
-        .from(customUrls);
+        .from(pathRegistry)
+        .where(ne(pathRegistry.kind, "slug"));
       return result[0]?.count ?? 0;
     },
 
     async list(opts) {
       let q = db
         .select()
-        .from(customUrls)
-        .orderBy(desc(customUrls.createdAt))
+        .from(pathRegistry)
+        .where(ne(pathRegistry.kind, "slug"))
+        .orderBy(desc(pathRegistry.createdAt))
         .$dynamic();
       if (opts?.limit !== undefined) q = q.limit(opts.limit);
       if (opts?.offset !== undefined) q = q.offset(opts.offset);
@@ -146,24 +180,9 @@ export function createCustomUrlService(db: Database): CustomUrlService {
     },
 
     async isPathAvailable(path) {
-      const normalized = normalizePath(path);
+      const normalized = normalizeInputPath(path);
       if (isReservedPath(normalized)) return false;
-
-      // Check custom_urls
-      const existing = await db
-        .select()
-        .from(customUrls)
-        .where(eq(customUrls.path, normalized))
-        .limit(1);
-      if (existing.length > 0) return false;
-
-      // Check posts.slug
-      const existingPost = await db
-        .select()
-        .from(posts)
-        .where(eq(posts.slug, normalized))
-        .limit(1);
-      return existingPost.length === 0;
+      return paths.isPathAvailable(normalized);
     },
   };
 }

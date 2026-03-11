@@ -4,6 +4,7 @@ import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
 import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createPostService } from "../../../services/post.js";
+import { createPathService } from "../../../services/path.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createMediaService } from "../../../services/media.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
@@ -13,9 +14,11 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
   const { db } = createTestDatabase();
+  const pathService = createPathService(db as never);
 
   const services = {
-    posts: createPostService(db as never, { slugIdLength: 5 }),
+    paths: pathService,
+    posts: createPostService(db as never, { slugIdLength: 5 }, pathService),
     settings: createSettingsService(db as never),
     media: createMediaService(db as never),
   };

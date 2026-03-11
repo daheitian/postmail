@@ -19,6 +19,30 @@ import type {
   UpdateCollection,
   SortOrder,
 } from "../types.js";
+import { ConflictError } from "../lib/errors.js";
+import {
+  createPathService,
+  toCollectionPath,
+  type PathService,
+} from "./path.js";
+
+function isUniqueConstraintError(err: unknown): boolean {
+  let current: unknown = err;
+  while (current) {
+    const msg = String(current);
+    if (
+      msg.includes("UNIQUE constraint") ||
+      msg.includes("SQLITE_CONSTRAINT")
+    ) {
+      return true;
+    }
+    current =
+      current instanceof Error && current.cause !== current
+        ? current.cause
+        : undefined;
+  }
+  return false;
+}
 
 export interface CollectionService {
   getById(id: string): Promise<Collection | null>;
@@ -62,11 +86,17 @@ export interface CollectionService {
   syncPostCollections(postId: string, collectionIds: string[]): Promise<void>;
 }
 
-export function createCollectionService(db: Database): CollectionService {
-  function toCollection(row: typeof collections.$inferSelect): Collection {
+export function createCollectionService(
+  db: Database,
+  paths: PathService = createPathService(db),
+): CollectionService {
+  function toCollection(
+    row: typeof collections.$inferSelect,
+    slug: string,
+  ): Collection {
     return {
       id: row.id,
-      slug: row.slug,
+      slug,
       title: row.title,
       description: row.description,
       icon: row.icon,
@@ -96,6 +126,28 @@ export function createCollectionService(db: Database): CollectionService {
     return rows[0]?.position ?? null;
   }
 
+  async function hydrateCollection(
+    row: typeof collections.$inferSelect | undefined,
+  ): Promise<Collection | null> {
+    if (!row) return null;
+    const slug = await paths.getCollectionSlug(row.id);
+    if (!slug) return null;
+    return toCollection(row, slug);
+  }
+
+  async function hydrateCollections(
+    rows: (typeof collections.$inferSelect)[],
+  ): Promise<Collection[]> {
+    if (rows.length === 0) return [];
+    const slugMap = await paths.getCollectionSlugMap(rows.map((row) => row.id));
+    return rows
+      .map((row) => {
+        const slug = slugMap.get(row.id);
+        return slug ? toCollection(row, slug) : null;
+      })
+      .filter((row): row is Collection => row !== null);
+  }
+
   return {
     async getById(id) {
       const result = await db
@@ -103,16 +155,15 @@ export function createCollectionService(db: Database): CollectionService {
         .from(collections)
         .where(eq(collections.id, id))
         .limit(1);
-      return result[0] ? toCollection(result[0]) : null;
+      return hydrateCollection(result[0]);
     },
 
     async getBySlug(slug) {
-      const result = await db
-        .select()
-        .from(collections)
-        .where(eq(collections.slug, slug))
-        .limit(1);
-      return result[0] ? toCollection(result[0]) : null;
+      const resolved = await paths.resolve(toCollectionPath(slug));
+      if (!resolved || resolved.kind !== "slug" || !resolved.collectionId) {
+        return null;
+      }
+      return this.getById(resolved.collectionId);
     },
 
     async list() {
@@ -120,7 +171,7 @@ export function createCollectionService(db: Database): CollectionService {
         .select()
         .from(collections)
         .orderBy(asc(collections.createdAt));
-      return rows.map(toCollection);
+      return hydrateCollections(rows);
     },
 
     async listByRecentActivity() {
@@ -136,7 +187,7 @@ export function createCollectionService(db: Database): CollectionService {
         )
         .groupBy(collections.id)
         .orderBy(desc(sql`last_added_at`), asc(collections.createdAt));
-      return rows.map((r) => toCollection(r.collection));
+      return hydrateCollections(rows.map((row) => row.collection));
     },
 
     async create(data) {
@@ -147,7 +198,6 @@ export function createCollectionService(db: Database): CollectionService {
         .insert(collections)
         .values({
           id,
-          slug: data.slug,
           title: data.title,
           description: data.description ?? null,
           icon: data.icon ?? null,
@@ -157,7 +207,16 @@ export function createCollectionService(db: Database): CollectionService {
         })
         .returning();
 
-      // Auto-create a sidebar item for this collection
+      try {
+        await paths.createCollectionSlug(id, data.slug);
+      } catch (err) {
+        await db.delete(collections).where(eq(collections.id, id));
+        if (err instanceof ConflictError) {
+          throw new ConflictError(`Slug "${data.slug}" is already in use`);
+        }
+        throw err;
+      }
+
       const lastPos = await getLastSidebarPosition();
       const position = generateKeyBetween(lastPos, null);
       await db.insert(sidebarItems).values({
@@ -169,13 +228,27 @@ export function createCollectionService(db: Database): CollectionService {
         updatedAt: timestamp,
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toCollection(result[0]!);
+      const collection = await hydrateCollection(result[0]);
+      if (!collection) {
+        throw new ConflictError(`Slug "${data.slug}" could not be resolved`);
+      }
+      return collection;
     },
 
     async update(id, data) {
       const existing = await this.getById(id);
       if (!existing) return null;
+
+      if (data.slug !== undefined && data.slug !== existing.slug) {
+        try {
+          await paths.updateCollectionSlug(id, data.slug);
+        } catch (err) {
+          if (err instanceof ConflictError) {
+            throw new ConflictError(`Slug "${data.slug}" is already in use`);
+          }
+          throw err;
+        }
+      }
 
       const timestamp = now();
       const updates: Partial<typeof collections.$inferInsert> = {
@@ -183,9 +256,9 @@ export function createCollectionService(db: Database): CollectionService {
       };
 
       if (data.title !== undefined) updates.title = data.title;
-      if (data.slug !== undefined) updates.slug = data.slug;
-      if (data.description !== undefined)
+      if (data.description !== undefined) {
         updates.description = data.description;
+      }
       if (data.icon !== undefined) updates.icon = data.icon;
       if (data.sortOrder !== undefined) updates.sortOrder = data.sortOrder;
 
@@ -195,15 +268,13 @@ export function createCollectionService(db: Database): CollectionService {
         .where(eq(collections.id, id))
         .returning();
 
-      return result[0] ? toCollection(result[0]) : null;
+      return hydrateCollection(result[0]);
     },
 
     async delete(id) {
-      // Clean up junction table entries manually (no FK CASCADE with text PKs)
       await db
         .delete(postCollections)
         .where(eq(postCollections.collectionId, id));
-      // Clean up sidebar item for this collection
       await db.delete(sidebarItems).where(eq(sidebarItems.collectionId, id));
       const result = await db
         .delete(collections)
@@ -227,17 +298,29 @@ export function createCollectionService(db: Database): CollectionService {
       const lastPos = await getLastSidebarPosition();
       const position = generateKeyBetween(lastPos, null);
 
-      const result = await db
-        .insert(sidebarItems)
-        .values({
-          id,
-          type,
-          collectionId: collectionId ?? null,
-          position,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-        })
-        .returning();
+      let result;
+      try {
+        result = await db
+          .insert(sidebarItems)
+          .values({
+            id,
+            type,
+            collectionId: collectionId ?? null,
+            position,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          })
+          .returning();
+      } catch (err) {
+        if (
+          type === "collection" &&
+          collectionId &&
+          isUniqueConstraintError(err)
+        ) {
+          throw new ConflictError("Collection is already in the sidebar.");
+        }
+        throw err;
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
       return toSidebarItem(result[0]!);
@@ -252,7 +335,6 @@ export function createCollectionService(db: Database): CollectionService {
     },
 
     async moveSidebarItem(id, afterId, beforeId) {
-      // Look up the item
       const items = await db
         .select()
         .from(sidebarItems)
@@ -260,7 +342,6 @@ export function createCollectionService(db: Database): CollectionService {
         .limit(1);
       if (!items[0]) return null;
 
-      // Look up neighbor positions
       let afterPos: string | null = null;
       let beforePos: string | null = null;
 
@@ -343,7 +424,7 @@ export function createCollectionService(db: Database): CollectionService {
         .where(eq(postCollections.postId, postId))
         .orderBy(asc(collections.createdAt));
 
-      return rows.map((r) => toCollection(r.collection));
+      return hydrateCollections(rows.map((row) => row.collection));
     },
 
     async getCollectionsByPostIds(postIds) {
@@ -363,11 +444,19 @@ export function createCollectionService(db: Database): CollectionService {
         .where(inArray(postCollections.postId, postIds))
         .orderBy(asc(collections.createdAt));
 
+      const collectionRows = rows.map((row) => row.collection);
+      const slugMap = await paths.getCollectionSlugMap(
+        collectionRows.map((row) => row.id),
+      );
+
       for (const row of rows) {
+        const slug = slugMap.get(row.collection.id);
+        if (!slug) continue;
         const existing = result.get(row.postId) ?? [];
-        existing.push(toCollection(row.collection));
+        existing.push(toCollection(row.collection, slug));
         result.set(row.postId, existing);
       }
+
       return result;
     },
 
@@ -377,18 +466,17 @@ export function createCollectionService(db: Database): CollectionService {
         .from(postCollections)
         .where(eq(postCollections.collectionId, collectionId));
 
-      return rows.map((r) => r.postId);
+      return rows.map((row) => row.postId);
     },
 
     async syncPostCollections(postId, collectionIds) {
       if (collectionIds.length === 0) {
-        // Only delete — single statement, no batch needed
         await db
           .delete(postCollections)
           .where(eq(postCollections.postId, postId));
         return;
       }
-      // Delete existing + insert new atomically
+
       const deleteQuery = db
         .delete(postCollections)
         .where(eq(postCollections.postId, postId));

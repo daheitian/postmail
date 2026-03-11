@@ -226,7 +226,7 @@ export function toPostView(
     media,
     collections,
     replyToId: post.replyToId ?? undefined,
-    threadRootId: post.threadId ?? undefined,
+    threadRootId: post.replyToId ? post.threadId : undefined,
     threadRootPermalink,
     body: post.body ?? undefined,
   };
@@ -246,7 +246,7 @@ export function toPostViews(
   threadRootPermalinkMap?: Map<string, string>,
 ): PostView[] {
   return posts.map((p) => {
-    const rootPermalink = p.threadId
+    const rootPermalink = p.replyToId
       ? threadRootPermalinkMap?.get(p.threadId)
       : undefined;
     return toPostView(p, ctx, undefined, rootPermalink);
@@ -278,7 +278,7 @@ export function toPostViewsFromPosts(
   threadRootPermalinkMap?: Map<string, string>,
 ): PostView[] {
   return posts.map((p) => {
-    const rootPermalink = p.threadId
+    const rootPermalink = p.replyToId
       ? threadRootPermalinkMap?.get(p.threadId)
       : undefined;
     return toPostViewFromPost(p, ctx, rootPermalink);
@@ -307,9 +307,7 @@ export async function loadThreadRootPermalinks(
   getById: (id: string) => Promise<Post | null>,
 ): Promise<Map<string, string>> {
   const threadRootIds = [
-    ...new Set(
-      posts.filter((p) => p.threadId).map((p) => p.threadId as string),
-    ),
+    ...new Set(posts.filter((p) => p.replyToId).map((p) => p.threadId)),
   ];
   const map = new Map<string, string>();
   if (threadRootIds.length > 0) {

@@ -44,7 +44,7 @@ interface RawSearchRow {
   rating: number | null;
   collection_id: string | null;
   reply_to_id: string | null;
-  thread_id: string | null;
+  thread_id: string;
   deleted_at: number | null;
   published_at: number;
   last_activity_at: number | null;
@@ -114,10 +114,14 @@ export function createSearchService(d1: D1Database): SearchService {
     const stmt = d1.prepare(`
       SELECT
         post.*,
+        path_registry.path AS slug,
         post_fts.rank AS rank,
         snippet(post_fts, 1, char(2), char(3), '...', 32) AS snippet
       FROM post_fts
       JOIN post ON post.rowid = post_fts.rowid
+      JOIN path_registry
+        ON path_registry.post_id = post.id
+       AND path_registry.kind = 'slug'
       WHERE post_fts MATCH ?
         AND post.deleted_at IS NULL
         AND post.status IN (${statusPlaceholders})
@@ -147,8 +151,11 @@ export function createSearchService(d1: D1Database): SearchService {
     const formatParams = options.format ? [options.format] : [];
 
     const stmt = d1.prepare(`
-      SELECT post.*, 0 AS rank, NULL AS snippet
+      SELECT post.*, path_registry.path AS slug, 0 AS rank, NULL AS snippet
       FROM post
+      JOIN path_registry
+        ON path_registry.post_id = post.id
+       AND path_registry.kind = 'slug'
       WHERE (
         title LIKE ? OR
         body_text LIKE ? OR
@@ -177,9 +184,14 @@ export function createSearchService(d1: D1Database): SearchService {
       // Trigram FTS requires at least 3 characters.
       // For shorter queries (common in CJK), fall back to LIKE.
       const charCount = [...trimmed].length;
-      return charCount < 3
-        ? searchLike(trimmed, options)
-        : searchFts(trimmed, options);
+      if (charCount < 3) {
+        return searchLike(trimmed, options);
+      }
+
+      const ftsResults = await searchFts(trimmed, options);
+      if (ftsResults.length > 0) return ftsResults;
+
+      return searchLike(trimmed, options);
     },
   };
 }

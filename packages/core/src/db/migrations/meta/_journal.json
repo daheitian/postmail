@@ -15,6 +15,34 @@
       "when": 1773250221639,
       "tag": "0001_fts_setup",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1773255621819,
+      "tag": "0002_high_rocket_racer",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1773258013895,
+      "tag": "0003_fuzzy_the_call",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1773259292956,
+      "tag": "0004_milky_reaper",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1773260039527,
+      "tag": "0005_lowly_wong",
+      "breakpoints": true
     }
   ]
 }

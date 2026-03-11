@@ -335,6 +335,17 @@ describe("CollectionService", () => {
 
       expect(first.position < second.position).toBe(true);
     });
+
+    it("rejects adding the same collection twice", async () => {
+      const collection = await collectionService.create({
+        slug: "notes",
+        title: "Notes",
+      });
+
+      await expect(
+        collectionService.createSidebarItem("collection", collection.id),
+      ).rejects.toThrow("Collection is already in the sidebar.");
+    });
   });
 
   describe("deleteSidebarItem", () => {

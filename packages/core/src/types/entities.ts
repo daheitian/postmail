@@ -9,6 +9,7 @@ import type {
   SortOrder,
   NavItemType,
   MediaKind,
+  PathKind,
 } from "./constants.js";
 
 export interface Post {
@@ -28,7 +29,7 @@ export interface Post {
   summary: string | null;
   rating: number | null;
   replyToId: string | null;
-  threadId: string | null;
+  threadId: string;
   deletedAt: number | null;
   publishedAt: number;
   lastActivityAt: number;
@@ -126,6 +127,18 @@ export interface CustomUrl {
   toPath: string | null;
   redirectType: 301 | 302 | null;
   createdAt: number;
+}
+
+export interface PathRecord {
+  id: string;
+  path: string;
+  kind: PathKind;
+  postId: string | null;
+  collectionId: string | null;
+  redirectToPath: string | null;
+  redirectType: 301 | 302 | null;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface Setting {

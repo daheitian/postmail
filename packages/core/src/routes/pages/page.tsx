@@ -1,13 +1,8 @@
 /**
  * Catch-all Route
  *
- * Resolves slug -> post and custom URL -> post/collection.
+ * Resolves post slugs, aliases, redirects, and collection aliases.
  * Must be registered last.
- *
- * Resolution order:
- * 1. Direct slug match in posts -> check for custom URL override -> 301 or serve
- * 2. Custom URL match -> serve post or collection
- * 3. Not found
  */
 
 import { Hono, type Context } from "hono";
@@ -28,7 +23,7 @@ async function renderPost(c: Context<Env>, post: Post) {
   const mediaCtx = createMediaContext(c.var.appConfig);
 
   // Load the full thread if this post is part of one
-  const threadRootId = post.threadId ?? post.id;
+  const threadRootId = post.threadId;
   const threadPosts = await c.var.services.posts.getThread(threadRootId);
 
   // Batch load media for all thread posts (or just this post if solo)
@@ -75,48 +70,45 @@ async function renderPost(c: Context<Env>, post: Post) {
   });
 }
 
-// Catch-all for slug-based post URLs and custom URL mappings
+// Catch-all for path-registry backed post URLs, aliases, and redirects
 pageRoutes.get("/*", async (c) => {
   const fullPath = c.req.path.slice(1); // Remove leading /
   if (!fullPath) return c.notFound();
 
-  // 1. Direct slug match
-  const post = await c.var.services.posts.getBySlug(fullPath);
-  if (post && post.status !== "draft") {
-    // Private posts require authentication
+  const resolved = await c.var.services.paths.resolve(fullPath);
+  if (!resolved) return c.notFound();
+
+  if (resolved.kind === "redirect" && resolved.redirectToPath) {
+    return c.redirect(
+      `/${resolved.redirectToPath}`,
+      resolved.redirectType ?? 301,
+    );
+  }
+
+  if (resolved.postId) {
+    const post = await c.var.services.posts.getById(resolved.postId);
+    if (!post || post.status === "draft") return c.notFound();
+
     if (post.visibility === "private") {
       const navData = await getNavigationData(c);
       if (!navData.isAuthenticated) return c.notFound();
     }
-    // Check for custom URL override -> 301 redirect to canonical
-    const override = await c.var.services.customUrls.getByTarget(
-      "post",
-      post.id,
-    );
-    if (override) {
-      return c.redirect(`/${override.path}`, 301);
+
+    if (resolved.kind === "alias") {
+      return c.redirect(`/${post.slug}`, 301);
     }
-    // Serve the post at /{slug}
+
     return renderPost(c, post);
   }
 
-  // 2. Custom URL match
-  const customUrl = await c.var.services.customUrls.getByPath(fullPath);
-  if (customUrl) {
-    if (customUrl.targetType === "post" && customUrl.targetId) {
-      const targetPost = await c.var.services.posts.getById(customUrl.targetId);
-      if (targetPost && targetPost.status !== "draft") {
-        // Private posts require authentication
-        if (targetPost.visibility === "private") {
-          const navData = await getNavigationData(c);
-          if (!navData.isAuthenticated) return c.notFound();
-        }
-        return renderPost(c, targetPost);
-      }
-    }
-    if (customUrl.targetType === "collection" && customUrl.targetId) {
-      // Collection custom URLs are not handled here -- they use /c/ prefix
-      // This is a placeholder for future collection custom URL support
+  if (resolved.collectionId) {
+    const collection = await c.var.services.collections.getById(
+      resolved.collectionId,
+    );
+    if (!collection) return c.notFound();
+
+    if (resolved.kind === "alias") {
+      return c.redirect(`/c/${collection.slug}`, 301);
     }
   }
 

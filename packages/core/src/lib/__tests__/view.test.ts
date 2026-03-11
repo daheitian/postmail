@@ -53,7 +53,7 @@ function makePost(overrides: Partial<Post> = {}): Post {
     summary: null,
     rating: null,
     replyToId: null,
-    threadId: null,
+    threadId: UUID_1,
     deletedAt: null,
     publishedAt: 1706745600, // 2024-02-01T00:00:00Z
     createdAt: 1706745600,

@@ -6,11 +6,11 @@
  * visibility (public/unlisted/private), featuredAt, and pinnedAt timestamp.
  */
 
-import { eq, and, isNull, desc, or, inArray, sql } from "drizzle-orm";
+import { eq, and, isNull, desc, inArray, sql, isNotNull } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
-import { posts, postCollections, customUrls } from "../db/schema.js";
+import { posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
@@ -28,7 +28,12 @@ import type {
   UpdatePost,
   ThreadTimelineContext,
 } from "../types.js";
-import { ConflictError } from "../lib/errors.js";
+import {
+  ConflictError,
+  ValidationError,
+  NotFoundError,
+} from "../lib/errors.js";
+import { createPathService, type PathService } from "./path.js";
 
 /** Dependencies for operations that coordinate with other services */
 export interface PostDeleteDeps {
@@ -43,7 +48,7 @@ export interface PostFilters {
   pinned?: boolean;
   featured?: boolean;
   collectionId?: string;
-  /** Exclude posts that are replies (have threadId set) */
+  /** Exclude posts that are replies (have replyToId set) */
   excludeReplies?: boolean;
   /** Exclude unlisted posts from results */
   excludeUnlisted?: boolean;
@@ -132,25 +137,55 @@ function isUniqueConstraintError(err: unknown): boolean {
   return false;
 }
 
+function hasNonEmptyText(value: string | null | undefined): boolean {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function assertPostFormatShape(data: {
+  format: Format;
+  url?: string | null;
+  quoteText?: string | null;
+}): void {
+  const hasUrl = hasNonEmptyText(data.url);
+  const hasQuoteText = hasNonEmptyText(data.quoteText);
+
+  if (data.format === "note") {
+    if (hasUrl) {
+      throw new ValidationError("Notes can't include a URL.");
+    }
+    if (hasQuoteText) {
+      throw new ValidationError("Notes can't include quoted text.");
+    }
+    return;
+  }
+
+  if (data.format === "link") {
+    if (!hasUrl) {
+      throw new ValidationError("Link posts need a URL.");
+    }
+    if (hasQuoteText) {
+      throw new ValidationError("Link posts can't include quoted text.");
+    }
+    return;
+  }
+
+  if (!hasQuoteText) {
+    throw new ValidationError("Quote posts need quoted text.");
+  }
+}
+
+function isThreadReply(post: Pick<Post, "replyToId">): boolean {
+  return post.replyToId !== null;
+}
+
 export function createPostService(
   db: Database,
   config: { slugIdLength: number },
+  paths: PathService = createPathService(db),
 ): PostService {
   /** Check if a slug is available (not used by posts or custom_urls) */
   async function isSlugAvailable(slug: string): Promise<boolean> {
-    const existingPost = await db
-      .select()
-      .from(posts)
-      .where(and(eq(posts.slug, slug), isNull(posts.deletedAt)))
-      .limit(1);
-    if (existingPost.length > 0) return false;
-
-    const existingCustomUrl = await db
-      .select()
-      .from(customUrls)
-      .where(eq(customUrls.path, slug))
-      .limit(1);
-    return existingCustomUrl.length === 0;
+    return paths.isPathAvailable(slug);
   }
 
   /** Build WHERE conditions from filters (shared by list and count) */
@@ -196,7 +231,7 @@ export function createPostService(
       conditions.push(eq(posts.threadId, filters.threadId));
     }
     if (filters.excludeReplies) {
-      conditions.push(isNull(posts.threadId));
+      conditions.push(isNull(posts.replyToId));
     }
     if (!filters.includeDeleted) {
       conditions.push(isNull(posts.deletedAt));
@@ -233,7 +268,7 @@ export function createPostService(
     return conditions;
   }
 
-  function toPost(row: typeof posts.$inferSelect): Post {
+  function toPost(row: typeof posts.$inferSelect, slug: string): Post {
     return {
       id: row.id,
       format: row.format as Format,
@@ -241,7 +276,7 @@ export function createPostService(
       visibility: row.visibility as Visibility,
       pinnedAt: row.pinnedAt,
       featuredAt: row.featuredAt,
-      slug: row.slug,
+      slug,
       title: row.title,
       url: row.url,
       body: row.body,
@@ -260,6 +295,28 @@ export function createPostService(
     };
   }
 
+  async function hydratePost(
+    row: typeof posts.$inferSelect | undefined,
+  ): Promise<Post | null> {
+    if (!row) return null;
+    const slug = await paths.getPostSlug(row.id);
+    if (!slug) return null;
+    return toPost(row, slug);
+  }
+
+  async function hydratePosts(
+    rows: (typeof posts.$inferSelect)[],
+  ): Promise<Post[]> {
+    if (rows.length === 0) return [];
+    const slugMap = await paths.getPostSlugMap(rows.map((row) => row.id));
+    return rows
+      .map((row) => {
+        const slug = slugMap.get(row.id);
+        return slug ? toPost(row, slug) : null;
+      })
+      .filter((row): row is Post => row !== null);
+  }
+
   return {
     async getById(id) {
       const result = await db
@@ -267,16 +324,15 @@ export function createPostService(
         .from(posts)
         .where(and(eq(posts.id, id), isNull(posts.deletedAt)))
         .limit(1);
-      return result[0] ? toPost(result[0]) : null;
+      return hydratePost(result[0]);
     },
 
     async getBySlug(slug) {
-      const result = await db
-        .select()
-        .from(posts)
-        .where(and(eq(posts.slug, slug), isNull(posts.deletedAt)))
-        .limit(1);
-      return result[0] ? toPost(result[0]) : null;
+      const resolved = await paths.resolve(slug);
+      if (!resolved || resolved.kind !== "slug" || !resolved.postId) {
+        return null;
+      }
+      return this.getById(resolved.postId);
     },
 
     async list(filters = {}) {
@@ -304,7 +360,7 @@ export function createPostService(
       }
 
       const rows = await query;
-      return rows.map(toPost);
+      return hydratePosts(rows);
     },
 
     async count(filters = {}) {
@@ -321,6 +377,12 @@ export function createPostService(
     async create(data, summaryConfig) {
       const id = uuidv7();
       const timestamp = now();
+
+      assertPostFormatShape({
+        format: data.format,
+        url: data.url,
+        quoteText: data.quoteText,
+      });
 
       const body = data.bodyMarkdown
         ? markdownToTiptapJson(data.bodyMarkdown)
@@ -339,24 +401,28 @@ export function createPostService(
       }
 
       // Handle thread relationship
-      let threadId: string | null = null;
+      let threadId = id;
       let status: Status = data.status ?? "published";
       let visibility: Visibility = data.visibility ?? "public";
 
       if (data.replyToId) {
         const parent = await this.getById(data.replyToId);
-        if (parent) {
-          threadId = parent.threadId ?? parent.id;
-          // Inherit status and visibility from root
-          const root = parent.threadId
-            ? await this.getById(parent.threadId)
-            : parent;
-          if (root) {
-            if (data.status !== "draft") {
-              status = root.status as Status;
-            }
-            visibility = root.visibility as Visibility;
+        if (!parent) {
+          throw new NotFoundError("Parent post");
+        }
+
+        threadId = parent.threadId;
+
+        // Inherit status and visibility from root
+        const root =
+          parent.threadId === parent.id
+            ? parent
+            : await this.getById(parent.threadId);
+        if (root) {
+          if (data.status !== "draft") {
+            status = root.status as Status;
           }
+          visibility = root.visibility as Visibility;
         }
       }
 
@@ -379,7 +445,6 @@ export function createPostService(
             visibility,
             pinnedAt: data.pinned ? timestamp : null,
             featuredAt: data.featured ? timestamp : null,
-            slug,
             title: data.title ?? null,
             url: data.url ?? null,
             body: body ?? null,
@@ -403,8 +468,21 @@ export function createPostService(
         throw err;
       }
 
+      try {
+        await paths.createPostSlug(id, slug);
+      } catch (err) {
+        await db.delete(posts).where(eq(posts.id, id));
+        if (err instanceof ConflictError) {
+          throw new ConflictError(`Slug "${slug}" is already in use`);
+        }
+        throw err;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      const post = toPost(result[0]!);
+      const post = await hydratePost(result[0]!);
+      if (!post) {
+        throw new ConflictError(`Slug "${slug}" could not be resolved`);
+      }
 
       // Sync collection memberships if provided
       if (data.collectionIds && data.collectionIds.length > 0) {
@@ -418,7 +496,7 @@ export function createPostService(
       }
 
       // Bump thread root's lastActivityAt when creating a reply
-      if (threadId) {
+      if (data.replyToId) {
         await db
           .update(posts)
           .set({ lastActivityAt: data.publishedAt ?? timestamp })
@@ -433,18 +511,33 @@ export function createPostService(
       if (!existing) return null;
 
       const timestamp = now();
+      const nextFormat = data.format ?? existing.format;
+      const nextUrl = data.url !== undefined ? data.url : existing.url;
+      const nextQuoteText =
+        data.quoteText !== undefined ? data.quoteText : existing.quoteText;
+
+      assertPostFormatShape({
+        format: nextFormat,
+        url: nextUrl,
+        quoteText: nextQuoteText,
+      });
+
       const updates: Partial<typeof posts.$inferInsert> = {
         updatedAt: timestamp,
       };
 
       // Handle slug change
-      if (data.slug !== undefined && data.slug !== existing.slug) {
-        // Validate new slug availability
-        const available = await isSlugAvailable(data.slug);
-        if (!available) {
-          throw new ConflictError(`Slug "${data.slug}" is already in use`);
+      const slugChanged =
+        data.slug !== undefined && data.slug !== existing.slug;
+      if (slugChanged && data.slug) {
+        try {
+          await paths.updatePostSlug(id, data.slug);
+        } catch (err) {
+          if (err instanceof ConflictError) {
+            throw new ConflictError(`Slug "${data.slug}" is already in use`);
+          }
+          throw err;
         }
-        updates.slug = data.slug;
       }
 
       if (data.format !== undefined) updates.format = data.format;
@@ -496,7 +589,7 @@ export function createPostService(
       }
 
       // Thread replies inherit visibility/pinned from root — reject direct changes
-      if (existing.threadId) {
+      if (isThreadReply(existing)) {
         if (data.visibility !== undefined) {
           throw new ConflictError(
             "Cannot change visibility of a thread reply. Update the root post instead.",
@@ -521,7 +614,7 @@ export function createPostService(
 
       // Build all write queries for atomic execution via D1 batch
       const needsCascade =
-        (statusChanged || visibilityChanged) && !existing.threadId;
+        (statusChanged || visibilityChanged) && !isThreadReply(existing);
       const needsCollectionSync = data.collectionIds !== undefined;
       const hasExtraWrites = needsCascade || needsCollectionSync;
 
@@ -532,7 +625,7 @@ export function createPostService(
           .set(updates)
           .where(eq(posts.id, id))
           .returning();
-        return result[0] ? toPost(result[0]) : null;
+        return hydratePost(result[0]);
       }
 
       // Complex case: batch cascade + update + collection sync atomically
@@ -548,7 +641,7 @@ export function createPostService(
                 data.visibility ?? (existing.visibility as Visibility),
               updatedAt: timestamp,
             })
-            .where(eq(posts.threadId, id)),
+            .where(and(eq(posts.threadId, id), isNotNull(posts.replyToId))),
         );
       }
 
@@ -586,7 +679,7 @@ export function createPostService(
       const updateResult = results[updateIdx] as
         | (typeof posts.$inferSelect)[]
         | undefined;
-      return updateResult?.[0] ? toPost(updateResult[0]) : null;
+      return hydratePost(updateResult?.[0]);
     },
 
     async delete(id, deps) {
@@ -596,7 +689,7 @@ export function createPostService(
       // Clean up media for all affected posts
       if (deps?.media) {
         let postIds: string[];
-        if (!existing.threadId) {
+        if (!isThreadReply(existing)) {
           const thread = await this.getThread(id);
           postIds = thread.map((p) => p.id);
         } else {
@@ -616,11 +709,11 @@ export function createPostService(
       const timestamp = now();
 
       // If this is a thread root, soft delete all posts in the thread
-      if (!existing.threadId) {
+      if (!isThreadReply(existing)) {
         await db
           .update(posts)
           .set({ deletedAt: timestamp, updatedAt: timestamp })
-          .where(or(eq(posts.id, id), eq(posts.threadId, id)));
+          .where(eq(posts.threadId, id));
       } else {
         // Soft-delete the single reply
         await db
@@ -635,6 +728,7 @@ export function createPostService(
           .where(
             and(
               eq(posts.threadId, existing.threadId),
+              isNotNull(posts.replyToId),
               isNull(posts.deletedAt),
               sql`${posts.id} != ${id}`,
             ),
@@ -665,15 +759,10 @@ export function createPostService(
       const rows = await db
         .select()
         .from(posts)
-        .where(
-          and(
-            or(eq(posts.id, rootId), eq(posts.threadId, rootId)),
-            isNull(posts.deletedAt),
-          ),
-        )
+        .where(and(eq(posts.threadId, rootId), isNull(posts.deletedAt)))
         .orderBy(posts.createdAt);
 
-      return rows.map(toPost);
+      return hydratePosts(rows);
     },
 
     async updateThreadStatusAndVisibility(rootId, status, visibility) {
@@ -681,7 +770,7 @@ export function createPostService(
       await db
         .update(posts)
         .set({ status, visibility, updatedAt: timestamp })
-        .where(eq(posts.threadId, rootId));
+        .where(and(eq(posts.threadId, rootId), isNotNull(posts.replyToId)));
     },
 
     async getReplyCounts(postIds) {
@@ -693,14 +782,18 @@ export function createPostService(
           count: sql<number>`count(*)`.as("count"),
         })
         .from(posts)
-        .where(and(inArray(posts.threadId, postIds), isNull(posts.deletedAt)))
+        .where(
+          and(
+            inArray(posts.threadId, postIds),
+            isNotNull(posts.replyToId),
+            isNull(posts.deletedAt),
+          ),
+        )
         .groupBy(posts.threadId);
 
       const counts = new Map<string, number>();
       for (const row of rows) {
-        if (row.threadId !== null) {
-          counts.set(row.threadId, row.count);
-        }
+        counts.set(row.threadId, row.count);
       }
       return counts;
     },
@@ -711,13 +804,17 @@ export function createPostService(
       const rows = await db
         .select()
         .from(posts)
-        .where(and(inArray(posts.threadId, rootIds), isNull(posts.deletedAt)))
+        .where(
+          and(
+            inArray(posts.threadId, rootIds),
+            isNotNull(posts.replyToId),
+            isNull(posts.deletedAt),
+          ),
+        )
         .orderBy(posts.threadId, posts.createdAt);
 
       const result = new Map<string, Post[]>();
-      for (const row of rows) {
-        const post = toPost(row);
-        if (post.threadId === null) continue;
+      for (const post of await hydratePosts(rows)) {
         const list = result.get(post.threadId);
         if (list) {
           if (list.length < previewCount) {
@@ -737,14 +834,18 @@ export function createPostService(
       const rows = await db
         .select()
         .from(posts)
-        .where(and(inArray(posts.threadId, rootIds), isNull(posts.deletedAt)))
+        .where(
+          and(
+            inArray(posts.threadId, rootIds),
+            isNotNull(posts.replyToId),
+            isNull(posts.deletedAt),
+          ),
+        )
         .orderBy(posts.threadId, desc(posts.createdAt), desc(posts.id));
 
       // Group by threadId, extract latest reply + its parent + count
       const grouped = new Map<string, Post[]>();
-      for (const row of rows) {
-        const post = toPost(row);
-        if (post.threadId === null) continue;
+      for (const post of await hydratePosts(rows)) {
         const list = grouped.get(post.threadId);
         if (list) {
           list.push(post);
