@@ -459,6 +459,12 @@ export function createPostService(
           throw new NotFoundError("Parent post");
         }
 
+        if (data.pinned) {
+          throw new ConflictError(
+            "Cannot pin a thread reply. Pin the root post instead.",
+          );
+        }
+
         threadId = parent.threadId;
 
         // Inherit status and visibility from root

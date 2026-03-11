@@ -70,7 +70,7 @@ describe("Posts API Routes", () => {
       expect(body.posts[0].mediaAttachments[0].mimeType).toBe("image/jpeg");
       expect(body.posts[0].mediaAttachments[0].url).toBeTruthy();
       expect(body.posts[0].mediaAttachments[0].previewUrl).toBeTruthy();
-      expect(body.posts[0].mediaAttachments[0].position).toBe(0);
+      expect(body.posts[0].mediaAttachments[0].position).toBe("a0");
     });
 
     it("filters by status", async () => {
@@ -297,9 +297,9 @@ describe("Posts API Routes", () => {
       const body = await res.json();
       expect(body.mediaAttachments).toHaveLength(2);
       expect(body.mediaAttachments[0].id).toBe(m1.id);
-      expect(body.mediaAttachments[0].position).toBe(0);
+      expect(body.mediaAttachments[0].position).toBe("a0");
       expect(body.mediaAttachments[1].id).toBe(m2.id);
-      expect(body.mediaAttachments[1].position).toBe(1);
+      expect(body.mediaAttachments[1].position).toBe("a1");
     });
 
     it("returns 400 for invalid media IDs", async () => {

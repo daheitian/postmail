@@ -5,6 +5,7 @@
  */
 
 import { eq, desc, inArray, asc, sql, and } from "drizzle-orm";
+import { generateKeyBetween } from "fractional-indexing";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { media } from "../db/schema.js";
@@ -14,6 +15,8 @@ import { toMediaKind } from "../lib/upload.js";
 import type { Media, MediaKind } from "../types.js";
 import { MAX_MEDIA_ATTACHMENTS } from "../types.js";
 import { ValidationError } from "../lib/errors.js";
+
+const DEFAULT_MEDIA_POSITION = "a0";
 
 export interface MediaFilters {
   limit?: number;
@@ -69,7 +72,7 @@ export interface CreateMediaData {
   width?: number;
   height?: number;
   alt?: string;
-  position?: number;
+  position?: string;
   blurhash?: string;
   waveform?: string;
   posterKey?: string;
@@ -79,6 +82,28 @@ export interface CreateMediaData {
 }
 
 export function createMediaService(db: Database): MediaService {
+  async function getLastPosition(postId: string): Promise<string | null> {
+    const rows = await db
+      .select({ position: media.position })
+      .from(media)
+      .where(eq(media.postId, postId))
+      .orderBy(sql`${media.position} DESC`)
+      .limit(1);
+    return rows[0]?.position ?? null;
+  }
+
+  function buildSequentialPositions(count: number): string[] {
+    const positions: string[] = [];
+    let previous: string | null = null;
+
+    for (let i = 0; i < count; i += 1) {
+      previous = generateKeyBetween(previous, null);
+      positions.push(previous);
+    }
+
+    return positions;
+  }
+
   function toMedia(row: typeof media.$inferSelect): Media {
     return {
       id: row.id,
@@ -198,6 +223,10 @@ export function createMediaService(db: Database): MediaService {
       const id = data.id ?? uuidv7();
       const timestamp = now();
       const mediaKind = data.mediaKind ?? toMediaKind(data.mimeType);
+      const lastPosition =
+        data.position === undefined && data.postId
+          ? await getLastPosition(data.postId)
+          : null;
 
       const result = await db
         .insert(media)
@@ -213,7 +242,11 @@ export function createMediaService(db: Database): MediaService {
           width: data.width ?? null,
           height: data.height ?? null,
           alt: data.alt ?? null,
-          position: data.position ?? 0,
+          position:
+            data.position ??
+            (data.postId
+              ? generateKeyBetween(lastPosition, null)
+              : DEFAULT_MEDIA_POSITION),
           blurhash: data.blurhash ?? null,
           waveform: data.waveform ?? null,
           posterKey: data.posterKey ?? null,
@@ -233,7 +266,11 @@ export function createMediaService(db: Database): MediaService {
       const timestamp = now();
       const clearQuery = db
         .update(media)
-        .set({ postId: null, position: 0, updatedAt: timestamp })
+        .set({
+          postId: null,
+          position: DEFAULT_MEDIA_POSITION,
+          updatedAt: timestamp,
+        })
         .where(eq(media.postId, postId));
 
       const validIds = mediaIds.filter((id): id is string => Boolean(id));
@@ -243,13 +280,20 @@ export function createMediaService(db: Database): MediaService {
         return;
       }
 
+      const positions = buildSequentialPositions(validIds.length);
+
       // Clear existing + re-attach atomically
-      const attachQueries = validIds.map((mediaId, i) =>
-        db
+      const attachQueries = validIds.map((mediaId, i) => {
+        const position = positions[i];
+        if (!position) {
+          throw new Error("Failed to assign a media position");
+        }
+
+        return db
           .update(media)
-          .set({ postId, position: i, updatedAt: timestamp })
-          .where(eq(media.id, mediaId)),
-      );
+          .set({ postId, position, updatedAt: timestamp })
+          .where(eq(media.id, mediaId));
+      });
       await db.batch([clearQuery, ...attachQueries] as [
         typeof clearQuery,
         ...(typeof attachQueries)[number][],
@@ -259,7 +303,7 @@ export function createMediaService(db: Database): MediaService {
     async detachFromPost(postId) {
       await db
         .update(media)
-        .set({ postId: null, position: 0 })
+        .set({ postId: null, position: DEFAULT_MEDIA_POSITION })
         .where(eq(media.postId, postId));
     },
 

@@ -1279,6 +1279,24 @@ describe("PostService", () => {
       expect(unfeatured?.featuredAt).toBeNull();
     });
 
+    it("rejects creating a pinned thread reply", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+      });
+
+      await expect(
+        postService.create({
+          format: "note",
+          bodyMarkdown: "reply",
+          replyToId: root.id,
+          pinned: true,
+        }),
+      ).rejects.toThrow(
+        "Cannot pin a thread reply. Pin the root post instead.",
+      );
+    });
+
     it("rejects pinning a thread reply", async () => {
       const root = await postService.create({
         format: "note",

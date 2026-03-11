@@ -44,7 +44,7 @@ describe("MediaService", () => {
       expect(media.height).toBe(1080);
       expect(media.postId).toBeNull();
       expect(media.alt).toBeNull();
-      expect(media.position).toBe(0);
+      expect(media.position).toBe("a0");
       expect(media.blurhash).toBeNull();
       expect(media.posterKey).toBeNull();
     });
@@ -85,12 +85,32 @@ describe("MediaService", () => {
     it("creates media with position and blurhash", async () => {
       const media = await mediaService.create({
         ...sampleMedia,
-        position: 3,
+        position: "a3",
         blurhash: "LKO2?U%2Tw=w]~RBVZRi};RPxuwH",
       });
 
-      expect(media.position).toBe(3);
+      expect(media.position).toBe("a3");
       expect(media.blurhash).toBe("LKO2?U%2Tw=w]~RBVZRi};RPxuwH");
+    });
+
+    it("appends position when creating media already attached to a post", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "test",
+      });
+
+      const media1 = await mediaService.create({
+        ...sampleMedia,
+        postId: post.id,
+      });
+      const media2 = await mediaService.create({
+        ...sampleMedia,
+        postId: post.id,
+        storageKey: "media/2025/01/second.jpg",
+      });
+
+      expect(media1.position).toBe("a0");
+      expect(media2.position).toBe("a1");
     });
 
     it("generates UUIDv7 IDs", async () => {
@@ -138,12 +158,12 @@ describe("MediaService", () => {
       ).rejects.toThrow();
     });
 
-    it("rejects negative positions at the database layer", async () => {
+    it("rejects blank positions at the database layer", async () => {
       await expect(
         mediaService.create({
           ...sampleMedia,
           storageKey: "media/2025/01/invalid-position.jpg",
-          position: -1,
+          position: "   ",
         }),
       ).rejects.toThrow();
     });
@@ -235,9 +255,9 @@ describe("MediaService", () => {
       const results = await mediaService.getByPostId(post.id);
       expect(results).toHaveLength(2);
       expect(results[0]!.id).toBe(m2.id);
-      expect(results[0]!.position).toBe(0);
+      expect(results[0]!.position).toBe("a0");
       expect(results[1]!.id).toBe(m1.id);
-      expect(results[1]!.position).toBe(1);
+      expect(results[1]!.position).toBe("a1");
     });
 
     it("returns empty array for post with no media", async () => {
@@ -423,9 +443,9 @@ describe("MediaService", () => {
       const attached = await mediaService.getByPostId(post.id);
       expect(attached).toHaveLength(2);
       expect(attached[0]!.id).toBe(m1.id);
-      expect(attached[0]!.position).toBe(0);
+      expect(attached[0]!.position).toBe("a0");
       expect(attached[1]!.id).toBe(m2.id);
-      expect(attached[1]!.position).toBe(1);
+      expect(attached[1]!.position).toBe("a1");
     });
 
     it("replaces existing attachments", async () => {
@@ -453,12 +473,12 @@ describe("MediaService", () => {
       const attached = await mediaService.getByPostId(post.id);
       expect(attached).toHaveLength(1);
       expect(attached[0]!.id).toBe(m3.id);
-      expect(attached[0]!.position).toBe(0);
+      expect(attached[0]!.position).toBe("a0");
 
       // Verify old media is detached
       const old1 = await mediaService.getById(m1.id);
       expect(old1!.postId).toBeNull();
-      expect(old1!.position).toBe(0);
+      expect(old1!.position).toBe("a0");
     });
 
     it("handles empty array by clearing all attachments", async () => {
@@ -500,7 +520,7 @@ describe("MediaService", () => {
 
       const detached = await mediaService.getById(m1.id);
       expect(detached!.postId).toBeNull();
-      expect(detached!.position).toBe(0);
+      expect(detached!.position).toBe("a0");
     });
   });
 

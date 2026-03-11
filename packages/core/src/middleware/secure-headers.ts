@@ -28,7 +28,7 @@ export function secureHeadersMiddleware(): MiddlewareHandler<Env> {
         // Theme styles and custom CSS are injected as inline <style> tags
         "'unsafe-inline'",
       ],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
       fontSrc: ["'self'"],
       connectSrc: IS_VITE_DEV ? ["'self'", "ws:"] : ["'self'"],
       frameSrc: ["'none'"],

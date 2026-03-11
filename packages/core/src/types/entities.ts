@@ -49,7 +49,7 @@ export interface Media {
   width: number | null;
   height: number | null;
   alt: string | null;
-  position: number;
+  position: string;
   blurhash: string | null;
   waveform: string | null;
   posterKey: string | null;
@@ -70,7 +70,7 @@ export interface MediaAttachment {
   posterUrl: string | null;
   width: number | null;
   height: number | null;
-  position: number;
+  position: string;
   mimeType: string;
   originalName: string;
   size: number;

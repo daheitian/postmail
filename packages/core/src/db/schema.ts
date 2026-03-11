@@ -92,6 +92,10 @@ export const posts = sqliteTable(
       )`,
     ),
     check(
+      "chk_post_reply_not_pinned",
+      sql`${table.pinnedAt} IS NULL OR ${table.replyToId} IS NULL`,
+    ),
+    check(
       "chk_post_format_shape",
       sql`(
         ${table.format} = 'note'
@@ -187,7 +191,7 @@ export const media = sqliteTable(
     width: integer("width"),
     height: integer("height"),
     alt: text("alt"),
-    position: integer("position").notNull().default(0),
+    position: text("position").notNull().default("a0"),
     blurhash: text("blurhash"),
     waveform: text("waveform"),
     posterKey: text("poster_key"),
@@ -207,7 +211,7 @@ export const media = sqliteTable(
       sql`${table.mediaKind} IN (${sqlTextEnum(MEDIA_KINDS)})`,
     ),
     check("chk_media_size_positive", sql`${table.size} > 0`),
-    check("chk_media_position_nonnegative", sql`${table.position} >= 0`),
+    check("chk_media_position_not_blank", sql`trim(${table.position}) <> ''`),
     check(
       "chk_media_dimensions_positive",
       sql`(
@@ -221,6 +225,9 @@ export const media = sqliteTable(
       sql`${table.chars} IS NULL OR ${table.chars} >= 0`,
     ),
     index("idx_media_post_id_position").on(table.postId, table.position),
+    uniqueIndex("uq_media_post_position")
+      .on(table.postId, table.position)
+      .where(sql`${table.postId} IS NOT NULL`),
     uniqueIndex("idx_media_storage_key").on(table.storageKey),
     index("idx_media_media_kind_post_id").on(table.mediaKind, table.postId),
   ],

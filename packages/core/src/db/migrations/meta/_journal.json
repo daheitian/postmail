@@ -71,6 +71,13 @@
       "when": 1773264662233,
       "tag": "0009_curious_starfox",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1773265734543,
+      "tag": "0010_awesome_lady_bullseye",
+      "breakpoints": true
     }
   ]
 }
