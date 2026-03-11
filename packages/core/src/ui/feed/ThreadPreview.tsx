@@ -10,6 +10,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { ThreadPreviewProps } from "../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { TimelineItemFromPost } from "./TimelineItem.js";
+import { getThreadPreviewState } from "./thread-preview-state.js";
 
 export const ThreadPreview: FC<ThreadPreviewProps> = ({
   rootPost,
@@ -18,16 +19,18 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
   totalReplyCount,
 }) => {
   const { t } = useLingui();
-
-  // Count of posts between root and parent (or root and latest if no parent)
-  const hiddenCount = parentReply
-    ? totalReplyCount - 2 // exclude latest + parent
-    : totalReplyCount - 1; // exclude latest only
+  const { hiddenCount, shouldShowToggle } = getThreadPreviewState({
+    hasParentReply: parentReply !== undefined,
+    totalReplyCount,
+  });
 
   return (
     <div class="thread-group">
       {/* Faded ancestor context */}
-      <div class="thread-context-faded" data-thread-context>
+      <div
+        class={shouldShowToggle ? "thread-context-faded" : undefined}
+        data-thread-context
+      >
         {/* Root post (compact) */}
         <div class="thread-item">
           <TimelineItemFromPost post={rootPost} mode="compact" />
@@ -57,20 +60,22 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
         )}
 
         {/* Gradient fade overlay */}
-        <div class="thread-context-fade" />
+        {shouldShowToggle && <div class="thread-context-fade" />}
       </div>
 
       {/* Toggle button */}
-      <button
-        type="button"
-        class="thread-context-toggle text-xs text-muted-foreground hover:text-foreground"
-        data-thread-context-toggle
-      >
-        {t({
-          message: "Show more",
-          comment: "@context: Button to expand faded thread context",
-        })}
-      </button>
+      {shouldShowToggle && (
+        <button
+          type="button"
+          class="thread-context-toggle text-xs text-muted-foreground hover:text-foreground"
+          data-thread-context-toggle
+        >
+          {t({
+            message: "Show more",
+            comment: "@context: Button to expand faded thread context",
+          })}
+        </button>
+      )}
 
       {/* Latest reply (full card, hero) */}
       <div class="thread-item">
