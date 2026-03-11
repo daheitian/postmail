@@ -31,7 +31,7 @@ export interface Post {
   replyToId: string | null;
   threadId: string;
   deletedAt: number | null;
-  publishedAt: number;
+  publishedAt: number | null;
   lastActivityAt: number;
   createdAt: number;
   updatedAt: number;

@@ -18,6 +18,26 @@ import type {
   UpdateNavItem,
 } from "../types.js";
 
+const POSITION_RETRY_ATTEMPTS = 5;
+
+function isUniqueConstraintError(err: unknown): boolean {
+  let current: unknown = err;
+  while (current) {
+    const msg = String(current);
+    if (
+      msg.includes("UNIQUE constraint") ||
+      msg.includes("SQLITE_CONSTRAINT")
+    ) {
+      return true;
+    }
+    current =
+      current instanceof Error && current.cause !== current
+        ? current.cause
+        : undefined;
+  }
+  return false;
+}
+
 export interface NavItemService {
   list(): Promise<NavItem[]>;
   getById(id: string): Promise<NavItem | null>;
@@ -53,6 +73,48 @@ export function createNavItemService(db: Database): NavItemService {
     return rows[0]?.position ?? null;
   }
 
+  async function listOrderedPositions(excludeId?: string) {
+    const rows = await db
+      .select({ id: navItems.id, position: navItems.position })
+      .from(navItems)
+      .orderBy(asc(navItems.position));
+    return excludeId ? rows.filter((row) => row.id !== excludeId) : rows;
+  }
+
+  async function getAppendPosition(): Promise<string> {
+    const lastPos = await getLastPosition();
+    return generateKeyBetween(lastPos, null);
+  }
+
+  async function getMovePosition(
+    id: string,
+    afterId: string | null,
+    beforeId: string | null,
+  ): Promise<string> {
+    const rows = await listOrderedPositions(id);
+    const afterIndex = afterId
+      ? rows.findIndex((row) => row.id === afterId)
+      : -1;
+    if (afterIndex >= 0) {
+      return generateKeyBetween(
+        rows[afterIndex]?.position ?? null,
+        rows[afterIndex + 1]?.position ?? null,
+      );
+    }
+
+    const beforeIndex = beforeId
+      ? rows.findIndex((row) => row.id === beforeId)
+      : -1;
+    if (beforeIndex >= 0) {
+      return generateKeyBetween(
+        rows[beforeIndex - 1]?.position ?? null,
+        rows[beforeIndex]?.position ?? null,
+      );
+    }
+
+    return generateKeyBetween(rows.at(-1)?.position ?? null, null);
+  }
+
   return {
     async list() {
       const rows = await db
@@ -75,27 +137,52 @@ export function createNavItemService(db: Database): NavItemService {
       const id = uuidv7();
       const timestamp = now();
 
-      let position = data.position;
-      if (position === undefined) {
-        const lastPos = await getLastPosition();
-        position = generateKeyBetween(lastPos, null);
+      if (data.position !== undefined) {
+        const result = await db
+          .insert(navItems)
+          .values({
+            id,
+            type: data.type,
+            label: data.label,
+            url: data.url,
+            position: data.position,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          })
+          .returning();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
+        return toNavItem(result[0]!);
       }
 
-      const result = await db
-        .insert(navItems)
-        .values({
-          id,
-          type: data.type,
-          label: data.label,
-          url: data.url,
-          position,
-          createdAt: timestamp,
-          updatedAt: timestamp,
-        })
-        .returning();
+      for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
+        try {
+          const result = await db
+            .insert(navItems)
+            .values({
+              id,
+              type: data.type,
+              label: data.label,
+              url: data.url,
+              position: await getAppendPosition(),
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            })
+            .returning();
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toNavItem(result[0]!);
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
+          return toNavItem(result[0]!);
+        } catch (err) {
+          if (
+            !isUniqueConstraintError(err) ||
+            attempt === POSITION_RETRY_ATTEMPTS - 1
+          ) {
+            throw err;
+          }
+        }
+      }
+
+      throw new Error("Failed to assign a unique nav item position");
     },
 
     async update(id, data) {
@@ -139,38 +226,30 @@ export function createNavItemService(db: Database): NavItemService {
         .limit(1);
       if (!items[0]) return null;
 
-      // Look up neighbor positions
-      let afterPos: string | null = null;
-      let beforePos: string | null = null;
-
-      if (afterId) {
-        const afterRows = await db
-          .select({ position: navItems.position })
-          .from(navItems)
-          .where(eq(navItems.id, afterId))
-          .limit(1);
-        afterPos = afterRows[0]?.position ?? null;
-      }
-
-      if (beforeId) {
-        const beforeRows = await db
-          .select({ position: navItems.position })
-          .from(navItems)
-          .where(eq(navItems.id, beforeId))
-          .limit(1);
-        beforePos = beforeRows[0]?.position ?? null;
-      }
-
-      const newPosition = generateKeyBetween(afterPos, beforePos);
       const timestamp = now();
+      for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
+        try {
+          const result = await db
+            .update(navItems)
+            .set({
+              position: await getMovePosition(id, afterId, beforeId),
+              updatedAt: timestamp,
+            })
+            .where(eq(navItems.id, id))
+            .returning();
 
-      const result = await db
-        .update(navItems)
-        .set({ position: newPosition, updatedAt: timestamp })
-        .where(eq(navItems.id, id))
-        .returning();
+          return result[0] ? toNavItem(result[0]) : null;
+        } catch (err) {
+          if (
+            !isUniqueConstraintError(err) ||
+            attempt === POSITION_RETRY_ATTEMPTS - 1
+          ) {
+            throw err;
+          }
+        }
+      }
 
-      return result[0] ? toNavItem(result[0]) : null;
+      throw new Error("Failed to assign a unique nav item position");
     },
   };
 }

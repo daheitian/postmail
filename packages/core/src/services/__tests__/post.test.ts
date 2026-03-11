@@ -168,6 +168,28 @@ describe("PostService", () => {
       });
 
       expect(post.status).toBe("draft");
+      expect(post.publishedAt).toBeNull();
+    });
+
+    it("rejects ratings outside the database range", async () => {
+      await expect(
+        postService.create({
+          format: "note",
+          bodyMarkdown: "test",
+          rating: 6,
+        }),
+      ).rejects.toThrow();
+    });
+
+    it("rejects draft posts with an explicit publish time", async () => {
+      await expect(
+        postService.create({
+          format: "note",
+          bodyMarkdown: "draft content",
+          status: "draft",
+          publishedAt: 1706745600,
+        }),
+      ).rejects.toThrow("Drafts can't set a publish time.");
     });
 
     it("rejects note posts with a URL", async () => {
@@ -309,6 +331,31 @@ describe("PostService", () => {
       const posts = await postService.list();
       expect(posts[0]?.bodyText).toBe("new");
       expect(posts[1]?.bodyText).toBe("old");
+    });
+
+    it("orders drafts by updatedAt descending", async () => {
+      const older = await postService.create({
+        format: "note",
+        bodyMarkdown: "older draft",
+        status: "draft",
+      });
+
+      await new Promise((r) => setTimeout(r, 1100));
+
+      const newer = await postService.create({
+        format: "note",
+        bodyMarkdown: "newer draft",
+        status: "draft",
+      });
+
+      await new Promise((r) => setTimeout(r, 1100));
+      await postService.update(older.id, {
+        bodyMarkdown: "older draft edited",
+      });
+
+      const drafts = await postService.list({ status: "draft" });
+      expect(drafts[0]?.id).toBe(older.id);
+      expect(drafts[1]?.id).toBe(newer.id);
     });
 
     it("filters by format", async () => {
@@ -736,6 +783,55 @@ describe("PostService", () => {
       expect(updated?.updatedAt).toBeGreaterThanOrEqual(originalUpdatedAt);
     });
 
+    it("sets publishedAt when publishing a draft", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "draft",
+        status: "draft",
+      });
+
+      expect(post.publishedAt).toBeNull();
+
+      await new Promise((r) => setTimeout(r, 1100));
+
+      const published = await postService.update(post.id, {
+        status: "published",
+      });
+
+      expect(published?.status).toBe("published");
+      expect(published?.publishedAt).toBeTypeOf("number");
+      expect((published?.publishedAt ?? 0) >= post.updatedAt).toBe(true);
+    });
+
+    it("clears publishedAt when converting a published post back to draft", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "published",
+        publishedAt: 1706745600,
+      });
+
+      const draft = await postService.update(post.id, {
+        status: "draft",
+      });
+
+      expect(draft?.status).toBe("draft");
+      expect(draft?.publishedAt).toBeNull();
+    });
+
+    it("rejects setting publishedAt while remaining a draft", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "draft",
+        status: "draft",
+      });
+
+      await expect(
+        postService.update(post.id, {
+          publishedAt: 1706745600,
+        }),
+      ).rejects.toThrow("Drafts can't set a publish time.");
+    });
+
     it("updates visibility", async () => {
       const post = await postService.create({
         format: "note",
@@ -1067,6 +1163,29 @@ describe("PostService", () => {
       const thread = await postService.getThread(root.id);
       for (const post of thread) {
         expect(post.status).toBe("draft");
+        expect(post.publishedAt).toBeNull();
+      }
+    });
+
+    it("publishing a draft thread stamps publishedAt on all posts", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+        status: "draft",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "reply",
+        replyToId: root.id,
+      });
+
+      await new Promise((r) => setTimeout(r, 1100));
+      await postService.update(root.id, { status: "published" });
+
+      const thread = await postService.getThread(root.id);
+      for (const post of thread) {
+        expect(post.status).toBe("published");
+        expect(post.publishedAt).toBeTypeOf("number");
       }
     });
 
@@ -1200,6 +1319,27 @@ describe("PostService", () => {
       });
 
       await postService.delete(reply.id);
+
+      const counts = await postService.getReplyCounts([root.id]);
+      expect(counts.get(root.id)).toBe(1);
+    });
+
+    it("excludes draft replies from count", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "published reply",
+        replyToId: root.id,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "draft reply",
+        replyToId: root.id,
+        status: "draft",
+      });
 
       const counts = await postService.getReplyCounts([root.id]);
       expect(counts.get(root.id)).toBe(1);

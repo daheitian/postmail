@@ -50,7 +50,7 @@ export const posts = sqliteTable(
     replyToId: text("reply_to_id"),
     threadId: text("thread_id").notNull(),
     deletedAt: integer("deleted_at"),
-    publishedAt: integer("published_at").notNull(),
+    publishedAt: integer("published_at"),
     lastActivityAt: integer("last_activity_at"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -85,6 +85,20 @@ export const posts = sqliteTable(
         ${table.format} = 'quote'
         AND ${table.quoteText} IS NOT NULL
         AND trim(${table.quoteText}) <> ''
+      )`,
+    ),
+    check(
+      "chk_post_rating_range",
+      sql`${table.rating} IS NULL OR ${table.rating} BETWEEN 1 AND 5`,
+    ),
+    check(
+      "chk_post_status_published_at",
+      sql`(
+        ${table.status} = 'draft'
+        AND ${table.publishedAt} IS NULL
+      ) OR (
+        ${table.status} = 'published'
+        AND ${table.publishedAt} IS NOT NULL
       )`,
     ),
     foreignKey({
@@ -240,6 +254,7 @@ export const sidebarItems = sqliteTable(
   },
   (table) => [
     index("idx_sidebar_item_collection_id").on(table.collectionId),
+    uniqueIndex("uq_sidebar_item_position").on(table.position),
     uniqueIndex("uq_sidebar_item_collection_once")
       .on(table.collectionId)
       .where(
@@ -281,19 +296,23 @@ export const postCollections = sqliteTable(
 // Navigation Items
 // =============================================================================
 
-export const navItems = sqliteTable("nav_item", {
-  id: text("id").primaryKey(),
-  type: text("type", {
-    enum: ["link", "system"],
-  })
-    .notNull()
-    .default("link"),
-  label: text("label").notNull(),
-  url: text("url").notNull(),
-  position: text("position").notNull().default("a0"),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const navItems = sqliteTable(
+  "nav_item",
+  {
+    id: text("id").primaryKey(),
+    type: text("type", {
+      enum: ["link", "system"],
+    })
+      .notNull()
+      .default("link"),
+    label: text("label").notNull(),
+    url: text("url").notNull(),
+    position: text("position").notNull().default("a0"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [uniqueIndex("uq_nav_item_position").on(table.position)],
+);
 
 // =============================================================================
 // Settings (Key-Value)

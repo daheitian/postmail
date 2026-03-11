@@ -178,6 +178,15 @@ function isThreadReply(post: Pick<Post, "replyToId">): boolean {
   return post.replyToId !== null;
 }
 
+function assertDraftPublishedAt(
+  status: Status,
+  publishedAt: number | undefined,
+): void {
+  if (status === "draft" && publishedAt !== undefined) {
+    throw new ValidationError("Drafts can't set a publish time.");
+  }
+}
+
 export function createPostService(
   db: Database,
   config: { slugIdLength: number },
@@ -186,6 +195,28 @@ export function createPostService(
   /** Check if a slug is available (not used by posts or custom_urls) */
   async function isSlugAvailable(slug: string): Promise<boolean> {
     return paths.isPathAvailable(slug);
+  }
+
+  async function recalculateThreadLastActivity(rootId: string): Promise<void> {
+    const rootRows = await db
+      .select({
+        latestPublishedAt: sql<number | null>`MAX(${posts.publishedAt})`.as(
+          "latest_published_at",
+        ),
+      })
+      .from(posts)
+      .where(and(eq(posts.threadId, rootId), isNull(posts.deletedAt)));
+
+    const latestPublishedAt = rootRows[0]?.latestPublishedAt ?? null;
+    const root = await db
+      .select({ updatedAt: posts.updatedAt })
+      .from(posts)
+      .where(eq(posts.id, rootId))
+      .limit(1);
+
+    const lastActivityAt = latestPublishedAt ?? root[0]?.updatedAt ?? now();
+
+    await db.update(posts).set({ lastActivityAt }).where(eq(posts.id, rootId));
   }
 
   /** Build WHERE conditions from filters (shared by list and count) */
@@ -289,7 +320,7 @@ export function createPostService(
       threadId: row.threadId,
       deletedAt: row.deletedAt,
       publishedAt: row.publishedAt,
-      lastActivityAt: row.lastActivityAt ?? row.publishedAt,
+      lastActivityAt: row.lastActivityAt ?? row.publishedAt ?? row.updatedAt,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -337,6 +368,15 @@ export function createPostService(
 
     async list(filters = {}) {
       const conditions = buildFilterConditions(filters);
+      const sortTimestamp =
+        filters.status === "draft"
+          ? posts.updatedAt
+          : filters.status === "published"
+            ? posts.lastActivityAt
+            : sql<number>`CASE
+                WHEN ${posts.status} = 'draft' THEN ${posts.updatedAt}
+                ELSE ${posts.lastActivityAt}
+              END`;
 
       if (filters.cursor) {
         conditions.push(sql`${posts.id} < ${filters.cursor}`);
@@ -348,9 +388,7 @@ export function createPostService(
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(
           desc(posts.pinnedAt),
-          filters.featured
-            ? desc(posts.featuredAt)
-            : desc(posts.lastActivityAt),
+          filters.featured ? desc(posts.featuredAt) : desc(sortTimestamp),
           desc(posts.id),
         )
         .limit(filters.limit ?? 100);
@@ -426,6 +464,10 @@ export function createPostService(
         }
       }
 
+      assertDraftPublishedAt(status, data.publishedAt);
+      const publishedAt =
+        status === "published" ? (data.publishedAt ?? timestamp) : null;
+
       // Generate slug
       const slug = await generatePostSlug({
         slug: data.slug,
@@ -455,8 +497,8 @@ export function createPostService(
             rating: data.rating ?? null,
             replyToId: data.replyToId ?? null,
             threadId,
-            publishedAt: data.publishedAt ?? timestamp,
-            lastActivityAt: data.publishedAt ?? timestamp,
+            publishedAt,
+            lastActivityAt: publishedAt ?? timestamp,
             createdAt: timestamp,
             updatedAt: timestamp,
           })
@@ -495,12 +537,9 @@ export function createPostService(
         );
       }
 
-      // Bump thread root's lastActivityAt when creating a reply
-      if (data.replyToId) {
-        await db
-          .update(posts)
-          .set({ lastActivityAt: data.publishedAt ?? timestamp })
-          .where(eq(posts.id, threadId));
+      // Bump thread root's lastActivityAt when creating a published reply
+      if (data.replyToId && status === "published") {
+        await recalculateThreadLastActivity(threadId);
       }
 
       return post;
@@ -515,12 +554,14 @@ export function createPostService(
       const nextUrl = data.url !== undefined ? data.url : existing.url;
       const nextQuoteText =
         data.quoteText !== undefined ? data.quoteText : existing.quoteText;
+      const nextStatus = data.status ?? existing.status;
 
       assertPostFormatShape({
         format: nextFormat,
         url: nextUrl,
         quoteText: nextQuoteText,
       });
+      assertDraftPublishedAt(nextStatus, data.publishedAt);
 
       const updates: Partial<typeof posts.$inferInsert> = {
         updatedAt: timestamp,
@@ -545,8 +586,6 @@ export function createPostService(
       if (data.url !== undefined) updates.url = data.url;
       if (data.quoteText !== undefined) updates.quoteText = data.quoteText;
       if (data.rating !== undefined) updates.rating = data.rating;
-      if (data.publishedAt !== undefined)
-        updates.publishedAt = data.publishedAt;
       if (data.pinned !== undefined)
         updates.pinnedAt = data.pinned ? now() : null;
       if (data.featured !== undefined)
@@ -608,14 +647,29 @@ export function createPostService(
       const visibilityChanged =
         data.visibility !== undefined &&
         data.visibility !== existing.visibility;
+      const publishedAtChanged = data.publishedAt !== undefined;
+      const nextPublishedAt =
+        nextStatus === "draft"
+          ? null
+          : publishedAtChanged
+            ? (data.publishedAt ?? timestamp)
+            : existing.status === "draft"
+              ? timestamp
+              : (existing.publishedAt ?? timestamp);
 
       if (statusChanged) updates.status = data.status;
       if (visibilityChanged) updates.visibility = data.visibility;
+      if (statusChanged || publishedAtChanged || existing.status === "draft") {
+        updates.publishedAt = nextPublishedAt;
+        updates.lastActivityAt = nextPublishedAt ?? timestamp;
+      }
 
       // Build all write queries for atomic execution via D1 batch
       const needsCascade =
         (statusChanged || visibilityChanged) && !isThreadReply(existing);
       const needsCollectionSync = data.collectionIds !== undefined;
+      const needsThreadActivityRecalc =
+        statusChanged || publishedAtChanged || existing.status === "draft";
       const hasExtraWrites = needsCascade || needsCollectionSync;
 
       if (!hasExtraWrites) {
@@ -625,6 +679,10 @@ export function createPostService(
           .set(updates)
           .where(eq(posts.id, id))
           .returning();
+        if (needsThreadActivityRecalc) {
+          await recalculateThreadLastActivity(existing.threadId);
+          return this.getById(id);
+        }
         return hydratePost(result[0]);
       }
 
@@ -639,6 +697,11 @@ export function createPostService(
               status: data.status ?? (existing.status as Status),
               visibility:
                 data.visibility ?? (existing.visibility as Visibility),
+              publishedAt: nextStatus === "published" ? nextPublishedAt : null,
+              lastActivityAt:
+                nextStatus === "published"
+                  ? (nextPublishedAt ?? timestamp)
+                  : timestamp,
               updatedAt: timestamp,
             })
             .where(and(eq(posts.threadId, id), isNotNull(posts.replyToId))),
@@ -679,6 +742,10 @@ export function createPostService(
       const updateResult = results[updateIdx] as
         | (typeof posts.$inferSelect)[]
         | undefined;
+      if (needsThreadActivityRecalc) {
+        await recalculateThreadLastActivity(existing.threadId);
+        return this.getById(id);
+      }
       return hydratePost(updateResult?.[0]);
     },
 
@@ -720,36 +787,7 @@ export function createPostService(
           .update(posts)
           .set({ deletedAt: timestamp, updatedAt: timestamp })
           .where(eq(posts.id, id));
-
-        // Recalculate thread root's lastActivityAt
-        const latestReply = await db
-          .select({ publishedAt: posts.publishedAt })
-          .from(posts)
-          .where(
-            and(
-              eq(posts.threadId, existing.threadId),
-              isNotNull(posts.replyToId),
-              isNull(posts.deletedAt),
-              sql`${posts.id} != ${id}`,
-            ),
-          )
-          .orderBy(desc(posts.publishedAt))
-          .limit(1);
-
-        // Fall back to root's own publishedAt when no replies remain
-        const rootPost = await db
-          .select({ publishedAt: posts.publishedAt })
-          .from(posts)
-          .where(eq(posts.id, existing.threadId))
-          .limit(1);
-
-        const newActivity =
-          latestReply[0]?.publishedAt ?? rootPost[0]?.publishedAt ?? timestamp;
-
-        await db
-          .update(posts)
-          .set({ lastActivityAt: newActivity })
-          .where(eq(posts.id, existing.threadId));
+        await recalculateThreadLastActivity(existing.threadId);
       }
 
       return true;
@@ -769,8 +807,15 @@ export function createPostService(
       const timestamp = now();
       await db
         .update(posts)
-        .set({ status, visibility, updatedAt: timestamp })
+        .set({
+          status,
+          visibility,
+          publishedAt: status === "published" ? timestamp : null,
+          lastActivityAt: timestamp,
+          updatedAt: timestamp,
+        })
         .where(and(eq(posts.threadId, rootId), isNotNull(posts.replyToId)));
+      await recalculateThreadLastActivity(rootId);
     },
 
     async getReplyCounts(postIds) {
@@ -785,6 +830,7 @@ export function createPostService(
         .where(
           and(
             inArray(posts.threadId, postIds),
+            eq(posts.status, "published"),
             isNotNull(posts.replyToId),
             isNull(posts.deletedAt),
           ),
@@ -807,6 +853,7 @@ export function createPostService(
         .where(
           and(
             inArray(posts.threadId, rootIds),
+            eq(posts.status, "published"),
             isNotNull(posts.replyToId),
             isNull(posts.deletedAt),
           ),
@@ -837,6 +884,7 @@ export function createPostService(
         .where(
           and(
             inArray(posts.threadId, rootIds),
+            eq(posts.status, "published"),
             isNotNull(posts.replyToId),
             isNull(posts.deletedAt),
           ),
@@ -875,7 +923,10 @@ export function createPostService(
     },
 
     async getDistinctYears(filters = {}) {
-      const conditions = buildFilterConditions(filters);
+      const conditions = [
+        ...buildFilterConditions(filters),
+        isNotNull(posts.publishedAt),
+      ];
 
       const rows = await db
         .select({

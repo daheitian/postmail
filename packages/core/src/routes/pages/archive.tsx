@@ -171,7 +171,8 @@ archiveRoutes.get("/", async (c) => {
 
   const grouped = new Map<string, PostWithMedia[]>();
   for (const post of posts) {
-    const date = new Date(post.publishedAt * 1000);
+    const publishedAt = post.publishedAt ?? post.updatedAt;
+    const date = new Date(publishedAt * 1000);
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     if (!grouped.has(key)) {
       grouped.set(key, []);

@@ -24,7 +24,9 @@ async function renderPost(c: Context<Env>, post: Post) {
 
   // Load the full thread if this post is part of one
   const threadRootId = post.threadId;
-  const threadPosts = await c.var.services.posts.getThread(threadRootId);
+  const threadPosts = (
+    await c.var.services.posts.getThread(threadRootId)
+  ).filter((threadPost) => threadPost.status === "published");
 
   // Batch load media for all thread posts (or just this post if solo)
   const allPostIds =

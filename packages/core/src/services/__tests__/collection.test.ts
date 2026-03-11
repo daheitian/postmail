@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import { sidebarItems } from "../../db/schema.js";
 import { createCollectionService } from "../collection.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
@@ -345,6 +346,21 @@ describe("CollectionService", () => {
       await expect(
         collectionService.createSidebarItem("collection", collection.id),
       ).rejects.toThrow("Collection is already in the sidebar.");
+    });
+
+    it("rejects duplicate sidebar positions at the database layer", async () => {
+      const item = await collectionService.createSidebarItem("divider");
+
+      await expect(
+        db.insert(sidebarItems).values({
+          id: "00000000-0000-7000-8000-000000000001",
+          type: "divider",
+          collectionId: null,
+          position: item.position,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        }),
+      ).rejects.toThrow();
     });
   });
 

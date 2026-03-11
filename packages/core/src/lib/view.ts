@@ -140,6 +140,7 @@ export function toPostView(
 ): PostView {
   const id = post.id;
   const permalink = `/${post.slug}`;
+  const publishedAt = post.publishedAt ?? post.updatedAt;
 
   // Pre-compute excerpt from raw body
   let excerpt: string | undefined;
@@ -218,10 +219,10 @@ export function toPostView(
     pinned: post.pinnedAt !== null,
     featured: post.featuredAt !== null,
     rating: post.rating ?? undefined,
-    publishedAt: toISOString(post.publishedAt),
-    publishedAtFormatted: formatDate(post.publishedAt),
-    publishedAtTime: formatTime(post.publishedAt),
-    publishedAtRelative: formatRelativeTime(post.publishedAt),
+    publishedAt: toISOString(publishedAt),
+    publishedAtFormatted: formatDate(publishedAt),
+    publishedAtTime: formatTime(publishedAt),
+    publishedAtRelative: formatRelativeTime(publishedAt),
     updatedAt: toISOString(post.updatedAt),
     media,
     collections,

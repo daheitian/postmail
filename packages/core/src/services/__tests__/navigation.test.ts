@@ -55,6 +55,24 @@ describe("NavItemService", () => {
       expect(item.position).toBe("z99");
     });
 
+    it("rejects duplicate provided positions", async () => {
+      await navItemService.create({
+        type: "link",
+        label: "Home",
+        url: "/",
+        position: "m0",
+      });
+
+      await expect(
+        navItemService.create({
+          type: "link",
+          label: "Archive",
+          url: "/archive",
+          position: "m0",
+        }),
+      ).rejects.toThrow();
+    });
+
     it("sets createdAt and updatedAt timestamps", async () => {
       const item = await navItemService.create({
         type: "link",

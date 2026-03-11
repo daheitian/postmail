@@ -181,6 +181,29 @@ describe("PostService - Timeline features", () => {
       expect(replies?.[0]?.bodyText).toBe("reply 2");
     });
 
+    it("excludes draft replies", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "published reply",
+        replyToId: root.id,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "draft reply",
+        replyToId: root.id,
+        status: "draft",
+      });
+
+      const previews = await postService.getThreadPreviews([root.id]);
+      const replies = previews.get(root.id);
+      expect(replies).toHaveLength(1);
+      expect(replies?.[0]?.bodyText).toBe("published reply");
+    });
+
     it("returns empty for roots with no replies", async () => {
       const root = await postService.create({
         format: "note",
@@ -286,6 +309,30 @@ describe("PostService - Timeline features", () => {
       const ctx = result.get(root.id);
       expect(ctx).toBeDefined();
       expect(ctx?.latestReply.id).toBe(reply1.id);
+      expect(ctx?.totalReplyCount).toBe(1);
+    });
+
+    it("excludes draft replies from thread context", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+      });
+      const publishedReply = await postService.create({
+        format: "note",
+        bodyMarkdown: "published reply",
+        replyToId: root.id,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "draft reply",
+        replyToId: root.id,
+        status: "draft",
+      });
+
+      const result = await postService.getThreadTimelineContext([root.id]);
+      const ctx = result.get(root.id);
+      expect(ctx).toBeDefined();
+      expect(ctx?.latestReply.id).toBe(publishedReply.id);
       expect(ctx?.totalReplyCount).toBe(1);
     });
 

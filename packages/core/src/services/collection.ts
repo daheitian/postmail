@@ -26,6 +26,8 @@ import {
   type PathService,
 } from "./path.js";
 
+const POSITION_RETRY_ATTEMPTS = 5;
+
 function isUniqueConstraintError(err: unknown): boolean {
   let current: unknown = err;
   while (current) {
@@ -126,6 +128,48 @@ export function createCollectionService(
     return rows[0]?.position ?? null;
   }
 
+  async function listOrderedSidebarPositions(excludeId?: string) {
+    const rows = await db
+      .select({ id: sidebarItems.id, position: sidebarItems.position })
+      .from(sidebarItems)
+      .orderBy(asc(sidebarItems.position));
+    return excludeId ? rows.filter((row) => row.id !== excludeId) : rows;
+  }
+
+  async function getAppendSidebarPosition(): Promise<string> {
+    const lastPos = await getLastSidebarPosition();
+    return generateKeyBetween(lastPos, null);
+  }
+
+  async function getSidebarMovePosition(
+    id: string,
+    afterId: string | null,
+    beforeId: string | null,
+  ): Promise<string> {
+    const rows = await listOrderedSidebarPositions(id);
+    const afterIndex = afterId
+      ? rows.findIndex((row) => row.id === afterId)
+      : -1;
+    if (afterIndex >= 0) {
+      return generateKeyBetween(
+        rows[afterIndex]?.position ?? null,
+        rows[afterIndex + 1]?.position ?? null,
+      );
+    }
+
+    const beforeIndex = beforeId
+      ? rows.findIndex((row) => row.id === beforeId)
+      : -1;
+    if (beforeIndex >= 0) {
+      return generateKeyBetween(
+        rows[beforeIndex - 1]?.position ?? null,
+        rows[beforeIndex]?.position ?? null,
+      );
+    }
+
+    return generateKeyBetween(rows.at(-1)?.position ?? null, null);
+  }
+
   async function hydrateCollection(
     row: typeof collections.$inferSelect | undefined,
   ): Promise<Collection | null> {
@@ -217,16 +261,26 @@ export function createCollectionService(
         throw err;
       }
 
-      const lastPos = await getLastSidebarPosition();
-      const position = generateKeyBetween(lastPos, null);
-      await db.insert(sidebarItems).values({
-        id: uuidv7(),
-        type: "collection",
-        collectionId: id,
-        position,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      });
+      for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
+        try {
+          await db.insert(sidebarItems).values({
+            id: uuidv7(),
+            type: "collection",
+            collectionId: id,
+            position: await getAppendSidebarPosition(),
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          });
+          break;
+        } catch (err) {
+          if (
+            !isUniqueConstraintError(err) ||
+            attempt === POSITION_RETRY_ATTEMPTS - 1
+          ) {
+            throw err;
+          }
+        }
+      }
 
       const collection = await hydrateCollection(result[0]);
       if (!collection) {
@@ -295,35 +349,47 @@ export function createCollectionService(
       const id = uuidv7();
       const timestamp = now();
 
-      const lastPos = await getLastSidebarPosition();
-      const position = generateKeyBetween(lastPos, null);
+      for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
+        try {
+          const result = await db
+            .insert(sidebarItems)
+            .values({
+              id,
+              type,
+              collectionId: collectionId ?? null,
+              position: await getAppendSidebarPosition(),
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            })
+            .returning();
 
-      let result;
-      try {
-        result = await db
-          .insert(sidebarItems)
-          .values({
-            id,
-            type,
-            collectionId: collectionId ?? null,
-            position,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          })
-          .returning();
-      } catch (err) {
-        if (
-          type === "collection" &&
-          collectionId &&
-          isUniqueConstraintError(err)
-        ) {
-          throw new ConflictError("Collection is already in the sidebar.");
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
+          return toSidebarItem(result[0]!);
+        } catch (err) {
+          if (
+            type === "collection" &&
+            collectionId &&
+            isUniqueConstraintError(err)
+          ) {
+            const existing = await db
+              .select({ id: sidebarItems.id })
+              .from(sidebarItems)
+              .where(eq(sidebarItems.collectionId, collectionId))
+              .limit(1);
+            if (existing.length > 0) {
+              throw new ConflictError("Collection is already in the sidebar.");
+            }
+          }
+          if (
+            !isUniqueConstraintError(err) ||
+            attempt === POSITION_RETRY_ATTEMPTS - 1
+          ) {
+            throw err;
+          }
         }
-        throw err;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      return toSidebarItem(result[0]!);
+      throw new Error("Failed to assign a unique sidebar item position");
     },
 
     async deleteSidebarItem(id) {
@@ -342,37 +408,30 @@ export function createCollectionService(
         .limit(1);
       if (!items[0]) return null;
 
-      let afterPos: string | null = null;
-      let beforePos: string | null = null;
-
-      if (afterId) {
-        const afterRows = await db
-          .select({ position: sidebarItems.position })
-          .from(sidebarItems)
-          .where(eq(sidebarItems.id, afterId))
-          .limit(1);
-        afterPos = afterRows[0]?.position ?? null;
-      }
-
-      if (beforeId) {
-        const beforeRows = await db
-          .select({ position: sidebarItems.position })
-          .from(sidebarItems)
-          .where(eq(sidebarItems.id, beforeId))
-          .limit(1);
-        beforePos = beforeRows[0]?.position ?? null;
-      }
-
-      const newPosition = generateKeyBetween(afterPos, beforePos);
       const timestamp = now();
+      for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
+        try {
+          const result = await db
+            .update(sidebarItems)
+            .set({
+              position: await getSidebarMovePosition(id, afterId, beforeId),
+              updatedAt: timestamp,
+            })
+            .where(eq(sidebarItems.id, id))
+            .returning();
 
-      const result = await db
-        .update(sidebarItems)
-        .set({ position: newPosition, updatedAt: timestamp })
-        .where(eq(sidebarItems.id, id))
-        .returning();
+          return result[0] ? toSidebarItem(result[0]) : null;
+        } catch (err) {
+          if (
+            !isUniqueConstraintError(err) ||
+            attempt === POSITION_RETRY_ATTEMPTS - 1
+          ) {
+            throw err;
+          }
+        }
+      }
 
-      return result[0] ? toSidebarItem(result[0]) : null;
+      throw new Error("Failed to assign a unique sidebar item position");
     },
 
     async getPostCounts() {
