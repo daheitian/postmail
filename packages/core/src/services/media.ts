@@ -54,7 +54,7 @@ export interface MediaService {
    * @param storage - Optional storage driver; when provided the files are deleted from storage
    */
   deleteByIds(ids: string[], storage?: StorageDriver | null): Promise<void>;
-  getByStorageKey(storageKey: string): Promise<Media | null>;
+  getByStorageKey(storageKey: string, provider: string): Promise<Media | null>;
   attachToPost(postId: string, mediaIds: string[]): Promise<void>;
   detachFromPost(postId: string): Promise<void>;
   updateAlt(id: string, alt: string): Promise<void>;
@@ -178,11 +178,13 @@ export function createMediaService(db: Database): MediaService {
       return result;
     },
 
-    async getByStorageKey(storageKey) {
+    async getByStorageKey(storageKey, provider) {
       const result = await db
         .select()
         .from(media)
-        .where(eq(media.storageKey, storageKey))
+        .where(
+          and(eq(media.storageKey, storageKey), eq(media.provider, provider)),
+        )
         .limit(1);
       return result[0] ? toMedia(result[0]) : null;
     },

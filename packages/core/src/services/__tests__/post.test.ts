@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { eq } from "drizzle-orm";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { posts } from "../../db/schema.js";
 import { createPostService } from "../post.js";
@@ -1120,6 +1121,28 @@ describe("PostService", () => {
       expect(reply.visibility).toBe("unlisted");
     });
 
+    it("stores reply visibility as null and resolves it from the root", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+        visibility: "private",
+      });
+      const reply = await postService.create({
+        format: "note",
+        bodyMarkdown: "reply",
+        replyToId: root.id,
+      });
+
+      const rows = await db
+        .select({ visibility: posts.visibility })
+        .from(posts)
+        .where(eq(posts.id, reply.id))
+        .limit(1);
+
+      expect(rows[0]?.visibility).toBeNull();
+      expect(reply.visibility).toBe("private");
+    });
+
     it("does not inherit featuredAt from root post", async () => {
       const root = await postService.create({
         format: "note",
@@ -1238,6 +1261,32 @@ describe("PostService", () => {
       for (const post of thread) {
         expect(post.visibility).toBe("unlisted");
       }
+    });
+
+    it("filters replies by the root post visibility", async () => {
+      const unlistedRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+        visibility: "unlisted",
+      });
+      const unlistedReply = await postService.create({
+        format: "note",
+        bodyMarkdown: "reply",
+        replyToId: unlistedRoot.id,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "public root",
+      });
+
+      const postsByVisibility = await postService.list({
+        visibility: "unlisted",
+      });
+
+      expect(postsByVisibility.map((post) => post.id)).toEqual([
+        unlistedReply.id,
+        unlistedRoot.id,
+      ]);
     });
 
     it("rejects visibility changes on thread replies", async () => {

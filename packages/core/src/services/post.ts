@@ -193,6 +193,11 @@ export function createPostService(
   config: { slugIdLength: number },
   paths: PathService = createPathService(db),
 ): PostService {
+  const effectiveVisibilityExpr = sql<string>`coalesce(
+    ${posts.visibility},
+    (SELECT root.visibility FROM post AS root WHERE root.id = ${posts.threadId})
+  )`;
+
   /** Check if a slug is available (not used by posts or custom_urls) */
   async function isSlugAvailable(slug: string): Promise<boolean> {
     return paths.isPathAvailable(slug);
@@ -237,13 +242,13 @@ export function createPostService(
       conditions.push(eq(posts.status, filters.status));
     }
     if (filters.visibility !== undefined) {
-      conditions.push(eq(posts.visibility, filters.visibility));
+      conditions.push(sql`${effectiveVisibilityExpr} = ${filters.visibility}`);
     }
     if (filters.excludeUnlisted) {
-      conditions.push(sql`${posts.visibility} != 'unlisted'`);
+      conditions.push(sql`${effectiveVisibilityExpr} != 'unlisted'`);
     }
     if (filters.excludePrivate) {
-      conditions.push(sql`${posts.visibility} != 'private'`);
+      conditions.push(sql`${effectiveVisibilityExpr} != 'private'`);
     }
     if (filters.pinned !== undefined) {
       conditions.push(
@@ -309,12 +314,16 @@ export function createPostService(
     return conditions;
   }
 
-  function toPost(row: typeof posts.$inferSelect, slug: string): Post {
+  function toPost(
+    row: typeof posts.$inferSelect,
+    slug: string,
+    visibility: Visibility,
+  ): Post {
     return {
       id: row.id,
       format: row.format as Format,
       status: row.status as Status,
-      visibility: row.visibility as Visibility,
+      visibility,
       pinnedAt: row.pinnedAt,
       featuredAt: row.featuredAt,
       slug,
@@ -342,7 +351,10 @@ export function createPostService(
     if (!row) return null;
     const slug = await paths.getPostSlug(row.id);
     if (!slug) return null;
-    return toPost(row, slug);
+    const rootVisibilityMap = await getThreadVisibilityMap([row.threadId]);
+    const visibility = rootVisibilityMap.get(row.threadId) ?? row.visibility;
+    if (!visibility) return null;
+    return toPost(row, slug, visibility as Visibility);
   }
 
   async function hydratePosts(
@@ -350,12 +362,40 @@ export function createPostService(
   ): Promise<Post[]> {
     if (rows.length === 0) return [];
     const slugMap = await paths.getPostSlugMap(rows.map((row) => row.id));
+    const rootVisibilityMap = await getThreadVisibilityMap(
+      rows.map((row) => row.threadId),
+    );
     return rows
       .map((row) => {
         const slug = slugMap.get(row.id);
-        return slug ? toPost(row, slug) : null;
+        const visibility =
+          rootVisibilityMap.get(row.threadId) ?? row.visibility;
+        return slug && visibility
+          ? toPost(row, slug, visibility as Visibility)
+          : null;
       })
       .filter((row): row is Post => row !== null);
+  }
+
+  async function getThreadVisibilityMap(
+    threadIds: string[],
+  ): Promise<Map<string, Visibility>> {
+    const uniqueThreadIds = [...new Set(threadIds)];
+    const result = new Map<string, Visibility>();
+    if (uniqueThreadIds.length === 0) return result;
+
+    const rows = await db
+      .select({ id: posts.id, visibility: posts.visibility })
+      .from(posts)
+      .where(inArray(posts.id, uniqueThreadIds));
+
+    for (const row of rows) {
+      if (row.visibility) {
+        result.set(row.id, row.visibility as Visibility);
+      }
+    }
+
+    return result;
   }
 
   return {
@@ -451,7 +491,7 @@ export function createPostService(
       // Handle thread relationship
       let threadId = id;
       let status: Status = data.status ?? "published";
-      let visibility: Visibility = data.visibility ?? "public";
+      let visibility: Visibility | null = data.visibility ?? "public";
 
       if (data.replyToId) {
         const parent = await this.getById(data.replyToId);
@@ -467,7 +507,7 @@ export function createPostService(
 
         threadId = parent.threadId;
 
-        // Inherit status and visibility from root
+        // Replies inherit visibility from the root at read time.
         const root =
           parent.threadId === parent.id
             ? parent
@@ -476,8 +516,8 @@ export function createPostService(
           if (data.status !== "draft") {
             status = root.status as Status;
           }
-          visibility = root.visibility as Visibility;
         }
+        visibility = null;
       }
 
       assertDraftPublishedAt(status, data.publishedAt);
@@ -684,19 +724,23 @@ export function createPostService(
               : (existing.publishedAt ?? timestamp);
 
       if (statusChanged) updates.status = data.status;
-      if (visibilityChanged) updates.visibility = data.visibility;
+      if (visibilityChanged && !isThreadReply(existing)) {
+        updates.visibility = data.visibility;
+      }
       if (statusChanged || publishedAtChanged || existing.status === "draft") {
         updates.publishedAt = nextPublishedAt;
         updates.lastActivityAt = nextPublishedAt ?? timestamp;
       }
 
       // Build all write queries for atomic execution via D1 batch
-      const needsCascade =
-        (statusChanged || visibilityChanged) && !isThreadReply(existing);
+      const needsCascade = statusChanged && !isThreadReply(existing);
+      const needsReplyVisibilityCleanup =
+        !isThreadReply(existing) && (statusChanged || visibilityChanged);
       const needsCollectionSync = data.collectionIds !== undefined;
       const needsThreadActivityRecalc =
         statusChanged || publishedAtChanged || existing.status === "draft";
-      const hasExtraWrites = needsCascade || needsCollectionSync;
+      const hasExtraWrites =
+        needsCascade || needsReplyVisibilityCleanup || needsCollectionSync;
 
       if (!hasExtraWrites) {
         // Simple case: only the post update
@@ -721,8 +765,6 @@ export function createPostService(
             .update(posts)
             .set({
               status: data.status ?? (existing.status as Status),
-              visibility:
-                data.visibility ?? (existing.visibility as Visibility),
               publishedAt: nextStatus === "published" ? nextPublishedAt : null,
               lastActivityAt:
                 nextStatus === "published"
@@ -730,6 +772,15 @@ export function createPostService(
                   : timestamp,
               updatedAt: timestamp,
             })
+            .where(and(eq(posts.threadId, id), isNotNull(posts.replyToId))),
+        );
+      }
+
+      if (needsReplyVisibilityCleanup) {
+        writeQueries.push(
+          db
+            .update(posts)
+            .set({ visibility: null, updatedAt: timestamp })
             .where(and(eq(posts.threadId, id), isNotNull(posts.replyToId))),
         );
       }
@@ -831,16 +882,28 @@ export function createPostService(
 
     async updateThreadStatusAndVisibility(rootId, status, visibility) {
       const timestamp = now();
-      await db
-        .update(posts)
-        .set({
-          status,
-          visibility,
-          publishedAt: status === "published" ? timestamp : null,
-          lastActivityAt: timestamp,
-          updatedAt: timestamp,
-        })
-        .where(and(eq(posts.threadId, rootId), isNotNull(posts.replyToId)));
+      await db.batch([
+        db
+          .update(posts)
+          .set({
+            status,
+            visibility,
+            publishedAt: status === "published" ? timestamp : null,
+            lastActivityAt: timestamp,
+            updatedAt: timestamp,
+          })
+          .where(eq(posts.id, rootId)),
+        db
+          .update(posts)
+          .set({
+            status,
+            visibility: null,
+            publishedAt: status === "published" ? timestamp : null,
+            lastActivityAt: timestamp,
+            updatedAt: timestamp,
+          })
+          .where(and(eq(posts.threadId, rootId), isNotNull(posts.replyToId))),
+      ]);
       await recalculateThreadLastActivity(rootId);
     },
 

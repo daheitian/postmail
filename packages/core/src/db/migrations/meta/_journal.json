@@ -78,6 +78,20 @@
       "when": 1773265734543,
       "tag": "0010_awesome_lady_bullseye",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1773269318122,
+      "tag": "0011_curious_garia",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1773270060621,
+      "tag": "0012_curly_domino",
+      "breakpoints": true
     }
   ]
 }

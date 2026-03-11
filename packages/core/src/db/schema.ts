@@ -46,9 +46,7 @@ export const posts = sqliteTable(
       .default("published"),
     visibility: text("visibility", {
       enum: VISIBILITIES,
-    })
-      .notNull()
-      .default("public"),
+    }).default("public"),
     pinnedAt: integer("pinned_at"),
     featuredAt: integer("featured_at"),
     title: text("title"),
@@ -76,6 +74,10 @@ export const posts = sqliteTable(
     check(
       "chk_post_visibility",
       sql`${table.visibility} IN (${sqlTextEnum(VISIBILITIES)})`,
+    ),
+    check(
+      "chk_post_root_visibility_present",
+      sql`${table.replyToId} IS NOT NULL OR ${table.visibility} IS NOT NULL`,
     ),
     check(
       "chk_post_reply_to_not_self",
@@ -228,7 +230,10 @@ export const media = sqliteTable(
     uniqueIndex("uq_media_post_position")
       .on(table.postId, table.position)
       .where(sql`${table.postId} IS NOT NULL`),
-    uniqueIndex("idx_media_storage_key").on(table.storageKey),
+    uniqueIndex("uq_media_provider_storage_key").on(
+      table.provider,
+      table.storageKey,
+    ),
     index("idx_media_media_kind_post_id").on(table.mediaKind, table.postId),
   ],
 );

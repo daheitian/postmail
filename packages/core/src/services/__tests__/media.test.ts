@@ -384,14 +384,36 @@ describe("MediaService", () => {
 
       const found = await mediaService.getByStorageKey(
         "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
+        "r2",
       );
       expect(found).not.toBeNull();
       expect(found?.originalName).toBe("photo.jpg");
     });
 
     it("returns null for non-existent R2 key", async () => {
-      const found = await mediaService.getByStorageKey("nonexistent");
+      const found = await mediaService.getByStorageKey("nonexistent", "r2");
       expect(found).toBeNull();
+    });
+
+    it("allows the same storage key on different providers", async () => {
+      await mediaService.create(sampleMedia);
+      await mediaService.create({
+        ...sampleMedia,
+        id: "0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e10",
+        provider: "s3",
+      });
+
+      const r2Media = await mediaService.getByStorageKey(
+        sampleMedia.storageKey,
+        "r2",
+      );
+      const s3Media = await mediaService.getByStorageKey(
+        sampleMedia.storageKey,
+        "s3",
+      );
+
+      expect(r2Media?.provider).toBe("r2");
+      expect(s3Media?.provider).toBe("s3");
     });
   });
 

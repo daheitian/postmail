@@ -30,7 +30,8 @@ interface RawSearchRow {
   id: string;
   format: string;
   status: string;
-  visibility: string;
+  visibility: string | null;
+  effective_visibility: string | null;
   pinned_at: number | null;
   featured_at: number | null;
   slug: string;
@@ -60,7 +61,8 @@ function mapRow(row: RawSearchRow): SearchResult {
       id: row.id,
       format: row.format as Post["format"],
       status: row.status as Post["status"],
-      visibility: row.visibility as Post["visibility"],
+      visibility: (row.effective_visibility ??
+        row.visibility) as Post["visibility"],
       pinnedAt: row.pinned_at,
       featuredAt: row.featured_at,
       slug: row.slug,
@@ -115,11 +117,13 @@ export function createSearchService(d1: D1Database): SearchService {
     const stmt = d1.prepare(`
       SELECT
         post.*,
+        COALESCE(post.visibility, root_post.visibility) AS effective_visibility,
         path_registry.path AS slug,
         post_fts.rank AS rank,
         snippet(post_fts, 1, char(2), char(3), '...', 32) AS snippet
       FROM post_fts
       JOIN post ON post.rowid = post_fts.rowid
+      JOIN post AS root_post ON root_post.id = post.thread_id
       JOIN path_registry
         ON path_registry.post_id = post.id
        AND path_registry.kind = 'slug'
@@ -152,16 +156,22 @@ export function createSearchService(d1: D1Database): SearchService {
     const formatParams = options.format ? [options.format] : [];
 
     const stmt = d1.prepare(`
-      SELECT post.*, path_registry.path AS slug, 0 AS rank, NULL AS snippet
+      SELECT
+        post.*,
+        COALESCE(post.visibility, root_post.visibility) AS effective_visibility,
+        path_registry.path AS slug,
+        0 AS rank,
+        NULL AS snippet
       FROM post
+      JOIN post AS root_post ON root_post.id = post.thread_id
       JOIN path_registry
         ON path_registry.post_id = post.id
        AND path_registry.kind = 'slug'
       WHERE (
-        title LIKE ? OR
-        body_text LIKE ? OR
-        quote_text LIKE ? OR
-        url LIKE ?
+        post.title LIKE ? OR
+        post.body_text LIKE ? OR
+        post.quote_text LIKE ? OR
+        post.url LIKE ?
       )
       AND post.deleted_at IS NULL
       AND post.status IN (${statusPlaceholders})
