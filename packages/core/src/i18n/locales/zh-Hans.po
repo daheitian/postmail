@@ -845,7 +845,9 @@ msgid "New Password"
 msgstr "新密码"
 
 #. @context: Browser page title for the new post page
+#. @context: Page title for the new post page
 #: src/routes/pages/new.tsx
+#: src/ui/pages/ComposePage.tsx
 msgid "New post"
 msgstr ""
 

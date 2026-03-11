@@ -2082,7 +2082,12 @@ export class JantComposeDialog extends LitElement {
     ></jant-compose-editor>`;
 
     return html`
-      <div class="compose-dialog-inner">
+      <div
+        class=${classMap({
+          "compose-dialog-inner": true,
+          "compose-dialog-inner-page": this.pageMode,
+        })}
+      >
         ${this._renderHeader()}
         ${isReply
           ? html`

@@ -930,6 +930,20 @@
     background-color: var(--site-elevated-bg);
   }
 
+  .compose-page-intro {
+    display: none;
+  }
+
+  .compose-page-title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 3vw, 2.4rem);
+    font-weight: var(--fw-regular);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--site-text-primary);
+  }
+
   .compose-page-shell > jant-compose-dialog {
     display: block;
   }
@@ -957,18 +971,88 @@
     .compose-page {
       margin-inline: 0;
       margin-bottom: 0;
-      padding: 16px 0 24px;
+      padding: 32px 0 40px;
     }
 
     .compose-page-shell {
-      max-width: calc(var(--site-width) - var(--site-padding) * 2 - 20px);
+      max-width: min(760px, calc(100vw - var(--site-padding) * 2));
       margin: 0 auto;
+      background: transparent;
+    }
+
+    .compose-page-intro {
+      display: block;
+      margin-bottom: 20px;
+      padding-inline: 4px;
+    }
+
+    .compose-page-shell .compose-dialog-inner-page {
+      padding: 20px 24px 0;
+      background-color: color-mix(
+        in srgb,
+        var(--site-elevated-bg) 96%,
+        var(--site-bg) 4%
+      );
       border: 1px solid var(--site-column-outline);
-      border-radius: 10px;
-      box-shadow:
-        0 8px 40px rgba(0, 0, 0, 0.08),
-        0 1px 3px rgba(0, 0, 0, 0.04);
-      overflow: hidden;
+      border-radius: 18px;
+      overflow: visible;
+    }
+
+    .compose-page-shell .compose-dialog-inner-page .compose-dialog-header {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 0 0 16px;
+      border-bottom: 1px solid var(--site-border-light);
+    }
+
+    .compose-page-shell
+      .compose-dialog-inner-page
+      .compose-dialog-header-center {
+      position: static;
+      transform: none;
+      justify-self: start;
+      min-width: 0;
+    }
+
+    .compose-page-shell .compose-dialog-inner-page .compose-dialog-cancel {
+      min-width: 0;
+      padding-inline: 0;
+    }
+
+    .compose-page-shell .compose-dialog-inner-page .compose-body {
+      padding: 22px 0 12px;
+      min-height: clamp(14rem, 34vh, 22rem);
+    }
+
+    .compose-page-shell .compose-dialog-inner-page .compose-action-row {
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      margin-inline: -24px;
+      padding: 14px 24px 16px;
+      border-top: 1px solid var(--site-border-light);
+      background-color: color-mix(
+        in srgb,
+        var(--site-elevated-bg) 92%,
+        transparent
+      );
+      backdrop-filter: blur(14px);
+    }
+
+    .compose-page-shell .compose-dialog-inner-page .compose-thread-layout,
+    .compose-page-shell .compose-dialog-inner-page .compose-editor-row,
+    .compose-page-shell .compose-dialog-inner-page .compose-reply-row,
+    .compose-page-shell .compose-dialog-inner-page .compose-reply-meta {
+      padding-inline: 0;
+    }
+
+    .compose-page-shell
+      .compose-dialog-inner-page
+      .compose-add-collection-panel,
+    .compose-page-shell .compose-dialog-inner-page .compose-confirm-panel {
+      border-radius: 18px;
     }
   }
 
