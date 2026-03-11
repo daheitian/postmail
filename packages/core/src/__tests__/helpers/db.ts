@@ -123,15 +123,22 @@ export function createTestDatabase(options?: { fts?: boolean }) {
 
   // Polyfill D1 batch() for test compatibility.
   // In production, D1 batch executes statements atomically in a single transaction.
-  // In tests, better-sqlite3 is synchronous and single-threaded so sequential
-  // execution is effectively atomic.
+  // In tests, wrap sequential execution in an explicit transaction so rollback
+  // behavior matches D1's all-or-nothing semantics.
   Object.defineProperty(db, "batch", {
     value: async (queries: PromiseLike<unknown>[]) => {
-      const results = [];
-      for (const q of queries) {
-        results.push(await q);
+      sqlite.exec("BEGIN");
+      try {
+        const results = [];
+        for (const q of queries) {
+          results.push(await q);
+        }
+        sqlite.exec("COMMIT");
+        return results;
+      } catch (err) {
+        sqlite.exec("ROLLBACK");
+        throw err;
       }
-      return results;
     },
   });
 

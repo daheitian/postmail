@@ -149,6 +149,21 @@ export const posts = sqliteTable(
       table.deletedAt,
       table.lastActivityAt,
     ),
+    index("idx_post_root_live_published_activity")
+      .on(table.lastActivityAt, table.id)
+      .where(
+        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NULL AND ${table.status} = 'published'`,
+      ),
+    index("idx_post_root_live_draft_updated")
+      .on(table.updatedAt, table.id)
+      .where(
+        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NULL AND ${table.status} = 'draft'`,
+      ),
+    index("idx_post_reply_live_thread_created")
+      .on(table.threadId, table.createdAt, table.id)
+      .where(
+        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NOT NULL AND ${table.status} = 'published'`,
+      ),
   ],
 );
 
@@ -191,9 +206,23 @@ export const media = sqliteTable(
       "chk_media_media_kind",
       sql`${table.mediaKind} IN (${sqlTextEnum(MEDIA_KINDS)})`,
     ),
+    check("chk_media_size_positive", sql`${table.size} > 0`),
+    check("chk_media_position_nonnegative", sql`${table.position} >= 0`),
+    check(
+      "chk_media_dimensions_positive",
+      sql`(
+        ${table.width} IS NULL OR ${table.width} > 0
+      ) AND (
+        ${table.height} IS NULL OR ${table.height} > 0
+      )`,
+    ),
+    check(
+      "chk_media_chars_nonnegative",
+      sql`${table.chars} IS NULL OR ${table.chars} >= 0`,
+    ),
     index("idx_media_post_id_position").on(table.postId, table.position),
     uniqueIndex("idx_media_storage_key").on(table.storageKey),
-    index("idx_media_media_kind").on(table.mediaKind),
+    index("idx_media_media_kind_post_id").on(table.mediaKind, table.postId),
   ],
 );
 
@@ -403,18 +432,22 @@ export const user = sqliteTable("user", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-export const session = sqliteTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id),
-});
+export const session = sqliteTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+  },
+  (table) => [index("idx_session_user_id").on(table.userId)],
+);
 
 export const account = sqliteTable("account", {
   id: text("id").primaryKey(),

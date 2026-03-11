@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
-import { sidebarItems } from "../../db/schema.js";
+import { collections, sidebarItems } from "../../db/schema.js";
 import { createCollectionService } from "../collection.js";
+import { createPathService } from "../path.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
 
@@ -70,6 +71,30 @@ describe("CollectionService", () => {
       expect(sidebarItems[0]?.type).toBe("collection");
       expect(sidebarItems[0]?.collectionId).toBe(collection.id);
       expect(typeof sidebarItems[0]?.position).toBe("string");
+    });
+
+    it("rolls back the collection insert when slug persistence fails inside the batch", async () => {
+      await collectionService.create({
+        slug: "race-condition",
+        title: "Existing",
+      });
+
+      const paths = createPathService(db);
+      const raceyPaths = {
+        ...paths,
+        isPathAvailable: async () => true,
+      };
+      const raceyCollectionService = createCollectionService(db, raceyPaths);
+
+      await expect(
+        raceyCollectionService.create({
+          slug: "race-condition",
+          title: "Race Condition",
+        }),
+      ).rejects.toThrow('Slug "race-condition" is already in use');
+
+      const rows = await db.select({ id: collections.id }).from(collections);
+      expect(rows).toHaveLength(1);
     });
   });
 

@@ -10,12 +10,13 @@ import { eq, and, isNull, desc, inArray, sql, isNotNull } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
-import { posts, postCollections } from "../db/schema.js";
+import { pathRegistry, posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { generatePostSlug } from "../lib/slug.js";
+import { normalizePath } from "../lib/url.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import type {
@@ -195,6 +196,15 @@ export function createPostService(
   /** Check if a slug is available (not used by posts or custom_urls) */
   async function isSlugAvailable(slug: string): Promise<boolean> {
     return paths.isPathAvailable(slug);
+  }
+
+  async function pathExists(path: string): Promise<boolean> {
+    const rows = await db
+      .select({ id: pathRegistry.id })
+      .from(pathRegistry)
+      .where(eq(pathRegistry.path, normalizePath(path)))
+      .limit(1);
+    return rows.length > 0;
   }
 
   async function recalculateThreadLastActivity(rootId: string): Promise<void> {
@@ -475,12 +485,11 @@ export function createPostService(
         idLength: config.slugIdLength,
         isAvailable: isSlugAvailable,
       });
+      const collectionIds = [...new Set(data.collectionIds ?? [])];
 
-      let result;
       try {
-        result = await db
-          .insert(posts)
-          .values({
+        const writeQueries: BatchItem<"sqlite">[] = [
+          db.insert(posts).values({
             id,
             format: data.format,
             status,
@@ -501,40 +510,51 @@ export function createPostService(
             lastActivityAt: publishedAt ?? timestamp,
             createdAt: timestamp,
             updatedAt: timestamp,
-          })
-          .returning();
-      } catch (err) {
-        if (isUniqueConstraintError(err)) {
-          throw new ConflictError(`Slug "${slug}" is already in use`);
-        }
-        throw err;
-      }
+          }),
+          db.insert(pathRegistry).values({
+            id: uuidv7(),
+            path: normalizePath(slug),
+            kind: "slug",
+            postId: id,
+            collectionId: null,
+            redirectToPath: null,
+            redirectType: null,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          }),
+        ];
 
-      try {
-        await paths.createPostSlug(id, slug);
+        if (collectionIds.length > 0) {
+          writeQueries.push(
+            db.insert(postCollections).values(
+              collectionIds.map((collectionId) => ({
+                postId: id,
+                collectionId,
+                createdAt: timestamp,
+              })),
+            ),
+          );
+        }
+
+        await db.batch(
+          writeQueries as [
+            (typeof writeQueries)[number],
+            ...(typeof writeQueries)[number][],
+          ],
+        );
       } catch (err) {
-        await db.delete(posts).where(eq(posts.id, id));
         if (err instanceof ConflictError) {
           throw new ConflictError(`Slug "${slug}" is already in use`);
         }
+        if (isUniqueConstraintError(err) && (await pathExists(slug))) {
+          throw new ConflictError(`Slug "${slug}" is already in use`);
+        }
         throw err;
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
-      const post = await hydratePost(result[0]!);
+      const post = await this.getById(id);
       if (!post) {
         throw new ConflictError(`Slug "${slug}" could not be resolved`);
-      }
-
-      // Sync collection memberships if provided
-      if (data.collectionIds && data.collectionIds.length > 0) {
-        await db.insert(postCollections).values(
-          data.collectionIds.map((collectionId) => ({
-            postId: post.id,
-            collectionId,
-            createdAt: timestamp,
-          })),
-        );
       }
 
       // Bump thread root's lastActivityAt when creating a published reply

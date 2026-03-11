@@ -127,6 +127,46 @@ describe("MediaService", () => {
         /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
       );
     });
+
+    it("rejects non-positive sizes at the database layer", async () => {
+      await expect(
+        mediaService.create({
+          ...sampleMedia,
+          storageKey: "media/2025/01/invalid-size.jpg",
+          size: 0,
+        }),
+      ).rejects.toThrow();
+    });
+
+    it("rejects negative positions at the database layer", async () => {
+      await expect(
+        mediaService.create({
+          ...sampleMedia,
+          storageKey: "media/2025/01/invalid-position.jpg",
+          position: -1,
+        }),
+      ).rejects.toThrow();
+    });
+
+    it("rejects non-positive dimensions at the database layer", async () => {
+      await expect(
+        mediaService.create({
+          ...sampleMedia,
+          storageKey: "media/2025/01/invalid-dimensions.jpg",
+          width: 0,
+        }),
+      ).rejects.toThrow();
+    });
+
+    it("rejects negative extracted text length at the database layer", async () => {
+      await expect(
+        mediaService.create({
+          ...sampleMedia,
+          storageKey: "media/2025/01/invalid-chars.jpg",
+          chars: -1,
+        }),
+      ).rejects.toThrow();
+    });
   });
 
   describe("getById", () => {

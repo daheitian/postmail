@@ -6,10 +6,16 @@
  */
 
 import { eq, asc, sql, and, inArray, desc } from "drizzle-orm";
+import type { BatchItem } from "drizzle-orm/batch";
 import { generateKeyBetween } from "fractional-indexing";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
-import { collections, sidebarItems, postCollections } from "../db/schema.js";
+import {
+  collections,
+  pathRegistry,
+  sidebarItems,
+  postCollections,
+} from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type {
   Collection,
@@ -141,6 +147,15 @@ export function createCollectionService(
     return generateKeyBetween(lastPos, null);
   }
 
+  async function pathExists(path: string): Promise<boolean> {
+    const rows = await db
+      .select({ id: pathRegistry.id })
+      .from(pathRegistry)
+      .where(eq(pathRegistry.path, path))
+      .limit(1);
+    return rows.length > 0;
+  }
+
   async function getSidebarMovePosition(
     id: string,
     afterId: string | null,
@@ -237,56 +252,70 @@ export function createCollectionService(
     async create(data) {
       const id = uuidv7();
       const timestamp = now();
-
-      const result = await db
-        .insert(collections)
-        .values({
-          id,
-          title: data.title,
-          description: data.description ?? null,
-          icon: data.icon ?? null,
-          sortOrder: data.sortOrder ?? "newest",
-          createdAt: timestamp,
-          updatedAt: timestamp,
-        })
-        .returning();
-
-      try {
-        await paths.createCollectionSlug(id, data.slug);
-      } catch (err) {
-        await db.delete(collections).where(eq(collections.id, id));
-        if (err instanceof ConflictError) {
-          throw new ConflictError(`Slug "${data.slug}" is already in use`);
-        }
-        throw err;
-      }
+      const slugPath = toCollectionPath(data.slug);
 
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
-          await db.insert(sidebarItems).values({
-            id: uuidv7(),
-            type: "collection",
-            collectionId: id,
-            position: await getAppendSidebarPosition(),
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          });
-          break;
+          const position = await getAppendSidebarPosition();
+          const writeQueries: BatchItem<"sqlite">[] = [
+            db.insert(collections).values({
+              id,
+              title: data.title,
+              description: data.description ?? null,
+              icon: data.icon ?? null,
+              sortOrder: data.sortOrder ?? "newest",
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            }),
+            db.insert(pathRegistry).values({
+              id: uuidv7(),
+              path: slugPath,
+              kind: "slug",
+              postId: null,
+              collectionId: id,
+              redirectToPath: null,
+              redirectType: null,
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            }),
+            db.insert(sidebarItems).values({
+              id: uuidv7(),
+              type: "collection",
+              collectionId: id,
+              position,
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            }),
+          ];
+
+          await db.batch(
+            writeQueries as [
+              (typeof writeQueries)[number],
+              ...(typeof writeQueries)[number][],
+            ],
+          );
+
+          const collection = await this.getById(id);
+          if (!collection) {
+            throw new ConflictError(
+              `Slug "${data.slug}" could not be resolved`,
+            );
+          }
+          return collection;
         } catch (err) {
-          if (
-            !isUniqueConstraintError(err) ||
-            attempt === POSITION_RETRY_ATTEMPTS - 1
-          ) {
+          if (err instanceof ConflictError) {
+            throw err;
+          }
+          if (isUniqueConstraintError(err) && (await pathExists(slugPath))) {
+            throw new ConflictError(`Slug "${data.slug}" is already in use`);
+          }
+          if (attempt === POSITION_RETRY_ATTEMPTS - 1) {
             throw err;
           }
         }
       }
 
-      const collection = await hydrateCollection(result[0]);
-      if (!collection) {
-        throw new ConflictError(`Slug "${data.slug}" could not be resolved`);
-      }
-      return collection;
+      throw new Error("Failed to assign a unique sidebar item position");
     },
 
     async update(id, data) {

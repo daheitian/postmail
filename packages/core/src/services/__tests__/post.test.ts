@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import { posts } from "../../db/schema.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
+import { createPathService } from "../path.js";
 
 describe("PostService", () => {
   let db: Database;
@@ -237,6 +239,36 @@ describe("PostService", () => {
           replyToId: "00000000-0000-0000-0000-000000009999",
         }),
       ).rejects.toThrow("Parent post not found");
+    });
+
+    it("rolls back the post insert when slug persistence fails inside the batch", async () => {
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "existing",
+        slug: "race-condition",
+      });
+
+      const paths = createPathService(db);
+      const raceyPaths = {
+        ...paths,
+        isPathAvailable: async () => true,
+      };
+      const raceyPostService = createPostService(
+        db,
+        { slugIdLength: 5 },
+        raceyPaths,
+      );
+
+      await expect(
+        raceyPostService.create({
+          format: "note",
+          bodyMarkdown: "test",
+          slug: "race-condition",
+        }),
+      ).rejects.toThrow('Slug "race-condition" is already in use');
+
+      const rows = await db.select({ id: posts.id }).from(posts);
+      expect(rows).toHaveLength(1);
     });
   });
 
