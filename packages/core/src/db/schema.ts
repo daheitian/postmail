@@ -16,6 +16,18 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
+const FORMATS = ["note", "link", "quote"] as const;
+const STATUSES = ["draft", "published"] as const;
+const VISIBILITIES = ["public", "unlisted", "private"] as const;
+const SORT_ORDERS = ["newest", "oldest", "rating_desc", "rating_asc"] as const;
+const NAV_ITEM_TYPES = ["link", "system"] as const;
+const MEDIA_KINDS = ["image", "video", "audio", "text", "document"] as const;
+const STORAGE_DRIVERS = ["r2", "s3"] as const;
+
+function sqlTextEnum(values: readonly string[]) {
+  return sql.raw(values.map((value) => `'${value}'`).join(", "));
+}
+
 // =============================================================================
 // Posts
 // =============================================================================
@@ -25,15 +37,15 @@ export const posts = sqliteTable(
   {
     id: text("id").primaryKey(),
     format: text("format", {
-      enum: ["note", "link", "quote"],
+      enum: FORMATS,
     }).notNull(),
     status: text("status", {
-      enum: ["draft", "published"],
+      enum: STATUSES,
     })
       .notNull()
       .default("published"),
     visibility: text("visibility", {
-      enum: ["public", "unlisted", "private"],
+      enum: VISIBILITIES,
     })
       .notNull()
       .default("public"),
@@ -56,6 +68,15 @@ export const posts = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
+    check("chk_post_format", sql`${table.format} IN (${sqlTextEnum(FORMATS)})`),
+    check(
+      "chk_post_status",
+      sql`${table.status} IN (${sqlTextEnum(STATUSES)})`,
+    ),
+    check(
+      "chk_post_visibility",
+      sql`${table.visibility} IN (${sqlTextEnum(VISIBILITIES)})`,
+    ),
     check(
       "chk_post_reply_to_not_self",
       sql`${table.replyToId} IS NULL OR ${table.replyToId} <> ${table.id}`,
@@ -115,6 +136,9 @@ export const posts = sqliteTable(
     }),
     uniqueIndex("uq_post_id_thread_id").on(table.id, table.threadId),
     index("idx_post_thread_id").on(table.threadId),
+    index("idx_post_thread_live_created")
+      .on(table.threadId, table.createdAt, table.id)
+      .where(sql`${table.deletedAt} IS NULL`),
     index("idx_post_status_deleted_published").on(
       table.status,
       table.deletedAt,
@@ -159,6 +183,14 @@ export const media = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
+    check(
+      "chk_media_provider",
+      sql`${table.provider} IN (${sqlTextEnum(STORAGE_DRIVERS)})`,
+    ),
+    check(
+      "chk_media_media_kind",
+      sql`${table.mediaKind} IN (${sqlTextEnum(MEDIA_KINDS)})`,
+    ),
     index("idx_media_post_id_position").on(table.postId, table.position),
     uniqueIndex("idx_media_storage_key").on(table.storageKey),
     index("idx_media_media_kind").on(table.mediaKind),
@@ -169,19 +201,28 @@ export const media = sqliteTable(
 // Collections
 // =============================================================================
 
-export const collections = sqliteTable("collection", {
-  id: text("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description"),
-  icon: text("icon"),
-  sortOrder: text("sort_order", {
-    enum: ["newest", "oldest", "rating_desc", "rating_asc"],
-  })
-    .notNull()
-    .default("newest"),
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const collections = sqliteTable(
+  "collection",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    description: text("description"),
+    icon: text("icon"),
+    sortOrder: text("sort_order", {
+      enum: SORT_ORDERS,
+    })
+      .notNull()
+      .default("newest"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "chk_collection_sort_order",
+      sql`${table.sortOrder} IN (${sqlTextEnum(SORT_ORDERS)})`,
+    ),
+  ],
+);
 
 // =============================================================================
 // Path Registry (slug + alias + redirect)
@@ -301,7 +342,7 @@ export const navItems = sqliteTable(
   {
     id: text("id").primaryKey(),
     type: text("type", {
-      enum: ["link", "system"],
+      enum: NAV_ITEM_TYPES,
     })
       .notNull()
       .default("link"),
@@ -311,7 +352,13 @@ export const navItems = sqliteTable(
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },
-  (table) => [uniqueIndex("uq_nav_item_position").on(table.position)],
+  (table) => [
+    check(
+      "chk_nav_item_type",
+      sql`${table.type} IN (${sqlTextEnum(NAV_ITEM_TYPES)})`,
+    ),
+    uniqueIndex("uq_nav_item_position").on(table.position),
+  ],
 );
 
 // =============================================================================
