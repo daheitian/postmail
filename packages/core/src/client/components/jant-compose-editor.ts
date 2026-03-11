@@ -75,6 +75,7 @@ export class JantComposeEditor extends LitElement {
   private _emojiContainer: HTMLElement | null = null;
   private _onDocClickBound = this._onDocumentClick.bind(this);
   private _scrollBufferApplied = false;
+  private _suppressAttachedTextOpenUntil = 0;
   #sortable: { destroy(): void } | null = null;
   #revertNextSibling: globalThis.Node | null = null;
 
@@ -595,13 +596,30 @@ export class JantComposeEditor extends LitElement {
     if (!item) return;
     nextOrder.splice(nextIndex, 0, item);
     this._attachmentOrder = nextOrder;
+    this.#scrollAttachmentIntoView(clientId);
   }
 
-  private _canMoveAttachment(clientId: string, direction: -1 | 1): boolean {
-    const index = this._attachmentOrder.indexOf(clientId);
-    if (index === -1) return false;
-    const nextIndex = index + direction;
-    return nextIndex >= 0 && nextIndex < this._attachmentOrder.length;
+  private _handleAttachmentKeydown(
+    clientId: string,
+    e: globalThis.KeyboardEvent,
+    onActivate?: () => void,
+  ) {
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      this._moveAttachment(clientId, -1);
+      return;
+    }
+
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      this._moveAttachment(clientId, 1);
+      return;
+    }
+
+    if (onActivate && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      onActivate();
+    }
   }
 
   #initSortable() {
@@ -609,10 +627,29 @@ export class JantComposeEditor extends LitElement {
     if (!list || this.#sortable || this._attachmentOrder.length <= 1) return;
 
     this.#sortable = Sortable.create(list, {
-      animation: 150,
-      handle: "[data-drag-handle]",
+      animation: 180,
+      bubbleScroll: false,
+      chosenClass: "compose-attachment-chosen",
+      direction: "horizontal",
+      dragClass: "compose-attachment-drag",
+      fallbackTolerance: 4,
+      filter:
+        "button, a, input, textarea, select, option, [contenteditable='true']",
+      forceAutoScrollFallback: true,
+      ghostClass: "compose-attachment-ghost",
+      handle: "[data-attachment-sortable]",
+      preventOnFilter: false,
+      scroll: list,
+      scrollSensitivity: 56,
+      scrollSpeed: 18,
+      onChoose: () => {
+        list.dataset.dragging = "true";
+      },
       onStart: (evt) => {
         this.#revertNextSibling = evt.item.nextSibling;
+      },
+      onUnchoose: () => {
+        delete list.dataset.dragging;
       },
       onEnd: (evt) => {
         const els = [
@@ -632,15 +669,42 @@ export class JantComposeEditor extends LitElement {
           }
         }
         this.#revertNextSibling = null;
+        delete list.dataset.dragging;
 
         this.#sortable?.destroy();
         this.#sortable = null;
 
         if (orderedIds.length === this._attachmentOrder.length) {
           this._attachmentOrder = orderedIds;
+          const movedId =
+            evt.newIndex != null ? orderedIds[evt.newIndex] : undefined;
+          if (movedId) {
+            this._suppressAttachedTextOpenUntil = Date.now() + 250;
+            this.#scrollAttachmentIntoView(movedId);
+          }
         }
       },
     });
+  }
+
+  #scrollAttachmentIntoView(clientId: string) {
+    void this.updateComplete.then(() => {
+      const target = this.querySelector<HTMLElement>(
+        `[data-attachment-id="${clientId}"]`,
+      );
+      target?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+    });
+  }
+
+  private _maybeEditAttachedText(index: number) {
+    if (Date.now() < this._suppressAttachedTextOpenUntil) {
+      return;
+    }
+    this._editAttachedText(index);
   }
 
   private _editAttachedText(index: number) {
@@ -1340,95 +1404,19 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
-  private _renderAttachmentActions(clientId: string) {
-    const canMoveEarlier = this._canMoveAttachment(clientId, -1);
-    const canMoveLater = this._canMoveAttachment(clientId, 1);
-
-    return html`
-      <div class="compose-attachment-actions">
-        ${this._attachmentOrder.length > 1
-          ? html`
-              <button
-                type="button"
-                class="compose-attachment-action compose-attachment-handle"
-                data-drag-handle
-                title=${this.labels.reorderAttachment}
-                aria-label=${this.labels.reorderAttachment}
-                @click=${(e: Event) => e.stopPropagation()}
-              >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M4 3h.01M4 7h.01M4 11h.01M10 3h.01M10 7h.01M10 11h.01"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="compose-attachment-action"
-                ?disabled=${!canMoveEarlier}
-                title=${this.labels.moveAttachmentEarlier}
-                aria-label=${this.labels.moveAttachmentEarlier}
-                @click=${(e: Event) => {
-                  e.stopPropagation();
-                  this._moveAttachment(clientId, -1);
-                }}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M7 11V3" />
-                  <path d="M4.5 5.5 7 3l2.5 2.5" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                class="compose-attachment-action"
-                ?disabled=${!canMoveLater}
-                title=${this.labels.moveAttachmentLater}
-                aria-label=${this.labels.moveAttachmentLater}
-                @click=${(e: Event) => {
-                  e.stopPropagation();
-                  this._moveAttachment(clientId, 1);
-                }}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 14 14"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M7 3v8" />
-                  <path d="M4.5 8.5 7 11l2.5-2.5" />
-                </svg>
-              </button>
-            `
-          : nothing}
-      </div>
-    `;
-  }
-
   private _renderAttachedTextCard(item: AttachedTextItem, index: number) {
     return html`
       <div class="compose-attachment" data-attachment-id=${item.clientId}>
         <div
-          class="compose-attachment-thumb"
-          @click=${() => this._editAttachedText(index)}
+          class="compose-attachment-thumb compose-attachment-sortable"
+          data-attachment-sortable
+          tabindex="0"
+          @click=${() => this._maybeEditAttachedText(index)}
+          @keydown=${(e: globalThis.KeyboardEvent) =>
+            this._handleAttachmentKeydown(item.clientId, e, () =>
+              this._maybeEditAttachedText(index),
+            )}
         >
-          ${this._renderAttachmentActions(item.clientId)}
           <div class="compose-attachment-text-card">
             <div class="compose-attachment-file-icon">
               ${this._renderFileIcon("text/x-tiptap+json", 20)}
@@ -1466,57 +1454,71 @@ export class JantComposeEditor extends LitElement {
         ${isFileCard
           ? html`
               <div class="compose-attachment-thumb">
-                ${this._renderAttachmentActions(a.clientId)}
-                ${this._renderAttachmentPreview(a)}
+                <div
+                  class="compose-attachment-sortable"
+                  data-attachment-sortable
+                  tabindex="0"
+                  @keydown=${(e: globalThis.KeyboardEvent) =>
+                    this._handleAttachmentKeydown(a.clientId, e)}
+                >
+                  ${this._renderAttachmentPreview(a)}
+                </div>
                 ${this._renderAttachmentOverlay(a, i)}
               </div>
             `
           : html`
               <div class="compose-attachment-thumb">
-                ${this._renderAttachmentActions(a.clientId)}
-                ${category === "video"
-                  ? html`
-                      <video
-                        src=${a.previewUrl}
-                        class="compose-attachment-img"
-                        preload="metadata"
-                        muted
-                      ></video>
-                      <div class="compose-attachment-play-icon">
-                        <svg
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="white"
-                        >
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </div>
-                    `
-                  : a.status === "processing"
+                <div
+                  class="compose-attachment-sortable"
+                  data-attachment-sortable
+                  tabindex="0"
+                  @keydown=${(e: globalThis.KeyboardEvent) =>
+                    this._handleAttachmentKeydown(a.clientId, e)}
+                >
+                  ${category === "video"
                     ? html`
-                        <div class="compose-attachment-processing">
+                        <video
+                          src=${a.previewUrl}
+                          class="compose-attachment-img"
+                          preload="metadata"
+                          muted
+                        ></video>
+                        <div class="compose-attachment-play-icon">
                           <svg
-                            class="animate-spin size-5"
+                            width="24"
+                            height="24"
                             viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
+                            fill="white"
                           >
-                            <path
-                              d="M12 2a10 10 0 1 0 10 10"
-                              stroke-linecap="round"
-                            />
+                            <path d="M8 5v14l11-7z" />
                           </svg>
                         </div>
                       `
-                    : html`
-                        <img
-                          src=${a.previewUrl}
-                          alt=""
-                          class="compose-attachment-img"
-                        />
-                      `}
+                    : a.status === "processing"
+                      ? html`
+                          <div class="compose-attachment-processing">
+                            <svg
+                              class="animate-spin size-5"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                            >
+                              <path
+                                d="M12 2a10 10 0 1 0 10 10"
+                                stroke-linecap="round"
+                              />
+                            </svg>
+                          </div>
+                        `
+                      : html`
+                          <img
+                            src=${a.previewUrl}
+                            alt=""
+                            class="compose-attachment-img"
+                          />
+                        `}
+                </div>
                 ${this._renderAttachmentOverlay(a, i)}
               </div>
             `}

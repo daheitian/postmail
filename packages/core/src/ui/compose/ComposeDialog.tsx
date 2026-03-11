@@ -157,20 +157,6 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       message: "Add",
       comment: "@context: Add more attachments button",
     }),
-    reorderAttachment: t({
-      message: "Reorder",
-      comment: "@context: Attachment drag handle label in compose",
-    }),
-    moveAttachmentEarlier: t({
-      message: "Move earlier",
-      comment:
-        "@context: Button label to move an attachment earlier in compose order",
-    }),
-    moveAttachmentLater: t({
-      message: "Move later",
-      comment:
-        "@context: Button label to move an attachment later in compose order",
-    }),
     uploading: t({
       message: "Uploading...",
       comment: "@context: Toast shown during background upload",

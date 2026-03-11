@@ -61,9 +61,6 @@ const labels: ComposeLabels = {
   altPlaceholder: "Describe this...",
   altHint: "Alt text improves accessibility",
   addMore: "Add",
-  reorderAttachment: "Reorder",
-  moveAttachmentEarlier: "Move earlier",
-  moveAttachmentLater: "Move later",
   uploading: "Uploading...",
   published: "Published!",
   view: "View",
@@ -446,13 +443,18 @@ describe("JantComposeEditor", () => {
     el._attachmentOrder = ["a1", "a2"];
     await el.updateComplete;
 
-    const moveLaterBtn = requireElement(
-      el.querySelector<HTMLButtonElement>(
-        '[data-attachment-id="a1"] button[aria-label="Move later"]',
+    const attachment = requireElement(
+      el.querySelector<HTMLElement>(
+        '[data-attachment-id="a1"] [data-attachment-sortable]',
       ),
-      "expected move later button",
+      "expected attachment card",
     );
-    moveLaterBtn.click();
+    attachment.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "ArrowRight",
+        bubbles: true,
+      }),
+    );
     await el.updateComplete;
 
     expect(el._attachmentOrder).toEqual(["a2", "a1"]);

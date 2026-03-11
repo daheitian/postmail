@@ -13,9 +13,23 @@ declare module "sortablejs" {
 
   interface SortableOptions {
     animation?: number;
+    bubbleScroll?: boolean;
+    chosenClass?: string;
+    direction?: "horizontal" | "vertical";
+    dragClass?: string;
+    fallbackTolerance?: number;
+    filter?: string;
+    forceAutoScrollFallback?: boolean;
+    ghostClass?: string;
     handle?: string;
+    onChoose?: (event: SortableEvent) => void;
     onStart?: (event: SortableEvent) => void;
+    onUnchoose?: (event: SortableEvent) => void;
     onEnd?: (event: SortableEvent) => void;
+    preventOnFilter?: boolean;
+    scroll?: boolean | HTMLElement;
+    scrollSensitivity?: number;
+    scrollSpeed?: number;
   }
 
   interface SortableInstance {

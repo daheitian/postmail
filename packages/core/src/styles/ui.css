@@ -1983,6 +1983,11 @@
     animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
+  .compose-attachments[data-dragging="true"] {
+    scroll-snap-type: none;
+    cursor: grabbing;
+  }
+
   .compose-attachments::-webkit-scrollbar {
     display: none;
   }
@@ -2009,52 +2014,33 @@
     background-color: var(--site-nav-hover-bg);
   }
 
-  .compose-attachment-actions {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    display: flex;
-    gap: 4px;
-    z-index: 2;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-  }
-
-  .compose-attachment-thumb:hover .compose-attachment-actions {
-    opacity: 1;
-  }
-
-  .compose-attachment-action {
-    width: 24px;
-    height: 24px;
-    border-radius: 999px;
-    border: none;
-    background-color: rgba(0, 0, 0, 0.55);
-    color: white;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition:
-      background-color 0.15s ease,
-      opacity 0.15s ease;
-  }
-
-  .compose-attachment-action:hover {
-    background-color: rgba(0, 0, 0, 0.68);
-  }
-
-  .compose-attachment-action:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-
-  .compose-attachment-handle {
+  .compose-attachment-sortable {
+    display: block;
     cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 
-  .compose-attachment-handle:active {
+  .compose-attachment-sortable:active {
     cursor: grabbing;
+  }
+
+  .compose-attachment-sortable:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+
+  .compose-attachment-chosen {
+    z-index: 2;
+  }
+
+  .compose-attachment-ghost {
+    opacity: 0.32;
+  }
+
+  .compose-attachment-drag {
+    opacity: 0.98;
+    transform: scale(1.02);
   }
 
   .compose-attachment-img {
@@ -2159,7 +2145,6 @@
 
   /* Always show on touch devices */
   @media (hover: none) {
-    .compose-attachment-actions,
     .compose-attachment-remove {
       opacity: 1;
     }
