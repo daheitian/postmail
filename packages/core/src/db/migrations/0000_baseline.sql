@@ -28,28 +28,15 @@ CREATE TABLE `api_token` (
 CREATE UNIQUE INDEX `api_token_token_hash_unique` ON `api_token` (`token_hash`);--> statement-breakpoint
 CREATE TABLE `collection` (
 	`id` text PRIMARY KEY NOT NULL,
-	`slug` text NOT NULL,
 	`title` text NOT NULL,
 	`description` text,
 	`icon` text,
 	`sort_order` text DEFAULT 'newest' NOT NULL,
 	`created_at` integer NOT NULL,
-	`updated_at` integer NOT NULL
+	`updated_at` integer NOT NULL,
+	CONSTRAINT "chk_collection_sort_order" CHECK("collection"."sort_order" IN ('newest', 'oldest', 'rating_desc', 'rating_asc'))
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `collection_slug_unique` ON `collection` (`slug`);--> statement-breakpoint
-CREATE TABLE `custom_url` (
-	`id` text PRIMARY KEY NOT NULL,
-	`path` text NOT NULL,
-	`target_type` text NOT NULL,
-	`target_id` text,
-	`to_path` text,
-	`redirect_type` integer,
-	`created_at` integer NOT NULL
-);
---> statement-breakpoint
-CREATE UNIQUE INDEX `custom_url_path_unique` ON `custom_url` (`path`);--> statement-breakpoint
-CREATE INDEX `idx_custom_url_target_id` ON `custom_url` (`target_id`);--> statement-breakpoint
 CREATE TABLE `media` (
 	`id` text PRIMARY KEY NOT NULL,
 	`post_id` text,
@@ -62,7 +49,7 @@ CREATE TABLE `media` (
 	`width` integer,
 	`height` integer,
 	`alt` text,
-	`position` integer DEFAULT 0 NOT NULL,
+	`position` text DEFAULT 'a0' NOT NULL,
 	`blurhash` text,
 	`waveform` text,
 	`poster_key` text,
@@ -71,12 +58,23 @@ CREATE TABLE `media` (
 	`media_kind` text DEFAULT 'document' NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null
+	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null,
+	CONSTRAINT "chk_media_provider" CHECK("media"."provider" IN ('r2', 's3')),
+	CONSTRAINT "chk_media_media_kind" CHECK("media"."media_kind" IN ('image', 'video', 'audio', 'text', 'document')),
+	CONSTRAINT "chk_media_size_positive" CHECK("media"."size" > 0),
+	CONSTRAINT "chk_media_position_not_blank" CHECK(trim("media"."position") <> ''),
+	CONSTRAINT "chk_media_dimensions_positive" CHECK((
+        "media"."width" IS NULL OR "media"."width" > 0
+      ) AND (
+        "media"."height" IS NULL OR "media"."height" > 0
+      )),
+	CONSTRAINT "chk_media_chars_nonnegative" CHECK("media"."chars" IS NULL OR "media"."chars" >= 0)
 );
 --> statement-breakpoint
 CREATE INDEX `idx_media_post_id_position` ON `media` (`post_id`,`position`);--> statement-breakpoint
-CREATE INDEX `idx_media_storage_key` ON `media` (`storage_key`);--> statement-breakpoint
-CREATE INDEX `idx_media_media_kind` ON `media` (`media_kind`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_media_post_position` ON `media` (`post_id`,`position`) WHERE "media"."post_id" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_media_provider_storage_key` ON `media` (`provider`,`storage_key`);--> statement-breakpoint
+CREATE INDEX `idx_media_media_kind_post_id` ON `media` (`media_kind`,`post_id`);--> statement-breakpoint
 CREATE TABLE `nav_item` (
 	`id` text PRIMARY KEY NOT NULL,
 	`type` text DEFAULT 'link' NOT NULL,
@@ -84,9 +82,45 @@ CREATE TABLE `nav_item` (
 	`url` text NOT NULL,
 	`position` text DEFAULT 'a0' NOT NULL,
 	`created_at` integer NOT NULL,
-	`updated_at` integer NOT NULL
+	`updated_at` integer NOT NULL,
+	CONSTRAINT "chk_nav_item_type" CHECK("nav_item"."type" IN ('link', 'system'))
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `uq_nav_item_position` ON `nav_item` (`position`);--> statement-breakpoint
+CREATE TABLE `path_registry` (
+	`id` text PRIMARY KEY NOT NULL,
+	`path` text NOT NULL,
+	`kind` text NOT NULL,
+	`post_id` text,
+	`collection_id` text,
+	`redirect_to_path` text,
+	`redirect_type` integer,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade,
+	CONSTRAINT "chk_path_registry_shape" CHECK((
+        "path_registry"."kind" IN ('slug', 'alias')
+        AND (
+          ("path_registry"."post_id" IS NOT NULL AND "path_registry"."collection_id" IS NULL)
+          OR ("path_registry"."post_id" IS NULL AND "path_registry"."collection_id" IS NOT NULL)
+        )
+        AND "path_registry"."redirect_to_path" IS NULL
+        AND "path_registry"."redirect_type" IS NULL
+      ) OR (
+        "path_registry"."kind" = 'redirect'
+        AND "path_registry"."post_id" IS NULL
+        AND "path_registry"."collection_id" IS NULL
+        AND "path_registry"."redirect_to_path" IS NOT NULL
+        AND "path_registry"."redirect_type" IN (301, 302)
+      ))
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `path_registry_path_unique` ON `path_registry` (`path`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_path_registry_post_slug` ON `path_registry` (`post_id`) WHERE "path_registry"."kind" = 'slug' AND "path_registry"."post_id" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_path_registry_collection_slug` ON `path_registry` (`collection_id`) WHERE "path_registry"."kind" = 'slug' AND "path_registry"."collection_id" IS NOT NULL;--> statement-breakpoint
+CREATE INDEX `idx_path_registry_post_id` ON `path_registry` (`post_id`);--> statement-breakpoint
+CREATE INDEX `idx_path_registry_collection_id` ON `path_registry` (`collection_id`);--> statement-breakpoint
 CREATE TABLE `post_collection` (
 	`post_id` text NOT NULL,
 	`collection_id` text NOT NULL,
@@ -101,10 +135,9 @@ CREATE TABLE `post` (
 	`id` text PRIMARY KEY NOT NULL,
 	`format` text NOT NULL,
 	`status` text DEFAULT 'published' NOT NULL,
-	`visibility` text DEFAULT 'public' NOT NULL,
+	`visibility` text DEFAULT 'public',
 	`pinned_at` integer,
 	`featured_at` integer,
-	`slug` text NOT NULL,
 	`title` text,
 	`url` text,
 	`body` text,
@@ -114,20 +147,60 @@ CREATE TABLE `post` (
 	`summary` text,
 	`rating` integer,
 	`reply_to_id` text,
-	`thread_id` text,
+	`thread_id` text NOT NULL,
 	`deleted_at` integer,
-	`published_at` integer NOT NULL,
+	`published_at` integer,
 	`last_activity_at` integer,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`reply_to_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null,
-	FOREIGN KEY (`thread_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null
+	FOREIGN KEY (`reply_to_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`thread_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`reply_to_id`,`thread_id`) REFERENCES `post`(`id`,`thread_id`) ON UPDATE no action ON DELETE no action,
+	CONSTRAINT "chk_post_format" CHECK("post"."format" IN ('note', 'link', 'quote')),
+	CONSTRAINT "chk_post_status" CHECK("post"."status" IN ('draft', 'published')),
+	CONSTRAINT "chk_post_visibility" CHECK("post"."visibility" IN ('public', 'unlisted', 'private')),
+	CONSTRAINT "chk_post_root_visibility_present" CHECK("post"."reply_to_id" IS NOT NULL OR "post"."visibility" IS NOT NULL),
+	CONSTRAINT "chk_post_reply_to_not_self" CHECK("post"."reply_to_id" IS NULL OR "post"."reply_to_id" <> "post"."id"),
+	CONSTRAINT "chk_post_thread_shape" CHECK((
+        "post"."reply_to_id" IS NULL
+        AND "post"."thread_id" = "post"."id"
+      ) OR (
+        "post"."reply_to_id" IS NOT NULL
+        AND "post"."thread_id" <> "post"."id"
+      )),
+	CONSTRAINT "chk_post_reply_not_pinned" CHECK("post"."pinned_at" IS NULL OR "post"."reply_to_id" IS NULL),
+	CONSTRAINT "chk_post_format_shape" CHECK((
+        "post"."format" = 'note'
+        AND ("post"."url" IS NULL OR trim("post"."url") = '')
+        AND ("post"."quote_text" IS NULL OR trim("post"."quote_text") = '')
+      ) OR (
+        "post"."format" = 'link'
+        AND "post"."url" IS NOT NULL
+        AND trim("post"."url") <> ''
+        AND ("post"."quote_text" IS NULL OR trim("post"."quote_text") = '')
+      ) OR (
+        "post"."format" = 'quote'
+        AND "post"."quote_text" IS NOT NULL
+        AND trim("post"."quote_text") <> ''
+      )),
+	CONSTRAINT "chk_post_rating_range" CHECK("post"."rating" IS NULL OR "post"."rating" BETWEEN 1 AND 5),
+	CONSTRAINT "chk_post_status_published_at" CHECK((
+        "post"."status" = 'draft'
+        AND "post"."published_at" IS NULL
+      ) OR (
+        "post"."status" = 'published'
+        AND "post"."published_at" IS NOT NULL
+      ))
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `post_slug_unique` ON `post` (`slug`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_post_id_thread_id` ON `post` (`id`,`thread_id`);--> statement-breakpoint
 CREATE INDEX `idx_post_thread_id` ON `post` (`thread_id`);--> statement-breakpoint
+CREATE INDEX `idx_post_thread_live_created` ON `post` (`thread_id`,`created_at`,`id`) WHERE "post"."deleted_at" IS NULL;--> statement-breakpoint
 CREATE INDEX `idx_post_status_deleted_published` ON `post` (`status`,`deleted_at`,`published_at`);--> statement-breakpoint
 CREATE INDEX `idx_post_status_deleted_activity` ON `post` (`status`,`deleted_at`,`last_activity_at`);--> statement-breakpoint
+CREATE INDEX `idx_post_root_live_published_activity` ON `post` (`last_activity_at`,`id`) WHERE "post"."deleted_at" IS NULL AND "post"."reply_to_id" IS NULL AND "post"."status" = 'published';--> statement-breakpoint
+CREATE INDEX `idx_post_root_live_draft_updated` ON `post` (`updated_at`,`id`) WHERE "post"."deleted_at" IS NULL AND "post"."reply_to_id" IS NULL AND "post"."status" = 'draft';--> statement-breakpoint
+CREATE INDEX `idx_post_reply_live_thread_created` ON `post` (`thread_id`,`created_at`,`id`) WHERE "post"."deleted_at" IS NULL AND "post"."reply_to_id" IS NOT NULL AND "post"."status" = 'published';--> statement-breakpoint
 CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`expires_at` integer NOT NULL,
@@ -141,6 +214,7 @@ CREATE TABLE `session` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `session_token_unique` ON `session` (`token`);--> statement-breakpoint
+CREATE INDEX `idx_session_user_id` ON `session` (`user_id`);--> statement-breakpoint
 CREATE TABLE `setting` (
 	`key` text PRIMARY KEY NOT NULL,
 	`value` text NOT NULL,
@@ -154,10 +228,17 @@ CREATE TABLE `sidebar_item` (
 	`position` text DEFAULT 'a0' NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade,
+	CONSTRAINT "chk_sidebar_item_shape" CHECK((
+        "sidebar_item"."type" = 'collection' AND "sidebar_item"."collection_id" IS NOT NULL
+      ) OR (
+        "sidebar_item"."type" = 'divider' AND "sidebar_item"."collection_id" IS NULL
+      ))
 );
 --> statement-breakpoint
 CREATE INDEX `idx_sidebar_item_collection_id` ON `sidebar_item` (`collection_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_sidebar_item_position` ON `sidebar_item` (`position`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_sidebar_item_collection_once` ON `sidebar_item` (`collection_id`) WHERE "sidebar_item"."type" = 'collection' AND "sidebar_item"."collection_id" IS NOT NULL;--> statement-breakpoint
 CREATE TABLE `user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,

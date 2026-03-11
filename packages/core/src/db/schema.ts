@@ -77,7 +77,13 @@ export const posts = sqliteTable(
     ),
     check(
       "chk_post_root_visibility_present",
-      sql`${table.replyToId} IS NOT NULL OR ${table.visibility} IS NOT NULL`,
+      sql`(
+        ${table.replyToId} IS NULL
+        AND ${table.visibility} IS NOT NULL
+      ) OR (
+        ${table.replyToId} IS NOT NULL
+        AND ${table.visibility} IS NULL
+      )`,
     ),
     check(
       "chk_post_reply_to_not_self",
@@ -289,6 +295,10 @@ export const pathRegistry = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
+    check(
+      "chk_path_registry_kind",
+      sql`${table.kind} IN ('slug', 'alias', 'redirect')`,
+    ),
     uniqueIndex("uq_path_registry_post_slug")
       .on(table.postId)
       .where(sql`${table.kind} = 'slug' AND ${table.postId} IS NOT NULL`),
@@ -335,6 +345,10 @@ export const sidebarItems = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
+    check(
+      "chk_sidebar_item_type",
+      sql`${table.type} IN ('collection', 'divider')`,
+    ),
     index("idx_sidebar_item_collection_id").on(table.collectionId),
     uniqueIndex("uq_sidebar_item_position").on(table.position),
     uniqueIndex("uq_sidebar_item_collection_once")

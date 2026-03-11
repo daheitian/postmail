@@ -5,92 +5,22 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1773250217366,
+      "when": 1773270494899,
       "tag": "0000_baseline",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1773250221639,
+      "when": 1773270497564,
       "tag": "0001_fts_setup",
       "breakpoints": true
     },
     {
       "idx": 2,
       "version": "6",
-      "when": 1773255621819,
-      "tag": "0002_high_rocket_racer",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1773258013895,
-      "tag": "0003_fuzzy_the_call",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1773259292956,
-      "tag": "0004_milky_reaper",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1773260039527,
-      "tag": "0005_lowly_wong",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1773262048304,
-      "tag": "0006_panoramic_guardian",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1773262616143,
-      "tag": "0007_shallow_mastermind",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "6",
-      "when": 1773263492973,
-      "tag": "0008_uneven_shard",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "6",
-      "when": 1773264662233,
-      "tag": "0009_curious_starfox",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "6",
-      "when": 1773265734543,
-      "tag": "0010_awesome_lady_bullseye",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "6",
-      "when": 1773269318122,
-      "tag": "0011_curious_garia",
-      "breakpoints": true
-    },
-    {
-      "idx": 12,
-      "version": "6",
-      "when": 1773270060621,
-      "tag": "0012_curly_domino",
+      "when": 1773271102579,
+      "tag": "0002_square_living_lightning",
       "breakpoints": true
     }
   ]

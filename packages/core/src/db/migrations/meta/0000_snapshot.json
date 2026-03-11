@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "80667c76-9073-4dc7-b0d8-1666cbece09e",
+  "id": "51776110-30b9-4b8a-a76b-8cf4d3cb1e37",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -190,13 +190,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "title": {
           "name": "title",
           "type": "text",
@@ -241,87 +234,16 @@
           "autoincrement": false
         }
       },
-      "indexes": {
-        "collection_slug_unique": {
-          "name": "collection_slug_unique",
-          "columns": ["slug"],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "custom_url": {
-      "name": "custom_url",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "path": {
-          "name": "path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "target_type": {
-          "name": "target_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "target_id": {
-          "name": "target_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "to_path": {
-          "name": "to_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "redirect_type": {
-          "name": "redirect_type",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
+      "checkConstraints": {
+        "chk_collection_sort_order": {
+          "name": "chk_collection_sort_order",
+          "value": "\"collection\".\"sort_order\" IN ('newest', 'oldest', 'rating_desc', 'rating_asc')"
         }
-      },
-      "indexes": {
-        "custom_url_path_unique": {
-          "name": "custom_url_path_unique",
-          "columns": ["path"],
-          "isUnique": true
-        },
-        "idx_custom_url_target_id": {
-          "name": "idx_custom_url_target_id",
-          "columns": ["target_id"],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
+      }
     },
     "media": {
       "name": "media",
@@ -406,11 +328,11 @@
         },
         "position": {
           "name": "position",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": 0
+          "default": "'a0'"
         },
         "blurhash": {
           "name": "blurhash",
@@ -476,14 +398,20 @@
           "columns": ["post_id", "position"],
           "isUnique": false
         },
-        "idx_media_storage_key": {
-          "name": "idx_media_storage_key",
-          "columns": ["storage_key"],
-          "isUnique": false
+        "uq_media_post_position": {
+          "name": "uq_media_post_position",
+          "columns": ["post_id", "position"],
+          "isUnique": true,
+          "where": "\"media\".\"post_id\" IS NOT NULL"
         },
-        "idx_media_media_kind": {
-          "name": "idx_media_media_kind",
-          "columns": ["media_kind"],
+        "uq_media_provider_storage_key": {
+          "name": "uq_media_provider_storage_key",
+          "columns": ["provider", "storage_key"],
+          "isUnique": true
+        },
+        "idx_media_media_kind_post_id": {
+          "name": "idx_media_media_kind_post_id",
+          "columns": ["media_kind", "post_id"],
           "isUnique": false
         }
       },
@@ -500,7 +428,32 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "chk_media_provider": {
+          "name": "chk_media_provider",
+          "value": "\"media\".\"provider\" IN ('r2', 's3')"
+        },
+        "chk_media_media_kind": {
+          "name": "chk_media_media_kind",
+          "value": "\"media\".\"media_kind\" IN ('image', 'video', 'audio', 'text', 'document')"
+        },
+        "chk_media_size_positive": {
+          "name": "chk_media_size_positive",
+          "value": "\"media\".\"size\" > 0"
+        },
+        "chk_media_position_not_blank": {
+          "name": "chk_media_position_not_blank",
+          "value": "trim(\"media\".\"position\") <> ''"
+        },
+        "chk_media_dimensions_positive": {
+          "name": "chk_media_dimensions_positive",
+          "value": "(\n        \"media\".\"width\" IS NULL OR \"media\".\"width\" > 0\n      ) AND (\n        \"media\".\"height\" IS NULL OR \"media\".\"height\" > 0\n      )"
+        },
+        "chk_media_chars_nonnegative": {
+          "name": "chk_media_chars_nonnegative",
+          "value": "\"media\".\"chars\" IS NULL OR \"media\".\"chars\" >= 0"
+        }
+      }
     },
     "nav_item": {
       "name": "nav_item",
@@ -557,11 +510,147 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "uq_nav_item_position": {
+          "name": "uq_nav_item_position",
+          "columns": ["position"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "chk_nav_item_type": {
+          "name": "chk_nav_item_type",
+          "value": "\"nav_item\".\"type\" IN ('link', 'system')"
+        }
+      }
+    },
+    "path_registry": {
+      "name": "path_registry",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "path": {
+          "name": "path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "post_id": {
+          "name": "post_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "redirect_to_path": {
+          "name": "redirect_to_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "redirect_type": {
+          "name": "redirect_type",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "path_registry_path_unique": {
+          "name": "path_registry_path_unique",
+          "columns": ["path"],
+          "isUnique": true
+        },
+        "uq_path_registry_post_slug": {
+          "name": "uq_path_registry_post_slug",
+          "columns": ["post_id"],
+          "isUnique": true,
+          "where": "\"path_registry\".\"kind\" = 'slug' AND \"path_registry\".\"post_id\" IS NOT NULL"
+        },
+        "uq_path_registry_collection_slug": {
+          "name": "uq_path_registry_collection_slug",
+          "columns": ["collection_id"],
+          "isUnique": true,
+          "where": "\"path_registry\".\"kind\" = 'slug' AND \"path_registry\".\"collection_id\" IS NOT NULL"
+        },
+        "idx_path_registry_post_id": {
+          "name": "idx_path_registry_post_id",
+          "columns": ["post_id"],
+          "isUnique": false
+        },
+        "idx_path_registry_collection_id": {
+          "name": "idx_path_registry_collection_id",
+          "columns": ["collection_id"],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "path_registry_post_id_post_id_fk": {
+          "name": "path_registry_post_id_post_id_fk",
+          "tableFrom": "path_registry",
+          "tableTo": "post",
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "path_registry_collection_id_collection_id_fk": {
+          "name": "path_registry_collection_id_collection_id_fk",
+          "tableFrom": "path_registry",
+          "tableTo": "collection",
+          "columnsFrom": ["collection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_path_registry_shape": {
+          "name": "chk_path_registry_shape",
+          "value": "(\n        \"path_registry\".\"kind\" IN ('slug', 'alias')\n        AND (\n          (\"path_registry\".\"post_id\" IS NOT NULL AND \"path_registry\".\"collection_id\" IS NULL)\n          OR (\"path_registry\".\"post_id\" IS NULL AND \"path_registry\".\"collection_id\" IS NOT NULL)\n        )\n        AND \"path_registry\".\"redirect_to_path\" IS NULL\n        AND \"path_registry\".\"redirect_type\" IS NULL\n      ) OR (\n        \"path_registry\".\"kind\" = 'redirect'\n        AND \"path_registry\".\"post_id\" IS NULL\n        AND \"path_registry\".\"collection_id\" IS NULL\n        AND \"path_registry\".\"redirect_to_path\" IS NOT NULL\n        AND \"path_registry\".\"redirect_type\" IN (301, 302)\n      )"
+        }
+      }
     },
     "post_collection": {
       "name": "post_collection",
@@ -653,7 +742,7 @@
           "name": "visibility",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false,
           "default": "'public'"
         },
@@ -669,13 +758,6 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
-        },
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
           "autoincrement": false
         },
         "title": {
@@ -745,7 +827,7 @@
           "name": "thread_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "deleted_at": {
@@ -759,7 +841,7 @@
           "name": "published_at",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "last_activity_at": {
@@ -785,15 +867,21 @@
         }
       },
       "indexes": {
-        "post_slug_unique": {
-          "name": "post_slug_unique",
-          "columns": ["slug"],
+        "uq_post_id_thread_id": {
+          "name": "uq_post_id_thread_id",
+          "columns": ["id", "thread_id"],
           "isUnique": true
         },
         "idx_post_thread_id": {
           "name": "idx_post_thread_id",
           "columns": ["thread_id"],
           "isUnique": false
+        },
+        "idx_post_thread_live_created": {
+          "name": "idx_post_thread_live_created",
+          "columns": ["thread_id", "created_at", "id"],
+          "isUnique": false,
+          "where": "\"post\".\"deleted_at\" IS NULL"
         },
         "idx_post_status_deleted_published": {
           "name": "idx_post_status_deleted_published",
@@ -804,6 +892,24 @@
           "name": "idx_post_status_deleted_activity",
           "columns": ["status", "deleted_at", "last_activity_at"],
           "isUnique": false
+        },
+        "idx_post_root_live_published_activity": {
+          "name": "idx_post_root_live_published_activity",
+          "columns": ["last_activity_at", "id"],
+          "isUnique": false,
+          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NULL AND \"post\".\"status\" = 'published'"
+        },
+        "idx_post_root_live_draft_updated": {
+          "name": "idx_post_root_live_draft_updated",
+          "columns": ["updated_at", "id"],
+          "isUnique": false,
+          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NULL AND \"post\".\"status\" = 'draft'"
+        },
+        "idx_post_reply_live_thread_created": {
+          "name": "idx_post_reply_live_thread_created",
+          "columns": ["thread_id", "created_at", "id"],
+          "isUnique": false,
+          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NOT NULL AND \"post\".\"status\" = 'published'"
         }
       },
       "foreignKeys": {
@@ -813,7 +919,7 @@
           "tableTo": "post",
           "columnsFrom": ["reply_to_id"],
           "columnsTo": ["id"],
-          "onDelete": "set null",
+          "onDelete": "no action",
           "onUpdate": "no action"
         },
         "post_thread_id_post_id_fk": {
@@ -822,13 +928,63 @@
           "tableTo": "post",
           "columnsFrom": ["thread_id"],
           "columnsTo": ["id"],
-          "onDelete": "set null",
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "post_reply_to_id_thread_id_post_id_thread_id_fk": {
+          "name": "post_reply_to_id_thread_id_post_id_thread_id_fk",
+          "tableFrom": "post",
+          "tableTo": "post",
+          "columnsFrom": ["reply_to_id", "thread_id"],
+          "columnsTo": ["id", "thread_id"],
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "chk_post_format": {
+          "name": "chk_post_format",
+          "value": "\"post\".\"format\" IN ('note', 'link', 'quote')"
+        },
+        "chk_post_status": {
+          "name": "chk_post_status",
+          "value": "\"post\".\"status\" IN ('draft', 'published')"
+        },
+        "chk_post_visibility": {
+          "name": "chk_post_visibility",
+          "value": "\"post\".\"visibility\" IN ('public', 'unlisted', 'private')"
+        },
+        "chk_post_root_visibility_present": {
+          "name": "chk_post_root_visibility_present",
+          "value": "\"post\".\"reply_to_id\" IS NOT NULL OR \"post\".\"visibility\" IS NOT NULL"
+        },
+        "chk_post_reply_to_not_self": {
+          "name": "chk_post_reply_to_not_self",
+          "value": "\"post\".\"reply_to_id\" IS NULL OR \"post\".\"reply_to_id\" <> \"post\".\"id\""
+        },
+        "chk_post_thread_shape": {
+          "name": "chk_post_thread_shape",
+          "value": "(\n        \"post\".\"reply_to_id\" IS NULL\n        AND \"post\".\"thread_id\" = \"post\".\"id\"\n      ) OR (\n        \"post\".\"reply_to_id\" IS NOT NULL\n        AND \"post\".\"thread_id\" <> \"post\".\"id\"\n      )"
+        },
+        "chk_post_reply_not_pinned": {
+          "name": "chk_post_reply_not_pinned",
+          "value": "\"post\".\"pinned_at\" IS NULL OR \"post\".\"reply_to_id\" IS NULL"
+        },
+        "chk_post_format_shape": {
+          "name": "chk_post_format_shape",
+          "value": "(\n        \"post\".\"format\" = 'note'\n        AND (\"post\".\"url\" IS NULL OR trim(\"post\".\"url\") = '')\n        AND (\"post\".\"quote_text\" IS NULL OR trim(\"post\".\"quote_text\") = '')\n      ) OR (\n        \"post\".\"format\" = 'link'\n        AND \"post\".\"url\" IS NOT NULL\n        AND trim(\"post\".\"url\") <> ''\n        AND (\"post\".\"quote_text\" IS NULL OR trim(\"post\".\"quote_text\") = '')\n      ) OR (\n        \"post\".\"format\" = 'quote'\n        AND \"post\".\"quote_text\" IS NOT NULL\n        AND trim(\"post\".\"quote_text\") <> ''\n      )"
+        },
+        "chk_post_rating_range": {
+          "name": "chk_post_rating_range",
+          "value": "\"post\".\"rating\" IS NULL OR \"post\".\"rating\" BETWEEN 1 AND 5"
+        },
+        "chk_post_status_published_at": {
+          "name": "chk_post_status_published_at",
+          "value": "(\n        \"post\".\"status\" = 'draft'\n        AND \"post\".\"published_at\" IS NULL\n      ) OR (\n        \"post\".\"status\" = 'published'\n        AND \"post\".\"published_at\" IS NOT NULL\n      )"
+        }
+      }
     },
     "session": {
       "name": "session",
@@ -895,6 +1051,11 @@
           "name": "session_token_unique",
           "columns": ["token"],
           "isUnique": true
+        },
+        "idx_session_user_id": {
+          "name": "idx_session_user_id",
+          "columns": ["user_id"],
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -995,6 +1156,17 @@
           "name": "idx_sidebar_item_collection_id",
           "columns": ["collection_id"],
           "isUnique": false
+        },
+        "uq_sidebar_item_position": {
+          "name": "uq_sidebar_item_position",
+          "columns": ["position"],
+          "isUnique": true
+        },
+        "uq_sidebar_item_collection_once": {
+          "name": "uq_sidebar_item_collection_once",
+          "columns": ["collection_id"],
+          "isUnique": true,
+          "where": "\"sidebar_item\".\"type\" = 'collection' AND \"sidebar_item\".\"collection_id\" IS NOT NULL"
         }
       },
       "foreignKeys": {
@@ -1010,7 +1182,12 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "chk_sidebar_item_shape": {
+          "name": "chk_sidebar_item_shape",
+          "value": "(\n        \"sidebar_item\".\"type\" = 'collection' AND \"sidebar_item\".\"collection_id\" IS NOT NULL\n      ) OR (\n        \"sidebar_item\".\"type\" = 'divider' AND \"sidebar_item\".\"collection_id\" IS NULL\n      )"
+        }
+      }
     },
     "user": {
       "name": "user",
