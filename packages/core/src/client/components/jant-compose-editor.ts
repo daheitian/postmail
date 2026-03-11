@@ -12,6 +12,7 @@ import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import type { Editor, JSONContent } from "@tiptap/core";
+import Sortable from "sortablejs";
 import type {
   ComposeFormat,
   ComposeLabels,
@@ -74,6 +75,8 @@ export class JantComposeEditor extends LitElement {
   private _emojiContainer: HTMLElement | null = null;
   private _onDocClickBound = this._onDocumentClick.bind(this);
   private _scrollBufferApplied = false;
+  #sortable: { destroy(): void } | null = null;
+  #revertNextSibling: globalThis.Node | null = null;
 
   createRenderRoot() {
     return this;
@@ -109,6 +112,8 @@ export class JantComposeEditor extends LitElement {
     super.disconnectedCallback();
     this._editor?.destroy();
     this._editor = null;
+    this.#sortable?.destroy();
+    this.#sortable = null;
     document.removeEventListener("jant:slash-image", this._onSlashImage);
     document.removeEventListener("click", this._onDocClickBound, true);
     this._emojiContainer?.remove();
@@ -366,6 +371,7 @@ export class JantComposeEditor extends LitElement {
     "_showTitle",
     "_showRating",
     "_attachedTexts",
+    "_attachmentOrder",
   ]);
 
   protected updated(changed: Map<string, unknown>) {
@@ -381,6 +387,19 @@ export class JantComposeEditor extends LitElement {
       this._destroyEditor();
       // Schedule init after Lit re-renders the new template
       this.updateComplete.then(() => this._initEditor());
+    }
+
+    if (
+      changed.has("_attachmentOrder") ||
+      changed.has("_attachments") ||
+      changed.has("_attachedTexts")
+    ) {
+      if (this._attachmentOrder.length > 1) {
+        this.#initSortable();
+      } else {
+        this.#sortable?.destroy();
+        this.#sortable = null;
+      }
     }
 
     // Notify parent dialog of content changes for draft auto-save
@@ -424,11 +443,13 @@ export class JantComposeEditor extends LitElement {
       chars?: number;
     }>;
     textAttachments?: Array<{
+      clientId?: string;
       bodyJson: string;
       bodyHtml?: string;
       summary: string;
       mediaId?: string;
     }>;
+    attachmentOrder?: string[];
   }) {
     if (data.title) this._title = data.title;
     if (data.url) this._url = data.url;
@@ -483,7 +504,7 @@ export class JantComposeEditor extends LitElement {
           // Invalid JSON — leave as null
         }
         return {
-          clientId: crypto.randomUUID(),
+          clientId: t.clientId ?? crypto.randomUUID(),
           bodyJson: parsed,
           bodyHtml: t.bodyHtml ?? "",
           summary: t.summary,
@@ -491,11 +512,31 @@ export class JantComposeEditor extends LitElement {
         };
       });
       this._attachedTexts = texts;
-      // Add text clientIds to attachment order after media
       this._attachmentOrder = [
         ...this._attachmentOrder,
         ...texts.map((t) => t.clientId),
       ];
+    }
+
+    if (data.attachmentOrder?.length) {
+      const orderedClientIds = data.attachmentOrder
+        .map((attachmentId) => {
+          const mediaClientId = this._attachments.find(
+            (item) =>
+              item.mediaId === attachmentId || item.clientId === attachmentId,
+          )?.clientId;
+          if (mediaClientId) return mediaClientId;
+          return this._attachedTexts.find(
+            (item) =>
+              item.mediaId === attachmentId || item.clientId === attachmentId,
+          )?.clientId;
+        })
+        .filter((clientId): clientId is string => clientId !== undefined);
+
+      const remainingClientIds = this._attachmentOrder.filter(
+        (clientId) => !orderedClientIds.includes(clientId),
+      );
+      this._attachmentOrder = [...orderedClientIds, ...remainingClientIds];
     }
   }
 
@@ -536,6 +577,70 @@ export class JantComposeEditor extends LitElement {
         detail: { index },
       }),
     );
+  }
+
+  private _moveAttachment(clientId: string, direction: -1 | 1) {
+    const index = this._attachmentOrder.indexOf(clientId);
+    const nextIndex = index + direction;
+    if (
+      index === -1 ||
+      nextIndex < 0 ||
+      nextIndex >= this._attachmentOrder.length
+    ) {
+      return;
+    }
+
+    const nextOrder = [...this._attachmentOrder];
+    const [item] = nextOrder.splice(index, 1);
+    if (!item) return;
+    nextOrder.splice(nextIndex, 0, item);
+    this._attachmentOrder = nextOrder;
+  }
+
+  private _canMoveAttachment(clientId: string, direction: -1 | 1): boolean {
+    const index = this._attachmentOrder.indexOf(clientId);
+    if (index === -1) return false;
+    const nextIndex = index + direction;
+    return nextIndex >= 0 && nextIndex < this._attachmentOrder.length;
+  }
+
+  #initSortable() {
+    const list = this.querySelector<HTMLElement>("[data-attachment-list]");
+    if (!list || this.#sortable || this._attachmentOrder.length <= 1) return;
+
+    this.#sortable = Sortable.create(list, {
+      animation: 150,
+      handle: "[data-drag-handle]",
+      onStart: (evt) => {
+        this.#revertNextSibling = evt.item.nextSibling;
+      },
+      onEnd: (evt) => {
+        const els = [
+          ...list.querySelectorAll<HTMLElement>("[data-attachment-id]"),
+        ];
+        const orderedIds = els
+          .map((el) => el.dataset.attachmentId)
+          .filter((id): id is string => id !== undefined);
+
+        const { item, oldIndex, newIndex } = evt;
+        if (oldIndex != null && newIndex != null && oldIndex !== newIndex) {
+          item.parentNode?.removeChild(item);
+          if (this.#revertNextSibling) {
+            list.insertBefore(item, this.#revertNextSibling);
+          } else {
+            list.appendChild(item);
+          }
+        }
+        this.#revertNextSibling = null;
+
+        this.#sortable?.destroy();
+        this.#sortable = null;
+
+        if (orderedIds.length === this._attachmentOrder.length) {
+          this._attachmentOrder = orderedIds;
+        }
+      },
+    });
   }
 
   private _editAttachedText(index: number) {
@@ -1235,13 +1340,95 @@ export class JantComposeEditor extends LitElement {
     `;
   }
 
+  private _renderAttachmentActions(clientId: string) {
+    const canMoveEarlier = this._canMoveAttachment(clientId, -1);
+    const canMoveLater = this._canMoveAttachment(clientId, 1);
+
+    return html`
+      <div class="compose-attachment-actions">
+        ${this._attachmentOrder.length > 1
+          ? html`
+              <button
+                type="button"
+                class="compose-attachment-action compose-attachment-handle"
+                data-drag-handle
+                title=${this.labels.reorderAttachment}
+                aria-label=${this.labels.reorderAttachment}
+                @click=${(e: Event) => e.stopPropagation()}
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M4 3h.01M4 7h.01M4 11h.01M10 3h.01M10 7h.01M10 11h.01"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="compose-attachment-action"
+                ?disabled=${!canMoveEarlier}
+                title=${this.labels.moveAttachmentEarlier}
+                aria-label=${this.labels.moveAttachmentEarlier}
+                @click=${(e: Event) => {
+                  e.stopPropagation();
+                  this._moveAttachment(clientId, -1);
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M7 11V3" />
+                  <path d="M4.5 5.5 7 3l2.5 2.5" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="compose-attachment-action"
+                ?disabled=${!canMoveLater}
+                title=${this.labels.moveAttachmentLater}
+                aria-label=${this.labels.moveAttachmentLater}
+                @click=${(e: Event) => {
+                  e.stopPropagation();
+                  this._moveAttachment(clientId, 1);
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M7 3v8" />
+                  <path d="M4.5 8.5 7 11l2.5-2.5" />
+                </svg>
+              </button>
+            `
+          : nothing}
+      </div>
+    `;
+  }
+
   private _renderAttachedTextCard(item: AttachedTextItem, index: number) {
     return html`
-      <div class="compose-attachment">
+      <div class="compose-attachment" data-attachment-id=${item.clientId}>
         <div
           class="compose-attachment-thumb"
           @click=${() => this._editAttachedText(index)}
         >
+          ${this._renderAttachmentActions(item.clientId)}
           <div class="compose-attachment-text-card">
             <div class="compose-attachment-file-icon">
               ${this._renderFileIcon("text/x-tiptap+json", 20)}
@@ -1275,16 +1462,18 @@ export class JantComposeEditor extends LitElement {
     const isFileCard = category !== "image" && category !== "video";
 
     return html`
-      <div class="compose-attachment">
+      <div class="compose-attachment" data-attachment-id=${a.clientId}>
         ${isFileCard
           ? html`
               <div class="compose-attachment-thumb">
+                ${this._renderAttachmentActions(a.clientId)}
                 ${this._renderAttachmentPreview(a)}
                 ${this._renderAttachmentOverlay(a, i)}
               </div>
             `
           : html`
               <div class="compose-attachment-thumb">
+                ${this._renderAttachmentActions(a.clientId)}
                 ${category === "video"
                   ? html`
                       <video
@@ -1354,7 +1543,7 @@ export class JantComposeEditor extends LitElement {
       return nothing;
 
     return html`
-      <div class="compose-attachments">
+      <div class="compose-attachments" data-attachment-list>
         ${this._attachmentOrder.map((clientId) => {
           const mediaIndex = this._attachments.findIndex(
             (a) => a.clientId === clientId,

@@ -320,6 +320,7 @@ export class JantComposeDialog extends LitElement {
         }),
       ),
       textAttachments,
+      attachmentOrder: allMedia.map((m: { id: string }) => m.id),
     });
 
     this.closest("dialog")?.showModal();
@@ -1013,6 +1014,7 @@ export class JantComposeDialog extends LitElement {
         }),
       ),
       textAttachments,
+      attachmentOrder: allMedia.map((m: { id: string }) => m.id),
     });
 
     globalThis.requestAnimationFrame(() => {
@@ -1134,6 +1136,7 @@ export class JantComposeDialog extends LitElement {
         bodyHtml: t.bodyHtml,
         summary: t.summary,
       })),
+      attachmentOrder: [...(data.attachmentOrder ?? [])],
       savedAt: Date.now(),
     };
 
@@ -1194,6 +1197,7 @@ export class JantComposeDialog extends LitElement {
     const textAttachments = draft.attachedTexts
       ?.filter((t) => t.bodyJson !== null)
       .map((t) => ({
+        clientId: t.clientId,
         bodyJson: JSON.stringify(t.bodyJson),
         bodyHtml: t.bodyHtml,
         summary: t.summary,
@@ -1210,6 +1214,7 @@ export class JantComposeDialog extends LitElement {
       showTitle: draft.showTitle,
       showRating: draft.showRating,
       textAttachments: textAttachments?.length ? textAttachments : undefined,
+      attachmentOrder: draft.attachmentOrder,
     });
 
     this._draftRestored = true;

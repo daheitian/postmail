@@ -61,6 +61,9 @@ const labels: ComposeLabels = {
   altPlaceholder: "Describe this...",
   altHint: "Alt text improves accessibility",
   addMore: "Add",
+  reorderAttachment: "Reorder",
+  moveAttachmentEarlier: "Move earlier",
+  moveAttachmentLater: "Move later",
   uploading: "Uploading...",
   published: "Published!",
   view: "View",
@@ -408,5 +411,92 @@ describe("JantComposeEditor", () => {
     const label = mediaBtnAfter?.querySelector(".compose-tool-label");
     expect(label).not.toBeNull();
     expect(label?.textContent).toBe("Add");
+  });
+
+  it("moves attachments later with keyboard controls", async () => {
+    const el = await createElement("note");
+    const blob = new Blob(["fake"], { type: "image/png" });
+    const file = new File([blob], "test.png", { type: "image/png" });
+    el._attachments = [
+      {
+        clientId: "a1",
+        file,
+        previewUrl: URL.createObjectURL(blob),
+        status: "done",
+        progress: null,
+        mediaId: "m1",
+        alt: "",
+        error: null,
+        summary: null,
+        chars: null,
+      },
+      {
+        clientId: "a2",
+        file,
+        previewUrl: URL.createObjectURL(blob),
+        status: "done",
+        progress: null,
+        mediaId: "m2",
+        alt: "",
+        error: null,
+        summary: null,
+        chars: null,
+      },
+    ];
+    el._attachmentOrder = ["a1", "a2"];
+    await el.updateComplete;
+
+    const moveLaterBtn = requireElement(
+      el.querySelector<HTMLButtonElement>(
+        '[data-attachment-id="a1"] button[aria-label="Move later"]',
+      ),
+      "expected move later button",
+    );
+    moveLaterBtn.click();
+    await el.updateComplete;
+
+    expect(el._attachmentOrder).toEqual(["a2", "a1"]);
+  });
+
+  it("preserves mixed attachment order when populate provides one", async () => {
+    const el = await createElement("note");
+
+    el.populate({
+      format: "note",
+      media: [
+        {
+          id: "m1",
+          previewUrl: "/a.png",
+          mimeType: "image/png",
+        },
+      ],
+      textAttachments: [
+        {
+          clientId: "t1",
+          bodyJson: JSON.stringify({
+            type: "doc",
+            content: [
+              {
+                type: "paragraph",
+                content: [{ type: "text", text: "Text attachment" }],
+              },
+            ],
+          }),
+          bodyHtml: "<p>Text attachment</p>",
+          summary: "Text attachment",
+        },
+      ],
+      attachmentOrder: ["t1", "m1"],
+    });
+    await el.updateComplete;
+
+    const items = [
+      ...el.querySelectorAll<HTMLElement>("[data-attachment-id]"),
+    ].map((item) => item.dataset.attachmentId);
+
+    expect(items).toHaveLength(2);
+    expect(items[0]).toBe(el._attachmentOrder[0]);
+    expect(items[1]).toBe(el._attachmentOrder[1]);
+    expect(el._attachmentOrder[0]).toBe("t1");
   });
 });

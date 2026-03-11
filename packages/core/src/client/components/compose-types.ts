@@ -71,6 +71,7 @@ export interface LocalDraft {
     bodyHtml: string;
     summary: string;
   }>;
+  attachmentOrder?: string[];
   savedAt: number;
 }
 
@@ -108,6 +109,9 @@ export interface ComposeLabels {
   altPlaceholder: string;
   altHint: string;
   addMore: string;
+  reorderAttachment: string;
+  moveAttachmentEarlier: string;
+  moveAttachmentLater: string;
   uploading: string;
   published: string;
   view: string;
