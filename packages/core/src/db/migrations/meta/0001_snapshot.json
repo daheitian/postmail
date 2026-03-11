@@ -1,8 +1,8 @@
 {
+  "id": "3fb06406-59a1-4a2b-b8c2-6e458415b0d3",
+  "prevId": "80667c76-9073-4dc7-b0d8-1666cbece09e",
   "version": "6",
   "dialect": "sqlite",
-  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "prevId": "e139d66a-b2f6-4d15-9c0e-0dfa69edb0dc",
   "tables": {
     "account": {
       "name": "account",
@@ -104,11 +104,11 @@
         "account_user_id_user_id_fk": {
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
-          "tableTo": "user",
           "columnsFrom": ["user_id"],
+          "tableTo": "user",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -168,7 +168,13 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "api_token_token_hash_unique": {
+          "name": "api_token_token_hash_unique",
+          "columns": ["token_hash"],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -305,6 +311,11 @@
           "name": "custom_url_path_unique",
           "columns": ["path"],
           "isUnique": true
+        },
+        "idx_custom_url_target_id": {
+          "name": "idx_custom_url_target_id",
+          "columns": ["target_id"],
+          "isUnique": false
         }
       },
       "foreignKeys": {},
@@ -436,6 +447,14 @@
           "notNull": false,
           "autoincrement": false
         },
+        "media_kind": {
+          "name": "media_kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'document'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -451,16 +470,32 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_media_post_id_position": {
+          "name": "idx_media_post_id_position",
+          "columns": ["post_id", "position"],
+          "isUnique": false
+        },
+        "idx_media_storage_key": {
+          "name": "idx_media_storage_key",
+          "columns": ["storage_key"],
+          "isUnique": false
+        },
+        "idx_media_media_kind": {
+          "name": "idx_media_media_kind",
+          "columns": ["media_kind"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "media_post_id_post_id_fk": {
           "name": "media_post_id_post_id_fk",
           "tableFrom": "media",
-          "tableTo": "post",
           "columnsFrom": ["post_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -553,25 +588,31 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_post_collection_collection_id": {
+          "name": "idx_post_collection_collection_id",
+          "columns": ["collection_id"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "post_collection_post_id_post_id_fk": {
           "name": "post_collection_post_id_post_id_fk",
           "tableFrom": "post_collection",
-          "tableTo": "post",
           "columnsFrom": ["post_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "post_collection_collection_id_collection_id_fk": {
           "name": "post_collection_collection_id_collection_id_fk",
           "tableFrom": "post_collection",
-          "tableTo": "collection",
           "columnsFrom": ["collection_id"],
+          "tableTo": "collection",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -618,6 +659,13 @@
         },
         "pinned_at": {
           "name": "pinned_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "featured_at": {
+          "name": "featured_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -714,6 +762,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "last_activity_at": {
+          "name": "last_activity_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
@@ -734,26 +789,41 @@
           "name": "post_slug_unique",
           "columns": ["slug"],
           "isUnique": true
+        },
+        "idx_post_thread_id": {
+          "name": "idx_post_thread_id",
+          "columns": ["thread_id"],
+          "isUnique": false
+        },
+        "idx_post_status_deleted_published": {
+          "name": "idx_post_status_deleted_published",
+          "columns": ["status", "deleted_at", "published_at"],
+          "isUnique": false
+        },
+        "idx_post_status_deleted_activity": {
+          "name": "idx_post_status_deleted_activity",
+          "columns": ["status", "deleted_at", "last_activity_at"],
+          "isUnique": false
         }
       },
       "foreignKeys": {
         "post_reply_to_id_post_id_fk": {
           "name": "post_reply_to_id_post_id_fk",
           "tableFrom": "post",
-          "tableTo": "post",
           "columnsFrom": ["reply_to_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         },
         "post_thread_id_post_id_fk": {
           "name": "post_thread_id_post_id_fk",
           "tableFrom": "post",
-          "tableTo": "post",
           "columnsFrom": ["thread_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -831,11 +901,11 @@
         "session_user_id_user_id_fk": {
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
-          "tableTo": "user",
           "columnsFrom": ["user_id"],
+          "tableTo": "user",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -920,16 +990,22 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_sidebar_item_collection_id": {
+          "name": "idx_sidebar_item_collection_id",
+          "columns": ["collection_id"],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "sidebar_item_collection_id_collection_id_fk": {
           "name": "sidebar_item_collection_id_collection_id_fk",
           "tableFrom": "sidebar_item",
-          "tableTo": "collection",
           "columnsFrom": ["collection_id"],
+          "tableTo": "collection",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -981,7 +1057,7 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
-          "default": "'admin'"
+          "default": "'member'"
         },
         "created_at": {
           "name": "created_at",
@@ -1066,9 +1142,9 @@
   "views": {},
   "enums": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
+    "tables": {}
   },
   "internal": {
     "indexes": {}

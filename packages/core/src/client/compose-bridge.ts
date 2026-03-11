@@ -400,6 +400,13 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     if (!isPageMode || !composeEl) return;
     composeEl.loading = false;
   };
+  const leavePageAfterConfirmSave = () => {
+    if (!isPageMode || !composeEl) return false;
+    if (!composeEl.consumePageLeaveRequest()) return false;
+    composeEl.preparePageLeave();
+    globalThis.location.assign(composeEl.closeHref || "/");
+    return true;
+  };
   const isEdit = !!detail.editPostId;
   let draftFallback: "upload" | "server" | null = null;
 
@@ -518,7 +525,9 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
           const retryData = await retryRes.json();
           const fallbackMsg =
             labels?.publishFailedDraft ?? "Couldn't publish. Saved as draft.";
-          resetPageCompose();
+          if (!leavePageAfterConfirmSave()) {
+            resetPageCompose();
+          }
           toastMsg(fallbackMsg);
           if (retryData.toast) toastMsg(retryData.toast);
           return;
@@ -554,6 +563,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
     if (data.status === "published") {
       if (isPageMode && data.permalink) {
+        composeEl?.preparePageLeave?.();
         globalThis.location.assign(data.permalink);
       } else {
         // Reload the page so the timeline picks up the new post via a
@@ -561,7 +571,9 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
         globalThis.location.reload();
       }
     } else {
-      resetPageCompose();
+      if (!leavePageAfterConfirmSave()) {
+        resetPageCompose();
+      }
       toastMsg(data.toast ?? "Draft saved.");
     }
   } catch {

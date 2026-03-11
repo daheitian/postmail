@@ -5,57 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1772965706200,
-      "tag": "0000_illegal_phalanx",
+      "when": 1773250217366,
+      "tag": "0000_baseline",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1772965706201,
+      "when": 1773250221639,
       "tag": "0001_fts_setup",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1772973467110,
-      "tag": "0002_complex_white_tiger",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1772973888182,
-      "tag": "0003_quick_johnny_blaze",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1772990226835,
-      "tag": "0004_spicy_albert_cleary",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1773005237586,
-      "tag": "0005_white_orphan",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1773007147589,
-      "tag": "0006_easy_thanos",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1773074015231,
-      "tag": "0007_abandoned_robbie_robertson",
       "breakpoints": true
     }
   ]

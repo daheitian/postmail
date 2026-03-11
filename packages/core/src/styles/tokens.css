@@ -63,6 +63,11 @@
   --site-accent: var(--primary);
   --site-accent-text: var(--primary-foreground);
   --site-column-outline: var(--border);
+  --site-border-light: color-mix(
+    in srgb,
+    var(--site-column-outline) 52%,
+    transparent
+  );
   --site-threadline: var(--border);
   --site-page-bg: var(--background);
   --site-elevated-bg: var(--background);

@@ -139,6 +139,9 @@ export class JantComposeDialog extends LitElement {
   private _draftSaveTimer: ReturnType<typeof setTimeout> | null = null;
   private _draftRestored = false;
   private _initialSnapshot: string | null = null;
+  private _pageFocusApplied = false;
+  private _pageLeaveRequested = false;
+  private _suppressBeforeUnload = false;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -227,6 +230,9 @@ export class JantComposeDialog extends LitElement {
     this._showVisibilityMenu = false;
     this._confirmForDrafts = false;
     this._initialSnapshot = null;
+    this._pageFocusApplied = false;
+    this._pageLeaveRequested = false;
+    this._suppressBeforeUnload = false;
     this._destroyAttachedEditor();
     this._editor?.reset();
     this._captureInitialSnapshot();
@@ -377,8 +383,24 @@ export class JantComposeDialog extends LitElement {
     }
 
     if (this.pageMode) {
+      this._suppressBeforeUnload = true;
       globalThis.location.assign(this.closeHref || "/");
     }
+  }
+
+  requestCloseAndLeave() {
+    this._pageLeaveRequested = true;
+    this.requestClose();
+  }
+
+  consumePageLeaveRequest(): boolean {
+    const shouldLeave = this._pageLeaveRequested;
+    this._pageLeaveRequested = false;
+    return shouldLeave;
+  }
+
+  preparePageLeave() {
+    this._suppressBeforeUnload = true;
   }
 
   private _hasContent(): boolean {
@@ -472,6 +494,7 @@ export class JantComposeDialog extends LitElement {
     if (this._confirmPanelOpen) {
       this._confirmPanelOpen = false;
       this._confirmForDrafts = false;
+      this._pageLeaveRequested = false;
       this.updateComplete.then(() => this._editor?.focusInput());
       return;
     }
@@ -678,8 +701,8 @@ export class JantComposeDialog extends LitElement {
       dialog.addEventListener("cancel", this._handleDialogCancel);
     }
 
-    if (this.pageMode && this.autoRestoreDraft) {
-      this.updateComplete.then(() => this.restoreLocalDraft());
+    if (this.pageMode) {
+      this.updateComplete.then(() => this._focusPageEditorOnMount());
     }
   }
 
@@ -1057,14 +1080,18 @@ export class JantComposeDialog extends LitElement {
 
   /** Flush pending draft save and warn on unsaved changes before page unload */
   private _onBeforeUnload = (e: globalThis.BeforeUnloadEvent) => {
+    if (this._suppressBeforeUnload) return;
+
     // Flush any pending debounced draft save
     if (this._draftSaveTimer !== null) {
       this._cancelDraftSaveTimer();
       this._saveDraftToStorage();
     }
-    // Warn if the dialog is open with unsaved modifications
+    // Warn if compose has unsaved modifications in either dialog or page mode.
     const dialog = this.closest("dialog");
-    if (dialog?.open && this._hasUnsavedChanges()) {
+    const shouldWarn =
+      this._hasUnsavedChanges() && (this.pageMode || dialog?.open === true);
+    if (shouldWarn) {
       e.preventDefault();
       e.returnValue = "";
     }
@@ -1189,6 +1216,20 @@ export class JantComposeDialog extends LitElement {
     showToast(this.labels.draftRestored);
     globalThis.requestAnimationFrame(() => {
       this._captureInitialSnapshot();
+    });
+  }
+
+  private async _focusPageEditorOnMount() {
+    if (this._pageFocusApplied) return;
+
+    if (this.autoRestoreDraft) {
+      await this.restoreLocalDraft();
+    }
+
+    await this.updateComplete;
+    globalThis.requestAnimationFrame(() => {
+      this._editor?.focusInput();
+      this._pageFocusApplied = true;
     });
   }
 

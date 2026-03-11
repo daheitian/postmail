@@ -1,6 +1,6 @@
 -- FTS5 virtual table for full-text search on posts
 -- Uses trigram tokenizer for partial-match support (CJK, substring queries)
--- This is not managed by Drizzle ORM — maintained manually.
+-- This is not managed by Drizzle ORM - maintained manually.
 
 CREATE VIRTUAL TABLE post_fts USING fts5(
   title,

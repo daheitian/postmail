@@ -200,6 +200,11 @@ msgstr "Avatar"
 msgid "Avatar display updated."
 msgstr "Avatar display updated."
 
+#. @context: Link back from the new post page
+#: src/ui/pages/ComposePage.tsx
+msgid "Back"
+msgstr "Back"
+
 #. @context: Settings item description for API tokens
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Bearer tokens for scripts and automation"

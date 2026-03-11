@@ -25,6 +25,7 @@ CREATE TABLE `api_token` (
 	`updated_at` integer NOT NULL
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `api_token_token_hash_unique` ON `api_token` (`token_hash`);--> statement-breakpoint
 CREATE TABLE `collection` (
 	`id` text PRIMARY KEY NOT NULL,
 	`slug` text NOT NULL,
@@ -48,6 +49,7 @@ CREATE TABLE `custom_url` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `custom_url_path_unique` ON `custom_url` (`path`);--> statement-breakpoint
+CREATE INDEX `idx_custom_url_target_id` ON `custom_url` (`target_id`);--> statement-breakpoint
 CREATE TABLE `media` (
 	`id` text PRIMARY KEY NOT NULL,
 	`post_id` text,
@@ -66,11 +68,15 @@ CREATE TABLE `media` (
 	`poster_key` text,
 	`summary` text,
 	`chars` integer,
+	`media_kind` text DEFAULT 'document' NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
+CREATE INDEX `idx_media_post_id_position` ON `media` (`post_id`,`position`);--> statement-breakpoint
+CREATE INDEX `idx_media_storage_key` ON `media` (`storage_key`);--> statement-breakpoint
+CREATE INDEX `idx_media_media_kind` ON `media` (`media_kind`);--> statement-breakpoint
 CREATE TABLE `nav_item` (
 	`id` text PRIMARY KEY NOT NULL,
 	`type` text DEFAULT 'link' NOT NULL,
@@ -86,16 +92,18 @@ CREATE TABLE `post_collection` (
 	`collection_id` text NOT NULL,
 	`created_at` integer NOT NULL,
 	PRIMARY KEY(`post_id`, `collection_id`),
-	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE INDEX `idx_post_collection_collection_id` ON `post_collection` (`collection_id`);--> statement-breakpoint
 CREATE TABLE `post` (
 	`id` text PRIMARY KEY NOT NULL,
 	`format` text NOT NULL,
 	`status` text DEFAULT 'published' NOT NULL,
 	`visibility` text DEFAULT 'public' NOT NULL,
 	`pinned_at` integer,
+	`featured_at` integer,
 	`slug` text NOT NULL,
 	`title` text,
 	`url` text,
@@ -109,13 +117,17 @@ CREATE TABLE `post` (
 	`thread_id` text,
 	`deleted_at` integer,
 	`published_at` integer NOT NULL,
+	`last_activity_at` integer,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`reply_to_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`thread_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`reply_to_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null,
+	FOREIGN KEY (`thread_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `post_slug_unique` ON `post` (`slug`);--> statement-breakpoint
+CREATE INDEX `idx_post_thread_id` ON `post` (`thread_id`);--> statement-breakpoint
+CREATE INDEX `idx_post_status_deleted_published` ON `post` (`status`,`deleted_at`,`published_at`);--> statement-breakpoint
+CREATE INDEX `idx_post_status_deleted_activity` ON `post` (`status`,`deleted_at`,`last_activity_at`);--> statement-breakpoint
 CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`expires_at` integer NOT NULL,
@@ -142,16 +154,17 @@ CREATE TABLE `sidebar_item` (
 	`position` text DEFAULT 'a0' NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE INDEX `idx_sidebar_item_collection_id` ON `sidebar_item` (`collection_id`);--> statement-breakpoint
 CREATE TABLE `user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`email` text NOT NULL,
 	`email_verified` integer DEFAULT false NOT NULL,
 	`image` text,
-	`role` text DEFAULT 'admin',
+	`role` text DEFAULT 'member',
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL
 );
