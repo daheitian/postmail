@@ -38,6 +38,8 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   siteFooterHtml,
   sidebar,
   uploadMaxFileSize,
+  showComposeDialog = true,
+  showHeader = true,
   children,
 }) => {
   const { t } = useLingui();
@@ -81,110 +83,112 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
 
   return (
     <div class="site-page">
-      <header class="site-header">
-        <div class="site-header-inner">
-          <div class="site-header-top site-header-top-bordered">
-            <a href="/" class="site-logo">
-              {showHeaderAvatar && siteAvatarUrl && (
-                <img src={siteAvatarUrl} class="site-logo-avatar" alt="" />
-              )}
-              {siteName}
-            </a>
-            <div class="site-header-right">
-              {links.length > 0 && (
-                <nav class="site-header-nav">
-                  {links.slice(0, maxVisible).map((link) => (
-                    <HeaderLink key={link.id} link={link} />
-                  ))}
-                  {overflowLinks.length > 0 && (
-                    <div class="dropdown-menu site-header-more">
-                      <button
-                        type="button"
-                        id="site-nav-more-trigger"
-                        class={`site-header-more-btn ${hasActiveOverflow ? "site-header-more-btn-active" : ""}`}
-                        aria-haspopup="menu"
-                        aria-controls="site-nav-more-menu"
-                        aria-expanded="false"
-                        aria-label={t({
-                          message: "More links",
-                          comment:
-                            "@context: Button to show overflow nav links",
-                        })}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
+      {showHeader && (
+        <header class="site-header">
+          <div class="site-header-inner">
+            <div class="site-header-top site-header-top-bordered">
+              <a href="/" class="site-logo">
+                {showHeaderAvatar && siteAvatarUrl && (
+                  <img src={siteAvatarUrl} class="site-logo-avatar" alt="" />
+                )}
+                {siteName}
+              </a>
+              <div class="site-header-right">
+                {links.length > 0 && (
+                  <nav class="site-header-nav">
+                    {links.slice(0, maxVisible).map((link) => (
+                      <HeaderLink key={link.id} link={link} />
+                    ))}
+                    {overflowLinks.length > 0 && (
+                      <div class="dropdown-menu site-header-more">
+                        <button
+                          type="button"
+                          id="site-nav-more-trigger"
+                          class={`site-header-more-btn ${hasActiveOverflow ? "site-header-more-btn-active" : ""}`}
+                          aria-haspopup="menu"
+                          aria-controls="site-nav-more-menu"
+                          aria-expanded="false"
+                          aria-label={t({
+                            message: "More links",
+                            comment:
+                              "@context: Button to show overflow nav links",
+                          })}
                         >
-                          <circle cx="5" cy="12" r="2" />
-                          <circle cx="12" cy="12" r="2" />
-                          <circle cx="19" cy="12" r="2" />
-                        </svg>
-                      </button>
-                      <div
-                        id="site-nav-more-popover"
-                        data-popover
-                        data-align="end"
-                        aria-hidden="true"
-                      >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <circle cx="5" cy="12" r="2" />
+                            <circle cx="12" cy="12" r="2" />
+                            <circle cx="19" cy="12" r="2" />
+                          </svg>
+                        </button>
                         <div
-                          role="menu"
-                          id="site-nav-more-menu"
-                          aria-labelledby="site-nav-more-trigger"
+                          id="site-nav-more-popover"
+                          data-popover
+                          data-align="end"
+                          aria-hidden="true"
                         >
-                          {overflowLinks.map((link) => (
-                            <a
-                              key={link.id}
-                              href={link.url}
-                              role="menuitem"
-                              class={
-                                link.isActive
-                                  ? "site-header-menuitem-active"
-                                  : undefined
-                              }
-                              {...(link.isExternal
-                                ? {
-                                    target: "_blank",
-                                    rel: "noopener noreferrer",
-                                  }
-                                : {})}
-                            >
-                              {link.label}
-                            </a>
-                          ))}
+                          <div
+                            role="menu"
+                            id="site-nav-more-menu"
+                            aria-labelledby="site-nav-more-trigger"
+                          >
+                            {overflowLinks.map((link) => (
+                              <a
+                                key={link.id}
+                                href={link.url}
+                                role="menuitem"
+                                class={
+                                  link.isActive
+                                    ? "site-header-menuitem-active"
+                                    : undefined
+                                }
+                                {...(link.isExternal
+                                  ? {
+                                      target: "_blank",
+                                      rel: "noopener noreferrer",
+                                    }
+                                  : {})}
+                              >
+                                {link.label}
+                              </a>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </nav>
-              )}
-              <a
-                href="/search"
-                class={`site-header-search ${currentPath === "/search" ? "site-header-search-active" : ""}`}
-                aria-label={searchLabel}
-                title={searchLabel}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                    )}
+                  </nav>
+                )}
+                <a
+                  href="/search"
+                  class={`site-header-search ${currentPath === "/search" ? "site-header-search-active" : ""}`}
+                  aria-label={searchLabel}
+                  title={searchLabel}
                 >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-              </a>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main class="site-main">
         {sidebar ? (
@@ -238,7 +242,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
       <jant-media-lightbox />
       <jant-text-preview />
       {isAuthenticated && <jant-post-menu />}
-      {isAuthenticated && (
+      {isAuthenticated && showComposeDialog && (
         <ComposeDialog
           collections={collections}
           uploadMaxFileSize={uploadMaxFileSize}

@@ -18,9 +18,18 @@ export interface ComposeDialogProps {
   uploadMaxFileSize?: number;
 }
 
-export const ComposeDialog: FC<ComposeDialogProps> = ({
+export interface ComposeFormProps extends ComposeDialogProps {
+  pageMode?: boolean;
+  closeHref?: string;
+  autoRestoreDraft?: boolean;
+}
+
+export const ComposeForm: FC<ComposeFormProps> = ({
   collections,
   uploadMaxFileSize,
+  pageMode = false,
+  closeHref,
+  autoRestoreDraft = false,
 }) => {
   const { t } = useLingui();
 
@@ -364,22 +373,37 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
   ).replace(/</g, "\\u003c");
 
   return (
+    <jant-compose-dialog
+      collections={collectionsJson}
+      labels={labels}
+      upload-max-file-size={uploadMaxFileSize ?? 500}
+      {...(pageMode ? { "page-mode": "" } : {})}
+      {...(closeHref ? { "close-href": closeHref } : {})}
+      {...(autoRestoreDraft ? { "auto-restore-draft": "" } : {})}
+    >
+      {/* SSR fallback skeleton */}
+      <div class="compose-dialog-inner">
+        <div class="compose-dialog-header" />
+        <div class="compose-body skel-section-md" />
+      </div>
+    </jant-compose-dialog>
+  );
+};
+
+export const ComposeDialog: FC<ComposeDialogProps> = ({
+  collections,
+  uploadMaxFileSize,
+}) => {
+  return (
     <dialog
       id="compose-dialog"
       class="compose-dialog"
       data-on:click="evt.target === el && el.querySelector('jant-compose-dialog')?.requestClose()"
     >
-      <jant-compose-dialog
-        collections={collectionsJson}
-        labels={labels}
-        upload-max-file-size={uploadMaxFileSize ?? 500}
-      >
-        {/* SSR fallback skeleton */}
-        <div class="compose-dialog-inner">
-          <div class="compose-dialog-header" />
-          <div class="compose-body skel-section-md" />
-        </div>
-      </jant-compose-dialog>
+      <ComposeForm
+        collections={collections}
+        uploadMaxFileSize={uploadMaxFileSize}
+      />
     </dialog>
   );
 };

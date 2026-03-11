@@ -844,6 +844,11 @@ msgstr "新增自訂網址"
 msgid "New Password"
 msgstr "新密碼"
 
+#. @context: Browser page title for the new post page
+#: src/routes/pages/new.tsx
+msgid "New post"
+msgstr ""
+
 #. @context: Collection sort order option
 #. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx

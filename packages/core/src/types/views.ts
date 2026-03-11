@@ -187,4 +187,6 @@ export interface SiteLayoutProps {
   siteFooterHtml?: string;
   sidebar?: import("hono/jsx").Child;
   uploadMaxFileSize?: number;
+  showComposeDialog?: boolean;
+  showHeader?: boolean;
 }

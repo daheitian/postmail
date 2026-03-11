@@ -25,6 +25,10 @@ export interface RenderPublicPageOptions {
   sidebar?: Child;
   /** Optional toast notification */
   toast?: ToastProps;
+  /** Whether to render the shared compose dialog shell */
+  showComposeDialog?: boolean;
+  /** Whether to render the site header */
+  showHeader?: boolean;
 }
 
 /**
@@ -45,7 +49,16 @@ export interface RenderPublicPageOptions {
  * ```
  */
 export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
-  const { title, description, navData, content, sidebar, toast } = options;
+  const {
+    title,
+    description,
+    navData,
+    content,
+    sidebar,
+    toast,
+    showComposeDialog,
+    showHeader,
+  } = options;
 
   // Use siteDescription as meta description fallback when not explicitly provided
   const metaDescription = description || navData.siteDescription || undefined;
@@ -66,6 +79,8 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     siteFooterHtml: navData.siteFooterHtml,
     sidebar,
     uploadMaxFileSize: appConfig.uploadMaxFileSize,
+    showComposeDialog,
+    showHeader,
   };
   const faviconUrl = appConfig.siteAvatarUrl || undefined;
   const faviconVersion = appConfig.faviconVersion || undefined;

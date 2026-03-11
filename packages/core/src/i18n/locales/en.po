@@ -844,6 +844,11 @@ msgstr "New Custom URL"
 msgid "New Password"
 msgstr "New Password"
 
+#. @context: Browser page title for the new post page
+#: src/routes/pages/new.tsx
+msgid "New post"
+msgstr "New post"
+
 #. @context: Collection sort order option
 #. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx

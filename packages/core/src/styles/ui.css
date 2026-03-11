@@ -917,6 +917,61 @@
     }
   }
 
+  .compose-page {
+    margin-inline: calc(var(--site-padding) * -1);
+    margin-bottom: calc(var(--space-xl) * -1);
+    min-height: 100dvh;
+  }
+
+  .compose-page-shell {
+    --compose-margin-top: 0px;
+
+    width: 100%;
+    background-color: var(--site-elevated-bg);
+  }
+
+  .compose-page-shell > jant-compose-dialog {
+    display: block;
+  }
+
+  .compose-page-shell .compose-dialog-inner {
+    min-height: 0;
+    max-height: none;
+    border-radius: inherit;
+  }
+
+  .compose-page-shell .compose-dialog-inner > jant-compose-editor,
+  .compose-page-shell .compose-thread-layout,
+  .compose-page-shell .compose-editor-row,
+  .compose-page-shell .compose-editor-row > jant-compose-editor {
+    flex: 0 1 auto;
+    min-height: 0;
+  }
+
+  .compose-page-shell .compose-body {
+    flex: 0 1 auto;
+    min-height: clamp(8rem, 22vh, 12rem);
+  }
+
+  @media (min-width: 701px) and (min-height: 761px) {
+    .compose-page {
+      margin-inline: 0;
+      margin-bottom: 0;
+      padding: 16px 0 24px;
+    }
+
+    .compose-page-shell {
+      max-width: calc(var(--site-width) - var(--site-padding) * 2 - 20px);
+      margin: 0 auto;
+      border: 1px solid var(--site-column-outline);
+      border-radius: 10px;
+      box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.08),
+        0 1px 3px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+    }
+  }
+
   /* --- Dialog shell ------------------------------------------------------- */
 
   /* Prevent body scroll when any compose dialog is open */

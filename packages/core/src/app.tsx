@@ -23,6 +23,7 @@ import { searchRoutes } from "./routes/pages/search.js";
 import { featuredRoutes } from "./routes/pages/featured.js";
 import { latestRoutes } from "./routes/pages/latest.js";
 import { collectionsPageRoutes } from "./routes/pages/collections.js";
+import { newPostRoutes } from "./routes/pages/new.js";
 
 // Routes - Settings (admin)
 import { settingsRoutes } from "./routes/dash/settings.js";
@@ -361,6 +362,7 @@ export function createApp(): App {
 
   // Frontend routes
   app.route("/search", searchRoutes);
+  app.route("/", newPostRoutes);
   app.route("/archive", archiveRoutes);
   app.route("/featured", featuredRoutes);
   app.route("/latest", latestRoutes);

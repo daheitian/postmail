@@ -24,6 +24,22 @@ import {
 import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
 import { getMediaCategory } from "../lib/upload.js";
 
+function getComposeEditorFromEventTarget(
+  target: globalThis.EventTarget | null,
+): JantComposeEditor | null {
+  return target instanceof globalThis.Element
+    ? (target.closest("jant-compose-editor") as JantComposeEditor | null)
+    : null;
+}
+
+function getComposeDialogFromEventTarget(
+  target: globalThis.EventTarget | null,
+): JantComposeDialog | null {
+  return target instanceof globalThis.Element
+    ? (target.closest("jant-compose-dialog") as JantComposeDialog | null)
+    : null;
+}
+
 // ── Upload manager ──────────────────────────────────────────────────
 
 /** Track in-flight upload promises keyed by clientId */
@@ -201,10 +217,6 @@ async function uploadFile(
   }
 }
 
-function getEditor(): JantComposeEditor | null {
-  return document.querySelector("jant-compose-editor");
-}
-
 // ── Attachment removal handler ───────────────────────────────────────
 
 document.addEventListener("jant:attachment-removed", (e: Event) => {
@@ -227,7 +239,7 @@ document.addEventListener("jant:files-selected", (e: Event) => {
   const event = e as CustomEvent<{
     files: { file: File; clientId: string }[];
   }>;
-  const editor = getEditor();
+  const editor = getComposeEditorFromEventTarget(event.target);
 
   for (const { file, clientId } of event.detail.files) {
     const promise = uploadFile(file, clientId, editor).then((mediaId) => {
@@ -352,9 +364,10 @@ interface DeferredDetail extends ComposeSubmitDetail {
 document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   const event = e as CustomEvent<DeferredDetail>;
   const detail = event.detail;
-  const composeEl = document.querySelector(
-    "jant-compose-dialog",
-  ) as JantComposeDialog | null;
+  const composeEl =
+    getComposeDialogFromEventTarget(event.target) ??
+    (document.querySelector("jant-compose-dialog") as JantComposeDialog | null);
+  const isPageMode = !!composeEl?.pageMode;
 
   // Get labels for toast messages
   const labels = composeEl?.labels;
@@ -373,6 +386,19 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     } else {
       showToast(msg, type);
     }
+  };
+  const resetPageCompose = () => {
+    if (!isPageMode || !composeEl) return;
+    composeEl.reset();
+    composeEl.updateComplete.then(() => {
+      composeEl
+        .querySelector<JantComposeEditor>("jant-compose-editor")
+        ?.focusInput();
+    });
+  };
+  const clearPageLoading = () => {
+    if (!isPageMode || !composeEl) return;
+    composeEl.loading = false;
   };
   const isEdit = !!detail.editPostId;
   let draftFallback: "upload" | "server" | null = null;
@@ -394,6 +420,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       if (detail.status === "published" && !isEdit) {
         draftFallback = "upload";
       } else {
+        clearPageLoading();
         toastMsg("Upload failed. Post not created.", "error");
         return;
       }
@@ -491,6 +518,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
           const retryData = await retryRes.json();
           const fallbackMsg =
             labels?.publishFailedDraft ?? "Couldn't publish. Saved as draft.";
+          resetPageCompose();
           toastMsg(fallbackMsg);
           if (retryData.toast) toastMsg(retryData.toast);
           return;
@@ -498,13 +526,18 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       }
 
       const data = await res.json();
+      clearPageLoading();
       toastMsg(data.error ?? "Something went wrong", "error");
       return;
     }
 
     if (isEdit) {
       toastMsg("Post updated.");
-      globalThis.location.reload();
+      if (isPageMode) {
+        globalThis.location.assign(globalThis.location.pathname);
+      } else {
+        globalThis.location.reload();
+      }
       return;
     }
 
@@ -512,6 +545,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     if (draftFallback === "upload") {
       const fallbackMsg =
         labels?.uploadFailedDraft ?? "Some uploads failed. Saved as draft.";
+      resetPageCompose();
       toastMsg(fallbackMsg);
       return;
     }
@@ -519,13 +553,19 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     const data = await res.json();
 
     if (data.status === "published") {
-      // Reload the page so the timeline picks up the new post via a
-      // full assembleTimeline() pass (correct thread previews, filters, etc.)
-      globalThis.location.reload();
+      if (isPageMode && data.permalink) {
+        globalThis.location.assign(data.permalink);
+      } else {
+        // Reload the page so the timeline picks up the new post via a
+        // full assembleTimeline() pass (correct thread previews, filters, etc.)
+        globalThis.location.reload();
+      }
     } else {
+      resetPageCompose();
       toastMsg(data.toast ?? "Draft saved.");
     }
   } catch {
+    clearPageLoading();
     toastMsg("Something went wrong", "error");
   }
 });

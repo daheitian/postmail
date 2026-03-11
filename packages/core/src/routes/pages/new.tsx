@@ -1,0 +1,39 @@
+import { Hono } from "hono";
+import { msg } from "@lingui/core/macro";
+import type { Bindings } from "../../types.js";
+import type { AppVariables } from "../../types/app-context.js";
+import { requireAuth } from "../../middleware/auth.js";
+import { getNavigationData } from "../../lib/navigation.js";
+import { renderPublicPage } from "../../lib/render.js";
+import { getI18n } from "../../i18n/index.js";
+import { ComposePage } from "../../ui/pages/ComposePage.js";
+
+type Env = { Bindings: Bindings; Variables: AppVariables };
+
+export const newPostRoutes = new Hono<Env>();
+
+newPostRoutes.use("*", requireAuth());
+
+newPostRoutes.get("/new", async (c) => {
+  const navData = await getNavigationData(c);
+  const i18n = getI18n(c);
+
+  return renderPublicPage(c, {
+    title: `${i18n._(
+      msg({
+        message: "New post",
+        comment: "@context: Browser page title for the new post page",
+      }),
+    )} - ${navData.siteName}`,
+    navData,
+    showComposeDialog: false,
+    showHeader: false,
+    content: (
+      <ComposePage
+        collections={navData.collections}
+        uploadMaxFileSize={c.var.appConfig.uploadMaxFileSize}
+        closeHref="/"
+      />
+    ),
+  });
+});

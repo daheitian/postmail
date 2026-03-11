@@ -69,6 +69,9 @@ export class JantComposeDialog extends LitElement {
     collections: { type: Array },
     labels: { type: Object },
     uploadMaxFileSize: { type: Number, attribute: "upload-max-file-size" },
+    pageMode: { type: Boolean, attribute: "page-mode" },
+    closeHref: { type: String, attribute: "close-href" },
+    autoRestoreDraft: { type: Boolean, attribute: "auto-restore-draft" },
     _format: { state: true },
     _status: { state: true },
     _loading: { state: true },
@@ -100,6 +103,9 @@ export class JantComposeDialog extends LitElement {
   declare collections: ComposeCollection[];
   declare labels: ComposeLabels;
   declare uploadMaxFileSize: number;
+  declare pageMode: boolean;
+  declare closeHref: string;
+  declare autoRestoreDraft: boolean;
   declare _format: ComposeFormat;
   declare _status: "published" | "draft";
   declare _loading: boolean;
@@ -144,6 +150,9 @@ export class JantComposeDialog extends LitElement {
     this.collections = [];
     this.labels = {} as ComposeLabels;
     this.uploadMaxFileSize = 500;
+    this.pageMode = false;
+    this.closeHref = "/";
+    this.autoRestoreDraft = false;
     this._format = "note";
     this._status = "published";
     this._loading = false;
@@ -361,7 +370,15 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _closeDialog() {
-    this.closest("dialog")?.close();
+    const dialog = this.closest("dialog");
+    if (dialog) {
+      dialog.close();
+      return;
+    }
+
+    if (this.pageMode) {
+      globalThis.location.assign(this.closeHref || "/");
+    }
   }
 
   private _hasContent(): boolean {
@@ -605,6 +622,10 @@ export class JantComposeDialog extends LitElement {
   private _submit(status: "published" | "draft") {
     this._clearDraftFromStorage();
     if (!this._dispatchSubmit(status)) return;
+    if (this.pageMode) {
+      this._loading = true;
+      return;
+    }
     this._closeDialog();
     // Prevent browser from restoring focus to the trigger button
     (document.activeElement as HTMLElement)?.blur();
@@ -655,6 +676,10 @@ export class JantComposeDialog extends LitElement {
     const dialog = this.closest("dialog");
     if (dialog) {
       dialog.addEventListener("cancel", this._handleDialogCancel);
+    }
+
+    if (this.pageMode && this.autoRestoreDraft) {
+      this.updateComplete.then(() => this.restoreLocalDraft());
     }
   }
 
