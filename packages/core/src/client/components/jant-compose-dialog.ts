@@ -33,6 +33,37 @@ interface ReplyToData {
   dateText: string;
 }
 
+interface ComposeStateSnapshot {
+  format: ComposeFormat;
+  collectionIds: string[];
+  title: string;
+  bodyJson: JSONContent | null;
+  url: string;
+  quoteText: string;
+  quoteAuthor: string;
+  rating: number;
+  showTitle: boolean;
+  showRating: boolean;
+  attachments: Array<{
+    clientId: string;
+    mediaId: string | null;
+    previewUrl: string;
+    mimeType: string;
+    alt: string;
+    status: ComposeAttachment["status"];
+    summary: string | null;
+    chars: number | null;
+  }>;
+  attachedTexts: Array<{
+    clientId: string;
+    mediaId: string | null;
+    bodyJson: JSONContent | null;
+    bodyHtml: string;
+    summary: string;
+  }>;
+  attachmentOrder: string[];
+}
+
 export class JantComposeDialog extends LitElement {
   static properties = {
     collections: { type: Array },
@@ -101,7 +132,7 @@ export class JantComposeDialog extends LitElement {
   private _confirmForDrafts = false;
   private _draftSaveTimer: ReturnType<typeof setTimeout> | null = null;
   private _draftRestored = false;
-  #dirty = false;
+  private _initialSnapshot: string | null = null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -147,8 +178,10 @@ export class JantComposeDialog extends LitElement {
 
   protected updated(changed: Map<string, unknown>) {
     super.updated(changed);
+    if (this._initialSnapshot === null && this._editor) {
+      this._captureInitialSnapshot();
+    }
     if (changed.has("_format") || changed.has("_collectionIds")) {
-      this.#dirty = true;
       // Schedule draft auto-save for new-post mode only
       if (!this._editPostId && !this._draftSourceId) {
         this._scheduleDraftSave();
@@ -184,9 +217,10 @@ export class JantComposeDialog extends LitElement {
     this._featured = false;
     this._showVisibilityMenu = false;
     this._confirmForDrafts = false;
-    this.#dirty = false;
+    this._initialSnapshot = null;
     this._destroyAttachedEditor();
     this._editor?.reset();
+    this._captureInitialSnapshot();
   }
 
   async openEdit(id: string) {
@@ -276,7 +310,7 @@ export class JantComposeDialog extends LitElement {
     this.closest("dialog")?.showModal();
     globalThis.requestAnimationFrame(() => {
       this._editor?.focusInput();
-      this.#dirty = false;
+      this._captureInitialSnapshot();
     });
   }
 
@@ -295,6 +329,7 @@ export class JantComposeDialog extends LitElement {
     this.closest("dialog")?.showModal();
     await this.updateComplete;
     this._editor?.focusInput();
+    this._captureInitialSnapshot();
   }
 
   /**
@@ -348,6 +383,60 @@ export class JantComposeDialog extends LitElement {
     return false;
   }
 
+  private _buildSnapshot(): ComposeStateSnapshot | null {
+    const editor = this._editor;
+    if (!editor) return null;
+
+    return {
+      format: this._format,
+      collectionIds: [...this._collectionIds],
+      title: editor._title,
+      bodyJson: editor._bodyJson,
+      url: editor._url,
+      quoteText: editor._quoteText,
+      quoteAuthor: editor._quoteAuthor,
+      rating: editor._rating,
+      showTitle: editor._showTitle,
+      showRating: editor._showRating,
+      attachments: editor._attachments.map((attachment) => ({
+        clientId: attachment.clientId,
+        mediaId: attachment.mediaId,
+        previewUrl: attachment.previewUrl,
+        mimeType: attachment.file.type,
+        alt: attachment.alt,
+        status: attachment.status,
+        summary: attachment.summary,
+        chars: attachment.chars,
+      })),
+      attachedTexts: editor._attachedTexts.map((item) => ({
+        clientId: item.clientId,
+        mediaId: item.mediaId ?? null,
+        bodyJson: item.bodyJson,
+        bodyHtml: item.bodyHtml,
+        summary: item.summary,
+      })),
+      attachmentOrder: [...editor._attachmentOrder],
+    };
+  }
+
+  private _serializeSnapshot(
+    snapshot: ComposeStateSnapshot | null,
+  ): string | null {
+    if (!snapshot) return null;
+    return JSON.stringify(snapshot);
+  }
+
+  private _captureInitialSnapshot() {
+    this._initialSnapshot = this._serializeSnapshot(this._buildSnapshot());
+  }
+
+  private _hasUnsavedChanges(): boolean {
+    const currentSnapshot = this._serializeSnapshot(this._buildSnapshot());
+    if (currentSnapshot === null) return false;
+    if (this._initialSnapshot === null) return this._hasContent();
+    return currentSnapshot !== this._initialSnapshot;
+  }
+
   requestClose() {
     if (this._loading) return;
 
@@ -372,7 +461,7 @@ export class JantComposeDialog extends LitElement {
 
     // In edit mode, only prompt if actual changes were made
     if (this._editPostId) {
-      if (this.#dirty) {
+      if (this._hasUnsavedChanges()) {
         this._confirmForDrafts = false;
         this._confirmPanelOpen = true;
       } else {
@@ -880,7 +969,7 @@ export class JantComposeDialog extends LitElement {
 
     globalThis.requestAnimationFrame(() => {
       this._editor?.focusInput();
-      this.#dirty = false;
+      this._captureInitialSnapshot();
     });
   }
 
@@ -923,7 +1012,6 @@ export class JantComposeDialog extends LitElement {
   private static _DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   private _onContentChanged = () => {
-    this.#dirty = true;
     // Schedule localStorage auto-save for new-post mode only
     if (!this._editPostId && !this._draftSourceId) {
       this._scheduleDraftSave();
@@ -951,7 +1039,7 @@ export class JantComposeDialog extends LitElement {
     }
     // Warn if the dialog is open with unsaved modifications
     const dialog = this.closest("dialog");
-    if (dialog?.open && this.#dirty) {
+    if (dialog?.open && this._hasUnsavedChanges()) {
       e.preventDefault();
       e.returnValue = "";
     }
@@ -1075,7 +1163,7 @@ export class JantComposeDialog extends LitElement {
     this._draftRestored = true;
     showToast(this.labels.draftRestored);
     globalThis.requestAnimationFrame(() => {
-      this.#dirty = false;
+      this._captureInitialSnapshot();
     });
   }
 

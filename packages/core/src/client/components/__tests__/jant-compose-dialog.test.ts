@@ -654,6 +654,57 @@ describe("JantComposeDialog", () => {
     expect(el.querySelector(".compose-confirm-panel")).toBeNull();
   });
 
+  it("beforeunload does not warn when dialog was only opened", async () => {
+    const el = await createElement();
+    vi.spyOn(el, "closest").mockReturnValue({
+      open: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as HTMLDialogElement);
+
+    const event = new Event("beforeunload", {
+      cancelable: true,
+    }) as globalThis.BeforeUnloadEvent;
+
+    window.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(
+      (
+        el as unknown as { _hasUnsavedChanges: () => boolean }
+      )._hasUnsavedChanges(),
+    ).toBe(false);
+  });
+
+  it("beforeunload warns after compose content changes", async () => {
+    const el = await createElement();
+    vi.spyOn(el, "closest").mockReturnValue({
+      open: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as HTMLDialogElement);
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Unsaved" }] },
+      ],
+    };
+    await editor.updateComplete;
+
+    const event = new Event("beforeunload", {
+      cancelable: true,
+    }) as globalThis.BeforeUnloadEvent;
+
+    window.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it("requestClose with content shows confirmation panel", async () => {
     const el = await createElement();
     const editor = requireElement(
