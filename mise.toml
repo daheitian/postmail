@@ -249,6 +249,10 @@ rm ../../packages/core/dev/scripts/seed-demo-upload.sql
 echo "Done! Demo has been seeded from local data."
 """
 
+[tasks.demo-nuke]
+description = "Drop ALL tables in demo database (including migrations)"
+run = "node scripts/nuke-db.mjs sites/demo"
+
 # =============================================================================
 # Official Site (sites/jant-me)
 # =============================================================================
@@ -286,6 +290,10 @@ echo "Loading seed data to jant.me..."
 pnpm exec wrangler d1 execute DB --remote --file=scripts/seed-site.sql
 echo "Done! jant.me has been seeded from seed-site.sql."
 """
+
+[tasks.site-nuke]
+description = "Drop ALL tables in jant.me database (including migrations)"
+run = "node scripts/nuke-db.mjs sites/jant-me"
 
 # =============================================================================
 # Code Generation

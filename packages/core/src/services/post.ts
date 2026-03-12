@@ -117,6 +117,8 @@ export interface PostService {
   ): Promise<Map<string, ThreadTimelineContext>>;
   /** Get distinct years that have published posts */
   getDistinctYears(filters?: PostFilters): Promise<number[]>;
+  /** For each thread ID, return the ID of the last published, non-deleted post */
+  getLastPostIdsByThread(threadIds: string[]): Promise<Map<string, string>>;
 }
 
 /** Check if an error (or any of its causes) is a SQLite UNIQUE constraint violation */
@@ -1008,6 +1010,32 @@ export function createPostService(
         result.set(threadId, { latestReply, parentReply, totalReplyCount });
       }
 
+      return result;
+    },
+
+    async getLastPostIdsByThread(threadIds) {
+      const result = new Map<string, string>();
+      if (threadIds.length === 0) return result;
+
+      const unique = [...new Set(threadIds)];
+      const rows = await db
+        .select({
+          threadId: posts.threadId,
+          id: sql<string>`(
+            SELECT p2.id FROM post AS p2
+            WHERE p2.thread_id = ${posts.threadId}
+              AND p2.deleted_at IS NULL
+              AND p2.status = 'published'
+            ORDER BY p2.created_at DESC, p2.id DESC
+            LIMIT 1
+          )`.as("last_id"),
+        })
+        .from(posts)
+        .where(inArray(posts.id, unique));
+
+      for (const row of rows) {
+        if (row.id) result.set(row.threadId, row.id);
+      }
       return result;
     },
 

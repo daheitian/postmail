@@ -137,6 +137,7 @@ export function toPostView(
   _ctx: MediaContext,
   postCollections?: Collection[],
   threadRootPermalink?: string,
+  isLastInThread?: boolean,
 ): PostView {
   const id = post.id;
   const permalink = `/${post.slug}`;
@@ -229,6 +230,7 @@ export function toPostView(
     replyToId: post.replyToId ?? undefined,
     threadRootId: post.replyToId ? post.threadId : undefined,
     threadRootPermalink,
+    isLastInThread: isLastInThread ?? true,
     body: post.body ?? undefined,
   };
 }
@@ -245,12 +247,19 @@ export function toPostViews(
   posts: PostWithMedia[],
   ctx: MediaContext,
   threadRootPermalinkMap?: Map<string, string>,
+  isLastInThreadMap?: Map<string, boolean>,
 ): PostView[] {
   return posts.map((p) => {
     const rootPermalink = p.replyToId
       ? threadRootPermalinkMap?.get(p.threadId)
       : undefined;
-    return toPostView(p, ctx, undefined, rootPermalink);
+    return toPostView(
+      p,
+      ctx,
+      undefined,
+      rootPermalink,
+      isLastInThreadMap?.get(p.id),
+    );
   });
 }
 
@@ -261,12 +270,14 @@ export function toPostViewFromPost(
   post: Post,
   ctx: MediaContext,
   threadRootPermalink?: string,
+  isLastInThread?: boolean,
 ): PostView {
   return toPostView(
     { ...post, mediaAttachments: [] },
     ctx,
     undefined,
     threadRootPermalink,
+    isLastInThread,
   );
 }
 
@@ -277,12 +288,18 @@ export function toPostViewsFromPosts(
   posts: Post[],
   ctx: MediaContext,
   threadRootPermalinkMap?: Map<string, string>,
+  isLastInThreadMap?: Map<string, boolean>,
 ): PostView[] {
   return posts.map((p) => {
     const rootPermalink = p.replyToId
       ? threadRootPermalinkMap?.get(p.threadId)
       : undefined;
-    return toPostViewFromPost(p, ctx, rootPermalink);
+    return toPostViewFromPost(
+      p,
+      ctx,
+      rootPermalink,
+      isLastInThreadMap?.get(p.id),
+    );
   });
 }
 

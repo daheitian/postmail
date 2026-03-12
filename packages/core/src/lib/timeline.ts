@@ -127,12 +127,18 @@ export async function assembleTimeline(
     const threadCtx = threadContexts.get(post.id);
 
     if (threadCtx) {
+      // Thread root is not the last post — hide reply button on it
+      postView.isLastInThread = false;
+
       const latestReplyView = toPostView(
         {
           ...threadCtx.latestReply,
           mediaAttachments: contextMediaMap.get(threadCtx.latestReply.id) ?? [],
         },
         mediaCtx,
+        undefined,
+        undefined,
+        true, // latestReply is the last post in the thread
       );
 
       const parentReplyView = threadCtx.parentReply
@@ -143,6 +149,9 @@ export async function assembleTimeline(
                 contextMediaMap.get(threadCtx.parentReply.id) ?? [],
             },
             mediaCtx,
+            undefined,
+            undefined,
+            false, // parentReply is not the last post
           )
         : undefined;
 

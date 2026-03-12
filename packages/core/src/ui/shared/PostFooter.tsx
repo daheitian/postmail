@@ -125,27 +125,29 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail }) => {
         <CollectionTags collections={post.collections} />
       </div>
       <div class="post-menu-actions">
-        <button
-          type="button"
-          class="reply-trigger"
-          aria-label="Reply"
-          data-reply-trigger
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        {post.isLastInThread && (
+          <button
+            type="button"
+            class="reply-trigger"
+            aria-label="Reply"
+            data-reply-trigger
           >
-            <polyline points="9 17 4 12 9 7" />
-            <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="9 17 4 12 9 7" />
+              <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+            </svg>
+          </button>
+        )}
         <button
           type="button"
           class="post-menu-trigger"

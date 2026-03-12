@@ -52,11 +52,13 @@ async function renderPost(c: Context<Env>, post: Post) {
   // Build thread post views if this is a multi-post thread
   const threadPostViews =
     threadPosts.length > 1
-      ? threadPosts.map((tp) =>
+      ? threadPosts.map((tp, i) =>
           toPostView(
             { ...tp, mediaAttachments: mediaMap.get(tp.id) ?? [] },
             mediaCtx,
             collectionsMap.get(tp.id),
+            undefined,
+            i === threadPosts.length - 1,
           ),
         )
       : undefined;

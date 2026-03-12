@@ -41,7 +41,21 @@ featuredRoutes.get("/", async (c) => {
     c.var.services.posts.getById.bind(c.var.services.posts),
   );
 
-  const postViews = toPostViewsFromPosts(posts, mediaCtx, rootPermalinkMap);
+  // Determine which posts are last in their thread for reply button visibility
+  const threadIds = [...new Set(posts.map((p) => p.threadId))];
+  const lastPostMap =
+    await c.var.services.posts.getLastPostIdsByThread(threadIds);
+  const isLastInThreadMap = new Map<string, boolean>();
+  for (const p of posts) {
+    isLastInThreadMap.set(p.id, lastPostMap.get(p.threadId) === p.id);
+  }
+
+  const postViews = toPostViewsFromPosts(
+    posts,
+    mediaCtx,
+    rootPermalinkMap,
+    isLastInThreadMap,
+  );
 
   // Convert to timeline items (simple — no thread previews)
   const items = postViews.map((post) => ({ post }));
