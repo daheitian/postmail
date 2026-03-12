@@ -5,6 +5,9 @@ import {
   RedirectTypeSchema,
   CreatePostSchema,
   UpdatePostSchema,
+  SetupSchema,
+  SigninSchema,
+  normalizeEmail,
   parseFormData,
   parseFormDataOptional,
   validateMediaCount,
@@ -49,6 +52,46 @@ describe("RedirectTypeSchema", () => {
     expect(() => RedirectTypeSchema.parse("200")).toThrow();
     expect(() => RedirectTypeSchema.parse("404")).toThrow();
     expect(() => RedirectTypeSchema.parse(301)).toThrow();
+  });
+});
+
+describe("normalizeEmail", () => {
+  it("trims and lowercases email addresses", () => {
+    expect(normalizeEmail("  User.Name+tag@Example.COM ")).toBe(
+      "user.name+tag@example.com",
+    );
+  });
+});
+
+describe("SetupSchema", () => {
+  it("normalizes email before returning parsed data", () => {
+    const result = SetupSchema.parse({
+      siteName: "Jant",
+      email: "  Admin@Example.COM ",
+      password: "password123",
+    });
+
+    expect(result.email).toBe("admin@example.com");
+  });
+});
+
+describe("SigninSchema", () => {
+  it("normalizes email before returning parsed data", () => {
+    const result = SigninSchema.parse({
+      email: "  Admin@Example.COM ",
+      password: "password123",
+    });
+
+    expect(result.email).toBe("admin@example.com");
+  });
+
+  it("rejects invalid email after normalization", () => {
+    expect(() =>
+      SigninSchema.parse({
+        email: "  not-an-email  ",
+        password: "password123",
+      }),
+    ).toThrow();
   });
 });
 

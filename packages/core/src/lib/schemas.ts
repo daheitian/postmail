@@ -31,6 +31,21 @@ import { sanitizeUrl } from "./url.js";
 // eslint-disable-next-line no-control-regex -- intentionally matching C0 control characters
 const CONTROL_CHAR_RE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 
+/**
+ * Normalize an email address for storage and lookup.
+ *
+ * @param email - Raw email input
+ * @returns Trimmed, lowercased email
+ * @example
+ * ```ts
+ * normalizeEmail("  User@Example.COM ");
+ * // Returns: "user@example.com"
+ * ```
+ */
+export function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 /** Trim, strip control characters, and collapse to undefined when empty. */
 function sanitizeText(maxLength: number) {
   return z
@@ -305,7 +320,10 @@ export const CreateCustomUrlSchema = z.object({
  */
 export const SetupSchema = z.object({
   siteName: z.string().min(1, "Site name is required"),
-  email: z.string().email("Invalid email address"),
+  email: z
+    .string()
+    .transform(normalizeEmail)
+    .pipe(z.string().email("Invalid email address")),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -316,7 +334,10 @@ export const SetupSchema = z.object({
  * Sign-in form validation schema
  */
 export const SigninSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z
+    .string()
+    .transform(normalizeEmail)
+    .pipe(z.string().email("Invalid email address")),
   password: z.string().min(1, "Password is required").max(128),
 });
 

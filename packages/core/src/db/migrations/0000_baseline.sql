@@ -99,6 +99,7 @@ CREATE TABLE `path_registry` (
 	`updated_at` integer NOT NULL,
 	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade,
+	CONSTRAINT "chk_path_registry_kind" CHECK("path_registry"."kind" IN ('slug', 'alias', 'redirect')),
 	CONSTRAINT "chk_path_registry_shape" CHECK((
         "path_registry"."kind" IN ('slug', 'alias')
         AND (
@@ -159,7 +160,13 @@ CREATE TABLE `post` (
 	CONSTRAINT "chk_post_format" CHECK("post"."format" IN ('note', 'link', 'quote')),
 	CONSTRAINT "chk_post_status" CHECK("post"."status" IN ('draft', 'published')),
 	CONSTRAINT "chk_post_visibility" CHECK("post"."visibility" IN ('public', 'unlisted', 'private')),
-	CONSTRAINT "chk_post_root_visibility_present" CHECK("post"."reply_to_id" IS NOT NULL OR "post"."visibility" IS NOT NULL),
+	CONSTRAINT "chk_post_root_visibility_present" CHECK((
+        "post"."reply_to_id" IS NULL
+        AND "post"."visibility" IS NOT NULL
+      ) OR (
+        "post"."reply_to_id" IS NOT NULL
+        AND "post"."visibility" IS NULL
+      )),
 	CONSTRAINT "chk_post_reply_to_not_self" CHECK("post"."reply_to_id" IS NULL OR "post"."reply_to_id" <> "post"."id"),
 	CONSTRAINT "chk_post_thread_shape" CHECK((
         "post"."reply_to_id" IS NULL
@@ -229,6 +236,7 @@ CREATE TABLE `sidebar_item` (
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
 	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade,
+	CONSTRAINT "chk_sidebar_item_type" CHECK("sidebar_item"."type" IN ('collection', 'divider')),
 	CONSTRAINT "chk_sidebar_item_shape" CHECK((
         "sidebar_item"."type" = 'collection' AND "sidebar_item"."collection_id" IS NOT NULL
       ) OR (
