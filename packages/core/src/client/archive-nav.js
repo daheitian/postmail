@@ -141,6 +141,20 @@ document.querySelectorAll(".archive-chip-dropdown").forEach((chip) => {
     }
   };
 
+  listbox.addEventListener("mousemove", (e) => {
+    const opt = e.target.closest('[role="option"]');
+    if (opt) {
+      const index = options.indexOf(opt);
+      if (index !== -1 && index !== activeIndex) {
+        setActive(index);
+      }
+    }
+  });
+
+  listbox.addEventListener("mouseleave", () => {
+    setActive(-1);
+  });
+
   trigger.addEventListener("keydown", (e) => {
     const isOpen = popover.getAttribute("aria-hidden") === "false";
 

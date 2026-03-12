@@ -8,7 +8,7 @@
 
 import { and, eq, inArray, isNotNull, ne } from "drizzle-orm";
 import { uuidv7 } from "uuidv7";
-import type { Database } from "../db/index.js";
+import { type Database, batchQuery } from "../db/index.js";
 import { pathRegistry } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { ConflictError } from "../lib/errors.js";
@@ -42,6 +42,7 @@ export interface PathService {
   createCollectionSlug(collectionId: string, slug: string): Promise<PathRecord>;
   updateCollectionSlug(collectionId: string, slug: string): Promise<void>;
   deleteByPostId(postId: string): Promise<void>;
+  getPostAliases(postIds: string[]): Promise<Map<string, string[]>>;
 }
 
 export function toCollectionPath(slug: string): string {
@@ -186,53 +187,57 @@ export function createPathService(db: Database): PathService {
     },
 
     async getPostSlugMap(postIds) {
-      const result = new Map<string, string>();
-      if (postIds.length === 0) return result;
+      if (postIds.length === 0) return new Map<string, string>();
 
-      const rows = await db
-        .select({
-          postId: pathRegistry.postId,
-          path: pathRegistry.path,
-        })
-        .from(pathRegistry)
-        .where(
-          and(
-            inArray(pathRegistry.postId, postIds),
-            eq(pathRegistry.kind, "slug"),
-            isNotNull(pathRegistry.postId),
-          ),
-        );
+      return batchQuery(postIds, async (chunk) => {
+        const result = new Map<string, string>();
+        const rows = await db
+          .select({
+            postId: pathRegistry.postId,
+            path: pathRegistry.path,
+          })
+          .from(pathRegistry)
+          .where(
+            and(
+              inArray(pathRegistry.postId, chunk),
+              eq(pathRegistry.kind, "slug"),
+              isNotNull(pathRegistry.postId),
+            ),
+          );
 
-      for (const row of rows) {
-        if (row.postId) result.set(row.postId, row.path);
-      }
-      return result;
+        for (const row of rows) {
+          if (row.postId) result.set(row.postId, row.path);
+        }
+        return result;
+      });
     },
 
     async getCollectionSlugMap(collectionIds) {
-      const result = new Map<string, string>();
-      if (collectionIds.length === 0) return result;
+      if (collectionIds.length === 0) return new Map<string, string>();
 
-      const rows = await db
-        .select({
-          collectionId: pathRegistry.collectionId,
-          path: pathRegistry.path,
-        })
-        .from(pathRegistry)
-        .where(
-          and(
-            inArray(pathRegistry.collectionId, collectionIds),
-            eq(pathRegistry.kind, "slug"),
-            isNotNull(pathRegistry.collectionId),
-          ),
-        );
+      return batchQuery(collectionIds, async (chunk) => {
+        const result = new Map<string, string>();
+        const rows = await db
+          .select({
+            collectionId: pathRegistry.collectionId,
+            path: pathRegistry.path,
+          })
+          .from(pathRegistry)
+          .where(
+            and(
+              inArray(pathRegistry.collectionId, chunk),
+              eq(pathRegistry.kind, "slug"),
+              isNotNull(pathRegistry.collectionId),
+            ),
+          );
 
-      for (const row of rows) {
-        if (row.collectionId) {
-          result.set(row.collectionId, fromCollectionPath(row.path));
+        for (const row of rows) {
+          if (row.collectionId) {
+            result.set(row.collectionId, fromCollectionPath(row.path));
+          }
         }
-      }
-      return result;
+        return result;
+      });
     },
 
     async create(input) {
@@ -300,6 +305,35 @@ export function createPathService(db: Database): PathService {
 
     async deleteByPostId(postId) {
       await db.delete(pathRegistry).where(eq(pathRegistry.postId, postId));
+    },
+
+    async getPostAliases(postIds) {
+      if (postIds.length === 0) return new Map<string, string[]>();
+
+      return batchQuery(postIds, async (chunk) => {
+        const result = new Map<string, string[]>();
+        const rows = await db
+          .select({
+            postId: pathRegistry.postId,
+            path: pathRegistry.path,
+          })
+          .from(pathRegistry)
+          .where(
+            and(
+              inArray(pathRegistry.postId, chunk),
+              inArray(pathRegistry.kind, ["alias", "redirect"]),
+              isNotNull(pathRegistry.postId),
+            ),
+          );
+
+        for (const row of rows) {
+          if (!row.postId) continue;
+          const existing = result.get(row.postId) ?? [];
+          existing.push(`/${row.path}`);
+          result.set(row.postId, existing);
+        }
+        return result;
+      });
     },
   };
 }

@@ -17,6 +17,7 @@ export interface CreatePost {
   pinned?: boolean;
   featured?: boolean;
   slug?: string;
+  path?: string;
   title?: string;
   url?: string;
   body?: string;

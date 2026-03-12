@@ -787,7 +787,7 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
               {title}
             </span>
           )}
-          {variant !== "image" && summary && (
+          {variant !== "image" && !title && summary && (
             <span class="archive-tile-summary">{summary}</span>
           )}
           {cornerBadge && (

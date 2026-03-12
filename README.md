@@ -2,7 +2,7 @@
 
 > **Work in Progress**: This project is still under active development and not yet ready for use. See the latest build at [demo.jant.me](https://demo.jant.me).
 >
-> Demo login: `demo@jant.me` / `demodemo` — Settings: [demo.jant.me/settings](https://demo.jant.me/settings)
+> Demo login: `demo@jant.me` / `jantdemodemojant` — Settings: [demo.jant.me/settings](https://demo.jant.me/settings)
 
 A personal microblogging system as smooth as <https://threads.com>.
 

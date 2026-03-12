@@ -142,6 +142,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
       body: body.body,
       bodyMarkdown: body.bodyMarkdown,
       slug: body.slug || undefined,
+      path: body.path || undefined,
       status: body.status,
       visibility: body.visibility,
       pinned: body.pinned,

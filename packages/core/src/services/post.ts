@@ -9,14 +9,14 @@
 import { eq, and, isNull, desc, inArray, sql, isNotNull } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { uuidv7 } from "uuidv7";
-import type { Database } from "../db/index.js";
+import { type Database, batchQueryRows } from "../db/index.js";
 import { pathRegistry, posts, postCollections } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { generatePostSlug } from "../lib/slug.js";
-import { normalizePath } from "../lib/url.js";
+import { normalizePath, slugify } from "../lib/url.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import type {
@@ -119,6 +119,12 @@ export interface PostService {
   getDistinctYears(filters?: PostFilters): Promise<number[]>;
   /** For each thread ID, return the ID of the last published, non-deleted post */
   getLastPostIdsByThread(threadIds: string[]): Promise<Map<string, string>>;
+}
+
+const SLUG_RE = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
+
+function isValidSlug(value: string): boolean {
+  return SLUG_RE.test(value);
 }
 
 /** Check if an error (or any of its causes) is a SQLite UNIQUE constraint violation */
@@ -386,10 +392,12 @@ export function createPostService(
     const result = new Map<string, Visibility>();
     if (uniqueThreadIds.length === 0) return result;
 
-    const rows = await db
-      .select({ id: posts.id, visibility: posts.visibility })
-      .from(posts)
-      .where(inArray(posts.id, uniqueThreadIds));
+    const rows = await batchQueryRows(uniqueThreadIds, (chunk) =>
+      db
+        .select({ id: posts.id, visibility: posts.visibility })
+        .from(posts)
+        .where(inArray(posts.id, chunk)),
+    );
 
     for (const row of rows) {
       if (row.visibility) {
@@ -526,13 +534,43 @@ export function createPostService(
       const publishedAt =
         status === "published" ? (data.publishedAt ?? timestamp) : null;
 
-      // Generate slug
-      const slug = await generatePostSlug({
-        slug: data.slug,
-        title: data.title,
-        idLength: config.slugIdLength,
-        isAvailable: isSlugAvailable,
-      });
+      // Resolve slug from slug, path, or title
+      let slug: string;
+      let aliasPath: string | null = null;
+
+      if (data.path) {
+        const normalized = normalizePath(data.path);
+        if (isValidSlug(normalized)) {
+          // Path is a valid slug — use it directly
+          slug = await generatePostSlug({
+            slug: normalized,
+            idLength: config.slugIdLength,
+            isAvailable: isSlugAvailable,
+          });
+        } else {
+          // Path is not a valid slug — slugify it for the slug, keep original as alias
+          const slugified = slugify(normalized);
+          slug = await generatePostSlug({
+            slug: slugified || undefined,
+            title: data.title,
+            idLength: config.slugIdLength,
+            isAvailable: isSlugAvailable,
+          });
+          // Verify the alias path is available before proceeding
+          if (!(await paths.isPathAvailable(normalized))) {
+            throw new ConflictError(`Path "${normalized}" is already in use`);
+          }
+          aliasPath = normalized;
+        }
+      } else {
+        slug = await generatePostSlug({
+          slug: data.slug,
+          title: data.title,
+          idLength: config.slugIdLength,
+          isAvailable: isSlugAvailable,
+        });
+      }
+
       const collectionIds = [...new Set(data.collectionIds ?? [])];
 
       try {
@@ -571,6 +609,22 @@ export function createPostService(
             updatedAt: timestamp,
           }),
         ];
+
+        if (aliasPath) {
+          writeQueries.push(
+            db.insert(pathRegistry).values({
+              id: uuidv7(),
+              path: normalizePath(aliasPath),
+              kind: "alias",
+              postId: id,
+              collectionId: null,
+              redirectToPath: null,
+              redirectType: null,
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            }),
+          );
+        }
 
         if (collectionIds.length > 0) {
           writeQueries.push(

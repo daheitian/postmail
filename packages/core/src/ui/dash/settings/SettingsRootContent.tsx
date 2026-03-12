@@ -241,7 +241,7 @@ export function SettingsRootContent() {
               comment: "@context: Settings item — account settings",
             })}
             description={t({
-              message: "Sessions, password",
+              message: "Sessions, password, export",
               comment: "@context: Settings item description for account",
             })}
           />

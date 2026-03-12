@@ -18,7 +18,7 @@ import {
   MAX_MEDIA_ATTACHMENTS,
 } from "../types.js";
 import { ValidationError } from "./errors.js";
-import { sanitizeUrl } from "./url.js";
+import { sanitizeUrl, normalizePath } from "./url.js";
 
 // =============================================================================
 // Shared Transforms
@@ -121,6 +121,13 @@ const PostFieldsSchema = z.object({
     )
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  path: z
+    .string()
+    .min(1)
+    .transform(normalizePath)
+    .pipe(z.string().min(1))
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   title: sanitizeText(300)
     .optional()
     .or(z.literal("").transform(() => undefined)),
@@ -216,18 +223,28 @@ function refineCreatePostFormatShape<
   });
 }
 
+/** Mutual exclusivity: slug and path cannot both be provided */
+function refineSlugPathExclusivity<T extends { slug?: string; path?: string }>(
+  schema: z.ZodType<T>,
+) {
+  return schema.refine((data) => !(data.slug && data.path), {
+    message: "Provide either slug or path, not both",
+    path: ["path"],
+  });
+}
+
 /**
  * API request body schema for creating a post
  */
-export const CreatePostSchema = refineCreatePostFormatShape(
-  refineBodyExclusivity(PostFieldsSchema),
+export const CreatePostSchema = refineSlugPathExclusivity(
+  refineCreatePostFormatShape(refineBodyExclusivity(PostFieldsSchema)),
 );
 
 /**
  * API request body schema for updating a post
  */
-export const UpdatePostSchema = refineBodyExclusivity(
-  PostFieldsSchema.partial(),
+export const UpdatePostSchema = refineSlugPathExclusivity(
+  refineBodyExclusivity(PostFieldsSchema.partial()),
 );
 
 /**

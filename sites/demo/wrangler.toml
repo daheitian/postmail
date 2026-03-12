@@ -49,7 +49,7 @@ IMAGE_TRANSFORM_URL = "https://demo-media.jant.me/cdn-cgi/image" # @create-jant:
 
 # @create-jant: @remove-start
 DEMO_EMAIL = "demo@jant.me"
-DEMO_PASSWORD = "demodemo"
+DEMO_PASSWORD = "jantdemodemojant"
 # @create-jant: @remove-end
 
 [[d1_databases]]

@@ -339,6 +339,22 @@ svg[stroke-width].icon-fine {
     color: var(--color-muted-foreground);
     opacity: 0.5;
   }
+
+  .settings-export-form {
+    display: contents;
+  }
+
+  button.settings-item {
+    @apply w-full text-left cursor-pointer;
+    background: none;
+    border: none;
+    font: inherit;
+    border-bottom: 1px solid var(--color-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 }
 
 /* Admin scoped font rules */

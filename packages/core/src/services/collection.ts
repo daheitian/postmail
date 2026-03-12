@@ -9,7 +9,7 @@ import { eq, asc, sql, and, inArray, desc } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { generateKeyBetween } from "fractional-indexing";
 import { uuidv7 } from "uuidv7";
-import type { Database } from "../db/index.js";
+import { type Database, batchQueryRows } from "../db/index.js";
 import {
   collections,
   pathRegistry,
@@ -519,18 +519,20 @@ export function createCollectionService(
       const result = new Map<string, Collection[]>();
       if (postIds.length === 0) return result;
 
-      const rows = await db
-        .select({
-          postId: postCollections.postId,
-          collection: collections,
-        })
-        .from(postCollections)
-        .innerJoin(
-          collections,
-          eq(postCollections.collectionId, collections.id),
-        )
-        .where(inArray(postCollections.postId, postIds))
-        .orderBy(asc(collections.createdAt));
+      const rows = await batchQueryRows(postIds, (chunk) =>
+        db
+          .select({
+            postId: postCollections.postId,
+            collection: collections,
+          })
+          .from(postCollections)
+          .innerJoin(
+            collections,
+            eq(postCollections.collectionId, collections.id),
+          )
+          .where(inArray(postCollections.postId, chunk))
+          .orderBy(asc(collections.createdAt)),
+      );
 
       const collectionRows = rows.map((row) => row.collection);
       const slugMap = await paths.getCollectionSlugMap(

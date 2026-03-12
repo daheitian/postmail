@@ -410,6 +410,11 @@ msgstr "Custom URLs"
 msgid "Danger Zone"
 msgstr "Danger Zone"
 
+#. @context: Settings group label for data export/import
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Data"
+msgstr "Data"
+
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
 #. @context: Delete collection action
@@ -499,6 +504,11 @@ msgstr "Don't save"
 msgid "Done"
 msgstr "Done"
 
+#. @context: Settings item description for site export
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Download as a Zola static site (.zip)"
+msgstr "Download as a Zola static site (.zip)"
+
 #. @context: Post status badge - draft
 #: src/ui/dash/StatusBadge.tsx
 msgid "Draft"
@@ -571,6 +581,11 @@ msgstr "entries"
 #: src/ui/pages/CollectionsPage.tsx
 msgid "entry"
 msgstr "entry"
+
+#. @context: Settings item — export site as Zola ZIP
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Export Site"
+msgstr "Export Site"
 
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1250,8 +1265,8 @@ msgstr "Sessions"
 
 #. @context: Settings item description for account
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Sessions, password"
-msgstr "Sessions, password"
+msgid "Sessions, password, export"
+msgstr "Sessions, password, export"
 
 #. @context: Toast after saving general settings
 #. @context: Toast after saving general settings
