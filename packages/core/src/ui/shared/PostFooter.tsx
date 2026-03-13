@@ -8,6 +8,7 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { PostView, CollectionTagView } from "../../types.js";
+import { sanitizeUrl } from "../../lib/url.js";
 
 interface PostFooterProps {
   post: PostView;
@@ -72,6 +73,8 @@ const CollectionTags: FC<{ collections: CollectionTagView[] }> = ({
 
 export const PostFooter: FC<PostFooterProps> = ({ post, detail }) => {
   const { t } = useLingui();
+  const safeExternalUrl =
+    post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
 
   return (
     <footer
@@ -99,6 +102,28 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail }) => {
             >
               {post.publishedAtFormatted}
             </time>
+          </a>
+        )}
+        {safeExternalUrl && (
+          <a
+            href={safeExternalUrl}
+            class="post-footer-external-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Open external link"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M7 17 17 7" />
+              <path d="M9 7h8v8" />
+            </svg>
           </a>
         )}
         {detail && (

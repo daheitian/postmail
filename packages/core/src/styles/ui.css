@@ -313,8 +313,8 @@
     --site-feed-card-tint: transparent;
     background: color-mix(
       in srgb,
-      var(--site-feed-card-bg) 93%,
-      var(--site-page-bg)
+      var(--site-page-bg) 88%,
+      var(--site-nav-hover-bg) 12%
     );
     border-color: color-mix(
       in srgb,
@@ -335,37 +335,38 @@
     );
   }
 
-  .feed-link-kicker {
+  .feed-link-domain {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.25rem;
     max-width: 100%;
     margin-bottom: 0.65rem;
     padding: 0;
     border-radius: 0;
     background: none;
     color: var(--site-text-secondary);
-    font-size: 0.68rem;
+    font-size: 0.6875rem;
     font-weight: var(--fw-medium);
     line-height: 1;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     text-decoration: none;
     transition: color 0.18s ease;
   }
 
-  .feed-link-kicker:hover {
+  .feed-link-domain:hover {
     color: var(--site-text-primary);
   }
 
-  .feed-link-kicker-icon {
-    width: 0.8rem;
-    height: 0.8rem;
+  .feed-link-domain-icon {
+    width: 0.72rem;
+    height: 0.72rem;
     flex-shrink: 0;
   }
 
   .feed-link-title {
-    line-height: 1.35;
+    font-size: 0.98rem;
+    line-height: 1.26;
     letter-spacing: -0.015em;
   }
 
@@ -380,51 +381,6 @@
 
   .feed-link-summary {
     margin-top: 0.75rem;
-  }
-
-  .feed-link-destination {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
-    margin-top: 0.9rem;
-    padding: 0.62rem 0.72rem;
-    border: 1px solid color-mix(in srgb, var(--site-divider) 62%, transparent);
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--site-nav-hover-bg) 44%, transparent);
-    color: var(--site-text-secondary);
-    text-decoration: none;
-    transition:
-      color 0.18s ease,
-      border-color 0.18s ease,
-      background-color 0.18s ease;
-  }
-
-  .feed-link-destination:hover {
-    color: var(--site-text-primary);
-    border-color: color-mix(
-      in srgb,
-      var(--site-divider) 46%,
-      var(--site-nav-hover-bg)
-    );
-    background: color-mix(in srgb, var(--site-nav-hover-bg) 56%, transparent);
-  }
-
-  .feed-link-destination-url {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    color: inherit;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    line-height: 1.2;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .feed-link-destination-arrow {
-    flex-shrink: 0;
-    font-size: 0.88rem;
-    line-height: 1;
   }
 
   /* Thread group: timeline layout — vertical line with dot markers */
@@ -887,6 +843,26 @@
     gap: 4px;
     flex-wrap: wrap;
     min-width: 0;
+  }
+
+  .post-footer-external-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.9rem;
+    height: 0.9rem;
+    color: var(--site-text-secondary);
+    text-decoration: none;
+    transition: color 0.18s ease;
+  }
+
+  .post-footer-external-link:hover {
+    color: var(--site-text-primary);
+  }
+
+  .post-footer-external-link svg {
+    width: 0.82rem;
+    height: 0.82rem;
   }
 
   .post-collection-tags {

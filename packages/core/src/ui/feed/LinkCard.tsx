@@ -17,9 +17,6 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
   const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-card feed-card-link"}`;
 
   const safeUrl = post.url ? sanitizeUrl(post.url) : "";
-  const displayUrl = safeUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
-
-  // Extract domain from URL for display
   let domain: string | undefined;
   if (safeUrl) {
     try {
@@ -47,12 +44,12 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
         (safeUrl ? (
           <a
             href={safeUrl}
-            class="feed-link-kicker"
+            class="feed-link-domain"
             target="_blank"
             rel="noopener noreferrer"
           >
             <svg
-              class="feed-link-kicker-icon"
+              class="feed-link-domain-icon"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -64,9 +61,9 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
             <span>{domain}</span>
           </a>
         ) : (
-          <div class="feed-link-kicker">
+          <div class="feed-link-domain">
             <svg
-              class="feed-link-kicker-icon"
+              class="feed-link-domain-icon"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -92,7 +89,7 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
           </h1>
         ) : (
           <h2
-            class={`p-name feed-link-title font-semibold ${isCompact ? "text-sm" : "text-base"} mb-1`}
+            class={`p-name feed-link-title font-semibold ${isCompact ? "text-sm" : ""} mb-1`}
           >
             <a
               href={safeUrl || post.permalink}
@@ -110,19 +107,6 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
           data-post-body
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />
-      )}
-      {!isCompact && safeUrl && (
-        <a
-          href={safeUrl}
-          class="feed-link-destination"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span class="feed-link-destination-url">{displayUrl}</span>
-          <span class="feed-link-destination-arrow" aria-hidden="true">
-            ↗
-          </span>
-        </a>
       )}
       {!isCompact && <StarRating rating={post.rating} />}
       <PostFooter post={post} detail={isDetail} />
