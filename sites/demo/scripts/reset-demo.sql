@@ -8,7 +8,7 @@ DELETE FROM post_fts;
 -- Clear junction/dependent tables first
 DELETE FROM post_collection;
 DELETE FROM sidebar_item;
-DELETE FROM custom_url;
+DELETE FROM path_registry;
 DELETE FROM api_token;
 
 -- Clear main tables (order matters for FK constraints)

@@ -68,7 +68,7 @@ const tables = [
   ["collection"],
   ["nav_item"],
   ["sidebar_item"],
-  ["custom_url"],
+  ["path_registry"],
   ["api_token"],
   ["media"],
 ];

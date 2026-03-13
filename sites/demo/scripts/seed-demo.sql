@@ -5,183 +5,102 @@
 -- =============================================================================
 
 -- Reset (clear existing content)
-DELETE FROM posts_fts;
+DELETE FROM post_fts;
 
-DELETE FROM nav_items;
+DELETE FROM post_collection;
+DELETE FROM sidebar_item;
+DELETE FROM path_registry;
+DELETE FROM api_token;
+
+DELETE FROM nav_item;
 DELETE FROM media;
-DELETE FROM posts;
-DELETE FROM pages;
-DELETE FROM collections;
-DELETE FROM redirects;
+DELETE FROM post;
+DELETE FROM collection;
 
+-- post
+INSERT INTO post VALUES('019ce8cd-4fb6-7aec-bbf3-bd0bd775aa12','note','published','public',NULL,NULL,NULL,NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"The best writing happens when you stop trying to sound smart and just say what you mean. Every draft gets better when you cut the clever parts."}]}]}','<p>The best writing happens when you stop trying to sound smart and just say what you mean. Every draft gets better when you cut the clever parts.</p>','The best writing happens when you stop trying to sound smart and just say what you mean. Every draft gets better when you cut the clever parts.',NULL,NULL,NULL,NULL,'019ce8cd-4fb6-7aec-bbf3-bd0bd775aa12',NULL,1773432295,1773432295,1773432295,1773432295);
+INSERT INTO post VALUES('019ce8cd-5502-74a3-86d2-f0e993c06e5b','note','published','public',NULL,NULL,NULL,NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Started waking up an hour earlier this week. Not to be productive — just to have a window where nobody expects anything from me. Coffee, silence, and whatever my mind wants to do. Turns out it usually wants to stare out the window for a while, and that''s fine."}]}]}','<p>Started waking up an hour earlier this week. Not to be productive — just to have a window where nobody expects anything from me. Coffee, silence, and whatever my mind wants to do. Turns out it usually wants to stare out the window for a while, and that&#39;s fine.</p>','Started waking up an hour earlier this week. Not to be productive — just to have a window where nobody expects anything from me. Coffee, silence, and whatever my mind wants to do. Turns out it usually wants to stare out the window for a while, and that''s fine.',NULL,NULL,NULL,NULL,'019ce8cd-5502-74a3-86d2-f0e993c06e5b',NULL,1773432296,1773432296,1773432296,1773432296);
+INSERT INTO post VALUES('019ce8cd-5a0b-77d2-805c-6a92b5dd146d','note','published','public',NULL,NULL,NULL,NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Noticed that the local bookshop rearranged everything by color instead of genre. Chaotic, impractical, and honestly kind of beautiful. Sometimes the wrong system is the right one."}]}]}','<p>Noticed that the local bookshop rearranged everything by color instead of genre. Chaotic, impractical, and honestly kind of beautiful. Sometimes the wrong system is the right one.</p>','Noticed that the local bookshop rearranged everything by color instead of genre. Chaotic, impractical, and honestly kind of beautiful. Sometimes the wrong system is the right one.',NULL,NULL,NULL,NULL,'019ce8cd-5a0b-77d2-805c-6a92b5dd146d',NULL,1773432297,1773432297,1773432297,1773432297);
+INSERT INTO post VALUES('019ce8cd-e659-7237-b141-3b28d4d51f2d','note','published','public',1773432422,1773432422,'Why I Still Blog in 2026',NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Everyone asks why I bother maintaining a personal blog when social media exists. The answer is simple: "},{"type":"text","text":"ownership","marks":[{"type":"bold"}]},{"type":"text","text":"."}]},{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"The case for your own space"}]},{"type":"paragraph","content":[{"type":"text","text":"Social platforms come and go. MySpace, Vine, the old Twitter — all either dead or unrecognizable. But a personal site? That stays as long as you want it to."}]},{"type":"paragraph","content":[{"type":"text","text":"Here''s what a blog gives you that no platform can:"}]},{"type":"bulletList","content":[{"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Full control","marks":[{"type":"bold"}]},{"type":"text","text":" over your content and presentation"}]}]},{"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"No algorithm","marks":[{"type":"bold"}]},{"type":"text","text":" deciding who sees your work"}]}]},{"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Permanent URLs","marks":[{"type":"bold"}]},{"type":"text","text":" that don''t break when a company pivots"}]}]},{"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"A creative outlet","marks":[{"type":"bold"}]},{"type":"text","text":" that belongs entirely to you"}]}]}]},{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"The tools have never been better"}]},{"type":"paragraph","content":[{"type":"text","text":"Setting up a blog used to mean wrestling with PHP and shared hosting. Now you can deploy a static site in minutes, or run something like Jant on Cloudflare Workers with zero server management."}]},{"type":"codeBlock","content":[{"type":"text","text":"npx create-jant my-blog\ncd my-blog && npm run dev"}],"attrs":{"language":"bash"}},{"type":"paragraph","content":[{"type":"text","text":"That''s it. You''re writing."}]},{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Write for yourself first"}]},{"type":"paragraph","content":[{"type":"text","text":"The best blogs aren''t optimized for engagement. They''re just one person thinking out loud — sharing what they''ve learned, what they''re curious about, what they can''t stop thinking about."}]},{"type":"paragraph","content":[{"type":"text","text":"If even one person stumbles across your post and finds it useful, that''s a win. But even if nobody reads it, you''ve clarified your own thinking. And that''s worth more than any like count."}]}]}','<p>Everyone asks why I bother maintaining a personal blog when social media exists. The answer is simple: <strong>ownership</strong>.</p><h2>The case for your own space</h2><p>Social platforms come and go. MySpace, Vine, the old Twitter — all either dead or unrecognizable. But a personal site? That stays as long as you want it to.</p><p>Here&#39;s what a blog gives you that no platform can:</p><ul><li><p><strong>Full control</strong> over your content and presentation</p></li><li><p><strong>No algorithm</strong> deciding who sees your work</p></li><li><p><strong>Permanent URLs</strong> that don&#39;t break when a company pivots</p></li><li><p><strong>A creative outlet</strong> that belongs entirely to you</p></li></ul><h2>The tools have never been better</h2><p>Setting up a blog used to mean wrestling with PHP and shared hosting. Now you can deploy a static site in minutes, or run something like Jant on Cloudflare Workers with zero server management.</p><pre><code class="language-bash">npx create-jant my-blog
+cd my-blog &amp;&amp; npm run dev</code></pre><p>That&#39;s it. You&#39;re writing.</p><h2>Write for yourself first</h2><p>The best blogs aren&#39;t optimized for engagement. They&#39;re just one person thinking out loud — sharing what they&#39;ve learned, what they&#39;re curious about, what they can&#39;t stop thinking about.</p><p>If even one person stumbles across your post and finds it useful, that&#39;s a win. But even if nobody reads it, you&#39;ve clarified your own thinking. And that&#39;s worth more than any like count.</p>','Everyone asks why I bother maintaining a personal blog when social media exists. The answer is simple:  ownership . The case for your own space Social platforms come and go. MySpace, Vine, the old Twitter — all either dead or unrecognizable. But a personal site? That stays as long as you want it to. Here''s what a blog gives you that no platform can: Full control  over your content and presentation No algorithm  deciding who sees your work Permanent URLs  that don''t break when a company pivots A creative outlet  that belongs entirely to you The tools have never been better Setting up a blog used to mean wrestling with PHP and shared hosting. Now you can deploy a static site in minutes, or run something like Jant on Cloudflare Workers with zero server management. npx create-jant my-blog
+cd my-blog && npm run dev That''s it. You''re writing. Write for yourself first The best blogs aren''t optimized for engagement. They''re just one person thinking out loud — sharing what they''ve learned, what they''re curious about, what they can''t stop thinking about. If even one person stumbles across your post and finds it useful, that''s a win. But even if nobody reads it, you''ve clarified your own thinking. And that''s worth more than any like count.',NULL,'Everyone asks why I bother maintaining a personal blog when social media exists. The answer is simple: ownership.
 
-DELETE FROM sqlite_sequence WHERE name IN ('posts', 'pages', 'collections', 'nav_items', 'redirects');
+Social platforms come and go. MySpace, Vine, the old Twitter — all either dead or unrecognizable. But a personal site? That stays as long as you want it to.
 
--- posts
-INSERT INTO posts VALUES(1,'note','published',0,0,NULL,'really?',NULL,'is this works?','<p>is this works?</p>
-',NULL,NULL,NULL,NULL,NULL,1771089786,1771089786,1771089786);
-INSERT INTO posts VALUES(2,'quote','published',0,0,NULL,NULL,NULL,NULL,NULL,'worked?',NULL,NULL,NULL,NULL,1771089808,1771089808,1771089808);
-INSERT INTO posts VALUES(3,'note','published',0,0,NULL,'greate image',NULL,'great','<p>great</p>
-',NULL,NULL,NULL,NULL,NULL,1771092931,1771092931,1771268464);
-INSERT INTO posts VALUES(4,'note','published',0,0,NULL,NULL,NULL,'没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。','<p>没有人真的想交付自己都看不上的东西。我们天然就想把事情做得更对一点、更好一点。</p>
-',NULL,NULL,NULL,NULL,NULL,1771114861,1771114861,1771114861);
-INSERT INTO posts VALUES(5,'note','published',0,0,NULL,NULL,NULL,'新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。"。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。','<p>新荣记的老板会给出预算，让店长和主厨每两周可以自己订一家餐厅去体验，而且预算没有上限。从到东京筹备开店至今，他们已经吃了日本十几家不同的餐厅。很多餐厅的服务员从没吃过自家餐厅的招牌菜，而新荣记不但安排自己的厨师和服务人员吃自己家的菜，还会提供费用，让这些年轻人去他们向往的餐厅，体验别人家的优点。&quot;。我想，对我们网上冲浪的启发就是我们也要多体验别人做的好东西，从中提高审美和获得灵感。</p>
-',NULL,NULL,NULL,NULL,NULL,1771114906,1771114906,1771114906);
-INSERT INTO posts VALUES(6,'link','published',0,0,NULL,'Forty News','https://forty.news/','40年前今日的新闻...','<p>40年前今日的新闻...</p>
-',NULL,NULL,NULL,NULL,NULL,1771114955,1771114955,1771114955);
-INSERT INTO posts VALUES(7,'note','published',0,0,NULL,'我从 Hacker News 中学到了什么？',NULL,'昨天看到 Hacker News 的创始人 Paul Graham 在 2009
-年写的一篇文章[《我从 Hacker News 中学到了什么》](http://www.paulgraham.com/hackernews.html),
-作者提到：
+Here''s what a blog gives you that no platform can:
 
-> 随着 Hacker News 变得越来越大，占用的时间比我预期的要多，但我并不后悔，因为我从工作中学到了很多东西。
+Setting up a blog used to mean wrestling with PHP and shared hosting. Now you can deploy a static site in minutes, or run something like Jant on Cloudflare Workers with zero server management.',NULL,NULL,'019ce8cd-e659-7237-b141-3b28d4d51f2d',NULL,1773432333,1773432333,1773432333,1773432422);
+INSERT INTO post VALUES('019ce8cd-eb16-7323-9eda-619befc99f43','note','published','public',NULL,1773432424,'On Walking Without a Destination',NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"There''s a particular kind of walk that has no purpose. No errand, no exercise goal, no podcast in your ears. Just movement."}]},{"type":"moreBreak"},{"type":"paragraph","content":[{"type":"text","text":"The Japanese have a word for it — "},{"type":"text","text":"sanpo","marks":[{"type":"italic"}]},{"type":"text","text":" (散歩) — which literally translates to \"scatter steps.\" I love that. Steps that scatter, that go wherever they go."}]},{"type":"paragraph","content":[{"type":"text","text":"I''ve been doing this every Sunday for the past year. No route planned, no step counter checked. Just walking until something catches my eye — a side street I''ve never noticed, a cat asleep on a warm car hood, the way light falls differently at 4pm in winter."}]},{"type":"paragraph","content":[{"type":"text","text":"It''s the closest thing I''ve found to meditation that doesn''t involve sitting still."}]}]}','<p>There&#39;s a particular kind of walk that has no purpose. No errand, no exercise goal, no podcast in your ears. Just movement.</p><!--more--><p>The Japanese have a word for it — <em>sanpo</em> (散歩) — which literally translates to &quot;scatter steps.&quot; I love that. Steps that scatter, that go wherever they go.</p><p>I&#39;ve been doing this every Sunday for the past year. No route planned, no step counter checked. Just walking until something catches my eye — a side street I&#39;ve never noticed, a cat asleep on a warm car hood, the way light falls differently at 4pm in winter.</p><p>It&#39;s the closest thing I&#39;ve found to meditation that doesn&#39;t involve sitting still.</p>','There''s a particular kind of walk that has no purpose. No errand, no exercise goal, no podcast in your ears. Just movement. The Japanese have a word for it —  sanpo  (散歩) — which literally translates to "scatter steps." I love that. Steps that scatter, that go wherever they go. I''ve been doing this every Sunday for the past year. No route planned, no step counter checked. Just walking until something catches my eye — a side street I''ve never noticed, a cat asleep on a warm car hood, the way light falls differently at 4pm in winter. It''s the closest thing I''ve found to meditation that doesn''t involve sitting still.',NULL,'There''s a particular kind of walk that has no purpose. No errand, no exercise goal, no podcast in your ears. Just movement.',NULL,NULL,'019ce8cd-eb16-7323-9eda-619befc99f43',NULL,1773432335,1773432335,1773432335,1773432424);
+INSERT INTO post VALUES('019ce8ce-340a-74bc-98dd-d5130505fb47','link','published','public',NULL,NULL,'SQLite on the Edge: D1 at Cloudflare','https://blog.cloudflare.com/introducing-d1','{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Cloudflare D1 brings SQLite to the edge. For small projects like personal blogs, this is a game-changer — your database lives right next to your code, no connection pooling, no cold starts. It''s what makes running Jant on Workers practical."}]}]}','<p>Cloudflare D1 brings SQLite to the edge. For small projects like personal blogs, this is a game-changer — your database lives right next to your code, no connection pooling, no cold starts. It&#39;s what makes running Jant on Workers practical.</p>','Cloudflare D1 brings SQLite to the edge. For small projects like personal blogs, this is a game-changer — your database lives right next to your code, no connection pooling, no cold starts. It''s what makes running Jant on Workers practical.',NULL,NULL,NULL,NULL,'019ce8ce-340a-74bc-98dd-d5130505fb47',NULL,1773432353,1773432353,1773432353,1773432353);
+INSERT INTO post VALUES('019ce8ce-38c0-7ed2-98c3-04e11fcae771','link','published','public',NULL,NULL,'Drizzle ORM — TypeScript ORM That Feels Like SQL','https://orm.drizzle.team','{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"After years of fighting ORMs that try to hide SQL, Drizzle is refreshing. It gives you type safety without pretending the database doesn''t exist. The schema-as-code approach means your TypeScript types and your database schema are always in sync."}]}]}','<p>After years of fighting ORMs that try to hide SQL, Drizzle is refreshing. It gives you type safety without pretending the database doesn&#39;t exist. The schema-as-code approach means your TypeScript types and your database schema are always in sync.</p>','After years of fighting ORMs that try to hide SQL, Drizzle is refreshing. It gives you type safety without pretending the database doesn''t exist. The schema-as-code approach means your TypeScript types and your database schema are always in sync.',NULL,NULL,NULL,NULL,'019ce8ce-38c0-7ed2-98c3-04e11fcae771',NULL,1773432355,1773432355,1773432355,1773432355);
+INSERT INTO post VALUES('019ce8ce-3f7f-7894-8e57-30af7510c8df','link','published','public',NULL,NULL,'The Technium: 1,000 True Fans','https://kk.org/thetechnium/1000-true-fans/','{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Kevin Kelly''s 2008 essay keeps proving itself right. You don''t need millions of followers — you need a thousand people who genuinely care about what you make. Still the most important thing I''ve read about creative sustainability."}]}]}','<p>Kevin Kelly&#39;s 2008 essay keeps proving itself right. You don&#39;t need millions of followers — you need a thousand people who genuinely care about what you make. Still the most important thing I&#39;ve read about creative sustainability.</p>','Kevin Kelly''s 2008 essay keeps proving itself right. You don''t need millions of followers — you need a thousand people who genuinely care about what you make. Still the most important thing I''ve read about creative sustainability.',NULL,NULL,NULL,NULL,'019ce8ce-3f7f-7894-8e57-30af7510c8df',NULL,1773432356,1773432356,1773432356,1773432356);
+INSERT INTO post VALUES('019ce8ce-7641-7867-ad27-bbfbbf152429','quote','published','public',NULL,NULL,'Kurt Vonnegut','https://en.wikipedia.org/wiki/Mother_Night','{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"From "},{"type":"text","text":"Mother Night","marks":[{"type":"italic"}]},{"type":"text","text":" (1961). A line that hits differently every time I re-read it."}]}]}','<p>From <em>Mother Night</em> (1961). A line that hits differently every time I re-read it.</p>','From  Mother Night  (1961). A line that hits differently every time I re-read it.','We are what we pretend to be, so we must be careful about what we pretend to be.',NULL,NULL,NULL,'019ce8ce-7641-7867-ad27-bbfbbf152429',NULL,1773432370,1773432370,1773432370,1773432370);
+INSERT INTO post VALUES('019ce8ce-7b8b-7a25-817a-6d9f24c99924','quote','published','public',NULL,NULL,'Stafford Beer',NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"POSIWID — one of the most useful mental models for understanding organizations. Don''t look at mission statements. Look at outcomes."}]}]}','<p>POSIWID — one of the most useful mental models for understanding organizations. Don&#39;t look at mission statements. Look at outcomes.</p>','POSIWID — one of the most useful mental models for understanding organizations. Don''t look at mission statements. Look at outcomes.','The purpose of a system is what it does. There is, after all, no point in claiming that the purpose of a system is to do what it constantly fails to do.',NULL,NULL,NULL,'019ce8ce-7b8b-7a25-817a-6d9f24c99924',NULL,1773432372,1773432372,1773432372,1773432372);
+INSERT INTO post VALUES('019ce8ce-809b-7754-b09c-771e01566f63','quote','published','public',NULL,NULL,'George R.R. Martin',NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"From "},{"type":"text","text":"A Dance with Dragons","marks":[{"type":"italic"}]},{"type":"text","text":". The simplest argument for reading I''ve ever encountered."}]}]}','<p>From <em>A Dance with Dragons</em>. The simplest argument for reading I&#39;ve ever encountered.</p>','From  A Dance with Dragons . The simplest argument for reading I''ve ever encountered.','A reader lives a thousand lives before he dies. The man who never reads lives only one.',NULL,5,NULL,'019ce8ce-809b-7754-b09c-771e01566f63',NULL,1773432373,1773432373,1773432373,1773432373);
+INSERT INTO post VALUES('019ce8ce-b752-717f-bb46-53c5f1078de3','note','published','public',NULL,NULL,NULL,NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Golden hour on a random Tuesday. Sometimes the light does all the work — you just have to be there with a camera."}]}]}','<p>Golden hour on a random Tuesday. Sometimes the light does all the work — you just have to be there with a camera.</p>','Golden hour on a random Tuesday. Sometimes the light does all the work — you just have to be there with a camera.',NULL,NULL,NULL,NULL,'019ce8ce-b752-717f-bb46-53c5f1078de3',NULL,1773432387,1773432387,1773432387,1773432387);
+INSERT INTO post VALUES('019ce8ce-bd2c-772b-ad0b-4875ba22705d','note','published','public',NULL,NULL,'Weekend Wandering',NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Took the long way home through a part of the city I never visit. Found these two scenes within a block of each other — proof that you don''t need to travel far to find something worth looking at."}]}]}','<p>Took the long way home through a part of the city I never visit. Found these two scenes within a block of each other — proof that you don&#39;t need to travel far to find something worth looking at.</p>','Took the long way home through a part of the city I never visit. Found these two scenes within a block of each other — proof that you don''t need to travel far to find something worth looking at.',NULL,'Took the long way home through a part of the city I never visit. Found these two scenes within a block of each other — proof that you don''t need to travel far to find something worth looking at.',NULL,NULL,'019ce8ce-bd2c-772b-ad0b-4875ba22705d',NULL,1773432388,1773432388,1773432388,1773432388);
+INSERT INTO post VALUES('019ce8ce-d6d8-7fda-a5df-c2da2bef5ade','note','published','public',NULL,NULL,NULL,NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"A thread on "},{"type":"text","text":"building in public","marks":[{"type":"bold"}]},{"type":"text","text":" — something I''ve been thinking about a lot lately as I work on this site. 🧵"}]}]}','<p>A thread on <strong>building in public</strong> — something I&#39;ve been thinking about a lot lately as I work on this site. 🧵</p>','A thread on  building in public  — something I''ve been thinking about a lot lately as I work on this site. 🧵',NULL,NULL,NULL,NULL,'019ce8ce-d6d8-7fda-a5df-c2da2bef5ade',NULL,1773432395,1773432412,1773432395,1773432395);
+INSERT INTO post VALUES('019ce8cf-0db9-7649-a36c-6a942d202aa8','note','published',NULL,NULL,NULL,NULL,NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"The conventional wisdom is to share your progress constantly — every commit, every design iteration, every decision. But I''ve found that too much sharing "},{"type":"text","text":"while building","marks":[{"type":"italic"}]},{"type":"text","text":" actually slows me down. It shifts my focus from \"is this good?\" to \"does this look good?\""}]}]}','<p>The conventional wisdom is to share your progress constantly — every commit, every design iteration, every decision. But I&#39;ve found that too much sharing <em>while building</em> actually slows me down. It shifts my focus from &quot;is this good?&quot; to &quot;does this look good?&quot;</p>','The conventional wisdom is to share your progress constantly — every commit, every design iteration, every decision. But I''ve found that too much sharing  while building  actually slows me down. It shifts my focus from "is this good?" to "does this look good?"',NULL,NULL,NULL,'019ce8ce-d6d8-7fda-a5df-c2da2bef5ade','019ce8ce-d6d8-7fda-a5df-c2da2bef5ade',NULL,1773432409,1773432409,1773432409,1773432409);
+INSERT INTO post VALUES('019ce8cf-13df-7459-85a6-65e7fb8f9421','note','published',NULL,NULL,NULL,NULL,NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"What works better for me: build in private, "},{"type":"text","text":"write","marks":[{"type":"italic"}]},{"type":"text","text":" in public. Finish a feature, let it settle, then write about what I learned. The writing becomes the artifact — not a stream-of-consciousness progress bar, but a considered reflection."}]}]}','<p>What works better for me: build in private, <em>write</em> in public. Finish a feature, let it settle, then write about what I learned. The writing becomes the artifact — not a stream-of-consciousness progress bar, but a considered reflection.</p>','What works better for me: build in private,  write  in public. Finish a feature, let it settle, then write about what I learned. The writing becomes the artifact — not a stream-of-consciousness progress bar, but a considered reflection.',NULL,NULL,NULL,'019ce8ce-d6d8-7fda-a5df-c2da2bef5ade','019ce8ce-d6d8-7fda-a5df-c2da2bef5ade',NULL,1773432411,1773432411,1773432411,1773432411);
+INSERT INTO post VALUES('019ce8cf-19a1-7d16-9a75-017a9ac7299d','note','published',NULL,NULL,NULL,NULL,NULL,'{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"That''s partly why I built this site the way I did — threads for connected thoughts, long posts for deeper dives, and no engagement metrics pulling me toward performance. The audience is future-me and anyone who happens to find it useful."}]}]}','<p>That&#39;s partly why I built this site the way I did — threads for connected thoughts, long posts for deeper dives, and no engagement metrics pulling me toward performance. The audience is future-me and anyone who happens to find it useful.</p>','That''s partly why I built this site the way I did — threads for connected thoughts, long posts for deeper dives, and no engagement metrics pulling me toward performance. The audience is future-me and anyone who happens to find it useful.',NULL,NULL,NULL,'019ce8ce-d6d8-7fda-a5df-c2da2bef5ade','019ce8ce-d6d8-7fda-a5df-c2da2bef5ade',NULL,1773432412,1773432412,1773432412,1773432412);
 
-就挺感慨的，一方面是我亲自做了一遍 HN 的中文翻译，在整个过程中学到了很多，另一方面也让我回想起大学期间做的一个社区，对我的之后的种种影响。
+-- post_collection
+INSERT INTO post_collection VALUES('019ce8cd-4fb6-7aec-bbf3-bd0bd775aa12','019ce8cc-ac82-7faa-8585-bd461b312645',1773432295);
+INSERT INTO post_collection VALUES('019ce8cd-e659-7237-b141-3b28d4d51f2d','019ce8cc-ac82-7faa-8585-bd461b312645',1773432333);
+INSERT INTO post_collection VALUES('019ce8cd-eb16-7323-9eda-619befc99f43','019ce8cc-ac82-7faa-8585-bd461b312645',1773432335);
+INSERT INTO post_collection VALUES('019ce8ce-340a-74bc-98dd-d5130505fb47','019ce8cc-a6db-7596-91ed-6e0ee8163c40',1773432353);
+INSERT INTO post_collection VALUES('019ce8ce-38c0-7ed2-98c3-04e11fcae771','019ce8cc-a6db-7596-91ed-6e0ee8163c40',1773432355);
+INSERT INTO post_collection VALUES('019ce8ce-7b8b-7a25-817a-6d9f24c99924','019ce8cc-ac82-7faa-8585-bd461b312645',1773432372);
+INSERT INTO post_collection VALUES('019ce8ce-809b-7754-b09c-771e01566f63','019ce8cc-a115-7e0e-9b4e-0426898de54c',1773432373);
+INSERT INTO post_collection VALUES('019ce8ce-b752-717f-bb46-53c5f1078de3','019ce8cc-b188-7184-91cb-411a66ebfdc2',1773432387);
+INSERT INTO post_collection VALUES('019ce8ce-bd2c-772b-ad0b-4875ba22705d','019ce8cc-b188-7184-91cb-411a66ebfdc2',1773432388);
+INSERT INTO post_collection VALUES('019ce8ce-d6d8-7fda-a5df-c2da2bef5ade','019ce8cc-ac82-7faa-8585-bd461b312645',1773432395);
 
-如果有机会的话，我觉得每个人都应该尽可能的去亲自参与创造某个能有其他人一起创造信息的社区，比如成立一个小组，一个论坛，一个社群等等，线下的可能更好。和人交流，能碰撞出我更多的想法，以及让我知道更大的世界，更多元的价值观。
+-- collection
+INSERT INTO collection VALUES('019ce8cc-a115-7e0e-9b4e-0426898de54c','Reading','Book quotes and reading notes','📚','newest',1773432250,1773432250);
+INSERT INTO collection VALUES('019ce8cc-a6db-7596-91ed-6e0ee8163c40','Tools','Software tools and recommendations','🔧','newest',1773432252,1773432252);
+INSERT INTO collection VALUES('019ce8cc-ac82-7faa-8585-bd461b312645','Thoughts','Reflections and ideas','💡','newest',1773432253,1773432253);
+INSERT INTO collection VALUES('019ce8cc-b188-7184-91cb-411a66ebfdc2','Photography','Photo posts','📷','newest',1773432254,1773432254);
 
-[hacker news 的中文翻译](https://hn.buzzing.cc)是一个非常普通的想法，每年可能都有人声称自己做了一个 HN 的中文版。因为
-HN 上不仅文章质量普遍优质，而且最重要的是： HN 的 API 是业界最友好的，所有人都可以用来练手，做一个 HN 的 XX
-版，比如各种平台的客户端，各种语言的实现，rss 服务，email 订阅，评论通知，大数据分析，newsletter
-等等，不胜枚举。由于我的英文水平并不能像母语一样让我能快速找到感兴趣的东西（后来发现其实不少看起来英文很好的人，也有类似的体验），所以如果我想阅读 HN
-的话，我可能有 2 个选择：
+-- nav_item
+INSERT INTO nav_item VALUES('019ce280-dfef-7e11-91ff-96f9b4d1cf04','link','Collections','/c','a0',1773326622,1773326622);
+INSERT INTO nav_item VALUES('019ce280-e0b0-7c95-a58a-b9a156a898df','link','Archive','/archive','a1',1773326622,1773326622);
+INSERT INTO nav_item VALUES('019ce280-e165-764d-a179-16b150850863','system','RSS','/feed','a2',1773326623,1773326623);
+INSERT INTO nav_item VALUES('019ce280-e215-745e-a4fb-f089695be32c','system','Settings','/settings','a3',1773326623,1773326623);
 
-1. 抱着锻炼自己英语的想法逼迫自己不太流利的浏览 HN
-2. 使用浏览器自带的翻译功能，浏览 HN
+-- sidebar_item
+INSERT INTO sidebar_item VALUES('019ce8cc-a140-7074-8490-071f624b6356','collection','019ce8cc-a115-7e0e-9b4e-0426898de54c','a0',1773432250,1773432250);
+INSERT INTO sidebar_item VALUES('019ce8cc-a6f8-7b19-9e88-d3d1da8148ba','collection','019ce8cc-a6db-7596-91ed-6e0ee8163c40','a1',1773432252,1773432252);
+INSERT INTO sidebar_item VALUES('019ce8cc-aca1-7be6-a7cf-190df272ada6','collection','019ce8cc-ac82-7faa-8585-bd461b312645','a2',1773432253,1773432253);
+INSERT INTO sidebar_item VALUES('019ce8cc-b1a5-7f97-984b-1f06b53c47ce','collection','019ce8cc-b188-7184-91cb-411a66ebfdc2','a3',1773432254,1773432254);
 
-这两个阶段我都经历过。我希望你不要经历，因为每个阶段都可能使你错过 HN，错过一个很优质的信息源。
+-- path_registry
+INSERT INTO path_registry VALUES('019ce8cc-a140-7074-8490-071e19eb2354','c/reading','slug',NULL,'019ce8cc-a115-7e0e-9b4e-0426898de54c',NULL,NULL,1773432250,1773432250);
+INSERT INTO path_registry VALUES('019ce8cc-a6f8-7b19-9e88-d3d0c6d8b3cf','c/tools','slug',NULL,'019ce8cc-a6db-7596-91ed-6e0ee8163c40',NULL,NULL,1773432252,1773432252);
+INSERT INTO path_registry VALUES('019ce8cc-aca1-7be6-a7cf-190cbc6fa418','c/thoughts','slug',NULL,'019ce8cc-ac82-7faa-8585-bd461b312645',NULL,NULL,1773432253,1773432253);
+INSERT INTO path_registry VALUES('019ce8cc-b1a5-7f97-984b-1f058feb818e','c/photography','slug',NULL,'019ce8cc-b188-7184-91cb-411a66ebfdc2',NULL,NULL,1773432254,1773432254);
+INSERT INTO path_registry VALUES('019ce8cd-4fdf-79b0-a0db-0fb830fffa9b','tjbrw','slug','019ce8cd-4fb6-7aec-bbf3-bd0bd775aa12',NULL,NULL,NULL,1773432295,1773432295);
+INSERT INTO path_registry VALUES('019ce8cd-5524-7bcf-b257-686ab7b10aa2','332c3','slug','019ce8cd-5502-74a3-86d2-f0e993c06e5b',NULL,NULL,NULL,1773432296,1773432296);
+INSERT INTO path_registry VALUES('019ce8cd-5a29-7395-8587-7a55b8b11a0c','y7cs9','slug','019ce8cd-5a0b-77d2-805c-6a92b5dd146d',NULL,NULL,NULL,1773432297,1773432297);
+INSERT INTO path_registry VALUES('019ce8cd-e67e-7b3c-b91d-8e364c1f1f10','why-i-still-blog-in-2026','slug','019ce8cd-e659-7237-b141-3b28d4d51f2d',NULL,NULL,NULL,1773432333,1773432333);
+INSERT INTO path_registry VALUES('019ce8cd-eb2f-766a-a46a-4da501c6cad9','on-walking-without-a-destination','slug','019ce8cd-eb16-7323-9eda-619befc99f43',NULL,NULL,NULL,1773432335,1773432335);
+INSERT INTO path_registry VALUES('019ce8ce-3428-732d-bd1b-880de5591a7f','sqlite-on-the-edge-d1-at-cloudflare','slug','019ce8ce-340a-74bc-98dd-d5130505fb47',NULL,NULL,NULL,1773432353,1773432353);
+INSERT INTO path_registry VALUES('019ce8ce-38e4-7be2-9197-75796f049891','drizzle-orm-typescript-orm-that-feels-like-sql','slug','019ce8ce-38c0-7ed2-98c3-04e11fcae771',NULL,NULL,NULL,1773432355,1773432355);
+INSERT INTO path_registry VALUES('019ce8ce-3fab-70ea-bde1-35ab91e8290d','the-technium-1-000-true-fans','slug','019ce8ce-3f7f-7894-8e57-30af7510c8df',NULL,NULL,NULL,1773432356,1773432356);
+INSERT INTO path_registry VALUES('019ce8ce-765e-748b-9fd9-591213bab91a','kurt-vonnegut','slug','019ce8ce-7641-7867-ad27-bbfbbf152429',NULL,NULL,NULL,1773432370,1773432370);
+INSERT INTO path_registry VALUES('019ce8ce-7baa-796f-8322-1f7ad56b6553','stafford-beer','slug','019ce8ce-7b8b-7a25-817a-6d9f24c99924',NULL,NULL,NULL,1773432372,1773432372);
+INSERT INTO path_registry VALUES('019ce8ce-80b4-78db-b190-7df0b24b4803','george-r-r-martin','slug','019ce8ce-809b-7754-b09c-771e01566f63',NULL,NULL,NULL,1773432373,1773432373);
+INSERT INTO path_registry VALUES('019ce8ce-b76a-7986-a501-2f63a22123cb','zj8yk','slug','019ce8ce-b752-717f-bb46-53c5f1078de3',NULL,NULL,NULL,1773432387,1773432387);
+INSERT INTO path_registry VALUES('019ce8ce-bd44-79ad-a32c-46f8fbf00e7f','weekend-wandering','slug','019ce8ce-bd2c-772b-ad0b-4875ba22705d',NULL,NULL,NULL,1773432388,1773432388);
+INSERT INTO path_registry VALUES('019ce8ce-d6f1-7aa1-920c-d1dfc6cce170','zd67s','slug','019ce8ce-d6d8-7fda-a5df-c2da2bef5ade',NULL,NULL,NULL,1773432395,1773432395);
+INSERT INTO path_registry VALUES('019ce8cf-0e29-7c66-93c6-1e49bd857519','1bke9','slug','019ce8cf-0db9-7649-a36c-6a942d202aa8',NULL,NULL,NULL,1773432409,1773432409);
+INSERT INTO path_registry VALUES('019ce8cf-1445-733d-aaf5-4ef2face8e41','vimzm','slug','019ce8cf-13df-7459-85a6-65e7fb8f9421',NULL,NULL,NULL,1773432411,1773432411);
+INSERT INTO path_registry VALUES('019ce8cf-1a10-7d04-87e6-48fbed6d4a65','pl62y','slug','019ce8cf-19a1-7d16-9a75-017a9ac7299d',NULL,NULL,NULL,1773432412,1773432412);
 
-第一个阶段，我只能坚持几天，然后就会本能的优先去看其他中文信息，慢慢的其实就没在看 HN 了。这在我的推特账号上尤其明显，我注册了 2
-个推特号，一个是英文号[@TheOwenYoung](https://twitter.com/TheOwenYoung),一个是中文号[@OwenYoungZh](https://twitter.com/OwenYoungZh)，本来是先开英文号的，专门关注的都是些英文博主，但是后面实在受不了了，说那就再开个中文号，尽量少关注人，只发一些东西。后来的故事就是，英文号上的很少，主力变成了中文号。唉，人就是离不开舒适圈，所以我们最好不要给自己创造舒适圈，比如在浏览器上设置很多社交网络的快捷书签；新
-tab 页放很多快捷入口；手机上下载很多好用的应用；如果想克制自己，就最好只下必要应用，优先用网页版，或者像我现在做的，把 iPhone13
-当成测试机，用一台好几年前的 Pixel 3a，又卡，掉电还快，但是用起来其实完全没问题，然后我又重新开始用
-Kindle，只能一个操作，就是下一页，这样就能节省很多时间来看书了。
-
-第二个阶段，我发现浏览器自带的翻译功能并不是太好用（去年我开始做 hn
-中文版的时候更不好用，现在其实好了很多），比如有一些网页它会失败，要么就是要重试，然后排版也不太好看，我更希望的是有些区域不要翻译，只翻译标题之类的，但是浏览器会全部翻译，就不太好浏览。而作为一个要长期阅读的地方，体验还是挺重要的。
-
-正好去年那会儿，刚做完[Actionsflow](https://github.com/actionsflow/actionsflow), 想利用
-Actionsflow 做点什么，所以说那就做一个 HN
-的中文翻译吧，这很适合工作流去处理，处理完之后生成一个静态网页，就算没人用，我自己也可以天天用，做好之后也不用维护，就一直在那。于是就开干，没想到做到后面发现还可以顺便做点别的我感兴趣的英文内容翻译，比如[Reddit 的美股讨论](https://reddit.buzzing.cc)，[国外的权威媒体报道](https://news.buzzing.cc)，[ProductHunt](https://ph.buzzing.cc)等等，最后就汇总成了一个[Buzzing](https://www.buzzing.cc)
-
-Buzzing
-运行了一年之后，发现之前的设计有不少欠考虑的地方，[Actionsflow](https://github.com/actionsflow/actionsflow)也有点太重了，尤其是看了一年
-HN 的帖子后，觉得 Actionsflow
-的设计简直就是一坨屎，又臭又长。这个时候[才发现 Deno 是最适合做工作流的运行时](https://twitter.com/OwenYoungZh/status/1478928692781137925)，Deno
-的依赖只需要
-URL，天生适合脚本。这样就可以和`package.json`,`package-lock.json`,`node_modules`地狱说拜拜了，而且我的工作流也不用再依赖
-Docker 和[act](https://github.com/nektos/act)了，于是过了 10 多天之后，我开始着手做了一个史上最快兑现的
-「如果我有时间，我一定要做 XXX
-」的项目：[Denoflow](https://twitter.com/OwenYoungZh/status/1485381401327267840),用来做我的低代码
-IFTTT 或者说 Zapier，用流行一点的话说，这是配置即代码服务(Configure as Code)。
-
-这一次，产生了一些变化，在泡了一年自己做的 HN 中文版之后：
-
-1. 首先我没有像 Actionsflow 一样设计一个浮夸的[Landing 页](https://actionsflow.github.io/).
-2. 其次我没有用自己蹩脚的英语凑成一个看起来功能很丰富，维护人员很多，很正规的[一个文档网站](https://actionsflow.github.io/docs/reference/)。我只在项目的[Readme 文件](https://github.com/denoflow/denoflow)里写了一个我自认为很诚恳的说明，在一页的文本里说清楚这个项目的用途，和看一个示例就能明白的使用方法，没有多余的营销话语，把时间真正花在工具本身，利用省下的时间做了一个[在线 PlayGround](https://playground.owenyoung.com/)，运行在我的廉价
-   VPS 上。
-3. 没考虑买一个域名，尽管`denoflow.com`域名还在。直接放在我的个人子域`playground.owenyoung.com`.
-4. 版本号的克制，对于刚推出的项目，我使用`0.0.x`，而不是像 Actionsflow
-   一样，一上来就是`1.0.0`。而后来的证明，`0.0.x`是最适合这个项目的，因为在后来的使用中，发现了不少的致命 bug
-5. 在文档的显眼处声明：`项目仍处于非常早期的阶段，谨慎使用!`
-6. 仔细思考了项目的 License,选择了 Apache2.0
-
-做完之后，又花了 2 个小时，用 Denoflow
-做了[Show HN](https://showhn.buzzing.cc/),[Ask HN](https://askhn.buzzing.cc/),[HN 首页](https://hackernews.buzzing.cc/),[Best HN](https://besthn.buzzing.cc)，这里可以和之前的[HN 热门](https://hn.buzzing.cc)对比下，没有追踪，没有
-JS
-代码，只是使用一个舒服的背景色，使用[class less 原则](https://github.com/dbohdan/classless-css)，同时生成一个
-RSS。没有使用任何框架，就几句简单的 deno
-代码即可生成。和之前的[HN 热门](https://hn.buzzing.cc)相比，[HN 热门](https://hn.buzzing.cc)在一个屏幕里只能显示出
-2 篇文章，而现在[HN 首页](https://hackernews.buzzing.cc/)可以放 20 多篇，效率直接提升 10 倍啊有木有。
-
-很快，我发现按照这样布局的话，阅读效率高了太多了，已有的这些时间流，已经不够我看了，所以索性单独为我自己生成一个[HN 时间流](https://myfeed.owenyoung.com/)，里面包含了
- hn 上前 100 位用户提交的任何帖子。
-
-几天之后我就发现，之前只看 HN 的热门帖子损失有多大，HN
-上有太多优秀的内容没有被顶上去了。热门真的很随机，所以我们也要万分警惕大公司的算法机制。基于此，我又做了一个变化，直接抓取 HN 上最新的提交（我去掉了 Ask
-HN 的内容，因为 Ask HN
-的质量相对较差，并且我还有专门的[Ask HN](https://ask.buzzing.cc)可以回头再看）。那么现在专属于我的[HN 时间流](https://myfeed.owenyoung.com/)就包括了
-HN 上所有最新的文章了。即使是全部文章，由于是母语阅读，我还是能快速读完这些标题，找到感兴趣的内容，还可能留下我的 2 cents.
-把之前关注了很久的不少优质英文 RSS
-源，也利于[Denoflow](https://github.com/denoflow/denoflow)生成了一个专属于我的[RSS 翻译流](https://myrss.owenyoung.com/).
-这样下来我的空余时间就可以住要花在阅读长文章，而不是刷推特这样更短的文章。我们都知道推特其实无法代替长文章，就像长文章也无法代替读书一样。
-
-如果有人看到这里的话，那你一定会觉得 HN 有毒，而我已经上瘾了。其实没错，目前阶段是这样。
-
-好在 HN 上的人也经常推荐图书，比如以下两个链接就是 HN 的用户制作的 HN 评论大数据最推荐的书（HN 的评论比图书网站，或者第三方网站更可信）：
-
-- [汇总了 hacker news 上评论里提到的书籍的排名](https://hacker-recommended-books.vercel.app/)
-- [又一个 hacker news 提到的图书周报](https://hackernewsbooks.com/top-books-on-hacker-news)
-
-比如我读了上面推荐的[《深度工作》](https://d.buzzing.cc/post/1)，作者提到：
-
-> "如果在你全部的清醒时间，都能给自己的大脑找到有意义的事情去做，而不是放任自己在迷糊的状态下漫无目的地浏览几个小时网页，那么在一天结束时，你会觉得更加充实，第二天开始时更加轻松。
-> – 卡尔·纽波特《深度工作》
-
-从我沉迷 HN
-的例子里就能看出，网络已经剥夺了我保持专注和沉思的能力，但是真正值得探索和学习的知识都需要我拥有这种能力。如果我没有在某一个特定时段给自己安排任务，那么这些网站总是会更有诱惑力。所以如果我想抵御社交网络对我时间和精力的诱惑，那么必须要给大脑找一些高质量的替代活动，所以我基于开源
-[Lemmy](https://lemmy.ml/) 搭建了一个类似 Reddit
-的社区，叫[**如何度过每一天**](https://d.buzzing.cc/),希望能在社区里分享有意义的事，不虚度光阴的事，可以是阅读某本书，学习某项技能，看某部纪录片等等等等。社区有投票的功能，某项活动被投票的次数越多，说明认为这项活动有意义的更多。
-
-目前其实就只有少数几个用户在用，网站依然是部署在我的一个 廉价 VPS 上，没有盈利的打算，目前加载也有点慢，但是够用。
-
-以上是我在 Hacker News 上学到的一些东西。
-','<p>昨天看到 Hacker News 的创始人 Paul Graham 在 2009<br>年写的一篇文章<a href="http://www.paulgraham.com/hackernews.html">《我从 Hacker News 中学到了什么》</a>,<br>作者提到：</p>
-<blockquote>
-<p>随着 Hacker News 变得越来越大，占用的时间比我预期的要多，但我并不后悔，因为我从工作中学到了很多东西。</p>
-</blockquote>
-<p>就挺感慨的，一方面是我亲自做了一遍 HN 的中文翻译，在整个过程中学到了很多，另一方面也让我回想起大学期间做的一个社区，对我的之后的种种影响。</p>
-<p>如果有机会的话，我觉得每个人都应该尽可能的去亲自参与创造某个能有其他人一起创造信息的社区，比如成立一个小组，一个论坛，一个社群等等，线下的可能更好。和人交流，能碰撞出我更多的想法，以及让我知道更大的世界，更多元的价值观。</p>
-<p><a href="https://hn.buzzing.cc">hacker news 的中文翻译</a>是一个非常普通的想法，每年可能都有人声称自己做了一个 HN 的中文版。因为<br>HN 上不仅文章质量普遍优质，而且最重要的是： HN 的 API 是业界最友好的，所有人都可以用来练手，做一个 HN 的 XX<br>版，比如各种平台的客户端，各种语言的实现，rss 服务，email 订阅，评论通知，大数据分析，newsletter<br>等等，不胜枚举。由于我的英文水平并不能像母语一样让我能快速找到感兴趣的东西（后来发现其实不少看起来英文很好的人，也有类似的体验），所以如果我想阅读 HN<br>的话，我可能有 2 个选择：</p>
-<ol>
-<li>抱着锻炼自己英语的想法逼迫自己不太流利的浏览 HN</li>
-<li>使用浏览器自带的翻译功能，浏览 HN</li>
-</ol>
-<p>这两个阶段我都经历过。我希望你不要经历，因为每个阶段都可能使你错过 HN，错过一个很优质的信息源。</p>
-<p>第一个阶段，我只能坚持几天，然后就会本能的优先去看其他中文信息，慢慢的其实就没在看 HN 了。这在我的推特账号上尤其明显，我注册了 2<br>个推特号，一个是英文号<a href="https://twitter.com/TheOwenYoung">@TheOwenYoung</a>,一个是中文号<a href="https://twitter.com/OwenYoungZh">@OwenYoungZh</a>，本来是先开英文号的，专门关注的都是些英文博主，但是后面实在受不了了，说那就再开个中文号，尽量少关注人，只发一些东西。后来的故事就是，英文号上的很少，主力变成了中文号。唉，人就是离不开舒适圈，所以我们最好不要给自己创造舒适圈，比如在浏览器上设置很多社交网络的快捷书签；新<br>tab 页放很多快捷入口；手机上下载很多好用的应用；如果想克制自己，就最好只下必要应用，优先用网页版，或者像我现在做的，把 iPhone13<br>当成测试机，用一台好几年前的 Pixel 3a，又卡，掉电还快，但是用起来其实完全没问题，然后我又重新开始用<br>Kindle，只能一个操作，就是下一页，这样就能节省很多时间来看书了。</p>
-<p>第二个阶段，我发现浏览器自带的翻译功能并不是太好用（去年我开始做 hn<br>中文版的时候更不好用，现在其实好了很多），比如有一些网页它会失败，要么就是要重试，然后排版也不太好看，我更希望的是有些区域不要翻译，只翻译标题之类的，但是浏览器会全部翻译，就不太好浏览。而作为一个要长期阅读的地方，体验还是挺重要的。</p>
-<p>正好去年那会儿，刚做完<a href="https://github.com/actionsflow/actionsflow">Actionsflow</a>, 想利用<br>Actionsflow 做点什么，所以说那就做一个 HN<br>的中文翻译吧，这很适合工作流去处理，处理完之后生成一个静态网页，就算没人用，我自己也可以天天用，做好之后也不用维护，就一直在那。于是就开干，没想到做到后面发现还可以顺便做点别的我感兴趣的英文内容翻译，比如<a href="https://reddit.buzzing.cc">Reddit 的美股讨论</a>，<a href="https://news.buzzing.cc">国外的权威媒体报道</a>，<a href="https://ph.buzzing.cc">ProductHunt</a>等等，最后就汇总成了一个<a href="https://www.buzzing.cc">Buzzing</a></p>
-<p>Buzzing<br>运行了一年之后，发现之前的设计有不少欠考虑的地方，<a href="https://github.com/actionsflow/actionsflow">Actionsflow</a>也有点太重了，尤其是看了一年<br>HN 的帖子后，觉得 Actionsflow<br>的设计简直就是一坨屎，又臭又长。这个时候<a href="https://twitter.com/OwenYoungZh/status/1478928692781137925">才发现 Deno 是最适合做工作流的运行时</a>，Deno<br>的依赖只需要<br>URL，天生适合脚本。这样就可以和<code>package.json</code>,<code>package-lock.json</code>,<code>node_modules</code>地狱说拜拜了，而且我的工作流也不用再依赖<br>Docker 和<a href="https://github.com/nektos/act">act</a>了，于是过了 10 多天之后，我开始着手做了一个史上最快兑现的<br>「如果我有时间，我一定要做 XXX<br>」的项目：<a href="https://twitter.com/OwenYoungZh/status/1485381401327267840">Denoflow</a>,用来做我的低代码<br>IFTTT 或者说 Zapier，用流行一点的话说，这是配置即代码服务(Configure as Code)。</p>
-<p>这一次，产生了一些变化，在泡了一年自己做的 HN 中文版之后：</p>
-<ol>
-<li>首先我没有像 Actionsflow 一样设计一个浮夸的<a href="https://actionsflow.github.io/">Landing 页</a>.</li>
-<li>其次我没有用自己蹩脚的英语凑成一个看起来功能很丰富，维护人员很多，很正规的<a href="https://actionsflow.github.io/docs/reference/">一个文档网站</a>。我只在项目的<a href="https://github.com/denoflow/denoflow">Readme 文件</a>里写了一个我自认为很诚恳的说明，在一页的文本里说清楚这个项目的用途，和看一个示例就能明白的使用方法，没有多余的营销话语，把时间真正花在工具本身，利用省下的时间做了一个<a href="https://playground.owenyoung.com/">在线 PlayGround</a>，运行在我的廉价<br>VPS 上。</li>
-<li>没考虑买一个域名，尽管<code>denoflow.com</code>域名还在。直接放在我的个人子域<code>playground.owenyoung.com</code>.</li>
-<li>版本号的克制，对于刚推出的项目，我使用<code>0.0.x</code>，而不是像 Actionsflow<br>一样，一上来就是<code>1.0.0</code>。而后来的证明，<code>0.0.x</code>是最适合这个项目的，因为在后来的使用中，发现了不少的致命 bug</li>
-<li>在文档的显眼处声明：<code>项目仍处于非常早期的阶段，谨慎使用!</code></li>
-<li>仔细思考了项目的 License,选择了 Apache2.0</li>
-</ol>
-<p>做完之后，又花了 2 个小时，用 Denoflow<br>做了<a href="https://showhn.buzzing.cc/">Show HN</a>,<a href="https://askhn.buzzing.cc/">Ask HN</a>,<a href="https://hackernews.buzzing.cc/">HN 首页</a>,<a href="https://besthn.buzzing.cc">Best HN</a>，这里可以和之前的<a href="https://hn.buzzing.cc">HN 热门</a>对比下，没有追踪，没有<br>JS<br>代码，只是使用一个舒服的背景色，使用<a href="https://github.com/dbohdan/classless-css">class less 原则</a>，同时生成一个<br>RSS。没有使用任何框架，就几句简单的 deno<br>代码即可生成。和之前的<a href="https://hn.buzzing.cc">HN 热门</a>相比，<a href="https://hn.buzzing.cc">HN 热门</a>在一个屏幕里只能显示出<br>2 篇文章，而现在<a href="https://hackernews.buzzing.cc/">HN 首页</a>可以放 20 多篇，效率直接提升 10 倍啊有木有。</p>
-<p>很快，我发现按照这样布局的话，阅读效率高了太多了，已有的这些时间流，已经不够我看了，所以索性单独为我自己生成一个<a href="https://myfeed.owenyoung.com/">HN 时间流</a>，里面包含了<br>hn 上前 100 位用户提交的任何帖子。</p>
-<p>几天之后我就发现，之前只看 HN 的热门帖子损失有多大，HN<br>上有太多优秀的内容没有被顶上去了。热门真的很随机，所以我们也要万分警惕大公司的算法机制。基于此，我又做了一个变化，直接抓取 HN 上最新的提交（我去掉了 Ask<br>HN 的内容，因为 Ask HN<br>的质量相对较差，并且我还有专门的<a href="https://ask.buzzing.cc">Ask HN</a>可以回头再看）。那么现在专属于我的<a href="https://myfeed.owenyoung.com/">HN 时间流</a>就包括了<br>HN 上所有最新的文章了。即使是全部文章，由于是母语阅读，我还是能快速读完这些标题，找到感兴趣的内容，还可能留下我的 2 cents.<br>把之前关注了很久的不少优质英文 RSS<br>源，也利于<a href="https://github.com/denoflow/denoflow">Denoflow</a>生成了一个专属于我的<a href="https://myrss.owenyoung.com/">RSS 翻译流</a>.<br>这样下来我的空余时间就可以住要花在阅读长文章，而不是刷推特这样更短的文章。我们都知道推特其实无法代替长文章，就像长文章也无法代替读书一样。</p>
-<p>如果有人看到这里的话，那你一定会觉得 HN 有毒，而我已经上瘾了。其实没错，目前阶段是这样。</p>
-<p>好在 HN 上的人也经常推荐图书，比如以下两个链接就是 HN 的用户制作的 HN 评论大数据最推荐的书（HN 的评论比图书网站，或者第三方网站更可信）：</p>
-<ul>
-<li><a href="https://hacker-recommended-books.vercel.app/">汇总了 hacker news 上评论里提到的书籍的排名</a></li>
-<li><a href="https://hackernewsbooks.com/top-books-on-hacker-news">又一个 hacker news 提到的图书周报</a></li>
-</ul>
-<p>比如我读了上面推荐的<a href="https://d.buzzing.cc/post/1">《深度工作》</a>，作者提到：</p>
-<blockquote>
-<p>"如果在你全部的清醒时间，都能给自己的大脑找到有意义的事情去做，而不是放任自己在迷糊的状态下漫无目的地浏览几个小时网页，那么在一天结束时，你会觉得更加充实，第二天开始时更加轻松。<br>– 卡尔·纽波特《深度工作》</p>
-</blockquote>
-<p>从我沉迷 HN<br>的例子里就能看出，网络已经剥夺了我保持专注和沉思的能力，但是真正值得探索和学习的知识都需要我拥有这种能力。如果我没有在某一个特定时段给自己安排任务，那么这些网站总是会更有诱惑力。所以如果我想抵御社交网络对我时间和精力的诱惑，那么必须要给大脑找一些高质量的替代活动，所以我基于开源<br><a href="https://lemmy.ml/">Lemmy</a> 搭建了一个类似 Reddit<br>的社区，叫<a href="https://d.buzzing.cc/"><strong>如何度过每一天</strong></a>,希望能在社区里分享有意义的事，不虚度光阴的事，可以是阅读某本书，学习某项技能，看某部纪录片等等等等。社区有投票的功能，某项活动被投票的次数越多，说明认为这项活动有意义的更多。</p>
-<p>目前其实就只有少数几个用户在用，网站依然是部署在我的一个 廉价 VPS 上，没有盈利的打算，目前加载也有点慢，但是够用。</p>
-<p>以上是我在 Hacker News 上学到的一些东西。</p>
-',NULL,NULL,NULL,NULL,NULL,1771115051,1771115051,1771115051);
-INSERT INTO posts VALUES(8,'quote','published',0,0,NULL,NULL,'https://www.joanwestenberg.com/why-my-newsletter-costs-2-50/',NULL,NULL,'拥有五万个从不打开邮件的订阅者名单，其价值远不及五百个逐字阅读并偶尔给予深度回复的读者。后者会购买你的著作，向朋友推荐你，并长久陪伴你。前者不过是你在那些无聊的数字炫耀派对上能拿出来吹嘘的数字而已。',NULL,NULL,NULL,NULL,1771115103,1771115103,1771115103);
-INSERT INTO posts VALUES(9,'quote','published',1,0,NULL,'JA Westenberg','https://www.joanwestenberg.com/the-case-for-blogging-in-the-ruins/',NULL,NULL,'弗吉尼亚·伍尔夫曾论述拥有独立空间的重要性：那是供人进行创作的物理场所，不受干扰与控制。博客便是网络世界中的独立空间。在这里，你自主决定书写内容与表达方式，无需屈从于平台算法的任性摆布——那些平台只顾榨取你的参与度，却不关心这种参与究竟是否让你或他人变得更聪明。
-
-我们不会通过等待平台减少剥削来获得更好的互联网。我们需要亲手构建它——维护自己的空间，相互链接，打造独立网站的互联网络，让博客圈重现昔日的辉煌。',NULL,NULL,NULL,NULL,1771115159,1771115159,1771115177);
-INSERT INTO posts VALUES(10,'link','published',0,0,NULL,'Some pics','https://some.pics/','一个干净的图片流网站
-','<p>一个干净的图片流网站</p>
-',NULL,NULL,NULL,NULL,NULL,1771115271,1771115271,1771115271);
-INSERT INTO posts VALUES(11,'note','published',0,0,NULL,NULL,NULL,'From splash','<p>From splash</p>
-',NULL,NULL,NULL,NULL,NULL,1771268320,1771268320,1771268958);
+-- api_token
+INSERT INTO api_token VALUES('019ce8c7-85cb-7ef4-acf3-573ae8222d88','api test','42ba502bd33c0e0971e10dfa80cc799ca3743aa5b674c0325e9f90664d362a5d','2601a002',1773432435,1773431915,1773432435);
 
 -- media
-INSERT INTO media VALUES('019c676d-1fcd-7c11-9737-5aebd10c1087',3,'019c676d-1fcd-7c11-9737-5aebd10c1087.webp','ansis-kancs-XGxp1rvTVag-unsplash.webp','image/webp',202748,'media/2026/02/019c676d-1fcd-7c11-9737-5aebd10c1087.webp',NULL,NULL,NULL,1771261731,0,NULL,'r2');
-INSERT INTO media VALUES('019c679e-98f9-73ba-bd57-ab6ebf94fe05',3,'019c679e-98f9-73ba-bd57-ab6ebf94fe05.webp','dan-begel-pbfkmEL3QaU-unsplash.webp','image/webp',229392,'media/2026/02/019c679e-98f9-73ba-bd57-ab6ebf94fe05.webp',NULL,NULL,NULL,1771264973,1,NULL,'r2');
-INSERT INTO media VALUES('019c679e-a8ce-7d49-9c21-8d75a1551198',3,'019c679e-a8ce-7d49-9c21-8d75a1551198.webp','willian-justen-de-vasconcellos--pKhrem8YpE-unsplash.webp','image/webp',324826,'media/2026/02/019c679e-a8ce-7d49-9c21-8d75a1551198.webp',NULL,NULL,NULL,1771264977,2,NULL,'r2');
-INSERT INTO media VALUES('019c679e-c351-76dc-9569-2a716b4384b5',NULL,'019c679e-c351-76dc-9569-2a716b4384b5.webp','brianna-parks-frXRtKYPqXk-unsplash.webp','image/webp',264554,'media/2026/02/019c679e-c351-76dc-9569-2a716b4384b5.webp',NULL,NULL,NULL,1771264984,0,NULL,'r2');
-INSERT INTO media VALUES('019c67d5-1022-7efd-9ae8-0454325cba78',NULL,'019c67d5-1022-7efd-9ae8-0454325cba78.webp','takashi-sakamoto-J9nW9Tc1HVc-unsplash.webp','image/webp',505172,'media/2026/02/019c67d5-1022-7efd-9ae8-0454325cba78.webp',NULL,NULL,NULL,1771268543,0,NULL,'r2');
-INSERT INTO media VALUES('019c67d5-28b8-7ec3-ae2e-83d9eb1b096b',NULL,'019c67d5-28b8-7ec3-ae2e-83d9eb1b096b.webp','museum-of-new-zealand-te-papa-tongarewa-1C7oRRwUkgU-unsplash.webp','image/webp',322656,'media/2026/02/019c67d5-28b8-7ec3-ae2e-83d9eb1b096b.webp',NULL,NULL,NULL,1771268549,0,NULL,'r2');
-INSERT INTO media VALUES('019c67d5-39c9-7723-8b0c-4c8a50076dc3',11,'019c67d5-39c9-7723-8b0c-4c8a50076dc3.webp','land-o-lakes-inc-peEOQ4_dqOo-unsplash.webp','image/webp',470774,'media/2026/02/019c67d5-39c9-7723-8b0c-4c8a50076dc3.webp',NULL,NULL,NULL,1771268554,0,NULL,'r2');
+INSERT INTO media VALUES('019ce8cd-09ed-7301-b308-b62d0fc96a60','019ce8ce-b752-717f-bb46-53c5f1078de3','019ce8cd-09ed-7301-b308-b62d0fc96a60.jpg','demo-landscape.jpg','image/jpeg',113022,'media/2026/03/019ce8cd-09ed-7301-b308-b62d0fc96a60.jpg','r2',1200,800,NULL,'a0',NULL,NULL,NULL,NULL,NULL,'image',1773432278,1773432387);
+INSERT INTO media VALUES('019ce8cd-12eb-711d-a0be-0761bd4d15cf','019ce8ce-bd2c-772b-ad0b-4875ba22705d','019ce8cd-12eb-711d-a0be-0761bd4d15cf.jpg','demo-portrait.jpg','image/jpeg',108669,'media/2026/03/019ce8cd-12eb-711d-a0be-0761bd4d15cf.jpg','r2',800,1200,NULL,'a0',NULL,NULL,NULL,NULL,NULL,'image',1773432280,1773432389);
+INSERT INTO media VALUES('019ce8cd-1a18-7e56-94f0-e37c7ab65e6f','019ce8ce-bd2c-772b-ad0b-4875ba22705d','019ce8cd-1a18-7e56-94f0-e37c7ab65e6f.jpg','demo-square.jpg','image/jpeg',72317,'media/2026/03/019ce8cd-1a18-7e56-94f0-e37c7ab65e6f.jpg','r2',1000,1000,NULL,'a1',NULL,NULL,NULL,NULL,NULL,'image',1773432282,1773432389);
