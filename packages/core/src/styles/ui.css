@@ -270,15 +270,21 @@
    * Timeline & Post Components
    * ========================================================================= */
 
-  /* Post divider */
   .site-content hr.feed-divider {
     border: none;
-    height: 10px;
-    width: 32px;
+    width: 30px;
+    height: 9px;
     margin: 2.5rem auto;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='%23ccc' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='%23ccc' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='%23ccc' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
+    color: var(--site-feed-divider-color);
+    background-color: currentColor;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='black' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='black' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
   }
 
   .feed-card {
@@ -4889,6 +4895,12 @@
 
   /* --- List view month headers --------------------------------------------- */
 
+  .archive-list-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+  }
+
   .archive-list-month-header {
     display: flex;
     align-items: center;
@@ -4898,7 +4910,7 @@
     color: var(--site-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    padding: 28px 0 0;
+    padding: 0;
     margin-bottom: 16px;
     white-space: nowrap;
   }
@@ -4911,9 +4923,5 @@
     background: var(--site-text-secondary);
     flex-shrink: 0;
     opacity: 0.4;
-  }
-
-  [data-feed] > div > div:first-child .archive-list-month-header {
-    padding-top: 0;
   }
 }

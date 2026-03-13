@@ -16,18 +16,16 @@ const ThreadDetail: FC<{ post: PostView; threadPosts: PostView[] }> = ({
 }) => {
   return (
     <div class="thread-group" data-page="post">
-      {threadPosts.map((tp, i) => {
+      {threadPosts.map((tp) => {
         const isCurrent = tp.id === post.id;
         return (
-          <div key={tp.id}>
-            {i > 0 && <hr class="feed-divider" />}
-            <div
-              id={`post-${tp.id}`}
-              class={`thread-item thread-detail-item${isCurrent ? " thread-detail-current" : ""}`}
-              {...(isCurrent ? { "data-post-current": "" } : {})}
-            >
-              <TimelineItemFromPost post={tp} />
-            </div>
+          <div
+            key={tp.id}
+            id={`post-${tp.id}`}
+            class={`thread-item thread-detail-item${isCurrent ? " thread-detail-current" : ""}`}
+            {...(isCurrent ? { "data-post-current": "" } : {})}
+          >
+            <TimelineItemFromPost post={tp} />
           </div>
         );
       })}

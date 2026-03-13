@@ -1,7 +1,7 @@
 /**
  * Timeline Feed
  *
- * Flat list of posts separated by simple dividers.
+ * Flat list of posts separated by lightweight dividers.
  */
 
 import type { FC } from "hono/jsx";

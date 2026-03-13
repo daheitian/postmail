@@ -961,16 +961,18 @@ export const ArchivePage: FC<ArchivePageProps> = ({
           </div>
         ) : (
           <div data-feed>
-            <div class="flex flex-col">
-              {groups.map((group, gi) => (
+            <div class="archive-list-groups">
+              {groups.map((group) => (
                 <div key={`list-${group.year}-${group.month}`}>
                   <div class="archive-list-month-header">{group.label}</div>
-                  {group.posts.map((post, pi) => (
-                    <div key={post.id}>
-                      {(gi > 0 || pi > 0) && <hr class="feed-divider" />}
-                      <TimelineItemFromPost post={post} />
-                    </div>
-                  ))}
+                  <div class="flex flex-col">
+                    {group.posts.map((post, pi) => (
+                      <div key={post.id}>
+                        {pi > 0 && <hr class="feed-divider" />}
+                        <TimelineItemFromPost post={post} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>

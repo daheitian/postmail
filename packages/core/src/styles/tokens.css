@@ -92,6 +92,11 @@
     var(--site-text-primary) 12%,
     transparent
   );
+  --site-feed-divider-color: color-mix(
+    in srgb,
+    var(--site-text-secondary) 30%,
+    transparent
+  );
   --site-feed-link-tint: color-mix(in srgb, var(--site-accent) 7%, transparent);
   --site-feed-quote-tint: color-mix(
     in srgb,
