@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getThreadPreviewState } from "../thread-preview-state.js";
 
 describe("getThreadPreviewState", () => {
-  it("does not show the toggle for a 2-post thread", () => {
+  it("has no hidden ancestors for a 2-post thread", () => {
     expect(
       getThreadPreviewState({
         hasParentReply: false,
@@ -10,11 +10,10 @@ describe("getThreadPreviewState", () => {
       }),
     ).toEqual({
       hiddenCount: 0,
-      shouldShowToggle: false,
     });
   });
 
-  it("shows the toggle for a 3-post thread with no hidden ancestors", () => {
+  it("has no hidden ancestors for a 3-post thread with parent context", () => {
     expect(
       getThreadPreviewState({
         hasParentReply: true,
@@ -22,7 +21,6 @@ describe("getThreadPreviewState", () => {
       }),
     ).toEqual({
       hiddenCount: 0,
-      shouldShowToggle: true,
     });
   });
 
@@ -34,7 +32,6 @@ describe("getThreadPreviewState", () => {
       }),
     ).toEqual({
       hiddenCount: 3,
-      shouldShowToggle: true,
     });
   });
 });

@@ -1273,8 +1273,10 @@ msgstr "Sessions, password, export"
 msgid "Settings updated."
 msgstr "Settings updated."
 
+#. @context: Button to collapse expanded thread context
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/feed/ThreadPreview.tsx
 msgid "Show less"
 msgstr "Show less"
 

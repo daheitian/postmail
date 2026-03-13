@@ -27,7 +27,15 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
   totalReplyCount,
 }) => {
   const { t } = useLingui();
-  const { hiddenCount, shouldShowToggle } = getThreadPreviewState({
+  const showMoreLabel = t({
+    message: "Show more",
+    comment: "@context: Button to expand faded thread context",
+  });
+  const showLessLabel = t({
+    message: "Show less",
+    comment: "@context: Button to collapse expanded thread context",
+  });
+  const { hiddenCount } = getThreadPreviewState({
     hasParentReply: parentReply !== undefined,
     totalReplyCount,
   });
@@ -35,10 +43,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
   return (
     <div class="thread-group thread-group-preview">
       {/* Faded ancestor context */}
-      <div
-        class={`thread-context-shell${shouldShowToggle ? " thread-context-faded" : ""}`}
-        data-thread-context
-      >
+      <div class="thread-context-shell" data-thread-context>
         {/* Root post */}
         <div class="thread-item thread-item-context">
           <TimelineItemFromPost
@@ -72,23 +77,20 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
           </div>
         )}
 
-        {/* Gradient fade overlay */}
-        {shouldShowToggle && <div class="thread-context-fade" />}
+        <div class="thread-context-fade" />
       </div>
 
       {/* Toggle button */}
-      {shouldShowToggle && (
-        <button
-          type="button"
-          class="thread-context-toggle text-xs text-muted-foreground hover:text-foreground"
-          data-thread-context-toggle
-        >
-          {t({
-            message: "Show more",
-            comment: "@context: Button to expand faded thread context",
-          })}
-        </button>
-      )}
+      <button
+        type="button"
+        class="thread-context-toggle hidden text-xs text-muted-foreground hover:text-foreground"
+        data-thread-context-toggle
+        data-label-more={showMoreLabel}
+        data-label-less={showLessLabel}
+        aria-expanded="false"
+      >
+        {showMoreLabel}
+      </button>
 
       {/* Latest reply (full card, hero) */}
       <div class="thread-item thread-item-hero">

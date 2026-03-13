@@ -1273,8 +1273,10 @@ msgstr ""
 msgid "Settings updated."
 msgstr "设置已更新。"
 
+#. @context: Button to collapse expanded thread context
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/feed/ThreadPreview.tsx
 msgid "Show less"
 msgstr "收起"
 

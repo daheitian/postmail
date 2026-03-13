@@ -113,6 +113,7 @@
     var(--site-nav-hover-bg) 42%,
     transparent
   );
+  --site-thread-context-max-height: 188px;
   --site-thread-dot-ring: color-mix(
     in srgb,
     var(--site-accent) 16%,

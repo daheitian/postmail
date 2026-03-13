@@ -11,6 +11,5 @@ export function getThreadPreviewState({
 
   return {
     hiddenCount,
-    shouldShowToggle: totalReplyCount > 1,
   };
 }
