@@ -599,14 +599,14 @@
   }
 
   /* Faded thread ancestor context */
-  .thread-context-faded {
+  .thread-context-collapsed {
     position: relative;
     max-height: var(--site-thread-context-max-height);
     overflow: hidden;
     transition: max-height 0.3s ease;
   }
 
-  .thread-context-faded.expanded {
+  .thread-context-collapsed.expanded {
     max-height: none;
     overflow: visible;
   }
@@ -629,7 +629,7 @@
     display: block;
   }
 
-  .thread-context-faded.expanded .thread-context-fade {
+  .thread-context-collapsed.expanded .thread-context-fade {
     display: none;
   }
 

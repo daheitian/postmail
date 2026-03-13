@@ -17,9 +17,42 @@ function getCollapsedMaxHeight(container: HTMLElement): number {
   return parsePixelValue(value, 188);
 }
 
+function getPendingImages(container: HTMLElement): HTMLImageElement[] {
+  return Array.from(container.querySelectorAll("img")).filter(
+    (image) => !image.complete,
+  );
+}
+
+function waitForContentToSettle(
+  container: HTMLElement,
+  callback: () => void,
+): void {
+  const pendingImages = getPendingImages(container);
+  if (pendingImages.length === 0) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(callback);
+    });
+    return;
+  }
+
+  let remaining = pendingImages.length;
+  const handleDone = (): void => {
+    remaining -= 1;
+    if (remaining === 0) {
+      callback();
+    }
+  };
+
+  pendingImages.forEach((image) => {
+    image.addEventListener("load", handleDone, { once: true });
+    image.addEventListener("error", handleDone, { once: true });
+  });
+}
+
 function updateThreadContextState(
   container: HTMLElement,
   toggle: HTMLElement,
+  allowExpand: boolean,
 ): void {
   const collapsedMaxHeight = getCollapsedMaxHeight(container);
   const isExpanded = container.classList.contains("expanded");
@@ -28,13 +61,23 @@ function updateThreadContextState(
   const showLessLabel = toggle.dataset.labelLess ?? "Show less";
 
   if (!overflows) {
-    container.classList.remove("thread-context-faded", "expanded");
+    if (allowExpand) {
+      container.classList.remove(
+        "thread-context-collapsed",
+        "thread-context-faded",
+        "expanded",
+      );
+    } else {
+      container.classList.add("thread-context-collapsed");
+      container.classList.remove("thread-context-faded", "expanded");
+    }
     toggle.classList.add("hidden");
     toggle.textContent = showMoreLabel;
     toggle.setAttribute("aria-expanded", "false");
     return;
   }
 
+  container.classList.add("thread-context-collapsed");
   container.classList.add("thread-context-faded");
   toggle.classList.remove("hidden");
   toggle.textContent = isExpanded ? showLessLabel : showMoreLabel;
@@ -48,11 +91,17 @@ function setupThreadContext(group: HTMLElement): void {
   );
   if (!container || !toggle) return;
 
-  updateThreadContextState(container, toggle);
+  let allowExpand = false;
+  updateThreadContextState(container, toggle, allowExpand);
+
+  waitForContentToSettle(container, () => {
+    allowExpand = true;
+    updateThreadContextState(container, toggle, allowExpand);
+  });
 
   if ("ResizeObserver" in globalThis) {
     const observer = new globalThis.ResizeObserver(() => {
-      updateThreadContextState(container, toggle);
+      updateThreadContextState(container, toggle, allowExpand);
     });
     observer.observe(container);
   }
@@ -71,7 +120,7 @@ document.addEventListener("click", (e) => {
   if (!container) return;
 
   container.classList.toggle("expanded");
-  updateThreadContextState(container, toggle);
+  updateThreadContextState(container, toggle, true);
 });
 
 // Auto-scroll to current post on detail pages

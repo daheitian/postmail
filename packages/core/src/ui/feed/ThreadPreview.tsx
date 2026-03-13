@@ -10,7 +10,10 @@ import { useLingui } from "@lingui/react/macro";
 import type { ThreadPreviewProps } from "../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { TimelineItemFromPost } from "./TimelineItem.js";
-import { getThreadPreviewState } from "./thread-preview-state.js";
+import {
+  getThreadPreviewState,
+  isThreadContextLikelyOverflow,
+} from "./thread-preview-state.js";
 
 const THREAD_CONTEXT_DISPLAY = {
   hideStatusBadges: true,
@@ -39,11 +42,19 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
     hasParentReply: parentReply !== undefined,
     totalReplyCount,
   });
+  const startsCollapsedWithAffordances = isThreadContextLikelyOverflow({
+    rootPost,
+    parentReply,
+    hiddenCount,
+  });
 
   return (
     <div class="thread-group thread-group-preview">
       {/* Faded ancestor context */}
-      <div class="thread-context-shell" data-thread-context>
+      <div
+        class={`thread-context-shell thread-context-collapsed${startsCollapsedWithAffordances ? " thread-context-faded" : ""}`}
+        data-thread-context
+      >
         {/* Root post */}
         <div class="thread-item thread-item-context">
           <TimelineItemFromPost
@@ -83,7 +94,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
       {/* Toggle button */}
       <button
         type="button"
-        class="thread-context-toggle hidden text-xs text-muted-foreground hover:text-foreground"
+        class={`thread-context-toggle text-xs text-muted-foreground hover:text-foreground${startsCollapsedWithAffordances ? "" : " hidden"}`}
         data-thread-context-toggle
         data-label-more={showMoreLabel}
         data-label-less={showLessLabel}
