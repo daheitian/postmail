@@ -15,14 +15,14 @@ const ThreadDetail: FC<{ post: PostView; threadPosts: PostView[] }> = ({
   threadPosts,
 }) => {
   return (
-    <div class="thread-group" data-page="post">
+    <div class="thread-group thread-group-detail" data-page="post">
       {threadPosts.map((tp) => {
         const isCurrent = tp.id === post.id;
         return (
           <div
             key={tp.id}
             id={`post-${tp.id}`}
-            class={`thread-item thread-detail-item${isCurrent ? " thread-detail-current" : ""}`}
+            class={`thread-item thread-detail-item${isCurrent ? " thread-item-current" : ""}`}
             {...(isCurrent ? { "data-post-current": "" } : {})}
           >
             <TimelineItemFromPost post={tp} />

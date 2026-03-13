@@ -509,11 +509,13 @@
     z-index: 1;
   }
 
-  .thread-group-preview {
+  .thread-group-preview,
+  .thread-group-detail {
     padding-left: 30px;
   }
 
-  .thread-group-preview::before {
+  .thread-group-preview::before,
+  .thread-group-detail::before {
     left: 10px;
     width: 1px;
     background: linear-gradient(
@@ -524,11 +526,13 @@
     );
   }
 
-  .thread-group-preview .thread-item {
-    padding: 10px 0;
+  .thread-group-preview .thread-item,
+  .thread-group-detail .thread-item {
+    padding: var(--site-thread-item-spacing) 0;
   }
 
-  .thread-group-preview .thread-item::before {
+  .thread-group-preview .thread-item::before,
+  .thread-group-detail .thread-item::before {
     left: -20px;
     width: 10px;
     height: 10px;
@@ -657,16 +661,16 @@
     );
   }
 
-  /* Thread detail: current post highlight + scroll margin */
+  /* Thread detail: current post anchor + dot-only highlight */
   .thread-detail-item {
     scroll-margin-top: 80px;
   }
 
-  .thread-detail-current {
-    background-color: color-mix(in srgb, var(--primary) 5%, transparent);
-    border-radius: var(--radius);
-    padding: 12px;
-    margin: -12px;
+  .thread-group-detail .thread-item-current::before {
+    background-color: var(--site-accent);
+    box-shadow:
+      0 0 0 2px var(--site-page-bg),
+      0 0 0 4px color-mix(in srgb, var(--site-accent) 18%, var(--site-page-bg));
   }
 
   /* Quote block styling */
