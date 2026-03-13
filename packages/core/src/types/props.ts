@@ -44,6 +44,7 @@ export interface ArchiveFilters {
   year?: number;
   collectionSlug?: string;
   collectionTitle?: string;
+  collectionIcon?: string | null;
   format?: Format;
   mediaKinds?: MediaKind[];
   hasMedia?: boolean;
@@ -59,7 +60,7 @@ export interface ArchivePageProps {
   totalPages: number;
   filters: ArchiveFilters;
   availableYears: number[];
-  availableCollections: { slug: string; title: string }[];
+  availableCollections: { slug: string; title: string; icon: string | null }[];
   isAuthenticated: boolean;
 }
 

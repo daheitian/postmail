@@ -12,7 +12,7 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const newPostRoutes = new Hono<Env>();
 
-newPostRoutes.use("*", requireAuth());
+newPostRoutes.use("/new", requireAuth());
 
 newPostRoutes.get("/new", async (c) => {
   const navData = await getNavigationData(c);

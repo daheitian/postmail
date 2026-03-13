@@ -98,10 +98,6 @@ pageRoutes.get("/*", async (c) => {
       if (!navData.isAuthenticated) return c.notFound();
     }
 
-    if (resolved.kind === "alias") {
-      return c.redirect(`/${post.slug}`, 301);
-    }
-
     return renderPost(c, post);
   }
 

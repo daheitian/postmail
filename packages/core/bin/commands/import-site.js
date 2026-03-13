@@ -377,15 +377,16 @@ export async function run(argv) {
 
     const postData = {
       format,
-      title: frontMatter.title || undefined,
+      title: frontMatter.title != null ? String(frontMatter.title) : undefined,
       bodyMarkdown: rootBody || undefined,
-      slug: frontMatter.slug || undefined,
+      slug: frontMatter.slug != null ? String(frontMatter.slug) : undefined,
       status: frontMatter.draft ? "draft" : "published",
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
       mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
-      publishedAt: frontMatter.date
-        ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
-        : undefined,
+      publishedAt:
+        !frontMatter.draft && frontMatter.date
+          ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
+          : undefined,
       pinned: extra.pinned || undefined,
       featured: extra.featured || undefined,
       rating: extra.rating || undefined,
@@ -424,18 +425,18 @@ export async function run(argv) {
       if (err.status === 409) {
         console.log(`${progress} Skipped: ${postLabel}`);
         skipped++;
-        continue;
+      } else {
+        console.error(`Error creating post "${postLabel}": ${err.message}`);
+        process.exit(1);
       }
-      console.error(`Error creating post "${postLabel}": ${err.message}`);
-      process.exit(1);
     }
 
-    // Create custom URL aliases from front matter
+    // Create custom URL aliases from front matter (also for skipped posts)
     const aliases = frontMatter.aliases || [];
-    const postSlug = frontMatter.slug || post.slug;
+    const postSlug = frontMatter.slug != null ? String(frontMatter.slug) : post?.slug;
     for (const alias of aliases) {
-      const aliasPath = alias.replace(/^\//, ""); // strip leading /
-      if (aliasPath === postSlug) continue; // skip self-reference
+      const aliasPath = alias.startsWith("/") ? alias : `/${alias}`;
+      if (aliasPath === `/${postSlug}`) continue; // skip self-reference
       try {
         await apiCall("POST", "/api/custom-urls", apiUrl, token, {
           path: aliasPath,
@@ -449,7 +450,8 @@ export async function run(argv) {
       }
     }
 
-    // Create replies
+    // Create replies (only for newly created posts)
+    if (!post) continue;
     for (const replySegment of replySegments) {
       const replyAttrs = replySegment.attrs || {};
       let replyBody = replySegment.body || "";

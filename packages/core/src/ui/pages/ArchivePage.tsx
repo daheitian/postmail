@@ -16,7 +16,7 @@ import type {
 } from "../../types.js";
 import type { PostView } from "../../types/views.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
-import { getIconSvg } from "../../lib/icons.js";
+import { getIconSvg, renderCollectionIcon } from "../../lib/icons.js";
 import { toMediaKind } from "../../lib/upload.js";
 import { PagePagination } from "../shared/Pagination.js";
 import { TimelineItemFromPost } from "../feed/TimelineItem.js";
@@ -90,6 +90,13 @@ function getFormatLabelPlural(format: string): string {
   return labels[format] ?? format + "s";
 }
 
+/** Icon name mapping for post formats. */
+const FORMAT_ICONS: Record<string, string> = {
+  note: "notepad-text",
+  link: "external-link",
+  quote: "text-quote",
+};
+
 /** Icon name mapping for media kinds. */
 const MEDIA_KIND_ICONS: Record<MediaKind, string> = {
   image: "image",
@@ -115,8 +122,8 @@ function getMediaKindLabel(kind: MediaKind): string {
       comment: "@context: Archive media filter - audio",
     }),
     text: t({
-      message: "Text",
-      comment: "@context: Archive media filter - text files",
+      message: "Text attachment",
+      comment: "@context: Archive media filter - text file attachments",
     }),
     document: t({
       message: "Files",
@@ -158,6 +165,7 @@ interface ChipSelectOption {
   label: string;
   value: string;
   icon?: string;
+  iconHtml?: string;
   indent?: boolean;
 }
 
@@ -165,7 +173,8 @@ interface ChipSelectOption {
  * Compact chip-style dropdown.
  *
  * Default state: icon + chevron (no text).
- * Active state: icon + selected label + ✕ clear button.
+ * Active state (iconOnly): active icon + ✕ clear button (no text).
+ * Active state (with label): icon + selected label + ✕ clear button.
  */
 const ChipSelect: FC<{
   id: string;
@@ -174,7 +183,20 @@ const ChipSelect: FC<{
   currentValue: string;
   clearUrl: string;
   activeLabel?: string;
-}> = ({ id, icon, options, currentValue, clearUrl, activeLabel }) => {
+  activeIconHtml?: string;
+  activeIcon?: string;
+  iconOnly?: boolean;
+}> = ({
+  id,
+  icon,
+  options,
+  currentValue,
+  clearUrl,
+  activeLabel,
+  activeIconHtml,
+  activeIcon,
+  iconOnly,
+}) => {
   const isActive = !!activeLabel;
 
   return (
@@ -191,8 +213,19 @@ const ChipSelect: FC<{
         aria-expanded="false"
         aria-controls={`${id}-listbox`}
       >
-        <Icon name={icon} class="[&>svg]:size-4 text-muted-foreground" />
-        {isActive && <span class="archive-chip-label">{activeLabel}</span>}
+        {isActive && activeIconHtml ? (
+          <span
+            class="shrink-0 inline-flex [&>svg]:size-4"
+            dangerouslySetInnerHTML={{ __html: activeIconHtml }}
+          />
+        ) : isActive && activeIcon ? (
+          <Icon name={activeIcon} class="[&>svg]:size-4" />
+        ) : (
+          <Icon name={icon} class="[&>svg]:size-4 text-muted-foreground" />
+        )}
+        {isActive && !iconOnly && (
+          <span class="archive-chip-label">{activeLabel}</span>
+        )}
         {isActive ? (
           <a
             href={clearUrl}
@@ -220,7 +253,15 @@ const ChipSelect: FC<{
               aria-selected={opt.value === currentValue ? "true" : undefined}
               class={opt.indent ? "pl-4" : undefined}
             >
-              {opt.icon ? (
+              {opt.iconHtml ? (
+                <span class="flex items-center gap-2">
+                  <span
+                    class="shrink-0 inline-flex [&>svg]:size-4"
+                    dangerouslySetInnerHTML={{ __html: opt.iconHtml }}
+                  />
+                  {opt.label}
+                </span>
+              ) : opt.icon ? (
                 <span class="flex items-center gap-2">
                   <Icon
                     name={opt.icon}
@@ -257,6 +298,15 @@ const ChipMediaSelect: FC<{
   const isActive = !!activeLabel;
   const activeKinds = f.mediaKinds ?? [];
 
+  const singleKind = activeKinds.length === 1 ? activeKinds[0] : undefined;
+  const activeMediaIcon = isActive
+    ? f.hasMedia === false
+      ? "text"
+      : singleKind
+        ? MEDIA_KIND_ICONS[singleKind]
+        : icon
+    : undefined;
+
   const textOnlyUrl = buildFilterUrl(
     { ...f, mediaKinds: undefined, hasMedia: undefined },
     { hasMedia: false, mediaKinds: undefined },
@@ -277,8 +327,14 @@ const ChipMediaSelect: FC<{
         aria-expanded="false"
         aria-controls={`${id}-listbox`}
       >
-        <Icon name={icon} class="[&>svg]:size-4 text-muted-foreground" />
-        {isActive && <span class="archive-chip-label">{activeLabel}</span>}
+        {isActive && activeMediaIcon ? (
+          <Icon name={activeMediaIcon} class="[&>svg]:size-4" />
+        ) : (
+          <Icon name={icon} class="[&>svg]:size-4 text-muted-foreground" />
+        )}
+        {isActive && activeKinds.length > 1 && (
+          <span class="archive-chip-label">{activeLabel}</span>
+        )}
         {isActive ? (
           <a
             href={clearUrl}
@@ -308,14 +364,13 @@ const ChipMediaSelect: FC<{
             <span class="flex items-center gap-2">
               <Icon name="text" class="[&>svg]:size-4 text-muted-foreground" />
               {t({
-                message: "Text only",
+                message: "Text",
                 comment:
                   "@context: Archive media filter - posts without any media attachments",
               })}
             </span>
           </div>
-          <hr class="archive-chip-sep" />
-          {MEDIA_KINDS.filter((k) => k !== "text").map((kind) => {
+          {MEDIA_KINDS.map((kind) => {
             const label = getMediaKindLabel(kind);
             const kindIcon = MEDIA_KIND_ICONS[kind];
             return (
@@ -428,7 +483,7 @@ const FILTER_ICONS = {
 const FilterBar: FC<{
   filters: ArchiveFilters;
   availableYears: number[];
-  availableCollections: { slug: string; title: string }[];
+  availableCollections: { slug: string; title: string; icon: string | null }[];
   isAuthenticated: boolean;
 }> = ({ filters, availableYears, availableCollections, isAuthenticated }) => {
   const { t } = useLingui();
@@ -442,6 +497,7 @@ const FilterBar: FC<{
         message: "All years",
         comment: "@context: Archive filter - year dropdown default",
       }),
+      icon: FILTER_ICONS.year,
       value: buildFilterUrl(
         { ...filters, year: undefined },
         { year: undefined },
@@ -461,6 +517,7 @@ const FilterBar: FC<{
         message: "All collections",
         comment: "@context: Archive filter - collection dropdown default",
       }),
+      icon: FILTER_ICONS.collection,
       value: buildFilterUrl(
         {
           ...filters,
@@ -472,6 +529,9 @@ const FilterBar: FC<{
     },
     ...availableCollections.map((col) => ({
       label: col.title,
+      iconHtml:
+        renderCollectionIcon(col.icon, { size: 16, fallback: true }) ||
+        undefined,
       value: buildFilterUrl(filters, { collectionSlug: col.slug }),
     })),
   ];
@@ -492,12 +552,21 @@ const FilterBar: FC<{
         : getFormatLabelPlural(filters.format)
     : undefined;
 
+  const formatActiveIcon = filters.format
+    ? filters.hasTitle === true
+      ? "type"
+      : filters.hasTitle === false
+        ? "text"
+        : FORMAT_ICONS[filters.format]
+    : undefined;
+
   const formatOptions: ChipSelectOption[] = [
     {
       label: t({
         message: "All formats",
         comment: "@context: Archive filter - all formats select option",
       }),
+      icon: FILTER_ICONS.format,
       value: buildFilterUrl(
         { ...filters, format: undefined, hasTitle: undefined },
         { format: undefined, hasTitle: undefined },
@@ -505,6 +574,7 @@ const FilterBar: FC<{
     },
     {
       label: getFormatLabelPlural("note"),
+      icon: FORMAT_ICONS.note,
       value: buildFilterUrl(filters, {
         format: "note",
         hasTitle: undefined,
@@ -536,6 +606,7 @@ const FilterBar: FC<{
     },
     ...FORMATS.filter((f) => f !== "note").map((f) => ({
       label: getFormatLabelPlural(f),
+      icon: FORMAT_ICONS[f],
       value: buildFilterUrl(filters, { format: f, hasTitle: undefined }),
     })),
   ];
@@ -559,6 +630,7 @@ const FilterBar: FC<{
         message: "All visibility",
         comment: "@context: Archive filter - all visibility select option",
       }),
+      icon: FILTER_ICONS.visibility,
       value: allVisibilityUrl,
     },
     ...ARCHIVE_VISIBILITIES.map((v) => ({
@@ -572,7 +644,7 @@ const FilterBar: FC<{
   const mediaActiveLabel =
     filters.hasMedia === false
       ? t({
-          message: "Text only",
+          message: "Text",
           comment:
             "@context: Archive media filter - posts without any media attachments",
         })
@@ -618,6 +690,13 @@ const FilterBar: FC<{
               { collectionSlug: undefined, collectionTitle: undefined },
             )}
             activeLabel={filters.collectionTitle}
+            activeIconHtml={
+              renderCollectionIcon(filters.collectionIcon ?? null, {
+                size: 16,
+                fallback: true,
+              }) || undefined
+            }
+            iconOnly
           />
         )}
         <ChipSelect
@@ -630,6 +709,8 @@ const FilterBar: FC<{
             { format: undefined, hasTitle: undefined },
           )}
           activeLabel={formatActiveLabel}
+          activeIcon={formatActiveIcon}
+          iconOnly
         />
 
         <ChipMediaSelect
@@ -652,6 +733,12 @@ const FilterBar: FC<{
                 ? getVisibilityLabel(filters.visibility)
                 : undefined
             }
+            activeIcon={
+              filters.visibility
+                ? VISIBILITY_ICONS[filters.visibility]
+                : undefined
+            }
+            iconOnly
           />
         )}
       </div>

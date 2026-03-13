@@ -4080,6 +4080,10 @@
     color: var(--destructive-foreground);
   }
 
+  .archive-chip-select.select [data-popover] [role="option"] {
+    cursor: pointer;
+  }
+
   .archive-chip-sep {
     border: none;
     border-top: 1px solid var(--border);

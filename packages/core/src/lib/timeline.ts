@@ -103,15 +103,22 @@ export async function assembleTimeline(
       contextPostIds.push(ctx.parentReply.id);
     }
   }
-  const contextMediaMap =
+  const [contextMediaMap, contextCollectionsMap] =
     contextPostIds.length > 0
-      ? buildMediaMap(
-          await c.var.services.media.getByPostIds(contextPostIds),
-          mediaCtx.r2PublicUrl,
-          mediaCtx.imageTransformUrl,
-          mediaCtx.s3PublicUrl,
-        )
-      : new Map();
+      ? await Promise.all([
+          c.var.services.media
+            .getByPostIds(contextPostIds)
+            .then((raw) =>
+              buildMediaMap(
+                raw,
+                mediaCtx.r2PublicUrl,
+                mediaCtx.imageTransformUrl,
+                mediaCtx.s3PublicUrl,
+              ),
+            ),
+          c.var.services.collections.getCollectionsByPostIds(contextPostIds),
+        ])
+      : [new Map(), new Map()];
 
   // Assemble timeline items with View Models
   const items: TimelineItemView[] = posts.map((post) => {
@@ -136,7 +143,7 @@ export async function assembleTimeline(
           mediaAttachments: contextMediaMap.get(threadCtx.latestReply.id) ?? [],
         },
         mediaCtx,
-        undefined,
+        contextCollectionsMap.get(threadCtx.latestReply.id),
         undefined,
         true, // latestReply is the last post in the thread
       );
@@ -149,7 +156,7 @@ export async function assembleTimeline(
                 contextMediaMap.get(threadCtx.parentReply.id) ?? [],
             },
             mediaCtx,
-            undefined,
+            contextCollectionsMap.get(threadCtx.parentReply.id),
             undefined,
             false, // parentReply is not the last post
           )

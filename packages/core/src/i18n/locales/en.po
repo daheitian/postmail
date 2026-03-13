@@ -1382,22 +1382,19 @@ msgstr "Tap to retry"
 msgid "Target Slug"
 msgstr "Target Slug"
 
-#. @context: Archive media filter - text files
+#. @context: Archive media filter - posts without any media attachments
+#. @context: Archive media filter - posts without any media attachments
+#: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Text"
 msgstr "Text"
 
+#. @context: Archive media filter - text file attachments
 #. @context: Attached text panel title
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
 msgid "Text attachment"
 msgstr "Text attachment"
-
-#. @context: Archive media filter - posts without any media attachments
-#. @context: Archive media filter - posts without any media attachments
-#: src/ui/pages/ArchivePage.tsx
-#: src/ui/pages/ArchivePage.tsx
-msgid "Text only"
-msgstr "Text only"
 
 #. @context: Error toast when selected font theme is not valid
 #: src/routes/dash/settings.tsx

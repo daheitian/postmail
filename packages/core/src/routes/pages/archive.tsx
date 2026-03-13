@@ -192,6 +192,7 @@ archiveRoutes.get("/", async (c) => {
     year: validYear,
     collectionSlug,
     collectionTitle: collection?.title,
+    collectionIcon: collection?.icon,
     format,
     mediaKinds: mediaKinds && mediaKinds.length > 0 ? mediaKinds : undefined,
     hasMedia,
@@ -203,6 +204,7 @@ archiveRoutes.get("/", async (c) => {
   const availableCollectionsList = allCollections.map((col) => ({
     slug: col.slug,
     title: col.title,
+    icon: col.icon,
   }));
 
   return renderPublicPage(c, {
