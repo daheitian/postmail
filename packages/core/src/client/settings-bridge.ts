@@ -14,13 +14,6 @@ import type { JantSettingsGeneral } from "./components/jant-settings-general.js"
 import type { JantSettingsAvatar } from "./components/jant-settings-avatar.js";
 import { showToast } from "./toast.js";
 
-function updateSidebarSiteName(siteName: string) {
-  const el = document.getElementById("site-name");
-  if (el) el.textContent = siteName;
-  const titleEl = document.querySelector("title");
-  if (titleEl) titleEl.textContent = `Settings - ${siteName}`;
-}
-
 // ── Settings save handler ───────────────────────────────────────────
 
 document.addEventListener("jant:settings-save", async (e: Event) => {
@@ -57,11 +50,6 @@ document.addEventListener("jant:settings-save", async (e: Event) => {
 
     if (json.toast) {
       showToast(json.toast);
-    }
-
-    // Update sidebar site name when general settings are saved
-    if (section === "general" && json.siteName) {
-      updateSidebarSiteName(json.siteName);
     }
 
     // Notify the component that save succeeded

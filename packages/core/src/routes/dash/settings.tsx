@@ -119,23 +119,13 @@ settingsRoutes.post("/general", async (c) => {
   });
 
   // ── JSON response mode (used by Lit settings bridge) ──────────────
+  // Always redirect — site name appears in the header/title and a full
+  // reload is the simplest way to keep everything in sync.
   const wantsJson = c.req.header("accept")?.includes("application/json");
   if (wantsJson) {
-    if (languageChanged) {
-      return c.json({
-        status: "redirect" as const,
-        url: "/settings/general?saved",
-      });
-    }
     return c.json({
-      status: "ok" as const,
-      toast: i18n._(
-        msg({
-          message: "Settings updated.",
-          comment: "@context: Toast after saving general settings",
-        }),
-      ),
-      siteName: displayName,
+      status: "redirect" as const,
+      url: "/settings/general?saved",
     });
   }
 

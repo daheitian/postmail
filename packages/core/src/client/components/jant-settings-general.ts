@@ -211,6 +211,24 @@ export class JantSettingsGeneral extends LitElement {
     );
   }
 
+  /** Submit on Enter from non-textarea fields */
+  private _onKeydown(
+    e: globalThis.KeyboardEvent,
+    save: () => void,
+    dirty: boolean,
+    loading: boolean,
+  ) {
+    if (
+      e.key === "Enter" &&
+      !loading &&
+      dirty &&
+      !(e.target instanceof HTMLTextAreaElement)
+    ) {
+      e.preventDefault();
+      save();
+    }
+  }
+
   // ── Render helpers ────────────────────────────────────────────────
 
   private _renderActions(
@@ -258,7 +276,15 @@ export class JantSettingsGeneral extends LitElement {
 
   private _renderGeneralForm() {
     return html`
-      <div>
+      <div
+        @keydown=${(e: globalThis.KeyboardEvent) =>
+          this._onKeydown(
+            e,
+            () => this._saveGeneral(),
+            this._generalDirty,
+            this._generalLoading,
+          )}
+      >
         <h2 class="text-lg font-semibold mb-4">${this.labels.general}</h2>
         <div class="flex flex-col gap-4">
           <div class="field">
@@ -366,7 +392,15 @@ export class JantSettingsGeneral extends LitElement {
 
   private _renderSeoForm() {
     return html`
-      <div>
+      <div
+        @keydown=${(e: globalThis.KeyboardEvent) =>
+          this._onKeydown(
+            e,
+            () => this._saveSeo(),
+            this._seoDirty,
+            this._seoLoading,
+          )}
+      >
         <h2 class="text-lg font-semibold mb-4">${this.labels.seo}</h2>
         <div>
           <label class="flex items-center gap-2 cursor-pointer">

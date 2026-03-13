@@ -1269,8 +1269,6 @@ msgid "Sessions, password, export"
 msgstr "Sessions, password, export"
 
 #. @context: Toast after saving general settings
-#. @context: Toast after saving general settings
-#: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
 msgid "Settings updated."
 msgstr "Settings updated."

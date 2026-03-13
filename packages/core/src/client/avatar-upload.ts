@@ -130,7 +130,7 @@ async function handleAvatarUpload(
     }
 
     // Redirect on success
-    window.location.href = "/settings?saved";
+    window.location.href = "/settings/avatar?saved";
   } catch {
     // Restore button text on error
     if (label) label.textContent = originalText;
