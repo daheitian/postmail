@@ -311,6 +311,12 @@
 
   .feed-card-link {
     --site-feed-card-tint: transparent;
+    --feed-link-domain-size: 0.625rem;
+    --feed-link-title-size: 0.93rem;
+    --feed-link-title-leading: 1.22;
+    --feed-link-summary-size: 0.875rem;
+    --feed-link-summary-leading: 1.55;
+    --feed-link-summary-gap: 0.48rem;
     background: color-mix(
       in srgb,
       var(--site-page-bg) 88%,
@@ -381,6 +387,75 @@
 
   .feed-link-summary {
     margin-top: 0.75rem;
+  }
+
+  .feed-card-link .feed-link-domain {
+    margin-bottom: 0.55rem;
+    font-size: var(--feed-link-domain-size);
+  }
+
+  .feed-card-link .feed-link-title {
+    margin-bottom: 0;
+    font-size: var(--feed-link-title-size);
+    line-height: var(--feed-link-title-leading);
+  }
+
+  .feed-card-link .feed-link-summary.prose {
+    max-width: 35rem;
+    margin-top: 0.55rem;
+    font-size: var(--feed-link-summary-size);
+    line-height: var(--feed-link-summary-leading);
+  }
+
+  .feed-card-link .feed-link-summary.prose > :first-child {
+    margin-top: 0;
+  }
+
+  .feed-card-link .feed-link-summary.prose > :last-child {
+    margin-bottom: 0;
+  }
+
+  article.feed-card-link .feed-link-summary.prose p,
+  article.feed-card-link .feed-link-summary.prose ul,
+  article.feed-card-link .feed-link-summary.prose ol,
+  article.feed-card-link .feed-link-summary.prose blockquote,
+  article.feed-card-link .feed-link-summary.prose pre {
+    font-size: var(--feed-link-summary-size);
+    line-height: var(--feed-link-summary-leading);
+  }
+
+  .feed-card-link .feed-link-summary.prose p {
+    margin: 0;
+  }
+
+  .feed-card-link .feed-link-summary.prose p + p,
+  .feed-card-link .feed-link-summary.prose ul,
+  .feed-card-link .feed-link-summary.prose ol,
+  .feed-card-link .feed-link-summary.prose blockquote,
+  .feed-card-link .feed-link-summary.prose pre {
+    margin-top: var(--feed-link-summary-gap);
+  }
+
+  .feed-card-link .feed-link-summary.prose ul,
+  .feed-card-link .feed-link-summary.prose ol {
+    padding-left: 1.15rem;
+  }
+
+  .feed-card-link .feed-link-summary.prose li {
+    margin: 0.18rem 0;
+  }
+
+  .feed-card-link .feed-link-summary.prose blockquote {
+    padding-left: 0.85rem;
+    border-left: 2px solid
+      color-mix(in srgb, var(--site-divider) 75%, transparent);
+    color: var(--site-text-secondary);
+  }
+
+  .feed-card-link .feed-link-summary.prose :is(h1, h2, h3, h4) {
+    margin: 0.7rem 0 0.2rem;
+    font-size: 0.92em;
+    line-height: 1.35;
   }
 
   /* Thread group: timeline layout — vertical line with dot markers */
@@ -647,8 +722,8 @@
     padding-left: 0;
     font-family: var(--font-serif);
     color: var(--site-text-primary);
-    font-size: clamp(1.22rem, 1.16rem + 0.32vw, 1.4rem);
-    line-height: 1.4;
+    font-size: clamp(1.3rem, 1.2rem + 0.42vw, 1.52rem);
+    line-height: 1.36;
     letter-spacing: -0.02em;
     text-wrap: pretty;
   }
