@@ -20,11 +20,12 @@ import { sanitizeUrl } from "../../lib/url.js";
 export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
   const isCompact = mode === "compact";
   const isDetail = mode === "detail";
+  const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-quote-post"}`;
   const safeUrl = post.url ? sanitizeUrl(post.url) : "";
 
   return (
     <article
-      class={`h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : ""}`}
+      class={articleClass}
       {...(isDetail ? { "data-page": "post" } : {})}
       data-post
       data-format="quote"
@@ -37,21 +38,20 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
     >
       {!isCompact && <PostStatusBadges />}
       {post.quoteText && (
-        <blockquote class="feed-quote">
+        <blockquote class={`feed-quote${isCompact ? "" : " feed-quote-card"}`}>
           <div
-            class={`e-content ${isCompact ? "text-sm" : "text-base"} leading-relaxed`}
+            class={`e-content feed-quote-content${isCompact ? " text-sm" : ""}`}
           >
             {post.quoteText}
           </div>
         </blockquote>
       )}
       {!isCompact && (post.title || safeUrl) && (
-        <div class="mt-2 text-sm text-muted-foreground">
-          &mdash;{" "}
+        <div class="feed-quote-attribution">
           {safeUrl ? (
             <a
               href={safeUrl}
-              class="hover:underline"
+              class="feed-quote-source"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -64,7 +64,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
       )}
       {!isCompact && post.bodyHtml && (
         <div
-          class="mt-3 prose text-muted-foreground"
+          class="feed-quote-commentary prose text-muted-foreground"
           data-post-body
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />

@@ -14,8 +14,10 @@ import { sanitizeUrl } from "../../lib/url.js";
 export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
   const isCompact = mode === "compact";
   const isDetail = mode === "detail";
+  const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-card feed-card-link"}`;
 
   const safeUrl = post.url ? sanitizeUrl(post.url) : "";
+  const displayUrl = safeUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   // Extract domain from URL for display
   let domain: string | undefined;
@@ -29,7 +31,7 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
 
   return (
     <article
-      class={`h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : ""}`}
+      class={articleClass}
       {...(isDetail ? { "data-page": "post" } : {})}
       data-post
       data-format="link"
@@ -41,27 +43,47 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
       {...(!isDetail && post.threadRootId ? { "data-post-reply": "" } : {})}
     >
       {!isCompact && <PostStatusBadges />}
-      {domain && (
-        <div class="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-          <svg
-            class="size-3"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
+      {domain &&
+        (safeUrl ? (
+          <a
+            href={safeUrl}
+            class="feed-link-kicker"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-          </svg>
-          <span>{domain}</span>
-        </div>
-      )}
+            <svg
+              class="feed-link-kicker-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+            >
+              <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+            <span>{domain}</span>
+          </a>
+        ) : (
+          <div class="feed-link-kicker">
+            <svg
+              class="feed-link-kicker-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+            >
+              <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+            <span>{domain}</span>
+          </div>
+        ))}
       {post.title &&
         (isDetail ? (
-          <h1 class="p-name text-2xl font-semibold mb-4">
+          <h1 class="p-name feed-link-title text-2xl font-semibold mb-4">
             <a
               href={safeUrl || post.permalink}
-              class="u-url hover:underline"
+              class="u-url feed-link-title-link"
               target={safeUrl ? "_blank" : undefined}
               rel={safeUrl ? "noopener noreferrer" : undefined}
             >
@@ -70,11 +92,11 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
           </h1>
         ) : (
           <h2
-            class={`p-name font-semibold ${isCompact ? "text-sm" : "text-base"} mb-1`}
+            class={`p-name feed-link-title font-semibold ${isCompact ? "text-sm" : "text-base"} mb-1`}
           >
             <a
               href={safeUrl || post.permalink}
-              class="u-url hover:underline"
+              class="u-url feed-link-title-link"
               target={safeUrl ? "_blank" : undefined}
               rel={safeUrl ? "noopener noreferrer" : undefined}
             >
@@ -84,10 +106,23 @@ export const LinkCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
         ))}
       {!isCompact && post.bodyHtml && (
         <div
-          class="e-content prose text-muted-foreground"
+          class="e-content prose text-muted-foreground feed-link-summary"
           data-post-body
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />
+      )}
+      {!isCompact && safeUrl && (
+        <a
+          href={safeUrl}
+          class="feed-link-destination"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="feed-link-destination-url">{displayUrl}</span>
+          <span class="feed-link-destination-arrow" aria-hidden="true">
+            ↗
+          </span>
+        </a>
       )}
       {!isCompact && <StarRating rating={post.rating} />}
       <PostFooter post={post} detail={isDetail} />

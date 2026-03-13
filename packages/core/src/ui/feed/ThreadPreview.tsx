@@ -25,24 +25,21 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
   });
 
   return (
-    <div class="thread-group">
+    <div class="thread-group thread-group-preview">
       {/* Faded ancestor context */}
       <div
-        class={shouldShowToggle ? "thread-context-faded" : undefined}
+        class={`thread-context-shell${shouldShowToggle ? " thread-context-faded" : ""}`}
         data-thread-context
       >
         {/* Root post (compact) */}
-        <div class="thread-item">
+        <div class="thread-item thread-item-context">
           <TimelineItemFromPost post={rootPost} mode="compact" />
         </div>
 
         {/* Hidden posts gap */}
         {hiddenCount > 0 && (
-          <div class="thread-item">
-            <a
-              href={latestReply.permalink}
-              class="text-sm text-muted-foreground hover:text-foreground hover:underline"
-            >
+          <div class="thread-item thread-item-gap">
+            <a href={latestReply.permalink} class="thread-gap-link">
               {t({
                 message: `${hiddenCount} more ${hiddenCount === 1 ? "post" : "posts"}`,
                 comment:
@@ -54,7 +51,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
 
         {/* Parent of latest reply (compact) */}
         {parentReply && (
-          <div class="thread-item">
+          <div class="thread-item thread-item-context">
             <TimelineItemFromPost post={parentReply} mode="compact" />
           </div>
         )}
@@ -78,7 +75,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
       )}
 
       {/* Latest reply (full card, hero) */}
-      <div class="thread-item">
+      <div class="thread-item thread-item-hero">
         <TimelineItem item={{ post: latestReply }} />
       </div>
     </div>

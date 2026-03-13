@@ -77,6 +77,47 @@
   --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
   --site-media-outline: var(--border);
   --site-divider: var(--border);
+  --site-feed-card-bg: color-mix(
+    in srgb,
+    var(--site-elevated-bg) 88%,
+    var(--site-nav-hover-bg)
+  );
+  --site-feed-card-border: color-mix(
+    in srgb,
+    var(--site-divider) 78%,
+    transparent
+  );
+  --site-feed-card-shadow: color-mix(
+    in srgb,
+    var(--site-text-primary) 12%,
+    transparent
+  );
+  --site-feed-link-tint: color-mix(in srgb, var(--site-accent) 7%, transparent);
+  --site-feed-quote-tint: color-mix(
+    in srgb,
+    var(--site-accent) 10%,
+    transparent
+  );
+  --site-thread-context-bg: color-mix(
+    in srgb,
+    var(--site-nav-hover-bg) 58%,
+    transparent
+  );
+  --site-thread-context-border: color-mix(
+    in srgb,
+    var(--site-divider) 74%,
+    transparent
+  );
+  --site-thread-gap-bg: color-mix(
+    in srgb,
+    var(--site-nav-hover-bg) 42%,
+    transparent
+  );
+  --site-thread-dot-ring: color-mix(
+    in srgb,
+    var(--site-accent) 16%,
+    transparent
+  );
 
   /* Search highlight */
   --search-mark-bg: oklch(0.92 0.14 90 / 0.55);
