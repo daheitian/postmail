@@ -24,7 +24,8 @@ function queryRemote(sql) {
     try {
       const errJson = JSON.parse(output.trim());
       if (errJson.error?.text) {
-        console.error(`Wrangler error: ${errJson.error.text}`);
+        const detail = errJson.error.notes?.[0]?.text;
+        console.error(`Wrangler error: ${errJson.error.text}${detail ? `\n  ${detail}` : ""}`);
         process.exit(1);
       }
     } catch {
@@ -35,7 +36,8 @@ function queryRemote(sql) {
   }
   const parsed = JSON.parse(stdout);
   if (parsed.error?.text) {
-    console.error(`Wrangler error: ${parsed.error.text}`);
+    const detail = parsed.error.notes?.[0]?.text;
+    console.error(`Wrangler error: ${parsed.error.text}${detail ? `\n  ${detail}` : ""}`);
     process.exit(1);
   }
   return parsed[0]?.results || [];
