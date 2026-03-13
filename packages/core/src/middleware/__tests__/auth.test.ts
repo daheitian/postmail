@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
-import { requireAuth, requireAuthApi } from "../auth.js";
+import { requireAuth, requireAuthApi, isLocalHostname } from "../auth.js";
 import { errorHandler } from "../error-handler.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -31,6 +31,21 @@ function createMockApiTokenService(validToken?: string) {
     delete: vi.fn(),
   };
 }
+
+describe("isLocalHostname", () => {
+  it.each([
+    ["localhost", true],
+    ["127.0.0.1", true],
+    ["::1", true],
+    ["jant.localtest.me", true],
+    ["sub.localtest.me", true],
+    ["myblog.com", false],
+    ["demo.jant.me", false],
+    ["localtest.me.evil.com", false],
+  ])("isLocalHostname(%s) → %s", (hostname, expected) => {
+    expect(isLocalHostname(hostname)).toBe(expected);
+  });
+});
 
 describe("requireAuth", () => {
   it("allows authenticated requests", async () => {
@@ -204,6 +219,79 @@ describe("requireAuthApi", () => {
     expect(res.status).toBe(200);
 
     // Should not check the token since session auth succeeded
+    expect(mockApiTokens.verify).not.toHaveBeenCalled();
+  });
+
+  it("allows DEV_API_TOKEN on localhost", async () => {
+    const devToken = "jnt_dev_test123";
+    const mockApiTokens = createMockApiTokenService();
+
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.env = { ...c.env, DEV_API_TOKEN: devToken } as Bindings;
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: mockApiTokens,
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
+
+    const res = await app.request("http://localhost:9020/api/data", {
+      headers: { Authorization: `Bearer ${devToken}` },
+    });
+    expect(res.status).toBe(200);
+
+    // Should NOT hit DB verification
+    expect(mockApiTokens.verify).not.toHaveBeenCalled();
+  });
+
+  it("rejects DEV_API_TOKEN on non-local hostname", async () => {
+    const devToken = "jnt_dev_test123";
+    const mockApiTokens = createMockApiTokenService();
+
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.env = { ...c.env, DEV_API_TOKEN: devToken } as Bindings;
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: mockApiTokens,
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
+
+    const res = await app.request("https://myblog.com/api/data", {
+      headers: { Authorization: `Bearer ${devToken}` },
+    });
+    expect(res.status).toBe(401);
+
+    // Falls through to normal DB verification (which also fails)
+    expect(mockApiTokens.verify).toHaveBeenCalledWith(devToken);
+  });
+
+  it("allows DEV_API_TOKEN on *.localtest.me", async () => {
+    const devToken = "jnt_dev_test123";
+    const mockApiTokens = createMockApiTokenService();
+
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.env = { ...c.env, DEV_API_TOKEN: devToken } as Bindings;
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: mockApiTokens,
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
+
+    const res = await app.request("https://jant.localtest.me/api/data", {
+      headers: { Authorization: `Bearer ${devToken}` },
+    });
+    expect(res.status).toBe(200);
     expect(mockApiTokens.verify).not.toHaveBeenCalled();
   });
 });

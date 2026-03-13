@@ -13,6 +13,27 @@ import { UnauthorizedError } from "../lib/errors.js";
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 /**
+ * Checks whether a hostname is local (dev environment).
+ *
+ * @param hostname - The hostname to check
+ * @returns `true` for localhost, 127.0.0.1, ::1, and *.localtest.me
+ *
+ * @example
+ * ```ts
+ * isLocalHostname("localhost") // true
+ * isLocalHostname("myblog.com") // false
+ * ```
+ */
+export function isLocalHostname(hostname: string): boolean {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname.endsWith(".localtest.me")
+  );
+}
+
+/**
  * Middleware that requires authentication.
  * Redirects to signin page if not authenticated.
  * Session-only — Bearer tokens are not accepted for dashboard pages.
@@ -60,6 +81,17 @@ export function requireAuthApi(): MiddlewareHandler<Env> {
     const authHeader = c.req.header("Authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const rawToken = authHeader.slice(7);
+
+      // Dev shortcut: bypass DB lookup when DEV_API_TOKEN matches on a local hostname
+      const devToken = c.env?.DEV_API_TOKEN;
+      if (devToken && rawToken === devToken) {
+        const hostname = new URL(c.req.url).hostname;
+        if (isLocalHostname(hostname)) {
+          await next();
+          return;
+        }
+      }
+
       const tokenId = await c.var.services.apiTokens.verify(rawToken);
       if (tokenId) {
         // Fire-and-forget last-used update (non-blocking)

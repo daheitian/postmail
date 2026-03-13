@@ -47,7 +47,7 @@ import { rssRoutes } from "./routes/feed/rss.js";
 import { sitemapRoutes } from "./routes/feed/sitemap.js";
 
 // Middleware
-import { requireAuth } from "./middleware/auth.js";
+import { requireAuth, isLocalHostname } from "./middleware/auth.js";
 import { requireOnboarding } from "./middleware/onboarding.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { withConfig } from "./middleware/config.js";
@@ -79,6 +79,31 @@ export function createApp(): App {
 
   // Lightweight init — no DB queries
   app.use("*", async (c, next) => {
+    // Fail fast: DEV_API_TOKEN must never be reachable from a non-local hostname
+    if (c.env.DEV_API_TOKEN) {
+      const hostname = new URL(c.req.url).hostname;
+      if (!isLocalHostname(hostname)) {
+        return c.html(
+          `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration Error</title>
+<style>body{font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#fafafa;color:#111}div{max-width:480px;text-align:center}h1{font-size:1.25rem;font-weight:600}p{color:#666;line-height:1.6}code{background:#eee;padding:2px 6px;border-radius:4px;font-size:.9em}</style>
+</head>
+<body>
+<div>
+<h1>DEV_API_TOKEN must not be set in production</h1>
+<p>Remove <code>DEV_API_TOKEN</code> from your environment variables. This token is only for local development.</p>
+</div>
+</body>
+</html>`,
+          500,
+        );
+      }
+    }
+
     if (!c.env.AUTH_SECRET) {
       return c.html(
         `<!DOCTYPE html>
