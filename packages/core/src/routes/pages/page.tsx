@@ -98,6 +98,17 @@ pageRoutes.get("/*", async (c) => {
       if (!navData.isAuthenticated) return c.notFound();
     }
 
+    // If accessed via slug but an alias exists, redirect to the alias
+    if (resolved.kind === "slug") {
+      const alias = await c.var.services.customUrls.getByTarget(
+        "post",
+        post.id,
+      );
+      if (alias) {
+        return c.redirect(`/${alias.path}`, 301);
+      }
+    }
+
     return renderPost(c, post);
   }
 
