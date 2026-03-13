@@ -759,16 +759,65 @@
   }
 
   .feed-quote-commentary {
-    margin-top: 1.15rem;
+    position: relative;
+    max-width: 34rem;
+    margin-top: 1.1rem;
     padding-top: 0.95rem;
-    border-top: 1px solid
-      color-mix(in srgb, var(--site-divider) 72%, transparent);
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 84%,
+      var(--site-text-primary)
+    );
+    text-wrap: pretty;
+  }
+
+  .feed-quote-commentary::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in srgb, var(--site-divider) 48%, transparent) 16%,
+      color-mix(in srgb, var(--site-divider) 78%, transparent) 50%,
+      color-mix(in srgb, var(--site-divider) 48%, transparent) 84%,
+      transparent 100%
+    );
   }
 
   .feed-quote-post .feed-quote-commentary {
-    max-width: 34rem;
-    font-size: 0.96rem;
-    line-height: 1.65;
+    font-size: 0.94rem;
+    line-height: 1.68;
+  }
+
+  .feed-quote-commentary.prose > :first-child {
+    margin-top: 0;
+  }
+
+  .feed-quote-commentary.prose > :last-child {
+    margin-bottom: 0;
+  }
+
+  .feed-quote-commentary.prose p {
+    margin: 0;
+  }
+
+  .feed-quote-commentary.prose p + p,
+  .feed-quote-commentary.prose ul,
+  .feed-quote-commentary.prose ol,
+  .feed-quote-commentary.prose blockquote,
+  .feed-quote-commentary.prose pre {
+    margin-top: 0.55rem;
+  }
+
+  .feed-quote-commentary.prose :is(h1, h2, h3, h4) {
+    margin-top: 0.85rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.92em;
+    line-height: 1.4;
   }
 
   .feed-quote-post [data-post-meta] {

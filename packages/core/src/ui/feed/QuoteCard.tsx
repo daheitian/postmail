@@ -26,6 +26,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({
   const isDetail = mode === "detail";
   const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-quote-post"}`;
   const safeUrl = post.url ? sanitizeUrl(post.url) : "";
+  const commentaryHtml = post.bodyHtml ?? null;
 
   return (
     <article
@@ -66,11 +67,11 @@ export const QuoteCard: FC<TimelineCardProps> = ({
           )}
         </div>
       )}
-      {!isCompact && post.bodyHtml && (
+      {!isCompact && commentaryHtml && (
         <div
           class="feed-quote-commentary prose text-muted-foreground"
           data-post-body
-          dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
+          dangerouslySetInnerHTML={{ __html: commentaryHtml }}
         />
       )}
       {!isCompact && !display?.hideRating && (
