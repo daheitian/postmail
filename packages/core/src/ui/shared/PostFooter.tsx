@@ -7,13 +7,18 @@
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import type { PostView, CollectionTagView } from "../../types.js";
+import type {
+  PostView,
+  CollectionTagView,
+  PostFooterDisplayOptions,
+} from "../../types.js";
 import { sanitizeUrl } from "../../lib/url.js";
 
 interface PostFooterProps {
   post: PostView;
   /** Detail page variant: border-top, shows permalink */
   detail?: boolean;
+  display?: PostFooterDisplayOptions;
 }
 
 const CollectionTags: FC<{ collections: CollectionTagView[] }> = ({
@@ -71,7 +76,7 @@ const CollectionTags: FC<{ collections: CollectionTagView[] }> = ({
   );
 };
 
-export const PostFooter: FC<PostFooterProps> = ({ post, detail }) => {
+export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
   const { t } = useLingui();
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
@@ -149,49 +154,51 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail }) => {
         )}
         <CollectionTags collections={post.collections} />
       </div>
-      <div class="post-menu-actions">
-        {post.isLastInThread && (
+      {!display?.hideActions && (
+        <div class="post-menu-actions">
+          {post.isLastInThread && (
+            <button
+              type="button"
+              class="reply-trigger"
+              aria-label="Reply"
+              data-reply-trigger
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="9 17 4 12 9 7" />
+                <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+              </svg>
+            </button>
+          )}
           <button
             type="button"
-            class="reply-trigger"
-            aria-label="Reply"
-            data-reply-trigger
+            class="post-menu-trigger"
+            aria-label="More actions"
+            data-post-menu-trigger
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              fill="currentColor"
             >
-              <polyline points="9 17 4 12 9 7" />
-              <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+              <circle cx="5" cy="12" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="19" cy="12" r="2" />
             </svg>
           </button>
-        )}
-        <button
-          type="button"
-          class="post-menu-trigger"
-          aria-label="More actions"
-          data-post-menu-trigger
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <circle cx="5" cy="12" r="2" />
-            <circle cx="12" cy="12" r="2" />
-            <circle cx="19" cy="12" r="2" />
-          </svg>
-        </button>
-      </div>
+        </div>
+      )}
     </footer>
   );
 };

@@ -12,6 +12,14 @@ import { TimelineItem } from "./TimelineItem.js";
 import { TimelineItemFromPost } from "./TimelineItem.js";
 import { getThreadPreviewState } from "./thread-preview-state.js";
 
+const THREAD_CONTEXT_DISPLAY = {
+  hideStatusBadges: true,
+  hideRating: true,
+  footer: {
+    hideActions: true,
+  },
+} as const;
+
 export const ThreadPreview: FC<ThreadPreviewProps> = ({
   rootPost,
   latestReply,
@@ -31,9 +39,13 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
         class={`thread-context-shell${shouldShowToggle ? " thread-context-faded" : ""}`}
         data-thread-context
       >
-        {/* Root post (compact) */}
+        {/* Root post */}
         <div class="thread-item thread-item-context">
-          <TimelineItemFromPost post={rootPost} mode="compact" />
+          <TimelineItemFromPost
+            post={rootPost}
+            mode="feed"
+            display={THREAD_CONTEXT_DISPLAY}
+          />
         </div>
 
         {/* Hidden posts gap */}
@@ -49,10 +61,14 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
           </div>
         )}
 
-        {/* Parent of latest reply (compact) */}
+        {/* Parent of latest reply */}
         {parentReply && (
           <div class="thread-item thread-item-context">
-            <TimelineItemFromPost post={parentReply} mode="compact" />
+            <TimelineItemFromPost
+              post={parentReply}
+              mode="feed"
+              display={THREAD_CONTEXT_DISPLAY}
+            />
           </div>
         )}
 

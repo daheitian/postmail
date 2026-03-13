@@ -12,7 +12,11 @@ import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 
-export const NoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
+export const NoteCard: FC<TimelineCardProps> = ({
+  post,
+  mode = "feed",
+  display,
+}) => {
   const isCompact = mode === "compact";
   const isDetail = mode === "detail";
   const isArticle = !!post.title;
@@ -31,7 +35,7 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
       data-post-visibility={post.visibility}
       {...(!isDetail && post.threadRootId ? { "data-post-reply": "" } : {})}
     >
-      {!isCompact && <PostStatusBadges />}
+      {!isCompact && !display?.hideStatusBadges && <PostStatusBadges />}
       {isArticle &&
         (isDetail ? (
           <h1 class="p-name text-2xl font-semibold mb-4">{post.title}</h1>
@@ -64,8 +68,10 @@ export const NoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
           Continue →
         </a>
       )}
-      {!isCompact && <StarRating rating={post.rating} />}
-      <PostFooter post={post} detail={isDetail} />
+      {!isCompact && !display?.hideRating && (
+        <StarRating rating={post.rating} />
+      )}
+      <PostFooter post={post} detail={isDetail} display={display?.footer} />
     </article>
   );
 };

@@ -538,40 +538,6 @@
     padding-bottom: 0.35rem;
   }
 
-  .thread-group-preview .thread-item-context > article[data-post] {
-    padding: 0.9rem 1rem 0.8rem;
-    border: 1px solid var(--site-thread-context-border);
-    border-radius: 16px;
-    background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--site-thread-context-bg) 92%, transparent),
-        transparent 100%
-      ),
-      var(--site-feed-card-bg);
-  }
-
-  .thread-group-preview
-    .thread-item-context
-    > article[data-post]
-    .post-menu-footer {
-    margin-top: 0.6rem;
-  }
-
-  .thread-group-preview
-    .thread-item-context
-    > article[data-post]
-    .post-menu-actions {
-    display: none;
-  }
-
-  .thread-group-preview
-    .thread-item-context
-    > article[data-post]
-    [data-post-body] {
-    color: var(--site-text-secondary);
-  }
-
   .thread-item-gap {
     padding-top: 0.15rem;
     padding-bottom: 0.35rem;

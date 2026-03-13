@@ -111,16 +111,27 @@ export interface SitemapData {
 
 /**
  * Display mode for timeline cards.
- * - `compact` — condensed view used in thread previews
+ * - `compact` — condensed view for constrained contexts
  * - `feed`    — standard timeline card (default)
  * - `detail`  — full single-post page view
  */
 export type CardMode = "compact" | "feed" | "detail";
 
+export interface PostFooterDisplayOptions {
+  hideActions?: boolean;
+}
+
+export interface TimelineCardDisplayOptions {
+  hideStatusBadges?: boolean;
+  hideRating?: boolean;
+  footer?: PostFooterDisplayOptions;
+}
+
 /** Props for per-type timeline cards */
 export interface TimelineCardProps {
   post: PostView;
   mode?: CardMode;
+  display?: TimelineCardDisplayOptions;
 }
 
 /** Props for thread inline preview */

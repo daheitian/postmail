@@ -17,7 +17,11 @@ import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 import { sanitizeUrl } from "../../lib/url.js";
 
-export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
+export const QuoteCard: FC<TimelineCardProps> = ({
+  post,
+  mode = "feed",
+  display,
+}) => {
   const isCompact = mode === "compact";
   const isDetail = mode === "detail";
   const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-quote-post"}`;
@@ -36,7 +40,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
       data-post-visibility={post.visibility}
       {...(!isDetail && post.threadRootId ? { "data-post-reply": "" } : {})}
     >
-      {!isCompact && <PostStatusBadges />}
+      {!isCompact && !display?.hideStatusBadges && <PostStatusBadges />}
       {post.quoteText && (
         <blockquote class={`feed-quote${isCompact ? "" : " feed-quote-card"}`}>
           <div
@@ -69,8 +73,10 @@ export const QuoteCard: FC<TimelineCardProps> = ({ post, mode = "feed" }) => {
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />
       )}
-      {!isCompact && <StarRating rating={post.rating} />}
-      <PostFooter post={post} detail={isDetail} />
+      {!isCompact && !display?.hideRating && (
+        <StarRating rating={post.rating} />
+      )}
+      <PostFooter post={post} detail={isDetail} display={display?.footer} />
     </article>
   );
 };
