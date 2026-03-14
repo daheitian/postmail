@@ -1089,6 +1089,13 @@ msgstr "Permanently delete all data and reset the blog"
 msgid "Pinned"
 msgstr "Pinned"
 
+#. @context: Archive month header count unit for a single post
+#. @context: Archive page summary unit for a single matching post
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "post"
+msgstr "post"
+
 #. @context: Compose button - publish post
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
@@ -1110,6 +1117,13 @@ msgstr "Post as Private"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post Unlisted"
 msgstr "Post Unlisted"
+
+#. @context: Archive month header count unit for multiple posts
+#. @context: Archive page summary unit for multiple matching posts
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "posts"
+msgstr "posts"
 
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page

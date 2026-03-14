@@ -18,6 +18,7 @@ import type { PostView } from "../../types/views.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { getIconSvg, renderCollectionIcon } from "../../lib/icons.js";
 import { toMediaKind } from "../../lib/upload.js";
+import { stripHtml } from "../../lib/excerpt.js";
 import { PagePagination } from "../shared/Pagination.js";
 import { TimelineItemFromPost } from "../feed/TimelineItem.js";
 
@@ -813,33 +814,128 @@ function getTileBadge(
   return undefined;
 }
 
-/** Strip HTML tags to get plain text for tile previews. */
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
+function decodeHtmlEntities(text: string): string {
+  const namedEntities: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+  };
+
+  return text.replace(
+    /&(#x?[0-9a-f]+|[a-z]+);/gi,
+    (match: string, entity: string) => {
+      const normalized = entity.toLowerCase();
+
+      if (normalized.startsWith("#x")) {
+        const codePoint = Number.parseInt(normalized.slice(2), 16);
+        return Number.isFinite(codePoint)
+          ? String.fromCodePoint(codePoint)
+          : match;
+      }
+
+      if (normalized.startsWith("#")) {
+        const codePoint = Number.parseInt(normalized.slice(1), 10);
+        return Number.isFinite(codePoint)
+          ? String.fromCodePoint(codePoint)
+          : match;
+      }
+
+      return namedEntities[normalized] ?? match;
+    },
+  );
+}
+
+function getTilePreviewText(html: string): string {
+  return decodeHtmlEntities(stripHtml(html)).replace(/\s+/g, " ").trim();
 }
 
 function getTileText(post: PostView): { title?: string; summary: string } {
+  const bodySummary = post.bodyHtml
+    ? getTilePreviewText(post.bodyHtml).slice(0, 200)
+    : "";
+  const fallbackSummary = bodySummary || post.excerpt?.trim() || "";
+
   if (post.title) {
-    const summary = post.bodyHtml
-      ? stripHtml(post.bodyHtml).slice(0, 200)
-      : (post.url ?? "");
+    const summary = fallbackSummary || post.url || "";
     return { title: post.title, summary };
   }
   if (post.format === "quote" && post.quoteText)
     return { summary: post.quoteText };
-  if (post.bodyHtml) return { summary: stripHtml(post.bodyHtml).slice(0, 200) };
+  if (fallbackSummary) return { summary: fallbackSummary };
   if (post.url) return { summary: post.url };
   return { summary: getFormatLabel(post.format) };
 }
+
+function getArchiveDateParts(isoDate: string): { shortDate: string } {
+  const date = new Date(isoDate);
+
+  return {
+    shortDate: date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }),
+  };
+}
+
+const ArchiveMonthHeader: FC<{
+  label: string;
+  count?: number;
+  class: string;
+}> = ({ label, count, class: cls }) => {
+  const { t } = useLingui();
+  const countUnit =
+    count === undefined
+      ? null
+      : count === 1
+        ? t({
+            message: "post",
+            comment:
+              "@context: Archive month header count unit for a single post",
+          })
+        : t({
+            message: "posts",
+            comment:
+              "@context: Archive month header count unit for multiple posts",
+          });
+
+  return (
+    <div class={cls}>
+      <span class="archive-month-header-copy">
+        <span class="archive-month-header-label">{label}</span>
+        {count !== undefined && countUnit && (
+          <span class="archive-month-header-count">
+            <span class="archive-month-header-count-number">{count}</span>{" "}
+            {countUnit}
+          </span>
+        )}
+      </span>
+      <span class="archive-month-header-rule" aria-hidden="true" />
+    </div>
+  );
+};
 
 const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
   const variant = getTileVariant(post);
   const bgImage = getTileBgImage(post);
   const badge = getTileBadge(post);
   const { title, summary } = getTileText(post);
+  const { shortDate } = getArchiveDateParts(post.publishedAt);
   const hasBg = variant === "image" || variant === "mixed";
+  const showBgTitle = hasBg && !!title;
+  const showTitledSummary =
+    !hasBg &&
+    !!title &&
+    !!summary &&
+    (post.format === "note" || post.format === "link");
+  const showSummary =
+    !!summary && ((hasBg && !title) || (!title && !hasBg) || showTitledSummary);
   const cornerBadge = badge?.position === "corner" ? badge : undefined;
-  const hasContent = variant !== "image" || cornerBadge;
+  const hasCopy = !!title || showSummary;
+  const hasContent = hasCopy || !!cornerBadge;
 
   return (
     <a
@@ -850,6 +946,15 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
       data-post
       data-format={post.format}
     >
+      <time
+        class="archive-tile-date"
+        datetime={post.publishedAt}
+        title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
+        aria-label={post.publishedAtFormatted}
+      >
+        {shortDate}
+      </time>
+
       {bgImage && hasBg && (
         <img
           class="archive-tile-bg"
@@ -861,21 +966,25 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
 
       {hasContent && (
         <div class="archive-tile-content">
-          {variant !== "image" && title && (
-            <span class="archive-tile-title">
-              {post.format === "link" && (
-                <span
-                  class="archive-tile-link-indicator"
-                  dangerouslySetInnerHTML={{
-                    __html: getIconSvg("external-link") ?? "",
-                  }}
-                />
+          {hasCopy && (
+            <div class="archive-tile-copy">
+              {title && (
+                <span class="archive-tile-title">
+                  {post.format === "link" && (
+                    <span
+                      class="archive-tile-link-indicator"
+                      dangerouslySetInnerHTML={{
+                        __html: getIconSvg("external-link") ?? "",
+                      }}
+                    />
+                  )}
+                  {title}
+                </span>
               )}
-              {title}
-            </span>
-          )}
-          {variant !== "image" && !title && summary && (
-            <span class="archive-tile-summary">{summary}</span>
+              {showSummary && !showBgTitle && (
+                <span class="archive-tile-summary">{summary}</span>
+              )}
+            </div>
           )}
           {cornerBadge && (
             <span
@@ -894,9 +1003,29 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
           dangerouslySetInnerHTML={{ __html: getIconSvg(badge.icon) ?? "" }}
         />
       )}
-
-      <span class="archive-tile-date">{post.publishedAtFormatted}</span>
     </a>
+  );
+};
+
+const ArchiveListItem: FC<{ post: PostView }> = ({ post }) => {
+  const { shortDate } = getArchiveDateParts(post.publishedAt);
+
+  return (
+    <div class="archive-list-entry">
+      <time
+        class="archive-list-entry-date"
+        datetime={post.publishedAt}
+        title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
+      >
+        {shortDate}
+      </time>
+      <div class="archive-list-entry-card">
+        <TimelineItemFromPost
+          post={post}
+          display={{ footer: { hideTimestamp: true } }}
+        />
+      </div>
+    </div>
   );
 };
 
@@ -906,6 +1035,7 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
 
 export const ArchivePage: FC<ArchivePageProps> = ({
   groups,
+  totalCount,
   currentPage,
   totalPages,
   filters,
@@ -916,12 +1046,31 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   const { t } = useLingui();
   const currentView: ArchiveView = filters.view ?? "grid";
   const paginationBaseUrl = buildFilterUrl(filters, {});
+  const totalCountUnit =
+    totalCount === 1
+      ? t({
+          message: "post",
+          comment:
+            "@context: Archive page summary unit for a single matching post",
+        })
+      : t({
+          message: "posts",
+          comment:
+            "@context: Archive page summary unit for multiple matching posts",
+        });
 
   return (
     <div class="py-6" data-page="archive">
       <header class="mb-6">
-        <h1 class="text-2xl font-semibold mb-4">
+        <h1 class="archive-page-title">
           {t({ message: "Archive", comment: "@context: Archive page title" })}
+          <span
+            class="archive-page-summary"
+            aria-label={`${totalCount} ${totalCountUnit}`}
+          >
+            <span class="archive-page-summary-count">{totalCount}</span>{" "}
+            {totalCountUnit}
+          </span>
         </h1>
 
         <FilterBar
@@ -944,18 +1093,17 @@ export const ArchivePage: FC<ArchivePageProps> = ({
         ) : currentView === "grid" ? (
           <div class="archive-grid-wrapper">
             <div class="archive-grid">
-              {groups.map((group) => (
-                <>
-                  <div
-                    key={`header-${group.year}-${group.month}`}
-                    class="archive-month-header"
-                  >
-                    {group.label}
-                  </div>
+              {groups.map((group, groupIndex) => (
+                <div key={`grid-${group.year}-${group.month}`} class="contents">
+                  <ArchiveMonthHeader
+                    class={`archive-month-header${groupIndex > 0 ? " archive-month-header-spaced" : ""}`}
+                    label={group.label}
+                    count={group.totalCount}
+                  />
                   {group.posts.map((post) => (
                     <ArchiveTile key={post.id} post={post} />
                   ))}
-                </>
+                </div>
               ))}
             </div>
           </div>
@@ -964,13 +1112,14 @@ export const ArchivePage: FC<ArchivePageProps> = ({
             <div class="archive-list-groups">
               {groups.map((group) => (
                 <div key={`list-${group.year}-${group.month}`}>
-                  <div class="archive-list-month-header">{group.label}</div>
-                  <div class="flex flex-col">
-                    {group.posts.map((post, pi) => (
-                      <div key={post.id}>
-                        {pi > 0 && <hr class="feed-divider" />}
-                        <TimelineItemFromPost post={post} />
-                      </div>
+                  <ArchiveMonthHeader
+                    class="archive-list-month-header"
+                    label={group.label}
+                    count={group.totalCount}
+                  />
+                  <div class="archive-list-items">
+                    {group.posts.map((post) => (
+                      <ArchiveListItem key={post.id} post={post} />
                     ))}
                   </div>
                 </div>

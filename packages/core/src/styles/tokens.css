@@ -14,8 +14,8 @@
     "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   --font-heading: var(--font-body);
   --font-serif:
-    "Noto Serif CJK SC", "Songti SC", "STSong", "SimSun", ui-serif,
-    "New York Small", "New York", "Iowan Old Style", Charter, Georgia,
+    "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", "Noto Serif SC",
+    ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, Georgia,
     "Times New Roman", Times, serif;
   --font-mono:
     ui-monospace, Menlo, Monaco, Consolas, "Cascadia Code", "Courier New",
