@@ -16,6 +16,7 @@ import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 import { sanitizeUrl } from "../../lib/url.js";
+import { DecorativeQuoteMark } from "../shared/DecorativeQuoteMark.js";
 
 export const QuoteCard: FC<TimelineCardProps> = ({
   post,
@@ -44,6 +45,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({
       {!isCompact && !display?.hideStatusBadges && <PostStatusBadges />}
       {post.quoteText && (
         <blockquote class={`feed-quote${isCompact ? "" : " feed-quote-card"}`}>
+          {!isCompact && <DecorativeQuoteMark class="feed-quote-mark" />}
           <div
             class={`e-content feed-quote-content${isCompact ? " text-sm" : ""}`}
           >

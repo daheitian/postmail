@@ -715,21 +715,33 @@
   }
 
   .feed-quote-post .feed-quote-card {
-    position: relative;
-    padding-top: 0.85rem;
+    padding-top: 0;
   }
 
-  .feed-quote-post .feed-quote-card::after {
-    content: "\201C";
-    position: absolute;
-    top: -0.16em;
-    left: -0.04em;
-    color: color-mix(in srgb, var(--site-accent) 14%, var(--site-divider));
-    font-family: var(--font-serif);
-    font-size: clamp(2.9rem, 2.7rem + 0.9vw, 3.8rem);
-    line-height: 1;
+  .decorative-quote-mark {
+    display: block;
+    line-height: 0;
     pointer-events: none;
-    opacity: 0.95;
+  }
+
+  .decorative-quote-mark svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .decorative-quote-mark[data-direction="close"] {
+    transform: scaleX(-1);
+    transform-origin: center;
+  }
+
+  .feed-quote-post .feed-quote-mark {
+    position: relative;
+    width: clamp(1.46rem, 1.38rem + 0.36vw, 1.76rem);
+    margin-bottom: -0.1rem;
+    margin-left: -0.04rem;
+    color: color-mix(in srgb, var(--site-accent) 14%, var(--site-divider));
+    opacity: 0.66;
   }
 
   .feed-quote-attribution {
@@ -851,9 +863,10 @@
       line-height: 1.42;
     }
 
-    .feed-quote-post .feed-quote-card::after {
-      left: -0.03em;
-      font-size: clamp(2.45rem, 2.28rem + 0.8vw, 3.05rem);
+    .feed-quote-post .feed-quote-mark {
+      width: clamp(1.34rem, 1.28rem + 0.32vw, 1.58rem);
+      margin-bottom: -0.08rem;
+      margin-left: -0.03rem;
     }
   }
 
@@ -4946,24 +4959,23 @@
   }
 
   .archive-tile-quote .archive-tile-copy {
+    position: relative;
+    z-index: 1;
     justify-content: safe center;
   }
 
-  .archive-tile-quote .archive-tile-content::before {
-    content: "\201D";
+  .archive-tile-quote .archive-tile-quote-mark {
     position: absolute;
     top: 10px;
     right: 12px;
+    width: 1.85rem;
     color: color-mix(in srgb, var(--site-accent) 12%, var(--site-divider));
-    font-family: var(--font-serif);
-    font-size: 1.9rem;
-    line-height: 1;
     opacity: 0.82;
-    pointer-events: none;
   }
 
   .archive-tile-quote .archive-tile-summary {
     position: relative;
+    z-index: 1;
     flex: unset;
     font-style: normal;
     font-family: var(--font-serif);
@@ -5034,11 +5046,19 @@
   }
 
   .archive-list-month-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 0;
-    margin-bottom: 12px;
+    padding: 10px 0 12px;
+    margin-bottom: 18px;
+    background: linear-gradient(
+      to bottom,
+      var(--site-page-bg) 82%,
+      color-mix(in srgb, var(--site-page-bg) 0%, transparent) 100%
+    );
   }
 
   .archive-list-items {
@@ -5047,41 +5067,15 @@
     gap: 0;
   }
 
-  .archive-list-entry {
-    display: block;
-    padding: 0.9rem 0;
-  }
-
-  .archive-list-entry + .archive-list-entry {
-    border-top: 1px solid
-      color-mix(in srgb, var(--site-divider) 78%, transparent);
-  }
-
-  .archive-list-entry-date {
-    display: block;
-    margin-bottom: 0.45rem;
-    color: var(--site-text-secondary);
-    text-decoration: none;
-    white-space: nowrap;
-    font-size: 0.7rem;
-    font-weight: var(--fw-medium);
-    line-height: 1;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .archive-list-entry-card {
-    min-width: 0;
-  }
-
-  .archive-list-entry-card .post-menu-footer {
-    margin-top: 8px;
-  }
-
   @media (max-width: 699px) {
     .archive-page-title {
       gap: 0.45rem;
       margin-bottom: 1rem;
+    }
+
+    .archive-list-month-header {
+      top: 0;
+      padding-top: 8px;
     }
 
     .archive-grid-wrapper {
@@ -5098,10 +5092,6 @@
 
     .archive-month-header-spaced {
       margin-top: 20px;
-    }
-
-    .archive-list-entry {
-      padding: 1rem 0;
     }
   }
 }
