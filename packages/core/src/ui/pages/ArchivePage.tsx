@@ -21,6 +21,7 @@ import { toMediaKind } from "../../lib/upload.js";
 import { stripHtml } from "../../lib/excerpt.js";
 import { PagePagination } from "../shared/Pagination.js";
 import { TimelineItemFromPost } from "../feed/TimelineItem.js";
+import { DecorativeQuoteMark } from "../shared/DecorativeQuoteMark.js";
 
 // =============================================================================
 // URL Builder
@@ -966,6 +967,12 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
 
       {hasContent && (
         <div class="archive-tile-content">
+          {variant === "quote" && (
+            <DecorativeQuoteMark
+              class="archive-tile-quote-mark"
+              direction="close"
+            />
+          )}
           {hasCopy && (
             <div class="archive-tile-copy">
               {title && (
@@ -1004,28 +1011,6 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
         />
       )}
     </a>
-  );
-};
-
-const ArchiveListItem: FC<{ post: PostView }> = ({ post }) => {
-  const { shortDate } = getArchiveDateParts(post.publishedAt);
-
-  return (
-    <div class="archive-list-entry">
-      <time
-        class="archive-list-entry-date"
-        datetime={post.publishedAt}
-        title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
-      >
-        {shortDate}
-      </time>
-      <div class="archive-list-entry-card">
-        <TimelineItemFromPost
-          post={post}
-          display={{ footer: { hideTimestamp: true } }}
-        />
-      </div>
-    </div>
   );
 };
 
@@ -1118,8 +1103,11 @@ export const ArchivePage: FC<ArchivePageProps> = ({
                     count={group.totalCount}
                   />
                   <div class="archive-list-items">
-                    {group.posts.map((post) => (
-                      <ArchiveListItem key={post.id} post={post} />
+                    {group.posts.map((post, postIndex) => (
+                      <div key={post.id}>
+                        {postIndex > 0 && <hr class="feed-divider" />}
+                        <TimelineItemFromPost post={post} />
+                      </div>
                     ))}
                   </div>
                 </div>
