@@ -17,18 +17,19 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const collectionsPageRoutes = new Hono<Env>();
 
 collectionsPageRoutes.get("/", async (c) => {
-  const [allCollections, sidebarItems, postCounts] = await Promise.all([
-    c.var.services.collections.list(),
-    c.var.services.collections.listSidebarItems(),
-    c.var.services.collections.getPostCounts(),
-  ]);
+  const [allCollections, sidebarItems, postCounts, navData] = await Promise.all(
+    [
+      c.var.services.collections.list(),
+      c.var.services.collections.listSidebarItems(),
+      c.var.services.collections.getPostCounts(),
+      getNavigationData(c),
+    ],
+  );
 
   const collections = allCollections.map((col) => ({
     ...col,
     postCount: postCounts.get(col.id) ?? 0,
   }));
-
-  const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
     title: `Collections - ${navData.siteName}`,

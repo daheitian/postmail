@@ -42,6 +42,9 @@ export interface StorageDriver {
     size?: number;
   } | null>;
 
+  /** Retrieve file metadata without downloading the body. Returns null if not found. */
+  head(key: string): Promise<{ contentType?: string; size?: number } | null>;
+
   /** Delete a file from storage */
   delete(key: string): Promise<void>;
 
@@ -125,6 +128,15 @@ export function createR2Driver(r2: R2Bucket): StorageDriver {
       };
     },
 
+    async head(key) {
+      const object = await r2.head(key);
+      if (!object) return null;
+      return {
+        contentType: object.httpMetadata?.contentType ?? undefined,
+        size: object.size,
+      };
+    },
+
     async delete(key) {
       await r2.delete(key);
     },
@@ -200,12 +212,25 @@ interface S3GetObjectOutput {
   ContentLength?: number;
 }
 
+/** Input for HeadObject */
+interface HeadObjectInput {
+  Bucket: string;
+  Key: string;
+}
+
+/** Subset of HeadObjectOutput used by the S3 driver */
+interface S3HeadObjectOutput {
+  ContentType?: string;
+  ContentLength?: number;
+}
+
 /** Lazy-loaded S3 client bundle */
 interface S3ClientBundle {
   send: (command: unknown) => Promise<unknown>;
   PutObjectCommand: S3CommandCtor<PutObjectInput>;
   GetObjectCommand: S3CommandCtor<GetObjectInput>;
   DeleteObjectCommand: S3CommandCtor<ObjectKeyInput>;
+  HeadObjectCommand: S3CommandCtor<HeadObjectInput>;
   bucket: string;
 }
 
@@ -240,6 +265,7 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
           PutObjectCommand: sdk.PutObjectCommand,
           GetObjectCommand: sdk.GetObjectCommand,
           DeleteObjectCommand: sdk.DeleteObjectCommand,
+          HeadObjectCommand: sdk.HeadObjectCommand,
           bucket: config.bucket,
         };
       });
@@ -304,6 +330,29 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
         if (
           err instanceof Error &&
           (err.name === "NoSuchKey" || err.name === "NotFound")
+        ) {
+          return null;
+        }
+        throw err;
+      }
+    },
+
+    async head(key) {
+      const s3 = await getClient();
+      try {
+        const command = new s3.HeadObjectCommand({
+          Bucket: s3.bucket,
+          Key: key,
+        });
+        const response = (await s3.send(command)) as S3HeadObjectOutput;
+        return {
+          contentType: response.ContentType ?? undefined,
+          size: response.ContentLength ?? undefined,
+        };
+      } catch (err: unknown) {
+        if (
+          err instanceof Error &&
+          (err.name === "NotFound" || err.name === "NoSuchKey")
         ) {
           return null;
         }

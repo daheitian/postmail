@@ -203,15 +203,16 @@ export function createApp(): App {
 
     const rangeHeader = c.req.header("Range");
 
-    // First fetch without range to get the total size
     if (rangeHeader) {
-      // Get total size via a full request first
-      const full = await storage.get(storageKey);
-      if (!full) return c.notFound();
+      // Use head() to get size without downloading the body
+      const meta = await storage.head(storageKey);
+      if (!meta) return c.notFound();
 
-      const totalSize = full.size;
+      const totalSize = meta.size;
       if (!totalSize) {
         // Driver doesn't report size — fall back to full response
+        const full = await storage.get(storageKey);
+        if (!full) return c.notFound();
         const headers = new Headers();
         headers.set(
           "Content-Type",
@@ -220,9 +221,6 @@ export function createApp(): App {
         headers.set("Cache-Control", "public, max-age=31536000, immutable");
         return new Response(full.body, { headers });
       }
-
-      // Cancel the full stream — we'll re-fetch with the range
-      await full.body.cancel();
 
       // Parse "bytes=START-END" (END is optional)
       const match = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader);

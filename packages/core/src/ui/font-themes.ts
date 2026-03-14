@@ -33,6 +33,14 @@ export interface FontTheme {
 const SANS =
   'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
 
+/** Humanist sans stack with self-hosted Latin and system CJK fallback */
+const HUMANIST_SANS =
+  '"Source Sans 3 Variable", "Source Sans 3", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+
+/** Narrower newsroom sans for headlines and labels */
+const NEWSROOM_SANS =
+  '"News Cycle", "Franklin Gothic Medium", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+
 /**
  * Editorial serif stack
  *
@@ -42,14 +50,13 @@ const SANS =
 const EDITORIAL_SERIF =
   '"Noto Serif SC", ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
 
-/**
- * Classical serif stack
- *
- * Palatino (macOS); Palatino Linotype / Book Antiqua (Windows);
- * Old-style serif with calligraphic warmth
- */
-const CLASSICAL_SERIF =
-  '"Noto Serif SC", Palatino, "Palatino Linotype", "Book Antiqua", "Source Serif 4", "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
+/** Refined newsroom serif with self-hosted Latin text */
+const NEWSROOM_SERIF =
+  '"Newsreader Variable", Newsreader, "Noto Serif SC", ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
+
+/** Library serif with self-hosted Latin text and CJK serif fallback */
+const LITERARY_SERIF =
+  '"Literata Variable", Literata, "Noto Serif SC", Palatino, "Palatino Linotype", "Book Antiqua", "Source Serif 4", "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
 
 /**
  * Geometric sans stack
@@ -140,30 +147,58 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
     },
   },
   {
+    id: "humanist-sans",
+    name: {
+      id: "Humanist Sans",
+      message: "Humanist Sans",
+      comment: "@context: Font theme name",
+    },
+    headingFontFamily: HUMANIST_SANS,
+    bodyFontFamily: HUMANIST_SANS,
+    cssVariables: {
+      "--type-body-size": "0.97rem",
+      "--type-body-leading": "1.72",
+      "--type-body-tracking": "0.001em",
+      "--type-heading-weight": "var(--fw-semibold)",
+      "--type-heading-leading": "1.22",
+      "--type-heading-tracking": "-0.014em",
+      "--type-display-weight": "var(--fw-semibold)",
+      "--type-display-leading": "0.99",
+      "--type-display-tracking": "-0.024em",
+      "--type-label-weight": "var(--fw-medium)",
+      "--type-label-tracking": "0.11em",
+    },
+    description: {
+      id: "Open, readable sans with softer shapes and steadier rhythm",
+      message: "Open, readable sans with softer shapes and steadier rhythm",
+      comment: "@context: Font theme description",
+    },
+  },
+  {
     id: "modern-editorial",
     name: {
       id: "Newsroom",
       message: "Newsroom",
       comment: "@context: Font theme name",
     },
-    headingFontFamily: SANS,
-    bodyFontFamily: EDITORIAL_SERIF,
+    headingFontFamily: NEWSROOM_SANS,
+    bodyFontFamily: NEWSROOM_SERIF,
     cssVariables: {
       "--type-body-size": "0.99rem",
-      "--type-body-leading": "1.78",
-      "--type-body-tracking": "0.004em",
+      "--type-body-leading": "1.8",
+      "--type-body-tracking": "0.003em",
       "--type-heading-weight": "var(--fw-bold)",
-      "--type-heading-leading": "1.18",
-      "--type-heading-tracking": "-0.028em",
+      "--type-heading-leading": "1.14",
+      "--type-heading-tracking": "-0.02em",
       "--type-display-weight": "var(--fw-bold)",
-      "--type-display-leading": "0.98",
-      "--type-display-tracking": "-0.05em",
+      "--type-display-leading": "0.96",
+      "--type-display-tracking": "-0.026em",
       "--type-label-weight": "var(--fw-semibold)",
-      "--type-label-tracking": "0.12em",
+      "--type-label-tracking": "0.14em",
     },
     description: {
-      id: "Sharper headlines with roomy serif reading text",
-      message: "Sharper headlines with roomy serif reading text",
+      id: "News-cycle headlines over calmer Newsreader body text",
+      message: "News-cycle headlines over calmer Newsreader body text",
       comment: "@context: Font theme description",
     },
   },
@@ -174,24 +209,25 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
       message: "Library",
       comment: "@context: Font theme name",
     },
-    headingFontFamily: CLASSICAL_SERIF,
-    bodyFontFamily: EDITORIAL_SERIF,
+    headingFontFamily: LITERARY_SERIF,
+    bodyFontFamily: LITERARY_SERIF,
     cssVariables: {
       "--type-body-size": "1rem",
-      "--type-body-leading": "1.82",
+      "--type-body-leading": "1.84",
       "--type-body-tracking": "0.002em",
       "--type-heading-weight": "var(--fw-regular)",
-      "--type-heading-leading": "1.18",
-      "--type-heading-tracking": "-0.022em",
+      "--type-heading-leading": "1.16",
+      "--type-heading-tracking": "-0.018em",
       "--type-display-weight": "var(--fw-regular)",
       "--type-display-leading": "1.01",
-      "--type-display-tracking": "-0.04em",
+      "--type-display-tracking": "-0.026em",
       "--type-label-weight": "var(--fw-medium)",
       "--type-label-tracking": "0.14em",
     },
     description: {
-      id: "Quiet all-serif setting for essays, quotes, and slower reading",
-      message: "Quiet all-serif setting for essays, quotes, and slower reading",
+      id: "Literata-driven all-serif setting for essays, notes, and quotations",
+      message:
+        "Literata-driven all-serif setting for essays, notes, and quotations",
       comment: "@context: Font theme description",
     },
   },

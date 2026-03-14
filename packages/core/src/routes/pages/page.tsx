@@ -22,26 +22,28 @@ export const pageRoutes = new Hono<Env>();
 async function renderPost(c: Context<Env>, post: Post) {
   const mediaCtx = createMediaContext(c.var.appConfig);
 
+  // Start navData fetch immediately — it's independent of thread/media queries
+  const navDataPromise = getNavigationData(c);
+
   // Load the full thread if this post is part of one
   const threadRootId = post.threadId;
   const threadPosts = (
     await c.var.services.posts.getThread(threadRootId)
   ).filter((threadPost) => threadPost.status === "published");
 
-  // Batch load media for all thread posts (or just this post if solo)
+  // Batch load media + collections in parallel
   const allPostIds =
     threadPosts.length > 1 ? threadPosts.map((p) => p.id) : [post.id];
-  const rawMediaMap = await c.var.services.media.getByPostIds(allPostIds);
+  const [rawMediaMap, collectionsMap] = await Promise.all([
+    c.var.services.media.getByPostIds(allPostIds),
+    c.var.services.collections.getCollectionsByPostIds(allPostIds),
+  ]);
   const mediaMap = buildMediaMap(
     rawMediaMap,
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
   );
-
-  // Batch load collections for all posts
-  const collectionsMap =
-    await c.var.services.collections.getCollectionsByPostIds(allPostIds);
 
   const postView = toPostView(
     { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
@@ -63,7 +65,7 @@ async function renderPost(c: Context<Env>, post: Post) {
         )
       : undefined;
 
-  const navData = await getNavigationData(c);
+  const navData = await navDataPromise;
   const title = post.title || navData.siteName;
 
   return renderPublicPage(c, {

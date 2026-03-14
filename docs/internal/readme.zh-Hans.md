@@ -316,12 +316,13 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 7.2 字体主题
 
-内置 5 种字体方案，除字体组合外也会一起调整标题、正文、标签的排版节奏：
+内置 6 种字体方案，除字体组合外也会一起调整标题、正文、标签的排版节奏：
 
 - **default** — Notebook，温和衬线标题 + 清爽无衬线正文
 - **system-sans** — System Sans，平台默认感，紧凑中性
-- **modern-editorial** — Newsroom，锋利标题 + 宽松衬线正文
-- **literary** — Library，全衬线，适合长文和引用
+- **humanist-sans** — Humanist Sans，更柔和的人文无衬线，节奏稳定
+- **modern-editorial** — Newsroom，News Cycle 标题 + Newsreader 正文
+- **literary** — Library，Literata 全衬线，适合长文和引用
 - **geometric** — Signal，高对比无衬线，标题更紧、标签更响
 
 ### 7.3 自定义 CSS

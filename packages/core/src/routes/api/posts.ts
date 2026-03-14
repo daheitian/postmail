@@ -107,14 +107,14 @@ postsApiRoutes.get("/", requireAuthApi(), async (c) => {
 postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
   const id = parseIdParam(c.req.param("id"));
 
-  const post = assertFound(await c.var.services.posts.getById(id), "Post");
-
-  const mediaList = await c.var.services.media.getByPostId(post.id);
+  // Fetch post, media, and collections in parallel (all keyed by the same id)
+  const [post, mediaList, postCollections] = await Promise.all([
+    c.var.services.posts.getById(id),
+    c.var.services.media.getByPostId(id),
+    c.var.services.collections.getCollectionsByPostId(id),
+  ]);
+  assertFound(post, "Post");
   const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
-
-  // Get collection IDs for this post
-  const postCollections =
-    await c.var.services.collections.getCollectionsByPostId(post.id);
   const collectionIds = postCollections.map((col) => col.id);
 
   return c.json({

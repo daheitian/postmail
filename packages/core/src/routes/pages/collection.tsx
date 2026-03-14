@@ -24,12 +24,14 @@ export const collectionRoutes = new Hono<Env>();
 collectionRoutes.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
 
-  const collection = await c.var.services.collections.getBySlug(slug);
+  // Start navData + collection fetch in parallel
+  const [collection, navData] = await Promise.all([
+    c.var.services.collections.getBySlug(slug),
+    getNavigationData(c),
+  ]);
   if (!collection) return c.notFound();
 
   // Fetch posts, all collections, sidebar items, and post counts in parallel
-  const navData = await getNavigationData(c);
-
   const [posts, allCollections, sidebarItems, postCounts] = await Promise.all([
     c.var.services.posts.list({
       collectionId: collection.id,
@@ -139,6 +141,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=180",
     },
   });
 });

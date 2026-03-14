@@ -49,46 +49,43 @@ export async function assembleTimeline(
 
   const excludePrivate = !(options?.isAuthenticated ?? false);
 
-  // Get total count for pagination
-  const totalCount = await c.var.services.posts.count({
-    status: "published",
-    excludeReplies: true,
-    excludeUnlisted: true,
-    excludePrivate,
-  });
+  // Count + list are independent — run in parallel
+  const [totalCount, posts] = await Promise.all([
+    c.var.services.posts.count({
+      status: "published",
+      excludeReplies: true,
+      excludeUnlisted: true,
+      excludePrivate,
+    }),
+    c.var.services.posts.list({
+      status: "published",
+      excludeReplies: true,
+      excludeUnlisted: true,
+      excludePrivate,
+      limit: pageSize,
+      offset,
+    }),
+  ]);
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-
-  // Fetch posts for the current page
-  const posts = await c.var.services.posts.list({
-    status: "published",
-    excludeReplies: true,
-    excludeUnlisted: true,
-    excludePrivate,
-    limit: pageSize,
-    offset,
-  });
 
   if (posts.length === 0) {
     return { items: [], currentPage: page, totalPages };
   }
 
-  // Batch load media
+  // Batch load media, collections, and reply counts in parallel
   const postIds = posts.map((p) => p.id);
-  const rawMediaMap = await c.var.services.media.getByPostIds(postIds);
   const mediaCtx = createMediaContext(c.var.appConfig);
+  const [rawMediaMap, collectionsMap, replyCounts] = await Promise.all([
+    c.var.services.media.getByPostIds(postIds),
+    c.var.services.collections.getCollectionsByPostIds(postIds),
+    c.var.services.posts.getReplyCounts(postIds),
+  ]);
   const mediaMap = buildMediaMap(
     rawMediaMap,
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
   );
-
-  // Batch load collections for main posts
-  const collectionsMap =
-    await c.var.services.collections.getCollectionsByPostIds(postIds);
-
-  // Get reply counts to identify thread roots
-  const replyCounts = await c.var.services.posts.getReplyCounts(postIds);
   const threadRootIds = postIds.filter((id) => (replyCounts.get(id) ?? 0) > 0);
 
   // Batch load thread timeline context (latest reply + parent)

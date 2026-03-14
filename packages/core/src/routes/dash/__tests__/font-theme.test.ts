@@ -44,19 +44,19 @@ describe("Font theme save & CSS generation", () => {
   });
 
   it("generates correct CSS with typography overrides", async () => {
-    // Save system-sans, then switch to geometric — simulates the middleware flow
+    // Save system-sans, then switch to humanist-sans — simulates the middleware flow
     await settings.set("FONT_THEME", "system-sans");
-    await settings.set("FONT_THEME", "geometric");
+    await settings.set("FONT_THEME", "humanist-sans");
 
     const fontThemeId = await settings.get("FONT_THEME");
-    expect(fontThemeId).toBe("geometric");
+    expect(fontThemeId).toBe("humanist-sans");
 
     const fontTheme = BUILTIN_FONT_THEMES.find(
       (f) => f.id === fontThemeId,
     ) as (typeof BUILTIN_FONT_THEMES)[number];
     expect(fontTheme).toBeDefined();
-    expect(fontTheme.headingFontFamily).toContain("Avenir");
-    expect(fontTheme.bodyFontFamily).toContain("ui-sans-serif");
+    expect(fontTheme.headingFontFamily).toContain("Source Sans 3 Variable");
+    expect(fontTheme.bodyFontFamily).toContain("Source Sans 3 Variable");
 
     const fontOverrides = getFontThemeCssVariables(fontTheme);
     const css = buildThemeStyle(undefined, fontOverrides);
@@ -64,7 +64,7 @@ describe("Font theme save & CSS generation", () => {
     expect(css).toContain("--font-body:");
     expect(css).toContain("--font-heading:");
     expect(css).toContain("--type-display-tracking:");
-    expect(css).toContain("Avenir");
+    expect(css).toContain("Source Sans 3 Variable");
     expect(css).not.toContain("Charter");
   });
 
@@ -102,5 +102,17 @@ describe("Font theme save & CSS generation", () => {
     expect(css).toContain("--font-heading:");
     expect(css).toContain("--type-heading-leading:");
     expect(css).toContain("Charter");
+  });
+
+  it("newsroom uses refined Latin newsroom fonts", async () => {
+    await settings.set("FONT_THEME", "modern-editorial");
+
+    const fontThemeId = await settings.get("FONT_THEME");
+    const fontTheme = BUILTIN_FONT_THEMES.find(
+      (f) => f.id === fontThemeId,
+    ) as (typeof BUILTIN_FONT_THEMES)[number];
+
+    expect(fontTheme.headingFontFamily).toContain("News Cycle");
+    expect(fontTheme.bodyFontFamily).toContain("Newsreader Variable");
   });
 });

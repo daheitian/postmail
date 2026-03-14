@@ -1104,7 +1104,7 @@ msgstr "已釘選"
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "post"
-msgstr ""
+msgstr "篇"
 
 #. @context: Compose button - publish post
 #. @context: Custom URL type option
@@ -1133,7 +1133,7 @@ msgstr "發佈為未列出"
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "posts"
-msgstr ""
+msgstr "篇"
 
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page

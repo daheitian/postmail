@@ -107,6 +107,7 @@ rssRoutes.get("/", async (c) => {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=180",
     },
   });
 });
@@ -119,6 +120,7 @@ rssRoutes.get("/atom.xml", async (c) => {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/atom+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=180",
     },
   });
 });
@@ -134,6 +136,7 @@ rssRoutes.get("/all", async (c) => {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=180",
     },
   });
 });
@@ -147,6 +150,7 @@ rssRoutes.get("/all/atom.xml", async (c) => {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/atom+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=180",
     },
   });
 });

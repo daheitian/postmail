@@ -36,6 +36,7 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=180",
     },
   });
 });
@@ -56,6 +57,7 @@ Sitemap: ${siteUrl}/sitemap.xml
   return new Response(robots, {
     headers: {
       "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "public, max-age=180",
     },
   });
 });

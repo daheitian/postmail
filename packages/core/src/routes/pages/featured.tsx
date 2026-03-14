@@ -36,15 +36,15 @@ featuredRoutes.get("/", async (c) => {
 
   const mediaCtx = createMediaContext(c.var.appConfig);
 
-  const rootPermalinkMap = await loadThreadRootPermalinks(
-    posts,
-    c.var.services.posts.getById.bind(c.var.services.posts),
-  );
-
-  // Determine which posts are last in their thread for reply button visibility
+  // Permalinks + last-in-thread are independent — run in parallel
   const threadIds = [...new Set(posts.map((p) => p.threadId))];
-  const lastPostMap =
-    await c.var.services.posts.getLastPostIdsByThread(threadIds);
+  const [rootPermalinkMap, lastPostMap] = await Promise.all([
+    loadThreadRootPermalinks(
+      posts,
+      c.var.services.posts.getById.bind(c.var.services.posts),
+    ),
+    c.var.services.posts.getLastPostIdsByThread(threadIds),
+  ]);
   const isLastInThreadMap = new Map<string, boolean>();
   for (const p of posts) {
     isLastInThreadMap.set(p.id, lastPostMap.get(p.threadId) === p.id);

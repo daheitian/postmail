@@ -5,8 +5,8 @@ import {
 } from "../font-themes.js";
 
 describe("BUILTIN_FONT_THEMES", () => {
-  it("contains 5 themes", () => {
-    expect(BUILTIN_FONT_THEMES).toHaveLength(5);
+  it("contains 6 themes", () => {
+    expect(BUILTIN_FONT_THEMES).toHaveLength(6);
   });
 
   it("has 'default' as the first theme", () => {
@@ -33,6 +33,7 @@ describe("BUILTIN_FONT_THEMES", () => {
     const ids = BUILTIN_FONT_THEMES.map((t) => t.id);
     expect(ids).toContain("default");
     expect(ids).toContain("system-sans");
+    expect(ids).toContain("humanist-sans");
     expect(ids).toContain("modern-editorial");
     expect(ids).toContain("literary");
     expect(ids).toContain("geometric");
@@ -51,7 +52,7 @@ describe("BUILTIN_FONT_THEMES", () => {
   });
 
   it("pairing themes have distinct heading and body fonts", () => {
-    const pairingIds = ["default", "modern-editorial", "literary"];
+    const pairingIds = ["default", "modern-editorial"];
     for (const id of pairingIds) {
       const theme = BUILTIN_FONT_THEMES.find(
         (t) => t.id === id,
@@ -65,6 +66,14 @@ describe("BUILTIN_FONT_THEMES", () => {
       (item) => item.id === "system-sans",
     ) as (typeof BUILTIN_FONT_THEMES)[number];
     expect(theme.headingFontFamily).toBe(theme.bodyFontFamily);
+  });
+
+  it("humanist sans uses Source Sans 3 for both heading and body", () => {
+    const theme = BUILTIN_FONT_THEMES.find(
+      (item) => item.id === "humanist-sans",
+    ) as (typeof BUILTIN_FONT_THEMES)[number];
+    expect(theme.headingFontFamily).toBe(theme.bodyFontFamily);
+    expect(theme.bodyFontFamily).toContain("Source Sans 3 Variable");
   });
 
   it("exposes font theme css variables for injection", () => {
