@@ -8,7 +8,6 @@
 
 import { eq, and } from "drizzle-orm";
 import { sql } from "drizzle-orm";
-import { hashPassword } from "better-auth/crypto";
 import type { Database } from "../db/index.js";
 import {
   user,
@@ -28,6 +27,7 @@ import type { SettingsService } from "./settings.js";
 import type { StorageDriver } from "../lib/storage.js";
 import { SETTINGS_KEYS } from "../lib/constants.js";
 import { ValidationError, NotFoundError } from "../lib/errors.js";
+import { hashPassword } from "../lib/password.js";
 
 /** Dependencies for account deletion */
 export interface DeleteAccountDeps {

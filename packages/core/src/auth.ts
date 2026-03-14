@@ -6,6 +6,7 @@ import { betterAuth, APIError } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./db/schema.js";
+import { hashPassword, verifyPassword } from "./lib/password.js";
 
 export function createAuth(
   d1: D1Database,
@@ -32,6 +33,10 @@ export function createAuth(
       enabled: true,
       autoSignIn: true,
       minPasswordLength: 8,
+      password: {
+        hash: hashPassword,
+        verify: verifyPassword,
+      },
     },
     session: {
       expiresIn: 3600 * 24 * 30, // 30 days
