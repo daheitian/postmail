@@ -56,6 +56,7 @@ export interface ArchiveFilters {
 /** Props for the archive page component */
 export interface ArchivePageProps {
   groups: ArchiveGroup[];
+  totalCount: number;
   currentPage: number;
   totalPages: number;
   filters: ArchiveFilters;
@@ -119,6 +120,7 @@ export type CardMode = "compact" | "feed" | "detail";
 
 export interface PostFooterDisplayOptions {
   hideActions?: boolean;
+  hideTimestamp?: boolean;
 }
 
 export interface TimelineCardDisplayOptions {

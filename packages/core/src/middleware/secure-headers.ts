@@ -29,6 +29,7 @@ export function secureHeadersMiddleware(): MiddlewareHandler<Env> {
         "'unsafe-inline'",
       ],
       imgSrc: ["'self'", "data:", "blob:", "https:"],
+      mediaSrc: ["'self'", "blob:"],
       fontSrc: ["'self'"],
       connectSrc: IS_VITE_DEV ? ["'self'", "ws:"] : ["'self'"],
       frameSrc: ["'none'"],

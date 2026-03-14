@@ -84,6 +84,10 @@ export interface PostService {
   list(filters?: PostFilters): Promise<Post[]>;
   /** Count posts matching filters (ignores cursor, offset, limit) */
   count(filters?: PostFilters): Promise<number>;
+  /** Count posts grouped by published year-month (YYYY-MM) */
+  countByYearMonth(
+    filters?: PostFilters,
+  ): Promise<{ yearMonth: string; count: number }[]>;
   create(data: CreatePost, summaryConfig?: SummaryConfig): Promise<Post>;
   update(
     id: string,
@@ -470,6 +474,28 @@ export function createPostService(
         .where(conditions.length > 0 ? and(...conditions) : undefined);
 
       return result[0]?.count ?? 0;
+    },
+
+    async countByYearMonth(filters = {}) {
+      const conditions = [
+        ...buildFilterConditions(filters),
+        isNotNull(posts.publishedAt),
+      ];
+
+      return db
+        .select({
+          yearMonth:
+            sql<string>`strftime('%Y-%m', ${posts.publishedAt}, 'unixepoch')`.as(
+              "year_month",
+            ),
+          count: sql<number>`count(*)`.as("count"),
+        })
+        .from(posts)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .groupBy(sql`strftime('%Y-%m', ${posts.publishedAt}, 'unixepoch')`)
+        .orderBy(
+          desc(sql`strftime('%Y-%m', ${posts.publishedAt}, 'unixepoch')`),
+        );
     },
 
     async create(data, summaryConfig) {

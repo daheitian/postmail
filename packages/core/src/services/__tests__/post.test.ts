@@ -718,6 +718,63 @@ describe("PostService", () => {
     });
   });
 
+  describe("countByYearMonth", () => {
+    it("returns grouped month totals for the full filtered result set", async () => {
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "jan a",
+        publishedAt: 1704067200, // Jan 1, 2024
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "jan b",
+        publishedAt: 1705276800, // Jan 15, 2024
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "feb",
+        publishedAt: 1706745600, // Feb 1, 2024
+      });
+
+      const counts = await postService.countByYearMonth({
+        status: "published",
+        excludeReplies: true,
+      });
+
+      expect(counts).toEqual([
+        { yearMonth: "2024-02", count: 1 },
+        { yearMonth: "2024-01", count: 2 },
+      ]);
+    });
+
+    it("respects the same archive filters as list and count", async () => {
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "public jan",
+        publishedAt: 1704067200,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "private jan",
+        visibility: "private",
+        publishedAt: 1704153600,
+      });
+      await postService.create({
+        format: "link",
+        title: "feb link",
+        url: "https://example.com",
+        publishedAt: 1706745600,
+      });
+
+      const counts = await postService.countByYearMonth({
+        format: "note",
+        visibility: "private",
+      });
+
+      expect(counts).toEqual([{ yearMonth: "2024-01", count: 1 }]);
+    });
+  });
+
   describe("update", () => {
     it("updates post body", async () => {
       const post = await postService.create({

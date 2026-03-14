@@ -170,6 +170,8 @@ export interface ArchiveGroup {
   month: string;
   /** Pre-formatted, e.g. "February 2024" */
   label: string;
+  /** Total posts in this month across the full filtered result set */
+  totalCount?: number;
   posts: PostView[];
 }
 

@@ -137,9 +137,10 @@ archiveRoutes.get("/", async (c) => {
 
   // --- Parallel data fetches ------------------------------------------------
 
-  const [totalCount, posts, availableYears, allCollections] = await Promise.all(
-    [
+  const [totalCount, monthlyCounts, posts, availableYears, allCollections] =
+    await Promise.all([
       services.posts.count(filters),
+      services.posts.countByYearMonth(filters),
       services.posts.list({
         ...filters,
         limit: PAGE_SIZE,
@@ -150,8 +151,7 @@ archiveRoutes.get("/", async (c) => {
         excludeReplies: true,
       }),
       services.collections.list(),
-    ],
-  );
+    ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
@@ -184,7 +184,14 @@ archiveRoutes.get("/", async (c) => {
     });
   }
 
-  const groups = toArchiveGroupsWithMedia(grouped, mediaCtx);
+  const monthlyCountMap = new Map(
+    monthlyCounts.map((row) => [row.yearMonth, row.count] as const),
+  );
+  const groups = toArchiveGroupsWithMedia(grouped, mediaCtx).map((group) => ({
+    ...group,
+    totalCount:
+      monthlyCountMap.get(`${group.year}-${group.month}`) ?? group.posts.length,
+  }));
 
   // --- Build active filter state for UI -------------------------------------
 
@@ -213,6 +220,7 @@ archiveRoutes.get("/", async (c) => {
     content: (
       <ArchivePage
         groups={groups}
+        totalCount={totalCount}
         currentPage={currentPage}
         totalPages={totalPages}
         filters={archiveFilters}

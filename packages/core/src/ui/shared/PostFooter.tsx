@@ -21,9 +21,10 @@ interface PostFooterProps {
   display?: PostFooterDisplayOptions;
 }
 
-const CollectionTags: FC<{ collections: CollectionTagView[] }> = ({
-  collections,
-}) => {
+const CollectionTags: FC<{
+  collections: CollectionTagView[];
+  showSeparator?: boolean;
+}> = ({ collections, showSeparator = true }) => {
   if (collections.length === 0) return null;
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length checked above
@@ -32,9 +33,11 @@ const CollectionTags: FC<{ collections: CollectionTagView[] }> = ({
 
   return (
     <span class="post-collection-tags">
-      <span class="post-collection-sep" aria-hidden="true">
-        &middot;
-      </span>
+      {showSeparator && (
+        <span class="post-collection-sep" aria-hidden="true">
+          &middot;
+        </span>
+      )}
       <a href={`/c/${first.slug}`} class="post-collection-tag">
         {first.iconHtml && (
           <span
@@ -80,6 +83,15 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
   const { t } = useLingui();
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
+  const showTimestamp = !display?.hideTimestamp;
+  const showThreadSeparator =
+    !!post.threadRootPermalink &&
+    (showTimestamp || !!safeExternalUrl || !!detail);
+  const showCollectionSeparator =
+    showTimestamp ||
+    !!safeExternalUrl ||
+    !!detail ||
+    !!post.threadRootPermalink;
 
   return (
     <footer
@@ -87,19 +99,8 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
       data-post-meta
     >
       <div class="post-footer-meta">
-        {detail ? (
-          <time
-            class="dt-published"
-            datetime={post.publishedAt}
-            title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
-          >
-            {post.publishedAtFormatted}
-          </time>
-        ) : (
-          <a
-            href={post.permalink}
-            class="u-url text-xs text-muted-foreground hover:underline"
-          >
+        {showTimestamp &&
+          (detail ? (
             <time
               class="dt-published"
               datetime={post.publishedAt}
@@ -107,8 +108,20 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             >
               {post.publishedAtFormatted}
             </time>
-          </a>
-        )}
+          ) : (
+            <a
+              href={post.permalink}
+              class="u-url text-xs text-muted-foreground hover:underline"
+            >
+              <time
+                class="dt-published"
+                datetime={post.publishedAt}
+                title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
+              >
+                {post.publishedAtFormatted}
+              </time>
+            </a>
+          ))}
         {safeExternalUrl && (
           <a
             href={safeExternalUrl}
@@ -139,7 +152,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             })}
           </a>
         )}
-        {post.threadRootPermalink && (
+        {showThreadSeparator && (
           <span class="post-collection-sep" aria-hidden="true">
             &middot;
           </span>
@@ -152,7 +165,10 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             In thread &rarr;
           </a>
         )}
-        <CollectionTags collections={post.collections} />
+        <CollectionTags
+          collections={post.collections}
+          showSeparator={showCollectionSeparator}
+        />
       </div>
       {!display?.hideActions && (
         <div class="post-menu-actions">
