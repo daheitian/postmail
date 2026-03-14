@@ -15,7 +15,7 @@ import type { TimelineCardProps } from "../../types.js";
 import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
-import { sanitizeUrl } from "../../lib/url.js";
+import { sanitizeUrl, extractDisplayDomain } from "../../lib/url.js";
 import { DecorativeQuoteMark } from "../shared/DecorativeQuoteMark.js";
 
 export const QuoteCard: FC<TimelineCardProps> = ({
@@ -62,7 +62,7 @@ export const QuoteCard: FC<TimelineCardProps> = ({
               target="_blank"
               rel="noopener noreferrer"
             >
-              {post.title || "Source"}
+              {post.title || extractDisplayDomain(safeUrl) || safeUrl}
             </a>
           ) : (
             <span>{post.title}</span>

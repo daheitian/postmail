@@ -90,7 +90,7 @@ These are derived from the core palette by default. Override them only when you 
 | `--fw-bold`      | 700                   | Strong emphasis              |
 | `--fw-extrabold` | 800                   | Site logo                    |
 
-Font themes (**Settings > Font Theme**) override `--font-heading` and `--font-body` with curated pairings. You can further override them in Custom CSS.
+Font themes (**Settings > Font Theme**) override `--font-heading`, `--font-body`, and a small set of typography rhythm tokens for headings, labels, and body copy. You can further override them in Custom CSS.
 
 ### Example: Lighter typography
 

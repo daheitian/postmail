@@ -2,13 +2,16 @@
  * Font theme save & read flow test.
  *
  * Verifies that FONT_THEME setting persists and buildThemeStyle generates
- * the correct CSS overrides for --font-body and --font-heading.
+ * the correct CSS overrides for typography tokens.
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../../__tests__/helpers/db.js";
 import { createSettingsService } from "../../../services/settings.js";
-import { BUILTIN_FONT_THEMES } from "../../../ui/font-themes.js";
+import {
+  BUILTIN_FONT_THEMES,
+  getFontThemeCssVariables,
+} from "../../../ui/font-themes.js";
 import { buildThemeStyle } from "../../../lib/theme.js";
 import type { Database } from "../../../db/index.js";
 
@@ -27,9 +30,9 @@ describe("Font theme save & CSS generation", () => {
     const initial = await settings.get("FONT_THEME");
     expect(initial).toBeNull();
 
-    // Save classic-editorial
-    await settings.set("FONT_THEME", "classic-editorial");
-    expect(await settings.get("FONT_THEME")).toBe("classic-editorial");
+    // Save system-sans
+    await settings.set("FONT_THEME", "system-sans");
+    expect(await settings.get("FONT_THEME")).toBe("system-sans");
 
     // Update to geometric
     await settings.set("FONT_THEME", "geometric");
@@ -40,9 +43,9 @@ describe("Font theme save & CSS generation", () => {
     expect(await settings.get("FONT_THEME")).toBeNull();
   });
 
-  it("generates correct CSS with both --font-body and --font-heading", async () => {
-    // Save classic-editorial, then switch to geometric — simulates the middleware flow
-    await settings.set("FONT_THEME", "classic-editorial");
+  it("generates correct CSS with typography overrides", async () => {
+    // Save system-sans, then switch to geometric — simulates the middleware flow
+    await settings.set("FONT_THEME", "system-sans");
     await settings.set("FONT_THEME", "geometric");
 
     const fontThemeId = await settings.get("FONT_THEME");
@@ -52,18 +55,16 @@ describe("Font theme save & CSS generation", () => {
       (f) => f.id === fontThemeId,
     ) as (typeof BUILTIN_FONT_THEMES)[number];
     expect(fontTheme).toBeDefined();
-    expect(fontTheme.headingFontFamily).toContain("Futura");
-    expect(fontTheme.bodyFontFamily).toContain("system-ui");
+    expect(fontTheme.headingFontFamily).toContain("Avenir");
+    expect(fontTheme.bodyFontFamily).toContain("ui-sans-serif");
 
-    const fontOverrides = {
-      "--font-body": fontTheme.bodyFontFamily,
-      "--font-heading": fontTheme.headingFontFamily,
-    };
+    const fontOverrides = getFontThemeCssVariables(fontTheme);
     const css = buildThemeStyle(undefined, fontOverrides);
 
     expect(css).toContain("--font-body:");
     expect(css).toContain("--font-heading:");
-    expect(css).toContain("Futura");
+    expect(css).toContain("--type-display-tracking:");
+    expect(css).toContain("Avenir");
     expect(css).not.toContain("Charter");
   });
 
@@ -79,32 +80,27 @@ describe("Font theme save & CSS generation", () => {
 
     const fontOverrides: Record<string, string> = {};
     if (fontTheme) {
-      fontOverrides["--font-body"] = fontTheme.bodyFontFamily;
-      fontOverrides["--font-heading"] = fontTheme.headingFontFamily;
+      Object.assign(fontOverrides, getFontThemeCssVariables(fontTheme));
     }
 
     const css = buildThemeStyle(undefined, fontOverrides);
     expect(css).toBe("");
   });
 
-  it("classic-editorial has serif heading and sans body", async () => {
-    await settings.set("FONT_THEME", "classic-editorial");
-
-    const fontThemeId = await settings.get("FONT_THEME");
+  it("default theme data uses serif heading and sans body", async () => {
     const fontTheme = BUILTIN_FONT_THEMES.find(
-      (f) => f.id === fontThemeId,
+      (f) => f.id === "default",
     ) as (typeof BUILTIN_FONT_THEMES)[number];
 
+    expect(fontTheme.id).toBe("default");
     expect(fontTheme.headingFontFamily).toContain("Charter");
-    expect(fontTheme.bodyFontFamily).toContain("system-ui");
+    expect(fontTheme.bodyFontFamily).toContain("ui-sans-serif");
 
-    const fontOverrides = {
-      "--font-body": fontTheme.bodyFontFamily,
-      "--font-heading": fontTheme.headingFontFamily,
-    };
+    const fontOverrides = getFontThemeCssVariables(fontTheme);
     const css = buildThemeStyle(undefined, fontOverrides);
 
     expect(css).toContain("--font-heading:");
+    expect(css).toContain("--type-heading-leading:");
     expect(css).toContain("Charter");
   });
 });

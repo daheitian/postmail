@@ -12,7 +12,10 @@ import type { AppVariables } from "../types/app-context.js";
 import { resolveConfig } from "../lib/resolve-config.js";
 import { buildThemeStyle } from "../lib/theme.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
-import { BUILTIN_FONT_THEMES } from "../ui/font-themes.js";
+import {
+  BUILTIN_FONT_THEMES,
+  getFontThemeCssVariables,
+} from "../ui/font-themes.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -33,15 +36,11 @@ export function withConfig(): MiddlewareHandler<Env> {
       (t) => t.id === (appConfig.themeId || appConfig.defaultThemeId),
     );
 
-    // Build font override CSS variables
+    // Build font theme CSS variables
     const fontTheme = appConfig.fontThemeId
       ? BUILTIN_FONT_THEMES.find((f) => f.id === appConfig.fontThemeId)
       : undefined;
-    const fontOverrides: Record<string, string> = {};
-    if (fontTheme) {
-      fontOverrides["--font-body"] = fontTheme.bodyFontFamily;
-      fontOverrides["--font-heading"] = fontTheme.headingFontFamily;
-    }
+    const fontOverrides = fontTheme ? getFontThemeCssVariables(fontTheme) : {};
 
     const themeStyle = buildThemeStyle(activeTheme, fontOverrides);
     c.set("themeStyle", themeStyle);

@@ -12,7 +12,10 @@
     system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  --font-heading: var(--font-body);
+  --font-heading:
+    "Noto Serif SC", ui-serif, "New York Small", "New York", "Iowan Old Style",
+    Charter, "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text",
+    Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif;
   --font-serif:
     "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", "Noto Serif SC",
     ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, Georgia,
@@ -32,6 +35,17 @@
   --text-base: 0.9375rem;
   --text-lg: 1.0625rem;
   --leading: 1.5;
+  --type-body-size: var(--text-base);
+  --type-body-leading: 1.66;
+  --type-body-tracking: 0.002em;
+  --type-heading-weight: var(--fw-medium);
+  --type-heading-leading: 1.26;
+  --type-heading-tracking: -0.02em;
+  --type-display-weight: var(--fw-regular);
+  --type-display-leading: 1.04;
+  --type-display-tracking: -0.036em;
+  --type-label-weight: var(--fw-medium);
+  --type-label-tracking: 0.08em;
 
   /* Layout */
   --site-width: 500px;

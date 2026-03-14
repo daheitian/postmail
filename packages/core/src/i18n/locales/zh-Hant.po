@@ -44,6 +44,11 @@ msgstr "301 (永久)"
 msgid "302 (Temporary)"
 msgstr "302 (暫時)"
 
+#. @context: Font theme preview body sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "A good font theme should change the pace of reading, not only the shape of the letters."
+msgstr "好的字型主題改變的不只是字形，也會改變閱讀節奏。"
+
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "A short intro for search engines and feed readers. Plain text only."
@@ -254,15 +259,15 @@ msgstr "變更密碼"
 msgid "Change your sign-in password"
 msgstr "變更您的登入密碼"
 
-#. @context: Font theme settings description
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
-msgstr "為您的網站選擇字型配對。所有選項皆使用系統字型以快速載入。"
-
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
 msgstr "請選擇新密碼."
+
+#. @context: Font theme settings description
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
+msgstr "為你的網站選擇一種排版方向。每個主題都會同時改變字型搭配與閱讀節奏。"
 
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL type option
@@ -655,6 +660,11 @@ msgstr "網站小圖示與頁首圖示"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Featured"
 msgstr "精選"
+
+#. @context: Font theme preview eyebrow label
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Field note"
+msgstr "隨手記"
 
 #. @context: Error toast when file storage is not set up
 #. @context: Error when file storage is not set up
@@ -1176,6 +1186,11 @@ msgstr "引用"
 msgid "Quotes"
 msgstr "引用"
 
+#. @context: Font theme preview quote sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Quotes, titles, and labels should all lean together."
+msgstr "引用、標題和標籤，應該朝同一個方向傾斜。"
+
 #. @context: Compose toolbar - rate tooltip
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Rate"
@@ -1494,13 +1509,6 @@ msgstr "該主題不可用。請選擇其他主題。"
 msgid "The custom URL path (without leading slash)"
 msgstr "自訂 URL 路徑 (不含前導斜線)"
 
-#. @context: Font theme preview sentence for body text
-#. @context: Font theme preview sentence for headings
-#: src/ui/dash/appearance/FontThemeContent.tsx
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "The quick brown fox jumps over the lazy dog."
-msgstr "敏捷的棕色狐狸躍過那隻懶惰的狗。"
-
 #. @context: Description for max visible nav links, explains overflow behavior
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "The rest will be tucked into a ··· menu"
@@ -1713,6 +1721,11 @@ msgstr "這個收藏是關於什麼？"
 msgid "When off, visitors see your latest posts first"
 msgstr "關閉時, 訪客會先看到你的最新文章"
 
+#. @context: Font theme preview display sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Write small things with a clear shape."
+msgstr "把小事也寫出清晰的形狀。"
+
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
@@ -1727,3 +1740,8 @@ msgstr "您有未儲存的變更"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Your thoughts (optional)"
 msgstr "你的想法（選填）"
+
+#. @context: Font theme preview Chinese body sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "写下一点想法，也要让它有自己的轮廓。"
+msgstr "寫下一點想法，也要讓它有自己的輪廓。"

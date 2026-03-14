@@ -44,6 +44,11 @@ msgstr "301 (Permanent)"
 msgid "302 (Temporary)"
 msgstr "302 (Temporary)"
 
+#. @context: Font theme preview body sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "A good font theme should change the pace of reading, not only the shape of the letters."
+msgstr "A good font theme should change the pace of reading, not only the shape of the letters."
+
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "A short intro for search engines and feed readers. Plain text only."
@@ -254,15 +259,15 @@ msgstr "Change Password"
 msgid "Change your sign-in password"
 msgstr "Change your sign-in password"
 
-#. @context: Font theme settings description
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
-msgstr "Choose a font pairing for your site. All options use system fonts for fast loading."
-
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
 msgstr "Choose a new password."
+
+#. @context: Font theme settings description
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
+msgstr "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL type option
@@ -655,6 +660,11 @@ msgstr "Favicon and header icon"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Featured"
 msgstr "Featured"
+
+#. @context: Font theme preview eyebrow label
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Field note"
+msgstr "Field note"
 
 #. @context: Error toast when file storage is not set up
 #. @context: Error when file storage is not set up
@@ -1176,6 +1186,11 @@ msgstr "Quote"
 msgid "Quotes"
 msgstr "Quotes"
 
+#. @context: Font theme preview quote sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Quotes, titles, and labels should all lean together."
+msgstr "Quotes, titles, and labels should all lean together."
+
 #. @context: Compose toolbar - rate tooltip
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Rate"
@@ -1494,13 +1509,6 @@ msgstr "That theme isn't available. Pick another one."
 msgid "The custom URL path (without leading slash)"
 msgstr "The custom URL path (without leading slash)"
 
-#. @context: Font theme preview sentence for body text
-#. @context: Font theme preview sentence for headings
-#: src/ui/dash/appearance/FontThemeContent.tsx
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "The quick brown fox jumps over the lazy dog."
-msgstr "The quick brown fox jumps over the lazy dog."
-
 #. @context: Description for max visible nav links, explains overflow behavior
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "The rest will be tucked into a ··· menu"
@@ -1713,6 +1721,11 @@ msgstr "What's this collection about?"
 msgid "When off, visitors see your latest posts first"
 msgstr "When off, visitors see your latest posts first"
 
+#. @context: Font theme preview display sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Write small things with a clear shape."
+msgstr "Write small things with a clear shape."
+
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
@@ -1727,3 +1740,8 @@ msgstr "You have unsaved changes"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Your thoughts (optional)"
 msgstr "Your thoughts (optional)"
+
+#. @context: Font theme preview Chinese body sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "写下一点想法，也要让它有自己的轮廓。"
+msgstr "写下一点想法，也要让它有自己的轮廓。"

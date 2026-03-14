@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { buildThemeStyle } from "../theme.js";
-import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
+import {
+  BUILTIN_FONT_THEMES,
+  getFontThemeCssVariables,
+} from "../../ui/font-themes.js";
 
 describe("buildThemeStyle", () => {
   it("returns empty string when no theme and no variables", () => {
@@ -10,19 +13,17 @@ describe("buildThemeStyle", () => {
 
   it("generates CSS with font overrides only (no color theme)", () => {
     const theme = BUILTIN_FONT_THEMES.find(
-      (f) => f.id === "classic-editorial",
+      (f) => f.id === "system-sans",
     ) as (typeof BUILTIN_FONT_THEMES)[number];
-    const fontOverrides = {
-      "--font-body": theme.bodyFontFamily,
-      "--font-heading": theme.headingFontFamily,
-    };
+    const fontOverrides = getFontThemeCssVariables(theme);
 
     const css = buildThemeStyle(undefined, fontOverrides);
 
     expect(css).toContain(":root:root");
     expect(css).toContain("--font-body:");
     expect(css).toContain("--font-heading:");
-    expect(css).toContain("Charter");
+    expect(css).toContain("--type-body-leading:");
+    expect(css).toContain("ui-sans-serif");
     expect(css).toContain("prefers-color-scheme: dark");
   });
 
