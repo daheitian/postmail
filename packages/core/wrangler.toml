@@ -25,3 +25,28 @@ migrations_dir = "src/db/migrations"
 binding = "R2"
 bucket_name = "jant-demo-media"
 remote = false
+
+# ============================================
+# Preview environment (deploy current branch)
+# Usage: wrangler deploy --env preview
+# ============================================
+[env.preview]
+name = "jant-preview"
+main = "dev/preview-entry.js"
+
+[env.preview.assets]
+directory = "dist/client"
+
+[env.preview.vars]
+SITE_URL = "https://preview.jant.me"
+PAGE_SIZE = 50
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "jant-preview-db"
+database_id = "c1aed962-7394-4d1a-aea0-5de5e09d40dd"
+migrations_dir = "src/db/migrations"
+
+[[env.preview.r2_buckets]]
+binding = "R2"
+bucket_name = "jant-preview-media"

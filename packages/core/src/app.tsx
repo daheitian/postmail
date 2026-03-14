@@ -55,12 +55,6 @@ import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
 
 import { createStorageDriver } from "./lib/storage.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
-import {
-  createRequestTrace,
-  elapsedMs,
-  logTiming,
-  shouldLogRequestTiming,
-} from "./lib/request-timing.js";
 import { type AppVariables, type App } from "./types/app-context.js";
 
 export type { AppVariables, App };
@@ -85,11 +79,6 @@ export function createApp(): App {
 
   // Lightweight init — no DB queries
   app.use("*", async (c, next) => {
-    const trace = createRequestTrace(c.req.raw);
-    c.set("requestTrace", trace);
-    const shouldLogTiming = shouldLogRequestTiming(trace.path);
-    const requestStart = shouldLogTiming ? Date.now() : 0;
-
     // Fail fast: DEV_API_TOKEN must never be reachable from a non-local hostname
     if (c.env.DEV_API_TOKEN) {
       const hostname = new URL(c.req.url).hostname;
@@ -160,16 +149,7 @@ export function createApp(): App {
       }),
     );
 
-    try {
-      await next();
-    } finally {
-      if (shouldLogTiming) {
-        logTiming(trace, "request.completed", {
-          durationMs: elapsedMs(requestStart),
-          status: c.res.status,
-        });
-      }
-    }
+    await next();
   });
 
   // Security headers (CSP, X-Frame-Options, etc.)
@@ -362,15 +342,7 @@ export function createApp(): App {
       return next();
     }
 
-    const shouldLogTiming = shouldLogRequestTiming(path);
-    const redirectStart = shouldLogTiming ? Date.now() : 0;
     const customUrl = await c.var.services.customUrls.getByPath(path.slice(1));
-    if (shouldLogTiming) {
-      logTiming(c.var.requestTrace, "redirect.lookup.completed", {
-        durationMs: elapsedMs(redirectStart),
-        matched: !!customUrl,
-      });
-    }
     if (customUrl?.targetType === "redirect" && customUrl.toPath) {
       return c.redirect(customUrl.toPath, customUrl.redirectType ?? 301);
     }

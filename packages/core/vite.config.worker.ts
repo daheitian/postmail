@@ -29,6 +29,7 @@ export default defineConfig({
     rollupOptions: {
       external: (id: string) => {
         if (id.startsWith("@jant/core")) return false; // bundle internal modules
+        if (id.startsWith("node:")) return true;
         if (id.startsWith("cloudflare:")) return true;
         if (id === "__STATIC_CONTENT_MANIFEST") return true;
         return Object.keys(pkg.dependencies ?? {}).some(

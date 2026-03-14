@@ -12,7 +12,6 @@ import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SigninSchema } from "../../lib/schemas.js";
 import { getI18n } from "../../i18n/index.js";
-import { elapsedMs, logTiming } from "../../lib/request-timing.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -128,7 +127,6 @@ signinRoutes.get("/signin", async (c) => {
 });
 
 signinRoutes.post("/signin", async (c) => {
-  const requestStart = Date.now();
   const i18n = getI18n(c);
 
   if (!c.var.auth) {
@@ -163,30 +161,14 @@ signinRoutes.post("/signin", async (c) => {
   const { email, password } = parsed.data;
 
   try {
-    const authStart = Date.now();
     const { headers } = await c.var.auth.api.signInEmail({
       returnHeaders: true,
       body: { email, password },
       headers: c.req.raw.headers,
     });
 
-    logTiming(c.var.requestTrace, "signin.auth.completed", {
-      durationMs: elapsedMs(authStart),
-    });
-    logTiming(c.var.requestTrace, "signin.route.completed", {
-      durationMs: elapsedMs(requestStart),
-    });
-
     return dsRedirect("/", { headers });
   } catch {
-    logTiming(
-      c.var.requestTrace,
-      "signin.auth.failed",
-      {
-        durationMs: elapsedMs(requestStart),
-      },
-      "error",
-    );
     return dsToast(
       i18n._(
         msg({

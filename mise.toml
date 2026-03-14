@@ -209,6 +209,28 @@ npx lingui-po-translate \
 """
 
 # =============================================================================
+# Preview (deploy current branch for testing)
+# =============================================================================
+[tasks.preview-deploy]
+alias = "pd"
+description = "Build and deploy current branch to preview environment"
+dir = "packages/core"
+run = """
+echo "Building @jant/core..."
+pnpm run build
+echo "Running migrations on preview D1..."
+pnpm exec wrangler d1 migrations apply DB --env preview --remote
+echo "Deploying to preview..."
+pnpm exec wrangler deploy --env preview
+"""
+
+[tasks.preview-migrate]
+alias = "pm"
+description = "Run D1 migrations on preview environment"
+dir = "packages/core"
+run = "pnpm exec wrangler d1 migrations apply DB --env preview --remote"
+
+# =============================================================================
 # Demo
 # =============================================================================
 [tasks.demo-deploy]
