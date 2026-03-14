@@ -14,6 +14,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
+import { elapsedMs, logTiming } from "../../lib/request-timing.js";
 import {
   createMediaContext,
   toPostViewsFromPosts,
@@ -27,10 +28,12 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 export const homeRoutes = new Hono<Env>();
 
 homeRoutes.get("/", async (c) => {
+  const routeStart = Date.now();
   const navData = await getNavigationData(c);
 
   if (navData.homeDefaultView === "featured") {
     // Show featured posts on homepage
+    const featuredStart = Date.now();
     const posts = await c.var.services.posts.list({
       featured: true,
       status: "published",
@@ -46,6 +49,17 @@ homeRoutes.get("/", async (c) => {
     const postViews = toPostViewsFromPosts(posts, mediaCtx, rootPermalinkMap);
     const items = postViews.map((post) => ({ post }));
 
+    logTiming(c.var.requestTrace, "home.featured.completed", {
+      durationMs: elapsedMs(featuredStart),
+      itemCount: items.length,
+      isAuthenticated: navData.isAuthenticated,
+    });
+    logTiming(c.var.requestTrace, "home.route.completed", {
+      durationMs: elapsedMs(routeStart),
+      isAuthenticated: navData.isAuthenticated,
+      view: "featured",
+    });
+
     return renderPublicPage(c, {
       title: navData.siteName,
       navData,
@@ -60,6 +74,15 @@ homeRoutes.get("/", async (c) => {
   const { items, currentPage, totalPages } = await assembleTimeline(c, {
     page,
     isAuthenticated: navData.isAuthenticated,
+  });
+
+  logTiming(c.var.requestTrace, "home.route.completed", {
+    durationMs: elapsedMs(routeStart),
+    isAuthenticated: navData.isAuthenticated,
+    view: "latest",
+    itemCount: items.length,
+    currentPage,
+    totalPages,
   });
 
   return renderPublicPage(c, {

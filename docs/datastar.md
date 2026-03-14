@@ -80,3 +80,11 @@ return sse(c, async (stream) => {
 - Use `throwIfNamespace: false` in SWC config for colon syntax (`data-on:click`)
 - For complex interactions (file uploads), use plain JS instead of Datastar
 - Prefer `dsRedirect`/`dsToast`/`dsSignals` over `sse()` for single-event responses
+
+## Expression Pitfalls
+
+- **Event object is `evt`, NOT `$event`**: In `data-on:*` expressions, the DOM event is passed as `evt`. Writing `$event` makes Datastar treat it as a signal named `event` (`$['event']`), which is `undefined`. Correct: `evt.target.value`. Wrong: `$event.target.value`.
+- **`$` prefix is for signals only**: Any `$foo` in an expression is rewritten to `$['foo']` (signal access). Only use `$` for signal references. Regular JS variables (`evt`, `el`, `document`, etc.) must NOT have a `$` prefix.
+- **`data-on:submit` always prevents default on forms**: Datastar unconditionally calls `evt.preventDefault()` when a `data-on:submit` handler is attached to a `<form>`. Native form submission will not happen. If you need native submission (e.g., file download), use `data-on:click` on the button instead, or use `fetch()` manually.
+- **No inline `<script>` tags**: CSP is set to `script-src 'self' 'unsafe-eval'` — inline scripts are blocked. Datastar expressions work because they use `new Function()` (`unsafe-eval`). For complex logic, write it directly in the Datastar expression or move it to a client-side module.
+- **FOUC with `data-show`**: Elements controlled by `data-show` are visible before Datastar initializes. Add `style="display:none"` to elements that should be hidden by default to prevent flash.

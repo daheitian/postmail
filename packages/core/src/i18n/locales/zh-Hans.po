@@ -205,10 +205,20 @@ msgstr "头像显示已更新。"
 msgid "Back"
 msgstr ""
 
+#. @context: Confirmation text after downloading backup in delete flow
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Backup downloaded"
+msgstr ""
+
 #. @context: Settings item description for API tokens
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Bearer tokens for scripts and automation"
 msgstr "用于脚本和自动化的 Bearer 令牌"
+
+#. @context: Step 1 description for data backup
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Before deleting, download a backup of all your content. You won't be able to recover it after deletion."
+msgstr ""
 
 #. @context: Settings section heading for avatar
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -286,6 +296,11 @@ msgstr "颜色主题"
 #: src/routes/auth/setup.tsx
 msgid "Complete Setup"
 msgstr "完成设置"
+
+#. @context: Step 2 heading — user must type confirmation phrase
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Confirm deletion"
+msgstr ""
 
 #. @context: Password form field
 #: src/ui/dash/settings/AccountContent.tsx
@@ -406,7 +421,9 @@ msgid "Custom URLs"
 msgstr "自定义 URL"
 
 #. @context: Section heading for dangerous/destructive actions
+#. @context: Settings group label for destructive account actions
 #: src/ui/dash/DangerZone.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Danger Zone"
 msgstr "危险区"
 
@@ -426,10 +443,27 @@ msgstr ""
 msgid "Delete"
 msgstr "删除"
 
+#. @context: Page title for account deletion
+#. @context: Settings item — delete account and all data
+#: src/ui/dash/settings/AccountMenuContent.tsx
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Delete Account"
+msgstr ""
+
+#. @context: Final destructive button to delete account and all data
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Delete Account Permanently"
+msgstr ""
+
 #. @context: Draft item action
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Delete Draft"
 msgstr "删除草稿"
+
+#. @context: Final browser confirm dialog before account deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Delete this blog permanently? This cannot be undone."
+msgstr ""
 
 #. @context: Confirm dialog for deleting a collection
 #: src/ui/shared/CollectionsSidebar.tsx
@@ -507,6 +541,21 @@ msgstr "完成"
 #. @context: Settings item description for site export
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Download as a Zola static site (.zip)"
+msgstr ""
+
+#. @context: Button to download site backup before deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Download Backup"
+msgstr ""
+
+#. @context: Alert when backup download fails during account deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Download failed. Please try again."
+msgstr ""
+
+#. @context: Step 1 heading — user must download backup before deleting
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Download your data"
 msgstr ""
 
 #. @context: Post status badge - draft
@@ -683,6 +732,11 @@ msgstr "评分最高"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Home view saved"
 msgstr "主页视图已保存"
+
+#. @context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "I want to delete {siteName}"
+msgstr ""
 
 #. @context: Icon picker tab label
 #. @context: Icon picker tab label
@@ -1025,6 +1079,11 @@ msgstr "路径"
 msgid "Permalink"
 msgstr "永久链接"
 
+#. @context: Settings item description for account deletion
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Permanently delete all data and reset the blog"
+msgstr ""
+
 #. @context: Post badge - pinned
 #: src/ui/dash/StatusBadge.tsx
 msgid "Pinned"
@@ -1246,6 +1305,16 @@ msgstr "搜索帖子..."
 msgid "Search..."
 msgstr "搜索..."
 
+#. @context: Error toast when CSRF token is invalid or expired
+#: src/routes/dash/settings.tsx
+msgid "Security token expired. Refresh the page and try again."
+msgstr ""
+
+#. @context: Error toast when CSRF token is missing from delete request
+#: src/routes/dash/settings.tsx
+msgid "Security token missing. Refresh the page and try again."
+msgstr ""
+
 #. @context: Settings section heading for SEO
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "SEO"
@@ -1458,6 +1527,11 @@ msgstr "此链接已过期"
 msgid "This reset link is no longer valid. Request a new one to continue."
 msgstr "该重置链接已失效。请求一个新的以继续。"
 
+#. @context: Warning text on account deletion page
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone."
+msgstr ""
+
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Time Zone"
@@ -1505,6 +1579,11 @@ msgstr "令牌可让您在不登录的情况下从脚本、快捷方式和其他
 #: src/routes/dash/custom-urls.tsx
 msgid "Type"
 msgstr "类型"
+
+#. @context: Instruction to type confirmation phrase before deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Type the following phrase to confirm:"
+msgstr ""
 
 #. @context: Compose quote text placeholder
 #: src/ui/compose/ComposeDialog.tsx

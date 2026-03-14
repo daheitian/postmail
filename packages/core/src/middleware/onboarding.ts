@@ -10,6 +10,11 @@
 import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
+import {
+  elapsedMs,
+  logTiming,
+  shouldLogRequestTiming,
+} from "../lib/request-timing.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -23,16 +28,30 @@ let onboardingComplete = false;
  */
 export function requireOnboarding(): MiddlewareHandler<Env> {
   return async (c, next) => {
+    const path = new URL(c.req.url).pathname;
+    const shouldLogTiming = shouldLogRequestTiming(path);
+
     if (onboardingComplete) {
+      if (shouldLogTiming && shouldRedirect(path)) {
+        logTiming(c.var.requestTrace, "onboarding.cache.hit", {
+          isComplete: true,
+        });
+      }
       return next();
     }
 
-    const path = new URL(c.req.url).pathname;
     if (!shouldRedirect(path)) {
       return next();
     }
 
+    const checkStart = shouldLogTiming ? Date.now() : 0;
     const isComplete = await c.var.services.settings.isOnboardingComplete();
+    if (shouldLogTiming) {
+      logTiming(c.var.requestTrace, "onboarding.check.completed", {
+        durationMs: elapsedMs(checkStart),
+        isComplete,
+      });
+    }
     if (isComplete) {
       onboardingComplete = true;
       return next();

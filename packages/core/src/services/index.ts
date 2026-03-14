@@ -67,5 +67,5 @@ export type { MediaService, MediaFilters } from "./media.js";
 export type { CollectionService } from "./collection.js";
 export type { SearchService, SearchResult, SearchOptions } from "./search.js";
 export type { NavItemService } from "./navigation.js";
-export type { AuthService } from "./auth.js";
+export type { AuthService, DeleteAccountDeps } from "./auth.js";
 export type { ApiTokenService } from "./api-token.js";

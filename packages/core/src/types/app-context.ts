@@ -11,6 +11,7 @@ import type { Services } from "../services/index.js";
 import type { Auth } from "../auth.js";
 import type { AppConfig } from "./config.js";
 import type { StorageDriver } from "../lib/storage.js";
+import type { RequestTrace } from "../lib/request-timing.js";
 import type { Bindings } from "./bindings.js";
 
 export interface AppVariables {
@@ -20,6 +21,7 @@ export interface AppVariables {
   allSettings: Record<string, string>;
   themeStyle: string;
   storage: StorageDriver | null;
+  requestTrace: RequestTrace;
 }
 
 export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;

@@ -35,6 +35,7 @@ import { ColorThemeContent } from "../../ui/dash/appearance/ColorThemeContent.js
 import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
 import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
 import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
+import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountContent.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -748,6 +749,71 @@ settingsRoutes.post("/account/password", async (c) => {
       confirmPassword: "",
     });
   });
+});
+
+// ===========================================================================
+// Delete Account
+// ===========================================================================
+
+settingsRoutes.get("/account/delete-account", async (c) => {
+  const navData = await getNavigationData(c);
+  const csrfToken = await c.var.services.auth.generateDeleteCsrfToken();
+
+  return renderPublicPage(c, {
+    title: `Delete Account - ${navData.siteName}`,
+    navData,
+    content: (
+      <>
+        <AdminBreadcrumb
+          parent="Account"
+          parentHref="/settings/account"
+          current="Delete Account"
+        />
+        <DeleteAccountContent
+          siteName={navData.siteName}
+          csrfToken={csrfToken}
+        />
+      </>
+    ),
+  });
+});
+
+settingsRoutes.post("/account/delete-account", async (c) => {
+  const i18n = getI18n(c);
+  const csrfToken = c.req.header("x-csrf-token");
+
+  if (!csrfToken) {
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Security token missing. Refresh the page and try again.",
+          comment:
+            "@context: Error toast when CSRF token is missing from delete request",
+        }),
+      ),
+      "error",
+    );
+  }
+
+  const isValid = await c.var.services.auth.validateDeleteCsrfToken(csrfToken);
+  if (!isValid) {
+    return dsToast(
+      i18n._(
+        msg({
+          message: "Security token expired. Refresh the page and try again.",
+          comment:
+            "@context: Error toast when CSRF token is invalid or expired",
+        }),
+      ),
+      "error",
+    );
+  }
+
+  await c.var.services.auth.deleteAllData({
+    storage: c.var.storage,
+  });
+
+  return dsRedirect("/setup");
 });
 
 // ===========================================================================

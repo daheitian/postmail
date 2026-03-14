@@ -11,6 +11,11 @@ import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { resolveConfig } from "../lib/resolve-config.js";
 import { buildThemeStyle } from "../lib/theme.js";
+import {
+  elapsedMs,
+  logTiming,
+  shouldLogRequestTiming,
+} from "../lib/request-timing.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
 import { BUILTIN_FONT_THEMES } from "../ui/font-themes.js";
 
@@ -23,6 +28,8 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
  */
 export function withConfig(): MiddlewareHandler<Env> {
   return async (c, next) => {
+    const shouldLogTiming = shouldLogRequestTiming(c.var.requestTrace.path);
+    const configStart = shouldLogTiming ? Date.now() : 0;
     const allSettings = await c.var.services.settings.getAll();
     c.set("allSettings", allSettings);
     const appConfig = resolveConfig(c.env, allSettings);
@@ -45,6 +52,13 @@ export function withConfig(): MiddlewareHandler<Env> {
 
     const themeStyle = buildThemeStyle(activeTheme, fontOverrides);
     c.set("themeStyle", themeStyle);
+
+    if (shouldLogTiming) {
+      logTiming(c.var.requestTrace, "config.loaded", {
+        durationMs: elapsedMs(configStart),
+        settingsCount: Object.keys(allSettings).length,
+      });
+    }
 
     await next();
   };

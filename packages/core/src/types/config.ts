@@ -178,6 +178,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  DELETE_CSRF_TOKEN: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
 } as const;
 
 export type ConfigKey = keyof typeof CONFIG_FIELDS;

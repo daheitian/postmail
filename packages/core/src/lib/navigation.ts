@@ -6,6 +6,7 @@
 
 import type { Context } from "hono";
 import type { Collection, NavItemView } from "../types.js";
+import { elapsedMs, logTiming } from "./request-timing.js";
 import { toNavItemViews } from "./view.js";
 import { render as renderMarkdown } from "./markdown.js";
 
@@ -47,7 +48,17 @@ export interface NavigationData {
  * ```
  */
 export async function getNavigationData(c: Context): Promise<NavigationData> {
+  const shouldLogTiming = c.var.requestTrace?.path === "/";
+  const navigationStart = shouldLogTiming ? Date.now() : 0;
+
+  const navItemsStart = shouldLogTiming ? Date.now() : 0;
   const items = await c.var.services.navItems.list();
+  if (shouldLogTiming) {
+    logTiming(c.var.requestTrace, "home.navigation.nav-items.loaded", {
+      durationMs: elapsedMs(navItemsStart),
+      itemCount: items.length,
+    });
+  }
   const currentPath = new URL(c.req.url).pathname;
   const appConfig = c.var.appConfig;
 
@@ -71,19 +82,45 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   let isAuthenticated = false;
   let collections: Collection[] = [];
   try {
+    const sessionStart = shouldLogTiming ? Date.now() : 0;
     const session = await c.var.auth.api.getSession({
       headers: c.req.raw.headers,
     });
     isAuthenticated = !!session?.user;
+    if (shouldLogTiming) {
+      logTiming(c.var.requestTrace, "home.navigation.session.checked", {
+        durationMs: elapsedMs(sessionStart),
+        isAuthenticated,
+      });
+    }
   } catch {
     // Not authenticated
+    if (shouldLogTiming) {
+      logTiming(c.var.requestTrace, "home.navigation.session.checked", {
+        isAuthenticated: false,
+      });
+    }
   }
 
   const links = toNavItemViews(items, currentPath, isAuthenticated);
 
   // Only load collections when authenticated (for compose dialog)
   if (isAuthenticated) {
+    const collectionsStart = shouldLogTiming ? Date.now() : 0;
     collections = await c.var.services.collections.listByRecentActivity();
+    if (shouldLogTiming) {
+      logTiming(c.var.requestTrace, "home.navigation.collections.loaded", {
+        durationMs: elapsedMs(collectionsStart),
+        collectionsCount: collections.length,
+      });
+    }
+  }
+
+  if (shouldLogTiming) {
+    logTiming(c.var.requestTrace, "home.navigation.completed", {
+      durationMs: elapsedMs(navigationStart),
+      isAuthenticated,
+    });
   }
 
   return {
