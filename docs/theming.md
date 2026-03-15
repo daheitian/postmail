@@ -82,18 +82,18 @@ These are derived from the core palette by default. Built-in themes set `--site-
 
 ## Typography Variables
 
-| Variable         | Default               | What it controls             |
-| ---------------- | --------------------- | ---------------------------- |
-| `--font-body`    | System sans-serif     | Body text, inputs, UI labels |
-| `--font-heading` | Same as `--font-body` | Headings, site logo          |
-| `--font-serif`   | System serif          | Serif accents                |
-| `--font-mono`    | System monospace      | Code blocks                  |
-| `--fw-light`     | 300                   | Light accents                |
-| `--fw-regular`   | 400                   | Body text                    |
-| `--fw-medium`    | 500                   | Labels, active nav           |
-| `--fw-semibold`  | 600                   | Headings, buttons            |
-| `--fw-bold`      | 700                   | Strong emphasis              |
-| `--fw-extrabold` | 800                   | Site logo                    |
+| Variable         | Default                      | What it controls             |
+| ---------------- | ---------------------------- | ---------------------------- |
+| `--font-body`    | System sans-serif            | Body text, inputs, UI labels |
+| `--font-heading` | Editorial serif stack        | Headings, site logo          |
+| `--font-serif`   | System serif + Noto fallback | Serif accents                |
+| `--font-mono`    | System monospace             | Code blocks                  |
+| `--fw-light`     | 300                          | Light accents                |
+| `--fw-regular`   | 400                          | Body text                    |
+| `--fw-medium`    | 500                          | Labels, active nav           |
+| `--fw-semibold`  | 600                          | Headings, buttons            |
+| `--fw-bold`      | 700                          | Strong emphasis              |
+| `--fw-extrabold` | 800                          | Site logo                    |
 
 Font themes (**Settings > Font Theme**) override `--font-heading`, `--font-body`, and a small set of typography rhythm tokens for headings, labels, and body copy. You can further override them in Custom CSS.
 

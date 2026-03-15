@@ -48,15 +48,15 @@ const NEWSROOM_SANS =
  * Charter (macOS); Cambria / Sitka Text (Windows); Georgia (universal)
  */
 const EDITORIAL_SERIF =
-  '"Noto Serif SC", ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
+  'ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", "Noto Serif SC", serif';
 
 /** Refined newsroom serif with self-hosted Latin text */
 const NEWSROOM_SERIF =
-  '"Newsreader Variable", Newsreader, "Noto Serif SC", ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
+  '"Newsreader Variable", Newsreader, ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", "Noto Serif SC", serif';
 
 /** Library serif with self-hosted Latin text and CJK serif fallback */
 const LITERARY_SERIF =
-  '"Literata Variable", Literata, "Noto Serif SC", Palatino, "Palatino Linotype", "Book Antiqua", "Source Serif 4", "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif';
+  '"Literata Variable", Literata, Palatino, "Palatino Linotype", "Book Antiqua", "Source Serif 4", "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", "Noto Serif SC", serif';
 
 /**
  * Geometric sans stack
