@@ -22,6 +22,7 @@ import type {
   LocalDraft,
 } from "./compose-types.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
+import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
 import { getMediaCategory } from "../../lib/upload.js";
@@ -859,9 +860,18 @@ export class JantComposeDialog extends LitElement {
     this._editor?.closeAttachedPanel(this._attachedTextIndex);
   }
 
-  private _cancelAttachedPanel() {
+  private async _cancelAttachedPanel() {
     if (this._isAttachedTextDirty()) {
-      if (!globalThis.confirm("Discard changes?")) return;
+      const confirmed = await showConfirmDialog({
+        message: this.labels.discardChangesConfirm,
+        confirmLabel: this.labels.discard,
+        cancelLabel: this.labels.cancel,
+        tone: "danger",
+      });
+      if (!confirmed) return;
+      this._destroyAttachedEditor();
+      this._attachedPanelOpen = false;
+      return;
     }
     // Revert to snapshot — don't save current editor content
     this._destroyAttachedEditor();

@@ -20,6 +20,7 @@ export interface CollectionManagerLabels {
   moreActions: string;
   deleteCollection: string;
   confirmDelete: string;
+  cancel: string;
   entrySingular: string;
   entryPlural: string;
   emptyState: string;

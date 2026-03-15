@@ -7,6 +7,7 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
+import { buildConfirmActionExpression } from "../../../lib/confirm.js";
 import { escapeHtml } from "../../../lib/html.js";
 
 export interface DeleteAccountContentProps {
@@ -26,6 +27,11 @@ export function DeleteAccountContent({
       "@context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.",
   });
   const escapedConfirmPhrase = escapeHtml(confirmPhrase);
+  const deleteAccountLabel = t({
+    message: "Delete Account Permanently",
+    comment:
+      "@context: Final destructive button to delete account and all data",
+  });
 
   return (
     <div
@@ -205,22 +211,31 @@ export function DeleteAccountContent({
             type="button"
             class="btn-destructive"
             data-attr:disabled="!$_confirmMatch || $_deleteLoading"
-            data-on:click__prevent={`
-              if (!confirm('${t({ message: "Delete this blog permanently? This cannot be undone.", comment: "@context: Final browser confirm dialog before account deletion" }).replace(/'/g, "\\'")}')) return;
-              $_deleteLoading = true;
-              @post('/settings/account/delete-account', {headers: {'x-csrf-token': $_csrfToken}})
-            `}
+            data-on:click__prevent={buildConfirmActionExpression(
+              `$_deleteLoading = true; @post('/settings/account/delete-account', {headers: {'x-csrf-token': $_csrfToken}})`,
+              {
+                message: t({
+                  message:
+                    "Delete this blog permanently? This cannot be undone.",
+                  comment:
+                    "@context: Final browser confirm dialog before account deletion",
+                }),
+                confirmLabel: deleteAccountLabel,
+                cancelLabel: t({
+                  message: "Cancel",
+                  comment:
+                    "@context: Button label to dismiss a dialog or action",
+                }),
+                tone: "danger",
+              },
+            )}
           >
             <span
               data-show="$_deleteLoading"
               class="btn-spinner"
               style="display:none"
             />
-            {t({
-              message: "Delete Account Permanently",
-              comment:
-                "@context: Final destructive button to delete account and all data",
-            })}
+            {deleteAccountLabel}
           </button>
         </div>
       </div>

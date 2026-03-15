@@ -124,6 +124,7 @@ export interface ComposeLabels {
   confirmEditSubtitle: string;
   confirmEditPublish: string;
   confirmEditDiscard: string;
+  discardChangesConfirm: string;
   drafts: string;
   draftsEmpty: string;
   deleteDraft: string;

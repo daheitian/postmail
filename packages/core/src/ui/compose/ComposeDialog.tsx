@@ -223,6 +223,11 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       comment:
         "@context: Confirm close action sheet - discard changes button for editing published post",
     }),
+    discardChangesConfirm: t({
+      message: "Discard changes?",
+      comment:
+        "@context: Confirm dialog shown before discarding attached text edits",
+    }),
     drafts: t({ message: "Drafts", comment: "@context: Drafts panel title" }),
     draftsEmpty: t({
       message: "No drafts yet. Save a draft to find it here.",

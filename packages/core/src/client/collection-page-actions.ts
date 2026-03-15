@@ -1,4 +1,5 @@
 import type { CollectionSubmitDetail } from "./components/collection-types.js";
+import { showConfirmDialog } from "./confirm.js";
 import { showToast } from "./toast.js";
 
 interface CollectionPageActionLabels {
@@ -6,6 +7,7 @@ interface CollectionPageActionLabels {
   moreActions: string;
   deleteCollection: string;
   confirmDelete: string;
+  cancel: string;
   saved: string;
   saveFailed: string;
   deleted: string;
@@ -18,6 +20,7 @@ const parseLabels = (value: string | undefined): CollectionPageActionLabels => {
       moreActions: "",
       deleteCollection: "",
       confirmDelete: "",
+      cancel: "",
       saved: "",
       saveFailed: "",
       deleted: "",
@@ -32,6 +35,7 @@ const parseLabels = (value: string | undefined): CollectionPageActionLabels => {
       moreActions: "",
       deleteCollection: "",
       confirmDelete: "",
+      cancel: "",
       saved: "",
       saveFailed: "",
       deleted: "",
@@ -95,7 +99,13 @@ document
     const handleDelete = async () => {
       closeMenu(false);
 
-      if (!window.confirm(labels.confirmDelete)) return;
+      const confirmed = await showConfirmDialog({
+        message: labels.confirmDelete,
+        confirmLabel: labels.deleteCollection,
+        cancelLabel: labels.cancel,
+        tone: "danger",
+      });
+      if (!confirmed) return;
 
       try {
         const res = await fetch(`/api/collections/${collectionId}`, {

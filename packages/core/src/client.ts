@@ -10,6 +10,7 @@
 import "./vendor/datastar.js";
 import "./client/image-processor.js";
 import "./client/avatar-upload.js";
+import { ensureConfirmDialog } from "./client/confirm.js";
 
 // Lit Web Components (and their bridge modules)
 import "./client/components/jant-compose-dialog.js";
@@ -19,6 +20,7 @@ import "./client/components/jant-compose-fullscreen.js";
 // Mount fullscreen overlay at body level to escape the dialog's containing block
 // (dialog animation creates a containing block that traps position:fixed descendants)
 document.body.appendChild(document.createElement("jant-compose-fullscreen"));
+ensureConfirmDialog();
 import "./client/compose-bridge.js";
 import "./client/components/jant-settings-general.js";
 import "./client/components/jant-settings-avatar.js";

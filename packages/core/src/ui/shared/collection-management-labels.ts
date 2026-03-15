@@ -94,6 +94,10 @@ export const getCollectionMutationLabels = (t: Translate) => ({
       "Delete this collection permanently? Posts inside won't be removed.",
     comment: "@context: Confirm dialog for deleting a collection",
   }),
+  cancel: t({
+    message: "Cancel",
+    comment: "@context: Button label to dismiss a dialog or action",
+  }),
   saved: t({
     message: "Saved",
     comment: "@context: Toast after saving a collection",

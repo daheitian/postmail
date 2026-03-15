@@ -12,6 +12,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 
@@ -358,8 +359,13 @@ export class JantPostMenu extends LitElement {
 
   async #delete() {
     if (!this._data) return;
-    if (!window.confirm("Delete this post permanently? This can't be undone."))
-      return;
+    const confirmed = await showConfirmDialog({
+      message: "Delete this post permanently? This can't be undone.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      tone: "danger",
+    });
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`/api/posts/${this._data.id}`, {

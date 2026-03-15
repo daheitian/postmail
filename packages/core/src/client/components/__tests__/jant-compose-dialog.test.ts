@@ -70,6 +70,7 @@ const labels: ComposeLabels = {
   confirmEditSubtitle: "Do you want to publish your changes or discard them?",
   confirmEditPublish: "Publish",
   confirmEditDiscard: "Discard",
+  discardChangesConfirm: "Discard changes?",
   drafts: "Drafts",
   draftsEmpty: "No drafts yet. Save a draft to find it here.",
   deleteDraft: "Delete Draft",

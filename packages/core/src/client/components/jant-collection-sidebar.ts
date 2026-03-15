@@ -24,6 +24,7 @@ import {
   revertSortableDomMove,
   setSortableDraggingState,
 } from "../sortable-list.js";
+import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
@@ -579,7 +580,13 @@ export class JantCollectionsManager extends LitElement {
   }
 
   async #deleteCollection(collection: ManagedCollection) {
-    if (!window.confirm(this.labels.confirmDelete)) return;
+    const confirmed = await showConfirmDialog({
+      message: this.labels.confirmDelete,
+      confirmLabel: this.labels.deleteCollection,
+      cancelLabel: this.labels.cancel,
+      tone: "danger",
+    });
+    if (!confirmed) return;
 
     this._showItemMenuId = null;
     document.removeEventListener("click", this.#closeItemMenu);

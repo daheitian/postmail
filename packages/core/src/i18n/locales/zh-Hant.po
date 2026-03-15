@@ -408,6 +408,10 @@ msgstr ""
 msgid "Calm, not sleepy."
 msgstr ""
 
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel settings changes
@@ -418,7 +422,11 @@ msgstr ""
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/ActionButtons.tsx
+#: src/ui/dash/DangerZone.tsx
+#: src/ui/dash/settings/ApiTokensContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
+#: src/ui/dash/settings/DeleteAccountContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Cancel"
 msgstr "取消"
@@ -790,6 +798,11 @@ msgstr "目的地"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "放棄"
+
+#. @context: Confirm dialog shown before discarding attached text edits
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Discard changes?"
+msgstr "要放棄變更嗎？"
 
 #. @context: Checkbox to show avatar in the site header
 #: src/ui/dash/settings/AvatarContent.tsx

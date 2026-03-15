@@ -6,6 +6,7 @@
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
+import { buildConfirmActionExpression } from "../../lib/confirm.js";
 
 export interface ActionButtonsProps {
   /**
@@ -84,7 +85,15 @@ export const ActionButtons: FC<ActionButtonsProps> = ({
 
   const deleteClickHandler = deleteAction
     ? deleteConfirm
-      ? `confirm('${deleteConfirm}') && @post('${deleteAction}')`
+      ? buildConfirmActionExpression(`@post('${deleteAction}')`, {
+          message: deleteConfirm,
+          confirmLabel: deleteLabel || defaultDeleteLabel,
+          cancelLabel: t({
+            message: "Cancel",
+            comment: "@context: Button label to dismiss a dialog or action",
+          }),
+          tone: "danger",
+        })
       : `@post('${deleteAction}')`
     : undefined;
 

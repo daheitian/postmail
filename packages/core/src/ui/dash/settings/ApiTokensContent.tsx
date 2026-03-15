@@ -7,12 +7,17 @@
 
 import { useLingui } from "@lingui/react/macro";
 import type { ApiToken } from "../../../types/entities.js";
+import { buildConfirmActionExpression } from "../../../lib/confirm.js";
 import { formatDate } from "../../../lib/time.js";
 
 const API_DOCS_URL = "https://github.com/jant-me/jant/blob/main/docs/API.md";
 
 function TokenRow({ token }: { token: ApiToken }) {
   const { t } = useLingui();
+  const revokeLabel = t({
+    message: "Revoke",
+    comment: "@context: Button to revoke API token",
+  });
 
   return (
     <div class="py-4 flex items-start gap-4 border-b border-border last:border-b-0">
@@ -41,12 +46,24 @@ function TokenRow({ token }: { token: ApiToken }) {
       <button
         type="button"
         class="btn-sm-ghost text-destructive"
-        data-on:click__prevent={`confirm('${t({ message: "Revoke this token? Any scripts using it will stop working.", comment: "@context: Confirm dialog for revoking API token" })}') && @post('/settings/api-tokens/${token.id}/delete')`}
+        data-on:click__prevent={buildConfirmActionExpression(
+          `@post('/settings/api-tokens/${token.id}/delete')`,
+          {
+            message: t({
+              message:
+                "Revoke this token? Any scripts using it will stop working.",
+              comment: "@context: Confirm dialog for revoking API token",
+            }),
+            confirmLabel: revokeLabel,
+            cancelLabel: t({
+              message: "Cancel",
+              comment: "@context: Button label to dismiss a dialog or action",
+            }),
+            tone: "danger",
+          },
+        )}
       >
-        {t({
-          message: "Revoke",
-          comment: "@context: Button to revoke API token",
-        })}
+        {revokeLabel}
       </button>
     </div>
   );

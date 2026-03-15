@@ -408,6 +408,10 @@ msgstr "Buttons can stay steady, but links, thread markers, and subtle emphasis 
 msgid "Calm, not sleepy."
 msgstr "Calm, not sleepy."
 
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
+#. @context: Button label to dismiss a dialog or action
 #. @context: Button to cancel form
 #. @context: Button to cancel form
 #. @context: Button to cancel settings changes
@@ -418,7 +422,11 @@ msgstr "Calm, not sleepy."
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/ActionButtons.tsx
+#: src/ui/dash/DangerZone.tsx
+#: src/ui/dash/settings/ApiTokensContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
+#: src/ui/dash/settings/DeleteAccountContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Cancel"
 msgstr "Cancel"
@@ -790,6 +798,11 @@ msgstr "Destination"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Discard"
 msgstr "Discard"
+
+#. @context: Confirm dialog shown before discarding attached text edits
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Discard changes?"
+msgstr "Discard changes?"
 
 #. @context: Checkbox to show avatar in the site header
 #: src/ui/dash/settings/AvatarContent.tsx

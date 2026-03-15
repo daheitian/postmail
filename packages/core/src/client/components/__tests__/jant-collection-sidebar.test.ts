@@ -38,6 +38,7 @@ const labels: CollectionManagerLabels = {
   moreActions: "More actions",
   deleteCollection: "Delete collection",
   confirmDelete: "Delete this collection permanently?",
+  cancel: "Cancel",
   entrySingular: "entry",
   entryPlural: "entries",
   emptyState: "Create a collection to get started.",

@@ -6,13 +6,17 @@ vi.mock("../toast.js", () => ({
   showToast: vi.fn(),
 }));
 
+vi.mock("../confirm.js", () => ({
+  showConfirmDialog: vi.fn(),
+}));
+
 function createMarkup() {
   document.body.innerHTML = `
     <div id="toast-container"></div>
     <div
       data-collection-page-actions
       data-collection-id="collection-1"
-      data-collection-page-labels='{"edit":"Edit","moreActions":"More actions","deleteCollection":"Delete","confirmDelete":"Delete this collection permanently? Posts inside won\\u0027t be removed.","saved":"Saved","saveFailed":"Couldn\\u0027t save. Try again in a moment.","deleted":"Deleted"}'
+      data-collection-page-labels='{"edit":"Edit","moreActions":"More actions","deleteCollection":"Delete","confirmDelete":"Delete this collection permanently? Posts inside won\\u0027t be removed.","cancel":"Cancel","saved":"Saved","saveFailed":"Couldn\\u0027t save. Try again in a moment.","deleted":"Deleted"}'
       data-collection-page-redirect-url="/c"
     >
       <button
@@ -141,13 +145,11 @@ describe("collection detail page actions", () => {
       status: 200,
     });
     vi.stubGlobal("fetch", fetchMock);
-    Object.defineProperty(window, "confirm", {
-      configurable: true,
-      value: vi.fn().mockReturnValue(true),
-    });
 
+    const { showConfirmDialog } = await import("../confirm.js");
     const { showToast } = await import("../toast.js");
     await import("../collection-page-actions.js");
+    vi.mocked(showConfirmDialog).mockResolvedValue(true);
 
     const trigger = document.querySelector<HTMLElement>(
       "[data-collection-page-action='toggle-menu']",
@@ -162,9 +164,13 @@ describe("collection detail page actions", () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      "Delete this collection permanently? Posts inside won't be removed.",
-    );
+    expect(showConfirmDialog).toHaveBeenCalledWith({
+      message:
+        "Delete this collection permanently? Posts inside won't be removed.",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      tone: "danger",
+    });
     expect(fetchMock).toHaveBeenCalledWith("/api/collections/collection-1", {
       method: "DELETE",
     });

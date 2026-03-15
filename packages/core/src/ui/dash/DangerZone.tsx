@@ -7,6 +7,7 @@
 
 import type { FC, PropsWithChildren } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
+import { buildConfirmActionExpression } from "../../lib/confirm.js";
 
 export interface DangerZoneProps extends PropsWithChildren {
   /**
@@ -58,7 +59,15 @@ export const DangerZone: FC<DangerZoneProps> = ({
   });
 
   const clickHandler = confirmMessage
-    ? `confirm('${confirmMessage}') && @post('${formAction}')`
+    ? buildConfirmActionExpression(`@post('${formAction}')`, {
+        message: confirmMessage,
+        confirmLabel: actionLabel,
+        cancelLabel: t({
+          message: "Cancel",
+          comment: "@context: Button label to dismiss a dialog or action",
+        }),
+        tone: "danger",
+      })
     : `@post('${formAction}')`;
 
   return (
