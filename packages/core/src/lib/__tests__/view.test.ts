@@ -127,20 +127,22 @@ describe("toPostView", () => {
     expect(view.publishedAtFormatted).toBe("Feb 1, 2024");
   });
 
-  it("generates excerpt from body", () => {
+  it("generates summary and excerpt from plain-text preview content", () => {
     const shortBody = "Short text";
     const longBody = "A".repeat(200);
 
     const shortView = toPostView(
-      makePostWithMedia({ body: shortBody }),
+      makePostWithMedia({ bodyText: shortBody }),
       EMPTY_CTX,
     );
+    expect(shortView.summary).toBe("Short text");
     expect(shortView.excerpt).toBe("Short text");
 
     const longView = toPostView(
-      makePostWithMedia({ body: longBody }),
+      makePostWithMedia({ bodyText: longBody }),
       EMPTY_CTX,
     );
+    expect(longView.summary).toBe(longBody);
     expect(longView.excerpt).toBe("A".repeat(160) + "...");
   });
 
@@ -201,6 +203,7 @@ describe("toPostView", () => {
       makePostWithMedia({ body: null, bodyHtml: null }),
       EMPTY_CTX,
     );
+    expect(view.summary).toBeUndefined();
     expect(view.excerpt).toBeUndefined();
     expect(view.bodyHtml).toBeUndefined();
     expect(view.body).toBeUndefined();
@@ -211,6 +214,7 @@ describe("toPostView", () => {
     expect(view.title).toBeUndefined();
     expect(view.slug).toBe("test-post");
     expect(view.url).toBeUndefined();
+    expect(view.summary).toBe("Hello world");
     expect(view.quoteText).toBeUndefined();
     expect(view.rating).toBeUndefined();
     expect(view.replyToId).toBeUndefined();
@@ -235,6 +239,7 @@ describe("toPostView", () => {
       }),
       EMPTY_CTX,
     );
+    expect(view.summary).toBe("Something wise");
     expect(view.quoteText).toBe("Something wise");
   });
 

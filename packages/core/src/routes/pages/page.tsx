@@ -12,6 +12,7 @@ import { PostPage } from "../../ui/pages/PostPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
+import { buildPostMeta } from "../../lib/post-meta.js";
 import { createMediaContext, toPostView } from "../../lib/view.js";
 import type { Post } from "../../types.js";
 
@@ -66,11 +67,11 @@ async function renderPost(c: Context<Env>, post: Post) {
       : undefined;
 
   const navData = await navDataPromise;
-  const title = post.title || navData.siteName;
+  const meta = buildPostMeta(post, navData.siteName);
 
   return renderPublicPage(c, {
-    title,
-    description: post.body?.slice(0, 160),
+    title: meta.title,
+    description: meta.description,
     navData,
     content: <PostPage post={postView} threadPosts={threadPostViews} />,
   });

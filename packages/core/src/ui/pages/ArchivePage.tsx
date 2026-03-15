@@ -18,7 +18,6 @@ import type { PostView } from "../../types/views.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { getIconSvg, renderCollectionIcon } from "../../lib/icons.js";
 import { toMediaKind } from "../../lib/upload.js";
-import { stripHtml } from "../../lib/excerpt.js";
 import { PagePagination } from "../shared/Pagination.js";
 import { TimelineItemFromPost } from "../feed/TimelineItem.js";
 import { DecorativeQuoteMark } from "../shared/DecorativeQuoteMark.js";
@@ -770,7 +769,9 @@ function getTileVariant(post: PostView): "text" | "image" | "mixed" | "quote" {
   if (post.format === "quote") {
     return hasVisualBg ? "mixed" : "quote";
   }
-  if (hasVisualBg && (post.title || post.excerpt)) return "mixed";
+  if (hasVisualBg && (post.title || post.summary || post.excerpt)) {
+    return "mixed";
+  }
   if (hasVisualBg) return "image";
   return "text";
 }
@@ -815,49 +816,8 @@ function getTileBadge(
   return undefined;
 }
 
-function decodeHtmlEntities(text: string): string {
-  const namedEntities: Record<string, string> = {
-    amp: "&",
-    lt: "<",
-    gt: ">",
-    quot: '"',
-    apos: "'",
-    nbsp: " ",
-  };
-
-  return text.replace(
-    /&(#x?[0-9a-f]+|[a-z]+);/gi,
-    (match: string, entity: string) => {
-      const normalized = entity.toLowerCase();
-
-      if (normalized.startsWith("#x")) {
-        const codePoint = Number.parseInt(normalized.slice(2), 16);
-        return Number.isFinite(codePoint)
-          ? String.fromCodePoint(codePoint)
-          : match;
-      }
-
-      if (normalized.startsWith("#")) {
-        const codePoint = Number.parseInt(normalized.slice(1), 10);
-        return Number.isFinite(codePoint)
-          ? String.fromCodePoint(codePoint)
-          : match;
-      }
-
-      return namedEntities[normalized] ?? match;
-    },
-  );
-}
-
-function getTilePreviewText(html: string): string {
-  return decodeHtmlEntities(stripHtml(html)).replace(/\s+/g, " ").trim();
-}
-
 function getTileText(post: PostView): { title?: string; summary: string } {
-  const bodySummary = post.bodyHtml
-    ? getTilePreviewText(post.bodyHtml).slice(0, 200)
-    : "";
-  const fallbackSummary = bodySummary || post.excerpt?.trim() || "";
+  const fallbackSummary = post.summary?.trim() || post.excerpt?.trim() || "";
 
   if (post.title) {
     const summary = fallbackSummary || post.url || "";

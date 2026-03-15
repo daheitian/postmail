@@ -33,6 +33,8 @@ export interface PostView {
   title?: string;
   /** Pre-sanitized HTML */
   bodyHtml?: string;
+  /** Unified plain-text preview summary for cards, lists, and meta fallbacks */
+  summary?: string;
   /** Pre-computed excerpt, max 160 chars */
   excerpt?: string;
   /** HTML excerpt for article previews (paragraph-aware, ~500 chars) */

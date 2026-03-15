@@ -9,16 +9,17 @@
  */
 
 import { Hono } from "hono";
+import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { getI18n } from "../../i18n/index.js";
+import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { assembleTimeline } from "../../lib/timeline.js";
 import {
-  createMediaContext,
-  toPostViewsFromPosts,
-  loadThreadRootPermalinks,
-} from "../../lib/view.js";
+  assembleFeaturedTimeline,
+  assembleTimeline,
+} from "../../lib/timeline.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
 import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
@@ -28,34 +29,48 @@ export const homeRoutes = new Hono<Env>();
 
 homeRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
+  const i18n = getI18n(c);
+  const page = parsePageNumber(c.req.query("page"));
+  const paginatedPageTitle = formatPageLabel(page);
 
   if (navData.homeDefaultView === "featured") {
-    // Show featured posts on homepage
-    const posts = await c.var.services.posts.list({
-      featured: true,
-      status: "published",
-      excludePrivate: !navData.isAuthenticated,
-    });
-    const mediaCtx = createMediaContext(c.var.appConfig);
-
-    const rootPermalinkMap = await loadThreadRootPermalinks(
-      posts,
-      c.var.services.posts.getById.bind(c.var.services.posts),
+    const featuredTitle = i18n._(
+      msg({
+        message: "Featured",
+        comment: "@context: Browser page title for the featured feed",
+      }),
+    );
+    const { items, currentPage, totalPages } = await assembleFeaturedTimeline(
+      c,
+      {
+        page,
+        isAuthenticated: navData.isAuthenticated,
+      },
     );
 
-    const postViews = toPostViewsFromPosts(posts, mediaCtx, rootPermalinkMap);
-    const items = postViews.map((post) => ({ post }));
-
     return renderPublicPage(c, {
-      title: navData.siteName,
+      title:
+        page > 1
+          ? `${featuredTitle} - ${paginatedPageTitle} - ${navData.siteName}`
+          : navData.siteName,
       navData,
-      content: <FeaturedPage items={items} />,
+      content: (
+        <FeaturedPage
+          items={items}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          baseUrl="/"
+        />
+      ),
     });
   }
 
-  // Default: show latest posts (pinned posts sort to top via service layer)
-  const pageParam = c.req.query("page");
-  const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
+  const latestTitle = i18n._(
+    msg({
+      message: "Latest",
+      comment: "@context: Browser page title for the latest feed",
+    }),
+  );
 
   const { items, currentPage, totalPages } = await assembleTimeline(c, {
     page,
@@ -63,11 +78,15 @@ homeRoutes.get("/", async (c) => {
   });
 
   return renderPublicPage(c, {
-    title: navData.siteName,
+    title:
+      page > 1
+        ? `${latestTitle} - ${paginatedPageTitle} - ${navData.siteName}`
+        : navData.siteName,
     navData,
     content: (
       <HomePage
         items={items}
+        baseUrl="/"
         currentPage={currentPage}
         totalPages={totalPages}
       />

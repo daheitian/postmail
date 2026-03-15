@@ -7,6 +7,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { CollectionPage } from "../../ui/pages/CollectionPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
 import { renderPublicPage } from "../../lib/render.js";
 import {
   createMediaContext,
@@ -23,6 +24,10 @@ export const collectionRoutes = new Hono<Env>();
 
 collectionRoutes.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
+  const page = parsePageNumber(c.req.query("page"));
+  const pageSize = c.var.appConfig.pageSize;
+  const offset = (page - 1) * pageSize;
+  const paginatedPageTitle = formatPageLabel(page);
 
   // Start navData + collection fetch in parallel
   const [collection, navData] = await Promise.all([
@@ -32,16 +37,25 @@ collectionRoutes.get("/:slug", async (c) => {
   if (!collection) return c.notFound();
 
   // Fetch posts, all collections, sidebar items, and post counts in parallel
-  const [posts, allCollections, sidebarItems, postCounts] = await Promise.all([
-    c.var.services.posts.list({
-      collectionId: collection.id,
-      status: "published",
-      excludePrivate: !navData.isAuthenticated,
-    }),
-    c.var.services.collections.list(),
-    c.var.services.collections.listSidebarItems(),
-    c.var.services.collections.getPostCounts(),
-  ]);
+  const [totalCount, posts, allCollections, sidebarItems, postCounts] =
+    await Promise.all([
+      c.var.services.posts.count({
+        collectionId: collection.id,
+        status: "published",
+        excludePrivate: !navData.isAuthenticated,
+      }),
+      c.var.services.posts.list({
+        collectionId: collection.id,
+        status: "published",
+        excludePrivate: !navData.isAuthenticated,
+        limit: pageSize,
+        offset,
+      }),
+      c.var.services.collections.list(),
+      c.var.services.collections.listSidebarItems(),
+      c.var.services.collections.getPostCounts(),
+    ]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   // Batch-load media and thread root permalinks in parallel
   const postIds = posts.map((p) => p.id);
@@ -72,7 +86,10 @@ collectionRoutes.get("/:slug", async (c) => {
   const items = postViews.map((post) => ({ post }));
 
   return renderPublicPage(c, {
-    title: `${collection.title} - ${navData.siteName}`,
+    title:
+      page > 1
+        ? `${collection.title} - ${paginatedPageTitle} - ${navData.siteName}`
+        : `${collection.title} - ${navData.siteName}`,
     description: collection.description ?? undefined,
     navData,
     sidebar: (
@@ -85,7 +102,13 @@ collectionRoutes.get("/:slug", async (c) => {
       />
     ),
     content: (
-      <CollectionPage collection={collection} items={items} hasMore={false} />
+      <CollectionPage
+        collection={collection}
+        items={items}
+        currentPage={page}
+        totalPages={totalPages}
+        baseUrl={`/c/${collection.slug}`}
+      />
     ),
   });
 });

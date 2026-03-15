@@ -6,6 +6,7 @@
 
 import type { ColorTheme } from "../ui/color-themes.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
+import type { ThemeMode } from "../types/config.js";
 
 /**
  * Get the list of available color themes.
@@ -41,12 +42,13 @@ export function getAvailableThemes(): ColorTheme[] {
  *
  * @example
  * ```typescript
- * const css = buildThemeStyle(blueTheme, { "--radius": "0.5rem" });
+ * const css = buildThemeStyle(blueTheme, "auto", { "--radius": "0.5rem" });
  * // => ":root:root { ... }\n@media (prefers-color-scheme: dark) { :root:root { ... } }"
  * ```
  */
 export function buildThemeStyle(
   theme: ColorTheme | undefined,
+  themeMode: ThemeMode = "auto",
   cssVariables?: Record<string, string>,
 ): string {
   const lightVars: Record<string, string> = {
@@ -70,17 +72,22 @@ export function buildThemeStyle(
       .map(([k, v]) => `  ${k}: ${v};`)
       .join("\n");
     // :root:root has specificity (0,0,2) > BaseCoat's :root (0,0,1)
-    parts.push(`:root:root {\n${declarations}\n}`);
+    parts.push(`:root:root {\n  color-scheme: light;\n${declarations}\n}`);
   }
 
   if (hasDark) {
     const declarations = Object.entries(darkVars)
       .map(([k, v]) => `    ${k}: ${v};`)
       .join("\n");
-    // :root:root inside @media has specificity (0,0,2) > preset fallback :root (0,0,1)
-    parts.push(
-      `@media (prefers-color-scheme: dark) {\n  :root:root {\n${declarations}\n  }\n}`,
-    );
+    const darkBlock = `  color-scheme: dark;\n${declarations}`;
+    if (themeMode === "dark") {
+      parts.push(`:root:root {\n${darkBlock}\n}`);
+    } else {
+      parts.push(`:root:root[data-theme-mode="dark"] {\n${darkBlock}\n}`);
+      parts.push(
+        `@media (prefers-color-scheme: dark) {\n  :root:root:not([data-theme-mode="light"]) {\n${darkBlock}\n  }\n}`,
+      );
+    }
   }
 
   return parts.join("\n");

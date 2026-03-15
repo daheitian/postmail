@@ -8,9 +8,11 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { HomePageProps } from "../../types.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
+import { PaginatedPageHeader } from "../shared/PaginatedPageHeader.js";
 
 export const HomePage: FC<HomePageProps> = ({
   items,
+  baseUrl,
   currentPage,
   totalPages,
 }) => {
@@ -18,6 +20,16 @@ export const HomePage: FC<HomePageProps> = ({
 
   return (
     <div data-page="home">
+      <PaginatedPageHeader
+        title={t({
+          message: "Latest",
+          comment: "@context: Page heading for the latest posts feed",
+        })}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        hideOnFirstPage
+        showTitle={false}
+      />
       {items.length === 0 ? (
         <div data-feed>
           <div id="timeline-feed">
@@ -37,6 +49,7 @@ export const HomePage: FC<HomePageProps> = ({
       ) : (
         <TimelineFeed
           items={items}
+          baseUrl={baseUrl}
           currentPage={currentPage}
           totalPages={totalPages}
         />

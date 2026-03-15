@@ -9,7 +9,12 @@ import type { Context } from "hono";
 import type { Bindings, TimelineItemView } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
-import { createMediaContext, toPostView } from "./view.js";
+import {
+  createMediaContext,
+  loadThreadRootPermalinks,
+  toPostView,
+  toPostViewsFromPosts,
+} from "./view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -171,6 +176,68 @@ export async function assembleTimeline(
 
     return { post: postView };
   });
+
+  return { items, currentPage: page, totalPages };
+}
+
+/**
+ * Assembles a paginated featured-post timeline without thread previews.
+ *
+ * @param c - Hono context (provides services + appConfig)
+ * @param options - Optional page number and auth state
+ * @returns Featured timeline items with pagination info
+ */
+export async function assembleFeaturedTimeline(
+  c: Context<Env>,
+  options?: { page?: number; isAuthenticated?: boolean },
+): Promise<TimelineResult> {
+  const pageSize = c.var.appConfig.pageSize;
+  const page = Math.max(1, options?.page ?? 1);
+  const offset = (page - 1) * pageSize;
+  const excludePrivate = !(options?.isAuthenticated ?? false);
+
+  const [totalCount, posts] = await Promise.all([
+    c.var.services.posts.count({
+      featured: true,
+      status: "published",
+      excludePrivate,
+    }),
+    c.var.services.posts.list({
+      featured: true,
+      status: "published",
+      excludePrivate,
+      limit: pageSize,
+      offset,
+    }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  if (posts.length === 0) {
+    return { items: [], currentPage: page, totalPages };
+  }
+
+  const mediaCtx = createMediaContext(c.var.appConfig);
+  const threadIds = [...new Set(posts.map((p) => p.threadId))];
+  const [rootPermalinkMap, lastPostMap] = await Promise.all([
+    loadThreadRootPermalinks(
+      posts,
+      c.var.services.posts.getById.bind(c.var.services.posts),
+    ),
+    c.var.services.posts.getLastPostIdsByThread(threadIds),
+  ]);
+
+  const isLastInThreadMap = new Map<string, boolean>();
+  for (const post of posts) {
+    isLastInThreadMap.set(post.id, lastPostMap.get(post.threadId) === post.id);
+  }
+
+  const items = toPostViewsFromPosts(
+    posts,
+    mediaCtx,
+    rootPermalinkMap,
+    isLastInThreadMap,
+  ).map((post) => ({ post }));
 
   return { items, currentPage: page, totalPages };
 }

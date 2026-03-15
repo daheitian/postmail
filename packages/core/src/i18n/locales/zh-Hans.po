@@ -146,6 +146,16 @@ msgstr "所有可见性"
 msgid "All years"
 msgstr "所有年份"
 
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Always show the dark version of the theme."
+msgstr ""
+
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Always show the light version of the theme."
+msgstr ""
+
 #. @context: Link to API documentation
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "API reference"
@@ -160,8 +170,8 @@ msgstr "API 令牌"
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Applies to your entire site, including admin pages. All themes support dark mode."
-msgstr "应用于整个站点，包括管理页面。所有主题都支持深色模式。"
+msgid "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
+msgstr ""
 
 #. @context: Archive page title
 #: src/ui/pages/ArchivePage.tsx
@@ -187,6 +197,11 @@ msgstr "未设置身份验证。请检查您的服务器配置。"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Author (optional)"
 msgstr "作者（可选）"
+
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Auto"
+msgstr ""
 
 #. @context: Description after theming guide link on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -432,6 +447,11 @@ msgstr "自定义 URL"
 msgid "Danger Zone"
 msgstr "危险区"
 
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Dark"
+msgstr ""
+
 #. @context: Settings group label for data export/import
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Data"
@@ -497,7 +517,9 @@ msgstr "为视力受限的人描述此图像..."
 msgid "Description (optional)"
 msgstr "描述（可选）"
 
+#. @context: Color theme preview collection label
 #. @context: Settings group label for design settings
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Design"
 msgstr "设计"
@@ -651,13 +673,19 @@ msgstr "Favicon 和页眉图标"
 #. @context: Browse filter label
 #. @context: Browse filter label
 #. @context: Browse filter label for featured posts
+#. @context: Browser page title for the featured feed
+#. @context: Browser page title for the featured feed
+#. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
+#: src/routes/pages/featured.tsx
+#: src/routes/pages/home.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/FeaturedPage.tsx
 msgid "Featured"
 msgstr "精选"
 
@@ -665,6 +693,11 @@ msgstr "精选"
 #: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Field note"
 msgstr "随手记"
+
+#. @context: Color theme preview card title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Field notes on quiet design"
+msgstr ""
 
 #. @context: Error toast when file storage is not set up
 #. @context: Error when file storage is not set up
@@ -682,6 +715,11 @@ msgstr "文件已上传."
 #: src/ui/pages/ArchivePage.tsx
 msgid "Files"
 msgstr "文件"
+
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Follow each visitor's system preference."
+msgstr ""
 
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -795,17 +833,28 @@ msgstr "上次使用 {0}"
 #. @context: Browse filter label
 #. @context: Browse filter label
 #. @context: Browse filter label for latest posts
+#. @context: Browser page title for the latest feed
+#. @context: Browser page title for the latest feed
+#. @context: Page heading for the latest posts feed
+#: src/routes/pages/home.tsx
+#: src/routes/pages/latest.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
+#: src/ui/pages/HomePage.tsx
 msgid "Latest"
 msgstr "最新"
 
 #. @context: Suffix after Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
-msgstr "允许您覆盖任何主题变量."
+msgstr ""
+
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Light"
+msgstr ""
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -852,6 +901,11 @@ msgstr "评分最低"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage active sign-in sessions"
 msgstr "管理当前的登录会话"
+
+#. @context: Color theme preview date label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "March 14"
+msgstr ""
 
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1001,10 +1055,12 @@ msgstr "没有帖子符合这些筛选条件。尝试调整选择或清除所有
 msgid "No results. Try different keywords."
 msgstr "没有结果。尝试不同的关键词。"
 
+#. @context: Color theme preview format label
 #. @context: Compose format tab
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/FormatBadge.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Note"
@@ -1038,11 +1094,6 @@ msgstr "以精选文章打开"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Order saved"
 msgstr "排序已保存"
-
-#. @context: Pagination - current page indicator
-#: src/ui/shared/Pagination.tsx
-msgid "Page {page}"
-msgstr "第 {page} 页"
 
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
@@ -1172,6 +1223,11 @@ msgstr "已发布"
 msgid "Published!"
 msgstr "已发布！"
 
+#. @context: Color theme preview card secondary sentence
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Quiet surfaces let writing lead."
+msgstr ""
+
 #. @context: Compose format tab
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
@@ -1195,6 +1251,11 @@ msgstr "引用、标题和标签，应该朝同一个方向倾斜。"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Rate"
 msgstr "评分"
+
+#. @context: Color theme preview inline link label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Read why"
+msgstr ""
 
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
@@ -1426,6 +1487,11 @@ msgstr "站点名称"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "URL 别名"
+
+#. @context: Color theme preview card body sentence
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Soft color should still carry a clear reading rhythm."
+msgstr ""
 
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
@@ -1692,7 +1758,7 @@ msgstr "查看"
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
-msgstr "想要更多控制吗？"
+msgstr ""
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx

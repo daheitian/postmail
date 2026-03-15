@@ -20,6 +20,7 @@ export interface HomePageProps {
   items: TimelineItemView[];
   currentPage: number;
   totalPages: number;
+  baseUrl: string;
 }
 
 /** Props for the single post page component */
@@ -31,6 +32,9 @@ export interface PostPageProps {
 /** Props for the featured page component */
 export interface FeaturedPageProps {
   items: TimelineItemView[];
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string;
 }
 
 /** Visibility filter values for the archive page (includes "featured" as a virtual value). */
@@ -78,8 +82,9 @@ export interface SearchPageProps {
 export interface CollectionPageProps {
   collection: Collection;
   items: TimelineItemView[];
-  hasMore: boolean;
-  nextCursor?: string;
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string;
 }
 
 /** Props for the collections list page component */
@@ -147,6 +152,7 @@ export interface ThreadPreviewProps {
 /** Props for the timeline feed wrapper */
 export interface TimelineFeedProps {
   items: TimelineItemView[];
+  baseUrl: string;
   currentPage?: number;
   totalPages?: number;
 }

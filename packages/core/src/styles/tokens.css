@@ -150,9 +150,15 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme-mode="light"]) {
     --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
     --search-mark-color: oklch(0.92 0.08 90);
     --dash-bg: oklch(0.2 0.005 80);
   }
+}
+
+:root[data-theme-mode="dark"] {
+  --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
+  --search-mark-color: oklch(0.92 0.08 90);
+  --dash-bg: oklch(0.2 0.005 80);
 }

@@ -2,7 +2,7 @@
 
 Customize how your Jant site looks using CSS variables and the Custom CSS editor in **Settings > Custom CSS**.
 
-All built-in themes support light and dark mode automatically. Your Custom CSS is applied on top of the selected theme, so you can pick a theme as a starting point and fine-tune from there.
+All built-in themes include light and dark palettes. In **Settings > Color Theme** you can let the site follow the visitor's system preference, or lock it to Light or Dark. Your Custom CSS is applied on top of the selected theme, so you can pick a theme as a starting point and fine-tune from there.
 
 ## Color Variables
 

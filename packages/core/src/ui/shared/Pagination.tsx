@@ -6,7 +6,7 @@
 
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
-import { getPageNumbers } from "../../lib/pagination.js";
+import { formatPageLabel, getPageNumbers } from "../../lib/pagination.js";
 
 export interface PaginationProps {
   /** Base URL for pagination links (e.g., "/archive", "/search?q=test") */
@@ -224,11 +224,7 @@ export const PagePagination: FC<PagePaginationProps> = ({
   }
 
   // Simple prev/next fallback when totalPages is unknown
-  const page = String(currentPage);
-  const pageText = t({
-    message: `Page ${page}`,
-    comment: "@context: Pagination - current page indicator",
-  });
+  const pageText = formatPageLabel(currentPage);
 
   return (
     <nav class="flex items-center justify-between py-4" aria-label="Pagination">

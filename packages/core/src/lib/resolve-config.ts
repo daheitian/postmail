@@ -157,6 +157,11 @@ export function resolveConfig(
     defaultThemeId:
       env.DEFAULT_THEME || CONFIG_FIELDS.DEFAULT_THEME.defaultValue,
     fontThemeId: allSettings["FONT_THEME"] ?? "",
+    themeMode:
+      allSettings["THEME_MODE"] === "light" ||
+      allSettings["THEME_MODE"] === "dark"
+        ? allSettings["THEME_MODE"]
+        : "auto",
     customCSS: allSettings["CUSTOM_CSS"] ?? "",
 
     // Site appearance (DB internal)

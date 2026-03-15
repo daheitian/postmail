@@ -12,6 +12,7 @@ import { PagePagination } from "../shared/Pagination.js";
 
 export const TimelineFeed: FC<TimelineFeedProps> = ({
   items,
+  baseUrl,
   currentPage,
   totalPages,
 }) => {
@@ -40,7 +41,7 @@ export const TimelineFeed: FC<TimelineFeedProps> = ({
         totalPages !== undefined &&
         totalPages > 1 && (
           <PagePagination
-            baseUrl="/"
+            baseUrl={baseUrl}
             currentPage={currentPage}
             totalPages={totalPages}
           />

@@ -71,11 +71,11 @@ Use Tailwind utilities for layout only:
 
 ### Dark Mode
 
-Dark mode uses `@media (prefers-color-scheme: dark)` — no JS class toggling. BaseCoat ships with a `.dark` class-based approach, but `preset.css` overrides this:
+By default, dark mode follows `@media (prefers-color-scheme: dark)`. Users can also force Light or Dark in **Settings > Color Theme** via a root `data-theme-mode` attribute. BaseCoat ships with a `.dark` class-based approach, but `preset.css` overrides this:
 
 1. `@custom-variant dark` is redefined to use the media query (for Tailwind `dark:` utilities)
 2. BaseCoat's `.dark { }` variables are mirrored in a `@media` block in `preset.css` (as fallback)
-3. `buildThemeStyle()` outputs theme dark overrides inside `@media (prefers-color-scheme: dark) { :root:root { } }` for higher specificity
+3. `buildThemeStyle()` outputs theme dark overrides for both system-driven dark mode and forced dark mode, with higher specificity than BaseCoat defaults
 
 **When upgrading BaseCoat**: check if the `.dark { }` variable block changed and update the mirror in `preset.css`.
 

@@ -146,6 +146,16 @@ msgstr "All visibility"
 msgid "All years"
 msgstr "All years"
 
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Always show the dark version of the theme."
+msgstr "Always show the dark version of the theme."
+
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Always show the light version of the theme."
+msgstr "Always show the light version of the theme."
+
 #. @context: Link to API documentation
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "API reference"
@@ -160,8 +170,8 @@ msgstr "API Tokens"
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Applies to your entire site, including admin pages. All themes support dark mode."
-msgstr "Applies to your entire site, including admin pages. All themes support dark mode."
+msgid "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
+msgstr "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
 
 #. @context: Archive page title
 #: src/ui/pages/ArchivePage.tsx
@@ -187,6 +197,11 @@ msgstr "Authentication isn't set up. Check your server config."
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Author (optional)"
 msgstr "Author (optional)"
+
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Auto"
+msgstr "Auto"
 
 #. @context: Description after theming guide link on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -432,6 +447,11 @@ msgstr "Custom URLs"
 msgid "Danger Zone"
 msgstr "Danger Zone"
 
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Dark"
+msgstr "Dark"
+
 #. @context: Settings group label for data export/import
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Data"
@@ -497,7 +517,9 @@ msgstr "Describe this for people with visual impairments..."
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
+#. @context: Color theme preview collection label
 #. @context: Settings group label for design settings
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Design"
 msgstr "Design"
@@ -651,13 +673,19 @@ msgstr "Favicon and header icon"
 #. @context: Browse filter label
 #. @context: Browse filter label
 #. @context: Browse filter label for featured posts
+#. @context: Browser page title for the featured feed
+#. @context: Browser page title for the featured feed
+#. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
+#: src/routes/pages/featured.tsx
+#: src/routes/pages/home.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/FeaturedPage.tsx
 msgid "Featured"
 msgstr "Featured"
 
@@ -665,6 +693,11 @@ msgstr "Featured"
 #: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Field note"
 msgstr "Field note"
+
+#. @context: Color theme preview card title
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Field notes on quiet design"
+msgstr "Field notes on quiet design"
 
 #. @context: Error toast when file storage is not set up
 #. @context: Error when file storage is not set up
@@ -682,6 +715,11 @@ msgstr "File uploaded."
 #: src/ui/pages/ArchivePage.tsx
 msgid "Files"
 msgstr "Files"
+
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Follow each visitor's system preference."
+msgstr "Follow each visitor's system preference."
 
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -795,10 +833,16 @@ msgstr "Last used {0}"
 #. @context: Browse filter label
 #. @context: Browse filter label
 #. @context: Browse filter label for latest posts
+#. @context: Browser page title for the latest feed
+#. @context: Browser page title for the latest feed
+#. @context: Page heading for the latest posts feed
+#: src/routes/pages/home.tsx
+#: src/routes/pages/latest.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
+#: src/ui/pages/HomePage.tsx
 msgid "Latest"
 msgstr "Latest"
 
@@ -806,6 +850,11 @@ msgstr "Latest"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
 msgstr "lets you override any theme variable."
+
+#. @context: Theme mode option label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Light"
+msgstr "Light"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -852,6 +901,11 @@ msgstr "Lowest rated"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage active sign-in sessions"
 msgstr "Manage active sign-in sessions"
+
+#. @context: Color theme preview date label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "March 14"
+msgstr "March 14"
 
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1001,10 +1055,12 @@ msgstr "No posts match these filters. Try adjusting your selection or clear all 
 msgid "No results. Try different keywords."
 msgstr "No results. Try different keywords."
 
+#. @context: Color theme preview format label
 #. @context: Compose format tab
 #. @context: Post format badge - note
 #. @context: Post format label - note
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/FormatBadge.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Note"
@@ -1038,11 +1094,6 @@ msgstr "Open with Featured posts"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Order saved"
 msgstr "Order saved"
-
-#. @context: Pagination - current page indicator
-#: src/ui/shared/Pagination.tsx
-msgid "Page {page}"
-msgstr "Page {page}"
 
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
@@ -1172,6 +1223,11 @@ msgstr "Published"
 msgid "Published!"
 msgstr "Published!"
 
+#. @context: Color theme preview card secondary sentence
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Quiet surfaces let writing lead."
+msgstr "Quiet surfaces let writing lead."
+
 #. @context: Compose format tab
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
@@ -1195,6 +1251,11 @@ msgstr "Quotes, titles, and labels should all lean together."
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Rate"
 msgstr "Rate"
+
+#. @context: Color theme preview inline link label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Read why"
+msgstr "Read why"
 
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
@@ -1426,6 +1487,11 @@ msgstr "Site Name"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "Slug"
+
+#. @context: Color theme preview card body sentence
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Soft color should still carry a clear reading rhythm."
+msgstr "Soft color should still carry a clear reading rhythm."
 
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx

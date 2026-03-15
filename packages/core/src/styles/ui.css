@@ -3993,6 +3993,10 @@
     }
   }
 
+  :root[data-theme-mode="dark"] .tiptap-image-figure {
+    --_img-toolbar-bg: oklch(0.32 0.01 260 / 0.88);
+  }
+
   .tiptap-image-container {
     position: relative;
     border-radius: 6px;
@@ -5076,6 +5080,95 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+  }
+
+  /* --- Theme preview panel ------------------------------------------------ */
+
+  .theme-preview-panel {
+    background: var(--preview-bg-light);
+    color: var(--preview-fg-light);
+    color-scheme: light;
+  }
+
+  .theme-preview-panel[data-theme-preview-mode="dark"] {
+    background: var(--preview-bg-dark);
+    color: var(--preview-fg-dark);
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .theme-preview-panel[data-theme-preview-mode="auto"] {
+      background: var(--preview-bg-dark);
+      color: var(--preview-fg-dark);
+      color-scheme: dark;
+    }
+  }
+
+  .theme-preview-name,
+  .theme-preview-title {
+    color: inherit;
+    font-family: var(--font-heading);
+    font-weight: var(--type-heading-weight);
+    letter-spacing: var(--type-heading-tracking);
+  }
+
+  .theme-preview-name {
+    line-height: 1.1;
+  }
+
+  .theme-preview-title {
+    line-height: 1.28;
+  }
+
+  .theme-preview-meta {
+    color: var(--preview-muted-light);
+    line-height: 1.55;
+  }
+
+  .theme-preview-kicker {
+    letter-spacing: 0.12em;
+  }
+
+  .theme-preview-divider {
+    border-color: var(--preview-border-light);
+  }
+
+  .theme-preview-body {
+    color: inherit;
+    line-height: 1.55;
+  }
+
+  .theme-preview-link {
+    color: var(--preview-primary-light);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .theme-preview-panel[data-theme-preview-mode="dark"] .theme-preview-meta {
+    color: var(--preview-muted-dark);
+  }
+
+  .theme-preview-panel[data-theme-preview-mode="dark"] .theme-preview-divider {
+    border-color: var(--preview-border-dark);
+  }
+
+  .theme-preview-panel[data-theme-preview-mode="dark"] .theme-preview-link {
+    color: var(--preview-primary-dark);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .theme-preview-panel[data-theme-preview-mode="auto"] .theme-preview-meta {
+      color: var(--preview-muted-dark);
+    }
+
+    .theme-preview-panel[data-theme-preview-mode="auto"]
+      .theme-preview-divider {
+      border-color: var(--preview-border-dark);
+    }
+
+    .theme-preview-panel[data-theme-preview-mode="auto"] .theme-preview-link {
+      color: var(--preview-primary-dark);
+    }
   }
 
   @media (max-width: 699px) {
