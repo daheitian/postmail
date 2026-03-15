@@ -2064,6 +2064,8 @@ msgstr "展开更多"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
+#. @context: Sign in page heading
+#: src/routes/auth/signin.tsx
 #: src/routes/auth/signin.tsx
 #: src/routes/auth/signin.tsx
 msgid "Sign In"

@@ -12,6 +12,7 @@ import { EmptyState, ListItemRow, ActionButtons } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
 import { parseIdParam } from "../../lib/errors.js";
 import { CreateCustomUrlSchema, parseValidated } from "../../lib/schemas.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
@@ -326,7 +327,7 @@ customUrlsRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Custom URLs - ${navData.siteName}`,
+    title: buildPageTitle("Custom URLs", navData.siteName),
     navData,
     content: (
       <>
@@ -351,7 +352,7 @@ customUrlsRoutes.get("/new", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `New Custom URL - ${navData.siteName}`,
+    title: buildPageTitle("New Custom URL", navData.siteName),
     navData,
     content: (
       <>

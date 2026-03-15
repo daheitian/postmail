@@ -11,6 +11,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { getI18n } from "../../i18n/index.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleFeaturedTimeline } from "../../lib/timeline.js";
 import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
@@ -43,8 +44,8 @@ featuredRoutes.get("/", async (c) => {
   return renderPublicPage(c, {
     title:
       page > 1
-        ? `${featuredTitle} - ${paginatedPageTitle} - ${navData.siteName}`
-        : `${featuredTitle} - ${navData.siteName}`,
+        ? buildPageTitle(featuredTitle, paginatedPageTitle, navData.siteName)
+        : buildPageTitle(featuredTitle, navData.siteName),
     navData,
     content: (
       <FeaturedPage

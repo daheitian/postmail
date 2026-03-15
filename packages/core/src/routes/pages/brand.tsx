@@ -10,6 +10,7 @@ import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { buildThemeStyle } from "../../lib/theme.js";
 import { getI18n } from "../../i18n/index.js";
@@ -66,12 +67,15 @@ brandRoutes.get("/brand", async (c) => {
   c.set("themeStyle", buildThemeStyle(brandTheme, selectedMode, fontOverrides));
 
   return renderPublicPage(c, {
-    title: `${i18n._(
-      msg({
-        message: "Brand",
-        comment: "@context: Browser page title for the public brand page",
-      }),
-    )} - Jant`,
+    title: buildPageTitle(
+      i18n._(
+        msg({
+          message: "Brand",
+          comment: "@context: Browser page title for the public brand page",
+        }),
+      ),
+      navData.siteName,
+    ),
     description: i18n._(
       msg({
         message:

@@ -8,6 +8,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { CollectionPage } from "../../ui/pages/CollectionPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { SortOrderSchema } from "../../lib/schemas.js";
 import {
@@ -111,8 +112,8 @@ collectionRoutes.get("/:slug", async (c) => {
   return renderPublicPage(c, {
     title:
       page > 1
-        ? `${collection.title} - ${paginatedPageTitle} - ${navData.siteName}`
-        : `${collection.title} - ${navData.siteName}`,
+        ? buildPageTitle(collection.title, paginatedPageTitle, navData.siteName)
+        : buildPageTitle(collection.title, navData.siteName),
     description: collection.description ?? undefined,
     navData,
     content: (
@@ -177,7 +178,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
   );
 
   const xml = defaultRssRenderer({
-    siteName: `${collection.title} - ${siteName}`,
+    siteName: buildPageTitle(collection.title, siteName),
     siteDescription: collection.description ?? "",
     siteUrl,
     siteLanguage,

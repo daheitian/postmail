@@ -15,6 +15,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { getI18n } from "../../i18n/index.js";
 import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import {
   assembleFeaturedTimeline,
@@ -51,7 +52,7 @@ homeRoutes.get("/", async (c) => {
     return renderPublicPage(c, {
       title:
         page > 1
-          ? `${featuredTitle} - ${paginatedPageTitle} - ${navData.siteName}`
+          ? buildPageTitle(featuredTitle, paginatedPageTitle, navData.siteName)
           : navData.siteName,
       navData,
       content: (
@@ -80,7 +81,7 @@ homeRoutes.get("/", async (c) => {
   return renderPublicPage(c, {
     title:
       page > 1
-        ? `${latestTitle} - ${paginatedPageTitle} - ${navData.siteName}`
+        ? buildPageTitle(latestTitle, paginatedPageTitle, navData.siteName)
         : navData.siteName,
     navData,
     content: (

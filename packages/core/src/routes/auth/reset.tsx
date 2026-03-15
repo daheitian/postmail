@@ -13,6 +13,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { ResetPasswordSchema } from "../../lib/schemas.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -140,10 +141,11 @@ const ResetErrorContent: FC = () => {
 export const resetRoutes = new Hono<Env>();
 
 resetRoutes.get("/reset", async (c) => {
+  const title = buildPageTitle("Reset Password", c.var.appConfig.siteName);
   const token = c.req.query("token");
   if (!token) {
     return c.html(
-      <BaseLayout title="Reset Password - Jant" c={c}>
+      <BaseLayout title={title} c={c}>
         <ResetErrorContent />
       </BaseLayout>,
     );
@@ -152,14 +154,14 @@ resetRoutes.get("/reset", async (c) => {
   const isValid = await c.var.services.auth.validateResetToken(token);
   if (!isValid) {
     return c.html(
-      <BaseLayout title="Reset Password - Jant" c={c}>
+      <BaseLayout title={title} c={c}>
         <ResetErrorContent />
       </BaseLayout>,
     );
   }
 
   return c.html(
-    <BaseLayout title="Reset Password - Jant" c={c}>
+    <BaseLayout title={title} c={c}>
       <ResetContent token={token} />
     </BaseLayout>,
   );

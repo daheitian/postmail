@@ -22,6 +22,7 @@ import type {
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import {
   createMediaContext,
@@ -215,7 +216,7 @@ archiveRoutes.get("/", async (c) => {
   }));
 
   return renderPublicPage(c, {
-    title: `Archive - ${navData.siteName}`,
+    title: buildPageTitle("Archive", navData.siteName),
     navData,
     content: (
       <ArchivePage

@@ -9,6 +9,7 @@ import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { buildThemeStyle } from "../../lib/theme.js";
 import { getI18n } from "../../i18n/index.js";
@@ -73,13 +74,17 @@ themeSampleRoutes.get("/theme-sample", async (c) => {
   );
 
   return renderPublicPage(c, {
-    title: `${selectedTheme.name} - ${i18n._(
-      msg({
-        message: "Theme sample",
-        comment:
-          "@context: Browser page title for the public theme sample page",
-      }),
-    )} - ${navData.siteName}`,
+    title: buildPageTitle(
+      selectedTheme.name,
+      i18n._(
+        msg({
+          message: "Theme sample",
+          comment:
+            "@context: Browser page title for the public theme sample page",
+        }),
+      ),
+      navData.siteName,
+    ),
     navData,
     content: (
       <ThemeSamplePage

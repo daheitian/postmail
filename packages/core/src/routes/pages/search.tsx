@@ -7,6 +7,7 @@ import type { Bindings, SearchResult } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { SearchPage } from "../../ui/pages/SearchPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { createMediaContext, toSearchResultViews } from "../../lib/view.js";
 
@@ -53,9 +54,10 @@ searchRoutes.get("/", async (c) => {
   const resultViews = toSearchResultViews(results, mediaCtx, query);
 
   return renderPublicPage(c, {
-    title: query
-      ? `Search: ${query} - ${navData.siteName}`
-      : `Search - ${navData.siteName}`,
+    title: buildPageTitle(
+      query ? `Search: ${query}` : "Search",
+      navData.siteName,
+    ),
     navData,
     content: (
       <SearchPage

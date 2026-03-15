@@ -14,6 +14,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { getI18n } from "../../i18n/index.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
@@ -48,8 +49,8 @@ latestRoutes.get("/", async (c) => {
   return renderPublicPage(c, {
     title:
       page > 1
-        ? `${latestTitle} - ${paginatedPageTitle} - ${navData.siteName}`
-        : `${latestTitle} - ${navData.siteName}`,
+        ? buildPageTitle(latestTitle, paginatedPageTitle, navData.siteName)
+        : buildPageTitle(latestTitle, navData.siteName),
     navData,
     content: (
       <HomePage

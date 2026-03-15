@@ -4,6 +4,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuth } from "../../middleware/auth.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { getI18n } from "../../i18n/index.js";
 import { ComposePage } from "../../ui/pages/ComposePage.js";
@@ -19,12 +20,15 @@ newPostRoutes.get("/new", async (c) => {
   const i18n = getI18n(c);
 
   return renderPublicPage(c, {
-    title: `${i18n._(
-      msg({
-        message: "New post",
-        comment: "@context: Browser page title for the new post page",
-      }),
-    )} - ${navData.siteName}`,
+    title: buildPageTitle(
+      i18n._(
+        msg({
+          message: "New post",
+          comment: "@context: Browser page title for the new post page",
+        }),
+      ),
+      navData.siteName,
+    ),
     navData,
     showComposeDialog: false,
     showHeader: false,

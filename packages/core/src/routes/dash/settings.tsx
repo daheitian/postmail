@@ -14,6 +14,7 @@ import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
 import { getI18n } from "../../i18n/index.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
 import { TIMEZONES } from "../../lib/timezones.js";
 import { escapeHtml } from "../../lib/html.js";
@@ -50,7 +51,7 @@ settingsRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Settings - ${navData.siteName}`,
+    title: buildPageTitle("Settings", navData.siteName),
     navData,
     content: <SettingsRootContent />,
   });
@@ -70,7 +71,7 @@ settingsRoutes.get("/general", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `General - ${navData.siteName}`,
+    title: buildPageTitle("General", navData.siteName),
     navData,
     toast: saved ? { message: "Settings updated." } : undefined,
     content: (
@@ -135,11 +136,13 @@ settingsRoutes.post("/general", async (c) => {
     if (languageChanged) {
       await stream.redirect("/settings/general?saved");
     } else {
-      const escaped = escapeHtml(displayName);
-      await stream.patchElements(`General - ${escaped}`, {
-        mode: "inner",
-        selector: "title",
-      });
+      await stream.patchElements(
+        escapeHtml(buildPageTitle("General", displayName)),
+        {
+          mode: "inner",
+          selector: "title",
+        },
+      );
       await stream.toast(
         i18n._(
           msg({
@@ -213,7 +216,7 @@ settingsRoutes.get("/avatar", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Avatar - ${navData.siteName}`,
+    title: buildPageTitle("Avatar", navData.siteName),
     navData,
     toast: saved ? { message: "Avatar updated." } : undefined,
     content: (
@@ -365,7 +368,7 @@ settingsRoutes.get("/navigation", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Navigation - ${navData.siteName}`,
+    title: buildPageTitle("Navigation", navData.siteName),
     navData,
     content: (
       <>
@@ -426,7 +429,7 @@ settingsRoutes.get("/color-theme", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Color Theme - ${navData.siteName}`,
+    title: buildPageTitle("Color Theme", navData.siteName),
     navData,
     toast: saved ? { message: "Theme updated." } : undefined,
     content: (
@@ -495,7 +498,7 @@ settingsRoutes.get("/font-theme", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Font Theme - ${navData.siteName}`,
+    title: buildPageTitle("Font Theme", navData.siteName),
     navData,
     toast: saved ? { message: "Font theme updated." } : undefined,
     content: (
@@ -551,7 +554,7 @@ settingsRoutes.get("/custom-css", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Custom CSS - ${navData.siteName}`,
+    title: buildPageTitle("Custom CSS", navData.siteName),
     navData,
     content: (
       <>
@@ -597,7 +600,7 @@ settingsRoutes.get("/account", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Account - ${navData.siteName}`,
+    title: buildPageTitle("Account", navData.siteName),
     navData,
     content: (
       <>
@@ -653,7 +656,7 @@ settingsRoutes.get("/account/sessions", async (c) => {
   });
 
   return renderPublicPage(c, {
-    title: `Sessions - ${navData.siteName}`,
+    title: buildPageTitle("Sessions", navData.siteName),
     navData,
     content: (
       <>
@@ -691,7 +694,7 @@ settingsRoutes.get("/account/password", async (c) => {
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
-    title: `Password - ${navData.siteName}`,
+    title: buildPageTitle("Password", navData.siteName),
     navData,
     content: (
       <>
@@ -776,7 +779,7 @@ settingsRoutes.get("/account/delete-account", async (c) => {
   const csrfToken = await c.var.services.auth.generateDeleteCsrfToken();
 
   return renderPublicPage(c, {
-    title: `Delete Account - ${navData.siteName}`,
+    title: buildPageTitle("Delete Account", navData.siteName),
     navData,
     content: (
       <>
@@ -842,7 +845,7 @@ settingsRoutes.get("/api-tokens", async (c) => {
   const siteUrl = c.env.SITE_URL;
 
   return renderPublicPage(c, {
-    title: `API Tokens - ${navData.siteName}`,
+    title: buildPageTitle("API Tokens", navData.siteName),
     navData,
     content: (
       <>

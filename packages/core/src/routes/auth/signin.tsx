@@ -11,6 +11,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SigninSchema } from "../../lib/schemas.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -107,6 +108,7 @@ const SigninContent: FC<{
 export const signinRoutes = new Hono<Env>();
 
 signinRoutes.get("/signin", async (c) => {
+  const i18n = getI18n(c);
   const isSetup = c.req.query("setup") !== undefined;
   const isReset = c.req.query("reset") !== undefined;
   let toast: { message: string } | undefined;
@@ -117,7 +119,19 @@ signinRoutes.get("/signin", async (c) => {
   }
 
   return c.html(
-    <BaseLayout title="Sign In - Jant" c={c} toast={toast}>
+    <BaseLayout
+      title={buildPageTitle(
+        i18n._(
+          msg({
+            message: "Sign In",
+            comment: "@context: Sign in page heading",
+          }),
+        ),
+        c.var.appConfig.siteName,
+      )}
+      c={c}
+      toast={toast}
+    >
       <SigninContent
         demoEmail={c.var.appConfig.demoEmail}
         demoPassword={c.var.appConfig.demoPassword}

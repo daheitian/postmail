@@ -8,6 +8,7 @@ import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { CollectionsPage } from "../../ui/pages/CollectionsPage.js";
 
@@ -22,7 +23,7 @@ collectionsPageRoutes.get("/", async (c) => {
   ]);
 
   return renderPublicPage(c, {
-    title: `Collections - ${navData.siteName}`,
+    title: buildPageTitle("Collections", navData.siteName),
     navData,
     content: (
       <CollectionsPage

@@ -13,6 +13,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { BaseLayout } from "../../ui/layouts/BaseLayout.js";
 import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SetupSchema } from "../../lib/schemas.js";
+import { buildPageTitle } from "../../lib/page-title.js";
 import { mapIanaToTimezone } from "../../lib/timezones.js";
 import { getI18n, baseLocale } from "../../i18n/index.js";
 import { detectLocaleFromHeader } from "../../i18n/detect.js";
@@ -127,7 +128,7 @@ setupRoutes.get("/setup", async (c) => {
   if (isComplete) return c.redirect("/");
 
   return c.html(
-    <BaseLayout title="Setup - Jant" c={c}>
+    <BaseLayout title={buildPageTitle("Setup", c.var.appConfig.siteName)} c={c}>
       <SetupContent />
     </BaseLayout>,
   );
