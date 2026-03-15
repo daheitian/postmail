@@ -288,6 +288,21 @@ svg[stroke-width].icon-fine {
     @apply flex flex-col gap-6;
   }
 
+  .settings-root-header {
+    @apply flex flex-col gap-2;
+  }
+
+  .settings-root-title {
+    @apply text-3xl font-medium tracking-tight;
+    color: var(--color-foreground);
+  }
+
+  .settings-root-lead {
+    @apply text-sm leading-relaxed;
+    max-width: 34rem;
+    color: var(--color-muted-foreground);
+  }
+
   .settings-group-label {
     @apply text-xs font-medium uppercase tracking-wider mb-2 px-1;
     color: var(--color-muted-foreground);

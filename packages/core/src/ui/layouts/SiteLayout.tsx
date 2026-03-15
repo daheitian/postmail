@@ -80,13 +80,18 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
     currentPath === "/" ||
     currentPath === "/featured" ||
     currentPath === "/latest";
+  const contentClass = isHomePage
+    ? "site-content site-content-home"
+    : "site-content";
 
   return (
     <div class="site-page">
       {showHeader && (
         <header class="site-header">
           <div class="site-header-inner">
-            <div class="site-header-top site-header-top-bordered">
+            <div
+              class={`site-header-top site-header-top-bordered${isHomePage ? " site-header-top-home" : ""}`}
+            >
               <a href="/" class="site-logo">
                 {showHeaderAvatar && siteAvatarUrl && (
                   <img src={siteAvatarUrl} class="site-logo-avatar" alt="" />
@@ -194,11 +199,11 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
         {sidebar ? (
           <div class="site-container site-container-sidebar">
             <aside class="sidebar-nav">{sidebar}</aside>
-            <div class="site-content">{children}</div>
+            <div class={contentClass}>{children}</div>
           </div>
         ) : (
           <div class="site-container">
-            <div class="site-content">
+            <div class={contentClass}>
               {isHomePage && (
                 <div class="site-home-header">
                   {isAuthenticated && <ComposePrompt />}

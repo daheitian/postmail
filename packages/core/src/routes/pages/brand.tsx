@@ -1,0 +1,83 @@
+/**
+ * Brand Page Route
+ *
+ * Public brand spec page for Jant's default visual direction.
+ * Uses the Linen theme regardless of the site's current theme.
+ */
+
+import { Hono } from "hono";
+import { msg } from "@lingui/core/macro";
+import type { Bindings } from "../../types.js";
+import type { AppVariables } from "../../types/app-context.js";
+import { getNavigationData } from "../../lib/navigation.js";
+import { renderPublicPage } from "../../lib/render.js";
+import { buildThemeStyle } from "../../lib/theme.js";
+import { getI18n } from "../../i18n/index.js";
+import { BUILTIN_COLOR_THEMES } from "../../ui/color-themes.js";
+import { BrandPage } from "../../ui/pages/BrandPage.js";
+import { THEME_MODES, type ThemeMode } from "../../types/config.js";
+import {
+  BUILTIN_FONT_THEMES,
+  getFontThemeCssVariables,
+} from "../../ui/font-themes.js";
+
+type Env = { Bindings: Bindings; Variables: AppVariables };
+
+function resolveThemeMode(
+  value: string | undefined,
+  fallback: ThemeMode,
+): ThemeMode {
+  return THEME_MODES.includes(value as ThemeMode)
+    ? (value as ThemeMode)
+    : fallback;
+}
+
+export const brandRoutes = new Hono<Env>();
+
+brandRoutes.get("/brand", async (c) => {
+  const navData = await getNavigationData(c);
+  const i18n = getI18n(c);
+  const fallbackTheme = BUILTIN_COLOR_THEMES[0];
+  if (!fallbackTheme) {
+    return c.notFound();
+  }
+
+  const brandTheme =
+    BUILTIN_COLOR_THEMES.find((theme) => theme.id === "linen") ?? fallbackTheme;
+  const selectedMode = resolveThemeMode(
+    c.req.query("mode"),
+    c.var.appConfig.themeMode,
+  );
+
+  const fontTheme = c.var.appConfig.fontThemeId
+    ? BUILTIN_FONT_THEMES.find(
+        (theme) => theme.id === c.var.appConfig.fontThemeId,
+      )
+    : undefined;
+  const fontOverrides = fontTheme ? getFontThemeCssVariables(fontTheme) : {};
+
+  c.set("appConfig", {
+    ...c.var.appConfig,
+    themeId: brandTheme.id,
+    themeMode: selectedMode,
+  });
+  c.set("themeStyle", buildThemeStyle(brandTheme, selectedMode, fontOverrides));
+
+  return renderPublicPage(c, {
+    title: `${i18n._(
+      msg({
+        message: "Brand",
+        comment: "@context: Browser page title for the public brand page",
+      }),
+    )} - Jant`,
+    description: i18n._(
+      msg({
+        message:
+          "Public brand spec for Jant, including palette, voice, and usage guidance.",
+        comment: "@context: Meta description for the public brand page",
+      }),
+    ),
+    navData,
+    content: <BrandPage theme={brandTheme} currentMode={selectedMode} />,
+  });
+});

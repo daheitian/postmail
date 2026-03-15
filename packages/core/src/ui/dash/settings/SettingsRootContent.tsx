@@ -83,6 +83,22 @@ export function SettingsRootContent() {
 
   return (
     <div class="settings-root">
+      <header class="settings-root-header">
+        <h1 class="settings-root-title">
+          {t({
+            message: "Settings",
+            comment: "@context: Page title for the settings home page",
+          })}
+        </h1>
+        <p class="settings-root-lead">
+          {t({
+            message: "Manage your site, design, and account.",
+            comment:
+              "@context: Intro text on the settings home page below the title",
+          })}
+        </p>
+      </header>
+
       {/* Site */}
       <div>
         <div class="settings-group-label">
