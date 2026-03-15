@@ -410,7 +410,6 @@ msgstr "Calm, not sleepy."
 
 #. @context: Button to cancel form
 #. @context: Button to cancel form
-#. @context: Button to cancel form
 #. @context: Button to cancel settings changes
 #. @context: Button to cancel unsaved changes and revert to original values
 #. @context: Close compose dialog
@@ -421,7 +420,6 @@ msgstr "Calm, not sleepy."
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -580,9 +578,7 @@ msgid "Couldn't publish. Saved as draft."
 msgstr "Couldn't publish. Saved as draft."
 
 #. @context: Error toast when nav save fails
-#. @context: Toast when save fails
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Couldn't save. Try again in a moment."
 msgstr "Couldn't save. Try again in a moment."
 
@@ -721,12 +717,10 @@ msgstr "default note sample"
 
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
-#. @context: Delete collection action
 #. @context: Delete nav item
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Delete"
 msgstr "Delete"
 
@@ -752,16 +746,6 @@ msgstr "Delete Draft"
 msgid "Delete this blog permanently? This cannot be undone."
 msgstr "Delete this blog permanently? This cannot be undone."
 
-#. @context: Confirm dialog for deleting a collection
-#: src/ui/shared/CollectionsManager.tsx
-msgid "Delete this collection permanently? Posts inside won't be removed."
-msgstr "Delete this collection permanently? Posts inside won't be removed."
-
-#. @context: Toast after deleting a collection
-#: src/ui/shared/CollectionsManager.tsx
-msgid "Deleted"
-msgstr "Deleted"
-
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
 msgid "Demo credentials are pre-filled — hit Sign In to continue."
@@ -773,9 +757,7 @@ msgid "Describe this for people with visual impairments..."
 msgstr "Describe this for people with visual impairments..."
 
 #. @context: Collection form field
-#. @context: Collection form field
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
@@ -901,9 +883,7 @@ msgid "e.g. iOS Shortcuts"
 msgstr "e.g. iOS Shortcuts"
 
 #. @context: Button to edit item
-#. @context: Per-collection edit action
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Edit"
 msgstr "Edit"
 
@@ -935,9 +915,7 @@ msgid "Emoji"
 msgstr "Emoji"
 
 #. @context: Emoji picker tab label
-#. @context: Emoji picker tab label
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Emojis"
 msgstr "Emojis"
 
@@ -1106,10 +1084,8 @@ msgstr "Helps screen readers describe the image"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
-#. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/CollectionPage.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Highest rated"
 msgstr "Highest rated"
 
@@ -1139,9 +1115,7 @@ msgid "I want to delete {siteName}"
 msgstr "I want to delete {siteName}"
 
 #. @context: Icon picker tab label
-#. @context: Icon picker tab label
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Icons"
 msgstr "Icons"
 
@@ -1342,10 +1316,8 @@ msgstr "Look at the footer metadata last, to make sure the accent is not fightin
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
-#. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/CollectionPage.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Lowest rated"
 msgstr "Lowest rated"
 
@@ -1389,11 +1361,6 @@ msgstr "Max visible links saved"
 msgid "Media"
 msgstr "Media"
 
-#. @context: Aria-label for collections page more button
-#: src/ui/shared/CollectionsManager.tsx
-msgid "More actions"
-msgstr "More actions"
-
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
@@ -1412,9 +1379,7 @@ msgid "Muted colors can still carry rhythm and hierarchy when typography does th
 msgstr "Muted colors can still carry rhythm and hierarchy when typography does the heavy lifting."
 
 #. @context: Collection title placeholder
-#. @context: Collection title placeholder
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "My Collection"
 msgstr "My Collection"
 
@@ -1480,10 +1445,8 @@ msgstr "New post"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
-#. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/CollectionPage.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Newest first"
 msgstr "Newest first"
 
@@ -1582,10 +1545,8 @@ msgstr "Nothing here yet."
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
-#. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/CollectionPage.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Oldest first"
 msgstr "Oldest first"
 
@@ -1908,13 +1869,11 @@ msgid "References"
 msgstr "References"
 
 #. @context: Button to remove icon
-#. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove system item from navigation
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Remove"
 msgstr "Remove"
 
@@ -1948,7 +1907,6 @@ msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "Revoke this token? Any scripts using it will stop working."
 
 #. @context: Button to save collection
-#. @context: Button to save collection
 #. @context: Button to save settings
 #. @context: Button to save settings changes
 #. @context: Confirm close action sheet - save draft button
@@ -1958,7 +1916,6 @@ msgstr "Revoke this token? Any scripts using it will stop working."
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Save"
 msgstr "Save"
 
@@ -1997,11 +1954,6 @@ msgstr "Save to drafts to edit and post at a later time."
 msgid "Save to drafts?"
 msgstr "Save to drafts?"
 
-#. @context: Toast after saving a collection
-#: src/ui/shared/CollectionsManager.tsx
-msgid "Saved"
-msgstr "Saved"
-
 #. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
@@ -2012,16 +1964,12 @@ msgid "Search"
 msgstr "Search"
 
 #. @context: Emoji picker search placeholder
-#. @context: Emoji picker search placeholder
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Search emojis..."
 msgstr "Search emojis..."
 
 #. @context: Icon picker search placeholder
-#. @context: Icon picker search placeholder
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Search icons..."
 msgstr "Search icons..."
 
@@ -2142,9 +2090,7 @@ msgid "Site Name"
 msgstr "Site Name"
 
 #. @context: Collection form field
-#. @context: Collection form field
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Slug"
 msgstr "Slug"
 
@@ -2180,9 +2126,7 @@ msgid "Sort"
 msgstr "Sort"
 
 #. @context: Collection form field
-#. @context: Collection form field
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Sort Order"
 msgstr "Sort Order"
 
@@ -2423,7 +2367,6 @@ msgid "Time Zone"
 msgstr "Time Zone"
 
 #. @context: Collection form field
-#. @context: Collection form field
 #. @context: Compose note title placeholder
 #. @context: Compose toolbar - title tooltip
 #. @context: Input label on sample page
@@ -2431,7 +2374,6 @@ msgstr "Time Zone"
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "Title"
 msgstr "Title"
 
@@ -2546,9 +2488,7 @@ msgid "URL"
 msgstr "URL"
 
 #. @context: Collection path help text
-#. @context: Collection path help text
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 
@@ -2640,9 +2580,7 @@ msgid "What's on your mind..."
 msgstr "What's on your mind..."
 
 #. @context: Collection description placeholder
-#. @context: Collection description placeholder
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsManager.tsx
 msgid "What's this collection about?"
 msgstr "What's this collection about?"
 

@@ -89,6 +89,7 @@ export interface CollectionPageProps {
   currentSort: SortOrder;
   defaultSort: SortOrder;
   showRatingSort: boolean;
+  isAuthenticated: boolean;
 }
 
 /** Props for the collections list page component */

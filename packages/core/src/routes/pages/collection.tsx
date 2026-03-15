@@ -130,6 +130,7 @@ collectionRoutes.get("/:slug", async (c) => {
         currentSort={currentSort}
         defaultSort={defaultSort}
         showRatingSort={showRatingSort}
+        isAuthenticated={navData.isAuthenticated}
       />
     ),
   });
