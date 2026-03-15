@@ -3,7 +3,7 @@
  *
  * Tumblr-style archive grid with rich filtering:
  * year, collection, format, media types, title presence.
- * Page-based pagination with media-enriched post tiles.
+ * Page-based pagination with media-enriched thread-root tiles.
  */
 
 import { Hono } from "hono";
@@ -156,10 +156,13 @@ archiveRoutes.get("/", async (c) => {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  // --- Batch-load media for posts -------------------------------------------
+  // --- Batch-load media and reply counts for thread roots -------------------
 
   const postIds = posts.map((p) => p.id);
-  const rawMediaMap = await services.media.getByPostIds(postIds);
+  const [rawMediaMap, replyCounts] = await Promise.all([
+    services.media.getByPostIds(postIds),
+    services.posts.getReplyCounts(postIds),
+  ]);
   const mediaCtx = createMediaContext(appConfig);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -190,6 +193,10 @@ archiveRoutes.get("/", async (c) => {
   );
   const groups = toArchiveGroupsWithMedia(grouped, mediaCtx).map((group) => ({
     ...group,
+    posts: group.posts.map((post) => ({
+      ...post,
+      replyCount: replyCounts.get(post.id) ?? undefined,
+    })),
     totalCount:
       monthlyCountMap.get(`${group.year}-${group.month}`) ?? group.posts.length,
   }));

@@ -853,14 +853,14 @@ const ArchiveMonthHeader: FC<{
       ? null
       : count === 1
         ? t({
-            message: "post",
+            message: "thread",
             comment:
-              "@context: Archive month header count unit for a single post",
+              "@context: Archive month header count unit for a single thread",
           })
         : t({
-            message: "posts",
+            message: "threads",
             comment:
-              "@context: Archive month header count unit for multiple posts",
+              "@context: Archive month header count unit for multiple threads",
           });
 
   return (
@@ -880,11 +880,24 @@ const ArchiveMonthHeader: FC<{
 };
 
 const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
+  const { t } = useLingui();
   const variant = getTileVariant(post);
   const bgImage = getTileBgImage(post);
   const badge = getTileBadge(post);
   const { title, summary } = getTileText(post);
   const { shortDate } = getArchiveDateParts(post.publishedAt);
+  const replyCount = post.replyCount ?? 0;
+  const replyCountUnit =
+    replyCount === 1
+      ? t({
+          message: "Reply",
+          comment: "@context: Archive tile label for a single thread reply",
+        })
+      : t({
+          message: "Replies",
+          comment: "@context: Archive tile label for multiple thread replies",
+        });
+  const replyCountLabel = `${replyCount} ${replyCountUnit}`;
   const hasBg = variant === "image" || variant === "mixed";
   const showBgTitle = hasBg && !!title;
   const showTitledSummary =
@@ -907,14 +920,21 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
       data-post
       data-format={post.format}
     >
-      <time
-        class="archive-tile-date"
-        datetime={post.publishedAt}
-        title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
-        aria-label={post.publishedAtFormatted}
-      >
-        {shortDate}
-      </time>
+      <div class="archive-tile-top-meta">
+        <time
+          class="archive-tile-date"
+          datetime={post.publishedAt}
+          title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
+          aria-label={post.publishedAtFormatted}
+        >
+          {shortDate}
+        </time>
+        {replyCount > 0 && (
+          <span class="archive-tile-reply-inline" aria-label={replyCountLabel}>
+            {replyCountLabel}
+          </span>
+        )}
+      </div>
 
       {bgImage && hasBg && (
         <img
@@ -994,14 +1014,14 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   const totalCountUnit =
     totalCount === 1
       ? t({
-          message: "post",
+          message: "thread",
           comment:
-            "@context: Archive page summary unit for a single matching post",
+            "@context: Archive page summary unit for a single matching thread",
         })
       : t({
-          message: "posts",
+          message: "threads",
           comment:
-            "@context: Archive page summary unit for multiple matching posts",
+            "@context: Archive page summary unit for multiple matching threads",
         });
 
   return (
@@ -1031,8 +1051,8 @@ export const ArchivePage: FC<ArchivePageProps> = ({
           <p class="text-muted-foreground py-8 text-center">
             {t({
               message:
-                "No posts match these filters. Try adjusting your selection or clear all filters.",
-              comment: "@context: Archive empty state with filters",
+                "No threads match these filters. Try adjusting your selection or clear all filters.",
+              comment: "@context: Archive empty state with filters applied",
             })}
           </p>
         ) : currentView === "grid" ? (

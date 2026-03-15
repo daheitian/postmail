@@ -1525,15 +1525,15 @@ msgstr "找不到符合的集合。"
 msgid "No navigation items yet. Add links or enable system items below."
 msgstr "目前尚無導覽項目。新增連結或在下方啟用系統項目。"
 
-#. @context: Archive empty state with filters
-#: src/ui/pages/ArchivePage.tsx
-msgid "No posts match these filters. Try adjusting your selection or clear all filters."
-msgstr "沒有貼文符合這些篩選條件。請調整您的選擇或清除所有篩選條件。"
-
 #. @context: Search empty results
 #: src/ui/pages/SearchPage.tsx
 msgid "No results. Try different keywords."
 msgstr "沒有結果。請嘗試不同的關鍵字。"
+
+#. @context: Archive empty state with filters applied
+#: src/ui/pages/ArchivePage.tsx
+msgid "No threads match these filters. Try adjusting your selection or clear all filters."
+msgstr ""
 
 #. @context: Color theme preview format label
 #. @context: Compose format tab
@@ -1672,13 +1672,6 @@ msgstr ""
 msgid "Pinned"
 msgstr "已釘選"
 
-#. @context: Archive month header count unit for a single post
-#. @context: Archive page summary unit for a single matching post
-#: src/ui/pages/ArchivePage.tsx
-#: src/ui/pages/ArchivePage.tsx
-msgid "post"
-msgstr "篇"
-
 #. @context: Compose button - publish post
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
@@ -1700,13 +1693,6 @@ msgstr "以私密方式發佈"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post Unlisted"
 msgstr "發佈為未列出"
-
-#. @context: Archive month header count unit for multiple posts
-#. @context: Archive page summary unit for multiple matching posts
-#: src/ui/pages/ArchivePage.tsx
-#: src/ui/pages/ArchivePage.tsx
-msgid "posts"
-msgstr "篇"
 
 #. @context: Ghost button label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1902,8 +1888,15 @@ msgstr "移除"
 msgid "Remove Divider"
 msgstr "移除分隔線"
 
+#. @context: Archive tile label for multiple thread replies
+#: src/ui/pages/ArchivePage.tsx
+msgid "Replies"
+msgstr ""
+
+#. @context: Archive tile label for a single thread reply
 #. @context: Compose button - reply to post
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ArchivePage.tsx
 msgid "Reply"
 msgstr "回覆"
 
@@ -2373,6 +2366,13 @@ msgstr ""
 msgid "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone."
 msgstr "這將永久刪除你所有的資料 — 文章、媒體檔案、收藏集、設定，以及你的帳戶。你的部落格將會重設為初始設定狀態。此操作無法復原。"
 
+#. @context: Archive month header count unit for a single thread
+#. @context: Archive page summary unit for a single matching thread
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "thread"
+msgstr ""
+
 #. @context: Table cell in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Thread accent"
@@ -2381,6 +2381,13 @@ msgstr ""
 #. @context: Thread accents section heading on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Thread accents"
+msgstr ""
+
+#. @context: Archive month header count unit for multiple threads
+#. @context: Archive page summary unit for multiple matching threads
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "threads"
 msgstr ""
 
 #. @context: Settings form field

@@ -81,6 +81,8 @@ export interface PostView {
   threadRootPermalink?: string;
   /** Whether this post is the last (most recent) in its thread. Controls reply button visibility. */
   isLastInThread: boolean;
+  /** Number of published replies in this thread when relevant to the current view. */
+  replyCount?: number;
 
   // Raw content (for forms/editing, not typical theme use)
   body?: string;
@@ -179,7 +181,7 @@ export interface ArchiveGroup {
   month: string;
   /** Pre-formatted, e.g. "February 2024" */
   label: string;
-  /** Total posts in this month across the full filtered result set */
+  /** Total thread roots in this month across the full filtered result set */
   totalCount?: number;
   posts: PostView[];
 }

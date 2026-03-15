@@ -5472,23 +5472,48 @@
     transform: translateY(-1px);
   }
 
-  .archive-tile-date {
+  .archive-tile-top-meta {
     position: absolute;
     top: 10px;
     left: 12px;
     z-index: 2;
-    font-size: 0.625rem;
-    font-weight: var(--fw-medium);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    max-width: calc(100% - 3.5rem);
     color: var(--site-text-secondary);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     pointer-events: none;
-    line-height: 1;
-    opacity: 0.72;
   }
 
-  .archive-tile-mixed .archive-tile-date,
-  .archive-tile-image .archive-tile-date {
+  .archive-tile-date {
+    font-size: 0.625rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+    opacity: 0.72;
+    white-space: nowrap;
+  }
+
+  .archive-tile-reply-inline {
+    min-width: 0;
+    font-size: 0.625rem;
+    font-weight: var(--fw-medium);
+    line-height: 1;
+    opacity: 0.72;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .archive-tile-reply-inline::before {
+    content: "·";
+    margin-right: 0.2rem;
+    opacity: 0.65;
+  }
+
+  .archive-tile-mixed .archive-tile-top-meta,
+  .archive-tile-image .archive-tile-top-meta {
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
   }
@@ -5539,7 +5564,6 @@
     height: 36px;
   }
 
-  /* Badge row pinned to bottom-right of content */
   .archive-tile-badge-row {
     flex-shrink: 0;
     margin-top: auto;
@@ -5611,7 +5635,7 @@
     flex-shrink: 0;
     font-family: var(--font-heading);
     font-size: 0.78rem;
-    font-weight: var(--type-heading-weight);
+    font-weight: var(--fw-semibold);
     line-height: calc(var(--type-heading-leading) + 0.1);
     letter-spacing: var(--type-heading-tracking);
     margin-bottom: 6px;
@@ -5738,7 +5762,7 @@
 
   .archive-tile-quote .archive-tile-quote-mark {
     position: absolute;
-    top: 12px;
+    top: 6px;
     right: 10px;
     width: 1.5rem;
     color: color-mix(in srgb, var(--site-accent) 14%, var(--site-divider));
