@@ -1444,7 +1444,7 @@
     transform-origin: center;
   }
 
-  .feed-quote-post .feed-quote-mark {
+  .feed-quote-mark {
     position: relative;
     width: clamp(1.46rem, 1.38rem + 0.36vw, 1.76rem);
     margin-bottom: -0.1rem;
@@ -1571,7 +1571,7 @@
       line-height: 1.42;
     }
 
-    .feed-quote-post .feed-quote-mark {
+    .feed-quote-mark {
       width: clamp(1.34rem, 1.28rem + 0.32vw, 1.58rem);
       margin-bottom: -0.08rem;
       margin-left: -0.03rem;
