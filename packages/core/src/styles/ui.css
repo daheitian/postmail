@@ -2055,7 +2055,7 @@
     align-items: center;
     gap: 12px;
     padding: 16px 0;
-    margin: 10px 0;
+    margin-bottom: 10px;
     border-bottom: 0.5px solid oklch(from var(--site-divider) l c h / 0.5);
     transition: border-color 0.15s;
   }
