@@ -6,21 +6,40 @@ import { CollectionDirectory } from "./CollectionDirectory.js";
 const escapeJson = (data: unknown) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
 
+const countCollections = (items: CollectionDirectoryItem[]) =>
+  items.filter((item) => item.type === "collection" && item.collection).length;
+
 export interface CollectionsManagerProps {
   items: CollectionDirectoryItem[];
 }
 
 export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
   const { t } = useLingui();
+  const collectionCount = countCollections(items);
+  const collectionCountLabel = `${collectionCount} ${
+    collectionCount === 1
+      ? t({
+          message: "collection",
+          comment: "@context: Singular collection count label",
+        })
+      : t({
+          message: "collections",
+          comment: "@context: Plural collection count label",
+        })
+  }`;
 
   const labels = {
     collectionsTitle: t({
       message: "Collections",
       comment: "@context: Collections page heading",
     }),
-    pageDescription: t({
-      message: "Browse by topic, not chronology.",
-      comment: "@context: Introductory description on the collections page",
+    collectionSingular: t({
+      message: "collection",
+      comment: "@context: Singular collection count label",
+    }),
+    collectionPlural: t({
+      message: "collections",
+      comment: "@context: Plural collection count label",
     }),
     organize: t({
       message: "Organize",
@@ -80,10 +99,6 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
     entryPlural: t({
       message: "entries",
       comment: "@context: Plural entry count label",
-    }),
-    updatedLabel: t({
-      message: "Updated",
-      comment: "@context: Label before a collection's latest activity date",
     }),
     emptyState: t({
       message: "No collections yet. Start one to organize posts by topic.",
@@ -190,8 +205,14 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
       <div class="collections-page-shell">
         <header class="collections-page-header">
           <div class="collections-page-heading">
-            <h1 class="text-2xl font-semibold">{labels.collectionsTitle}</h1>
-            <p class="collections-page-description">{labels.pageDescription}</p>
+            <div class="collections-page-title-row">
+              <h1 class="collections-page-title">{labels.collectionsTitle}</h1>
+            </div>
+            {collectionCount > 0 ? (
+              <div class="collections-page-meta-row">
+                <p class="collections-page-badge">{collectionCountLabel}</p>
+              </div>
+            ) : null}
           </div>
         </header>
         <CollectionDirectory items={items} emptyMessage={labels.emptyState} />

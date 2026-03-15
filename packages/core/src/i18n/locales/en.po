@@ -373,13 +373,6 @@ msgstr "Brand note"
 msgid "Breadcrumb"
 msgstr "Breadcrumb"
 
-#. @context: Introductory description on the collections page
-#. @context: Introductory description on the collections page
-#: src/ui/pages/CollectionsPage.tsx
-#: src/ui/shared/CollectionsManager.tsx
-msgid "Browse by topic, not chronology."
-msgstr "Browse by topic, not chronology."
-
 #. @context: Role label for dark primary swatch
 #: src/ui/pages/BrandPage.tsx
 msgid "Button tone"
@@ -434,12 +427,30 @@ msgstr "Choose a new password."
 msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 msgstr "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 
+#. @context: Singular collection count label
+#. @context: Singular collection count label
+#. @context: Singular collection count label
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "collection"
+msgstr "collection"
+
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Collection"
 msgstr "Collection"
+
+#. @context: Plural collection count label
+#. @context: Plural collection count label
+#. @context: Plural collection count label
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "collections"
+msgstr "collections"
 
 #. @context: Breadcrumb link to collections page
 #. @context: Collections page heading
@@ -2504,13 +2515,6 @@ msgstr "Unlisted"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Untitled"
 msgstr "Untitled"
-
-#. @context: Label before a collection's latest activity date
-#. @context: Label before a collection's latest activity date
-#: src/ui/shared/CollectionDirectory.tsx
-#: src/ui/shared/CollectionsManager.tsx
-msgid "Updated"
-msgstr "Updated"
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx

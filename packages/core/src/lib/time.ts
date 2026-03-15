@@ -173,6 +173,30 @@ export function formatRelativeTime(timestamp: number): string {
   });
 }
 
+/**
+ * Formats a Unix timestamp as a compact English relative age label.
+ *
+ * Returns labels like "1m ago", "5h ago", "3d ago" for recent timestamps,
+ * and falls back to "MMM D" (e.g. "Feb 1") for anything older than 7 days.
+ * This helper intentionally stays English-only for ultra-compact UI metadata.
+ *
+ * @param timestamp - Unix timestamp in seconds
+ * @returns Compact relative age label
+ *
+ * @example
+ * ```ts
+ * // Assuming current time is Feb 16, 2026
+ * formatRelativeAge(now() - 60);      // "1m ago"
+ * formatRelativeAge(now() - 3600);    // "1h ago"
+ * formatRelativeAge(now() - 86400);   // "1d ago"
+ * formatRelativeAge(now() - 864000);  // "Feb 6"
+ * ```
+ */
+export function formatRelativeAge(timestamp: number): string {
+  const relative = formatRelativeTime(timestamp);
+  return /^[0-9]+[mhd]$/.test(relative) ? `${relative} ago` : relative;
+}
+
 export function formatYearMonth(timestamp: number): string {
   const date = new Date(timestamp * 1000);
   const year = date.getUTCFullYear();

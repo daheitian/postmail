@@ -6,7 +6,8 @@ import type { CollectionFormLabels } from "./collection-types.js";
 
 export interface CollectionManagerLabels {
   collectionsTitle: string;
-  pageDescription: string;
+  collectionSingular: string;
+  collectionPlural: string;
   organize: string;
   done: string;
   organizeHint: string;
@@ -21,7 +22,6 @@ export interface CollectionManagerLabels {
   confirmDelete: string;
   entrySingular: string;
   entryPlural: string;
-  updatedLabel: string;
   emptyState: string;
   orderSaved: string;
   saved: string;

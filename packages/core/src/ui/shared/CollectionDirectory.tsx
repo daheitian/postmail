@@ -2,7 +2,7 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionDirectoryItem } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
-import { formatDate, toISOString } from "../../lib/time.js";
+import { formatRelativeAge, toISOString } from "../../lib/time.js";
 
 export interface CollectionDirectoryProps {
   items: CollectionDirectoryItem[];
@@ -12,15 +12,13 @@ export interface CollectionDirectoryProps {
 const hasCollections = (items: CollectionDirectoryItem[]) =>
   items.some((item) => item.type === "collection" && item.collection);
 
+const formatSequence = (value: number) => String(value).padStart(2, "0");
+
 export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
   items,
   emptyMessage,
 }) => {
   const { t } = useLingui();
-  const updatedLabel = t({
-    message: "Updated",
-    comment: "@context: Label before a collection's latest activity date",
-  });
 
   if (!hasCollections(items)) {
     return (
@@ -34,6 +32,8 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
       </p>
     );
   }
+
+  let collectionIndex = 0;
 
   return (
     <div class="collection-directory">
@@ -62,6 +62,8 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
         }
 
         const collection = item.collection;
+        collectionIndex += 1;
+        const sequence = formatSequence(collectionIndex);
 
         return (
           <a
@@ -69,43 +71,50 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
             href={`/c/${collection.slug}`}
             class="collection-directory-item"
           >
-            <span
-              class="collection-directory-icon"
-              dangerouslySetInnerHTML={{
-                __html: renderCollectionIcon(collection.icon, {
-                  size: 20,
-                  fallback: true,
-                }),
-              }}
-            />
-            <div class="collection-directory-copy">
+            <div class="collection-directory-main">
+              <span class="collection-directory-sequence" aria-hidden="true">
+                {sequence}
+              </span>
               <div class="collection-directory-title-row">
                 <span class="collection-directory-title">
-                  {collection.title}
+                  <span
+                    class="collection-directory-title-marker"
+                    aria-hidden="true"
+                    dangerouslySetInnerHTML={{
+                      __html: renderCollectionIcon(collection.icon, {
+                        size: 14,
+                        fallback: true,
+                      }),
+                    }}
+                  />
+                  <span>{collection.title}</span>
+                </span>
+              </div>
+              <p class="collection-directory-summary">
+                <span class="collection-directory-meta">
+                  {collection.postCount}{" "}
+                  {collection.postCount === 1
+                    ? t({
+                        message: "entry",
+                        comment: "@context: Singular entry count label",
+                      })
+                    : t({
+                        message: "entries",
+                        comment: "@context: Plural entry count label",
+                      })}
+                </span>
+                <span
+                  class="collection-directory-meta-separator"
+                  aria-hidden="true"
+                >
+                  /
                 </span>
                 <time
                   class="collection-directory-updated"
                   dateTime={toISOString(collection.recentActivityAt)}
                 >
-                  {updatedLabel} {formatDate(collection.recentActivityAt)}
+                  {formatRelativeAge(collection.recentActivityAt)}
                 </time>
-              </div>
-              {collection.description ? (
-                <p class="collection-directory-description">
-                  {collection.description}
-                </p>
-              ) : null}
-              <p class="collection-directory-meta">
-                {collection.postCount}{" "}
-                {collection.postCount === 1
-                  ? t({
-                      message: "entry",
-                      comment: "@context: Singular entry count label",
-                    })
-                  : t({
-                      message: "entries",
-                      comment: "@context: Plural entry count label",
-                    })}
               </p>
             </div>
           </a>

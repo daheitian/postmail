@@ -18,7 +18,7 @@ import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import Sortable from "sortablejs";
 import { showToast } from "../toast.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
-import { formatDate, toISOString } from "../../lib/time.js";
+import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import type {
   CollectionManagerItem,
@@ -35,6 +35,7 @@ export class JantCollectionsManager extends LitElement {
     _reorderMode: { state: true },
     _dialogMode: { state: true },
     _editingCollection: { state: true },
+    _editingDividerId: { state: true },
     _showMoreMenu: { state: true },
     _hoveringId: { state: true },
     _showItemMenuId: { state: true },
@@ -47,6 +48,7 @@ export class JantCollectionsManager extends LitElement {
   declare _reorderMode: boolean;
   declare _dialogMode: "create" | "edit" | null;
   declare _editingCollection: ManagedCollection | null;
+  declare _editingDividerId: string | null;
   declare _showMoreMenu: boolean;
   declare _hoveringId: string | null;
   declare _showItemMenuId: string | null;
@@ -79,6 +81,7 @@ export class JantCollectionsManager extends LitElement {
     this._reorderMode = false;
     this._dialogMode = null;
     this._editingCollection = null;
+    this._editingDividerId = null;
     this._showMoreMenu = false;
     this._hoveringId = null;
     this._showItemMenuId = null;
@@ -108,14 +111,25 @@ export class JantCollectionsManager extends LitElement {
     );
   }
 
+  #collectionCount() {
+    return this._items.filter(
+      (item) => item.type === "collection" && item.collection,
+    ).length;
+  }
+
+  #collectionCountLabel() {
+    const count = this.#collectionCount();
+    return `${count} ${
+      count === 1
+        ? this.labels.collectionSingular
+        : this.labels.collectionPlural
+    }`;
+  }
+
   #countLabel(count: number) {
     return `${count} ${
       count === 1 ? this.labels.entrySingular : this.labels.entryPlural
     }`;
-  }
-
-  #formatUpdatedLabel(timestamp: number) {
-    return `${this.labels.updatedLabel} ${formatDate(timestamp)}`;
   }
 
   #toItems(json: {
@@ -276,6 +290,7 @@ export class JantCollectionsManager extends LitElement {
 
   #exitReorderMode() {
     this._reorderMode = false;
+    this._editingDividerId = null;
     this.#sortable?.destroy();
     this.#sortable = null;
   }
@@ -283,6 +298,18 @@ export class JantCollectionsManager extends LitElement {
   protected updated(): void {
     if (this._reorderMode) {
       this.#initSortable();
+    }
+
+    if (this._editingDividerId) {
+      const input = this.querySelector<HTMLInputElement>(
+        `[data-divider-input-for="${this._editingDividerId}"]`,
+      );
+      if (input) {
+        input.focus();
+        input.select();
+        input.scrollIntoView({ block: "nearest" });
+        this._editingDividerId = null;
+      }
     }
   }
 
@@ -295,7 +322,10 @@ export class JantCollectionsManager extends LitElement {
         headers: { "Content-Type": "application/json" },
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const item = (await res.json()) as { id: string };
+      this._reorderMode = true;
       await this.#refreshList();
+      this._editingDividerId = item.id;
     } catch {
       showToast(this.labels.saveFailed, "error");
     }
@@ -429,41 +459,62 @@ export class JantCollectionsManager extends LitElement {
     return html`
       <header class="collections-page-header">
         <div class="collections-page-heading">
-          <h1 class="text-2xl font-semibold">
-            ${this.labels.collectionsTitle}
-          </h1>
-          <p class="collections-page-description">
-            ${this.labels.pageDescription}
-          </p>
+          <div class="collections-page-title-row">
+            <h1 class="collections-page-title">
+              ${this.labels.collectionsTitle}
+            </h1>
+          </div>
+          <div class="collections-page-meta-row">
+            ${this.#collectionCount() > 0
+              ? html`
+                  <p class="collections-page-badge">
+                    ${this.#collectionCountLabel()}
+                  </p>
+                `
+              : nothing}
+            <div class="collections-page-actions">
+              ${this._reorderMode
+                ? html`
+                    <button
+                      type="button"
+                      class="btn-outline"
+                      @click=${() => this.#exitReorderMode()}
+                    >
+                      ${this.labels.done}
+                    </button>
+                  `
+                : html`
+                    <button
+                      type="button"
+                      class="collections-page-toolbar-button"
+                      aria-label=${this.labels.newCollection}
+                      title=${this.labels.newCollection}
+                      @click=${() => this.#openCreateDialog()}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M12 5v14" />
+                        <path d="M5 12h14" />
+                      </svg>
+                    </button>
+                    ${this.#renderPageMoreMenu()}
+                  `}
+            </div>
+          </div>
           ${this._reorderMode
             ? html`
-                <p class="collections-page-hint text-sm text-muted-foreground">
-                  ${this.labels.organizeHint}
-                </p>
+                <p class="collections-page-hint">${this.labels.organizeHint}</p>
               `
             : nothing}
-        </div>
-        <div class="collections-page-actions">
-          ${this._reorderMode
-            ? html`
-                <button
-                  type="button"
-                  class="btn-outline"
-                  @click=${() => this.#exitReorderMode()}
-                >
-                  ${this.labels.done}
-                </button>
-              `
-            : html`
-                <button
-                  type="button"
-                  class="btn"
-                  @click=${() => this.#openCreateDialog()}
-                >
-                  ${this.labels.newCollection}
-                </button>
-                ${this.#renderPageMoreMenu()}
-              `}
         </div>
       </header>
     `;
@@ -474,8 +525,9 @@ export class JantCollectionsManager extends LitElement {
       <div class="relative">
         <button
           type="button"
-          class="btn-outline collections-page-more-btn"
+          class="collections-page-toolbar-button collections-page-more-btn"
           aria-label=${this.labels.moreActions}
+          title=${this.labels.moreActions}
           @click=${(e: Event) => {
             e.stopPropagation();
             this._showMoreMenu = !this._showMoreMenu;
@@ -527,38 +579,41 @@ export class JantCollectionsManager extends LitElement {
     `;
   }
 
-  #renderCollectionItem(item: CollectionManagerItem) {
+  #renderCollectionItem(item: CollectionManagerItem, sequence: number) {
     const collection = item.collection;
     if (!collection) return nothing;
 
     const body = html`
-      <span class="collection-directory-icon">
-        ${unsafeHTML(
-          renderCollectionIcon(collection.icon, {
-            size: 20,
-            fallback: true,
-          }),
-        )}
-      </span>
-      <div class="collection-directory-copy">
+      <div class="collection-directory-main">
+        <span class="collection-directory-sequence" aria-hidden="true">
+          ${String(sequence).padStart(2, "0")}
+        </span>
         <div class="collection-directory-title-row">
-          <span class="collection-directory-title">${collection.title}</span>
+          <span class="collection-directory-title">
+            <span class="collection-directory-title-marker" aria-hidden="true">
+              ${unsafeHTML(
+                renderCollectionIcon(collection.icon, {
+                  size: 14,
+                  fallback: true,
+                }),
+              )}
+            </span>
+            <span>${collection.title}</span>
+          </span>
+        </div>
+        <p class="collection-directory-summary">
+          <span class="collection-directory-meta"
+            >${this.#countLabel(collection.postCount)}</span
+          >
+          <span class="collection-directory-meta-separator" aria-hidden="true"
+            >/</span
+          >
           <time
             class="collection-directory-updated"
             datetime=${toISOString(collection.recentActivityAt)}
           >
-            ${this.#formatUpdatedLabel(collection.recentActivityAt)}
+            ${formatRelativeAge(collection.recentActivityAt)}
           </time>
-        </div>
-        ${collection.description
-          ? html`
-              <p class="collection-directory-description">
-                ${collection.description}
-              </p>
-            `
-          : nothing}
-        <p class="collection-directory-meta">
-          ${this.#countLabel(collection.postCount)}
         </p>
       </div>
     `;
@@ -716,6 +771,7 @@ export class JantCollectionsManager extends LitElement {
             <input
               type="text"
               class="collection-directory-divider-input"
+              data-divider-input-for=${item.id}
               placeholder=${this.labels.dividerLabelPlaceholder}
               .value=${item.label ?? ""}
               aria-label=${this.labels.dividerLabelPlaceholder}
@@ -851,11 +907,16 @@ export class JantCollectionsManager extends LitElement {
         ${this.#hasCollections()
           ? html`
               <div id="collections-manager-list" class="collection-directory">
-                ${this._items.map((item) =>
-                  item.type === "collection"
-                    ? this.#renderCollectionItem(item)
-                    : this.#renderDividerItem(item),
-                )}
+                ${(() => {
+                  let collectionIndex = 0;
+                  return this._items.map((item) => {
+                    if (item.type === "collection") {
+                      collectionIndex += 1;
+                      return this.#renderCollectionItem(item, collectionIndex);
+                    }
+                    return this.#renderDividerItem(item);
+                  });
+                })()}
               </div>
             `
           : html`<p class="text-muted-foreground">

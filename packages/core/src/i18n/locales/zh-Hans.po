@@ -373,13 +373,6 @@ msgstr ""
 msgid "Breadcrumb"
 msgstr ""
 
-#. @context: Introductory description on the collections page
-#. @context: Introductory description on the collections page
-#: src/ui/pages/CollectionsPage.tsx
-#: src/ui/shared/CollectionsManager.tsx
-msgid "Browse by topic, not chronology."
-msgstr ""
-
 #. @context: Role label for dark primary swatch
 #: src/ui/pages/BrandPage.tsx
 msgid "Button tone"
@@ -434,12 +427,30 @@ msgstr "设置新密码."
 msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 msgstr "为你的站点选择一种排版方向。每个主题都会同时改变字体搭配和阅读节奏。"
 
+#. @context: Singular collection count label
+#. @context: Singular collection count label
+#. @context: Singular collection count label
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "collection"
+msgstr "个合集"
+
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Collection"
 msgstr "集合"
+
+#. @context: Plural collection count label
+#. @context: Plural collection count label
+#. @context: Plural collection count label
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "collections"
+msgstr "个合集"
 
 #. @context: Breadcrumb link to collections page
 #. @context: Collections page heading
@@ -2504,13 +2515,6 @@ msgstr "未列出"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Untitled"
 msgstr "无标题"
-
-#. @context: Label before a collection's latest activity date
-#. @context: Label before a collection's latest activity date
-#: src/ui/shared/CollectionDirectory.tsx
-#: src/ui/shared/CollectionsManager.tsx
-msgid "Updated"
-msgstr ""
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx

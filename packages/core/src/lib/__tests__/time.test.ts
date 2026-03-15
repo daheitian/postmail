@@ -6,6 +6,7 @@ import {
   formatDate,
   formatTime,
   formatRelativeTime,
+  formatRelativeAge,
   formatYearMonth,
 } from "../time.js";
 
@@ -150,6 +151,24 @@ describe("formatRelativeTime", () => {
     // Mock now() to return Feb 16, 2024
     vi.spyOn(Date, "now").mockReturnValue((feb1 + 15 * 86400) * 1000);
     expect(formatRelativeTime(feb1)).toBe("Feb 1");
+  });
+});
+
+describe("formatRelativeAge", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("adds 'ago' to recent compact labels", () => {
+    expect(formatRelativeAge(now() - 60)).toBe("1m ago");
+    expect(formatRelativeAge(now() - 3600)).toBe("1h ago");
+    expect(formatRelativeAge(now() - 3 * 86400)).toBe("3d ago");
+  });
+
+  it("keeps calendar labels for older timestamps", () => {
+    const feb1 = 1706745600;
+    vi.spyOn(Date, "now").mockReturnValue((feb1 + 15 * 86400) * 1000);
+    expect(formatRelativeAge(feb1)).toBe("Feb 1");
   });
 });
 
