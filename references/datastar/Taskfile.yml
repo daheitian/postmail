@@ -14,4 +14,3 @@ tasks:
     cmds:
       - pnpm i
       - pnpm build
-

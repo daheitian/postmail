@@ -24,6 +24,7 @@ import { featuredRoutes } from "./routes/pages/featured.js";
 import { latestRoutes } from "./routes/pages/latest.js";
 import { collectionsPageRoutes } from "./routes/pages/collections.js";
 import { newPostRoutes } from "./routes/pages/new.js";
+import { partialPageRoutes } from "./routes/pages/partials.js";
 import { themeSampleRoutes } from "./routes/pages/theme-sample.js";
 import { brandRoutes } from "./routes/pages/brand.js";
 
@@ -393,6 +394,7 @@ export function createApp(): App {
   app.route("/archive", archiveRoutes);
   app.route("/featured", featuredRoutes);
   app.route("/latest", latestRoutes);
+  app.route("/", partialPageRoutes);
   app.route("/_", brandRoutes);
   app.route("/_", themeSampleRoutes);
   app.route("/c", collectionsPageRoutes);

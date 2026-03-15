@@ -6,7 +6,7 @@
  */
 
 import type { Context } from "hono";
-import type { Bindings, TimelineItemView } from "../types.js";
+import type { Bindings, Post, TimelineItemView } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
 import {
@@ -27,54 +27,12 @@ export interface TimelineResult {
   totalPages: number;
 }
 
-/**
- * Assembles a page of timeline items with media attachments and thread previews.
- *
- * Fetches posts using offset-based pagination, batch-loads media, identifies
- * threads, and returns render-ready `TimelineItemView[]` with page info.
- *
- * @param c - Hono context (provides services + appConfig)
- * @param options - Optional page number (1-indexed, defaults to 1)
- * @returns Assembled timeline items with pagination info
- *
- * @example
- * ```ts
- * const { items, currentPage, totalPages } = await assembleTimeline(c);
- * const { items, currentPage, totalPages } = await assembleTimeline(c, { page: 2 });
- * ```
- */
-export async function assembleTimeline(
+async function buildTimelineItems(
   c: Context<Env>,
-  options?: { page?: number; isAuthenticated?: boolean },
-): Promise<TimelineResult> {
-  const pageSize = c.var.appConfig.pageSize;
-
-  const page = Math.max(1, options?.page ?? 1);
-  const offset = (page - 1) * pageSize;
-
-  const excludePrivate = !(options?.isAuthenticated ?? false);
-
-  // Count + list are independent — run in parallel
-  const [totalCount, posts] = await Promise.all([
-    c.var.services.posts.count({
-      status: "published",
-      excludeReplies: true,
-      excludeUnlisted: true,
-      excludePrivate,
-    }),
-    c.var.services.posts.list({
-      status: "published",
-      excludeReplies: true,
-      excludeUnlisted: true,
-      excludePrivate,
-      limit: pageSize,
-      offset,
-    }),
-  ]);
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-
+  posts: Post[],
+): Promise<TimelineItemView[]> {
   if (posts.length === 0) {
-    return { items: [], currentPage: page, totalPages };
+    return [];
   }
 
   // Batch load media, collections, and reply counts in parallel
@@ -123,7 +81,7 @@ export async function assembleTimeline(
       : [new Map(), new Map()];
 
   // Assemble timeline items with View Models
-  const items: TimelineItemView[] = posts.map((post) => {
+  return posts.map((post) => {
     const postView = toPostView(
       {
         ...post,
@@ -176,8 +134,94 @@ export async function assembleTimeline(
 
     return { post: postView };
   });
+}
+
+/**
+ * Assembles a page of timeline items with media attachments and thread previews.
+ *
+ * Fetches posts using offset-based pagination, batch-loads media, identifies
+ * threads, and returns render-ready `TimelineItemView[]` with page info.
+ *
+ * @param c - Hono context (provides services + appConfig)
+ * @param options - Optional page number (1-indexed, defaults to 1)
+ * @returns Assembled timeline items with pagination info
+ *
+ * @example
+ * ```ts
+ * const { items, currentPage, totalPages } = await assembleTimeline(c);
+ * const { items, currentPage, totalPages } = await assembleTimeline(c, { page: 2 });
+ * ```
+ */
+export async function assembleTimeline(
+  c: Context<Env>,
+  options?: { page?: number; isAuthenticated?: boolean },
+): Promise<TimelineResult> {
+  const pageSize = c.var.appConfig.pageSize;
+
+  const page = Math.max(1, options?.page ?? 1);
+  const offset = (page - 1) * pageSize;
+
+  const excludePrivate = !(options?.isAuthenticated ?? false);
+
+  // Count + list are independent — run in parallel
+  const [totalCount, posts] = await Promise.all([
+    c.var.services.posts.count({
+      status: "published",
+      excludeReplies: true,
+      excludeUnlisted: true,
+      excludePrivate,
+    }),
+    c.var.services.posts.list({
+      status: "published",
+      excludeReplies: true,
+      excludeUnlisted: true,
+      excludePrivate,
+      limit: pageSize,
+      offset,
+    }),
+  ]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  if (posts.length === 0) {
+    return { items: [], currentPage: page, totalPages };
+  }
+
+  const items = await buildTimelineItems(c, posts);
 
   return { items, currentPage: page, totalPages };
+}
+
+/**
+ * Assembles a single timeline item for in-place timeline refreshes.
+ *
+ * Reuses the same thread-preview assembly path as `assembleTimeline()` so
+ * page renders and partial updates stay in sync.
+ *
+ * @param c - Hono context (provides services + appConfig)
+ * @param threadRootId - UUID of the thread root displayed in the timeline
+ * @param options - Auth state used to apply timeline visibility rules
+ * @returns A render-ready timeline item, or null when it should not be shown
+ */
+export async function assembleTimelineItem(
+  c: Context<Env>,
+  threadRootId: string,
+  options?: { isAuthenticated?: boolean },
+): Promise<TimelineItemView | null> {
+  const excludePrivate = !(options?.isAuthenticated ?? false);
+  const post = await c.var.services.posts.getById(threadRootId);
+
+  if (
+    !post ||
+    post.replyToId !== null ||
+    post.status !== "published" ||
+    post.visibility === "unlisted" ||
+    (excludePrivate && post.visibility === "private")
+  ) {
+    return null;
+  }
+
+  const items = await buildTimelineItems(c, [post]);
+  return items[0] ?? null;
 }
 
 /**

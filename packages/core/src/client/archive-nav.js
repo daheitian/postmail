@@ -13,9 +13,7 @@
 document.querySelectorAll(".archive-chip-dropdown").forEach((chip) => {
   const trigger = chip.querySelector(":scope > button");
   const popover = chip.querySelector(":scope > [data-popover]");
-  const listbox = popover
-    ? popover.querySelector('[role="listbox"]')
-    : null;
+  const listbox = popover ? popover.querySelector('[role="listbox"]') : null;
   if (!trigger || !popover || !listbox) return;
 
   const options = Array.from(listbox.querySelectorAll('[role="option"]'));

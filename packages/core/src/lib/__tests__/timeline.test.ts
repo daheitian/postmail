@@ -8,24 +8,49 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
+import type { Context } from "hono";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPostService } from "../../services/post.js";
 import { createMediaService } from "../../services/media.js";
+import { createPathService } from "../../services/path.js";
+import { createCollectionService } from "../../services/collection.js";
 import { buildMediaMap } from "../media-helpers.js";
+import { assembleTimelineItem } from "../timeline.js";
 import type { Database } from "../../db/index.js";
-import type { PostWithMedia } from "../../types.js";
+import type { AppConfig, Bindings, PostWithMedia } from "../../types.js";
+import type { AppVariables } from "../../types/app-context.js";
+
+type Env = { Bindings: Bindings; Variables: AppVariables };
 
 describe("Timeline data assembly", () => {
   let db: Database;
   let postService: ReturnType<typeof createPostService>;
   let mediaService: ReturnType<typeof createMediaService>;
+  let collectionService: ReturnType<typeof createCollectionService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    postService = createPostService(db, { slugIdLength: 5 });
+    const pathService = createPathService(db);
+    postService = createPostService(db, { slugIdLength: 5 }, pathService);
     mediaService = createMediaService(db);
+    collectionService = createCollectionService(db, pathService);
   });
+
+  function createTimelineContext(): Context<Env> {
+    return {
+      var: {
+        services: {
+          posts: postService,
+          media: mediaService,
+          collections: collectionService,
+        },
+        appConfig: {
+          pageSize: 20,
+        } as unknown as AppConfig,
+      },
+    } as unknown as Context<Env>;
+  }
 
   it("assembles timeline items with media attachments", async () => {
     const post = await postService.create({
@@ -248,5 +273,50 @@ describe("Timeline data assembly", () => {
     expect(totalCount).toBe(5);
     const totalPages = Math.ceil(totalCount / pageSize);
     expect(totalPages).toBe(3);
+  });
+
+  it("assembles a single timeline item for in-place thread refreshes", async () => {
+    const root = await postService.create({
+      format: "note",
+      bodyMarkdown: "Thread root",
+    });
+    await postService.create({
+      format: "note",
+      bodyMarkdown: "Reply 1",
+      replyToId: root.id,
+    });
+    const latestReply = await postService.create({
+      format: "note",
+      bodyMarkdown: "Reply 2",
+      replyToId: root.id,
+    });
+
+    const item = await assembleTimelineItem(createTimelineContext(), root.id);
+
+    expect(item?.post.id).toBe(root.id);
+    expect(item?.post.isLastInThread).toBe(false);
+    expect(item?.threadPreview?.latestReply.id).toBe(latestReply.id);
+    expect(item?.threadPreview?.totalReplyCount).toBe(2);
+  });
+
+  it("omits private timeline items from unauthenticated partial refreshes", async () => {
+    const root = await postService.create({
+      format: "note",
+      bodyMarkdown: "Private root",
+      visibility: "private",
+    });
+
+    const unauthenticatedItem = await assembleTimelineItem(
+      createTimelineContext(),
+      root.id,
+    );
+    const authenticatedItem = await assembleTimelineItem(
+      createTimelineContext(),
+      root.id,
+      { isAuthenticated: true },
+    );
+
+    expect(unauthenticatedItem).toBeNull();
+    expect(authenticatedItem?.post.id).toBe(root.id);
   });
 });

@@ -45,7 +45,11 @@ function splitReplies(body) {
     while ((attrMatch = attrRegex.exec(match[1])) !== null) {
       attrs[attrMatch[1]] = attrMatch[2];
     }
-    markers.push({ index: match.index, endIndex: match.index + match[0].length, attrs });
+    markers.push({
+      index: match.index,
+      endIndex: match.index + match[0].length,
+      attrs,
+    });
   }
 
   if (markers.length === 0) {
@@ -61,7 +65,10 @@ function splitReplies(body) {
   for (let i = 0; i < markers.length; i++) {
     const start = markers[i].endIndex;
     const end = i + 1 < markers.length ? markers[i + 1].index : body.length;
-    segments.push({ attrs: markers[i].attrs, body: body.slice(start, end).trim() });
+    segments.push({
+      attrs: markers[i].attrs,
+      body: body.slice(start, end).trim(),
+    });
   }
 
   return segments;
@@ -142,14 +149,19 @@ async function apiCall(method, path, apiUrl, token, body) {
     });
   } catch (err) {
     const cause = err.cause?.code || err.cause?.message || err.message;
-    if (cause === "UNABLE_TO_VERIFY_LEAF_SIGNATURE" || cause?.includes("certificate")) {
+    if (
+      cause === "UNABLE_TO_VERIFY_LEAF_SIGNATURE" ||
+      cause?.includes("certificate")
+    ) {
       console.error(`\nSSL certificate error connecting to ${apiUrl}`);
       console.error("If using a local/self-signed certificate, run with:");
       console.error("  NODE_TLS_REJECT_UNAUTHORIZED=0 jant import-site ...");
       console.error("Or use: node --use-system-ca bin/jant.js import-site ...");
       process.exit(1);
     }
-    throw new Error(`Network error calling ${method} ${apiUrl}${path}: ${cause}`);
+    throw new Error(
+      `Network error calling ${method} ${apiUrl}${path}: ${cause}`,
+    );
   }
 
   if (!response.ok) {
@@ -180,7 +192,10 @@ async function walkContent(rootDir, postFiles, collectionFiles) {
       } else if (entry.name === "index.md" || entry.name === "_index.md") {
         const relPath = relative(rootDir, fullPath).replace(/\\/g, "/");
         const content = await readFile(fullPath, "utf-8");
-        if (relPath.startsWith("content/c/") && relPath.endsWith("/_index.md")) {
+        if (
+          relPath.startsWith("content/c/") &&
+          relPath.endsWith("/_index.md")
+        ) {
           collectionFiles.push({ path: relPath, content });
         } else if (
           relPath.startsWith("content/") &&
@@ -216,7 +231,9 @@ export async function run(argv) {
     console.log("");
     console.log("Options:");
     console.log("  --url         Target Jant instance URL (required)");
-    console.log("  --path        Path to export directory or ZIP file (default: .)");
+    console.log(
+      "  --path        Path to export directory or ZIP file (default: .)",
+    );
     console.log("  --dry-run     Parse and validate without making API calls");
     console.log("  --skip-media  Skip image download/upload");
     console.log("");
@@ -234,7 +251,9 @@ export async function run(argv) {
 
   const token = process.env.JANT_TOKEN || values.token;
   if (!token && !values["dry-run"]) {
-    console.error("Error: JANT_TOKEN env var is required (unless using --dry-run)");
+    console.error(
+      "Error: JANT_TOKEN env var is required (unless using --dry-run)",
+    );
     console.error("");
     console.error("  export JANT_TOKEN=jnt_your_token");
     process.exit(1);
@@ -308,7 +327,9 @@ export async function run(argv) {
     }
 
     if (dryRun) {
-      console.log(`[dry-run] Would create collection: ${frontMatter.title || slug}`);
+      console.log(
+        `[dry-run] Would create collection: ${frontMatter.title || slug}`,
+      );
       collectionSlugToId.set(slug, `dry-run-${slug}`);
       continue;
     }
@@ -343,7 +364,8 @@ export async function run(argv) {
 
     // Resolve collection IDs from taxonomy slugs
     const collectionIds = [];
-    const taxonomyCollections = frontMatter.taxonomies?.c || frontMatter.taxonomies?.collections || [];
+    const taxonomyCollections =
+      frontMatter.taxonomies?.c || frontMatter.taxonomies?.collections || [];
     for (const colSlug of taxonomyCollections) {
       const id = collectionSlugToId.get(colSlug);
       if (id) collectionIds.push(id);
@@ -419,7 +441,8 @@ export async function run(argv) {
     try {
       post = await apiCall("POST", "/api/posts", apiUrl, token, postData);
       postsCreated++;
-      const replyInfo = replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
+      const replyInfo =
+        replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
       console.log(`${progress} Created: ${postLabel}${replyInfo}`);
     } catch (err) {
       if (err.status === 409) {
@@ -433,7 +456,8 @@ export async function run(argv) {
 
     // Create custom URL aliases from front matter (also for skipped posts)
     const aliases = frontMatter.aliases || [];
-    const postSlug = frontMatter.slug != null ? String(frontMatter.slug) : post?.slug;
+    const postSlug =
+      frontMatter.slug != null ? String(frontMatter.slug) : post?.slug;
     for (const alias of aliases) {
       const aliasPath = alias.startsWith("/") ? alias : `/${alias}`;
       if (aliasPath === `/${postSlug}`) continue; // skip self-reference
@@ -446,7 +470,9 @@ export async function run(argv) {
         aliasesCreated++;
       } catch (err) {
         if (err.status === 409) continue; // alias already exists
-        console.warn(`  Warning: Failed to create alias "${aliasPath}": ${err.message}`);
+        console.warn(
+          `  Warning: Failed to create alias "${aliasPath}": ${err.message}`,
+        );
       }
     }
 

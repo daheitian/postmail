@@ -88,11 +88,11 @@ run = "pnpm lint"
 
 [tasks.format]
 description = "Format code with Prettier"
-run = "prettier --write ."
+run = "npx prettier --write ."
 
 [tasks.format-check]
 description = "Check code formatting"
-run = "prettier --check ."
+run = "npx prettier --check ."
 
 # =============================================================================
 # Database (D1)

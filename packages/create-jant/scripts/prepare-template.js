@@ -57,11 +57,15 @@ async function validateTemplate() {
 
   // Check all tsconfig files for unresolved "extends"
   const tsconfigFiles = await fs.readdir(TEMPLATE_DIR);
-  for (const file of tsconfigFiles.filter((f) => f.startsWith("tsconfig") && f.endsWith(".json"))) {
+  for (const file of tsconfigFiles.filter(
+    (f) => f.startsWith("tsconfig") && f.endsWith(".json"),
+  )) {
     const filePath = path.join(TEMPLATE_DIR, file);
     const content = await fs.readJson(filePath);
     if (content.extends) {
-      errors.push(`${file} still has "extends": "${content.extends}" (must be inlined for standalone projects)`);
+      errors.push(
+        `${file} still has "extends": "${content.extends}" (must be inlined for standalone projects)`,
+      );
     }
   }
 
@@ -82,7 +86,11 @@ async function main() {
   console.log("Preparing template for publishing...");
 
   // Merge all tsconfig files that use "extends"
-  const tsconfigFiles = ["tsconfig.json", "tsconfig.app.json", "tsconfig.node.json"];
+  const tsconfigFiles = [
+    "tsconfig.json",
+    "tsconfig.app.json",
+    "tsconfig.node.json",
+  ];
   for (const file of tsconfigFiles) {
     await mergeTsconfig(path.join(TEMPLATE_DIR, file));
   }

@@ -9,9 +9,7 @@ const commandsDir = join(__dirname, "commands");
 
 async function listCommands() {
   const files = await readdir(commandsDir);
-  return files
-    .filter((f) => f.endsWith(".js"))
-    .map((f) => basename(f, ".js"));
+  return files.filter((f) => f.endsWith(".js")).map((f) => basename(f, ".js"));
 }
 
 async function showHelp() {

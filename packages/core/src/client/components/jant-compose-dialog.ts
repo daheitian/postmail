@@ -142,6 +142,13 @@ export class JantComposeDialog extends LitElement {
   private _initialSnapshot: string | null = null;
   private _pageFocusApplied = false;
   private _pageLeaveRequested = false;
+  private _replyThreadRootId: string | null = null;
+  private _replyRefreshKind:
+    | "timeline-item"
+    | "post-card"
+    | "post-view"
+    | null = null;
+  private _replyRefreshId: string | null = null;
   private _suppressBeforeUnload = false;
 
   createRenderRoot() {
@@ -180,6 +187,9 @@ export class JantComposeDialog extends LitElement {
     this._replyToId = null;
     this._replyToData = null;
     this._replyExpanded = false;
+    this._replyThreadRootId = null;
+    this._replyRefreshKind = null;
+    this._replyRefreshId = null;
     this._visibility = "public";
     this._featured = false;
     this._showVisibilityMenu = false;
@@ -226,6 +236,9 @@ export class JantComposeDialog extends LitElement {
     this._replyToId = null;
     this._replyToData = null;
     this._replyExpanded = false;
+    this._replyThreadRootId = null;
+    this._replyRefreshKind = null;
+    this._replyRefreshId = null;
     this._visibility = "public";
     this._featured = false;
     this._showVisibilityMenu = false;
@@ -336,10 +349,23 @@ export class JantComposeDialog extends LitElement {
    *
    * @param id - UUID of the post being replied to
    * @param replyData - Pre-captured content from the DOM (avoids API fetch)
+   * @param threadRootId - UUID of the thread root (used for in-place timeline refresh)
+   * @param refreshTarget - Current view to patch after publishing the reply
    */
-  async openReply(id: string, replyData?: ReplyToData) {
+  async openReply(
+    id: string,
+    replyData?: ReplyToData,
+    threadRootId?: string,
+    refreshTarget?: {
+      kind: "timeline-item" | "post-card" | "post-view";
+      id: string;
+    },
+  ) {
     this.reset();
     this._replyToId = id;
+    this._replyThreadRootId = threadRootId ?? id;
+    this._replyRefreshKind = refreshTarget?.kind ?? null;
+    this._replyRefreshId = refreshTarget?.id ?? null;
     this._replyToData = replyData ?? null;
     this._format = "note";
 
@@ -358,6 +384,9 @@ export class JantComposeDialog extends LitElement {
       const res = await fetch(`/api/posts/${replyToId}`);
       if (!res.ok) return;
       const post = await res.json();
+      this._replyThreadRootId = (post.replyToId as string | null)
+        ? (post.threadId as string)
+        : (post.id as string);
       const dateText = post.publishedAt
         ? new Date(post.publishedAt * 1000).toLocaleDateString(undefined, {
             month: "short",
@@ -616,6 +645,9 @@ export class JantComposeDialog extends LitElement {
       mediaClientMap,
       editPostId: this._editPostId ?? this._draftSourceId ?? undefined,
       replyToId: this._replyToId ?? undefined,
+      replyThreadRootId: this._replyThreadRootId ?? undefined,
+      replyRefreshKind: this._replyRefreshKind ?? undefined,
+      replyRefreshId: this._replyRefreshId ?? undefined,
     };
   }
 

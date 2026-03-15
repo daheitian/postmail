@@ -13,14 +13,12 @@ const outputFile =
 
 // better-sqlite3 is installed in packages/core
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const coreRequire = createRequire(
-  resolve(__dirname, "../../package.json")
-);
+const coreRequire = createRequire(resolve(__dirname, "../../package.json"));
 const Database = coreRequire("better-sqlite3");
 
 const dbDir = resolve(
   __dirname,
-  "../../.wrangler/state/v3/d1/miniflare-D1DatabaseObject"
+  "../../.wrangler/state/v3/d1/miniflare-D1DatabaseObject",
 );
 const files = readdirSync(dbDir).filter((f) => f.endsWith(".sqlite"));
 if (!files.length) {
@@ -41,7 +39,7 @@ function dumpTable(name, query) {
   return rows
     .map(
       (row) =>
-        `INSERT INTO ${name} VALUES(${Object.values(row).map(sqlValue).join(",")});`
+        `INSERT INTO ${name} VALUES(${Object.values(row).map(sqlValue).join(",")});`,
     )
     .join("\n");
 }
@@ -56,10 +54,7 @@ const header = `-- =============================================================
 const tables = [
   ...(!noAuth ? [["setting"], ["user"], ["account"]] : []),
   ["collection"],
-  [
-    "post",
-    "SELECT * FROM post WHERE deleted_at IS NULL",
-  ],
+  ["post", "SELECT * FROM post WHERE deleted_at IS NULL"],
   ["post_collection"],
   ["nav_item"],
   ["sidebar_item"],
@@ -76,7 +71,10 @@ let sql = header;
 
 // When --no-auth, embed reset statements so everything runs in a single D1 import
 if (noAuth) {
-  const resetSql = readFileSync(resolve(__dirname, "reset-content.sql"), "utf-8");
+  const resetSql = readFileSync(
+    resolve(__dirname, "reset-content.sql"),
+    "utf-8",
+  );
   sql += "\n-- Reset (clear existing content)\n";
   sql += resetSql.replace(/^--.*\n/gm, "").trim() + "\n";
 }

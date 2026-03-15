@@ -107,6 +107,16 @@ function setupThreadContext(group: HTMLElement): void {
   }
 }
 
+export function setupThreadContexts(
+  root: globalThis.Document | globalThis.Element = document,
+): void {
+  root.querySelectorAll(".thread-group").forEach((group) => {
+    if (group instanceof HTMLElement) {
+      setupThreadContext(group);
+    }
+  });
+}
+
 // Expand/collapse: event delegation on toggle buttons
 document.addEventListener("click", (e) => {
   const toggle = (e.target as HTMLElement).closest<HTMLElement>(
@@ -125,11 +135,7 @@ document.addEventListener("click", (e) => {
 
 // Auto-scroll to current post on detail pages
 document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".thread-group").forEach((group) => {
-    if (group instanceof HTMLElement) {
-      setupThreadContext(group);
-    }
-  });
+  setupThreadContexts(document);
 
   const current = document.querySelector("[data-post-current]");
   if (!current) return;

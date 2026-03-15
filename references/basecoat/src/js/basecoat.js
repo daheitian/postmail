@@ -5,14 +5,14 @@
   const registerComponent = (name, selector, initFunction) => {
     componentRegistry[name] = {
       selector,
-      init: initFunction
+      init: initFunction,
     };
   };
 
   const initComponent = (element, componentName) => {
     const component = componentRegistry[componentName];
     if (!component) return;
-    
+
     try {
       component.init(element);
     } catch (error) {
@@ -28,7 +28,7 @@
 
   const initNewComponents = (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) return;
-    
+
     Object.entries(componentRegistry).forEach(([name, { selector, init }]) => {
       if (node.matches(selector)) {
         init(node);
@@ -39,13 +39,13 @@
 
   const startObserver = () => {
     if (observer) return;
-    
+
     observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach(initNewComponents);
       });
     });
-    
+
     observer.observe(document.body, { childList: true, subtree: true });
   };
 
@@ -62,13 +62,13 @@
       console.warn(`Component '${componentName}' not found in registry`);
       return;
     }
-    
+
     // Clear initialization flag for this component
     const flag = `data-${componentName}-initialized`;
-    document.querySelectorAll(`[${flag}]`).forEach(el => {
+    document.querySelectorAll(`[${flag}]`).forEach((el) => {
       el.removeAttribute(flag);
     });
-    
+
     document.querySelectorAll(component.selector).forEach(component.init);
   };
 
@@ -76,11 +76,11 @@
     // Clear all initialization flags using the registry
     Object.entries(componentRegistry).forEach(([name, { selector }]) => {
       const flag = `data-${name}-initialized`;
-      document.querySelectorAll(`[${flag}]`).forEach(el => {
+      document.querySelectorAll(`[${flag}]`).forEach((el) => {
         el.removeAttribute(flag);
       });
     });
-    
+
     initAllComponents();
   };
 
@@ -89,11 +89,11 @@
     init: reinitComponent,
     initAll: reinitAll,
     start: startObserver,
-    stop: stopObserver
+    stop: stopObserver,
   };
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener("DOMContentLoaded", () => {
     initAllComponents();
     startObserver();
   });
-})(); 
+})();

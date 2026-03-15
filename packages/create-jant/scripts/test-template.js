@@ -39,7 +39,9 @@ async function main() {
     console.log("Step 1: Building and packing @jant/core...");
     const coreDir = path.resolve(MONOREPO_ROOT, "packages/core");
     run("pnpm run build", { cwd: coreDir });
-    const packOutput = runCapture("pnpm pack --pack-destination /tmp", { cwd: coreDir });
+    const packOutput = runCapture("pnpm pack --pack-destination /tmp", {
+      cwd: coreDir,
+    });
     coreTarball = packOutput.split("\n").pop();
     console.log(`  Tarball: ${coreTarball}\n`);
   } else {
@@ -55,11 +57,15 @@ async function main() {
 
   const cliPath = path.join(PACKAGE_ROOT, "dist/index.js");
   if (!(await fs.pathExists(cliPath))) {
-    console.error(`  CLI not built. Run "pnpm --filter create-jant prepublishOnly" first.`);
+    console.error(
+      `  CLI not built. Run "pnpm --filter create-jant prepublishOnly" first.`,
+    );
     process.exit(1);
   }
 
-  run(`node ${cliPath} test-project -y --no-install --no-git`, { cwd: testDir });
+  run(`node ${cliPath} test-project -y --no-install --no-git`, {
+    cwd: testDir,
+  });
   console.log();
 
   // 3. Replace @jant/core dependency with local tarball
@@ -77,7 +83,10 @@ async function main() {
 
   // 5. Verify client assets exist
   console.log("Step 5: Verifying client assets...");
-  const clientDir = path.join(projectDir, "node_modules/@jant/core/dist/client");
+  const clientDir = path.join(
+    projectDir,
+    "node_modules/@jant/core/dist/client",
+  );
   const clientJs = path.join(clientDir, "client.js");
   const clientCss = path.join(clientDir, "client.css");
 
@@ -93,7 +102,10 @@ async function main() {
 
   // 6. Verify wrangler.toml is valid
   console.log("Step 6: Verifying wrangler.toml...");
-  const wranglerToml = await fs.readFile(path.join(projectDir, "wrangler.toml"), "utf-8");
+  const wranglerToml = await fs.readFile(
+    path.join(projectDir, "wrangler.toml"),
+    "utf-8",
+  );
   if (!wranglerToml.includes("test-project")) {
     console.error("  wrangler.toml does not contain project name");
     process.exit(1);
@@ -117,7 +129,9 @@ async function main() {
   const staleFiles = ["_gitignore", "_github"];
   for (const file of staleFiles) {
     if (await fs.pathExists(path.join(projectDir, file))) {
-      console.error(`  Underscore-prefixed file should have been renamed: ${file}`);
+      console.error(
+        `  Underscore-prefixed file should have been renamed: ${file}`,
+      );
       process.exit(1);
     }
   }

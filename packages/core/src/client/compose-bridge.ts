@@ -22,6 +22,7 @@ import {
   replaceWithAutoClose,
 } from "./toast.js";
 import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
+import { setupThreadContexts } from "./thread-context.js";
 import { getMediaCategory } from "../lib/upload.js";
 
 function getComposeEditorFromEventTarget(
@@ -38,6 +39,152 @@ function getComposeDialogFromEventTarget(
   return target instanceof globalThis.Element
     ? (target.closest("jant-compose-dialog") as JantComposeDialog | null)
     : null;
+}
+
+type ReplyRefreshKind = "timeline-item" | "post-card" | "post-view";
+
+interface ReplyRefreshTarget {
+  kind: ReplyRefreshKind;
+  id: string;
+}
+
+function getReplyRefreshTarget(
+  article: HTMLElement,
+): ReplyRefreshTarget | null {
+  const postView = article.closest<HTMLElement>("[data-post-view]");
+  const postViewId = postView?.dataset.postViewId;
+  if (postViewId) {
+    return { kind: "post-view", id: postViewId };
+  }
+
+  const page = article.closest<HTMLElement>("[data-page]")?.dataset.page;
+  const threadRootId = article.dataset.threadRootId ?? article.dataset.postId;
+  if (page === "home" && threadRootId) {
+    return { kind: "timeline-item", id: threadRootId };
+  }
+
+  const postId = article.dataset.postId;
+  if (postId) {
+    return { kind: "post-card", id: postId };
+  }
+
+  return null;
+}
+
+async function fetchPartialHtml(path: string): Promise<string | null> {
+  const res = await fetch(path, {
+    headers: { Accept: "text/html" },
+  });
+  if (!res.ok) return null;
+  return res.text();
+}
+
+async function refreshTimelineThreadView(
+  threadRootId: string,
+): Promise<boolean> {
+  try {
+    const timelineItem = document.querySelector<HTMLElement>(
+      `[data-timeline-item][data-thread-root-id="${threadRootId}"]`,
+    );
+    const content = timelineItem?.querySelector<HTMLElement>(
+      "[data-timeline-item-content]",
+    );
+    if (!content) return false;
+
+    const html = await fetchPartialHtml(
+      `/_/timeline-item/${encodeURIComponent(threadRootId)}`,
+    );
+    if (!html) return false;
+
+    content.innerHTML = html;
+    setupThreadContexts(content);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function refreshPostCardView(postId: string): Promise<boolean> {
+  try {
+    const timelineItem = document
+      .querySelector<HTMLElement>(`article[data-post-id="${postId}"]`)
+      ?.closest<HTMLElement>("[data-timeline-item]");
+    const html = await fetchPartialHtml(
+      `/_/post-card/${encodeURIComponent(postId)}`,
+    );
+    if (!html) return false;
+
+    if (timelineItem) {
+      const content = timelineItem.querySelector<HTMLElement>(
+        "[data-timeline-item-content]",
+      );
+      if (!content) return false;
+      content.innerHTML = html;
+      setupThreadContexts(content);
+      return true;
+    }
+
+    const article = document.querySelector<HTMLElement>(
+      `article[data-post-id="${postId}"]`,
+    );
+    if (!article) return false;
+
+    article.outerHTML = html;
+    const refreshed = document.querySelector<HTMLElement>(
+      `article[data-post-id="${postId}"]`,
+    );
+    if (refreshed) {
+      setupThreadContexts(refreshed);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function refreshPostPageView(postId: string): Promise<boolean> {
+  try {
+    const container = document.querySelector<HTMLElement>(
+      `[data-post-view][data-post-view-id="${postId}"]`,
+    );
+    if (!container) return false;
+
+    const html = await fetchPartialHtml(
+      `/_/post-view/${encodeURIComponent(postId)}`,
+    );
+    if (!html) return false;
+
+    container.outerHTML = html;
+    const refreshed = document.querySelector<HTMLElement>(
+      `[data-post-view][data-post-view-id="${postId}"]`,
+    );
+    if (refreshed) {
+      setupThreadContexts(refreshed);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function refreshReplyTarget(
+  detail: ComposeSubmitDetail,
+): Promise<boolean> {
+  if (!detail.replyRefreshKind || !detail.replyRefreshId) {
+    return false;
+  }
+
+  if (detail.replyRefreshKind === "timeline-item") {
+    return refreshTimelineThreadView(
+      detail.replyThreadRootId ?? detail.replyRefreshId,
+    );
+  }
+
+  if (detail.replyRefreshKind === "post-view") {
+    return refreshPostPageView(detail.replyRefreshId);
+  }
+
+  return refreshPostCardView(detail.replyRefreshId);
 }
 
 // ── Upload manager ──────────────────────────────────────────────────
@@ -270,6 +417,8 @@ document.addEventListener("click", (e: MouseEvent) => {
   if (!article) return;
 
   const postId = article.dataset.postId;
+  const threadRootId = article.dataset.threadRootId ?? postId;
+  const refreshTarget = getReplyRefreshTarget(article);
   if (!postId) return;
 
   // Capture rendered content from the DOM — reuses server-rendered cards
@@ -285,7 +434,12 @@ document.addEventListener("click", (e: MouseEvent) => {
   const dialog = document.querySelector(
     "jant-compose-dialog",
   ) as JantComposeDialog | null;
-  dialog?.openReply(postId, { contentHtml, dateText });
+  dialog?.openReply(
+    postId,
+    { contentHtml, dateText },
+    threadRootId,
+    refreshTarget ?? undefined,
+  );
 });
 
 // ── Submit handler ──────────────────────────────────────────────────
@@ -565,6 +719,11 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       if (isPageMode && data.permalink) {
         composeEl?.preparePageLeave?.();
         globalThis.location.assign(data.permalink);
+      } else if (detail.replyToId) {
+        const updated = await refreshReplyTarget(detail);
+        if (!updated) {
+          globalThis.location.reload();
+        }
       } else {
         // Reload the page so the timeline picks up the new post via a
         // full assembleTimeline() pass (correct thread previews, filters, etc.)

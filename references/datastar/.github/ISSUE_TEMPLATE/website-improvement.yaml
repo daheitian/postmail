@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         So you’d like to help improve the Datastar website? Great!
-        
+
         Please provide clear and concise suggestions for improvements to the website. This can include documentation, changes to existing content, or general usability enhancements.
   - type: textarea
     id: body

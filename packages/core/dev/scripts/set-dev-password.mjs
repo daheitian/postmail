@@ -16,12 +16,17 @@ function bytesToHex(bytes) {
 
 async function hashPassword(password) {
   const saltHex = randomBytes(PASSWORD_HASH_SALT_BYTES).toString("hex");
-  const derivedKey = scryptSync(password.normalize("NFKC"), saltHex, PASSWORD_HASH_KEY_LENGTH, {
-    N: PASSWORD_HASH_N,
-    r: PASSWORD_HASH_R,
-    p: PASSWORD_HASH_P,
-    maxmem: 128 * PASSWORD_HASH_N * PASSWORD_HASH_R * 2,
-  });
+  const derivedKey = scryptSync(
+    password.normalize("NFKC"),
+    saltHex,
+    PASSWORD_HASH_KEY_LENGTH,
+    {
+      N: PASSWORD_HASH_N,
+      r: PASSWORD_HASH_R,
+      p: PASSWORD_HASH_P,
+      maxmem: 128 * PASSWORD_HASH_N * PASSWORD_HASH_R * 2,
+    },
+  );
 
   return [
     PASSWORD_HASH_PREFIX,
@@ -42,12 +47,12 @@ const password = process.argv.find(
     !a.startsWith("-") &&
     a !== process.argv[0] &&
     a !== process.argv[1] &&
-    a !== "--remote"
+    a !== "--remote",
 );
 
 if (!password) {
   console.error(
-    "Usage: node scripts/set-dev-password.mjs <password> [--remote]"
+    "Usage: node scripts/set-dev-password.mjs <password> [--remote]",
   );
   process.exit(1);
 }

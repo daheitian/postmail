@@ -166,6 +166,9 @@ export interface ComposeSubmitDetail {
   featured?: boolean;
   editPostId?: string;
   replyToId?: string;
+  replyThreadRootId?: string;
+  replyRefreshKind?: "timeline-item" | "post-card" | "post-view";
+  replyRefreshId?: string;
 }
 
 export interface ComposeCollection {

@@ -16,7 +16,7 @@ function queryRemote(sql) {
   try {
     stdout = execSync(
       `pnpm exec wrangler d1 execute DB --remote --command "${sql}" --json`,
-      { encoding: "utf-8", cwd: process.cwd() }
+      { encoding: "utf-8", cwd: process.cwd() },
     );
   } catch (err) {
     const output = err.stdout || err.stderr || "";
@@ -45,7 +45,7 @@ function dumpTable(name, query) {
   return rows
     .map(
       (row) =>
-        `INSERT INTO ${name} VALUES(${Object.values(row).map(sqlValue).join(",")});`
+        `INSERT INTO ${name} VALUES(${Object.values(row).map(sqlValue).join(",")});`,
     )
     .join("\n");
 }

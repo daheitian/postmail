@@ -34,8 +34,17 @@ const ThreadDetail: FC<{ post: PostView; threadPosts: PostView[] }> = ({
 };
 
 export const PostPage: FC<PostPageProps> = ({ post, threadPosts }) => {
-  if (threadPosts && threadPosts.length > 1) {
-    return <ThreadDetail post={post} threadPosts={threadPosts} />;
-  }
-  return <TimelineItemFromPost post={post} mode="detail" />;
+  return (
+    <div
+      data-post-view
+      data-post-view-id={post.id}
+      data-thread-root-id={post.threadRootId ?? post.id}
+    >
+      {threadPosts && threadPosts.length > 1 ? (
+        <ThreadDetail post={post} threadPosts={threadPosts} />
+      ) : (
+        <TimelineItemFromPost post={post} mode="detail" />
+      )}
+    </div>
+  );
 };

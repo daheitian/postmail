@@ -16,7 +16,7 @@ function queryRemote(sql) {
   try {
     stdout = execSync(
       `pnpm exec wrangler d1 execute DB --remote --command "${sql}" --json`,
-      { encoding: "utf-8", cwd: process.cwd() }
+      { encoding: "utf-8", cwd: process.cwd() },
     );
   } catch (err) {
     // Wrangler returns JSON errors on stdout even with non-zero exit codes
@@ -25,7 +25,9 @@ function queryRemote(sql) {
       const errJson = JSON.parse(output.trim());
       if (errJson.error?.text) {
         const detail = errJson.error.notes?.[0]?.text;
-        console.error(`Wrangler error: ${errJson.error.text}${detail ? `\n  ${detail}` : ""}`);
+        console.error(
+          `Wrangler error: ${errJson.error.text}${detail ? `\n  ${detail}` : ""}`,
+        );
         process.exit(1);
       }
     } catch {
@@ -37,7 +39,9 @@ function queryRemote(sql) {
   const parsed = JSON.parse(stdout);
   if (parsed.error?.text) {
     const detail = parsed.error.notes?.[0]?.text;
-    console.error(`Wrangler error: ${parsed.error.text}${detail ? `\n  ${detail}` : ""}`);
+    console.error(
+      `Wrangler error: ${parsed.error.text}${detail ? `\n  ${detail}` : ""}`,
+    );
     process.exit(1);
   }
   return parsed[0]?.results || [];
@@ -48,7 +52,7 @@ function dumpTable(name, query) {
   return rows
     .map(
       (row) =>
-        `INSERT INTO ${name} VALUES(${Object.values(row).map(sqlValue).join(",")});`
+        `INSERT INTO ${name} VALUES(${Object.values(row).map(sqlValue).join(",")});`,
     )
     .join("\n");
 }

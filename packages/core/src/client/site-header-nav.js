@@ -11,9 +11,7 @@ document.querySelectorAll(".site-header-more").forEach((menuRoot) => {
 
   const trigger = menuRoot.querySelector(":scope > button");
   const popover = menuRoot.querySelector(":scope > [data-popover]");
-  const menu = popover
-    ? popover.querySelector('[role="menu"]')
-    : null;
+  const menu = popover ? popover.querySelector('[role="menu"]') : null;
 
   if (!trigger || !popover || !menu) return;
 

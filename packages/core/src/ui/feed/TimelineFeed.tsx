@@ -5,10 +5,52 @@
  */
 
 import type { FC } from "hono/jsx";
-import type { TimelineFeedProps } from "../../types.js";
+import type { TimelineFeedProps, TimelineItemView } from "../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { ThreadPreview } from "./ThreadPreview.js";
 import { PagePagination } from "../shared/Pagination.js";
+
+interface TimelineFeedItemContentProps {
+  item: TimelineItemView;
+}
+
+interface TimelineFeedItemProps extends TimelineFeedItemContentProps {
+  showDivider?: boolean;
+}
+
+export const TimelineFeedItemContent: FC<TimelineFeedItemContentProps> = ({
+  item,
+}) => {
+  return item.threadPreview ? (
+    <ThreadPreview
+      rootPost={item.post}
+      latestReply={item.threadPreview.latestReply}
+      parentReply={item.threadPreview.parentReply}
+      totalReplyCount={item.threadPreview.totalReplyCount}
+    />
+  ) : (
+    <TimelineItem item={item} />
+  );
+};
+
+export const TimelineFeedItem: FC<TimelineFeedItemProps> = ({
+  item,
+  showDivider = false,
+}) => {
+  return (
+    <div
+      class="feed-item"
+      data-timeline-item
+      data-timeline-item-id={item.post.id}
+      data-thread-root-id={item.post.threadRootId ?? item.post.id}
+    >
+      {showDivider && <hr class="feed-divider" />}
+      <div data-timeline-item-content>
+        <TimelineFeedItemContent item={item} />
+      </div>
+    </div>
+  );
+};
 
 export const TimelineFeed: FC<TimelineFeedProps> = ({
   items,
@@ -21,19 +63,11 @@ export const TimelineFeed: FC<TimelineFeedProps> = ({
       <div id="timeline-feed">
         <div id="timeline-items" class="flex flex-col">
           {items.map((item, i) => (
-            <div key={item.post.id}>
-              {i > 0 && <hr class="feed-divider" />}
-              {item.threadPreview ? (
-                <ThreadPreview
-                  rootPost={item.post}
-                  latestReply={item.threadPreview.latestReply}
-                  parentReply={item.threadPreview.parentReply}
-                  totalReplyCount={item.threadPreview.totalReplyCount}
-                />
-              ) : (
-                <TimelineItem item={item} />
-              )}
-            </div>
+            <TimelineFeedItem
+              key={item.post.id}
+              item={item}
+              showDivider={i > 0}
+            />
           ))}
         </div>
       </div>

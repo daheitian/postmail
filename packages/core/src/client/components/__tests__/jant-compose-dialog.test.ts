@@ -224,6 +224,61 @@ describe("JantComposeDialog", () => {
     expect(detail.pendingAttachments).toEqual([]);
   });
 
+  it("includes the thread root id when replying", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    await el.openReply(
+      "019ce8ce-d6d8-7fda-a5df-c2da2bef5ade",
+      {
+        contentHtml: "<p>Parent</p>",
+        dateText: "Mar 14",
+      },
+      "019ce8cf-19a1-7d16-9a75-017a9ac7299d",
+      {
+        kind: "timeline-item",
+        id: "019ce8cf-19a1-7d16-9a75-017a9ac7299d",
+      },
+    );
+
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Reply body" }] },
+      ],
+    };
+    await editor.updateComplete;
+
+    let receivedDetail:
+      | (ComposeSubmitDetail & { pendingAttachments: unknown[] })
+      | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      const customEvent = event as CustomEvent<
+        ComposeSubmitDetail & { pendingAttachments: unknown[] }
+      >;
+      receivedDetail = customEvent.detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      "expected reply button",
+    ).click();
+
+    expect(receivedDetail).not.toBeNull();
+    const detail = receivedDetail as unknown as ComposeSubmitDetail & {
+      pendingAttachments: unknown[];
+    };
+    expect(detail.replyToId).toBe("019ce8ce-d6d8-7fda-a5df-c2da2bef5ade");
+    expect(detail.replyThreadRootId).toBe(
+      "019ce8cf-19a1-7d16-9a75-017a9ac7299d",
+    );
+    expect(detail.replyRefreshKind).toBe("timeline-item");
+    expect(detail.replyRefreshId).toBe("019ce8cf-19a1-7d16-9a75-017a9ac7299d");
+  });
+
   it("collection selector toggles IDs", async () => {
     const el = await createElement();
 

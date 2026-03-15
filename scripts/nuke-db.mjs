@@ -20,10 +20,10 @@ if (!siteDir) {
 const cwd = resolve(process.cwd(), siteDir);
 
 function d1(command) {
-  execSync(
-    `pnpm exec wrangler d1 execute DB --remote --command "${command}"`,
-    { cwd, stdio: "pipe" },
-  );
+  execSync(`pnpm exec wrangler d1 execute DB --remote --command "${command}"`, {
+    cwd,
+    stdio: "pipe",
+  });
 }
 
 function d1Json(command) {
@@ -42,7 +42,11 @@ for (let pass = 1; pass <= MAX_PASSES; pass++) {
   );
 
   if (objects.length === 0) {
-    console.log(pass === 1 ? "Database is already empty." : "Done! Database is now empty.");
+    console.log(
+      pass === 1
+        ? "Database is already empty."
+        : "Done! Database is now empty.",
+    );
     process.exit(0);
   }
 
@@ -61,7 +65,11 @@ for (let pass = 1; pass <= MAX_PASSES; pass++) {
 
   // Build drop list: triggers -> views -> FTS virtual tables -> regular tables
   const drops = [];
-  const typeOrder = { trigger: "DROP TRIGGER", view: "DROP VIEW", table: "DROP TABLE" };
+  const typeOrder = {
+    trigger: "DROP TRIGGER",
+    view: "DROP VIEW",
+    table: "DROP TABLE",
+  };
 
   for (const type of ["trigger", "view", "table"]) {
     for (const o of objects) {
@@ -88,5 +96,7 @@ for (let pass = 1; pass <= MAX_PASSES; pass++) {
 const remaining = d1Json(
   "SELECT name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%';",
 );
-console.error(`Failed to drop ${remaining.length} objects: ${remaining.map((r) => r.name).join(", ")}`);
+console.error(
+  `Failed to drop ${remaining.length} objects: ${remaining.map((r) => r.name).join(", ")}`,
+);
 process.exit(1);
