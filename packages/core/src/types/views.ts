@@ -184,6 +184,7 @@ export interface ArchiveGroup {
   /** Total thread roots in this month across the full filtered result set */
   totalCount?: number;
   posts: PostView[];
+  items?: TimelineItemView[];
 }
 
 /**

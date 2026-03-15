@@ -29,6 +29,7 @@ import {
   toArchiveGroupsWithMedia,
 } from "../../lib/view.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
+import { assembleTimelineItems } from "../../lib/timeline.js";
 import type { PostFilters } from "../../services/post.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -156,22 +157,7 @@ archiveRoutes.get("/", async (c) => {
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  // --- Batch-load media and reply counts for thread roots -------------------
-
-  const postIds = posts.map((p) => p.id);
-  const [rawMediaMap, replyCounts] = await Promise.all([
-    services.media.getByPostIds(postIds),
-    services.posts.getReplyCounts(postIds),
-  ]);
-  const mediaCtx = createMediaContext(appConfig);
-  const mediaMap = buildMediaMap(
-    rawMediaMap,
-    mediaCtx.r2PublicUrl,
-    mediaCtx.imageTransformUrl,
-    mediaCtx.s3PublicUrl,
-  );
-
-  // --- Group posts by year-month with media ---------------------------------
+  // --- Group posts by year-month --------------------------------------------
 
   const grouped = new Map<string, PostWithMedia[]>();
   for (const post of posts) {
@@ -184,22 +170,65 @@ archiveRoutes.get("/", async (c) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- Map.set() above guarantees key exists
     grouped.get(key)!.push({
       ...post,
-      mediaAttachments: mediaMap.get(post.id) ?? [],
+      mediaAttachments: [],
     });
   }
 
   const monthlyCountMap = new Map(
     monthlyCounts.map((row) => [row.yearMonth, row.count] as const),
   );
-  const groups = toArchiveGroupsWithMedia(grouped, mediaCtx).map((group) => ({
-    ...group,
-    posts: group.posts.map((post) => ({
-      ...post,
-      replyCount: replyCounts.get(post.id) ?? undefined,
-    })),
-    totalCount:
-      monthlyCountMap.get(`${group.year}-${group.month}`) ?? group.posts.length,
-  }));
+  const mediaCtx = createMediaContext(appConfig);
+  const groups =
+    view === "list"
+      ? await (async () => {
+          const items = await assembleTimelineItems(c, posts);
+          const itemsById = new Map(items.map((item) => [item.post.id, item]));
+
+          return toArchiveGroupsWithMedia(grouped, mediaCtx).map((group) => ({
+            ...group,
+            posts: [],
+            items: group.posts
+              .map((post) => itemsById.get(post.id))
+              .filter((item): item is NonNullable<typeof item> => !!item),
+            totalCount:
+              monthlyCountMap.get(`${group.year}-${group.month}`) ??
+              group.posts.length,
+          }));
+        })()
+      : await (async () => {
+          const postIds = posts.map((p) => p.id);
+          const [rawMediaMap, replyCounts] = await Promise.all([
+            services.media.getByPostIds(postIds),
+            services.posts.getReplyCounts(postIds),
+          ]);
+          const mediaMap = buildMediaMap(
+            rawMediaMap,
+            mediaCtx.r2PublicUrl,
+            mediaCtx.imageTransformUrl,
+            mediaCtx.s3PublicUrl,
+          );
+
+          for (const [key, monthPosts] of grouped) {
+            grouped.set(
+              key,
+              monthPosts.map((post) => ({
+                ...post,
+                mediaAttachments: mediaMap.get(post.id) ?? [],
+              })),
+            );
+          }
+
+          return toArchiveGroupsWithMedia(grouped, mediaCtx).map((group) => ({
+            ...group,
+            posts: group.posts.map((post) => ({
+              ...post,
+              replyCount: replyCounts.get(post.id) ?? undefined,
+            })),
+            totalCount:
+              monthlyCountMap.get(`${group.year}-${group.month}`) ??
+              group.posts.length,
+          }));
+        })();
 
   // --- Build active filter state for UI -------------------------------------
 

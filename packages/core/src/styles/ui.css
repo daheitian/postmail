@@ -5321,8 +5321,14 @@
     background: var(--secondary);
   }
 
+  .archive-chip:focus-within {
+    border-color: color-mix(in srgb, var(--site-accent) 34%, var(--border));
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--site-accent) 12%, transparent);
+  }
+
   .archive-chip-active {
-    padding-right: 6px;
+    padding-right: 1.9rem;
   }
 
   .archive-chip-label {
@@ -5334,21 +5340,15 @@
   }
 
   .archive-chip-clear {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 18px;
-    height: 18px;
-    border-radius: 9999px;
+    position: absolute;
+    top: 50%;
+    right: 0.2rem;
+    transform: translateY(-50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    min-width: 1.5rem;
     color: var(--muted-foreground);
-    transition:
-      background 0.15s ease,
-      color 0.15s ease;
-  }
-
-  .archive-chip-clear:hover {
-    background: var(--destructive);
-    color: var(--destructive-foreground);
+    text-decoration: none;
   }
 
   .archive-chip-select.select [data-popover] [role="option"] {

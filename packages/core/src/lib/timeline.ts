@@ -133,6 +133,23 @@ async function buildTimelineItems(
   });
 }
 
+/**
+ * Assembles timeline items for a known ordered list of thread-root posts.
+ *
+ * Reuses the same media and thread-preview path as the main latest timeline so
+ * alternate grouped views can stay visually and behaviorally in sync.
+ *
+ * @param c - Hono context (provides services + appConfig)
+ * @param posts - Ordered published thread-root posts to render
+ * @returns Timeline items matching the latest-feed presentation
+ */
+export async function assembleTimelineItems(
+  c: Context<Env>,
+  posts: Post[],
+): Promise<TimelineItemView[]> {
+  return buildTimelineItems(c, posts);
+}
+
 async function buildCuratedThreadItems(
   c: Context<Env>,
   rootIds: string[],

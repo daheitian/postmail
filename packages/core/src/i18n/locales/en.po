@@ -460,6 +460,13 @@ msgstr "Choose a new password."
 msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 msgstr "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 
+#. @context: Archive filter button label to clear the active filter
+#. @context: Archive filter button label to clear the active filter
+#: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Clear filter"
+msgstr "Clear filter"
+
 #. @context: Singular collection count label
 #. @context: Singular collection count label
 #. @context: Singular collection count label

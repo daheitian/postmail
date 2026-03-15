@@ -19,7 +19,7 @@ import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { getIconSvg, renderCollectionIcon } from "../../lib/icons.js";
 import { toMediaKind } from "../../lib/upload.js";
 import { PagePagination } from "../shared/Pagination.js";
-import { TimelineItemFromPost } from "../feed/TimelineItem.js";
+import { TimelineFeedItem } from "../feed/TimelineFeed.js";
 import { DecorativeQuoteMark } from "../shared/DecorativeQuoteMark.js";
 
 // =============================================================================
@@ -158,6 +158,20 @@ const ChipChevron: FC = () => (
   <Icon name="chevron-down" class="[&>svg]:size-3 opacity-40" />
 );
 
+const ChipClearLink: FC<{ href: string; label: string }> = ({
+  href,
+  label,
+}) => (
+  <a
+    href={href}
+    class="archive-chip-clear btn-sm-icon-ghost rounded-full"
+    aria-label={label}
+    title={label}
+  >
+    <Icon name="x" class="[&>svg]:size-3" />
+  </a>
+);
+
 // =============================================================================
 // Chip Select Components
 // =============================================================================
@@ -198,7 +212,12 @@ const ChipSelect: FC<{
   activeIcon,
   iconOnly,
 }) => {
+  const { t } = useLingui();
   const isActive = !!activeLabel;
+  const clearLabel = t({
+    message: "Clear filter",
+    comment: "@context: Archive filter button label to clear the active filter",
+  });
 
   return (
     <div
@@ -227,18 +246,9 @@ const ChipSelect: FC<{
         {isActive && !iconOnly && (
           <span class="archive-chip-label">{activeLabel}</span>
         )}
-        {isActive ? (
-          <a
-            href={clearUrl}
-            class="archive-chip-clear"
-            aria-label="Clear filter"
-          >
-            <Icon name="x" class="[&>svg]:size-3" />
-          </a>
-        ) : (
-          <ChipChevron />
-        )}
+        {!isActive && <ChipChevron />}
       </button>
+      {isActive && <ChipClearLink href={clearUrl} label={clearLabel} />}
       <div id={`${id}-popover`} data-popover aria-hidden="true">
         <div
           role="listbox"
@@ -312,6 +322,10 @@ const ChipMediaSelect: FC<{
     { ...f, mediaKinds: undefined, hasMedia: undefined },
     { hasMedia: false, mediaKinds: undefined },
   );
+  const clearLabel = t({
+    message: "Clear filter",
+    comment: "@context: Archive filter button label to clear the active filter",
+  });
 
   return (
     <div
@@ -336,18 +350,9 @@ const ChipMediaSelect: FC<{
         {isActive && activeKinds.length > 1 && (
           <span class="archive-chip-label">{activeLabel}</span>
         )}
-        {isActive ? (
-          <a
-            href={clearUrl}
-            class="archive-chip-clear"
-            aria-label="Clear filter"
-          >
-            <Icon name="x" class="[&>svg]:size-3" />
-          </a>
-        ) : (
-          <ChipChevron />
-        )}
+        {!isActive && <ChipChevron />}
       </button>
+      {isActive && <ChipClearLink href={clearUrl} label={clearLabel} />}
       <div id={`${id}-popover`} data-popover aria-hidden="true">
         <div
           role="listbox"
@@ -1083,12 +1088,15 @@ export const ArchivePage: FC<ArchivePageProps> = ({
                     count={group.totalCount}
                   />
                   <div class="archive-list-items">
-                    {group.posts.map((post, postIndex) => (
-                      <div key={post.id}>
-                        {postIndex > 0 && <hr class="feed-divider" />}
-                        <TimelineItemFromPost post={post} />
-                      </div>
-                    ))}
+                    {(group.items ?? group.posts.map((post) => ({ post }))).map(
+                      (item, itemIndex) => (
+                        <TimelineFeedItem
+                          key={item.post.id}
+                          item={item}
+                          showDivider={itemIndex > 0}
+                        />
+                      ),
+                    )}
                   </div>
                 </div>
               ))}
