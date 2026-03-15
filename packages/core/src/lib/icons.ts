@@ -1,35 +1,30 @@
 /**
  * Collection Icon Utilities
  *
- * Handles structured icon data (Lucide icons with color) stored as JSON in the DB.
+ * Handles structured icon data (Lucide icons with semantic palette) stored as JSON in the DB.
  * Backward-compatible with legacy emoji/text icon values.
  */
 
 import * as lucideIcons from "lucide-static";
+import {
+  DEFAULT_ICON_PALETTE,
+  ICON_COLOR_PRESETS,
+  getCollectionIconColorVar,
+  isCollectionIconPalette,
+  mapLegacyCollectionIconColor,
+  type CollectionIconPalette,
+} from "./collection-icon-palette.js";
 
 /** Structured icon data stored as JSON in the DB `icon` column */
 export interface CollectionIcon {
   name: string;
   svg: string;
-  color: string;
+  palette: CollectionIconPalette;
 }
 
-/** Curated color presets for the icon picker */
-export const ICON_COLOR_PRESETS = [
-  { name: "gray", value: "#6b7280" },
-  { name: "red", value: "#ef4444" },
-  { name: "orange", value: "#f97316" },
-  { name: "amber", value: "#f59e0b" },
-  { name: "green", value: "#22c55e" },
-  { name: "teal", value: "#14b8a6" },
-  { name: "blue", value: "#3b82f6" },
-  { name: "indigo", value: "#6366f1" },
-  { name: "purple", value: "#a855f7" },
-  { name: "pink", value: "#ec4899" },
-] as const;
-
 export const DEFAULT_ICON_NAME = "library";
-export const DEFAULT_ICON_COLOR = "#6b7280";
+export { DEFAULT_ICON_PALETTE, ICON_COLOR_PRESETS };
+export type { CollectionIconPalette };
 
 /**
  * Convert a kebab-case icon name to PascalCase for lucide-static lookup.
@@ -77,8 +72,8 @@ export function getIconSvg(name: string): string | null {
  *
  * @example
  * ```typescript
- * parseCollectionIcon('{"name":"library","svg":"<svg...","color":"#6b7280"}')
- * // { name: "library", svg: "<svg...", color: "#6b7280" }
+ * parseCollectionIcon('{"name":"library","svg":"<svg...","palette":"stone"}')
+ * // { name: "library", svg: "<svg...", palette: "stone" }
  *
  * parseCollectionIcon("📚") // null (legacy emoji)
  * parseCollectionIcon(null) // null
@@ -93,10 +88,28 @@ export function parseCollectionIcon(
     if (
       typeof parsed.name === "string" &&
       typeof parsed.svg === "string" &&
-      typeof parsed.color === "string" &&
-      /^#[0-9a-f]{3,6}$/i.test(parsed.color)
+      typeof parsed.palette === "string" &&
+      isCollectionIconPalette(parsed.palette)
     ) {
-      return parsed as unknown as CollectionIcon;
+      return {
+        name: parsed.name,
+        svg: parsed.svg,
+        palette: parsed.palette,
+      };
+    }
+    if (
+      typeof parsed.name === "string" &&
+      typeof parsed.svg === "string" &&
+      typeof parsed.color === "string"
+    ) {
+      const palette = mapLegacyCollectionIconColor(parsed.color);
+      if (palette) {
+        return {
+          name: parsed.name,
+          svg: parsed.svg,
+          palette,
+        };
+      }
     }
     return null;
   } catch {
@@ -109,21 +122,21 @@ export function parseCollectionIcon(
  *
  * @param name - Kebab-case icon name
  * @param svg - SVG string
- * @param color - Hex color string
+ * @param palette - Semantic palette id
  * @returns JSON string for DB storage
  *
  * @example
  * ```typescript
- * createIconValue("library", "<svg...", "#6b7280")
- * // '{"name":"library","svg":"<svg...","color":"#6b7280"}'
+ * createIconValue("library", "<svg...", "stone")
+ * // '{"name":"library","svg":"<svg...","palette":"stone"}'
  * ```
  */
 export function createIconValue(
   name: string,
   svg: string,
-  color: string,
+  palette: CollectionIconPalette,
 ): string {
-  return JSON.stringify({ name, svg, color });
+  return JSON.stringify({ name, svg, palette });
 }
 
 /**
@@ -142,8 +155,8 @@ export function createIconValue(
  *
  * @example
  * ```typescript
- * renderCollectionIcon('{"name":"library","svg":"<svg...","color":"#3b82f6"}', { size: 16 })
- * // '<svg ... style="color: #3b82f6" width="16" height="16">...</svg>'
+ * renderCollectionIcon('{"name":"library","svg":"<svg...","palette":"slate"}', { size: 16 })
+ * // '<svg ... style="color: var(--collection-icon-slate)" width="16" height="16">...</svg>'
  *
  * renderCollectionIcon("📚")
  * // '<span>📚</span>'
@@ -160,7 +173,11 @@ export function renderCollectionIcon(
 
   const parsed = parseCollectionIcon(icon);
   if (parsed) {
-    return applyIconSize(parsed.svg, size, parsed.color);
+    return applyIconSize(
+      parsed.svg,
+      size,
+      getCollectionIconColorVar(parsed.palette),
+    );
   }
 
   // Legacy emoji/text value
@@ -172,7 +189,11 @@ export function renderCollectionIcon(
   if (opts?.fallback) {
     const defaultSvg = getIconSvg(DEFAULT_ICON_NAME);
     if (defaultSvg) {
-      return applyIconSize(defaultSvg, size, DEFAULT_ICON_COLOR);
+      return applyIconSize(
+        defaultSvg,
+        size,
+        getCollectionIconColorVar(DEFAULT_ICON_PALETTE),
+      );
     }
   }
 
@@ -187,7 +208,11 @@ function applyIconSize(svg: string, size: number, color?: string): string {
   let result = svg
     .replace(/width="24"/, `width="${size}"`)
     .replace(/height="24"/, `height="${size}"`);
-  if (color && /^#[0-9a-f]{3,6}$/i.test(color)) {
+  if (
+    color &&
+    (/^#[0-9a-f]{3,6}$/i.test(color) ||
+      /^var\(--collection-icon-[a-z-]+\)$/.test(color))
+  ) {
     result = result.replace("<svg", `<svg style="color: ${color}"`);
   }
   return result;

@@ -12,6 +12,11 @@
 
 import { LitElement, html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import {
+  getCollectionIconColorVar,
+  isCollectionIconPalette,
+  mapLegacyCollectionIconColor,
+} from "../../lib/collection-icon-palette.js";
 import { showToast } from "../toast.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 
@@ -41,14 +46,25 @@ function renderIconHtml(icon: string | null): string {
     try {
       const parsed = JSON.parse(icon) as {
         svg?: string;
+        palette?: string;
         color?: string;
       };
       if (typeof parsed.svg === "string") {
         let svg = parsed.svg
           .replace(/width="\d+"/, 'width="16"')
           .replace(/height="\d+"/, 'height="16"');
-        if (parsed.color) {
-          svg = svg.replace(/^<svg/, `<svg style="color: ${parsed.color}"`);
+        const palette =
+          typeof parsed.palette === "string" &&
+          isCollectionIconPalette(parsed.palette)
+            ? parsed.palette
+            : typeof parsed.color === "string"
+              ? mapLegacyCollectionIconColor(parsed.color)
+              : null;
+        if (palette) {
+          svg = svg.replace(
+            /^<svg/,
+            `<svg style="color: ${getCollectionIconColorVar(palette)}"`,
+          );
         }
         return svg;
       }
@@ -57,7 +73,15 @@ function renderIconHtml(icon: string | null): string {
     }
   }
   // Legacy emoji/text value
-  return `<span>${icon}</span>`;
+  return `<span>${escapeHtml(icon)}</span>`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 export class JantPostMenu extends LitElement {
