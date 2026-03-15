@@ -75,13 +75,19 @@ export async function assemblePostCardView(
     ? rootPermalinkMap.get(post.threadId)
     : undefined;
 
-  return toPostView(
+  const view = toPostView(
     { ...post, mediaAttachments: mediaMap.get(post.id) ?? [] },
     mediaCtx,
     collectionsMap.get(post.id),
     rootPermalink,
     lastPostMap.get(post.threadId) === post.id,
   );
+
+  if (!post.replyToId && lastPostMap.get(post.threadId) !== post.id) {
+    view.threadRootPermalink = view.permalink;
+  }
+
+  return view;
 }
 
 /**

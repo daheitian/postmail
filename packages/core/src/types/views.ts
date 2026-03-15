@@ -77,7 +77,7 @@ export interface PostView {
   replyToId?: string;
   /** UUIDv7 of the thread root post */
   threadRootId?: string;
-  /** Permalink of the thread root post (for "in thread" link on featured replies) */
+  /** Permalink of the thread root post for the "In thread" link. */
   threadRootPermalink?: string;
   /** Whether this post is the last (most recent) in its thread. Controls reply button visibility. */
   isLastInThread: boolean;

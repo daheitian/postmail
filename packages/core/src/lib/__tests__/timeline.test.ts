@@ -15,7 +15,7 @@ import { createMediaService } from "../../services/media.js";
 import { createPathService } from "../../services/path.js";
 import { createCollectionService } from "../../services/collection.js";
 import { buildMediaMap } from "../media-helpers.js";
-import { assembleTimelineItem } from "../timeline.js";
+import { assembleFeaturedTimeline, assembleTimelineItem } from "../timeline.js";
 import type { Database } from "../../db/index.js";
 import type { AppConfig, Bindings, PostWithMedia } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -297,6 +297,29 @@ describe("Timeline data assembly", () => {
     expect(item?.post.isLastInThread).toBe(false);
     expect(item?.threadPreview?.latestReply.id).toBe(latestReply.id);
     expect(item?.threadPreview?.totalReplyCount).toBe(2);
+  });
+
+  it('shows an "In thread" link for featured root posts with replies', async () => {
+    const root = await postService.create({
+      format: "note",
+      bodyMarkdown: "Featured root",
+      featured: true,
+    });
+    await postService.create({
+      format: "note",
+      bodyMarkdown: "Reply",
+      replyToId: root.id,
+    });
+
+    const result = await assembleFeaturedTimeline(createTimelineContext(), {
+      isAuthenticated: true,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.post.id).toBe(root.id);
+    expect(result.items[0]?.post.threadRootPermalink).toBe(
+      result.items[0]?.post.permalink,
+    );
   });
 
   it("omits private timeline items from unauthenticated partial refreshes", async () => {

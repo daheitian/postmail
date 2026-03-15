@@ -281,7 +281,13 @@ export async function assembleFeaturedTimeline(
     mediaCtx,
     rootPermalinkMap,
     isLastInThreadMap,
-  ).map((post) => ({ post }));
+  ).map((post) => {
+    if (!post.replyToId && !post.isLastInThread) {
+      post.threadRootPermalink = post.permalink;
+    }
+
+    return { post };
+  });
 
   return { items, currentPage: page, totalPages };
 }
