@@ -45,6 +45,7 @@ function CustomUrlsListContent({
   totalPages: number;
 }) {
   const { t } = useLingui();
+  const hasCustomUrls = customUrls.length > 0;
 
   return (
     <>
@@ -55,15 +56,17 @@ function CustomUrlsListContent({
             comment: "@context: Settings section heading",
           })}
         </h2>
-        <a href="/settings/custom-urls/new" class="btn">
-          {t({
-            message: "New Custom URL",
-            comment: "@context: Button to create new custom URL",
-          })}
-        </a>
+        {hasCustomUrls ? (
+          <a href="/settings/custom-urls/new" class="btn">
+            {t({
+              message: "New Custom URL",
+              comment: "@context: Button to create new custom URL",
+            })}
+          </a>
+        ) : null}
       </div>
 
-      {customUrls.length === 0 ? (
+      {!hasCustomUrls ? (
         <EmptyState
           message={t({
             message:

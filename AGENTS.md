@@ -55,7 +55,11 @@ Non-negotiable regardless of context:
 - **Latest packages**: use `@latest` when installing.
 - **Generated template is read-only**: never edit `packages/create-jant/template/`.
 - **GitHub Actions**: always add `workflow_dispatch:`.
-- **After every change**: run `mise run test`, then `mise run lint`, and fix all issues.
+- **Verify proportionally**: choose verification based on the risk and surface area of the change instead of mechanically running the full suite every time.
+  - Run `mise run test` and `mise run lint` for behavior changes: routes, services, DB/schema/migrations, validation, auth, build tooling, shared infrastructure, interactive client logic, or anything with meaningful regression risk.
+  - For isolated visual or content-only changes, such as CSS-only tweaks, spacing, color, typography, copy, or docs, use judgment. A focused sanity check is usually enough if no logic, markup structure, or event handling changed.
+  - If a change sits near the boundary, prefer the narrower relevant verification first, then escalate to full `test`/`lint` if the impact is broader than expected.
+  - Always state what you verified, and explicitly note when you skipped automated checks.
 
 ### Conventions
 
