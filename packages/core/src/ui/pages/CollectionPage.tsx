@@ -9,30 +9,27 @@ import { useLingui } from "@lingui/react/macro";
 import type { CollectionPageProps } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
+import { PaginatedPageHeader } from "../shared/PaginatedPageHeader.js";
 
 export const CollectionPage: FC<CollectionPageProps> = ({
   collection,
   items,
+  currentPage,
+  totalPages,
+  baseUrl,
 }) => {
   const { t } = useLingui();
   const iconHtml = renderCollectionIcon(collection.icon, { size: 28 });
 
   return (
     <div class="py-6" data-page="collection">
-      <header class="mb-8">
-        <h1 class="text-2xl font-semibold flex items-center gap-3">
-          {iconHtml && (
-            <span
-              class="shrink-0"
-              dangerouslySetInnerHTML={{ __html: iconHtml }}
-            />
-          )}
-          {collection.title}
-        </h1>
-        {collection.description && (
-          <p class="text-muted-foreground mt-2">{collection.description}</p>
-        )}
-      </header>
+      <PaginatedPageHeader
+        title={collection.title}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        description={collection.description ?? undefined}
+        iconHtml={iconHtml || undefined}
+      />
 
       <main>
         {items.length === 0 ? (
@@ -43,7 +40,12 @@ export const CollectionPage: FC<CollectionPageProps> = ({
             })}
           </p>
         ) : (
-          <TimelineFeed items={items} />
+          <TimelineFeed
+            items={items}
+            baseUrl={baseUrl}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
         )}
       </main>
     </div>

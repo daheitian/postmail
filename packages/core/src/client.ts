@@ -8,7 +8,6 @@
  */
 
 import "./vendor/datastar.js";
-import "basecoat-css/all";
 import "./client/image-processor.js";
 import "./client/avatar-upload.js";
 

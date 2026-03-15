@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getPageNumbers } from "../../../lib/pagination.js";
+import { getPageNumbers, parsePageNumber } from "../../../lib/pagination.js";
 
 describe("getPageNumbers", () => {
   it("returns all pages when totalPages <= 7", () => {
@@ -42,5 +42,22 @@ describe("getPageNumbers", () => {
     // Page 2 of 20: 1, 2, 3, ..., 20
     const result = getPageNumbers(2, 20);
     expect(result).toEqual([1, 2, 3, 0, 20]);
+  });
+});
+
+describe("parsePageNumber", () => {
+  it("returns 1 when the page param is missing", () => {
+    expect(parsePageNumber()).toBe(1);
+  });
+
+  it("clamps invalid values to 1", () => {
+    expect(parsePageNumber("0")).toBe(1);
+    expect(parsePageNumber("-5")).toBe(1);
+    expect(parsePageNumber("abc")).toBe(1);
+  });
+
+  it("returns the parsed page number for valid values", () => {
+    expect(parsePageNumber("2")).toBe(2);
+    expect(parsePageNumber("10")).toBe(10);
   });
 });

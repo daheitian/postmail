@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { extractDomain, normalizePath, isFullUrl, slugify } from "../url.js";
+import {
+  extractDomain,
+  extractDisplayDomain,
+  normalizePath,
+  isFullUrl,
+  slugify,
+} from "../url.js";
 
 describe("extractDomain", () => {
   it("extracts hostname from HTTPS URL", () => {
@@ -35,6 +41,40 @@ describe("extractDomain", () => {
     expect(extractDomain("https://blog.sub.example.com")).toBe(
       "blog.sub.example.com",
     );
+  });
+});
+
+describe("extractDisplayDomain", () => {
+  it("strips www prefix", () => {
+    expect(extractDisplayDomain("https://www.example.com/path")).toBe(
+      "example.com",
+    );
+  });
+
+  it("strips m prefix", () => {
+    expect(extractDisplayDomain("https://m.wikipedia.org/wiki/Test")).toBe(
+      "wikipedia.org",
+    );
+  });
+
+  it("strips mobile prefix", () => {
+    expect(extractDisplayDomain("https://mobile.twitter.com/user")).toBe(
+      "twitter.com",
+    );
+  });
+
+  it("keeps other subdomains", () => {
+    expect(extractDisplayDomain("https://blog.example.com")).toBe(
+      "blog.example.com",
+    );
+  });
+
+  it("returns domain as-is when no common prefix", () => {
+    expect(extractDisplayDomain("https://example.com")).toBe("example.com");
+  });
+
+  it("returns null for invalid URLs", () => {
+    expect(extractDisplayDomain("not-a-url")).toBe(null);
   });
 });
 

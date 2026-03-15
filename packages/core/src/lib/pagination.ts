@@ -5,6 +5,40 @@
  */
 
 /**
+ * Parses a page query param into a safe 1-indexed page number.
+ *
+ * Invalid, missing, or non-positive values fall back to page 1.
+ *
+ * @param pageParam - Raw page query value
+ * @returns Safe page number
+ */
+export function parsePageNumber(pageParam?: string): number {
+  if (!pageParam) {
+    return 1;
+  }
+
+  return Math.max(1, parseInt(pageParam, 10) || 1);
+}
+
+/**
+ * Formats a human-readable page label for paginated views.
+ *
+ * @param currentPage - Current 1-indexed page number
+ * @param totalPages - Optional total page count
+ * @returns Page label like "Page 2" or "Page 2 of 5"
+ */
+export function formatPageLabel(
+  currentPage: number,
+  totalPages?: number,
+): string {
+  if (totalPages && totalPages > 1) {
+    return `Page ${String(currentPage)} of ${String(totalPages)}`;
+  }
+
+  return `Page ${String(currentPage)}`;
+}
+
+/**
  * Computes which page numbers to display in a numbered pagination control.
  * Always includes: first page, last page, current page, and 1 page on each side of current.
  * Gaps between non-consecutive pages are represented by 0 (ellipsis marker).

@@ -5,15 +5,14 @@
  */
 
 import { Hono } from "hono";
+import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
+import { getI18n } from "../../i18n/index.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
 import { renderPublicPage } from "../../lib/render.js";
-import {
-  createMediaContext,
-  toPostViewsFromPosts,
-  loadThreadRootPermalinks,
-} from "../../lib/view.js";
+import { assembleFeaturedTimeline } from "../../lib/timeline.js";
 import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -22,47 +21,38 @@ export const featuredRoutes = new Hono<Env>();
 
 featuredRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
+  const i18n = getI18n(c);
 
   // When homepage already shows featured, redirect to avoid duplicate content
   if (navData.homeDefaultView === "featured") {
     return c.redirect("/", 302);
   }
-
-  const posts = await c.var.services.posts.list({
-    featured: true,
-    status: "published",
-    excludePrivate: !navData.isAuthenticated,
+  const page = parsePageNumber(c.req.query("page"));
+  const featuredTitle = i18n._(
+    msg({
+      message: "Featured",
+      comment: "@context: Browser page title for the featured feed",
+    }),
+  );
+  const paginatedPageTitle = formatPageLabel(page);
+  const { items, currentPage, totalPages } = await assembleFeaturedTimeline(c, {
+    page,
+    isAuthenticated: navData.isAuthenticated,
   });
 
-  const mediaCtx = createMediaContext(c.var.appConfig);
-
-  const rootPermalinkMap = await loadThreadRootPermalinks(
-    posts,
-    c.var.services.posts.getById.bind(c.var.services.posts),
-  );
-
-  // Determine which posts are last in their thread for reply button visibility
-  const threadIds = [...new Set(posts.map((p) => p.threadId))];
-  const lastPostMap =
-    await c.var.services.posts.getLastPostIdsByThread(threadIds);
-  const isLastInThreadMap = new Map<string, boolean>();
-  for (const p of posts) {
-    isLastInThreadMap.set(p.id, lastPostMap.get(p.threadId) === p.id);
-  }
-
-  const postViews = toPostViewsFromPosts(
-    posts,
-    mediaCtx,
-    rootPermalinkMap,
-    isLastInThreadMap,
-  );
-
-  // Convert to timeline items (simple — no thread previews)
-  const items = postViews.map((post) => ({ post }));
-
   return renderPublicPage(c, {
-    title: `Featured - ${navData.siteName}`,
+    title:
+      page > 1
+        ? `${featuredTitle} - ${paginatedPageTitle} - ${navData.siteName}`
+        : `${featuredTitle} - ${navData.siteName}`,
     navData,
-    content: <FeaturedPage items={items} />,
+    content: (
+      <FeaturedPage
+        items={items}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        baseUrl="/featured"
+      />
+    ),
   });
 });

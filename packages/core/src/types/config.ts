@@ -39,7 +39,7 @@ export const CONFIG_FIELDS = {
 
   // Environment-only (deployment/infrastructure config)
   DEFAULT_THEME: {
-    defaultValue: "notepad",
+    defaultValue: "linen",
     envOnly: true,
   },
   SITE_URL: {
@@ -156,6 +156,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     internal: true,
   },
+  THEME_MODE: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
   TIME_ZONE: {
     defaultValue: "UTC",
     envOnly: false,
@@ -186,6 +191,8 @@ export const CONFIG_FIELDS = {
 } as const;
 
 export type ConfigKey = keyof typeof CONFIG_FIELDS;
+export const THEME_MODES = ["auto", "light", "dark"] as const;
+export type ThemeMode = (typeof THEME_MODES)[number];
 
 /**
  * Unified application configuration
@@ -242,6 +249,7 @@ export interface AppConfig {
   themeId: string;
   defaultThemeId: string;
   fontThemeId: string;
+  themeMode: ThemeMode;
   customCSS: string;
 
   // Site appearance (DB internal)

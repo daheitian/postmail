@@ -9,6 +9,7 @@
 
 @import "basecoat-css";
 @plugin "@tailwindcss/typography";
+@import "./styles/fonts/latin.css";
 @import "./styles/fonts/noto-serif-sc/noto-serif-sc.css";
 @import "./styles/components.css";
 @import "./styles/tokens.css";
@@ -39,7 +40,7 @@
  * Source: basecoat-css@0.3.11 .dark { } block
  */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme-mode="light"]) {
     color-scheme: dark;
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
@@ -72,6 +73,38 @@
   }
 }
 
+:root[data-theme-mode="dark"] {
+  color-scheme: dark;
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.269 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.439 0 0);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.3);
+  --success: oklch(0.627 0.194 149.214);
+}
+
 /**
  * Typography (prose) — integrate with BaseCoat theme colors.
  *
@@ -79,16 +112,16 @@
  * We override them to use BaseCoat's CSS variables so that:
  *   - Light/dark mode switches automatically
  *   - Prose text matches the rest of the theme
- *   - Links are understated (same color as text, underline only)
+ *   - Links use the theme accent without reading like UI chrome
  *
- * Design reference: Medium, Substack, NYT — body links inherit text
- * color and rely on underline as the sole affordance.
+ * Design reference: editorial reading surfaces where links feel
+ * integrated into the text, not like product controls.
  */
 .prose {
   --tw-prose-body: inherit;
   --tw-prose-headings: var(--color-foreground);
   --tw-prose-lead: var(--color-muted-foreground);
-  --tw-prose-links: inherit;
+  --tw-prose-links: var(--site-accent);
   --tw-prose-bold: inherit;
   --tw-prose-counters: var(--color-muted-foreground);
   --tw-prose-bullets: var(--color-muted-foreground);
@@ -102,20 +135,15 @@
   --tw-prose-pre-bg: var(--color-muted);
   --tw-prose-th-borders: var(--color-border);
   --tw-prose-td-borders: var(--color-border);
-
-  /* Links: same color as surrounding text, underline only, no bold */
-  a {
-    font-weight: inherit;
-    text-underline-offset: 2px;
-    text-decoration-color: var(--color-border);
-  }
-
-  a:hover {
-    text-decoration-color: currentColor;
-  }
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  letter-spacing: var(--type-body-tracking);
 
   :where(h1, h2, h3, h4, h5, h6) {
     font-family: var(--font-heading);
+    font-weight: var(--type-heading-weight);
+    letter-spacing: var(--type-heading-tracking);
+    line-height: var(--type-heading-leading);
   }
 
   /* Image figures */
@@ -155,4 +183,33 @@
   figure[data-layout="full"] img {
     border-radius: 0;
   }
+}
+
+/*
+ * Content links
+ *
+ * Used by long-form prose and a few non-prose reading samples.
+ * UI/navigation links should use their own component styles instead.
+ */
+.content-link,
+.prose a {
+  color: var(--site-accent);
+  font-weight: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--site-accent) 58%,
+    transparent
+  );
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+  transition:
+    color 0.18s ease,
+    text-decoration-color 0.18s ease;
+}
+
+.content-link:hover,
+.prose a:hover {
+  color: color-mix(in srgb, var(--site-accent) 84%, var(--color-foreground));
+  text-decoration-color: currentColor;
 }

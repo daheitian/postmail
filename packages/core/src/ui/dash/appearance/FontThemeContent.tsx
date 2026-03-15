@@ -3,7 +3,13 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
-import type { FontTheme } from "../../font-themes.js";
+import { getFontThemeCssVariables, type FontTheme } from "../../font-themes.js";
+
+function toInlineStyle(variables: Record<string, string>): string {
+  return Object.entries(variables)
+    .map(([key, value]) => `${key}:${value}`)
+    .join(";");
+}
 
 export function FontThemeContent({
   fontThemes,
@@ -33,7 +39,7 @@ export function FontThemeContent({
         <p class="text-sm text-muted-foreground mb-4">
           {t({
             message:
-              "Choose a font pairing for your site. All options use system fonts for fast loading.",
+              "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm.",
             comment: "@context: Font theme settings description",
           })}
         </p>
@@ -58,22 +64,56 @@ export function FontThemeContent({
                 <div class="text-sm text-muted-foreground">
                   {t(ft.description)}
                 </div>
-                <div class="mt-1 text-sm leading-relaxed">
+                <div
+                  class="mt-3 rounded-xl border border-border/70 bg-muted/30 p-4"
+                  style={toInlineStyle(getFontThemeCssVariables(ft))}
+                >
                   <div
-                    class="font-semibold"
-                    style={`font-family:${ft.headingFontFamily}`}
+                    class="text-[0.68rem] uppercase text-muted-foreground"
+                    style="font-family:var(--font-body);font-weight:var(--type-label-weight);letter-spacing:var(--type-label-tracking);line-height:1"
                   >
                     {t({
-                      message: "The quick brown fox jumps over the lazy dog.",
-                      comment:
-                        "@context: Font theme preview sentence for headings",
+                      message: "Field note",
+                      comment: "@context: Font theme preview eyebrow label",
                     })}
                   </div>
-                  <div class="mt-2" style={`font-family:${ft.bodyFontFamily}`}>
+                  <div
+                    class="mt-2 text-[1.35rem] text-foreground"
+                    style="font-family:var(--font-heading);font-weight:var(--type-display-weight);letter-spacing:var(--type-display-tracking);line-height:var(--type-display-leading)"
+                  >
                     {t({
-                      message: "The quick brown fox jumps over the lazy dog.",
+                      message: "Write small things with a clear shape.",
+                      comment: "@context: Font theme preview display sentence",
+                    })}
+                  </div>
+                  <div
+                    class="mt-1 text-sm text-muted-foreground"
+                    style="font-family:var(--font-body);font-size:var(--type-body-size);line-height:var(--type-body-leading);letter-spacing:var(--type-body-tracking)"
+                  >
+                    {t({
+                      message: "写下一点想法，也要让它有自己的轮廓。",
                       comment:
-                        "@context: Font theme preview sentence for body text",
+                        "@context: Font theme preview Chinese body sentence",
+                    })}
+                  </div>
+                  <div
+                    class="mt-3 text-sm text-foreground"
+                    style="font-family:var(--font-body);font-size:var(--type-body-size);line-height:var(--type-body-leading);letter-spacing:var(--type-body-tracking)"
+                  >
+                    {t({
+                      message:
+                        "A good font theme should change the pace of reading, not only the shape of the letters.",
+                      comment: "@context: Font theme preview body sentence",
+                    })}
+                  </div>
+                  <div
+                    class="mt-3 border-l border-border pl-3 text-sm text-foreground/90"
+                    style="font-family:var(--font-heading);font-weight:var(--type-heading-weight);letter-spacing:var(--type-heading-tracking);line-height:var(--type-heading-leading)"
+                  >
+                    {t({
+                      message:
+                        "Quotes, titles, and labels should all lean together.",
+                      comment: "@context: Font theme preview quote sentence",
                     })}
                   </div>
                 </div>

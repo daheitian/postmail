@@ -12,7 +12,10 @@
     system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  --font-heading: var(--font-body);
+  --font-heading:
+    "Noto Serif SC", ui-serif, "New York Small", "New York", "Iowan Old Style",
+    Charter, "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text",
+    Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif;
   --font-serif:
     "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", "Noto Serif SC",
     ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, Georgia,
@@ -32,6 +35,17 @@
   --text-base: 0.9375rem;
   --text-lg: 1.0625rem;
   --leading: 1.5;
+  --type-body-size: var(--text-base);
+  --type-body-leading: 1.66;
+  --type-body-tracking: 0.002em;
+  --type-heading-weight: var(--fw-medium);
+  --type-heading-leading: 1.26;
+  --type-heading-tracking: -0.02em;
+  --type-display-weight: var(--fw-regular);
+  --type-display-leading: 1.04;
+  --type-display-tracking: -0.036em;
+  --type-label-weight: var(--fw-medium);
+  --type-label-tracking: 0.08em;
 
   /* Layout */
   --site-width: 500px;
@@ -136,9 +150,15 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme-mode="light"]) {
     --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
     --search-mark-color: oklch(0.92 0.08 90);
     --dash-bg: oklch(0.2 0.005 80);
   }
+}
+
+:root[data-theme-mode="dark"] {
+  --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
+  --search-mark-color: oklch(0.92 0.08 90);
+  --dash-bg: oklch(0.2 0.005 80);
 }

@@ -11,6 +11,7 @@
  */
 
 import type { FeedData, PostView, SitemapData } from "../types.js";
+import { extractDisplayDomain } from "./url.js";
 
 /**
  * Escape special XML characters.
@@ -62,7 +63,7 @@ function buildFeedContent(post: PostView): string {
     );
     if (attribution) {
       const source = post.url
-        ? `<a href="${escapeXml(post.url)}">${escapeXml(post.title || "Source")}</a>`
+        ? `<a href="${escapeXml(post.url)}">${escapeXml(post.title || extractDisplayDomain(post.url) || post.url)}</a>`
         : escapeXml(attribution);
       parts.push(`<p>— ${source}</p>`);
     }

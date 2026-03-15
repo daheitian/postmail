@@ -8,9 +8,12 @@
  */
 
 import { Hono } from "hono";
+import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
+import { getI18n } from "../../i18n/index.js";
 import { getNavigationData } from "../../lib/navigation.js";
+import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
@@ -21,14 +24,21 @@ export const latestRoutes = new Hono<Env>();
 
 latestRoutes.get("/", async (c) => {
   const navData = await getNavigationData(c);
+  const i18n = getI18n(c);
 
   // When homepage already shows latest, redirect to avoid duplicate content
   if (navData.homeDefaultView !== "featured") {
     return c.redirect("/", 302);
   }
 
-  const pageParam = c.req.query("page");
-  const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1;
+  const page = parsePageNumber(c.req.query("page"));
+  const latestTitle = i18n._(
+    msg({
+      message: "Latest",
+      comment: "@context: Browser page title for the latest feed",
+    }),
+  );
+  const paginatedPageTitle = formatPageLabel(page);
 
   const { items, currentPage, totalPages } = await assembleTimeline(c, {
     page,
@@ -36,11 +46,15 @@ latestRoutes.get("/", async (c) => {
   });
 
   return renderPublicPage(c, {
-    title: `Latest - ${navData.siteName}`,
+    title:
+      page > 1
+        ? `${latestTitle} - ${paginatedPageTitle} - ${navData.siteName}`
+        : `${latestTitle} - ${navData.siteName}`,
     navData,
     content: (
       <HomePage
         items={items}
+        baseUrl="/latest"
         currentPage={currentPage}
         totalPages={totalPages}
       />

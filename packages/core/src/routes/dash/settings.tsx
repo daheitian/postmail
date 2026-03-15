@@ -20,6 +20,7 @@ import { escapeHtml } from "../../lib/html.js";
 import { ValidationError } from "../../lib/errors.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { getAvailableThemes } from "../../lib/theme.js";
+import { THEME_MODES, type ThemeMode } from "../../types/config.js";
 import { BUILTIN_FONT_THEMES } from "../../ui/font-themes.js";
 import { SettingsRootContent } from "../../ui/dash/settings/SettingsRootContent.js";
 import { GeneralContent } from "../../ui/dash/settings/GeneralContent.js";
@@ -419,6 +420,7 @@ settingsRoutes.get("/color-theme", async (c) => {
   const defaultThemeId = c.var.appConfig.fallbacks.defaultTheme;
   const currentThemeId =
     c.var.allSettings[SETTINGS_KEYS.THEME] ?? defaultThemeId;
+  const currentThemeMode = c.var.appConfig.themeMode;
   const themes = getAvailableThemes();
   const saved = c.req.query("saved") !== undefined;
   const navData = await getNavigationData(c);
@@ -434,7 +436,11 @@ settingsRoutes.get("/color-theme", async (c) => {
           parentHref="/settings"
           current="Color Theme"
         />
-        <ColorThemeContent themes={themes} currentThemeId={currentThemeId} />
+        <ColorThemeContent
+          themes={themes}
+          currentThemeId={currentThemeId}
+          currentThemeMode={currentThemeMode}
+        />
       </>
     ),
   });
@@ -442,7 +448,7 @@ settingsRoutes.get("/color-theme", async (c) => {
 
 settingsRoutes.post("/color-theme", async (c) => {
   const i18n = getI18n(c);
-  const body = await c.req.json<{ theme: string }>();
+  const body = await c.req.json<{ theme: string; themeMode?: string }>();
   const { settings } = c.var.services;
   const themes = getAvailableThemes();
 
@@ -464,6 +470,16 @@ settingsRoutes.post("/color-theme", async (c) => {
     await settings.remove(SETTINGS_KEYS.THEME);
   } else {
     await settings.set(SETTINGS_KEYS.THEME, validTheme.id);
+  }
+
+  const themeMode: ThemeMode = THEME_MODES.includes(body.themeMode as ThemeMode)
+    ? (body.themeMode as ThemeMode)
+    : "auto";
+
+  if (themeMode === "auto") {
+    await settings.remove(SETTINGS_KEYS.THEME_MODE);
+  } else {
+    await settings.set(SETTINGS_KEYS.THEME_MODE, themeMode);
   }
 
   return dsRedirect("/settings/color-theme?saved");

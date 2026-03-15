@@ -44,15 +44,75 @@ msgstr "301 (Permanent)"
 msgid "302 (Temporary)"
 msgstr "302 (Temporary)"
 
+#. @context: Search snippet prefix on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A calmer accent makes"
+msgstr "A calmer accent makes"
+
+#. @context: Second paragraph on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A good default accent in Jant should feel like editorial structure, not product branding. That means links, emphasis, and thread cues can be visible without turning the page into UI chrome."
+msgstr "A good default accent in Jant should feel like editorial structure, not product branding. That means links, emphasis, and thread cues can be visible without turning the page into UI chrome."
+
+#. @context: Font theme preview body sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "A good font theme should change the pace of reading, not only the shape of the letters."
+msgstr "A good font theme should change the pace of reading, not only the shape of the letters."
+
+#. @context: Excerpt for the sample detail article
+#. @context: Plain-text body fallback for the sample detail article
+#. @context: Plain-text summary for the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A long-form article sample for checking the default palette in a true reading context."
+msgstr "A long-form article sample for checking the default palette in a true reading context."
+
+#. @context: Subheading in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A practical checklist"
+msgstr "A practical checklist"
+
+#. @context: Excerpt for the sample quote post
+#. @context: Plain-text summary for the sample quote post
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A quote card for judging accent color against softer, citation-heavy content."
+msgstr "A quote card for judging accent color against softer, citation-heavy content."
+
+#. @context: Excerpt for the sample link post
+#. @context: Plain-text summary for the sample link post
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A reference link for checking whether the accent feels editorial instead of promotional."
+msgstr "A reference link for checking whether the accent feels editorial instead of promotional."
+
 #. @context: Help text for site description field
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "A short intro for search engines and feed readers. Plain text only."
 msgstr "A short intro for search engines and feed readers. Plain text only."
 
+#. @context: Main sample article title
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A softer blue feels more like ink than product chrome."
+msgstr "A softer blue feels more like ink than product chrome."
+
+#. @context: Excerpt for the sample note post
+#. @context: Plain-text summary for the sample note post
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A softer editorial blue makes the default theme feel calmer and more intentional."
+msgstr "A softer editorial blue makes the default theme feel calmer and more intentional."
+
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "About this blog"
 msgstr "About this blog"
+
+#. @context: Thread helper text on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Accent should feel present, not loud."
+msgstr "Accent should feel present, not loud."
 
 #. @context: Settings group label for account settings
 #. @context: Settings item — account settings
@@ -141,6 +201,26 @@ msgstr "All visibility"
 msgid "All years"
 msgstr "All years"
 
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Always show the dark version of the theme."
+msgstr "Always show the dark version of the theme."
+
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Always show the light version of the theme."
+msgstr "Always show the light version of the theme."
+
+#. @context: Alt text for the sample detail article image
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "An abstract editorial layout in warm paper colors"
+msgstr "An abstract editorial layout in warm paper colors"
+
+#. @context: Sample link post body suffix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "and checking whether the accent is guiding attention or pulling too hard."
+msgstr "and checking whether the accent is guiding attention or pulling too hard."
+
 #. @context: Link to API documentation
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "API reference"
@@ -155,13 +235,20 @@ msgstr "API Tokens"
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-msgid "Applies to your entire site, including admin pages. All themes support dark mode."
-msgstr "Applies to your entire site, including admin pages. All themes support dark mode."
+msgid "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
+msgstr "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
 
 #. @context: Archive page title
+#. @context: Inactive nav link label on sample page
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
 msgid "Archive"
 msgstr "Archive"
+
+#. @context: Section heading for the detail article sample on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Article detail page"
+msgstr "Article detail page"
 
 #. @context: Archive media filter - audio
 #: src/ui/pages/ArchivePage.tsx
@@ -182,6 +269,13 @@ msgstr "Authentication isn't set up. Check your server config."
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Author (optional)"
 msgstr "Author (optional)"
+
+#. @context: Theme mode option label
+#. @context: Theme mode option on sample page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Auto"
+msgstr "Auto"
 
 #. @context: Description after theming guide link on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -215,6 +309,11 @@ msgstr "Backup downloaded"
 msgid "Bearer tokens for scripts and automation"
 msgstr "Bearer tokens for scripts and automation"
 
+#. @context: Sample note post body suffix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "before deciding whether the blue is carrying too much product energy."
+msgstr "before deciding whether the blue is carrying too much product energy."
+
 #. @context: Step 1 description for data backup
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Before deleting, download a backup of all your content. You won't be able to recover it after deletion."
@@ -224,6 +323,11 @@ msgstr "Before deleting, download a backup of all your content. You won't be abl
 #: src/ui/dash/settings/AvatarContent.tsx
 msgid "Blog Avatar"
 msgstr "Blog Avatar"
+
+#. @context: Sample note post second paragraph on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Buttons can stay steady, but links, thread markers, and subtle emphasis should feel closer to ink on paper than dashboard chrome."
+msgstr "Buttons can stay steady, but links, thread markers, and subtle emphasis should feel closer to ink on paper than dashboard chrome."
 
 #. @context: Button to cancel form
 #. @context: Button to cancel form
@@ -254,15 +358,15 @@ msgstr "Change Password"
 msgid "Change your sign-in password"
 msgstr "Change your sign-in password"
 
-#. @context: Font theme settings description
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Choose a font pairing for your site. All options use system fonts for fast loading."
-msgstr "Choose a font pairing for your site. All options use system fonts for fast loading."
-
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
 msgstr "Choose a new password."
+
+#. @context: Font theme settings description
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
+msgstr "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL type option
@@ -272,13 +376,20 @@ msgid "Collection"
 msgstr "Collection"
 
 #. @context: Collections page heading
+#. @context: Inactive nav link label on sample page
 #. @context: Sidebar heading for collections nav
 #. @context: Sidebar heading for collections nav
 #: src/ui/pages/CollectionsPage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Collections"
 msgstr "Collections"
+
+#. @context: Alert title on theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Color check"
+msgstr "Color check"
 
 #. @context: Appearance settings heading
 #. @context: Settings item description for color theme
@@ -291,6 +402,11 @@ msgstr "Color theme"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Color Theme"
 msgstr "Color Theme"
+
+#. @context: Inline link label in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Compare it against the theme controls"
+msgstr "Compare it against the theme controls"
 
 #. @context: Setup form submit button
 #: src/routes/auth/setup.tsx
@@ -311,6 +427,11 @@ msgstr "Confirm New Password"
 #: src/routes/auth/reset.tsx
 msgid "Confirm Password"
 msgstr "Confirm Password"
+
+#. @context: Controls section heading on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Controls"
+msgstr "Controls"
 
 #. @context: Feedback after copying API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -394,6 +515,11 @@ msgstr "Current Password"
 msgid "Current password doesn't match. Try again."
 msgstr "Current password doesn't match. Try again."
 
+#. @context: Thread item label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Current post"
+msgstr "Current post"
+
 #. @context: Appearance settings heading for custom CSS
 #. @context: Link to Custom CSS settings from color theme page
 #. @context: Settings item — custom CSS settings
@@ -420,6 +546,11 @@ msgstr "Custom styling"
 msgid "Custom URLs"
 msgstr "Custom URLs"
 
+#. @context: Destructive badge label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Danger"
+msgstr "Danger"
+
 #. @context: Section heading for dangerous/destructive actions
 #. @context: Settings group label for destructive account actions
 #: src/ui/dash/DangerZone.tsx
@@ -427,10 +558,27 @@ msgstr "Custom URLs"
 msgid "Danger Zone"
 msgstr "Danger Zone"
 
+#. @context: Theme mode option label
+#. @context: Theme mode option on sample page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Dark"
+msgstr "Dark"
+
 #. @context: Settings group label for data export/import
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Data"
 msgstr "Data"
+
+#. @context: Badge label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Default"
+msgstr "Default"
+
+#. @context: Inline link label in the sample link post body
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "default note sample"
+msgstr "default note sample"
 
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
@@ -492,10 +640,23 @@ msgstr "Describe this for people with visual impairments..."
 msgid "Description (optional)"
 msgstr "Description (optional)"
 
+#. @context: Collection label on theme sample content card
+#. @context: Collection tag on sample note post
+#. @context: Collection tag on the sample detail article
+#. @context: Color theme preview collection label
 #. @context: Settings group label for design settings
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
 msgid "Design"
 msgstr "Design"
+
+#. @context: Title for the sample detail article on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Designing a calmer default blue for Jant"
+msgstr "Designing a calmer default blue for Jant"
 
 #. @context: Redirect destination field
 #: src/routes/dash/custom-urls.tsx
@@ -602,6 +763,11 @@ msgstr "Edit"
 msgid "Edit post"
 msgstr "Edit post"
 
+#. @context: Sample link post title on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Editorial interfaces worth borrowing from"
+msgstr "Editorial interfaces worth borrowing from"
+
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
 #: src/routes/auth/setup.tsx
@@ -646,15 +812,50 @@ msgstr "Favicon and header icon"
 #. @context: Browse filter label
 #. @context: Browse filter label
 #. @context: Browse filter label for featured posts
+#. @context: Browser page title for the featured feed
+#. @context: Browser page title for the featured feed
+#. @context: Inactive browse tab label on sample page
+#. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
+#: src/routes/pages/featured.tsx
+#: src/routes/pages/home.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/FeaturedPage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
 msgid "Featured"
 msgstr "Featured"
+
+#. @context: Search snippet suffix on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "feel deliberate instead of washed out."
+msgstr "feel deliberate instead of washed out."
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Feel editorial and slightly quieter."
+msgstr "Feel editorial and slightly quieter."
+
+#. @context: Font theme preview eyebrow label
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Field note"
+msgstr "Field note"
+
+#. @context: Sample quote attribution title on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Field Notes on Interface Tone"
+msgstr "Field Notes on Interface Tone"
+
+#. @context: Color theme preview card title
+#. @context: Input value on sample page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Field notes on quiet design"
+msgstr "Field notes on quiet design"
 
 #. @context: Error toast when file storage is not set up
 #. @context: Error when file storage is not set up
@@ -673,6 +874,11 @@ msgstr "File uploaded."
 msgid "Files"
 msgstr "Files"
 
+#. @context: Theme mode option description
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Follow each visitor's system preference."
+msgstr "Follow each visitor's system preference."
+
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Font theme"
@@ -682,6 +888,11 @@ msgstr "Font theme"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Font Theme"
 msgstr "Font Theme"
+
+#. @context: Paragraph mentioning code on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(blue, 12%) should not suddenly become the loudest thing on the page."
+msgstr "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(blue, 12%) should not suddenly become the loudest thing on the page."
 
 #. @context: Search results count - multiple
 #. placeholder {0}: String(results.length)
@@ -711,10 +922,20 @@ msgstr "Generate Token"
 msgid "Give it a title..."
 msgstr "Give it a title..."
 
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Guide the eye without taking over the layout."
+msgstr "Guide the eye without taking over the layout."
+
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Header links, featured"
 msgstr "Header links, featured"
+
+#. @context: Bullet item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Headings should keep their hierarchy even when the accent gets softer."
+msgstr "Headings should keep their hierarchy even when the accent gets softer."
 
 #. @context: Hint text in alt text panel
 #: src/ui/compose/ComposeDialog.tsx
@@ -745,15 +966,55 @@ msgstr "I want to delete {siteName}"
 msgid "Icons"
 msgstr "Icons"
 
+#. @context: Closing paragraph on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "If this article still feels like a page you want to keep reading, the palette is probably close."
+msgstr "If this article still feels like a page you want to keep reading, the palette is probably close."
+
+#. @context: Alert body on theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "If this page feels too “UI blue”, the first place to soften is the default theme’s site accent, not the border or body text."
+msgstr "If this page feels too “UI blue”, the first place to soften is the default theme’s site accent, not the border or body text."
+
 #. @context: Archive media filter - images
 #: src/ui/pages/ArchivePage.tsx
 msgid "Images"
 msgstr "Images"
 
+#. @context: Site accent sample badge
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Inline emphasis"
+msgstr "Inline emphasis"
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Inline link"
+msgstr "Inline link"
+
+#. @context: Sample note summary suffix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "instead of judging it as an isolated swatch."
+msgstr "instead of judging it as an isolated swatch."
+
+#. @context: Sample quote text on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Interfaces for reading should guide the eye, not keep asking for attention."
+msgstr "Interfaces for reading should guide the eye, not keep asking for attention."
+
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "It's OK for search engines to index my site"
 msgstr "It's OK for search engines to index my site"
+
+#. @context: Body paragraph on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Jant looks best when the accent feels editorial. Buttons can stay sturdy, but inline emphasis should feel like a pen mark, not a dashboard highlight."
+msgstr "Jant looks best when the accent feels editorial. Buttons can stay sturdy, but inline emphasis should feel like a pen mark, not a dashboard highlight."
+
+#. @context: Active nav link label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Journal"
+msgstr "Journal"
 
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -781,14 +1042,22 @@ msgstr "Language"
 msgid "Last used {0}"
 msgstr "Last used {0}"
 
+#. @context: Active browse tab label on sample page
 #. @context: Browse filter for latest posts
 #. @context: Browse filter label
 #. @context: Browse filter label
 #. @context: Browse filter label for latest posts
+#. @context: Browser page title for the latest feed
+#. @context: Browser page title for the latest feed
+#. @context: Page heading for the latest posts feed
+#: src/routes/pages/home.tsx
+#: src/routes/pages/latest.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
+#: src/ui/pages/HomePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
 msgid "Latest"
 msgstr "Latest"
 
@@ -796,6 +1065,13 @@ msgstr "Latest"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
 msgstr "lets you override any theme variable."
+
+#. @context: Theme mode option label
+#. @context: Theme mode option on sample page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Light"
+msgstr "Light"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -816,6 +1092,11 @@ msgstr "Link"
 msgid "Links"
 msgstr "Links"
 
+#. @context: Bullet item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Links should read clearly without glowing against the page."
+msgstr "Links should read clearly without glowing against the page."
+
 #. @context: Label for max visible nav links number input
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Links shown in header"
@@ -826,10 +1107,22 @@ msgstr "Links shown in header"
 msgid "List posts:"
 msgstr "List posts:"
 
+#. @context: Inline link label in the sample note post body
+#. @context: Inline link label in the sample note summary
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "live theme controls"
+msgstr "live theme controls"
+
 #. @context: Pagination button - load more items
 #: src/ui/shared/Pagination.tsx
 msgid "Load more"
 msgstr "Load more"
+
+#. @context: Ordered list item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Look at the footer metadata last, to make sure the accent is not fighting the typography."
+msgstr "Look at the footer metadata last, to make sure the accent is not fighting the typography."
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -842,6 +1135,16 @@ msgstr "Lowest rated"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage active sign-in sessions"
 msgstr "Manage active sign-in sessions"
+
+#. @context: Color theme preview date label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "March 14"
+msgstr "March 14"
+
+#. @context: Date label on theme sample content card
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "March 15"
+msgstr "March 15"
 
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -868,6 +1171,13 @@ msgstr "More actions"
 msgid "More links"
 msgstr "More links"
 
+#. @context: Secondary badge label on sample page
+#. @context: Token label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Muted"
+msgstr "Muted"
+
 #. @context: Collection title placeholder
 #. @context: Collection title placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -884,6 +1194,11 @@ msgstr "Name, description, language"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Navigation"
 msgstr "Navigation"
+
+#. @context: Navigation section heading on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Navigation and reading states"
+msgstr "Navigation and reading states"
 
 #. @context: Section heading for nav items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -934,6 +1249,8 @@ msgstr "Newest first"
 
 #. @context: Pagination button - next page
 #. @context: Pagination button - next page
+#. @context: Pagination next label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/Pagination.tsx
 #: src/ui/shared/Pagination.tsx
 msgid "Next"
@@ -991,14 +1308,23 @@ msgstr "No posts match these filters. Try adjusting your selection or clear all 
 msgid "No results. Try different keywords."
 msgstr "No results. Try different keywords."
 
+#. @context: Color theme preview format label
 #. @context: Compose format tab
 #. @context: Post format badge - note
 #. @context: Post format label - note
+#. @context: Post format label on theme sample content card
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/dash/FormatBadge.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
 msgid "Note"
 msgstr "Note"
+
+#. @context: Inline link label in the sample quote commentary
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "note treatment"
+msgstr "note treatment"
 
 #. @context: Post format label plural - notes
 #: src/ui/pages/ArchivePage.tsx
@@ -1017,6 +1343,11 @@ msgstr "Nothing here yet."
 msgid "Oldest first"
 msgstr "Oldest first"
 
+#. @context: Ordered list item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Open a few links and check whether they still feel native to the page."
+msgstr "Open a few links and check whether they still feel native to the page."
+
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Open with Featured posts"
@@ -1029,10 +1360,10 @@ msgstr "Open with Featured posts"
 msgid "Order saved"
 msgstr "Order saved"
 
-#. @context: Pagination - current page indicator
-#: src/ui/shared/Pagination.tsx
-msgid "Page {page}"
-msgstr "Page {page}"
+#. @context: Outline badge label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Outline"
+msgstr "Outline"
 
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
@@ -1125,12 +1456,29 @@ msgstr "Post Unlisted"
 msgid "posts"
 msgstr "posts"
 
+#. @context: Ghost button label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Preview"
+msgstr "Preview"
+
 #. @context: Pagination button - previous page
 #. @context: Pagination button - previous page
+#. @context: Pagination previous label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/Pagination.tsx
 #: src/ui/shared/Pagination.tsx
 msgid "Previous"
 msgstr "Previous"
+
+#. @context: Token label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Primary"
+msgstr "Primary"
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Primary button"
+msgstr "Primary button"
 
 #. @context: Archive visibility filter - private posts
 #: src/ui/pages/ArchivePage.tsx
@@ -1148,7 +1496,9 @@ msgid "Public"
 msgstr "Public"
 
 #. @context: Confirm close action sheet - publish update button for editing published post
+#. @context: Primary button label on sample page
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
 msgid "Publish"
 msgstr "Publish"
 
@@ -1162,6 +1512,21 @@ msgstr "Published"
 msgid "Published!"
 msgstr "Published!"
 
+#. @context: Search highlight text on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "quiet design"
+msgstr "quiet design"
+
+#. @context: Muted sample label
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Quiet metadata"
+msgstr "Quiet metadata"
+
+#. @context: Color theme preview card secondary sentence
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Quiet surfaces let writing lead."
+msgstr "Quiet surfaces let writing lead."
+
 #. @context: Compose format tab
 #. @context: Post format badge - quote
 #. @context: Post format label - quote
@@ -1171,15 +1536,50 @@ msgstr "Published!"
 msgid "Quote"
 msgstr "Quote"
 
+#. @context: Bullet item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Quoted or highlighted passages should feel like annotations, not warnings."
+msgstr "Quoted or highlighted passages should feel like annotations, not warnings."
+
 #. @context: Post format label plural - quotes
 #: src/ui/pages/ArchivePage.tsx
 msgid "Quotes"
 msgstr "Quotes"
 
+#. @context: Font theme preview quote sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Quotes, titles, and labels should all lean together."
+msgstr "Quotes, titles, and labels should all lean together."
+
 #. @context: Compose toolbar - rate tooltip
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Rate"
 msgstr "Rate"
+
+#. @context: Ordered list item in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Read the page from top to bottom without looking at the swatches."
+msgstr "Read the page from top to bottom without looking at the swatches."
+
+#. @context: Inline link label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Read the palette as content first"
+msgstr "Read the palette as content first"
+
+#. @context: Color theme preview inline link label
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Read why"
+msgstr "Read why"
+
+#. @context: Collection tag on sample quote post
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Reading"
+msgstr "Reading"
+
+#. @context: Section heading for real post component samples on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Real post components"
+msgstr "Real post components"
 
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
@@ -1195,6 +1595,11 @@ msgstr "Redirect Type"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Redirects and custom paths"
 msgstr "Redirects and custom paths"
+
+#. @context: Collection tag on sample link post
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "References"
+msgstr "References"
 
 #. @context: Button to remove icon
 #. @context: Button to remove icon
@@ -1271,6 +1676,16 @@ msgstr "Save as Draft"
 msgid "Save CSS"
 msgstr "Save CSS"
 
+#. @context: Secondary button label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Save draft"
+msgstr "Save draft"
+
+#. @context: Filled primary button label
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Save theme"
+msgstr "Save theme"
+
 #. @context: Confirm close action sheet subtitle
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Save to drafts to edit and post at a later time."
@@ -1313,6 +1728,11 @@ msgstr "Search icons..."
 #: src/ui/pages/SearchPage.tsx
 msgid "Search posts..."
 msgstr "Search posts..."
+
+#. @context: Search snippet label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Search snippet"
+msgstr "Search snippet"
 
 #. @context: Compose collection combobox search placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -1393,6 +1813,11 @@ msgstr "Signed in {0}"
 msgid "Site"
 msgstr "Site"
 
+#. @context: Token label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Site accent"
+msgstr "Site accent"
+
 #. @context: Settings section heading for site footer
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Site Footer"
@@ -1411,6 +1836,11 @@ msgstr "Site Name"
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Slug"
 msgstr "Slug"
+
+#. @context: Color theme preview card body sentence
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Soft color should still carry a clear reading rhythm."
+msgstr "Soft color should still carry a clear reading rhythm."
 
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
@@ -1440,10 +1870,30 @@ msgstr "Sort Order"
 msgid "Source link (optional)"
 msgstr "Source link (optional)"
 
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Stay sturdy and readable."
+msgstr "Stay sturdy and readable."
+
+#. @context: Textarea label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Summary"
+msgstr "Summary"
+
 #. @context: Attached text panel hint
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Supplementary content attached to your post"
 msgstr "Supplementary content attached to your post"
+
+#. @context: Table header in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Surface"
+msgstr "Surface"
+
+#. @context: Helper text for theme picker pills on the sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Switch the palette and mode without opening settings or changing the active site theme."
+msgstr "Switch the palette and mode without opening settings or changing the active site theme."
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1489,37 +1939,82 @@ msgstr "That font theme isn't available. Pick another one."
 msgid "That theme isn't available. Pick another one."
 msgstr "That theme isn't available. Pick another one."
 
+#. @context: Blockquote in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The best default color is the one you notice only after reading for a while."
+msgstr "The best default color is the one you notice only after reading for a while."
+
 #. @context: Custom URL path help text
 #: src/routes/dash/custom-urls.tsx
 msgid "The custom URL path (without leading slash)"
 msgstr "The custom URL path (without leading slash)"
 
-#. @context: Font theme preview sentence for body text
-#. @context: Font theme preview sentence for headings
-#: src/ui/dash/appearance/FontThemeContent.tsx
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "The quick brown fox jumps over the lazy dog."
-msgstr "The quick brown fox jumps over the lazy dog."
+#. @context: Plain-text body fallback for the sample note post
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The default accent should feel written, not branded."
+msgstr "The default accent should feel written, not branded."
+
+#. @context: Sample note summary prefix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The default accent should support reading first. Start by comparing it against the"
+msgstr "The default accent should support reading first. Start by comparing it against the"
+
+#. @context: Sample note post body prefix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The default accent works best when it reads like a fountain-pen underline. Compare it against the"
+msgstr "The default accent works best when it reads like a fountain-pen underline. Compare it against the"
+
+#. @context: Caption for the sample detail article image
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The image should sit quietly inside the article instead of feeling like a card preview."
+msgstr "The image should sit quietly inside the article instead of feeling like a card preview."
 
 #. @context: Description for max visible nav links, explains overflow behavior
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "The rest will be tucked into a ··· menu"
 msgstr "The rest will be tucked into a ··· menu"
 
+#. @context: Blockquote on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "The right accent should disappear into the writing until you need it."
+msgstr "The right accent should disappear into the writing until you need it."
+
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
 msgid "The slug of the target post or collection"
 msgstr "The slug of the target post or collection"
+
+#. @context: Section heading for theme picker pills
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Theme"
+msgstr "Theme"
+
+#. @context: Browser page title for the public theme sample page
+#. @context: Eyebrow on the public theme sample page
+#: src/routes/pages/theme-sample.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Theme sample"
+msgstr "Theme sample"
 
 #. @context: Link to theming documentation on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Theming guide"
 msgstr "Theming guide"
 
+#. @context: Helper text for the real post component section on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "These are actual feed components with real footers, summaries, and inline links. Use this section to judge whether the theme still feels calm once it is applied to realistic content."
+msgstr "These are actual feed components with real footers, summaries, and inline links. Use this section to judge whether the theme still feels calm once it is applied to realistic content."
+
 #. @context: Description for session management
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "These devices are currently signed in to your account. Revoke any session you don't recognize."
 msgstr "These devices are currently signed in to your account. Revoke any session you don't recognize."
+
+#. @context: Opening paragraph on the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "This article is here to answer a specific question: does the default blue still feel calm once it has to carry a full reading experience?"
+msgstr "This article is here to answer a specific question: does the default blue still feel calm once it has to carry a full reading experience?"
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
@@ -1531,20 +2026,45 @@ msgstr "This collection is empty. Add posts from the editor."
 msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
 msgstr "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
 
+#. @context: Sample quote commentary prefix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "This is useful as a color check because it puts the accent next to quotation styling, metadata, and a quieter explanatory paragraph. Compare it back to the"
+msgstr "This is useful as a color check because it puts the accent next to quotation styling, metadata, and a quieter explanatory paragraph. Compare it back to the"
+
 #. @context: Password reset error heading
 #: src/routes/auth/reset.tsx
 msgid "This Link Has Expired"
 msgstr "This Link Has Expired"
+
+#. @context: Sample link post body prefix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "This reference is useful because it treats links and citations as part of the reading rhythm. Keep that in mind while tuning the"
+msgstr "This reference is useful because it treats links and citations as part of the reading rhythm. Keep that in mind while tuning the"
 
 #. @context: Password reset error description
 #: src/routes/auth/reset.tsx
 msgid "This reset link is no longer valid. Request a new one to continue."
 msgstr "This reset link is no longer valid. Request a new one to continue."
 
+#. @context: Helper text for the detail article sample on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "This uses the real single-post detail rendering with a longer article, inline image, tables, lists, quotes, and code. The content column stays at the same width as the live site."
+msgstr "This uses the real single-post detail rendering with a longer article, inline image, tables, lists, quotes, and code. The content column stays at the same width as the live site."
+
 #. @context: Warning text on account deletion page
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone."
 msgstr "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone."
+
+#. @context: Table cell in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Thread accent"
+msgstr "Thread accent"
+
+#. @context: Thread accents section heading on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Thread accents"
+msgstr "Thread accents"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1555,9 +2075,11 @@ msgstr "Time Zone"
 #. @context: Collection form field
 #. @context: Compose note title placeholder
 #. @context: Compose toolbar - title tooltip
+#. @context: Input label on sample page
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/CollectionsSidebar.tsx
 msgid "Title"
 msgstr "Title"
@@ -1568,6 +2090,11 @@ msgstr "Title"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Titled"
 msgstr "Titled"
+
+#. @context: Sample quote commentary suffix on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "to make sure both still feel like they belong to the same product."
+msgstr "to make sure both still feel like they belong to the same product."
 
 #. @context: Description for system nav toggles
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1588,6 +2115,11 @@ msgstr "Token name"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
 msgstr "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
+
+#. @context: Title on the public theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Tune color in a real reading context"
+msgstr "Tune color in a real reading context"
 
 #. @context: Custom URL form field
 #: src/routes/dash/custom-urls.tsx
@@ -1669,6 +2201,11 @@ msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug 
 msgid "Usage"
 msgstr "Usage"
 
+#. @context: Introductory description on the public theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Use this page to judge buttons, links, cards, forms, thread accents, and quiet surfaces before changing a theme globally."
+msgstr "Use this page to judge buttons, links, cards, forms, thread accents, and quiet surfaces before changing a theme globally."
+
 #. @context: Archive media filter - video
 #: src/ui/pages/ArchivePage.tsx
 msgid "Video"
@@ -1681,6 +2218,11 @@ msgstr "Video"
 msgid "View"
 msgstr "View"
 
+#. @context: Thread link label on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "View earlier notes in this thread"
+msgstr "View earlier notes in this thread"
+
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
@@ -1690,6 +2232,16 @@ msgstr "Want more control?"
 #: src/routes/auth/setup.tsx
 msgid "Welcome to Jant"
 msgstr "Welcome to Jant"
+
+#. @context: Table header in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "What the blue should do"
+msgstr "What the blue should do"
+
+#. @context: Section heading in the sample detail article
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "What to look for while tuning it"
+msgstr "What to look for while tuning it"
 
 #. @context: Compose prompt placeholder text
 #: src/ui/compose/ComposePrompt.tsx
@@ -1713,6 +2265,26 @@ msgstr "What's this collection about?"
 msgid "When off, visitors see your latest posts first"
 msgstr "When off, visitors see your latest posts first"
 
+#. @context: Textarea value on sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "When primary is too rigid, the whole page starts reading like product UI instead of writing space."
+msgstr "When primary is too rigid, the whole page starts reading like product UI instead of writing space."
+
+#. @context: Sample note summary second paragraph on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "When the blue is slightly grayer and less literal, the whole page feels more like a writing space and less like product UI."
+msgstr "When the blue is slightly grayer and less literal, the whole page feels more like a writing space and less like product UI."
+
+#. @context: Sample note post title on the theme sample page
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "Why the default blue should feel written, not branded"
+msgstr "Why the default blue should feel written, not branded"
+
+#. @context: Font theme preview display sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "Write small things with a clear shape."
+msgstr "Write small things with a clear shape."
+
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
@@ -1727,3 +2299,8 @@ msgstr "You have unsaved changes"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Your thoughts (optional)"
 msgstr "Your thoughts (optional)"
+
+#. @context: Font theme preview Chinese body sentence
+#: src/ui/dash/appearance/FontThemeContent.tsx
+msgid "写下一点想法，也要让它有自己的轮廓。"
+msgstr "写下一点想法，也要让它有自己的轮廓。"

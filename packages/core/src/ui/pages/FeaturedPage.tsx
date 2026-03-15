@@ -8,12 +8,28 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { FeaturedPageProps } from "../../types.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
+import { PaginatedPageHeader } from "../shared/PaginatedPageHeader.js";
 
-export const FeaturedPage: FC<FeaturedPageProps> = ({ items }) => {
+export const FeaturedPage: FC<FeaturedPageProps> = ({
+  items,
+  currentPage,
+  totalPages,
+  baseUrl,
+}) => {
   const { t } = useLingui();
 
   return (
     <div data-page="featured">
+      <PaginatedPageHeader
+        title={t({
+          message: "Featured",
+          comment: "@context: Page heading for the featured posts feed",
+        })}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        hideOnFirstPage
+        showTitle={false}
+      />
       <main>
         {items.length === 0 ? (
           <p class="text-muted-foreground">
@@ -24,7 +40,12 @@ export const FeaturedPage: FC<FeaturedPageProps> = ({ items }) => {
             })}
           </p>
         ) : (
-          <TimelineFeed items={items} />
+          <TimelineFeed
+            items={items}
+            baseUrl={baseUrl}
+            currentPage={currentPage}
+            totalPages={totalPages}
+          />
         )}
       </main>
     </div>

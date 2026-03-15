@@ -9,7 +9,7 @@ import type { TimelineCardProps } from "../../types.js";
 import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
-import { sanitizeUrl } from "../../lib/url.js";
+import { sanitizeUrl, extractDisplayDomain } from "../../lib/url.js";
 
 export const LinkCard: FC<TimelineCardProps> = ({
   post,
@@ -21,14 +21,7 @@ export const LinkCard: FC<TimelineCardProps> = ({
   const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-card feed-card-link"}`;
 
   const safeUrl = post.url ? sanitizeUrl(post.url) : "";
-  let domain: string | undefined;
-  if (safeUrl) {
-    try {
-      domain = new URL(safeUrl).hostname.replace(/^www\./, "");
-    } catch {
-      // Invalid URL, skip domain display
-    }
-  }
+  const domain = safeUrl ? extractDisplayDomain(safeUrl) : null;
 
   return (
     <article

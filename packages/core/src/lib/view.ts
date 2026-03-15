@@ -124,6 +124,43 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
 // Post Conversions
 // =============================================================================
 
+function normalizePreviewText(
+  text: string | null | undefined,
+): string | undefined {
+  const normalized = (text ?? "").replace(/\s+/g, " ").trim();
+  return normalized || undefined;
+}
+
+function getLegacyBodyPreview(post: PostWithMedia): string | undefined {
+  const body = post.body?.trim();
+  if (!body || body.startsWith("{") || body.startsWith("[")) {
+    return undefined;
+  }
+  return normalizePreviewText(body);
+}
+
+function getPlainSummary(post: PostWithMedia): string | undefined {
+  if (post.format === "quote") {
+    return normalizePreviewText(post.quoteText);
+  }
+
+  return (
+    normalizePreviewText(post.summary) ||
+    normalizePreviewText(post.bodyText) ||
+    getLegacyBodyPreview(post) ||
+    normalizePreviewText(post.url)
+  );
+}
+
+function clipPreviewText(
+  text: string | undefined,
+  maxChars: number,
+): string | undefined {
+  if (!text) return undefined;
+  if (text.length <= maxChars) return text;
+  return `${text.slice(0, maxChars).trimEnd()}...`;
+}
+
 /**
  * Converts a PostWithMedia to a render-ready PostView.
  *
@@ -142,13 +179,10 @@ export function toPostView(
   const id = post.id;
   const permalink = `/${post.slug}`;
   const publishedAt = post.publishedAt ?? post.updatedAt;
+  const summary = getPlainSummary(post);
 
-  // Pre-compute excerpt from raw body
-  let excerpt: string | undefined;
-  if (post.body) {
-    excerpt =
-      post.body.length > 160 ? post.body.slice(0, 160) + "..." : post.body;
-  }
+  // Pre-compute excerpt from the unified plain-text summary.
+  const excerpt = clipPreviewText(summary, 160);
 
   // Pre-compute HTML summary for article-style posts (with title)
   let summaryHtml: string | undefined;
@@ -209,6 +243,7 @@ export function toPostView(
     slug: post.slug,
     title: post.title ?? undefined,
     bodyHtml: bodyHtmlWithAnchor ?? undefined,
+    summary,
     excerpt,
     summaryHtml,
     summaryHasMore,

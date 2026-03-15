@@ -98,6 +98,33 @@ export function slugify(text: string): string {
   return limax(text, { tone: false }).replace(/_/g, "-");
 }
 
+/**
+ * Extracts a human-friendly domain name from a URL for display purposes.
+ *
+ * Parses the URL, strips common prefixes (`www.`, `m.`, `mobile.`), and returns
+ * a clean domain. Returns `null` if the URL is malformed.
+ *
+ * @param url - The full URL string
+ * @returns A display-friendly domain string, or `null` if parsing fails
+ *
+ * @example
+ * ```ts
+ * extractDisplayDomain("https://www.example.com/path");
+ * // Returns: "example.com"
+ *
+ * extractDisplayDomain("https://m.wikipedia.org/wiki/Test");
+ * // Returns: "wikipedia.org"
+ *
+ * extractDisplayDomain("https://blog.example.com");
+ * // Returns: "blog.example.com"
+ * ```
+ */
+export function extractDisplayDomain(url: string): string | null {
+  const hostname = extractDomain(url);
+  if (!hostname) return null;
+  return hostname.replace(/^(?:www|m|mobile)\./, "");
+}
+
 const SAFE_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
 
 /**

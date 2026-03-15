@@ -24,6 +24,7 @@ import { featuredRoutes } from "./routes/pages/featured.js";
 import { latestRoutes } from "./routes/pages/latest.js";
 import { collectionsPageRoutes } from "./routes/pages/collections.js";
 import { newPostRoutes } from "./routes/pages/new.js";
+import { themeSampleRoutes } from "./routes/pages/theme-sample.js";
 
 // Routes - Settings (admin)
 import { settingsRoutes } from "./routes/dash/settings.js";
@@ -203,15 +204,16 @@ export function createApp(): App {
 
     const rangeHeader = c.req.header("Range");
 
-    // First fetch without range to get the total size
     if (rangeHeader) {
-      // Get total size via a full request first
-      const full = await storage.get(storageKey);
-      if (!full) return c.notFound();
+      // Use head() to get size without downloading the body
+      const meta = await storage.head(storageKey);
+      if (!meta) return c.notFound();
 
-      const totalSize = full.size;
+      const totalSize = meta.size;
       if (!totalSize) {
         // Driver doesn't report size — fall back to full response
+        const full = await storage.get(storageKey);
+        if (!full) return c.notFound();
         const headers = new Headers();
         headers.set(
           "Content-Type",
@@ -220,9 +222,6 @@ export function createApp(): App {
         headers.set("Cache-Control", "public, max-age=31536000, immutable");
         return new Response(full.body, { headers });
       }
-
-      // Cancel the full stream — we'll re-fetch with the range
-      await full.body.cancel();
 
       // Parse "bytes=START-END" (END is optional)
       const match = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader);
@@ -393,6 +392,7 @@ export function createApp(): App {
   app.route("/archive", archiveRoutes);
   app.route("/featured", featuredRoutes);
   app.route("/latest", latestRoutes);
+  app.route("/_", themeSampleRoutes);
   app.route("/c", collectionsPageRoutes);
   app.route("/c", collectionRoutes);
   app.route("/", homeRoutes);

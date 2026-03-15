@@ -310,19 +310,20 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 7.1 颜色主题
 
-内置 7 种颜色方案：notepad, halloween, panda, beach, gameboy, grayscale, sonnet。不选择时使用 BaseCoat 默认样式。
+内置 9 种颜色方案：linen, ember, ink, dune, moss, stone, iris, clay, mist。不选择时使用 BaseCoat 默认样式。
 
-通过 CSS 变量实现，自动支持 light/dark mode。使用 `:root:root` 和 `:root.dark` 选择器确保主题覆盖优先级高于 BaseCoat 默认值。在 `/settings/color-theme` 切换。
+通过 CSS 变量实现，默认跟随系统的 light/dark mode，也可在 `/settings/color-theme` 强制为 Light 或 Dark。使用 `:root:root` 与 `data-theme-mode` 相关选择器确保主题覆盖优先级高于 BaseCoat 默认值。
 
 ### 7.2 字体主题
 
-内置 5 种字体方案，全部使用系统字体（无需加载外部字体）：
+内置 6 种字体方案，除字体组合外也会一起调整标题、正文、标签的排版节奏：
 
-- **default** — 系统默认字体
-- **modern-editorial** — 无衬线标题 + 衬线正文
-- **classic-editorial** — 衬线标题 + 无衬线正文
-- **literary** — 全衬线（适合长文阅读）
-- **geometric** — 几何无衬线标题 + 无衬线正文
+- **default** — Notebook，温和衬线标题 + 清爽无衬线正文
+- **system-sans** — System Sans，平台默认感，紧凑中性
+- **humanist-sans** — Humanist Sans，更柔和的人文无衬线，节奏稳定
+- **modern-editorial** — Newsroom，News Cycle 标题 + Newsreader 正文
+- **literary** — Library，Literata 全衬线，适合长文和引用
+- **geometric** — Signal，高对比无衬线，标题更紧、标签更响
 
 ### 7.3 自定义 CSS
 

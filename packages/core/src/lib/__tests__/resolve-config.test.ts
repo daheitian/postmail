@@ -164,12 +164,22 @@ describe("resolveConfig", () => {
     const config = resolveConfig(makeEnv(), {
       THEME: "blue",
       FONT_THEME: "serif",
+      THEME_MODE: "dark",
       CUSTOM_CSS: "body { color: red; }",
     });
 
     expect(config.themeId).toBe("blue");
     expect(config.fontThemeId).toBe("serif");
+    expect(config.themeMode).toBe("dark");
     expect(config.customCSS).toBe("body { color: red; }");
+  });
+
+  it("falls back to auto when THEME_MODE is missing or invalid", () => {
+    const config1 = resolveConfig(makeEnv(), {});
+    expect(config1.themeMode).toBe("auto");
+
+    const config2 = resolveConfig(makeEnv(), { THEME_MODE: "sunset" });
+    expect(config2.themeMode).toBe("auto");
   });
 
   it("resolves headerNavMaxVisible with default, DB override, and clamping", () => {
@@ -203,6 +213,6 @@ describe("resolveConfig", () => {
 
     // Falls back to default
     const config2 = resolveConfig(makeEnv(), {});
-    expect(config2.defaultThemeId).toBe("notepad");
+    expect(config2.defaultThemeId).toBe("linen");
   });
 });

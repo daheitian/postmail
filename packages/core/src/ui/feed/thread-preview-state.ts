@@ -1,5 +1,4 @@
 import type { PostView } from "../../types.js";
-import { stripHtml } from "../../lib/excerpt.js";
 
 export function getThreadPreviewState({
   hasParentReply,
@@ -20,12 +19,11 @@ export function getThreadPreviewState({
 function getRenderedTextLength(post?: PostView): number {
   if (!post) return 0;
 
-  const htmlText = stripHtml(post.summaryHtml ?? post.bodyHtml ?? "");
   return (
     (post.title?.length ?? 0) +
     (post.quoteText?.length ?? 0) +
-    (post.excerpt?.length ?? 0) +
-    htmlText.length
+    (post.summary?.length ?? 0) +
+    (post.excerpt?.length ?? 0)
   );
 }
 

@@ -52,6 +52,8 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   const resolvedFaviconVersion =
     faviconVersion ?? (appConfig?.faviconVersion || undefined);
   const resolvedNoindex = noindex ?? appConfig?.noindex;
+  const currentUrl = c ? new URL(c.req.url).toString() : undefined;
+  const siteName = appConfig?.siteName;
 
   // Automatically wrap with I18nProvider if Context is provided
   const content = c ? <I18nProvider c={c}>{children}</I18nProvider> : children;
@@ -61,14 +63,27 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
 
   // Read custom CSS from appConfig
   const customCSS = appConfig?.customCSS || undefined;
+  const themeMode = appConfig?.themeMode ?? "auto";
 
   return (
-    <html lang={resolvedLang}>
+    <html lang={resolvedLang} data-theme-mode={themeMode}>
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{title}</title>
         {description && <meta name="description" content={description} />}
+        <meta property="og:title" content={title} />
+        <meta property="og:type" content="website" />
+        {description && (
+          <meta property="og:description" content={description} />
+        )}
+        {siteName && <meta property="og:site_name" content={siteName} />}
+        {currentUrl && <meta property="og:url" content={currentUrl} />}
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content={title} />
+        {description && (
+          <meta name="twitter:description" content={description} />
+        )}
         {resolvedNoindex && <meta name="robots" content="noindex, nofollow" />}
         {resolvedFaviconUrl && (
           <>
