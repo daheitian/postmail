@@ -212,13 +212,12 @@ export class JantCollectionsManager extends LitElement {
   }
 
   #syncHeaderState() {
-    const count = this.#collectionCount();
     const countEl = this.#queryHeaderElement<HTMLElement>(
       "[data-collections-count]",
     );
     if (countEl) {
       countEl.textContent = this.#collectionCountLabel();
-      countEl.hidden = count === 0;
+      countEl.hidden = false;
     }
 
     const doneButton = this.#queryHeaderElement<HTMLButtonElement>(
