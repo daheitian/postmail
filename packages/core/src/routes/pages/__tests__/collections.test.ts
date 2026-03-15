@@ -24,7 +24,7 @@ describe("Collections Listing Page - Data Logic", () => {
     postService = createPostService(db, { slugIdLength: 5 });
   });
 
-  it("returns collections with post counts", async () => {
+  it("returns collections with post counts and recent activity", async () => {
     const recipes = await collectionService.create({
       slug: "recipes",
       title: "Recipes",
@@ -46,27 +46,23 @@ describe("Collections Listing Page - Data Logic", () => {
     await collectionService.addPost(recipes.id, p1.id);
     await collectionService.addPost(recipes.id, p2.id);
 
-    // Simulate route handler logic
-    const [allCollections, postCounts] = await Promise.all([
-      collectionService.list(),
-      collectionService.getPostCounts(),
-    ]);
+    const directory = await collectionService.listDirectoryData();
 
-    const collections = allCollections.map((col) => ({
-      ...col,
-      postCount: postCounts.get(col.id) ?? 0,
-    }));
-
-    expect(collections).toHaveLength(2);
-    const recipesResult = collections.find((c) => c.slug === "recipes");
-    const travelResult = collections.find((c) => c.slug === "travel");
+    expect(directory.collections).toHaveLength(2);
+    const recipesResult = directory.collections.find(
+      (c) => c.slug === "recipes",
+    );
+    const travelResult = directory.collections.find((c) => c.slug === "travel");
     expect(recipesResult?.postCount).toBe(2);
+    expect(recipesResult?.recentActivityAt).toBe(p2.lastActivityAt);
     expect(travelResult?.postCount).toBe(0);
+    expect(travelResult?.recentActivityAt).toBeGreaterThan(0);
   });
 
   it("returns empty list when no collections exist", async () => {
-    const allCollections = await collectionService.list();
-    expect(allCollections).toHaveLength(0);
+    const directory = await collectionService.listDirectoryData();
+    expect(directory.collections).toHaveLength(0);
+    expect(directory.items).toHaveLength(0);
   });
 
   it("does not count soft-deleted posts", async () => {
@@ -89,7 +85,10 @@ describe("Collections Listing Page - Data Logic", () => {
 
     await postService.delete(post.id);
 
-    const postCounts = await collectionService.getPostCounts();
-    expect(postCounts.get(col.id)).toBe(1);
+    const directory = await collectionService.listDirectoryData();
+    expect(directory.collections[0]?.postCount).toBe(1);
+    expect(directory.collections[0]?.recentActivityAt).toBe(
+      post2.lastActivityAt,
+    );
   });
 });

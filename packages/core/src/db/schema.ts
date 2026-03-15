@@ -340,6 +340,7 @@ export const sidebarItems = sqliteTable(
     collectionId: text("collection_id").references(() => collections.id, {
       onDelete: "cascade",
     }),
+    label: text("label"),
     position: text("position").notNull().default("a0"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -363,6 +364,10 @@ export const sidebarItems = sqliteTable(
       ) OR (
         ${table.type} = 'divider' AND ${table.collectionId} IS NULL
       )`,
+    ),
+    check(
+      "chk_sidebar_item_label",
+      sql`${table.type} = 'divider' OR ${table.label} IS NULL`,
     ),
   ],
 );

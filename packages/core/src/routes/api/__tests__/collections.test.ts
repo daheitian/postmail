@@ -36,10 +36,33 @@ describe("Collections API Routes", () => {
       expect(body.collections).toHaveLength(1);
       expect(body.collections[0].slug).toBe("tech");
       expect(body.collections[0].postCount).toBe(1);
+      expect(body.collections[0].recentActivityAt).toBe(post.lastActivityAt);
 
       expect(body.sidebarItems).toHaveLength(1);
       expect(body.sidebarItems[0].type).toBe("collection");
       expect(body.sidebarItems[0].collectionId).toBe(col.id);
+    });
+
+    it("returns divider labels", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const divider = await services.collections.createSidebarItem(
+        "divider",
+        undefined,
+        "Notes",
+      );
+
+      const res = await app.request("/api/collections");
+      const body = await res.json();
+
+      expect(body.sidebarItems).toContainEqual(
+        expect.objectContaining({
+          id: divider.id,
+          type: "divider",
+          label: "Notes",
+        }),
+      );
     });
   });
 
@@ -250,6 +273,28 @@ describe("Collections API Routes", () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
+    });
+  });
+
+  describe("PUT /api/collections/sidebar-items/:id", () => {
+    it("updates a divider label", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const item = await services.collections.createSidebarItem("divider");
+
+      const res = await app.request(
+        `/api/collections/sidebar-items/${item.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ label: "Reading" }),
+        },
+      );
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.label).toBe("Reading");
     });
   });
 

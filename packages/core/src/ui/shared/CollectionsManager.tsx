@@ -18,6 +18,10 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
       message: "Collections",
       comment: "@context: Collections page heading",
     }),
+    pageDescription: t({
+      message: "Browse by topic, not chronology.",
+      comment: "@context: Introductory description on the collections page",
+    }),
     organize: t({
       message: "Organize",
       comment: "@context: Menu action to organize collections",
@@ -38,6 +42,11 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
       message: "Divider",
       comment:
         "@context: Label for a divider item while organizing collections",
+    }),
+    dividerLabelPlaceholder: t({
+      message: "Label (optional)",
+      comment:
+        "@context: Placeholder for an optional divider label in collections organize mode",
     }),
     newCollection: t({
       message: "New Collection",
@@ -71,6 +80,10 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
     entryPlural: t({
       message: "entries",
       comment: "@context: Plural entry count label",
+    }),
+    updatedLabel: t({
+      message: "Updated",
+      comment: "@context: Label before a collection's latest activity date",
     }),
     emptyState: t({
       message: "No collections yet. Start one to organize posts by topic.",
@@ -178,6 +191,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
         <header class="collections-page-header">
           <div class="collections-page-heading">
             <h1 class="text-2xl font-semibold">{labels.collectionsTitle}</h1>
+            <p class="collections-page-description">{labels.pageDescription}</p>
           </div>
         </header>
         <CollectionDirectory items={items} emptyMessage={labels.emptyState} />

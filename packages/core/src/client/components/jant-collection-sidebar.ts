@@ -18,6 +18,7 @@ import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import Sortable from "sortablejs";
 import { showToast } from "../toast.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
+import { formatDate, toISOString } from "../../lib/time.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import type {
   CollectionManagerItem,
@@ -113,6 +114,10 @@ export class JantCollectionsManager extends LitElement {
     }`;
   }
 
+  #formatUpdatedLabel(timestamp: number) {
+    return `${this.labels.updatedLabel} ${formatDate(timestamp)}`;
+  }
+
   #toItems(json: {
     collections?: Array<{
       id: string;
@@ -122,11 +127,13 @@ export class JantCollectionsManager extends LitElement {
       icon: string | null;
       sortOrder: string;
       postCount: number;
+      recentActivityAt: number;
     }>;
     sidebarItems?: Array<{
       id: string;
       type: "collection" | "divider";
       collectionId: string | null;
+      label: string | null;
       position: string;
     }>;
   }): CollectionManagerItem[] {
@@ -143,6 +150,7 @@ export class JantCollectionsManager extends LitElement {
         icon: collection.icon,
         sortOrder: collection.sortOrder,
         postCount: collection.postCount ?? 0,
+        recentActivityAt: collection.recentActivityAt,
       });
     }
 
@@ -167,6 +175,7 @@ export class JantCollectionsManager extends LitElement {
         id: item.id,
         type: item.type,
         collectionId: item.collectionId,
+        label: item.label,
         position: item.position,
         collection,
       });
@@ -304,6 +313,30 @@ export class JantCollectionsManager extends LitElement {
     }
   }
 
+  async #saveDividerLabel(id: string, label: string) {
+    const normalized = label.trim();
+    const current = this._items.find((item) => item.id === id)?.label ?? "";
+    if (normalized === current) return;
+
+    try {
+      const res = await fetch(`/api/collections/sidebar-items/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: normalized || null,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const updated = await res.json();
+      this._items = this._items.map((item) =>
+        item.id === id ? { ...item, label: updated.label ?? null } : item,
+      );
+    } catch {
+      showToast(this.labels.saveFailed, "error");
+      await this.#refreshList();
+    }
+  }
+
   #openCreateDialog() {
     this._dialogMode = "create";
     this._editingCollection = null;
@@ -399,6 +432,9 @@ export class JantCollectionsManager extends LitElement {
           <h1 class="text-2xl font-semibold">
             ${this.labels.collectionsTitle}
           </h1>
+          <p class="collections-page-description">
+            ${this.labels.pageDescription}
+          </p>
           ${this._reorderMode
             ? html`
                 <p class="collections-page-hint text-sm text-muted-foreground">
@@ -495,6 +531,38 @@ export class JantCollectionsManager extends LitElement {
     const collection = item.collection;
     if (!collection) return nothing;
 
+    const body = html`
+      <span class="collection-directory-icon">
+        ${unsafeHTML(
+          renderCollectionIcon(collection.icon, {
+            size: 20,
+            fallback: true,
+          }),
+        )}
+      </span>
+      <div class="collection-directory-copy">
+        <div class="collection-directory-title-row">
+          <span class="collection-directory-title">${collection.title}</span>
+          <time
+            class="collection-directory-updated"
+            datetime=${toISOString(collection.recentActivityAt)}
+          >
+            ${this.#formatUpdatedLabel(collection.recentActivityAt)}
+          </time>
+        </div>
+        ${collection.description
+          ? html`
+              <p class="collection-directory-description">
+                ${collection.description}
+              </p>
+            `
+          : nothing}
+        <p class="collection-directory-meta">
+          ${this.#countLabel(collection.postCount)}
+        </p>
+      </div>
+    `;
+
     if (this._reorderMode) {
       return html`
         <div
@@ -521,31 +589,7 @@ export class JantCollectionsManager extends LitElement {
               <circle cx="15" cy="19" r="1" />
             </svg>
           </div>
-          <span class="collection-directory-icon">
-            ${unsafeHTML(
-              renderCollectionIcon(collection.icon, {
-                size: 20,
-                fallback: true,
-              }),
-            )}
-          </span>
-          <div class="collection-directory-copy">
-            <div class="collection-directory-title-row">
-              <span class="collection-directory-title"
-                >${collection.title}</span
-              >
-            </div>
-            ${collection.description
-              ? html`
-                  <p class="collection-directory-description">
-                    ${collection.description}
-                  </p>
-                `
-              : nothing}
-            <p class="collection-directory-meta">
-              ${this.#countLabel(collection.postCount)}
-            </p>
-          </div>
+          ${body}
         </div>
       `;
     }
@@ -567,31 +611,7 @@ export class JantCollectionsManager extends LitElement {
           href=${`/c/${collection.slug}`}
           class="collection-directory-item collection-directory-item-manageable"
         >
-          <span class="collection-directory-icon">
-            ${unsafeHTML(
-              renderCollectionIcon(collection.icon, {
-                size: 20,
-                fallback: true,
-              }),
-            )}
-          </span>
-          <div class="collection-directory-copy">
-            <div class="collection-directory-title-row">
-              <span class="collection-directory-title"
-                >${collection.title}</span
-              >
-            </div>
-            ${collection.description
-              ? html`
-                  <p class="collection-directory-description">
-                    ${collection.description}
-                  </p>
-                `
-              : nothing}
-            <p class="collection-directory-meta">
-              ${this.#countLabel(collection.postCount)}
-            </p>
-          </div>
+          ${body}
         </a>
         ${this._hoveringId === item.id || this._showItemMenuId === item.id
           ? this.#renderItemMenu(item)
@@ -693,10 +713,30 @@ export class JantCollectionsManager extends LitElement {
             </svg>
           </div>
           <div class="collection-directory-divider-body">
-            <span class="collection-directory-divider-text">
-              ${this.labels.dividerLabel}
-            </span>
-            <hr class="border-border" />
+            <input
+              type="text"
+              class="collection-directory-divider-input"
+              placeholder=${this.labels.dividerLabelPlaceholder}
+              .value=${item.label ?? ""}
+              aria-label=${this.labels.dividerLabelPlaceholder}
+              @blur=${(e: Event) =>
+                this.#saveDividerLabel(
+                  item.id,
+                  (e.currentTarget as HTMLInputElement).value,
+                )}
+              @keydown=${(e: globalThis.KeyboardEvent) => {
+                const target = e.currentTarget as HTMLInputElement;
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  target.blur();
+                }
+                if (e.key === "Escape") {
+                  target.value = item.label ?? "";
+                  target.blur();
+                }
+              }}
+            />
+            <hr class="collection-directory-divider-line" />
           </div>
           <button
             type="button"
@@ -724,9 +764,22 @@ export class JantCollectionsManager extends LitElement {
       `;
     }
 
+    const hasLabel = !!item.label;
     return html`
-      <div class="collection-directory-divider" aria-hidden="true">
-        <hr class="border-border" />
+      <div class="collection-directory-divider">
+        <div
+          class="collection-directory-divider-row"
+          aria-hidden=${hasLabel ? nothing : "true"}
+        >
+          ${hasLabel
+            ? html`
+                <span class="collection-directory-divider-text">
+                  ${item.label}
+                </span>
+                <hr class="collection-directory-divider-line" />
+              `
+            : html`<hr class="collection-directory-divider-line" />`}
+        </div>
       </div>
     `;
   }

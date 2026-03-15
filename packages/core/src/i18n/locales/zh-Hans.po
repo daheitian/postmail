@@ -373,6 +373,13 @@ msgstr ""
 msgid "Breadcrumb"
 msgstr ""
 
+#. @context: Introductory description on the collections page
+#. @context: Introductory description on the collections page
+#: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Browse by topic, not chronology."
+msgstr ""
+
 #. @context: Role label for dark primary swatch
 #: src/ui/pages/BrandPage.tsx
 msgid "Button tone"
@@ -1181,6 +1188,11 @@ msgstr ""
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label"
 msgstr "标签"
+
+#. @context: Placeholder for an optional divider label in collections organize mode
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Label (optional)"
+msgstr ""
 
 #. @context: Error toast when nav link fields are empty
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -2492,6 +2504,13 @@ msgstr "未列出"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Untitled"
 msgstr "无标题"
+
+#. @context: Label before a collection's latest activity date
+#. @context: Label before a collection's latest activity date
+#: src/ui/shared/CollectionDirectory.tsx
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Updated"
+msgstr ""
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx

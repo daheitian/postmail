@@ -2,6 +2,7 @@ import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionDirectoryItem } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
+import { formatDate, toISOString } from "../../lib/time.js";
 
 export interface CollectionDirectoryProps {
   items: CollectionDirectoryItem[];
@@ -16,6 +17,10 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
   emptyMessage,
 }) => {
   const { t } = useLingui();
+  const updatedLabel = t({
+    message: "Updated",
+    comment: "@context: Label before a collection's latest activity date",
+  });
 
   if (!hasCollections(items)) {
     return (
@@ -34,13 +39,24 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
     <div class="collection-directory">
       {items.map((item) => {
         if (item.type === "divider" || !item.collection) {
+          const hasLabel = !!item.label;
           return (
-            <div
-              key={item.id}
-              class="collection-directory-divider"
-              aria-hidden="true"
-            >
-              <hr class="border-border" />
+            <div key={item.id} class="collection-directory-divider">
+              <div
+                class="collection-directory-divider-row"
+                aria-hidden={hasLabel ? undefined : "true"}
+              >
+                {hasLabel ? (
+                  <>
+                    <span class="collection-directory-divider-text">
+                      {item.label}
+                    </span>
+                    <hr class="collection-directory-divider-line" />
+                  </>
+                ) : (
+                  <hr class="collection-directory-divider-line" />
+                )}
+              </div>
             </div>
           );
         }
@@ -67,6 +83,12 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
                 <span class="collection-directory-title">
                   {collection.title}
                 </span>
+                <time
+                  class="collection-directory-updated"
+                  dateTime={toISOString(collection.recentActivityAt)}
+                >
+                  {updatedLabel} {formatDate(collection.recentActivityAt)}
+                </time>
               </div>
               {collection.description ? (
                 <p class="collection-directory-description">

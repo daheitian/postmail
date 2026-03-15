@@ -3,7 +3,7 @@
  */
 
 import type { Format, MediaKind, SortOrder } from "./constants.js";
-import type { Collection } from "./entities.js";
+import type { Collection, CollectionDirectoryItem } from "./entities.js";
 import type {
   PostView,
   TimelineItemView,
@@ -76,12 +76,6 @@ export interface SearchPageProps {
   error?: string;
   hasMore: boolean;
   page: number;
-}
-
-export interface CollectionDirectoryItem {
-  id: string;
-  type: "collection" | "divider";
-  collection?: Collection & { postCount: number };
 }
 
 /** Props for the single collection page component */

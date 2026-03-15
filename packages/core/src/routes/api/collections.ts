@@ -34,20 +34,17 @@ const MoveSchema = z.object({
   before: z.string().nullable().optional(),
 });
 
+const UpdateSidebarItemSchema = z.object({
+  label: z.string().trim().max(60).nullable().optional(),
+});
+
 // List collections (includes post counts and sidebar items)
 collectionsApiRoutes.get("/", async (c) => {
-  const [collections, sidebarItems, postCounts] = await Promise.all([
-    c.var.services.collections.list(),
-    c.var.services.collections.listSidebarItems(),
-    c.var.services.collections.getPostCounts(),
-  ]);
+  const directoryData = await c.var.services.collections.listDirectoryData();
 
   return c.json({
-    collections: collections.map((col) => ({
-      ...col,
-      postCount: postCounts.get(col.id) ?? 0,
-    })),
-    sidebarItems,
+    collections: directoryData.collections,
+    sidebarItems: directoryData.sidebarItems,
   });
 });
 
@@ -55,6 +52,18 @@ collectionsApiRoutes.get("/", async (c) => {
 collectionsApiRoutes.post("/sidebar-items", requireAuthApi(), async (c) => {
   const item = await c.var.services.collections.createSidebarItem("divider");
   return c.json(item, 201);
+});
+
+collectionsApiRoutes.put("/sidebar-items/:id", requireAuthApi(), async (c) => {
+  const id = parseIdParam(c.req.param("id"));
+  const body = parseValidated(UpdateSidebarItemSchema, await c.req.json());
+
+  const item = assertFound(
+    await c.var.services.collections.updateSidebarItem(id, body),
+    "Sidebar item",
+  );
+
+  return c.json(item);
 });
 
 // Move sidebar item — must be before /:id

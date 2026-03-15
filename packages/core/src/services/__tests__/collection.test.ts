@@ -151,6 +151,51 @@ describe("CollectionService", () => {
     });
   });
 
+  describe("listDirectoryData", () => {
+    it("returns collections with recent activity and labeled dividers", async () => {
+      const reading = await collectionService.create({
+        slug: "reading",
+        title: "Reading",
+      });
+      const divider = await collectionService.createSidebarItem(
+        "divider",
+        undefined,
+        "Essays",
+      );
+
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "Book note",
+      });
+      await collectionService.addPost(reading.id, post.id);
+
+      const directory = await collectionService.listDirectoryData();
+
+      expect(directory.collections).toHaveLength(1);
+      expect(directory.collections[0]?.recentActivityAt).toBe(
+        post.lastActivityAt,
+      );
+      expect(
+        directory.sidebarItems.find((item) => item.id === divider.id)?.label,
+      ).toBe("Essays");
+      expect(directory.items).toEqual([
+        expect.objectContaining({
+          type: "collection",
+          collection: expect.objectContaining({
+            id: reading.id,
+            postCount: 1,
+            recentActivityAt: post.lastActivityAt,
+          }),
+        }),
+        expect.objectContaining({
+          id: divider.id,
+          type: "divider",
+          label: "Essays",
+        }),
+      ]);
+    });
+  });
+
   describe("update", () => {
     it("updates collection title", async () => {
       const collection = await collectionService.create({
@@ -351,6 +396,7 @@ describe("CollectionService", () => {
 
       expect(item.type).toBe("divider");
       expect(item.collectionId).toBeNull();
+      expect(item.label).toBeNull();
       expect(typeof item.position).toBe("string");
       expect(item.createdAt).toBeGreaterThan(0);
     });
@@ -386,6 +432,18 @@ describe("CollectionService", () => {
           updatedAt: item.updatedAt,
         }),
       ).rejects.toThrow();
+    });
+  });
+
+  describe("updateSidebarItem", () => {
+    it("updates and trims a divider label", async () => {
+      const item = await collectionService.createSidebarItem("divider");
+
+      const updated = await collectionService.updateSidebarItem(item.id, {
+        label: "  Writing  ",
+      });
+
+      expect(updated?.label).toBe("Writing");
     });
   });
 

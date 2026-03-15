@@ -501,7 +501,8 @@ Public.
       "sortOrder": "newest",
       "createdAt": 1706000000,
       "updatedAt": 1706000000,
-      "postCount": 12
+      "postCount": 12,
+      "recentActivityAt": 1706100000
     }
   ],
   "sidebarItems": [
@@ -509,9 +510,19 @@ Public.
       "id": "019513c1-...",
       "type": "collection",
       "collectionId": "019513b1-...",
+      "label": null,
       "position": "a0",
       "createdAt": 1706000000,
       "updatedAt": 1706000000
+    },
+    {
+      "id": "019513c2-...",
+      "type": "divider",
+      "collectionId": null,
+      "label": "Essays",
+      "position": "a1",
+      "createdAt": 1706000100,
+      "updatedAt": 1706000100
     }
   ]
 }
@@ -568,6 +579,63 @@ DELETE /api/collections/:id
 ```
 
 **Auth required.** Deletes the collection. Posts in the collection are NOT deleted.
+
+**Response (200):** `{ "success": true }`
+
+### Create Sidebar Divider
+
+```
+POST /api/collections/sidebar-items
+```
+
+**Auth required.**
+
+Creates a new divider item for the `/c` collection index.
+
+**Response (201):** Created sidebar item object.
+
+### Update Sidebar Divider
+
+```
+PUT /api/collections/sidebar-items/:id
+```
+
+**Auth required.**
+
+```json
+{ "label": "Essays" }
+```
+
+Set `label` to `null` or an empty string to remove it.
+
+**Response (200):** Updated sidebar item object.
+
+### Move Sidebar Item
+
+```
+PUT /api/collections/sidebar-items/:id/move
+```
+
+**Auth required.**
+
+```json
+{
+  "after": "019513c1-...",
+  "before": "019513c3-..."
+}
+```
+
+Both fields are optional and nullable. Use `null` to move to the beginning or end.
+
+**Response (200):** Updated sidebar item object.
+
+### Delete Sidebar Item
+
+```
+DELETE /api/collections/sidebar-items/:id
+```
+
+**Auth required.**
 
 **Response (200):** `{ "success": true }`
 

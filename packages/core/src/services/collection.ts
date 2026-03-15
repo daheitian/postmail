@@ -15,14 +15,19 @@ import {
   pathRegistry,
   sidebarItems,
   postCollections,
+  posts,
 } from "../db/schema.js";
 import { now } from "../lib/time.js";
 import type {
   Collection,
+  CollectionDirectoryCollection,
+  CollectionDirectoryItem,
+  CollectionsDirectoryData,
   SidebarItem,
   SidebarItemType,
   CreateCollection,
   UpdateCollection,
+  UpdateSidebarItem,
   SortOrder,
 } from "../types.js";
 import { ConflictError } from "../lib/errors.js";
@@ -56,6 +61,7 @@ export interface CollectionService {
   getById(id: string): Promise<Collection | null>;
   getBySlug(slug: string): Promise<Collection | null>;
   list(): Promise<Collection[]>;
+  listDirectoryData(): Promise<CollectionsDirectoryData>;
   /** List collections sorted by most recent post addition (for compose dialog) */
   listByRecentActivity(): Promise<Collection[]>;
   create(data: CreateCollection): Promise<Collection>;
@@ -67,9 +73,15 @@ export interface CollectionService {
   createSidebarItem(
     type: SidebarItemType,
     collectionId?: string,
+    label?: string | null,
   ): Promise<SidebarItem>;
   /** Delete a sidebar item by ID */
   deleteSidebarItem(id: string): Promise<boolean>;
+  /** Update a sidebar item */
+  updateSidebarItem(
+    id: string,
+    data: UpdateSidebarItem,
+  ): Promise<SidebarItem | null>;
   /** Move a sidebar item between two neighbors */
   moveSidebarItem(
     id: string,
@@ -119,10 +131,16 @@ export function createCollectionService(
       id: row.id,
       type: row.type as SidebarItemType,
       collectionId: row.collectionId,
+      label: row.label,
       position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
+  }
+
+  function normalizeSidebarLabel(label?: string | null): string | null {
+    const trimmed = label?.trim();
+    return trimmed ? trimmed : null;
   }
 
   async function getLastSidebarPosition(): Promise<string | null> {
@@ -207,6 +225,109 @@ export function createCollectionService(
       .filter((row): row is Collection => row !== null);
   }
 
+  async function listDirectoryCollections(): Promise<
+    CollectionDirectoryCollection[]
+  > {
+    const postCount = sql<number>`
+      COUNT(
+        CASE
+          WHEN ${posts.id} IS NOT NULL AND ${posts.deletedAt} IS NULL THEN 1
+        END
+      )
+    `.as("post_count");
+    const recentActivityAt = sql<number | null>`
+      MAX(
+        CASE
+          WHEN ${posts.id} IS NOT NULL AND ${posts.deletedAt} IS NULL
+          THEN COALESCE(
+            ${posts.lastActivityAt},
+            ${posts.publishedAt},
+            ${posts.updatedAt}
+          )
+        END
+      )
+    `.as("recent_activity_at");
+
+    const rows = await db
+      .select({
+        collection: collections,
+        postCount,
+        recentActivityAt,
+      })
+      .from(collections)
+      .leftJoin(
+        postCollections,
+        eq(collections.id, postCollections.collectionId),
+      )
+      .leftJoin(posts, eq(postCollections.postId, posts.id))
+      .groupBy(collections.id)
+      .orderBy(asc(collections.createdAt));
+
+    if (rows.length === 0) return [];
+
+    const slugMap = await paths.getCollectionSlugMap(
+      rows.map((row) => row.collection.id),
+    );
+
+    return rows
+      .map((row) => {
+        const slug = slugMap.get(row.collection.id);
+        if (!slug) return null;
+
+        return {
+          ...toCollection(row.collection, slug),
+          postCount: row.postCount,
+          recentActivityAt: row.recentActivityAt ?? row.collection.updatedAt,
+        };
+      })
+      .filter((row): row is CollectionDirectoryCollection => row !== null);
+  }
+
+  function buildDirectoryItems(
+    directoryCollections: CollectionDirectoryCollection[],
+    orderedSidebarItems: SidebarItem[],
+  ): CollectionDirectoryItem[] {
+    const collectionMap = new Map(
+      directoryCollections.map((collection) => [collection.id, collection]),
+    );
+    const seenCollections = new Set<string>();
+    const items: CollectionDirectoryItem[] = [];
+
+    for (const item of orderedSidebarItems) {
+      if (item.type === "divider") {
+        items.push({
+          id: item.id,
+          type: "divider",
+          label: item.label,
+        });
+        continue;
+      }
+
+      const collection = item.collectionId
+        ? collectionMap.get(item.collectionId)
+        : undefined;
+      if (!collection) continue;
+
+      seenCollections.add(collection.id);
+      items.push({
+        id: item.id,
+        type: "collection",
+        collection,
+      });
+    }
+
+    for (const collection of directoryCollections) {
+      if (seenCollections.has(collection.id)) continue;
+      items.push({
+        id: collection.id,
+        type: "collection",
+        collection,
+      });
+    }
+
+    return items;
+  }
+
   return {
     async getById(id) {
       const result = await db
@@ -231,6 +352,19 @@ export function createCollectionService(
         .from(collections)
         .orderBy(asc(collections.createdAt));
       return hydrateCollections(rows);
+    },
+
+    async listDirectoryData() {
+      const [directoryCollections, orderedSidebarItems] = await Promise.all([
+        listDirectoryCollections(),
+        this.listSidebarItems(),
+      ]);
+
+      return {
+        collections: directoryCollections,
+        items: buildDirectoryItems(directoryCollections, orderedSidebarItems),
+        sidebarItems: orderedSidebarItems,
+      };
     },
 
     async listByRecentActivity() {
@@ -374,9 +508,11 @@ export function createCollectionService(
       return rows.map(toSidebarItem);
     },
 
-    async createSidebarItem(type, collectionId) {
+    async createSidebarItem(type, collectionId, label) {
       const id = uuidv7();
       const timestamp = now();
+      const normalizedLabel =
+        type === "divider" ? normalizeSidebarLabel(label) : null;
 
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
@@ -386,6 +522,7 @@ export function createCollectionService(
               id,
               type,
               collectionId: collectionId ?? null,
+              label: normalizedLabel,
               position: await getAppendSidebarPosition(),
               createdAt: timestamp,
               updatedAt: timestamp,
@@ -427,6 +564,32 @@ export function createCollectionService(
         .where(eq(sidebarItems.id, id))
         .returning();
       return result.length > 0;
+    },
+
+    async updateSidebarItem(id, data) {
+      const existing = await db
+        .select()
+        .from(sidebarItems)
+        .where(eq(sidebarItems.id, id))
+        .limit(1);
+      const item = existing[0];
+      if (!item) return null;
+
+      if (data.label === undefined) {
+        return toSidebarItem(item);
+      }
+
+      const result = await db
+        .update(sidebarItems)
+        .set({
+          label:
+            item.type === "divider" ? normalizeSidebarLabel(data.label) : null,
+          updatedAt: now(),
+        })
+        .where(eq(sidebarItems.id, id))
+        .returning();
+
+      return result[0] ? toSidebarItem(result[0]) : null;
     },
 
     async moveSidebarItem(id, afterId, beforeId) {

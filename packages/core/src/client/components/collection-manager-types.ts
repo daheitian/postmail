@@ -6,11 +6,13 @@ import type { CollectionFormLabels } from "./collection-types.js";
 
 export interface CollectionManagerLabels {
   collectionsTitle: string;
+  pageDescription: string;
   organize: string;
   done: string;
   organizeHint: string;
   newDivider: string;
   dividerLabel: string;
+  dividerLabelPlaceholder: string;
   newCollection: string;
   edit: string;
   deleteDivider: string;
@@ -19,6 +21,7 @@ export interface CollectionManagerLabels {
   confirmDelete: string;
   entrySingular: string;
   entryPlural: string;
+  updatedLabel: string;
   emptyState: string;
   orderSaved: string;
   saved: string;
@@ -35,12 +38,14 @@ export interface ManagedCollection {
   icon: string | null;
   sortOrder: string;
   postCount: number;
+  recentActivityAt: number;
 }
 
 export interface CollectionManagerItem {
   id: string;
   type: "collection" | "divider";
   collectionId?: string | null;
+  label?: string | null;
   position?: string;
   collection?: ManagedCollection;
 }

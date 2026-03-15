@@ -93,15 +93,34 @@ export interface Collection {
   updatedAt: number;
 }
 
+export interface CollectionDirectoryCollection extends Collection {
+  postCount: number;
+  recentActivityAt: number;
+}
+
 export type SidebarItemType = "collection" | "divider";
 
 export interface SidebarItem {
   id: string;
   type: SidebarItemType;
   collectionId: string | null;
+  label: string | null;
   position: string;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface CollectionDirectoryItem {
+  id: string;
+  type: "collection" | "divider";
+  label?: string | null;
+  collection?: CollectionDirectoryCollection;
+}
+
+export interface CollectionsDirectoryData {
+  collections: CollectionDirectoryCollection[];
+  items: CollectionDirectoryItem[];
+  sidebarItems: SidebarItem[];
 }
 
 export interface PostCollection {

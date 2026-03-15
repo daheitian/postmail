@@ -77,3 +77,7 @@ export interface UpdateCollection {
   icon?: string | null;
   sortOrder?: SortOrder;
 }
+
+export interface UpdateSidebarItem {
+  label?: string | null;
+}

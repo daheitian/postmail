@@ -15,6 +15,10 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
   isAuthenticated,
 }) => {
   const { t } = useLingui();
+  const pageDescription = t({
+    message: "Browse by topic, not chronology.",
+    comment: "@context: Introductory description on the collections page",
+  });
   const emptyMessage = t({
     message: "No collections yet. Start one to organize posts by topic.",
     comment: "@context: Empty state message on collections page",
@@ -39,6 +43,7 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
                 comment: "@context: Collections page heading",
               })}
             </h1>
+            <p class="collections-page-description">{pageDescription}</p>
           </div>
         </header>
 
