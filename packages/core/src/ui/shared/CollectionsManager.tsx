@@ -198,25 +198,112 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
   };
 
   return (
-    <jant-collections-manager
-      items={escapeJson(items)}
-      labels={escapeJson(labels)}
-    >
-      <div class="collections-page-shell">
-        <header class="collections-page-header">
-          <div class="collections-page-heading">
-            <div class="collections-page-title-row">
-              <h1 class="collections-page-title">{labels.collectionsTitle}</h1>
-            </div>
-            {collectionCount > 0 ? (
-              <div class="collections-page-meta-row">
-                <p class="collections-page-badge">{collectionCountLabel}</p>
-              </div>
-            ) : null}
+    <div class="collections-page-shell" data-collections-manager-root>
+      <header class="collections-page-header">
+        <div class="collections-page-heading">
+          <div class="collections-page-title-row">
+            <h1 class="collections-page-title">{labels.collectionsTitle}</h1>
           </div>
-        </header>
+          <div class="collections-page-meta-row">
+            <p
+              class="collections-page-badge"
+              data-collections-count
+              hidden={collectionCount === 0}
+            >
+              {collectionCountLabel}
+            </p>
+            <div class="collections-page-actions">
+              <button
+                type="button"
+                class="btn-outline"
+                data-collections-action="done"
+                hidden
+              >
+                {labels.done}
+              </button>
+              <div
+                class="collections-page-action-group"
+                data-collections-toolbar
+              >
+                <button
+                  type="button"
+                  class="collections-page-toolbar-button"
+                  aria-label={labels.newCollection}
+                  title={labels.newCollection}
+                  data-collections-action="create"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M12 5v14" />
+                    <path d="M5 12h14" />
+                  </svg>
+                </button>
+                <div class="relative">
+                  <button
+                    type="button"
+                    class="collections-page-toolbar-button collections-page-more-btn"
+                    aria-label={labels.moreActions}
+                    aria-expanded="false"
+                    title={labels.moreActions}
+                    data-collections-action="toggle-menu"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <circle cx="5" cy="12" r="2" />
+                      <circle cx="12" cy="12" r="2" />
+                      <circle cx="19" cy="12" r="2" />
+                    </svg>
+                  </button>
+                  <div
+                    class="collections-page-menu"
+                    data-collections-more-menu
+                    hidden
+                  >
+                    <button
+                      type="button"
+                      class="collections-page-menu-item"
+                      data-collections-action="organize"
+                    >
+                      {labels.organize}
+                    </button>
+                    <button
+                      type="button"
+                      class="collections-page-menu-item"
+                      data-collections-action="divider"
+                    >
+                      {labels.newDivider}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="collections-page-hint" data-collections-hint hidden>
+            {labels.organizeHint}
+          </p>
+        </div>
+      </header>
+
+      <jant-collections-manager
+        items={escapeJson(items)}
+        labels={escapeJson(labels)}
+      >
         <CollectionDirectory items={items} emptyMessage={labels.emptyState} />
-      </div>
-    </jant-collections-manager>
+      </jant-collections-manager>
+    </div>
   );
 };

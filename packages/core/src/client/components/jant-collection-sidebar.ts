@@ -56,6 +56,7 @@ export class JantCollectionsManager extends LitElement {
   #sortable: { destroy(): void } | null = null;
   #initialized = false;
   #revertNextSibling: Node | null = null;
+  #managerRoot: HTMLElement | null = null;
 
   #closeMoreMenu = () => {
     this._showMoreMenu = false;
@@ -67,9 +68,64 @@ export class JantCollectionsManager extends LitElement {
     document.removeEventListener("click", this.#closeItemMenu);
   };
 
+  #handleHeaderClick = (event: Event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    if (target.closest("[data-collections-more-menu]")) {
+      event.stopPropagation();
+    }
+
+    const actionEl = target.closest<HTMLElement>("[data-collections-action]");
+    if (!actionEl || !this.#managerRoot?.contains(actionEl)) return;
+
+    const action = actionEl.dataset.collectionsAction;
+    if (!action) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (action !== "toggle-menu" && this._showMoreMenu) {
+      this._showMoreMenu = false;
+      document.removeEventListener("click", this.#closeMoreMenu);
+    }
+
+    switch (action) {
+      case "create":
+        this.#openCreateDialog();
+        break;
+      case "done":
+        this.#exitReorderMode();
+        break;
+      case "toggle-menu":
+        this._showMoreMenu = !this._showMoreMenu;
+        if (this._showMoreMenu) {
+          setTimeout(() => {
+            document.addEventListener("click", this.#closeMoreMenu);
+          });
+        } else {
+          document.removeEventListener("click", this.#closeMoreMenu);
+        }
+        break;
+      case "organize":
+        this.#enterReorderMode();
+        break;
+      case "divider":
+        void this.#addDivider();
+        break;
+      default:
+        break;
+    }
+  };
+
   createRenderRoot() {
     this.innerHTML = "";
     return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.#bindManagerRoot();
   }
 
   constructor() {
@@ -101,6 +157,8 @@ export class JantCollectionsManager extends LitElement {
     super.disconnectedCallback();
     this.#sortable?.destroy();
     this.#sortable = null;
+    this.#managerRoot?.removeEventListener("click", this.#handleHeaderClick);
+    this.#managerRoot = null;
     document.removeEventListener("click", this.#closeMoreMenu);
     document.removeEventListener("click", this.#closeItemMenu);
   }
@@ -130,6 +188,68 @@ export class JantCollectionsManager extends LitElement {
     return `${count} ${
       count === 1 ? this.labels.entrySingular : this.labels.entryPlural
     }`;
+  }
+
+  #bindManagerRoot() {
+    const root = this.closest<HTMLElement>("[data-collections-manager-root]");
+    if (root === this.#managerRoot) return;
+
+    this.#managerRoot?.removeEventListener("click", this.#handleHeaderClick);
+    this.#managerRoot = root;
+    this.#managerRoot?.addEventListener("click", this.#handleHeaderClick);
+  }
+
+  #queryHeaderElement<T extends HTMLElement>(selector: string) {
+    return this.#managerRoot?.querySelector<T>(selector) ?? null;
+  }
+
+  #syncHeaderState() {
+    const count = this.#collectionCount();
+    const countEl = this.#queryHeaderElement<HTMLElement>(
+      "[data-collections-count]",
+    );
+    if (countEl) {
+      countEl.textContent = this.#collectionCountLabel();
+      countEl.hidden = count === 0;
+    }
+
+    const doneButton = this.#queryHeaderElement<HTMLButtonElement>(
+      '[data-collections-action="done"]',
+    );
+    if (doneButton) {
+      doneButton.hidden = !this._reorderMode;
+    }
+
+    const toolbar = this.#queryHeaderElement<HTMLElement>(
+      "[data-collections-toolbar]",
+    );
+    if (toolbar) {
+      toolbar.hidden = this._reorderMode;
+    }
+
+    const hint = this.#queryHeaderElement<HTMLElement>(
+      "[data-collections-hint]",
+    );
+    if (hint) {
+      hint.hidden = !this._reorderMode;
+    }
+
+    const menu = this.#queryHeaderElement<HTMLElement>(
+      "[data-collections-more-menu]",
+    );
+    if (menu) {
+      menu.hidden = !this._showMoreMenu || this._reorderMode;
+    }
+
+    const toggleButton = this.#queryHeaderElement<HTMLButtonElement>(
+      '[data-collections-action="toggle-menu"]',
+    );
+    if (toggleButton) {
+      toggleButton.setAttribute(
+        "aria-expanded",
+        String(this._showMoreMenu && !this._reorderMode),
+      );
+    }
   }
 
   #toItems(json: {
@@ -296,6 +416,9 @@ export class JantCollectionsManager extends LitElement {
   }
 
   protected updated(): void {
+    this.#bindManagerRoot();
+    this.#syncHeaderState();
+
     if (this._reorderMode) {
       this.#initSortable();
     }
@@ -373,9 +496,15 @@ export class JantCollectionsManager extends LitElement {
     this._showMoreMenu = false;
     document.removeEventListener("click", this.#closeMoreMenu);
     this.updateComplete.then(() => {
-      this.querySelector<HTMLDialogElement>(
+      const dialog = this.querySelector<HTMLDialogElement>(
         "#collections-manager-dialog",
-      )?.showModal();
+      );
+      dialog?.showModal();
+      const titleInput = dialog?.querySelector<HTMLInputElement>(
+        "[data-collection-title-input]",
+      );
+      titleInput?.focus();
+      titleInput?.select();
     });
   }
 
@@ -453,130 +582,6 @@ export class JantCollectionsManager extends LitElement {
     } catch {
       showToast(this.labels.saveFailed, "error");
     }
-  }
-
-  #renderPageHeader() {
-    return html`
-      <header class="collections-page-header">
-        <div class="collections-page-heading">
-          <div class="collections-page-title-row">
-            <h1 class="collections-page-title">
-              ${this.labels.collectionsTitle}
-            </h1>
-          </div>
-          <div class="collections-page-meta-row">
-            ${this.#collectionCount() > 0
-              ? html`
-                  <p class="collections-page-badge">
-                    ${this.#collectionCountLabel()}
-                  </p>
-                `
-              : nothing}
-            <div class="collections-page-actions">
-              ${this._reorderMode
-                ? html`
-                    <button
-                      type="button"
-                      class="btn-outline"
-                      @click=${() => this.#exitReorderMode()}
-                    >
-                      ${this.labels.done}
-                    </button>
-                  `
-                : html`
-                    <button
-                      type="button"
-                      class="collections-page-toolbar-button"
-                      aria-label=${this.labels.newCollection}
-                      title=${this.labels.newCollection}
-                      @click=${() => this.#openCreateDialog()}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path d="M12 5v14" />
-                        <path d="M5 12h14" />
-                      </svg>
-                    </button>
-                    ${this.#renderPageMoreMenu()}
-                  `}
-            </div>
-          </div>
-          ${this._reorderMode
-            ? html`
-                <p class="collections-page-hint">${this.labels.organizeHint}</p>
-              `
-            : nothing}
-        </div>
-      </header>
-    `;
-  }
-
-  #renderPageMoreMenu() {
-    return html`
-      <div class="relative">
-        <button
-          type="button"
-          class="collections-page-toolbar-button collections-page-more-btn"
-          aria-label=${this.labels.moreActions}
-          title=${this.labels.moreActions}
-          @click=${(e: Event) => {
-            e.stopPropagation();
-            this._showMoreMenu = !this._showMoreMenu;
-            if (this._showMoreMenu) {
-              setTimeout(() => {
-                document.addEventListener("click", this.#closeMoreMenu);
-              });
-            } else {
-              document.removeEventListener("click", this.#closeMoreMenu);
-            }
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-          >
-            <circle cx="5" cy="12" r="2" />
-            <circle cx="12" cy="12" r="2" />
-            <circle cx="19" cy="12" r="2" />
-          </svg>
-        </button>
-        ${this._showMoreMenu
-          ? html`
-              <div
-                class="collections-page-menu"
-                @click=${(e: Event) => e.stopPropagation()}
-              >
-                <button
-                  type="button"
-                  class="collections-page-menu-item"
-                  @click=${() => this.#enterReorderMode()}
-                >
-                  ${this.labels.organize}
-                </button>
-                <button
-                  type="button"
-                  class="collections-page-menu-item"
-                  @click=${() => this.#addDivider()}
-                >
-                  ${this.labels.newDivider}
-                </button>
-              </div>
-            `
-          : nothing}
-      </div>
-    `;
   }
 
   #renderCollectionItem(item: CollectionManagerItem, sequence: number) {
@@ -902,28 +907,23 @@ export class JantCollectionsManager extends LitElement {
 
   render() {
     return html`
-      <div class="collections-page-shell">
-        ${this.#renderPageHeader()}
-        ${this.#hasCollections()
-          ? html`
-              <div id="collections-manager-list" class="collection-directory">
-                ${(() => {
-                  let collectionIndex = 0;
-                  return this._items.map((item) => {
-                    if (item.type === "collection") {
-                      collectionIndex += 1;
-                      return this.#renderCollectionItem(item, collectionIndex);
-                    }
-                    return this.#renderDividerItem(item);
-                  });
-                })()}
-              </div>
-            `
-          : html`<p class="text-muted-foreground">
-              ${this.labels.emptyState}
-            </p>`}
-        ${this.#renderDialog()}
-      </div>
+      ${this.#hasCollections()
+        ? html`
+            <div id="collections-manager-list" class="collection-directory">
+              ${(() => {
+                let collectionIndex = 0;
+                return this._items.map((item) => {
+                  if (item.type === "collection") {
+                    collectionIndex += 1;
+                    return this.#renderCollectionItem(item, collectionIndex);
+                  }
+                  return this.#renderDividerItem(item);
+                });
+              })()}
+            </div>
+          `
+        : html`<p class="text-muted-foreground">${this.labels.emptyState}</p>`}
+      ${this.#renderDialog()}
     `;
   }
 }

@@ -434,6 +434,12 @@
     margin-left: auto;
   }
 
+  .collections-page-action-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
   .collections-page-toolbar-button {
     display: inline-flex;
     align-items: center;
@@ -445,6 +451,7 @@
     border-radius: 999px;
     background: transparent;
     color: var(--site-text-secondary);
+    cursor: pointer;
     transition:
       color 0.15s ease,
       border-color 0.15s ease,
@@ -685,7 +692,7 @@
     font-family: var(--font-heading);
     font-size: 0.9rem;
     letter-spacing: 0;
-    font-style: italic;
+    font-style: normal;
     white-space: nowrap;
     color: var(--site-text-primary);
   }
@@ -714,7 +721,7 @@
     font-family: var(--font-heading);
     font-size: 0.9rem;
     letter-spacing: 0;
-    font-style: italic;
+    font-style: normal;
     outline: none;
   }
 

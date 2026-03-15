@@ -560,6 +560,7 @@ export class JantCollectionForm extends LitElement {
             <input
               type="text"
               class="input pl-12"
+              data-collection-title-input
               required
               .value=${this._title}
               placeholder=${this.isEdit
