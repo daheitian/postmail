@@ -6,15 +6,10 @@
  */
 
 import type { Context } from "hono";
-import type { Bindings, Post, TimelineItemView } from "../types.js";
+import type { Bindings, Post, SortOrder, TimelineItemView } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
-import {
-  createMediaContext,
-  loadThreadRootPermalinks,
-  toPostView,
-  toPostViewsFromPosts,
-} from "./view.js";
+import { createMediaContext, toPostView } from "./view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -26,6 +21,8 @@ export interface TimelineResult {
   currentPage: number;
   totalPages: number;
 }
+
+type CuratedThreadSelectionMap = Map<string, Set<string>>;
 
 async function buildTimelineItems(
   c: Context<Env>,
@@ -136,6 +133,120 @@ async function buildTimelineItems(
   });
 }
 
+async function buildCuratedThreadItems(
+  c: Context<Env>,
+  rootIds: string[],
+  threadsByRootId: Map<string, Post[]>,
+  selectedPostIdsByThread: CuratedThreadSelectionMap,
+): Promise<TimelineItemView[]> {
+  const orderedThreads = rootIds
+    .map((rootId) => threadsByRootId.get(rootId) ?? [])
+    .filter((thread) => thread.length > 0);
+
+  if (orderedThreads.length === 0) {
+    return [];
+  }
+
+  const mediaCtx = createMediaContext(c.var.appConfig);
+  const postIds = orderedThreads.flatMap((thread) =>
+    thread.map((post) => post.id),
+  );
+  const [rawMediaMap, collectionsMap] = await Promise.all([
+    c.var.services.media.getByPostIds(postIds),
+    c.var.services.collections.getCollectionsByPostIds(postIds),
+  ]);
+  const mediaMap = buildMediaMap(
+    rawMediaMap,
+    mediaCtx.r2PublicUrl,
+    mediaCtx.imageTransformUrl,
+    mediaCtx.s3PublicUrl,
+  );
+
+  return orderedThreads.reduce<TimelineItemView[]>((items, thread) => {
+    const root = thread[0];
+    if (!root) {
+      return items;
+    }
+
+    const threadRootPermalink = `/${root.slug}`;
+    const lastPostId = thread[thread.length - 1]?.id;
+    const postViews = thread.map((post) =>
+      toPostView(
+        {
+          ...post,
+          mediaAttachments: mediaMap.get(post.id) ?? [],
+        },
+        mediaCtx,
+        collectionsMap.get(post.id),
+        post.replyToId ? threadRootPermalink : undefined,
+        post.id === lastPostId,
+      ),
+    );
+    const rootView = postViews[0];
+    const selectedIds = selectedPostIdsByThread.get(root.id);
+
+    if (!rootView || !selectedIds || selectedIds.size === 0) {
+      return items;
+    }
+
+    const selectedIndices = postViews.reduce<number[]>(
+      (indices, post, index) => {
+        if (selectedIds.has(post.id)) {
+          indices.push(index);
+        }
+        return indices;
+      },
+      [],
+    );
+
+    if (selectedIndices.length === 0) {
+      return items;
+    }
+
+    if (selectedIndices[0] === 0 && !rootView.isLastInThread) {
+      rootView.threadRootPermalink = rootView.permalink;
+    }
+
+    const segments = selectedIndices.reduce<
+      NonNullable<TimelineItemView["curatedThread"]>["segments"]
+    >((items, index, segmentIndex) => {
+      const postView = postViews[index];
+      if (!postView) {
+        return items;
+      }
+
+      const previousIndex =
+        segmentIndex === 0 ? undefined : selectedIndices[segmentIndex - 1];
+
+      items.push({
+        post: postView,
+        hiddenBeforeCount:
+          previousIndex === undefined
+            ? index === 0
+              ? 0
+              : index - 1
+            : index - previousIndex - 1,
+      });
+
+      return items;
+    }, []);
+
+    if (segments.length === 0) {
+      return items;
+    }
+
+    items.push({
+      post: rootView,
+      curatedThread: {
+        rootPost: rootView,
+        segments,
+      },
+    });
+
+    return items;
+  }, []);
+}
+
 /**
  * Assembles a page of timeline items with media attachments and thread previews.
  *
@@ -225,7 +336,7 @@ export async function assembleTimelineItem(
 }
 
 /**
- * Assembles a paginated featured-post timeline without thread previews.
+ * Assembles a paginated featured timeline grouped by thread root.
  *
  * @param c - Hono context (provides services + appConfig)
  * @param options - Optional page number and auth state
@@ -240,14 +351,12 @@ export async function assembleFeaturedTimeline(
   const offset = (page - 1) * pageSize;
   const excludePrivate = !(options?.isAuthenticated ?? false);
 
-  const [totalCount, posts] = await Promise.all([
-    c.var.services.posts.count({
-      featured: true,
+  const [totalCount, rootIds] = await Promise.all([
+    c.var.services.posts.countFeaturedThreadRoots({
       status: "published",
       excludePrivate,
     }),
-    c.var.services.posts.list({
-      featured: true,
+    c.var.services.posts.listFeaturedThreadRootIds({
       status: "published",
       excludePrivate,
       limit: pageSize,
@@ -257,37 +366,98 @@ export async function assembleFeaturedTimeline(
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  if (posts.length === 0) {
+  if (rootIds.length === 0) {
     return { items: [], currentPage: page, totalPages };
   }
 
-  const mediaCtx = createMediaContext(c.var.appConfig);
-  const threadIds = [...new Set(posts.map((p) => p.threadId))];
-  const [rootPermalinkMap, lastPostMap] = await Promise.all([
-    loadThreadRootPermalinks(
-      posts,
-      c.var.services.posts.getById.bind(c.var.services.posts),
-    ),
-    c.var.services.posts.getLastPostIdsByThread(threadIds),
-  ]);
+  const threadsByRootId =
+    await c.var.services.posts.getPublishedThreads(rootIds);
+  const selectedPostIdsByThread: CuratedThreadSelectionMap = new Map();
 
-  const isLastInThreadMap = new Map<string, boolean>();
-  for (const post of posts) {
-    isLastInThreadMap.set(post.id, lastPostMap.get(post.threadId) === post.id);
+  for (const [threadId, thread] of threadsByRootId) {
+    const selectedIds = thread
+      .filter((post) => post.featuredAt !== null)
+      .map((post) => post.id);
+
+    if (selectedIds.length > 0) {
+      selectedPostIdsByThread.set(threadId, new Set(selectedIds));
+    }
   }
 
-  const items = toPostViewsFromPosts(
-    posts,
-    mediaCtx,
-    rootPermalinkMap,
-    isLastInThreadMap,
-  ).map((post) => {
-    if (!post.replyToId && !post.isLastInThread) {
-      post.threadRootPermalink = post.permalink;
-    }
+  const items = await buildCuratedThreadItems(
+    c,
+    rootIds,
+    threadsByRootId,
+    selectedPostIdsByThread,
+  );
 
-    return { post };
-  });
+  return { items, currentPage: page, totalPages };
+}
+
+/**
+ * Assembles a paginated collection timeline grouped by thread root.
+ *
+ * Threads are ordered by collection membership time (newest/oldest) or by the
+ * rated posts collected into the thread. Within each thread, collected posts are
+ * expanded and intervening non-collected posts collapse into hidden-count gaps.
+ *
+ * @param c - Hono context (provides services + appConfig)
+ * @param options - Collection ID, optional page number, auth state, and sort
+ * @returns Collection timeline items with pagination info
+ */
+export async function assembleCollectionTimeline(
+  c: Context<Env>,
+  options: {
+    collectionId: string;
+    page?: number;
+    isAuthenticated?: boolean;
+    sortOrder?: SortOrder;
+  },
+): Promise<TimelineResult> {
+  const pageSize = c.var.appConfig.pageSize;
+  const page = Math.max(1, options.page ?? 1);
+  const offset = (page - 1) * pageSize;
+  const excludePrivate = !(options.isAuthenticated ?? false);
+
+  const [totalCount, rootIds] = await Promise.all([
+    c.var.services.posts.countCollectionThreadRoots(options.collectionId, {
+      status: "published",
+      excludePrivate,
+    }),
+    c.var.services.posts.listCollectionThreadRootIds(options.collectionId, {
+      status: "published",
+      excludePrivate,
+      sortOrder: options.sortOrder,
+      limit: pageSize,
+      offset,
+    }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  if (rootIds.length === 0) {
+    return { items: [], currentPage: page, totalPages };
+  }
+
+  const [threadsByRootId, collectedPostIdsByThread] = await Promise.all([
+    c.var.services.posts.getPublishedThreads(rootIds),
+    c.var.services.posts.getCollectionPostIdsByThread(
+      options.collectionId,
+      rootIds,
+    ),
+  ]);
+  const selectedPostIdsByThread: CuratedThreadSelectionMap = new Map(
+    [...collectedPostIdsByThread.entries()].map(([threadId, postIds]) => [
+      threadId,
+      new Set(postIds),
+    ]),
+  );
+  const items = await buildCuratedThreadItems(
+    c,
+    rootIds,
+    threadsByRootId,
+    selectedPostIdsByThread,
+  );
 
   return { items, currentPage: page, totalPages };
 }

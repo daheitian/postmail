@@ -1302,6 +1302,15 @@
     box-shadow: 0 0 0 2px var(--site-thread-dot-ring);
   }
 
+  .thread-group-curated .thread-item-curated::before {
+    left: -22px;
+    width: 14px;
+    height: 14px;
+    border: 3px solid var(--site-page-bg);
+    background-color: var(--site-accent);
+    box-shadow: 0 0 0 2px var(--site-thread-dot-ring);
+  }
+
   /* Compact text for thread replies */
   .feed-compact {
     @apply text-sm;

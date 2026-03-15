@@ -13,6 +13,13 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. @context: Link showing count of hidden thread posts between curated posts
+#. placeholder {0}: segment.hiddenBeforeCount
+#. placeholder {1}: segment.hiddenBeforeCount === 1 ? "post" : "posts"
+#: src/ui/feed/CuratedThreadPreview.tsx
+msgid "{0} hidden {1}"
+msgstr ""
+
 #. @context: Link showing count of hidden thread posts between root and latest
 #. placeholder {0}: hiddenCount === 1 ? "post" : "posts"
 #: src/ui/feed/ThreadPreview.tsx

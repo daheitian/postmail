@@ -92,6 +92,17 @@ export interface SummaryConfig {
   maxChars: number;
 }
 
+interface ThreadRootPageOptions {
+  status?: Status;
+  excludePrivate?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+interface CollectionThreadRootPageOptions extends ThreadRootPageOptions {
+  sortOrder?: SortOrder;
+}
+
 export interface PostService {
   getById(id: string): Promise<Post | null>;
   getBySlug(slug: string): Promise<Post | null>;
@@ -133,6 +144,27 @@ export interface PostService {
   getThreadTimelineContext(
     rootIds: string[],
   ): Promise<Map<string, ThreadTimelineContext>>;
+  /** Count distinct thread roots that contain featured published posts */
+  countFeaturedThreadRoots(options?: ThreadRootPageOptions): Promise<number>;
+  /** List featured thread root IDs ordered by the latest featured post in each thread */
+  listFeaturedThreadRootIds(options?: ThreadRootPageOptions): Promise<string[]>;
+  /** Count distinct thread roots that contain published posts in the given collection */
+  countCollectionThreadRoots(
+    collectionId: string,
+    options?: ThreadRootPageOptions,
+  ): Promise<number>;
+  /** List collection thread root IDs ordered by collected-at or rating semantics */
+  listCollectionThreadRootIds(
+    collectionId: string,
+    options?: CollectionThreadRootPageOptions,
+  ): Promise<string[]>;
+  /** Fetch all published, non-deleted posts for each requested thread root */
+  getPublishedThreads(rootIds: string[]): Promise<Map<string, Post[]>>;
+  /** For each thread, return post IDs that belong to the given collection */
+  getCollectionPostIdsByThread(
+    collectionId: string,
+    threadIds: string[],
+  ): Promise<Map<string, string[]>>;
   /** Get distinct years that have published posts */
   getDistinctYears(filters?: PostFilters): Promise<number[]>;
   /** For each thread ID, return the ID of the last published, non-deleted post */
@@ -429,6 +461,20 @@ export function createPostService(
     }
 
     return result;
+  }
+
+  function buildThreadRootPageConditions(options?: ThreadRootPageOptions) {
+    const conditions = [isNull(posts.deletedAt)];
+    const status = options?.status;
+
+    if (status) {
+      conditions.push(eq(posts.status, status));
+    }
+    if (options?.excludePrivate) {
+      conditions.push(sql`${effectiveVisibilityExpr} != 'private'`);
+    }
+
+    return conditions;
   }
 
   return {
@@ -1136,6 +1182,197 @@ export function createPostService(
         }
 
         result.set(threadId, { latestReply, parentReply, totalReplyCount });
+      }
+
+      return result;
+    },
+
+    async countFeaturedThreadRoots(options = {}) {
+      const conditions = [
+        ...buildThreadRootPageConditions(options),
+        isNotNull(posts.featuredAt),
+      ];
+
+      const rows = await db
+        .select({
+          count: sql<number>`count(distinct ${posts.threadId})`.as("count"),
+        })
+        .from(posts)
+        .where(and(...conditions));
+
+      return rows[0]?.count ?? 0;
+    },
+
+    async listFeaturedThreadRootIds(options = {}) {
+      const conditions = [
+        ...buildThreadRootPageConditions(options),
+        isNotNull(posts.featuredAt),
+      ];
+      const latestFeaturedAt = sql<number>`MAX(${posts.featuredAt})`.as(
+        "latest_featured_at",
+      );
+
+      let query = db
+        .select({
+          threadId: posts.threadId,
+          latestFeaturedAt,
+        })
+        .from(posts)
+        .where(and(...conditions))
+        .groupBy(posts.threadId)
+        .orderBy(desc(latestFeaturedAt), desc(posts.threadId));
+
+      if (options.limit !== undefined) {
+        query = query.limit(options.limit) as typeof query;
+      }
+      if (options.offset !== undefined) {
+        query = query.offset(options.offset) as typeof query;
+      }
+
+      const rows = await query;
+      return rows.map((row) => row.threadId);
+    },
+
+    async countCollectionThreadRoots(collectionId, options = {}) {
+      const conditions = [
+        ...buildThreadRootPageConditions(options),
+        eq(postCollections.collectionId, collectionId),
+      ];
+
+      const rows = await db
+        .select({
+          count: sql<number>`count(distinct ${posts.threadId})`.as("count"),
+        })
+        .from(posts)
+        .innerJoin(postCollections, eq(postCollections.postId, posts.id))
+        .where(and(...conditions));
+
+      return rows[0]?.count ?? 0;
+    },
+
+    async listCollectionThreadRootIds(collectionId, options = {}) {
+      const conditions = [
+        ...buildThreadRootPageConditions(options),
+        eq(postCollections.collectionId, collectionId),
+      ];
+      const sortOrder = options.sortOrder ?? "newest";
+      const collectedAt =
+        sortOrder === "oldest"
+          ? sql<number>`MIN(${postCollections.createdAt})`.as("collected_at")
+          : sql<number>`MAX(${postCollections.createdAt})`.as("collected_at");
+      const ratingPresence = sql<number>`MAX(
+        CASE
+          WHEN ${posts.rating} IS NULL THEN 0
+          ELSE 1
+        END
+      )`.as("rating_presence");
+      const ratingValue =
+        sortOrder === "rating_asc"
+          ? sql<number | null>`MIN(${posts.rating})`.as("rating_value")
+          : sql<number | null>`MAX(${posts.rating})`.as("rating_value");
+
+      const baseQuery = db
+        .select({
+          threadId: posts.threadId,
+          collectedAt,
+          ratingPresence,
+          ratingValue,
+        })
+        .from(posts)
+        .innerJoin(postCollections, eq(postCollections.postId, posts.id))
+        .where(and(...conditions))
+        .groupBy(posts.threadId);
+
+      let query =
+        sortOrder === "oldest"
+          ? baseQuery.orderBy(asc(collectedAt), asc(posts.threadId))
+          : sortOrder === "rating_desc"
+            ? baseQuery.orderBy(
+                desc(ratingPresence),
+                desc(ratingValue),
+                desc(collectedAt),
+                desc(posts.threadId),
+              )
+            : sortOrder === "rating_asc"
+              ? baseQuery.orderBy(
+                  desc(ratingPresence),
+                  asc(ratingValue),
+                  desc(collectedAt),
+                  desc(posts.threadId),
+                )
+              : baseQuery.orderBy(desc(collectedAt), desc(posts.threadId));
+
+      if (options.limit !== undefined) {
+        query = query.limit(options.limit) as typeof query;
+      }
+      if (options.offset !== undefined) {
+        query = query.offset(options.offset) as typeof query;
+      }
+
+      const rows = await query;
+      return rows.map((row) => row.threadId);
+    },
+
+    async getPublishedThreads(rootIds) {
+      const result = new Map<string, Post[]>();
+      if (rootIds.length === 0) return result;
+
+      const unique = [...new Set(rootIds)];
+      const rows = await db
+        .select()
+        .from(posts)
+        .where(
+          and(
+            inArray(posts.threadId, unique),
+            eq(posts.status, "published"),
+            isNull(posts.deletedAt),
+          ),
+        )
+        .orderBy(posts.threadId, posts.createdAt, posts.id);
+
+      for (const post of await hydratePosts(rows)) {
+        const thread = result.get(post.threadId);
+        if (thread) {
+          thread.push(post);
+        } else {
+          result.set(post.threadId, [post]);
+        }
+      }
+
+      return result;
+    },
+
+    async getCollectionPostIdsByThread(collectionId, threadIds) {
+      const result = new Map<string, string[]>();
+      if (threadIds.length === 0) return result;
+
+      const unique = [...new Set(threadIds)];
+      const rows = await batchQueryRows(unique, (chunk) =>
+        db
+          .select({
+            threadId: posts.threadId,
+            postId: posts.id,
+          })
+          .from(posts)
+          .innerJoin(postCollections, eq(postCollections.postId, posts.id))
+          .where(
+            and(
+              eq(postCollections.collectionId, collectionId),
+              inArray(posts.threadId, chunk),
+              eq(posts.status, "published"),
+              isNull(posts.deletedAt),
+            ),
+          )
+          .orderBy(posts.threadId, posts.createdAt, posts.id),
+      );
+
+      for (const row of rows) {
+        const list = result.get(row.threadId);
+        if (list) {
+          list.push(row.postId);
+        } else {
+          result.set(row.threadId, [row.postId]);
+        }
       }
 
       return result;

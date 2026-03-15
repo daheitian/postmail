@@ -84,15 +84,12 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
   const showTimestamp = !display?.hideTimestamp;
+  const showThreadLink = !!post.threadRootPermalink && !display?.hideThreadLink;
   const hideActions = !!display?.hideActions;
   const showThreadSeparator =
-    !!post.threadRootPermalink &&
-    (showTimestamp || !!safeExternalUrl || !!detail);
+    showThreadLink && (showTimestamp || !!safeExternalUrl || !!detail);
   const showCollectionSeparator =
-    showTimestamp ||
-    !!safeExternalUrl ||
-    !!detail ||
-    !!post.threadRootPermalink;
+    showTimestamp || !!safeExternalUrl || !!detail || showThreadLink;
 
   return (
     <footer
@@ -158,7 +155,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             &middot;
           </span>
         )}
-        {post.threadRootPermalink && (
+        {showThreadLink && post.threadRootPermalink && (
           <a
             href={post.threadRootPermalink}
             class="text-xs text-muted-foreground hover:underline"

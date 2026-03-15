@@ -176,6 +176,11 @@ export const posts = sqliteTable(
       .where(
         sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NOT NULL AND ${table.status} = 'published'`,
       ),
+    index("idx_post_featured_live_featured_at")
+      .on(table.featuredAt, table.threadId, table.id)
+      .where(
+        sql`${table.deletedAt} IS NULL AND ${table.status} = 'published' AND ${table.featuredAt} IS NOT NULL`,
+      ),
   ],
 );
 
@@ -390,6 +395,11 @@ export const postCollections = sqliteTable(
   (table) => [
     primaryKey({ columns: [table.postId, table.collectionId] }),
     index("idx_post_collection_collection_id").on(table.collectionId),
+    index("idx_post_collection_collection_created_post").on(
+      table.collectionId,
+      table.createdAt,
+      table.postId,
+    ),
   ],
 );
 

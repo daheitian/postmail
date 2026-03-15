@@ -8,14 +8,20 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
+import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createPostService } from "../../services/post.js";
 import { createMediaService } from "../../services/media.js";
 import { createPathService } from "../../services/path.js";
 import { createCollectionService } from "../../services/collection.js";
+import { postCollections, posts as postTable } from "../../db/schema.js";
 import { buildMediaMap } from "../media-helpers.js";
-import { assembleFeaturedTimeline, assembleTimelineItem } from "../timeline.js";
+import {
+  assembleCollectionTimeline,
+  assembleFeaturedTimeline,
+  assembleTimelineItem,
+} from "../timeline.js";
 import type { Database } from "../../db/index.js";
 import type { AppConfig, Bindings, PostWithMedia } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -320,6 +326,168 @@ describe("Timeline data assembly", () => {
     expect(result.items[0]?.post.threadRootPermalink).toBe(
       result.items[0]?.post.permalink,
     );
+  });
+
+  it("groups featured replies under their thread root with hidden gaps", async () => {
+    const root = await postService.create({
+      format: "note",
+      bodyMarkdown: "Root",
+    });
+    await postService.create({
+      format: "note",
+      bodyMarkdown: "Reply 1",
+      replyToId: root.id,
+    });
+    const featuredReplyA = await postService.create({
+      format: "note",
+      bodyMarkdown: "Featured reply A",
+      replyToId: root.id,
+    });
+    await postService.create({
+      format: "note",
+      bodyMarkdown: "Reply 3",
+      replyToId: root.id,
+    });
+    const featuredReplyB = await postService.create({
+      format: "note",
+      bodyMarkdown: "Featured reply B",
+      replyToId: root.id,
+    });
+
+    await db
+      .update(postTable)
+      .set({ featuredAt: 100 })
+      .where(eq(postTable.id, featuredReplyA.id));
+    await db
+      .update(postTable)
+      .set({ featuredAt: 200 })
+      .where(eq(postTable.id, featuredReplyB.id));
+
+    const result = await assembleFeaturedTimeline(createTimelineContext(), {
+      isAuthenticated: true,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.post.id).toBe(root.id);
+    expect(result.items[0]?.curatedThread?.rootPost.id).toBe(root.id);
+    expect(result.items[0]?.curatedThread?.segments).toEqual([
+      expect.objectContaining({
+        post: expect.objectContaining({ id: featuredReplyA.id }),
+        hiddenBeforeCount: 1,
+      }),
+      expect.objectContaining({
+        post: expect.objectContaining({ id: featuredReplyB.id }),
+        hiddenBeforeCount: 1,
+      }),
+    ]);
+  });
+
+  it("orders featured threads by latest featured time instead of later non-featured activity", async () => {
+    const olderFeaturedRoot = await postService.create({
+      format: "note",
+      bodyMarkdown: "Older featured root",
+    });
+    const olderFeaturedReply = await postService.create({
+      format: "note",
+      bodyMarkdown: "Older featured reply",
+      replyToId: olderFeaturedRoot.id,
+    });
+    const newerFeaturedRoot = await postService.create({
+      format: "note",
+      bodyMarkdown: "Newer featured root",
+      featured: true,
+    });
+
+    await db
+      .update(postTable)
+      .set({ featuredAt: 100 })
+      .where(eq(postTable.id, olderFeaturedReply.id));
+    await db
+      .update(postTable)
+      .set({ featuredAt: 200 })
+      .where(eq(postTable.id, newerFeaturedRoot.id));
+
+    await postService.create({
+      format: "note",
+      bodyMarkdown: "Later non-featured reply",
+      replyToId: olderFeaturedRoot.id,
+    });
+
+    const result = await assembleFeaturedTimeline(createTimelineContext(), {
+      isAuthenticated: true,
+    });
+
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0]?.post.id).toBe(newerFeaturedRoot.id);
+    expect(result.items[1]?.post.id).toBe(olderFeaturedRoot.id);
+  });
+
+  it("groups collection posts by root thread and sorts threads by collected-at", async () => {
+    const collection = await collectionService.create({
+      slug: "reading",
+      title: "Reading",
+    });
+    const firstRoot = await postService.create({
+      format: "note",
+      bodyMarkdown: "Thread root",
+    });
+    const collectedReplyA = await postService.create({
+      format: "note",
+      bodyMarkdown: "Collected reply A",
+      replyToId: firstRoot.id,
+    });
+    await postService.create({
+      format: "note",
+      bodyMarkdown: "Hidden middle reply",
+      replyToId: firstRoot.id,
+    });
+    const collectedReplyB = await postService.create({
+      format: "note",
+      bodyMarkdown: "Collected reply B",
+      replyToId: firstRoot.id,
+    });
+    const secondRoot = await postService.create({
+      format: "note",
+      bodyMarkdown: "Second thread root",
+    });
+
+    await db.insert(postCollections).values([
+      {
+        postId: collectedReplyA.id,
+        collectionId: collection.id,
+        createdAt: 100,
+      },
+      {
+        postId: collectedReplyB.id,
+        collectionId: collection.id,
+        createdAt: 200,
+      },
+      {
+        postId: secondRoot.id,
+        collectionId: collection.id,
+        createdAt: 300,
+      },
+    ]);
+
+    const result = await assembleCollectionTimeline(createTimelineContext(), {
+      collectionId: collection.id,
+      isAuthenticated: true,
+      sortOrder: "newest",
+    });
+
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0]?.post.id).toBe(secondRoot.id);
+    expect(result.items[1]?.post.id).toBe(firstRoot.id);
+    expect(result.items[1]?.curatedThread?.segments).toEqual([
+      expect.objectContaining({
+        post: expect.objectContaining({ id: collectedReplyA.id }),
+        hiddenBeforeCount: 0,
+      }),
+      expect.objectContaining({
+        post: expect.objectContaining({ id: collectedReplyB.id }),
+        hiddenBeforeCount: 1,
+      }),
+    ]);
   });
 
   it("omits private timeline items from unauthenticated partial refreshes", async () => {

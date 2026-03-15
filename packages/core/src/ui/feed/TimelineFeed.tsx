@@ -8,6 +8,7 @@ import type { FC } from "hono/jsx";
 import type { TimelineFeedProps, TimelineItemView } from "../../types.js";
 import { TimelineItem } from "./TimelineItem.js";
 import { ThreadPreview } from "./ThreadPreview.js";
+import { CuratedThreadPreview } from "./CuratedThreadPreview.js";
 import { PagePagination } from "../shared/Pagination.js";
 
 interface TimelineFeedItemContentProps {
@@ -21,7 +22,9 @@ interface TimelineFeedItemProps extends TimelineFeedItemContentProps {
 export const TimelineFeedItemContent: FC<TimelineFeedItemContentProps> = ({
   item,
 }) => {
-  return item.threadPreview ? (
+  return item.curatedThread ? (
+    <CuratedThreadPreview curatedThread={item.curatedThread} />
+  ) : item.threadPreview ? (
     <ThreadPreview
       rootPost={item.post}
       latestReply={item.threadPreview.latestReply}

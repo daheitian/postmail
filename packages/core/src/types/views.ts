@@ -160,6 +160,13 @@ export interface TimelineItemView {
     parentReply?: PostView;
     totalReplyCount: number;
   };
+  curatedThread?: {
+    rootPost: PostView;
+    segments: {
+      post: PostView;
+      hiddenBeforeCount: number;
+    }[];
+  };
 }
 
 /**

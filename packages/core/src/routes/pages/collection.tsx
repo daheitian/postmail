@@ -15,13 +15,10 @@ import {
   resolveCollectionSortOrder,
   supportsCollectionRatingSort,
 } from "../../lib/collection-sort.js";
-import {
-  createMediaContext,
-  toPostViews,
-  loadThreadRootPermalinks,
-} from "../../lib/view.js";
+import { assembleCollectionTimeline } from "../../lib/timeline.js";
 import { defaultRssRenderer } from "../../lib/feed.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
+import { createMediaContext, toPostViews } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -30,8 +27,6 @@ export const collectionRoutes = new Hono<Env>();
 collectionRoutes.get("/:slug", async (c) => {
   const slug = c.req.param("slug");
   const page = parsePageNumber(c.req.query("page"));
-  const pageSize = c.var.appConfig.pageSize;
-  const offset = (page - 1) * pageSize;
   const paginatedPageTitle = formatPageLabel(page);
 
   // Start navData + collection fetch in parallel
@@ -71,43 +66,12 @@ collectionRoutes.get("/:slug", async (c) => {
     showRatingSort,
   );
 
-  const posts = await c.var.services.posts.list({
+  const { items, totalPages } = await assembleCollectionTimeline(c, {
     collectionId: collection.id,
-    status: "published",
-    excludePrivate: !navData.isAuthenticated,
+    page,
+    isAuthenticated: navData.isAuthenticated,
     sortOrder: currentSort,
-    limit: pageSize,
-    offset,
   });
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-
-  // Batch-load media and thread root permalinks in parallel
-  const postIds = posts.map((p) => p.id);
-  const [rawMediaMap, rootPermalinkMap] = await Promise.all([
-    c.var.services.media.getByPostIds(postIds),
-    loadThreadRootPermalinks(
-      posts,
-      c.var.services.posts.getById.bind(c.var.services.posts),
-    ),
-  ]);
-  const mediaCtx = createMediaContext(c.var.appConfig);
-  const mediaMap = buildMediaMap(
-    rawMediaMap,
-    mediaCtx.r2PublicUrl,
-    mediaCtx.imageTransformUrl,
-    mediaCtx.s3PublicUrl,
-  );
-
-  const postViews = toPostViews(
-    posts.map((p) => ({
-      ...p,
-      mediaAttachments: mediaMap.get(p.id) ?? [],
-    })),
-    mediaCtx,
-    rootPermalinkMap,
-  );
-
-  const items = postViews.map((post) => ({ post }));
 
   return renderPublicPage(c, {
     title:
