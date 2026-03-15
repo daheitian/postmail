@@ -1412,7 +1412,7 @@
     padding-left: 0;
     font-family: var(--font-serif);
     color: var(--site-text-primary);
-    font-size: clamp(1.3rem, 1.2rem + 0.42vw, 1.52rem);
+    font-size: clamp(1.34rem, 1.23rem + 0.44vw, 1.58rem);
     line-height: 1.36;
     letter-spacing: -0.02em;
     text-wrap: pretty;
@@ -1567,7 +1567,7 @@
 
   @media (max-width: 640px) {
     .feed-quote-content {
-      font-size: clamp(1.24rem, 1.16rem + 0.7vw, 1.46rem);
+      font-size: clamp(1.28rem, 1.19rem + 0.72vw, 1.5rem);
       line-height: 1.42;
     }
 
