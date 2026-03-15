@@ -38,3 +38,4 @@ import "./client/thread-context.js";
 import "./client/archive-nav.js";
 import "./client/site-header-nav.js";
 import "./client/collection-sort-menu.js";
+import "./client/collection-page-actions.js";

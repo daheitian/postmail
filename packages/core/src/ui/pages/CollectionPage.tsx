@@ -10,6 +10,10 @@ import type { CollectionPageProps } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatPageLabel } from "../../lib/pagination.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
+import { getCollectionMutationLabels } from "../shared/collection-management-labels.js";
+
+const escapeJson = (data: unknown) =>
+  JSON.stringify(data).replace(/</g, "\\u003c");
 
 export const CollectionPage: FC<CollectionPageProps> = ({
   collection,
@@ -21,6 +25,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   currentSort,
   defaultSort,
   showRatingSort,
+  isAuthenticated,
 }) => {
   const { t } = useLingui();
   const iconHtml = renderCollectionIcon(collection.icon, { size: 28 });
@@ -29,6 +34,14 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   const sortPopoverId = `collection-sort-popover-${collection.id}`;
   const pageLabel =
     currentPage > 1 ? formatPageLabel(currentPage, totalPages) : null;
+  const mutationLabels = getCollectionMutationLabels(t);
+  const formInitial = {
+    title: collection.title,
+    slug: collection.slug,
+    description: collection.description ?? "",
+    sortOrder: collection.sortOrder ?? "newest",
+    icon: collection.icon ?? "",
+  };
   const sortOptions = [
     {
       value: "newest",
@@ -138,73 +151,143 @@ export const CollectionPage: FC<CollectionPageProps> = ({
             </p>
           </div>
 
-          <div class="collection-sort-menu">
-            <button
-              type="button"
-              id={sortTriggerId}
-              class="btn-outline collection-sort-trigger"
-              aria-haspopup="menu"
-              aria-controls={sortPopoverId}
-              aria-expanded="false"
-            >
-              <span>
-                {t({
-                  message: "Sort",
-                  comment:
-                    "@context: Sort menu label on collection detail page",
-                })}
-                : {currentSortLabel}
-              </span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+          <div class="collection-page-controls">
+            <div class="collection-sort-menu">
+              <button
+                type="button"
+                id={sortTriggerId}
+                class="btn-outline collection-sort-trigger"
+                aria-haspopup="menu"
+                aria-controls={sortPopoverId}
+                aria-expanded="false"
               >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-            <div
-              id={sortPopoverId}
-              class="collection-sort-popover"
-              data-popover
-              data-align="end"
-              aria-hidden="true"
-            >
+                <span>
+                  {t({
+                    message: "Sort",
+                    comment:
+                      "@context: Sort menu label on collection detail page",
+                  })}
+                  : {currentSortLabel}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
               <div
-                class="collection-sort-options"
-                role="menu"
-                aria-labelledby={sortTriggerId}
-                data-collection-sort-options
+                id={sortPopoverId}
+                class="collection-sort-popover"
+                data-popover
+                data-align="end"
+                aria-hidden="true"
               >
-                {sortOptions.map((option) => (
-                  <a
-                    key={option.value}
-                    href={
-                      option.value === defaultSort
-                        ? collectionUrl
-                        : `${collectionUrl}?sort=${option.value}`
-                    }
-                    role="menuitem"
-                    class={`collection-sort-option ${
-                      option.value === currentSort
-                        ? "collection-sort-option-active"
-                        : ""
-                    }`}
-                    aria-current={
-                      option.value === currentSort ? "true" : undefined
-                    }
-                  >
-                    {option.label}
-                  </a>
-                ))}
+                <div
+                  class="collection-sort-options"
+                  role="menu"
+                  aria-labelledby={sortTriggerId}
+                  data-collection-sort-options
+                >
+                  {sortOptions.map((option) => (
+                    <a
+                      key={option.value}
+                      href={
+                        option.value === defaultSort
+                          ? collectionUrl
+                          : `${collectionUrl}?sort=${option.value}`
+                      }
+                      role="menuitem"
+                      class={`collection-sort-option ${
+                        option.value === currentSort
+                          ? "collection-sort-option-active"
+                          : ""
+                      }`}
+                      aria-current={
+                        option.value === currentSort ? "true" : undefined
+                      }
+                    >
+                      {option.label}
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
+
+            {isAuthenticated ? (
+              <div
+                class="collection-page-manage"
+                data-collection-page-actions
+                data-collection-id={collection.id}
+                data-collection-page-labels={escapeJson(mutationLabels)}
+                data-collection-page-redirect-url="/c"
+              >
+                <button
+                  type="button"
+                  class="btn-outline collection-page-manage-trigger"
+                  aria-label={mutationLabels.moreActions}
+                  aria-expanded="false"
+                  aria-haspopup="menu"
+                  data-collection-page-action="toggle-menu"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <circle cx="5" cy="12" r="2" />
+                    <circle cx="12" cy="12" r="2" />
+                    <circle cx="19" cy="12" r="2" />
+                  </svg>
+                </button>
+
+                <div
+                  class="collections-page-menu"
+                  role="menu"
+                  data-collection-page-menu
+                  hidden
+                >
+                  <button
+                    type="button"
+                    class="collections-page-menu-item"
+                    role="menuitem"
+                    data-collection-page-action="edit"
+                  >
+                    {mutationLabels.edit}
+                  </button>
+                  <button
+                    type="button"
+                    class="collections-page-menu-item collections-page-menu-item-danger"
+                    role="menuitem"
+                    data-collection-page-action="delete"
+                  >
+                    {mutationLabels.deleteCollection}
+                  </button>
+                </div>
+
+                <dialog
+                  class="collection-page-dialog"
+                  data-collection-page-dialog
+                >
+                  <jant-collection-form
+                    labels={escapeJson(mutationLabels.formLabels)}
+                    initial={escapeJson(formInitial)}
+                    action={`/api/collections/${collection.id}`}
+                    cancel-href="javascript:void(0)"
+                    is-edit
+                  ></jant-collection-form>
+                </dialog>
+              </div>
+            ) : null}
           </div>
         </div>
       </header>

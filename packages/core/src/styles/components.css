@@ -315,6 +315,10 @@ svg[stroke-width].icon-fine {
 
   .settings-item {
     @apply flex items-center gap-3 px-4 py-3;
+    --settings-item-icon-accent: var(--site-accent);
+    --settings-item-icon-bg-strength: 13%;
+    --settings-item-icon-border-strength: 22%;
+    --settings-item-icon-fg-strength: 70%;
     transition: background-color 0.15s;
     border-bottom: 1px solid var(--color-border);
 
@@ -327,12 +331,45 @@ svg[stroke-width].icon-fine {
     }
   }
 
+  .settings-item[data-tone="subtle"] {
+    --settings-item-icon-bg-strength: 8%;
+    --settings-item-icon-border-strength: 16%;
+    --settings-item-icon-fg-strength: 56%;
+  }
+
+  .settings-item[data-tone="danger"] {
+    --settings-item-icon-accent: var(--color-destructive);
+    --settings-item-icon-bg-strength: 10%;
+    --settings-item-icon-border-strength: 20%;
+    --settings-item-icon-fg-strength: 76%;
+  }
+
   .settings-item-icon {
     @apply flex items-center justify-center shrink-0;
     width: 28px;
     height: 28px;
-    border-radius: 6px;
-    color: white;
+    border-radius: 8px;
+    border: 1px solid
+      color-mix(
+        in srgb,
+        var(--settings-item-icon-accent)
+          var(--settings-item-icon-border-strength),
+        var(--color-border)
+      );
+    background-color: color-mix(
+      in srgb,
+      var(--settings-item-icon-accent) var(--settings-item-icon-bg-strength),
+      var(--color-card)
+    );
+    color: color-mix(
+      in srgb,
+      var(--settings-item-icon-accent) var(--settings-item-icon-fg-strength),
+      var(--color-foreground)
+    );
+    transition:
+      background-color 0.15s,
+      border-color 0.15s,
+      color 0.15s;
   }
 
   .settings-item-text {

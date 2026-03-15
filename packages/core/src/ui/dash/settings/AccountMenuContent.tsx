@@ -27,19 +27,19 @@ function ChevronRight() {
 function AccountMenuItem({
   href,
   icon,
-  color,
+  tone = "accent",
   name,
   description,
 }: {
   href: string;
   icon: string;
-  color: string;
+  tone?: "accent" | "subtle" | "danger";
   name: string;
   description: string;
 }) {
   return (
-    <a href={href} class="settings-item">
-      <span class="settings-item-icon" style={`background-color:${color}`}>
+    <a href={href} class="settings-item" data-tone={tone}>
+      <span class="settings-item-icon">
         <span dangerouslySetInnerHTML={{ __html: icon }} />
       </span>
       <span class="settings-item-text">
@@ -58,13 +58,6 @@ const ICONS = {
   trash: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
 };
 
-const COLORS = {
-  teal: "oklch(0.55 0.15 185)",
-  gray: "oklch(0.55 0.01 250)",
-  green: "oklch(0.55 0.18 155)",
-  red: "oklch(0.55 0.2 25)",
-};
-
 export function AccountMenuContent() {
   const { t } = useLingui();
 
@@ -75,7 +68,7 @@ export function AccountMenuContent() {
           <AccountMenuItem
             href="/settings/account/sessions"
             icon={ICONS.monitor}
-            color={COLORS.teal}
+            tone="subtle"
             name={t({
               message: "Sessions",
               comment: "@context: Settings item — session management",
@@ -88,7 +81,7 @@ export function AccountMenuContent() {
           <AccountMenuItem
             href="/settings/account/password"
             icon={ICONS.lock}
-            color={COLORS.gray}
+            tone="subtle"
             name={t({
               message: "Password",
               comment: "@context: Settings item — password settings",
@@ -116,11 +109,8 @@ export function AccountMenuContent() {
             action="/api/export/zola"
             class="settings-export-form"
           >
-            <button type="submit" class="settings-item">
-              <span
-                class="settings-item-icon"
-                style={`background-color:${COLORS.green}`}
-              >
+            <button type="submit" class="settings-item" data-tone="subtle">
+              <span class="settings-item-icon">
                 <span dangerouslySetInnerHTML={{ __html: ICONS.download }} />
               </span>
               <span class="settings-item-text">
@@ -161,7 +151,7 @@ export function AccountMenuContent() {
           <AccountMenuItem
             href="/settings/account/delete-account"
             icon={ICONS.trash}
-            color={COLORS.red}
+            tone="danger"
             name={t({
               message: "Delete Account",
               comment: "@context: Settings item — delete account and all data",

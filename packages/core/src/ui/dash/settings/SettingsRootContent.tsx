@@ -27,19 +27,19 @@ function ChevronRight() {
 function SettingsItem({
   href,
   icon,
-  color,
+  tone = "accent",
   name,
   description,
 }: {
   href: string;
   icon: string;
-  color: string;
+  tone?: "accent" | "subtle" | "danger";
   name: string;
   description: string;
 }) {
   return (
-    <a href={href} class="settings-item">
-      <span class="settings-item-icon" style={`background-color:${color}`}>
+    <a href={href} class="settings-item" data-tone={tone}>
+      <span class="settings-item-icon">
         <span dangerouslySetInnerHTML={{ __html: icon }} />
       </span>
       <span class="settings-item-text">
@@ -63,19 +63,6 @@ const ICONS = {
   lock: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
   key: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>`,
   shield: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>`,
-};
-
-// oklch-based colors for icon backgrounds
-const COLORS = {
-  blue: "oklch(0.55 0.2 250)",
-  purple: "oklch(0.55 0.2 300)",
-  green: "oklch(0.55 0.18 155)",
-  orange: "oklch(0.6 0.18 55)",
-  pink: "oklch(0.6 0.2 350)",
-  indigo: "oklch(0.5 0.2 275)",
-  amber: "oklch(0.6 0.16 75)",
-  teal: "oklch(0.55 0.15 185)",
-  gray: "oklch(0.55 0.01 250)",
 };
 
 export function SettingsRootContent() {
@@ -111,7 +98,7 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/general"
             icon={ICONS.settings}
-            color={COLORS.blue}
+            tone="subtle"
             name={t({
               message: "General",
               comment: "@context: Settings item — general settings",
@@ -136,7 +123,6 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/avatar"
             icon={ICONS.image}
-            color={COLORS.purple}
             name={t({
               message: "Avatar",
               comment: "@context: Settings item — avatar settings",
@@ -149,7 +135,6 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/navigation"
             icon={ICONS.menu}
-            color={COLORS.green}
             name={t({
               message: "Navigation",
               comment: "@context: Settings item — navigation settings",
@@ -162,7 +147,6 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/color-theme"
             icon={ICONS.palette}
-            color={COLORS.orange}
             name={t({
               message: "Color Theme",
               comment: "@context: Settings item — color theme settings",
@@ -175,7 +159,7 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/font-theme"
             icon={ICONS.type}
-            color={COLORS.pink}
+            tone="subtle"
             name={t({
               message: "Font Theme",
               comment: "@context: Settings item — font theme settings",
@@ -188,7 +172,7 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/custom-css"
             icon={ICONS.code}
-            color={COLORS.indigo}
+            tone="subtle"
             name={t({
               message: "Custom CSS",
               comment: "@context: Settings item — custom CSS settings",
@@ -213,7 +197,7 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/custom-urls"
             icon={ICONS.arrowRightLeft}
-            color={COLORS.amber}
+            tone="subtle"
             name={t({
               message: "Custom URLs",
               comment: "@context: Settings item — custom URL settings",
@@ -226,7 +210,7 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/api-tokens"
             icon={ICONS.key}
-            color={COLORS.teal}
+            tone="subtle"
             name={t({
               message: "API Tokens",
               comment: "@context: Settings item — API token settings",
@@ -251,7 +235,7 @@ export function SettingsRootContent() {
           <SettingsItem
             href="/settings/account"
             icon={ICONS.shield}
-            color={COLORS.gray}
+            tone="subtle"
             name={t({
               message: "Account",
               comment: "@context: Settings item — account settings",

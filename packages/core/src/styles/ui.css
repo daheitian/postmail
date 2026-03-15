@@ -842,15 +842,55 @@
   }
 
   .collection-page-description {
-    max-width: 42rem;
+    max-width: 38rem;
     color: var(--site-text-secondary);
-    font-size: 1rem;
-    line-height: 1.7;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    line-height: 1.58;
+    letter-spacing: 0.004em;
   }
 
   .collection-page-meta {
     font-size: 0.95rem;
     color: var(--muted-foreground);
+  }
+
+  .collection-page-controls {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .collection-page-manage {
+    position: relative;
+  }
+
+  .collection-page-manage-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    width: 2.5rem;
+    padding-inline: 0;
+    cursor: pointer;
+  }
+
+  .collection-page-dialog {
+    width: min(100%, 32rem);
+    max-width: 32rem;
+    margin: auto;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    background: var(--background);
+    color: var(--foreground);
+    padding: 1.5rem;
+    box-shadow: 0 20px 40px -28px rgba(15, 23, 42, 0.26);
+  }
+
+  .collection-page-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
   }
 
   .collection-sort-menu {
@@ -927,6 +967,10 @@
 
     .collection-page-title-row {
       flex-direction: column;
+    }
+
+    .collection-page-controls {
+      justify-content: flex-start;
     }
   }
 
