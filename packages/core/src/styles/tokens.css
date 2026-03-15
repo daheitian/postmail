@@ -13,13 +13,13 @@
     "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
   --font-heading:
-    "Noto Serif SC", ui-serif, "New York Small", "New York", "Iowan Old Style",
-    Charter, "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text",
-    Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", serif;
+    ui-serif, "New York Small", "New York", "Iowan Old Style", Charter,
+    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+    "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", "Noto Serif SC", serif;
   --font-serif:
-    "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", "Noto Serif SC",
-    ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, Georgia,
-    "Times New Roman", Times, serif;
+    "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", ui-serif,
+    "New York Small", "New York", "Iowan Old Style", Charter, Georgia,
+    "Times New Roman", Times, "Noto Serif SC", serif;
   --font-mono:
     ui-monospace, Menlo, Monaco, Consolas, "Cascadia Code", "Courier New",
     monospace;
