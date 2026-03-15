@@ -5,13 +5,13 @@
  */
 
 declare module "sortablejs" {
-  interface SortableEvent {
+  export interface SortableEvent {
     oldIndex?: number;
     newIndex?: number;
     item: HTMLElement;
   }
 
-  interface SortableOptions {
+  export interface SortableOptions {
     animation?: number;
     bubbleScroll?: boolean;
     chosenClass?: string;
@@ -32,7 +32,7 @@ declare module "sortablejs" {
     scrollSpeed?: number;
   }
 
-  interface SortableInstance {
+  export interface SortableInstance {
     destroy(): void;
   }
 

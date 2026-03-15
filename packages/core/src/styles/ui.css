@@ -515,6 +515,10 @@
     gap: 0.15rem;
   }
 
+  .collection-directory[data-dragging="true"] {
+    cursor: grabbing;
+  }
+
   .collection-directory-item {
     position: relative;
     display: flex;
@@ -550,6 +554,23 @@
 
   .collection-directory-item-reorder:hover {
     color: inherit;
+  }
+
+  .collection-directory-item-reorder {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .collection-directory-reorder-main {
+    min-width: 0;
+    flex: 1;
+    cursor: grab;
+    border-radius: 0.5rem;
+    -webkit-user-drag: none;
+  }
+
+  .collection-directory-reorder-main:active {
+    cursor: grabbing;
   }
 
   .collection-directory-main {
@@ -731,14 +752,43 @@
   }
 
   .collection-directory-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    padding-top: 0.15rem;
+    width: 2rem;
+    height: 2rem;
+    margin-top: -0.25rem;
+    border-radius: 999px;
     color: var(--muted-foreground);
     cursor: grab;
+    touch-action: none;
+    -webkit-user-drag: none;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .collection-directory-handle:hover {
+    color: var(--foreground);
+    background: var(--accent);
   }
 
   .collection-directory-handle:active {
     cursor: grabbing;
+  }
+
+  .collection-directory-chosen {
+    z-index: 2;
+  }
+
+  .collection-directory-ghost {
+    opacity: 0.32;
+  }
+
+  .collection-directory-drag {
+    opacity: 0.98;
+    transform: scale(1.01);
   }
 
   .collection-page-header {

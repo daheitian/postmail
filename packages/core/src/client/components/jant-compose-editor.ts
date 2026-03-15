@@ -13,6 +13,14 @@ import { classMap } from "lit/directives/class-map.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import Sortable from "sortablejs";
+import {
+  captureSortableRevertNextSibling,
+  getSortableMove,
+  readSortableDataIds,
+  responsiveSortableOptions,
+  revertSortableDomMove,
+  setSortableDraggingState,
+} from "../sortable-list.js";
 import type {
   ComposeFormat,
   ComposeLabels,
@@ -627,57 +635,41 @@ export class JantComposeEditor extends LitElement {
     if (!list || this.#sortable || this._attachmentOrder.length <= 1) return;
 
     this.#sortable = Sortable.create(list, {
-      animation: 180,
-      bubbleScroll: false,
+      ...responsiveSortableOptions,
       chosenClass: "compose-attachment-chosen",
       direction: "horizontal",
       dragClass: "compose-attachment-drag",
-      fallbackTolerance: 4,
       filter:
         "button, a, input, textarea, select, option, [contenteditable='true']",
-      forceAutoScrollFallback: true,
       ghostClass: "compose-attachment-ghost",
       handle: "[data-attachment-sortable]",
       preventOnFilter: false,
       scroll: list,
-      scrollSensitivity: 56,
-      scrollSpeed: 18,
       onChoose: () => {
-        list.dataset.dragging = "true";
+        setSortableDraggingState(list, true);
       },
       onStart: (evt) => {
-        this.#revertNextSibling = evt.item.nextSibling;
+        this.#revertNextSibling = captureSortableRevertNextSibling(evt);
       },
       onUnchoose: () => {
-        delete list.dataset.dragging;
+        setSortableDraggingState(list, false);
       },
       onEnd: (evt) => {
-        const els = [
-          ...list.querySelectorAll<HTMLElement>("[data-attachment-id]"),
-        ];
-        const orderedIds = els
-          .map((el) => el.dataset.attachmentId)
-          .filter((id): id is string => id !== undefined);
-
-        const { item, oldIndex, newIndex } = evt;
-        if (oldIndex != null && newIndex != null && oldIndex !== newIndex) {
-          item.parentNode?.removeChild(item);
-          if (this.#revertNextSibling) {
-            list.insertBefore(item, this.#revertNextSibling);
-          } else {
-            list.appendChild(item);
-          }
-        }
+        const orderedIds = readSortableDataIds(
+          list,
+          "[data-attachment-id]",
+          "attachmentId",
+        );
+        revertSortableDomMove(list, evt, this.#revertNextSibling);
         this.#revertNextSibling = null;
-        delete list.dataset.dragging;
+        setSortableDraggingState(list, false);
 
         this.#sortable?.destroy();
         this.#sortable = null;
 
         if (orderedIds.length === this._attachmentOrder.length) {
           this._attachmentOrder = orderedIds;
-          const movedId =
-            evt.newIndex != null ? orderedIds[evt.newIndex] : undefined;
+          const { movedId } = getSortableMove(orderedIds, evt.newIndex);
           if (movedId) {
             this._suppressAttachedTextOpenUntil = Date.now() + 250;
             this.#scrollAttachmentIntoView(movedId);

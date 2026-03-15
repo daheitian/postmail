@@ -15,6 +15,12 @@
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
 import Sortable from "sortablejs";
+import {
+  getSortableMove,
+  readSortableDataIds,
+  responsiveSortableOptions,
+  revertSortableDomMove,
+} from "../sortable-list.js";
 import { showToast } from "../toast.js";
 import type {
   NavManagerItem,
@@ -130,41 +136,23 @@ export class JantNavManager extends LitElement {
     if (!list || this.#sortable) return;
 
     this.#sortable = Sortable.create(list, {
+      ...responsiveSortableOptions,
       animation: 150,
       handle: "[data-drag-handle]",
       onEnd: (evt) => {
-        // Read new order from DOM BEFORE reverting
-        const els = [...list.querySelectorAll<HTMLElement>("[data-nav-id]")];
-        const ids = els
-          .map((el) => el.dataset.navId)
-          .filter((id): id is string => id !== undefined);
-
-        // Revert SortableJS DOM manipulation so Lit can re-render cleanly.
-        // SortableJS physically moved the element — put it back where it was.
-        const { item, oldIndex, newIndex } = evt;
-        if (oldIndex != null && newIndex != null && oldIndex !== newIndex) {
-          // Remove the item from its new position
-          item.parentNode?.removeChild(item);
-          // Re-insert at the original position
-          const children = list.children;
-          if (oldIndex >= children.length) {
-            list.appendChild(item);
-          } else {
-            list.insertBefore(item, children[oldIndex]);
-          }
-        }
+        const ids = readSortableDataIds(list, "[data-nav-id]", "navId");
+        revertSortableDomMove(list, evt);
 
         // Destroy sortable so it doesn't fight Lit's re-render
         this.#sortable?.destroy();
         this.#sortable = null;
 
         // Find the moved item and compute neighbors
-        const movedId = newIndex != null ? ids[newIndex] : undefined;
+        const { movedId, afterId, beforeId } = getSortableMove(
+          ids,
+          evt.newIndex,
+        );
         if (!movedId) return;
-
-        const movedIdx = ids.indexOf(movedId);
-        const afterId = movedIdx > 0 ? ids[movedIdx - 1] : null;
-        const beforeId = movedIdx < ids.length - 1 ? ids[movedIdx + 1] : null;
 
         // Update internal state so Lit re-renders in the new order
         const itemMap = new Map(this._items.map((i) => [i.id, i]));

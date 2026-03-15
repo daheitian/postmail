@@ -16,6 +16,14 @@ import type { PropertyValueMap } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import Sortable from "sortablejs";
+import {
+  captureSortableRevertNextSibling,
+  getSortableMove,
+  readSortableDataIds,
+  responsiveSortableOptions,
+  revertSortableDomMove,
+  setSortableDraggingState,
+} from "../sortable-list.js";
 import { showToast } from "../toast.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
@@ -345,40 +353,39 @@ export class JantCollectionsManager extends LitElement {
     if (!list || this.#sortable) return;
 
     this.#sortable = Sortable.create(list, {
-      animation: 150,
+      ...responsiveSortableOptions,
+      chosenClass: "collection-directory-chosen",
+      dragClass: "collection-directory-drag",
+      ghostClass: "collection-directory-ghost",
       handle: "[data-drag-handle]",
+      scroll: true,
+      onChoose: () => {
+        setSortableDraggingState(list, true);
+      },
       onStart: (evt) => {
-        this.#revertNextSibling = evt.item.nextSibling;
+        this.#revertNextSibling = captureSortableRevertNextSibling(evt);
+      },
+      onUnchoose: () => {
+        setSortableDraggingState(list, false);
       },
       onEnd: (evt) => {
-        const els = [
-          ...list.querySelectorAll<HTMLElement>("[data-sidebar-item]"),
-        ];
-        const orderedIds = els
-          .map((el) => el.dataset.sidebarItem)
-          .filter((id): id is string => id !== undefined);
-
-        const { item, oldIndex, newIndex } = evt;
-        if (oldIndex != null && newIndex != null && oldIndex !== newIndex) {
-          item.parentNode?.removeChild(item);
-          if (this.#revertNextSibling) {
-            list.insertBefore(item, this.#revertNextSibling);
-          } else {
-            list.appendChild(item);
-          }
-        }
+        const orderedIds = readSortableDataIds(
+          list,
+          "[data-sidebar-item]",
+          "sidebarItem",
+        );
+        revertSortableDomMove(list, evt, this.#revertNextSibling);
         this.#revertNextSibling = null;
+        setSortableDraggingState(list, false);
 
         this.#sortable?.destroy();
         this.#sortable = null;
 
-        const movedId = newIndex != null ? orderedIds[newIndex] : undefined;
+        const { movedId, afterId, beforeId } = getSortableMove(
+          orderedIds,
+          evt.newIndex,
+        );
         if (!movedId) return;
-
-        const movedIdx = orderedIds.indexOf(movedId);
-        const afterId = movedIdx > 0 ? orderedIds[movedIdx - 1] : null;
-        const beforeId =
-          movedIdx < orderedIds.length - 1 ? orderedIds[movedIdx + 1] : null;
 
         const itemMap = new Map(this._items.map((entry) => [entry.id, entry]));
         this._items = orderedIds
@@ -649,7 +656,9 @@ export class JantCollectionsManager extends LitElement {
               <circle cx="15" cy="19" r="1" />
             </svg>
           </div>
-          ${body}
+          <div class="collection-directory-reorder-main" data-drag-handle>
+            ${body}
+          </div>
         </div>
       `;
     }
