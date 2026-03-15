@@ -10,7 +10,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { CollectionsPage } from "../../ui/pages/CollectionsPage.js";
-import { CollectionsSidebar } from "../../ui/shared/CollectionsSidebar.js";
+import type { CollectionDirectoryItem } from "../../types.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -30,19 +30,48 @@ collectionsPageRoutes.get("/", async (c) => {
     ...col,
     postCount: postCounts.get(col.id) ?? 0,
   }));
+  const collectionMap = new Map(
+    collections.map((collection) => [collection.id, collection]),
+  );
+  const seenCollections = new Set<string>();
+  const items: CollectionDirectoryItem[] = [];
+
+  for (const item of sidebarItems) {
+    if (item.type === "divider") {
+      items.push({ id: item.id, type: "divider" });
+      continue;
+    }
+
+    const collection = item.collectionId
+      ? collectionMap.get(item.collectionId)
+      : undefined;
+    if (!collection) continue;
+
+    seenCollections.add(collection.id);
+    items.push({
+      id: item.id,
+      type: "collection",
+      collection,
+    });
+  }
+
+  for (const collection of collections) {
+    if (seenCollections.has(collection.id)) continue;
+    items.push({
+      id: collection.id,
+      type: "collection",
+      collection,
+    });
+  }
 
   return renderPublicPage(c, {
     title: `Collections - ${navData.siteName}`,
     navData,
-    sidebar: (
-      <CollectionsSidebar
-        collections={allCollections}
-        sidebarItems={sidebarItems}
-        activeSlug={undefined}
-        isAuthenticated={navData.isAuthenticated}
-        postCounts={postCounts}
+    content: (
+      <CollectionsPage
+        items={items}
+        isAuthenticated={navData.isAuthenticated ?? false}
       />
     ),
-    content: <CollectionsPage collections={collections} />,
   });
 });

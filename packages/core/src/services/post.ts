@@ -6,7 +6,16 @@
  * visibility (public/unlisted/private), featuredAt, and pinnedAt timestamp.
  */
 
-import { eq, and, isNull, desc, inArray, sql, isNotNull } from "drizzle-orm";
+import {
+  eq,
+  and,
+  isNull,
+  desc,
+  inArray,
+  sql,
+  isNotNull,
+  asc,
+} from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { uuidv7 } from "uuidv7";
 import { type Database, batchQueryRows } from "../db/index.js";
@@ -23,6 +32,7 @@ import type {
   Format,
   Status,
   Visibility,
+  SortOrder,
   MediaKind,
   Post,
   CreatePost,
@@ -67,6 +77,10 @@ export interface PostFilters {
   hasMedia?: boolean;
   /** Filter by title presence */
   hasTitle?: boolean;
+  /** Filter by rating presence */
+  hasRating?: boolean;
+  /** Explicit result sort order */
+  sortOrder?: SortOrder;
   limit?: number;
   cursor?: string; // post id for cursor pagination (UUIDv7 sorts chronologically)
   offset?: number; // offset for page-based pagination
@@ -322,6 +336,11 @@ export function createPostService(
         conditions.push(sql`(${posts.title} IS NULL OR ${posts.title} = '')`);
       }
     }
+    if (filters.hasRating !== undefined) {
+      conditions.push(
+        filters.hasRating ? isNotNull(posts.rating) : isNull(posts.rating),
+      );
+    }
 
     return conditions;
   }
@@ -446,16 +465,45 @@ export function createPostService(
         conditions.push(sql`${posts.id} < ${filters.cursor}`);
       }
 
-      let query = db
+      const ratingPresence = sql<number>`CASE
+          WHEN ${posts.rating} IS NULL THEN 0
+          ELSE 1
+        END`;
+
+      const baseQuery = db
         .select()
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(
-          desc(posts.pinnedAt),
-          filters.featured ? desc(posts.featuredAt) : desc(sortTimestamp),
-          desc(posts.id),
-        )
         .limit(filters.limit ?? 100);
+
+      let query =
+        filters.featured || filters.sortOrder === undefined
+          ? baseQuery.orderBy(
+              desc(posts.pinnedAt),
+              filters.featured ? desc(posts.featuredAt) : desc(sortTimestamp),
+              desc(posts.id),
+            )
+          : filters.sortOrder === "oldest"
+            ? baseQuery.orderBy(
+                desc(posts.pinnedAt),
+                asc(sortTimestamp),
+                asc(posts.id),
+              )
+            : filters.sortOrder === "rating_desc"
+              ? baseQuery.orderBy(
+                  desc(posts.pinnedAt),
+                  desc(ratingPresence),
+                  desc(posts.rating),
+                  desc(sortTimestamp),
+                  desc(posts.id),
+                )
+              : baseQuery.orderBy(
+                  desc(posts.pinnedAt),
+                  desc(ratingPresence),
+                  asc(posts.rating),
+                  desc(sortTimestamp),
+                  desc(posts.id),
+                );
 
       if (filters.offset !== undefined) {
         query = query.offset(filters.offset) as typeof query;

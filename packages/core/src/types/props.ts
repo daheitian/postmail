@@ -2,7 +2,7 @@
  * Page-Level Props & Feed Data Types
  */
 
-import type { Format, MediaKind } from "./constants.js";
+import type { Format, MediaKind, SortOrder } from "./constants.js";
 import type { Collection } from "./entities.js";
 import type {
   PostView,
@@ -78,18 +78,29 @@ export interface SearchPageProps {
   page: number;
 }
 
+export interface CollectionDirectoryItem {
+  id: string;
+  type: "collection" | "divider";
+  collection?: Collection & { postCount: number };
+}
+
 /** Props for the single collection page component */
 export interface CollectionPageProps {
   collection: Collection;
   items: TimelineItemView[];
+  totalCount: number;
   currentPage: number;
   totalPages: number;
   baseUrl: string;
+  currentSort: SortOrder;
+  defaultSort: SortOrder;
+  showRatingSort: boolean;
 }
 
 /** Props for the collections list page component */
 export interface CollectionsPageProps {
-  collections: (Collection & { postCount: number })[];
+  items: CollectionDirectoryItem[];
+  isAuthenticated: boolean;
 }
 
 // =============================================================================

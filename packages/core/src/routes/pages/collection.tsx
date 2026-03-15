@@ -9,6 +9,11 @@ import { CollectionPage } from "../../ui/pages/CollectionPage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
 import { renderPublicPage } from "../../lib/render.js";
+import { SortOrderSchema } from "../../lib/schemas.js";
+import {
+  resolveCollectionSortOrder,
+  supportsCollectionRatingSort,
+} from "../../lib/collection-sort.js";
 import {
   createMediaContext,
   toPostViews,
@@ -16,7 +21,6 @@ import {
 } from "../../lib/view.js";
 import { defaultRssRenderer } from "../../lib/feed.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
-import { CollectionsSidebar } from "../../ui/shared/CollectionsSidebar.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -35,26 +39,45 @@ collectionRoutes.get("/:slug", async (c) => {
     getNavigationData(c),
   ]);
   if (!collection) return c.notFound();
+  const sortQuery = c.req.query("sort");
+  const requestedSort =
+    sortQuery && SortOrderSchema.safeParse(sortQuery).success
+      ? SortOrderSchema.parse(sortQuery)
+      : undefined;
 
-  // Fetch posts, all collections, sidebar items, and post counts in parallel
-  const [totalCount, posts, allCollections, sidebarItems, postCounts] =
-    await Promise.all([
-      c.var.services.posts.count({
-        collectionId: collection.id,
-        status: "published",
-        excludePrivate: !navData.isAuthenticated,
-      }),
-      c.var.services.posts.list({
-        collectionId: collection.id,
-        status: "published",
-        excludePrivate: !navData.isAuthenticated,
-        limit: pageSize,
-        offset,
-      }),
-      c.var.services.collections.list(),
-      c.var.services.collections.listSidebarItems(),
-      c.var.services.collections.getPostCounts(),
-    ]);
+  const [totalCount, ratedPostCount] = await Promise.all([
+    c.var.services.posts.count({
+      collectionId: collection.id,
+      status: "published",
+      excludePrivate: !navData.isAuthenticated,
+    }),
+    c.var.services.posts.count({
+      collectionId: collection.id,
+      status: "published",
+      excludePrivate: !navData.isAuthenticated,
+      hasRating: true,
+    }),
+  ]);
+  const showRatingSort = supportsCollectionRatingSort(ratedPostCount);
+  const defaultSort = resolveCollectionSortOrder(
+    undefined,
+    collection.sortOrder,
+    showRatingSort,
+  );
+  const currentSort = resolveCollectionSortOrder(
+    requestedSort,
+    defaultSort,
+    showRatingSort,
+  );
+
+  const posts = await c.var.services.posts.list({
+    collectionId: collection.id,
+    status: "published",
+    excludePrivate: !navData.isAuthenticated,
+    sortOrder: currentSort,
+    limit: pageSize,
+    offset,
+  });
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   // Batch-load media and thread root permalinks in parallel
@@ -92,22 +115,21 @@ collectionRoutes.get("/:slug", async (c) => {
         : `${collection.title} - ${navData.siteName}`,
     description: collection.description ?? undefined,
     navData,
-    sidebar: (
-      <CollectionsSidebar
-        collections={allCollections}
-        sidebarItems={sidebarItems}
-        activeSlug={slug}
-        isAuthenticated={navData.isAuthenticated}
-        postCounts={postCounts}
-      />
-    ),
     content: (
       <CollectionPage
         collection={collection}
         items={items}
+        totalCount={totalCount}
         currentPage={page}
         totalPages={totalPages}
-        baseUrl={`/c/${collection.slug}`}
+        baseUrl={
+          currentSort === defaultSort
+            ? `/c/${collection.slug}`
+            : `/c/${collection.slug}?sort=${currentSort}`
+        }
+        currentSort={currentSort}
+        defaultSort={defaultSort}
+        showRatingSort={showRatingSort}
       />
     ),
   });

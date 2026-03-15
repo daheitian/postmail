@@ -366,6 +366,64 @@ describe("PostService", () => {
       expect(posts[1]?.bodyText).toBe("old");
     });
 
+    it("supports oldest-first sorting", async () => {
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "oldest",
+        publishedAt: 1000,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "newest",
+        publishedAt: 2000,
+      });
+
+      const posts = await postService.list({
+        sortOrder: "oldest",
+      });
+
+      expect(posts[0]?.bodyText).toBe("oldest");
+      expect(posts[1]?.bodyText).toBe("newest");
+    });
+
+    it("supports rating-based sorting with unrated posts last", async () => {
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "five stars",
+        publishedAt: 1000,
+        rating: 5,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "three stars",
+        publishedAt: 3000,
+        rating: 3,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "unrated newest",
+        publishedAt: 4000,
+      });
+
+      const descending = await postService.list({
+        sortOrder: "rating_desc",
+      });
+      const ascending = await postService.list({
+        sortOrder: "rating_asc",
+      });
+
+      expect(descending.map((post) => post.bodyText)).toEqual([
+        "five stars",
+        "three stars",
+        "unrated newest",
+      ]);
+      expect(ascending.map((post) => post.bodyText)).toEqual([
+        "three stars",
+        "five stars",
+        "unrated newest",
+      ]);
+    });
+
     it("orders drafts by updatedAt descending", async () => {
       const older = await postService.create({
         format: "note",
@@ -403,6 +461,26 @@ describe("PostService", () => {
       const notes = await postService.list({ format: "note" });
       expect(notes).toHaveLength(1);
       expect(notes[0]?.format).toBe("note");
+    });
+
+    it("filters by rating presence", async () => {
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "rated post",
+        rating: 4,
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "unrated post",
+      });
+
+      const rated = await postService.list({ hasRating: true });
+      const unrated = await postService.list({ hasRating: false });
+
+      expect(rated).toHaveLength(1);
+      expect(rated[0]?.bodyText).toBe("rated post");
+      expect(unrated).toHaveLength(1);
+      expect(unrated[0]?.bodyText).toBe("unrated post");
     });
 
     it("filters by status", async () => {

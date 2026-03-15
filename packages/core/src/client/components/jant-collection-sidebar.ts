@@ -1,17 +1,14 @@
 /**
- * Collection Sidebar Component
+ * Collections Page Manager
  *
- * Manages collections in the public /c page sidebar for authenticated users:
- * - Renders sidebar items (collections + dividers) from a single pre-ordered list
- * - Dropdown menus for "More" (reorder, add divider) and per-collection edit
- * - SortableJS drag-and-drop reorder mode
+ * Manages collections on the public /c page for authenticated users:
+ * - Renders collection rows and dividers in a single-column layout
+ * - Dropdown menu for page actions (organize, new divider)
+ * - SortableJS drag-and-drop organize mode
  * - Create/edit collection dialogs embedding <jant-collection-form>
  * - Divider CRUD
  *
- * Anonymous users see a static list rendered server-side; this component
- * is only instantiated for authenticated users.
- *
- * Light DOM only — BaseCoat and Tailwind classes apply directly.
+ * Light DOM only so site styles apply directly.
  */
 
 import { LitElement, html, nothing } from "lit";
@@ -23,16 +20,15 @@ import { showToast } from "../toast.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import type {
-  CollectionSidebarLabels,
-  SidebarCollection,
-  ClientSidebarItem,
-} from "./collection-sidebar-types.js";
+  CollectionManagerItem,
+  CollectionManagerLabels,
+  ManagedCollection,
+} from "./collection-manager-types.js";
 
-export class JantCollectionSidebar extends LitElement {
+export class JantCollectionsManager extends LitElement {
   static properties = {
-    "sidebar-items": { type: Array },
+    items: { type: Array },
     labels: { type: Object },
-    activeSlug: { type: String, attribute: "active-slug" },
 
     _items: { state: true },
     _reorderMode: { state: true },
@@ -43,14 +39,13 @@ export class JantCollectionSidebar extends LitElement {
     _showItemMenuId: { state: true },
   };
 
-  declare "sidebar-items": ClientSidebarItem[];
-  declare labels: CollectionSidebarLabels;
-  declare activeSlug: string;
+  declare items: CollectionManagerItem[];
+  declare labels: CollectionManagerLabels;
 
-  declare _items: ClientSidebarItem[];
+  declare _items: CollectionManagerItem[];
   declare _reorderMode: boolean;
   declare _dialogMode: "create" | "edit" | null;
-  declare _editingCollection: SidebarCollection | null;
+  declare _editingCollection: ManagedCollection | null;
   declare _showMoreMenu: boolean;
   declare _hoveringId: string | null;
   declare _showItemMenuId: string | null;
@@ -76,9 +71,8 @@ export class JantCollectionSidebar extends LitElement {
 
   constructor() {
     super();
-    this["sidebar-items"] = [];
-    this.labels = {} as CollectionSidebarLabels;
-    this.activeSlug = "";
+    this.items = [];
+    this.labels = {} as CollectionManagerLabels;
 
     this._items = [];
     this._reorderMode = false;
@@ -90,13 +84,10 @@ export class JantCollectionSidebar extends LitElement {
   }
 
   protected update(
-    changedProperties: PropertyValueMap<JantCollectionSidebar>,
+    changedProperties: PropertyValueMap<JantCollectionsManager>,
   ): void {
-    if (
-      !this.#initialized ||
-      changedProperties.has("sidebar-items" as keyof JantCollectionSidebar)
-    ) {
-      this._items = [...(this["sidebar-items"] ?? [])];
+    if (!this.#initialized || changedProperties.has("items")) {
+      this._items = [...(this.items ?? [])];
       this.#initialized = true;
     }
     super.update(changedProperties);
@@ -110,52 +101,113 @@ export class JantCollectionSidebar extends LitElement {
     document.removeEventListener("click", this.#closeItemMenu);
   }
 
-  // ===========================================================================
-  // Data fetching
-  // ===========================================================================
+  #hasCollections() {
+    return this._items.some(
+      (item) => item.type === "collection" && item.collection,
+    );
+  }
+
+  #countLabel(count: number) {
+    return `${count} ${
+      count === 1 ? this.labels.entrySingular : this.labels.entryPlural
+    }`;
+  }
+
+  #toItems(json: {
+    collections?: Array<{
+      id: string;
+      slug: string;
+      title: string;
+      description: string | null;
+      icon: string | null;
+      sortOrder: string;
+      postCount: number;
+    }>;
+    sidebarItems?: Array<{
+      id: string;
+      type: "collection" | "divider";
+      collectionId: string | null;
+      position: string;
+    }>;
+  }): CollectionManagerItem[] {
+    const collections = json.collections ?? [];
+    const sidebarItems = json.sidebarItems ?? [];
+    const collectionMap = new Map<string, ManagedCollection>();
+
+    for (const collection of collections) {
+      collectionMap.set(collection.id, {
+        id: collection.id,
+        slug: collection.slug,
+        title: collection.title,
+        description: collection.description,
+        icon: collection.icon,
+        sortOrder: collection.sortOrder,
+        postCount: collection.postCount ?? 0,
+      });
+    }
+
+    const seenCollections = new Set<string>();
+    const orderedItems: CollectionManagerItem[] = [];
+
+    for (const item of sidebarItems) {
+      const collection =
+        item.collectionId != null
+          ? collectionMap.get(item.collectionId)
+          : undefined;
+
+      if (item.type === "collection" && !collection) {
+        continue;
+      }
+
+      if (collection) {
+        seenCollections.add(collection.id);
+      }
+
+      orderedItems.push({
+        id: item.id,
+        type: item.type,
+        collectionId: item.collectionId,
+        position: item.position,
+        collection,
+      });
+    }
+
+    for (const collection of collections) {
+      if (seenCollections.has(collection.id)) continue;
+      orderedItems.push({
+        id: `collection-${collection.id}`,
+        type: "collection",
+        collectionId: collection.id,
+        position: "",
+        collection: collectionMap.get(collection.id),
+      });
+    }
+
+    return orderedItems;
+  }
 
   async #refreshList() {
     try {
       const res = await fetch("/api/collections");
       if (!res.ok) return;
       const json = await res.json();
-
-      // Build collection lookup from response
-      const collectionMap = new Map<string, SidebarCollection>();
-      for (const col of json.collections) {
-        collectionMap.set(col.id, col);
-      }
-
-      // Map sidebar items, enriching with collection data
-      this._items = (json.sidebarItems as ClientSidebarItem[]).map((item) => ({
-        ...item,
-        collection: item.collectionId
-          ? collectionMap.get(item.collectionId)
-          : undefined,
-      }));
+      this._items = this.#toItems(json);
     } catch {
-      // silent — stale list is acceptable
+      // stale UI is acceptable
     }
   }
 
-  // ===========================================================================
-  // SortableJS
-  // ===========================================================================
-
   #initSortable() {
-    const list = this.querySelector<HTMLElement>("#sidebar-collections-list");
+    const list = this.querySelector<HTMLElement>("#collections-manager-list");
     if (!list || this.#sortable) return;
 
     this.#sortable = Sortable.create(list, {
       animation: 150,
       handle: "[data-drag-handle]",
       onStart: (evt) => {
-        // Capture the exact next sibling (including comment/marker nodes)
-        // so the DOM revert restores the element between the correct Lit markers.
         this.#revertNextSibling = evt.item.nextSibling;
       },
       onEnd: (evt) => {
-        // Read new order from DOM BEFORE reverting
         const els = [
           ...list.querySelectorAll<HTMLElement>("[data-sidebar-item]"),
         ];
@@ -163,11 +215,6 @@ export class JantCollectionSidebar extends LitElement {
           .map((el) => el.dataset.sidebarItem)
           .filter((id): id is string => id !== undefined);
 
-        // Revert SortableJS DOM manipulation so Lit can re-render cleanly.
-        // Use the captured nextSibling (which includes Lit's comment markers)
-        // to restore the element to its exact original position. Using
-        // list.children (element-only) would skip comment nodes and misalign
-        // Lit's internal template markers, leaving orphaned DOM nodes.
         const { item, oldIndex, newIndex } = evt;
         if (oldIndex != null && newIndex != null && oldIndex !== newIndex) {
           item.parentNode?.removeChild(item);
@@ -179,27 +226,24 @@ export class JantCollectionSidebar extends LitElement {
         }
         this.#revertNextSibling = null;
 
-        // Destroy sortable so it doesn't fight Lit's re-render
         this.#sortable?.destroy();
         this.#sortable = null;
 
-        // Find the moved item
         const movedId = newIndex != null ? orderedIds[newIndex] : undefined;
         if (!movedId) return;
 
-        // Compute after/before neighbors
         const movedIdx = orderedIds.indexOf(movedId);
         const afterId = movedIdx > 0 ? orderedIds[movedIdx - 1] : null;
         const beforeId =
           movedIdx < orderedIds.length - 1 ? orderedIds[movedIdx + 1] : null;
 
-        // Update internal state — rebuild items in new order
-        const itemMap = new Map(this._items.map((i) => [i.id, i]));
+        const itemMap = new Map(this._items.map((entry) => [entry.id, entry]));
         this._items = orderedIds
           .map((id) => itemMap.get(id))
-          .filter((i): i is ClientSidebarItem => i !== undefined);
+          .filter(
+            (entry): entry is CollectionManagerItem => entry !== undefined,
+          );
 
-        // Persist to server — single item move
         fetch(`/api/collections/sidebar-items/${movedId}/move`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -219,7 +263,6 @@ export class JantCollectionSidebar extends LitElement {
     this._reorderMode = true;
     this._showMoreMenu = false;
     document.removeEventListener("click", this.#closeMoreMenu);
-    // SortableJS will be initialized after Lit re-renders (in updated())
   }
 
   #exitReorderMode() {
@@ -233,10 +276,6 @@ export class JantCollectionSidebar extends LitElement {
       this.#initSortable();
     }
   }
-
-  // ===========================================================================
-  // Divider handlers
-  // ===========================================================================
 
   async #addDivider() {
     this._showMoreMenu = false;
@@ -259,45 +298,39 @@ export class JantCollectionSidebar extends LitElement {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      // Remove locally for instant feedback
       this._items = this._items.filter((item) => item.id !== id);
     } catch {
       showToast(this.labels.saveFailed, "error");
     }
   }
 
-  // ===========================================================================
-  // Collection CRUD handlers
-  // ===========================================================================
-
   #openCreateDialog() {
     this._dialogMode = "create";
     this._editingCollection = null;
     this._showMoreMenu = false;
     document.removeEventListener("click", this.#closeMoreMenu);
-    // Wait for render, then show the dialog
     this.updateComplete.then(() => {
       this.querySelector<HTMLDialogElement>(
-        "#sidebar-collection-dialog",
+        "#collections-manager-dialog",
       )?.showModal();
     });
   }
 
-  #openEditDialog(col: SidebarCollection) {
+  #openEditDialog(collection: ManagedCollection) {
     this._dialogMode = "edit";
-    this._editingCollection = col;
+    this._editingCollection = collection;
     this._showItemMenuId = null;
     document.removeEventListener("click", this.#closeItemMenu);
     this.updateComplete.then(() => {
       this.querySelector<HTMLDialogElement>(
-        "#sidebar-collection-dialog",
+        "#collections-manager-dialog",
       )?.showModal();
     });
   }
 
   #closeDialog() {
     this.querySelector<HTMLDialogElement>(
-      "#sidebar-collection-dialog",
+      "#collections-manager-dialog",
     )?.close();
     this._dialogMode = null;
     this._editingCollection = null;
@@ -305,15 +338,13 @@ export class JantCollectionSidebar extends LitElement {
 
   async #handleCollectionSubmit(e: Event) {
     const event = e as CustomEvent<CollectionSubmitDetail>;
-    event.stopPropagation(); // prevent global bridge from handling
+    event.stopPropagation();
 
     const detail = event.detail;
     if (!detail) return;
 
     const formEl = this.querySelector("jant-collection-form") as
-      | (HTMLElement & {
-          loading: boolean;
-        })
+      | (HTMLElement & { loading: boolean })
       | null;
     if (formEl) formEl.loading = true;
 
@@ -342,14 +373,14 @@ export class JantCollectionSidebar extends LitElement {
     }
   }
 
-  async #deleteCollection(col: SidebarCollection) {
+  async #deleteCollection(collection: ManagedCollection) {
     if (!window.confirm(this.labels.confirmDelete)) return;
 
     this._showItemMenuId = null;
     document.removeEventListener("click", this.#closeItemMenu);
 
     try {
-      const res = await fetch(`/api/collections/${col.id}`, {
+      const res = await fetch(`/api/collections/${collection.id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -361,41 +392,53 @@ export class JantCollectionSidebar extends LitElement {
     }
   }
 
-  // ===========================================================================
-  // Render
-  // ===========================================================================
-
-  #renderHeading() {
+  #renderPageHeader() {
     return html`
-      <div class="flex items-center justify-between px-3 pb-2">
-        <h2
-          class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-        >
-          ${this.labels.collections}
-        </h2>
-        <div class="flex items-center gap-1">
+      <header class="collections-page-header">
+        <div class="collections-page-heading">
+          <h1 class="text-2xl font-semibold">
+            ${this.labels.collectionsTitle}
+          </h1>
+          ${this._reorderMode
+            ? html`
+                <p class="collections-page-hint text-sm text-muted-foreground">
+                  ${this.labels.organizeHint}
+                </p>
+              `
+            : nothing}
+        </div>
+        <div class="collections-page-actions">
           ${this._reorderMode
             ? html`
                 <button
                   type="button"
-                  class="text-xs font-medium text-primary hover:underline"
+                  class="btn-outline"
                   @click=${() => this.#exitReorderMode()}
                 >
                   ${this.labels.done}
                 </button>
               `
-            : html` ${this.#renderMoreButton()} ${this.#renderAddButton()} `}
+            : html`
+                <button
+                  type="button"
+                  class="btn"
+                  @click=${() => this.#openCreateDialog()}
+                >
+                  ${this.labels.newCollection}
+                </button>
+                ${this.#renderPageMoreMenu()}
+              `}
         </div>
-      </div>
+      </header>
     `;
   }
 
-  #renderMoreButton() {
+  #renderPageMoreMenu() {
     return html`
       <div class="relative">
         <button
           type="button"
-          class="flex items-center justify-center w-6 h-6 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          class="btn-outline collections-page-more-btn"
           aria-label=${this.labels.moreActions}
           @click=${(e: Event) => {
             e.stopPropagation();
@@ -411,68 +454,35 @@ export class JantCollectionSidebar extends LitElement {
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            fill="currentColor"
           >
-            <circle cx="12" cy="5" r="1" />
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="12" cy="19" r="1" />
+            <circle cx="5" cy="12" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="19" cy="12" r="2" />
           </svg>
         </button>
         ${this._showMoreMenu
           ? html`
               <div
-                class="absolute right-0 top-full mt-1 z-50 min-w-[160px] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
+                class="collections-page-menu"
                 @click=${(e: Event) => e.stopPropagation()}
               >
                 <button
                   type="button"
-                  class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                  class="collections-page-menu-item"
                   @click=${() => this.#enterReorderMode()}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="m3 16 4 4 4-4" />
-                    <path d="M7 20V4" />
-                    <path d="m21 8-4-4-4 4" />
-                    <path d="M17 4v16" />
-                  </svg>
-                  ${this.labels.reorder}
+                  ${this.labels.organize}
                 </button>
                 <button
                   type="button"
-                  class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                  class="collections-page-menu-item"
                   @click=${() => this.#addDivider()}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M3 12h18" />
-                  </svg>
-                  ${this.labels.addDivider}
+                  ${this.labels.newDivider}
                 </button>
               </div>
             `
@@ -481,50 +491,21 @@ export class JantCollectionSidebar extends LitElement {
     `;
   }
 
-  #renderAddButton() {
-    return html`
-      <button
-        type="button"
-        class="flex items-center justify-center w-6 h-6 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-        title=${this.labels.newCollection}
-        aria-label=${this.labels.newCollection}
-        @click=${() => this.#openCreateDialog()}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
-      </button>
-    `;
-  }
-
-  #renderCollectionItem(item: ClientSidebarItem) {
-    const col = item.collection;
-    if (!col) return nothing;
-
-    const isActive = col.slug === this.activeSlug;
+  #renderCollectionItem(item: CollectionManagerItem) {
+    const collection = item.collection;
+    if (!collection) return nothing;
 
     if (this._reorderMode) {
       return html`
         <div
-          data-sidebar-item="${item.id}"
-          class="flex items-center gap-2 px-3 py-2 text-sm rounded-md"
+          data-sidebar-item=${item.id}
+          class="collection-directory-item collection-directory-item-reorder"
         >
-          <div class="cursor-grab text-muted-foreground" data-drag-handle>
+          <div class="collection-directory-handle" data-drag-handle>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -540,19 +521,37 @@ export class JantCollectionSidebar extends LitElement {
               <circle cx="15" cy="19" r="1" />
             </svg>
           </div>
-          <span class="flex items-center justify-center w-4 h-4 shrink-0">
+          <span class="collection-directory-icon">
             ${unsafeHTML(
-              renderCollectionIcon(col.icon, { size: 16, fallback: true }),
+              renderCollectionIcon(collection.icon, {
+                size: 20,
+                fallback: true,
+              }),
             )}
           </span>
-          <span class="truncate">${col.title}</span>
+          <div class="collection-directory-copy">
+            <div class="collection-directory-title-row">
+              <span class="collection-directory-title"
+                >${collection.title}</span
+              >
+            </div>
+            ${collection.description
+              ? html`
+                  <p class="collection-directory-description">
+                    ${collection.description}
+                  </p>
+                `
+              : nothing}
+            <p class="collection-directory-meta">
+              ${this.#countLabel(collection.postCount)}
+            </p>
+          </div>
         </div>
       `;
     }
 
     return html`
       <div
-        data-sidebar-item="${item.id}"
         class=${classMap({
           "group relative": true,
           "z-50": this._showItemMenuId === item.id,
@@ -565,20 +564,34 @@ export class JantCollectionSidebar extends LitElement {
         }}
       >
         <a
-          href=${`/c/${col.slug}`}
-          class=${classMap({
-            "flex items-center gap-2.5 px-3 py-2 text-sm rounded-md truncate": true,
-            "bg-accent text-accent-foreground font-medium": isActive,
-            "text-muted-foreground hover:bg-accent hover:text-accent-foreground":
-              !isActive,
-          })}
+          href=${`/c/${collection.slug}`}
+          class="collection-directory-item collection-directory-item-manageable"
         >
-          <span class="flex items-center justify-center w-4 h-4 shrink-0">
+          <span class="collection-directory-icon">
             ${unsafeHTML(
-              renderCollectionIcon(col.icon, { size: 16, fallback: true }),
+              renderCollectionIcon(collection.icon, {
+                size: 20,
+                fallback: true,
+              }),
             )}
           </span>
-          <span class="truncate">${col.title}</span>
+          <div class="collection-directory-copy">
+            <div class="collection-directory-title-row">
+              <span class="collection-directory-title"
+                >${collection.title}</span
+              >
+            </div>
+            ${collection.description
+              ? html`
+                  <p class="collection-directory-description">
+                    ${collection.description}
+                  </p>
+                `
+              : nothing}
+            <p class="collection-directory-meta">
+              ${this.#countLabel(collection.postCount)}
+            </p>
+          </div>
         </a>
         ${this._hoveringId === item.id || this._showItemMenuId === item.id
           ? this.#renderItemMenu(item)
@@ -587,17 +600,18 @@ export class JantCollectionSidebar extends LitElement {
     `;
   }
 
-  #renderItemMenu(item: ClientSidebarItem) {
-    const col = item.collection;
-    if (!col) return nothing;
+  #renderItemMenu(item: CollectionManagerItem) {
+    const collection = item.collection;
+    if (!collection) return nothing;
 
     const isOpen = this._showItemMenuId === item.id;
 
     return html`
-      <div class="absolute right-1 top-1/2 -translate-y-1/2">
+      <div class="collection-directory-item-menu">
         <button
           type="button"
-          class="flex items-center justify-center w-6 h-6 rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          class="collections-page-icon-button"
+          aria-label=${this.labels.moreActions}
           @click=${(e: Event) => {
             e.preventDefault();
             e.stopPropagation();
@@ -617,34 +631,30 @@ export class JantCollectionSidebar extends LitElement {
             width="14"
             height="14"
             viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            fill="currentColor"
           >
-            <circle cx="12" cy="5" r="1" />
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="12" cy="19" r="1" />
+            <circle cx="5" cy="12" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="19" cy="12" r="2" />
           </svg>
         </button>
         ${isOpen
           ? html`
               <div
-                class="absolute right-0 top-full mt-1 z-50 min-w-[120px] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
+                class="collections-page-menu"
                 @click=${(e: Event) => e.stopPropagation()}
               >
                 <button
                   type="button"
-                  class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
-                  @click=${() => this.#openEditDialog(col)}
+                  class="collections-page-menu-item"
+                  @click=${() => this.#openEditDialog(collection)}
                 >
                   ${this.labels.edit}
                 </button>
                 <button
                   type="button"
-                  class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-destructive hover:bg-accent"
-                  @click=${() => this.#deleteCollection(col)}
+                  class="collections-page-menu-item collections-page-menu-item-danger"
+                  @click=${() => this.#deleteCollection(collection)}
                 >
                   ${this.labels.deleteCollection}
                 </button>
@@ -655,18 +665,18 @@ export class JantCollectionSidebar extends LitElement {
     `;
   }
 
-  #renderDividerItem(item: ClientSidebarItem) {
+  #renderDividerItem(item: CollectionManagerItem) {
     if (this._reorderMode) {
       return html`
         <div
-          data-sidebar-item="${item.id}"
-          class="flex items-center gap-2 px-3 py-1"
+          data-sidebar-item=${item.id}
+          class="collection-directory-divider-row"
         >
-          <div class="cursor-grab text-muted-foreground" data-drag-handle>
+          <div class="collection-directory-handle" data-drag-handle>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -682,11 +692,17 @@ export class JantCollectionSidebar extends LitElement {
               <circle cx="15" cy="19" r="1" />
             </svg>
           </div>
-          <hr class="flex-1 border-border" />
+          <div class="collection-directory-divider-body">
+            <span class="collection-directory-divider-text">
+              ${this.labels.dividerLabel}
+            </span>
+            <hr class="border-border" />
+          </div>
           <button
             type="button"
-            class="flex items-center justify-center w-5 h-5 rounded-md text-muted-foreground hover:text-destructive"
+            class="collections-page-icon-button"
             title=${this.labels.deleteDivider}
+            aria-label=${this.labels.deleteDivider}
             @click=${() => this.#deleteDivider(item.id)}
           >
             <svg
@@ -709,7 +725,7 @@ export class JantCollectionSidebar extends LitElement {
     }
 
     return html`
-      <div data-sidebar-item="${item.id}" class="px-3 py-1">
+      <div class="collection-directory-divider" aria-hidden="true">
         <hr class="border-border" />
       </div>
     `;
@@ -719,17 +735,16 @@ export class JantCollectionSidebar extends LitElement {
     if (!this._dialogMode) return nothing;
 
     const isEdit = this._dialogMode === "edit";
-    const col = this._editingCollection;
-
+    const collection = this._editingCollection;
     const formLabels = this.labels.formLabels;
     const initial =
-      isEdit && col
+      isEdit && collection
         ? {
-            title: col.title,
-            slug: col.slug,
-            description: col.description ?? "",
-            sortOrder: col.sortOrder ?? "newest",
-            icon: col.icon ?? "",
+            title: collection.title,
+            slug: collection.slug,
+            description: collection.description ?? "",
+            sortOrder: collection.sortOrder ?? "newest",
+            icon: collection.icon ?? "",
           }
         : {
             title: "",
@@ -739,39 +754,32 @@ export class JantCollectionSidebar extends LitElement {
             icon: "",
           };
 
-    const dialogLabels = {
-      ...formLabels,
-      submitLabel: isEdit ? formLabels.submitLabel : formLabels.submitLabel,
-    };
-
     return html`
       <dialog
-        id="sidebar-collection-dialog"
-        class="m-auto rounded-lg border border-border bg-background text-foreground p-6 w-full max-w-md shadow-lg backdrop:bg-black/50"
+        id="collections-manager-dialog"
+        class="m-auto rounded-lg border border-border bg-background p-6 text-foreground shadow-lg backdrop:bg-black/50 w-full max-w-md"
         @cancel=${() => this.#closeDialog()}
         @close=${() => {
           this._dialogMode = null;
           this._editingCollection = null;
         }}
         @click=${(e: Event) => {
-          // Backdrop click — target is the <dialog> itself when clicking outside the box
           if (e.target === e.currentTarget) {
             this.#closeDialog();
           }
         }}
       >
         <jant-collection-form
-          .labels=${dialogLabels}
+          .labels=${formLabels}
           .initial=${initial}
-          action=${isEdit && col
-            ? `/api/collections/${col.id}`
+          action=${isEdit && collection
+            ? `/api/collections/${collection.id}`
             : "/api/collections"}
           cancel-href="javascript:void(0)"
           ?is-edit=${isEdit}
           @jant:collection-submit=${(e: Event) =>
             this.#handleCollectionSubmit(e)}
           @click=${(e: Event) => {
-            // Intercept cancel link click
             const target = (e.target as HTMLElement).closest?.("a.btn-outline");
             if (target) {
               e.preventDefault();
@@ -785,21 +793,25 @@ export class JantCollectionSidebar extends LitElement {
 
   render() {
     return html`
-      <nav class="flex flex-col gap-1 pt-6">
-        ${this.#renderHeading()}
-
-        <div id="sidebar-collections-list" class="flex flex-col">
-          ${this._items.map((item) =>
-            item.type === "collection"
-              ? this.#renderCollectionItem(item)
-              : this.#renderDividerItem(item),
-          )}
-        </div>
-
+      <div class="collections-page-shell">
+        ${this.#renderPageHeader()}
+        ${this.#hasCollections()
+          ? html`
+              <div id="collections-manager-list" class="collection-directory">
+                ${this._items.map((item) =>
+                  item.type === "collection"
+                    ? this.#renderCollectionItem(item)
+                    : this.#renderDividerItem(item),
+                )}
+              </div>
+            `
+          : html`<p class="text-muted-foreground">
+              ${this.labels.emptyState}
+            </p>`}
         ${this.#renderDialog()}
-      </nav>
+      </div>
     `;
   }
 }
 
-customElements.define("jant-collection-sidebar", JantCollectionSidebar);
+customElements.define("jant-collections-manager", JantCollectionsManager);

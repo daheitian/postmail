@@ -110,7 +110,7 @@
 - Collection 有自定义排序方式（最新/最早/评分最高/评分最低）
 - Collection 有自定义 slug，地址为 `/c/{slug}`，创建时根据名称自动生成，用户可修改
 - Collection 有 `position` 字段，后台支持拖拽排序
-- Collection 之间可以插入分隔线（独立的 `collection_dividers` 表），用于在列表页分组
+- Collection 之间可以插入分隔线（保存在统一的 `sidebar_item` 排序表里），用于在列表页分组
 - 不预设任何 Collection，首次使用时引导创建
 
 ### 2.6 Media（媒体）

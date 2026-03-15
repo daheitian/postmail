@@ -171,11 +171,6 @@ msgstr "添加自定义 CSS 来覆盖任何样式。使用诸如 [data-page], [d
 msgid "Add custom link to navigation"
 msgstr "向导航添加自定义链接"
 
-#. @context: Menu action to add a divider
-#: src/ui/shared/CollectionsSidebar.tsx
-msgid "Add Divider"
-msgstr "添加分隔线"
-
 #. @context: Button and heading for adding custom link
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add Link"
@@ -373,6 +368,11 @@ msgstr ""
 msgid "Brand note"
 msgstr ""
 
+#. @context: Breadcrumb label on collection detail page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Breadcrumb"
+msgstr ""
+
 #. @context: Role label for dark primary swatch
 #: src/ui/pages/BrandPage.tsx
 msgid "Button tone"
@@ -401,7 +401,7 @@ msgstr ""
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Cancel"
 msgstr "取消"
 
@@ -434,14 +434,14 @@ msgstr "为你的站点选择一种排版方向。每个主题都会同时改变
 msgid "Collection"
 msgstr "集合"
 
+#. @context: Breadcrumb link to collections page
+#. @context: Collections page heading
 #. @context: Collections page heading
 #. @context: Inactive nav link label on sample page
-#. @context: Sidebar heading for collections nav
-#. @context: Sidebar heading for collections nav
+#: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Collections"
 msgstr "集合"
 
@@ -544,7 +544,7 @@ msgstr "无法发布. 已保存为草稿."
 #. @context: Error toast when nav save fails
 #. @context: Toast when save fails
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Couldn't save. Try again in a moment."
 msgstr "保存失败。请稍后再试。"
 
@@ -688,7 +688,7 @@ msgstr ""
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/dash/ActionButtons.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Delete"
 msgstr "删除"
 
@@ -715,12 +715,12 @@ msgid "Delete this blog permanently? This cannot be undone."
 msgstr "永久删除此博客？此操作不可恢复。"
 
 #. @context: Confirm dialog for deleting a collection
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Delete this collection permanently? Posts inside won't be removed."
 msgstr "永久删除此收藏集？其中的帖子不会被删除。"
 
 #. @context: Toast after deleting a collection
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Deleted"
 msgstr "已删除"
 
@@ -737,7 +737,7 @@ msgstr "为视力受限的人描述此图像..."
 #. @context: Collection form field
 #. @context: Collection form field
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Description (optional)"
 msgstr "描述（可选）"
 
@@ -781,6 +781,11 @@ msgstr "在我的站点页眉显示头像"
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "显示在所有文章和页面的底部。支持 Markdown。"
 
+#. @context: Label for a divider item while organizing collections
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Divider"
+msgstr ""
+
 #. @context: Confirm close action sheet subtitle when editing a published post
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Do you want to publish your changes or discard them?"
@@ -791,12 +796,12 @@ msgstr "要发布您的更改，还是放弃它们？"
 msgid "Don't save"
 msgstr "不保存"
 
-#. @context: Button to exit reorder mode
+#. @context: Button to exit collection organize mode
 #. @context: Close attached text panel
 #. @context: Compose button - update existing post
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Done"
 msgstr "完成"
 
@@ -847,6 +852,11 @@ msgstr "草稿已保存."
 msgid "Drafts"
 msgstr "草稿"
 
+#. @context: Helper text shown while organizing collections
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Drag collections and dividers into the order you want."
+msgstr ""
+
 #. @context: Placeholder for API token name input
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "e.g. iOS Shortcuts"
@@ -855,7 +865,7 @@ msgstr "例如 iOS Shortcuts"
 #. @context: Button to edit item
 #. @context: Per-collection edit action
 #: src/ui/dash/ActionButtons.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Edit"
 msgstr "编辑"
 
@@ -889,17 +899,25 @@ msgstr "表情"
 #. @context: Emoji picker tab label
 #. @context: Emoji picker tab label
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Emojis"
 msgstr "表情"
 
 #. @context: Plural entry count label
-#: src/ui/pages/CollectionsPage.tsx
+#. @context: Plural entry count label
+#. @context: Plural entry count label
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/CollectionDirectory.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "entries"
 msgstr "条目"
 
 #. @context: Singular entry count label
-#: src/ui/pages/CollectionsPage.tsx
+#. @context: Singular entry count label
+#. @context: Singular entry count label
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/CollectionDirectory.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "entry"
 msgstr "条目"
 
@@ -1050,8 +1068,10 @@ msgstr "帮助屏幕阅读器描述图片"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
+#. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Highest rated"
 msgstr "评分最高"
 
@@ -1083,7 +1103,7 @@ msgstr "我想删除 {siteName}"
 #. @context: Icon picker tab label
 #. @context: Icon picker tab label
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Icons"
 msgstr "图标"
 
@@ -1279,8 +1299,10 @@ msgstr ""
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
+#. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Lowest rated"
 msgstr "评分最低"
 
@@ -1324,8 +1346,8 @@ msgstr "已保存最大可见链接数"
 msgid "Media"
 msgstr "媒体"
 
-#. @context: Aria-label for more button
-#: src/ui/shared/CollectionsSidebar.tsx
+#. @context: Aria-label for collections page more button
+#: src/ui/shared/CollectionsManager.tsx
 msgid "More actions"
 msgstr "更多操作"
 
@@ -1364,7 +1386,7 @@ msgstr ""
 #. @context: Collection title placeholder
 #. @context: Collection title placeholder
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "My Collection"
 msgstr "我的收藏"
 
@@ -1395,8 +1417,8 @@ msgstr "导航项"
 msgid "Navigation Preview"
 msgstr "导航预览"
 
-#. @context: Tooltip/aria for add collection button
-#: src/ui/shared/CollectionsSidebar.tsx
+#. @context: Button to create a collection from collections page
+#: src/ui/shared/CollectionsManager.tsx
 msgid "New Collection"
 msgstr "新建收藏夹"
 
@@ -1408,6 +1430,11 @@ msgstr "新建收藏夹"
 #: src/routes/dash/custom-urls.tsx
 msgid "New Custom URL"
 msgstr "新建自定义 URL"
+
+#. @context: Menu action to create a divider on collections page
+#: src/ui/shared/CollectionsManager.tsx
+msgid "New Divider"
+msgstr ""
 
 #. @context: Password form field
 #. @context: Password reset form field
@@ -1425,8 +1452,10 @@ msgstr "新建帖子"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
+#. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Newest first"
 msgstr "最新在前"
 
@@ -1445,7 +1474,11 @@ msgid "No active sessions found."
 msgstr "未找到活动会话。"
 
 #. @context: Empty state message on collections page
+#. @context: Empty state message on collections page
+#. @context: Empty state message on collections page
 #: src/ui/pages/CollectionsPage.tsx
+#: src/ui/shared/CollectionDirectory.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "No collections yet. Start one to organize posts by topic."
 msgstr "还没有集合。创建一个集合以按主题整理帖子。"
 
@@ -1521,8 +1554,10 @@ msgstr "这里还没有内容."
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
+#. @context: Collection sort order option
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/pages/CollectionPage.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Oldest first"
 msgstr "最旧优先"
 
@@ -1544,9 +1579,14 @@ msgstr "以精选文章打开"
 #. @context: Toast after reordering collections
 #. @context: Toast after saving navigation item order
 #: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Order saved"
 msgstr "排序已保存"
+
+#. @context: Menu action to organize collections
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Organize"
+msgstr ""
 
 #. @context: Outline badge label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1846,19 +1886,14 @@ msgstr ""
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Remove"
 msgstr "移除"
 
 #. @context: Tooltip for divider delete button
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Remove Divider"
 msgstr "删除分隔线"
-
-#. @context: Menu action to reorder collections
-#: src/ui/shared/CollectionsSidebar.tsx
-msgid "Reorder"
-msgstr "重新排序"
 
 #. @context: Compose button - reply to post
 #: src/ui/compose/ComposeDialog.tsx
@@ -1900,7 +1935,7 @@ msgstr ""
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
 #: src/ui/dash/settings/GeneralContent.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Save"
 msgstr "保存"
 
@@ -1940,7 +1975,7 @@ msgid "Save to drafts?"
 msgstr "保存为草稿？"
 
 #. @context: Toast after saving a collection
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Saved"
 msgstr "已保存"
 
@@ -1956,14 +1991,14 @@ msgstr "搜索"
 #. @context: Emoji picker search placeholder
 #. @context: Emoji picker search placeholder
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Search emojis..."
 msgstr "搜索表情..."
 
 #. @context: Icon picker search placeholder
 #. @context: Icon picker search placeholder
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Search icons..."
 msgstr "搜索图标..."
 
@@ -2086,7 +2121,7 @@ msgstr "站点名称"
 #. @context: Collection form field
 #. @context: Collection form field
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Slug"
 msgstr "URL 别名"
 
@@ -2116,10 +2151,15 @@ msgstr "部分上传失败。已保存为草稿。"
 msgid "Something doesn't look right. Check the form and try again."
 msgstr "有些内容看起来不对。请检查表单并重试。"
 
+#. @context: Sort menu label on collection detail page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Sort"
+msgstr ""
+
 #. @context: Collection form field
 #. @context: Collection form field
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Sort Order"
 msgstr "排序顺序"
 
@@ -2368,7 +2408,7 @@ msgstr "时区"
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "Title"
 msgstr "标题"
 
@@ -2485,7 +2525,7 @@ msgstr "URL"
 #. @context: Collection path help text
 #. @context: Collection path help text
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 msgstr "URL 安全的标识（小写、数字、连字符）。对于 CJK 标题，slug 将在服务器端自动生成。"
 
@@ -2579,7 +2619,7 @@ msgstr "在想些什么..."
 #. @context: Collection description placeholder
 #. @context: Collection description placeholder
 #: src/ui/compose/ComposeDialog.tsx
-#: src/ui/shared/CollectionsSidebar.tsx
+#: src/ui/shared/CollectionsManager.tsx
 msgid "What's this collection about?"
 msgstr "这个集合是关于什么？"
 
