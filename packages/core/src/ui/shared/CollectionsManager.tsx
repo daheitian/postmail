@@ -104,11 +104,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
             <h1 class="collections-page-title">{labels.collectionsTitle}</h1>
           </div>
           <div class="collections-page-meta-row">
-            <p
-              class="collections-page-badge"
-              data-collections-count
-              hidden={collectionCount === 0}
-            >
+            <p class="collections-page-badge" data-collections-count>
               {collectionCountLabel}
             </p>
             <div class="collections-page-actions">

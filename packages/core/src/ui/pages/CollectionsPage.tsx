@@ -56,11 +56,9 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
                 })}
               </h1>
             </div>
-            {collectionCount > 0 ? (
-              <div class="collections-page-meta-row">
-                <p class="collections-page-badge">{collectionCountLabel}</p>
-              </div>
-            ) : null}
+            <div class="collections-page-meta-row">
+              <p class="collections-page-badge">{collectionCountLabel}</p>
+            </div>
           </div>
         </header>
 
