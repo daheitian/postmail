@@ -1478,7 +1478,11 @@
     content: "";
     width: 0.9rem;
     height: 1px;
-    background: color-mix(in srgb, var(--site-divider) 86%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--site-text-secondary) 38%,
+      var(--site-divider)
+    );
   }
 
   .feed-quote-source {
