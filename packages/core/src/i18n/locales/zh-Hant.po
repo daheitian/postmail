@@ -44,6 +44,11 @@ msgstr "301 (永久)"
 msgid "302 (Temporary)"
 msgstr "302 (暫時)"
 
+#. @context: Hero title on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "A calm writing brand built around muted sage and warm linen."
+msgstr ""
+
 #. @context: Search snippet prefix on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "A calmer accent makes"
@@ -71,6 +76,11 @@ msgstr ""
 #. @context: Subheading in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "A practical checklist"
+msgstr ""
+
+#. @context: Showcase quote on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "A quiet brand still leaves a signature. It simply does it without urgency."
 msgstr ""
 
 #. @context: Excerpt for the sample quote post
@@ -272,7 +282,9 @@ msgstr "作者 (選填)"
 
 #. @context: Theme mode option label
 #. @context: Theme mode option on sample page
+#. @context: Theme mode option on the brand page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Auto"
 msgstr ""
@@ -294,6 +306,11 @@ msgstr "頭像"
 msgid "Avatar display updated."
 msgstr "頭像顯示已更新。"
 
+#. @context: Section kicker on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Avoid"
+msgstr ""
+
 #. @context: Link back from the new post page
 #: src/ui/pages/ComposePage.tsx
 msgid "Back"
@@ -303,6 +320,13 @@ msgstr "返回"
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Backup downloaded"
 msgstr "備份已下載"
+
+#. @context: Label for the paper swatch
+#. @context: Role label for dark background swatch
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Base surface"
+msgstr ""
 
 #. @context: Settings item description for API tokens
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -324,9 +348,44 @@ msgstr "刪除前，請下載您所有內容的備份。刪除後將無法復原
 msgid "Blog Avatar"
 msgstr "部落格頭像"
 
+#. @context: Browser page title for the public brand page
+#: src/routes/pages/brand.tsx
+msgid "Brand"
+msgstr ""
+
+#. @context: Accessible label for the brand keyword list
+#: src/ui/pages/BrandPage.tsx
+msgid "Brand attributes"
+msgstr ""
+
+#. @context: Label for the primary brand swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Brand core"
+msgstr ""
+
+#. @context: Section kicker on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Brand logic"
+msgstr ""
+
+#. @context: Meta label on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Brand note"
+msgstr ""
+
+#. @context: Role label for dark primary swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Button tone"
+msgstr ""
+
 #. @context: Sample note post second paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Buttons can stay steady, but links, thread markers, and subtle emphasis should feel closer to ink on paper than dashboard chrome."
+msgstr ""
+
+#. @context: Brand principle on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Calm, not sleepy."
 msgstr ""
 
 #. @context: Button to cancel form
@@ -428,6 +487,16 @@ msgstr "確認新密碼"
 msgid "Confirm Password"
 msgstr "確認密碼"
 
+#. @context: Label for the secondary accent swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Content accent"
+msgstr ""
+
+#. @context: Positive brand usage guidance on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Content links, thread markers, and quiet emphasis."
+msgstr ""
+
 #. @context: Controls section heading on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Controls"
@@ -449,6 +518,11 @@ msgstr "複製 Token"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Copy your token now — it won't be shown again."
 msgstr "請立即複製您的 token — 之後不會再顯示。"
+
+#. @context: Heading for the core palette card
+#: src/ui/pages/BrandPage.tsx
+msgid "Core palette"
+msgstr ""
 
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
@@ -560,9 +634,36 @@ msgstr "危險區域"
 
 #. @context: Theme mode option label
 #. @context: Theme mode option on sample page
+#. @context: Theme mode option on the brand page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Dark"
+msgstr ""
+
+#. @context: Label for dark accent swatch on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Dark accent"
+msgstr ""
+
+#. @context: Body copy on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Dark Jant should still feel like paper and ink translated into evening light. The brand green becomes softer and milkier, but it should not turn electric."
+msgstr ""
+
+#. @context: Section kicker on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Dark mode"
+msgstr ""
+
+#. @context: Label for dark background swatch on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Dark paper"
+msgstr ""
+
+#. @context: Label for dark primary swatch on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Dark primary"
 msgstr ""
 
 #. @context: Settings group label for data export/import
@@ -768,6 +869,11 @@ msgstr "編輯貼文"
 msgid "Editorial interfaces worth borrowing from"
 msgstr ""
 
+#. @context: Positive brand usage guidance on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Editorial surfaces where the page should feel soft and composed."
+msgstr ""
+
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
 #: src/routes/auth/setup.tsx
@@ -954,6 +1060,21 @@ msgstr "評分最高"
 msgid "Home view saved"
 msgstr "首頁檢視已儲存"
 
+#. @context: Section title on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "How Jant should feel in one glance."
+msgstr ""
+
+#. @context: Brand keyword on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Humble"
+msgstr ""
+
+#. @context: Brand principle on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Humble, not anonymous."
+msgstr ""
+
 #. @context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "I want to delete {siteName}"
@@ -981,6 +1102,16 @@ msgstr ""
 msgid "Images"
 msgstr "圖片"
 
+#. @context: Section title on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "In dark mode, keep the same calm. Only lift the contrast."
+msgstr ""
+
+#. @context: Section kicker on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "In use"
+msgstr ""
+
 #. @context: Site accent sample badge
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Inline emphasis"
@@ -1006,9 +1137,19 @@ msgstr ""
 msgid "It's OK for search engines to index my site"
 msgstr "允許搜尋引擎索引我的網站"
 
+#. @context: Eyebrow on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Jant brand"
+msgstr ""
+
 #. @context: Body paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Jant looks best when the accent feels editorial. Buttons can stay sturdy, but inline emphasis should feel like a pen mark, not a dashboard highlight."
+msgstr ""
+
+#. @context: Intro paragraph on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Jant should feel unhurried, private, and confident without becoming polished product theater. The palette is meant to read like paper, ink, and a quiet mark left in the margin."
 msgstr ""
 
 #. @context: Active nav link label on sample page
@@ -1061,6 +1202,11 @@ msgstr "上次使用於 {0}"
 msgid "Latest"
 msgstr "最新"
 
+#. @context: Name of the success swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Leaf Green"
+msgstr ""
+
 #. @context: Suffix after Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
@@ -1068,7 +1214,9 @@ msgstr ""
 
 #. @context: Theme mode option label
 #. @context: Theme mode option on sample page
+#. @context: Theme mode option on the brand page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
+#: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Light"
 msgstr ""
@@ -1086,6 +1234,11 @@ msgstr "連結"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Link"
 msgstr "連結"
+
+#. @context: Role label for dark accent swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Link tone"
+msgstr ""
 
 #. @context: Post format label plural - links
 #: src/ui/pages/ArchivePage.tsx
@@ -1136,6 +1289,11 @@ msgstr "評分最低"
 msgid "Manage active sign-in sessions"
 msgstr "管理目前的登入工作階段"
 
+#. @context: Intro text on the settings home page below the title
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Manage your site, design, and account."
+msgstr ""
+
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "March 14"
@@ -1144,6 +1302,11 @@ msgstr ""
 #. @context: Date label on theme sample content card
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "March 15"
+msgstr ""
+
+#. @context: Meta label on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "March 2026"
 msgstr ""
 
 #. @context: Placeholder hint for markdown-enabled textareas
@@ -1176,6 +1339,26 @@ msgstr "更多連結"
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Muted"
+msgstr ""
+
+#. @context: Brand principle explanation on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Muted colors can still carry rhythm and hierarchy when typography does the heavy lifting."
+msgstr ""
+
+#. @context: Name of the primary brand swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Muted Sage"
+msgstr ""
+
+#. @context: Body copy on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Muted Sage is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout."
+msgstr ""
+
+#. @context: Showcase title on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Muted Sage should feel like a mark in the margin, not a spotlight."
 msgstr ""
 
 #. @context: Collection title placeholder
@@ -1343,6 +1526,11 @@ msgstr "這裡還沒有任何內容."
 msgid "Oldest first"
 msgstr "由舊到新"
 
+#. @context: Section title on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "One color family, three jobs."
+msgstr ""
+
 #. @context: Ordered list item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Open a few links and check whether they still feel native to the page."
@@ -1363,6 +1551,16 @@ msgstr "排序已儲存"
 #. @context: Outline badge label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Outline"
+msgstr ""
+
+#. @context: Negative brand usage guidance on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Over-polishing the layout until the writing stops feeling personal."
+msgstr ""
+
+#. @context: Negative brand usage guidance on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Pairing it with bright SaaS blues or neon greens."
 msgstr ""
 
 #. @context: Settings item — password settings
@@ -1414,6 +1612,11 @@ msgstr "永久連結"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Permanently delete all data and reset the blog"
 msgstr "永久刪除所有資料並重設部落格"
+
+#. @context: Brand keyword on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Personal"
+msgstr ""
 
 #. @context: Post badge - pinned
 #: src/ui/dash/StatusBadge.tsx
@@ -1475,15 +1678,30 @@ msgstr "上一頁"
 msgid "Primary"
 msgstr ""
 
+#. @context: Positive brand usage guidance on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Primary actions that need confidence, not flash."
+msgstr ""
+
 #. @context: Table cell in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Primary button"
+msgstr ""
+
+#. @context: Body copy on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Primary is used for committed actions. Site accent is used for content links and thread cues. Success is intentionally cleaner so state feedback does not blur into the brand voice."
 msgstr ""
 
 #. @context: Archive visibility filter - private posts
 #: src/ui/pages/ArchivePage.tsx
 msgid "Private"
 msgstr "私密"
+
+#. @context: Brand principle on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Private, not precious."
+msgstr ""
 
 #. @context: Avatar upload button text while generating favicon variants
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -1494,6 +1712,11 @@ msgstr "處理中..."
 #: src/ui/pages/ArchivePage.tsx
 msgid "Public"
 msgstr "公開"
+
+#. @context: Meta description for the public brand page
+#: src/routes/pages/brand.tsx
+msgid "Public brand spec for Jant, including palette, voice, and usage guidance."
+msgstr ""
 
 #. @context: Confirm close action sheet - publish update button for editing published post
 #. @context: Primary button label on sample page
@@ -1511,6 +1734,11 @@ msgstr "已發佈"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Published!"
 msgstr "已發佈！"
+
+#. @context: Brand keyword on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Quiet"
+msgstr ""
 
 #. @context: Search highlight text on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1556,6 +1784,11 @@ msgstr "引用、標題和標籤，應該朝同一個方向傾斜。"
 msgid "Rate"
 msgstr "評分"
 
+#. @context: Showcase content link on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "read the full brand note"
+msgstr ""
+
 #. @context: Ordered list item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Read the page from top to bottom without looking at the swatches."
@@ -1574,6 +1807,11 @@ msgstr ""
 #. @context: Collection tag on sample quote post
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Reading"
+msgstr ""
+
+#. @context: Label for the text swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Reading ink"
 msgstr ""
 
 #. @context: Section heading for real post component samples on the theme sample page
@@ -1645,6 +1883,11 @@ msgstr "撤銷"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "撤銷此權杖？任何使用它的腳本將會停止運作。"
+
+#. @context: Name of the secondary accent swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Sage Accent"
+msgstr ""
 
 #. @context: Button to save collection
 #. @context: Button to save collection
@@ -1771,10 +2014,20 @@ msgstr "工作階段"
 msgid "Sessions, password, export"
 msgstr "工作階段, 密碼, 匯出"
 
+#. @context: Page title for the settings home page
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Settings"
+msgstr ""
+
 #. @context: Toast after saving general settings
 #: src/routes/dash/settings.tsx
 msgid "Settings updated."
 msgstr "設定已更新."
+
+#. @context: Showcase paragraph suffix on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "should feel present, but it should never start acting like a product CTA inside the paragraph."
+msgstr ""
 
 #. @context: Button to collapse expanded thread context
 #. @context: Collapse reply context
@@ -1837,6 +2090,11 @@ msgstr "網站名稱"
 msgid "Slug"
 msgstr "網址別名"
 
+#. @context: Name of the text swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Soft Charcoal"
+msgstr ""
+
 #. @context: Color theme preview card body sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Soft color should still carry a clear reading rhythm."
@@ -1869,6 +2127,11 @@ msgstr "排序順序"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Source link (optional)"
 msgstr "來源連結（選填）"
+
+#. @context: Label for the success swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Status color"
+msgstr ""
 
 #. @context: Table cell in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1944,6 +2207,16 @@ msgstr "該主題不可用。請選擇其他主題。"
 msgid "The best default color is the one you notice only after reading for a while."
 msgstr ""
 
+#. @context: Body copy on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "The brand is working when the writing still leads, but the interface quietly holds the page together. Links should feel editorial. Buttons should feel steady. Metadata should stay out of the way."
+msgstr ""
+
+#. @context: Section title on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "The brand should read like a page first."
+msgstr ""
+
 #. @context: Custom URL path help text
 #: src/routes/dash/custom-urls.tsx
 msgid "The custom URL path (without leading slash)"
@@ -1969,6 +2242,11 @@ msgstr ""
 msgid "The image should sit quietly inside the article instead of feeling like a card preview."
 msgstr ""
 
+#. @context: Brand principle explanation on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "The palette should feel personal and lived-in, not premium for the sake of premium."
+msgstr ""
+
 #. @context: Description for max visible nav links, explains overflow behavior
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "The rest will be tucked into a ··· menu"
@@ -1977,6 +2255,11 @@ msgstr "其餘項目會被收納到 ··· 選單"
 #. @context: Blockquote on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "The right accent should disappear into the writing until you need it."
+msgstr ""
+
+#. @context: Brand principle explanation on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "The sage note gives Jant a recognizable identity without turning the brand into a loud signature."
 msgstr ""
 
 #. @context: Custom URL target slug help text
@@ -2020,6 +2303,11 @@ msgstr ""
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
 msgstr "此收藏為空。請從編輯器新增文章。"
+
+#. @context: Showcase paragraph prefix on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "This is the test: a content link like"
+msgstr ""
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2141,6 +2429,11 @@ msgstr "輸入引述..."
 msgid "Typography"
 msgstr "排版"
 
+#. @context: Brand keyword on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Unhurried"
+msgstr ""
+
 #. @context: Fallback label when session device can't be identified
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Unknown device"
@@ -2201,9 +2494,24 @@ msgstr "URL 安全的識別字串（小寫、數字、連字號）。對於 CJK 
 msgid "Usage"
 msgstr "使用方式"
 
+#. @context: Section kicker on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Use it for"
+msgstr ""
+
+#. @context: Showcase primary button on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Use Muted Sage"
+msgstr ""
+
 #. @context: Introductory description on the public theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Use this page to judge buttons, links, cards, forms, thread accents, and quiet surfaces before changing a theme globally."
+msgstr ""
+
+#. @context: Negative brand usage guidance on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Using brand green for every state, including success and warnings."
 msgstr ""
 
 #. @context: Archive media filter - video
@@ -2223,9 +2531,24 @@ msgstr "檢視"
 msgid "View earlier notes in this thread"
 msgstr ""
 
+#. @context: Showcase secondary button on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "View token values"
+msgstr ""
+
+#. @context: Section kicker on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Voice"
+msgstr ""
+
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
+msgstr ""
+
+#. @context: Name of the paper swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Warm Linen"
 msgstr ""
 
 #. @context: Setup page welcome heading
