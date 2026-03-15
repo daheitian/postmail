@@ -47,12 +47,14 @@ sitemapRoutes.get("/robots.txt", async (c) => {
   const siteUrl = appConfig.siteUrl;
   const noindex = appConfig.noindex;
 
-  const directive = noindex ? "Disallow: /" : "Allow: /";
-  const robots = `User-agent: *
-${directive}
-
-Sitemap: ${siteUrl}/sitemap.xml
-`;
+  const rules = noindex ? ["Disallow: /"] : ["Allow: /", "Disallow: /_/"];
+  const robots = [
+    `User-agent: *`,
+    ...rules,
+    "",
+    `Sitemap: ${siteUrl}/sitemap.xml`,
+    "",
+  ].join("\n");
 
   return new Response(robots, {
     headers: {

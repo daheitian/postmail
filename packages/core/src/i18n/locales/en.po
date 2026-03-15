@@ -46,13 +46,20 @@ msgstr "302 (Temporary)"
 
 #. @context: Hero title on the public brand page
 #: src/ui/pages/BrandPage.tsx
-msgid "A calm writing brand built around muted sage and warm linen."
-msgstr "A calm writing brand built around muted sage and warm linen."
+msgid "A calm writing brand built around absinthe green and warm linen."
+msgstr "A calm writing brand built around absinthe green and warm linen."
 
 #. @context: Search snippet prefix on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "A calmer accent makes"
 msgstr "A calmer accent makes"
+
+#. @context: Excerpt for the sample note post
+#. @context: Plain-text summary for the sample note post
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A calmer, warmer accent makes the default theme feel quieter and more intentional."
+msgstr "A calmer, warmer accent makes the default theme feel quieter and more intentional."
 
 #. @context: Second paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -107,17 +114,30 @@ msgstr "A short intro for search engines and feed readers. Plain text only."
 msgid "A softer blue feels more like ink than product chrome."
 msgstr "A softer blue feels more like ink than product chrome."
 
-#. @context: Excerpt for the sample note post
-#. @context: Plain-text summary for the sample note post
-#: src/ui/pages/ThemeSamplePage.tsx
-#: src/ui/pages/ThemeSamplePage.tsx
-msgid "A softer editorial blue makes the default theme feel calmer and more intentional."
-msgstr "A softer editorial blue makes the default theme feel calmer and more intentional."
-
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "About this blog"
 msgstr "About this blog"
+
+#. @context: Name of the secondary accent swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Absinthe Accent"
+msgstr "Absinthe Accent"
+
+#. @context: Name of the primary brand swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Absinthe Green"
+msgstr "Absinthe Green"
+
+#. @context: Body copy on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Absinthe Green is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout."
+msgstr "Absinthe Green is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout."
+
+#. @context: Showcase title on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Absinthe Green should feel like a mark in the margin, not a spotlight."
+msgstr "Absinthe Green should feel like a mark in the margin, not a spotlight."
 
 #. @context: Thread helper text on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -330,8 +350,8 @@ msgstr "Bearer tokens for scripts and automation"
 
 #. @context: Sample note post body suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "before deciding whether the blue is carrying too much product energy."
-msgstr "before deciding whether the blue is carrying too much product energy."
+msgid "before deciding whether the accent is carrying too much product energy."
+msgstr "before deciding whether the accent is carrying too much product energy."
 
 #. @context: Step 1 description for data backup
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -774,8 +794,8 @@ msgstr "Design"
 
 #. @context: Title for the sample detail article on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "Designing a calmer default blue for Jant"
-msgstr "Designing a calmer default blue for Jant"
+msgid "Designing a calmer default accent for Jant"
+msgstr "Designing a calmer default accent for Jant"
 
 #. @context: Redirect destination field
 #: src/routes/dash/custom-urls.tsx
@@ -1033,8 +1053,8 @@ msgstr "Font Theme"
 
 #. @context: Paragraph mentioning code on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(blue, 12%) should not suddenly become the loudest thing on the page."
-msgstr "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(blue, 12%) should not suddenly become the loudest thing on the page."
+msgid "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(green, 12%) should not suddenly become the loudest thing on the page."
+msgstr "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(green, 12%) should not suddenly become the loudest thing on the page."
 
 #. @context: Search results count - multiple
 #. placeholder {0}: String(results.length)
@@ -1132,8 +1152,8 @@ msgstr "If this article still feels like a page you want to keep reading, the pa
 
 #. @context: Alert body on theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "If this page feels too “UI blue”, the first place to soften is the default theme’s site accent, not the border or body text."
-msgstr "If this page feels too “UI blue”, the first place to soften is the default theme’s site accent, not the border or body text."
+msgid "If this page feels too branded, the first place to soften is the default theme’s site accent, not the border or body text."
+msgstr "If this page feels too branded, the first place to soften is the default theme’s site accent, not the border or body text."
 
 #. @context: Archive media filter - images
 #: src/ui/pages/ArchivePage.tsx
@@ -1390,21 +1410,6 @@ msgstr "Muted"
 #: src/ui/pages/BrandPage.tsx
 msgid "Muted colors can still carry rhythm and hierarchy when typography does the heavy lifting."
 msgstr "Muted colors can still carry rhythm and hierarchy when typography does the heavy lifting."
-
-#. @context: Name of the primary brand swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Muted Sage"
-msgstr "Muted Sage"
-
-#. @context: Body copy on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Muted Sage is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout."
-msgstr "Muted Sage is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout."
-
-#. @context: Showcase title on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Muted Sage should feel like a mark in the margin, not a spotlight."
-msgstr "Muted Sage should feel like a mark in the margin, not a spotlight."
 
 #. @context: Collection title placeholder
 #. @context: Collection title placeholder
@@ -1942,11 +1947,6 @@ msgstr "Revoke"
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "Revoke this token? Any scripts using it will stop working."
 
-#. @context: Name of the secondary accent swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Sage Accent"
-msgstr "Sage Accent"
-
 #. @context: Button to save collection
 #. @context: Button to save collection
 #. @context: Button to save settings
@@ -2300,6 +2300,11 @@ msgstr "The default accent should support reading first. Start by comparing it a
 msgid "The default accent works best when it reads like a fountain-pen underline. Compare it against the"
 msgstr "The default accent works best when it reads like a fountain-pen underline. Compare it against the"
 
+#. @context: Brand principle explanation on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "The green note gives Jant a recognizable identity without turning the brand into a loud signature."
+msgstr "The green note gives Jant a recognizable identity without turning the brand into a loud signature."
+
 #. @context: Caption for the sample detail article image
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "The image should sit quietly inside the article instead of feeling like a card preview."
@@ -2319,11 +2324,6 @@ msgstr "The rest will be tucked into a ··· menu"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "The right accent should disappear into the writing until you need it."
 msgstr "The right accent should disappear into the writing until you need it."
-
-#. @context: Brand principle explanation on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "The sage note gives Jant a recognizable identity without turning the brand into a loud signature."
-msgstr "The sage note gives Jant a recognizable identity without turning the brand into a loud signature."
 
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
@@ -2359,8 +2359,8 @@ msgstr "These devices are currently signed in to your account. Revoke any sessio
 
 #. @context: Opening paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "This article is here to answer a specific question: does the default blue still feel calm once it has to carry a full reading experience?"
-msgstr "This article is here to answer a specific question: does the default blue still feel calm once it has to carry a full reading experience?"
+msgid "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
+msgstr "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
@@ -2557,15 +2557,15 @@ msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug 
 msgid "Usage"
 msgstr "Usage"
 
+#. @context: Showcase primary button on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Use Absinthe Green"
+msgstr "Use Absinthe Green"
+
 #. @context: Section kicker on the public brand page
 #: src/ui/pages/BrandPage.tsx
 msgid "Use it for"
 msgstr "Use it for"
-
-#. @context: Showcase primary button on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Use Muted Sage"
-msgstr "Use Muted Sage"
 
 #. @context: Introductory description on the public theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2621,8 +2621,8 @@ msgstr "Welcome to Jant"
 
 #. @context: Table header in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "What the blue should do"
-msgstr "What the blue should do"
+msgid "What the accent should do"
+msgstr "What the accent should do"
 
 #. @context: Section heading in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2658,13 +2658,13 @@ msgstr "When primary is too rigid, the whole page starts reading like product UI
 
 #. @context: Sample note summary second paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "When the blue is slightly grayer and less literal, the whole page feels more like a writing space and less like product UI."
-msgstr "When the blue is slightly grayer and less literal, the whole page feels more like a writing space and less like product UI."
+msgid "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
+msgstr "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
 
 #. @context: Sample note post title on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "Why the default blue should feel written, not branded"
-msgstr "Why the default blue should feel written, not branded"
+msgid "Why the default accent should feel written, not branded"
+msgstr "Why the default accent should feel written, not branded"
 
 #. @context: Font theme preview display sentence
 #: src/ui/dash/appearance/FontThemeContent.tsx

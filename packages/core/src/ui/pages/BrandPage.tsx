@@ -4,7 +4,7 @@ import type { ColorTheme } from "../color-themes.js";
 
 function buildBrandHref(mode: ThemeMode): string {
   const params = new URLSearchParams({ mode });
-  return `/brand?${params.toString()}`;
+  return `/_/brand?${params.toString()}`;
 }
 
 function ModePill({
@@ -81,7 +81,7 @@ export function BrandPage({
           <h1 class="brand-title">
             {t({
               message:
-                "A calm writing brand built around muted sage and warm linen.",
+                "A calm writing brand built around absinthe green and warm linen.",
               comment: "@context: Hero title on the public brand page",
             })}
           </h1>
@@ -166,7 +166,7 @@ export function BrandPage({
           <div class="brand-manifest-swatches">
             <ColorSpecCard
               title={t({
-                message: "Muted Sage",
+                message: "Absinthe Green",
                 comment: "@context: Name of the primary brand swatch",
               })}
               role={t({
@@ -202,7 +202,7 @@ export function BrandPage({
             />
             <ColorSpecCard
               title={t({
-                message: "Sage Accent",
+                message: "Absinthe Accent",
                 comment: "@context: Name of the secondary accent swatch",
               })}
               role={t({
@@ -246,7 +246,7 @@ export function BrandPage({
             <p>
               {t({
                 message:
-                  "Muted Sage is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout.",
+                  "Absinthe Green is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout.",
                 comment: "@context: Body copy on the public brand page",
               })}
             </p>
@@ -311,7 +311,7 @@ export function BrandPage({
               </strong>{" "}
               {t({
                 message:
-                  "The sage note gives Jant a recognizable identity without turning the brand into a loud signature.",
+                  "The green note gives Jant a recognizable identity without turning the brand into a loud signature.",
                 comment:
                   "@context: Brand principle explanation on the public brand page",
               })}
@@ -363,7 +363,7 @@ export function BrandPage({
           <h3 class="brand-live-title">
             {t({
               message:
-                "Muted Sage should feel like a mark in the margin, not a spotlight.",
+                "Absinthe Green should feel like a mark in the margin, not a spotlight.",
               comment: "@context: Showcase title on the public brand page",
             })}
           </h3>
@@ -374,7 +374,7 @@ export function BrandPage({
               comment:
                 "@context: Showcase paragraph prefix on the public brand page",
             })}{" "}
-            <a href="/brand" class="content-link">
+            <a href="/_/brand" class="content-link">
               {t({
                 message: "read the full brand note",
                 comment:
@@ -400,7 +400,7 @@ export function BrandPage({
           <div class="brand-live-actions">
             <button type="button" class="btn-primary">
               {t({
-                message: "Use Muted Sage",
+                message: "Use Absinthe Green",
                 comment:
                   "@context: Showcase primary button on the public brand page",
               })}

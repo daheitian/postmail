@@ -393,7 +393,7 @@ export function createApp(): App {
   app.route("/archive", archiveRoutes);
   app.route("/featured", featuredRoutes);
   app.route("/latest", latestRoutes);
-  app.route("/", brandRoutes);
+  app.route("/_", brandRoutes);
   app.route("/_", themeSampleRoutes);
   app.route("/c", collectionsPageRoutes);
   app.route("/c", collectionRoutes);

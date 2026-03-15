@@ -1,7 +1,7 @@
 /**
  * Theme Sample Route
  *
- * Public style-guide page for tuning color themes in a real content context.
+ * Internal style-guide page for tuning color themes in a real content context.
  */
 
 import { Hono } from "hono";
@@ -64,7 +64,9 @@ themeSampleRoutes.get("/theme-sample", async (c) => {
     ...c.var.appConfig,
     themeId: selectedTheme.id,
     themeMode: selectedMode,
+    noindex: true,
   });
+  c.header("X-Robots-Tag", "noindex, nofollow");
   c.set(
     "themeStyle",
     buildThemeStyle(selectedTheme, selectedMode, fontOverrides),

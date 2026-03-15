@@ -1,7 +1,7 @@
 /**
  * Brand Page Route
  *
- * Public brand spec page for Jant's default visual direction.
+ * Internal brand spec page for Jant's default visual direction.
  * Uses the Linen theme regardless of the site's current theme.
  */
 
@@ -60,7 +60,9 @@ brandRoutes.get("/brand", async (c) => {
     ...c.var.appConfig,
     themeId: brandTheme.id,
     themeMode: selectedMode,
+    noindex: true,
   });
+  c.header("X-Robots-Tag", "noindex, nofollow");
   c.set("themeStyle", buildThemeStyle(brandTheme, selectedMode, fontOverrides));
 
   return renderPublicPage(c, {

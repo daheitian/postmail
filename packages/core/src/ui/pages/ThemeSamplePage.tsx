@@ -146,7 +146,7 @@ export function ThemeSamplePage({
       permalink: notePermalink,
       slug: "sample-note",
       title: t({
-        message: "Why the default blue should feel written, not branded",
+        message: "Why the default accent should feel written, not branded",
         comment: "@context: Sample note post title on the theme sample page",
       }),
       bodyHtml: [
@@ -164,7 +164,7 @@ export function ThemeSamplePage({
           }),
           t({
             message:
-              "before deciding whether the blue is carrying too much product energy.",
+              "before deciding whether the accent is carrying too much product energy.",
             comment:
               "@context: Sample note post body suffix on the theme sample page",
           }),
@@ -180,12 +180,12 @@ export function ThemeSamplePage({
       ].join(""),
       summary: t({
         message:
-          "A softer editorial blue makes the default theme feel calmer and more intentional.",
+          "A calmer, warmer accent makes the default theme feel quieter and more intentional.",
         comment: "@context: Plain-text summary for the sample note post",
       }),
       excerpt: t({
         message:
-          "A softer editorial blue makes the default theme feel calmer and more intentional.",
+          "A calmer, warmer accent makes the default theme feel quieter and more intentional.",
         comment: "@context: Excerpt for the sample note post",
       }),
       summaryHtml: [
@@ -210,7 +210,7 @@ export function ThemeSamplePage({
         renderParagraph(
           t({
             message:
-              "When the blue is slightly grayer and less literal, the whole page feels more like a writing space and less like product UI.",
+              "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI.",
             comment:
               "@context: Sample note summary second paragraph on the theme sample page",
           }),
@@ -384,7 +384,7 @@ export function ThemeSamplePage({
     permalink: articlePermalink,
     slug: "sample-article-detail",
     title: t({
-      message: "Designing a calmer default blue for Jant",
+      message: "Designing a calmer default accent for Jant",
       comment:
         "@context: Title for the sample detail article on the theme sample page",
     }),
@@ -392,7 +392,7 @@ export function ThemeSamplePage({
       `<p>${escapeHtml(
         t({
           message:
-            "This article is here to answer a specific question: does the default blue still feel calm once it has to carry a full reading experience?",
+            "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?",
           comment: "@context: Opening paragraph on the sample detail article",
         }),
       )}</p>`,
@@ -483,7 +483,7 @@ export function ThemeSamplePage({
             comment: "@context: Table header in the sample detail article",
           }),
           t({
-            message: "What the blue should do",
+            message: "What the accent should do",
             comment: "@context: Table header in the sample detail article",
           }),
         ],
@@ -523,14 +523,14 @@ export function ThemeSamplePage({
       renderParagraph(
         t({
           message:
-            "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(blue, 12%) should not suddenly become the loudest thing on the page.",
+            "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(green, 12%) should not suddenly become the loudest thing on the page.",
           comment:
             "@context: Paragraph mentioning code on the sample detail article",
         }),
       ),
       renderCodeBlock(`const linenAccent = {
-  primary: "oklch(0.43 0.055 236)",
-  siteAccent: "oklch(0.50 0.045 222)",
+  primary: "oklch(0.47 0.045 140)",
+  siteAccent: "oklch(0.54 0.038 138)",
 };`),
       renderParagraph(
         t({
@@ -1061,7 +1061,7 @@ export function ThemeSamplePage({
                   <p class="leading-6 text-muted-foreground">
                     {t({
                       message:
-                        "If this page feels too “UI blue”, the first place to soften is the default theme’s site accent, not the border or body text.",
+                        "If this page feels too branded, the first place to soften is the default theme’s site accent, not the border or body text.",
                       comment: "@context: Alert body on theme sample page",
                     })}
                   </p>

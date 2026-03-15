@@ -46,13 +46,20 @@ msgstr "302 (暫時)"
 
 #. @context: Hero title on the public brand page
 #: src/ui/pages/BrandPage.tsx
-msgid "A calm writing brand built around muted sage and warm linen."
-msgstr ""
+msgid "A calm writing brand built around absinthe green and warm linen."
+msgstr "一個圍繞苦艾綠與暖亞麻色建立的平靜書寫品牌。"
 
 #. @context: Search snippet prefix on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "A calmer accent makes"
 msgstr ""
+
+#. @context: Excerpt for the sample note post
+#. @context: Plain-text summary for the sample note post
+#: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/pages/ThemeSamplePage.tsx
+msgid "A calmer, warmer accent makes the default theme feel quieter and more intentional."
+msgstr "更平靜、更溫暖的強調色，讓預設主題更安靜，也更有分寸。"
 
 #. @context: Second paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -107,17 +114,30 @@ msgstr "供搜尋引擎與訂閱閱讀器使用的簡短介紹。僅限純文字
 msgid "A softer blue feels more like ink than product chrome."
 msgstr ""
 
-#. @context: Excerpt for the sample note post
-#. @context: Plain-text summary for the sample note post
-#: src/ui/pages/ThemeSamplePage.tsx
-#: src/ui/pages/ThemeSamplePage.tsx
-msgid "A softer editorial blue makes the default theme feel calmer and more intentional."
-msgstr ""
-
 #. @context: Settings form field for site description
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "About this blog"
 msgstr "關於本部落格"
+
+#. @context: Name of the secondary accent swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Absinthe Accent"
+msgstr "苦艾強調色"
+
+#. @context: Name of the primary brand swatch
+#: src/ui/pages/BrandPage.tsx
+msgid "Absinthe Green"
+msgstr "苦艾綠"
+
+#. @context: Body copy on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Absinthe Green is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout."
+msgstr "苦艾綠是品牌中心。暖亞麻色讓空間保持柔和。柔炭色承擔大部分閱讀重量，讓介面不必大聲說話。"
+
+#. @context: Showcase title on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Absinthe Green should feel like a mark in the margin, not a spotlight."
+msgstr "苦艾綠應該像頁邊的一筆記號，而不是聚光燈。"
 
 #. @context: Thread helper text on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -330,8 +350,8 @@ msgstr "用於腳本與自動化的 Bearer 令牌"
 
 #. @context: Sample note post body suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "before deciding whether the blue is carrying too much product energy."
-msgstr ""
+msgid "before deciding whether the accent is carrying too much product energy."
+msgstr "再判斷這個強調色是否帶上了過多產品化的氣息。"
 
 #. @context: Step 1 description for data backup
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -774,8 +794,8 @@ msgstr "設計"
 
 #. @context: Title for the sample detail article on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "Designing a calmer default blue for Jant"
-msgstr ""
+msgid "Designing a calmer default accent for Jant"
+msgstr "為 Jant 設計更平靜的預設強調色"
 
 #. @context: Redirect destination field
 #: src/routes/dash/custom-urls.tsx
@@ -1033,8 +1053,8 @@ msgstr "字型主題"
 
 #. @context: Paragraph mentioning code on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(blue, 12%) should not suddenly become the loudest thing on the page."
-msgstr ""
+msgid "For the same reason, inline code should stay neutral. Something like theme.siteAccent = soften(green, 12%) should not suddenly become the loudest thing on the page."
+msgstr "也因為這個原因，行內程式碼應該保持中性。像 theme.siteAccent = soften(green, 12%) 這樣的內容，不該突然變成頁面裡最吵的一部分。"
 
 #. @context: Search results count - multiple
 #. placeholder {0}: String(results.length)
@@ -1132,8 +1152,8 @@ msgstr ""
 
 #. @context: Alert body on theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "If this page feels too “UI blue”, the first place to soften is the default theme’s site accent, not the border or body text."
-msgstr ""
+msgid "If this page feels too branded, the first place to soften is the default theme’s site accent, not the border or body text."
+msgstr "如果這一頁顯得太有品牌姿態，最先該收一收的是預設主題的網站強調色，而不是邊框或正文顏色。"
 
 #. @context: Archive media filter - images
 #: src/ui/pages/ArchivePage.tsx
@@ -1389,21 +1409,6 @@ msgstr ""
 #. @context: Brand principle explanation on the public brand page
 #: src/ui/pages/BrandPage.tsx
 msgid "Muted colors can still carry rhythm and hierarchy when typography does the heavy lifting."
-msgstr ""
-
-#. @context: Name of the primary brand swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Muted Sage"
-msgstr ""
-
-#. @context: Body copy on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Muted Sage is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout."
-msgstr ""
-
-#. @context: Showcase title on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Muted Sage should feel like a mark in the margin, not a spotlight."
 msgstr ""
 
 #. @context: Collection title placeholder
@@ -1942,11 +1947,6 @@ msgstr "撤銷"
 msgid "Revoke this token? Any scripts using it will stop working."
 msgstr "撤銷此權杖？任何使用它的腳本將會停止運作。"
 
-#. @context: Name of the secondary accent swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Sage Accent"
-msgstr ""
-
 #. @context: Button to save collection
 #. @context: Button to save collection
 #. @context: Button to save settings
@@ -2300,6 +2300,11 @@ msgstr ""
 msgid "The default accent works best when it reads like a fountain-pen underline. Compare it against the"
 msgstr ""
 
+#. @context: Brand principle explanation on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "The green note gives Jant a recognizable identity without turning the brand into a loud signature."
+msgstr "這一抹綠色讓 Jant 有了可辨識的身份，但不會把品牌變成吵鬧的簽名。"
+
 #. @context: Caption for the sample detail article image
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "The image should sit quietly inside the article instead of feeling like a card preview."
@@ -2318,11 +2323,6 @@ msgstr "其餘項目會被收納到 ··· 選單"
 #. @context: Blockquote on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "The right accent should disappear into the writing until you need it."
-msgstr ""
-
-#. @context: Brand principle explanation on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "The sage note gives Jant a recognizable identity without turning the brand into a loud signature."
 msgstr ""
 
 #. @context: Custom URL target slug help text
@@ -2359,8 +2359,8 @@ msgstr "這些裝置目前已登入您的帳戶。撤銷任何您不認識的工
 
 #. @context: Opening paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "This article is here to answer a specific question: does the default blue still feel calm once it has to carry a full reading experience?"
-msgstr ""
+msgid "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
+msgstr "這篇文章想回答一個具體問題：當預設強調色要撐起一整段閱讀體驗時，它是否依然足夠平靜？"
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
@@ -2557,14 +2557,14 @@ msgstr "URL 安全的識別字串（小寫、數字、連字號）。對於 CJK 
 msgid "Usage"
 msgstr "使用方式"
 
+#. @context: Showcase primary button on the public brand page
+#: src/ui/pages/BrandPage.tsx
+msgid "Use Absinthe Green"
+msgstr "使用苦艾綠"
+
 #. @context: Section kicker on the public brand page
 #: src/ui/pages/BrandPage.tsx
 msgid "Use it for"
-msgstr ""
-
-#. @context: Showcase primary button on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Use Muted Sage"
 msgstr ""
 
 #. @context: Introductory description on the public theme sample page
@@ -2621,8 +2621,8 @@ msgstr "歡迎使用 Jant"
 
 #. @context: Table header in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "What the blue should do"
-msgstr ""
+msgid "What the accent should do"
+msgstr "強調色該承擔什麼"
 
 #. @context: Section heading in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2658,13 +2658,13 @@ msgstr ""
 
 #. @context: Sample note summary second paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "When the blue is slightly grayer and less literal, the whole page feels more like a writing space and less like product UI."
-msgstr ""
+msgid "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
+msgstr "當強調色更溫暖一點、也沒那麼直白時，整頁會更像寫作空間，而不是產品介面。"
 
 #. @context: Sample note post title on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
-msgid "Why the default blue should feel written, not branded"
-msgstr ""
+msgid "Why the default accent should feel written, not branded"
+msgstr "為什麼預設強調色應該像書寫，而不是品牌標記"
 
 #. @context: Font theme preview display sentence
 #: src/ui/dash/appearance/FontThemeContent.tsx
