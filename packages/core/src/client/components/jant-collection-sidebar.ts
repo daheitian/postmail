@@ -228,6 +228,13 @@ export class JantCollectionsManager extends LitElement {
       doneButton.hidden = !this._reorderMode;
     }
 
+    const reorderActions = this.#queryHeaderElement<HTMLElement>(
+      "[data-collections-reorder-actions]",
+    );
+    if (reorderActions) {
+      reorderActions.hidden = !this._reorderMode;
+    }
+
     const toolbar = this.#queryHeaderElement<HTMLElement>(
       "[data-collections-toolbar]",
     );

@@ -25,6 +25,8 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   const { t } = useLingui();
   const iconHtml = renderCollectionIcon(collection.icon, { size: 28 });
   const collectionUrl = `/c/${collection.slug}`;
+  const sortTriggerId = `collection-sort-trigger-${collection.id}`;
+  const sortPopoverId = `collection-sort-popover-${collection.id}`;
   const pageLabel =
     currentPage > 1 ? formatPageLabel(currentPage, totalPages) : null;
   const sortOptions = [
@@ -136,8 +138,15 @@ export const CollectionPage: FC<CollectionPageProps> = ({
             </p>
           </div>
 
-          <details class="collection-sort-menu">
-            <summary class="btn-outline collection-sort-trigger">
+          <div class="collection-sort-menu">
+            <button
+              type="button"
+              id={sortTriggerId}
+              class="btn-outline collection-sort-trigger"
+              aria-haspopup="menu"
+              aria-controls={sortPopoverId}
+              aria-expanded="false"
+            >
               <span>
                 {t({
                   message: "Sort",
@@ -159,30 +168,44 @@ export const CollectionPage: FC<CollectionPageProps> = ({
               >
                 <path d="m6 9 6 6 6-6" />
               </svg>
-            </summary>
-            <div class="collection-sort-popover">
-              {sortOptions.map((option) => (
-                <a
-                  key={option.value}
-                  href={
-                    option.value === defaultSort
-                      ? collectionUrl
-                      : `${collectionUrl}?sort=${option.value}`
-                  }
-                  class={`collection-sort-option ${
-                    option.value === currentSort
-                      ? "collection-sort-option-active"
-                      : ""
-                  }`}
-                  aria-current={
-                    option.value === currentSort ? "true" : undefined
-                  }
-                >
-                  {option.label}
-                </a>
-              ))}
+            </button>
+            <div
+              id={sortPopoverId}
+              class="collection-sort-popover"
+              data-popover
+              data-align="end"
+              aria-hidden="true"
+            >
+              <div
+                class="collection-sort-options"
+                role="menu"
+                aria-labelledby={sortTriggerId}
+                data-collection-sort-options
+              >
+                {sortOptions.map((option) => (
+                  <a
+                    key={option.value}
+                    href={
+                      option.value === defaultSort
+                        ? collectionUrl
+                        : `${collectionUrl}?sort=${option.value}`
+                    }
+                    role="menuitem"
+                    class={`collection-sort-option ${
+                      option.value === currentSort
+                        ? "collection-sort-option-active"
+                        : ""
+                    }`}
+                    aria-current={
+                      option.value === currentSort ? "true" : undefined
+                    }
+                  >
+                    {option.label}
+                  </a>
+                ))}
+              </div>
             </div>
-          </details>
+          </div>
         </div>
       </header>
 

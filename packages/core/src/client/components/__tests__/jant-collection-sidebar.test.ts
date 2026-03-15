@@ -113,6 +113,32 @@ async function createElement(): Promise<JantCollectionsManager> {
   return el;
 }
 
+async function createElementWithManagerRoot(): Promise<JantCollectionsManager> {
+  const root = document.createElement("div");
+  root.setAttribute("data-collections-manager-root", "");
+  root.innerHTML = `
+    <p data-collections-count></p>
+    <div data-collections-reorder-actions hidden>
+      <button type="button" data-collections-action="divider">New divider</button>
+      <button type="button" data-collections-action="done">Done</button>
+    </div>
+    <div data-collections-toolbar></div>
+    <p data-collections-hint hidden></p>
+    <div data-collections-more-menu hidden></div>
+    <button type="button" data-collections-action="toggle-menu"></button>
+  `;
+
+  const el = document.createElement(
+    "jant-collections-manager",
+  ) as JantCollectionsManager;
+  el.labels = labels;
+  el.items = items;
+  root.appendChild(el);
+  document.body.appendChild(root);
+  await el.updateComplete;
+  return el;
+}
+
 describe("JantCollectionsManager", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
@@ -153,5 +179,33 @@ describe("JantCollectionsManager", () => {
       ".collection-directory-reorder-main[data-drag-handle]",
     );
     expect(dragSurface).not.toBeNull();
+  });
+
+  it("shows the reorder actions with new divider while organizing", async () => {
+    const el = await createElementWithManagerRoot();
+    const root = el.closest<HTMLElement>("[data-collections-manager-root]");
+
+    expect(root).not.toBeNull();
+    if (!root) throw new Error("Expected collections manager root");
+
+    const reorderActions = root.querySelector<HTMLElement>(
+      "[data-collections-reorder-actions]",
+    );
+    const toolbar = root.querySelector<HTMLElement>(
+      "[data-collections-toolbar]",
+    );
+    const dividerButton = root.querySelector<HTMLButtonElement>(
+      '[data-collections-reorder-actions] [data-collections-action="divider"]',
+    );
+
+    expect(reorderActions?.hidden).toBe(true);
+    expect(toolbar?.hidden).toBe(false);
+    expect(dividerButton?.textContent).toContain(labels.newDivider);
+
+    el._reorderMode = true;
+    await el.updateComplete;
+
+    expect(reorderActions?.hidden).toBe(false);
+    expect(toolbar?.hidden).toBe(true);
   });
 });

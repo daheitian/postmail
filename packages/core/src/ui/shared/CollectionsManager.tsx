@@ -213,14 +213,26 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
               {collectionCountLabel}
             </p>
             <div class="collections-page-actions">
-              <button
-                type="button"
-                class="btn-outline"
-                data-collections-action="done"
+              <div
+                class="collections-page-action-group"
+                data-collections-reorder-actions
                 hidden
               >
-                {labels.done}
-              </button>
+                <button
+                  type="button"
+                  class="btn-outline"
+                  data-collections-action="divider"
+                >
+                  {labels.newDivider}
+                </button>
+                <button
+                  type="button"
+                  class="btn-outline"
+                  data-collections-action="done"
+                >
+                  {labels.done}
+                </button>
+              </div>
               <div
                 class="collections-page-action-group"
                 data-collections-toolbar

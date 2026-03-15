@@ -861,14 +861,9 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    list-style: none;
   }
 
-  .collection-sort-trigger::-webkit-details-marker {
-    display: none;
-  }
-
-  .collection-sort-menu[open] .collection-sort-trigger svg {
+  .collection-sort-trigger[aria-expanded="true"] svg {
     transform: rotate(180deg);
   }
 
@@ -883,6 +878,11 @@
     border-radius: 16px;
     background: var(--popover);
     box-shadow: 0 20px 40px -28px rgba(15, 23, 42, 0.26);
+  }
+
+  .collection-sort-options {
+    display: flex;
+    flex-direction: column;
   }
 
   .collection-sort-option {

@@ -37,3 +37,4 @@ import "./client/components/jant-post-menu.js";
 import "./client/thread-context.js";
 import "./client/archive-nav.js";
 import "./client/site-header-nav.js";
+import "./client/collection-sort-menu.js";
