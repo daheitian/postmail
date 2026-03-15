@@ -5156,6 +5156,27 @@
     color: var(--preview-primary-dark);
   }
 
+  /* --- Internal theme sample page --------------------------------------- */
+
+  body:has([data-page="theme-sample"]) .site-header,
+  body:has([data-page="theme-sample"]) .site-container,
+  body:has([data-page="theme-sample"]) .site-footer {
+    max-width: min(1240px, calc(100vw - 1.5rem));
+  }
+
+  body:has([data-page="theme-sample"]) .site-content {
+    padding-inline: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  [data-page="theme-sample"] .theme-sample-feed-preview-inner {
+    width: min(100%, calc(var(--site-width) - (var(--site-padding) * 2)));
+    margin-inline: auto;
+  }
+
+  [data-page="theme-sample"] code {
+    overflow-wrap: anywhere;
+  }
+
   @media (prefers-color-scheme: dark) {
     .theme-preview-panel[data-theme-preview-mode="auto"] .theme-preview-meta {
       color: var(--preview-muted-dark);

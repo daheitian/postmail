@@ -24,6 +24,7 @@ import { featuredRoutes } from "./routes/pages/featured.js";
 import { latestRoutes } from "./routes/pages/latest.js";
 import { collectionsPageRoutes } from "./routes/pages/collections.js";
 import { newPostRoutes } from "./routes/pages/new.js";
+import { themeSampleRoutes } from "./routes/pages/theme-sample.js";
 
 // Routes - Settings (admin)
 import { settingsRoutes } from "./routes/dash/settings.js";
@@ -391,6 +392,7 @@ export function createApp(): App {
   app.route("/archive", archiveRoutes);
   app.route("/featured", featuredRoutes);
   app.route("/latest", latestRoutes);
+  app.route("/_", themeSampleRoutes);
   app.route("/c", collectionsPageRoutes);
   app.route("/c", collectionRoutes);
   app.route("/", homeRoutes);

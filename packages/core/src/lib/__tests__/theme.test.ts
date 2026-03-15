@@ -31,8 +31,14 @@ describe("buildThemeStyle", () => {
     const fakeTheme = {
       id: "test",
       name: "Test",
-      light: { "--primary": "oklch(0.5 0.1 200)" },
-      dark: { "--primary": "oklch(0.7 0.1 200)" },
+      light: {
+        "--primary": "oklch(0.5 0.1 200)",
+        "--site-accent": "oklch(0.58 0.08 210)",
+      },
+      dark: {
+        "--primary": "oklch(0.7 0.1 200)",
+        "--site-accent": "oklch(0.76 0.08 210)",
+      },
     };
     const fontOverrides = {
       "--font-body": "Georgia, serif",
@@ -42,6 +48,7 @@ describe("buildThemeStyle", () => {
     const css = buildThemeStyle(fakeTheme, "auto", fontOverrides);
 
     expect(css).toContain("--primary:");
+    expect(css).toContain("--site-accent:");
     expect(css).toContain("--font-body: Georgia, serif");
     expect(css).toContain("--font-heading: Futura, sans-serif");
   });

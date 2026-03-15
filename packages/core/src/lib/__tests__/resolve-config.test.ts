@@ -213,6 +213,6 @@ describe("resolveConfig", () => {
 
     // Falls back to default
     const config2 = resolveConfig(makeEnv(), {});
-    expect(config2.defaultThemeId).toBe("notepad");
+    expect(config2.defaultThemeId).toBe("linen");
   });
 });

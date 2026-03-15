@@ -112,16 +112,16 @@
  * We override them to use BaseCoat's CSS variables so that:
  *   - Light/dark mode switches automatically
  *   - Prose text matches the rest of the theme
- *   - Links are understated (same color as text, underline only)
+ *   - Links use the theme accent without reading like UI chrome
  *
- * Design reference: Medium, Substack, NYT — body links inherit text
- * color and rely on underline as the sole affordance.
+ * Design reference: editorial reading surfaces where links feel
+ * integrated into the text, not like product controls.
  */
 .prose {
   --tw-prose-body: inherit;
   --tw-prose-headings: var(--color-foreground);
   --tw-prose-lead: var(--color-muted-foreground);
-  --tw-prose-links: inherit;
+  --tw-prose-links: var(--site-accent);
   --tw-prose-bold: inherit;
   --tw-prose-counters: var(--color-muted-foreground);
   --tw-prose-bullets: var(--color-muted-foreground);
@@ -138,17 +138,6 @@
   font-size: var(--type-body-size);
   line-height: var(--type-body-leading);
   letter-spacing: var(--type-body-tracking);
-
-  /* Links: same color as surrounding text, underline only, no bold */
-  a {
-    font-weight: inherit;
-    text-underline-offset: 2px;
-    text-decoration-color: var(--color-border);
-  }
-
-  a:hover {
-    text-decoration-color: currentColor;
-  }
 
   :where(h1, h2, h3, h4, h5, h6) {
     font-family: var(--font-heading);
@@ -194,4 +183,33 @@
   figure[data-layout="full"] img {
     border-radius: 0;
   }
+}
+
+/*
+ * Content links
+ *
+ * Used by long-form prose and a few non-prose reading samples.
+ * UI/navigation links should use their own component styles instead.
+ */
+.content-link,
+.prose a {
+  color: var(--site-accent);
+  font-weight: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--site-accent) 58%,
+    transparent
+  );
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.14em;
+  transition:
+    color 0.18s ease,
+    text-decoration-color 0.18s ease;
+}
+
+.content-link:hover,
+.prose a:hover {
+  color: color-mix(in srgb, var(--site-accent) 84%, var(--color-foreground));
+  text-decoration-color: currentColor;
 }

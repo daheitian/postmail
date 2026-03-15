@@ -39,7 +39,7 @@ export const CONFIG_FIELDS = {
 
   // Environment-only (deployment/infrastructure config)
   DEFAULT_THEME: {
-    defaultValue: "notepad",
+    defaultValue: "linen",
     envOnly: true,
   },
   SITE_URL: {

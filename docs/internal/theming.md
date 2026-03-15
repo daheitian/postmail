@@ -81,9 +81,9 @@ By default, dark mode follows `@media (prefers-color-scheme: dark)`. Users can a
 
 ### Adding a New Color Theme
 
-Define themes in `src/ui/color-themes.ts` using `defineTheme()`. Each theme specifies 7 required colors plus optional semantic colors per mode:
+Define themes in `src/ui/color-themes.ts` using `defineTheme()`. Each theme specifies 8 required colors plus optional semantic colors per mode:
 
-- **Required**: `bg`, `fg`, `primary`, `primaryFg`, `muted`, `mutedFg`, `border`
+- **Required**: `bg`, `fg`, `primary`, `primaryFg`, `siteAccent`, `muted`, `mutedFg`, `border`
 - **Optional**: `destructive`, `success`, `searchMarkBg`, `searchMarkColor`, `dashBg`
 
 Optional colors fall back to sensible defaults. Override them when the default clashes with the theme's palette (e.g. green `--success` on the Gameboy green theme).

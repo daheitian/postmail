@@ -22,13 +22,18 @@ function getPreviewVariables(theme: ColorTheme): Record<string, string> {
     "--preview-muted-light":
       theme.light["--muted-foreground"] ?? theme.preview.lightText,
     "--preview-primary-light":
-      theme.light["--primary"] ?? theme.preview.lightLink,
+      theme.light["--site-accent"] ??
+      theme.light["--primary"] ??
+      theme.preview.lightLink,
     "--preview-bg-dark": theme.dark["--background"] ?? theme.preview.darkBg,
     "--preview-fg-dark": theme.dark["--foreground"] ?? theme.preview.darkText,
     "--preview-border-dark": theme.dark["--border"] ?? theme.preview.darkText,
     "--preview-muted-dark":
       theme.dark["--muted-foreground"] ?? theme.preview.darkText,
-    "--preview-primary-dark": theme.dark["--primary"] ?? theme.preview.darkLink,
+    "--preview-primary-dark":
+      theme.dark["--site-accent"] ??
+      theme.dark["--primary"] ??
+      theme.preview.darkLink,
   };
 }
 

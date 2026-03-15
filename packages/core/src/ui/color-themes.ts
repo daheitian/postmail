@@ -9,7 +9,7 @@
  * A color theme definition with light and dark mode CSS variable overrides.
  */
 export interface ColorTheme {
-  /** Stored in DB settings, e.g. "beach" */
+  /** Stored in DB settings, e.g. "linen" */
   id: string;
   /** Display name, e.g. "Dune" */
   name: string;
@@ -33,6 +33,9 @@ interface ThemeModeColors {
   fg: string;
   primary: string;
   primaryFg: string;
+  siteAccent: string;
+  /** Text on site accent backgrounds (defaults to primaryFg) */
+  siteAccentFg?: string;
   muted: string;
   mutedFg: string;
   border: string;
@@ -92,6 +95,8 @@ function defineTheme(opts: {
       "--popover-foreground": light.fg,
       "--primary": light.primary,
       "--primary-foreground": light.primaryFg,
+      "--site-accent": light.siteAccent,
+      "--site-accent-text": light.siteAccentFg ?? light.primaryFg,
       "--secondary": light.muted,
       "--secondary-foreground": light.fg,
       "--muted": light.muted,
@@ -125,6 +130,8 @@ function defineTheme(opts: {
       "--popover-foreground": dark.fg,
       "--primary": dark.primary,
       "--primary-foreground": dark.primaryFg,
+      "--site-accent": dark.siteAccent,
+      "--site-accent-text": dark.siteAccentFg ?? dark.primaryFg,
       "--secondary": dark.muted,
       "--secondary-foreground": dark.fg,
       "--muted": dark.muted,
@@ -154,7 +161,7 @@ function defineTheme(opts: {
 
 export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
-    id: "notepad",
+    id: "linen",
     name: "Linen",
     preview: {
       lightBg: "#f7f1e4",
@@ -167,8 +174,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.975 0.015 92)",
       fg: "oklch(0.29 0.01 70)",
-      primary: "oklch(0.46 0.09 255)",
+      primary: "oklch(0.43 0.055 236)",
       primaryFg: "oklch(0.985 0.008 92)",
+      siteAccent: "oklch(0.5 0.045 222)",
       muted: "oklch(0.94 0.017 92)",
       mutedFg: "oklch(0.52 0.008 70)",
       border: "oklch(0.89 0.018 92)",
@@ -179,8 +187,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.2 0.016 88)",
       fg: "oklch(0.87 0.012 92)",
-      primary: "oklch(0.68 0.08 255)",
+      primary: "oklch(0.79 0.045 236)",
       primaryFg: "oklch(0.18 0.014 88)",
+      siteAccent: "oklch(0.8 0.055 222)",
       muted: "oklch(0.26 0.016 88)",
       mutedFg: "oklch(0.64 0.01 92)",
       border: "oklch(0.32 0.015 88)",
@@ -191,7 +200,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   }),
 
   defineTheme({
-    id: "halloween",
+    id: "ember",
     name: "Ember",
     preview: {
       lightBg: "#f5ede1",
@@ -204,8 +213,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.968 0.014 68)",
       fg: "oklch(0.28 0.03 45)",
-      primary: "oklch(0.53 0.13 42)",
+      primary: "oklch(0.47 0.11 45)",
       primaryFg: "oklch(0.985 0.008 70)",
+      siteAccent: "oklch(0.57 0.12 55)",
       muted: "oklch(0.93 0.017 68)",
       mutedFg: "oklch(0.51 0.022 45)",
       border: "oklch(0.88 0.02 68)",
@@ -218,8 +228,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.17 0.022 38)",
       fg: "oklch(0.86 0.018 68)",
-      primary: "oklch(0.7 0.14 48)",
+      primary: "oklch(0.79 0.1 58)",
       primaryFg: "oklch(0.16 0.02 38)",
+      siteAccent: "oklch(0.74 0.12 48)",
       muted: "oklch(0.23 0.02 38)",
       mutedFg: "oklch(0.64 0.016 68)",
       border: "oklch(0.29 0.02 38)",
@@ -232,7 +243,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   }),
 
   defineTheme({
-    id: "panda",
+    id: "ink",
     name: "Ink",
     preview: {
       lightBg: "#f8f7f5",
@@ -245,8 +256,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.985 0.002 85)",
       fg: "oklch(0.24 0.004 85)",
-      primary: "oklch(0.43 0.025 250)",
+      primary: "oklch(0.36 0.012 255)",
       primaryFg: "oklch(0.985 0.002 85)",
+      siteAccent: "oklch(0.45 0.02 242)",
       muted: "oklch(0.95 0.003 85)",
       mutedFg: "oklch(0.5 0.006 85)",
       border: "oklch(0.89 0.003 85)",
@@ -257,8 +269,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.22 0.006 260)",
       fg: "oklch(0.94 0.004 85)",
-      primary: "oklch(0.76 0.03 245)",
+      primary: "oklch(0.83 0.015 248)",
       primaryFg: "oklch(0.18 0.008 260)",
+      siteAccent: "oklch(0.8 0.03 238)",
       muted: "oklch(0.28 0.006 260)",
       mutedFg: "oklch(0.66 0.004 85)",
       border: "oklch(0.34 0.006 260)",
@@ -269,7 +282,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   }),
 
   defineTheme({
-    id: "beach",
+    id: "dune",
     name: "Dune",
     preview: {
       lightBg: "#f7efe3",
@@ -282,8 +295,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.972 0.01 82)",
       fg: "oklch(0.29 0.018 55)",
-      primary: "oklch(0.5 0.1 190)",
+      primary: "oklch(0.44 0.085 200)",
       primaryFg: "oklch(0.985 0.004 82)",
+      siteAccent: "oklch(0.53 0.075 187)",
       muted: "oklch(0.934 0.013 82)",
       mutedFg: "oklch(0.52 0.014 55)",
       border: "oklch(0.885 0.015 82)",
@@ -294,8 +308,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.265 0.02 210)",
       fg: "oklch(0.88 0.012 82)",
-      primary: "oklch(0.72 0.11 185)",
+      primary: "oklch(0.8 0.08 190)",
       primaryFg: "oklch(0.22 0.018 210)",
+      siteAccent: "oklch(0.77 0.09 178)",
       muted: "oklch(0.325 0.018 210)",
       mutedFg: "oklch(0.67 0.012 82)",
       border: "oklch(0.38 0.016 210)",
@@ -306,7 +321,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   }),
 
   defineTheme({
-    id: "gameboy",
+    id: "moss",
     name: "Moss",
     preview: {
       lightBg: "#d7dbc7",
@@ -319,8 +334,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.882 0.026 125)",
       fg: "oklch(0.27 0.032 140)",
-      primary: "oklch(0.42 0.09 152)",
+      primary: "oklch(0.36 0.055 148)",
       primaryFg: "oklch(0.94 0.016 125)",
+      siteAccent: "oklch(0.44 0.05 138)",
       muted: "oklch(0.84 0.028 125)",
       mutedFg: "oklch(0.46 0.024 140)",
       border: "oklch(0.79 0.028 125)",
@@ -333,8 +349,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.18 0.018 145)",
       fg: "oklch(0.8 0.02 126)",
-      primary: "oklch(0.62 0.09 152)",
+      primary: "oklch(0.77 0.06 145)",
       primaryFg: "oklch(0.15 0.018 145)",
+      siteAccent: "oklch(0.8 0.07 150)",
       muted: "oklch(0.24 0.018 145)",
       mutedFg: "oklch(0.61 0.015 126)",
       border: "oklch(0.305 0.018 145)",
@@ -347,7 +364,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   }),
 
   defineTheme({
-    id: "grayscale",
+    id: "stone",
     name: "Stone",
     preview: {
       lightBg: "#efeeeb",
@@ -360,8 +377,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.96 0.002 90)",
       fg: "oklch(0.31 0.005 90)",
-      primary: "oklch(0.48 0.02 250)",
+      primary: "oklch(0.42 0.008 248)",
       primaryFg: "oklch(0.97 0.002 90)",
+      siteAccent: "oklch(0.5 0.018 230)",
       muted: "oklch(0.92 0.002 90)",
       mutedFg: "oklch(0.56 0.004 90)",
       border: "oklch(0.87 0.002 90)",
@@ -374,8 +392,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.19 0.004 250)",
       fg: "oklch(0.84 0.003 90)",
-      primary: "oklch(0.71 0.025 240)",
+      primary: "oklch(0.78 0.012 240)",
       primaryFg: "oklch(0.19 0.004 250)",
+      siteAccent: "oklch(0.8 0.022 222)",
       muted: "oklch(0.25 0.004 250)",
       mutedFg: "oklch(0.62 0.003 90)",
       border: "oklch(0.31 0.004 250)",
@@ -388,7 +407,7 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   }),
 
   defineTheme({
-    id: "sonnet",
+    id: "iris",
     name: "Iris",
     preview: {
       lightBg: "#f5edf5",
@@ -401,8 +420,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.972 0.01 320)",
       fg: "oklch(0.28 0.018 315)",
-      primary: "oklch(0.54 0.11 315)",
+      primary: "oklch(0.49 0.09 315)",
       primaryFg: "oklch(0.985 0.006 320)",
+      siteAccent: "oklch(0.58 0.08 320)",
       muted: "oklch(0.934 0.012 320)",
       mutedFg: "oklch(0.53 0.012 315)",
       border: "oklch(0.885 0.013 320)",
@@ -415,8 +435,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.185 0.018 305)",
       fg: "oklch(0.88 0.01 320)",
-      primary: "oklch(0.73 0.12 312)",
+      primary: "oklch(0.8 0.09 312)",
       primaryFg: "oklch(0.18 0.015 305)",
+      siteAccent: "oklch(0.79 0.11 318)",
       muted: "oklch(0.245 0.016 305)",
       mutedFg: "oklch(0.64 0.01 320)",
       border: "oklch(0.305 0.016 305)",
@@ -442,8 +463,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.973 0.011 45)",
       fg: "oklch(0.29 0.022 35)",
-      primary: "oklch(0.56 0.12 38)",
+      primary: "oklch(0.49 0.085 34)",
       primaryFg: "oklch(0.986 0.006 45)",
+      siteAccent: "oklch(0.56 0.09 28)",
       muted: "oklch(0.936 0.013 45)",
       mutedFg: "oklch(0.53 0.016 35)",
       border: "oklch(0.888 0.014 45)",
@@ -456,8 +478,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.19 0.017 28)",
       fg: "oklch(0.88 0.011 45)",
-      primary: "oklch(0.7 0.12 42)",
+      primary: "oklch(0.76 0.08 34)",
       primaryFg: "oklch(0.17 0.015 28)",
+      siteAccent: "oklch(0.78 0.1 26)",
       muted: "oklch(0.25 0.016 28)",
       mutedFg: "oklch(0.65 0.01 45)",
       border: "oklch(0.31 0.016 28)",
@@ -483,8 +506,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.978 0.006 230)",
       fg: "oklch(0.29 0.015 240)",
-      primary: "oklch(0.52 0.07 235)",
+      primary: "oklch(0.46 0.055 232)",
       primaryFg: "oklch(0.986 0.003 230)",
+      siteAccent: "oklch(0.54 0.05 220)",
       muted: "oklch(0.94 0.008 230)",
       mutedFg: "oklch(0.53 0.012 240)",
       border: "oklch(0.89 0.008 230)",
@@ -497,8 +521,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.205 0.014 240)",
       fg: "oklch(0.87 0.008 230)",
-      primary: "oklch(0.72 0.08 228)",
+      primary: "oklch(0.79 0.055 228)",
       primaryFg: "oklch(0.19 0.012 240)",
+      siteAccent: "oklch(0.79 0.07 216)",
       muted: "oklch(0.265 0.013 240)",
       mutedFg: "oklch(0.66 0.008 230)",
       border: "oklch(0.325 0.013 240)",

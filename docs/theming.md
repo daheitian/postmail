@@ -16,7 +16,7 @@ These are the main colors that control the overall look. Changing these affects 
 | ------------------------ | ---------------------------------------------- |
 | `--background`           | Page background                                |
 | `--foreground`           | Main text color                                |
-| `--primary`              | Accent color (buttons, active states)          |
+| `--primary`              | Functional brand color (buttons, selected UI)  |
 | `--primary-foreground`   | Text on primary-colored elements               |
 | `--secondary`            | Secondary buttons, badges                      |
 | `--secondary-foreground` | Text on secondary elements                     |
@@ -36,34 +36,39 @@ These are the main colors that control the overall look. Changing these affects 
 
 ### Site-specific colors
 
-These are derived from the core palette by default. Override them only when you need finer control — for example, making the thread line a different color than the standard border.
+These are derived from the core palette by default. Built-in themes set `--site-accent` separately; if you only override the core palette yourself, `--site-accent` falls back to `--primary`.
 
-| Variable                | Default                   | What it controls                   |
-| ----------------------- | ------------------------- | ---------------------------------- |
-| `--site-accent`         | `var(--primary)`          | Site accent color                  |
-| `--site-accent-text`    | `var(--primary-fg)`       | Text on site accent                |
-| `--site-page-bg`        | `var(--background)`       | Page background                    |
-| `--site-elevated-bg`    | `var(--background)`       | Elevated content areas             |
-| `--site-nav-hover-bg`   | `var(--accent)`           | Navigation hover background        |
-| `--site-text-primary`   | `var(--foreground)`       | Primary text                       |
-| `--site-text-secondary` | `var(--muted-foreground)` | Secondary/caption text             |
-| `--site-divider`        | `var(--border)`           | Content dividers                   |
-| `--site-threadline`     | `var(--border)`           | Thread connection lines            |
-| `--site-column-outline` | `var(--border)`           | Column outline                     |
-| `--site-media-outline`  | `var(--border)`           | Image/video border                 |
-| `--search-mark-bg`      | Yellow highlight          | Search result highlight background |
-| `--search-mark-color`   | Dark text                 | Search result highlight text       |
+| Variable                | Default                     | What it controls                                    |
+| ----------------------- | --------------------------- | --------------------------------------------------- |
+| `--site-accent`         | `var(--primary)`            | Editorial accent (links, thread dots, subtle tints) |
+| `--site-accent-text`    | `var(--primary-foreground)` | Text on site accent                                 |
+| `--site-page-bg`        | `var(--background)`         | Page background                                     |
+| `--site-elevated-bg`    | `var(--background)`         | Elevated content areas                              |
+| `--site-nav-hover-bg`   | `var(--accent)`             | Navigation hover background                         |
+| `--site-text-primary`   | `var(--foreground)`         | Primary text                                        |
+| `--site-text-secondary` | `var(--muted-foreground)`   | Secondary/caption text                              |
+| `--site-divider`        | `var(--border)`             | Content dividers                                    |
+| `--site-threadline`     | `var(--border)`             | Thread connection lines                             |
+| `--site-column-outline` | `var(--border)`             | Column outline                                      |
+| `--site-media-outline`  | `var(--border)`             | Image/video border                                  |
+| `--search-mark-bg`      | Yellow highlight            | Search result highlight background                  |
+| `--search-mark-color`   | Dark text                   | Search result highlight text                        |
 
-### Example: Custom accent color
+### Example: Custom primary and site accent
 
 ```css
 :root {
-  --primary: oklch(0.55 0.15 250);
+  --primary: oklch(0.48 0.08 255);
   --primary-foreground: oklch(0.98 0 0);
+  --site-accent: oklch(0.56 0.06 240);
 }
 
-.dark {
-  --primary: oklch(0.7 0.15 250);
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: oklch(0.79 0.06 255);
+    --primary-foreground: oklch(0.19 0.01 255);
+    --site-accent: oklch(0.74 0.07 240);
+  }
 }
 ```
 
@@ -175,7 +180,7 @@ Target specific pages or elements using data attributes:
 }
 
 [data-format="link"] {
-  border-left: 3px solid var(--primary);
+  border-left: 3px solid var(--site-accent);
   padding-left: 1rem;
 }
 ```
@@ -209,5 +214,5 @@ Jant automatically follows the visitor's system preference (light/dark). Use a m
 ## Tips
 
 - Custom CSS has the highest priority and overrides everything, including the selected color theme.
-- Use `oklch()` for colors — it produces more perceptually uniform results than hex or hsl. Example: `oklch(0.6 0.15 250)` is a medium-saturation blue.
-- Test in both light and dark mode. If you override a color variable in `:root`, consider whether `.dark` needs a matching override.
+- Use `oklch()` for colors. A good rule of thumb: keep `--primary` slightly sturdier for solid controls, and let `--site-accent` carry the softer editorial color.
+- Test in both light and dark mode. If you override a color variable in `:root`, consider whether it also needs a matching override in `@media (prefers-color-scheme: dark)` or `:root[data-theme-mode="dark"]`.
