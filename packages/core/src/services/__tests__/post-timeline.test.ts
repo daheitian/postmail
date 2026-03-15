@@ -366,6 +366,52 @@ describe("PostService - Timeline features", () => {
     });
   });
 
+  describe("getLastPostIdsByThread", () => {
+    it("keeps independent root threads separate", async () => {
+      const root1 = await postService.create({
+        format: "note",
+        bodyMarkdown: "root 1",
+      });
+      const root2 = await postService.create({
+        format: "quote",
+        bodyMarkdown: "root 2",
+        quoteText: "quoted",
+      });
+
+      const result = await postService.getLastPostIdsByThread([
+        root1.id,
+        root2.id,
+      ]);
+
+      expect(result.get(root1.id)).toBe(root1.id);
+      expect(result.get(root2.id)).toBe(root2.id);
+    });
+
+    it("returns the latest published post within each thread", async () => {
+      const root1 = await postService.create({
+        format: "note",
+        bodyMarkdown: "root 1",
+      });
+      const root2 = await postService.create({
+        format: "note",
+        bodyMarkdown: "root 2",
+      });
+      const reply1 = await postService.create({
+        format: "note",
+        bodyMarkdown: "reply 1",
+        replyToId: root1.id,
+      });
+
+      const result = await postService.getLastPostIdsByThread([
+        root1.id,
+        root2.id,
+      ]);
+
+      expect(result.get(root1.id)).toBe(reply1.id);
+      expect(result.get(root2.id)).toBe(root2.id);
+    });
+  });
+
   describe("timeline assembly", () => {
     it("fetches published non-reply posts for the timeline", async () => {
       const root = await postService.create({

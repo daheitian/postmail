@@ -84,6 +84,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
   const showTimestamp = !display?.hideTimestamp;
+  const hideActions = !!display?.hideActions;
   const showThreadSeparator =
     !!post.threadRootPermalink &&
     (showTimestamp || !!safeExternalUrl || !!detail);
@@ -170,7 +171,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
           showSeparator={showCollectionSeparator}
         />
       </div>
-      {!display?.hideActions && (
+      {!hideActions && (
         <div class="post-menu-actions">
           {post.isLastInThread && (
             <button

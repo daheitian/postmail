@@ -1149,20 +1149,22 @@ export function createPostService(
       const rows = await db
         .select({
           threadId: posts.threadId,
-          id: sql<string>`(
-            SELECT p2.id FROM post AS p2
-            WHERE p2.thread_id = ${posts.threadId}
-              AND p2.deleted_at IS NULL
-              AND p2.status = 'published'
-            ORDER BY p2.created_at DESC, p2.id DESC
-            LIMIT 1
-          )`.as("last_id"),
+          id: posts.id,
         })
         .from(posts)
-        .where(inArray(posts.id, unique));
+        .where(
+          and(
+            inArray(posts.threadId, unique),
+            eq(posts.status, "published"),
+            isNull(posts.deletedAt),
+          ),
+        )
+        .orderBy(posts.threadId, desc(posts.createdAt), desc(posts.id));
 
       for (const row of rows) {
-        if (row.id) result.set(row.threadId, row.id);
+        if (!result.has(row.threadId)) {
+          result.set(row.threadId, row.id);
+        }
       }
       return result;
     },
