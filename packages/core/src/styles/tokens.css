@@ -159,6 +159,12 @@
   --dash-card-radius: 10px;
 }
 
+@media (max-width: 699px) {
+  :root {
+    --site-padding: 1.625rem;
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme-mode="light"]) {
     --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
