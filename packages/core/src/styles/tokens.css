@@ -72,6 +72,16 @@
   /* Icons */
   --icon-stroke: 2;
   --icon-stroke-fine: 1.5;
+  --collection-icon-stone: #6f685f;
+  --collection-icon-clay: #98624c;
+  --collection-icon-rust: #ab6e49;
+  --collection-icon-ochre: #a88a4d;
+  --collection-icon-moss: #748251;
+  --collection-icon-sea: #547b78;
+  --collection-icon-slate: #647588;
+  --collection-icon-indigo: #6f7498;
+  --collection-icon-plum: #846b84;
+  --collection-icon-rose: #a06f77;
 
   /* Derived color tokens (from BaseCoat variables) */
   --site-accent: var(--primary);
@@ -154,6 +164,16 @@
     --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
     --search-mark-color: oklch(0.92 0.08 90);
     --dash-bg: oklch(0.2 0.005 80);
+    --collection-icon-stone: #b7afa2;
+    --collection-icon-clay: #cc9880;
+    --collection-icon-rust: #d4a07b;
+    --collection-icon-ochre: #d1b176;
+    --collection-icon-moss: #a4b67b;
+    --collection-icon-sea: #7ba7a2;
+    --collection-icon-slate: #91a8bf;
+    --collection-icon-indigo: #9ca3ca;
+    --collection-icon-plum: #b293b4;
+    --collection-icon-rose: #c79aa0;
   }
 }
 
@@ -161,4 +181,14 @@
   --search-mark-bg: oklch(0.45 0.1 85 / 0.5);
   --search-mark-color: oklch(0.92 0.08 90);
   --dash-bg: oklch(0.2 0.005 80);
+  --collection-icon-stone: #b7afa2;
+  --collection-icon-clay: #cc9880;
+  --collection-icon-rust: #d4a07b;
+  --collection-icon-ochre: #d1b176;
+  --collection-icon-moss: #a4b67b;
+  --collection-icon-sea: #7ba7a2;
+  --collection-icon-slate: #91a8bf;
+  --collection-icon-indigo: #9ca3ca;
+  --collection-icon-plum: #b293b4;
+  --collection-icon-rose: #c79aa0;
 }

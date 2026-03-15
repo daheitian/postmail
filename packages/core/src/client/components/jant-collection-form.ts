@@ -15,14 +15,18 @@ import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import {
-  DEFAULT_ICON_COLOR,
+  DEFAULT_ICON_PALETTE,
   DEFAULT_ICON_NAME,
-  ICON_COLOR_PRESETS,
   createIconValue,
   parseCollectionIcon,
   renderCollectionIcon,
   getIconSvg,
 } from "../../lib/icons.js";
+import {
+  ICON_COLOR_PRESETS,
+  getCollectionIconColorVar,
+  type CollectionIconPalette,
+} from "../../lib/collection-icon-palette.js";
 import { ALL_ICON_NAMES, ALL_ICON_CATEGORIES } from "../../lib/icon-catalog.js";
 import { EMOJI_CATALOG } from "../../lib/emoji-catalog.js";
 import { slugify } from "../lazy-slugify.js";
@@ -56,7 +60,7 @@ export class JantCollectionForm extends LitElement {
     _sortOrder: { state: true },
     _iconName: { state: true },
     _iconSvg: { state: true },
-    _iconColor: { state: true },
+    _iconPalette: { state: true },
     _iconEmoji: { state: true },
     _iconSearch: { state: true },
     _pickerOpen: { state: true },
@@ -76,7 +80,7 @@ export class JantCollectionForm extends LitElement {
   declare _sortOrder: string;
   declare _iconName: string;
   declare _iconSvg: string;
-  declare _iconColor: string;
+  declare _iconPalette: CollectionIconPalette;
   declare _iconEmoji: string;
   declare _iconSearch: string;
   declare _pickerOpen: boolean;
@@ -134,7 +138,7 @@ export class JantCollectionForm extends LitElement {
     this._sortOrder = "newest";
     this._iconName = "";
     this._iconSvg = "";
-    this._iconColor = DEFAULT_ICON_COLOR;
+    this._iconPalette = DEFAULT_ICON_PALETTE;
     this._iconEmoji = "";
     this._iconSearch = "";
     this._pickerOpen = false;
@@ -182,18 +186,18 @@ export class JantCollectionForm extends LitElement {
     if (parsed) {
       this._iconName = parsed.name;
       this._iconSvg = parsed.svg;
-      this._iconColor = parsed.color || DEFAULT_ICON_COLOR;
+      this._iconPalette = parsed.palette;
       this._iconEmoji = "";
     } else if (rawIcon && !rawIcon.startsWith("{")) {
       // Legacy emoji value
       this._iconEmoji = rawIcon;
       this._iconName = "";
       this._iconSvg = "";
-      this._iconColor = DEFAULT_ICON_COLOR;
+      this._iconPalette = DEFAULT_ICON_PALETTE;
     } else {
       this._iconName = "";
       this._iconSvg = "";
-      this._iconColor = DEFAULT_ICON_COLOR;
+      this._iconPalette = DEFAULT_ICON_PALETTE;
       this._iconEmoji = "";
       // Default icon in create mode
       if (!this.isEdit) {
@@ -207,7 +211,7 @@ export class JantCollectionForm extends LitElement {
     if (svg) {
       this._iconName = DEFAULT_ICON_NAME;
       this._iconSvg = svg;
-      this._iconColor = DEFAULT_ICON_COLOR;
+      this._iconPalette = DEFAULT_ICON_PALETTE;
     }
   }
 
@@ -219,7 +223,7 @@ export class JantCollectionForm extends LitElement {
       return createIconValue(
         this._iconName,
         this._iconSvg,
-        this._iconColor || DEFAULT_ICON_COLOR,
+        this._iconPalette || DEFAULT_ICON_PALETTE,
       );
     }
     return "";
@@ -288,8 +292,8 @@ export class JantCollectionForm extends LitElement {
     this._iconName = name;
     this._iconSvg = svg;
     this._iconEmoji = "";
-    if (!this._iconColor) {
-      this._iconColor = DEFAULT_ICON_COLOR;
+    if (!this._iconPalette) {
+      this._iconPalette = DEFAULT_ICON_PALETTE;
     }
     this._iconSearch = "";
     this._pickerOpen = false;
@@ -306,7 +310,7 @@ export class JantCollectionForm extends LitElement {
   #removeIcon() {
     this._iconName = "";
     this._iconSvg = "";
-    this._iconColor = DEFAULT_ICON_COLOR;
+    this._iconPalette = DEFAULT_ICON_PALETTE;
     this._iconEmoji = "";
     this._pickerOpen = false;
   }
@@ -350,7 +354,7 @@ export class JantCollectionForm extends LitElement {
       });
       return html`<span
         class="w-5 h-5 flex items-center justify-center"
-        style=${`color:${this._iconColor}`}
+        style=${`color:${getCollectionIconColorVar(this._iconPalette)}`}
       >
         ${unsafeHTML(htmlString)}
       </span>`;
@@ -375,15 +379,15 @@ export class JantCollectionForm extends LitElement {
     return html`
       <div class="flex items-center gap-1.5 px-3 pb-2">
         ${ICON_COLOR_PRESETS.map((preset) => {
-          const isActive = this._iconColor === preset.value;
+          const isActive = this._iconPalette === preset.name;
           return html`
             <button
               type="button"
               class=${`w-5 h-5 rounded-full border-2 transition-transform hover:scale-110${isActive ? " ring-2 ring-offset-1 ring-primary" : ""}`}
-              style=${`background-color:${preset.value}; border-color: transparent`}
+              style=${`background-color:${getCollectionIconColorVar(preset.name)}; border-color: transparent`}
               title=${preset.name}
               @click=${() => {
-                this._iconColor = preset.value;
+                this._iconPalette = preset.name;
               }}
             ></button>
           `;
@@ -415,7 +419,7 @@ export class JantCollectionForm extends LitElement {
                   class=${`flex items-center justify-center w-8 h-8 rounded-md hover:bg-accent transition-colors${this._iconName === icon.name && this._iconSvg === icon.svg && !this._iconEmoji ? " ring-2 ring-primary" : ""}`}
                   data-icon-name=${icon.name}
                   title=${icon.name}
-                  style=${`color:${this._iconColor}`}
+                  style=${`color:${getCollectionIconColorVar(this._iconPalette)}`}
                   @click=${() => this.#selectIcon(icon.name, icon.svg)}
                 >
                   <span class="w-4 h-4 flex items-center justify-center">

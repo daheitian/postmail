@@ -55,14 +55,14 @@ describe("showConfirmDialog", () => {
       .updateComplete;
 
     const title = host?.querySelector(".confirm-dialog-title");
+    const message = host?.querySelector(".confirm-dialog-message");
     const confirmButton = host?.querySelector<HTMLButtonElement>(
       ".confirm-dialog-actions .btn-destructive",
     );
     const panel = host?.querySelector<HTMLElement>(".confirm-dialog-panel");
 
-    expect(title?.textContent).toContain(
-      "Delete this post permanently? This can't be undone.",
-    );
+    expect(title?.textContent).toContain("Delete this post permanently?");
+    expect(message?.textContent).toContain("This can't be undone.");
     expect(document.activeElement).toBe(panel);
 
     confirmButton?.click();

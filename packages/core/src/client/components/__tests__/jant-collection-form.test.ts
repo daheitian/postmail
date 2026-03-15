@@ -163,8 +163,9 @@ describe("JantCollectionForm", () => {
     expect(d.data.slug).toBe("books");
     expect(d.data.description).toBe("All about books");
     expect(d.data.sortOrder).toBe("rating_desc");
-    // Default icon is auto-selected in create mode (library icon with gray color)
+    // Default icon is auto-selected in create mode using the first semantic palette entry.
     expect(d.data.icon).toBeDefined();
     expect(d.data.icon).toContain('"name":"library"');
+    expect(d.data.icon).toContain('"palette":"stone"');
   });
 });

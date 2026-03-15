@@ -18,6 +18,7 @@ import {
   MAX_MEDIA_ATTACHMENTS,
 } from "../types.js";
 import { ValidationError } from "./errors.js";
+import { isCollectionIconPalette } from "./collection-icon-palette.js";
 import { sanitizeUrl, normalizePath } from "./url.js";
 
 // =============================================================================
@@ -292,15 +293,20 @@ export const CreateCollectionSchema = z.object({
         if (!val || !val.startsWith("{")) return true;
         try {
           const parsed = JSON.parse(val) as Record<string, unknown>;
-          if (typeof parsed.color === "string") {
-            return /^#[0-9a-f]{3,6}$/i.test(parsed.color);
-          }
-          return true;
+          return (
+            typeof parsed.name === "string" &&
+            typeof parsed.svg === "string" &&
+            typeof parsed.palette === "string" &&
+            isCollectionIconPalette(parsed.palette)
+          );
         } catch {
-          return true; // non-JSON icons (legacy emoji) are fine
+          return false;
         }
       },
-      { message: "Icon color must be a valid hex color (e.g. #fff, #ff0000)" },
+      {
+        message:
+          "Icon palette must be one of Jant's built-in collection colors",
+      },
     ),
   sortOrder: SortOrderSchema.optional(),
 });

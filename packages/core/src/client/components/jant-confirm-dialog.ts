@@ -164,16 +164,37 @@ export class JantConfirmDialog extends LitElement {
     }
   };
 
+  #resolveCopy() {
+    if (this._title) {
+      return {
+        title: this._title,
+        message: this._message,
+      };
+    }
+
+    const parts = this._message.match(/^(.+?[?？])\s+(.+)$/u);
+    if (parts) {
+      return {
+        title: parts[1],
+        message: parts[2],
+      };
+    }
+
+    return {
+      title: this._message,
+      message: "",
+    };
+  }
+
   render() {
     if (!this._open) return nothing;
 
-    const title = this._title || this._message;
-    const message = this._title ? this._message : "";
+    const { title, message } = this.#resolveCopy();
     const confirmClass = this._tone === "danger" ? "btn-destructive" : "btn";
 
     return html`
       <dialog
-        class="confirm-dialog"
+        class="dialog confirm-dialog"
         @cancel=${this.#handleCancel}
         @click=${this.#handleBackdropClick}
         @keydown=${this.#handleKeydown}
@@ -182,12 +203,13 @@ export class JantConfirmDialog extends LitElement {
           class="confirm-dialog-panel"
           data-tone=${this._tone}
           tabindex="-1"
+          role="document"
           aria-labelledby="confirm-dialog-title"
           aria-describedby=${message
             ? "confirm-dialog-message"
             : "confirm-dialog-title"}
         >
-          <div class="confirm-dialog-body">
+          <header class="confirm-dialog-header">
             <h2 id="confirm-dialog-title" class="confirm-dialog-title">
               ${title}
             </h2>
@@ -199,11 +221,11 @@ export class JantConfirmDialog extends LitElement {
                   ${message}
                 </p>`
               : nothing}
-          </div>
-          <div class="confirm-dialog-actions">
+          </header>
+          <footer class="confirm-dialog-actions">
             <button
               type="button"
-              class="btn-outline confirm-dialog-cancel"
+              class="btn-outline"
               @click=${() => this.#finish(false)}
             >
               ${this._cancelLabel}
@@ -215,7 +237,7 @@ export class JantConfirmDialog extends LitElement {
             >
               ${this._confirmLabel}
             </button>
-          </div>
+          </footer>
         </div>
       </dialog>
     `;
