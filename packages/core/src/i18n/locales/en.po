@@ -178,6 +178,11 @@ msgstr "Add"
 msgid "Add a custom link to any URL"
 msgstr "Add a custom link to any URL"
 
+#. @context: Description for the RSS system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Add a link to your RSS feed"
+msgstr "Add a link to your RSS feed"
+
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add alt text"
@@ -271,9 +276,11 @@ msgid "Applies to your entire site, including admin pages. Pick a palette, then 
 msgstr "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
 
 #. @context: Archive page title
+#. @context: Built-in navigation label for the archive page
 #. @context: Inactive nav link label on sample page
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Archive"
 msgstr "Archive"
 
@@ -515,6 +522,7 @@ msgstr "collections"
 
 #. @context: Breadcrumb link to collections page
 #. @context: Breadcrumb link to collections page
+#. @context: Built-in navigation label for the collections page
 #. @context: Collections page heading
 #. @context: Collections page heading
 #. @context: Inactive nav link label on sample page
@@ -523,6 +531,7 @@ msgstr "collections"
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Collections"
 msgstr "Collections"
 
@@ -1371,6 +1380,16 @@ msgstr "link"
 msgid "Link"
 msgstr "Link"
 
+#. @context: Description for the archive system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to the post archive"
+msgstr "Link to the post archive"
+
+#. @context: Description for the collections system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your collections page"
+msgstr "Link to your collections page"
+
 #. @context: Role label for dark accent swatch
 #: src/ui/pages/BrandPage.tsx
 msgid "Link tone"
@@ -2164,8 +2183,10 @@ msgstr "Sessions"
 msgid "Sessions, password, export"
 msgstr "Sessions, password, export"
 
+#. @context: Built-in navigation label for settings
 #. @context: Page title for the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Settings"
 msgstr "Settings"
 
@@ -2204,6 +2225,16 @@ msgstr "Show more"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Show more icons"
 msgstr "Show more icons"
+
+#. @context: Description for the settings system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Shows 'Settings' when logged in, 'Sign in' when logged out"
+msgstr "Shows 'Settings' when logged in, 'Sign in' when logged out"
+
+#. @context: Built-in navigation label shown when auth is required
+#: src/ui/shared/navigation-labels.ts
+msgid "Sign in"
+msgstr "Sign in"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading

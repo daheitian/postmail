@@ -90,12 +90,16 @@ export function SettingsRootContent({
     <div class="settings-root">
       {demoMode && (
         <div class="alert mb-6" role="alert">
-          {t({
-            message:
-              "Demo mode keeps search indexing, sessions, passwords, and account deletion locked.",
-            comment:
-              "@context: Notice shown on the settings home page when demo restrictions are enabled",
-          })}
+          <section>
+            <p>
+              {t({
+                message:
+                  "Demo mode keeps search indexing, sessions, passwords, and account deletion locked.",
+                comment:
+                  "@context: Notice shown on the settings home page when demo restrictions are enabled",
+              })}
+            </p>
+          </section>
         </div>
       )}
       <header class="settings-root-header">

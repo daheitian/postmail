@@ -22,13 +22,23 @@ export type SortOrder = (typeof SORT_ORDERS)[number];
 export const NAV_ITEM_TYPES = ["link", "system"] as const;
 export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
 
+export const SYSTEM_NAV_KEY_VALUES = [
+  "rss",
+  "settings",
+  "collections",
+  "archive",
+] as const;
+export type SystemNavKey = (typeof SYSTEM_NAV_KEY_VALUES)[number];
+
 export const SYSTEM_NAV_KEYS = {
   rss: { defaultLabel: "RSS", url: "/feed" },
   settings: { defaultLabel: "Settings", url: "/settings" },
   collections: { defaultLabel: "Collections", url: "/c" },
   archive: { defaultLabel: "Archive", url: "/archive" },
-} as const;
-export type SystemNavKey = keyof typeof SYSTEM_NAV_KEYS;
+} as const satisfies Record<
+  SystemNavKey,
+  { defaultLabel: string; url: string }
+>;
 
 export const MAX_MEDIA_ATTACHMENTS = 20;
 export const MAX_PINNED_POSTS = 3;

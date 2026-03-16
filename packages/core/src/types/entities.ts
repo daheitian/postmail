@@ -8,6 +8,7 @@ import type {
   Visibility,
   SortOrder,
   NavItemType,
+  SystemNavKey,
   MediaKind,
   PathKind,
 } from "./constants.js";
@@ -131,6 +132,7 @@ export interface PostCollection {
 export interface NavItem {
   id: string;
   type: NavItemType;
+  systemKey?: SystemNavKey;
   label: string;
   url: string;
   position: string;

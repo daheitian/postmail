@@ -72,12 +72,16 @@ export function AccountMenuContent({
     <div class="settings-root">
       {demoMode && (
         <div class="alert mb-6" role="alert">
-          {t({
-            message:
-              "Demo mode hides sessions, password changes, and account deletion. Export still works.",
-            comment:
-              "@context: Notice shown on the account page when demo restrictions are enabled",
-          })}
+          <section>
+            <p>
+              {t({
+                message:
+                  "Demo mode hides sessions, password changes, and account deletion. Export still works.",
+                comment:
+                  "@context: Notice shown on the account page when demo restrictions are enabled",
+              })}
+            </p>
+          </section>
         </div>
       )}
 

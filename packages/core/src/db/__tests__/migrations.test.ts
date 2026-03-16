@@ -9,6 +9,7 @@
  */
 
 import { describe, it, expect } from "vitest";
+import Database from "better-sqlite3";
 import { readdirSync, readFileSync } from "fs";
 import { resolve } from "path";
 
@@ -37,6 +38,20 @@ function listMigrationFiles(): string[] {
   return readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith(".sql"))
     .sort();
+}
+
+function applyMigration(
+  sqlite: Database.Database,
+  filename: string,
+  options?: { skipFts?: boolean },
+) {
+  const migration = readFileSync(resolve(MIGRATIONS_DIR, filename), "utf-8");
+  for (const sql of migration.split("--> statement-breakpoint")) {
+    const trimmed = sql.trim();
+    if (!trimmed) continue;
+    if (options?.skipFts && trimmed.includes("post_fts")) continue;
+    sqlite.exec(trimmed);
+  }
 }
 
 describe("migration integrity", () => {
@@ -114,5 +129,83 @@ describe("migration integrity", () => {
         "Fix: run `mise run db-generate` to regenerate it properly.",
       ].join("\n"),
     ).toBe(true);
+  });
+
+  it("backfills legacy system nav rows before enforcing system_key constraints", () => {
+    const sqlite = new Database(":memory:");
+    sqlite.pragma("foreign_keys = ON");
+
+    for (const filename of [
+      "0000_baseline.sql",
+      "0002_closed_blockbuster.sql",
+      "0003_mysterious_wind_dancer.sql",
+      "0004_workable_true_believers.sql",
+    ]) {
+      applyMigration(sqlite, filename, { skipFts: true });
+    }
+
+    sqlite.exec(`
+      INSERT INTO nav_item (id, type, label, url, position, created_at, updated_at) VALUES
+        ('nav-collections', 'system', 'Collections', '/c', 'a0', 1, 1),
+        ('nav-archive', 'system', 'Archive', '/archive', 'a1', 1, 1),
+        ('nav-rss', 'system', 'RSS', '/feed', 'a2', 1, 1),
+        ('nav-dashboard', 'system', 'Dashboard', '/dash', 'a3', 1, 1),
+        ('nav-duplicate-settings', 'system', 'Settings', '/settings', 'a4', 1, 1),
+        ('nav-legacy-custom', 'system', 'Legacy', '/legacy', 'a5', 1, 1);
+    `);
+
+    applyMigration(sqlite, "0004z_nav_item_system_key_backfill.sql");
+    applyMigration(sqlite, "0005_happy_slyde.sql");
+
+    const rows = sqlite
+      .prepare(
+        "SELECT id, type, system_key AS systemKey, label, url FROM nav_item ORDER BY position",
+      )
+      .all();
+
+    expect(rows).toEqual([
+      {
+        id: "nav-collections",
+        type: "system",
+        systemKey: "collections",
+        label: "Collections",
+        url: "/c",
+      },
+      {
+        id: "nav-archive",
+        type: "system",
+        systemKey: "archive",
+        label: "Archive",
+        url: "/archive",
+      },
+      {
+        id: "nav-rss",
+        type: "system",
+        systemKey: "rss",
+        label: "RSS",
+        url: "/feed",
+      },
+      {
+        id: "nav-dashboard",
+        type: "system",
+        systemKey: "settings",
+        label: "Settings",
+        url: "/settings",
+      },
+      {
+        id: "nav-duplicate-settings",
+        type: "link",
+        systemKey: null,
+        label: "Settings",
+        url: "/settings",
+      },
+      {
+        id: "nav-legacy-custom",
+        type: "link",
+        systemKey: null,
+        label: "Legacy",
+        url: "/legacy",
+      },
+    ]);
   });
 });

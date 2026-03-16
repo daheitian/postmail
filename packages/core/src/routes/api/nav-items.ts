@@ -4,17 +4,19 @@
 
 import { Hono } from "hono";
 import { z } from "zod";
-import type { Bindings, NavItemType } from "../../types.js";
+import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { CreateNavItemSchema, parseValidated } from "../../lib/schemas.js";
+import {
+  CreateNavItemSchema,
+  UpdateNavItemSchema,
+  parseValidated,
+} from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const navItemsApiRoutes = new Hono<Env>();
-
-const UpdateNavItemSchema = CreateNavItemSchema.partial();
 
 const MoveSchema = z.object({
   after: z.string().nullable().optional(),
@@ -47,12 +49,17 @@ navItemsApiRoutes.put("/:id/move", requireAuthApi(), async (c) => {
 // Create nav item (requires auth)
 navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
   const body = parseValidated(CreateNavItemSchema, await c.req.json());
-
-  const item = await c.var.services.navItems.create({
-    type: body.type as NavItemType,
-    label: body.label,
-    url: body.url,
-  });
+  const item =
+    body.type === "system"
+      ? await c.var.services.navItems.create({
+          type: "system",
+          systemKey: body.systemKey,
+        })
+      : await c.var.services.navItems.create({
+          type: "link",
+          label: body.label,
+          url: body.url,
+        });
 
   return c.json(item, 201);
 });

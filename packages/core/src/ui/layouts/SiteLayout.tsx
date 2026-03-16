@@ -11,8 +11,9 @@ import type { NavItemView, SiteLayoutProps } from "../../types.js";
 import { toPublicPath } from "../../lib/url.js";
 import { ComposeDialog } from "../compose/ComposeDialog.js";
 import { ComposePrompt } from "../compose/ComposePrompt.js";
+import { getNavItemDisplayLabel } from "../shared/navigation-labels.js";
 
-function HeaderLink({ link }: { link: NavItemView }) {
+function HeaderLink({ link, label }: { link: NavItemView; label: string }) {
   return (
     <a
       href={link.url}
@@ -21,7 +22,7 @@ function HeaderLink({ link }: { link: NavItemView }) {
         ? { target: "_blank", rel: "noopener noreferrer" }
         : {})}
     >
-      {link.label}
+      {label}
     </a>
   );
 }
@@ -46,7 +47,12 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
 }) => {
   const { t } = useLingui();
   const maxVisible = headerNavMaxVisible ?? 3;
-  const overflowLinks = links.slice(maxVisible);
+  const linksWithLabels = links.map((link) => ({
+    ...link,
+    displayLabel: getNavItemDisplayLabel(link, t, sitePathPrefix),
+  }));
+  const visibleLinks = linksWithLabels.slice(0, maxVisible);
+  const overflowLinks = linksWithLabels.slice(maxVisible);
   const hasActiveOverflow = overflowLinks.some((l) => l.isActive);
 
   const latestHref =
@@ -109,8 +115,12 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
               <div class="site-header-right">
                 {links.length > 0 && (
                   <nav class="site-header-nav">
-                    {links.slice(0, maxVisible).map((link) => (
-                      <HeaderLink key={link.id} link={link} />
+                    {visibleLinks.map((link) => (
+                      <HeaderLink
+                        key={link.id}
+                        link={link}
+                        label={link.displayLabel}
+                      />
                     ))}
                     {overflowLinks.length > 0 && (
                       <div class="dropdown-menu site-header-more">
@@ -167,7 +177,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                                     }
                                   : {})}
                               >
-                                {link.label}
+                                {link.displayLabel}
                               </a>
                             ))}
                           </div>

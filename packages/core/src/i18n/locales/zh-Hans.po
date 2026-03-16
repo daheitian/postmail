@@ -178,6 +178,11 @@ msgstr "添加"
 msgid "Add a custom link to any URL"
 msgstr "添加指向任意 URL 的自定义链接"
 
+#. @context: Description for the RSS system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Add a link to your RSS feed"
+msgstr "添加指向你的 RSS 订阅源的链接"
+
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add alt text"
@@ -271,9 +276,11 @@ msgid "Applies to your entire site, including admin pages. Pick a palette, then 
 msgstr "应用到整个站点，包括管理页面。先选择配色，再决定是跟随系统还是固定模式。"
 
 #. @context: Archive page title
+#. @context: Built-in navigation label for the archive page
 #. @context: Inactive nav link label on sample page
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Archive"
 msgstr "归档"
 
@@ -515,6 +522,7 @@ msgstr "个合集"
 
 #. @context: Breadcrumb link to collections page
 #. @context: Breadcrumb link to collections page
+#. @context: Built-in navigation label for the collections page
 #. @context: Collections page heading
 #. @context: Collections page heading
 #. @context: Inactive nav link label on sample page
@@ -523,6 +531,7 @@ msgstr "个合集"
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Collections"
 msgstr "合集"
 
@@ -1371,6 +1380,16 @@ msgstr "链接"
 msgid "Link"
 msgstr "链接"
 
+#. @context: Description for the archive system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to the post archive"
+msgstr "链接到文章归档页"
+
+#. @context: Description for the collections system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your collections page"
+msgstr "链接到你的合集页"
+
 #. @context: Role label for dark accent swatch
 #: src/ui/pages/BrandPage.tsx
 msgid "Link tone"
@@ -2164,8 +2183,10 @@ msgstr "会话"
 msgid "Sessions, password, export"
 msgstr "会话、密码、导出"
 
+#. @context: Built-in navigation label for settings
 #. @context: Page title for the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Settings"
 msgstr "设置"
 
@@ -2204,6 +2225,16 @@ msgstr "展开更多"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Show more icons"
 msgstr "显示更多图标"
+
+#. @context: Description for the settings system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Shows 'Settings' when logged in, 'Sign in' when logged out"
+msgstr "登录时显示“设置”，未登录时显示“登录”"
+
+#. @context: Built-in navigation label shown when auth is required
+#: src/ui/shared/navigation-labels.ts
+msgid "Sign in"
+msgstr "登录"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading

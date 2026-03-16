@@ -21,6 +21,7 @@ const STATUSES = ["draft", "published"] as const;
 const VISIBILITIES = ["public", "unlisted", "private"] as const;
 const SORT_ORDERS = ["newest", "oldest", "rating_desc", "rating_asc"] as const;
 const NAV_ITEM_TYPES = ["link", "system"] as const;
+const SYSTEM_NAV_KEYS = ["rss", "settings", "collections", "archive"] as const;
 const MEDIA_KINDS = ["image", "video", "audio", "text", "document"] as const;
 const STORAGE_DRIVERS = ["r2", "s3"] as const;
 
@@ -416,6 +417,9 @@ export const navItems = sqliteTable(
     })
       .notNull()
       .default("link"),
+    systemKey: text("system_key", {
+      enum: SYSTEM_NAV_KEYS,
+    }),
     label: text("label").notNull(),
     url: text("url").notNull(),
     position: text("position").notNull().default("a0"),
@@ -427,7 +431,24 @@ export const navItems = sqliteTable(
       "chk_nav_item_type",
       sql`${table.type} IN (${sqlTextEnum(NAV_ITEM_TYPES)})`,
     ),
+    check(
+      "chk_nav_item_system_key",
+      sql`${table.systemKey} IS NULL OR ${table.systemKey} IN (${sqlTextEnum(SYSTEM_NAV_KEYS)})`,
+    ),
+    check(
+      "chk_nav_item_shape",
+      sql`(
+        ${table.type} = 'link'
+        AND ${table.systemKey} IS NULL
+      ) OR (
+        ${table.type} = 'system'
+        AND ${table.systemKey} IS NOT NULL
+      )`,
+    ),
     uniqueIndex("uq_nav_item_position").on(table.position),
+    uniqueIndex("uq_nav_item_system_key")
+      .on(table.systemKey)
+      .where(sql`${table.systemKey} IS NOT NULL`),
   ],
 );
 

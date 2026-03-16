@@ -49,10 +49,10 @@ INSERT INTO collection ("id","title","description","icon","sort_order","created_
 INSERT INTO collection ("id","title","description","icon","sort_order","created_at","updated_at") VALUES('019ce8cc-b188-7184-91cb-411a66ebfdc2','Photography','Photo posts','📷','newest',1773432254,1773432254);
 
 -- nav_item
-INSERT INTO nav_item ("id","type","label","url","position","created_at","updated_at") VALUES('019ce280-dfef-7e11-91ff-96f9b4d1cf04','link','Collections','/c','a0',1773326622,1773326622);
-INSERT INTO nav_item ("id","type","label","url","position","created_at","updated_at") VALUES('019ce280-e0b0-7c95-a58a-b9a156a898df','link','Archive','/archive','a1',1773326622,1773326622);
-INSERT INTO nav_item ("id","type","label","url","position","created_at","updated_at") VALUES('019ce280-e165-764d-a179-16b150850863','system','RSS','/feed','a2',1773326623,1773326623);
-INSERT INTO nav_item ("id","type","label","url","position","created_at","updated_at") VALUES('019ce280-e215-745e-a4fb-f089695be32c','system','Settings','/settings','a3',1773326623,1773326623);
+INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019ce280-dfef-7e11-91ff-96f9b4d1cf04','system','collections','Collections','/c','a0',1773326622,1773326622);
+INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019ce280-e0b0-7c95-a58a-b9a156a898df','system','archive','Archive','/archive','a1',1773326622,1773326622);
+INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019ce280-e165-764d-a179-16b150850863','system','rss','RSS','/feed','a2',1773326623,1773326623);
+INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019ce280-e215-745e-a4fb-f089695be32c','system','settings','Settings','/settings','a3',1773326623,1773326623);
 
 -- sidebar_item
 INSERT INTO sidebar_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-a140-7074-8490-071f624b6356','collection','019ce8cc-a115-7e0e-9b4e-0426898de54c',NULL,'a0',1773432250,1773432250);

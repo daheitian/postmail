@@ -78,6 +78,27 @@ describe("Nav Items API Routes", () => {
       expect(body.type).toBe("link");
     });
 
+    it("creates a system nav item when authenticated", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const res = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "system",
+          systemKey: "archive",
+        }),
+      });
+
+      expect(res.status).toBe(201);
+      const body = await res.json();
+      expect(body.type).toBe("system");
+      expect(body.systemKey).toBe("archive");
+      expect(body.url).toBe("/archive");
+      expect(body.label).toBe("Archive");
+    });
+
     it("returns 400 for missing required fields", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);
@@ -86,6 +107,31 @@ describe("Nav Items API Routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "link" }),
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it("returns 400 for duplicate system nav items", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "system",
+          systemKey: "archive",
+        }),
+      });
+
+      const res = await app.request("/api/nav-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "system",
+          systemKey: "archive",
+        }),
       });
 
       expect(res.status).toBe(400);
@@ -184,6 +230,24 @@ describe("Nav Items API Routes", () => {
       );
 
       expect(res.status).toBe(404);
+    });
+
+    it("rejects editing built-in system labels", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/nav-items", navItemsApiRoutes);
+
+      const item = await services.navItems.create({
+        type: "system",
+        systemKey: "settings",
+      });
+
+      const res = await app.request(`/api/nav-items/${item.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label: "Admin" }),
+      });
+
+      expect(res.status).toBe(400);
     });
   });
 
