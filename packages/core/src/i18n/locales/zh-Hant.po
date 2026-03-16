@@ -73,11 +73,6 @@ msgstr "更平靜、更溫暖的強調色，讓預設主題更安靜，也更有
 msgid "A good default accent in Jant should feel like editorial structure, not product branding. That means links, emphasis, and thread cues can be visible without turning the page into UI chrome."
 msgstr ""
 
-#. @context: Font theme preview body sentence
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "A good font theme should change the pace of reading, not only the shape of the letters."
-msgstr "好的字型主題改變的不只是字形，也會改變閱讀節奏。"
-
 #. @context: Excerpt for the sample detail article
 #. @context: Plain-text body fallback for the sample detail article
 #. @context: Plain-text summary for the sample detail article
@@ -1009,11 +1004,6 @@ msgstr ""
 msgid "Feel editorial and slightly quieter."
 msgstr ""
 
-#. @context: Font theme preview eyebrow label
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Field note"
-msgstr "隨手記"
-
 #. @context: Sample quote attribution title on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Field Notes on Interface Tone"
@@ -1824,11 +1814,6 @@ msgstr ""
 #: src/ui/pages/ArchivePage.tsx
 msgid "Quotes"
 msgstr "引用"
-
-#. @context: Font theme preview quote sentence
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Quotes, titles, and labels should all lean together."
-msgstr "引用、標題和標籤，應該朝同一個方向傾斜。"
 
 #. @context: Compose toolbar - rate tooltip
 #: src/ui/compose/ComposeDialog.tsx
@@ -2651,11 +2636,6 @@ msgstr "當強調色更溫暖一點、也沒那麼直白時，整頁會更像寫
 msgid "Why the default accent should feel written, not branded"
 msgstr "為什麼預設強調色應該像書寫，而不是品牌標記"
 
-#. @context: Font theme preview display sentence
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Write small things with a clear shape."
-msgstr "把小事也寫出清晰的形狀。"
-
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
@@ -2670,8 +2650,3 @@ msgstr "您有未儲存的變更"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Your thoughts (optional)"
 msgstr "你的想法（選填）"
-
-#. @context: Font theme preview Chinese body sentence
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "写下一点想法，也要让它有自己的轮廓。"
-msgstr "寫下一點想法，也要讓它有自己的輪廓。"
