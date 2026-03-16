@@ -5,12 +5,67 @@
  * Uses raw BMP encoding (no Canvas/DOM needed) so it works in
  * Cloudflare Workers and Node.js alike.
  *
- * The resulting 4×3 image is stretched by the browser via CSS
+ * The resulting tiny image is stretched by the browser via CSS
  * `background-size: cover` with `image-rendering: auto` (default),
  * which applies bilinear interpolation for a natural blur effect.
  */
 
 import { decode } from "blurhash";
+
+const DEFAULT_BLURHASH_WIDTH = 4;
+const DEFAULT_BLURHASH_HEIGHT = 3;
+const DEFAULT_BLURHASH_LONGEST_SIDE = 16;
+
+/**
+ * Pick tiny decode dimensions that preserve the source aspect ratio.
+ *
+ * @param width - Source media width in pixels
+ * @param height - Source media height in pixels
+ * @param longestSide - Longest blurhash decode edge in pixels
+ * @returns Tiny width/height pair for blurhash decoding
+ *
+ * @example
+ * ```ts
+ * getBlurhashDecodeSize(1600, 900);
+ * // { width: 16, height: 9 }
+ * ```
+ */
+export function getBlurhashDecodeSize(
+  width?: number,
+  height?: number,
+  longestSide = DEFAULT_BLURHASH_LONGEST_SIDE,
+): { width: number; height: number } {
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    !width ||
+    !height ||
+    width <= 0 ||
+    height <= 0
+  ) {
+    return {
+      width: DEFAULT_BLURHASH_WIDTH,
+      height: DEFAULT_BLURHASH_HEIGHT,
+    };
+  }
+
+  const edge =
+    Number.isFinite(longestSide) && longestSide > 0
+      ? Math.round(longestSide)
+      : DEFAULT_BLURHASH_LONGEST_SIDE;
+
+  if (width >= height) {
+    return {
+      width: edge,
+      height: Math.max(1, Math.round((height / width) * edge)),
+    };
+  }
+
+  return {
+    width: Math.max(1, Math.round((width / height) * edge)),
+    height: edge,
+  };
+}
 
 /**
  * Convert a blurhash string to a base64-encoded BMP data URL.

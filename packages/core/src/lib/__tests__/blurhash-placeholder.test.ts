@@ -3,7 +3,10 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { blurhashToDataUrl } from "../blurhash-placeholder.js";
+import {
+  blurhashToDataUrl,
+  getBlurhashDecodeSize,
+} from "../blurhash-placeholder.js";
 
 describe("blurhashToDataUrl", () => {
   // A known valid blurhash string
@@ -71,5 +74,26 @@ describe("blurhashToDataUrl", () => {
     const url1 = blurhashToDataUrl(HASH);
     const url2 = blurhashToDataUrl("LGF5]+Yk^6#M@-5c,1J5@[or[Q6.");
     expect(url1).not.toBe(url2);
+  });
+
+  it("keeps landscape blurhash placeholders aligned with source aspect ratio", () => {
+    expect(getBlurhashDecodeSize(1600, 900)).toEqual({
+      width: 16,
+      height: 9,
+    });
+  });
+
+  it("keeps portrait blurhash placeholders aligned with source aspect ratio", () => {
+    expect(getBlurhashDecodeSize(900, 1600)).toEqual({
+      width: 9,
+      height: 16,
+    });
+  });
+
+  it("falls back to the default blurhash decode size when media size is missing", () => {
+    expect(getBlurhashDecodeSize()).toEqual({
+      width: 4,
+      height: 3,
+    });
   });
 });

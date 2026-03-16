@@ -9,11 +9,16 @@
 import type { FC } from "hono/jsx";
 import type { MediaView } from "../../types.js";
 import { getMediaCategory } from "../../lib/upload.js";
-import { blurhashToDataUrl } from "../../lib/blurhash-placeholder.js";
+import {
+  blurhashToDataUrl,
+  getBlurhashDecodeSize,
+} from "../../lib/blurhash-placeholder.js";
 
 export interface MediaGalleryProps {
   attachments: MediaView[];
 }
+
+const DEFAULT_VISUAL_RATIO = 4 / 3;
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -27,6 +32,36 @@ export function formatChars(count: number): string {
     return `${parseFloat((count / 1000).toFixed(1))}k chars`;
   }
   return `${parseFloat((count / 1_000_000).toFixed(1))}M chars`;
+}
+
+export function getMediaAspectRatio(width?: number, height?: number): number {
+  if (
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    !width ||
+    !height ||
+    width <= 0 ||
+    height <= 0
+  ) {
+    return DEFAULT_VISUAL_RATIO;
+  }
+
+  return width / height;
+}
+
+export function getMediaPlaceholderDataUrl(
+  blurhash?: string,
+  width?: number,
+  height?: number,
+): string | undefined {
+  if (!blurhash) return undefined;
+
+  const decodeSize = getBlurhashDecodeSize(width, height);
+  return blurhashToDataUrl(blurhash, decodeSize.width, decodeSize.height);
+}
+
+function getSingleVisualWidth(ratio: number): string {
+  return `min(100%, calc(24rem * ${ratio}))`;
 }
 
 /**
@@ -217,10 +252,10 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
       (item) => item._kind === "image" || item._kind === "video",
     );
     if (firstVisual && "width" in firstVisual && "height" in firstVisual) {
-      const firstRatio =
-        firstVisual.width && firstVisual.height
-          ? firstVisual.width / firstVisual.height
-          : 4 / 3;
+      const firstRatio = getMediaAspectRatio(
+        firstVisual.width,
+        firstVisual.height,
+      );
       rowHeight = Math.round(
         Math.min(ROW_MAX, Math.max(ROW_MIN, 320 / Math.max(firstRatio, 0.5))),
       );
@@ -249,72 +284,105 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
         >
           {galleryItems.map((item) => {
             if (item._kind === "image") {
-              const ratio =
-                item.width && item.height ? item.width / item.height : 4 / 3;
-              const placeholder = item.blurhash
-                ? blurhashToDataUrl(item.blurhash)
-                : undefined;
+              const ratio = getMediaAspectRatio(item.width, item.height);
+              const placeholder = getMediaPlaceholderDataUrl(
+                item.blurhash,
+                item.width,
+                item.height,
+              );
               const itemWidth = singleVisual
                 ? undefined
                 : `${Math.round(Math.max(160, rowHeight * ratio))}px`;
+              const aspectRatio =
+                item.width && item.height
+                  ? `${item.width}/${item.height}`
+                  : "4/3";
+              const imageStyle = {
+                ...(singleVisual
+                  ? { aspectRatio, backgroundSize: "cover" }
+                  : { height: `${rowHeight}px`, backgroundSize: "cover" }),
+                ...(placeholder
+                  ? {
+                      backgroundImage: `url(${placeholder})`,
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }
+                  : {}),
+              };
 
               return (
                 <a
                   key={item.id}
                   href={item.url}
                   data-lightbox-index={item._lbIdx}
-                  class={`${singleVisual ? "" : "shrink-0 snap-start"} block rounded-lg overflow-hidden`}
+                  class={`${singleVisual ? "" : "shrink-0 snap-start"} media-visual-frame`}
                   style={{
                     ...(singleVisual
-                      ? {}
-                      : { width: itemWidth, maxWidth: "85%" }),
-                    ...(placeholder
                       ? {
-                          backgroundImage: `url(${placeholder})`,
-                          backgroundSize: "cover",
+                          width: getSingleVisualWidth(ratio),
+                          maxWidth: "100%",
                         }
-                      : {}),
+                      : { width: itemWidth, maxWidth: "85%" }),
                   }}
                 >
                   <img
                     src={item.thumbnailUrl}
                     alt={item.altText || ""}
-                    style={
-                      singleVisual && item.width && item.height
-                        ? { aspectRatio: `${item.width}/${item.height}` }
-                        : { height: `${rowHeight}px` }
-                    }
+                    width={item.width}
+                    height={item.height}
+                    style={imageStyle}
                     class={
                       singleVisual
-                        ? "rounded-lg max-w-full max-h-96 h-auto object-contain bg-transparent"
-                        : "w-full object-cover bg-transparent"
+                        ? "media-visual w-full h-auto rounded-lg"
+                        : "media-visual w-full object-cover"
                     }
                     loading="lazy"
+                    decoding="async"
                   />
                 </a>
               );
             }
 
             if (item._kind === "video") {
-              const ratio =
-                item.width && item.height ? item.width / item.height : 4 / 3;
-              const placeholder = item.blurhash
-                ? blurhashToDataUrl(item.blurhash)
-                : undefined;
+              const ratio = getMediaAspectRatio(item.width, item.height);
+              const placeholder = getMediaPlaceholderDataUrl(
+                item.blurhash,
+                item.width,
+                item.height,
+              );
               const itemWidth = singleVisual
                 ? undefined
                 : `${Math.round(Math.max(160, rowHeight * ratio))}px`;
               const posterSrc = item.posterUrl || placeholder;
+              const aspectRatio =
+                item.width && item.height
+                  ? `${item.width}/${item.height}`
+                  : "4/3";
+              const videoStyle = {
+                ...(singleVisual
+                  ? { aspectRatio, backgroundSize: "cover" }
+                  : { height: `${rowHeight}px`, backgroundSize: "cover" }),
+                ...(placeholder
+                  ? {
+                      backgroundImage: `url(${placeholder})`,
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }
+                  : {}),
+              };
 
               return (
                 <a
                   key={item.id}
                   href={item.url}
                   data-lightbox-index={item._lbIdx}
-                  class={`${singleVisual ? "" : "shrink-0 snap-start"} media-video-wrap`}
+                  class={`${singleVisual ? "" : "shrink-0 snap-start"} media-video-wrap media-visual-frame`}
                   style={
                     singleVisual
-                      ? undefined
+                      ? {
+                          width: getSingleVisualWidth(ratio),
+                          maxWidth: "100%",
+                        }
                       : { width: itemWidth, maxWidth: "85%" }
                   }
                 >
@@ -323,12 +391,14 @@ export const MediaGallery: FC<MediaGalleryProps> = ({ attachments }) => {
                     muted
                     playsinline
                     poster={posterSrc}
-                    style={
-                      singleVisual && item.width && item.height
-                        ? { aspectRatio: `${item.width}/${item.height}` }
-                        : { height: `${rowHeight}px` }
+                    width={item.width}
+                    height={item.height}
+                    style={videoStyle}
+                    class={
+                      singleVisual
+                        ? "media-visual w-full h-auto"
+                        : "media-visual w-full object-cover"
                     }
-                    class={singleVisual ? "max-h-96" : "w-full object-cover"}
                   />
                   <div class="media-video-play-overlay">
                     <svg viewBox="0 0 24 24" fill="white">
