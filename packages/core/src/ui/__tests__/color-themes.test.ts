@@ -1,0 +1,72 @@
+import { describe, expect, it } from "vitest";
+import {
+  BUILTIN_COLOR_THEMES,
+  COLOR_THEME_GROUPS,
+  getGroupedColorThemes,
+} from "../color-themes.js";
+
+describe("BUILTIN_COLOR_THEMES", () => {
+  it("contains 12 themes", () => {
+    expect(BUILTIN_COLOR_THEMES).toHaveLength(12);
+  });
+
+  it("keeps Linen as the first theme", () => {
+    expect(BUILTIN_COLOR_THEMES[0]?.id).toBe("linen");
+  });
+
+  it("includes the new theme IDs", () => {
+    const ids = BUILTIN_COLOR_THEMES.map((theme) => theme.id);
+
+    expect(ids).toContain("parchment");
+    expect(ids).toContain("slate");
+    expect(ids).toContain("nocturne");
+  });
+
+  it("has no duplicate IDs", () => {
+    const ids = BUILTIN_COLOR_THEMES.map((theme) => theme.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("keeps the intended group structure", () => {
+    expect(COLOR_THEME_GROUPS.map((group) => group.id)).toEqual([
+      "warm-editorial",
+      "quiet-neutral",
+      "distinctive-mood",
+    ]);
+
+    expect(COLOR_THEME_GROUPS.map((group) => group.themeIds)).toEqual([
+      ["linen", "dune", "clay", "parchment"],
+      ["ink", "stone", "mist", "slate"],
+      ["ember", "moss", "iris", "nocturne"],
+    ]);
+  });
+
+  it("assigns every built-in theme to exactly one group", () => {
+    const groupedIds = getGroupedColorThemes()
+      .flatMap((group) => group.themes)
+      .map((theme) => theme.id);
+
+    expect(groupedIds).toEqual(BUILTIN_COLOR_THEMES.map((theme) => theme.id));
+    expect(new Set(groupedIds).size).toBe(BUILTIN_COLOR_THEMES.length);
+  });
+
+  it("defines the required core tokens for each mode", () => {
+    const requiredTokens = [
+      "--background",
+      "--foreground",
+      "--primary",
+      "--primary-foreground",
+      "--site-accent",
+      "--muted",
+      "--muted-foreground",
+      "--border",
+    ] as const;
+
+    for (const theme of BUILTIN_COLOR_THEMES) {
+      for (const token of requiredTokens) {
+        expect(theme.light[token]).toBeTruthy();
+        expect(theme.dark[token]).toBeTruthy();
+      }
+    }
+  });
+});

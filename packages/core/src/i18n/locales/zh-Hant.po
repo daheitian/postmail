@@ -850,6 +850,11 @@ msgstr "在我的網站標頭顯示頭像"
 msgid "Displayed at the bottom of all posts and pages. Markdown supported."
 msgstr "顯示於所有文章與頁面的底部。支援 Markdown."
 
+#. @context: Theme group heading on color theme settings page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Distinctive Mood"
+msgstr ""
+
 #. @context: Label for a divider item while organizing collections
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Divider"
@@ -1366,6 +1371,11 @@ msgstr "載入更多"
 msgid "Look at the footer metadata last, to make sure the accent is not fighting the typography."
 msgstr ""
 
+#. @context: Theme group description on color theme settings page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Low-distraction palettes for a cleaner, calmer reading rhythm."
+msgstr ""
+
 #. @context: Collection sort order option
 #. @context: Collection sort order option
 #: src/ui/pages/CollectionPage.tsx
@@ -1420,10 +1430,20 @@ msgstr "媒體"
 msgid "More actions"
 msgstr ""
 
+#. @context: Theme group description on color theme settings page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "More atmospheric palettes with a stronger sense of time, place, or tone."
+msgstr ""
+
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
 msgstr "更多連結"
+
+#. @context: Fallback theme group heading on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "More Palettes"
+msgstr ""
 
 #. @context: Secondary badge label on sample page
 #. @context: Token label on sample page
@@ -1655,6 +1675,11 @@ msgstr ""
 msgid "Pairing it with bright SaaS blues or neon greens."
 msgstr ""
 
+#. @context: Theme group description on color theme settings page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Paper-first palettes with warmer surfaces and a softer, handwritten feel."
+msgstr ""
+
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
 #. @context: Setup/signin form field - password
@@ -1828,6 +1853,11 @@ msgstr ""
 #. @context: Muted sample label
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Quiet metadata"
+msgstr ""
+
+#. @context: Theme group heading on color theme settings page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Quiet Neutral"
 msgstr ""
 
 #. @context: Color theme preview card secondary sentence
@@ -2355,6 +2385,11 @@ msgstr ""
 msgid "Theme sample"
 msgstr ""
 
+#. @context: Fallback theme group description on color theme page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Themes that have not been assigned to a named group yet."
+msgstr ""
+
 #. @context: Link to theming documentation on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
 msgid "Theming guide"
@@ -2630,6 +2665,11 @@ msgstr ""
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
+msgstr ""
+
+#. @context: Theme group heading on color theme settings page
+#: src/ui/dash/appearance/ColorThemeContent.tsx
+msgid "Warm Editorial"
 msgstr ""
 
 #. @context: Name of the paper swatch

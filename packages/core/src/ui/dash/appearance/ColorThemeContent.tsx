@@ -5,7 +5,7 @@
 import { useLingui } from "@lingui/react/macro";
 import { toPublicPath } from "../../../lib/url.js";
 import type { ThemeMode } from "../../../types/config.js";
-import type { ColorTheme } from "../../color-themes.js";
+import { getGroupedColorThemes, type ColorTheme } from "../../color-themes.js";
 
 function toInlineStyle(variables: Record<string, string>): string {
   return Object.entries(variables)
@@ -192,6 +192,56 @@ export function ColorThemeContent({
     theme: currentThemeId,
     themeMode: currentThemeMode,
   }).replace(/</g, "\\u003c");
+  const themeGroups = getGroupedColorThemes(themes);
+  const fallbackGroupCopy = {
+    title: t({
+      message: "More Palettes",
+      comment: "@context: Fallback theme group heading on color theme page",
+    }),
+    description: t({
+      message: "Themes that have not been assigned to a named group yet.",
+      comment: "@context: Fallback theme group description on color theme page",
+    }),
+  };
+  const groupCopy: Record<string, { title: string; description: string }> = {
+    "warm-editorial": {
+      title: t({
+        message: "Warm Editorial",
+        comment: "@context: Theme group heading on color theme settings page",
+      }),
+      description: t({
+        message:
+          "Paper-first palettes with warmer surfaces and a softer, handwritten feel.",
+        comment:
+          "@context: Theme group description on color theme settings page",
+      }),
+    },
+    "quiet-neutral": {
+      title: t({
+        message: "Quiet Neutral",
+        comment: "@context: Theme group heading on color theme settings page",
+      }),
+      description: t({
+        message:
+          "Low-distraction palettes for a cleaner, calmer reading rhythm.",
+        comment:
+          "@context: Theme group description on color theme settings page",
+      }),
+    },
+    "distinctive-mood": {
+      title: t({
+        message: "Distinctive Mood",
+        comment: "@context: Theme group heading on color theme settings page",
+      }),
+      description: t({
+        message:
+          "More atmospheric palettes with a stronger sense of time, place, or tone.",
+        comment:
+          "@context: Theme group description on color theme settings page",
+      }),
+    },
+    other: fallbackGroupCopy,
+  };
 
   return (
     <div
@@ -273,15 +323,35 @@ export function ColorThemeContent({
           />
         </div>
 
-        <div class="flex flex-col gap-3">
-          {themes.map((theme) => (
-            <ThemeCard
-              key={theme.id}
-              theme={theme}
-              selected={theme.id === currentThemeId}
-              currentThemeMode={currentThemeMode}
-            />
-          ))}
+        <div class="space-y-5">
+          {themeGroups.map((group) => {
+            const copy = groupCopy[group.id] ?? fallbackGroupCopy;
+
+            return (
+              <section
+                key={group.id}
+                class="rounded-2xl border border-border p-4 md:p-5"
+              >
+                <div class="mb-4 space-y-1">
+                  <h2 class="text-base font-semibold">{copy.title}</h2>
+                  <p class="text-sm text-muted-foreground">
+                    {copy.description}
+                  </p>
+                </div>
+
+                <div class="grid gap-3">
+                  {group.themes.map((theme) => (
+                    <ThemeCard
+                      key={theme.id}
+                      theme={theme}
+                      selected={theme.id === currentThemeId}
+                      currentThemeMode={currentThemeMode}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       </fieldset>
     </div>
