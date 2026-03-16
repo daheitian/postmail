@@ -96,6 +96,7 @@ settingsRoutes.get("/general", async (c) => {
           siteDescriptionFallback={appConfig.fallbacks.siteDescription}
           timeZone={appConfig.timeZone}
           siteFooter={appConfig.siteFooter}
+          showJantBrandingOnHome={appConfig.showJantBrandingOnHome}
           noindex={appConfig.noindex}
           timezones={TIMEZONES}
         />
@@ -172,7 +173,10 @@ settingsRoutes.post("/general", async (c) => {
 
 settingsRoutes.post("/general/seo", async (c) => {
   const i18n = getI18n(c);
-  const body = await c.req.json<{ noindex: string }>();
+  const body = await c.req.json<{
+    noindex: string;
+    showJantBrandingOnHome?: boolean;
+  }>();
   const { settings } = c.var.services;
 
   // Checkbox "noindex" is the allow-indexing signal:
@@ -182,6 +186,12 @@ settingsRoutes.post("/general/seo", async (c) => {
     await settings.remove("NOINDEX");
   } else {
     await settings.set("NOINDEX", "true");
+  }
+
+  if (body.showJantBrandingOnHome === true) {
+    await settings.set("SHOW_JANT_BRANDING_ON_HOME", "true");
+  } else {
+    await settings.remove("SHOW_JANT_BRANDING_ON_HOME");
   }
 
   // ── JSON response mode (used by Lit settings bridge) ──────────────
@@ -209,6 +219,7 @@ settingsRoutes.post("/general/seo", async (c) => {
     );
     await stream.patchSignals({
       _orig_noindex: body.noindex,
+      _orig_showJantBrandingOnHome: body.showJantBrandingOnHome,
       _seoDirty: false,
     });
   });

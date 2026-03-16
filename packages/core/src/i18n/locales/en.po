@@ -2014,11 +2014,6 @@ msgstr "Security token expired. Refresh the page and try again."
 msgid "Security token missing. Refresh the page and try again."
 msgstr "Security token missing. Refresh the page and try again."
 
-#. @context: Settings section heading for SEO
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "SEO"
-msgstr "SEO"
-
 #. @context: Toast after saving SEO settings
 #. @context: Toast after saving SEO settings
 #: src/routes/dash/settings.tsx
@@ -2050,6 +2045,11 @@ msgstr "Settings updated."
 #: src/ui/pages/BrandPage.tsx
 msgid "should feel present, but it should never start acting like a product CTA inside the paragraph."
 msgstr "should feel present, but it should never start acting like a product CTA inside the paragraph."
+
+#. @context: Checkbox for showing the optional Jant credit link on the home page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Show \"Build with Jant\" at the bottom of the home page"
+msgstr "Show \"Build with Jant\" at the bottom of the home page"
 
 #. @context: Button to collapse expanded thread context
 #. @context: Collapse reply context

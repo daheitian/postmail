@@ -9,6 +9,11 @@
 import type { PostService } from "./post.js";
 import type { PathService } from "./path.js";
 import type { CollectionService } from "./collection.js";
+import {
+  HOME_BRANDING_LINK_LABEL,
+  HOME_BRANDING_PREFIX,
+  JANT_REPO_URL,
+} from "../lib/jant-branding.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import { toISOString } from "../lib/time.js";
 import type { Post, Collection } from "../types.js";
@@ -22,6 +27,7 @@ interface SiteConfig {
   siteUrl: string;
   siteDescription: string;
   siteLanguage: string;
+  showJantBrandingOnHome: boolean;
 }
 
 export function createExportService(
@@ -103,7 +109,9 @@ export function createExportService(
       );
       files["content/_index.md"] = new TextEncoder().encode(buildRootSection());
       files["templates/base.html"] = new TextEncoder().encode(TEMPLATE_BASE);
-      files["templates/index.html"] = new TextEncoder().encode(TEMPLATE_INDEX);
+      files["templates/index.html"] = new TextEncoder().encode(
+        buildIndexTemplate(siteConfig.showJantBrandingOnHome),
+      );
       files["templates/page.html"] = new TextEncoder().encode(TEMPLATE_PAGE);
       files["templates/section.html"] = new TextEncoder().encode(
         TEMPLATE_SECTION,
@@ -388,14 +396,19 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
   <main class="site-main">
     {% block content %}{% endblock %}
   </main>
-  <footer class="site-footer">
-    <p>Powered by <a href="https://github.com/jant-me/jant">Jant</a></p>
-  </footer>
 </body>
 </html>
 `;
 
-const TEMPLATE_INDEX = `{% extends "base.html" %}
+function buildIndexTemplate(showJantBrandingOnHome: boolean): string {
+  const branding = showJantBrandingOnHome
+    ? `
+<footer class="site-footer">
+  <p>${HOME_BRANDING_PREFIX} <a href="${JANT_REPO_URL}">${HOME_BRANDING_LINK_LABEL}</a></p>
+</footer>`
+    : "";
+
+  return `{% extends "base.html" %}
 {% import "macros.html" as macros %}
 
 {% block title %}{{ config.title }}{% endblock %}
@@ -413,8 +426,10 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
   {% if paginator.next %}<a href="{{ paginator.next }}">Older &rarr;</a>{% endif %}
 </nav>
 {% endif %}
+${branding}
 {% endblock %}
 `;
+}
 
 const TEMPLATE_PAGE = `{% extends "base.html" %}
 {% import "macros.html" as macros %}

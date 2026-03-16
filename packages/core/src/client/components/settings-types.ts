@@ -21,12 +21,12 @@ export interface SettingsLabels {
   aboutBlogHelp: string;
   siteFooter: string;
   footerHelp: string;
+  showJantBrandingOnHome: string;
   markdownSupported: string;
   language: string;
   timeZone: string;
 
   // SEO
-  seo: string;
   allowIndexing: string;
 
   // Actions

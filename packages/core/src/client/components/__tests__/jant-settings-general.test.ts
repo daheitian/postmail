@@ -37,8 +37,9 @@ const labels: SettingsLabels = {
   timeZone: "Time Zone",
   siteFooter: "Site Footer",
   footerHelp: "Displayed at the bottom of posts.",
+  showJantBrandingOnHome:
+    'Show "Build with Jant" at the bottom of the home page',
   markdownSupported: "Markdown supported",
-  seo: "SEO",
   allowIndexing: "It's OK for search engines to index my site",
   save: "Save",
   cancel: "Cancel",
@@ -60,8 +61,20 @@ const initialData = {
   siteLanguage: "en",
   timeZone: "UTC",
   siteFooter: "Footer text",
+  showJantBrandingOnHome: false,
   noindex: false,
 };
+
+function findCheckboxByLabel(
+  el: HTMLElement,
+  labelText: string,
+): HTMLInputElement | undefined {
+  return Array.from(
+    el.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+  ).find((checkbox) =>
+    checkbox.closest("label")?.textContent?.includes(labelText),
+  );
+}
 
 async function createElement(): Promise<JantSettingsGeneral> {
   const el = document.createElement(
@@ -84,12 +97,14 @@ describe("JantSettingsGeneral", () => {
     document.body.innerHTML = "";
   });
 
-  it("renders general and SEO sections", async () => {
+  it("renders general settings heading and search controls", async () => {
     const el = await createElement();
     const headings = el.querySelectorAll("h2");
     const headingTexts = Array.from(headings).map((h) => h.textContent);
     expect(headingTexts).toContain("General");
-    expect(headingTexts).toContain("SEO");
+    expect(headingTexts).not.toContain("SEO");
+    expect(el.textContent).toContain(labels.allowIndexing);
+    expect(el.textContent).toContain(labels.showJantBrandingOnHome);
   });
 
   it("renders form fields with initial values", async () => {
@@ -216,11 +231,7 @@ describe("JantSettingsGeneral", () => {
 
   it("SEO checkbox toggles noindex state", async () => {
     const el = await createElement();
-    // noindex is false initially, so checkbox should be checked (allow indexing)
-    const checkboxes = el.querySelectorAll<HTMLInputElement>(
-      'input[type="checkbox"]',
-    );
-    const seoCheckbox = checkboxes[0]; // Only checkbox in this component
+    const seoCheckbox = findCheckboxByLabel(el, labels.allowIndexing);
     expect(seoCheckbox?.checked).toBe(true);
 
     // Toggle
@@ -260,12 +271,38 @@ describe("JantSettingsGeneral", () => {
     expect(d.data.siteFooter).toBe("New footer");
   });
 
+  it("includes home page Jant branding preference in SEO section save", async () => {
+    const el = await createElement();
+    const brandingCheckbox = requireElement(
+      findCheckboxByLabel(el, labels.showJantBrandingOnHome) ?? null,
+      "expected home page branding checkbox",
+    );
+
+    brandingCheckbox.click();
+    await el.updateComplete;
+
+    let detail: SettingsSaveDetail | null = null;
+    el.addEventListener("jant:settings-save", (event) => {
+      const customEvent = event as CustomEvent<SettingsSaveDetail>;
+      detail = customEvent.detail;
+    });
+
+    const hr = el.querySelector("hr");
+    const seoSection = hr?.nextElementSibling;
+    const seoSaveBtn = seoSection?.querySelector<HTMLButtonElement>(".btn");
+    seoSaveBtn?.click();
+    await el.updateComplete;
+
+    expect(detail).not.toBeNull();
+    const d = detail as unknown as SettingsSaveDetail;
+    expect(d.endpoint).toBe("/settings/general/seo");
+    expect(d.section).toBe("seo");
+    expect(d.data.showJantBrandingOnHome).toBe(true);
+  });
+
   it("dispatches jant:settings-save for SEO section", async () => {
     const el = await createElement();
-    const checkboxes = el.querySelectorAll<HTMLInputElement>(
-      'input[type="checkbox"]',
-    );
-    const seoCheckbox = checkboxes[0];
+    const seoCheckbox = findCheckboxByLabel(el, labels.allowIndexing);
 
     // Toggle to make dirty
     seoCheckbox?.click();

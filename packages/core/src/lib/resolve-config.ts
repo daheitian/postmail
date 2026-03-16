@@ -126,6 +126,8 @@ export function resolveConfig(
     })(),
     timeZone: resolve("TIME_ZONE", allSettings, env),
     siteFooter: resolve("SITE_FOOTER", allSettings, env),
+    showJantBrandingOnHome:
+      resolve("SHOW_JANT_BRANDING_ON_HOME", allSettings, env) === "true",
     noindex: resolve("NOINDEX", allSettings, env) === "true",
 
     // Infrastructure (ENV only)

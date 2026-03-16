@@ -4604,6 +4604,29 @@
     padding-top: var(--content-gap);
   }
 
+  .home-branding-credit {
+    margin-top: var(--space-xl);
+    text-align: center;
+    color: var(--site-text-secondary);
+    font-size: var(--text-sm);
+  }
+
+  .home-branding-credit a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 0.5px solid
+      color-mix(in srgb, var(--site-text-secondary) 45%, transparent);
+    transition:
+      color 160ms ease,
+      border-color 160ms ease;
+  }
+
+  .home-branding-credit a:hover,
+  .home-branding-credit a:focus-visible {
+    color: var(--site-text-primary);
+    border-color: currentColor;
+  }
+
   /* =========================================================================
    * Tiptap Editor
    * ========================================================================= */

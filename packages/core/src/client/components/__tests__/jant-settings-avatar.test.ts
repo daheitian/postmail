@@ -37,7 +37,8 @@ const labels: SettingsLabels = {
   siteFooter: "Site Footer",
   markdownSupported: "Markdown supported",
   footerHelp: "Displayed at the bottom of posts.",
-  seo: "SEO",
+  showJantBrandingOnHome:
+    'Show "Build with Jant" at the bottom of the home page',
   allowIndexing: "It's OK for search engines to index my site",
   save: "Save",
   cancel: "Cancel",

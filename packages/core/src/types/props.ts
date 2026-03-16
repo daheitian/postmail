@@ -21,6 +21,7 @@ export interface HomePageProps {
   currentPage: number;
   totalPages: number;
   baseUrl: string;
+  showJantBranding?: boolean;
 }
 
 /** Props for the single post page component */
@@ -35,6 +36,7 @@ export interface FeaturedPageProps {
   currentPage: number;
   totalPages: number;
   baseUrl: string;
+  showJantBranding?: boolean;
 }
 
 /** Visibility filter values for the archive page (includes "featured" as a virtual value). */
