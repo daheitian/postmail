@@ -73,11 +73,6 @@ msgstr "A calmer, warmer accent makes the default theme feel quieter and more in
 msgid "A good default accent in Jant should feel like editorial structure, not product branding. That means links, emphasis, and thread cues can be visible without turning the page into UI chrome."
 msgstr "A good default accent in Jant should feel like editorial structure, not product branding. That means links, emphasis, and thread cues can be visible without turning the page into UI chrome."
 
-#. @context: Font theme preview body sentence
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "A good font theme should change the pace of reading, not only the shape of the letters."
-msgstr "A good font theme should change the pace of reading, not only the shape of the letters."
-
 #. @context: Excerpt for the sample detail article
 #. @context: Plain-text body fallback for the sample detail article
 #. @context: Plain-text summary for the sample detail article
@@ -1007,11 +1002,6 @@ msgstr "feel deliberate instead of washed out."
 msgid "Feel editorial and slightly quieter."
 msgstr "Feel editorial and slightly quieter."
 
-#. @context: Font theme preview eyebrow label
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Field note"
-msgstr "Field note"
-
 #. @context: Sample quote attribution title on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Field Notes on Interface Tone"
@@ -1815,11 +1805,6 @@ msgstr "Quoted or highlighted passages should feel like annotations, not warning
 #: src/ui/pages/ArchivePage.tsx
 msgid "Quotes"
 msgstr "Quotes"
-
-#. @context: Font theme preview quote sentence
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Quotes, titles, and labels should all lean together."
-msgstr "Quotes, titles, and labels should all lean together."
 
 #. @context: Compose toolbar - rate tooltip
 #: src/ui/compose/ComposeDialog.tsx
@@ -2640,11 +2625,6 @@ msgstr "When the accent is slightly warmer and less literal, the whole page feel
 msgid "Why the default accent should feel written, not branded"
 msgstr "Why the default accent should feel written, not branded"
 
-#. @context: Font theme preview display sentence
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "Write small things with a clear shape."
-msgstr "Write small things with a clear shape."
-
 #. @context: Error toast when sign-in credentials are wrong
 #: src/routes/auth/signin.tsx
 msgid "Wrong email or password. Check your credentials and try again."
@@ -2659,8 +2639,3 @@ msgstr "You have unsaved changes"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Your thoughts (optional)"
 msgstr "Your thoughts (optional)"
-
-#. @context: Font theme preview Chinese body sentence
-#: src/ui/dash/appearance/FontThemeContent.tsx
-msgid "写下一点想法，也要让它有自己的轮廓。"
-msgstr "写下一点想法，也要让它有自己的轮廓。"

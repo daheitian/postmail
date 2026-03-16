@@ -134,8 +134,8 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {
     id: "default",
     name: {
-      id: "Notebook",
-      message: "Notebook",
+      id: "Classic",
+      message: "Classic",
       comment: "@context: Font theme name",
     },
     headingFontFamily: EDITORIAL_SERIF,
@@ -163,8 +163,8 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {
     id: "system-sans",
     name: {
-      id: "System Sans",
-      message: "System Sans",
+      id: "Clean",
+      message: "Clean",
       comment: "@context: Font theme name",
     },
     headingFontFamily: SANS,
@@ -191,8 +191,8 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {
     id: "humanist-sans",
     name: {
-      id: "Humanist Sans",
-      message: "Humanist Sans",
+      id: "Friendly",
+      message: "Friendly",
       comment: "@context: Font theme name",
     },
     headingFontFamily: HUMANIST_SANS,
@@ -219,8 +219,8 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {
     id: "modern-editorial",
     name: {
-      id: "Newsroom",
-      message: "Newsroom",
+      id: "Editorial",
+      message: "Editorial",
       comment: "@context: Font theme name",
     },
     headingFontFamily: NEWSROOM_SANS,
@@ -247,8 +247,8 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {
     id: "literary",
     name: {
-      id: "Library",
-      message: "Library",
+      id: "Bookish",
+      message: "Bookish",
       comment: "@context: Font theme name",
     },
     headingFontFamily: LITERARY_SERIF,
@@ -276,8 +276,8 @@ export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {
     id: "geometric",
     name: {
-      id: "Signal",
-      message: "Signal",
+      id: "Bold",
+      message: "Bold",
       comment: "@context: Font theme name",
     },
     headingFontFamily: GEOMETRIC_SANS,

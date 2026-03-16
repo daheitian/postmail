@@ -45,7 +45,7 @@ describe("BUILTIN_FONT_THEMES", () => {
     const defaultTheme = BUILTIN_FONT_THEMES.find(
       (t) => t.id === "default",
     ) as (typeof BUILTIN_FONT_THEMES)[number];
-    expect(defaultTheme.name.message).toBe("Notebook");
+    expect(defaultTheme.name.message).toBe("Classic");
     expect(defaultTheme.headingFontFamily).not.toBe(
       defaultTheme.bodyFontFamily,
     );

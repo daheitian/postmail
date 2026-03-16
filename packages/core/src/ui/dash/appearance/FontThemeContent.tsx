@@ -6,6 +6,16 @@ import { useLingui } from "@lingui/react/macro";
 import { getFontThemeCssVariables, type FontTheme } from "../../font-themes.js";
 import { toPublicPath } from "../../../lib/url.js";
 
+const FONT_THEME_PREVIEW = {
+  title: "Field notes on quiet design",
+  bodyLead: "A short note should feel steady. Even",
+  bodyLink: "a saved reference",
+  bodyTail: "should sit inside the paragraph without breaking its rhythm.",
+  linkLabel: "Editorial interfaces worth borrowing from",
+  linkMeta: "example.com",
+  quote: "The right theme disappears into the writing until you need it.",
+} as const;
+
 function toInlineStyle(variables: Record<string, string>): string {
   return Object.entries(variables)
     .map(([key, value]) => `${key}:${value}`)
@@ -70,55 +80,60 @@ export function FontThemeContent({
                 <div
                   class="mt-3 rounded-xl border border-border/70 bg-muted/30 p-4"
                   style={toInlineStyle(getFontThemeCssVariables(ft))}
+                  lang="en"
                 >
                   <div
-                    class="text-[0.68rem] uppercase text-muted-foreground"
-                    style="font-family:var(--font-body);font-weight:var(--type-label-weight);letter-spacing:var(--type-label-tracking);line-height:1"
-                  >
-                    {t({
-                      message: "Field note",
-                      comment: "@context: Font theme preview eyebrow label",
-                    })}
-                  </div>
-                  <div
-                    class="mt-2 text-[1.35rem] text-foreground"
+                    class="text-[1.35rem] text-foreground"
                     style="font-family:var(--font-heading);font-weight:var(--type-display-weight);letter-spacing:var(--type-display-tracking);line-height:var(--type-display-leading)"
                   >
-                    {t({
-                      message: "Write small things with a clear shape.",
-                      comment: "@context: Font theme preview display sentence",
-                    })}
+                    {FONT_THEME_PREVIEW.title}
                   </div>
                   <div
-                    class="mt-1 text-sm text-muted-foreground"
+                    class="prose max-w-none mt-2 text-muted-foreground"
                     style="font-family:var(--font-body);font-size:var(--type-body-size);line-height:var(--type-body-leading);letter-spacing:var(--type-body-tracking)"
                   >
-                    {t({
-                      message: "写下一点想法，也要让它有自己的轮廓。",
-                      comment:
-                        "@context: Font theme preview Chinese body sentence",
-                    })}
+                    <p>
+                      {FONT_THEME_PREVIEW.bodyLead}{" "}
+                      <a
+                        href={toPublicPath("/_/theme-sample", sitePathPrefix)}
+                        class="pointer-events-none"
+                        tabIndex={-1}
+                        aria-hidden="true"
+                      >
+                        {FONT_THEME_PREVIEW.bodyLink}
+                      </a>{" "}
+                      {FONT_THEME_PREVIEW.bodyTail}
+                    </p>
                   </div>
                   <div
-                    class="mt-3 text-sm text-foreground"
+                    class="mt-3"
                     style="font-family:var(--font-body);font-size:var(--type-body-size);line-height:var(--type-body-leading);letter-spacing:var(--type-body-tracking)"
                   >
-                    {t({
-                      message:
-                        "A good font theme should change the pace of reading, not only the shape of the letters.",
-                      comment: "@context: Font theme preview body sentence",
-                    })}
+                    <div class="feed-link-domain">
+                      <svg
+                        class="feed-link-domain-icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                      </svg>
+                      <span>{FONT_THEME_PREVIEW.linkMeta}</span>
+                    </div>
+                    <div class="feed-link-title mt-1">
+                      <span class="feed-link-title-link">
+                        {FONT_THEME_PREVIEW.linkLabel}
+                      </span>
+                    </div>
                   </div>
-                  <div
-                    class="mt-3 border-l border-border pl-3 text-sm text-foreground/90"
-                    style="font-family:var(--font-heading);font-weight:var(--type-heading-weight);letter-spacing:var(--type-heading-tracking);line-height:var(--type-heading-leading)"
-                  >
-                    {t({
-                      message:
-                        "Quotes, titles, and labels should all lean together.",
-                      comment: "@context: Font theme preview quote sentence",
-                    })}
-                  </div>
+                  <blockquote class="feed-quote feed-quote-card mt-4">
+                    <div class="feed-quote-content">
+                      {FONT_THEME_PREVIEW.quote}
+                    </div>
+                  </blockquote>
                 </div>
               </div>
             </label>
