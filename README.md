@@ -75,7 +75,7 @@ pnpm install   # installs dependencies
 mise run dev
 ```
 
-For authenticated browser or agent debugging, run `mise run dev-debug` and use `http://jant.localtest.me:19020/__dev/login?token=...`.
+For authenticated browser or agent debugging, run `mise run dev-debug`. It uses the first free port starting at `19020` and prints the exact `jant.localtest.me` login URL to use.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for code style, PR process, and release workflow.
 

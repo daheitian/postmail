@@ -57,7 +57,7 @@ mise run dev-auth-setup
 
 This creates or updates `packages/core/.dev.vars`, ensures a local credential admin exists, marks onboarding complete when needed, and prints both the sign-in URL and the local-only auto-login URL.
 
-`mise run dev-debug` runs this automatically before starting port `19020`.
+`mise run dev-debug` runs this automatically before starting the first free debug port beginning at `19020`.
 
 If you only need the bare minimum, create `.dev.vars` in `packages/core/`:
 
@@ -138,7 +138,7 @@ All commands are run via `mise run <command>`. You never need to `cd` into subdi
 
 ```bash
 mise run dev              # Start Vite dev server on port 9020 (auto-runs migrations)
-mise run dev-debug        # Start debug server on port 19020 and prepare local auth helpers
+mise run dev-debug        # Start debug server on the first free port from 19020 and prepare local auth helpers
 mise run dev-auth-setup   # Sync local demo credentials + print auth debug URLs
 mise run build            # Build @jant/core (lib + client assets)
 mise run site-dev         # Build @jant/core + start jant.me dev server
@@ -182,7 +182,7 @@ mise run dev-debug
 
 Then use one of these:
 
-- Browser or Chrome MCP: open `http://jant.localtest.me:19020/__dev/login?token=YOUR_TOKEN&redirect=/settings`.
+- Browser or Chrome MCP: open the `http://jant.localtest.me:19xxx/__dev/login?token=YOUR_TOKEN&redirect=/settings` URL printed by `mise run dev-debug`.
 - HTTP agent: request that same URL directly, capture the `Set-Cookie` header from the `302` response, and reuse it on later requests.
 
 ### i18n
@@ -306,7 +306,7 @@ git branch -d feat/login          # Optionally delete the branch too
 
 #### Port Conflicts
 
-Each worktree is a full copy of the project. If you run `mise run dev` in multiple worktrees, you'll get port conflicts. Use `mise run dev-debug` (port 19020) in one of them, or stop one before starting another.
+Each worktree is a full copy of the project. If you run `mise run dev` in multiple worktrees, you'll get port conflicts. `mise run dev-debug` searches for the first free port starting at `19020`, so use the printed debug URL for that worktree instead of assuming a fixed port.
 
 ## Testing
 

@@ -39,11 +39,8 @@ run = "pnpm --filter @jant/core build:lib"
 
 [tasks.dev-debug]
 alias = "debug"
-description = "Start debug server on port 19020 with local auth helpers ready"
-run = """
-mise run dev-auth-setup
-pnpm --filter @jant/core dev:debug
-"""
+description = "Start debug server on the first free port starting at 19020 with local auth helpers ready"
+run = "pnpm --filter @jant/core dev:debug"
 
 [tasks.dev-password]
 description = "Set the local admin password used for browser/agent debugging"

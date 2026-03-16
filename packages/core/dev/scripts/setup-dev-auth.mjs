@@ -53,6 +53,8 @@ const password =
     (arg) =>
       !arg.startsWith("-") && arg !== process.argv[0] && arg !== process.argv[1],
   ) || DEFAULT_DEV_PASSWORD;
+const debugPort = Number(process.env.JANT_DEBUG_PORT || "19020");
+const debugBaseUrl = `http://jant.localtest.me:${debugPort}`;
 
 let lines = readEnvLines();
 
@@ -100,14 +102,14 @@ if (ensured.seededNavigation) {
 console.log("");
 console.log("Browser sign-in:");
 console.log("  http://jant.localtest.me:9020/signin");
-console.log("  http://jant.localtest.me:19020/signin");
+console.log(`  ${debugBaseUrl}/signin`);
 console.log("");
 console.log("Auto-login:");
 console.log(
   `  http://jant.localtest.me:9020/__dev/login?token=${devApiToken}&redirect=/settings`,
 );
 console.log(
-  `  http://jant.localtest.me:19020/__dev/login?token=${devApiToken}&redirect=/settings`,
+  `  ${debugBaseUrl}/__dev/login?token=${devApiToken}&redirect=/settings`,
 );
 console.log("");
 console.log("HTTP agent flow:");
