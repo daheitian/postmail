@@ -38,6 +38,33 @@ interface CollectionItem {
   icon: string | null;
 }
 
+type PostMenuView = "menu" | "collections" | "visibility";
+
+interface MenuTriggerRect {
+  top: number;
+  bottom: number;
+  right: number;
+}
+
+const ESTIMATED_MENU_HEIGHT = 360;
+const ESTIMATED_MENU_WIDTH = 448;
+const LARGE_SCREEN_MENU_BREAKPOINT = 1120;
+const MENU_VIEWPORT_MARGIN = 12;
+const MENU_OUTSIDE_GUTTER = 16;
+
+function getMenuPlacement(rect: MenuTriggerRect) {
+  const spaceBelow = window.innerHeight - rect.bottom - MENU_VIEWPORT_MARGIN;
+  const spaceAbove = rect.top - MENU_VIEWPORT_MARGIN;
+  const openAbove =
+    spaceBelow < ESTIMATED_MENU_HEIGHT && spaceAbove > spaceBelow;
+  const spaceRight = window.innerWidth - rect.right - MENU_VIEWPORT_MARGIN;
+  const openOutside =
+    window.innerWidth >= LARGE_SCREEN_MENU_BREAKPOINT &&
+    spaceRight >= ESTIMATED_MENU_WIDTH + MENU_OUTSIDE_GUTTER;
+
+  return { openAbove, openOutside };
+}
+
 /**
  * Render a collection icon from its raw DB value (JSON or legacy emoji).
  * Inline helper to avoid pulling lucide-static into the post-menu bundle.
@@ -93,7 +120,8 @@ export class JantPostMenu extends LitElement {
     _x: { state: true },
     _y: { state: true },
     _openAbove: { state: true },
-    _collectionPickerOpen: { state: true },
+    _openOutside: { state: true },
+    _view: { state: true },
     _collections: { state: true },
     _collectionsLoading: { state: true },
     _collectionSearch: { state: true },
@@ -106,7 +134,8 @@ export class JantPostMenu extends LitElement {
   declare _x: number;
   declare _y: number;
   declare _openAbove: boolean;
-  declare _collectionPickerOpen: boolean;
+  declare _openOutside: boolean;
+  declare _view: PostMenuView;
   declare _collections: CollectionItem[] | null;
   declare _collectionsLoading: boolean;
   declare _collectionSearch: string;
@@ -129,7 +158,8 @@ export class JantPostMenu extends LitElement {
     this._x = 0;
     this._y = 0;
     this._openAbove = true;
-    this._collectionPickerOpen = false;
+    this._openOutside = false;
+    this._view = "menu";
     this._collections = null;
     this._collectionsLoading = false;
     this._collectionSearch = "";
@@ -166,6 +196,10 @@ export class JantPostMenu extends LitElement {
         return;
       }
       if (this._open) {
+        if (this._view !== "menu") {
+          this.#showMainMenu();
+          return;
+        }
         this.#close();
       }
     }
@@ -242,44 +276,72 @@ export class JantPostMenu extends LitElement {
 
       // Position relative to trigger
       const rect = trigger.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const menuHeight = 280; // estimate
-      this._openAbove = spaceBelow < menuHeight;
+      const placement = getMenuPlacement(rect);
+      this._openAbove = placement.openAbove;
+      this._openOutside = placement.openOutside;
 
       this._x = rect.right;
       this._y = this._openAbove ? rect.top : rect.bottom;
       this._triggerEl = trigger;
       trigger.setAttribute("aria-expanded", "true");
-      this._collectionPickerOpen = false;
+      this._view = "menu";
       this._open = true;
+      this.#focusAfterUpdate("[data-post-menu-item-primary]");
       return;
     }
 
     // Clicking inside the dropdown — don't close (menu or collection picker)
     if (this._open) {
       const inside = target.closest?.(
-        "[role='menu'], [data-collection-picker]",
+        "[role='menu'], [data-collection-picker], [data-visibility-panel]",
       );
       if (inside) return;
     }
 
     // Clicking outside — close
     if (this._open) {
-      this.#close();
+      this.#close({ restoreFocus: false });
     }
   };
 
-  #close() {
-    this._triggerEl?.setAttribute("aria-expanded", "false");
+  #focusAfterUpdate(selector: string) {
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLElement>(selector)?.focus();
+    });
+  }
+
+  #showMainMenu(focusSelector = "[data-post-menu-item-primary]") {
+    this._view = "menu";
+    this.#focusAfterUpdate(focusSelector);
+  }
+
+  #openVisibilityPanel() {
+    if (this._data?.isReply) return;
+    this._view = "visibility";
+    this.#focusAfterUpdate(
+      "[data-post-menu-visibility-current='true'], [data-post-menu-visibility-option]",
+    );
+  }
+
+  #close(options: { restoreFocus?: boolean } = {}) {
+    const { restoreFocus = true } = options;
+    const trigger = this._triggerEl;
+    trigger?.setAttribute("aria-expanded", "false");
     this._triggerEl = null;
     this._open = false;
-    this._collectionPickerOpen = false;
+    this._view = "menu";
+    this._openOutside = false;
     this._addCollectionPanelOpen = false;
     this._collectionSearch = "";
 
     if (this.#collectionsDirty) {
       this.#collectionsDirty = false;
       window.location.reload();
+      return;
+    }
+
+    if (restoreFocus) {
+      trigger?.focus();
     }
   }
 
@@ -288,7 +350,7 @@ export class JantPostMenu extends LitElement {
   async #edit() {
     if (!this._data) return;
     const postId = this._data.id;
-    this.#close();
+    this.#close({ restoreFocus: false });
 
     const dialog = document.getElementById(
       "compose-dialog",
@@ -441,9 +503,12 @@ export class JantPostMenu extends LitElement {
   async #openCollectionPicker() {
     if (!this._data) return;
     const postId = this._data.id;
-    this._collectionPickerOpen = true;
+    this._view = "collections";
     this._collectionSearch = "";
     this._collectionsLoading = true;
+    this.#focusAfterUpdate(
+      ".post-menu-picker-search input, .post-menu-picker-option, [data-post-menu-add-collection]",
+    );
 
     try {
       const [collectionsRes, postRes] = await Promise.all([
@@ -464,6 +529,9 @@ export class JantPostMenu extends LitElement {
       showToast("Could not load collections.", "error");
     }
     this._collectionsLoading = false;
+    this.#focusAfterUpdate(
+      ".post-menu-picker-search input, .post-menu-picker-option, [data-post-menu-add-collection]",
+    );
   }
 
   async #toggleCollection(collectionId: string) {
@@ -529,7 +597,10 @@ export class JantPostMenu extends LitElement {
   #closeAddCollectionPanel() {
     this._addCollectionPanelOpen = false;
     this.updateComplete.then(() => {
-      this._triggerEl?.focus();
+      (
+        this.querySelector<HTMLElement>("[data-post-menu-add-collection]") ??
+        this._triggerEl
+      )?.focus();
     });
   }
 
@@ -618,6 +689,17 @@ export class JantPostMenu extends LitElement {
     return composeEl?.labels?.addCollection ?? "Add Collection";
   }
 
+  #getVisibilityLabel(visibility: string) {
+    switch (visibility) {
+      case "private":
+        return "Private";
+      case "unlisted":
+        return "Unlisted";
+      default:
+        return "Public";
+    }
+  }
+
   // --- Icons (inline SVG) ---
 
   #iconEdit() {
@@ -630,8 +712,8 @@ export class JantPostMenu extends LitElement {
       stroke-linecap="round"
       stroke-linejoin="round"
     >
-      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-      <path d="m15 5 4 4" />
+      <path d="M12 20h9" />
+      <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z" />
     </svg>`;
   }
 
@@ -645,10 +727,9 @@ export class JantPostMenu extends LitElement {
       stroke-linecap="round"
       stroke-linejoin="round"
     >
-      <rect width="7" height="7" x="3" y="3" rx="1" />
-      <rect width="7" height="7" x="14" y="3" rx="1" />
-      <rect width="7" height="7" x="14" y="14" rx="1" />
-      <rect width="7" height="7" x="3" y="14" rx="1" />
+      <path d="M17 19V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v12l6-3Z" />
+      <path d="M19 10v6" />
+      <path d="M16 13h6" />
     </svg>`;
   }
 
@@ -812,6 +893,48 @@ export class JantPostMenu extends LitElement {
     </svg>`;
   }
 
+  #iconChevronLeft() {
+    return html`<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>`;
+  }
+
+  #iconChevronRight() {
+    return html`<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.9"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>`;
+  }
+
+  #iconCheck() {
+    return html`<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>`;
+  }
+
   // --- Render ---
 
   #renderCollectionPicker() {
@@ -822,9 +945,23 @@ export class JantPostMenu extends LitElement {
       : collections;
 
     return html`
-      <div data-collection-picker class="post-menu-collection-picker">
-        <div class="post-menu-picker-header">
-          <span>Collections</span>
+      <div
+        data-collection-picker
+        class="post-menu-view post-menu-collection-picker"
+      >
+        <div class="post-menu-panel-header">
+          <button
+            type="button"
+            class="post-menu-panel-back"
+            aria-label="Back"
+            @click=${() =>
+              this.#showMainMenu("[data-post-menu-open-collections]")}
+          >
+            ${this.#iconChevronLeft()}
+          </button>
+          <div class="post-menu-panel-heading">
+            <span>Collections</span>
+          </div>
         </div>
         ${collections.length > 0
           ? html`<div class="post-menu-picker-search">
@@ -866,10 +1003,13 @@ export class JantPostMenu extends LitElement {
                   const selected = this._postCollectionIds.includes(c.id);
                   const iconStr = renderIconHtml(c.icon);
                   return html`
-                    <div
+                    <button
+                      type="button"
                       role="option"
                       aria-selected=${selected ? "true" : "false"}
-                      class="post-menu-picker-option"
+                      class=${`post-menu-picker-option${
+                        selected ? " post-menu-picker-option-selected" : ""
+                      }`}
                       @click=${() => this.#toggleCollection(c.id)}
                     >
                       ${iconStr
@@ -894,15 +1034,17 @@ export class JantPostMenu extends LitElement {
                             <path d="M20 6 9 17l-5-5" />
                           </svg>`
                         : nothing}
-                    </div>
+                    </button>
                   `;
                 })
               : html`<div class="post-menu-picker-empty">
                   ${search ? "No matching collections" : "No collections yet"}
                 </div>`}
         </div>
-        <div
+        <button
+          type="button"
           class="post-menu-picker-add"
+          data-post-menu-add-collection
           @click=${() => this.#openAddCollectionPanel()}
         >
           <svg
@@ -918,6 +1060,111 @@ export class JantPostMenu extends LitElement {
             <path d="M8 3v10M3 8h10" />
           </svg>
           Add Collection
+        </button>
+      </div>
+    `;
+  }
+
+  #renderVisibilityPanel() {
+    if (!this._data || this._data.isReply) return nothing;
+
+    const visibility = this._data.visibility;
+    return html`
+      <div
+        data-visibility-panel
+        class="post-menu-view post-menu-visibility-panel"
+      >
+        <div class="post-menu-panel-header">
+          <button
+            type="button"
+            class="post-menu-panel-back"
+            aria-label="Back"
+            @click=${() =>
+              this.#showMainMenu("[data-post-menu-open-visibility]")}
+          >
+            ${this.#iconChevronLeft()}
+          </button>
+          <div class="post-menu-panel-heading">
+            <span>Visibility</span>
+          </div>
+        </div>
+        <div role="menu" class="post-menu-list">
+          <div class="post-menu-section">
+            <button
+              type="button"
+              role="menuitemradio"
+              aria-checked=${visibility === "public" ? "true" : "false"}
+              data-post-menu-visibility-option
+              data-post-menu-visibility-current=${visibility === "public"
+                ? "true"
+                : "false"}
+              class=${`post-menu-item${
+                visibility === "public" ? " post-menu-item-active" : ""
+              }`}
+              @click=${() =>
+                visibility === "public"
+                  ? this.#showMainMenu("[data-post-menu-open-visibility]")
+                  : this.#setVisibility("public")}
+            >
+              <span class="post-menu-item-icon">${this.#iconGlobe()}</span>
+              <span class="post-menu-item-label">Public</span>
+              ${visibility === "public"
+                ? html`<span class="post-menu-item-check"
+                    >${this.#iconCheck()}</span
+                  >`
+                : nothing}
+            </button>
+
+            <button
+              type="button"
+              role="menuitemradio"
+              aria-checked=${visibility === "unlisted" ? "true" : "false"}
+              data-post-menu-visibility-option
+              data-post-menu-visibility-current=${visibility === "unlisted"
+                ? "true"
+                : "false"}
+              class=${`post-menu-item${
+                visibility === "unlisted" ? " post-menu-item-active" : ""
+              }`}
+              @click=${() =>
+                visibility === "unlisted"
+                  ? this.#showMainMenu("[data-post-menu-open-visibility]")
+                  : this.#setVisibility("unlisted")}
+            >
+              <span class="post-menu-item-icon">${this.#iconLinkOff()}</span>
+              <span class="post-menu-item-label">Unlisted</span>
+              ${visibility === "unlisted"
+                ? html`<span class="post-menu-item-check"
+                    >${this.#iconCheck()}</span
+                  >`
+                : nothing}
+            </button>
+
+            <button
+              type="button"
+              role="menuitemradio"
+              aria-checked=${visibility === "private" ? "true" : "false"}
+              data-post-menu-visibility-option
+              data-post-menu-visibility-current=${visibility === "private"
+                ? "true"
+                : "false"}
+              class=${`post-menu-item${
+                visibility === "private" ? " post-menu-item-active" : ""
+              }`}
+              @click=${() =>
+                visibility === "private"
+                  ? this.#showMainMenu("[data-post-menu-open-visibility]")
+                  : this.#setVisibility("private")}
+            >
+              <span class="post-menu-item-icon">${this.#iconEyeOff()}</span>
+              <span class="post-menu-item-label">Private</span>
+              ${visibility === "private"
+                ? html`<span class="post-menu-item-check"
+                    >${this.#iconCheck()}</span
+                  >`
+                : nothing}
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -997,76 +1244,113 @@ export class JantPostMenu extends LitElement {
     const isFeatured = this._data.featured;
 
     return html`
-      <div role="menu">
-        <div role="menuitem" @click=${() => this.#edit()}>
-          ${this.#iconEdit()} Edit
-        </div>
+      <div class="post-menu-view post-menu-main">
+        <div role="menu" class="post-menu-list">
+          <div class="post-menu-section">
+            <button
+              type="button"
+              role="menuitem"
+              class="post-menu-item"
+              data-post-menu-item-primary
+              @click=${() => this.#edit()}
+            >
+              <span class="post-menu-item-icon">${this.#iconEdit()}</span>
+              <span class="post-menu-item-label">Edit</span>
+            </button>
 
-        <hr role="separator" />
+            <button
+              type="button"
+              role="menuitem"
+              class="post-menu-item"
+              data-post-menu-open-collections
+              @click=${() => this.#openCollectionPicker()}
+            >
+              <span class="post-menu-item-icon">${this.#iconCollection()}</span>
+              <span class="post-menu-item-label">Add to collection</span>
+              <span class="post-menu-item-chevron"
+                >${this.#iconChevronRight()}</span
+              >
+            </button>
 
-        <div role="menuitem" @click=${() => this.#openCollectionPicker()}>
-          ${this.#iconCollection()} Add to collection
-        </div>
-        ${isFeatured
-          ? html`<div role="menuitem" @click=${() => this.#setFeatured(false)}>
-              ${this.#iconHeartOff()} Unfeature
-            </div>`
-          : html`<div role="menuitem" @click=${() => this.#setFeatured(true)}>
-              ${this.#iconHeart()} Feature
-            </div>`}
-        ${this._data.isReply
-          ? nothing
-          : html`
-              ${visibility !== "public"
-                ? html`<div
+            ${this._data.isReply
+              ? nothing
+              : html`
+                  <button
+                    type="button"
                     role="menuitem"
-                    @click=${() => this.#setVisibility("public")}
+                    class="post-menu-item"
+                    data-post-menu-open-visibility
+                    @click=${() => this.#openVisibilityPanel()}
                   >
-                    ${this.#iconGlobe()} Make Public
-                  </div>`
-                : nothing}
-              ${visibility !== "unlisted"
-                ? html`<div
+                    <span class="post-menu-item-icon"
+                      >${this.#iconGlobe()}</span
+                    >
+                    <span class="post-menu-item-label">Visibility</span>
+                    <span class="post-menu-item-meta"
+                      >${this.#getVisibilityLabel(visibility)}</span
+                    >
+                    <span class="post-menu-item-chevron"
+                      >${this.#iconChevronRight()}</span
+                    >
+                  </button>
+                `}
+          </div>
+
+          <div class="post-menu-section">
+            <button
+              type="button"
+              role="menuitem"
+              class="post-menu-item"
+              @click=${() => this.#setFeatured(!isFeatured)}
+            >
+              <span class="post-menu-item-icon"
+                >${isFeatured ? this.#iconHeartOff() : this.#iconHeart()}</span
+              >
+              <span class="post-menu-item-label"
+                >${isFeatured ? "Unfeature" : "Feature"}</span
+              >
+            </button>
+
+            ${this._data.isReply
+              ? nothing
+              : html`
+                  <button
+                    type="button"
                     role="menuitem"
-                    @click=${() => this.#setVisibility("unlisted")}
+                    class="post-menu-item"
+                    @click=${() => this.#togglePin()}
                   >
-                    ${this.#iconLinkOff()} Make Unlisted
-                  </div>`
-                : nothing}
-              ${visibility !== "private"
-                ? html`<div
-                    role="menuitem"
-                    @click=${() => this.#setVisibility("private")}
-                  >
-                    ${this.#iconEyeOff()} Make Private
-                  </div>`
-                : nothing}
-            `}
-        ${this._data.isReply
-          ? nothing
-          : html`<div role="menuitem" @click=${() => this.#togglePin()}>
-              ${isPinned ? this.#iconPinOff() : this.#iconPin()}
-              ${isPinned ? "Unpin" : "Pin this post"}
-            </div>`}
+                    <span class="post-menu-item-icon"
+                      >${isPinned ? this.#iconPinOff() : this.#iconPin()}</span
+                    >
+                    <span class="post-menu-item-label"
+                      >${isPinned ? "Unpin" : "Pin this post"}</span
+                    >
+                  </button>
+                `}
 
-        <hr role="separator" />
+            <button
+              type="button"
+              role="menuitem"
+              class="post-menu-item post-menu-item-quiet"
+              @click=${() => this.#copyLink()}
+            >
+              <span class="post-menu-item-icon">${this.#iconLink()}</span>
+              <span class="post-menu-item-label">Copy link</span>
+            </button>
+          </div>
 
-        <div
-          role="menuitem"
-          class="text-destructive! [&_svg]:text-destructive!"
-          @click=${() => this.#delete()}
-        >
-          ${this.#iconTrash()} Delete
-        </div>
-
-        <hr role="separator" />
-
-        <div
-          role="menuitem"
-          class="text-muted-foreground!"
-          @click=${() => this.#copyLink()}
-        >
-          ${this.#iconLink()} Copy link
+          <div class="post-menu-section post-menu-section-danger">
+            <button
+              type="button"
+              role="menuitem"
+              class="post-menu-item post-menu-item-danger"
+              @click=${() => this.#delete()}
+            >
+              <span class="post-menu-item-icon">${this.#iconTrash()}</span>
+              <span class="post-menu-item-label">Delete</span>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -1075,19 +1359,26 @@ export class JantPostMenu extends LitElement {
   render() {
     if (!this._open || !this._data) return nothing;
 
-    const wrapperStyle = `position:fixed;z-index:100;right:${document.documentElement.clientWidth - this._x}px;${
-      this._openAbove
-        ? `bottom:${window.innerHeight - this._y + 6}px;`
-        : `top:${this._y + 6}px;`
-    }`;
+    const horizontalStyle = this._openOutside
+      ? `left:${Math.round(this._x + MENU_OUTSIDE_GUTTER)}px;`
+      : `right:${Math.round(document.documentElement.clientWidth - this._x)}px;`;
+    const verticalStyle = this._openAbove
+      ? `bottom:${Math.round(window.innerHeight - this._y + 6)}px;`
+      : `top:${Math.round(this._y + 6)}px;`;
+    const wrapperStyle = `position:fixed;z-index:100;${horizontalStyle}${verticalStyle}`;
 
     return html`
-      <div class="post-menu-backdrop" @click=${() => this.#close()}></div>
+      <div
+        class="post-menu-backdrop"
+        @click=${() => this.#close({ restoreFocus: false })}
+      ></div>
       <div class="dropdown-menu" style=${wrapperStyle}>
-        <div data-popover aria-hidden="false" class="!static min-w-52">
-          ${this._collectionPickerOpen
+        <div data-popover aria-hidden="false" class="!static post-menu-panel">
+          ${this._view === "collections"
             ? this.#renderCollectionPicker()
-            : this.#renderMenu()}
+            : this._view === "visibility"
+              ? this.#renderVisibilityPanel()
+              : this.#renderMenu()}
         </div>
       </div>
       ${this._addCollectionPanelOpen
