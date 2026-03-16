@@ -2,7 +2,8 @@
  * General settings form
  *
  * Server-side template that renders the <jant-settings-general> Lit
- * component for site name, description, language, timezone, footer, and SEO.
+ * component for site name, description, footer, homepage branding, language,
+ * timezone, and search settings.
  * The settings-bridge.ts script handles server communication.
  */
 
@@ -17,6 +18,7 @@ export function GeneralContent({
   siteDescriptionFallback,
   timeZone,
   siteFooter,
+  showJantBrandingOnHome,
   noindex,
   timezones,
 }: {
@@ -27,6 +29,7 @@ export function GeneralContent({
   siteDescriptionFallback: string;
   timeZone: string;
   siteFooter: string;
+  showJantBrandingOnHome: boolean;
   noindex: boolean;
   timezones: TimezoneEntry[];
 }) {
@@ -67,13 +70,14 @@ export function GeneralContent({
         "Displayed at the bottom of all posts and pages. Markdown supported.",
       comment: "@context: Help text for site footer field",
     }),
+    showJantBrandingOnHome: t({
+      message: 'Show "Build with Jant" at the bottom of the home page',
+      comment:
+        "@context: Checkbox for showing the optional Jant credit link on the home page",
+    }),
     markdownSupported: t({
       message: "Markdown supported",
       comment: "@context: Placeholder hint for markdown-enabled textareas",
-    }),
-    seo: t({
-      message: "SEO",
-      comment: "@context: Settings section heading for SEO",
     }),
     allowIndexing: t({
       message: "It's OK for search engines to index my site",
@@ -106,6 +110,7 @@ export function GeneralContent({
     siteLanguage,
     timeZone,
     siteFooter,
+    showJantBrandingOnHome,
     noindex,
   }).replace(/</g, "\\u003c");
 

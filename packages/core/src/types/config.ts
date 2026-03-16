@@ -169,6 +169,10 @@ export const CONFIG_FIELDS = {
     defaultValue: "",
     envOnly: false,
   },
+  SHOW_JANT_BRANDING_ON_HOME: {
+    defaultValue: "",
+    envOnly: false,
+  },
   NOINDEX: {
     defaultValue: "",
     envOnly: false,
@@ -211,6 +215,7 @@ export interface AppConfig {
   headerNavMaxVisible: number;
   timeZone: string;
   siteFooter: string;
+  showJantBrandingOnHome: boolean;
   noindex: boolean;
 
   // Infrastructure (ENV only)

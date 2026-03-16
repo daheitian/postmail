@@ -20,6 +20,7 @@ export interface Bindings {
   SITE_NAME?: string;
   SITE_DESCRIPTION?: string;
   SITE_LANGUAGE?: string;
+  SHOW_JANT_BRANDING_ON_HOME?: string;
   // S3-compatible storage (alternative to R2)
   STORAGE_DRIVER?: string;
   S3_ENDPOINT?: string;
