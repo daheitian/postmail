@@ -1,0 +1,116 @@
+terms:
+  - source: Collection
+    target: 合集
+    note: Jant 的策展概念。不要译成收藏夹、收藏集或集合。
+
+  - source: Collections
+    target: 合集
+    note: Jant 的策展概念。不要译成收藏夹、收藏集或集合。
+
+  - source: collection
+    target: 合集
+    note: Jant 的策展概念。可按语境补上量词。
+
+  - source: collections
+    target: 合集
+    note: Jant 的策展概念。可按语境补上量词。
+
+  - source: Collection link
+    target: 合集链接
+    note: Collection 的 URL/slug 字段文案。
+
+  - source: Thread
+    target: 帖子串
+    note: Jant 中由多条帖子组成的串联内容，不要直译成线程。
+
+  - source: thread
+    target: 帖子串
+    note: Jant 中由多条帖子组成的串联内容，不要直译成线程。
+
+  - source: threads
+    target: 帖子串
+    note: Jant 中由多条帖子组成的串联内容，可按语境补上量词。
+
+  - source: Note
+    target: 笔记
+    note: Jant 的帖子格式之一。
+
+  - source: Notes
+    target: 笔记
+    note: Jant 的帖子格式之一。
+
+  - source: Link
+    target: 链接
+    note: Jant 的帖子格式之一。
+
+  - source: Links
+    target: 链接
+    note: Jant 的帖子格式之一。
+
+  - source: Quote
+    target: 引用
+    note: Jant 的帖子格式之一。
+
+  - source: Quotes
+    target: 引用
+    note: Jant 的帖子格式之一。
+
+  - source: Reply
+    target: 回复
+    note: 帖子回复动作或标签。
+
+  - source: Replies
+    target: 回复
+    note: 帖子回复计数标签，可按语境补上量词。
+
+  - source: Archive
+    target: 归档
+    note: 归档页概念。
+
+  - source: Draft
+    target: 草稿
+    note: 未发布内容。
+
+  - source: Drafts
+    target: 草稿
+    note: 未发布内容。
+
+  - source: Featured
+    target: 精选
+    note: 站点精选内容。
+
+  - source: Pinned
+    target: 已置顶
+    note: 已固定在顶部的状态标签。
+
+  - source: Published
+    target: 已发布
+    note: 已发布状态标签。
+
+  - source: Unlisted
+    target: 未列出
+    note: 不出现在主列表中的可访问状态。
+
+  - source: API Tokens
+    target: API 令牌
+    note: API 访问凭证设置项。
+
+  - source: Token
+    target: 令牌
+    note: API 或安全令牌术语。
+
+  - source: Tokens
+    target: 令牌
+    note: API 或安全令牌术语。
+
+  - source: Token name
+    target: 令牌名称
+    note: API 令牌名称字段。
+
+  - source: slug
+    target: slug
+    note: 保持 slug 不翻译。
+
+  - source: Slug
+    target: slug
+    note: 保持 slug 不翻译。

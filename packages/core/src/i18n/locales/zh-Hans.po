@@ -18,7 +18,7 @@ msgstr ""
 #. placeholder {1}: segment.hiddenBeforeCount === 1 ? "post" : "posts"
 #: src/ui/feed/CuratedThreadPreview.tsx
 msgid "{0} hidden {1}"
-msgstr ""
+msgstr "隐藏了 {0} 条"
 
 #. @context: Link showing count of hidden thread posts between root and latest
 #. placeholder {0}: hiddenCount === 1 ? "post" : "posts"
@@ -231,12 +231,12 @@ msgstr "所有年份"
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Always show the dark version of the theme."
-msgstr ""
+msgstr "始终显示主题的深色版本。"
 
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Always show the light version of the theme."
-msgstr ""
+msgstr "始终显示主题的浅色版本。"
 
 #. @context: Alt text for the sample detail article image
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -263,7 +263,7 @@ msgstr "API 令牌"
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
-msgstr ""
+msgstr "应用到整个站点，包括管理页面。先选择配色，再决定是跟随系统还是固定模式。"
 
 #. @context: Archive page title
 #. @context: Inactive nav link label on sample page
@@ -304,7 +304,7 @@ msgstr "作者（可选）"
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Auto"
-msgstr ""
+msgstr "自动"
 
 #. @context: Description after theming guide link on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -368,7 +368,7 @@ msgstr "博客头像"
 #. @context: Browser page title for the public brand page
 #: src/routes/pages/brand.tsx
 msgid "Brand"
-msgstr ""
+msgstr "品牌"
 
 #. @context: Accessible label for the brand keyword list
 #: src/ui/pages/BrandPage.tsx
@@ -395,12 +395,12 @@ msgstr ""
 #: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/pages/CollectionPage.tsx
 msgid "Breadcrumb"
-msgstr ""
+msgstr "面包屑导航"
 
 #. @context: Label for the full icon browser view
 #: src/ui/shared/collection-management-labels.ts
 msgid "Browse all icons"
-msgstr ""
+msgstr "浏览全部图标"
 
 #. @context: Role label for dark primary swatch
 #: src/ui/pages/BrandPage.tsx
@@ -469,7 +469,7 @@ msgstr "为你的站点选择一种排版方向。每个主题都会同时改变
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Clear filter"
-msgstr ""
+msgstr "清除筛选"
 
 #. @context: Singular collection count label
 #. @context: Singular collection count label
@@ -682,7 +682,7 @@ msgstr "自定义 CSS"
 #. @context: Toast after saving custom CSS
 #: src/routes/dash/settings.tsx
 msgid "Custom CSS updated."
-msgstr "自定义 CSS 已更新."
+msgstr "自定义 CSS 已更新。"
 
 #. @context: Settings item description for custom CSS
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -715,7 +715,7 @@ msgstr "危险区"
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Dark"
-msgstr ""
+msgstr "深色"
 
 #. @context: Label for dark accent swatch on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -798,7 +798,7 @@ msgstr "永久删除这个合集？里面的帖子不会被删除。"
 #. @context: Toast after deleting a collection
 #: src/ui/shared/collection-management-labels.ts
 msgid "Deleted"
-msgstr ""
+msgstr "已删除"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
@@ -813,7 +813,7 @@ msgstr "为视力受限的人描述此图像..."
 #. @context: Collection form field
 #: src/ui/shared/collection-management-labels.ts
 msgid "Description (optional)"
-msgstr ""
+msgstr "描述（可选）"
 
 #. @context: Collection label on theme sample content card
 #. @context: Collection tag on sample note post
@@ -863,12 +863,12 @@ msgstr "显示在所有文章和页面的底部。支持 Markdown。"
 #. @context: Theme group heading on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Distinctive Mood"
-msgstr ""
+msgstr "鲜明氛围"
 
 #. @context: Label for a divider item while organizing collections
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Divider"
-msgstr ""
+msgstr "分隔线"
 
 #. @context: Confirm close action sheet subtitle when editing a published post
 #: src/ui/compose/ComposeDialog.tsx
@@ -941,7 +941,7 @@ msgstr "草稿"
 #. @context: Helper text shown while organizing collections
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Drag collections and dividers into the order you want."
-msgstr ""
+msgstr "拖动合集和分隔线，调整为你想要的顺序。"
 
 #. @context: Placeholder for API token name input
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -962,7 +962,7 @@ msgstr "编辑"
 #. @context: Button to manually edit the collection link
 #: src/ui/shared/collection-management-labels.ts
 msgid "Edit link"
-msgstr ""
+msgstr "编辑链接"
 
 #. @context: Compose dialog header title in edit mode
 #: src/ui/compose/ComposeDialog.tsx
@@ -994,7 +994,7 @@ msgstr "表情"
 #. @context: Emoji picker tab label
 #: src/ui/shared/collection-management-labels.ts
 msgid "Emojis"
-msgstr ""
+msgstr "表情符号"
 
 #. @context: Plural entry count label
 #. @context: Plural entry count label
@@ -1069,7 +1069,7 @@ msgstr ""
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Field notes on quiet design"
-msgstr ""
+msgstr "克制设计手记"
 
 #. @context: Error toast when file storage is not set up
 #. @context: Error when file storage is not set up
@@ -1091,7 +1091,7 @@ msgstr "文件"
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Follow each visitor's system preference."
-msgstr ""
+msgstr "跟随每位访问者的系统偏好。"
 
 #. @context: Appearance settings heading for font theme
 #: src/ui/dash/appearance/FontThemeContent.tsx
@@ -1191,7 +1191,7 @@ msgstr "我想删除 {siteName}"
 #. @context: Icon picker tab label
 #: src/ui/shared/collection-management-labels.ts
 msgid "Icons"
-msgstr ""
+msgstr "图标"
 
 #. @context: Closing paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1271,7 +1271,7 @@ msgstr "标签"
 #. @context: Placeholder for an optional divider label in collections organize mode
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Label (optional)"
-msgstr ""
+msgstr "标签（可选）"
 
 #. @context: Error toast when nav link fields are empty
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1321,7 +1321,7 @@ msgstr ""
 #. @context: Suffix after Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
-msgstr ""
+msgstr "可让你覆盖任意主题变量。"
 
 #. @context: Theme mode option label
 #. @context: Theme mode option on sample page
@@ -1330,7 +1330,7 @@ msgstr ""
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Light"
-msgstr ""
+msgstr "浅色"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1391,7 +1391,7 @@ msgstr ""
 #. @context: Theme group description on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Low-distraction palettes for a cleaner, calmer reading rhythm."
-msgstr ""
+msgstr "低干扰配色，带来更干净、更平静的阅读节奏。"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1408,12 +1408,12 @@ msgstr "管理当前的登录会话"
 #. @context: Intro text on the settings home page below the title
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Manage your site, design, and account."
-msgstr ""
+msgstr "管理你的站点、设计和账户。"
 
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "March 14"
-msgstr ""
+msgstr "3 月 14 日"
 
 #. @context: Date label on theme sample content card
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1445,12 +1445,12 @@ msgstr "媒体"
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/shared/collection-management-labels.ts
 msgid "More actions"
-msgstr ""
+msgstr "更多操作"
 
 #. @context: Theme group description on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "More atmospheric palettes with a stronger sense of time, place, or tone."
-msgstr ""
+msgstr "氛围感更强的配色，时间、地点和情绪感更鲜明。"
 
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
@@ -1460,12 +1460,12 @@ msgstr "更多链接"
 #. @context: Helper text in the quick-create collection dialog
 #: src/ui/shared/collection-management-labels.ts
 msgid "More options are available after you create it."
-msgstr ""
+msgstr "创建后还可设置更多选项。"
 
 #. @context: Fallback theme group heading on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "More Palettes"
-msgstr ""
+msgstr "更多配色"
 
 #. @context: Secondary badge label on sample page
 #. @context: Token label on sample page
@@ -1532,7 +1532,7 @@ msgstr "新建自定义 URL"
 #. @context: Menu action to create a divider on collections page
 #: src/ui/shared/CollectionsManager.tsx
 msgid "New Divider"
-msgstr ""
+msgstr "新建分隔线"
 
 #. @context: Password form field
 #. @context: Password reset form field
@@ -1618,7 +1618,7 @@ msgstr "没有结果。尝试不同的关键词。"
 #. @context: Archive empty state with filters applied
 #: src/ui/pages/ArchivePage.tsx
 msgid "No threads match these filters. Try adjusting your selection or clear all filters."
-msgstr ""
+msgstr "没有符合这些筛选条件的帖子串。调整筛选条件，或清除所有筛选。"
 
 #. @context: Color theme preview format label
 #. @context: Compose format tab
@@ -1646,7 +1646,7 @@ msgstr "笔记"
 #. @context: Empty state message on home page
 #: src/ui/pages/HomePage.tsx
 msgid "Nothing here yet."
-msgstr "这里还没有内容."
+msgstr "这里还没有内容。"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1680,7 +1680,7 @@ msgstr "排序已保存"
 #. @context: Menu action to organize collections
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Organize"
-msgstr ""
+msgstr "整理"
 
 #. @context: Outline badge label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1700,7 +1700,7 @@ msgstr ""
 #. @context: Theme group description on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Paper-first palettes with warmer surfaces and a softer, handwritten feel."
-msgstr ""
+msgstr "以纸感为先的配色，界面更温暖，也更有手写感。"
 
 #. @context: Settings item — password settings
 #. @context: Setup/signin form field - password
@@ -1838,7 +1838,7 @@ msgstr "公开"
 #. @context: Meta description for the public brand page
 #: src/routes/pages/brand.tsx
 msgid "Public brand spec for Jant, including palette, voice, and usage guidance."
-msgstr ""
+msgstr "Jant 的公开品牌规范，涵盖配色、语气和使用指南。"
 
 #. @context: Confirm close action sheet - publish update button for editing published post
 #. @context: Primary button label on sample page
@@ -1875,12 +1875,12 @@ msgstr ""
 #. @context: Theme group heading on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Quiet Neutral"
-msgstr ""
+msgstr "克制中性色"
 
 #. @context: Color theme preview card secondary sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Quiet surfaces let writing lead."
-msgstr ""
+msgstr "安静的界面应让文字先说话。"
 
 #. @context: Compose format tab
 #. @context: Post format badge - quote
@@ -1924,7 +1924,7 @@ msgstr ""
 #. @context: Color theme preview inline link label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Read why"
-msgstr ""
+msgstr "了解原因"
 
 #. @context: Collection tag on sample quote post
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1980,7 +1980,7 @@ msgstr "删除分隔线"
 #. @context: Archive tile label for multiple thread replies
 #: src/ui/pages/ArchivePage.tsx
 msgid "Replies"
-msgstr ""
+msgstr "条回复"
 
 #. @context: Archive tile label for a single thread reply
 #. @context: Compose button - reply to post
@@ -1992,7 +1992,7 @@ msgstr "回复"
 #. @context: Button to restore the automatically generated collection link from the title
 #: src/ui/shared/collection-management-labels.ts
 msgid "Reset link"
-msgstr ""
+msgstr "重置链接"
 
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
@@ -2011,7 +2011,7 @@ msgstr "撤销"
 #. @context: Confirm dialog for revoking API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Revoke this token? Any scripts using it will stop working."
-msgstr "撤销此令牌吗？ 任何使用它的脚本将停止工作。"
+msgstr "撤销此令牌吗？任何使用它的脚本都将停止工作。"
 
 #. @context: Button to save collection
 #. @context: Button to save settings
@@ -2064,7 +2064,7 @@ msgstr "保存为草稿？"
 #. @context: Toast after saving a collection
 #: src/ui/shared/collection-management-labels.ts
 msgid "Saved"
-msgstr ""
+msgstr "已保存"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title
@@ -2078,12 +2078,12 @@ msgstr "搜索"
 #. @context: Emoji picker search placeholder
 #: src/ui/shared/collection-management-labels.ts
 msgid "Search emojis..."
-msgstr ""
+msgstr "搜索表情符号..."
 
 #. @context: Icon picker search placeholder
 #: src/ui/shared/collection-management-labels.ts
 msgid "Search icons..."
-msgstr ""
+msgstr "搜索图标..."
 
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx
@@ -2108,14 +2108,14 @@ msgstr "安全令牌已过期。请刷新页面后重试。"
 #. @context: Error toast when CSRF token is missing from delete request
 #: src/routes/dash/settings.tsx
 msgid "Security token missing. Refresh the page and try again."
-msgstr "安全令牌缺失。刷新页面后重试。"
+msgstr "安全令牌缺失。请刷新页面后重试。"
 
 #. @context: Toast after saving SEO settings
 #. @context: Toast after saving SEO settings
 #: src/routes/dash/settings.tsx
 #: src/routes/dash/settings.tsx
 msgid "SEO settings updated."
-msgstr "SEO 设置已更新."
+msgstr "SEO 设置已更新。"
 
 #. @context: Settings item — session management
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -2130,7 +2130,7 @@ msgstr "会话、密码、导出"
 #. @context: Page title for the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Settings"
-msgstr ""
+msgstr "设置"
 
 #. @context: Toast after saving general settings
 #: src/routes/dash/settings.tsx
@@ -2166,7 +2166,7 @@ msgstr "展开更多"
 #. @context: Button to expand the collection icon picker into category browsing
 #: src/ui/shared/collection-management-labels.ts
 msgid "Show more icons"
-msgstr ""
+msgstr "显示更多图标"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading
@@ -2218,7 +2218,7 @@ msgstr ""
 #. @context: Color theme preview card body sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Soft color should still carry a clear reading rhythm."
-msgstr ""
+msgstr "柔和的颜色也该保有清晰的阅读节奏。"
 
 #. @context: Toast when uploads fail and post is auto-saved as draft
 #: src/ui/compose/ComposeDialog.tsx
@@ -2239,12 +2239,12 @@ msgstr "有些内容看起来不对。请检查表单并重试。"
 #. @context: Sort menu label on collection detail page
 #: src/ui/pages/CollectionPage.tsx
 msgid "Sort"
-msgstr ""
+msgstr "排序"
 
 #. @context: Collection form field
 #: src/ui/shared/collection-management-labels.ts
 msgid "Sort Order"
-msgstr ""
+msgstr "排序方式"
 
 #. @context: Compose quote source link placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -2400,12 +2400,12 @@ msgstr ""
 #: src/routes/pages/theme-sample.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Theme sample"
-msgstr ""
+msgstr "主题示例"
 
 #. @context: Fallback theme group description on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Themes that have not been assigned to a named group yet."
-msgstr ""
+msgstr "尚未归入已命名分组的主题。"
 
 #. @context: Link to theming documentation on Custom CSS page
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -2435,7 +2435,7 @@ msgstr "该合集为空。从编辑器添加文章。"
 #. @context: Collection link help text
 #: src/ui/shared/collection-management-labels.ts
 msgid "This is the last part of the collection link."
-msgstr "这是合集链接的最后一部分。"
+msgstr "这是合集链接的最后一段。"
 
 #. @context: Showcase paragraph prefix on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -2482,7 +2482,7 @@ msgstr "这将永久删除您所有的数据 — 文章、媒体、合集、设�
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "thread"
-msgstr ""
+msgstr "个帖子串"
 
 #. @context: Table cell in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2499,7 +2499,7 @@ msgstr ""
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "threads"
-msgstr ""
+msgstr "个帖子串"
 
 #. @context: Settings form field
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2667,7 +2667,7 @@ msgstr "查看"
 #. @context: Thread link label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "View earlier notes in this thread"
-msgstr ""
+msgstr "查看这个帖子串里更早的笔记"
 
 #. @context: Showcase secondary button on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -2682,12 +2682,12 @@ msgstr ""
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
-msgstr ""
+msgstr "想调得更细？"
 
 #. @context: Theme group heading on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Warm Editorial"
-msgstr ""
+msgstr "暖调编辑风"
 
 #. @context: Name of the paper swatch
 #: src/ui/pages/BrandPage.tsx

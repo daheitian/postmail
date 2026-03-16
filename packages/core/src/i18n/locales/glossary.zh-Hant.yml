@@ -1,0 +1,116 @@
+terms:
+  - source: Collection
+    target: 選集
+    note: Jant 的策展概念。不要譯成收藏夾、收藏集或集合。
+
+  - source: Collections
+    target: 選集
+    note: Jant 的策展概念。不要譯成收藏夾、收藏集或集合。
+
+  - source: collection
+    target: 選集
+    note: Jant 的策展概念。可依語境補上量詞。
+
+  - source: collections
+    target: 選集
+    note: Jant 的策展概念。可依語境補上量詞。
+
+  - source: Collection link
+    target: 選集連結
+    note: Collection 的 URL/slug 欄位文案。
+
+  - source: Thread
+    target: 貼文串
+    note: Jant 中由多則貼文組成的串聯內容，不要直譯成執行緒。
+
+  - source: thread
+    target: 貼文串
+    note: Jant 中由多則貼文組成的串聯內容，不要直譯成執行緒。
+
+  - source: threads
+    target: 貼文串
+    note: Jant 中由多則貼文組成的串聯內容，可依語境補上量詞。
+
+  - source: Note
+    target: 筆記
+    note: Jant 的貼文格式之一。
+
+  - source: Notes
+    target: 筆記
+    note: Jant 的貼文格式之一。
+
+  - source: Link
+    target: 連結
+    note: Jant 的貼文格式之一。
+
+  - source: Links
+    target: 連結
+    note: Jant 的貼文格式之一。
+
+  - source: Quote
+    target: 引用
+    note: Jant 的貼文格式之一。
+
+  - source: Quotes
+    target: 引用
+    note: Jant 的貼文格式之一。
+
+  - source: Reply
+    target: 回覆
+    note: 貼文回覆動作或標籤。
+
+  - source: Replies
+    target: 回覆
+    note: 貼文回覆計數標籤，可依語境補上量詞。
+
+  - source: Archive
+    target: 封存
+    note: 封存頁概念。
+
+  - source: Draft
+    target: 草稿
+    note: 尚未發佈內容。
+
+  - source: Drafts
+    target: 草稿
+    note: 尚未發佈內容。
+
+  - source: Featured
+    target: 精選
+    note: 網站精選內容。
+
+  - source: Pinned
+    target: 已釘選
+    note: 已固定在頂部的狀態標籤。
+
+  - source: Published
+    target: 已發佈
+    note: 已發佈狀態標籤。
+
+  - source: Unlisted
+    target: 未列出
+    note: 不出現在主列表中的可存取狀態。
+
+  - source: API Tokens
+    target: API 權杖
+    note: API 存取憑證設定項。台灣繁中優先用權杖，不用令牌。
+
+  - source: Token
+    target: 權杖
+    note: API 或安全權杖術語。台灣繁中優先用權杖，不用令牌。
+
+  - source: Tokens
+    target: 權杖
+    note: API 或安全權杖術語。台灣繁中優先用權杖，不用令牌。
+
+  - source: Token name
+    target: 權杖名稱
+    note: API 權杖名稱欄位。
+
+  - source: slug
+    target: slug
+    note: 保持 slug 不翻譯。
+
+  - source: Slug
+    target: slug
+    note: 保持 slug 不翻譯。
