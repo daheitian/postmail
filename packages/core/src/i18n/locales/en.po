@@ -1695,11 +1695,6 @@ msgstr "Paste a URL..."
 msgid "Path"
 msgstr "Path"
 
-#. @context: Link to permanent URL of post
-#: src/ui/shared/PostFooter.tsx
-msgid "Permalink"
-msgstr "Permalink"
-
 #. @context: Settings item description for account deletion
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Permanently delete all data and reset the blog"

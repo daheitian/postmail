@@ -181,7 +181,7 @@ msgstr "新增替代文字"
 #. @context: Action to create a new collection from compose
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add Collection"
-msgstr "新增集合"
+msgstr "新增選集"
 
 #. @context: Custom CSS settings description
 #: src/ui/dash/appearance/AdvancedContent.tsx
@@ -211,7 +211,7 @@ msgstr "所有可用的端點和請求格式."
 #. @context: Archive filter - collection dropdown default
 #: src/ui/pages/ArchivePage.tsx
 msgid "All collections"
-msgstr "所有收藏集"
+msgstr "所有選集"
 
 #. @context: Archive filter - all formats select option
 #: src/ui/pages/ArchivePage.tsx
@@ -478,7 +478,7 @@ msgstr ""
 #: src/ui/shared/CollectionsManager.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "collection"
-msgstr "個合集"
+msgstr "個選集"
 
 #. @context: Compose collection selector trigger label
 #. @context: Custom URL target type badge for a collection
@@ -487,7 +487,7 @@ msgstr "個合集"
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Collection"
-msgstr "集合"
+msgstr "選集"
 
 #. @context: Plural collection count label
 #. @context: Plural collection count label
@@ -496,7 +496,7 @@ msgstr "集合"
 #: src/ui/shared/CollectionsManager.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "collections"
-msgstr "個合集"
+msgstr "個選集"
 
 #. @context: Breadcrumb link to collections page
 #. @context: Breadcrumb link to collections page
@@ -509,7 +509,7 @@ msgstr "個合集"
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Collections"
-msgstr "收藏集"
+msgstr "選集"
 
 #. @context: Alert title on theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -617,7 +617,7 @@ msgstr "無法儲存。 請稍後再試。"
 #. @context: Compose collection combobox empty state when no collections exist
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Create a collection to get started."
-msgstr "建立一個集合以開始。"
+msgstr "建立一個選集即可開始。"
 
 #. @context: Label for curl example
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -783,7 +783,7 @@ msgstr "永久刪除此部落格？ 此操作無法復原。"
 #. @context: Confirm dialog for deleting a collection
 #: src/ui/shared/collection-management-labels.ts
 msgid "Delete this collection permanently? Posts inside won't be removed."
-msgstr ""
+msgstr "要永久刪除此選集嗎？裡面的貼文不會被刪除。"
 
 #. @context: Toast after deleting a collection
 #: src/ui/shared/collection-management-labels.ts
@@ -1440,7 +1440,7 @@ msgstr ""
 #. @context: Collection title placeholder
 #: src/ui/shared/collection-management-labels.ts
 msgid "My Collection"
-msgstr ""
+msgstr "我的選集"
 
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1476,7 +1476,7 @@ msgstr "導覽預覽"
 #: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "New Collection"
-msgstr "建立新集合"
+msgstr "新增選集"
 
 #. @context: Button to create new custom URL
 #. @context: Button to create new custom URL
@@ -1534,7 +1534,7 @@ msgstr "找不到任何活動中的工作階段。"
 #: src/ui/shared/CollectionDirectory.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "No collections yet. Start one to organize posts by topic."
-msgstr "尚未建立任何收藏集。建立一個以主題整理貼文。"
+msgstr "還沒有選集。建立一個選集，依主題整理貼文。"
 
 #. @context: Empty state message
 #: src/routes/dash/custom-urls.tsx
@@ -1561,7 +1561,7 @@ msgstr "未選取任何檔案。請選擇要上傳的檔案。"
 #. @context: Compose collection combobox empty state when search has no results
 #: src/ui/compose/ComposeDialog.tsx
 msgid "No matching collections."
-msgstr "找不到符合的集合。"
+msgstr "找不到符合的選集。"
 
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1694,11 +1694,6 @@ msgstr "貼上網址..."
 #: src/routes/dash/custom-urls.tsx
 msgid "Path"
 msgstr "路徑"
-
-#. @context: Link to permanent URL of post
-#: src/ui/shared/PostFooter.tsx
-msgid "Permalink"
-msgstr "永久連結"
 
 #. @context: Settings item description for account deletion
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -2341,7 +2336,7 @@ msgstr ""
 #. @context: Custom URL target slug help text
 #: src/routes/dash/custom-urls.tsx
 msgid "The slug of the target post or collection"
-msgstr "目標貼文或集合的 URL slug"
+msgstr "目標貼文或選集的 URL slug"
 
 #. @context: Section heading for theme picker pills
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2378,12 +2373,12 @@ msgstr "這篇文章想回答一個具體問題：當預設強調色要撐起一
 #. @context: Collection path help text
 #: src/ui/shared/collection-management-labels.ts
 msgid "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you."
-msgstr "這會成為收藏夾連結的一部分。如果標題用了中文、日文或韓文，我們會自動幫你產生。"
+msgstr "這會成為選集連結的一部分。如果標題用了中文、日文或韓文，我們會自動幫你產生。"
 
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
-msgstr "此收藏為空。請從編輯器新增文章。"
+msgstr "此選集為空。請從編輯器新增貼文。"
 
 #. @context: Showcase paragraph prefix on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -2423,7 +2418,7 @@ msgstr ""
 #. @context: Warning text on account deletion page
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "This will permanently delete all your data — posts, media, collections, settings, and your account. Your blog will be reset to its initial setup state. This cannot be undone."
-msgstr "這將永久刪除你所有的資料 — 文章、媒體檔案、收藏集、設定，以及你的帳戶。你的部落格將會重設為初始設定狀態。此操作無法復原。"
+msgstr "這將永久刪除你所有的資料 — 文章、媒體檔案、選集、設定，以及你的帳戶。你的部落格將會重設為初始設定狀態。此操作無法復原。"
 
 #. @context: Archive month header count unit for a single thread
 #. @context: Archive page summary unit for a single matching thread
@@ -2665,7 +2660,7 @@ msgstr "在想什麼..."
 #. @context: Collection description placeholder
 #: src/ui/shared/collection-management-labels.ts
 msgid "What's this collection about?"
-msgstr ""
+msgstr "這個選集是關於什麼的？"
 
 #. @context: Description for featured default toggle, explains what happens when off
 #: src/ui/dash/appearance/NavigationContent.tsx

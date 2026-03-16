@@ -13,7 +13,7 @@
 - 单博客，单作者
 - 三种内容格式（Note, Link, Quote）类似 Tumblr
 - Thread（帖子串）——把想法串联成连贯的对话
-- Collection（策展）——把零散帖子组织成主题集合
+- Collection（合集）——把零散帖子组织成主题合集
 - 可定制的颜色方案和字体主题
 - 多语言支持（英文、简体中文、繁体中文）
 - 极简部署（Cloudflare Workers，一键启动）
@@ -43,14 +43,14 @@
 | `media`     | 可选媒体，图片/视频/音频可混合上传                             |
 | `rating`    | 可选评分，1-5 整数                                             |
 
-**设计理念**：三种 format 覆盖内容的三种来源——我创造的、我指向的、我引用的。Note 有标题时按文章样式渲染，无标题时按短帖子渲染，不需要独立的 article 类型。图片、视频作为任何 format 的通用媒体能力，不需要独立的 image 类型。Rating 是通用字段，任何帖子都可以评分，不需要独立的 review 类型。所有细分分类的需求交给 Collection。
+**设计理念**：三种 format 覆盖内容的三种来源——我创造的、我指向的、我引用的。Note 有标题时按文章样式渲染，无标题时按短帖子渲染，不需要独立的 article 类型。图片、视频作为任何 format 的通用媒体能力，不需要独立的 image 类型。Rating 是通用字段，任何帖子都可以评分，不需要独立的 review 类型。所有细分分类的需求交给合集。
 
 ### 2.2 Page（独立页面）
 
 与 Post 平级的独立内容类型，单独存储。
 
 - 不出现在时间线和 RSS
-- 不属于任何 Collection
+- 不属于任何合集
 - 没有 featured / rating / format / pinned 概念
 - 有 `status` 字段（`draft` / `published`），与 Post 一致
 - 有固定 URL：`/{slug}`，用户必须自定义 slug，仅支持单级
@@ -92,9 +92,9 @@
 - 删除 root = 整个 Thread 软删除
 - 删除中间帖 = 子帖保留
 
-### 2.5 Collection（策展）
+### 2.5 Collection（合集）
 
-**场景**：把零散帖子组织成主题集合。Collection 同时承担"子类型"的分类职责——用户通过 Collection 来区分书评、影评、产品推荐等，而非通过内容类型。
+**场景**：把零散帖子组织成主题合集。合集同时承担"子类型"的分类职责——用户通过合集来区分书评、影评、产品推荐等，而非通过内容类型。
 
 **示例**：
 
@@ -105,13 +105,13 @@
 
 **规则**：
 
-- 一个帖子可以属于多个 Collection（多对多关系，通过 `post_collections` 关联表实现）
-- Collection 有名称、描述和图标
-- Collection 有自定义排序方式（最新/最早/评分最高/评分最低）
-- Collection 有自定义 slug，地址为 `/c/{slug}`，创建时根据名称自动生成，用户可修改
-- Collection 有 `position` 字段，后台支持拖拽排序
-- Collection 之间可以插入分隔线（保存在统一的 `sidebar_item` 排序表里），用于在列表页分组
-- 不预设任何 Collection，首次使用时引导创建
+- 一个帖子可以属于多个合集（多对多关系，通过 `post_collections` 关联表实现）
+- 合集有名称、描述和图标
+- 合集有自定义排序方式（最新/最早/评分最高/评分最低）
+- 合集有自定义 slug，地址为 `/c/{slug}`，创建时根据名称自动生成，用户可修改
+- 合集有 `position` 字段，后台支持拖拽排序
+- 合集之间可以插入分隔线（保存在统一的 `sidebar_item` 排序表里），用于在列表页分组
+- 不预设任何合集，首次使用时引导创建
 
 ### 2.6 Media（媒体）
 
@@ -180,7 +180,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 - 标题输入框始终可见但以灰色小字弱化
 - 通过工具栏图标切换 format，编辑器形态随之变化
 - 📎 媒体和 ⭐ 评分作为可选的通用能力
-- 📂 Collection 选择集成在发布框内，降低使用门槛
+- 📂 合集选择集成在发布框内，降低使用门槛
 - 草稿逻辑参考 Threads / Bluesky：发布按钮旁有 drafts 图标，有内容时点击 = 存为草稿并清空，空输入框时点击 = 展开草稿列表
 - 发布默认 = published + 不 featured，精选和置顶通过发布按钮下拉勾选
 
@@ -202,9 +202,9 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 首页保持干净，所有高级筛选收到 Archive 里。
 
-### 3.7 Collections 页面
+### 3.7 合集页面
 
-`/c` 展示所有 Collection 的列表页，点击进入单个 Collection 的帖子列表（`/c/{slug}`）。Collections 页面为双栏布局，左侧边栏展示所有的 Collection，右侧栏展示当前 Collection 的帖子列表。
+`/c` 展示所有合集的列表页，点击进入单个合集的帖子列表（`/c/{slug}`）。合集页面为双栏布局，左侧边栏展示所有合集，右侧栏展示当前合集的帖子列表。
 
 ### 3.8 首次使用（Onboarding）
 
@@ -243,7 +243,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 > URL 是产品的一部分。应该简洁、美观、有意义。
 
-帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义 URL 覆盖通过 `custom_urls` 表管理。Collection 使用 `/c/{slug}`。
+帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义 URL 覆盖通过 `custom_urls` 表管理。合集使用 `/c/{slug}`。
 
 ### 5.2 前台路由
 
@@ -253,15 +253,15 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `/latest`            | 最新帖子（当首页已展示最新时，302 重定向到 `/`）                      |
 | `/featured`          | 精选帖子（当首页已展示精选时，302 重定向到 `/`）                      |
 | `/{slug}`            | 单条帖子（slug 自动生成或自定义）                                     |
-| `/c/{slug}`          | Collection 帖子列表                                                   |
-| `/c`                 | Collection 列表页                                                     |
+| `/c/{slug}`          | 合集帖子列表                                                          |
+| `/c`                 | 合集列表页                                                            |
 | `/archive`           | 归档（支持 ?format= &featured= 筛选）                                 |
 | `/search`            | 搜索                                                                  |
 | `/feed`              | RSS 2.0（仅精选帖子，面向订阅者的精选内容）                           |
 | `/feed/atom.xml`     | Atom Feed（仅精选帖子）                                               |
 | `/feed/all`          | RSS 2.0（所有 published 帖子，支持 `?format=` 筛选）                  |
 | `/feed/all/atom.xml` | Atom Feed（所有 published 帖子）                                      |
-| `/c/{slug}/feed`     | 单个 Collection 的 RSS Feed                                           |
+| `/c/{slug}/feed`     | 单个合集的 RSS Feed                                                   |
 | `/sitemap.xml`       | 自动生成的站点地图                                                    |
 
 ### 5.3 后台路由
@@ -283,10 +283,10 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **重定向**：支持 301（永久）和 302（临时）重定向。两种来源：
 
-- **自动**：Post 或 Collection 修改 slug 时，系统自动为旧路径创建 301 重定向
+- **自动**：Post 或合集修改 slug 时，系统自动为旧路径创建 301 重定向
 - **手动**：用户在后台（`/settings/custom-urls`）自行创建，用于短链接、旧站迁移等场景
 
-**自定义 URL**：`custom_urls` 表管理所有自定义路径，支持帖子别名、Collection 别名和重定向。确保 slug 在帖子和自定义 URL 之间不会冲突。
+**自定义 URL**：`custom_urls` 表管理所有自定义路径，支持帖子别名、合集别名和重定向。确保 slug 在帖子和自定义 URL 之间不会冲突。
 
 ---
 
@@ -298,7 +298,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 - `/feed/atom.xml` — Atom 格式，仅精选帖子
 - `/feed/all` — RSS 2.0，所有 published 帖子（支持 `?format=note` 等格式筛选）
 - `/feed/all/atom.xml` — Atom 格式，所有 published 帖子
-- `/c/{slug}/feed` — 单个 Collection 的 RSS Feed
+- `/c/{slug}/feed` — 单个合集的 RSS Feed
 
 **Sitemap**：自动生成，包含所有公开帖子和页面。
 
