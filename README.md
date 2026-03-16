@@ -71,11 +71,11 @@ cd jant
 mise install   # installs Node.js and pnpm
 pnpm install   # installs dependencies
 
-# Start development server (http://jant.localtest.me:9020)
+# Start development server (http://localhost:9020)
 mise run dev
 ```
 
-For authenticated browser or agent debugging, run `mise run dev-debug`. It uses the first free port starting at `19020` and prints the exact `jant.localtest.me` login URL to use.
+For authenticated browser or agent debugging, run `mise run dev-debug`. It uses the first free port starting at `19020` and prints the exact `http://localhost:19xxx/...` login URL to use. Prefer `localhost` for browser debugging because some environments upgrade `*.localtest.me` to HTTPS, which breaks local HTTP dev ports.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for code style, PR process, and release workflow.
 

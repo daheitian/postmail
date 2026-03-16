@@ -54,7 +54,10 @@ const password =
       !arg.startsWith("-") && arg !== process.argv[0] && arg !== process.argv[1],
   ) || DEFAULT_DEV_PASSWORD;
 const debugPort = Number(process.env.JANT_DEBUG_PORT || "19020");
-const debugBaseUrl = `http://jant.localtest.me:${debugPort}`;
+const localBaseUrl = "http://localhost:9020";
+const debugBaseUrl = `http://localhost:${debugPort}`;
+const localtestBaseUrl = "http://jant.localtest.me:9020";
+const localtestDebugBaseUrl = `http://jant.localtest.me:${debugPort}`;
 
 let lines = readEnvLines();
 
@@ -101,16 +104,27 @@ if (ensured.seededNavigation) {
 }
 console.log("");
 console.log("Browser sign-in:");
-console.log("  http://jant.localtest.me:9020/signin");
+console.log(`  ${localBaseUrl}/signin`);
 console.log(`  ${debugBaseUrl}/signin`);
 console.log("");
 console.log("Auto-login:");
 console.log(
-  `  http://jant.localtest.me:9020/__dev/login?token=${devApiToken}&redirect=/settings`,
+  `  ${localBaseUrl}/__dev/login?token=${devApiToken}&redirect=/settings`,
 );
 console.log(
   `  ${debugBaseUrl}/__dev/login?token=${devApiToken}&redirect=/settings`,
 );
+console.log("");
+console.log("Other local hostnames accepted by /__dev/login:");
+console.log(`  ${localtestBaseUrl}/signin`);
+console.log(`  ${localtestDebugBaseUrl}/signin`);
+console.log(
+  `  ${localtestBaseUrl}/__dev/login?token=${devApiToken}&redirect=/settings`,
+);
+console.log(
+  `  ${localtestDebugBaseUrl}/__dev/login?token=${devApiToken}&redirect=/settings`,
+);
+console.log("  Prefer localhost in browsers to avoid HTTPS upgrades on *.localtest.me.");
 console.log("");
 console.log("HTTP agent flow:");
 console.log("  Request the /__dev/login URL directly, capture Set-Cookie, then reuse it.");

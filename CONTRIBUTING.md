@@ -40,12 +40,12 @@ mise install
 # Install dependencies
 pnpm install
 
-# Start development server (http://jant.localtest.me:9020)
+# Start development server (http://localhost:9020)
 mise run dev
 ```
 
 `mise run dev` automatically runs database migrations before starting the server — no manual migration step needed.
-Use `jant.localtest.me` instead of `localhost` when testing auth flows so cookies and redirect behavior match the configured `SITE_URL`.
+Prefer `localhost` for browser auth flows. `jant.localtest.me` is still accepted by `/__dev/login`, but some browsers upgrade `*.localtest.me` to HTTPS, which breaks local HTTP dev ports.
 
 ### Environment Setup
 
@@ -55,7 +55,7 @@ For browser or agent debugging, Jant can prepare local auth helpers for you:
 mise run dev-auth-setup
 ```
 
-This creates or updates `packages/core/.dev.vars`, ensures a local credential admin exists, marks onboarding complete when needed, and prints both the sign-in URL and the local-only auto-login URL.
+This creates or updates `packages/core/.dev.vars`, ensures a local credential admin exists, marks onboarding complete when needed, and prints both the sign-in URL and the local-only auto-login URL. Use the printed `http://localhost:19xxx/...` URL for browser testing.
 
 `mise run dev-debug` runs this automatically before starting the first free debug port beginning at `19020`.
 
@@ -182,8 +182,8 @@ mise run dev-debug
 
 Then use one of these:
 
-- Browser or Chrome MCP: open the `http://jant.localtest.me:19xxx/__dev/login?token=YOUR_TOKEN&redirect=/settings` URL printed by `mise run dev-debug`.
-- HTTP agent: request that same URL directly, capture the `Set-Cookie` header from the `302` response, and reuse it on later requests.
+- Browser or Chrome MCP: open the `http://localhost:19xxx/__dev/login?token=YOUR_TOKEN&redirect=/settings` URL printed by `mise run dev-debug`, then continue on `http://localhost:19xxx/settings`.
+- HTTP agent: request that same localhost URL directly, capture the `Set-Cookie` header from the `302` response, and reuse it on later requests.
 
 ### i18n
 

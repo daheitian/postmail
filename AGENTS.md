@@ -51,7 +51,7 @@ Non-negotiable regardless of context:
 ### Tooling
 
 - **Use mise tasks** for all commands (`mise tasks` to list). Never run `wrangler dev`; use `mise run dev` / `mise run build`.
-- **Debug**: `mise run dev-debug` prepares local auth helpers automatically and uses the first free debug port starting at `19020`. Always use the exact `jant.localtest.me` URL printed in the terminal for `/__dev/login?token=...` with `DEV_API_TOKEN` from `packages/core/.dev.vars`. HTTP agents can call that URL directly and reuse the returned `Set-Cookie`. Stop background processes when done.
+- **Debug**: `mise run dev-debug` prepares local auth helpers automatically and uses the first free debug port starting at `19020`. For browser testing, use the printed `http://localhost:19xxx/__dev/login?token=...&redirect=/settings` URL with `DEV_API_TOKEN` from `packages/core/.dev.vars`, then continue on `http://localhost:19xxx/settings`. `jant.localtest.me` is still accepted locally, but some browsers upgrade it to HTTPS and break local HTTP dev ports. HTTP agents can call the same local login URL directly and reuse the returned `Set-Cookie`. Stop background processes when done.
 - **Verify before changing**: never assume CLI flags; confirm with `--help` or docs.
 - **Latest packages**: use `@latest` when installing.
 - **Generated template is read-only**: never edit `packages/create-jant/template/`.
