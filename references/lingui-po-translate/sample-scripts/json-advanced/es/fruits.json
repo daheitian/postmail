@@ -1,0 +1,9 @@
+{
+  "apple.1": "manzana",
+  "array": [
+    "Pera",
+    {
+      "banana": "Plátano"
+    }
+  ]
+}

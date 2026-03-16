@@ -7,6 +7,11 @@ export interface CollectionFormLabels {
   titlePlaceholder: string;
   slugLabel: string;
   slugHelp: string;
+  editSlugLabel: string;
+  resetSlugLabel: string;
+  quickHint: string;
+  quickSubmitLabel: string;
+  createdLabel: string;
   descriptionLabel: string;
   descriptionPlaceholder: string;
   featuredIconsLabel: string;

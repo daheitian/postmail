@@ -6,7 +6,6 @@
  */
 
 import type { FC } from "hono/jsx";
-import { useLingui } from "@lingui/react/macro";
 import type {
   PostView,
   CollectionTagView,
@@ -21,7 +20,7 @@ interface PostFooterProps {
   display?: PostFooterDisplayOptions;
 }
 
-const CollectionTags: FC<{
+const CompactCollectionTags: FC<{
   collections: CollectionTagView[];
   showSeparator?: boolean;
 }> = ({ collections, showSeparator = true }) => {
@@ -57,7 +56,7 @@ const CollectionTags: FC<{
             and {rest.length} more
           </button>
           <div class="post-collection-popover" data-collection-popover>
-            {collections.map((c) => (
+            {rest.map((c) => (
               <a key={c.slug} href={c.url} class="post-collection-popover-item">
                 {c.iconHtml && (
                   <span
@@ -76,7 +75,6 @@ const CollectionTags: FC<{
 };
 
 export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
-  const { t } = useLingui();
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
   const showTimestamp = !display?.hideTimestamp;
@@ -93,8 +91,11 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
       data-post-meta
     >
       <div class="post-footer-meta">
-        {showTimestamp &&
-          (detail ? (
+        {showTimestamp && (
+          <a
+            href={post.permalink}
+            class={`u-url hover:underline${detail ? "" : " text-xs text-muted-foreground"}`}
+          >
             <time
               class="dt-published"
               datetime={post.publishedAt}
@@ -102,20 +103,8 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             >
               {post.publishedAtFormatted}
             </time>
-          ) : (
-            <a
-              href={post.permalink}
-              class="u-url text-xs text-muted-foreground hover:underline"
-            >
-              <time
-                class="dt-published"
-                datetime={post.publishedAt}
-                title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
-              >
-                {post.publishedAtFormatted}
-              </time>
-            </a>
-          ))}
+          </a>
+        )}
         {safeExternalUrl && (
           <a
             href={safeExternalUrl}
@@ -138,14 +127,6 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             </svg>
           </a>
         )}
-        {detail && (
-          <a href={post.permalink} class="u-url ml-4">
-            {t({
-              message: "Permalink",
-              comment: "@context: Link to permanent URL of post",
-            })}
-          </a>
-        )}
         {showThreadSeparator && (
           <span class="post-collection-sep" aria-hidden="true">
             &middot;
@@ -159,7 +140,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             In thread &rarr;
           </a>
         )}
-        <CollectionTags
+        <CompactCollectionTags
           collections={post.collections}
           showSeparator={showCollectionSeparator}
         />

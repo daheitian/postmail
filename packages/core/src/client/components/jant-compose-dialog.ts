@@ -798,7 +798,7 @@ export class JantComposeDialog extends LitElement {
       } else if (this._showVisibilityMenu) {
         this._showVisibilityMenu = false;
       } else if (this._addCollectionPanelOpen) {
-        this._addCollectionPanelOpen = false;
+        this._closeAddCollectionPanel();
       } else if (this._draftMenuOpenId) {
         this._draftMenuOpenId = null;
       } else if (this._draftsPanelOpen) {
@@ -1760,6 +1760,13 @@ export class JantComposeDialog extends LitElement {
 
   // ── Add Collection dialog ───────────────────────────────────────
 
+  private _closeAddCollectionPanel() {
+    this._addCollectionPanelOpen = false;
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLElement>(".compose-collection-trigger")?.focus();
+    });
+  }
+
   private async _handleAddCollectionSubmit(e: Event) {
     const event = e as CustomEvent<CollectionSubmitDetail>;
     event.stopPropagation();
@@ -1801,8 +1808,8 @@ export class JantComposeDialog extends LitElement {
 
       this.collections = [...this.collections, newCollection];
       this._collectionIds = [...this._collectionIds, created.id];
-      this._addCollectionPanelOpen = false;
-      showToast(this.labels.collectionFormLabels.submitLabel);
+      this._closeAddCollectionPanel();
+      showToast(this.labels.collectionFormLabels.createdLabel);
     } catch (error) {
       showToast(
         error instanceof Error
@@ -1836,9 +1843,7 @@ export class JantComposeDialog extends LitElement {
     return html`
       <div
         class="collection-quick-dialog-backdrop"
-        @click=${() => {
-          this._addCollectionPanelOpen = false;
-        }}
+        @click=${() => this._closeAddCollectionPanel()}
       ></div>
       <div
         class="collection-quick-dialog"
@@ -1846,8 +1851,16 @@ export class JantComposeDialog extends LitElement {
         role="dialog"
         aria-modal="true"
         aria-label=${this.labels.addCollection}
+        @click=${(event: Event) => event.stopPropagation()}
       >
         <div class="collection-quick-dialog-header">
+          <button
+            type="button"
+            class="collection-quick-dialog-cancel"
+            @click=${() => this._closeAddCollectionPanel()}
+          >
+            ${this.labels.collectionFormLabels.cancelLabel}
+          </button>
           <h2 class="collection-quick-dialog-title">
             ${this.labels.addCollection}
           </h2>
@@ -1861,15 +1874,19 @@ export class JantComposeDialog extends LitElement {
             cancel-href="javascript:void(0)"
             @jant:collection-submit=${(e: Event) =>
               this._handleAddCollectionSubmit(e)}
-            @click=${(e: Event) => {
-              const target = (e.target as HTMLElement).closest?.(
-                "a.btn-outline",
-              );
-              if (!target) return;
-              e.preventDefault();
-              this._addCollectionPanelOpen = false;
-            }}
           ></jant-collection-form>
+          <p class="collection-quick-dialog-note">
+            ${this.labels.collectionFormLabels.quickHint}
+          </p>
+        </div>
+        <div class="collection-quick-dialog-footer">
+          <button
+            type="button"
+            class="compose-post-btn collection-quick-dialog-submit"
+            @click=${() => this._submitAddCollectionForm()}
+          >
+            ${this.labels.collectionFormLabels.quickSubmitLabel}
+          </button>
         </div>
       </div>
     `;

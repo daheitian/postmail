@@ -89,8 +89,13 @@ const labels: ComposeLabels = {
   collectionFormLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",
-    slugLabel: "Slug",
-    slugHelp: "URL-safe identifier",
+    slugLabel: "Collection link",
+    slugHelp: "This is the last part of the collection link.",
+    editSlugLabel: "Edit link",
+    resetSlugLabel: "Reset link",
+    quickHint: "More options are available after you create it.",
+    quickSubmitLabel: "Done",
+    createdLabel: "Collection created.",
     descriptionLabel: "Description (optional)",
     descriptionPlaceholder: "What's this collection about?",
     featuredIconsLabel: "Featured",
@@ -378,6 +383,24 @@ describe("JantComposeDialog", () => {
     expect(
       el.querySelector("[data-collection-quick-dialog] [data-icon-trigger]"),
     ).toBeNull();
+    expect(
+      el.querySelector(
+        "[data-collection-quick-dialog] [data-collection-slug-input]",
+      ),
+    ).toBeNull();
+    expect(
+      el.querySelector(
+        "[data-collection-quick-dialog] .collection-quick-dialog-cancel",
+      )?.textContent,
+    ).toContain("Cancel");
+    expect(
+      el.querySelector(
+        "[data-collection-quick-dialog] .collection-quick-dialog-submit",
+      )?.textContent,
+    ).toContain("Done");
+    expect(el.textContent).toContain(
+      "More options are available after you create it.",
+    );
   });
 
   it("draft button with content shows confirm panel", async () => {

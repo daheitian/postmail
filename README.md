@@ -79,6 +79,12 @@ For authenticated browser or agent debugging, run `mise run dev-debug` and use `
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for code style, PR process, and release workflow.
 
+### Translation Reference
+
+Jant keeps [`references/lingui-po-translate/`](references/lingui-po-translate/) as a checked-in copy of [lingui-po-translate](https://github.com/theowenyoung/lingui-po-translate). This is the CLI tool we use for AI-assisted Lingui PO translation, and we keep it locally so the team can check its supported options and integration details without leaving the repo.
+
+The most relevant options for our workflow are `--service`, `--serviceConfig`, `--model`, `--baseUrl`, `--prompt`, and `--sourceOverride`. Its README also documents how Lingui `@context` comments are passed through to translation prompts, which matches Jant's `t({ comment: "@context:..." })` convention.
+
 ## Philosophy
 
 Jant is built on the idea that not everything needs to be optimized for engagement. Write for yourself. Share if you want. No metrics, no pressure.
