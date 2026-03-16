@@ -476,6 +476,269 @@ svg[stroke-width].icon-fine {
       border-bottom: none;
     }
   }
+
+  .custom-url-row {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    padding: 0.8rem 0.9rem 0.78rem;
+    transition: background-color 0.18s ease;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--color-border) 78%, transparent);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: color-mix(
+        in srgb,
+        var(--site-accent) 4%,
+        var(--color-card)
+      );
+    }
+
+    &:focus-within {
+      background-color: color-mix(
+        in srgb,
+        var(--site-accent) 5%,
+        var(--color-card)
+      );
+    }
+  }
+
+  .custom-url-row-main {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.28rem;
+    padding-right: 2.1rem;
+  }
+
+  .custom-url-row-header {
+    position: relative;
+    min-width: 0;
+  }
+
+  .custom-url-row-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.16rem;
+    min-width: 0;
+    padding-top: 0.04rem;
+  }
+
+  .custom-url-row-target {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.24rem 0.56rem;
+    min-width: 0;
+  }
+
+  .custom-url-row-menu {
+    position: absolute;
+    top: -0.18rem;
+    right: -0.24rem;
+    z-index: 2;
+  }
+
+  .custom-url-path {
+    display: block;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    letter-spacing: -0.018em;
+    color: color-mix(
+      in srgb,
+      var(--color-foreground) 94%,
+      var(--site-accent) 6%
+    );
+  }
+
+  .custom-url-target-path {
+    display: inline;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 0.84rem;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    color: color-mix(
+      in srgb,
+      var(--color-foreground) 74%,
+      var(--color-muted-foreground)
+    );
+  }
+
+  .custom-url-menu-trigger {
+    @apply flex items-center justify-center cursor-pointer;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    color: color-mix(
+      in srgb,
+      var(--color-muted-foreground) 88%,
+      var(--color-foreground)
+    );
+    transition:
+      background-color 0.18s ease,
+      border-color 0.18s ease,
+      color 0.18s ease;
+
+    &:hover {
+      background-color: color-mix(
+        in srgb,
+        var(--site-accent) 5%,
+        var(--color-card)
+      );
+      border-color: color-mix(
+        in srgb,
+        var(--color-border) 72%,
+        var(--site-accent) 12%
+      );
+      color: var(--color-foreground);
+    }
+
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--site-accent) 20%, transparent);
+      outline-offset: 2px;
+      background-color: color-mix(
+        in srgb,
+        var(--site-accent) 6%,
+        var(--color-card)
+      );
+      border-color: color-mix(
+        in srgb,
+        var(--color-border) 72%,
+        var(--site-accent) 14%
+      );
+      color: var(--color-foreground);
+    }
+  }
+
+  .custom-url-flow-arrow {
+    @apply flex items-center justify-center;
+    width: 0.9rem;
+    height: 0.9rem;
+    color: color-mix(
+      in srgb,
+      var(--color-muted-foreground) 82%,
+      var(--site-accent) 18%
+    );
+    opacity: 0.7;
+  }
+
+  .custom-url-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.35rem);
+    z-index: 30;
+    min-width: 8.5rem;
+    padding: 0.35rem;
+    border: 1px solid
+      color-mix(in srgb, var(--color-border) 84%, var(--site-accent) 8%);
+    border-radius: 0.85rem;
+    background-color: color-mix(
+      in srgb,
+      var(--color-card) 98%,
+      var(--site-accent) 2%
+    );
+    box-shadow: 0 20px 38px -28px
+      color-mix(in srgb, var(--color-foreground) 26%, transparent);
+  }
+
+  .custom-url-menu-item {
+    @apply w-full text-left cursor-pointer;
+    border: none;
+    background: transparent;
+    border-radius: 0.6rem;
+    padding: 0.58rem 0.72rem;
+    font-size: 0.88rem;
+    line-height: 1.35;
+    color: var(--color-foreground);
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+
+    &:hover,
+    &:focus-visible {
+      background-color: color-mix(
+        in srgb,
+        var(--site-accent) 7%,
+        var(--color-card)
+      );
+      color: var(--color-foreground);
+      outline: none;
+    }
+  }
+
+  .custom-url-menu-item-danger {
+    color: var(--color-destructive);
+
+    &:hover,
+    &:focus-visible {
+      background-color: color-mix(
+        in srgb,
+        var(--color-destructive) 8%,
+        var(--color-card)
+      );
+      color: var(--color-destructive);
+    }
+  }
+
+  .custom-url-target-meta {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.38rem;
+    min-width: 0;
+  }
+
+  .custom-url-type-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.26rem;
+    font-size: 0.71rem;
+    line-height: 1.32;
+    letter-spacing: 0.02em;
+    color: var(--color-muted-foreground);
+  }
+
+  .custom-url-type-icon {
+    flex-shrink: 0;
+    color: color-mix(
+      in srgb,
+      var(--site-accent) 28%,
+      var(--color-muted-foreground)
+    );
+    opacity: 0.9;
+  }
+
+  .custom-url-redirect-code {
+    font-size: 0.7rem;
+    line-height: 1.3;
+    letter-spacing: 0.05em;
+    color: var(--color-muted-foreground);
+  }
+
+  @media (max-width: 640px) {
+    .custom-url-row {
+      padding-inline: 0.8rem;
+    }
+
+    .custom-url-row-main {
+      padding-right: 1.95rem;
+    }
+
+    .custom-url-menu {
+      min-width: 7.75rem;
+    }
+  }
 }
 
 /* Admin scoped font rules */

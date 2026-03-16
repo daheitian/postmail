@@ -25,6 +25,7 @@ import "./client/components/jant-nav-manager.js";
 import "./client/nav-manager-bridge.js";
 import "./client/components/jant-post-menu.js";
 import "./client/collection-page-actions.js";
+import "./client/custom-url-menu.js";
 
 // Mount fullscreen overlay at body level to escape the dialog's containing
 // block (dialog animation creates a containing block that traps fixed children).

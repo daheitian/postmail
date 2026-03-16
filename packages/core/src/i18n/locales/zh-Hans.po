@@ -477,7 +477,9 @@ msgid "collection"
 msgstr "个合集"
 
 #. @context: Compose collection selector trigger label
+#. @context: Custom URL target type badge for a collection
 #. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Collection"
@@ -1388,6 +1390,11 @@ msgstr "已保存最大可见链接数"
 msgid "Media"
 msgstr "媒体"
 
+#. @context: Button label for a menu with more actions
+#: src/routes/dash/custom-urls.tsx
+msgid "More actions"
+msgstr ""
+
 #. @context: Button to show overflow nav links
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
@@ -1680,7 +1687,9 @@ msgid "Pinned"
 msgstr "已置顶"
 
 #. @context: Compose button - publish post
+#. @context: Custom URL target type badge for a post
 #. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post"
@@ -1861,7 +1870,9 @@ msgstr ""
 msgid "Real post components"
 msgstr ""
 
+#. @context: Custom URL target type badge for a redirect
 #. @context: Custom URL type option
+#: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
 msgid "Redirect"
 msgstr "重定向"

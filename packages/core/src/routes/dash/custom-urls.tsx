@@ -8,7 +8,7 @@ import { Hono } from "hono";
 import { useLingui } from "@lingui/react/macro";
 import type { Bindings, CustomUrl } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { EmptyState, ListItemRow, ActionButtons } from "../../ui/dash/index.js";
+import { EmptyState } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
 import { parseIdParam } from "../../lib/errors.js";
 import { CreateCustomUrlSchema, parseValidated } from "../../lib/schemas.js";
@@ -24,15 +24,86 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const customUrlsRoutes = new Hono<Env>();
 
-function targetBadge(targetType: CustomUrl["targetType"]) {
+function TargetTypeIcon({
+  targetType,
+}: {
+  targetType: CustomUrl["targetType"];
+}) {
   switch (targetType) {
     case "post":
-      return "Post";
+      return (
+        <svg
+          class="custom-url-type-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M14 3H7a2 2 0 0 0-2 2v14" />
+          <path d="M14 3v5h5" />
+          <path d="M9 13h6" />
+          <path d="M9 17h4" />
+          <path d="M14 3l5 5v11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-1" />
+        </svg>
+      );
     case "collection":
-      return "Collection";
+      return (
+        <svg
+          class="custom-url-type-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="4" y="4" width="11" height="11" rx="2" />
+          <path d="M9 20h9a2 2 0 0 0 2-2V9" />
+        </svg>
+      );
     case "redirect":
-      return "Redirect";
+      return (
+        <svg
+          class="custom-url-type-icon"
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M8 8h9v9" />
+          <path d="m8 16 9-9" />
+        </svg>
+      );
   }
+}
+
+function targetPath(
+  customUrl: CustomUrl,
+  targetSlugs: Record<string, string>,
+): string {
+  if (customUrl.targetType === "redirect") {
+    return customUrl.toPath ?? "?";
+  }
+
+  return customUrl.targetId
+    ? `/${targetSlugs[customUrl.targetId] ?? customUrl.targetId}`
+    : "/?";
 }
 
 function CustomUrlsListContent({
@@ -50,6 +121,28 @@ function CustomUrlsListContent({
 }) {
   const { t } = useLingui();
   const hasCustomUrls = customUrls.length > 0;
+  const targetTypeLabels = {
+    post: t({
+      message: "Post",
+      comment: "@context: Custom URL target type badge for a post",
+    }),
+    collection: t({
+      message: "Collection",
+      comment: "@context: Custom URL target type badge for a collection",
+    }),
+    redirect: t({
+      message: "Redirect",
+      comment: "@context: Custom URL target type badge for a redirect",
+    }),
+  } satisfies Record<CustomUrl["targetType"], string>;
+  const moreActionsLabel = t({
+    message: "More actions",
+    comment: "@context: Button label for a menu with more actions",
+  });
+  const deleteLabel = t({
+    message: "Delete",
+    comment: "@context: Button to delete custom URL",
+  });
 
   return (
     <>
@@ -88,46 +181,94 @@ function CustomUrlsListContent({
         />
       ) : (
         <>
-          <div class="flex flex-col divide-y">
+          <div class="settings-group">
             {customUrls.map((cu) => (
-              <ListItemRow
-                key={cu.id}
-                actions={
-                  <ActionButtons
-                    deleteAction={toPublicPath(
-                      `/settings/custom-urls/${cu.id}/delete`,
-                      sitePathPrefix,
-                    )}
-                    deleteLabel={t({
-                      message: "Delete",
-                      comment: "@context: Button to delete custom URL",
-                    })}
-                  />
-                }
-              >
-                <div class="flex items-center gap-2">
-                  <code class="text-sm bg-muted px-1 rounded">/{cu.path}</code>
-                  <span class="text-muted-foreground">&rarr;</span>
-                  {cu.targetType === "redirect" ? (
-                    <code class="text-sm bg-muted px-1 rounded">
-                      {cu.toPath}
-                    </code>
-                  ) : (
-                    <code class="text-sm bg-muted px-1 rounded">
-                      /
-                      {cu.targetId
-                        ? (targetSlugs[cu.targetId] ?? cu.targetId)
-                        : "?"}
-                    </code>
-                  )}
-                  <span class="badge-outline">
-                    {targetBadge(cu.targetType)}
-                  </span>
-                  {cu.targetType === "redirect" && cu.redirectType && (
-                    <span class="badge-outline">{cu.redirectType}</span>
-                  )}
+              <div key={cu.id} class="custom-url-row" data-custom-url-actions>
+                <div class="custom-url-row-main">
+                  <div class="custom-url-row-header">
+                    <code class="custom-url-path">/{cu.path}</code>
+                    <div class="custom-url-row-menu">
+                      <button
+                        type="button"
+                        class="custom-url-menu-trigger"
+                        aria-label={moreActionsLabel}
+                        aria-controls={`custom-url-menu-${cu.id}`}
+                        aria-expanded="false"
+                        aria-haspopup="menu"
+                        title={moreActionsLabel}
+                        data-custom-url-action="toggle-menu"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          aria-hidden="true"
+                        >
+                          <circle cx="5" cy="12" r="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <circle cx="19" cy="12" r="2" />
+                        </svg>
+                      </button>
+                      <div
+                        id={`custom-url-menu-${cu.id}`}
+                        class="custom-url-menu"
+                        role="menu"
+                        data-custom-url-menu
+                        hidden
+                      >
+                        <button
+                          type="button"
+                          class="custom-url-menu-item custom-url-menu-item-danger"
+                          role="menuitem"
+                          data-custom-url-action="delete"
+                          data-on:click__prevent={`@post('${toPublicPath(
+                            `/settings/custom-urls/${cu.id}/delete`,
+                            sitePathPrefix,
+                          )}')`}
+                        >
+                          {deleteLabel}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="custom-url-row-flow">
+                    <span class="custom-url-flow-arrow" aria-hidden="true">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M12 5v14" />
+                        <path d="m19 12-7 7-7-7" />
+                      </svg>
+                    </span>
+                    <div class="custom-url-row-target">
+                      <code class="custom-url-target-path">
+                        {targetPath(cu, targetSlugs)}
+                      </code>
+                      <span class="custom-url-target-meta">
+                        <span class="custom-url-type-mark">
+                          <TargetTypeIcon targetType={cu.targetType} />
+                          <span>{targetTypeLabels[cu.targetType]}</span>
+                        </span>
+                        {cu.targetType === "redirect" && cu.redirectType ? (
+                          <span class="custom-url-redirect-code">
+                            {cu.redirectType}
+                          </span>
+                        ) : null}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </ListItemRow>
+              </div>
             ))}
           </div>
           <PagePagination
