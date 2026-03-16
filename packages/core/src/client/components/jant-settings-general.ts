@@ -3,8 +3,9 @@
  *
  * Main container for the General settings page. Contains:
  * - Avatar section (delegated to <jant-settings-avatar>)
- * - General settings form (site name, description, footer, language, homepage view, timezone)
- * - SEO form
+ * - General settings form (site name, description, footer, language,
+ *   homepage view, timezone)
+ * - Search settings form
  *
  * Each form section tracks dirty state independently and dispatches
  * `jant:settings-save` events for the bridge to handle.
@@ -43,6 +44,8 @@ export class JantSettingsGeneral extends LitElement {
     // SEO form
     _noindex: { state: true },
     _origNoindex: { state: true },
+    _showJantBrandingOnHome: { state: true },
+    _origShowJantBrandingOnHome: { state: true },
     _seoDirty: { state: true },
     _seoLoading: { state: true },
   };
@@ -59,13 +62,21 @@ export class JantSettingsGeneral extends LitElement {
   declare _siteFooter: string;
   declare _siteLanguage: string;
   declare _timeZone: string;
-  declare _origGeneral: Record<string, string>;
+  declare _origGeneral: {
+    siteName: string;
+    siteDescription: string;
+    siteFooter: string;
+    siteLanguage: string;
+    timeZone: string;
+  };
   declare _generalDirty: boolean;
   declare _generalLoading: boolean;
 
   // SEO
   declare _noindex: boolean;
   declare _origNoindex: boolean;
+  declare _showJantBrandingOnHome: boolean;
+  declare _origShowJantBrandingOnHome: boolean;
   declare _seoDirty: boolean;
   declare _seoLoading: boolean;
 
@@ -87,12 +98,20 @@ export class JantSettingsGeneral extends LitElement {
     this._siteFooter = "";
     this._siteLanguage = "en";
     this._timeZone = "UTC";
-    this._origGeneral = {};
+    this._origGeneral = {
+      siteName: "",
+      siteDescription: "",
+      siteFooter: "",
+      siteLanguage: "en",
+      timeZone: "UTC",
+    };
     this._generalDirty = false;
     this._generalLoading = false;
 
     this._noindex = false;
     this._origNoindex = false;
+    this._showJantBrandingOnHome = false;
+    this._origShowJantBrandingOnHome = false;
     this._seoDirty = false;
     this._seoLoading = false;
   }
@@ -104,11 +123,13 @@ export class JantSettingsGeneral extends LitElement {
     siteLanguage: string;
     timeZone: string;
     siteFooter: string;
+    showJantBrandingOnHome: boolean;
     noindex: boolean;
   }) {
     this._siteName = data.siteName;
     this._siteDescription = data.siteDescription;
     this._siteFooter = data.siteFooter;
+    this._showJantBrandingOnHome = data.showJantBrandingOnHome;
     this._siteLanguage = data.siteLanguage;
     this._timeZone = data.timeZone;
     this._origGeneral = {
@@ -121,6 +142,7 @@ export class JantSettingsGeneral extends LitElement {
 
     this._noindex = data.noindex;
     this._origNoindex = data.noindex;
+    this._origShowJantBrandingOnHome = data.showJantBrandingOnHome;
   }
 
   /** Called by bridge after a section save succeeds */
@@ -137,6 +159,7 @@ export class JantSettingsGeneral extends LitElement {
       this._generalLoading = false;
     } else if (section === "seo") {
       this._origNoindex = this._noindex;
+      this._origShowJantBrandingOnHome = this._showJantBrandingOnHome;
       this._seoDirty = false;
       this._seoLoading = false;
     }
@@ -188,11 +211,21 @@ export class JantSettingsGeneral extends LitElement {
 
   private _toggleNoindex() {
     this._noindex = !this._noindex;
-    this._seoDirty = this._noindex !== this._origNoindex;
+    this._seoDirty =
+      this._noindex !== this._origNoindex ||
+      this._showJantBrandingOnHome !== this._origShowJantBrandingOnHome;
+  }
+
+  private _toggleShowJantBrandingOnHome() {
+    this._showJantBrandingOnHome = !this._showJantBrandingOnHome;
+    this._seoDirty =
+      this._noindex !== this._origNoindex ||
+      this._showJantBrandingOnHome !== this._origShowJantBrandingOnHome;
   }
 
   private _cancelSeo() {
     this._noindex = this._origNoindex;
+    this._showJantBrandingOnHome = this._origShowJantBrandingOnHome;
     this._seoDirty = false;
   }
 
@@ -204,7 +237,10 @@ export class JantSettingsGeneral extends LitElement {
         bubbles: true,
         detail: {
           endpoint: "/settings/general/seo",
-          data: { noindex: this._noindex ? "" : "true" },
+          data: {
+            noindex: this._noindex ? "" : "true",
+            showJantBrandingOnHome: this._showJantBrandingOnHome,
+          },
           section: "seo",
         },
       }),
@@ -401,8 +437,7 @@ export class JantSettingsGeneral extends LitElement {
             this._seoLoading,
           )}
       >
-        <h2 class="text-lg font-semibold mb-4">${this.labels.seo}</h2>
-        <div>
+        <div class="flex flex-col gap-4">
           <label class="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
@@ -411,6 +446,15 @@ export class JantSettingsGeneral extends LitElement {
               @change=${this._toggleNoindex}
             />
             <span>${this.labels.allowIndexing}</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              class="checkbox"
+              .checked=${this._showJantBrandingOnHome}
+              @change=${this._toggleShowJantBrandingOnHome}
+            />
+            <span>${this.labels.showJantBrandingOnHome}</span>
           </label>
           ${this._renderActions(
             this._seoLoading,

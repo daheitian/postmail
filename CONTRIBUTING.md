@@ -40,21 +40,30 @@ mise install
 # Install dependencies
 pnpm install
 
-# Start development server (http://localhost:9020)
+# Start development server (http://jant.localtest.me:9020)
 mise run dev
 ```
 
 `mise run dev` automatically runs database migrations before starting the server — no manual migration step needed.
+Use `jant.localtest.me` instead of `localhost` when testing auth flows so cookies and redirect behavior match the configured `SITE_URL`.
 
 ### Environment Setup
 
-Create `.dev.vars` in `packages/core/`:
+For browser or agent debugging, Jant can prepare local auth helpers for you:
+
+```bash
+mise run dev-auth-setup
+```
+
+This creates or updates `packages/core/.dev.vars`, ensures a local credential admin exists, marks onboarding complete when needed, and prints both the sign-in URL and the local-only auto-login URL.
+
+`mise run dev-debug` runs this automatically before starting port `19020`.
+
+If you only need the bare minimum, create `.dev.vars` in `packages/core/`:
 
 ```
 AUTH_SECRET=your-secret-at-least-32-chars
 ```
-
-You can also copy `.dev.vars.example` and fill in the values.
 
 ## Project Structure
 
@@ -129,7 +138,8 @@ All commands are run via `mise run <command>`. You never need to `cd` into subdi
 
 ```bash
 mise run dev              # Start Vite dev server on port 9020 (auto-runs migrations)
-mise run dev-debug        # Start dev server on port 19020 (for debugging)
+mise run dev-debug        # Start debug server on port 19020 and prepare local auth helpers
+mise run dev-auth-setup   # Sync local demo credentials + print auth debug URLs
 mise run build            # Build @jant/core (lib + client assets)
 mise run site-dev         # Build @jant/core + start jant.me dev server
 mise run site-deploy      # Build @jant/core + deploy jant.me to Workers
@@ -161,6 +171,19 @@ mise run db-export        # Export current local D1 data to seed-local.sql
 mise run db-reset         # Reset local database and load dev seed data
 mise run db-clean         # Delete local D1 database (.wrangler)
 ```
+
+### Auth Debugging
+
+When you need to debug authenticated UI with Chrome DevTools MCP, Codex, or any other browser agent:
+
+```bash
+mise run dev-debug
+```
+
+Then use one of these:
+
+- Browser or Chrome MCP: open `http://jant.localtest.me:19020/__dev/login?token=YOUR_TOKEN&redirect=/settings`.
+- HTTP agent: request that same URL directly, capture the `Set-Cookie` header from the `302` response, and reuse it on later requests.
 
 ### i18n
 

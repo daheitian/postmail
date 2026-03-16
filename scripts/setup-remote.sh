@@ -38,5 +38,5 @@ pnpm install
 # Set up local database with seed data
 mise run db-reset
 
-# Set dev login credentials (demo@jant.me / testtest)
-mise run dev-password testtest
+# Set up demo login helpers for browser/agent debugging
+mise run dev-auth-setup

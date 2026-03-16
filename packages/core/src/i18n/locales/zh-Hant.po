@@ -2058,11 +2058,6 @@ msgstr "安全令牌已過期。請重新整理頁面後再試一次。"
 msgid "Security token missing. Refresh the page and try again."
 msgstr "找不到安全令牌。重新整理頁面後再試一次。"
 
-#. @context: Settings section heading for SEO
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "SEO"
-msgstr "SEO"
-
 #. @context: Toast after saving SEO settings
 #. @context: Toast after saving SEO settings
 #: src/routes/dash/settings.tsx
@@ -2094,6 +2089,11 @@ msgstr "設定已更新."
 #: src/ui/pages/BrandPage.tsx
 msgid "should feel present, but it should never start acting like a product CTA inside the paragraph."
 msgstr ""
+
+#. @context: Checkbox for showing the optional Jant credit link on the home page
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Show \"Build with Jant\" at the bottom of the home page"
+msgstr "在首頁底部顯示「Build with Jant」"
 
 #. @context: Button to collapse expanded thread context
 #. @context: Button to collapse the collection icon picker back to featured icons

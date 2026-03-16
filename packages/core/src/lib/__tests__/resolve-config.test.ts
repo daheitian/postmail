@@ -27,6 +27,7 @@ describe("resolveConfig", () => {
     expect(config.siteLanguage).toBe("en");
     expect(config.homeDefaultView).toBe("latest");
     expect(config.timeZone).toBe("UTC");
+    expect(config.showJantBrandingOnHome).toBe(false);
     expect(config.noindex).toBe(false);
     expect(config.pageSize).toBe(20);
     expect(config.rssFeedLimit).toBe(50);
@@ -112,10 +113,12 @@ describe("resolveConfig", () => {
     const config = resolveConfig(makeEnv(), {
       NOINDEX: "true",
       SHOW_HEADER_AVATAR: "true",
+      SHOW_JANT_BRANDING_ON_HOME: "true",
     });
 
     expect(config.noindex).toBe(true);
     expect(config.showHeaderAvatar).toBe(true);
+    expect(config.showJantBrandingOnHome).toBe(true);
   });
 
   it("resolves authConfigured from AUTH_SECRET", () => {

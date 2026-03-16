@@ -13,6 +13,7 @@ import type { Bindings } from "./types.js";
 import { setupRoutes } from "./routes/auth/setup.js";
 import { signinRoutes } from "./routes/auth/signin.js";
 import { resetRoutes } from "./routes/auth/reset.js";
+import { devAuthRoutes } from "./routes/auth/dev.js";
 
 // Routes - Pages
 import { homeRoutes } from "./routes/pages/home.js";
@@ -397,6 +398,7 @@ export function createApp(): App {
   app.route("/", setupRoutes);
   app.route("/", signinRoutes);
   app.route("/", resetRoutes);
+  app.route("/", devAuthRoutes);
 
   // Settings routes (protected)
   app.use("/settings/*", requireAuth());

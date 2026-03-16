@@ -71,9 +71,11 @@ cd jant
 mise install   # installs Node.js and pnpm
 pnpm install   # installs dependencies
 
-# Start development server (http://localhost:9020)
+# Start development server (http://jant.localtest.me:9020)
 mise run dev
 ```
+
+For authenticated browser or agent debugging, run `mise run dev-debug` and use `http://jant.localtest.me:19020/__dev/login?token=...`.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for code style, PR process, and release workflow.
 

@@ -19,6 +19,7 @@ exportApiRoutes.post("/zola", requireAuthApi(), async (c) => {
     siteUrl: appConfig.siteUrl,
     siteDescription: appConfig.siteDescription,
     siteLanguage: appConfig.siteLanguage,
+    showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
   });
   const zip = await exportService.generateZolaSite();
   return new Response(zip, {

@@ -62,6 +62,9 @@ homeRoutes.get("/", async (c) => {
           currentPage={currentPage}
           totalPages={totalPages}
           baseUrl={toPublicPath("/", navData.sitePathPrefix)}
+          showJantBranding={
+            c.var.appConfig.showJantBrandingOnHome && currentPage === 1
+          }
         />
       ),
     });
@@ -91,6 +94,9 @@ homeRoutes.get("/", async (c) => {
         baseUrl={toPublicPath("/", navData.sitePathPrefix)}
         currentPage={currentPage}
         totalPages={totalPages}
+        showJantBranding={
+          c.var.appConfig.showJantBrandingOnHome && currentPage === 1
+        }
       />
     ),
   });
