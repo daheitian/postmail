@@ -39,8 +39,28 @@ run = "pnpm --filter @jant/core build:lib"
 
 [tasks.dev-debug]
 alias = "debug"
-description = "Start dev server on port 19020 (for Claude debugging)"
-run = "pnpm --filter @jant/core dev:debug"
+description = "Start debug server on port 19020 with local auth helpers ready"
+run = """
+mise run dev-auth-setup
+pnpm --filter @jant/core dev:debug
+"""
+
+[tasks.dev-password]
+description = "Set the local admin password used for browser/agent debugging"
+usage = 'arg "[password]" default="jant-dev-debug-login"'
+dir = "packages/core"
+run = 'node dev/scripts/set-dev-password.mjs "$usage_password"'
+
+[tasks.dev-auth-setup]
+description = "Configure local demo login helpers for browser/agent debugging"
+usage = 'arg "[password]" default="jant-dev-debug-login"'
+dir = "packages/core"
+run = 'node dev/scripts/setup-dev-auth.mjs "$usage_password"'
+
+[tasks.dev-debug-auth]
+alias = ["debug-auth", "agent-debug"]
+description = "Alias for dev-debug"
+run = "mise run dev-debug"
 
 [tasks.build]
 description = "Build @jant/core (lib + client assets)"

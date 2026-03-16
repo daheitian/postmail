@@ -35,6 +35,26 @@ export function isLocalHostname(hostname: string): boolean {
 }
 
 /**
+ * Validates a local-only development token against the current request.
+ *
+ * @param requestUrl - Full request URL
+ * @param providedToken - Token supplied by the caller
+ * @param expectedToken - Token configured in the environment
+ * @returns `true` when the token matches on a local hostname
+ */
+export function hasValidLocalDevToken(
+  requestUrl: string,
+  providedToken: string | undefined,
+  expectedToken: string | undefined,
+): boolean {
+  if (!providedToken || !expectedToken || providedToken !== expectedToken) {
+    return false;
+  }
+
+  return isLocalHostname(new URL(requestUrl).hostname);
+}
+
+/**
  * Middleware that requires authentication.
  * Redirects to signin page if not authenticated.
  * Session-only — Bearer tokens are not accepted for dashboard pages.
@@ -89,13 +109,9 @@ export function requireAuthApi(): MiddlewareHandler<Env> {
       const rawToken = authHeader.slice(7);
 
       // Dev shortcut: bypass DB lookup when DEV_API_TOKEN matches on a local hostname
-      const devToken = c.env?.DEV_API_TOKEN;
-      if (devToken && rawToken === devToken) {
-        const hostname = new URL(c.req.url).hostname;
-        if (isLocalHostname(hostname)) {
-          await next();
-          return;
-        }
+      if (hasValidLocalDevToken(c.req.url, rawToken, c.env?.DEV_API_TOKEN)) {
+        await next();
+        return;
       }
 
       const tokenId = await c.var.services.apiTokens.verify(rawToken);

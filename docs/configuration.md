@@ -227,9 +227,17 @@ Sensitive secrets are stored in `.dev.vars` (NOT committed to git):
 ```bash
 # .dev.vars
 AUTH_SECRET=your-32-plus-character-secret-here
+DEV_API_TOKEN=local-debug-token
+DEMO_EMAIL=debug@jant.test
+DEMO_PASSWORD=jant-dev-debug-login
 ```
 
-Copy from `.dev.vars.example` and fill in your actual values.
+`DEV_API_TOKEN`, `DEMO_EMAIL`, and `DEMO_PASSWORD` are optional local-only helpers for browser and agent debugging:
+
+- `/signin` uses `DEMO_EMAIL` and `DEMO_PASSWORD` to pre-fill the sign-in form.
+- `/__dev/login?token=...` accepts `DEV_API_TOKEN` only on `localhost`, `127.0.0.1`, `::1`, and `*.localtest.me`.
+
+Run `mise run dev-auth-setup` to generate or update these values automatically. `mise run dev-debug` runs the same setup before it starts the local debug server.
 
 ### Production Secrets
 
