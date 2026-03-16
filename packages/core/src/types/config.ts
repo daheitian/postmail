@@ -66,6 +66,10 @@ export const CONFIG_FIELDS = {
     defaultValue: "",
     envOnly: true,
   },
+  DEMO_MODE: {
+    defaultValue: "false",
+    envOnly: true,
+  },
   PAGE_SIZE: {
     defaultValue: "20",
     envOnly: true,
@@ -252,6 +256,7 @@ export interface AppConfig {
   // Demo (ENV only)
   demoEmail: string;
   demoPassword: string;
+  demoMode: boolean;
 
   // Theme (DB internal)
   themeId: string;

@@ -28,6 +28,7 @@ export interface SettingsLabels {
 
   // SEO
   allowIndexing: string;
+  demoSeoLocked: string;
 
   // Actions
   save: string;

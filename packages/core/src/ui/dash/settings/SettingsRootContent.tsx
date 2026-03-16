@@ -68,13 +68,36 @@ const ICONS = {
 
 export function SettingsRootContent({
   sitePathPrefix = "",
+  demoMode = false,
 }: {
   sitePathPrefix?: string;
+  demoMode?: boolean;
 }) {
   const { t } = useLingui();
+  const accountDescription = demoMode
+    ? t({
+        message: "Export and demo limits",
+        comment:
+          "@context: Settings item description for account settings on the settings home page when demo restrictions are enabled",
+      })
+    : t({
+        message: "Sessions, password, export",
+        comment:
+          "@context: Settings item description for account settings on the settings home page",
+      });
 
   return (
     <div class="settings-root">
+      {demoMode && (
+        <div class="alert mb-6" role="alert">
+          {t({
+            message:
+              "Demo mode keeps search indexing, sessions, passwords, and account deletion locked.",
+            comment:
+              "@context: Notice shown on the settings home page when demo restrictions are enabled",
+          })}
+        </div>
+      )}
       <header class="settings-root-header">
         <h1 class="settings-root-title">
           {t({
@@ -245,10 +268,7 @@ export function SettingsRootContent({
               message: "Account",
               comment: "@context: Settings item — account settings",
             })}
-            description={t({
-              message: "Sessions, password, export",
-              comment: "@context: Settings item description for account",
-            })}
+            description={accountDescription}
           />
         </div>
       </div>

@@ -31,6 +31,8 @@ interface TestAppOptions {
   authenticated?: boolean;
   /** Enable FTS for search tests */
   fts?: boolean;
+  /** Enable public demo restrictions in appConfig */
+  demoMode?: boolean;
 }
 
 /**
@@ -70,6 +72,7 @@ export function createTestApp(options: TestAppOptions = {}) {
     // Provide mock env bindings so c.env.* works in route handlers
     c.env = {
       SITE_URL: "http://localhost:9020",
+      DEMO_MODE: options.demoMode ? "true" : "false",
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);

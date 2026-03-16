@@ -14,6 +14,7 @@ import { ValidationError } from "../../lib/errors.js";
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const settingsApiRoutes = new Hono<Env>();
+const demoLockedKeys = new Set<ConfigKey>(["NOINDEX"]);
 
 /** Config keys that can be modified via the settings API */
 const editableKeys = Object.entries(CONFIG_FIELDS)
@@ -31,6 +32,9 @@ settingsApiRoutes.get("/", requireAuthApi(), async (c) => {
   for (const key of editableKeys) {
     result[key] = allSettings[key] ?? CONFIG_FIELDS[key].defaultValue;
   }
+  if (c.var.appConfig.demoMode) {
+    result.NOINDEX = "true";
+  }
 
   return c.json({ settings: result });
 });
@@ -44,7 +48,18 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
   const rejectedKeys: string[] = [];
 
   for (const [key, value] of Object.entries(updates)) {
-    if (editableKeys.includes(key as ConfigKey)) {
+    const configKey = key as ConfigKey;
+
+    if (
+      c.var.appConfig.demoMode &&
+      editableKeys.includes(configKey) &&
+      demoLockedKeys.has(configKey)
+    ) {
+      rejectedKeys.push(key);
+      continue;
+    }
+
+    if (editableKeys.includes(configKey)) {
       filteredUpdates[key as ConfigKey] = value;
     } else {
       rejectedKeys.push(key);
@@ -52,9 +67,10 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
   }
 
   if (rejectedKeys.length > 0 && Object.keys(filteredUpdates).length === 0) {
-    throw new ValidationError("None of the provided keys are editable", {
-      rejectedKeys,
-    });
+    const message = c.var.appConfig.demoMode
+      ? "Demo mode locks these settings"
+      : "None of the provided keys are editable";
+    throw new ValidationError(message, { rejectedKeys });
   }
 
   if (Object.keys(filteredUpdates).length > 0) {
@@ -66,6 +82,9 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
   const result: Record<string, string> = {};
   for (const key of editableKeys) {
     result[key] = allSettings[key] ?? CONFIG_FIELDS[key].defaultValue;
+  }
+  if (c.var.appConfig.demoMode) {
+    result.NOINDEX = "true";
   }
 
   return c.json({

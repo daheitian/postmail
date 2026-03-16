@@ -41,6 +41,7 @@ const labels: SettingsLabels = {
     'Show "Build with Jant" at the bottom of the home page',
   markdownSupported: "Markdown supported",
   allowIndexing: "It's OK for search engines to index my site",
+  demoSeoLocked: "Demo sites always stay hidden from search engines.",
   save: "Save",
   cancel: "Cancel",
 };
@@ -76,7 +77,11 @@ function findCheckboxByLabel(
   );
 }
 
-async function createElement(): Promise<JantSettingsGeneral> {
+async function createElement(
+  opts: {
+    demoMode?: boolean;
+  } = {},
+): Promise<JantSettingsGeneral> {
   const el = document.createElement(
     "jant-settings-general",
   ) as JantSettingsGeneral;
@@ -85,6 +90,7 @@ async function createElement(): Promise<JantSettingsGeneral> {
   el.languages = languages;
   el.siteNameFallback = "Fallback Name";
   el.siteDescriptionFallback = "Fallback Description";
+  el.demoMode = opts.demoMode ?? false;
   document.body.appendChild(el);
   await el.updateComplete;
   el.initData(initialData);
@@ -325,6 +331,22 @@ describe("JantSettingsGeneral", () => {
     const d = detail as unknown as SettingsSaveDetail;
     expect(d.endpoint).toBe("/settings/general/seo");
     expect(d.section).toBe("seo");
+  });
+
+  it("disables SEO indexing toggle in demo mode", async () => {
+    const el = await createElement({ demoMode: true });
+    const seoCheckbox = requireElement(
+      findCheckboxByLabel(el, labels.allowIndexing) ?? null,
+      "expected SEO checkbox",
+    );
+
+    expect(seoCheckbox.disabled).toBe(true);
+    expect(el.textContent).toContain(labels.demoSeoLocked);
+
+    seoCheckbox.click();
+    await el.updateComplete;
+
+    expect(seoCheckbox.checked).toBe(true);
   });
 
   it("shows loading spinner during save", async () => {

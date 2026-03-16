@@ -230,6 +230,7 @@ AUTH_SECRET=your-32-plus-character-secret-here
 DEV_API_TOKEN=local-debug-token
 DEMO_EMAIL=debug@jant.test
 DEMO_PASSWORD=jant-dev-debug-login
+DEMO_MODE=false
 ```
 
 `DEV_API_TOKEN`, `DEMO_EMAIL`, and `DEMO_PASSWORD` are optional local-only helpers for browser and agent debugging:
@@ -238,6 +239,14 @@ DEMO_PASSWORD=jant-dev-debug-login
 - `/__dev/login?token=...` accepts `DEV_API_TOKEN` only on `localhost`, `127.0.0.1`, `::1`, and `*.localtest.me`.
 
 Run `mise run dev-auth-setup` to generate or update these values automatically. `mise run dev-debug` runs the same setup before it starts the local debug server.
+
+### Demo Mode
+
+Set `DEMO_MODE=true` only for a public shared demo deployment.
+
+- The site is always treated as `noindex`, even if the database says otherwise.
+- Password changes, session management, and account deletion are disabled.
+- `DEMO_EMAIL` and `DEMO_PASSWORD` do not enable demo restrictions by themselves.
 
 ### Production Secrets
 

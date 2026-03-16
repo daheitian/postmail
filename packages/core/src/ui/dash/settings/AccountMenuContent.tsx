@@ -61,44 +61,59 @@ const ICONS = {
 
 export function AccountMenuContent({
   sitePathPrefix = "",
+  demoMode = false,
 }: {
   sitePathPrefix?: string;
+  demoMode?: boolean;
 }) {
   const { t } = useLingui();
 
   return (
     <div class="settings-root">
-      <div>
-        <div class="settings-group">
-          <AccountMenuItem
-            href={toPublicPath("/settings/account/sessions", sitePathPrefix)}
-            icon={ICONS.monitor}
-            tone="subtle"
-            name={t({
-              message: "Sessions",
-              comment: "@context: Settings item — session management",
-            })}
-            description={t({
-              message: "Manage active sign-in sessions",
-              comment: "@context: Settings item description for sessions",
-            })}
-          />
-          <AccountMenuItem
-            href={toPublicPath("/settings/account/password", sitePathPrefix)}
-            icon={ICONS.lock}
-            tone="subtle"
-            name={t({
-              message: "Password",
-              comment: "@context: Settings item — password settings",
-            })}
-            description={t({
-              message: "Change your sign-in password",
-              comment:
-                "@context: Settings item description for password change",
-            })}
-          />
+      {demoMode && (
+        <div class="alert mb-6" role="alert">
+          {t({
+            message:
+              "Demo mode hides sessions, password changes, and account deletion. Export still works.",
+            comment:
+              "@context: Notice shown on the account page when demo restrictions are enabled",
+          })}
         </div>
-      </div>
+      )}
+
+      {!demoMode && (
+        <div>
+          <div class="settings-group">
+            <AccountMenuItem
+              href={toPublicPath("/settings/account/sessions", sitePathPrefix)}
+              icon={ICONS.monitor}
+              tone="subtle"
+              name={t({
+                message: "Sessions",
+                comment: "@context: Settings item — session management",
+              })}
+              description={t({
+                message: "Manage active sign-in sessions",
+                comment: "@context: Settings item description for sessions",
+              })}
+            />
+            <AccountMenuItem
+              href={toPublicPath("/settings/account/password", sitePathPrefix)}
+              icon={ICONS.lock}
+              tone="subtle"
+              name={t({
+                message: "Password",
+                comment: "@context: Settings item — password settings",
+              })}
+              description={t({
+                message: "Change your sign-in password",
+                comment:
+                  "@context: Settings item description for password change",
+              })}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Data */}
       <div>
@@ -141,37 +156,40 @@ export function AccountMenuContent({
       </div>
 
       {/* Danger Zone */}
-      <div>
-        <div
-          class="settings-group-label"
-          style="color: var(--color-destructive)"
-        >
-          {t({
-            message: "Danger Zone",
-            comment:
-              "@context: Settings group label for destructive account actions",
-          })}
-        </div>
-        <div class="settings-group">
-          <AccountMenuItem
-            href={toPublicPath(
-              "/settings/account/delete-account",
-              sitePathPrefix,
-            )}
-            icon={ICONS.trash}
-            tone="danger"
-            name={t({
-              message: "Delete Account",
-              comment: "@context: Settings item — delete account and all data",
-            })}
-            description={t({
-              message: "Permanently delete all data and reset the blog",
+      {!demoMode && (
+        <div>
+          <div
+            class="settings-group-label"
+            style="color: var(--color-destructive)"
+          >
+            {t({
+              message: "Danger Zone",
               comment:
-                "@context: Settings item description for account deletion",
+                "@context: Settings group label for destructive account actions",
             })}
-          />
+          </div>
+          <div class="settings-group">
+            <AccountMenuItem
+              href={toPublicPath(
+                "/settings/account/delete-account",
+                sitePathPrefix,
+              )}
+              icon={ICONS.trash}
+              tone="danger"
+              name={t({
+                message: "Delete Account",
+                comment:
+                  "@context: Settings item — delete account and all data",
+              })}
+              description={t({
+                message: "Permanently delete all data and reset the blog",
+                comment:
+                  "@context: Settings item description for account deletion",
+              })}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

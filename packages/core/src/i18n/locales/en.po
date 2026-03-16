@@ -153,6 +153,11 @@ msgstr "Accent should feel present, not loud."
 msgid "Account"
 msgstr "Account"
 
+#. @context: Error shown when account deletion is blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Account deletion is off in demo mode. The shared demo resets separately."
+msgstr "Account deletion is off in demo mode. The shared demo resets separately."
+
 #. @context: Settings section heading for active sessions
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Active Sessions"
@@ -805,6 +810,21 @@ msgstr "Deleted"
 msgid "Demo credentials are pre-filled — hit Sign In to continue."
 msgstr "Demo credentials are pre-filled — hit Sign In to continue."
 
+#. @context: Notice shown on the account page when demo restrictions are enabled
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Demo mode hides sessions, password changes, and account deletion. Export still works."
+msgstr "Demo mode hides sessions, password changes, and account deletion. Export still works."
+
+#. @context: Notice shown on the settings home page when demo restrictions are enabled
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Demo mode keeps search indexing, sessions, passwords, and account deletion locked."
+msgstr "Demo mode keeps search indexing, sessions, passwords, and account deletion locked."
+
+#. @context: Help text explaining that SEO indexing is locked in demo mode
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Demo sites always stay hidden from search engines."
+msgstr "Demo sites always stay hidden from search engines."
+
 #. @context: Alt text textarea placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Describe this for people with visual impairments..."
@@ -1013,6 +1033,11 @@ msgstr "entries"
 #: src/ui/shared/CollectionsManager.tsx
 msgid "entry"
 msgstr "entry"
+
+#. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Export and demo limits"
+msgstr "Export and demo limits"
 
 #. @context: Settings item — export site as Zola ZIP
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1716,6 +1741,13 @@ msgstr "Password"
 msgid "Password changed."
 msgstr "Password changed."
 
+#. @context: Error shown when password changes are blocked in demo mode
+#. @context: Error shown when password reset is blocked in demo mode
+#: src/routes/auth/reset.tsx
+#: src/routes/dash/settings.tsx
+msgid "Password changes are off in demo mode. Sign in with the shared demo credentials."
+msgstr "Password changes are off in demo mode. Sign in with the shared demo credentials."
+
 #. @context: Error toast when new password and confirmation differ
 #: src/routes/dash/settings.tsx
 msgid "Passwords don't match. Make sure both fields are identical."
@@ -2117,12 +2149,17 @@ msgstr "Security token missing. Refresh the page and try again."
 msgid "SEO settings updated."
 msgstr "SEO settings updated."
 
+#. @context: Error shown when session management is blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Session management is off in demo mode. Use the shared demo session instead."
+msgstr "Session management is off in demo mode. Use the shared demo session instead."
+
 #. @context: Settings item — session management
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Sessions"
 msgstr "Sessions"
 
-#. @context: Settings item description for account
+#. @context: Settings item description for account settings on the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sessions, password, export"
 msgstr "Sessions, password, export"
