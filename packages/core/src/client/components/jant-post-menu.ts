@@ -154,7 +154,7 @@ export class JantPostMenu extends LitElement {
     const ke = e as globalThis.KeyboardEvent;
     if (ke.key === "Escape") {
       if (this._addCollectionPanelOpen) {
-        this._addCollectionPanelOpen = false;
+        this.#closeAddCollectionPanel();
         return;
       }
       // Close collection popovers first
@@ -528,6 +528,9 @@ export class JantPostMenu extends LitElement {
 
   #closeAddCollectionPanel() {
     this._addCollectionPanelOpen = false;
+    this.updateComplete.then(() => {
+      this._triggerEl?.focus();
+    });
   }
 
   async #handleAddCollectionSubmit(e: Event) {
@@ -584,8 +587,10 @@ export class JantPostMenu extends LitElement {
       }
 
       this.#collectionsDirty = true;
-      this._addCollectionPanelOpen = false;
-      showToast("Collection created.");
+      this.#closeAddCollectionPanel();
+      showToast(
+        this.#getCollectionFormLabels()?.createdLabel ?? "Collection created.",
+      );
     } catch (error) {
       showToast(
         error instanceof Error
@@ -941,8 +946,16 @@ export class JantPostMenu extends LitElement {
         role="dialog"
         aria-modal="true"
         aria-label=${this.#getAddCollectionLabel()}
+        @click=${(event: Event) => event.stopPropagation()}
       >
         <div class="collection-quick-dialog-header">
+          <button
+            type="button"
+            class="collection-quick-dialog-cancel"
+            @click=${() => this.#closeAddCollectionPanel()}
+          >
+            ${labels.cancelLabel}
+          </button>
           <h2 class="collection-quick-dialog-title">
             ${this.#getAddCollectionLabel()}
           </h2>
@@ -956,15 +969,22 @@ export class JantPostMenu extends LitElement {
             cancel-href="javascript:void(0)"
             @jant:collection-submit=${(e: Event) =>
               this.#handleAddCollectionSubmit(e)}
-            @click=${(e: Event) => {
-              const target = (e.target as HTMLElement).closest?.(
-                "a.btn-outline",
-              );
-              if (!target) return;
-              e.preventDefault();
-              this.#closeAddCollectionPanel();
-            }}
           ></jant-collection-form>
+          <p class="collection-quick-dialog-note">${labels.quickHint}</p>
+        </div>
+        <div class="collection-quick-dialog-footer">
+          <button
+            type="button"
+            class="compose-post-btn collection-quick-dialog-submit"
+            @click=${() => {
+              const form = this.querySelector<HTMLFormElement>(
+                "[data-collection-quick-dialog] form",
+              );
+              form?.requestSubmit();
+            }}
+          >
+            ${labels.quickSubmitLabel}
+          </button>
         </div>
       </div>
     `;

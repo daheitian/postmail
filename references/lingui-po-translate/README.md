@@ -1,0 +1,330 @@
+# lingui-po-translate
+
+AI-powered translation tool for [Lingui](https://lingui.dev/) PO files with context-aware translations.
+
+## Features
+
+- **Context-aware translations**: Pass context from source code comments to AI for better translations
+- **Glossary-aware translations**: Inject matched terminology from a YAML glossary file into AI prompts
+- **Manual translation marking**: Mark specific entries for manual translation with `@manual:lang1,lang2`
+- **Source language override**: Translate Traditional Chinese from Simplified Chinese instead of English
+- **Incremental translation**: Only translates new or changed entries, preserves manual edits
+- **Multiple AI services**: Supports OpenAI, TypeChat, Google Translate, Azure, and more
+
+## Installation
+
+```bash
+npm install -g lingui-po-translate
+```
+
+Or as a dev dependency:
+
+```bash
+npm install --save-dev lingui-po-translate
+```
+
+## Quick Start
+
+```bash
+# Basic translation
+lingui-po-translate \
+  --srcFile=locales/en.po \
+  --srcLng=en \
+  --srcFormat=po \
+  --targetFile=locales/zh-Hans.po \
+  --targetLng=zh-Hans \
+  --targetFormat=po \
+  --service=openai \
+  --serviceConfig="YOUR_OPENAI_API_KEY"
+```
+
+## Source Code Annotations
+
+Add annotations in your Lingui source code to control translation behavior:
+
+### Context for AI (`@context`)
+
+```jsx
+import { t } from "@lingui/macro";
+
+// Provide context for better AI translation
+t({
+  message: "Save",
+  comment: "@context:Button to save form data, not 'save money'",
+});
+```
+
+Generated PO file:
+
+```po
+#. @context:Button to save form data, not 'save money'
+msgid "Save"
+msgstr ""
+```
+
+### Manual Translation (`@manual`)
+
+Mark entries that require manual translation for specific languages:
+
+```jsx
+// Only manually translate to zh-Hans, auto-translate to other languages
+t({
+  message: "Acme Corp",
+  comment: "@manual:zh-Hans",
+});
+
+// Manually translate both zh-Hans and zh-Hant
+t({
+  message: "Special Term",
+  comment: "@manual:zh-Hans,zh-Hant",
+});
+
+// Combine with context (use ; as separator)
+t({
+  message: "Technical term",
+  comment: "@manual:zh-Hans; @context:Industry-specific terminology",
+});
+```
+
+### Behavior with `@manual`
+
+| Target Language | `@manual:zh-Hans`                | Behavior                           |
+| --------------- | -------------------------------- | ---------------------------------- |
+| zh-Hans         | In list                          | Skip (wait for manual translation) |
+| zh-Hant         | Not in list + has sourceOverride | Translate from zh-Hans             |
+| de, fr, etc.    | Not in list                      | Copy original text                 |
+
+## Source Language Override
+
+Translate certain languages from a different source (e.g., Traditional Chinese from Simplified Chinese):
+
+```bash
+lingui-po-translate \
+  --srcFile=locales/en.po \
+  --srcLng=en \
+  --srcFormat=po \
+  --targetFile=locales/zh-Hant.po \
+  --targetLng=zh-Hant \
+  --targetFormat=po \
+  --service=openai \
+  --serviceConfig="YOUR_API_KEY" \
+  --sourceOverride="zh-Hant:zh-Hans"
+```
+
+This will:
+
+1. For entries **without** `@manual`: Translate from English as usual
+2. For entries **with** `@manual:zh-Hans`: Translate from `zh-Hans.po` (if zh-Hans translation exists)
+
+## Glossary File
+
+For `openai`, `typechat`, and `typechat-manual`, you can provide a YAML glossary file.
+Only the terms matched in each source string are added to the AI prompt.
+
+```yaml
+terms:
+  - source: Workspace
+    target: 工作区
+    note: IDE/workspace concept, not a physical room
+
+  - source: Repository
+    target: 仓库
+```
+
+Use it like this:
+
+```bash
+lingui-po-translate \
+  --srcFile=locales/en.po \
+  --srcLng=en \
+  --srcFormat=po \
+  --targetFile=locales/zh-Hans.po \
+  --targetLng=zh-Hans \
+  --targetFormat=po \
+  --service=openai \
+  --serviceConfig="YOUR_API_KEY" \
+  --glossaryFile=locales/glossary.zh-Hans.yml
+```
+
+## Batch Translation Script
+
+Create a script to translate all your locales:
+
+```bash
+#!/bin/bash
+# translate.sh
+
+BASE_DIR="locales"
+COMMON_ARGS=(
+  "--srcLng=en"
+  "--srcFormat=po"
+  "--targetFormat=po"
+  "--service=openai"
+  "--serviceConfig=$OPENAI_API_KEY"
+)
+
+# Translate to Simplified Chinese (manual entries skipped)
+lingui-po-translate \
+  --srcFile=$BASE_DIR/en.po \
+  --targetFile=$BASE_DIR/zh-Hans.po \
+  --targetLng=zh-Hans \
+  "${COMMON_ARGS[@]}"
+
+# Translate to Traditional Chinese (from zh-Hans for @manual entries)
+lingui-po-translate \
+  --srcFile=$BASE_DIR/en.po \
+  --targetFile=$BASE_DIR/zh-Hant.po \
+  --targetLng=zh-Hant \
+  --sourceOverride="zh-Hant:zh-Hans" \
+  "${COMMON_ARGS[@]}"
+
+# Translate to other languages
+for lang in de fr ja ko; do
+  lingui-po-translate \
+    --srcFile=$BASE_DIR/en.po \
+    --targetFile=$BASE_DIR/$lang.po \
+    --targetLng=$lang \
+    "${COMMON_ARGS[@]}"
+done
+```
+
+## CLI Options
+
+```
+Usage: lingui-po-translate [options]
+
+Options:
+  --srcFile <sourceFile>          The source PO file to be translated
+  --srcLng <sourceLanguage>       A language code for the source language
+  --srcFormat <sourceFileFormat>  One of "po", "flat-json", "nested-json", "yaml", "xml", etc.
+  --targetFile <targetFile>       The target file for the translations
+  --targetLng <targetLanguage>    A language code for the target language
+  --targetFormat <targetFileFormat>  Target file format (usually same as srcFormat)
+  --service <translationService>  One of "openai", "typechat", "google-translate", "azure", etc.
+  --serviceConfig <serviceKey>    API key for the translation service
+  --glossaryFile <path>           YAML glossary file with source/target term mappings for AI translation
+  --sourceOverride <mapping>      Override source language (e.g., "zh-Hant:zh-Hans,pt-BR:pt-PT")
+  --baseUrl <url>                 Custom API base URL for OpenAI-compatible APIs
+  --prompt <prompt>               Additional instructions for AI translation
+  --matcher <matcher>             Interpolation matcher: "none", "icu", "i18next", "sprintf"
+  --model <model>                 Model for AI translation (default: "gpt-4o-mini")
+  --debug                         Print debug info including API requests/responses
+  -v, --version                   Output the version number
+  -h, --help                      Display help
+```
+
+## Available Translation Services
+
+| Service                  | Description                         | Config Required               |
+| ------------------------ | ----------------------------------- | ----------------------------- |
+| `openai`                 | OpenAI GPT models                   | API key via `--serviceConfig` |
+| `typechat`               | TypeChat with OpenAI/compatible API | `OPENAI_API_KEY` env var      |
+| `google-translate`       | Google Cloud Translation            | Service account JSON path     |
+| `azure`                  | Azure Cognitive Services            | API key                       |
+| `sync-without-translate` | Copy without translation            | None                          |
+| `manual`                 | Manual typing                       | None                          |
+
+## Environment Variables
+
+For OpenAI service:
+
+- `OPENAI_BASE_URL` - Custom API base URL for OpenAI-compatible APIs (e.g., DeepSeek, Ollama)
+
+For TypeChat service:
+
+- `OPENAI_API_KEY` - Your OpenAI API key
+- `OPENAI_MODEL` - Model to use (default: `gpt-4o-mini-2024-07-18`)
+- `OPENAI_ENDPOINT` - Custom API endpoint (for Azure OpenAI or compatible APIs)
+- `TYPECHAT_RPM` - Requests per minute limit
+- `OPEN_AI_BATCH_SIZE` - Batch size for translation (default: 10)
+
+### Using OpenAI-Compatible APIs
+
+You can use any OpenAI-compatible API by setting the base URL:
+
+```bash
+# Using DeepSeek
+export OPENAI_BASE_URL="https://api.deepseek.com/v1"
+lingui-po-translate --service=openai --serviceConfig="YOUR_DEEPSEEK_KEY" ...
+
+# Using local Ollama
+export OPENAI_BASE_URL="http://localhost:11434/v1"
+lingui-po-translate --service=openai --serviceConfig="ollama" ...
+
+# Or via CLI argument (takes precedence over env var)
+lingui-po-translate --baseUrl="https://api.deepseek.com/v1" --serviceConfig="YOUR_KEY" ...
+```
+
+## Custom Prompts
+
+Provide additional instructions to the AI:
+
+```bash
+lingui-po-translate \
+  --srcFile=locales/en.po \
+  --targetFile=locales/ja.po \
+  --targetLng=ja \
+  --service=openai \
+  --serviceConfig="YOUR_API_KEY" \
+  --prompt="This is a medical application. Keep technical terms like 'MRI', 'CT scan' in English. Use polite Japanese (敬語)."
+```
+
+## Model Selection
+
+Specify a different model for translation:
+
+```bash
+# Use GPT-4o for higher quality translations
+lingui-po-translate \
+  --srcFile=locales/en.po \
+  --targetFile=locales/zh.po \
+  --targetLng=zh \
+  --service=openai \
+  --serviceConfig="YOUR_API_KEY" \
+  --model=gpt-4o
+
+# Use with DeepSeek
+lingui-po-translate \
+  --baseUrl="https://api.deepseek.com/v1" \
+  --serviceConfig="YOUR_DEEPSEEK_KEY" \
+  --model=deepseek-chat \
+  ...
+```
+
+Default model: `gpt-4o-mini`
+
+## Debugging
+
+Use `--debug` to print API requests and responses:
+
+```bash
+lingui-po-translate \
+  --srcFile=locales/en.po \
+  --targetFile=locales/zh.po \
+  --targetLng=zh \
+  --service=openai \
+  --serviceConfig="YOUR_API_KEY" \
+  --debug
+```
+
+This will print:
+
+- System prompt and user prompt sent to the API
+- Full API response including token usage
+
+## Weblate Integration
+
+For entries marked with `@manual`, the tool copies the original text to `msgstr`. This prevents Weblate from flagging them as "untranslated".
+
+To configure Weblate to ignore these entries:
+
+1. The entries will have the original English text as the translation
+2. Configure Weblate checks to ignore "unchanged translation" for entries with specific comments
+
+## License
+
+GPL
+
+## Credits
+
+Based on [attranslate](https://github.com/fkirc/attranslate) by Felix Kirchengast.

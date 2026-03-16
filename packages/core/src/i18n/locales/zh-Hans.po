@@ -489,6 +489,16 @@ msgstr "个合集"
 msgid "Collection"
 msgstr "合集"
 
+#. @context: Toast shown after creating a collection
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection created."
+msgstr "合集已创建。"
+
+#. @context: Collection form field
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection link"
+msgstr "合集链接"
+
 #. @context: Plural collection count label
 #. @context: Plural collection count label
 #. @context: Plural collection count label
@@ -868,8 +878,10 @@ msgstr "不保存"
 #. @context: Button to exit collection organize mode
 #. @context: Close attached text panel
 #. @context: Compose button - update existing post
+#. @context: Primary button in the quick-create collection dialog
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Done"
 msgstr "完成"
@@ -941,6 +953,11 @@ msgstr "例如 iOS Shortcuts"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Edit"
 msgstr "编辑"
+
+#. @context: Button to manually edit the collection link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Edit link"
+msgstr ""
 
 #. @context: Compose dialog header title in edit mode
 #: src/ui/compose/ComposeDialog.tsx
@@ -1424,6 +1441,11 @@ msgstr ""
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
 msgstr "更多链接"
+
+#. @context: Helper text in the quick-create collection dialog
+#: src/ui/shared/collection-management-labels.ts
+msgid "More options are available after you create it."
+msgstr ""
 
 #. @context: Secondary badge label on sample page
 #. @context: Token label on sample page
@@ -1937,6 +1959,11 @@ msgstr ""
 msgid "Reply"
 msgstr "回复"
 
+#. @context: Button to restore the automatically generated collection link from the title
+#: src/ui/shared/collection-management-labels.ts
+msgid "Reset link"
+msgstr ""
+
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
 #: src/routes/auth/reset.tsx
@@ -2153,11 +2180,6 @@ msgstr "网站页脚"
 msgid "Site Name"
 msgstr "站点名称"
 
-#. @context: Collection form field
-#: src/ui/shared/collection-management-labels.ts
-msgid "Slug"
-msgstr ""
-
 #. @context: Name of the text swatch
 #: src/ui/pages/BrandPage.tsx
 msgid "Soft Charcoal"
@@ -2370,15 +2392,15 @@ msgstr "这些设备当前已登录到您的账户。撤销任何您不认识的
 msgid "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
 msgstr "这篇文章想回答一个具体问题：当默认强调色要撑起一整段阅读体验时，它是否依然足够平静？"
 
-#. @context: Collection path help text
-#: src/ui/shared/collection-management-labels.ts
-msgid "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you."
-msgstr "这会成为合集链接的一部分。如果标题用了中文、日文或韩文，我们会自动帮你生成。"
-
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
 msgstr "该合集为空。从编辑器添加文章。"
+
+#. @context: Collection link help text
+#: src/ui/shared/collection-management-labels.ts
+msgid "This is the last part of the collection link."
+msgstr "这是合集链接的最后一部分。"
 
 #. @context: Showcase paragraph prefix on the public brand page
 #: src/ui/pages/BrandPage.tsx
