@@ -1230,9 +1230,9 @@
 
   .thread-group-preview,
   .thread-group-detail {
-    --site-thread-rail-dot-left: -20px;
+    --site-thread-rail-dot-left: -24px;
     --site-thread-rail-indent: 0px;
-    --site-thread-rail-line-left: -15px;
+    --site-thread-rail-line-left: -19px;
   }
 
   .thread-group-preview::before,
