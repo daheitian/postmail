@@ -1,7 +1,5 @@
-import type { CollectionSubmitDetail } from "./components/collection-types.js";
 import { showConfirmDialog } from "./confirm.js";
 import { showToast } from "./toast.js";
-import { publicPath } from "./runtime-paths.js";
 
 interface CollectionPageActionLabels {
   edit: string;
@@ -9,7 +7,6 @@ interface CollectionPageActionLabels {
   deleteCollection: string;
   confirmDelete: string;
   cancel: string;
-  saved: string;
   saveFailed: string;
   deleted: string;
 }
@@ -22,7 +19,6 @@ const parseLabels = (value: string | undefined): CollectionPageActionLabels => {
       deleteCollection: "",
       confirmDelete: "",
       cancel: "",
-      saved: "",
       saveFailed: "",
       deleted: "",
     };
@@ -37,7 +33,6 @@ const parseLabels = (value: string | undefined): CollectionPageActionLabels => {
       deleteCollection: "",
       confirmDelete: "",
       cancel: "",
-      saved: "",
       saveFailed: "",
       deleted: "",
     };
@@ -56,15 +51,8 @@ document
       "[data-collection-page-action='toggle-menu']",
     );
     const menu = root.querySelector<HTMLElement>("[data-collection-page-menu]");
-    const dialog = root.querySelector<HTMLDialogElement>(
-      "[data-collection-page-dialog]",
-    );
 
-    if (!collectionId || !trigger || !menu || !dialog) return;
-
-    const formEl = dialog.querySelector<HTMLElement & { loading?: boolean }>(
-      "jant-collection-form",
-    );
+    if (!collectionId || !trigger || !menu) return;
 
     const closeMenu = (focusTrigger = false) => {
       if (menu.hidden) return;
@@ -80,21 +68,6 @@ document
         const firstItem = menu.querySelector<HTMLElement>("[role='menuitem']");
         firstItem?.focus();
       }
-    };
-
-    const closeDialog = (focusTrigger = false) => {
-      if (dialog.open) dialog.close();
-      if (focusTrigger) trigger.focus();
-    };
-
-    const openDialog = () => {
-      closeMenu(false);
-      if (!dialog.open) dialog.showModal();
-      const titleInput = dialog.querySelector<HTMLInputElement>(
-        "[data-collection-title-input]",
-      );
-      titleInput?.focus();
-      titleInput?.select();
     };
 
     const handleDelete = async () => {
@@ -170,10 +143,6 @@ document
       if (!actionEl || !root.contains(actionEl)) return;
 
       const action = actionEl.dataset.collectionPageAction;
-      if (action === "edit") {
-        event.preventDefault();
-        openDialog();
-      }
       if (action === "delete") {
         event.preventDefault();
         void handleDelete();
@@ -184,58 +153,6 @@ document
       if (!(event.target instanceof Node)) return;
       if (!root.contains(event.target)) {
         closeMenu(false);
-      }
-    });
-
-    dialog.addEventListener("cancel", (event) => {
-      event.preventDefault();
-      closeDialog(true);
-    });
-
-    dialog.addEventListener("click", (event) => {
-      if (event.target === dialog) {
-        closeDialog(true);
-        return;
-      }
-
-      const cancelLink = (event.target as HTMLElement | null)?.closest?.(
-        "a.btn-outline",
-      );
-      if (cancelLink) {
-        event.preventDefault();
-        closeDialog(true);
-      }
-    });
-
-    dialog.addEventListener("jant:collection-submit", async (event: Event) => {
-      const customEvent = event as CustomEvent<CollectionSubmitDetail>;
-      customEvent.stopPropagation();
-
-      if (!customEvent.detail) return;
-      const endpoint =
-        customEvent.detail.endpoint || `/api/collections/${collectionId}`;
-
-      if (formEl) formEl.loading = true;
-
-      try {
-        const res = await fetch(endpoint, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(customEvent.detail.data),
-        });
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const updated = (await res.json()) as { slug?: string };
-        showToast(labels.saved);
-        closeDialog(false);
-        window.location.href = updated.slug
-          ? publicPath(`/c/${updated.slug}`)
-          : window.location.href;
-      } catch {
-        showToast(labels.saveFailed, "error");
-      } finally {
-        if (formEl) formEl.loading = false;
       }
     });
 

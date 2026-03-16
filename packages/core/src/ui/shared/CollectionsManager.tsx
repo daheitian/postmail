@@ -1,6 +1,7 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionDirectoryItem } from "../../types.js";
+import { toPublicPath } from "../../lib/url.js";
 import { CollectionDirectory } from "./CollectionDirectory.js";
 import { getCollectionMutationLabels } from "./collection-management-labels.js";
 
@@ -20,6 +21,11 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
   sitePathPrefix = "",
 }) => {
   const { t } = useLingui();
+  const collectionsHref = toPublicPath("/c", sitePathPrefix);
+  const newCollectionHref = toPublicPath(
+    `/c/new?returnTo=${encodeURIComponent(collectionsHref)}`,
+    sitePathPrefix,
+  );
   const collectionCount = countCollections(items);
   const collectionCountLabel = `${collectionCount} ${
     collectionCount === 1
@@ -136,12 +142,11 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
                 class="collections-page-action-group"
                 data-collections-toolbar
               >
-                <button
-                  type="button"
+                <a
+                  href={newCollectionHref}
                   class="collections-page-toolbar-button"
                   aria-label={labels.newCollection}
                   title={labels.newCollection}
-                  data-collections-action="create"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -157,7 +162,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
                     <path d="M12 5v14" />
                     <path d="M5 12h14" />
                   </svg>
-                </button>
+                </a>
                 <div class="relative">
                   <button
                     type="button"

@@ -5,7 +5,7 @@
  * - Renders collection rows and dividers in a single-column layout
  * - Dropdown menu for page actions (organize, new divider)
  * - SortableJS drag-and-drop organize mode
- * - Create/edit collection dialogs embedding <jant-collection-form>
+ * - Links out to full-page collection create/edit flows
  * - Divider CRUD
  *
  * Light DOM only so site styles apply directly.
@@ -29,7 +29,6 @@ import { publicPath } from "../runtime-paths.js";
 import { showToast } from "../toast.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
-import type { CollectionSubmitDetail } from "./collection-types.js";
 import type {
   CollectionManagerItem,
   CollectionManagerLabels,
@@ -43,8 +42,6 @@ export class JantCollectionsManager extends LitElement {
 
     _items: { state: true },
     _reorderMode: { state: true },
-    _dialogMode: { state: true },
-    _editingCollection: { state: true },
     _editingDividerId: { state: true },
     _showMoreMenu: { state: true },
     _hoveringId: { state: true },
@@ -56,8 +53,6 @@ export class JantCollectionsManager extends LitElement {
 
   declare _items: CollectionManagerItem[];
   declare _reorderMode: boolean;
-  declare _dialogMode: "create" | "edit" | null;
-  declare _editingCollection: ManagedCollection | null;
   declare _editingDividerId: string | null;
   declare _showMoreMenu: boolean;
   declare _hoveringId: string | null;
@@ -101,9 +96,6 @@ export class JantCollectionsManager extends LitElement {
     }
 
     switch (action) {
-      case "create":
-        this.#openCreateDialog();
-        break;
       case "done":
         this.#exitReorderMode();
         break;
@@ -145,8 +137,6 @@ export class JantCollectionsManager extends LitElement {
 
     this._items = [];
     this._reorderMode = false;
-    this._dialogMode = null;
-    this._editingCollection = null;
     this._editingDividerId = null;
     this._showMoreMenu = false;
     this._hoveringId = null;
@@ -505,81 +495,6 @@ export class JantCollectionsManager extends LitElement {
     }
   }
 
-  #openCreateDialog() {
-    this._dialogMode = "create";
-    this._editingCollection = null;
-    this._showMoreMenu = false;
-    document.removeEventListener("click", this.#closeMoreMenu);
-    this.updateComplete.then(() => {
-      const dialog = this.querySelector<HTMLDialogElement>(
-        "#collections-manager-dialog",
-      );
-      dialog?.showModal();
-      const titleInput = dialog?.querySelector<HTMLInputElement>(
-        "[data-collection-title-input]",
-      );
-      titleInput?.focus();
-      titleInput?.select();
-    });
-  }
-
-  #openEditDialog(collection: ManagedCollection) {
-    this._dialogMode = "edit";
-    this._editingCollection = collection;
-    this._showItemMenuId = null;
-    document.removeEventListener("click", this.#closeItemMenu);
-    this.updateComplete.then(() => {
-      this.querySelector<HTMLDialogElement>(
-        "#collections-manager-dialog",
-      )?.showModal();
-    });
-  }
-
-  #closeDialog() {
-    this.querySelector<HTMLDialogElement>(
-      "#collections-manager-dialog",
-    )?.close();
-    this._dialogMode = null;
-    this._editingCollection = null;
-  }
-
-  async #handleCollectionSubmit(e: Event) {
-    const event = e as CustomEvent<CollectionSubmitDetail>;
-    event.stopPropagation();
-
-    const detail = event.detail;
-    if (!detail) return;
-
-    const formEl = this.querySelector("jant-collection-form") as
-      | (HTMLElement & { loading: boolean })
-      | null;
-    if (formEl) formEl.loading = true;
-
-    try {
-      const isEdit = detail.isEdit;
-      const url = isEdit
-        ? `/api/collections/${this._editingCollection?.id}`
-        : "/api/collections";
-      const method = isEdit ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(detail.data),
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      showToast(this.labels.saved);
-      this.#closeDialog();
-      await this.#refreshList();
-    } catch {
-      showToast(this.labels.saveFailed, "error");
-    } finally {
-      if (formEl) formEl.loading = false;
-    }
-  }
-
   async #deleteCollection(collection: ManagedCollection) {
     const confirmed = await showConfirmDialog({
       message: this.labels.confirmDelete,
@@ -747,13 +662,16 @@ export class JantCollectionsManager extends LitElement {
                 class="collections-page-menu"
                 @click=${(e: Event) => e.stopPropagation()}
               >
-                <button
-                  type="button"
+                <a
+                  href=${publicPath(
+                    `/c/${collection.slug}/edit?returnTo=${encodeURIComponent(
+                      publicPath("/c"),
+                    )}`,
+                  )}
                   class="collections-page-menu-item"
-                  @click=${() => this.#openEditDialog(collection)}
                 >
                   ${this.labels.edit}
-                </button>
+                </a>
                 <button
                   type="button"
                   class="collections-page-menu-item collections-page-menu-item-danger"
@@ -868,66 +786,6 @@ export class JantCollectionsManager extends LitElement {
     `;
   }
 
-  #renderDialog() {
-    if (!this._dialogMode) return nothing;
-
-    const isEdit = this._dialogMode === "edit";
-    const collection = this._editingCollection;
-    const formLabels = this.labels.formLabels;
-    const initial =
-      isEdit && collection
-        ? {
-            title: collection.title,
-            slug: collection.slug,
-            description: collection.description ?? "",
-            sortOrder: collection.sortOrder ?? "newest",
-            icon: collection.icon ?? "",
-          }
-        : {
-            title: "",
-            slug: "",
-            description: "",
-            sortOrder: "newest",
-            icon: "",
-          };
-
-    return html`
-      <dialog
-        id="collections-manager-dialog"
-        class="m-auto rounded-lg border border-border bg-background p-6 text-foreground shadow-lg backdrop:bg-black/50 w-full max-w-md"
-        @cancel=${() => this.#closeDialog()}
-        @close=${() => {
-          this._dialogMode = null;
-          this._editingCollection = null;
-        }}
-        @click=${(e: Event) => {
-          if (e.target === e.currentTarget) {
-            this.#closeDialog();
-          }
-        }}
-      >
-        <jant-collection-form
-          .labels=${formLabels}
-          .initial=${initial}
-          action=${isEdit && collection
-            ? `/api/collections/${collection.id}`
-            : "/api/collections"}
-          cancel-href="javascript:void(0)"
-          ?is-edit=${isEdit}
-          @jant:collection-submit=${(e: Event) =>
-            this.#handleCollectionSubmit(e)}
-          @click=${(e: Event) => {
-            const target = (e.target as HTMLElement).closest?.("a.btn-outline");
-            if (target) {
-              e.preventDefault();
-              this.#closeDialog();
-            }
-          }}
-        ></jant-collection-form>
-      </dialog>
-    `;
-  }
-
   render() {
     return html`
       ${this.#hasCollections()
@@ -946,7 +804,6 @@ export class JantCollectionsManager extends LitElement {
             </div>
           `
         : html`<p class="text-muted-foreground">${this.labels.emptyState}</p>`}
-      ${this.#renderDialog()}
     `;
   }
 }

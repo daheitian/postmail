@@ -391,6 +391,8 @@ msgid "Brand note"
 msgstr "Brand note"
 
 #. @context: Breadcrumb label on collection detail page
+#. @context: Breadcrumb label on collection editor page
+#: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/pages/CollectionPage.tsx
 msgid "Breadcrumb"
 msgstr "Breadcrumb"
@@ -497,9 +499,11 @@ msgid "collections"
 msgstr "collections"
 
 #. @context: Breadcrumb link to collections page
+#. @context: Breadcrumb link to collections page
 #. @context: Collections page heading
 #. @context: Collections page heading
 #. @context: Inactive nav link label on sample page
+#: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -929,7 +933,11 @@ msgstr "e.g. iOS Shortcuts"
 
 #. @context: Button to edit item
 #. @context: Per-collection edit action
+#. @context: Per-collection edit action
+#. @context: Per-collection edit action
 #: src/ui/dash/ActionButtons.tsx
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/shared/collection-management-labels.ts
 msgid "Edit"
 msgstr "Edit"
@@ -1462,6 +1470,10 @@ msgid "Navigation Preview"
 msgstr "Navigation Preview"
 
 #. @context: Button to create a collection from collections page
+#. @context: Page title for new collection
+#. @context: Page title for new collection
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "New Collection"
 msgstr "New Collection"
@@ -2363,6 +2375,11 @@ msgstr "These devices are currently signed in to your account. Revoke any sessio
 msgid "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
 msgstr "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
 
+#. @context: Collection path help text
+#: src/ui/shared/collection-management-labels.ts
+msgid "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you."
+msgstr "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you."
+
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
@@ -2557,11 +2574,6 @@ msgstr "Uploading..."
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "URL"
 msgstr "URL"
-
-#. @context: Collection path help text
-#: src/ui/shared/collection-management-labels.ts
-msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
-msgstr "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
 
 #. @context: Heading for API token usage examples
 #: src/ui/dash/settings/ApiTokensContent.tsx

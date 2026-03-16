@@ -18,7 +18,7 @@ const collectionFormMessages = {
   }),
   slugHelp: msg({
     message:
-      "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server.",
+      "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you.",
     comment: "@context: Collection path help text",
   }),
   descriptionLabel: msg({

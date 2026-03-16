@@ -351,6 +351,35 @@ describe("JantComposeDialog", () => {
     expect(actionRow).not.toBeNull();
   });
 
+  it("opens a quick collection dialog from the collection selector", async () => {
+    const el = await createElement();
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
+    );
+
+    trigger.click();
+    await el.updateComplete;
+
+    const addAction = requireElement(
+      el.querySelector<HTMLElement>(".compose-collection-add-action"),
+      "expected add collection action",
+    );
+    addAction.click();
+    await el.updateComplete;
+
+    expect(el.querySelector("[data-collection-quick-dialog]")).not.toBeNull();
+    expect(
+      el.querySelector("[data-collection-quick-dialog] textarea"),
+    ).toBeNull();
+    expect(
+      el.querySelector("[data-collection-quick-dialog] select"),
+    ).toBeNull();
+    expect(
+      el.querySelector("[data-collection-quick-dialog] [data-icon-trigger]"),
+    ).toBeNull();
+  });
+
   it("draft button with content shows confirm panel", async () => {
     const el = await createElement();
     const editor = requireElement(

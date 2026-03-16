@@ -61,6 +61,7 @@ export class JantCollectionForm extends LitElement {
     action: { type: String },
     cancelHref: { type: String, attribute: "cancel-href" },
     isEdit: { type: Boolean, attribute: "is-edit" },
+    variant: { type: String },
 
     _title: { state: true },
     _slug: { state: true },
@@ -83,6 +84,7 @@ export class JantCollectionForm extends LitElement {
   declare action: string;
   declare cancelHref: string;
   declare isEdit: boolean;
+  declare variant: "full" | "quick";
 
   declare _title: string;
   declare _slug: string;
@@ -143,6 +145,7 @@ export class JantCollectionForm extends LitElement {
     this.action = "";
     this.cancelHref = "/";
     this.isEdit = false;
+    this.variant = "full";
 
     this._title = "";
     this._slug = "";
@@ -214,7 +217,7 @@ export class JantCollectionForm extends LitElement {
       this._iconPalette = DEFAULT_ICON_PALETTE;
       this._iconEmoji = "";
       // Default icon in create mode
-      if (!this.isEdit) {
+      if (!this.isEdit && this.variant !== "quick") {
         this.#applyDefaultIcon();
       }
     }
@@ -405,9 +408,14 @@ export class JantCollectionForm extends LitElement {
       data: {
         title,
         slug,
-        description: this._description.trim() || undefined,
-        icon: this.#iconValue || undefined,
-        sortOrder: this._sortOrder || undefined,
+        description:
+          this.variant === "quick"
+            ? undefined
+            : this._description.trim() || undefined,
+        icon:
+          this.variant === "quick" ? undefined : this.#iconValue || undefined,
+        sortOrder:
+          this.variant === "quick" ? undefined : this._sortOrder || undefined,
       },
     };
 
@@ -706,6 +714,8 @@ export class JantCollectionForm extends LitElement {
   }
 
   render() {
+    const isQuick = this.variant === "quick";
+
     return html`
       <form
         class="flex flex-col gap-4 max-w-lg"
@@ -713,11 +723,11 @@ export class JantCollectionForm extends LitElement {
       >
         <div class="field">
           <label class="label">${this.labels.titleLabel}</label>
-          <div class="relative">
-            ${this.#renderInlineIconTrigger()}
+          <div class=${isQuick ? nothing : "relative"}>
+            ${isQuick ? nothing : this.#renderInlineIconTrigger()}
             <input
               type="text"
-              class="input pl-12"
+              class=${isQuick ? "input" : "input pl-12"}
               data-collection-title-input
               required
               .value=${this._title}
@@ -737,7 +747,7 @@ export class JantCollectionForm extends LitElement {
                 }
               }}
             />
-            ${this.#renderIconPopover()}
+            ${isQuick ? nothing : this.#renderIconPopover()}
           </div>
         </div>
 
@@ -762,38 +772,46 @@ export class JantCollectionForm extends LitElement {
               </p>`}
         </div>
 
-        <div class="field">
-          <label class="label">${this.labels.descriptionLabel}</label>
-          <textarea
-            class="textarea"
-            rows="3"
-            .value=${this._description}
-            placeholder=${this.isEdit
-              ? nothing
-              : this.labels.descriptionPlaceholder}
-            @input=${(event: Event) => {
-              const target = event.target as HTMLTextAreaElement;
-              this._description = target.value;
-            }}
-          ></textarea>
-        </div>
+        ${isQuick
+          ? nothing
+          : html`
+              <div class="field">
+                <label class="label">${this.labels.descriptionLabel}</label>
+                <textarea
+                  class="textarea"
+                  rows="3"
+                  .value=${this._description}
+                  placeholder=${this.isEdit
+                    ? nothing
+                    : this.labels.descriptionPlaceholder}
+                  @input=${(event: Event) => {
+                    const target = event.target as HTMLTextAreaElement;
+                    this._description = target.value;
+                  }}
+                ></textarea>
+              </div>
 
-        <div class="field">
-          <label class="label">${this.labels.sortOrderLabel}</label>
-          <select
-            class="select"
-            .value=${this._sortOrder}
-            @change=${(event: Event) => {
-              const target = event.target as HTMLSelectElement;
-              this._sortOrder = target.value;
-            }}
-          >
-            <option value="newest">${this.labels.sortNewest}</option>
-            <option value="oldest">${this.labels.sortOldest}</option>
-            <option value="rating_desc">${this.labels.sortRatingDesc}</option>
-            <option value="rating_asc">${this.labels.sortRatingAsc}</option>
-          </select>
-        </div>
+              <div class="field">
+                <label class="label">${this.labels.sortOrderLabel}</label>
+                <select
+                  class="select"
+                  .value=${this._sortOrder}
+                  @change=${(event: Event) => {
+                    const target = event.target as HTMLSelectElement;
+                    this._sortOrder = target.value;
+                  }}
+                >
+                  <option value="newest">${this.labels.sortNewest}</option>
+                  <option value="oldest">${this.labels.sortOldest}</option>
+                  <option value="rating_desc">
+                    ${this.labels.sortRatingDesc}
+                  </option>
+                  <option value="rating_asc">
+                    ${this.labels.sortRatingAsc}
+                  </option>
+                </select>
+              </div>
+            `}
 
         <div class="flex gap-2">
           <button type="submit" class="btn" ?disabled=${this._loading}>

@@ -32,18 +32,15 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   const { t } = useLingui();
   const iconHtml = renderCollectionIcon(collection.icon, { size: 28 });
   const collectionUrl = toPublicPath(`/c/${collection.slug}`, sitePathPrefix);
+  const editCollectionUrl = toPublicPath(
+    `/c/${collection.slug}/edit?returnTo=${encodeURIComponent(collectionUrl)}`,
+    sitePathPrefix,
+  );
   const sortTriggerId = `collection-sort-trigger-${collection.id}`;
   const sortPopoverId = `collection-sort-popover-${collection.id}`;
   const pageLabel =
     currentPage > 1 ? formatPageLabel(currentPage, totalPages) : null;
   const mutationLabels = getCollectionMutationLabels(t);
-  const formInitial = {
-    title: collection.title,
-    slug: collection.slug,
-    description: collection.description ?? "",
-    sortOrder: collection.sortOrder ?? "newest",
-    icon: collection.icon ?? "",
-  };
   const sortOptions = [
     {
       value: "newest",
@@ -261,14 +258,13 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                   data-collection-page-menu
                   hidden
                 >
-                  <button
-                    type="button"
+                  <a
+                    href={editCollectionUrl}
                     class="collections-page-menu-item"
                     role="menuitem"
-                    data-collection-page-action="edit"
                   >
                     {mutationLabels.edit}
-                  </button>
+                  </a>
                   <button
                     type="button"
                     class="collections-page-menu-item collections-page-menu-item-danger"
@@ -278,19 +274,6 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                     {mutationLabels.deleteCollection}
                   </button>
                 </div>
-
-                <dialog
-                  class="collection-page-dialog"
-                  data-collection-page-dialog
-                >
-                  <jant-collection-form
-                    labels={escapeJson(mutationLabels.formLabels)}
-                    initial={escapeJson(formInitial)}
-                    action={`/api/collections/${collection.id}`}
-                    cancel-href="javascript:void(0)"
-                    is-edit
-                  ></jant-collection-form>
-                </dialog>
               </div>
             ) : null}
           </div>

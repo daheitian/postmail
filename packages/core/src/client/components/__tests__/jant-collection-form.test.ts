@@ -186,6 +186,48 @@ describe("JantCollectionForm", () => {
     expect(d.data.icon).toContain('"palette":"stone"');
   });
 
+  it("renders a quick variant with only title and slug fields", async () => {
+    const el = await createElement({
+      variant: "quick",
+    });
+
+    expect(el.querySelector("[data-icon-trigger]")).toBeNull();
+    expect(el.querySelector("textarea")).toBeNull();
+    expect(el.querySelector("select")).toBeNull();
+  });
+
+  it("submits only title and slug in quick variant", async () => {
+    const el = await createElement({
+      variant: "quick",
+    });
+
+    const titleInput = el.querySelectorAll<HTMLInputElement>("input")[0];
+    const slugInput = el.querySelectorAll<HTMLInputElement>("input")[1];
+
+    titleInput.value = "Reading";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    slugInput.value = "reading";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+    let detail: CollectionSubmitDetail | null = null;
+    el.addEventListener("jant:collection-submit", (event) => {
+      const customEvent = event as CustomEvent<CollectionSubmitDetail>;
+      detail = customEvent.detail;
+    });
+
+    el.querySelector("form")?.dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
+
+    expect(detail).not.toBeNull();
+    const d = detail as unknown as CollectionSubmitDetail;
+    expect(d.data.title).toBe("Reading");
+    expect(d.data.slug).toBe("reading");
+    expect(d.data.description).toBeUndefined();
+    expect(d.data.icon).toBeUndefined();
+    expect(d.data.sortOrder).toBeUndefined();
+  });
+
   it("shows the curated icon catalog by default", async () => {
     const el = await createElement();
 

@@ -16,7 +16,7 @@ function createMarkup() {
     <div
       data-collection-page-actions
       data-collection-id="collection-1"
-      data-collection-page-labels='{"edit":"Edit","moreActions":"More actions","deleteCollection":"Delete","confirmDelete":"Delete this collection permanently? Posts inside won\\u0027t be removed.","cancel":"Cancel","saved":"Saved","saveFailed":"Couldn\\u0027t save. Try again in a moment.","deleted":"Deleted"}'
+      data-collection-page-labels='{"edit":"Edit","moreActions":"More actions","deleteCollection":"Delete","confirmDelete":"Delete this collection permanently? Posts inside won\\u0027t be removed.","cancel":"Cancel","saveFailed":"Couldn\\u0027t save. Try again in a moment.","deleted":"Deleted"}'
       data-collection-page-redirect-url="/c"
     >
       <button
@@ -27,9 +27,9 @@ function createMarkup() {
         More actions
       </button>
       <div data-collection-page-menu hidden>
-        <button type="button" role="menuitem" data-collection-page-action="edit">
+        <a href="/c/original-slug/edit?returnTo=%2Fc%2Foriginal-slug" role="menuitem">
           Edit
-        </button>
+        </a>
         <button
           type="button"
           role="menuitem"
@@ -38,10 +38,6 @@ function createMarkup() {
           Delete
         </button>
       </div>
-      <dialog data-collection-page-dialog>
-        <input data-collection-title-input />
-        <jant-collection-form></jant-collection-form>
-      </dialog>
     </div>
   `;
 }
@@ -51,91 +47,27 @@ describe("collection detail page actions", () => {
     vi.resetModules();
     vi.clearAllMocks();
     window.location.href = "http://localhost/c/original-slug";
-
-    Object.defineProperty(HTMLDialogElement.prototype, "open", {
-      configurable: true,
-      get(this: HTMLDialogElement) {
-        return this.hasAttribute("open");
-      },
-      set(this: HTMLDialogElement, value: boolean) {
-        if (value) {
-          this.setAttribute("open", "");
-        } else {
-          this.removeAttribute("open");
-        }
-      },
-    });
-
-    Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
-      configurable: true,
-      value(this: HTMLDialogElement) {
-        this.open = true;
-      },
-    });
-
-    Object.defineProperty(HTMLDialogElement.prototype, "close", {
-      configurable: true,
-      value(this: HTMLDialogElement) {
-        this.open = false;
-      },
-    });
   });
 
-  it("opens the edit dialog and updates the collection", async () => {
+  it("toggles the action menu from the trigger", async () => {
     createMarkup();
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ slug: "updated-slug" }),
-    });
-    vi.stubGlobal("fetch", fetchMock);
-
-    const { showToast } = await import("../toast.js");
     await import("../collection-page-actions.js");
 
     const trigger = document.querySelector<HTMLElement>(
       "[data-collection-page-action='toggle-menu']",
     );
-    const editButton = document.querySelector<HTMLElement>(
-      "[data-collection-page-action='edit']",
+    const menu = document.querySelector<HTMLElement>(
+      "[data-collection-page-menu]",
     );
-    const dialog = document.querySelector<HTMLDialogElement>(
-      "[data-collection-page-dialog]",
-    );
-    const form = document.querySelector("jant-collection-form");
+
+    expect(menu?.hidden).toBe(true);
+    trigger?.click();
+    expect(menu?.hidden).toBe(false);
+    expect(trigger?.getAttribute("aria-expanded")).toBe("true");
 
     trigger?.click();
-    editButton?.click();
-    expect(dialog?.hasAttribute("open")).toBe(true);
-
-    form?.dispatchEvent(
-      new CustomEvent("jant:collection-submit", {
-        bubbles: true,
-        detail: {
-          endpoint: "/api/collections/collection-1",
-          isEdit: true,
-          data: {
-            title: "Updated",
-            slug: "updated-slug",
-          },
-        },
-      }),
-    );
-
-    await Promise.resolve();
-    await Promise.resolve();
-
-    expect(fetchMock).toHaveBeenCalledWith("/api/collections/collection-1", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: "Updated",
-        slug: "updated-slug",
-      }),
-    });
-    expect(showToast).toHaveBeenCalledWith("Saved");
-    expect(dialog?.hasAttribute("open")).toBe(false);
-    expect(window.location.pathname).toBe("/c/updated-slug");
+    expect(menu?.hidden).toBe(true);
+    expect(trigger?.getAttribute("aria-expanded")).toBe("false");
   });
 
   it("deletes the collection and redirects back to the collections page", async () => {

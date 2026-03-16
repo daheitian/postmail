@@ -881,20 +881,37 @@
     cursor: pointer;
   }
 
-  .collection-page-dialog {
-    width: min(100%, 32rem);
-    max-width: 32rem;
-    margin: auto;
+  .collection-editor-shell {
+    max-width: 42rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .collection-editor-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .collection-editor-title {
+    font-size: clamp(1.7rem, 4vw, 2.25rem);
+    font-weight: 600;
+    line-height: 1.08;
+  }
+
+  .collection-editor-card {
     border: 1px solid var(--border);
-    border-radius: 1rem;
+    border-radius: 1.1rem;
     background: var(--background);
     color: var(--foreground);
     padding: 1.5rem;
     box-shadow: 0 20px 40px -28px rgba(15, 23, 42, 0.26);
   }
 
-  .collection-page-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.5);
+  .collection-editor-card jant-collection-form form {
+    max-width: none;
   }
 
   .collection-sort-menu {
@@ -2003,58 +2020,47 @@
     color: var(--site-text-primary);
   }
 
-  /* --- Add Collection Panel (replaces picker when creating new collection) --- */
+  /* --- Collection Quick Dialog -------------------------------------------- */
 
-  .post-menu-add-collection-panel {
-    min-width: 300px;
+  .collection-quick-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    background: rgba(0, 0, 0, 0.45);
   }
 
-  .post-menu-panel-back {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    padding: 2px;
-    cursor: pointer;
-    color: var(--site-text-secondary);
-    border-radius: 4px;
-    transition: color 0.15s ease;
-  }
-
-  .post-menu-panel-back:hover {
-    color: var(--site-text-primary);
-  }
-
-  .post-menu-panel-done {
-    margin-left: auto;
-    font-size: var(--text-sm);
-    font-weight: var(--fw-medium);
-    color: var(--site-text-primary);
-    border: none;
-    background: transparent;
-    padding: 4px 8px;
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background-color 0.15s ease;
-  }
-
-  .post-menu-panel-done:hover {
-    background-color: var(--site-nav-hover-bg);
-  }
-
-  .post-menu-panel-body {
-    max-height: 420px;
+  .collection-quick-dialog {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 121;
+    width: min(calc(100vw - 2rem), 26rem);
+    max-height: calc(100dvh - 2rem);
+    transform: translate(-50%, -50%);
     overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 1.1rem;
+    background: var(--background);
+    color: var(--foreground);
+    box-shadow: 0 24px 60px -36px rgba(15, 23, 42, 0.38);
   }
 
-  .post-menu-collection-form form {
-    padding: 8px 12px;
+  .collection-quick-dialog-header {
+    padding: 1rem 1rem 0.35rem;
   }
 
-  /* Hide the form's built-in submit/cancel row — header has Done button */
-  .post-menu-collection-form form > :last-child:not(.field) {
-    display: none !important;
+  .collection-quick-dialog-title {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .collection-quick-dialog-body {
+    padding: 0 1rem 1rem;
+  }
+
+  .collection-quick-dialog jant-collection-form form {
+    max-width: none;
   }
 
   /* =========================================================================
@@ -2315,9 +2321,7 @@
       padding-inline: 0;
     }
 
-    .compose-page-shell
-      .compose-dialog-inner-page
-      .compose-add-collection-panel,
+    .compose-page-shell .compose-dialog-inner-page .collection-quick-dialog,
     .compose-page-shell .compose-dialog-inner-page .compose-confirm-panel {
       border-radius: 12px;
     }
@@ -2512,13 +2516,8 @@
       padding-left: calc(10px + env(safe-area-inset-left));
     }
 
-    .compose-add-collection-panel,
     .compose-confirm-panel {
       border-radius: 0;
-    }
-
-    .compose-add-collection-panel {
-      max-height: 100dvh;
     }
   }
 
@@ -3028,30 +3027,6 @@
 
   .compose-collection-add-action:hover {
     color: var(--site-text-primary);
-  }
-
-  .compose-add-collection-panel {
-    position: absolute;
-    inset: 0;
-    z-index: 50;
-    background-color: var(--site-elevated-bg);
-    display: flex;
-    flex-direction: column;
-    border-radius: 10px;
-    animation: compose-fade-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-    /* Size to fit the collection form — not constrained by compose-dialog-inner */
-    min-height: 480px;
-    max-height: calc(100dvh - var(--compose-margin-top) - 20px);
-  }
-
-  .compose-add-collection-form form {
-    padding: 16px;
-  }
-
-  /* Hide the form's built-in submit/cancel row — header has Done button.
-     !important needed to override Tailwind utility-layer `flex` on the element. */
-  .compose-add-collection-form form > :last-child:not(.field) {
-    display: none !important;
   }
 
   .compose-post-btn {

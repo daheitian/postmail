@@ -205,6 +205,18 @@ export class JantComposeDialog extends LitElement {
     if (this._initialSnapshot === null && this._editor) {
       this._captureInitialSnapshot();
     }
+    if (
+      changed.has("_addCollectionPanelOpen") &&
+      this._addCollectionPanelOpen
+    ) {
+      this.updateComplete.then(() => {
+        const titleInput = this.querySelector<HTMLInputElement>(
+          "[data-collection-quick-dialog] [data-collection-title-input]",
+        );
+        titleInput?.focus();
+        titleInput?.select();
+      });
+    }
     if (changed.has("_format") || changed.has("_collectionIds")) {
       // Schedule draft auto-save for new-post mode only
       if (!this._editPostId && !this._draftSourceId) {
@@ -1746,7 +1758,7 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
-  // ── Add Collection panel ────────────────────────────────────────
+  // ── Add Collection dialog ───────────────────────────────────────
 
   private async _handleAddCollectionSubmit(e: Event) {
     const event = e as CustomEvent<CollectionSubmitDetail>;
@@ -1766,22 +1778,38 @@ export class JantComposeDialog extends LitElement {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(detail.data),
       });
+      const created = (await res.json().catch(() => null)) as {
+        id: string;
+        title: string;
+        icon?: string | null;
+        error?: string;
+      } | null;
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const created = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          created?.error || "Couldn't create collection. Try again.",
+        );
+      }
+      if (!created?.id || !created.title) {
+        throw new Error("Couldn't create collection. Try again.");
+      }
       const newCollection: ComposeCollection = {
         id: created.id,
         title: created.title,
-        iconHtml: renderCollectionIcon(created.icon, { size: 16 }),
+        iconHtml: renderCollectionIcon(created.icon ?? null, { size: 16 }),
       };
 
       this.collections = [...this.collections, newCollection];
       this._collectionIds = [...this._collectionIds, created.id];
       this._addCollectionPanelOpen = false;
       showToast(this.labels.collectionFormLabels.submitLabel);
-    } catch {
-      showToast("Failed to create collection. Try again.", "error");
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Couldn't create collection. Try again.",
+        "error",
+      );
     } finally {
       if (formEl) formEl.loading = false;
     }
@@ -1789,7 +1817,7 @@ export class JantComposeDialog extends LitElement {
 
   private _submitAddCollectionForm() {
     const form = this.querySelector<HTMLFormElement>(
-      ".compose-add-collection-panel form",
+      "[data-collection-quick-dialog] form",
     );
     if (form) form.requestSubmit();
   }
@@ -1806,35 +1834,41 @@ export class JantComposeDialog extends LitElement {
     };
 
     return html`
-      <div class="compose-add-collection-panel">
-        <div class="compose-alt-header">
-          <button
-            type="button"
-            class="compose-attached-cancel"
-            @click=${() => {
-              this._addCollectionPanelOpen = false;
-            }}
-          >
-            ${this.labels.cancel}
-          </button>
-          <span class="compose-alt-title">${this.labels.addCollection}</span>
-          <button
-            type="button"
-            class="compose-post-btn ml-auto"
-            @click=${() => this._submitAddCollectionForm()}
-          >
-            ${this.labels.done}
-          </button>
+      <div
+        class="collection-quick-dialog-backdrop"
+        @click=${() => {
+          this._addCollectionPanelOpen = false;
+        }}
+      ></div>
+      <div
+        class="collection-quick-dialog"
+        data-collection-quick-dialog
+        role="dialog"
+        aria-modal="true"
+        aria-label=${this.labels.addCollection}
+      >
+        <div class="collection-quick-dialog-header">
+          <h2 class="collection-quick-dialog-title">
+            ${this.labels.addCollection}
+          </h2>
         </div>
-        <div class="flex-1 overflow-y-auto">
+        <div class="collection-quick-dialog-body">
           <jant-collection-form
-            class="compose-add-collection-form"
+            variant="quick"
             .labels=${this.labels.collectionFormLabels}
             .initial=${initial}
             action=${publicPath("/api/collections")}
             cancel-href="javascript:void(0)"
             @jant:collection-submit=${(e: Event) =>
               this._handleAddCollectionSubmit(e)}
+            @click=${(e: Event) => {
+              const target = (e.target as HTMLElement).closest?.(
+                "a.btn-outline",
+              );
+              if (!target) return;
+              e.preventDefault();
+              this._addCollectionPanelOpen = false;
+            }}
           ></jant-collection-form>
         </div>
       </div>

@@ -153,6 +153,10 @@ export class JantPostMenu extends LitElement {
   #handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
     if (ke.key === "Escape") {
+      if (this._addCollectionPanelOpen) {
+        this._addCollectionPanelOpen = false;
+        return;
+      }
       // Close collection popovers first
       const openPopover = document.querySelector(
         "[data-collection-popover].open",
@@ -188,6 +192,14 @@ export class JantPostMenu extends LitElement {
 
     // Click inside a collection popover — don't close it
     if (target.closest("[data-collection-popover]")) {
+      return;
+    }
+
+    // Click inside the quick-create dialog — don't close the menu session
+    if (
+      target.closest("[data-collection-quick-dialog]") ||
+      target.classList.contains("collection-quick-dialog-backdrop")
+    ) {
       return;
     }
 
@@ -505,6 +517,13 @@ export class JantPostMenu extends LitElement {
 
   #openAddCollectionPanel() {
     this._addCollectionPanelOpen = true;
+    this.updateComplete.then(() => {
+      const titleInput = this.querySelector<HTMLInputElement>(
+        "[data-collection-quick-dialog] [data-collection-title-input]",
+      );
+      titleInput?.focus();
+      titleInput?.select();
+    });
   }
 
   #closeAddCollectionPanel() {
@@ -529,10 +548,22 @@ export class JantPostMenu extends LitElement {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(detail.data),
       });
+      const created = (await res.json().catch(() => null)) as {
+        id: string;
+        title: string;
+        slug: string;
+        icon?: string | null;
+        error?: string;
+      } | null;
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      const created = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          created?.error || "Could not create collection. Try again.",
+        );
+      }
+      if (!created?.id || !created.title || !created.slug) {
+        throw new Error("Could not create collection. Try again.");
+      }
       const newItem: CollectionItem = {
         id: created.id,
         title: created.title,
@@ -555,18 +586,16 @@ export class JantPostMenu extends LitElement {
       this.#collectionsDirty = true;
       this._addCollectionPanelOpen = false;
       showToast("Collection created.");
-    } catch {
-      showToast("Could not create collection. Try again.", "error");
+    } catch (error) {
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Could not create collection. Try again.",
+        "error",
+      );
     } finally {
       if (formEl) formEl.loading = false;
     }
-  }
-
-  #submitAddCollectionForm() {
-    const form = this.querySelector<HTMLFormElement>(
-      ".post-menu-add-collection-panel form",
-    );
-    if (form) form.requestSubmit();
   }
 
   /** Get collection form labels from the compose dialog (already on the page) */
@@ -575,6 +604,13 @@ export class JantPostMenu extends LitElement {
       | import("./jant-compose-dialog.js").JantComposeDialog
       | null;
     return composeEl?.labels?.collectionFormLabels ?? null;
+  }
+
+  #getAddCollectionLabel() {
+    const composeEl = document.querySelector("jant-compose-dialog") as
+      | import("./jant-compose-dialog.js").JantComposeDialog
+      | null;
+    return composeEl?.labels?.addCollection ?? "Add Collection";
   }
 
   // --- Icons (inline SVG) ---
@@ -774,10 +810,6 @@ export class JantPostMenu extends LitElement {
   // --- Render ---
 
   #renderCollectionPicker() {
-    if (this._addCollectionPanelOpen) {
-      return this.#renderAddCollectionPanel();
-    }
-
     const collections = this._collections ?? [];
     const search = this._collectionSearch.toLowerCase();
     const filtered = search
@@ -899,44 +931,39 @@ export class JantPostMenu extends LitElement {
     };
 
     return html`
-      <div data-collection-picker class="post-menu-add-collection-panel">
-        <div class="post-menu-picker-header">
-          <button
-            type="button"
-            class="post-menu-panel-back"
-            @click=${() => this.#closeAddCollectionPanel()}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-          <span>Add Collection</span>
-          <button
-            type="button"
-            class="post-menu-panel-done"
-            @click=${() => this.#submitAddCollectionForm()}
-          >
-            Done
-          </button>
+      <div
+        class="collection-quick-dialog-backdrop"
+        @click=${() => this.#closeAddCollectionPanel()}
+      ></div>
+      <div
+        class="collection-quick-dialog"
+        data-collection-quick-dialog
+        role="dialog"
+        aria-modal="true"
+        aria-label=${this.#getAddCollectionLabel()}
+      >
+        <div class="collection-quick-dialog-header">
+          <h2 class="collection-quick-dialog-title">
+            ${this.#getAddCollectionLabel()}
+          </h2>
         </div>
-        <div class="post-menu-panel-body">
+        <div class="collection-quick-dialog-body">
           <jant-collection-form
-            class="post-menu-collection-form"
+            variant="quick"
             .labels=${labels}
             .initial=${initial}
             action=${publicPath("/api/collections")}
             cancel-href="javascript:void(0)"
             @jant:collection-submit=${(e: Event) =>
               this.#handleAddCollectionSubmit(e)}
+            @click=${(e: Event) => {
+              const target = (e.target as HTMLElement).closest?.(
+                "a.btn-outline",
+              );
+              if (!target) return;
+              e.preventDefault();
+              this.#closeAddCollectionPanel();
+            }}
           ></jant-collection-form>
         </div>
       </div>
@@ -1043,6 +1070,9 @@ export class JantPostMenu extends LitElement {
             : this.#renderMenu()}
         </div>
       </div>
+      ${this._addCollectionPanelOpen
+        ? this.#renderAddCollectionPanel()
+        : nothing}
     `;
   }
 }

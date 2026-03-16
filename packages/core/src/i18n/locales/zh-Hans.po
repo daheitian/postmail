@@ -391,6 +391,8 @@ msgid "Brand note"
 msgstr ""
 
 #. @context: Breadcrumb label on collection detail page
+#. @context: Breadcrumb label on collection editor page
+#: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/pages/CollectionPage.tsx
 msgid "Breadcrumb"
 msgstr ""
@@ -497,9 +499,11 @@ msgid "collections"
 msgstr "个合集"
 
 #. @context: Breadcrumb link to collections page
+#. @context: Breadcrumb link to collections page
 #. @context: Collections page heading
 #. @context: Collections page heading
 #. @context: Inactive nav link label on sample page
+#: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -929,7 +933,11 @@ msgstr "例如 iOS Shortcuts"
 
 #. @context: Button to edit item
 #. @context: Per-collection edit action
+#. @context: Per-collection edit action
+#. @context: Per-collection edit action
 #: src/ui/dash/ActionButtons.tsx
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/shared/collection-management-labels.ts
 msgid "Edit"
 msgstr "编辑"
@@ -1462,6 +1470,10 @@ msgid "Navigation Preview"
 msgstr "导航预览"
 
 #. @context: Button to create a collection from collections page
+#. @context: Page title for new collection
+#. @context: Page title for new collection
+#: src/ui/pages/CollectionEditorPage.tsx
+#: src/ui/pages/CollectionEditorPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "New Collection"
 msgstr "新建收藏夹"
@@ -2363,6 +2375,11 @@ msgstr "这些设备当前已登录到您的账户。撤销任何您不认识的
 msgid "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
 msgstr "这篇文章想回答一个具体问题：当默认强调色要撑起一整段阅读体验时，它是否依然足够平静？"
 
+#. @context: Collection path help text
+#: src/ui/shared/collection-management-labels.ts
+msgid "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you."
+msgstr "这会成为收藏夹链接的一部分。如果标题用了中文、日文或韩文，我们会自动帮你生成。"
+
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
@@ -2557,11 +2574,6 @@ msgstr "上传中..."
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "URL"
 msgstr "URL"
-
-#. @context: Collection path help text
-#: src/ui/shared/collection-management-labels.ts
-msgid "URL-safe identifier (lowercase, numbers, hyphens). For CJK titles, slug will be auto-generated on the server."
-msgstr ""
 
 #. @context: Heading for API token usage examples
 #: src/ui/dash/settings/ApiTokensContent.tsx
