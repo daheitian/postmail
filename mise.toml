@@ -202,6 +202,7 @@ npx lingui-po-translate \
   --targetFile=packages/core/src/i18n/locales/zh-Hans.po \
   --targetLng=zh-Hans \
   --targetFormat=po \
+  --glossaryFile=packages/core/src/i18n/locales/glossary.zh-Hans.yml \
   --service=openai \
   --serviceConfig="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
   --baseUrl="${CUSTOM_OPENAI_BASE_URL:-https://api.openai.com/v1}"
@@ -219,6 +220,7 @@ npx lingui-po-translate \
   --targetFile=packages/core/src/i18n/locales/zh-Hant.po \
   --targetLng=zh-Hant \
   --targetFormat=po \
+  --glossaryFile=packages/core/src/i18n/locales/glossary.zh-Hant.yml \
   --service=openai \
   --serviceConfig="${CUSTOM_OPENAI_API_KEY:-$OPENAI_API_KEY}" \
   --baseUrl="${CUSTOM_OPENAI_BASE_URL:-https://api.openai.com/v1}" \
