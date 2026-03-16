@@ -2,17 +2,20 @@
  * Shared type definitions for the nav manager Lit component.
  */
 
+import type { SystemNavKey } from "../../types/constants.js";
+
 export interface NavManagerItem {
   id: string;
   type: "link" | "system";
+  systemKey?: SystemNavKey;
   label: string;
+  displayLabel?: string;
   url: string;
 }
 
 export interface SystemNavConfig {
-  key: string;
-  defaultLabel: string;
-  url: string;
+  key: SystemNavKey;
+  label: string;
   description: string;
 }
 

@@ -10,16 +10,11 @@ import type {
   SystemNavConfig,
 } from "../../../client/components/nav-manager-types.js";
 import { toPublicHref, toPublicPath } from "../../../lib/url.js";
-// =============================================================================
-// System descriptions (used to build the config passed to the Lit component)
-// =============================================================================
-
-const SYSTEM_DESCRIPTIONS: Record<SystemNavKey, string> = {
-  rss: "Add a link to your RSS feed",
-  settings: "Shows 'Settings' when logged in, 'Sign in' when logged out",
-  collections: "Link to your collections page",
-  archive: "Link to the post archive",
-};
+import {
+  getNavItemDisplayLabel,
+  getSystemNavDescription,
+  getSystemNavDisplayLabel,
+} from "../../shared/navigation-labels.js";
 
 // =============================================================================
 // Main component
@@ -44,7 +39,9 @@ export function NavigationContent({
   const itemsData = navItems.map((item) => ({
     id: item.id,
     type: item.type,
+    systemKey: item.systemKey,
     label: item.label,
+    displayLabel: getNavItemDisplayLabel(item, t, sitePathPrefix),
     url: item.url,
   }));
 
@@ -53,9 +50,8 @@ export function NavigationContent({
     Object.keys(SYSTEM_NAV_KEYS) as SystemNavKey[]
   ).map((key) => ({
     key,
-    defaultLabel: SYSTEM_NAV_KEYS[key].defaultLabel,
-    url: SYSTEM_NAV_KEYS[key].url,
-    description: SYSTEM_DESCRIPTIONS[key],
+    label: getSystemNavDisplayLabel(key, t),
+    description: getSystemNavDescription(key, t),
   }));
 
   const labels: NavManagerLabels = {
@@ -219,7 +215,7 @@ export function NavigationContent({
                         href={toPublicHref(item.url, sitePathPrefix)}
                         class="site-header-link"
                       >
-                        {item.label}
+                        {getNavItemDisplayLabel(item, t, sitePathPrefix)}
                       </a>
                     ))}
                     {navItems.length > headerNavMaxVisible && (

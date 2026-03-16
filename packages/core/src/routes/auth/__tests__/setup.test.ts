@@ -17,24 +17,20 @@ async function runSetupSeed(services: {
   await services.settings.completeOnboarding();
 
   await services.navItems.create({
-    type: "link",
-    label: "Collections",
-    url: "/c",
-  });
-  await services.navItems.create({
-    type: "link",
-    label: "Archive",
-    url: "/archive",
+    type: "system",
+    systemKey: "collections",
   });
   await services.navItems.create({
     type: "system",
-    label: "RSS",
-    url: "/feed",
+    systemKey: "archive",
   });
   await services.navItems.create({
     type: "system",
-    label: "Settings",
-    url: "/settings",
+    systemKey: "rss",
+  });
+  await services.navItems.create({
+    type: "system",
+    systemKey: "settings",
   });
 }
 
@@ -59,21 +55,20 @@ describe("Setup seed logic", () => {
     const navItemsList = await services.navItems.list();
     expect(navItemsList).toHaveLength(4);
 
-    const labels = navItemsList.map((item) => item.label);
-    expect(labels).toContain("Collections");
-    expect(labels).toContain("Archive");
-    expect(labels).toContain("RSS");
-    expect(labels).toContain("Settings");
+    expect(navItemsList.map((item) => item.systemKey)).toEqual([
+      "collections",
+      "archive",
+      "rss",
+      "settings",
+    ]);
   });
 
-  it("creates link and system type nav items", async () => {
+  it("creates system type nav items", async () => {
     await runSetupSeed(services);
 
     const navItemsList = await services.navItems.list();
-    const linkItems = navItemsList.filter((item) => item.type === "link");
     const systemItems = navItemsList.filter((item) => item.type === "system");
 
-    expect(linkItems).toHaveLength(2);
-    expect(systemItems).toHaveLength(2);
+    expect(systemItems).toHaveLength(4);
   });
 });

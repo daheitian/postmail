@@ -99,6 +99,7 @@ function makeNavItem(overrides: Partial<NavItem> = {}): NavItem {
   return {
     id: UUID_NAV_1,
     type: "link",
+    systemKey: undefined,
     label: "Home",
     url: "/",
     position: "a0",
@@ -497,8 +498,46 @@ describe("toNavItemView", () => {
   });
 
   it("includes type in view", () => {
-    const view = toNavItemView(makeNavItem({ type: "system" }), "/");
+    const view = toNavItemView(
+      makeNavItem({ type: "system", systemKey: "rss", url: "/feed" }),
+      "/",
+    );
     expect(view.type).toBe("system");
+    expect(view.systemKey).toBe("rss");
+  });
+
+  it("resolves the settings system item to sign in when logged out", () => {
+    const view = toNavItemView(
+      makeNavItem({
+        type: "system",
+        systemKey: "settings",
+        label: "Settings",
+        url: "/settings",
+      }),
+      "/signin",
+      false,
+    );
+
+    expect(view.label).toBe("Sign in");
+    expect(view.url).toBe("/signin");
+    expect(view.isActive).toBe(true);
+  });
+
+  it("keeps the settings system item pointed at settings when logged in", () => {
+    const view = toNavItemView(
+      makeNavItem({
+        type: "system",
+        systemKey: "settings",
+        label: "Settings",
+        url: "/settings",
+      }),
+      "/settings",
+      true,
+    );
+
+    expect(view.label).toBe("Settings");
+    expect(view.url).toBe("/settings");
+    expect(view.isActive).toBe(true);
   });
 });
 

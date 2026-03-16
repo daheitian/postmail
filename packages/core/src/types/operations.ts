@@ -7,7 +7,7 @@ import type {
   Status,
   Visibility,
   SortOrder,
-  NavItemType,
+  SystemNavKey,
 } from "./constants.js";
 
 export interface CreatePost {
@@ -48,15 +48,20 @@ export interface UpdatePost {
   mediaIds?: string[];
 }
 
-export interface CreateNavItem {
-  type: NavItemType;
-  label: string;
-  url: string;
-  position?: string;
-}
+export type CreateNavItem =
+  | {
+      type: "link";
+      label: string;
+      url: string;
+      position?: string;
+    }
+  | {
+      type: "system";
+      systemKey: SystemNavKey;
+      position?: string;
+    };
 
 export interface UpdateNavItem {
-  type?: NavItemType;
   label?: string;
   url?: string;
   position?: string;
