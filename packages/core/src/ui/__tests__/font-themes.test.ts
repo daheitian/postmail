@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   BUILTIN_FONT_THEMES,
+  DEFAULT_FONT_CJK_SERIF_FALLBACK,
+  getCjkSerifCssVariables,
   getFontThemeCssVariables,
 } from "../font-themes.js";
 
@@ -85,5 +87,36 @@ describe("BUILTIN_FONT_THEMES", () => {
     expect(variables["--font-body"]).toBe(theme.bodyFontFamily);
     expect(variables["--font-heading"]).toBe(theme.headingFontFamily);
     expect(variables["--type-display-tracking"]).toBe("-0.06em");
+  });
+
+  it("routes zh-Hans sites to the simplified CJK serif fallback first", () => {
+    const variables = getCjkSerifCssVariables("zh-Hans");
+    const stack = variables["--font-cjk-serif-fallback"];
+
+    expect(stack).toContain('"Songti SC"');
+    expect(stack).toContain('"Noto Serif SC"');
+    expect(stack.indexOf('"Songti SC"')).toBeLessThan(
+      stack.indexOf('"Noto Serif SC"'),
+    );
+  });
+
+  it("routes zh-Hant sites to the traditional CJK serif fallback first", () => {
+    const variables = getCjkSerifCssVariables("zh-Hant");
+    const stack = variables["--font-cjk-serif-fallback"];
+
+    expect(stack).toContain('"Songti TC"');
+    expect(stack).toContain('"Noto Serif TC"');
+    expect(stack.indexOf('"Songti TC"')).toBeLessThan(
+      stack.indexOf('"Noto Serif TC"'),
+    );
+  });
+
+  it("does not inject a runtime override for non-Chinese sites", () => {
+    expect(getCjkSerifCssVariables("en")).toEqual({});
+  });
+
+  it("keeps a default CJK serif fallback for the base tokens", () => {
+    expect(DEFAULT_FONT_CJK_SERIF_FALLBACK).toContain('"Songti SC"');
+    expect(DEFAULT_FONT_CJK_SERIF_FALLBACK).toContain('"Noto Serif SC"');
   });
 });

@@ -29,17 +29,28 @@ export interface FontTheme {
   description: MessageDescriptor;
 }
 
+const HANS_SITE_LANGUAGES = new Set(["zh-hans", "zh-cn", "zh-sg"]);
+const HANT_SITE_LANGUAGES = new Set(["zh-hant", "zh-tw", "zh-hk", "zh-mo"]);
+
+const DEFAULT_CJK_SERIF_FALLBACK =
+  '"Songti SC", STSong, SimSun, "Songti TC", PMingLiU, MingLiU, "Noto Serif SC", "Noto Serif CJK SC", "Noto Serif TC", "Noto Serif CJK TC"';
+const HANS_CJK_SERIF_FALLBACK =
+  '"Songti SC", STSong, SimSun, "Noto Serif SC", "Noto Serif CJK SC", "Songti TC", PMingLiU, MingLiU, "Noto Serif TC", "Noto Serif CJK TC"';
+const HANT_CJK_SERIF_FALLBACK =
+  '"Songti TC", PMingLiU, MingLiU, "Noto Serif TC", "Noto Serif CJK TC", "Songti SC", STSong, SimSun, "Noto Serif SC", "Noto Serif CJK SC"';
+const CJK_SERIF_FALLBACK_VAR = "var(--font-cjk-serif-fallback)";
+
 /** System sans-serif stack */
 const SANS =
-  'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+  'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC", "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei", "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif';
 
 /** Humanist sans stack with self-hosted Latin and system CJK fallback */
 const HUMANIST_SANS =
-  '"Source Sans 3 Variable", "Source Sans 3", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+  '"Source Sans 3 Variable", "Source Sans 3", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC", "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei", "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif';
 
 /** Narrower newsroom sans for headlines and labels */
 const NEWSROOM_SANS =
-  '"News Cycle", "Franklin Gothic Medium", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+  '"News Cycle", "Franklin Gothic Medium", "Arial Narrow", "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC", "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei", "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif';
 
 /**
  * Editorial serif stack
@@ -47,16 +58,13 @@ const NEWSROOM_SANS =
  * ui-serif → New York (macOS 10.15+); Iowan Old Style (macOS/iOS);
  * Charter (macOS); Cambria / Sitka Text (Windows); Georgia (universal)
  */
-const EDITORIAL_SERIF =
-  'ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", "Noto Serif SC", serif';
+const EDITORIAL_SERIF = `"New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia, ${CJK_SERIF_FALLBACK_VAR}, ui-serif, serif`;
 
 /** Refined newsroom serif with self-hosted Latin text */
-const NEWSROOM_SERIF =
-  '"Newsreader Variable", Newsreader, ui-serif, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", Cambria, "Sitka Text", Georgia, "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", "Noto Serif SC", serif';
+const NEWSROOM_SERIF = `"Newsreader Variable", Newsreader, "New York Small", "New York", "Iowan Old Style", Charter, "Bitstream Charter", Cambria, "Sitka Text", Georgia, ${CJK_SERIF_FALLBACK_VAR}, ui-serif, serif`;
 
 /** Library serif with self-hosted Latin text and CJK serif fallback */
-const LITERARY_SERIF =
-  '"Literata Variable", Literata, Palatino, "Palatino Linotype", "Book Antiqua", "Source Serif 4", "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", "Noto Serif SC", serif';
+const LITERARY_SERIF = `"Literata Variable", Literata, Palatino, "Palatino Linotype", "Book Antiqua", "Source Serif 4", ${CJK_SERIF_FALLBACK_VAR}, ui-serif, serif`;
 
 /**
  * Geometric sans stack
@@ -64,7 +72,7 @@ const LITERARY_SERIF =
  * Futura (macOS); Century Gothic (Windows); clean geometric proportions
  */
 const GEOMETRIC_SANS =
-  '"Avenir Next", Avenir, Futura, "Century Gothic", Montserrat, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif';
+  '"Avenir Next", Avenir, Futura, "Century Gothic", Montserrat, "Noto Sans", "PingFang TC", "PingFang SC", "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei", "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif';
 
 /**
  * Resolve all CSS variables a font theme contributes.
@@ -87,6 +95,40 @@ export function getFontThemeCssVariables(
     ...(theme.cssVariables ?? {}),
   };
 }
+
+/**
+ * Resolve runtime CJK serif fallbacks for the current site language.
+ *
+ * @param siteLanguage - Resolved site language from config
+ * @returns CSS variable overrides for zh-Hans/zh-Hant sites
+ *
+ * @example
+ * ```typescript
+ * const vars = getCjkSerifCssVariables("zh-Hans");
+ * // => { "--font-cjk-serif-fallback": '"Songti SC", ...' }
+ * ```
+ */
+export function getCjkSerifCssVariables(
+  siteLanguage?: string,
+): Record<string, string> {
+  const normalizedLanguage = siteLanguage?.toLowerCase();
+
+  if (normalizedLanguage && HANS_SITE_LANGUAGES.has(normalizedLanguage)) {
+    return {
+      "--font-cjk-serif-fallback": HANS_CJK_SERIF_FALLBACK,
+    };
+  }
+
+  if (normalizedLanguage && HANT_SITE_LANGUAGES.has(normalizedLanguage)) {
+    return {
+      "--font-cjk-serif-fallback": HANT_CJK_SERIF_FALLBACK,
+    };
+  }
+
+  return {};
+}
+
+export const DEFAULT_FONT_CJK_SERIF_FALLBACK = DEFAULT_CJK_SERIF_FALLBACK;
 
 export const BUILTIN_FONT_THEMES: FontTheme[] = [
   {

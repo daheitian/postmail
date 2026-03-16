@@ -96,3 +96,27 @@ Transitions use these CSS variables:
 --transition-fast: 150ms ease-out;
 --transition-base: 200ms ease-out;
 ```
+
+### CJK Font Assets
+
+Self-hosted CJK font subsets live under `packages/core/src/styles/fonts/`.
+
+- Simplified Chinese uses the vendored `Noto Serif SC` subsets in `packages/core/src/styles/fonts/noto-serif-sc/`.
+- Traditional Chinese uses vendored `Noto Serif TC` subsets in `packages/core/src/styles/fonts/noto-serif-tc/`.
+
+Regenerate both CJK packs with:
+
+```bash
+pnpm --filter @jant/core fonts:generate:cjk
+```
+
+Generate a single pack with:
+
+```bash
+pnpm --filter @jant/core fonts:generate:sc
+pnpm --filter @jant/core fonts:generate:tc
+```
+
+The generator reads the source `woff2` files from `@fontsource/noto-serif-sc` or `@fontsource/noto-serif-tc`, runs `cn-font-split`, then rewrites the generated CSS so the committed output stays under `src/styles/fonts/`.
+
+Run it again when upgrading either `@fontsource` package or changing the split strategy.

@@ -1,0 +1,35 @@
+/**
+ * Authenticated client entry point.
+ *
+ * Extends the public bundle with editor, upload, and dashboard interactions
+ * that should not be shipped to anonymous page views.
+ */
+
+import "./client.js";
+import "./client/image-processor.js";
+import "./client/avatar-upload.js";
+import { ensureConfirmDialog } from "./client/confirm.js";
+import "./client/components/jant-compose-dialog.js";
+import "./client/components/jant-compose-editor.js";
+import "./client/components/jant-compose-fullscreen.js";
+import "./client/compose-bridge.js";
+import "./client/components/jant-settings-general.js";
+import "./client/components/jant-settings-avatar.js";
+import "./client/settings-bridge.js";
+import "./client/components/jant-collection-form.js";
+import "./client/components/jant-collection-sidebar.js";
+import "./client/collection-form-bridge.js";
+import "./client/components/jant-post-form.js";
+import "./client/post-form-bridge.js";
+import "./client/components/jant-nav-manager.js";
+import "./client/nav-manager-bridge.js";
+import "./client/components/jant-post-menu.js";
+import "./client/collection-page-actions.js";
+
+// Mount fullscreen overlay at body level to escape the dialog's containing
+// block (dialog animation creates a containing block that traps fixed children).
+if (!document.querySelector("jant-compose-fullscreen")) {
+  document.body.appendChild(document.createElement("jant-compose-fullscreen"));
+}
+
+ensureConfirmDialog();

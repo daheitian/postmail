@@ -1,10 +1,11 @@
 /**
- * Client asset build: produces client.js + client.css.
+ * Client asset build: produces public/auth JS plus shared CSS assets.
  *
  * Run via: `vite build --config vite.config.client.ts`
  *
- * These two files are served via wrangler [assets] in user projects.
- * Contains all interactive JS (Datastar, Lit components) and CSS (Tailwind + BaseCoat).
+ * These assets are served via wrangler [assets] in user projects.
+ * Public pages load the lean bundle; authenticated pages opt into the heavier
+ * editor/admin bundle.
  */
 
 import { defineConfig } from "vite";

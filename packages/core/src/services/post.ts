@@ -15,6 +15,7 @@ import {
   sql,
   isNotNull,
   asc,
+  lte,
 } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { uuidv7 } from "uuidv7";
@@ -438,6 +439,34 @@ export function createPostService(
           : null;
       })
       .filter((row): row is Post => row !== null);
+  }
+
+  async function hydratePostsById(ids: string[]): Promise<Map<string, Post>> {
+    const result = new Map<string, Post>();
+    const uniqueIds = [...new Set(ids)];
+
+    if (uniqueIds.length === 0) {
+      return result;
+    }
+
+    const rows = await batchQueryRows(uniqueIds, (chunk) =>
+      db
+        .select()
+        .from(posts)
+        .where(
+          and(
+            inArray(posts.id, chunk),
+            eq(posts.status, "published"),
+            isNull(posts.deletedAt),
+          ),
+        ),
+    );
+
+    for (const post of await hydratePosts(rows)) {
+      result.set(post.id, post);
+    }
+
+    return result;
   }
 
   async function getThreadVisibilityMap(
@@ -1112,8 +1141,16 @@ export function createPostService(
     async getThreadPreviews(rootIds, previewCount = 3) {
       if (rootIds.length === 0) return new Map();
 
-      const rows = await db
-        .select()
+      const rankedReplies = db
+        .select({
+          id: posts.id,
+          threadId: posts.threadId,
+          createdAt: posts.createdAt,
+          previewRank: sql<number>`ROW_NUMBER() OVER (
+            PARTITION BY ${posts.threadId}
+            ORDER BY ${posts.createdAt}, ${posts.id}
+          )`.as("preview_rank"),
+        })
         .from(posts)
         .where(
           and(
@@ -1123,18 +1160,37 @@ export function createPostService(
             isNull(posts.deletedAt),
           ),
         )
-        .orderBy(posts.threadId, posts.createdAt);
+        .as("ranked_replies");
 
+      const rankedRows = await db
+        .select({
+          id: rankedReplies.id,
+          threadId: rankedReplies.threadId,
+          createdAt: rankedReplies.createdAt,
+        })
+        .from(rankedReplies)
+        .where(lte(rankedReplies.previewRank, previewCount))
+        .orderBy(
+          rankedReplies.threadId,
+          rankedReplies.createdAt,
+          rankedReplies.id,
+        );
+
+      const hydratedPosts = await hydratePostsById(
+        rankedRows.map((row) => row.id),
+      );
       const result = new Map<string, Post[]>();
-      for (const post of await hydratePosts(rows)) {
-        const list = result.get(post.threadId);
+      for (const row of rankedRows) {
+        const post = hydratedPosts.get(row.id);
+        if (!post) continue;
+
+        const list = result.get(row.threadId);
         if (list) {
-          if (list.length < previewCount) {
-            list.push(post);
-          }
-        } else {
-          result.set(post.threadId, [post]);
+          list.push(post);
+          continue;
         }
+
+        result.set(row.threadId, [post]);
       }
       return result;
     },
@@ -1142,9 +1198,19 @@ export function createPostService(
     async getThreadTimelineContext(rootIds) {
       if (rootIds.length === 0) return new Map();
 
-      // Fetch all non-deleted replies ordered by thread, newest first
-      const rows = await db
-        .select()
+      const rankedReplies = db
+        .select({
+          id: posts.id,
+          threadId: posts.threadId,
+          replyToId: posts.replyToId,
+          replyRank: sql<number>`ROW_NUMBER() OVER (
+            PARTITION BY ${posts.threadId}
+            ORDER BY ${posts.createdAt} DESC, ${posts.id} DESC
+          )`.as("reply_rank"),
+          totalReplyCount: sql<number>`COUNT(*) OVER (
+            PARTITION BY ${posts.threadId}
+          )`.as("total_reply_count"),
+        })
         .from(posts)
         .where(
           and(
@@ -1154,34 +1220,44 @@ export function createPostService(
             isNull(posts.deletedAt),
           ),
         )
-        .orderBy(posts.threadId, desc(posts.createdAt), desc(posts.id));
+        .as("ranked_replies");
 
-      // Group by threadId, extract latest reply + its parent + count
-      const grouped = new Map<string, Post[]>();
-      for (const post of await hydratePosts(rows)) {
-        const list = grouped.get(post.threadId);
-        if (list) {
-          list.push(post);
-        } else {
-          grouped.set(post.threadId, [post]);
+      const latestReplyRows = await db
+        .select({
+          threadId: rankedReplies.threadId,
+          latestReplyId: rankedReplies.id,
+          latestReplyToId: rankedReplies.replyToId,
+          totalReplyCount: rankedReplies.totalReplyCount,
+        })
+        .from(rankedReplies)
+        .where(eq(rankedReplies.replyRank, 1));
+
+      const relatedPostIds = latestReplyRows.flatMap((row) => {
+        const ids = [row.latestReplyId];
+
+        if (row.latestReplyToId && row.latestReplyToId !== row.threadId) {
+          ids.push(row.latestReplyToId);
         }
-      }
+
+        return ids;
+      });
+      const hydratedPosts = await hydratePostsById(relatedPostIds);
 
       const result = new Map<string, ThreadTimelineContext>();
-      for (const [threadId, replies] of grouped) {
-        // replies are ordered newest-first; first element is the latest
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- grouped only contains non-empty arrays
-        const latestReply = replies[0]!;
-        const totalReplyCount = replies.length;
+      for (const row of latestReplyRows) {
+        const latestReply = hydratedPosts.get(row.latestReplyId);
+        if (!latestReply) continue;
 
-        // Find parent of latestReply if it's not the root
-        let parentReply: Post | null = null;
-        if (latestReply.replyToId && latestReply.replyToId !== threadId) {
-          parentReply =
-            replies.find((r) => r.id === latestReply.replyToId) ?? null;
-        }
+        const parentReply =
+          row.latestReplyToId && row.latestReplyToId !== row.threadId
+            ? (hydratedPosts.get(row.latestReplyToId) ?? null)
+            : null;
 
-        result.set(threadId, { latestReply, parentReply, totalReplyCount });
+        result.set(row.threadId, {
+          latestReply,
+          parentReply,
+          totalReplyCount: row.totalReplyCount,
+        });
       }
 
       return result;

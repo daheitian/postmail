@@ -32,13 +32,13 @@ async function buildTimelineItems(
     return [];
   }
 
-  // Batch load media, collections, and reply counts in parallel
+  // Batch load media, collections, and latest-reply contexts in parallel
   const postIds = posts.map((p) => p.id);
   const mediaCtx = createMediaContext(c.var.appConfig);
-  const [rawMediaMap, collectionsMap, replyCounts] = await Promise.all([
+  const [rawMediaMap, collectionsMap, threadContexts] = await Promise.all([
     c.var.services.media.getByPostIds(postIds),
     c.var.services.collections.getCollectionsByPostIds(postIds),
-    c.var.services.posts.getReplyCounts(postIds),
+    c.var.services.posts.getThreadTimelineContext(postIds),
   ]);
   const mediaMap = buildMediaMap(
     rawMediaMap,
@@ -46,11 +46,6 @@ async function buildTimelineItems(
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
   );
-  const threadRootIds = postIds.filter((id) => (replyCounts.get(id) ?? 0) > 0);
-
-  // Batch load thread timeline context (latest reply + parent)
-  const threadContexts =
-    await c.var.services.posts.getThreadTimelineContext(threadRootIds);
 
   // Batch load media for context posts (latestReply + parentReply)
   const contextPostIds: string[] = [];

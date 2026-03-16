@@ -2,9 +2,6 @@
 -- Clears content data while preserving users/settings/schema
 -- Usage: mise run demo-reset (runs this then seed-demo.sql)
 
--- Clear FTS index first (to avoid trigger issues)
-DELETE FROM post_fts;
-
 -- Clear junction/dependent tables first
 DELETE FROM post_collection;
 DELETE FROM sidebar_item;
@@ -16,6 +13,8 @@ DELETE FROM nav_item;
 DELETE FROM media;
 DELETE FROM post;
 DELETE FROM collection;
+
+-- post delete triggers keep post_fts in sync
 
 -- Sessions, users, accounts, and settings are preserved
 -- (seed-demo.sql only contains content data)

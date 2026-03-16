@@ -8,18 +8,21 @@
 
 :root {
   /* Typography — Font families */
+  --font-cjk-serif-fallback:
+    "Songti SC", STSong, SimSun, "Songti TC", PMingLiU, MingLiU,
+    "Noto Serif SC", "Noto Serif CJK SC", "Noto Serif TC", "Noto Serif CJK TC";
   --font-body:
     system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC",
+    "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei",
+    "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif;
   --font-heading:
-    ui-serif, "New York Small", "New York", "Iowan Old Style", Charter,
+    "New York Small", "New York", "Iowan Old Style", Charter,
     "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
-    "Songti SC", "Noto Serif CJK SC", "STSong", "SimSun", "Noto Serif SC", serif;
+    var(--font-cjk-serif-fallback), ui-serif, serif;
   --font-serif:
-    "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", ui-serif,
-    "New York Small", "New York", "Iowan Old Style", Charter, Georgia,
-    "Times New Roman", Times, "Noto Serif SC", serif;
+    var(--font-cjk-serif-fallback), ui-serif, "New York Small", "New York",
+    "Iowan Old Style", Charter, Georgia, "Times New Roman", Times, serif;
   --font-mono:
     ui-monospace, Menlo, Monaco, Consolas, "Cascadia Code", "Courier New",
     monospace;

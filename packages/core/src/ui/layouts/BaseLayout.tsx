@@ -28,6 +28,7 @@ export interface BaseLayoutProps {
   faviconVersion?: string;
   noindex?: boolean;
   isAuthenticated?: boolean;
+  clientBundle?: "public" | "full";
 }
 
 export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
@@ -40,6 +41,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   faviconVersion,
   noindex,
   isAuthenticated = false,
+  clientBundle,
   children,
 }) => {
   // Read lang from Hono context if available, otherwise use prop or default
@@ -64,6 +66,31 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   // Read custom CSS from appConfig
   const customCSS = appConfig?.customCSS || undefined;
   const themeMode = appConfig?.themeMode ?? "auto";
+  const resolvedClientBundle =
+    clientBundle ?? (isAuthenticated ? "full" : "public");
+  const fontLanguage = appConfig?.siteLanguage?.toLowerCase() ?? "";
+  const cjkStylesheetPath =
+    fontLanguage === "zh-hans" ||
+    fontLanguage === "zh-cn" ||
+    fontLanguage === "zh-sg"
+      ? IS_VITE_DEV
+        ? "/src/style-cjk.css"
+        : `/client-cjk.css?v=${CORE_VERSION}`
+      : fontLanguage === "zh-hant" ||
+          fontLanguage === "zh-tw" ||
+          fontLanguage === "zh-hk" ||
+          fontLanguage === "zh-mo"
+        ? IS_VITE_DEV
+          ? "/src/style-cjk-tc.css"
+          : `/client-cjk-tc.css?v=${CORE_VERSION}`
+        : null;
+  const clientScriptPath = IS_VITE_DEV
+    ? resolvedClientBundle === "full"
+      ? "/src/client-auth.ts"
+      : "/src/client.ts"
+    : resolvedClientBundle === "full"
+      ? `/client-auth.js?v=${CORE_VERSION}`
+      : `/client.js?v=${CORE_VERSION}`;
 
   return (
     <html lang={resolvedLang} data-theme-mode={themeMode}>
@@ -114,14 +141,14 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
             IS_VITE_DEV ? "/src/style.css" : `/client.css?v=${CORE_VERSION}`
           }
         />
+        {cjkStylesheetPath && (
+          <link rel="stylesheet" href={cjkStylesheetPath} />
+        )}
         {themeStyle && (
           <style dangerouslySetInnerHTML={{ __html: themeStyle }} />
         )}
         {customCSS && <style dangerouslySetInnerHTML={{ __html: customCSS }} />}
-        <script
-          type="module"
-          src={IS_VITE_DEV ? "/src/client.ts" : `/client.js?v=${CORE_VERSION}`}
-        />
+        <script type="module" src={clientScriptPath} />
       </head>
       <body
         class="bg-background text-foreground antialiased"

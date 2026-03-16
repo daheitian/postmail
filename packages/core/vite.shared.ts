@@ -4,7 +4,7 @@
  * Exports:
  * - pkg: package.json data (version, dependencies)
  * - CLIENT_TARGET: browser target for client asset compilation
- * - clientBuildOptions: rollup input/output for client.js + client.css
+ * - clientBuildOptions: rollup input/output for public/auth JS and CSS assets
  * - swcPlugin: SWC with Hono JSX + Lingui macro transforms
  */
 
@@ -22,17 +22,40 @@ export const pkg = JSON.parse(
 export const CLIENT_TARGET = "es2022" as const;
 
 /**
- * Client asset build options — produces client.js + client.css
- * consumed by wrangler [assets] in user projects.
+ * Client asset build options.
+ *
+ * Produces:
+ * - `client.js` for public-page interactions
+ * - `client-auth.js` for authenticated/editor interactions
+ * - `client.css` for the shared site styles
+ * - `client-cjk.css` for optional Simplified Chinese font assets
+ * - `client-cjk-tc.css` for optional Traditional Chinese font assets
  */
 export const clientBuildOptions = {
   outDir: "dist/client",
   target: CLIENT_TARGET,
   rollupOptions: {
-    input: [resolve(dir, "src/client.ts"), resolve(dir, "src/style.css")],
+    input: {
+      client: resolve(dir, "src/client.ts"),
+      "client-auth": resolve(dir, "src/client-auth.ts"),
+      style: resolve(dir, "src/style.css"),
+      "style-cjk": resolve(dir, "src/style-cjk.css"),
+      "style-cjk-tc": resolve(dir, "src/style-cjk-tc.css"),
+    },
     output: {
-      entryFileNames: "client.js",
-      assetFileNames: "client[extname]",
+      entryFileNames: "[name].js",
+      assetFileNames: (assetInfo) => {
+        switch (assetInfo.name) {
+          case "style.css":
+            return "client.css";
+          case "style-cjk.css":
+            return "client-cjk.css";
+          case "style-cjk-tc.css":
+            return "client-cjk-tc.css";
+          default:
+            return "assets/[name]-[hash][extname]";
+        }
+      },
     },
   },
 };

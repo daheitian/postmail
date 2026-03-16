@@ -9,6 +9,7 @@
     "dist",
     ".lingui-build",
     "src/client.ts",
+    "src/client-auth.ts",
     "src/client/**",
     "src/**/__tests__/**"
   ]
