@@ -515,9 +515,20 @@ customUrlsRoutes.get("/new", async (c) => {
     content: (
       <>
         <AdminBreadcrumb
-          parent="Settings"
-          parentHref={toPublicPath("/settings", c.var.appConfig.sitePathPrefix)}
-          current="Custom URLs"
+          ancestors={[
+            {
+              label: "Settings",
+              href: toPublicPath("/settings", c.var.appConfig.sitePathPrefix),
+            },
+            {
+              label: "Custom URLs",
+              href: toPublicPath(
+                "/settings/custom-urls",
+                c.var.appConfig.sitePathPrefix,
+              ),
+            },
+          ]}
+          current="New Custom URL"
         />
         <NewCustomUrlContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
       </>
