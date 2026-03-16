@@ -33,8 +33,13 @@ const CURATED_ICON_NAMES = Object.values(ICON_CATALOG).flat();
 const labels: CollectionFormLabels = {
   titleLabel: "Title",
   titlePlaceholder: "Placeholder Title",
-  slugLabel: "Slug",
+  slugLabel: "Collection link",
   slugHelp: "Help text",
+  editSlugLabel: "Edit link",
+  resetSlugLabel: "Reset link",
+  quickHint: "More options are available after you create it.",
+  quickSubmitLabel: "Done",
+  createdLabel: "Collection created.",
   descriptionLabel: "Description",
   descriptionPlaceholder: "Placeholder Description",
   featuredIconsLabel: "Featured",
@@ -186,7 +191,7 @@ describe("JantCollectionForm", () => {
     expect(d.data.icon).toContain('"palette":"stone"');
   });
 
-  it("renders a quick variant with only title and slug fields", async () => {
+  it("renders a quick variant with only the primary field visible", async () => {
     const el = await createElement({
       variant: "quick",
     });
@@ -194,6 +199,58 @@ describe("JantCollectionForm", () => {
     expect(el.querySelector("[data-icon-trigger]")).toBeNull();
     expect(el.querySelector("textarea")).toBeNull();
     expect(el.querySelector("select")).toBeNull();
+    expect(el.querySelector("[data-collection-slug-input]")).toBeNull();
+    expect(el.textContent).not.toContain("Edit link");
+    expect(el.textContent).not.toContain("Help text");
+  });
+
+  it("reveals the slug input in quick variant on demand", async () => {
+    const el = await createElement({
+      variant: "quick",
+    });
+
+    const titleInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-title-input]",
+    );
+    if (!titleInput) {
+      throw new Error("Expected title input");
+    }
+
+    titleInput.value = "Reading Notes";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    const editLinkButton = el.querySelector<HTMLButtonElement>(
+      ".collection-quick-link-action",
+    );
+    editLinkButton?.click();
+    await el.updateComplete;
+
+    expect(el.querySelector("[data-collection-slug-input]")).not.toBeNull();
+  });
+
+  it("shows a live link preview in quick variant", async () => {
+    const el = await createElement({
+      variant: "quick",
+    });
+
+    const titleInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-title-input]",
+    );
+    if (!titleInput) {
+      throw new Error("Expected title input");
+    }
+
+    titleInput.value = "Reading Notes";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    expect(el.textContent).toMatch(
+      /http:\/\/localhost(?::\d+)?\/c\/reading-notes/,
+    );
+    expect(el.textContent).toContain("Edit link");
   });
 
   it("submits only title and slug in quick variant", async () => {
@@ -201,13 +258,17 @@ describe("JantCollectionForm", () => {
       variant: "quick",
     });
 
-    const titleInput = el.querySelectorAll<HTMLInputElement>("input")[0];
-    const slugInput = el.querySelectorAll<HTMLInputElement>("input")[1];
+    const titleInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-title-input]",
+    );
+    if (!titleInput) {
+      throw new Error("Expected title input");
+    }
 
     titleInput.value = "Reading";
     titleInput.dispatchEvent(new Event("input", { bubbles: true }));
-    slugInput.value = "reading";
-    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
 
     let detail: CollectionSubmitDetail | null = null;
     el.addEventListener("jant:collection-submit", (event) => {
@@ -226,6 +287,93 @@ describe("JantCollectionForm", () => {
     expect(d.data.description).toBeUndefined();
     expect(d.data.icon).toBeUndefined();
     expect(d.data.sortOrder).toBeUndefined();
+  });
+
+  it("keeps a manually edited slug when the title changes", async () => {
+    const el = await createElement({
+      variant: "quick",
+    });
+
+    const titleInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-title-input]",
+    );
+    if (!titleInput) {
+      throw new Error("Expected title input");
+    }
+
+    titleInput.value = "Reading Notes";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    const editLinkButton = el.querySelector<HTMLButtonElement>(
+      ".collection-quick-link-action",
+    );
+    editLinkButton?.click();
+    await el.updateComplete;
+
+    const slugInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-slug-input]",
+    );
+    if (!slugInput) {
+      throw new Error("Expected slug input");
+    }
+
+    slugInput.value = "reading";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    titleInput.value = "Reading Notes Updated";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    expect(slugInput.value).toBe("reading");
+  });
+
+  it("lets quick variant restore the generated slug", async () => {
+    const el = await createElement({
+      variant: "quick",
+    });
+
+    const titleInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-title-input]",
+    );
+    if (!titleInput) {
+      throw new Error("Expected title input");
+    }
+
+    titleInput.value = "Reading Notes";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 0));
+    await el.updateComplete;
+
+    const editLinkButton = el.querySelector<HTMLButtonElement>(
+      ".collection-quick-link-action",
+    );
+    editLinkButton?.click();
+    await el.updateComplete;
+
+    const slugInput = el.querySelector<HTMLInputElement>(
+      "[data-collection-slug-input]",
+    );
+    if (!slugInput) {
+      throw new Error("Expected slug input");
+    }
+
+    slugInput.value = "reading";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    const resetButton = Array.from(
+      el.querySelectorAll<HTMLButtonElement>(".collection-quick-link-action"),
+    ).find((button) => button.textContent?.includes("Reset link"));
+    resetButton?.click();
+    await el.updateComplete;
+
+    expect(el.querySelector("[data-collection-slug-input]")).toBeNull();
+    expect(el.textContent).toContain("http://localhost");
+    expect(el.textContent).toContain("reading-notes");
   });
 
   it("shows the curated icon catalog by default", async () => {

@@ -34,6 +34,7 @@ import {
 } from "../../lib/icon-catalog.js";
 import { EMOJI_CATALOG } from "../../lib/emoji-catalog.js";
 import { slugify } from "../lazy-slugify.js";
+import { publicPath } from "../runtime-paths.js";
 import type {
   CollectionFormInitial,
   CollectionFormLabels,
@@ -76,6 +77,9 @@ export class JantCollectionForm extends LitElement {
     _pickerTab: { state: true },
     _showAllIconCategories: { state: true },
     _browseIconCategory: { state: true },
+    _showSlugEditor: { state: true },
+    _slugEdited: { state: true },
+    _suggestedSlug: { state: true },
     _loading: { state: true },
   };
 
@@ -99,6 +103,9 @@ export class JantCollectionForm extends LitElement {
   declare _pickerTab: "icons" | "emojis";
   declare _showAllIconCategories: boolean;
   declare _browseIconCategory: string;
+  declare _showSlugEditor: boolean;
+  declare _slugEdited: boolean;
+  declare _suggestedSlug: string;
   declare _loading: boolean;
 
   #initialized = false;
@@ -160,6 +167,9 @@ export class JantCollectionForm extends LitElement {
     this._pickerTab = "icons";
     this._showAllIconCategories = false;
     this._browseIconCategory = "";
+    this._showSlugEditor = false;
+    this._slugEdited = false;
+    this._suggestedSlug = "";
     this._loading = false;
   }
 
@@ -195,8 +205,11 @@ export class JantCollectionForm extends LitElement {
     this.#initialized = true;
     this._title = this.initial.title ?? "";
     this._slug = this.initial.slug ?? "";
+    this._suggestedSlug = this.initial.slug ?? "";
     this._description = this.initial.description ?? "";
     this._sortOrder = this.initial.sortOrder ?? "newest";
+    this._slugEdited = this.isEdit || Boolean(this._slug.trim());
+    this._showSlugEditor = this.variant !== "quick";
 
     const rawIcon = this.initial.icon ?? "";
     const parsed = parseCollectionIcon(rawIcon);
@@ -394,8 +407,145 @@ export class JantCollectionForm extends LitElement {
     this._pickerOpen = false;
   }
 
+  async #handleTitleInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this._title = target.value;
+
+    if (this.isEdit || this._slugEdited) {
+      return;
+    }
+
+    const currentTitle = target.value;
+    const slug = await slugify(currentTitle);
+    if (this._title === currentTitle) {
+      this._suggestedSlug = slug;
+      if (!this._slugEdited) {
+        this._slug = slug;
+      }
+    }
+  }
+
+  #handleSlugInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this._slug = target.value.toLowerCase();
+    this._slugEdited = true;
+  }
+
+  #showSlugEditor() {
+    if (this._showSlugEditor) return;
+    this._showSlugEditor = true;
+    this.updateComplete.then(() => {
+      const slugInput = this.querySelector<HTMLInputElement>(
+        "[data-collection-slug-input]",
+      );
+      slugInput?.focus();
+      slugInput?.select();
+    });
+  }
+
+  #resetSlugToSuggested() {
+    if (!this._suggestedSlug) return;
+    this._slug = this._suggestedSlug;
+    this._slugEdited = false;
+    if (this.variant === "quick") {
+      this._showSlugEditor = false;
+    }
+  }
+
+  #getCollectionLinkPreview(): string {
+    const slug = this._slug.trim();
+    const path = publicPath(slug ? `/c/${slug}` : "/c/");
+    const origin =
+      globalThis.location?.origin && globalThis.location.origin !== "null"
+        ? globalThis.location.origin
+        : "http://localhost";
+    return new URL(path, `${origin}/`).toString();
+  }
+
+  #renderSlugHelper() {
+    if (!this._slug.trim()) {
+      return html`<p class="text-xs text-muted-foreground mt-1">
+        ${this.labels.slugHelp}
+      </p>`;
+    }
+
+    return html`<p class="text-xs text-muted-foreground mt-1 break-all">
+      ${this.#getCollectionLinkPreview()}
+    </p>`;
+  }
+
+  #renderQuickSlugControls() {
+    const hasPreview = Boolean(this._slug.trim());
+    const canResetToTitle =
+      this._showSlugEditor &&
+      Boolean(this._suggestedSlug) &&
+      this._slug.trim() !== this._suggestedSlug;
+
+    if (!hasPreview && !this._showSlugEditor) {
+      return nothing;
+    }
+
+    if (this._showSlugEditor) {
+      return html`
+        <div class="collection-quick-link-editor">
+          <div class="field">
+            <div class="collection-quick-link-row">
+              <label class="label mb-0">${this.labels.slugLabel}</label>
+              ${canResetToTitle
+                ? html`
+                    <button
+                      type="button"
+                      class="collection-quick-link-action"
+                      @click=${() => this.#resetSlugToSuggested()}
+                    >
+                      ${this.labels.resetSlugLabel}
+                    </button>
+                  `
+                : nothing}
+            </div>
+            <input
+              type="text"
+              class="input"
+              data-collection-slug-input
+              required
+              pattern="[a-z0-9\\-]+"
+              .value=${this._slug}
+              placeholder="my-collection"
+              @input=${(event: Event) => this.#handleSlugInput(event)}
+            />
+            ${this.#renderSlugHelper()}
+          </div>
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="collection-quick-link-box">
+        <div class="collection-quick-link-row">
+          <p
+            class="collection-quick-link-preview text-xs text-muted-foreground"
+            aria-live="polite"
+          >
+            ${this.#getCollectionLinkPreview()}
+          </p>
+          <button
+            type="button"
+            class="collection-quick-link-action"
+            @click=${() => this.#showSlugEditor()}
+          >
+            ${this.labels.editSlugLabel}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   #handleSubmit(e: Event) {
     e.preventDefault();
+    if (this._loading) {
+      return;
+    }
+
     const title = this._title.trim();
     const slug = this._slug.trim();
     if (!title || !slug) {
@@ -718,7 +868,9 @@ export class JantCollectionForm extends LitElement {
 
     return html`
       <form
-        class="flex flex-col gap-4 max-w-lg"
+        class=${isQuick
+          ? "flex flex-col gap-4"
+          : "flex flex-col gap-4 max-w-lg"}
         @submit=${(event: Event) => this.#handleSubmit(event)}
       >
         <div class="field">
@@ -734,44 +886,30 @@ export class JantCollectionForm extends LitElement {
               placeholder=${this.isEdit
                 ? nothing
                 : this.labels.titlePlaceholder}
-              @input=${(event: Event) => {
-                const target = event.target as HTMLInputElement;
-                this._title = target.value;
-                if (!this.isEdit) {
-                  const currentTitle = target.value;
-                  slugify(currentTitle).then((slug) => {
-                    if (this._title === currentTitle) {
-                      this._slug = slug;
-                    }
-                  });
-                }
-              }}
+              @input=${(event: Event) => this.#handleTitleInput(event)}
             />
             ${isQuick ? nothing : this.#renderIconPopover()}
           </div>
         </div>
 
-        <div class="field">
-          <label class="label">${this.labels.slugLabel}</label>
-          <input
-            type="text"
-            class="input"
-            required
-            pattern="[a-z0-9\\-]+"
-            .value=${this._slug}
-            placeholder=${this.isEdit ? nothing : "my-collection"}
-            @input=${(event: Event) => {
-              const target = event.target as HTMLInputElement;
-              this._slug = target.value.toLowerCase();
-            }}
-          />
-          ${this.isEdit
-            ? nothing
-            : html`<p class="text-xs text-muted-foreground mt-1">
-                ${this.labels.slugHelp}
-              </p>`}
-        </div>
-
+        ${isQuick
+          ? this.#renderQuickSlugControls()
+          : html`
+              <div class="field">
+                <label class="label">${this.labels.slugLabel}</label>
+                <input
+                  type="text"
+                  class="input"
+                  data-collection-slug-input
+                  required
+                  pattern="[a-z0-9\\-]+"
+                  .value=${this._slug}
+                  placeholder=${this.isEdit ? nothing : "my-collection"}
+                  @input=${(event: Event) => this.#handleSlugInput(event)}
+                />
+                ${this.#renderSlugHelper()}
+              </div>
+            `}
         ${isQuick
           ? nothing
           : html`
@@ -812,30 +950,37 @@ export class JantCollectionForm extends LitElement {
                 </select>
               </div>
             `}
-
-        <div class="flex gap-2">
-          <button type="submit" class="btn" ?disabled=${this._loading}>
-            ${this._loading
-              ? html`<svg
-                  class="animate-spin size-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  role="status"
-                >
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                </svg>`
-              : nothing}
-            ${this.labels.submitLabel}
-          </button>
-          <a href=${this.cancelHref} class="btn-outline">
-            ${this.labels.cancelLabel}
-          </a>
-        </div>
+        ${isQuick
+          ? html`
+              <button type="submit" class="sr-only">
+                ${this.labels.quickSubmitLabel}
+              </button>
+            `
+          : html`
+              <div class="flex gap-2">
+                <button type="submit" class="btn" ?disabled=${this._loading}>
+                  ${this._loading
+                    ? html`<svg
+                        class="animate-spin size-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        role="status"
+                      >
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                      </svg>`
+                    : nothing}
+                  ${this.labels.submitLabel}
+                </button>
+                <a href=${this.cancelHref} class="btn-outline">
+                  ${this.labels.cancelLabel}
+                </a>
+              </div>
+            `}
       </form>
     `;
   }

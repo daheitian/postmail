@@ -489,6 +489,16 @@ msgstr "collection"
 msgid "Collection"
 msgstr "Collection"
 
+#. @context: Toast shown after creating a collection
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection created."
+msgstr "Collection created."
+
+#. @context: Collection form field
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection link"
+msgstr "Collection link"
+
 #. @context: Plural collection count label
 #. @context: Plural collection count label
 #. @context: Plural collection count label
@@ -868,8 +878,10 @@ msgstr "Don't save"
 #. @context: Button to exit collection organize mode
 #. @context: Close attached text panel
 #. @context: Compose button - update existing post
+#. @context: Primary button in the quick-create collection dialog
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Done"
 msgstr "Done"
@@ -941,6 +953,11 @@ msgstr "e.g. iOS Shortcuts"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Edit"
 msgstr "Edit"
+
+#. @context: Button to manually edit the collection link
+#: src/ui/shared/collection-management-labels.ts
+msgid "Edit link"
+msgstr "Edit link"
 
 #. @context: Compose dialog header title in edit mode
 #: src/ui/compose/ComposeDialog.tsx
@@ -1424,6 +1441,11 @@ msgstr "More actions"
 #: src/ui/layouts/SiteLayout.tsx
 msgid "More links"
 msgstr "More links"
+
+#. @context: Helper text in the quick-create collection dialog
+#: src/ui/shared/collection-management-labels.ts
+msgid "More options are available after you create it."
+msgstr "More options are available after you create it."
 
 #. @context: Secondary badge label on sample page
 #. @context: Token label on sample page
@@ -1942,6 +1964,11 @@ msgstr "Replies"
 msgid "Reply"
 msgstr "Reply"
 
+#. @context: Button to restore the automatically generated collection link from the title
+#: src/ui/shared/collection-management-labels.ts
+msgid "Reset link"
+msgstr "Reset link"
+
 #. @context: Password reset form submit button
 #. @context: Password reset page heading
 #: src/routes/auth/reset.tsx
@@ -2158,11 +2185,6 @@ msgstr "Site Footer"
 msgid "Site Name"
 msgstr "Site Name"
 
-#. @context: Collection form field
-#: src/ui/shared/collection-management-labels.ts
-msgid "Slug"
-msgstr "Slug"
-
 #. @context: Name of the text swatch
 #: src/ui/pages/BrandPage.tsx
 msgid "Soft Charcoal"
@@ -2375,15 +2397,15 @@ msgstr "These devices are currently signed in to your account. Revoke any sessio
 msgid "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
 msgstr "This article is here to answer a specific question: does the default accent still feel calm once it has to carry a full reading experience?"
 
-#. @context: Collection path help text
-#: src/ui/shared/collection-management-labels.ts
-msgid "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you."
-msgstr "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you."
-
 #. @context: Empty state message
 #: src/ui/pages/CollectionPage.tsx
 msgid "This collection is empty. Add posts from the editor."
 msgstr "This collection is empty. Add posts from the editor."
+
+#. @context: Collection link help text
+#: src/ui/shared/collection-management-labels.ts
+msgid "This is the last part of the collection link."
+msgstr "This is the last part of the collection link."
 
 #. @context: Showcase paragraph prefix on the public brand page
 #: src/ui/pages/BrandPage.tsx

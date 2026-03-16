@@ -13,13 +13,33 @@ const collectionFormMessages = {
     comment: "@context: Collection title placeholder",
   }),
   slugLabel: msg({
-    message: "Slug",
+    message: "Collection link",
     comment: "@context: Collection form field",
   }),
   slugHelp: msg({
-    message:
-      "This becomes the end of the collection link. If the title uses Chinese, Japanese, or Korean, we'll generate it for you.",
-    comment: "@context: Collection path help text",
+    message: "This is the last part of the collection link.",
+    comment: "@context: Collection link help text",
+  }),
+  editSlugLabel: msg({
+    message: "Edit link",
+    comment: "@context: Button to manually edit the collection link",
+  }),
+  resetSlugLabel: msg({
+    message: "Reset link",
+    comment:
+      "@context: Button to restore the automatically generated collection link from the title",
+  }),
+  quickHint: msg({
+    message: "More options are available after you create it.",
+    comment: "@context: Helper text in the quick-create collection dialog",
+  }),
+  quickSubmitLabel: msg({
+    message: "Done",
+    comment: "@context: Primary button in the quick-create collection dialog",
+  }),
+  createdLabel: msg({
+    message: "Collection created.",
+    comment: "@context: Toast shown after creating a collection",
   }),
   descriptionLabel: msg({
     message: "Description (optional)",
@@ -138,6 +158,11 @@ export const getCollectionFormLabels = (t: Translate) => ({
   titlePlaceholder: t(collectionFormMessages.titlePlaceholder),
   slugLabel: t(collectionFormMessages.slugLabel),
   slugHelp: t(collectionFormMessages.slugHelp),
+  editSlugLabel: t(collectionFormMessages.editSlugLabel),
+  resetSlugLabel: t(collectionFormMessages.resetSlugLabel),
+  quickHint: t(collectionFormMessages.quickHint),
+  quickSubmitLabel: t(collectionFormMessages.quickSubmitLabel),
+  createdLabel: t(collectionFormMessages.createdLabel),
   descriptionLabel: t(collectionFormMessages.descriptionLabel),
   descriptionPlaceholder: t(collectionFormMessages.descriptionPlaceholder),
   featuredIconsLabel: t(collectionFormMessages.featuredIconsLabel),
