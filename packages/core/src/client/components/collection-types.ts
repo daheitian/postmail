@@ -9,6 +9,10 @@ export interface CollectionFormLabels {
   slugHelp: string;
   descriptionLabel: string;
   descriptionPlaceholder: string;
+  featuredIconsLabel: string;
+  browseAllIconsLabel: string;
+  showMoreIcons: string;
+  showLessIcons: string;
   removeIcon: string;
   iconsTab: string;
   emojisTab: string;

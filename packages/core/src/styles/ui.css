@@ -690,6 +690,10 @@
     color: var(--accent-foreground);
   }
 
+  .collection-icon-category-strip::-webkit-scrollbar {
+    display: none;
+  }
+
   .collection-directory-divider {
     padding: 1.5rem 0 0.85rem;
   }

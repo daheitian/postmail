@@ -27,7 +27,11 @@ import {
   getCollectionIconColorVar,
   type CollectionIconPalette,
 } from "../../lib/collection-icon-palette.js";
-import { ALL_ICON_NAMES, ALL_ICON_CATEGORIES } from "../../lib/icon-catalog.js";
+import {
+  ALL_ICON_CATEGORIES,
+  ALL_ICON_NAMES,
+  ICON_CATALOG,
+} from "../../lib/icon-catalog.js";
 import { EMOJI_CATALOG } from "../../lib/emoji-catalog.js";
 import { slugify } from "../lazy-slugify.js";
 import type {
@@ -35,6 +39,10 @@ import type {
   CollectionFormLabels,
   CollectionSubmitDetail,
 } from "./collection-types.js";
+
+const ICON_SEARCH_RESULTS_LIMIT = 120;
+const CURATED_ICON_NAMES = new Set(Object.values(ICON_CATALOG).flat());
+const ALL_ICON_CATEGORY_NAMES = Object.keys(ALL_ICON_CATEGORIES);
 
 type CatalogCategory = {
   name: string;
@@ -65,6 +73,8 @@ export class JantCollectionForm extends LitElement {
     _iconSearch: { state: true },
     _pickerOpen: { state: true },
     _pickerTab: { state: true },
+    _showAllIconCategories: { state: true },
+    _browseIconCategory: { state: true },
     _loading: { state: true },
   };
 
@@ -85,6 +95,8 @@ export class JantCollectionForm extends LitElement {
   declare _iconSearch: string;
   declare _pickerOpen: boolean;
   declare _pickerTab: "icons" | "emojis";
+  declare _showAllIconCategories: boolean;
+  declare _browseIconCategory: string;
   declare _loading: boolean;
 
   #initialized = false;
@@ -143,6 +155,8 @@ export class JantCollectionForm extends LitElement {
     this._iconSearch = "";
     this._pickerOpen = false;
     this._pickerTab = "icons";
+    this._showAllIconCategories = false;
+    this._browseIconCategory = "";
     this._loading = false;
   }
 
@@ -229,12 +243,13 @@ export class JantCollectionForm extends LitElement {
     return "";
   }
 
-  #allIconsByCategory: CatalogCategory[] | null = null;
+  #browseIconsByCategory: CatalogCategory[] | null = null;
+  #allIconsByCategory = new Map<string, CatalogCategory | null>();
 
-  #getAllIconsByCategory(): CatalogCategory[] {
-    if (this.#allIconsByCategory) return this.#allIconsByCategory;
+  #getBrowseIconsByCategory(): CatalogCategory[] {
+    if (this.#browseIconsByCategory) return this.#browseIconsByCategory;
     const result: CatalogCategory[] = [];
-    for (const [category, names] of Object.entries(ALL_ICON_CATEGORIES)) {
+    for (const [category, names] of Object.entries(ICON_CATALOG)) {
       const icons = names
         .map((name) => {
           const svg = this.#getCachedSvg(name);
@@ -245,20 +260,82 @@ export class JantCollectionForm extends LitElement {
         result.push({ name: category, icons });
       }
     }
-    this.#allIconsByCategory = result;
+    this.#browseIconsByCategory = result;
     return result;
+  }
+
+  #getBrowseCategoryName(): string {
+    if (
+      this._browseIconCategory &&
+      Object.prototype.hasOwnProperty.call(
+        ALL_ICON_CATEGORIES,
+        this._browseIconCategory,
+      )
+    ) {
+      return this._browseIconCategory;
+    }
+
+    return ALL_ICON_CATEGORY_NAMES[0] ?? "";
+  }
+
+  #getAllIconsCategory(categoryName: string): CatalogCategory | null {
+    const cached = this.#allIconsByCategory.get(categoryName);
+    if (cached !== undefined) return cached;
+
+    const names = ALL_ICON_CATEGORIES[categoryName];
+    if (!names) {
+      this.#allIconsByCategory.set(categoryName, null);
+      return null;
+    }
+
+    const icons = names
+      .map((name) => {
+        const svg = this.#getCachedSvg(name);
+        return svg ? { name, svg } : null;
+      })
+      .filter((icon): icon is { name: string; svg: string } => Boolean(icon));
+
+    const category = icons.length > 0 ? { name: categoryName, icons } : null;
+    this.#allIconsByCategory.set(categoryName, category);
+    return category;
+  }
+
+  #setShowAllIconCategories(showAll: boolean) {
+    this._showAllIconCategories = showAll;
+    if (showAll) {
+      this._browseIconCategory = ALL_ICON_CATEGORY_NAMES[0] ?? "";
+    }
   }
 
   #filteredCatalog(): CatalogCategory[] {
     const q = this._iconSearch.trim().toLowerCase();
 
     if (!q) {
-      // No search → show all icons grouped by official category
-      return this.#getAllIconsByCategory();
+      if (this._showAllIconCategories) {
+        const category = this.#getAllIconsCategory(
+          this.#getBrowseCategoryName(),
+        );
+        return category ? [category] : [];
+      }
+
+      const categories = [...this.#getBrowseIconsByCategory()];
+      if (
+        this._iconName &&
+        this._iconSvg &&
+        !CURATED_ICON_NAMES.has(this._iconName)
+      ) {
+        categories.unshift({
+          name: "selected",
+          icons: [{ name: this._iconName, svg: this._iconSvg }],
+        });
+      }
+      return categories;
     }
 
-    // Search → filter ALL icon names + category names
-    const matching = ALL_ICON_NAMES.filter((name) => name.includes(q));
+    const matching = ALL_ICON_NAMES.filter((name) => name.includes(q)).slice(
+      0,
+      ICON_SEARCH_RESULTS_LIMIT,
+    );
     if (matching.length === 0) return [];
 
     const icons = matching
@@ -308,10 +385,9 @@ export class JantCollectionForm extends LitElement {
   }
 
   #removeIcon() {
-    this._iconName = "";
-    this._iconSvg = "";
-    this._iconPalette = DEFAULT_ICON_PALETTE;
     this._iconEmoji = "";
+    this._iconPalette = DEFAULT_ICON_PALETTE;
+    this.#applyDefaultIcon();
     this._pickerOpen = false;
   }
 
@@ -396,6 +472,81 @@ export class JantCollectionForm extends LitElement {
     `;
   }
 
+  #formatCategoryLabel(category: string): string {
+    return category
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+  }
+
+  #renderIconBrowseControls() {
+    const hasSearch = this._iconSearch.trim().length > 0;
+    if (hasSearch) return nothing;
+
+    if (!this._showAllIconCategories) {
+      return html`
+        <div class="flex items-center justify-between gap-3 px-3 pb-2">
+          <p
+            class="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+          >
+            ${this.labels.featuredIconsLabel}
+          </p>
+          <button
+            type="button"
+            data-icon-show-more
+            class="btn-ghost text-sm"
+            @click=${() => this.#setShowAllIconCategories(true)}
+          >
+            ${this.labels.showMoreIcons}
+          </button>
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="flex flex-col gap-2 px-3 pb-2">
+        <div class="flex items-center justify-between gap-3">
+          <p
+            class="text-xs font-medium text-muted-foreground uppercase tracking-wider"
+          >
+            ${this.labels.browseAllIconsLabel}
+          </p>
+          <button
+            type="button"
+            data-icon-show-less
+            class="btn-ghost text-sm"
+            @click=${() => this.#setShowAllIconCategories(false)}
+          >
+            ${this.labels.showLessIcons}
+          </button>
+        </div>
+        <div
+          class="collection-icon-category-strip overflow-x-auto"
+          style="scrollbar-width: none; -ms-overflow-style: none;"
+        >
+          <div class="flex min-w-max gap-1.5">
+            ${ALL_ICON_CATEGORY_NAMES.map((category) => {
+              const isActive = this.#getBrowseCategoryName() === category;
+              return html`
+                <button
+                  type="button"
+                  data-icon-browse-category=${category}
+                  class=${`shrink-0 rounded-full border px-2.5 py-1 text-xs transition-colors ${isActive ? "border-foreground bg-foreground font-medium text-background" : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground"}`}
+                  aria-pressed=${isActive ? "true" : "false"}
+                  @click=${() => {
+                    this._browseIconCategory = category;
+                  }}
+                >
+                  ${this.#formatCategoryLabel(category)}
+                </button>
+              `;
+            })}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   #renderIconsGrid() {
     const categories = this.#filteredCatalog();
     if (categories.length === 0) {
@@ -409,7 +560,7 @@ export class JantCollectionForm extends LitElement {
           <h3
             class="text-xs font-medium text-muted-foreground uppercase tracking-wider px-3"
           >
-            ${category.name}
+            ${this.#formatCategoryLabel(category.name)}
           </h3>
           <div class="grid grid-cols-8 gap-0.5 px-2">
             ${category.icons.map(
@@ -528,6 +679,8 @@ export class JantCollectionForm extends LitElement {
           />
         </div>
 
+        ${isIconsTab ? this.#renderIconBrowseControls() : nothing}
+
         <!-- Grid -->
         <div class="overflow-y-auto max-h-80">
           ${isIconsTab ? this.#renderIconsGrid() : this.#renderEmojisGrid()}
@@ -539,6 +692,7 @@ export class JantCollectionForm extends LitElement {
               <div class="border-t border-border px-3 py-2">
                 <button
                   type="button"
+                  data-icon-remove
                   class="btn-ghost text-sm w-full"
                   @click=${() => this.#removeIcon()}
                 >
