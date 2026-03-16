@@ -11,6 +11,7 @@
 import swc from "unplugin-swc";
 import { resolve } from "path";
 import { readFileSync } from "fs";
+import { ASSET_BASE_SEGMENT } from "./src/lib/asset-path.js";
 
 const dir = import.meta.dirname;
 
@@ -43,17 +44,18 @@ export const clientBuildOptions = {
       "style-cjk-tc": resolve(dir, "src/style-cjk-tc.css"),
     },
     output: {
-      entryFileNames: "[name].js",
+      entryFileNames: `${ASSET_BASE_SEGMENT}/[name].js`,
+      chunkFileNames: `${ASSET_BASE_SEGMENT}/assets/[name]-[hash].js`,
       assetFileNames: (assetInfo) => {
         switch (assetInfo.name) {
           case "style.css":
-            return "client.css";
+            return `${ASSET_BASE_SEGMENT}/client.css`;
           case "style-cjk.css":
-            return "client-cjk.css";
+            return `${ASSET_BASE_SEGMENT}/client-cjk.css`;
           case "style-cjk-tc.css":
-            return "client-cjk-tc.css";
+            return `${ASSET_BASE_SEGMENT}/client-cjk-tc.css`;
           default:
-            return "assets/[name]-[hash][extname]";
+            return `${ASSET_BASE_SEGMENT}/assets/[name]-[hash][extname]`;
         }
       },
     },

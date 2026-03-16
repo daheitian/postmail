@@ -38,7 +38,7 @@ const CollectionTags: FC<{
           &middot;
         </span>
       )}
-      <a href={`/c/${first.slug}`} class="post-collection-tag">
+      <a href={first.url} class="post-collection-tag">
         {first.iconHtml && (
           <span
             class="post-collection-icon"
@@ -58,11 +58,7 @@ const CollectionTags: FC<{
           </button>
           <div class="post-collection-popover" data-collection-popover>
             {collections.map((c) => (
-              <a
-                key={c.slug}
-                href={`/c/${c.slug}`}
-                class="post-collection-popover-item"
-              >
+              <a key={c.slug} href={c.url} class="post-collection-popover-item">
                 {c.iconHtml && (
                   <span
                     class="post-collection-icon"

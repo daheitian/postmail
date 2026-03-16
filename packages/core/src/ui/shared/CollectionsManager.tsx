@@ -12,9 +12,13 @@ const countCollections = (items: CollectionDirectoryItem[]) =>
 
 export interface CollectionsManagerProps {
   items: CollectionDirectoryItem[];
+  sitePathPrefix?: string;
 }
 
-export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
+export const CollectionsManager: FC<CollectionsManagerProps> = ({
+  items,
+  sitePathPrefix = "",
+}) => {
   const { t } = useLingui();
   const collectionCount = countCollections(items);
   const collectionCountLabel = `${collectionCount} ${
@@ -209,7 +213,11 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({ items }) => {
         items={escapeJson(items)}
         labels={escapeJson(labels)}
       >
-        <CollectionDirectory items={items} emptyMessage={labels.emptyState} />
+        <CollectionDirectory
+          items={items}
+          emptyMessage={labels.emptyState}
+          sitePathPrefix={sitePathPrefix}
+        />
       </jant-collections-manager>
     </div>
   );

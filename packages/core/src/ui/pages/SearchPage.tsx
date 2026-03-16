@@ -8,6 +8,7 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { SearchPageProps, SearchResultView } from "../../types.js";
+import { toPublicPath } from "../../lib/url.js";
 import { PagePagination } from "../shared/Pagination.js";
 
 // External link icon (shared by LinkCard)
@@ -185,6 +186,7 @@ export const SearchPage: FC<SearchPageProps> = ({
   error,
   hasMore,
   page,
+  sitePathPrefix = "",
 }) => {
   const { t } = useLingui();
 
@@ -195,7 +197,11 @@ export const SearchPage: FC<SearchPageProps> = ({
       </h1>
 
       {/* Search form */}
-      <form method="get" action="/search" class="mb-8">
+      <form
+        method="get"
+        action={toPublicPath("/search", sitePathPrefix)}
+        class="mb-8"
+      >
         <div class="flex gap-2">
           <input
             type="search"
@@ -256,7 +262,11 @@ export const SearchPage: FC<SearchPageProps> = ({
               </div>
 
               <PagePagination
-                baseUrl={"/search?q=" + encodeURIComponent(query)}
+                baseUrl={
+                  toPublicPath("/search", sitePathPrefix) +
+                  "?q=" +
+                  encodeURIComponent(query)
+                }
                 currentPage={page}
                 hasMore={hasMore}
               />

@@ -19,6 +19,7 @@ import {
   mapLegacyCollectionIconColor,
 } from "../../lib/collection-icon-palette.js";
 import { showToast } from "../toast.js";
+import { publicPath } from "../runtime-paths.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 
 interface PostMenuData {
@@ -932,7 +933,7 @@ export class JantPostMenu extends LitElement {
             class="post-menu-collection-form"
             .labels=${labels}
             .initial=${initial}
-            action="/api/collections"
+            action=${publicPath("/api/collections")}
             cancel-href="javascript:void(0)"
             @jant:collection-submit=${(e: Event) =>
               this.#handleAddCollectionSubmit(e)}

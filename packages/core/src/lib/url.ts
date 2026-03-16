@@ -4,6 +4,12 @@
 
 import limax from "limax";
 
+function normalizeSitePathname(pathname: string): string {
+  if (pathname === "/" || pathname === "") return "";
+  const trimmed = pathname.replace(/\/+$/, "");
+  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+}
+
 /**
  * Extracts the hostname (domain) from a URL string.
  *
@@ -154,4 +160,127 @@ export function sanitizeUrl(url: string): string {
   } catch {
     return "";
   }
+}
+
+/**
+ * Normalize a public site URL by stripping any trailing slash from the path.
+ *
+ * @param siteUrl - Full site URL, optionally with a path prefix
+ * @returns Normalized site URL, or an empty string when not configured
+ */
+export function normalizeSiteUrl(siteUrl: string): string {
+  const trimmed = siteUrl.trim();
+  if (!trimmed) return "";
+
+  const parsed = new URL(trimmed);
+  parsed.pathname = normalizeSitePathname(parsed.pathname) || "/";
+  if (parsed.pathname !== "/") {
+    parsed.pathname = parsed.pathname.replace(/\/+$/, "");
+  }
+  return parsed.toString().replace(/\/$/, parsed.pathname === "/" ? "/" : "");
+}
+
+/**
+ * Extract the public path prefix from a full site URL.
+ *
+ * @param siteUrl - Full site URL
+ * @returns Prefix like `/blog`, or an empty string when the site is rooted
+ */
+export function getSitePathPrefix(siteUrl: string): string {
+  if (!siteUrl.trim()) return "";
+  const parsed = new URL(siteUrl);
+  return normalizeSitePathname(parsed.pathname);
+}
+
+/**
+ * Extract the origin from a full site URL.
+ *
+ * @param siteUrl - Full site URL
+ * @returns Origin like `https://example.com`, or an empty string when missing
+ */
+export function getSiteOrigin(siteUrl: string): string {
+  if (!siteUrl.trim()) return "";
+  return new URL(siteUrl).origin;
+}
+
+/**
+ * Prefix an internal app path with the public site path prefix.
+ *
+ * Internal paths are always rooted at `/` and never include the deployment
+ * prefix. This helper converts them to public-facing paths.
+ *
+ * @param path - Internal app path, such as `/settings`
+ * @param sitePathPrefix - Public site path prefix, such as `/blog`
+ * @returns Public path
+ */
+export function toPublicPath(path: string, sitePathPrefix = ""): string {
+  if (!path) return sitePathPrefix || "/";
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  if (!sitePathPrefix) return normalizedPath;
+  if (
+    normalizedPath === sitePathPrefix ||
+    normalizedPath.startsWith(`${sitePathPrefix}/`)
+  ) {
+    return normalizedPath;
+  }
+  if (normalizedPath === "/") return sitePathPrefix;
+  return `${sitePathPrefix}${normalizedPath}`;
+}
+
+/**
+ * Convert an app-local href to its public path while leaving external URLs
+ * unchanged.
+ *
+ * @param href - Internal app path or external URL
+ * @param sitePathPrefix - Public site path prefix
+ * @returns Public-facing href
+ */
+export function toPublicHref(href: string, sitePathPrefix = ""): string {
+  if (
+    href.startsWith("http://") ||
+    href.startsWith("https://") ||
+    href.startsWith("//") ||
+    href.startsWith("mailto:") ||
+    href.startsWith("tel:") ||
+    href.startsWith("#")
+  ) {
+    return href;
+  }
+  return toPublicPath(href, sitePathPrefix);
+}
+
+/**
+ * Remove the site path prefix from a public request pathname.
+ *
+ * @param pathname - Public request pathname
+ * @param sitePathPrefix - Configured public site path prefix
+ * @returns Internal pathname, or `null` when the request is outside the site
+ */
+export function stripSitePathPrefix(
+  pathname: string,
+  sitePathPrefix: string,
+): string | null {
+  if (!sitePathPrefix) return pathname || "/";
+  if (pathname === sitePathPrefix) return "/";
+  if (pathname.startsWith(`${sitePathPrefix}/`)) {
+    return pathname.slice(sitePathPrefix.length) || "/";
+  }
+  return null;
+}
+
+/**
+ * Convert an internal or public path into an absolute site URL.
+ *
+ * @param path - Internal app path or already-public path
+ * @param siteUrl - Normalized site URL
+ * @param sitePathPrefix - Public site path prefix
+ * @returns Absolute URL when siteUrl is configured, otherwise the original path
+ */
+export function toAbsoluteSiteUrl(
+  path: string,
+  siteUrl: string,
+  sitePathPrefix = "",
+): string {
+  if (!siteUrl) return toPublicPath(path, sitePathPrefix);
+  return new URL(toPublicPath(path, sitePathPrefix), siteUrl).toString();
 }

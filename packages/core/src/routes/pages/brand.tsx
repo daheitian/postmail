@@ -84,6 +84,12 @@ brandRoutes.get("/brand", async (c) => {
       }),
     ),
     navData,
-    content: <BrandPage theme={brandTheme} currentMode={selectedMode} />,
+    content: (
+      <BrandPage
+        theme={brandTheme}
+        currentMode={selectedMode}
+        sitePathPrefix={navData.sitePathPrefix}
+      />
+    ),
   });
 });

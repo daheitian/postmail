@@ -29,6 +29,7 @@ collectionsPageRoutes.get("/", async (c) => {
       <CollectionsPage
         items={directoryData.items}
         isAuthenticated={navData.isAuthenticated ?? false}
+        sitePathPrefix={navData.sitePathPrefix}
       />
     ),
   });

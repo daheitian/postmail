@@ -42,7 +42,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
           <h1 class="p-name text-2xl font-semibold mb-4">{post.title}</h1>
         ) : (
           <h2
-            class={`p-name font-semibold ${isCompact ? "text-sm" : "text-lg"} mb-1`}
+            class={`p-name font-semibold ${isCompact ? "text-sm mb-1" : "feed-note-title mb-2"}`}
           >
             <a href={post.permalink} class="u-url hover:underline">
               {post.title}

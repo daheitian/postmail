@@ -1100,6 +1100,13 @@
     text-underline-offset: 3px;
   }
 
+  .feed-note-title {
+    font-size: var(--feed-note-title-size);
+    line-height: var(--feed-note-title-leading);
+    letter-spacing: var(--type-heading-tracking);
+    text-wrap: pretty;
+  }
+
   .feed-link-summary {
     margin-top: 0.75rem;
   }

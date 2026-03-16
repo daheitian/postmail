@@ -1,5 +1,6 @@
 import { useLingui } from "@lingui/react/macro";
 import { escapeHtml } from "../../lib/html.js";
+import { toPublicPath } from "../../lib/url.js";
 import type { PostView } from "../../types.js";
 import type { ThemeMode } from "../../types/config.js";
 import { TimelineItemFromPost } from "../feed/TimelineItem.js";
@@ -8,12 +9,16 @@ import type { ColorTheme } from "../color-themes.js";
 
 const MODES: ThemeMode[] = ["auto", "light", "dark"];
 
-function buildSampleHref(themeId: string, mode: ThemeMode): string {
+function buildSampleHref(
+  themeId: string,
+  mode: ThemeMode,
+  sitePathPrefix = "",
+): string {
   const params = new URLSearchParams({
     theme: themeId,
     mode,
   });
-  return `/_/theme-sample?${params.toString()}`;
+  return toPublicPath(`/_/theme-sample?${params.toString()}`, sitePathPrefix);
 }
 
 function isActivePill(current: string, value: string): string {
@@ -128,13 +133,19 @@ export function ThemeSamplePage({
   themes,
   selectedTheme,
   currentMode,
+  sitePathPrefix = "",
 }: {
   themes: Pick<ColorTheme, "id" | "name">[];
   selectedTheme: ColorTheme;
   currentMode: ThemeMode;
+  sitePathPrefix?: string;
 }) {
   const { t } = useLingui();
-  const sampleBaseHref = buildSampleHref(selectedTheme.id, currentMode);
+  const sampleBaseHref = buildSampleHref(
+    selectedTheme.id,
+    currentMode,
+    sitePathPrefix,
+  );
   const notePermalink = `${sampleBaseHref}#sample-note`;
   const linkPermalink = `${sampleBaseHref}#sample-link`;
   const quotePermalink = `${sampleBaseHref}#sample-quote`;
@@ -232,6 +243,7 @@ export function ThemeSamplePage({
       collections: [
         {
           slug: "design",
+          url: toPublicPath("/c/design", sitePathPrefix),
           title: t({
             message: "Design",
             comment: "@context: Collection tag on sample note post",
@@ -298,6 +310,7 @@ export function ThemeSamplePage({
       collections: [
         {
           slug: "references",
+          url: toPublicPath("/c/references", sitePathPrefix),
           title: t({
             message: "References",
             comment: "@context: Collection tag on sample link post",
@@ -370,6 +383,7 @@ export function ThemeSamplePage({
       collections: [
         {
           slug: "reading",
+          url: toPublicPath("/c/reading", sitePathPrefix),
           title: t({
             message: "Reading",
             comment: "@context: Collection tag on sample quote post",
@@ -565,6 +579,7 @@ export function ThemeSamplePage({
     collections: [
       {
         slug: "design",
+        url: toPublicPath("/c/design", sitePathPrefix),
         title: t({
           message: "Design",
           comment: "@context: Collection tag on the sample detail article",

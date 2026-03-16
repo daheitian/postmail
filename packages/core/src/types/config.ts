@@ -215,6 +215,9 @@ export interface AppConfig {
 
   // Infrastructure (ENV only)
   siteUrl: string;
+  siteOrigin: string;
+  sitePathPrefix: string;
+  assetBasePath: string;
   authConfigured: boolean;
 
   // Media (ENV only)

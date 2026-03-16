@@ -1,10 +1,11 @@
 import { useLingui } from "@lingui/react/macro";
+import { toPublicPath } from "../../lib/url.js";
 import type { ThemeMode } from "../../types/config.js";
 import type { ColorTheme } from "../color-themes.js";
 
-function buildBrandHref(mode: ThemeMode): string {
+function buildBrandHref(mode: ThemeMode, sitePathPrefix = ""): string {
   const params = new URLSearchParams({ mode });
-  return `/_/brand?${params.toString()}`;
+  return toPublicPath(`/_/brand?${params.toString()}`, sitePathPrefix);
 }
 
 function ModePill({
@@ -53,9 +54,11 @@ function ColorSpecCard({
 export function BrandPage({
   theme,
   currentMode,
+  sitePathPrefix = "",
 }: {
   theme: ColorTheme;
   currentMode: ThemeMode;
+  sitePathPrefix?: string;
 }) {
   const { t } = useLingui();
   const light = theme.light;
@@ -137,7 +140,7 @@ export function BrandPage({
               {modes.map((mode) => (
                 <ModePill
                   key={mode}
-                  href={buildBrandHref(mode)}
+                  href={buildBrandHref(mode, sitePathPrefix)}
                   isActive={currentMode === mode}
                   label={
                     mode === "auto"
@@ -374,7 +377,10 @@ export function BrandPage({
               comment:
                 "@context: Showcase paragraph prefix on the public brand page",
             })}{" "}
-            <a href="/_/brand" class="content-link">
+            <a
+              href={toPublicPath("/_/brand", sitePathPrefix)}
+              class="content-link"
+            >
               {t({
                 message: "read the full brand note",
                 comment:

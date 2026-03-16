@@ -3,6 +3,7 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
+import { toPublicPath } from "../../../lib/url.js";
 
 /** Chevron right icon */
 function ChevronRight() {
@@ -58,7 +59,11 @@ const ICONS = {
   trash: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
 };
 
-export function AccountMenuContent() {
+export function AccountMenuContent({
+  sitePathPrefix = "",
+}: {
+  sitePathPrefix?: string;
+}) {
   const { t } = useLingui();
 
   return (
@@ -66,7 +71,7 @@ export function AccountMenuContent() {
       <div>
         <div class="settings-group">
           <AccountMenuItem
-            href="/settings/account/sessions"
+            href={toPublicPath("/settings/account/sessions", sitePathPrefix)}
             icon={ICONS.monitor}
             tone="subtle"
             name={t({
@@ -79,7 +84,7 @@ export function AccountMenuContent() {
             })}
           />
           <AccountMenuItem
-            href="/settings/account/password"
+            href={toPublicPath("/settings/account/password", sitePathPrefix)}
             icon={ICONS.lock}
             tone="subtle"
             name={t({
@@ -106,7 +111,7 @@ export function AccountMenuContent() {
         <div class="settings-group">
           <form
             method="post"
-            action="/api/export/zola"
+            action={toPublicPath("/api/export/zola", sitePathPrefix)}
             class="settings-export-form"
           >
             <button type="submit" class="settings-item" data-tone="subtle">
@@ -149,7 +154,10 @@ export function AccountMenuContent() {
         </div>
         <div class="settings-group">
           <AccountMenuItem
-            href="/settings/account/delete-account"
+            href={toPublicPath(
+              "/settings/account/delete-account",
+              sitePathPrefix,
+            )}
             icon={ICONS.trash}
             tone="danger"
             name={t({

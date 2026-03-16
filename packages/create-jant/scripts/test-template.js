@@ -87,8 +87,9 @@ async function main() {
     projectDir,
     "node_modules/@jant/core/dist/client",
   );
-  const clientJs = path.join(clientDir, "client.js");
-  const clientCss = path.join(clientDir, "client.css");
+  const assetDir = path.join(clientDir, "jant-assets");
+  const clientJs = path.join(assetDir, "client.js");
+  const clientCss = path.join(assetDir, "client.css");
 
   if (!(await fs.pathExists(clientJs))) {
     console.error(`  client.js not found at ${clientJs}`);
@@ -98,7 +99,7 @@ async function main() {
     console.error(`  client.css not found at ${clientCss}`);
     process.exit(1);
   }
-  console.log("  client.js and client.css found\n");
+  console.log("  jant-assets/client.js and jant-assets/client.css found\n");
 
   // 6. Verify wrangler.toml is valid
   console.log("Step 6: Verifying wrangler.toml...");

@@ -67,6 +67,7 @@ export interface ArchivePageProps {
   availableYears: number[];
   availableCollections: { slug: string; title: string; icon: string | null }[];
   isAuthenticated: boolean;
+  sitePathPrefix?: string;
 }
 
 /** Props for the search page component */
@@ -76,6 +77,7 @@ export interface SearchPageProps {
   error?: string;
   hasMore: boolean;
   page: number;
+  sitePathPrefix?: string;
 }
 
 /** Props for the single collection page component */
@@ -90,12 +92,14 @@ export interface CollectionPageProps {
   defaultSort: SortOrder;
   showRatingSort: boolean;
   isAuthenticated: boolean;
+  sitePathPrefix?: string;
 }
 
 /** Props for the collections list page component */
 export interface CollectionsPageProps {
   items: CollectionDirectoryItem[];
   isAuthenticated: boolean;
+  sitePathPrefix?: string;
 }
 
 // =============================================================================
@@ -108,12 +112,14 @@ export interface FeedData {
   siteDescription: string;
   siteUrl: string;
   siteLanguage: string;
+  selfUrl: string;
   posts: PostView[];
 }
 
 /** Data passed to sitemap renderers */
 export interface SitemapData {
   siteUrl: string;
+  sitemapUrl: string;
   posts: PostView[];
 }
 

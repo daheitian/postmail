@@ -24,6 +24,7 @@ import type {
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
+import { publicPath } from "../runtime-paths.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
 import { getMediaCategory } from "../../lib/upload.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
@@ -415,7 +416,7 @@ export class JantComposeDialog extends LitElement {
 
     if (this.pageMode) {
       this._suppressBeforeUnload = true;
-      globalThis.location.assign(this.closeHref || "/");
+      globalThis.location.assign(this.closeHref || publicPath("/"));
     }
   }
 
@@ -1830,7 +1831,7 @@ export class JantComposeDialog extends LitElement {
             class="compose-add-collection-form"
             .labels=${this.labels.collectionFormLabels}
             .initial=${initial}
-            action="/api/collections"
+            action=${publicPath("/api/collections")}
             cancel-href="javascript:void(0)"
             @jant:collection-submit=${(e: Event) =>
               this._handleAddCollectionSubmit(e)}

@@ -16,6 +16,7 @@ const countCollections = (items: CollectionsPageProps["items"]) =>
 export const CollectionsPage: FC<CollectionsPageProps> = ({
   items,
   isAuthenticated,
+  sitePathPrefix = "",
 }) => {
   const { t } = useLingui();
   const collectionCount = countCollections(items);
@@ -38,7 +39,7 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
   if (isAuthenticated) {
     return (
       <div class="py-6" data-page="collections">
-        <CollectionsManager items={items} />
+        <CollectionsManager items={items} sitePathPrefix={sitePathPrefix} />
       </div>
     );
   }
@@ -62,7 +63,11 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
           </div>
         </header>
 
-        <CollectionDirectory items={items} emptyMessage={emptyMessage} />
+        <CollectionDirectory
+          items={items}
+          emptyMessage={emptyMessage}
+          sitePathPrefix={sitePathPrefix}
+        />
       </div>
     </div>
   );

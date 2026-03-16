@@ -7,6 +7,7 @@ import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { defaultSitemapRenderer } from "../../lib/feed.js";
 import { createMediaContext, toPostViewsFromPosts } from "../../lib/view.js";
+import { toAbsoluteSiteUrl } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -30,6 +31,11 @@ sitemapRoutes.get("/sitemap.xml", async (c) => {
 
   const xml = defaultSitemapRenderer({
     siteUrl,
+    sitemapUrl: toAbsoluteSiteUrl(
+      "/sitemap.xml",
+      siteUrl,
+      appConfig.sitePathPrefix,
+    ),
     posts: postViews,
   });
 
@@ -52,7 +58,7 @@ sitemapRoutes.get("/robots.txt", async (c) => {
     `User-agent: *`,
     ...rules,
     "",
-    `Sitemap: ${siteUrl}/sitemap.xml`,
+    `Sitemap: ${toAbsoluteSiteUrl("/sitemap.xml", siteUrl, appConfig.sitePathPrefix)}`,
     "",
   ].join("\n");
 

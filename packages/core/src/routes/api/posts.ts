@@ -33,13 +33,14 @@ function toMediaAttachment(
   r2PublicUrl?: string,
   imageTransformUrl?: string,
   s3PublicUrl?: string,
+  sitePathPrefix?: string,
 ) {
   const publicUrl = getPublicUrlForProvider(
     m.provider,
     r2PublicUrl,
     s3PublicUrl,
   );
-  const url = getMediaUrl(m.storageKey, publicUrl);
+  const url = getMediaUrl(m.storageKey, publicUrl, sitePathPrefix);
   const previewUrl = getImageUrl(url, imageTransformUrl, {
     width: 1200,
     height: 768,
@@ -47,7 +48,9 @@ function toMediaAttachment(
     format: "auto",
     fit: "scale-down",
   });
-  const posterUrl = m.posterKey ? getMediaUrl(m.posterKey, publicUrl) : null;
+  const posterUrl = m.posterKey
+    ? getMediaUrl(m.posterKey, publicUrl, sitePathPrefix)
+    : null;
 
   return {
     id: m.id,
@@ -88,13 +91,20 @@ postsApiRoutes.get("/", requireAuthApi(), async (c) => {
   // Batch load media for all posts
   const postIds = posts.map((p) => p.id);
   const mediaMap = await c.var.services.media.getByPostIds(postIds);
-  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl, sitePathPrefix } =
+    c.var.appConfig;
 
   return c.json({
     posts: posts.map((p) => ({
       ...p,
       mediaAttachments: (mediaMap.get(p.id) ?? []).map((m) =>
-        toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
+        toMediaAttachment(
+          m,
+          r2PublicUrl,
+          imageTransformUrl,
+          s3PublicUrl,
+          sitePathPrefix,
+        ),
       ),
     })),
 
@@ -114,14 +124,21 @@ postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
     c.var.services.collections.getCollectionsByPostId(id),
   ]);
   assertFound(post, "Post");
-  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl, sitePathPrefix } =
+    c.var.appConfig;
   const collectionIds = postCollections.map((col) => col.id);
 
   return c.json({
     ...post,
     collectionIds,
     mediaAttachments: mediaList.map((m) =>
-      toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
+      toMediaAttachment(
+        m,
+        r2PublicUrl,
+        imageTransformUrl,
+        s3PublicUrl,
+        sitePathPrefix,
+      ),
     ),
   });
 });
@@ -166,13 +183,20 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   }
 
   const mediaList = await c.var.services.media.getByPostId(post.id);
-  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl, sitePathPrefix } =
+    c.var.appConfig;
 
   return c.json(
     {
       ...post,
       mediaAttachments: mediaList.map((m) =>
-        toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
+        toMediaAttachment(
+          m,
+          r2PublicUrl,
+          imageTransformUrl,
+          s3PublicUrl,
+          sitePathPrefix,
+        ),
       ),
     },
     201,
@@ -223,12 +247,19 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   }
 
   const mediaList = await c.var.services.media.getByPostId(post.id);
-  const { r2PublicUrl, imageTransformUrl, s3PublicUrl } = c.var.appConfig;
+  const { r2PublicUrl, imageTransformUrl, s3PublicUrl, sitePathPrefix } =
+    c.var.appConfig;
 
   return c.json({
     ...post,
     mediaAttachments: mediaList.map((m) =>
-      toMediaAttachment(m, r2PublicUrl, imageTransformUrl, s3PublicUrl),
+      toMediaAttachment(
+        m,
+        r2PublicUrl,
+        imageTransformUrl,
+        s3PublicUrl,
+        sitePathPrefix,
+      ),
     ),
   });
 });

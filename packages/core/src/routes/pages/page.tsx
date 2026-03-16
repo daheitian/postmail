@@ -13,6 +13,7 @@ import { getNavigationData } from "../../lib/navigation.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { buildPostMeta } from "../../lib/post-meta.js";
 import { assemblePostPageDisplay } from "../../lib/post-display.js";
+import { toPublicHref, toPublicPath } from "../../lib/url.js";
 import type { Post } from "../../types.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -47,13 +48,14 @@ async function renderPost(c: Context<Env>, post: Post) {
 pageRoutes.get("/*", async (c) => {
   const fullPath = c.req.path.slice(1); // Remove leading /
   if (!fullPath) return c.notFound();
+  const sitePathPrefix = c.var.appConfig.sitePathPrefix;
 
   const resolved = await c.var.services.paths.resolve(fullPath);
   if (!resolved) return c.notFound();
 
   if (resolved.kind === "redirect" && resolved.redirectToPath) {
     return c.redirect(
-      `/${resolved.redirectToPath}`,
+      toPublicHref(`/${resolved.redirectToPath}`, sitePathPrefix),
       resolved.redirectType ?? 301,
     );
   }
@@ -74,7 +76,7 @@ pageRoutes.get("/*", async (c) => {
         post.id,
       );
       if (alias) {
-        return c.redirect(`/${alias.path}`, 301);
+        return c.redirect(toPublicPath(`/${alias.path}`, sitePathPrefix), 301);
       }
     }
 
@@ -88,7 +90,10 @@ pageRoutes.get("/*", async (c) => {
     if (!collection) return c.notFound();
 
     if (resolved.kind === "alias") {
-      return c.redirect(`/c/${collection.slug}`, 301);
+      return c.redirect(
+        toPublicPath(`/c/${collection.slug}`, sitePathPrefix),
+        301,
+      );
     }
   }
 

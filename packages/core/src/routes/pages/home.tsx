@@ -21,6 +21,7 @@ import {
   assembleFeaturedTimeline,
   assembleTimeline,
 } from "../../lib/timeline.js";
+import { toPublicPath } from "../../lib/url.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
 import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
@@ -60,7 +61,7 @@ homeRoutes.get("/", async (c) => {
           items={items}
           currentPage={currentPage}
           totalPages={totalPages}
-          baseUrl="/"
+          baseUrl={toPublicPath("/", navData.sitePathPrefix)}
         />
       ),
     });
@@ -87,7 +88,7 @@ homeRoutes.get("/", async (c) => {
     content: (
       <HomePage
         items={items}
-        baseUrl="/"
+        baseUrl={toPublicPath("/", navData.sitePathPrefix)}
         currentPage={currentPage}
         totalPages={totalPages}
       />

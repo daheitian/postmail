@@ -1,3 +1,5 @@
+import { toPublicPath } from "./url.js";
+
 /**
  * Image URL utilities
  *
@@ -123,7 +125,14 @@ export function getPublicUrlForProvider(
  * // Returns: "https://cdn.example.com/media/2025/01/01902a9f-1a2b-7c3d.webp"
  * ```
  */
-export function getMediaUrl(storageKey: string, publicUrl?: string): string {
+export function getMediaUrl(
+  storageKey: string,
+  publicUrl?: string,
+  sitePathPrefix = "",
+): string {
   const base = publicUrl ? publicUrl.replace(/\/+$/, "") : "";
-  return `${base}/${storageKey}`;
+  if (base) {
+    return `${base}/${storageKey}`;
+  }
+  return toPublicPath(`/${storageKey}`, sitePathPrefix);
 }

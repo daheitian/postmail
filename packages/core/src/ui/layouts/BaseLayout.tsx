@@ -10,6 +10,8 @@
 
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { Context } from "hono";
+import { toAssetPath } from "../../lib/asset-path.js";
+import { toPublicPath } from "../../lib/url.js";
 import { CORE_VERSION, IS_VITE_DEV } from "../../lib/version.js";
 import { I18nProvider } from "../../i18n/index.js";
 
@@ -54,8 +56,13 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   const resolvedFaviconVersion =
     faviconVersion ?? (appConfig?.faviconVersion || undefined);
   const resolvedNoindex = noindex ?? appConfig?.noindex;
-  const currentUrl = c ? new URL(c.req.url).toString() : undefined;
+  const sitePathPrefix = appConfig?.sitePathPrefix || "";
+  const assetBasePath = IS_VITE_DEV
+    ? "/"
+    : appConfig?.assetBasePath || toAssetPath("");
+  const currentUrl = c ? c.get("publicRequestUrl") : undefined;
   const siteName = appConfig?.siteName;
+  const assetPath = (path: string) => (IS_VITE_DEV ? path : toAssetPath(path));
 
   // Automatically wrap with I18nProvider if Context is provided
   const content = c ? <I18nProvider c={c}>{children}</I18nProvider> : children;
@@ -74,26 +81,40 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     fontLanguage === "zh-cn" ||
     fontLanguage === "zh-sg"
       ? IS_VITE_DEV
-        ? "/src/style-cjk.css"
-        : `/client-cjk.css?v=${CORE_VERSION}`
+        ? assetPath("/src/style-cjk.css")
+        : toAssetPath(`/client-cjk.css?v=${CORE_VERSION}`)
       : fontLanguage === "zh-hant" ||
           fontLanguage === "zh-tw" ||
           fontLanguage === "zh-hk" ||
           fontLanguage === "zh-mo"
         ? IS_VITE_DEV
-          ? "/src/style-cjk-tc.css"
-          : `/client-cjk-tc.css?v=${CORE_VERSION}`
+          ? assetPath("/src/style-cjk-tc.css")
+          : toAssetPath(`/client-cjk-tc.css?v=${CORE_VERSION}`)
         : null;
   const clientScriptPath = IS_VITE_DEV
     ? resolvedClientBundle === "full"
-      ? "/src/client-auth.ts"
-      : "/src/client.ts"
+      ? assetPath("/src/client-auth.ts")
+      : assetPath("/src/client.ts")
     : resolvedClientBundle === "full"
-      ? `/client-auth.js?v=${CORE_VERSION}`
-      : `/client.js?v=${CORE_VERSION}`;
+      ? toAssetPath(`/client-auth.js?v=${CORE_VERSION}`)
+      : toAssetPath(`/client.js?v=${CORE_VERSION}`);
+  const faviconHref = resolvedFaviconVersion
+    ? toPublicPath(`/favicon.ico?v=${resolvedFaviconVersion}`, sitePathPrefix)
+    : toPublicPath("/favicon.ico", sitePathPrefix);
+  const appleTouchHref = resolvedFaviconVersion
+    ? toPublicPath(
+        `/apple-touch-icon.png?v=${resolvedFaviconVersion}`,
+        sitePathPrefix,
+      )
+    : toPublicPath("/apple-touch-icon.png", sitePathPrefix);
 
   return (
-    <html lang={resolvedLang} data-theme-mode={themeMode}>
+    <html
+      lang={resolvedLang}
+      data-theme-mode={themeMode}
+      data-site-path-prefix={sitePathPrefix}
+      data-asset-base-path={assetBasePath}
+    >
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -114,31 +135,23 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         {resolvedNoindex && <meta name="robots" content="noindex, nofollow" />}
         {resolvedFaviconUrl && (
           <>
-            <link
-              rel="icon"
-              href={
-                resolvedFaviconVersion
-                  ? `/favicon.ico?v=${resolvedFaviconVersion}`
-                  : "/favicon.ico"
-              }
-              sizes="16x16 32x32"
-            />
+            <link rel="icon" href={faviconHref} sizes="16x16 32x32" />
             <link
               rel="apple-touch-icon"
-              href={
-                resolvedFaviconVersion
-                  ? `/apple-touch-icon.png?v=${resolvedFaviconVersion}`
-                  : "/apple-touch-icon.png"
-              }
+              href={appleTouchHref}
               sizes="180x180"
             />
           </>
         )}
-        {IS_VITE_DEV && <script type="module" src="/@vite/client" />}
+        {IS_VITE_DEV && (
+          <script type="module" src={assetPath("/@vite/client")} />
+        )}
         <link
           rel="stylesheet"
           href={
-            IS_VITE_DEV ? "/src/style.css" : `/client.css?v=${CORE_VERSION}`
+            IS_VITE_DEV
+              ? assetPath("/src/style.css")
+              : toAssetPath(`/client.css?v=${CORE_VERSION}`)
           }
         />
         {cjkStylesheetPath && (

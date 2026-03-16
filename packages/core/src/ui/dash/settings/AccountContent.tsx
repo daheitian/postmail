@@ -3,15 +3,20 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
+import { toPublicPath } from "../../../lib/url.js";
 
-export function AccountContent() {
+export function AccountContent({
+  sitePathPrefix = "",
+}: {
+  sitePathPrefix?: string;
+}) {
   const { t } = useLingui();
 
   return (
     <div class="flex flex-col max-w-lg">
       <form
         data-signals="{currentPassword: '', newPassword: '', confirmPassword: ''}"
-        data-on:submit__prevent="@post('/settings/account/password')"
+        data-on:submit__prevent={`@post('${toPublicPath("/settings/account/password", sitePathPrefix)}')`}
         data-indicator="_passwordLoading"
       >
         <h2 class="text-lg font-semibold mb-4">

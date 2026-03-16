@@ -10,6 +10,7 @@
  */
 
 import { encodeIco } from "../lib/favicon.js";
+import { publicPath } from "./runtime-paths.js";
 
 /**
  * Load an image from a File object
@@ -130,7 +131,7 @@ async function handleAvatarUpload(
     }
 
     // Redirect on success
-    window.location.href = "/settings/avatar?saved";
+    window.location.href = publicPath("/settings/avatar?saved");
   } catch {
     // Restore button text on error
     if (label) label.textContent = originalText;

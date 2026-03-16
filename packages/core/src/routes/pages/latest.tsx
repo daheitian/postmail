@@ -17,6 +17,7 @@ import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleTimeline } from "../../lib/timeline.js";
+import { toPublicPath } from "../../lib/url.js";
 import { HomePage } from "../../ui/pages/HomePage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -29,7 +30,7 @@ latestRoutes.get("/", async (c) => {
 
   // When homepage already shows latest, redirect to avoid duplicate content
   if (navData.homeDefaultView !== "featured") {
-    return c.redirect("/", 302);
+    return c.redirect(toPublicPath("/", navData.sitePathPrefix), 302);
   }
 
   const page = parsePageNumber(c.req.query("page"));
@@ -55,7 +56,7 @@ latestRoutes.get("/", async (c) => {
     content: (
       <HomePage
         items={items}
-        baseUrl="/latest"
+        baseUrl={toPublicPath("/latest", navData.sitePathPrefix)}
         currentPage={currentPage}
         totalPages={totalPages}
       />

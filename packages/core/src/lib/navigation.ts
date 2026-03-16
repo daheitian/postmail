@@ -15,6 +15,7 @@ import { render as renderMarkdown } from "./markdown.js";
 export interface NavigationData {
   links: NavItemView[];
   currentPath: string;
+  sitePathPrefix: string;
   siteName: string;
   /** Used as meta description fallback and in RSS/Atom feeds */
   siteDescription: string;
@@ -48,7 +49,7 @@ export interface NavigationData {
  */
 export async function getNavigationData(c: Context): Promise<NavigationData> {
   const items = await c.var.services.navItems.list();
-  const currentPath = new URL(c.req.url).pathname;
+  const currentPath = c.var.publicPath;
   const appConfig = c.var.appConfig;
 
   const siteName = appConfig.siteName;
@@ -79,7 +80,12 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
     // Not authenticated
   }
 
-  const links = toNavItemViews(items, currentPath, isAuthenticated);
+  const links = toNavItemViews(
+    items,
+    currentPath,
+    isAuthenticated,
+    appConfig.sitePathPrefix,
+  );
 
   // Only load collections when authenticated (for compose dialog)
   if (isAuthenticated) {
@@ -89,6 +95,7 @@ export async function getNavigationData(c: Context): Promise<NavigationData> {
   return {
     links,
     currentPath,
+    sitePathPrefix: appConfig.sitePathPrefix,
     siteName,
     siteDescription,
     isAuthenticated,

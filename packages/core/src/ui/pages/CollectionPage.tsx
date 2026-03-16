@@ -9,6 +9,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { CollectionPageProps } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatPageLabel } from "../../lib/pagination.js";
+import { toPublicPath } from "../../lib/url.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
 import { getCollectionMutationLabels } from "../shared/collection-management-labels.js";
 
@@ -26,10 +27,11 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   defaultSort,
   showRatingSort,
   isAuthenticated,
+  sitePathPrefix = "",
 }) => {
   const { t } = useLingui();
   const iconHtml = renderCollectionIcon(collection.icon, { size: 28 });
-  const collectionUrl = `/c/${collection.slug}`;
+  const collectionUrl = toPublicPath(`/c/${collection.slug}`, sitePathPrefix);
   const sortTriggerId = `collection-sort-trigger-${collection.id}`;
   const sortPopoverId = `collection-sort-popover-${collection.id}`;
   const pageLabel =
@@ -92,7 +94,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
         >
           <ol>
             <li>
-              <a href="/c">
+              <a href={toPublicPath("/c", sitePathPrefix)}>
                 {t({
                   message: "Collections",
                   comment: "@context: Breadcrumb link to collections page",
@@ -227,7 +229,10 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 data-collection-page-actions
                 data-collection-id={collection.id}
                 data-collection-page-labels={escapeJson(mutationLabels)}
-                data-collection-page-redirect-url="/c"
+                data-collection-page-redirect-url={toPublicPath(
+                  "/c",
+                  sitePathPrefix,
+                )}
               >
                 <button
                   type="button"

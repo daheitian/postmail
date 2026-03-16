@@ -6,7 +6,7 @@
  * Font Theme, Custom CSS, Account (Sessions + Password), and API Tokens.
  */
 
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -38,10 +38,15 @@ import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
 import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
 import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
 import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountContent.js";
+import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const settingsRoutes = new Hono<Env>();
+
+function publicPath(c: Context<Env>, path: string): string {
+  return toPublicPath(path, c.var.appConfig.sitePathPrefix);
+}
 
 // ===========================================================================
 // Settings root — iOS-style grouped list
@@ -53,7 +58,9 @@ settingsRoutes.get("/", async (c) => {
   return renderPublicPage(c, {
     title: buildPageTitle("Settings", navData.siteName),
     navData,
-    content: <SettingsRootContent />,
+    content: (
+      <SettingsRootContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
+    ),
   });
 });
 
@@ -78,7 +85,7 @@ settingsRoutes.get("/general", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={publicPath(c, "/settings")}
           current="General"
         />
         <GeneralContent
@@ -128,13 +135,13 @@ settingsRoutes.post("/general", async (c) => {
   if (wantsJson) {
     return c.json({
       status: "redirect" as const,
-      url: "/settings/general?saved",
+      url: publicPath(c, "/settings/general?saved"),
     });
   }
 
   return sse(c, async (stream) => {
     if (languageChanged) {
-      await stream.redirect("/settings/general?saved");
+      await stream.redirect(publicPath(c, "/settings/general?saved"));
     } else {
       await stream.patchElements(
         escapeHtml(buildPageTitle("General", displayName)),
@@ -223,7 +230,7 @@ settingsRoutes.get("/avatar", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={publicPath(c, "/settings")}
           current="Avatar"
         />
         <AvatarContent
@@ -284,7 +291,7 @@ settingsRoutes.post("/avatar", async (c) => {
       },
     );
 
-    return dsRedirect("/settings/avatar?saved");
+    return dsRedirect(publicPath(c, "/settings/avatar?saved"));
   } catch (e) {
     if (e instanceof ValidationError) {
       return dsToast(e.message, "error");
@@ -309,11 +316,11 @@ settingsRoutes.post("/avatar/remove", async (c) => {
   if (wantsJson) {
     return c.json({
       status: "redirect" as const,
-      url: "/settings/avatar?saved",
+      url: publicPath(c, "/settings/avatar?saved"),
     });
   }
 
-  return dsRedirect("/settings/avatar?saved");
+  return dsRedirect(publicPath(c, "/settings/avatar?saved"));
 });
 
 settingsRoutes.post("/avatar/display", async (c) => {
@@ -374,7 +381,7 @@ settingsRoutes.get("/navigation", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={publicPath(c, "/settings")}
           current="Navigation"
         />
         <NavigationContent
@@ -382,6 +389,7 @@ settingsRoutes.get("/navigation", async (c) => {
           headerNavMaxVisible={headerNavMaxVisible}
           homeDefaultView={homeDefaultView}
           siteName={navData.siteName}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
         />
       </>
     ),
@@ -436,13 +444,14 @@ settingsRoutes.get("/color-theme", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={publicPath(c, "/settings")}
           current="Color Theme"
         />
         <ColorThemeContent
           themes={themes}
           currentThemeId={currentThemeId}
           currentThemeMode={currentThemeMode}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
         />
       </>
     ),
@@ -485,7 +494,7 @@ settingsRoutes.post("/color-theme", async (c) => {
     await settings.set(SETTINGS_KEYS.THEME_MODE, themeMode);
   }
 
-  return dsRedirect("/settings/color-theme?saved");
+  return dsRedirect(publicPath(c, "/settings/color-theme?saved"));
 });
 
 // ===========================================================================
@@ -505,12 +514,13 @@ settingsRoutes.get("/font-theme", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={publicPath(c, "/settings")}
           current="Font Theme"
         />
         <FontThemeContent
           fontThemes={BUILTIN_FONT_THEMES}
           currentFontThemeId={currentFontThemeId}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
         />
       </>
     ),
@@ -542,7 +552,7 @@ settingsRoutes.post("/font-theme", async (c) => {
     await settings.set("FONT_THEME", validFont.id);
   }
 
-  return dsRedirect("/settings/font-theme?saved");
+  return dsRedirect(publicPath(c, "/settings/font-theme?saved"));
 });
 
 // ===========================================================================
@@ -560,10 +570,13 @@ settingsRoutes.get("/custom-css", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={publicPath(c, "/settings")}
           current="Custom CSS"
         />
-        <AdvancedContent customCSS={customCSS} />
+        <AdvancedContent
+          customCSS={customCSS}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
+        />
       </>
     ),
   });
@@ -606,10 +619,10 @@ settingsRoutes.get("/account", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={publicPath(c, "/settings")}
           current="Account"
         />
-        <AccountMenuContent />
+        <AccountMenuContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
       </>
     ),
   });
@@ -662,10 +675,13 @@ settingsRoutes.get("/account/sessions", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Account"
-          parentHref="/settings/account"
+          parentHref={publicPath(c, "/settings/account")}
           current="Sessions"
         />
-        <SessionsContent sessions={sessions} />
+        <SessionsContent
+          sessions={sessions}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
+        />
       </>
     ),
   });
@@ -683,7 +699,7 @@ settingsRoutes.post("/account/sessions/:token/revoke", async (c) => {
     // Session may already be expired/revoked — still redirect
   }
 
-  return dsRedirect("/settings/account/sessions");
+  return dsRedirect(publicPath(c, "/settings/account/sessions"));
 });
 
 // ===========================================================================
@@ -700,10 +716,10 @@ settingsRoutes.get("/account/password", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Account"
-          parentHref="/settings/account"
+          parentHref={publicPath(c, "/settings/account")}
           current="Password"
         />
-        <AccountContent />
+        <AccountContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
       </>
     ),
   });
@@ -785,12 +801,13 @@ settingsRoutes.get("/account/delete-account", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Account"
-          parentHref="/settings/account"
+          parentHref={publicPath(c, "/settings/account")}
           current="Delete Account"
         />
         <DeleteAccountContent
           siteName={navData.siteName}
           csrfToken={csrfToken}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
         />
       </>
     ),
@@ -832,7 +849,7 @@ settingsRoutes.post("/account/delete-account", async (c) => {
     storage: c.var.storage,
   });
 
-  return dsRedirect("/setup");
+  return dsRedirect(publicPath(c, "/setup"));
 });
 
 // ===========================================================================
@@ -842,7 +859,7 @@ settingsRoutes.post("/account/delete-account", async (c) => {
 settingsRoutes.get("/api-tokens", async (c) => {
   const tokens = await c.var.services.apiTokens.list();
   const navData = await getNavigationData(c);
-  const siteUrl = c.env.SITE_URL;
+  const siteUrl = c.var.appConfig.siteUrl;
 
   return renderPublicPage(c, {
     title: buildPageTitle("API Tokens", navData.siteName),
@@ -851,10 +868,14 @@ settingsRoutes.get("/api-tokens", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={publicPath(c, "/settings")}
           current="API Tokens"
         />
-        <ApiTokensContent tokens={tokens} siteUrl={siteUrl} />
+        <ApiTokensContent
+          tokens={tokens}
+          siteUrl={siteUrl}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
+        />
       </>
     ),
   });
@@ -882,5 +903,5 @@ settingsRoutes.post("/api-tokens/:id/delete", async (c) => {
   const id = c.req.param("id");
   await c.var.services.apiTokens.delete(id);
 
-  return dsRedirect("/settings/api-tokens");
+  return dsRedirect(publicPath(c, "/settings/api-tokens"));
 });

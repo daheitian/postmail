@@ -10,6 +10,7 @@
 import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
+import { getSitePathPrefix, toPublicPath } from "../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -39,7 +40,11 @@ export function requireOnboarding(): MiddlewareHandler<Env> {
       return next();
     }
 
-    return c.redirect("/setup");
+    const sitePathPrefix =
+      c.var.appConfig?.sitePathPrefix ??
+      getSitePathPrefix(c.env?.SITE_URL || "");
+
+    return c.redirect(toPublicPath("/setup", sitePathPrefix));
   };
 }
 

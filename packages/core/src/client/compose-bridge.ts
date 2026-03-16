@@ -22,6 +22,7 @@ import {
   replaceWithAutoClose,
 } from "./toast.js";
 import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
+import { publicPath } from "./runtime-paths.js";
 import { setupThreadContexts } from "./thread-context.js";
 import { getMediaCategory } from "../lib/upload.js";
 
@@ -558,7 +559,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     if (!isPageMode || !composeEl) return false;
     if (!composeEl.consumePageLeaveRequest()) return false;
     composeEl.preparePageLeave();
-    globalThis.location.assign(composeEl.closeHref || "/");
+    globalThis.location.assign(composeEl.closeHref || publicPath("/"));
     return true;
   };
   const isEdit = !!detail.editPostId;

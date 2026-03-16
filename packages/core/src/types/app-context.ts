@@ -20,6 +20,8 @@ export interface AppVariables {
   allSettings: Record<string, string>;
   themeStyle: string;
   storage: StorageDriver | null;
+  publicRequestUrl: string;
+  publicPath: string;
 }
 
 export type App = Hono<{ Bindings: Bindings; Variables: AppVariables }>;

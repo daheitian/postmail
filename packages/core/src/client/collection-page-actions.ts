@@ -1,6 +1,7 @@
 import type { CollectionSubmitDetail } from "./components/collection-types.js";
 import { showConfirmDialog } from "./confirm.js";
 import { showToast } from "./toast.js";
+import { publicPath } from "./runtime-paths.js";
 
 interface CollectionPageActionLabels {
   edit: string;
@@ -229,7 +230,7 @@ document
         showToast(labels.saved);
         closeDialog(false);
         window.location.href = updated.slug
-          ? `/c/${updated.slug}`
+          ? publicPath(`/c/${updated.slug}`)
           : window.location.href;
       } catch {
         showToast(labels.saveFailed, "error");

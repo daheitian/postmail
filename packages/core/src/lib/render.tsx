@@ -70,6 +70,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     siteName: navData.siteName,
     links: navData.links,
     currentPath: navData.currentPath,
+    sitePathPrefix: navData.sitePathPrefix,
     isAuthenticated: navData.isAuthenticated,
     collections: navData.collections,
     homeDefaultView: navData.homeDefaultView,

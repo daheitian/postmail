@@ -9,6 +9,7 @@ import type {
   NavManagerLabels,
   SystemNavConfig,
 } from "../../../client/components/nav-manager-types.js";
+import { toPublicHref, toPublicPath } from "../../../lib/url.js";
 // =============================================================================
 // System descriptions (used to build the config passed to the Lit component)
 // =============================================================================
@@ -29,11 +30,13 @@ export function NavigationContent({
   headerNavMaxVisible,
   homeDefaultView,
   siteName,
+  sitePathPrefix = "",
 }: {
   navItems: NavItem[];
   headerNavMaxVisible: number;
   homeDefaultView: string;
   siteName: string;
+  sitePathPrefix?: string;
 }) {
   const { t } = useLingui();
 
@@ -204,14 +207,18 @@ export function NavigationContent({
           </div>
           <div class="nav-preview-content">
             <div class="site-header-top">
-              <a href="/" class="site-logo">
+              <a href={toPublicPath("/", sitePathPrefix)} class="site-logo">
                 {siteName}
               </a>
               <div class="site-header-right">
                 {navItems.length > 0 && (
                   <nav class="site-header-nav">
                     {navItems.slice(0, headerNavMaxVisible).map((item) => (
-                      <a key={item.id} href={item.url} class="site-header-link">
+                      <a
+                        key={item.id}
+                        href={toPublicHref(item.url, sitePathPrefix)}
+                        class="site-header-link"
+                      >
                         {item.label}
                       </a>
                     ))}

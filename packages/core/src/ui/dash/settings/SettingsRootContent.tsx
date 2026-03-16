@@ -3,6 +3,7 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
+import { toPublicPath } from "../../../lib/url.js";
 
 /** Chevron right icon shared by all rows */
 function ChevronRight() {
@@ -65,7 +66,11 @@ const ICONS = {
   shield: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>`,
 };
 
-export function SettingsRootContent() {
+export function SettingsRootContent({
+  sitePathPrefix = "",
+}: {
+  sitePathPrefix?: string;
+}) {
   const { t } = useLingui();
 
   return (
@@ -96,7 +101,7 @@ export function SettingsRootContent() {
         </div>
         <div class="settings-group">
           <SettingsItem
-            href="/settings/general"
+            href={toPublicPath("/settings/general", sitePathPrefix)}
             icon={ICONS.settings}
             tone="subtle"
             name={t({
@@ -121,7 +126,7 @@ export function SettingsRootContent() {
         </div>
         <div class="settings-group">
           <SettingsItem
-            href="/settings/avatar"
+            href={toPublicPath("/settings/avatar", sitePathPrefix)}
             icon={ICONS.image}
             name={t({
               message: "Avatar",
@@ -133,7 +138,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/settings/navigation"
+            href={toPublicPath("/settings/navigation", sitePathPrefix)}
             icon={ICONS.menu}
             name={t({
               message: "Navigation",
@@ -145,7 +150,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/settings/color-theme"
+            href={toPublicPath("/settings/color-theme", sitePathPrefix)}
             icon={ICONS.palette}
             name={t({
               message: "Color Theme",
@@ -157,7 +162,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/settings/font-theme"
+            href={toPublicPath("/settings/font-theme", sitePathPrefix)}
             icon={ICONS.type}
             tone="subtle"
             name={t({
@@ -170,7 +175,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/settings/custom-css"
+            href={toPublicPath("/settings/custom-css", sitePathPrefix)}
             icon={ICONS.code}
             tone="subtle"
             name={t({
@@ -195,7 +200,7 @@ export function SettingsRootContent() {
         </div>
         <div class="settings-group">
           <SettingsItem
-            href="/settings/custom-urls"
+            href={toPublicPath("/settings/custom-urls", sitePathPrefix)}
             icon={ICONS.arrowRightLeft}
             tone="subtle"
             name={t({
@@ -208,7 +213,7 @@ export function SettingsRootContent() {
             })}
           />
           <SettingsItem
-            href="/settings/api-tokens"
+            href={toPublicPath("/settings/api-tokens", sitePathPrefix)}
             icon={ICONS.key}
             tone="subtle"
             name={t({
@@ -233,7 +238,7 @@ export function SettingsRootContent() {
         </div>
         <div class="settings-group">
           <SettingsItem
-            href="/settings/account"
+            href={toPublicPath("/settings/account", sitePathPrefix)}
             icon={ICONS.shield}
             tone="subtle"
             name={t({
@@ -252,7 +257,7 @@ export function SettingsRootContent() {
       <div class="pt-2 text-center">
         <button
           type="button"
-          data-on:click__prevent="@post('/signout')"
+          data-on:click__prevent={`@post('${toPublicPath("/signout", sitePathPrefix)}')`}
           class="text-sm text-destructive hover:text-destructive/80 transition-colors"
         >
           {t({

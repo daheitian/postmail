@@ -14,6 +14,7 @@ PAGE_SIZE = 50
 # R2_PUBLIC_URL = "https://demo-media.jant.me"
 # IMAGE_TRANSFORM_URL = "https://demo-media.jant.me/cdn-cgi/image"
 
+
 [[d1_databases]]
 binding = "DB"
 database_name = "jant-dev-db"

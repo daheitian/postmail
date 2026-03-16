@@ -91,6 +91,7 @@ themeSampleRoutes.get("/theme-sample", async (c) => {
         themes={BUILTIN_COLOR_THEMES}
         selectedTheme={selectedTheme}
         currentMode={selectedMode}
+        sitePathPrefix={navData.sitePathPrefix}
       />
     ),
   });

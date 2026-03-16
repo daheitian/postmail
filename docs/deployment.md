@@ -95,6 +95,31 @@ Set these in `wrangler.toml` under `[vars]`:
 SITE_URL = "https://yourdomain.com"
 ```
 
+`SITE_URL` can also include a subpath, such as `https://example.com/blog`.
+
+## Deploy Under a Subpath
+
+To serve Jant from a subpath, set `SITE_URL` to the full public base URL:
+
+```toml
+[vars]
+SITE_URL = "https://example.com/blog"
+```
+
+Jant will then use:
+
+- Page routes under `/blog/*`
+- Static assets under `/jant-assets/*`
+
+Jant also keeps fonts under `/jant-assets/*` as regular files rather than inline `data:` URLs, so the default `font-src 'self'` CSP stays sufficient.
+
+On Cloudflare, make sure your domain or proxy setup sends both of these path groups to the same Worker:
+
+- `/blog*`
+- `/jant-assets*`
+
+`/jant-assets` is a reserved root path for Jant's built assets.
+
 Or use secrets for sensitive values:
 
 ```bash

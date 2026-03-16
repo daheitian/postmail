@@ -12,6 +12,8 @@ import type { Post, Collection } from "./entities.js";
 export interface CollectionTagView {
   slug: string;
   title: string;
+  /** Public collection URL, including any configured site path prefix. */
+  url: string;
   /** Pre-rendered icon HTML (SVG or emoji span) */
   iconHtml?: string;
 }
@@ -194,6 +196,7 @@ export interface SiteLayoutProps {
   siteName: string;
   links: NavItemView[];
   currentPath: string;
+  sitePathPrefix?: string;
   isAuthenticated?: boolean;
   collections?: Collection[];
   homeDefaultView?: string;

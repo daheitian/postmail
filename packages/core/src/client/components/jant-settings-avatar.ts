@@ -13,6 +13,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { SettingsLabels } from "./settings-types.js";
+import { publicPath } from "../runtime-paths.js";
 
 export class JantSettingsAvatar extends LitElement {
   static properties = {
@@ -146,7 +147,7 @@ export class JantSettingsAvatar extends LitElement {
             ${this._renderPreview()}
             <div class="flex flex-col gap-2">
               <form
-                action="/settings/avatar"
+                action=${publicPath("/settings/avatar")}
                 method="post"
                 enctype="multipart/form-data"
                 class="inline"

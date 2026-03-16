@@ -186,7 +186,11 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     c.var.appConfig.r2PublicUrl,
     c.var.appConfig.s3PublicUrl,
   );
-  const publicUrl = getMediaUrl(data.storageKey, mediaPublicUrl);
+  const publicUrl = getMediaUrl(
+    data.storageKey,
+    mediaPublicUrl,
+    c.var.appConfig.sitePathPrefix,
+  );
 
   return c.json({
     id: media.id,

@@ -9,6 +9,7 @@ import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { UnauthorizedError } from "../lib/errors.js";
+import { getSitePathPrefix, toPublicHref } from "../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -40,18 +41,23 @@ export function isLocalHostname(hostname: string): boolean {
  */
 export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
   return async (c, next) => {
+    const sitePathPrefix =
+      c.var.appConfig?.sitePathPrefix ??
+      getSitePathPrefix(c.env?.SITE_URL || "");
+    const redirectTarget = toPublicHref(redirectTo, sitePathPrefix);
+
     try {
       const session = await c.var.auth.api.getSession({
         headers: c.req.raw.headers,
       });
 
       if (!session?.user) {
-        return c.redirect(redirectTo);
+        return c.redirect(redirectTarget);
       }
 
       await next();
     } catch {
-      return c.redirect(redirectTo);
+      return c.redirect(redirectTarget);
     }
   };
 }

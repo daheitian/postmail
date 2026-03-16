@@ -8,6 +8,7 @@
 import type { FC, PropsWithChildren } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { NavItemView, SiteLayoutProps } from "../../types.js";
+import { toPublicPath } from "../../lib/url.js";
 import { ComposeDialog } from "../compose/ComposeDialog.js";
 import { ComposePrompt } from "../compose/ComposePrompt.js";
 
@@ -29,6 +30,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   siteName,
   links,
   currentPath,
+  sitePathPrefix = "",
   isAuthenticated,
   collections,
   homeDefaultView,
@@ -47,8 +49,14 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   const overflowLinks = links.slice(maxVisible);
   const hasActiveOverflow = overflowLinks.some((l) => l.isActive);
 
-  const latestHref = homeDefaultView === "featured" ? "/latest" : "/";
-  const featuredHref = homeDefaultView === "featured" ? "/" : "/featured";
+  const latestHref =
+    homeDefaultView === "featured"
+      ? toPublicPath("/latest", sitePathPrefix)
+      : toPublicPath("/", sitePathPrefix);
+  const featuredHref =
+    homeDefaultView === "featured"
+      ? toPublicPath("/", sitePathPrefix)
+      : toPublicPath("/featured", sitePathPrefix);
 
   const latestLink = {
     href: latestHref,
@@ -77,9 +85,9 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   });
 
   const isHomePage =
-    currentPath === "/" ||
-    currentPath === "/featured" ||
-    currentPath === "/latest";
+    currentPath === toPublicPath("/", sitePathPrefix) ||
+    currentPath === toPublicPath("/featured", sitePathPrefix) ||
+    currentPath === toPublicPath("/latest", sitePathPrefix);
   const contentClass = isHomePage
     ? "site-content site-content-home"
     : "site-content";
@@ -92,7 +100,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
             <div
               class={`site-header-top site-header-top-bordered${isHomePage ? " site-header-top-home" : ""}`}
             >
-              <a href="/" class="site-logo">
+              <a href={toPublicPath("/", sitePathPrefix)} class="site-logo">
                 {showHeaderAvatar && siteAvatarUrl && (
                   <img src={siteAvatarUrl} class="site-logo-avatar" alt="" />
                 )}
@@ -169,8 +177,8 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
                   </nav>
                 )}
                 <a
-                  href="/search"
-                  class={`site-header-search ${currentPath === "/search" ? "site-header-search-active" : ""}`}
+                  href={toPublicPath("/search", sitePathPrefix)}
+                  class={`site-header-search ${currentPath === toPublicPath("/search", sitePathPrefix) ? "site-header-search-active" : ""}`}
                   aria-label={searchLabel}
                   title={searchLabel}
                 >

@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { ValidationError, ExternalServiceError } from "../../lib/errors.js";
+import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -41,7 +42,7 @@ searchApiRoutes.get("/", async (c) => {
         slug: r.post.slug,
         snippet: r.snippet,
         publishedAt: r.post.publishedAt,
-        url: `/${r.post.slug}`,
+        url: toPublicPath(`/${r.post.slug}`, c.var.appConfig.sitePathPrefix),
       })),
       count: results.length,
     });

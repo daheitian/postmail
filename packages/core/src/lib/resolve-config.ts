@@ -12,7 +12,9 @@
 import type { Bindings } from "../types/bindings.js";
 import type { AppConfig } from "../types/config.js";
 import { CONFIG_FIELDS } from "../types/config.js";
+import { ASSET_BASE_PATH } from "./asset-path.js";
 import { getPublicUrlForProvider, getMediaUrl } from "./image.js";
+import { getSiteOrigin, getSitePathPrefix, normalizeSiteUrl } from "./url.js";
 
 /**
  * Resolve a single config value following priority rules.
@@ -80,6 +82,9 @@ export function resolveConfig(
   env: Bindings,
   allSettings: Record<string, string>,
 ): AppConfig {
+  const siteUrl = normalizeSiteUrl(env.SITE_URL || "");
+  const siteOrigin = getSiteOrigin(siteUrl);
+  const sitePathPrefix = getSitePathPrefix(siteUrl);
   const storageDriver = env.STORAGE_DRIVER || "r2";
   const r2PublicUrl = env.R2_PUBLIC_URL || "";
   const s3PublicUrl = env.S3_PUBLIC_URL || "";
@@ -94,7 +99,7 @@ export function resolveConfig(
       r2PublicUrl,
       s3PublicUrl,
     );
-    siteAvatarUrl = getMediaUrl(siteAvatar, publicUrl);
+    siteAvatarUrl = getMediaUrl(siteAvatar, publicUrl, sitePathPrefix);
   }
 
   // Description is "explicit" when set in DB or ENV (not just the default)
@@ -124,7 +129,10 @@ export function resolveConfig(
     noindex: resolve("NOINDEX", allSettings, env) === "true",
 
     // Infrastructure (ENV only)
-    siteUrl: env.SITE_URL || "",
+    siteUrl,
+    siteOrigin,
+    sitePathPrefix,
+    assetBasePath: ASSET_BASE_PATH,
     authConfigured: !!env.AUTH_SECRET,
 
     // Media (ENV only)

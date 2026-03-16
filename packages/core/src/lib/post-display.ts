@@ -61,6 +61,7 @@ export async function assemblePostCardView(
       loadThreadRootPermalinks(
         [post],
         c.var.services.posts.getById.bind(c.var.services.posts),
+        mediaCtx.sitePathPrefix,
       ),
       c.var.services.posts.getLastPostIdsByThread([post.threadId]),
     ]);
@@ -70,6 +71,7 @@ export async function assemblePostCardView(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.sitePathPrefix,
   );
   const rootPermalink = post.replyToId
     ? rootPermalinkMap.get(post.threadId)
@@ -129,6 +131,7 @@ export async function assemblePostPageDisplay(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.sitePathPrefix,
   );
 
   const postView = toPostView(

@@ -8,10 +8,28 @@ Set these in `wrangler.toml` or as Cloudflare secrets.
 
 ### Required
 
-| Variable      | Description                                              |
-| ------------- | -------------------------------------------------------- |
-| `SITE_URL`    | Your site's public URL (e.g., `https://myblog.com`)      |
-| `AUTH_SECRET` | Random string, 32+ characters. Used for session signing. |
+| Variable      | Description                                                                       |
+| ------------- | --------------------------------------------------------------------------------- |
+| `SITE_URL`    | Your site's public URL (e.g., `https://myblog.com` or `https://example.com/blog`) |
+| `AUTH_SECRET` | Random string, 32+ characters. Used for session signing.                          |
+
+### Public URLs and Subpaths
+
+`SITE_URL` is the single source of truth for Jant's public base URL.
+
+- Root deployment: `SITE_URL="https://example.com"`
+- Subpath deployment: `SITE_URL="https://example.com/blog"`
+
+When `SITE_URL` includes a path:
+
+- Public pages and app routes move under that prefix, such as `/blog`, `/blog/signin`, and `/blog/c/notes`
+- Static build assets stay at the reserved root path `/jant-assets/*`
+- `/jant-assets` is reserved for Jant and should not be used by another app on the same domain
+
+On Cloudflare, a subpath deployment must route both the page prefix and the asset prefix to the same Worker:
+
+- `/blog*`
+- `/jant-assets*`
 
 ### Storage
 
@@ -171,6 +189,8 @@ compatibility_date = "2024-01-01"
 
 [vars]
 SITE_URL = "https://myblog.com"
+# Or mount Jant under a subpath:
+# SITE_URL = "https://example.com/blog"
 
 # Optional: Site configuration (can be overridden in settings)
 # SITE_NAME = "My Blog"

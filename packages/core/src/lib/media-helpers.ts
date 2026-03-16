@@ -32,6 +32,7 @@ export function buildMediaMap(
   r2PublicUrl?: string,
   imageTransformUrl?: string,
   s3PublicUrl?: string,
+  sitePathPrefix?: string,
 ): Map<string, MediaAttachment[]> {
   const mediaMap = new Map<string, MediaAttachment[]>();
   for (const [postId, mediaList] of rawMediaMap) {
@@ -43,7 +44,7 @@ export function buildMediaMap(
           r2PublicUrl,
           s3PublicUrl,
         );
-        const mediaUrl = getMediaUrl(m.storageKey, publicUrl);
+        const mediaUrl = getMediaUrl(m.storageKey, publicUrl, sitePathPrefix);
         // Only apply image transforms for image MIME types
         const previewUrl = m.mimeType.startsWith("image/")
           ? getImageUrl(mediaUrl, imageTransformUrl, {
@@ -55,7 +56,7 @@ export function buildMediaMap(
             })
           : mediaUrl;
         const posterUrl = m.posterKey
-          ? getMediaUrl(m.posterKey, publicUrl)
+          ? getMediaUrl(m.posterKey, publicUrl, sitePathPrefix)
           : null;
         return {
           id: m.id,

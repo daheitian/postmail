@@ -4,6 +4,7 @@
 
 import { useLingui } from "@lingui/react/macro";
 import { getFontThemeCssVariables, type FontTheme } from "../../font-themes.js";
+import { toPublicPath } from "../../../lib/url.js";
 
 function toInlineStyle(variables: Record<string, string>): string {
   return Object.entries(variables)
@@ -14,9 +15,11 @@ function toInlineStyle(variables: Record<string, string>): string {
 export function FontThemeContent({
   fontThemes,
   currentFontThemeId,
+  sitePathPrefix = "",
 }: {
   fontThemes: FontTheme[];
   currentFontThemeId: string;
+  sitePathPrefix?: string;
 }) {
   const { t } = useLingui();
 
@@ -26,7 +29,7 @@ export function FontThemeContent({
         /</g,
         "\\u003c",
       )}
-      data-on:change="@post('/settings/font-theme')"
+      data-on:change={`@post('${toPublicPath("/settings/font-theme", sitePathPrefix)}')`}
       class="max-w-3xl"
     >
       <fieldset>

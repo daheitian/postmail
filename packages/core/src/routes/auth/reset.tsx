@@ -15,10 +15,14 @@ import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { ResetPasswordSchema } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { getI18n } from "../../i18n/index.js";
+import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-const ResetContent: FC<{ token: string }> = ({ token }) => {
+const ResetContent: FC<{
+  token: string;
+  sitePathPrefix?: string;
+}> = ({ token, sitePathPrefix = "" }) => {
   const { t } = useLingui();
   const signals = JSON.stringify({
     password: "",
@@ -46,7 +50,7 @@ const ResetContent: FC<{ token: string }> = ({ token }) => {
         <section>
           <form
             data-signals={signals}
-            data-on:submit__prevent="@post('/reset')"
+            data-on:submit__prevent={`@post('${toPublicPath("/reset", sitePathPrefix)}')`}
             data-indicator="_loading"
             class="flex flex-col gap-4"
           >
@@ -162,7 +166,10 @@ resetRoutes.get("/reset", async (c) => {
 
   return c.html(
     <BaseLayout title={title} c={c}>
-      <ResetContent token={token} />
+      <ResetContent
+        token={token}
+        sitePathPrefix={c.var.appConfig.sitePathPrefix}
+      />
     </BaseLayout>,
   );
 });
@@ -189,5 +196,7 @@ resetRoutes.post("/reset", async (c) => {
   const { password, token } = parsed.data;
 
   await c.var.services.auth.resetPassword(token, password);
-  return dsRedirect("/signin?reset");
+  return dsRedirect(
+    toPublicPath("/signin?reset", c.var.appConfig.sitePathPrefix),
+  );
 });

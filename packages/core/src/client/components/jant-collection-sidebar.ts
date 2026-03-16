@@ -25,6 +25,7 @@ import {
   setSortableDraggingState,
 } from "../sortable-list.js";
 import { showConfirmDialog } from "../confirm.js";
+import { publicPath } from "../runtime-paths.js";
 import { showToast } from "../toast.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
@@ -690,7 +691,7 @@ export class JantCollectionsManager extends LitElement {
         }}
       >
         <a
-          href=${`/c/${collection.slug}`}
+          href=${publicPath(`/c/${collection.slug}`)}
           class="collection-directory-item collection-directory-item-manageable"
         >
           ${body}

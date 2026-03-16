@@ -15,6 +15,7 @@ import { CreatePostSchema } from "../lib/schemas.js";
 import { ValidationError } from "../lib/errors.js";
 import { sse, dsToast } from "../lib/sse.js";
 import { getI18n } from "../i18n/index.js";
+import { toPublicPath } from "../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -134,7 +135,10 @@ composeRoutes.post("/", async (c) => {
       });
     }
 
-    return c.json({ status: "published" as const, permalink: `/${post.slug}` });
+    return c.json({
+      status: "published" as const,
+      permalink: toPublicPath(`/${post.slug}`, c.var.appConfig.sitePathPrefix),
+    });
   }
 
   // ── SSE response mode (used by Datastar) ─────────────────────────

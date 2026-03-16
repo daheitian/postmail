@@ -13,8 +13,13 @@ import tailwindcss from "@tailwindcss/vite";
 import { clientBuildOptions } from "./vite.shared";
 
 export default defineConfig({
+  // Keep Vite's base at `/`. Asset URLs already include the reserved
+  // namespace via rollup output paths; setting `base` would prefix them twice.
   build: {
     ...clientBuildOptions,
+    // Keep fonts and other assets as real files so CSP can stay at
+    // `font-src 'self'` without needing `data:`.
+    assetInlineLimit: 0,
     emptyOutDir: true,
     minify: true,
   },

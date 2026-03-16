@@ -9,10 +9,17 @@ import { useLingui } from "@lingui/react/macro";
 import type { ApiToken } from "../../../types/entities.js";
 import { buildConfirmActionExpression } from "../../../lib/confirm.js";
 import { formatDate } from "../../../lib/time.js";
+import { toPublicPath } from "../../../lib/url.js";
 
 const API_DOCS_URL = "https://github.com/jant-me/jant/blob/main/docs/API.md";
 
-function TokenRow({ token }: { token: ApiToken }) {
+function TokenRow({
+  token,
+  sitePathPrefix = "",
+}: {
+  token: ApiToken;
+  sitePathPrefix?: string;
+}) {
   const { t } = useLingui();
   const revokeLabel = t({
     message: "Revoke",
@@ -47,7 +54,7 @@ function TokenRow({ token }: { token: ApiToken }) {
         type="button"
         class="btn-sm-ghost text-destructive"
         data-on:click__prevent={buildConfirmActionExpression(
-          `@post('/settings/api-tokens/${token.id}/delete')`,
+          `@post('${toPublicPath(`/settings/api-tokens/${token.id}/delete`, sitePathPrefix)}')`,
           {
             message: t({
               message:
@@ -72,9 +79,11 @@ function TokenRow({ token }: { token: ApiToken }) {
 export function ApiTokensContent({
   tokens,
   siteUrl,
+  sitePathPrefix = "",
 }: {
   tokens: ApiToken[];
   siteUrl: string;
+  sitePathPrefix?: string;
 }) {
   const { t } = useLingui();
 
@@ -132,7 +141,7 @@ export function ApiTokensContent({
           })}
         </p>
         <form
-          data-on:submit__prevent="@post('/settings/api-tokens')"
+          data-on:submit__prevent={`@post('${toPublicPath("/settings/api-tokens", sitePathPrefix)}')`}
           data-indicator="_tokenLoading"
           class="flex gap-2 items-end"
         >
@@ -179,7 +188,11 @@ export function ApiTokensContent({
           </h3>
           <div class="border border-border rounded-lg px-4">
             {tokens.map((token) => (
-              <TokenRow key={token.id} token={token} />
+              <TokenRow
+                key={token.id}
+                token={token}
+                sitePathPrefix={sitePathPrefix}
+              />
             ))}
           </div>
         </div>

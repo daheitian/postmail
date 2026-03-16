@@ -4,6 +4,7 @@
 
 import { useLingui } from "@lingui/react/macro";
 import { formatDate } from "../../../lib/time.js";
+import { toPublicPath } from "../../../lib/url.js";
 
 export interface SessionInfo {
   token: string;
@@ -60,7 +61,13 @@ function isMobileUA(ua: string | null): boolean {
   return /iPhone|iPad|iPod|Android|Mobile/i.test(ua);
 }
 
-function SessionRow({ session }: { session: SessionInfo }) {
+function SessionRow({
+  session,
+  sitePathPrefix = "",
+}: {
+  session: SessionInfo;
+  sitePathPrefix?: string;
+}) {
   const { t } = useLingui();
   const device = parseDevice(session.userAgent);
   const icon = isMobileUA(session.userAgent) ? ICON_MOBILE : ICON_DESKTOP;
@@ -106,7 +113,7 @@ function SessionRow({ session }: { session: SessionInfo }) {
         <button
           type="button"
           class="btn-sm-ghost text-destructive"
-          data-on:click__prevent={`@post('/settings/account/sessions/${session.token}/revoke')`}
+          data-on:click__prevent={`@post('${toPublicPath(`/settings/account/sessions/${session.token}/revoke`, sitePathPrefix)}')`}
         >
           {t({
             message: "Revoke",
@@ -118,7 +125,13 @@ function SessionRow({ session }: { session: SessionInfo }) {
   );
 }
 
-export function SessionsContent({ sessions }: { sessions: SessionInfo[] }) {
+export function SessionsContent({
+  sessions,
+  sitePathPrefix = "",
+}: {
+  sessions: SessionInfo[];
+  sitePathPrefix?: string;
+}) {
   const { t } = useLingui();
 
   return (
@@ -142,7 +155,11 @@ export function SessionsContent({ sessions }: { sessions: SessionInfo[] }) {
       {sessions.length > 0 ? (
         <div class="border border-border rounded-lg px-4">
           {sessions.map((session) => (
-            <SessionRow key={session.token} session={session} />
+            <SessionRow
+              key={session.token}
+              session={session}
+              sitePathPrefix={sitePathPrefix}
+            />
           ))}
         </div>
       ) : (

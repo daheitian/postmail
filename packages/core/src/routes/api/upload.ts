@@ -42,8 +42,9 @@ function renderMediaCard(
   },
   publicUrl?: string,
   imageTransformUrl?: string,
+  sitePathPrefix?: string,
 ): string {
-  const fullUrl = getMediaUrl(media.storageKey, publicUrl);
+  const fullUrl = getMediaUrl(media.storageKey, publicUrl, sitePathPrefix);
   const thumbnailUrl = getImageUrl(fullUrl, imageTransformUrl, {
     width: 300,
     quality: 80,
@@ -170,6 +171,8 @@ uploadApiRoutes.post("/", async (c) => {
   const { id, filename, storageKey } = generateStorageKey(file.name);
 
   try {
+    const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+
     // Read optional summary (provided for text attachments)
     let summary = (formData.get("summary") as string) || undefined;
     let chars: number | undefined;
@@ -272,6 +275,7 @@ uploadApiRoutes.post("/", async (c) => {
         media,
         mediaPublicUrl,
         c.var.appConfig.imageTransformUrl,
+        sitePathPrefix,
       );
 
       return sse(c, async (stream) => {
@@ -297,7 +301,7 @@ uploadApiRoutes.post("/", async (c) => {
       c.var.appConfig.r2PublicUrl,
       c.var.appConfig.s3PublicUrl,
     );
-    const publicUrl = getMediaUrl(storageKey, mediaPublicUrl);
+    const publicUrl = getMediaUrl(storageKey, mediaPublicUrl, sitePathPrefix);
     return c.json({
       id: media.id,
       filename: media.filename,
@@ -329,7 +333,7 @@ uploadApiRoutes.post("/", async (c) => {
 uploadApiRoutes.get("/", async (c) => {
   const limit = parseInt(c.req.query("limit") ?? "50", 10);
   const mediaList = await c.var.services.media.list({ limit });
-  const { r2PublicUrl, s3PublicUrl } = c.var.appConfig;
+  const { r2PublicUrl, s3PublicUrl, sitePathPrefix } = c.var.appConfig;
 
   return c.json({
     media: mediaList.map((m) => ({
@@ -338,6 +342,7 @@ uploadApiRoutes.get("/", async (c) => {
       url: getMediaUrl(
         m.storageKey,
         getPublicUrlForProvider(m.provider, r2PublicUrl, s3PublicUrl),
+        sitePathPrefix,
       ),
       mimeType: m.mimeType,
       size: m.size,

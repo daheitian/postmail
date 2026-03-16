@@ -18,6 +18,7 @@ import { getNavigationData } from "../../lib/navigation.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
 import { PagePagination } from "../../ui/shared/Pagination.js";
 import { DEFAULT_PAGE_SIZE } from "../../lib/constants.js";
+import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -39,11 +40,13 @@ function CustomUrlsListContent({
   targetSlugs,
   currentPage,
   totalPages,
+  sitePathPrefix = "",
 }: {
   customUrls: CustomUrl[];
   targetSlugs: Record<string, string>;
   currentPage: number;
   totalPages: number;
+  sitePathPrefix?: string;
 }) {
   const { t } = useLingui();
   const hasCustomUrls = customUrls.length > 0;
@@ -58,7 +61,10 @@ function CustomUrlsListContent({
           })}
         </h2>
         {hasCustomUrls ? (
-          <a href="/settings/custom-urls/new" class="btn">
+          <a
+            href={toPublicPath("/settings/custom-urls/new", sitePathPrefix)}
+            class="btn"
+          >
             {t({
               message: "New Custom URL",
               comment: "@context: Button to create new custom URL",
@@ -78,7 +84,7 @@ function CustomUrlsListContent({
             message: "New Custom URL",
             comment: "@context: Button to create new custom URL",
           })}
-          ctaHref="/settings/custom-urls/new"
+          ctaHref={toPublicPath("/settings/custom-urls/new", sitePathPrefix)}
         />
       ) : (
         <>
@@ -88,7 +94,10 @@ function CustomUrlsListContent({
                 key={cu.id}
                 actions={
                   <ActionButtons
-                    deleteAction={`/settings/custom-urls/${cu.id}/delete`}
+                    deleteAction={toPublicPath(
+                      `/settings/custom-urls/${cu.id}/delete`,
+                      sitePathPrefix,
+                    )}
                     deleteLabel={t({
                       message: "Delete",
                       comment: "@context: Button to delete custom URL",
@@ -122,7 +131,7 @@ function CustomUrlsListContent({
             ))}
           </div>
           <PagePagination
-            baseUrl="/settings/custom-urls"
+            baseUrl={toPublicPath("/settings/custom-urls", sitePathPrefix)}
             currentPage={currentPage}
             totalPages={totalPages}
           />
@@ -132,7 +141,11 @@ function CustomUrlsListContent({
   );
 }
 
-function NewCustomUrlContent() {
+function NewCustomUrlContent({
+  sitePathPrefix = "",
+}: {
+  sitePathPrefix?: string;
+}) {
   const { t } = useLingui();
 
   return (
@@ -143,7 +156,7 @@ function NewCustomUrlContent() {
 
       <form
         data-signals="{path: '', targetType: 'redirect', targetId: '', toPath: '', redirectType: '301'}"
-        data-on:submit__prevent="@post('/settings/custom-urls')"
+        data-on:submit__prevent={`@post('${toPublicPath("/settings/custom-urls", sitePathPrefix)}')`}
         data-indicator="_loading"
         class="flex flex-col gap-4 max-w-lg"
       >
@@ -284,7 +297,10 @@ function NewCustomUrlContent() {
               comment: "@context: Button to save new custom URL",
             })}
           </button>
-          <a href="/settings/custom-urls" class="btn-outline">
+          <a
+            href={toPublicPath("/settings/custom-urls", sitePathPrefix)}
+            class="btn-outline"
+          >
             {t({
               message: "Cancel",
               comment: "@context: Button to cancel form",
@@ -333,7 +349,7 @@ customUrlsRoutes.get("/", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={toPublicPath("/settings", c.var.appConfig.sitePathPrefix)}
           current="Custom URLs"
         />
         <CustomUrlsListContent
@@ -341,6 +357,7 @@ customUrlsRoutes.get("/", async (c) => {
           targetSlugs={targetSlugs}
           currentPage={currentPage}
           totalPages={totalPages}
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
         />
       </>
     ),
@@ -358,10 +375,10 @@ customUrlsRoutes.get("/new", async (c) => {
       <>
         <AdminBreadcrumb
           parent="Settings"
-          parentHref="/settings"
+          parentHref={toPublicPath("/settings", c.var.appConfig.sitePathPrefix)}
           current="Custom URLs"
         />
-        <NewCustomUrlContent />
+        <NewCustomUrlContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
       </>
     ),
   });
@@ -406,7 +423,9 @@ customUrlsRoutes.post("/", async (c) => {
     redirectType,
   });
 
-  return dsRedirect("/settings/custom-urls");
+  return dsRedirect(
+    toPublicPath("/settings/custom-urls", c.var.appConfig.sitePathPrefix),
+  );
 });
 
 // Delete custom URL
@@ -414,5 +433,7 @@ customUrlsRoutes.post("/:id/delete", async (c) => {
   const id = parseIdParam(c.req.param("id"));
   await c.var.services.customUrls.delete(id);
 
-  return dsRedirect("/settings/custom-urls");
+  return dsRedirect(
+    toPublicPath("/settings/custom-urls", c.var.appConfig.sitePathPrefix),
+  );
 });

@@ -13,13 +13,15 @@ import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SigninSchema } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { getI18n } from "../../i18n/index.js";
+import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 const SigninContent: FC<{
   demoEmail?: string;
   demoPassword?: string;
-}> = ({ demoEmail, demoPassword }) => {
+  sitePathPrefix?: string;
+}> = ({ demoEmail, demoPassword, sitePathPrefix = "" }) => {
   const { t } = useLingui();
   const signals = JSON.stringify({
     email: demoEmail || "",
@@ -50,7 +52,7 @@ const SigninContent: FC<{
           )}
           <form
             data-signals={signals}
-            data-on:submit__prevent="@post('/signin')"
+            data-on:submit__prevent={`@post('${toPublicPath("/signin", sitePathPrefix)}')`}
             data-indicator="_loading"
             class="flex flex-col gap-4"
           >
@@ -135,6 +137,7 @@ signinRoutes.get("/signin", async (c) => {
       <SigninContent
         demoEmail={c.var.appConfig.demoEmail}
         demoPassword={c.var.appConfig.demoPassword}
+        sitePathPrefix={c.var.appConfig.sitePathPrefix}
       />
     </BaseLayout>,
   );
@@ -181,7 +184,9 @@ signinRoutes.post("/signin", async (c) => {
       headers: c.req.raw.headers,
     });
 
-    return dsRedirect("/", { headers });
+    return dsRedirect(toPublicPath("/", c.var.appConfig.sitePathPrefix), {
+      headers,
+    });
   } catch {
     return dsToast(
       i18n._(
@@ -203,10 +208,12 @@ signinRoutes.post("/signout", async (c) => {
         headers: c.req.raw.headers,
         asResponse: true,
       });
-      return dsRedirect("/", { headers: res.headers });
+      return dsRedirect(toPublicPath("/", c.var.appConfig.sitePathPrefix), {
+        headers: res.headers,
+      });
     } catch {
       // Ignore signout errors
     }
   }
-  return dsRedirect("/");
+  return dsRedirect(toPublicPath("/", c.var.appConfig.sitePathPrefix));
 });

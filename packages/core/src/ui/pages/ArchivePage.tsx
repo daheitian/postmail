@@ -17,6 +17,7 @@ import type {
 import type { PostView } from "../../types/views.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
 import { getIconSvg, renderCollectionIcon } from "../../lib/icons.js";
+import { toPublicPath } from "../../lib/url.js";
 import { toMediaKind } from "../../lib/upload.js";
 import { PagePagination } from "../shared/Pagination.js";
 import { TimelineFeedItem } from "../feed/TimelineFeed.js";
@@ -30,8 +31,9 @@ import { DecorativeQuoteMark } from "../shared/DecorativeQuoteMark.js";
 function buildFilterUrl(
   current: ArchiveFilters,
   updates: Partial<ArchiveFilters & { clear?: boolean }>,
+  sitePathPrefix = "",
 ): string {
-  if (updates.clear) return "/archive";
+  if (updates.clear) return toPublicPath("/archive", sitePathPrefix);
 
   const merged = { ...current, ...updates };
   const params = new URLSearchParams();
@@ -52,7 +54,9 @@ function buildFilterUrl(
   if (merged.view && merged.view !== "grid") params.set("view", merged.view);
 
   const qs = params.toString();
-  return qs ? `/archive?${qs}` : "/archive";
+  return qs
+    ? toPublicPath(`/archive?${qs}`, sitePathPrefix)
+    : toPublicPath("/archive", sitePathPrefix);
 }
 
 // =============================================================================
@@ -304,7 +308,8 @@ const ChipMediaSelect: FC<{
   filters: ArchiveFilters;
   activeLabel?: string;
   clearUrl: string;
-}> = ({ id, icon, filters: f, activeLabel, clearUrl }) => {
+  sitePathPrefix?: string;
+}> = ({ id, icon, filters: f, activeLabel, clearUrl, sitePathPrefix = "" }) => {
   const { t } = useLingui();
   const isActive = !!activeLabel;
   const activeKinds = f.mediaKinds ?? [];
@@ -321,6 +326,7 @@ const ChipMediaSelect: FC<{
   const textOnlyUrl = buildFilterUrl(
     { ...f, mediaKinds: undefined, hasMedia: undefined },
     { hasMedia: false, mediaKinds: undefined },
+    sitePathPrefix,
   );
   const clearLabel = t({
     message: "Clear filter",
@@ -407,10 +413,13 @@ const ChipMediaSelect: FC<{
 // View Toggle
 // =============================================================================
 
-const ViewToggle: FC<{ filters: ArchiveFilters }> = ({ filters }) => {
+const ViewToggle: FC<{
+  filters: ArchiveFilters;
+  sitePathPrefix?: string;
+}> = ({ filters, sitePathPrefix = "" }) => {
   const currentView: ArchiveView = filters.view ?? "grid";
-  const gridUrl = buildFilterUrl(filters, { view: undefined });
-  const listUrl = buildFilterUrl(filters, { view: "list" });
+  const gridUrl = buildFilterUrl(filters, { view: undefined }, sitePathPrefix);
+  const listUrl = buildFilterUrl(filters, { view: "list" }, sitePathPrefix);
 
   return (
     <div class="archive-view-toggle" role="radiogroup" aria-label="View mode">
@@ -491,9 +500,16 @@ const FilterBar: FC<{
   availableYears: number[];
   availableCollections: { slug: string; title: string; icon: string | null }[];
   isAuthenticated: boolean;
-}> = ({ filters, availableYears, availableCollections, isAuthenticated }) => {
+  sitePathPrefix?: string;
+}> = ({
+  filters,
+  availableYears,
+  availableCollections,
+  isAuthenticated,
+  sitePathPrefix = "",
+}) => {
   const { t } = useLingui();
-  const currentUrl = buildFilterUrl(filters, {});
+  const currentUrl = buildFilterUrl(filters, {}, sitePathPrefix);
 
   // --- Year options ---------------------------------------------------------
 
@@ -507,11 +523,12 @@ const FilterBar: FC<{
       value: buildFilterUrl(
         { ...filters, year: undefined },
         { year: undefined },
+        sitePathPrefix,
       ),
     },
     ...availableYears.map((year) => ({
       label: String(year),
-      value: buildFilterUrl(filters, { year }),
+      value: buildFilterUrl(filters, { year }, sitePathPrefix),
     })),
   ];
 
@@ -531,6 +548,7 @@ const FilterBar: FC<{
           collectionTitle: undefined,
         },
         { collectionSlug: undefined, collectionTitle: undefined },
+        sitePathPrefix,
       ),
     },
     ...availableCollections.map((col) => ({
@@ -538,7 +556,11 @@ const FilterBar: FC<{
       iconHtml:
         renderCollectionIcon(col.icon, { size: 16, fallback: true }) ||
         undefined,
-      value: buildFilterUrl(filters, { collectionSlug: col.slug }),
+      value: buildFilterUrl(
+        filters,
+        { collectionSlug: col.slug },
+        sitePathPrefix,
+      ),
     })),
   ];
 
@@ -576,15 +598,20 @@ const FilterBar: FC<{
       value: buildFilterUrl(
         { ...filters, format: undefined, hasTitle: undefined },
         { format: undefined, hasTitle: undefined },
+        sitePathPrefix,
       ),
     },
     {
       label: getFormatLabelPlural("note"),
       icon: FORMAT_ICONS.note,
-      value: buildFilterUrl(filters, {
-        format: "note",
-        hasTitle: undefined,
-      }),
+      value: buildFilterUrl(
+        filters,
+        {
+          format: "note",
+          hasTitle: undefined,
+        },
+        sitePathPrefix,
+      ),
     },
     {
       label: t({
@@ -593,10 +620,14 @@ const FilterBar: FC<{
       }),
       icon: "type",
       indent: true,
-      value: buildFilterUrl(filters, {
-        format: "note",
-        hasTitle: true,
-      }),
+      value: buildFilterUrl(
+        filters,
+        {
+          format: "note",
+          hasTitle: true,
+        },
+        sitePathPrefix,
+      ),
     },
     {
       label: t({
@@ -605,15 +636,23 @@ const FilterBar: FC<{
       }),
       icon: "text",
       indent: true,
-      value: buildFilterUrl(filters, {
-        format: "note",
-        hasTitle: false,
-      }),
+      value: buildFilterUrl(
+        filters,
+        {
+          format: "note",
+          hasTitle: false,
+        },
+        sitePathPrefix,
+      ),
     },
     ...FORMATS.filter((f) => f !== "note").map((f) => ({
       label: getFormatLabelPlural(f),
       icon: FORMAT_ICONS[f],
-      value: buildFilterUrl(filters, { format: f, hasTitle: undefined }),
+      value: buildFilterUrl(
+        filters,
+        { format: f, hasTitle: undefined },
+        sitePathPrefix,
+      ),
     })),
   ];
 
@@ -625,6 +664,7 @@ const FilterBar: FC<{
   const allVisibilityBaseUrl = buildFilterUrl(
     { ...filters, visibility: undefined },
     { visibility: undefined },
+    sitePathPrefix,
   );
   const allVisibilityUrl = allVisibilityBaseUrl.includes("?")
     ? `${allVisibilityBaseUrl}&visibility=all`
@@ -642,7 +682,7 @@ const FilterBar: FC<{
     ...ARCHIVE_VISIBILITIES.map((v) => ({
       label: getVisibilityLabel(v),
       icon: VISIBILITY_ICONS[v],
-      value: buildFilterUrl(filters, { visibility: v }),
+      value: buildFilterUrl(filters, { visibility: v }, sitePathPrefix),
     })),
   ];
 
@@ -663,6 +703,7 @@ const FilterBar: FC<{
   const mediaClearUrl = buildFilterUrl(
     { ...filters, mediaKinds: undefined, hasMedia: undefined },
     { mediaKinds: undefined, hasMedia: undefined },
+    sitePathPrefix,
   );
 
   return (
@@ -677,6 +718,7 @@ const FilterBar: FC<{
             clearUrl={buildFilterUrl(
               { ...filters, year: undefined },
               { year: undefined },
+              sitePathPrefix,
             )}
             activeLabel={filters.year ? String(filters.year) : undefined}
           />
@@ -694,6 +736,7 @@ const FilterBar: FC<{
                 collectionTitle: undefined,
               },
               { collectionSlug: undefined, collectionTitle: undefined },
+              sitePathPrefix,
             )}
             activeLabel={filters.collectionTitle}
             activeIconHtml={
@@ -713,6 +756,7 @@ const FilterBar: FC<{
           clearUrl={buildFilterUrl(
             { ...filters, format: undefined, hasTitle: undefined },
             { format: undefined, hasTitle: undefined },
+            sitePathPrefix,
           )}
           activeLabel={formatActiveLabel}
           activeIcon={formatActiveIcon}
@@ -725,6 +769,7 @@ const FilterBar: FC<{
           filters={filters}
           activeLabel={mediaActiveLabel}
           clearUrl={mediaClearUrl}
+          sitePathPrefix={sitePathPrefix}
         />
 
         {isAuthenticated && (
@@ -749,7 +794,7 @@ const FilterBar: FC<{
         )}
       </div>
 
-      <ViewToggle filters={filters} />
+      <ViewToggle filters={filters} sitePathPrefix={sitePathPrefix} />
     </div>
   );
 };
@@ -1012,10 +1057,11 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   availableYears,
   availableCollections,
   isAuthenticated,
+  sitePathPrefix = "",
 }) => {
   const { t } = useLingui();
   const currentView: ArchiveView = filters.view ?? "grid";
-  const paginationBaseUrl = buildFilterUrl(filters, {});
+  const paginationBaseUrl = buildFilterUrl(filters, {}, sitePathPrefix);
   const totalCountUnit =
     totalCount === 1
       ? t({
@@ -1048,6 +1094,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
           availableYears={availableYears}
           availableCollections={availableCollections}
           isAuthenticated={isAuthenticated}
+          sitePathPrefix={sitePathPrefix}
         />
       </header>
 

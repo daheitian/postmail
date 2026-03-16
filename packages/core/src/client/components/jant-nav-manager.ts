@@ -22,6 +22,7 @@ import {
   revertSortableDomMove,
 } from "../sortable-list.js";
 import { showToast } from "../toast.js";
+import { publicPath } from "../runtime-paths.js";
 import type {
   NavManagerItem,
   NavManagerLabels,
@@ -372,13 +373,16 @@ export class JantNavManager extends LitElement {
         </div>
         <div class="nav-preview-content">
           <div class="site-header-top">
-            <a href="/" class="site-logo">${this.siteName}</a>
+            <a href=${publicPath("/")} class="site-logo">${this.siteName}</a>
             <div class="site-header-right">
               ${visible.length > 0 || hasMore
                 ? html`<nav class="site-header-nav">
                     ${visible.map(
                       (item) =>
-                        html`<a href=${item.url} class="site-header-link">
+                        html`<a
+                          href=${publicPath(item.url)}
+                          class="site-header-link"
+                        >
                           ${item.label}
                         </a>`,
                     )}
@@ -428,7 +432,10 @@ export class JantNavManager extends LitElement {
                                 <div role="menu">
                                   ${overflow.map(
                                     (item) =>
-                                      html`<a href=${item.url} role="menuitem">
+                                      html`<a
+                                        href=${publicPath(item.url)}
+                                        role="menuitem"
+                                      >
                                         ${item.label}
                                       </a>`,
                                   )}

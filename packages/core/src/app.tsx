@@ -59,9 +59,50 @@ import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
 import { createStorageDriver } from "./lib/storage.js";
 import { getStartupConfigurationErrorPage } from "./lib/startup-config.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
+import { isAssetPath } from "./lib/asset-path.js";
+import {
+  getSitePathPrefix,
+  stripSitePathPrefix,
+  toPublicHref,
+} from "./lib/url.js";
 import { type AppVariables, type App } from "./types/app-context.js";
 
 export type { AppVariables, App };
+
+const publicRequestMeta = new WeakMap<
+  Request,
+  { publicRequestUrl: string; publicPath: string }
+>();
+
+function prepareRequestForRouting(
+  request: Request,
+  sitePathPrefix: string,
+): Request | Response {
+  const publicUrl = new URL(request.url);
+  const publicPath = publicUrl.pathname;
+
+  if (!sitePathPrefix || isAssetPath(publicPath)) {
+    publicRequestMeta.set(request, {
+      publicRequestUrl: publicUrl.toString(),
+      publicPath,
+    });
+    return request;
+  }
+
+  const internalPath = stripSitePathPrefix(publicPath, sitePathPrefix);
+  if (!internalPath) {
+    return new Response("Not Found", { status: 404 });
+  }
+
+  const internalUrl = new URL(publicUrl.toString());
+  internalUrl.pathname = internalPath;
+  const rewrittenRequest = new Request(internalUrl, request);
+  publicRequestMeta.set(rewrittenRequest, {
+    publicRequestUrl: publicUrl.toString(),
+    publicPath,
+  });
+  return rewrittenRequest;
+}
 
 /**
  * Create a Jant application
@@ -77,12 +118,32 @@ export type { AppVariables, App };
  */
 export function createApp(): App {
   const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
+  const defaultFetch = app.fetch.bind(app);
+
+  app.fetch = (request, env, executionCtx) => {
+    const bindings = env as Bindings | undefined;
+    const preparedRequest = prepareRequestForRouting(
+      request,
+      getSitePathPrefix(bindings?.SITE_URL || ""),
+    );
+    if (preparedRequest instanceof Response) {
+      return preparedRequest;
+    }
+    return defaultFetch(preparedRequest, bindings, executionCtx);
+  };
 
   // Global error handler: maps DomainError → HTTP responses
   app.onError(errorHandler);
 
   // Lightweight init — no DB queries
   app.use("*", async (c, next) => {
+    const publicMeta = publicRequestMeta.get(c.req.raw);
+    const publicRequestUrl = publicMeta?.publicRequestUrl ?? c.req.url;
+    const publicPath =
+      publicMeta?.publicPath ?? new URL(publicRequestUrl).pathname;
+    c.set("publicRequestUrl", publicRequestUrl);
+    c.set("publicPath", publicPath);
+
     const startupConfigError = getStartupConfigurationErrorPage(c.env);
     if (startupConfigError) {
       return c.html(startupConfigError, 500);
@@ -105,8 +166,8 @@ export function createApp(): App {
     );
     c.set("storage", createStorageDriver(c.env));
 
-    const baseURL = c.env.SITE_URL || new URL(c.req.url).origin;
-    const requestUrl = new URL(c.req.url);
+    const requestUrl = new URL(publicRequestUrl);
+    const baseURL = c.env.SITE_URL || requestUrl.origin;
     c.set(
       "auth",
       createAuth(session as unknown as D1Database, {
@@ -291,9 +352,9 @@ export function createApp(): App {
 
   // Trailing slash redirect (redirect /foo/ to /foo)
   app.use("*", async (c, next) => {
-    const url = new URL(c.req.url);
-    if (url.pathname !== "/" && url.pathname.endsWith("/")) {
-      const newUrl = url.pathname.slice(0, -1) + url.search;
+    const publicUrl = new URL(c.var.publicRequestUrl);
+    if (c.var.publicPath !== "/" && c.var.publicPath.endsWith("/")) {
+      const newUrl = c.var.publicPath.slice(0, -1) + publicUrl.search;
       return c.redirect(newUrl, 301);
     }
     await next();
@@ -303,13 +364,16 @@ export function createApp(): App {
   app.use("*", async (c, next) => {
     const path = new URL(c.req.url).pathname;
     // Skip redirect check for API routes and static assets
-    if (path.startsWith("/api/") || path.startsWith("/assets/")) {
+    if (path.startsWith("/api/") || isAssetPath(path)) {
       return next();
     }
 
     const customUrl = await c.var.services.customUrls.getByPath(path.slice(1));
     if (customUrl?.targetType === "redirect" && customUrl.toPath) {
-      return c.redirect(customUrl.toPath, customUrl.redirectType ?? 301);
+      return c.redirect(
+        toPublicHref(customUrl.toPath, getSitePathPrefix(c.env.SITE_URL || "")),
+        customUrl.redirectType ?? 301,
+      );
     }
 
     await next();

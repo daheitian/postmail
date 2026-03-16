@@ -3,6 +3,7 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
+import { toPublicPath } from "../../../lib/url.js";
 import type { ThemeMode } from "../../../types/config.js";
 import type { ColorTheme } from "../../color-themes.js";
 
@@ -178,10 +179,12 @@ export function ColorThemeContent({
   themes,
   currentThemeId,
   currentThemeMode,
+  sitePathPrefix = "",
 }: {
   themes: ColorTheme[];
   currentThemeId: string;
   currentThemeMode: ThemeMode;
+  sitePathPrefix?: string;
 }) {
   const { t } = useLingui();
 
@@ -193,7 +196,7 @@ export function ColorThemeContent({
   return (
     <div
       data-signals={themeSignals}
-      data-on:change="@post('/settings/color-theme')"
+      data-on:change={`@post('${toPublicPath("/settings/color-theme", sitePathPrefix)}')`}
       class="max-w-5xl"
     >
       <fieldset>
@@ -215,7 +218,7 @@ export function ColorThemeContent({
               "@context: Prefix before Custom CSS link on color theme page",
           })}{" "}
           <a
-            href="/settings/custom-css"
+            href={toPublicPath("/settings/custom-css", sitePathPrefix)}
             class="underline hover:text-foreground transition-colors"
           >
             {t({

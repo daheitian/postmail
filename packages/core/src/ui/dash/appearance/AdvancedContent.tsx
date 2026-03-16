@@ -3,11 +3,18 @@
  */
 
 import { useLingui } from "@lingui/react/macro";
+import { toPublicPath } from "../../../lib/url.js";
 
 const THEMING_DOCS_URL =
   "https://github.com/jant-me/jant/blob/main/docs/theming.md";
 
-export function AdvancedContent({ customCSS }: { customCSS: string }) {
+export function AdvancedContent({
+  customCSS,
+  sitePathPrefix = "",
+}: {
+  customCSS: string;
+  sitePathPrefix?: string;
+}) {
   const { t } = useLingui();
 
   const cssSignals = JSON.stringify({ customCSS }).replace(/</g, "\\u003c");
@@ -15,7 +22,7 @@ export function AdvancedContent({ customCSS }: { customCSS: string }) {
   return (
     <form
       data-signals={cssSignals}
-      data-on:submit__prevent="@post('/settings/custom-css')"
+      data-on:submit__prevent={`@post('${toPublicPath("/settings/custom-css", sitePathPrefix)}')`}
       data-indicator="_cssLoading"
       class="max-w-3xl"
     >

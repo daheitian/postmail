@@ -19,6 +19,7 @@ import { assembleCollectionTimeline } from "../../lib/timeline.js";
 import { defaultRssRenderer } from "../../lib/feed.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
 import { createMediaContext, toPostViews } from "../../lib/view.js";
+import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -89,13 +90,17 @@ collectionRoutes.get("/:slug", async (c) => {
         totalPages={totalPages}
         baseUrl={
           currentSort === defaultSort
-            ? `/c/${collection.slug}`
-            : `/c/${collection.slug}?sort=${currentSort}`
+            ? toPublicPath(`/c/${collection.slug}`, navData.sitePathPrefix)
+            : toPublicPath(
+                `/c/${collection.slug}?sort=${currentSort}`,
+                navData.sitePathPrefix,
+              )
         }
         currentSort={currentSort}
         defaultSort={defaultSort}
         showRatingSort={showRatingSort}
         isAuthenticated={navData.isAuthenticated}
+        sitePathPrefix={navData.sitePathPrefix}
       />
     ),
   });
@@ -131,6 +136,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.sitePathPrefix,
   );
 
   const postViews = toPostViews(
@@ -145,6 +151,11 @@ collectionRoutes.get("/:slug/feed", async (c) => {
     siteName: buildPageTitle(collection.title, siteName),
     siteDescription: collection.description ?? "",
     siteUrl,
+    selfUrl: toAbsoluteSiteUrl(
+      `/c/${collection.slug}/feed`,
+      siteUrl,
+      appConfig.sitePathPrefix,
+    ),
     siteLanguage,
     posts: postViews,
   });

@@ -9,15 +9,18 @@
 import { useLingui } from "@lingui/react/macro";
 import { buildConfirmActionExpression } from "../../../lib/confirm.js";
 import { escapeHtml } from "../../../lib/html.js";
+import { toPublicPath } from "../../../lib/url.js";
 
 export interface DeleteAccountContentProps {
   siteName: string;
   csrfToken: string;
+  sitePathPrefix?: string;
 }
 
 export function DeleteAccountContent({
   siteName,
   csrfToken,
+  sitePathPrefix = "",
 }: DeleteAccountContentProps) {
   const { t } = useLingui();
 
@@ -89,7 +92,7 @@ export function DeleteAccountContent({
             data-attr:disabled="$_downloadLoading"
             data-on:click__prevent={`
               $_downloadLoading = true;
-              fetch('/api/export/zola', {method: 'POST', credentials: 'same-origin'})
+              fetch('${toPublicPath("/api/export/zola", sitePathPrefix)}', {method: 'POST', credentials: 'same-origin'})
                 .then(function(r) { if (!r.ok) throw new Error(); return r.blob() })
                 .then(function(b) {
                   var a = document.createElement('a');
@@ -212,7 +215,7 @@ export function DeleteAccountContent({
             class="btn-destructive"
             data-attr:disabled="!$_confirmMatch || $_deleteLoading"
             data-on:click__prevent={buildConfirmActionExpression(
-              `$_deleteLoading = true; @post('/settings/account/delete-account', {headers: {'x-csrf-token': $_csrfToken}})`,
+              `$_deleteLoading = true; @post('${toPublicPath("/settings/account/delete-account", sitePathPrefix)}', {headers: {'x-csrf-token': $_csrfToken}})`,
               {
                 message: t({
                   message:

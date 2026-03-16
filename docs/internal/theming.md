@@ -119,4 +119,17 @@ pnpm --filter @jant/core fonts:generate:tc
 
 The generator reads the source `woff2` files from `@fontsource/noto-serif-sc` or `@fontsource/noto-serif-tc`, runs `cn-font-split`, then rewrites the generated CSS so the committed output stays under `src/styles/fonts/`.
 
+Jant intentionally keeps these font subsets as real asset files instead of inline `data:` URLs.
+
+- The app ships with a strict CSP and keeps `font-src 'self'`.
+- Inline `data:` fonts would require widening CSP to `font-src 'self' data:`.
+- Real font files cache independently from CSS and fit the reserved `/jant-assets/*` asset namespace better.
+- Tiny subsets are still emitted as files on purpose. This is a policy choice, not an accident.
+
+If you change the font pipeline, preserve that behavior.
+
+- The CJK generator appends `?no-inline` to generated `woff2` URLs.
+- The client build also disables asset inlining for production.
+- Treat any reappearance of `data:font/...` in built CSS as a regression.
+
 Run it again when upgrading either `@fontsource` package or changing the split strategy.

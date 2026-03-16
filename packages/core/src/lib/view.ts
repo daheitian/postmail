@@ -34,6 +34,7 @@ import { getHtmlExcerpt } from "./excerpt.js";
 import { highlightText } from "./search-snippet.js";
 import { renderCollectionIcon } from "./icons.js";
 import { escapeHtml } from "./html.js";
+import { toPublicPath } from "./url.js";
 
 // =============================================================================
 // Media Context
@@ -46,6 +47,7 @@ export interface MediaContext {
   r2PublicUrl?: string;
   imageTransformUrl?: string;
   s3PublicUrl?: string;
+  sitePathPrefix?: string;
 }
 
 /**
@@ -59,6 +61,7 @@ export function createMediaContext(appConfig: AppConfig): MediaContext {
     r2PublicUrl: appConfig.r2PublicUrl || undefined,
     imageTransformUrl: appConfig.imageTransformUrl || undefined,
     s3PublicUrl: appConfig.s3PublicUrl || undefined,
+    sitePathPrefix: appConfig.sitePathPrefix || undefined,
   };
 }
 
@@ -79,7 +82,7 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
     ctx.r2PublicUrl,
     ctx.s3PublicUrl,
   );
-  const url = getMediaUrl(media.storageKey, publicUrl);
+  const url = getMediaUrl(media.storageKey, publicUrl, ctx.sitePathPrefix);
 
   // Only apply image transforms for image MIME types
   const thumbnailUrl = media.mimeType.startsWith("image/")
@@ -93,7 +96,7 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
     : url;
 
   const posterRawUrl = media.posterKey
-    ? getMediaUrl(media.posterKey, publicUrl)
+    ? getMediaUrl(media.posterKey, publicUrl, ctx.sitePathPrefix)
     : undefined;
   const posterUrl = posterRawUrl
     ? getImageUrl(posterRawUrl, ctx.imageTransformUrl, {
@@ -171,13 +174,13 @@ function clipPreviewText(
  */
 export function toPostView(
   post: PostWithMedia,
-  _ctx: MediaContext,
+  ctx: MediaContext,
   postCollections?: Collection[],
   threadRootPermalink?: string,
   isLastInThread?: boolean,
 ): PostView {
   const id = post.id;
-  const permalink = `/${post.slug}`;
+  const permalink = toPublicPath(`/${post.slug}`, ctx.sitePathPrefix);
   const publishedAt = post.publishedAt ?? post.updatedAt;
   const summary = getPlainSummary(post);
 
@@ -216,7 +219,12 @@ export function toPostView(
   // Convert collection tags
   const collections: CollectionTagView[] = (postCollections ?? []).map((c) => {
     const iconHtml = renderCollectionIcon(c.icon, { size: 12 }) || undefined;
-    return { slug: c.slug, title: c.title, iconHtml };
+    return {
+      slug: c.slug,
+      title: c.title,
+      url: toPublicPath(`/c/${c.slug}`, ctx.sitePathPrefix),
+      iconHtml,
+    };
   });
 
   // Convert media attachments
@@ -358,6 +366,7 @@ export function toPostViewsFromPosts(
 export async function loadThreadRootPermalinks(
   posts: Post[],
   getById: (id: string) => Promise<Post | null>,
+  sitePathPrefix = "",
 ): Promise<Map<string, string>> {
   const threadRootIds = [
     ...new Set(posts.filter((p) => p.replyToId).map((p) => p.threadId)),
@@ -366,7 +375,9 @@ export async function loadThreadRootPermalinks(
   if (threadRootIds.length > 0) {
     const roots = await Promise.all(threadRootIds.map(getById));
     for (const root of roots) {
-      if (root) map.set(root.id, `/${root.slug}`);
+      if (root) {
+        map.set(root.id, toPublicPath(`/${root.slug}`, sitePathPrefix));
+      }
     }
   }
   return map;
@@ -387,6 +398,7 @@ export function toNavItemView(
   item: NavItem,
   currentPath: string,
   isAuthenticated = false,
+  sitePathPrefix = "",
 ): NavItemView {
   let url = item.url;
   let label = item.label;
@@ -404,13 +416,15 @@ export function toNavItemView(
   }
 
   const isExternal = url.startsWith("http://") || url.startsWith("https://");
+  const publicUrl = isExternal ? url : toPublicPath(url, sitePathPrefix);
 
   let isActive = false;
   if (!isExternal) {
-    if (url === "/") {
-      isActive = currentPath === "/";
+    if (publicUrl === sitePathPrefix || publicUrl === "/") {
+      isActive = currentPath === (sitePathPrefix || "/");
     } else {
-      isActive = currentPath === url || currentPath.startsWith(url + "/");
+      isActive =
+        currentPath === publicUrl || currentPath.startsWith(`${publicUrl}/`);
     }
   }
 
@@ -418,7 +432,7 @@ export function toNavItemView(
     id: item.id,
     type: item.type as NavItemType,
     label,
-    url,
+    url: publicUrl,
     isActive,
     isExternal,
   };
@@ -435,8 +449,11 @@ export function toNavItemViews(
   items: NavItem[],
   currentPath: string,
   isAuthenticated = false,
+  sitePathPrefix = "",
 ): NavItemView[] {
-  return items.map((item) => toNavItemView(item, currentPath, isAuthenticated));
+  return items.map((item) =>
+    toNavItemView(item, currentPath, isAuthenticated, sitePathPrefix),
+  );
 }
 
 // =============================================================================

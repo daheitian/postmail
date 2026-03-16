@@ -16,6 +16,7 @@ import { buildMediaMap } from "../../lib/media-helpers.js";
 import { FORMATS } from "../../types/constants.js";
 
 import { createMediaContext, toPostViews } from "../../lib/view.js";
+import { toAbsoluteSiteUrl } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -65,6 +66,7 @@ async function buildFeedData(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.sitePathPrefix,
   );
 
   // Transform to PostView[] with media
@@ -81,6 +83,7 @@ async function buildFeedData(
     siteDescription,
     siteUrl,
     siteLanguage,
+    selfUrl: toAbsoluteSiteUrl("/feed", siteUrl, appConfig.sitePathPrefix),
     posts: postViews,
   };
 }
@@ -115,6 +118,11 @@ rssRoutes.get("/", async (c) => {
 // Atom — /feed/atom.xml
 rssRoutes.get("/atom.xml", async (c) => {
   const feedData = await buildFeedData(c, { featured: true });
+  feedData.selfUrl = toAbsoluteSiteUrl(
+    "/feed/atom.xml",
+    feedData.siteUrl,
+    c.var.appConfig.sitePathPrefix,
+  );
   const xml = defaultAtomRenderer(feedData);
 
   return new Response(xml, {
@@ -131,6 +139,11 @@ rssRoutes.get("/atom.xml", async (c) => {
 rssRoutes.get("/all", async (c) => {
   const format = parseFormatQuery(c);
   const feedData = await buildFeedData(c, { excludeUnlisted: true, format });
+  feedData.selfUrl = toAbsoluteSiteUrl(
+    "/feed/all",
+    feedData.siteUrl,
+    c.var.appConfig.sitePathPrefix,
+  );
   const xml = defaultRssRenderer(feedData);
 
   return new Response(xml, {
@@ -145,6 +158,11 @@ rssRoutes.get("/all", async (c) => {
 rssRoutes.get("/all/atom.xml", async (c) => {
   const format = parseFormatQuery(c);
   const feedData = await buildFeedData(c, { excludeUnlisted: true, format });
+  feedData.selfUrl = toAbsoluteSiteUrl(
+    "/feed/all/atom.xml",
+    feedData.siteUrl,
+    c.var.appConfig.sitePathPrefix,
+  );
   const xml = defaultAtomRenderer(feedData);
 
   return new Response(xml, {

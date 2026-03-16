@@ -206,6 +206,7 @@ archiveRoutes.get("/", async (c) => {
             mediaCtx.r2PublicUrl,
             mediaCtx.imageTransformUrl,
             mediaCtx.s3PublicUrl,
+            mediaCtx.sitePathPrefix,
           );
 
           for (const [key, monthPosts] of grouped) {
@@ -264,6 +265,7 @@ archiveRoutes.get("/", async (c) => {
         availableYears={availableYears}
         availableCollections={availableCollectionsList}
         isAuthenticated={navData.isAuthenticated}
+        sitePathPrefix={navData.sitePathPrefix}
       />
     ),
   });

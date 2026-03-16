@@ -119,7 +119,8 @@ function splitFont(inputFile, outputDir, family, weight) {
 }
 
 /**
- * Remove cn-font-split metadata comments and rewrite asset URLs to their weight directory.
+ * Remove cn-font-split metadata comments, rewrite asset URLs to their weight
+ * directory, and opt those font files out of Vite's CSS inlining.
  *
  * @param {string} css Generated CSS content.
  * @param {string} weight Weight directory name.
@@ -127,7 +128,10 @@ function splitFont(inputFile, outputDir, family, weight) {
  */
 function rewriteCss(css, weight) {
   const withoutBanner = css.replace(/^\/\*[\s\S]*?\*\/\s*/, "");
-  return withoutBanner.replaceAll('url("./', `url("./${weight}/`);
+  return withoutBanner.replace(
+    /url\("\.\/([^"]+\.woff2)"\)/g,
+    `url("./${weight}/$1?no-inline")`,
+  );
 }
 
 try {

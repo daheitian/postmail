@@ -10,14 +10,14 @@ Deploy to Cloudflare instantly — no local setup required:
 
 ### Deploy form fields
 
-| Field                      | What to do                                                                                                                                                                                                                 |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Git account**            | Select your GitHub account. A new repo will be created for you.                                                                                                                                                            |
-| **D1 database**            | Keep "Create new". The default name is fine.                                                                                                                                                                               |
-| **Database location hint** | Pick a region close to you (optional, Cloudflare auto-selects).                                                                                                                                                            |
-| **R2 bucket**              | Keep "Create new". The default name is fine. Used for media uploads.                                                                                                                                                       |
-| **AUTH_SECRET**            | Used for login session encryption. Keep the pre-filled value or generate your own with `openssl rand -base64 32`.                                                                                                          |
-| **SITE_URL**               | Change this to your production URL (e.g. `https://my-blog.example.com`). If you don't have a custom domain yet, leave it empty — you can set it later in the Cloudflare dashboard after you know your `*.workers.dev` URL. |
+| Field                      | What to do                                                                                                                                                                                                                                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Git account**            | Select your GitHub account. A new repo will be created for you.                                                                                                                                                                                          |
+| **D1 database**            | Keep "Create new". The default name is fine.                                                                                                                                                                                                             |
+| **Database location hint** | Pick a region close to you (optional, Cloudflare auto-selects).                                                                                                                                                                                          |
+| **R2 bucket**              | Keep "Create new". The default name is fine. Used for media uploads.                                                                                                                                                                                     |
+| **AUTH_SECRET**            | Used for login session encryption. Keep the pre-filled value or generate your own with `openssl rand -base64 32`.                                                                                                                                        |
+| **SITE_URL**               | Change this to your production URL (e.g. `https://my-blog.example.com` or `https://example.com/blog`). If you don't have a custom domain yet, leave it empty — you can set it later in the Cloudflare dashboard after you know your `*.workers.dev` URL. |
 
 ### After deploy
 
@@ -25,6 +25,8 @@ Deploy to Cloudflare instantly — no local setup required:
 2. Go to `/setup` to set up your admin account
 3. If you set `SITE_URL` to a custom domain, add it in: Cloudflare dashboard → Workers & Pages → your worker → Settings → Domains & Routes → Add Custom Domain
 4. If you left `SITE_URL` empty, set it to your `*.workers.dev` URL: Cloudflare dashboard → Workers & Pages → your worker → Settings → Variables and Secrets
+
+If you deploy Jant under a subpath on Cloudflare, reserve `/jant-assets/*` for Jant's static assets and route both your page prefix and `/jant-assets*` to the same Worker.
 
 ### Develop locally
 

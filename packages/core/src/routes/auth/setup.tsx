@@ -17,10 +17,13 @@ import { buildPageTitle } from "../../lib/page-title.js";
 import { mapIanaToTimezone } from "../../lib/timezones.js";
 import { getI18n, baseLocale } from "../../i18n/index.js";
 import { detectLocaleFromHeader } from "../../i18n/detect.js";
+import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-const SetupContent: FC = () => {
+const SetupContent: FC<{ sitePathPrefix?: string }> = ({
+  sitePathPrefix = "",
+}) => {
   const { t } = useLingui();
 
   return (
@@ -44,7 +47,7 @@ const SetupContent: FC = () => {
           <form
             data-signals="{siteName: '', email: '', password: '', timezone: '', language: ''}"
             data-init="$timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; $language = navigator.language || ''"
-            data-on:submit__prevent="@post('/setup')"
+            data-on:submit__prevent={`@post('${toPublicPath("/setup", sitePathPrefix)}')`}
             data-indicator="_loading"
             class="flex flex-col gap-4"
           >
@@ -125,11 +128,12 @@ export const setupRoutes = new Hono<Env>();
 
 setupRoutes.get("/setup", async (c) => {
   const isComplete = await c.var.services.settings.isOnboardingComplete();
-  if (isComplete) return c.redirect("/");
+  if (isComplete)
+    return c.redirect(toPublicPath("/", c.var.appConfig.sitePathPrefix));
 
   return c.html(
     <BaseLayout title={buildPageTitle("Setup", c.var.appConfig.siteName)} c={c}>
-      <SetupContent />
+      <SetupContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
     </BaseLayout>,
   );
 });
@@ -137,7 +141,8 @@ setupRoutes.get("/setup", async (c) => {
 setupRoutes.post("/setup", async (c) => {
   const i18n = getI18n(c);
   const isComplete = await c.var.services.settings.isOnboardingComplete();
-  if (isComplete) return c.redirect("/");
+  if (isComplete)
+    return c.redirect(toPublicPath("/", c.var.appConfig.sitePathPrefix));
 
   const body = await c.req.json<Record<string, string>>();
   const parsed = SetupSchema.safeParse(body);
@@ -236,7 +241,9 @@ setupRoutes.post("/setup", async (c) => {
       url: "/settings",
     });
 
-    return dsRedirect("/signin?setup");
+    return dsRedirect(
+      toPublicPath("/signin?setup", c.var.appConfig.sitePathPrefix),
+    );
   } catch (err) {
     // eslint-disable-next-line no-console -- Error logging is intentional
     console.error("Setup error:", err);

@@ -14,6 +14,7 @@ import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { assembleFeaturedTimeline } from "../../lib/timeline.js";
+import { toPublicPath } from "../../lib/url.js";
 import { FeaturedPage } from "../../ui/pages/FeaturedPage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -26,7 +27,7 @@ featuredRoutes.get("/", async (c) => {
 
   // When homepage already shows featured, redirect to avoid duplicate content
   if (navData.homeDefaultView === "featured") {
-    return c.redirect("/", 302);
+    return c.redirect(toPublicPath("/", navData.sitePathPrefix), 302);
   }
   const page = parsePageNumber(c.req.query("page"));
   const featuredTitle = i18n._(
@@ -52,7 +53,7 @@ featuredRoutes.get("/", async (c) => {
         items={items}
         currentPage={currentPage}
         totalPages={totalPages}
-        baseUrl="/featured"
+        baseUrl={toPublicPath("/featured", navData.sitePathPrefix)}
       />
     ),
   });

@@ -10,6 +10,7 @@ import type { Bindings, Post, SortOrder, TimelineItemView } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
 import { createMediaContext, toPostView } from "./view.js";
+import { toPublicPath } from "./url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -45,6 +46,7 @@ async function buildTimelineItems(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.sitePathPrefix,
   );
 
   // Batch load media for context posts (latestReply + parentReply)
@@ -66,6 +68,7 @@ async function buildTimelineItems(
                 mediaCtx.r2PublicUrl,
                 mediaCtx.imageTransformUrl,
                 mediaCtx.s3PublicUrl,
+                mediaCtx.sitePathPrefix,
               ),
             ),
           c.var.services.collections.getCollectionsByPostIds(contextPostIds),
@@ -172,6 +175,7 @@ async function buildCuratedThreadItems(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.sitePathPrefix,
   );
 
   return orderedThreads.reduce<TimelineItemView[]>((items, thread) => {
@@ -180,7 +184,10 @@ async function buildCuratedThreadItems(
       return items;
     }
 
-    const threadRootPermalink = `/${root.slug}`;
+    const threadRootPermalink = toPublicPath(
+      `/${root.slug}`,
+      mediaCtx.sitePathPrefix,
+    );
     const lastPostId = thread[thread.length - 1]?.id;
     const postViews = thread.map((post) =>
       toPostView(

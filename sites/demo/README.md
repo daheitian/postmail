@@ -10,14 +10,14 @@ Deploy to Cloudflare instantly — no local setup required:
 
 ### Deploy form fields
 
-| Field                      | What to do                                                                                                                                                                                                                 |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Git account**            | Select your GitHub account. A new repo will be created for you.                                                                                                                                                            |
-| **D1 database**            | Keep "Create new". The default name is fine.                                                                                                                                                                               |
-| **Database location hint** | Pick a region close to you (optional, Cloudflare auto-selects).                                                                                                                                                            |
-| **R2 bucket**              | Keep "Create new". The default name is fine. Used for media uploads.                                                                                                                                                       |
-| **AUTH_SECRET**            | Used for login session encryption. Keep the pre-filled value or generate your own with `openssl rand -base64 32`.                                                                                                          |
-| **SITE_URL**               | Change this to your production URL (e.g. `https://my-blog.example.com`). If you don't have a custom domain yet, leave it empty — you can set it later in the Cloudflare dashboard after you know your `*.workers.dev` URL. |
+| Field                      | What to do                                                                                                                                                                                                                                               |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Git account**            | Select your GitHub account. A new repo will be created for you.                                                                                                                                                                                          |
+| **D1 database**            | Keep "Create new". The default name is fine.                                                                                                                                                                                                             |
+| **Database location hint** | Pick a region close to you (optional, Cloudflare auto-selects).                                                                                                                                                                                          |
+| **R2 bucket**              | Keep "Create new". The default name is fine. Used for media uploads.                                                                                                                                                                                     |
+| **AUTH_SECRET**            | Used for login session encryption. Keep the pre-filled value or generate your own with `openssl rand -base64 32`.                                                                                                                                        |
+| **SITE_URL**               | Change this to your production URL (e.g. `https://my-blog.example.com` or `https://example.com/blog`). If you don't have a custom domain yet, leave it empty — you can set it later in the Cloudflare dashboard after you know your `*.workers.dev` URL. |
 
 ### After deploy
 
@@ -74,11 +74,13 @@ wrangler d1 create <your-project>-db
 Edit `wrangler.toml`:
 
 - Replace `database_id = "local"` with the ID from step 2
-- Set `SITE_URL` to your production URL (e.g. `https://example.com`)
+- Set `SITE_URL` to your production URL (e.g. `https://example.com` or `https://example.com/blog`)
 
 > R2 bucket is automatically created on first deploy — no manual setup needed.
 >
 > **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). If you've already started local development, you'll need to go through the setup wizard again to create your admin account.
+>
+> **Subpath deploys on Cloudflare:** If `SITE_URL` includes a path like `/blog`, reserve the root path `/jant-assets/*` for Jant's static assets and make sure both `/blog*` and `/jant-assets*` reach the same Worker.
 
 #### 4. Set Production Secrets
 
@@ -173,10 +175,10 @@ The workflow is pre-configured to deploy on every push to `main`. After pushing 
 
 ## Environment Variables
 
-| Variable      | Description                               | Location         |
-| ------------- | ----------------------------------------- | ---------------- |
-| `AUTH_SECRET` | Secret key for authentication (32+ chars) | `.dev.vars` file |
-| `SITE_URL`    | Your site's public URL                    | `wrangler.toml`  |
+| Variable      | Description                                           | Location         |
+| ------------- | ----------------------------------------------------- | ---------------- |
+| `AUTH_SECRET` | Secret key for authentication (32+ chars)             | `.dev.vars` file |
+| `SITE_URL`    | Your site's public URL, optionally with a path prefix | `wrangler.toml`  |
 
 For all available variables (site name, language, R2 storage, image optimization, S3, demo mode, etc.), see the **[Configuration Guide](https://github.com/jant-me/jant/blob/main/docs/configuration.md)**.
 

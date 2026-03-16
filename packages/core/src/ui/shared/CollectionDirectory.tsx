@@ -3,10 +3,12 @@ import { useLingui } from "@lingui/react/macro";
 import type { CollectionDirectoryItem } from "../../types.js";
 import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
+import { toPublicPath } from "../../lib/url.js";
 
 export interface CollectionDirectoryProps {
   items: CollectionDirectoryItem[];
   emptyMessage?: string;
+  sitePathPrefix?: string;
 }
 
 const hasCollections = (items: CollectionDirectoryItem[]) =>
@@ -17,6 +19,7 @@ const formatSequence = (value: number) => String(value).padStart(2, "0");
 export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
   items,
   emptyMessage,
+  sitePathPrefix = "",
 }) => {
   const { t } = useLingui();
 
@@ -68,7 +71,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
         return (
           <a
             key={item.id}
-            href={`/c/${collection.slug}`}
+            href={toPublicPath(`/c/${collection.slug}`, sitePathPrefix)}
             class="collection-directory-item"
           >
             <div class="collection-directory-main">

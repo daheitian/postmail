@@ -66,6 +66,7 @@ searchRoutes.get("/", async (c) => {
         error={error}
         hasMore={hasMore}
         page={page}
+        sitePathPrefix={navData.sitePathPrefix}
       />
     ),
   });
