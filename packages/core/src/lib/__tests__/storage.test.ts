@@ -10,6 +10,10 @@ import {
 } from "../storage.js";
 import type { Bindings } from "../../types.js";
 
+async function createTempDir() {
+  return mkdtemp(join(tmpdir(), "jant-local-storage-"));
+}
+
 describe("createStorageDriver", () => {
   it("returns null when no storage is configured", () => {
     const env = { DB: {} } as Bindings;
@@ -43,6 +47,29 @@ describe("createStorageDriver", () => {
 
     const driver = createStorageDriver(env);
     expect(driver).not.toBeNull();
+  });
+
+  it("derives the local storage path from JANT_DATA_DIR", async () => {
+    const rootPath = await createTempDir();
+    try {
+      const driver = createStorageDriver({
+        DB: {},
+        JANT_STORAGE_DRIVER: "local",
+        JANT_DATA_DIR: rootPath,
+      } as unknown as Bindings);
+
+      expect(driver).not.toBeNull();
+      await driver!.put(
+        "media/2026/03/data-dir.txt",
+        new TextEncoder().encode("from data dir"),
+      );
+
+      const object = await driver!.get("media/2026/03/data-dir.txt");
+      expect(object).not.toBeNull();
+      expect(await new Response(object!.body).text()).toBe("from data dir");
+    } finally {
+      await rm(rootPath, { recursive: true, force: true });
+    }
   });
 
   it("returns null for S3 driver when S3 config is incomplete", () => {
@@ -193,10 +220,6 @@ describe("createR2Driver", () => {
 });
 
 describe("local storage driver", () => {
-  async function createTempDir() {
-    return mkdtemp(join(tmpdir(), "jant-local-storage-"));
-  }
-
   it("returns null when local storage is selected without a path", () => {
     const env = {
       DB: {},

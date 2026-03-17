@@ -5,7 +5,11 @@
  */
 
 import type { Bindings } from "../types.js";
-import { getConfiguredStorageDriver, getEnvString } from "./env.js";
+import {
+  getConfiguredStorageDriver,
+  getEnvString,
+  getLocalStoragePath,
+} from "./env.js";
 
 /** Tracks an in-progress multipart upload */
 export interface MultipartUploadSession {
@@ -713,8 +717,7 @@ export function createStorageDriver(env: Bindings): StorageDriver | null {
   }
 
   if (driver === "local") {
-    const rootPath =
-      getEnvString(env, "JANT_LOCAL_STORAGE_PATH", "LOCAL_STORAGE_PATH") || "";
+    const rootPath = getLocalStoragePath(env) || "";
     if (!rootPath) {
       return null;
     }

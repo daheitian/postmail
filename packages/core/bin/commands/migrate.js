@@ -14,8 +14,9 @@ export async function run(argv) {
     console.log("");
     console.log("Apply SQLite migrations using DATABASE_URL.");
     console.log("");
-    console.log("Required:");
-    console.log("  DATABASE_URL=file:./data/jant.sqlite");
+    console.log("Defaults:");
+    console.log("  JANT_DATA_DIR=./data");
+    console.log("  DATABASE_URL=file:<data-dir>/jant.sqlite");
     process.exit(0);
   }
 

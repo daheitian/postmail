@@ -75,6 +75,61 @@ pnpm --filter @jant/core build
 pnpm --filter create-jant build
 """
 
+# =============================================================================
+# Docker
+# =============================================================================
+[tasks.docker-build]
+description = "Build the local Docker image"
+usage = 'arg "[image]" default="jant:local"'
+run = 'docker build -t "$usage_image" .'
+
+[tasks.docker-build-pull]
+description = "Build the local Docker image and refresh base layers"
+usage = 'arg "[image]" default="jant:local"'
+run = 'docker build --pull -t "$usage_image" .'
+
+[tasks.docker-pull]
+description = "Pull the published image used by compose.yml"
+run = "docker compose pull"
+
+[tasks.docker-push]
+description = "Push a tagged Docker image to its registry"
+usage = 'arg "<image>"'
+run = 'docker push "$usage_image"'
+
+[tasks.docker-dev-build]
+description = "Build the local development Docker Compose image"
+run = "docker compose -f compose.dev.yml build"
+
+[tasks.docker-dev-up]
+description = "Start the development Docker Compose stack from the local checkout"
+run = "docker compose -f compose.dev.yml up --build"
+
+[tasks.docker-dev-down]
+description = "Stop the development Docker Compose stack"
+run = "docker compose -f compose.dev.yml down"
+
+[tasks.docker-dev-logs]
+description = "Tail logs from the development Docker Compose stack"
+run = "docker compose -f compose.dev.yml logs -f"
+
+[tasks.docker-up]
+description = "Start the bundled Docker Compose stack"
+run = "docker compose up -d"
+
+[tasks.docker-up-local]
+description = "Start the bundled Docker Compose stack with a local image tag"
+usage = 'arg "[image]" default="jant:local"'
+run = 'JANT_IMAGE="$usage_image" docker compose up -d'
+
+[tasks.docker-down]
+description = "Stop the bundled Docker Compose stack"
+run = "docker compose down"
+
+[tasks.docker-logs]
+description = "Tail logs from the bundled Docker Compose stack"
+run = "docker compose logs -f"
+
 [tasks.typecheck]
 description = "Run TypeScript type checking (all packages)"
 run = "pnpm -r typecheck"

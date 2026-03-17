@@ -25,7 +25,7 @@ import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
  * @example
  * ```ts
  * const rawMediaMap = await services.media.getByPostIds(postIds);
- * const mediaMap = buildMediaMap(rawMediaMap, c.env.R2_PUBLIC_URL, c.env.IMAGE_TRANSFORM_URL, c.env.S3_PUBLIC_URL);
+ * const mediaMap = buildMediaMap(rawMediaMap, c.env.JANT_R2_PUBLIC_URL, c.env.JANT_IMAGE_TRANSFORM_URL, c.env.JANT_S3_PUBLIC_URL);
  * ```
  */
 export function buildMediaMap(

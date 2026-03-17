@@ -275,7 +275,7 @@ msgstr "API 權杖"
 #. @context: Settings group label for design settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "外觀"
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -916,7 +916,7 @@ msgstr "完成"
 #. @context: Settings item description for site export
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Download a full Zola export as a .zip archive"
-msgstr ""
+msgstr "下載完整的 Zola 匯出為 .zip 封存"
 
 #. @context: Button to download site backup before deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1049,7 +1049,7 @@ msgstr "匯出網站"
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Favicon and the profile mark in your header"
-msgstr ""
+msgstr "Favicon 與您標頭上的個人標記"
 
 #. @context: Archive visibility filter - featured posts
 #. @context: Browse filter for featured posts
@@ -1118,7 +1118,7 @@ msgstr "檔案"
 #. @context: Settings item description for custom CSS
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Fine-grained styling overrides"
-msgstr ""
+msgstr "細緻樣式覆寫"
 
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1176,7 +1176,7 @@ msgstr "引導視線而不搶佔版面。"
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Header links, featured tab, and menu balance"
-msgstr ""
+msgstr "頁首連結、精選分頁與選單餘額"
 
 #. @context: Bullet item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1445,7 +1445,7 @@ msgstr "評分最低"
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage sign-in security, exports, and irreversible actions."
-msgstr ""
+msgstr "管理登入安全, 匯出, 以及無法復原的操作."
 
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1524,7 +1524,7 @@ msgstr "我的選集"
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Name, metadata, language, and search defaults"
-msgstr ""
+msgstr "名稱、中繼資料、語言與搜尋預設值"
 
 #. @context: Settings item — navigation settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1737,7 +1737,7 @@ msgstr "將其與鮮豔的 SaaS 藍色或霓虹綠搭配。"
 #. @context: Settings item description for color theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Palette, surface tone, and overall mood"
-msgstr ""
+msgstr "調色盤、表面色調與整體氛圍"
 
 #. @context: Theme group description on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2005,7 +2005,7 @@ msgstr "重新導向類型"
 #. @context: Settings item description for custom URLs
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Redirects, vanity paths, and URL control"
-msgstr ""
+msgstr "重新導向、自訂路徑與 URL 控制"
 
 #. @context: Collection tag on sample link post
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2152,7 +2152,7 @@ msgstr "搜尋..."
 #. @context: Settings group label for account security settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Security"
-msgstr ""
+msgstr "安全性"
 
 #. @context: Error toast when CSRF token is invalid or expired
 #: src/routes/dash/settings.tsx
@@ -2167,7 +2167,7 @@ msgstr "找不到安全權杖。請重新整理頁面後再試一次。"
 #. @context: Settings item description for sessions
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "See where you're signed in and revoke old sessions"
-msgstr ""
+msgstr "查看您在哪裡已登入並終止舊的登入會話"
 
 #. @context: Toast after saving SEO settings
 #. @context: Toast after saving SEO settings
@@ -2633,7 +2633,7 @@ msgstr "在真實閱讀情境中微調顏色"
 #. @context: Intro text on the settings home page below the title
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Tune how your site looks, reads, and runs."
-msgstr ""
+msgstr "調整您的網站外觀、閱讀體驗與執行方式。"
 
 #. @context: Custom URL form field
 #: src/routes/dash/custom-urls.tsx
@@ -2653,7 +2653,7 @@ msgstr "輸入引述..."
 #. @context: Settings item description for font theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Typography choices and reading texture"
-msgstr ""
+msgstr "字體選擇與閱讀質感"
 
 #. @context: Brand keyword on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -2682,7 +2682,7 @@ msgstr "無標題"
 #. @context: Settings item description for password change
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Update the password you use to sign in"
-msgstr ""
+msgstr "更新您用來登入的密碼"
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx

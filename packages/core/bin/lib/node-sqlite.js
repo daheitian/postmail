@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
-import { dirname, isAbsolute, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dirname, isAbsolute, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 export function resolveDatabasePath(
   databaseUrl,
@@ -39,6 +39,36 @@ export function resolveDatabasePath(
   return isAbsolute(rawPath) ? rawPath : resolve(cwd, rawPath);
 }
 
+export function resolveDataDir(env = process.env, cwd = process.cwd()) {
+  const configured = env.JANT_DATA_DIR ?? env.DATA_DIR;
+  const candidate = configured || "data";
+  return isAbsolute(candidate) ? candidate : resolve(cwd, candidate);
+}
+
+export function applyNodeRuntimeDefaults(env = process.env) {
+  let dataDir;
+  if (env.JANT_DATA_DIR || env.DATA_DIR) {
+    dataDir = resolveDataDir(env);
+  } else if (env.DATABASE_URL) {
+    const databasePath = resolveDatabasePath(env.DATABASE_URL);
+    dataDir = databasePath === ":memory:" ? undefined : dirname(databasePath);
+  } else {
+    dataDir = resolveDataDir(env);
+  }
+
+  if (dataDir && !env.JANT_DATA_DIR && !env.DATA_DIR) {
+    env.JANT_DATA_DIR = dataDir;
+  }
+
+  if (!env.DATABASE_URL && dataDir) {
+    env.DATABASE_URL = pathToFileURL(join(dataDir, "jant.sqlite")).href;
+  }
+
+  if (dataDir && !env.JANT_LOCAL_STORAGE_PATH && !env.LOCAL_STORAGE_PATH) {
+    env.JANT_LOCAL_STORAGE_PATH = join(dataDir, "media");
+  }
+}
+
 export function assertDatabaseInitialized(sqlite) {
   const hasSettingsTable = sqlite
     .prepare(
@@ -63,6 +93,7 @@ export function openNodeSqlite(
   env = process.env,
   options = {},
 ) {
+  applyNodeRuntimeDefaults(env);
   const databasePath = resolveDatabasePath(env.DATABASE_URL ?? "");
 
   if (options.createParentDir && databasePath !== ":memory:") {

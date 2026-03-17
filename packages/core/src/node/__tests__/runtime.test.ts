@@ -1,14 +1,27 @@
-import { access, mkdtemp, rm } from "node:fs/promises";
+import { access, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import Database from "better-sqlite3";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  createNodeRequestHandler,
   migrate,
+  resolveNodeAssetRoot,
+  resolveNodeDataDir,
   resolveDatabasePath,
   resolvePublicRequestUrl,
 } from "../runtime.js";
 import type { Bindings } from "../../types.js";
+
+const tempDirs: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(
+    tempDirs.map((dir) => rm(dir, { recursive: true, force: true })),
+  );
+  tempDirs.length = 0;
+});
 
 describe("resolveDatabasePath", () => {
   it("resolves relative file URLs against the current working directory", () => {
@@ -25,6 +38,63 @@ describe("resolveDatabasePath", () => {
     expect(() => resolveDatabasePath("postgres://localhost/jant")).toThrow(
       /file:/,
     );
+  });
+});
+
+describe("resolveNodeDataDir", () => {
+  it("resolves JANT_DATA_DIR relative to the current working directory", () => {
+    expect(
+      resolveNodeDataDir({ JANT_DATA_DIR: "./data" } as Bindings, {
+        cwd: "/srv/jant",
+      }),
+    ).toBe("/srv/jant/data");
+  });
+});
+
+describe("resolveNodeAssetRoot", () => {
+  it("resolves the reserved jant-assets directory for built Node bundles", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-node-assets-"));
+    tempDirs.push(root);
+    const assetRoot = join(root, "dist", "client", "jant-assets");
+    await mkdir(assetRoot, { recursive: true });
+    await writeFile(join(assetRoot, "client.css"), "body{}");
+
+    expect(
+      resolveNodeAssetRoot(pathToFileURL(join(root, "dist", "node.js")).href),
+    ).toBe(assetRoot);
+  });
+
+  it("serves built jant-assets files from the asset root", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-node-assets-server-"));
+    tempDirs.push(root);
+    const assetRoot = join(root, "dist", "client", "jant-assets");
+    const databasePath = join(root, "data", "jant.sqlite");
+    await mkdir(assetRoot, { recursive: true });
+    await writeFile(join(assetRoot, "client.css"), "body{}");
+    migrate({
+      DATABASE_URL: `file:${databasePath}`,
+    } as Bindings);
+
+    const handler = await createNodeRequestHandler({
+      assetRoot,
+      env: {
+        DATABASE_URL: `file:${databasePath}`,
+      } as Bindings,
+    });
+
+    try {
+      const response = await handler.fetch(
+        new Request("http://127.0.0.1:3000/jant-assets/client.css"),
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(
+        "text/css; charset=utf-8",
+      );
+      expect(await response.text()).toBe("body{}");
+    } finally {
+      await handler.close();
+    }
   });
 });
 
@@ -72,15 +142,6 @@ describe("resolvePublicRequestUrl", () => {
 });
 
 describe("migrate", () => {
-  const tempDirs: string[] = [];
-
-  afterEach(async () => {
-    await Promise.all(
-      tempDirs.map((dir) => rm(dir, { recursive: true, force: true })),
-    );
-    tempDirs.length = 0;
-  });
-
   it("creates the SQLite database and applies migrations", async () => {
     const root = await mkdtemp(join(tmpdir(), "jant-node-migrate-"));
     tempDirs.push(root);
@@ -109,5 +170,18 @@ describe("migrate", () => {
     } finally {
       sqlite.close();
     }
+  });
+
+  it("derives the SQLite path from JANT_DATA_DIR when DATABASE_URL is unset", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-node-data-dir-"));
+    tempDirs.push(root);
+    const dataDir = join(root, "data");
+    const databasePath = join(dataDir, "jant.sqlite");
+
+    migrate({
+      JANT_DATA_DIR: dataDir,
+    } as Bindings);
+
+    await access(databasePath);
   });
 });

@@ -49,7 +49,7 @@ export const DEFAULT_PAGE_SIZE = 100;
  * Settings keys - derived from CONFIG_FIELDS (Single Source of Truth)
  *
  * Only non-envOnly fields and internal fields are stored in DB settings.
- * Environment-only fields (SITE_URL, AUTH_SECRET, etc.) are never in the DB.
+ * Environment-only fields (JANT_SITE_URL, JANT_AUTH_SECRET, etc.) are never in the DB.
  */
 import { CONFIG_FIELDS, type ConfigKey } from "../types.js";
 

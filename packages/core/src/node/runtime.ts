@@ -9,9 +9,12 @@ import {
 } from "./request-handler.js";
 
 export {
+  applyNodeRuntimeEnvDefaults,
   createNodeRequestHandler,
   migrate,
   resolveDatabasePath,
+  resolveNodeAssetRoot,
+  resolveNodeDataDir,
   resolveHost,
   resolveNodeMigrationsDir,
   resolvePort,

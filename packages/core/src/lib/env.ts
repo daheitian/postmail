@@ -42,6 +42,28 @@ export function getStorageDriverEnv(env: EnvSource): string | undefined {
   return getEnvString(env, "JANT_STORAGE_DRIVER", "STORAGE_DRIVER");
 }
 
+export function getDataDir(env: EnvSource): string | undefined {
+  return getEnvString(env, "JANT_DATA_DIR", "DATA_DIR");
+}
+
+function joinDataSubpath(dataDir: string, child: string): string {
+  return `${dataDir.replace(/[\\/]+$/, "")}/${child}`;
+}
+
+export function getLocalStoragePath(env: EnvSource): string | undefined {
+  const explicit = getEnvString(
+    env,
+    "JANT_LOCAL_STORAGE_PATH",
+    "LOCAL_STORAGE_PATH",
+  );
+  if (explicit) {
+    return explicit;
+  }
+
+  const dataDir = getDataDir(env);
+  return dataDir ? joinDataSubpath(dataDir, "media") : undefined;
+}
+
 export function getDefaultStorageDriver(env: EnvSource): "local" | "r2" {
   const record = toEnvRecord(env);
   return record["NODE_SQLITE"] ? "local" : "r2";

@@ -41,6 +41,7 @@ export interface Bindings {
   JANT_S3_SECRET_ACCESS_KEY?: string;
   JANT_S3_REGION?: string;
   JANT_S3_PUBLIC_URL?: string;
+  JANT_DATA_DIR?: string;
   JANT_LOCAL_STORAGE_PATH?: string;
   JANT_LOCAL_PUBLIC_URL?: string;
   JANT_UPLOAD_MAX_FILE_SIZE_MB?: string;
@@ -68,6 +69,7 @@ export interface Bindings {
   SHOW_JANT_BRANDING_ON_HOME?: string;
   // S3-compatible storage (alternative to R2)
   STORAGE_DRIVER?: string;
+  DATA_DIR?: string;
   S3_ENDPOINT?: string;
   S3_BUCKET?: string;
   S3_ACCESS_KEY_ID?: string;

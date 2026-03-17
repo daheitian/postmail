@@ -1,0 +1,28 @@
+services:
+  jant:
+    image: ${JANT_DEV_IMAGE:-jant:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${JANT_PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      JANT_AUTH_SECRET: ${JANT_AUTH_SECRET:?Set JANT_AUTH_SECRET in .env}
+      JANT_TRUST_PROXY: ${JANT_TRUST_PROXY:-true}
+    volumes:
+      - ./data:/var/lib/jant
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3

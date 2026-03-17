@@ -1,6 +1,6 @@
 # @jant/core
 
-A modern, open-source microblogging platform built on Cloudflare Workers.
+A modern, open-source microblogging platform for Cloudflare Workers and self-hosted Node deployments.
 
 > Still in development
 
@@ -16,11 +16,11 @@ Jant is a single-author microblog for people who want to share thoughts without 
 - **Full-text search** - Find anything with FTS5-powered search
 - **i18n ready** - Built-in internationalization support
 - **Beautiful themes** - Clean, responsive design with dark mode
-- **Fast & cheap** - Runs on Cloudflare's edge network
+- **Flexible deployment** - Run on Cloudflare Workers or self-host on Node/Docker
 
 ## Tech Stack
 
-- **Runtime**: Cloudflare Workers
+- **Runtime**: Cloudflare Workers or Node.js 24
 - **Framework**: [Hono](https://hono.dev)
 - **Database**: Cloudflare D1 (SQLite)
 - **Storage**: Cloudflare R2
@@ -53,6 +53,7 @@ pnpm add @jant/core
 
 - [Getting Started](https://github.com/jant-me/jant/blob/main/docs/getting-started.md)
 - [Deployment](https://github.com/jant-me/jant/blob/main/docs/deployment.md)
+- [Docker Deployment](https://github.com/jant-me/jant/blob/main/docs/deployment-docker.md)
 - [Configuration](https://github.com/jant-me/jant/blob/main/docs/configuration.md)
 - [Theming](https://github.com/jant-me/jant/blob/main/docs/theming.md)
 - [API Reference](https://github.com/jant-me/jant/blob/main/docs/API.md)

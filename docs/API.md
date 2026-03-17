@@ -409,7 +409,7 @@ POST /api/upload
 | `summary`  | string  | no       | Summary for text file attachments    |
 | `poster`   | File    | no       | Poster frame for video files (WebP)  |
 
-**File limits:** Configurable via `UPLOAD_MAX_FILE_SIZE_MB` env var (default: 500 MB). All MIME types accepted.
+**File limits:** Configurable via `JANT_UPLOAD_MAX_FILE_SIZE_MB` env var (default: 500 MB). All MIME types accepted.
 
 **Response (200):**
 
@@ -938,7 +938,7 @@ PUT /api/settings
 }
 ```
 
-Environment-only keys (like `AUTH_SECRET`) are silently rejected. If all keys are rejected, returns `400`.
+Environment-only config keys (like `AUTH_SECRET`) are silently rejected. If all keys are rejected, returns `400`.
 
 **Response (200):**
 

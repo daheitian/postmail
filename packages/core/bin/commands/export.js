@@ -51,7 +51,7 @@ export async function run(argv) {
     );
     console.log("");
     console.log(
-      "If DATABASE_URL is set and no runtime flag is passed, this command uses Node SQLite.",
+      "If DATABASE_URL or JANT_DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite.",
     );
     process.exit(0);
   }

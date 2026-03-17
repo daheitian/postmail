@@ -8,9 +8,9 @@
 import { getRequestListener } from "@hono/node-server";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import {
+  applyNodeRuntimeEnvDefaults,
   createNodeRequestHandler,
   migrate,
   resolveHost,
@@ -19,18 +19,6 @@ import {
 import type { Bindings } from "./src/types/bindings.js";
 import { pkg, swcPlugin } from "./vite.shared";
 import { linguiAutoExtract, ssrReload } from "./vite.dev-plugins";
-
-function applyNodeDevDefaults(env: Bindings): void {
-  if (!env.DATABASE_URL) {
-    env.DATABASE_URL = pathToFileURL(
-      resolve(import.meta.dirname, ".data/jant.sqlite"),
-    ).href;
-  }
-
-  if (!env.JANT_LOCAL_STORAGE_PATH) {
-    env.JANT_LOCAL_STORAGE_PATH = resolve(import.meta.dirname, ".data/media");
-  }
-}
 
 function nodeMiddleware(): Plugin {
   return {
@@ -89,7 +77,9 @@ export default defineConfig(({ command, mode }) => {
   process.env.NODE_ENV ||= "development";
 
   const bindings = process.env as unknown as Bindings;
-  applyNodeDevDefaults(bindings);
+  applyNodeRuntimeEnvDefaults(bindings, {
+    defaultDataDir: resolve(import.meta.dirname, "data"),
+  });
 
   if (command === "serve") {
     migrate(bindings);

@@ -1,10 +1,17 @@
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate as drizzleMigrate } from "drizzle-orm/better-sqlite3/migrator";
-import { createReadStream, existsSync, mkdirSync } from "node:fs";
-import { stat } from "node:fs/promises";
-import { dirname, extname, isAbsolute, relative, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, mkdirSync } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
+import {
+  dirname,
+  extname,
+  isAbsolute,
+  join,
+  relative,
+  resolve,
+} from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import * as schema from "../db/schema.js";
 import { ASSET_BASE_PATH } from "../lib/asset-path.js";
 import { getEnvString, getSiteUrl, shouldTrustProxy } from "../lib/env.js";
@@ -118,11 +125,11 @@ function applyHostToUrl(url: URL, host: string): void {
   url.port = parsed.port;
 }
 
-function resolveNodeAssetRoot(moduleUrl = import.meta.url): string {
+export function resolveNodeAssetRoot(moduleUrl = import.meta.url): string {
   return findExistingPath(
     [
-      fileURLToPath(new URL("./client", moduleUrl).href),
-      fileURLToPath(new URL("../../dist/client", moduleUrl).href),
+      fileURLToPath(new URL("./client/jant-assets", moduleUrl).href),
+      fileURLToPath(new URL("../../dist/client/jant-assets", moduleUrl).href),
     ],
     "Node asset directory",
   );
@@ -171,6 +178,61 @@ export function resolveDatabasePath(
   }
 
   return isAbsolute(rawPath) ? rawPath : resolve(cwd, rawPath);
+}
+
+export function resolveNodeDataDir(
+  env: Bindings,
+  options?: { cwd?: string; defaultDataDir?: string },
+): string | undefined {
+  const cwd = options?.cwd ?? process.cwd();
+  const configured = getEnvString(env, "JANT_DATA_DIR", "DATA_DIR");
+  const candidate = configured ?? options?.defaultDataDir;
+  if (!candidate) {
+    return undefined;
+  }
+
+  return isAbsolute(candidate) ? candidate : resolve(cwd, candidate);
+}
+
+export function applyNodeRuntimeEnvDefaults(
+  env: Bindings,
+  options?: { cwd?: string; defaultDataDir?: string },
+): void {
+  const cwd = options?.cwd ?? process.cwd();
+  let dataDir = resolveNodeDataDir(env, { cwd });
+
+  if (!dataDir) {
+    const configuredDatabaseUrl = getEnvString(env, "DATABASE_URL");
+    if (configuredDatabaseUrl) {
+      const databasePath = resolveDatabasePath(configuredDatabaseUrl, cwd);
+      if (databasePath !== ":memory:") {
+        dataDir = dirname(databasePath);
+      }
+    }
+  }
+
+  if (!dataDir) {
+    dataDir = resolveNodeDataDir(env, {
+      cwd,
+      defaultDataDir: options?.defaultDataDir,
+    });
+  }
+
+  if (!dataDir) {
+    return;
+  }
+
+  if (!getEnvString(env, "JANT_DATA_DIR", "DATA_DIR")) {
+    env.JANT_DATA_DIR = dataDir;
+  }
+
+  if (!getEnvString(env, "DATABASE_URL")) {
+    env.DATABASE_URL = pathToFileURL(join(dataDir, "jant.sqlite")).href;
+  }
+
+  if (!getEnvString(env, "JANT_LOCAL_STORAGE_PATH", "LOCAL_STORAGE_PATH")) {
+    env.JANT_LOCAL_STORAGE_PATH = join(dataDir, "media");
+  }
 }
 
 function ensureParentDirectory(databasePath: string): void {
@@ -233,6 +295,7 @@ function createNodeSqlite(
   env: Bindings,
   options?: { createParentDir?: boolean; requireInitialized?: boolean },
 ): Database.Database {
+  applyNodeRuntimeEnvDefaults(env, { defaultDataDir: "data" });
   const databasePath = resolveDatabasePath(
     getEnvString(env, "DATABASE_URL") ?? "",
   );
@@ -359,18 +422,15 @@ async function serveStaticAsset(
     });
   }
 
-  return new Response(
-    createReadStream(candidatePath) as unknown as ReadableStream,
-    {
-      headers: new Headers({
-        "Cache-Control": "public, max-age=31536000, immutable",
-        "Content-Length": String(fileStat.size),
-        "Content-Type": getMimeType(candidatePath),
-        ETag: etag,
-        "Last-Modified": fileStat.mtime.toUTCString(),
-      }),
-    },
-  );
+  return new Response(await readFile(candidatePath), {
+    headers: new Headers({
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "Content-Length": String(fileStat.size),
+      "Content-Type": getMimeType(candidatePath),
+      ETag: etag,
+      "Last-Modified": fileStat.mtime.toUTCString(),
+    }),
+  });
 }
 
 function createNodeBindings(

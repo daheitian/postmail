@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1.7
+
+FROM node:24-bookworm-slim AS build
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+ENV HUSKY=0
+
+RUN corepack enable
+
+WORKDIR /src
+
+COPY . .
+
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @jant/core i18n:compile
+RUN pnpm --filter @jant/core build
+RUN pnpm --filter @jant/core deploy --legacy --prod /app
+
+FROM node:24-bookworm-slim AS runtime
+
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
+ENV JANT_DATA_DIR=/var/lib/jant
+
+WORKDIR /app
+
+RUN mkdir -p /app /var/lib/jant /usr/local/bin \
+  && chown -R node:node /app /var/lib/jant /usr/local/bin
+
+COPY --from=build --chown=node:node /app /app
+COPY --chown=node:node scripts/docker-entrypoint.sh /usr/local/bin/jant-docker-entrypoint
+
+RUN chmod +x /usr/local/bin/jant-docker-entrypoint
+
+USER node
+
+VOLUME ["/var/lib/jant"]
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT || '3000') + '/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))"
+
+ENTRYPOINT ["jant-docker-entrypoint"]

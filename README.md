@@ -19,7 +19,7 @@ Jant is a single-author microblog for people who want to share thoughts without 
 - Thread support for longer thoughts
 - Collections for curated topics
 - Beautiful, themeable design
-- Deploys to Cloudflare Workers in minutes
+- Deploys on Cloudflare Workers or as a self-hosted Node/Docker app
 
 ## Quick Start
 
@@ -42,6 +42,7 @@ npm run dev
 
 - [Getting Started](docs/getting-started.md)
 - [Deployment](docs/deployment.md)
+- [Docker Deployment](docs/deployment-docker.md)
 - [Configuration](docs/configuration.md)
 - [Theming](docs/theming.md)
 - [API Reference](docs/API.md)
@@ -50,10 +51,10 @@ npm run dev
 
 After deploying, configure these in `wrangler.toml` for the best experience:
 
-| Variable              | Why                                                                                   |
-| --------------------- | ------------------------------------------------------------------------------------- |
-| `R2_PUBLIC_URL`       | Serve media directly from CDN instead of proxying through Worker (faster, lower cost) |
-| `IMAGE_TRANSFORM_URL` | Enable automatic thumbnail generation and image optimization                          |
+| Variable                   | Why                                                                                   |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| `JANT_R2_PUBLIC_URL`       | Serve media directly from CDN instead of proxying through Worker (faster, lower cost) |
+| `JANT_IMAGE_TRANSFORM_URL` | Enable automatic thumbnail generation and image optimization                          |
 
 See [Configuration](docs/configuration.md) for full details and setup instructions.
 

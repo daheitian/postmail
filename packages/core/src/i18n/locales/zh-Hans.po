@@ -275,7 +275,7 @@ msgstr "API 令牌"
 #. @context: Settings group label for design settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Appearance"
-msgstr ""
+msgstr "外观"
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -916,7 +916,7 @@ msgstr "完成"
 #. @context: Settings item description for site export
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Download a full Zola export as a .zip archive"
-msgstr ""
+msgstr "下载完整的 Zola 导出为 .zip 归档"
 
 #. @context: Button to download site backup before deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1049,7 +1049,7 @@ msgstr "导出站点"
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Favicon and the profile mark in your header"
-msgstr ""
+msgstr "网站图标及页眉中的个人头像"
 
 #. @context: Archive visibility filter - featured posts
 #. @context: Browse filter for featured posts
@@ -1118,7 +1118,7 @@ msgstr "文件"
 #. @context: Settings item description for custom CSS
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Fine-grained styling overrides"
-msgstr ""
+msgstr "细粒度样式覆盖"
 
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1445,7 +1445,7 @@ msgstr "评分最低"
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage sign-in security, exports, and irreversible actions."
-msgstr ""
+msgstr "管理登录安全、导出和不可逆操作."
 
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1524,7 +1524,7 @@ msgstr "我的合集"
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Name, metadata, language, and search defaults"
-msgstr ""
+msgstr "名称、元数据、语言和搜索默认设置"
 
 #. @context: Settings item — navigation settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1737,7 +1737,7 @@ msgstr "将其与鲜艳的SaaS蓝色或霓虹绿色搭配."
 #. @context: Settings item description for color theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Palette, surface tone, and overall mood"
-msgstr ""
+msgstr "调色板、表面色调与整体氛围"
 
 #. @context: Theme group description on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2005,7 +2005,7 @@ msgstr "重定向类型"
 #. @context: Settings item description for custom URLs
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Redirects, vanity paths, and URL control"
-msgstr ""
+msgstr "重定向、自定义路径与 URL 控制"
 
 #. @context: Collection tag on sample link post
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2152,7 +2152,7 @@ msgstr "搜索..."
 #. @context: Settings group label for account security settings
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Security"
-msgstr ""
+msgstr "安全"
 
 #. @context: Error toast when CSRF token is invalid or expired
 #: src/routes/dash/settings.tsx
@@ -2167,7 +2167,7 @@ msgstr "安全令牌缺失。请刷新页面后重试。"
 #. @context: Settings item description for sessions
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "See where you're signed in and revoke old sessions"
-msgstr ""
+msgstr "查看您在哪些设备登录并撤销旧会话"
 
 #. @context: Toast after saving SEO settings
 #. @context: Toast after saving SEO settings
@@ -2633,7 +2633,7 @@ msgstr "在真实阅读场景中调整颜色"
 #. @context: Intro text on the settings home page below the title
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Tune how your site looks, reads, and runs."
-msgstr ""
+msgstr "调整网站的外观、可读性和运行方式。"
 
 #. @context: Custom URL form field
 #: src/routes/dash/custom-urls.tsx
@@ -2653,7 +2653,7 @@ msgstr "输入引用..."
 #. @context: Settings item description for font theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Typography choices and reading texture"
-msgstr ""
+msgstr "排版选项与阅读体验"
 
 #. @context: Brand keyword on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -2682,7 +2682,7 @@ msgstr "无标题"
 #. @context: Settings item description for password change
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Update the password you use to sign in"
-msgstr ""
+msgstr "更新您用于登录的密码"
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx

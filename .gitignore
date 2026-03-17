@@ -13,6 +13,7 @@ packages/core/vite.config.d.ts.map
 packages/core/dev/scripts/seed-demo-upload.sql
 packages/core/dev/scripts/seed-site.sql
 packages/core/.data/
+packages/core/data/
 # Lingui compiled catalogs (generated from .po files via `lingui compile`)
 packages/core/src/i18n/locales/*.ts
 
@@ -33,6 +34,9 @@ examples/*
 .env.*
 !.env.example
 !packages/core/.env.node.example
+
+# Local Docker volume data
+/data/
 
 # Logs
 logs/

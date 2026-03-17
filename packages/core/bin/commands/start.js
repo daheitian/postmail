@@ -15,8 +15,12 @@ export async function run(argv) {
     console.log("Start the Node.js server using environment variables.");
     console.log("");
     console.log("Required:");
-    console.log("  DATABASE_URL=file:./data/jant.sqlite");
     console.log("  JANT_AUTH_SECRET=your-secret");
+    console.log("");
+    console.log("Defaults:");
+    console.log("  JANT_DATA_DIR=./data");
+    console.log("  DATABASE_URL=file:<data-dir>/jant.sqlite");
+    console.log("  JANT_LOCAL_STORAGE_PATH=<data-dir>/media");
     process.exit(0);
   }
 
