@@ -64,7 +64,7 @@ export class JantNavManager extends LitElement {
   declare _editLabel: string;
   declare _editUrl: string;
   /** Keys currently mid-request (to disable switch during toggle) */
-  declare _togglingKeys: Set<string>;
+  declare _togglingKeys: Set<SystemNavConfig["key"]>;
   declare _showOverflow: boolean;
   declare _showLinkForm: boolean;
   declare _newLinkLabel: string;
@@ -182,6 +182,8 @@ export class JantNavManager extends LitElement {
   // ===========================================================================
 
   #toggleEdit(item: NavManagerItem) {
+    if (item.type === "system") return;
+
     if (this._editingId === item.id) {
       this._editingId = null;
     } else {
@@ -301,7 +303,7 @@ export class JantNavManager extends LitElement {
 
   #isSystemEnabled(config: SystemNavConfig): boolean {
     return this._items.some(
-      (item) => item.type === "system" && item.url === config.url,
+      (item) => item.type === "system" && item.systemKey === config.key,
     );
   }
 
@@ -318,8 +320,7 @@ export class JantNavManager extends LitElement {
           },
           body: JSON.stringify({
             type: "system",
-            label: config.defaultLabel,
-            url: config.url,
+            systemKey: config.key,
           }),
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -327,10 +328,13 @@ export class JantNavManager extends LitElement {
         const created: NavManagerItem = await res.json();
         this.#sortable?.destroy();
         this.#sortable = null;
-        this._items = [...this._items, created];
+        this._items = [
+          ...this._items,
+          { ...created, displayLabel: config.label },
+        ];
       } else {
         const existing = this._items.find(
-          (item) => item.type === "system" && item.url === config.url,
+          (item) => item.type === "system" && item.systemKey === config.key,
         );
         if (existing) {
           const res = await fetch(`/api/nav-items/${existing.id}`, {
@@ -383,7 +387,7 @@ export class JantNavManager extends LitElement {
                           href=${publicPath(item.url)}
                           class="site-header-link"
                         >
-                          ${item.label}
+                          ${item.displayLabel ?? item.label}
                         </a>`,
                     )}
                     ${hasMore
@@ -436,7 +440,7 @@ export class JantNavManager extends LitElement {
                                         href=${publicPath(item.url)}
                                         role="menuitem"
                                       >
-                                        ${item.label}
+                                        ${item.displayLabel ?? item.label}
                                       </a>`,
                                   )}
                                 </div>
@@ -537,41 +541,6 @@ export class JantNavManager extends LitElement {
       `;
     }
 
-    if (item.type === "system") {
-      return html`
-        <div class="nav-item-edit">
-          <div class="field">
-            <label class="label">${this.labels.label}</label>
-            <input
-              type="text"
-              class="input"
-              required
-              .value=${this._editLabel}
-              @input=${(e: Event) => {
-                this._editLabel = (e.target as HTMLInputElement).value;
-              }}
-            />
-          </div>
-          <div class="flex items-center justify-between">
-            <button
-              type="button"
-              class="btn-sm-ghost text-destructive"
-              @click=${() => this.#handleDelete(item)}
-            >
-              ${this.labels.remove}
-            </button>
-            <button
-              type="button"
-              class="btn-sm"
-              @click=${() => this.#handleUpdate(item)}
-            >
-              ${this.labels.save}
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
     return nothing;
   }
 
@@ -605,38 +574,47 @@ export class JantNavManager extends LitElement {
               <circle cx="15" cy="19" r="1" />
             </svg>
           </div>
-          <div class="nav-item-info" @click=${() => this.#toggleEdit(item)}>
+          <div
+            class="nav-item-info"
+            @click=${item.type === "link"
+              ? () => this.#toggleEdit(item)
+              : undefined}
+          >
             <div class="flex items-center gap-2 min-w-0">
-              <span class="text-sm font-medium truncate">${item.label}</span>
+              <span class="text-sm font-medium truncate"
+                >${item.displayLabel ?? item.label}</span
+              >
               ${this.#renderTypeBadge(item.type)}
             </div>
             <span class="text-xs text-muted-foreground truncate"
               >${item.url}</span
             >
           </div>
-          <button
-            type="button"
-            class="nav-item-toggle"
-            @click=${() => this.#toggleEdit(item)}
-            aria-label=${this.labels.toggleEdit}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              style="transition: transform 0.15s; ${isEditing
-                ? "transform: rotate(180deg);"
-                : ""}"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
+          ${item.type === "link"
+            ? html`<button
+                type="button"
+                class="nav-item-toggle"
+                @click=${() => this.#toggleEdit(item)}
+                aria-label=${this.labels.toggleEdit}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="transition: transform 0.15s; ${isEditing
+                    ? "transform: rotate(180deg);"
+                    : ""}"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>`
+            : nothing}
         </div>
         ${this.#renderEditPanel(item)}
       </div>
@@ -763,7 +741,7 @@ export class JantNavManager extends LitElement {
             return html`
               <div class="flex items-center justify-between py-3">
                 <div>
-                  <p class="font-medium">${config.defaultLabel}</p>
+                  <p class="font-medium">${config.label}</p>
                   <p class="text-sm text-muted-foreground">
                     ${config.description}
                   </p>

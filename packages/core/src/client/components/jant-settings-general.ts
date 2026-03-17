@@ -30,6 +30,7 @@ export class JantSettingsGeneral extends LitElement {
       type: String,
       attribute: "sitedescription-fallback",
     },
+    demoMode: { type: Boolean, attribute: "demo-mode" },
 
     // General form
     _siteName: { state: true },
@@ -55,6 +56,7 @@ export class JantSettingsGeneral extends LitElement {
   declare languages: SettingsLanguage[];
   declare siteNameFallback: string;
   declare siteDescriptionFallback: string;
+  declare demoMode: boolean;
 
   // General
   declare _siteName: string;
@@ -92,6 +94,7 @@ export class JantSettingsGeneral extends LitElement {
     this.languages = [];
     this.siteNameFallback = "";
     this.siteDescriptionFallback = "";
+    this.demoMode = false;
 
     this._siteName = "";
     this._siteDescription = "";
@@ -210,6 +213,7 @@ export class JantSettingsGeneral extends LitElement {
   // ── SEO form helpers ──────────────────────────────────────────────
 
   private _toggleNoindex() {
+    if (this.demoMode) return;
     this._noindex = !this._noindex;
     this._seoDirty =
       this._noindex !== this._origNoindex ||
@@ -443,10 +447,16 @@ export class JantSettingsGeneral extends LitElement {
               type="checkbox"
               class="checkbox"
               .checked=${!this._noindex}
+              ?disabled=${this.demoMode}
               @change=${this._toggleNoindex}
             />
             <span>${this.labels.allowIndexing}</span>
           </label>
+          ${this.demoMode
+            ? html`<p class="text-sm text-muted-foreground">
+                ${this.labels.demoSeoLocked}
+              </p>`
+            : nothing}
           <label class="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"

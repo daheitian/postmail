@@ -84,6 +84,32 @@ describe("NavItemService", () => {
       expect(item.updatedAt).toBeGreaterThan(0);
       expect(item.createdAt).toBe(item.updatedAt);
     });
+
+    it("derives built-in system label and url from systemKey", async () => {
+      const item = await navItemService.create({
+        type: "system",
+        systemKey: "settings",
+      });
+
+      expect(item.type).toBe("system");
+      expect(item.systemKey).toBe("settings");
+      expect(item.label).toBe("Settings");
+      expect(item.url).toBe("/settings");
+    });
+
+    it("rejects duplicate built-in system items", async () => {
+      await navItemService.create({
+        type: "system",
+        systemKey: "archive",
+      });
+
+      await expect(
+        navItemService.create({
+          type: "system",
+          systemKey: "archive",
+        }),
+      ).rejects.toThrow("Built-in navigation item already exists");
+    });
   });
 
   describe("getById", () => {
@@ -149,14 +175,14 @@ describe("NavItemService", () => {
       });
       await navItemService.create({
         type: "system",
-        label: "Settings",
-        url: "/settings",
+        systemKey: "settings",
       });
 
       const items = await navItemService.list();
       expect(items).toHaveLength(2);
       expect(items[0]?.type).toBe("link");
       expect(items[1]?.type).toBe("system");
+      expect(items[1]?.systemKey).toBe("settings");
     });
   });
 
@@ -212,6 +238,21 @@ describe("NavItemService", () => {
         { label: "Nope" },
       );
       expect(result).toBeNull();
+    });
+
+    it("rejects label changes for built-in system items", async () => {
+      const created = await navItemService.create({
+        type: "system",
+        systemKey: "archive",
+      });
+
+      await expect(
+        navItemService.update(created.id, {
+          label: "Everything",
+        }),
+      ).rejects.toThrow(
+        "Built-in navigation labels and URLs are managed automatically",
+      );
     });
   });
 

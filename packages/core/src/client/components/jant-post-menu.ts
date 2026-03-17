@@ -43,26 +43,29 @@ type PostMenuView = "menu" | "collections" | "visibility";
 interface MenuTriggerRect {
   top: number;
   bottom: number;
-  right: number;
 }
 
 const ESTIMATED_MENU_HEIGHT = 360;
-const ESTIMATED_MENU_WIDTH = 448;
-const LARGE_SCREEN_MENU_BREAKPOINT = 1120;
 const MENU_VIEWPORT_MARGIN = 12;
-const MENU_OUTSIDE_GUTTER = 16;
 
 function getMenuPlacement(rect: MenuTriggerRect) {
   const spaceBelow = window.innerHeight - rect.bottom - MENU_VIEWPORT_MARGIN;
   const spaceAbove = rect.top - MENU_VIEWPORT_MARGIN;
-  const openAbove =
-    spaceBelow < ESTIMATED_MENU_HEIGHT && spaceAbove > spaceBelow;
-  const spaceRight = window.innerWidth - rect.right - MENU_VIEWPORT_MARGIN;
-  const openOutside =
-    window.innerWidth >= LARGE_SCREEN_MENU_BREAKPOINT &&
-    spaceRight >= ESTIMATED_MENU_WIDTH + MENU_OUTSIDE_GUTTER;
+  return spaceBelow < ESTIMATED_MENU_HEIGHT && spaceAbove > spaceBelow;
+}
 
-  return { openAbove, openOutside };
+export function removeLeadingFeedDivider(
+  feedContainer: HTMLElement | null | undefined,
+) {
+  const firstFeedItem = Array.from(feedContainer?.children ?? []).find(
+    (child): child is HTMLElement =>
+      child instanceof HTMLElement && child.classList.contains("feed-item"),
+  );
+  const firstDivider = Array.from(firstFeedItem?.children ?? []).find(
+    (child): child is HTMLElement =>
+      child instanceof HTMLElement && child.classList.contains("feed-divider"),
+  );
+  firstDivider?.remove();
 }
 
 /**
@@ -120,7 +123,6 @@ export class JantPostMenu extends LitElement {
     _x: { state: true },
     _y: { state: true },
     _openAbove: { state: true },
-    _openOutside: { state: true },
     _view: { state: true },
     _collections: { state: true },
     _collectionsLoading: { state: true },
@@ -134,7 +136,6 @@ export class JantPostMenu extends LitElement {
   declare _x: number;
   declare _y: number;
   declare _openAbove: boolean;
-  declare _openOutside: boolean;
   declare _view: PostMenuView;
   declare _collections: CollectionItem[] | null;
   declare _collectionsLoading: boolean;
@@ -158,7 +159,6 @@ export class JantPostMenu extends LitElement {
     this._x = 0;
     this._y = 0;
     this._openAbove = true;
-    this._openOutside = false;
     this._view = "menu";
     this._collections = null;
     this._collectionsLoading = false;
@@ -172,13 +172,36 @@ export class JantPostMenu extends LitElement {
     super.connectedCallback();
     document.addEventListener("click", this.#handleDocumentClick);
     document.addEventListener("keydown", this.#handleKeydown);
+    window.addEventListener("resize", this.#handleViewportChange);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener("click", this.#handleDocumentClick);
     document.removeEventListener("keydown", this.#handleKeydown);
+    window.removeEventListener("resize", this.#handleViewportChange);
   }
+
+  #syncPositionFromTrigger() {
+    const trigger = this._triggerEl;
+    if (!trigger?.isConnected) {
+      if (this._open) {
+        this.#close({ restoreFocus: false });
+      }
+      return;
+    }
+
+    const rect = trigger.getBoundingClientRect();
+    this._openAbove = getMenuPlacement(rect);
+    this._x = window.scrollX + rect.right;
+    this._y =
+      window.scrollY + (this._openAbove ? rect.top - 6 : rect.bottom + 6);
+  }
+
+  #handleViewportChange = () => {
+    if (!this._open || this._addCollectionPanelOpen) return;
+    this.#syncPositionFromTrigger();
+  };
 
   #handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
@@ -275,14 +298,8 @@ export class JantPostMenu extends LitElement {
       };
 
       // Position relative to trigger
-      const rect = trigger.getBoundingClientRect();
-      const placement = getMenuPlacement(rect);
-      this._openAbove = placement.openAbove;
-      this._openOutside = placement.openOutside;
-
-      this._x = rect.right;
-      this._y = this._openAbove ? rect.top : rect.bottom;
       this._triggerEl = trigger;
+      this.#syncPositionFromTrigger();
       trigger.setAttribute("aria-expanded", "true");
       this._view = "menu";
       this._open = true;
@@ -330,7 +347,6 @@ export class JantPostMenu extends LitElement {
     this._triggerEl = null;
     this._open = false;
     this._view = "menu";
-    this._openOutside = false;
     this._addCollectionPanelOpen = false;
     this._collectionSearch = "";
 
@@ -458,13 +474,19 @@ export class JantPostMenu extends LitElement {
 
   async #delete() {
     if (!this._data) return;
+    const trigger = this._triggerEl;
+    this.#close({ restoreFocus: false });
+
     const confirmed = await showConfirmDialog({
       message: "Delete this post permanently? This can't be undone.",
       confirmLabel: "Delete",
       cancelLabel: "Cancel",
       tone: "danger",
     });
-    if (!confirmed) return;
+    if (!confirmed) {
+      trigger?.focus();
+      return;
+    }
 
     try {
       const res = await fetch(`/api/posts/${this._data.id}`, {
@@ -478,13 +500,15 @@ export class JantPostMenu extends LitElement {
       );
       // Remove the feed item wrapper if it exists, otherwise the article itself
       const feedItem = article?.closest(".feed-item");
+      const feedContainer = feedItem?.parentElement;
       (feedItem ?? article)?.remove();
+      removeLeadingFeedDivider(feedContainer);
 
       showToast("Post deleted.");
     } catch {
       showToast("Could not delete post. Try again.", "error");
+      trigger?.focus();
     }
-    this.#close();
   }
 
   async #copyLink() {
@@ -596,6 +620,7 @@ export class JantPostMenu extends LitElement {
 
   #closeAddCollectionPanel() {
     this._addCollectionPanelOpen = false;
+    this.#syncPositionFromTrigger();
     this.updateComplete.then(() => {
       (
         this.querySelector<HTMLElement>("[data-post-menu-add-collection]") ??
@@ -717,22 +742,6 @@ export class JantPostMenu extends LitElement {
     </svg>`;
   }
 
-  #iconCollection() {
-    return html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.75"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="M17 19V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v12l6-3Z" />
-      <path d="M19 10v6" />
-      <path d="M16 13h6" />
-    </svg>`;
-  }
-
   // Lucide: heart (feature) / heart-off (unfeature)
   #iconHeart() {
     return html`<svg
@@ -818,63 +827,6 @@ export class JantPostMenu extends LitElement {
       <path d="M3 6h18" />
       <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
       <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-    </svg>`;
-  }
-
-  // Lucide: globe (make public)
-  #iconGlobe() {
-    return html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.75"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
-    </svg>`;
-  }
-
-  // Lucide: link-2-off (unlisted)
-  #iconLinkOff() {
-    return html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.75"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="M9 17H7A5 5 0 0 1 7 7" />
-      <path d="M15 7h2a5 5 0 0 1 4 8" />
-      <line x1="8" x2="12" y1="12" y2="12" />
-      <line x1="2" x2="22" y1="2" y2="22" />
-    </svg>`;
-  }
-
-  // Lucide: eye-off (private)
-  #iconEyeOff() {
-    return html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.75"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path
-        d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"
-      />
-      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
-      <path
-        d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"
-      />
-      <path d="m2 2 20 20" />
     </svg>`;
   }
 
@@ -1019,21 +971,54 @@ export class JantPostMenu extends LitElement {
                         : nothing}
                       <span class="post-menu-picker-title">${c.title}</span>
                       ${selected
-                        ? html`<svg
-                            class="post-menu-picker-check"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            width="14"
-                            height="14"
+                        ? html`<span
+                            class="post-menu-picker-marker post-menu-picker-marker-selected"
                           >
-                            <path d="M20 6 9 17l-5-5" />
-                          </svg>`
-                        : nothing}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              aria-hidden="true"
+                            >
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                fill="currentColor"
+                              />
+                              <path
+                                d="M8 12.5 10.7 15.2 16.4 9.5"
+                                stroke="var(--site-page-bg)"
+                                stroke-width="2.3"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                            </svg>
+                          </span>`
+                        : html`<span
+                            class="post-menu-picker-marker post-menu-picker-marker-add"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              aria-hidden="true"
+                            >
+                              <circle
+                                cx="12"
+                                cy="12"
+                                r="9"
+                                stroke="currentColor"
+                                stroke-width="1.8"
+                              />
+                              <path
+                                d="M12 8v8M8 12h8"
+                                stroke="currentColor"
+                                stroke-width="1.9"
+                                stroke-linecap="round"
+                              />
+                            </svg>
+                          </span>`}
                     </button>
                   `;
                 })
@@ -1041,26 +1026,28 @@ export class JantPostMenu extends LitElement {
                   ${search ? "No matching collections" : "No collections yet"}
                 </div>`}
         </div>
-        <button
-          type="button"
-          class="post-menu-picker-add"
-          data-post-menu-add-collection
-          @click=${() => this.#openAddCollectionPanel()}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        <div class="post-menu-picker-footer">
+          <button
+            type="button"
+            class="post-menu-picker-add"
+            data-post-menu-add-collection
+            @click=${() => this.#openAddCollectionPanel()}
           >
-            <path d="M8 3v10M3 8h10" />
-          </svg>
-          Add Collection
-        </button>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M8 3v10M3 8h10" />
+            </svg>
+            Add Collection
+          </button>
+        </div>
       </div>
     `;
   }
@@ -1106,10 +1093,10 @@ export class JantPostMenu extends LitElement {
                   ? this.#showMainMenu("[data-post-menu-open-visibility]")
                   : this.#setVisibility("public")}
             >
-              <span class="post-menu-item-icon">${this.#iconGlobe()}</span>
               <span class="post-menu-item-label">Public</span>
               ${visibility === "public"
-                ? html`<span class="post-menu-item-check"
+                ? html`<span
+                    class="post-menu-item-trailing post-menu-item-check"
                     >${this.#iconCheck()}</span
                   >`
                 : nothing}
@@ -1131,10 +1118,10 @@ export class JantPostMenu extends LitElement {
                   ? this.#showMainMenu("[data-post-menu-open-visibility]")
                   : this.#setVisibility("unlisted")}
             >
-              <span class="post-menu-item-icon">${this.#iconLinkOff()}</span>
               <span class="post-menu-item-label">Unlisted</span>
               ${visibility === "unlisted"
-                ? html`<span class="post-menu-item-check"
+                ? html`<span
+                    class="post-menu-item-trailing post-menu-item-check"
                     >${this.#iconCheck()}</span
                   >`
                 : nothing}
@@ -1156,10 +1143,10 @@ export class JantPostMenu extends LitElement {
                   ? this.#showMainMenu("[data-post-menu-open-visibility]")
                   : this.#setVisibility("private")}
             >
-              <span class="post-menu-item-icon">${this.#iconEyeOff()}</span>
               <span class="post-menu-item-label">Private</span>
               ${visibility === "private"
-                ? html`<span class="post-menu-item-check"
+                ? html`<span
+                    class="post-menu-item-trailing post-menu-item-check"
                     >${this.#iconCheck()}</span
                   >`
                 : nothing}
@@ -1254,8 +1241,8 @@ export class JantPostMenu extends LitElement {
               data-post-menu-item-primary
               @click=${() => this.#edit()}
             >
-              <span class="post-menu-item-icon">${this.#iconEdit()}</span>
               <span class="post-menu-item-label">Edit</span>
+              <span class="post-menu-item-trailing">${this.#iconEdit()}</span>
             </button>
 
             <button
@@ -1265,9 +1252,8 @@ export class JantPostMenu extends LitElement {
               data-post-menu-open-collections
               @click=${() => this.#openCollectionPicker()}
             >
-              <span class="post-menu-item-icon">${this.#iconCollection()}</span>
               <span class="post-menu-item-label">Add to collection</span>
-              <span class="post-menu-item-chevron"
+              <span class="post-menu-item-trailing post-menu-item-chevron"
                 >${this.#iconChevronRight()}</span
               >
             </button>
@@ -1282,14 +1268,11 @@ export class JantPostMenu extends LitElement {
                     data-post-menu-open-visibility
                     @click=${() => this.#openVisibilityPanel()}
                   >
-                    <span class="post-menu-item-icon"
-                      >${this.#iconGlobe()}</span
-                    >
                     <span class="post-menu-item-label">Visibility</span>
                     <span class="post-menu-item-meta"
                       >${this.#getVisibilityLabel(visibility)}</span
                     >
-                    <span class="post-menu-item-chevron"
+                    <span class="post-menu-item-trailing post-menu-item-chevron"
                       >${this.#iconChevronRight()}</span
                     >
                   </button>
@@ -1303,11 +1286,11 @@ export class JantPostMenu extends LitElement {
               class="post-menu-item"
               @click=${() => this.#setFeatured(!isFeatured)}
             >
-              <span class="post-menu-item-icon"
-                >${isFeatured ? this.#iconHeartOff() : this.#iconHeart()}</span
-              >
               <span class="post-menu-item-label"
                 >${isFeatured ? "Unfeature" : "Feature"}</span
+              >
+              <span class="post-menu-item-trailing"
+                >${isFeatured ? this.#iconHeartOff() : this.#iconHeart()}</span
               >
             </button>
 
@@ -1320,11 +1303,11 @@ export class JantPostMenu extends LitElement {
                     class="post-menu-item"
                     @click=${() => this.#togglePin()}
                   >
-                    <span class="post-menu-item-icon"
-                      >${isPinned ? this.#iconPinOff() : this.#iconPin()}</span
-                    >
                     <span class="post-menu-item-label"
                       >${isPinned ? "Unpin" : "Pin this post"}</span
+                    >
+                    <span class="post-menu-item-trailing"
+                      >${isPinned ? this.#iconPinOff() : this.#iconPin()}</span
                     >
                   </button>
                 `}
@@ -1332,11 +1315,11 @@ export class JantPostMenu extends LitElement {
             <button
               type="button"
               role="menuitem"
-              class="post-menu-item post-menu-item-quiet"
+              class="post-menu-item"
               @click=${() => this.#copyLink()}
             >
-              <span class="post-menu-item-icon">${this.#iconLink()}</span>
               <span class="post-menu-item-label">Copy link</span>
+              <span class="post-menu-item-trailing">${this.#iconLink()}</span>
             </button>
           </div>
 
@@ -1347,8 +1330,8 @@ export class JantPostMenu extends LitElement {
               class="post-menu-item post-menu-item-danger"
               @click=${() => this.#delete()}
             >
-              <span class="post-menu-item-icon">${this.#iconTrash()}</span>
               <span class="post-menu-item-label">Delete</span>
+              <span class="post-menu-item-trailing">${this.#iconTrash()}</span>
             </button>
           </div>
         </div>
@@ -1359,28 +1342,34 @@ export class JantPostMenu extends LitElement {
   render() {
     if (!this._open || !this._data) return nothing;
 
-    const horizontalStyle = this._openOutside
-      ? `left:${Math.round(this._x + MENU_OUTSIDE_GUTTER)}px;`
-      : `right:${Math.round(document.documentElement.clientWidth - this._x)}px;`;
-    const verticalStyle = this._openAbove
-      ? `bottom:${Math.round(window.innerHeight - this._y + 6)}px;`
-      : `top:${Math.round(this._y + 6)}px;`;
-    const wrapperStyle = `position:fixed;z-index:100;${horizontalStyle}${verticalStyle}`;
+    const transformStyle = this._openAbove
+      ? "transform:translate(-100%, -100%);"
+      : "transform:translateX(-100%);";
+    const wrapperStyle = `position:absolute;z-index:100;left:${Math.round(this._x)}px;top:${Math.round(this._y)}px;${transformStyle}`;
+    const showMenuSurface = !this._addCollectionPanelOpen;
 
     return html`
-      <div
-        class="post-menu-backdrop"
-        @click=${() => this.#close({ restoreFocus: false })}
-      ></div>
-      <div class="dropdown-menu" style=${wrapperStyle}>
-        <div data-popover aria-hidden="false" class="!static post-menu-panel">
-          ${this._view === "collections"
-            ? this.#renderCollectionPicker()
-            : this._view === "visibility"
-              ? this.#renderVisibilityPanel()
-              : this.#renderMenu()}
-        </div>
-      </div>
+      ${showMenuSurface
+        ? html`
+            <div
+              class="post-menu-backdrop"
+              @click=${() => this.#close({ restoreFocus: false })}
+            ></div>
+            <div class="dropdown-menu" style=${wrapperStyle}>
+              <div
+                data-popover
+                aria-hidden="false"
+                class="!static post-menu-panel"
+              >
+                ${this._view === "collections"
+                  ? this.#renderCollectionPicker()
+                  : this._view === "visibility"
+                    ? this.#renderVisibilityPanel()
+                    : this.#renderMenu()}
+              </div>
+            </div>
+          `
+        : nothing}
       ${this._addCollectionPanelOpen
         ? this.#renderAddCollectionPanel()
         : nothing}

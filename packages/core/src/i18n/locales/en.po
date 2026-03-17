@@ -153,6 +153,11 @@ msgstr "Accent should feel present, not loud."
 msgid "Account"
 msgstr "Account"
 
+#. @context: Error shown when account deletion is blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Account deletion is off in demo mode. The shared demo resets separately."
+msgstr "Account deletion is off in demo mode. The shared demo resets separately."
+
 #. @context: Settings section heading for active sessions
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Active Sessions"
@@ -172,6 +177,11 @@ msgstr "Add"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add a custom link to any URL"
 msgstr "Add a custom link to any URL"
+
+#. @context: Description for the RSS system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Add a link to your RSS feed"
+msgstr "Add a link to your RSS feed"
 
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
@@ -266,9 +276,11 @@ msgid "Applies to your entire site, including admin pages. Pick a palette, then 
 msgstr "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
 
 #. @context: Archive page title
+#. @context: Built-in navigation label for the archive page
 #. @context: Inactive nav link label on sample page
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Archive"
 msgstr "Archive"
 
@@ -510,6 +522,7 @@ msgstr "collections"
 
 #. @context: Breadcrumb link to collections page
 #. @context: Breadcrumb link to collections page
+#. @context: Built-in navigation label for the collections page
 #. @context: Collections page heading
 #. @context: Collections page heading
 #. @context: Inactive nav link label on sample page
@@ -518,6 +531,7 @@ msgstr "collections"
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Collections"
 msgstr "Collections"
 
@@ -805,6 +819,21 @@ msgstr "Deleted"
 msgid "Demo credentials are pre-filled — hit Sign In to continue."
 msgstr "Demo credentials are pre-filled — hit Sign In to continue."
 
+#. @context: Notice shown on the account page when demo restrictions are enabled
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Demo mode hides sessions, password changes, and account deletion. Export still works."
+msgstr "Demo mode hides sessions, password changes, and account deletion. Export still works."
+
+#. @context: Notice shown on the settings home page when demo restrictions are enabled
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Demo mode keeps search indexing, sessions, passwords, and account deletion locked."
+msgstr "Demo mode keeps search indexing, sessions, passwords, and account deletion locked."
+
+#. @context: Help text explaining that SEO indexing is locked in demo mode
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Demo sites always stay hidden from search engines."
+msgstr "Demo sites always stay hidden from search engines."
+
 #. @context: Alt text textarea placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Describe this for people with visual impairments..."
@@ -1013,6 +1042,11 @@ msgstr "entries"
 #: src/ui/shared/CollectionsManager.tsx
 msgid "entry"
 msgstr "entry"
+
+#. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Export and demo limits"
+msgstr "Export and demo limits"
 
 #. @context: Settings item — export site as Zola ZIP
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1345,6 +1379,16 @@ msgstr "link"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Link"
 msgstr "Link"
+
+#. @context: Description for the archive system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to the post archive"
+msgstr "Link to the post archive"
+
+#. @context: Description for the collections system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your collections page"
+msgstr "Link to your collections page"
 
 #. @context: Role label for dark accent swatch
 #: src/ui/pages/BrandPage.tsx
@@ -1715,6 +1759,13 @@ msgstr "Password"
 #: src/routes/dash/settings.tsx
 msgid "Password changed."
 msgstr "Password changed."
+
+#. @context: Error shown when password changes are blocked in demo mode
+#. @context: Error shown when password reset is blocked in demo mode
+#: src/routes/auth/reset.tsx
+#: src/routes/dash/settings.tsx
+msgid "Password changes are off in demo mode. Sign in with the shared demo credentials."
+msgstr "Password changes are off in demo mode. Sign in with the shared demo credentials."
 
 #. @context: Error toast when new password and confirmation differ
 #: src/routes/dash/settings.tsx
@@ -2117,18 +2168,25 @@ msgstr "Security token missing. Refresh the page and try again."
 msgid "SEO settings updated."
 msgstr "SEO settings updated."
 
+#. @context: Error shown when session management is blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Session management is off in demo mode. Use the shared demo session instead."
+msgstr "Session management is off in demo mode. Use the shared demo session instead."
+
 #. @context: Settings item — session management
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Sessions"
 msgstr "Sessions"
 
-#. @context: Settings item description for account
+#. @context: Settings item description for account settings on the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sessions, password, export"
 msgstr "Sessions, password, export"
 
+#. @context: Built-in navigation label for settings
 #. @context: Page title for the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Settings"
 msgstr "Settings"
 
@@ -2167,6 +2225,16 @@ msgstr "Show more"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Show more icons"
 msgstr "Show more icons"
+
+#. @context: Description for the settings system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Shows 'Settings' when logged in, 'Sign in' when logged out"
+msgstr "Shows 'Settings' when logged in, 'Sign in' when logged out"
+
+#. @context: Built-in navigation label shown when auth is required
+#: src/ui/shared/navigation-labels.ts
+msgid "Sign in"
+msgstr "Sign in"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading

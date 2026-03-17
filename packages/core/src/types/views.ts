@@ -2,7 +2,13 @@
  * View Model Types (render-ready, for theme components)
  */
 
-import type { Format, Status, Visibility, NavItemType } from "./constants.js";
+import type {
+  Format,
+  Status,
+  Visibility,
+  NavItemType,
+  SystemNavKey,
+} from "./constants.js";
 import type { Post, Collection } from "./entities.js";
 
 /**
@@ -121,6 +127,7 @@ export interface NavItemView {
   /** UUIDv7 identifier */
   id: string;
   type: NavItemType;
+  systemKey?: SystemNavKey;
   label: string;
   url: string;
   /** Pre-computed based on currentPath */

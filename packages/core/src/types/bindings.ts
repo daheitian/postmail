@@ -12,6 +12,7 @@ export interface Bindings {
   IMAGE_TRANSFORM_URL?: string;
   DEMO_EMAIL?: string;
   DEMO_PASSWORD?: string;
+  DEMO_MODE?: string;
   DEV_API_TOKEN?: string;
   // Timeline
   PAGE_SIZE?: string;

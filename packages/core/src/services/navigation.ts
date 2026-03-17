@@ -10,13 +10,16 @@ import { generateKeyBetween } from "fractional-indexing";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { navItems } from "../db/schema.js";
+import { ValidationError } from "../lib/errors.js";
 import { now } from "../lib/time.js";
 import type {
   NavItem,
   NavItemType,
   CreateNavItem,
   UpdateNavItem,
+  SystemNavKey,
 } from "../types.js";
+import { SYSTEM_NAV_KEYS } from "../types.js";
 
 const POSITION_RETRY_ATTEMPTS = 5;
 
@@ -56,11 +59,37 @@ export function createNavItemService(db: Database): NavItemService {
     return {
       id: row.id,
       type: row.type as NavItemType,
+      systemKey: (row.systemKey as SystemNavKey | null) ?? undefined,
       label: row.label,
       url: row.url,
       position: row.position,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
+    };
+  }
+
+  function normalizeCreateData(data: CreateNavItem) {
+    if (data.type === "system") {
+      const config = SYSTEM_NAV_KEYS[data.systemKey];
+      if (!config) {
+        throw new ValidationError("Invalid system nav key");
+      }
+
+      return {
+        type: data.type,
+        systemKey: data.systemKey,
+        label: config.defaultLabel,
+        url: config.url,
+        position: data.position,
+      };
+    }
+
+    return {
+      type: data.type,
+      systemKey: null,
+      label: data.label,
+      url: data.url,
+      position: data.position,
     };
   }
 
@@ -136,16 +165,30 @@ export function createNavItemService(db: Database): NavItemService {
     async create(data) {
       const id = uuidv7();
       const timestamp = now();
+      const normalized = normalizeCreateData(data);
 
-      if (data.position !== undefined) {
+      if (normalized.systemKey) {
+        const existingSystemItem = await db
+          .select({ id: navItems.id })
+          .from(navItems)
+          .where(eq(navItems.systemKey, normalized.systemKey))
+          .limit(1);
+
+        if (existingSystemItem[0]) {
+          throw new ValidationError("Built-in navigation item already exists");
+        }
+      }
+
+      if (normalized.position !== undefined) {
         const result = await db
           .insert(navItems)
           .values({
             id,
-            type: data.type,
-            label: data.label,
-            url: data.url,
-            position: data.position,
+            type: normalized.type,
+            systemKey: normalized.systemKey,
+            label: normalized.label,
+            url: normalized.url,
+            position: normalized.position,
             createdAt: timestamp,
             updatedAt: timestamp,
           })
@@ -161,9 +204,10 @@ export function createNavItemService(db: Database): NavItemService {
             .insert(navItems)
             .values({
               id,
-              type: data.type,
-              label: data.label,
-              url: data.url,
+              type: normalized.type,
+              systemKey: normalized.systemKey,
+              label: normalized.label,
+              url: normalized.url,
               position: await getAppendPosition(),
               createdAt: timestamp,
               updatedAt: timestamp,
@@ -193,11 +237,18 @@ export function createNavItemService(db: Database): NavItemService {
         .limit(1);
       if (!existing[0]) return null;
 
+      if (existing[0].type === "system") {
+        if (data.label !== undefined || data.url !== undefined) {
+          throw new ValidationError(
+            "Built-in navigation labels and URLs are managed automatically",
+          );
+        }
+      }
+
       const timestamp = now();
       const result = await db
         .update(navItems)
         .set({
-          ...(data.type !== undefined && { type: data.type }),
           ...(data.label !== undefined && { label: data.label }),
           ...(data.url !== undefined && { url: data.url }),
           ...(data.position !== undefined && { position: data.position }),

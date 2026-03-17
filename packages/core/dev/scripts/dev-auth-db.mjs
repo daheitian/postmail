@@ -231,18 +231,18 @@ export async function ensureLocalDevSetup({
 
   if (navCount === 0) {
     const items = [
-      ["link", "Collections", "/c", "a0"],
-      ["link", "Archive", "/archive", "a1"],
-      ["system", "RSS", "/feed", "a2"],
-      ["system", "Settings", "/settings", "a3"],
+      ["system", "collections", "Collections", "/c", "a0"],
+      ["system", "archive", "Archive", "/archive", "a1"],
+      ["system", "rss", "RSS", "/feed", "a2"],
+      ["system", "settings", "Settings", "/settings", "a3"],
     ];
 
-    for (const [type, label, url, position] of items) {
+    for (const [type, systemKey, label, url, position] of items) {
       statements.push(
         [
-          "INSERT INTO nav_item (id, type, label, url, position, created_at, updated_at)",
+          "INSERT INTO nav_item (id, type, system_key, label, url, position, created_at, updated_at)",
           "VALUES (",
-          `${sqlString(randomId())}, ${sqlString(type)}, ${sqlString(label)}, ${sqlString(url)}, ${sqlString(position)}, ${timestamp}, ${timestamp}`,
+          `${sqlString(randomId())}, ${sqlString(type)}, ${sqlString(systemKey)}, ${sqlString(label)}, ${sqlString(url)}, ${sqlString(position)}, ${timestamp}, ${timestamp}`,
           ")",
         ].join(" "),
       );

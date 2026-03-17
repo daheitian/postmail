@@ -1,8 +1,21 @@
 // @vitest-environment happy-dom
 
-import { beforeEach, describe, expect, it } from "vitest";
-import "../jant-post-menu.js";
-import type { JantPostMenu } from "../jant-post-menu.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { showConfirmDialogMock, showToastMock } = vi.hoisted(() => ({
+  showConfirmDialogMock: vi.fn(),
+  showToastMock: vi.fn(),
+}));
+
+vi.mock("../confirm.js", () => ({
+  showConfirmDialog: showConfirmDialogMock,
+}));
+
+vi.mock("../toast.js", () => ({
+  showToast: showToastMock,
+}));
+
+import { JantPostMenu, removeLeadingFeedDivider } from "../jant-post-menu.js";
 
 function requireElement<T extends globalThis.Element>(
   element: T | null,
@@ -29,6 +42,25 @@ function setViewport(width: number, height: number) {
     configurable: true,
     value: height,
   });
+  Object.defineProperty(document.documentElement, "clientWidth", {
+    configurable: true,
+    value: width,
+  });
+}
+
+function jsonResponse(body: unknown) {
+  return new Response(JSON.stringify(body), {
+    headers: { "Content-Type": "application/json" },
+    status: 200,
+  });
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((res) => {
+    resolve = res;
+  });
+  return { promise, resolve };
 }
 
 async function createMenu(): Promise<{
@@ -52,6 +84,19 @@ async function createMenu(): Promise<{
     </article>
   `;
 
+  const composeDialog = document.createElement(
+    "jant-compose-dialog",
+  ) as HTMLElement & { labels?: unknown };
+  composeDialog.labels = {
+    addCollection: "Add Collection",
+    collectionFormLabels: {
+      cancelLabel: "Cancel",
+      quickHint: "More options are available after you create it.",
+      quickSubmitLabel: "Done",
+    },
+  };
+  document.body.appendChild(composeDialog);
+
   const menu = document.createElement("jant-post-menu") as JantPostMenu;
   document.body.appendChild(menu);
   await menu.updateComplete;
@@ -68,6 +113,35 @@ describe("JantPostMenu", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     setViewport(1024, 768);
+    showConfirmDialogMock.mockReset();
+    showToastMock.mockReset();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: unknown, init?: globalThis.RequestInit) => {
+        const url = String(input);
+        const method = init?.method ?? "GET";
+        if (url === "/api/collections") {
+          return Promise.resolve(
+            jsonResponse({
+              collections: [
+                { id: "collection-1", title: "Movies", slug: "movies" },
+              ],
+            }),
+          );
+        }
+        if (url === "/api/posts/post-1" && method === "GET") {
+          return Promise.resolve(
+            jsonResponse({
+              collectionIds: ["collection-1"],
+            }),
+          );
+        }
+        if (url === "/api/posts/post-1" && method === "DELETE") {
+          return Promise.resolve(new Response(null, { status: 204 }));
+        }
+        throw new Error(`Unexpected fetch in test: ${url}`);
+      }),
+    );
   });
 
   it("moves visibility controls into a submenu", async () => {
@@ -129,7 +203,7 @@ describe("JantPostMenu", () => {
     expect(menu.textContent?.trim()).toBe("");
   });
 
-  it("opens into the right-side whitespace on large screens", async () => {
+  it("anchors to the trigger edge using document coordinates", async () => {
     setViewport(1440, 900);
     const { menu, trigger } = await createMenu();
     trigger.getBoundingClientRect = () =>
@@ -144,7 +218,109 @@ describe("JantPostMenu", () => {
     );
     const style = wrapper.getAttribute("style") ?? "";
 
-    expect(style).toContain("left:776px");
-    expect(style).not.toContain("right:");
+    expect(style).toContain("position:absolute");
+    expect(style).toContain("left:760px");
+    expect(style).toContain("top:270px");
+    expect(style).toContain("translateX(-100%)");
+  });
+
+  it("includes the current document scroll offset in its anchor position", async () => {
+    Object.defineProperty(window, "scrollX", {
+      configurable: true,
+      value: 24,
+    });
+    Object.defineProperty(window, "scrollY", {
+      configurable: true,
+      value: 320,
+    });
+
+    const { menu, trigger } = await createMenu();
+    trigger.getBoundingClientRect = () =>
+      new globalThis.DOMRect(736, 240, 24, 24);
+
+    click(trigger);
+    await menu.updateComplete;
+
+    const wrapper = requireElement(
+      menu.querySelector<HTMLElement>(".dropdown-menu"),
+      "expected dropdown wrapper",
+    );
+    const style = wrapper.getAttribute("style") ?? "";
+
+    expect(style).toContain("left:784px");
+    expect(style).toContain("top:590px");
+  });
+
+  it("hides the collection picker surface behind quick add", async () => {
+    const { menu, trigger } = await createMenu();
+
+    click(trigger);
+    await menu.updateComplete;
+
+    click(
+      requireElement(
+        menu.querySelector<HTMLElement>("[data-post-menu-open-collections]"),
+        "expected collections button in main menu",
+      ),
+    );
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    click(
+      requireElement(
+        menu.querySelector<HTMLElement>("[data-post-menu-add-collection]"),
+        "expected add collection button in collection picker",
+      ),
+    );
+    await menu.updateComplete;
+
+    expect(menu.querySelector(".dropdown-menu")).toBeNull();
+    expect(menu.querySelector(".post-menu-backdrop")).toBeNull();
+    expect(menu.querySelector("[data-collection-quick-dialog]")).not.toBeNull();
+  });
+
+  it("closes the menu before waiting on delete confirmation", async () => {
+    const confirmation = deferred<boolean>();
+    showConfirmDialogMock.mockReturnValueOnce(confirmation.promise);
+
+    const { menu, trigger } = await createMenu();
+
+    click(trigger);
+    await menu.updateComplete;
+
+    click(
+      requireElement(
+        menu.querySelector<HTMLElement>(".post-menu-item-danger"),
+        "expected delete button in main menu",
+      ),
+    );
+    await Promise.resolve();
+    await menu.updateComplete;
+
+    expect(menu.textContent?.trim()).toBe("");
+    expect(trigger.getAttribute("aria-expanded")).toBe("false");
+
+    confirmation.resolve(false);
+    await Promise.resolve();
+  });
+
+  it("removes the leading feed divider from the first remaining timeline item", async () => {
+    const host = document.createElement("div");
+    host.innerHTML = `
+      <div class="feed-item" data-timeline-item-id="post-1"></div>
+      <div class="feed-item" data-timeline-item-id="post-2">
+        <hr class="feed-divider" />
+      </div>
+    `;
+
+    host.firstElementChild?.remove();
+    removeLeadingFeedDivider(host);
+
+    const remainingItems = Array.from(
+      host.querySelectorAll<HTMLElement>(".feed-item"),
+    );
+    expect(remainingItems).toHaveLength(1);
+    expect(remainingItems[0]?.dataset.timelineItemId).toBe("post-2");
+    expect(remainingItems[0]?.querySelector(".feed-divider")).toBeNull();
   });
 });

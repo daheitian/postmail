@@ -89,6 +89,7 @@ export function resolveConfig(
   const r2PublicUrl = env.R2_PUBLIC_URL || "";
   const s3PublicUrl = env.S3_PUBLIC_URL || "";
   const imageTransformUrl = env.IMAGE_TRANSFORM_URL || "";
+  const demoMode = env.DEMO_MODE === "true";
 
   // Resolve avatar URL from storage key
   const siteAvatar = allSettings["SITE_AVATAR"] ?? "";
@@ -128,7 +129,7 @@ export function resolveConfig(
     siteFooter: resolve("SITE_FOOTER", allSettings, env),
     showJantBrandingOnHome:
       resolve("SHOW_JANT_BRANDING_ON_HOME", allSettings, env) === "true",
-    noindex: resolve("NOINDEX", allSettings, env) === "true",
+    noindex: demoMode || resolve("NOINDEX", allSettings, env) === "true",
 
     // Infrastructure (ENV only)
     siteUrl,
@@ -161,6 +162,7 @@ export function resolveConfig(
     // Demo (ENV only)
     demoEmail: env.DEMO_EMAIL || "",
     demoPassword: env.DEMO_PASSWORD || "",
+    demoMode,
 
     // Theme (DB internal)
     themeId: allSettings["THEME"] ?? "",

@@ -29,6 +29,7 @@ describe("resolveConfig", () => {
     expect(config.timeZone).toBe("UTC");
     expect(config.showJantBrandingOnHome).toBe(false);
     expect(config.noindex).toBe(false);
+    expect(config.demoMode).toBe(false);
     expect(config.pageSize).toBe(20);
     expect(config.rssFeedLimit).toBe(50);
   });
@@ -119,6 +120,18 @@ describe("resolveConfig", () => {
     expect(config.noindex).toBe(true);
     expect(config.showHeaderAvatar).toBe(true);
     expect(config.showJantBrandingOnHome).toBe(true);
+  });
+
+  it("forces noindex when DEMO_MODE is enabled", () => {
+    const config = resolveConfig(
+      makeEnv({
+        DEMO_MODE: "true",
+      }),
+      {},
+    );
+
+    expect(config.demoMode).toBe(true);
+    expect(config.noindex).toBe(true);
   });
 
   it("resolves authConfigured from AUTH_SECRET", () => {

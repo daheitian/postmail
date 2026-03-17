@@ -218,27 +218,23 @@ setupRoutes.post("/setup", async (c) => {
 
     // Seed default navigation items (order: Collections, Archive, RSS, Settings)
     await c.var.services.navItems.create({
-      type: "link",
-      label: "Collections",
-      url: "/c",
-    });
-
-    await c.var.services.navItems.create({
-      type: "link",
-      label: "Archive",
-      url: "/archive",
+      type: "system",
+      systemKey: "collections",
     });
 
     await c.var.services.navItems.create({
       type: "system",
-      label: "RSS",
-      url: "/feed",
+      systemKey: "archive",
     });
 
     await c.var.services.navItems.create({
       type: "system",
-      label: "Settings",
-      url: "/settings",
+      systemKey: "rss",
+    });
+
+    await c.var.services.navItems.create({
+      type: "system",
+      systemKey: "settings",
     });
 
     return dsRedirect(

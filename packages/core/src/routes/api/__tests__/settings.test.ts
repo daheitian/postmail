@@ -51,6 +51,16 @@ describe("Settings API Routes", () => {
       expect(body.settings.AUTH_SECRET).toBeUndefined();
       expect(body.settings.SITE_URL).toBeUndefined();
     });
+
+    it("returns NOINDEX as locked on in demo mode", async () => {
+      const { app } = createTestApp({ authenticated: true, demoMode: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings");
+      const body = await res.json();
+
+      expect(body.settings.NOINDEX).toBe("true");
+    });
   });
 
   describe("PUT /api/settings", () => {
@@ -127,6 +137,41 @@ describe("Settings API Routes", () => {
       });
 
       expect(res.status).toBe(400);
+    });
+
+    it("rejects NOINDEX updates in demo mode", async () => {
+      const { app } = createTestApp({ authenticated: true, demoMode: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ NOINDEX: "" }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.details.rejectedKeys).toContain("NOINDEX");
+    });
+
+    it("partially applies non-demo settings while rejecting NOINDEX in demo mode", async () => {
+      const { app } = createTestApp({ authenticated: true, demoMode: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          SITE_NAME: "Demo Blog",
+          NOINDEX: "",
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.settings.SITE_NAME).toBe("Demo Blog");
+      expect(body.settings.NOINDEX).toBe("true");
+      expect(body.rejectedKeys).toContain("NOINDEX");
     });
   });
 });

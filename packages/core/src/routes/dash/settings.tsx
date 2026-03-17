@@ -48,6 +48,53 @@ function publicPath(c: Context<Env>, path: string): string {
   return toPublicPath(path, c.var.appConfig.sitePathPrefix);
 }
 
+type DemoRestriction = "sessions" | "password" | "accountDeletion";
+
+function getDemoRestrictionMessage(
+  c: Context<Env>,
+  restriction: DemoRestriction,
+): string {
+  const i18n = getI18n(c);
+
+  switch (restriction) {
+    case "sessions":
+      return i18n._(
+        msg({
+          message:
+            "Session management is off in demo mode. Use the shared demo session instead.",
+          comment:
+            "@context: Error shown when session management is blocked in demo mode",
+        }),
+      );
+    case "password":
+      return i18n._(
+        msg({
+          message:
+            "Password changes are off in demo mode. Sign in with the shared demo credentials.",
+          comment:
+            "@context: Error shown when password changes are blocked in demo mode",
+        }),
+      );
+    case "accountDeletion":
+      return i18n._(
+        msg({
+          message:
+            "Account deletion is off in demo mode. The shared demo resets separately.",
+          comment:
+            "@context: Error shown when account deletion is blocked in demo mode",
+        }),
+      );
+  }
+}
+
+function demoRestrictionResponse(c: Context<Env>, message: string): Response {
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    return c.json({ error: message, code: "FORBIDDEN" }, 403);
+  }
+  return dsToast(message, "error");
+}
+
 // ===========================================================================
 // Settings root — iOS-style grouped list
 // ===========================================================================
@@ -59,7 +106,10 @@ settingsRoutes.get("/", async (c) => {
     title: buildPageTitle("Settings", navData.siteName),
     navData,
     content: (
-      <SettingsRootContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
+      <SettingsRootContent
+        sitePathPrefix={c.var.appConfig.sitePathPrefix}
+        demoMode={c.var.appConfig.demoMode}
+      />
     ),
   });
 });
@@ -98,6 +148,7 @@ settingsRoutes.get("/general", async (c) => {
           siteFooter={appConfig.siteFooter}
           showJantBrandingOnHome={appConfig.showJantBrandingOnHome}
           noindex={appConfig.noindex}
+          demoMode={appConfig.demoMode}
           timezones={TIMEZONES}
         />
       </>
@@ -182,7 +233,9 @@ settingsRoutes.post("/general/seo", async (c) => {
   // Checkbox "noindex" is the allow-indexing signal:
   // checked (value "true") = indexing allowed -> remove NOINDEX
   // unchecked (value "") = indexing blocked -> set NOINDEX=true
-  if (body.noindex === "true") {
+  if (c.var.appConfig.demoMode) {
+    await settings.set("NOINDEX", "true");
+  } else if (body.noindex === "true") {
     await settings.remove("NOINDEX");
   } else {
     await settings.set("NOINDEX", "true");
@@ -633,7 +686,10 @@ settingsRoutes.get("/account", async (c) => {
           parentHref={publicPath(c, "/settings")}
           current="Account"
         />
-        <AccountMenuContent sitePathPrefix={c.var.appConfig.sitePathPrefix} />
+        <AccountMenuContent
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
+          demoMode={c.var.appConfig.demoMode}
+        />
       </>
     ),
   });
@@ -644,6 +700,10 @@ settingsRoutes.get("/account", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account/sessions", async (c) => {
+  if (c.var.appConfig.demoMode) {
+    return c.redirect(publicPath(c, "/settings/account"));
+  }
+
   const navData = await getNavigationData(c);
 
   // Get current session to mark it
@@ -699,6 +759,10 @@ settingsRoutes.get("/account/sessions", async (c) => {
 });
 
 settingsRoutes.post("/account/sessions/:token/revoke", async (c) => {
+  if (c.var.appConfig.demoMode) {
+    return demoRestrictionResponse(c, getDemoRestrictionMessage(c, "sessions"));
+  }
+
   const token = c.req.param("token");
 
   try {
@@ -718,6 +782,10 @@ settingsRoutes.post("/account/sessions/:token/revoke", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account/password", async (c) => {
+  if (c.var.appConfig.demoMode) {
+    return c.redirect(publicPath(c, "/settings/account"));
+  }
+
   const navData = await getNavigationData(c);
 
   return renderPublicPage(c, {
@@ -737,6 +805,10 @@ settingsRoutes.get("/account/password", async (c) => {
 });
 
 settingsRoutes.post("/account/password", async (c) => {
+  if (c.var.appConfig.demoMode) {
+    return demoRestrictionResponse(c, getDemoRestrictionMessage(c, "password"));
+  }
+
   const i18n = getI18n(c);
   const body = await c.req.json<{
     currentPassword: string;
@@ -802,6 +874,10 @@ settingsRoutes.post("/account/password", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account/delete-account", async (c) => {
+  if (c.var.appConfig.demoMode) {
+    return c.redirect(publicPath(c, "/settings/account"));
+  }
+
   const navData = await getNavigationData(c);
   const csrfToken = await c.var.services.auth.generateDeleteCsrfToken();
 
@@ -826,6 +902,13 @@ settingsRoutes.get("/account/delete-account", async (c) => {
 });
 
 settingsRoutes.post("/account/delete-account", async (c) => {
+  if (c.var.appConfig.demoMode) {
+    return demoRestrictionResponse(
+      c,
+      getDemoRestrictionMessage(c, "accountDeletion"),
+    );
+  }
+
   const i18n = getI18n(c);
   const csrfToken = c.req.header("x-csrf-token");
 

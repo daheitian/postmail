@@ -176,6 +176,20 @@ resetRoutes.get("/reset", async (c) => {
 
 resetRoutes.post("/reset", async (c) => {
   const i18n = getI18n(c);
+  if (c.var.appConfig.demoMode) {
+    return dsToast(
+      i18n._(
+        msg({
+          message:
+            "Password changes are off in demo mode. Sign in with the shared demo credentials.",
+          comment:
+            "@context: Error shown when password reset is blocked in demo mode",
+        }),
+      ),
+      "error",
+    );
+  }
+
   const body = await c.req.json();
   const parsed = ResetPasswordSchema.safeParse(body);
 

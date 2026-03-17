@@ -153,6 +153,11 @@ msgstr "强调色应当有存在感，但不要太刺眼。"
 msgid "Account"
 msgstr "账户"
 
+#. @context: Error shown when account deletion is blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Account deletion is off in demo mode. The shared demo resets separately."
+msgstr "演示模式下不提供删除账户。共享演示会单独重置。"
+
 #. @context: Settings section heading for active sessions
 #: src/ui/dash/settings/SessionsContent.tsx
 msgid "Active Sessions"
@@ -172,6 +177,11 @@ msgstr "添加"
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Add a custom link to any URL"
 msgstr "添加指向任意 URL 的自定义链接"
+
+#. @context: Description for the RSS system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Add a link to your RSS feed"
+msgstr "添加指向你的 RSS 订阅源的链接"
 
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
@@ -266,9 +276,11 @@ msgid "Applies to your entire site, including admin pages. Pick a palette, then 
 msgstr "应用到整个站点，包括管理页面。先选择配色，再决定是跟随系统还是固定模式。"
 
 #. @context: Archive page title
+#. @context: Built-in navigation label for the archive page
 #. @context: Inactive nav link label on sample page
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Archive"
 msgstr "归档"
 
@@ -510,6 +522,7 @@ msgstr "个合集"
 
 #. @context: Breadcrumb link to collections page
 #. @context: Breadcrumb link to collections page
+#. @context: Built-in navigation label for the collections page
 #. @context: Collections page heading
 #. @context: Collections page heading
 #. @context: Inactive nav link label on sample page
@@ -518,6 +531,7 @@ msgstr "个合集"
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/shared/CollectionsManager.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Collections"
 msgstr "合集"
 
@@ -805,6 +819,21 @@ msgstr "已删除"
 msgid "Demo credentials are pre-filled — hit Sign In to continue."
 msgstr "演示凭证已预填 — 点击 登录 继续."
 
+#. @context: Notice shown on the account page when demo restrictions are enabled
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Demo mode hides sessions, password changes, and account deletion. Export still works."
+msgstr "演示模式下会隐藏会话、密码修改和删除账户。导出仍可使用。"
+
+#. @context: Notice shown on the settings home page when demo restrictions are enabled
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Demo mode keeps search indexing, sessions, passwords, and account deletion locked."
+msgstr "演示模式会锁定搜索索引、会话、密码和删除账户。"
+
+#. @context: Help text explaining that SEO indexing is locked in demo mode
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Demo sites always stay hidden from search engines."
+msgstr "演示站点会始终对搜索引擎隐藏。"
+
 #. @context: Alt text textarea placeholder
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Describe this for people with visual impairments..."
@@ -1013,6 +1042,11 @@ msgstr "条目"
 #: src/ui/shared/CollectionsManager.tsx
 msgid "entry"
 msgstr "条目"
+
+#. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Export and demo limits"
+msgstr "导出与演示限制"
 
 #. @context: Settings item — export site as Zola ZIP
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1345,6 +1379,16 @@ msgstr "链接"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Link"
 msgstr "链接"
+
+#. @context: Description for the archive system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to the post archive"
+msgstr "链接到文章归档页"
+
+#. @context: Description for the collections system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Link to your collections page"
+msgstr "链接到你的合集页"
 
 #. @context: Role label for dark accent swatch
 #: src/ui/pages/BrandPage.tsx
@@ -1715,6 +1759,13 @@ msgstr "密码"
 #: src/routes/dash/settings.tsx
 msgid "Password changed."
 msgstr "密码已更改."
+
+#. @context: Error shown when password changes are blocked in demo mode
+#. @context: Error shown when password reset is blocked in demo mode
+#: src/routes/auth/reset.tsx
+#: src/routes/dash/settings.tsx
+msgid "Password changes are off in demo mode. Sign in with the shared demo credentials."
+msgstr "演示模式下不提供密码修改。请使用共享的演示凭据登录。"
 
 #. @context: Error toast when new password and confirmation differ
 #: src/routes/dash/settings.tsx
@@ -2117,18 +2168,25 @@ msgstr "安全令牌缺失。请刷新页面后重试。"
 msgid "SEO settings updated."
 msgstr "SEO 设置已更新。"
 
+#. @context: Error shown when session management is blocked in demo mode
+#: src/routes/dash/settings.tsx
+msgid "Session management is off in demo mode. Use the shared demo session instead."
+msgstr "演示模式下不提供会话管理。请直接使用共享演示会话。"
+
 #. @context: Settings item — session management
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Sessions"
 msgstr "会话"
 
-#. @context: Settings item description for account
+#. @context: Settings item description for account settings on the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Sessions, password, export"
 msgstr "会话、密码、导出"
 
+#. @context: Built-in navigation label for settings
 #. @context: Page title for the settings home page
 #: src/ui/dash/settings/SettingsRootContent.tsx
+#: src/ui/shared/navigation-labels.ts
 msgid "Settings"
 msgstr "设置"
 
@@ -2167,6 +2225,16 @@ msgstr "展开更多"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Show more icons"
 msgstr "显示更多图标"
+
+#. @context: Description for the settings system navigation toggle
+#: src/ui/shared/navigation-labels.ts
+msgid "Shows 'Settings' when logged in, 'Sign in' when logged out"
+msgstr "登录时显示“设置”，未登录时显示“登录”"
+
+#. @context: Built-in navigation label shown when auth is required
+#: src/ui/shared/navigation-labels.ts
+msgid "Sign in"
+msgstr "登录"
 
 #. @context: Sign in form submit button
 #. @context: Sign in page heading

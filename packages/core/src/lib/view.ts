@@ -403,12 +403,8 @@ export function toNavItemView(
   let url = item.url;
   let label = item.label;
 
-  // System settings item: resolve URL and label based on auth
-  // Also handles legacy "/dash" URLs from existing DB data
-  if (
-    item.type === "system" &&
-    (item.url === "/settings" || item.url === "/dash")
-  ) {
+  // System settings item: resolve URL and label based on auth.
+  if (item.type === "system" && item.systemKey === "settings") {
     url = isAuthenticated ? "/settings" : "/signin";
     if (!isAuthenticated) {
       label = "Sign in";
@@ -431,6 +427,7 @@ export function toNavItemView(
   return {
     id: item.id,
     type: item.type as NavItemType,
+    systemKey: item.systemKey,
     label,
     url: publicUrl,
     isActive,

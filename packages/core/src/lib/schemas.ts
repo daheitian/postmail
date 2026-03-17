@@ -15,6 +15,7 @@ import {
   VISIBILITIES,
   SORT_ORDERS,
   NAV_ITEM_TYPES,
+  SYSTEM_NAV_KEY_VALUES,
   MAX_MEDIA_ATTACHMENTS,
 } from "../types.js";
 import { ValidationError } from "./errors.js";
@@ -77,6 +78,7 @@ export const SortOrderSchema = z.enum(SORT_ORDERS);
  * Navigation item type enum schema
  */
 export const NavItemTypeSchema = z.enum(NAV_ITEM_TYPES);
+export const SystemNavKeySchema = z.enum(SYSTEM_NAV_KEY_VALUES);
 
 /**
  * Redirect type enum schema
@@ -251,21 +253,36 @@ export const UpdatePostSchema = refineSlugPathExclusivity(
 /**
  * API request body schema for creating a navigation item
  */
-export const CreateNavItemSchema = z.object({
-  type: NavItemTypeSchema,
-  label: sanitizeText(100).pipe(z.string().min(1)),
+export const CreateNavItemSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("link"),
+    label: sanitizeText(100).pipe(z.string().min(1)),
+    url: z
+      .string()
+      .min(1)
+      .refine((val) => sanitizeUrl(val) !== "", {
+        message: "URL must use http:, https:, or mailto: protocol",
+      }),
+  }),
+  z.object({
+    type: z.literal("system"),
+    systemKey: SystemNavKeySchema,
+  }),
+]);
+
+/**
+ * API request body schema for updating a navigation item
+ */
+export const UpdateNavItemSchema = z.object({
+  label: sanitizeText(100).pipe(z.string().min(1)).optional(),
   url: z
     .string()
     .min(1)
     .refine((val) => sanitizeUrl(val) !== "", {
       message: "URL must use http:, https:, or mailto: protocol",
-    }),
+    })
+    .optional(),
 });
-
-/**
- * API request body schema for updating a navigation item
- */
-export const UpdateNavItemSchema = CreateNavItemSchema.partial();
 
 /**
  * API request body schema for creating a collection

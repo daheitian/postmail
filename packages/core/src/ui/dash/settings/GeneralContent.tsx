@@ -20,6 +20,7 @@ export function GeneralContent({
   siteFooter,
   showJantBrandingOnHome,
   noindex,
+  demoMode,
   timezones,
 }: {
   siteName: string;
@@ -31,6 +32,7 @@ export function GeneralContent({
   siteFooter: string;
   showJantBrandingOnHome: boolean;
   noindex: boolean;
+  demoMode: boolean;
   timezones: TimezoneEntry[];
 }) {
   const { t } = useLingui();
@@ -83,6 +85,11 @@ export function GeneralContent({
       message: "It's OK for search engines to index my site",
       comment: "@context: Checkbox for allowing search engine indexing",
     }),
+    demoSeoLocked: t({
+      message: "Demo sites always stay hidden from search engines.",
+      comment:
+        "@context: Help text explaining that SEO indexing is locked in demo mode",
+    }),
     save: t({
       message: "Save",
       comment: "@context: Button to save settings",
@@ -123,6 +130,7 @@ export function GeneralContent({
           languages={languagesJson}
           sitename-fallback={siteNameFallback}
           sitedescription-fallback={siteDescriptionFallback}
+          demo-mode={demoMode ? "true" : "false"}
         >
           {/* SSR fallback skeleton */}
           <div>
