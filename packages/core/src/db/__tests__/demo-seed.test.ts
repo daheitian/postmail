@@ -15,21 +15,10 @@ describe("demo seed", () => {
     try {
       execFileSync(
         PNPM_BIN,
-        [
-          "exec",
-          "wrangler",
-          "d1",
-          "migrations",
-          "apply",
-          "DB",
-          "--local",
-          "--persist-to",
-          persistDir,
-        ],
+        ["exec", "jant", "migrate", "--local", "--persist-to", persistDir],
         {
           cwd: DEMO_DIR,
           encoding: "utf-8",
-          input: "yes\n",
         },
       );
 

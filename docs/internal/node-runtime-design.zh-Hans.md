@@ -797,6 +797,8 @@ v1 不改 `create-jant` 的定位。
 
 - 路由不直接访问数据库
 - services 继续拥有所有业务逻辑
-- migration 仍然 append-only 且由 drizzle-kit 生成
+- schema migration 仍然 append-only，默认由 drizzle-kit 生成；少数
+  Drizzle 无法表达的 schema 例外仍放在 `src/db/migrations/`
+- 历史业务数据兼容继续走独立 backfill 轨道，由 `jant migrate` 串行执行
 - `createApp()` 继续保持无参数
 - Cloudflare 路线不能因 Node 支持而回退成功能次要路径

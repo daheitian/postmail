@@ -5,57 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1773271543545,
+      "when": 1773775877230,
       "tag": "0000_baseline",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1773271546509,
+      "when": 1773775888390,
       "tag": "0001_fts_setup",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1773595329116,
-      "tag": "0002_closed_blockbuster",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1773614609713,
-      "tag": "0003_mysterious_wind_dancer",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1773692227269,
-      "tag": "0004_workable_true_believers",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1773695036000,
-      "tag": "0004z_nav_item_system_key_backfill",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1773692242546,
-      "tag": "0005_happy_slyde",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "6",
-      "when": 1773753605346,
-      "tag": "0007_even_red_hulk",
       "breakpoints": true
     }
   ]

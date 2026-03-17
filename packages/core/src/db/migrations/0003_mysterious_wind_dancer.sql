@@ -1,2 +1,0 @@
-CREATE INDEX `idx_post_collection_collection_created_post` ON `post_collection` (`collection_id`,`created_at`,`post_id`);--> statement-breakpoint
-CREATE INDEX `idx_post_featured_live_featured_at` ON `post` (`featured_at`,`thread_id`,`id`) WHERE "post"."deleted_at" IS NULL AND "post"."status" = 'published' AND "post"."featured_at" IS NOT NULL;

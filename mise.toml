@@ -205,7 +205,7 @@ run = """
 echo "Resetting database..."
 rm -rf .wrangler
 echo "Running migrations..."
-echo y | pnpm exec wrangler d1 migrations apply DB --local
+pnpm db:migrate:local
 echo "Clearing data..."
 pnpm exec wrangler d1 execute DB --local --file=dev/scripts/reset-local.sql
 echo "Loading seed data..."
@@ -298,7 +298,7 @@ run = """
 echo "Building @jant/core..."
 pnpm run build
 echo "Running migrations on preview D1..."
-pnpm exec wrangler d1 migrations apply DB --env preview --remote
+pnpm exec jant migrate --remote --env preview
 echo "Deploying to preview..."
 pnpm exec wrangler deploy --env preview
 """
@@ -307,7 +307,7 @@ pnpm exec wrangler deploy --env preview
 alias = "pm"
 description = "Run D1 migrations on preview environment"
 dir = "packages/core"
-run = "pnpm exec wrangler d1 migrations apply DB --env preview --remote"
+run = "pnpm exec jant migrate --remote --env preview"
 
 # =============================================================================
 # Demo
@@ -316,6 +316,12 @@ run = "pnpm exec wrangler d1 migrations apply DB --env preview --remote"
 alias = "dd"
 description = "Deploy demo site to demo.jant.me"
 run = "pnpm --filter @jant/core build && pnpm --filter jant-demo run deploy"
+
+[tasks.demo-migrate]
+alias = "dm"
+description = "Run D1 migrations on demo.jant.me"
+dir = "sites/demo"
+run = "pnpm exec jant migrate --remote"
 
 [tasks.demo-reset]
 description = "Reset demo.jant.me data (clear + reseed)"
@@ -386,7 +392,7 @@ description = "Push seed-site.sql to jant.me remote (run migrations first)"
 dir = "sites/jant-me"
 run = """
 echo "Running remote migrations..."
-pnpm exec wrangler d1 migrations apply DB --remote
+pnpm exec jant migrate --remote
 echo "Loading seed data to jant.me..."
 pnpm exec wrangler d1 execute DB --remote --file=scripts/seed-site.sql
 echo "Done! jant.me has been seeded from seed-site.sql."
@@ -669,7 +675,7 @@ description = "Seed an example's local database with dev data"
 usage = 'arg "<name>"'
 run = """
 cd "examples/$usage_name"
-echo y | pnpm exec wrangler d1 migrations apply DB --local
+pnpm exec jant migrate --local
 pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/reset-local.sql
 pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/seed-local.sql
 """

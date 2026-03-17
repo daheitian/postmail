@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "echo y | wrangler d1 migrations apply DB --local && wrangler dev",
-    "deploy": "wrangler d1 migrations apply DB --remote && wrangler deploy",
+    "dev": "jant migrate --local && wrangler dev",
+    "deploy": "jant migrate --remote && wrangler deploy",
     "reset-password": "jant reset-password",
     "export": "jant export"
   },

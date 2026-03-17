@@ -1,6 +1,6 @@
 # Docker Deployment
 
-Jant's published Docker image runs the Node runtime. The container entrypoint applies SQLite migrations and then starts `jant start`.
+Jant's published Docker image runs the Node runtime. The container entrypoint applies SQLite schema migrations and data backfills, then starts `jant start`.
 
 ## Prerequisites
 

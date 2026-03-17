@@ -11,6 +11,10 @@ function sqlValue(v) {
   return "'" + String(v).replaceAll("'", "''") + "'";
 }
 
+function sqlIdentifier(name) {
+  return `"${String(name).replaceAll('"', '""')}"`;
+}
+
 function queryRemote(sql) {
   let stdout;
   try {
@@ -43,10 +47,10 @@ function queryRemote(sql) {
 function dumpTable(name, query) {
   const rows = queryRemote(query || `SELECT * FROM ${name}`);
   return rows
-    .map(
-      (row) =>
-        `INSERT INTO ${name} VALUES(${Object.values(row).map(sqlValue).join(",")});`,
-    )
+    .map((row) => {
+      const columns = Object.keys(row);
+      return `INSERT INTO ${name} (${columns.map(sqlIdentifier).join(",")}) VALUES(${columns.map((column) => sqlValue(row[column])).join(",")});`;
+    })
     .join("\n");
 }
 

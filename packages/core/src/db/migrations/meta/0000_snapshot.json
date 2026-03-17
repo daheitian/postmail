@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "6387f30b-c6d3-4ad1-a627-1ec026abed4a",
+  "id": "75028554-835e-472e-9a21-79e62df7b022",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -431,7 +431,7 @@
       "checkConstraints": {
         "chk_media_provider": {
           "name": "chk_media_provider",
-          "value": "\"media\".\"provider\" IN ('r2', 's3')"
+          "value": "\"media\".\"provider\" IN ('r2', 's3', 'local')"
         },
         "chk_media_media_kind": {
           "name": "chk_media_media_kind",
@@ -472,6 +472,13 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'link'"
+        },
+        "system_key": {
+          "name": "system_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "label": {
           "name": "label",
@@ -515,6 +522,12 @@
           "name": "uq_nav_item_position",
           "columns": ["position"],
           "isUnique": true
+        },
+        "uq_nav_item_system_key": {
+          "name": "uq_nav_item_system_key",
+          "columns": ["system_key"],
+          "isUnique": true,
+          "where": "\"nav_item\".\"system_key\" IS NOT NULL"
         }
       },
       "foreignKeys": {},
@@ -524,6 +537,14 @@
         "chk_nav_item_type": {
           "name": "chk_nav_item_type",
           "value": "\"nav_item\".\"type\" IN ('link', 'system')"
+        },
+        "chk_nav_item_system_key": {
+          "name": "chk_nav_item_system_key",
+          "value": "\"nav_item\".\"system_key\" IS NULL OR \"nav_item\".\"system_key\" IN ('rss', 'settings', 'collections', 'archive')"
+        },
+        "chk_nav_item_shape": {
+          "name": "chk_nav_item_shape",
+          "value": "(\n        \"nav_item\".\"type\" = 'link'\n        AND \"nav_item\".\"system_key\" IS NULL\n      ) OR (\n        \"nav_item\".\"type\" = 'system'\n        AND \"nav_item\".\"system_key\" IS NOT NULL\n      )"
         }
       }
     },
@@ -685,6 +706,11 @@
         "idx_post_collection_collection_id": {
           "name": "idx_post_collection_collection_id",
           "columns": ["collection_id"],
+          "isUnique": false
+        },
+        "idx_post_collection_collection_created_post": {
+          "name": "idx_post_collection_collection_created_post",
+          "columns": ["collection_id", "created_at", "post_id"],
           "isUnique": false
         }
       },
@@ -914,6 +940,12 @@
           "columns": ["thread_id", "created_at", "id"],
           "isUnique": false,
           "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NOT NULL AND \"post\".\"status\" = 'published'"
+        },
+        "idx_post_featured_live_featured_at": {
+          "name": "idx_post_featured_live_featured_at",
+          "columns": ["featured_at", "thread_id", "id"],
+          "isUnique": false,
+          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"status\" = 'published' AND \"post\".\"featured_at\" IS NOT NULL"
         }
       },
       "foreignKeys": {
@@ -1132,6 +1164,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "position": {
           "name": "position",
           "type": "text",
@@ -1194,6 +1233,10 @@
         "chk_sidebar_item_shape": {
           "name": "chk_sidebar_item_shape",
           "value": "(\n        \"sidebar_item\".\"type\" = 'collection' AND \"sidebar_item\".\"collection_id\" IS NOT NULL\n      ) OR (\n        \"sidebar_item\".\"type\" = 'divider' AND \"sidebar_item\".\"collection_id\" IS NULL\n      )"
+        },
+        "chk_sidebar_item_label": {
+          "name": "chk_sidebar_item_label",
+          "value": "\"sidebar_item\".\"type\" = 'divider' OR \"sidebar_item\".\"label\" IS NULL"
         }
       }
     },

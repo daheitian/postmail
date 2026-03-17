@@ -82,21 +82,10 @@ function validateSeed(sql) {
   try {
     execFileSync(
       "pnpm",
-      [
-        "exec",
-        "wrangler",
-        "d1",
-        "migrations",
-        "apply",
-        "DB",
-        "--local",
-        "--persist-to",
-        persistDir,
-      ],
+      ["exec", "jant", "migrate", "--local", "--persist-to", persistDir],
       {
         cwd: process.cwd(),
         encoding: "utf-8",
-        input: "yes\n",
       },
     );
 

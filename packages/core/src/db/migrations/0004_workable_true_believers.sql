@@ -1,1 +1,0 @@
-ALTER TABLE `nav_item` ADD `system_key` text;

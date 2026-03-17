@@ -14,7 +14,11 @@ const TABLE_EXPORT_ORDER = [
   "media",
 ];
 
-const EXCLUDED_TABLES = new Set(["__drizzle_migrations", "d1_migrations"]);
+const EXCLUDED_TABLES = new Set([
+  "__drizzle_migrations",
+  "d1_migrations",
+  "data_migration",
+]);
 
 function quoteIdentifier(identifier) {
   return `"${String(identifier).replaceAll('"', '""')}"`;
@@ -61,7 +65,9 @@ export function buildInsertStatement(tableName, columnNames, row) {
 }
 
 export function sortExportTables(tableNames) {
-  const order = new Map(TABLE_EXPORT_ORDER.map((table, index) => [table, index]));
+  const order = new Map(
+    TABLE_EXPORT_ORDER.map((table, index) => [table, index]),
+  );
 
   return [...tableNames].sort((left, right) => {
     const leftIndex = order.get(left);
@@ -97,7 +103,9 @@ export async function listExportTables(queryRunner) {
       .filter((row) => typeof row.name === "string" && row.name.length > 0)
       .filter((row) => !EXCLUDED_TABLES.has(row.name))
       .filter((row) => !String(row.name).startsWith("post_fts"))
-      .filter((row) => !String(row.sql ?? "").startsWith("CREATE VIRTUAL TABLE"))
+      .filter(
+        (row) => !String(row.sql ?? "").startsWith("CREATE VIRTUAL TABLE"),
+      )
       .map((row) => row.name),
   );
 }

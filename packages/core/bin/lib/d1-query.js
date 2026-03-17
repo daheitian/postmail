@@ -4,6 +4,22 @@ function getD1Flag(runtime) {
   return runtime === "d1-remote" ? "--remote" : "--local";
 }
 
+function appendWranglerContext(args, options = {}) {
+  if (options.configPath) {
+    args.push("--config", options.configPath);
+  }
+
+  if (options.env) {
+    args.push("--env", options.env);
+  }
+
+  if (options.persistTo) {
+    args.push("--persist-to", options.persistTo);
+  }
+
+  return args;
+}
+
 function getWranglerError(output) {
   if (!output) {
     return undefined;
@@ -36,23 +52,37 @@ function runWrangler(args, options = {}) {
   }
 }
 
-export function executeD1(sql, runtime) {
-  runWrangler(
-    ["d1", "execute", "DB", getD1Flag(runtime), "--command", sql],
-    { stdio: "inherit" },
+export function executeD1(sql, runtime, options = {}) {
+  const args = appendWranglerContext(
+    [
+      "d1",
+      "execute",
+      options.database ?? "DB",
+      getD1Flag(runtime),
+      "--command",
+      sql,
+    ],
+    options,
   );
+
+  runWrangler(args, { stdio: "inherit" });
 }
 
-export function queryD1(sql, runtime) {
-  const output = runWrangler([
-    "d1",
-    "execute",
-    "DB",
-    getD1Flag(runtime),
-    "--command",
-    sql,
-    "--json",
-  ]);
+export function queryD1(sql, runtime, options = {}) {
+  const output = runWrangler(
+    appendWranglerContext(
+      [
+        "d1",
+        "execute",
+        options.database ?? "DB",
+        getD1Flag(runtime),
+        "--command",
+        sql,
+        "--json",
+      ],
+      options,
+    ),
+  );
   const parsed = JSON.parse(output);
   const statement = Array.isArray(parsed) ? parsed[0] : parsed;
 

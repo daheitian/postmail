@@ -75,8 +75,8 @@ wrangler secret put JANT_SITE_URL
 ## Run Migrations
 
 ```bash
-# Apply database migrations
-wrangler d1 migrations apply DB
+# Apply schema migrations and data backfills
+pnpm exec jant migrate --remote
 ```
 
 ## Deploy
@@ -144,4 +144,4 @@ git pull
 pnpm run deploy
 ```
 
-Database migrations run automatically on deploy.
+Schema migrations and data backfills run automatically on deploy.

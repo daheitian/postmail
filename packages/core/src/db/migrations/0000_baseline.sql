@@ -59,7 +59,7 @@ CREATE TABLE `media` (
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
 	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null,
-	CONSTRAINT "chk_media_provider" CHECK("media"."provider" IN ('r2', 's3')),
+	CONSTRAINT "chk_media_provider" CHECK("media"."provider" IN ('r2', 's3', 'local')),
 	CONSTRAINT "chk_media_media_kind" CHECK("media"."media_kind" IN ('image', 'video', 'audio', 'text', 'document')),
 	CONSTRAINT "chk_media_size_positive" CHECK("media"."size" > 0),
 	CONSTRAINT "chk_media_position_not_blank" CHECK(trim("media"."position") <> ''),
@@ -78,15 +78,25 @@ CREATE INDEX `idx_media_media_kind_post_id` ON `media` (`media_kind`,`post_id`);
 CREATE TABLE `nav_item` (
 	`id` text PRIMARY KEY NOT NULL,
 	`type` text DEFAULT 'link' NOT NULL,
+	`system_key` text,
 	`label` text NOT NULL,
 	`url` text NOT NULL,
 	`position` text DEFAULT 'a0' NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	CONSTRAINT "chk_nav_item_type" CHECK("nav_item"."type" IN ('link', 'system'))
+	CONSTRAINT "chk_nav_item_type" CHECK("nav_item"."type" IN ('link', 'system')),
+	CONSTRAINT "chk_nav_item_system_key" CHECK("nav_item"."system_key" IS NULL OR "nav_item"."system_key" IN ('rss', 'settings', 'collections', 'archive')),
+	CONSTRAINT "chk_nav_item_shape" CHECK((
+        "nav_item"."type" = 'link'
+        AND "nav_item"."system_key" IS NULL
+      ) OR (
+        "nav_item"."type" = 'system'
+        AND "nav_item"."system_key" IS NOT NULL
+      ))
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `uq_nav_item_position` ON `nav_item` (`position`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_nav_item_system_key` ON `nav_item` (`system_key`) WHERE "nav_item"."system_key" IS NOT NULL;--> statement-breakpoint
 CREATE TABLE `path_registry` (
 	`id` text PRIMARY KEY NOT NULL,
 	`path` text NOT NULL,
@@ -132,6 +142,7 @@ CREATE TABLE `post_collection` (
 );
 --> statement-breakpoint
 CREATE INDEX `idx_post_collection_collection_id` ON `post_collection` (`collection_id`);--> statement-breakpoint
+CREATE INDEX `idx_post_collection_collection_created_post` ON `post_collection` (`collection_id`,`created_at`,`post_id`);--> statement-breakpoint
 CREATE TABLE `post` (
 	`id` text PRIMARY KEY NOT NULL,
 	`format` text NOT NULL,
@@ -208,6 +219,7 @@ CREATE INDEX `idx_post_status_deleted_activity` ON `post` (`status`,`deleted_at`
 CREATE INDEX `idx_post_root_live_published_activity` ON `post` (`last_activity_at`,`id`) WHERE "post"."deleted_at" IS NULL AND "post"."reply_to_id" IS NULL AND "post"."status" = 'published';--> statement-breakpoint
 CREATE INDEX `idx_post_root_live_draft_updated` ON `post` (`updated_at`,`id`) WHERE "post"."deleted_at" IS NULL AND "post"."reply_to_id" IS NULL AND "post"."status" = 'draft';--> statement-breakpoint
 CREATE INDEX `idx_post_reply_live_thread_created` ON `post` (`thread_id`,`created_at`,`id`) WHERE "post"."deleted_at" IS NULL AND "post"."reply_to_id" IS NOT NULL AND "post"."status" = 'published';--> statement-breakpoint
+CREATE INDEX `idx_post_featured_live_featured_at` ON `post` (`featured_at`,`thread_id`,`id`) WHERE "post"."deleted_at" IS NULL AND "post"."status" = 'published' AND "post"."featured_at" IS NOT NULL;--> statement-breakpoint
 CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`expires_at` integer NOT NULL,
@@ -232,6 +244,7 @@ CREATE TABLE `sidebar_item` (
 	`id` text PRIMARY KEY NOT NULL,
 	`type` text NOT NULL,
 	`collection_id` text,
+	`label` text,
 	`position` text DEFAULT 'a0' NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
@@ -241,7 +254,8 @@ CREATE TABLE `sidebar_item` (
         "sidebar_item"."type" = 'collection' AND "sidebar_item"."collection_id" IS NOT NULL
       ) OR (
         "sidebar_item"."type" = 'divider' AND "sidebar_item"."collection_id" IS NULL
-      ))
+      )),
+	CONSTRAINT "chk_sidebar_item_label" CHECK("sidebar_item"."type" = 'divider' OR "sidebar_item"."label" IS NULL)
 );
 --> statement-breakpoint
 CREATE INDEX `idx_sidebar_item_collection_id` ON `sidebar_item` (`collection_id`);--> statement-breakpoint
