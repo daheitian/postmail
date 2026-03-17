@@ -75,6 +75,21 @@ pnpm --filter @jant/core build
 pnpm --filter create-jant build
 """
 
+[tasks.jant]
+description = "Run the local Jant CLI from packages/core/bin/jant.js"
+usage = 'arg "[args]" var=#true double_dash="automatic"'
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+args=()
+if [[ -n "${usage_args:-}" ]]; then
+  eval "args=($usage_args)"
+fi
+
+exec ./packages/core/bin/jant.js "${args[@]}"
+"""
+
 # =============================================================================
 # Docker
 # =============================================================================
@@ -614,27 +629,6 @@ run = "git branch | grep -v '^\\* main$' | grep -v '^  main$' | xargs git branch
 alias = "worktrees"
 description = "List all git worktrees"
 run = "git worktree list"
-
-[tasks.import]
-description = "Move a project from ~/Inbox/ into the workspace: mise run import my-project"
-usage = 'arg "<name>"'
-run = """
-SOURCE="$HOME/Inbox/$usage_name"
-DEST="../$usage_name"
-
-if [ ! -d "$SOURCE" ]; then
-  echo "Not found: $SOURCE"
-  exit 1
-fi
-
-if [ -d "$DEST" ]; then
-  echo "Already exists: $DEST"
-  exit 1
-fi
-
-mv "$SOURCE" "$DEST"
-echo "Moved: $SOURCE -> $DEST"
-"""
 
 # =============================================================================
 # Examples (scaffolded via create-jant from sites/demo)

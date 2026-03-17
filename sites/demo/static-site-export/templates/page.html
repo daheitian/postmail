@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{% block title %}{% if page.title %}{{ page.title }} &mdash; {% endif %}{{ config.title }}{% endblock %}
+
+{% block content %}
+{{ macros::post_card(page=page, detail=true) }}
+{% endblock %}

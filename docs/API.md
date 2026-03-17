@@ -1166,7 +1166,7 @@ Restore an export ZIP into a Jant instance using the CLI:
 
 ```bash
 export JANT_TOKEN=jnt_YOUR_TOKEN
-npx jant import-site --url https://your-site.com
+npx jant import-site --url https://your-site.com --path ./export
 ```
 
 **Authentication:** Set the `JANT_TOKEN` environment variable. This avoids exposing the token in shell history or process lists.

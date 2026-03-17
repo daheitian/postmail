@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{% block title %}{{ section.title }} &mdash; {{ config.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ section.title }}</h1>
+{% if section.description %}
+<p class="section-description">{{ section.description }}</p>
+{% endif %}
+
+<div class="post-list">
+  {% for page in section.pages %}
+    {{ macros::post_card(page=page) }}
+  {% endfor %}
+</div>
+{% endblock %}

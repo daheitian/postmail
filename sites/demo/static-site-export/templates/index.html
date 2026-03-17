@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{% block title %}{{ config.title }}{% endblock %}
+
+{% block content %}
+<div class="post-list">
+  {% for page in paginator.pages %}
+    {{ macros::post_card(page=page) }}
+  {% endfor %}
+</div>
+
+{% if paginator.previous or paginator.next %}
+<nav class="pagination">
+  {% if paginator.previous %}<a href="{{ paginator.previous }}">&larr; Newer</a>{% endif %}
+  {% if paginator.next %}<a href="{{ paginator.next }}">Older &rarr;</a>{% endif %}
+</nav>
+{% endif %}
+
+{% endblock %}
