@@ -1,56 +1,13 @@
 /**
- * Settings root page — iOS-style grouped list linking to sub-pages
+ * Settings root page — spacious card directory linking to sub-pages
  */
 
 import { useLingui } from "@lingui/react/macro";
 import { toPublicPath } from "../../../lib/url.js";
-
-/** Chevron right icon shared by all rows */
-function ChevronRight() {
-  return (
-    <svg
-      class="settings-item-chevron"
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
-
-function SettingsItem({
-  href,
-  icon,
-  tone = "accent",
-  name,
-  description,
-}: {
-  href: string;
-  icon: string;
-  tone?: "accent" | "subtle" | "danger";
-  name: string;
-  description: string;
-}) {
-  return (
-    <a href={href} class="settings-item" data-tone={tone}>
-      <span class="settings-item-icon">
-        <span dangerouslySetInnerHTML={{ __html: icon }} />
-      </span>
-      <span class="settings-item-text">
-        <span class="settings-item-name">{name}</span>
-        <span class="settings-item-desc">{description}</span>
-      </span>
-      <ChevronRight />
-    </a>
-  );
-}
+import {
+  SettingsDirectoryLink,
+  SettingsDirectorySection,
+} from "./SettingsDirectory.js";
 
 // Lucide icon SVG paths (16x16, stroke-based)
 const ICONS = {
@@ -89,7 +46,7 @@ export function SettingsRootContent({
   return (
     <div class="settings-root">
       {demoMode && (
-        <div class="alert mb-6" role="alert">
+        <div class="alert" role="alert">
           <section>
             <p>
               {t({
@@ -111,178 +68,161 @@ export function SettingsRootContent({
         </h1>
         <p class="settings-root-lead">
           {t({
-            message: "Manage your site, design, and account.",
+            message: "Tune how your site looks, reads, and runs.",
             comment:
               "@context: Intro text on the settings home page below the title",
           })}
         </p>
       </header>
 
-      {/* Site */}
-      <div>
-        <div class="settings-group-label">
-          {t({
-            message: "Site",
-            comment: "@context: Settings group label for site settings",
+      <SettingsDirectorySection
+        title={t({
+          message: "Site",
+          comment: "@context: Settings group label for site settings",
+        })}
+      >
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/general", sitePathPrefix)}
+          icon={ICONS.settings}
+          tone="subtle"
+          name={t({
+            message: "General",
+            comment: "@context: Settings item — general settings",
           })}
-        </div>
-        <div class="settings-group">
-          <SettingsItem
-            href={toPublicPath("/settings/general", sitePathPrefix)}
-            icon={ICONS.settings}
-            tone="subtle"
-            name={t({
-              message: "General",
-              comment: "@context: Settings item — general settings",
-            })}
-            description={t({
-              message: "Name, description, language",
-              comment: "@context: Settings item description for general",
-            })}
-          />
-        </div>
-      </div>
-
-      {/* Design */}
-      <div>
-        <div class="settings-group-label">
-          {t({
-            message: "Design",
-            comment: "@context: Settings group label for design settings",
+          description={t({
+            message: "Name, metadata, language, and search defaults",
+            comment: "@context: Settings item description for general",
           })}
-        </div>
-        <div class="settings-group">
-          <SettingsItem
-            href={toPublicPath("/settings/avatar", sitePathPrefix)}
-            icon={ICONS.image}
-            name={t({
-              message: "Avatar",
-              comment: "@context: Settings item — avatar settings",
-            })}
-            description={t({
-              message: "Favicon and header icon",
-              comment: "@context: Settings item description for avatar",
-            })}
-          />
-          <SettingsItem
-            href={toPublicPath("/settings/navigation", sitePathPrefix)}
-            icon={ICONS.menu}
-            name={t({
-              message: "Navigation",
-              comment: "@context: Settings item — navigation settings",
-            })}
-            description={t({
-              message: "Header links, featured",
-              comment: "@context: Settings item description for navigation",
-            })}
-          />
-          <SettingsItem
-            href={toPublicPath("/settings/color-theme", sitePathPrefix)}
-            icon={ICONS.palette}
-            name={t({
-              message: "Color Theme",
-              comment: "@context: Settings item — color theme settings",
-            })}
-            description={t({
-              message: "Color theme",
-              comment: "@context: Settings item description for color theme",
-            })}
-          />
-          <SettingsItem
-            href={toPublicPath("/settings/font-theme", sitePathPrefix)}
-            icon={ICONS.type}
-            tone="subtle"
-            name={t({
-              message: "Font Theme",
-              comment: "@context: Settings item — font theme settings",
-            })}
-            description={t({
-              message: "Typography",
-              comment: "@context: Settings item description for font theme",
-            })}
-          />
-          <SettingsItem
-            href={toPublicPath("/settings/custom-css", sitePathPrefix)}
-            icon={ICONS.code}
-            tone="subtle"
-            name={t({
-              message: "Custom CSS",
-              comment: "@context: Settings item — custom CSS settings",
-            })}
-            description={t({
-              message: "Custom styling",
-              comment: "@context: Settings item description for custom CSS",
-            })}
-          />
-        </div>
-      </div>
+        />
+      </SettingsDirectorySection>
 
-      {/* Advanced */}
-      <div>
-        <div class="settings-group-label">
-          {t({
-            message: "Advanced",
-            comment: "@context: Settings group label for advanced settings",
+      <SettingsDirectorySection
+        title={t({
+          message: "Appearance",
+          comment: "@context: Settings group label for design settings",
+        })}
+      >
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/avatar", sitePathPrefix)}
+          icon={ICONS.image}
+          name={t({
+            message: "Avatar",
+            comment: "@context: Settings item — avatar settings",
           })}
-        </div>
-        <div class="settings-group">
-          <SettingsItem
-            href={toPublicPath("/settings/custom-urls", sitePathPrefix)}
-            icon={ICONS.arrowRightLeft}
-            tone="subtle"
-            name={t({
-              message: "Custom URLs",
-              comment: "@context: Settings item — custom URL settings",
-            })}
-            description={t({
-              message: "Redirects and custom paths",
-              comment: "@context: Settings item description for custom URLs",
-            })}
-          />
-          <SettingsItem
-            href={toPublicPath("/settings/api-tokens", sitePathPrefix)}
-            icon={ICONS.key}
-            tone="subtle"
-            name={t({
-              message: "API Tokens",
-              comment: "@context: Settings item — API token settings",
-            })}
-            description={t({
-              message: "Bearer tokens for scripts and automation",
-              comment: "@context: Settings item description for API tokens",
-            })}
-          />
-        </div>
-      </div>
+          description={t({
+            message: "Favicon and the profile mark in your header",
+            comment: "@context: Settings item description for avatar",
+          })}
+        />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/navigation", sitePathPrefix)}
+          icon={ICONS.menu}
+          name={t({
+            message: "Navigation",
+            comment: "@context: Settings item — navigation settings",
+          })}
+          description={t({
+            message: "Header links, featured tab, and menu balance",
+            comment: "@context: Settings item description for navigation",
+          })}
+        />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/color-theme", sitePathPrefix)}
+          icon={ICONS.palette}
+          name={t({
+            message: "Color Theme",
+            comment: "@context: Settings item — color theme settings",
+          })}
+          description={t({
+            message: "Palette, surface tone, and overall mood",
+            comment: "@context: Settings item description for color theme",
+          })}
+        />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/font-theme", sitePathPrefix)}
+          icon={ICONS.type}
+          tone="subtle"
+          name={t({
+            message: "Font Theme",
+            comment: "@context: Settings item — font theme settings",
+          })}
+          description={t({
+            message: "Typography choices and reading texture",
+            comment: "@context: Settings item description for font theme",
+          })}
+        />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/custom-css", sitePathPrefix)}
+          icon={ICONS.code}
+          tone="subtle"
+          name={t({
+            message: "Custom CSS",
+            comment: "@context: Settings item — custom CSS settings",
+          })}
+          description={t({
+            message: "Fine-grained styling overrides",
+            comment: "@context: Settings item description for custom CSS",
+          })}
+        />
+      </SettingsDirectorySection>
 
-      {/* Account */}
-      <div>
-        <div class="settings-group-label">
-          {t({
+      <SettingsDirectorySection
+        title={t({
+          message: "Advanced",
+          comment: "@context: Settings group label for advanced settings",
+        })}
+      >
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/custom-urls", sitePathPrefix)}
+          icon={ICONS.arrowRightLeft}
+          tone="subtle"
+          name={t({
+            message: "Custom URLs",
+            comment: "@context: Settings item — custom URL settings",
+          })}
+          description={t({
+            message: "Redirects, vanity paths, and URL control",
+            comment: "@context: Settings item description for custom URLs",
+          })}
+        />
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/api-tokens", sitePathPrefix)}
+          icon={ICONS.key}
+          tone="subtle"
+          name={t({
+            message: "API Tokens",
+            comment: "@context: Settings item — API token settings",
+          })}
+          description={t({
+            message: "Bearer tokens for scripts and automation",
+            comment: "@context: Settings item description for API tokens",
+          })}
+        />
+      </SettingsDirectorySection>
+
+      <SettingsDirectorySection
+        title={t({
+          message: "Account",
+          comment: "@context: Settings group label for account settings",
+        })}
+      >
+        <SettingsDirectoryLink
+          href={toPublicPath("/settings/account", sitePathPrefix)}
+          icon={ICONS.shield}
+          tone="subtle"
+          name={t({
             message: "Account",
-            comment: "@context: Settings group label for account settings",
+            comment: "@context: Settings item — account settings",
           })}
-        </div>
-        <div class="settings-group">
-          <SettingsItem
-            href={toPublicPath("/settings/account", sitePathPrefix)}
-            icon={ICONS.shield}
-            tone="subtle"
-            name={t({
-              message: "Account",
-              comment: "@context: Settings item — account settings",
-            })}
-            description={accountDescription}
-          />
-        </div>
-      </div>
+          description={accountDescription}
+        />
+      </SettingsDirectorySection>
 
-      {/* Sign Out */}
-      <div class="pt-2 text-center">
+      <div class="settings-root-signout">
         <button
           type="button"
           data-on:click__prevent={`@post('${toPublicPath("/signout", sitePathPrefix)}')`}
-          class="text-sm text-destructive hover:text-destructive/80 transition-colors"
+          class="settings-root-signout-btn"
         >
           {t({
             message: "Sign Out",

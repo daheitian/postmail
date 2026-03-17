@@ -106,10 +106,12 @@ settingsRoutes.get("/", async (c) => {
     title: buildPageTitle("Settings", navData.siteName),
     navData,
     content: (
-      <SettingsRootContent
-        sitePathPrefix={c.var.appConfig.sitePathPrefix}
-        demoMode={c.var.appConfig.demoMode}
-      />
+      <div class="py-6">
+        <SettingsRootContent
+          sitePathPrefix={c.var.appConfig.sitePathPrefix}
+          demoMode={c.var.appConfig.demoMode}
+        />
+      </div>
     ),
   });
 });

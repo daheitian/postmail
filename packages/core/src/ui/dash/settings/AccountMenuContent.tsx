@@ -1,56 +1,14 @@
 /**
- * Account settings sub-menu — lists Sessions and Password options
+ * Account settings sub-menu — lists security, data, and destructive actions
  */
 
 import { useLingui } from "@lingui/react/macro";
 import { toPublicPath } from "../../../lib/url.js";
-
-/** Chevron right icon */
-function ChevronRight() {
-  return (
-    <svg
-      class="settings-item-chevron"
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}
-
-function AccountMenuItem({
-  href,
-  icon,
-  tone = "accent",
-  name,
-  description,
-}: {
-  href: string;
-  icon: string;
-  tone?: "accent" | "subtle" | "danger";
-  name: string;
-  description: string;
-}) {
-  return (
-    <a href={href} class="settings-item" data-tone={tone}>
-      <span class="settings-item-icon">
-        <span dangerouslySetInnerHTML={{ __html: icon }} />
-      </span>
-      <span class="settings-item-text">
-        <span class="settings-item-name">{name}</span>
-        <span class="settings-item-desc">{description}</span>
-      </span>
-      <ChevronRight />
-    </a>
-  );
-}
+import {
+  SettingsDirectoryItemContent,
+  SettingsDirectoryLink,
+  SettingsDirectorySection,
+} from "./SettingsDirectory.js";
 
 const ICONS = {
   monitor: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>`,
@@ -70,8 +28,25 @@ export function AccountMenuContent({
 
   return (
     <div class="settings-root">
+      <header class="settings-root-header">
+        <h1 class="settings-root-title settings-root-title-compact">
+          {t({
+            message: "Account",
+            comment: "@context: Page title for the account settings menu",
+          })}
+        </h1>
+        <p class="settings-root-lead">
+          {t({
+            message:
+              "Manage sign-in security, exports, and irreversible actions.",
+            comment:
+              "@context: Intro text on the account settings menu page below the title",
+          })}
+        </p>
+      </header>
+
       {demoMode && (
-        <div class="alert mb-6" role="alert">
+        <div class="alert" role="alert">
           <section>
             <p>
               {t({
@@ -86,113 +61,101 @@ export function AccountMenuContent({
       )}
 
       {!demoMode && (
-        <div>
-          <div class="settings-group">
-            <AccountMenuItem
-              href={toPublicPath("/settings/account/sessions", sitePathPrefix)}
-              icon={ICONS.monitor}
-              tone="subtle"
-              name={t({
-                message: "Sessions",
-                comment: "@context: Settings item — session management",
-              })}
-              description={t({
-                message: "Manage active sign-in sessions",
-                comment: "@context: Settings item description for sessions",
-              })}
-            />
-            <AccountMenuItem
-              href={toPublicPath("/settings/account/password", sitePathPrefix)}
-              icon={ICONS.lock}
-              tone="subtle"
-              name={t({
-                message: "Password",
-                comment: "@context: Settings item — password settings",
-              })}
-              description={t({
-                message: "Change your sign-in password",
-                comment:
-                  "@context: Settings item description for password change",
-              })}
-            />
-          </div>
-        </div>
+        <SettingsDirectorySection
+          title={t({
+            message: "Security",
+            comment:
+              "@context: Settings group label for account security settings",
+          })}
+        >
+          <SettingsDirectoryLink
+            href={toPublicPath("/settings/account/sessions", sitePathPrefix)}
+            icon={ICONS.monitor}
+            tone="subtle"
+            name={t({
+              message: "Sessions",
+              comment: "@context: Settings item — session management",
+            })}
+            description={t({
+              message: "See where you're signed in and revoke old sessions",
+              comment: "@context: Settings item description for sessions",
+            })}
+          />
+          <SettingsDirectoryLink
+            href={toPublicPath("/settings/account/password", sitePathPrefix)}
+            icon={ICONS.lock}
+            tone="subtle"
+            name={t({
+              message: "Password",
+              comment: "@context: Settings item — password settings",
+            })}
+            description={t({
+              message: "Update the password you use to sign in",
+              comment:
+                "@context: Settings item description for password change",
+            })}
+          />
+        </SettingsDirectorySection>
       )}
 
-      {/* Data */}
-      <div>
-        <div class="settings-group-label">
-          {t({
-            message: "Data",
-            comment: "@context: Settings group label for data export/import",
-          })}
-        </div>
-        <div class="settings-group">
-          <form
-            method="post"
-            action={toPublicPath("/api/export/zola", sitePathPrefix)}
-            class="settings-export-form"
+      <SettingsDirectorySection
+        title={t({
+          message: "Data",
+          comment: "@context: Settings group label for data export/import",
+        })}
+      >
+        <form
+          method="post"
+          action={toPublicPath("/api/export/zola", sitePathPrefix)}
+          class="settings-export-form"
+        >
+          <button
+            type="submit"
+            class="settings-directory-item"
+            data-tone="subtle"
           >
-            <button type="submit" class="settings-item" data-tone="subtle">
-              <span class="settings-item-icon">
-                <span dangerouslySetInnerHTML={{ __html: ICONS.download }} />
-              </span>
-              <span class="settings-item-text">
-                <span class="settings-item-name">
-                  {t({
-                    message: "Export Site",
-                    comment:
-                      "@context: Settings item — export site as Zola ZIP",
-                  })}
-                </span>
-                <span class="settings-item-desc">
-                  {t({
-                    message: "Download as a Zola static site (.zip)",
-                    comment:
-                      "@context: Settings item description for site export",
-                  })}
-                </span>
-              </span>
-              <ChevronRight />
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* Danger Zone */}
-      {!demoMode && (
-        <div>
-          <div
-            class="settings-group-label"
-            style="color: var(--color-destructive)"
-          >
-            {t({
-              message: "Danger Zone",
-              comment:
-                "@context: Settings group label for destructive account actions",
-            })}
-          </div>
-          <div class="settings-group">
-            <AccountMenuItem
-              href={toPublicPath(
-                "/settings/account/delete-account",
-                sitePathPrefix,
-              )}
-              icon={ICONS.trash}
-              tone="danger"
+            <SettingsDirectoryItemContent
+              icon={ICONS.download}
               name={t({
-                message: "Delete Account",
-                comment:
-                  "@context: Settings item — delete account and all data",
+                message: "Export Site",
+                comment: "@context: Settings item — export site as Zola ZIP",
               })}
               description={t({
-                message: "Permanently delete all data and reset the blog",
-                comment:
-                  "@context: Settings item description for account deletion",
+                message: "Download a full Zola export as a .zip archive",
+                comment: "@context: Settings item description for site export",
               })}
             />
-          </div>
-        </div>
+          </button>
+        </form>
+      </SettingsDirectorySection>
+
+      {!demoMode && (
+        <SettingsDirectorySection
+          title={t({
+            message: "Danger Zone",
+            comment:
+              "@context: Settings group label for destructive account actions",
+          })}
+          tone="danger"
+        >
+          <SettingsDirectoryLink
+            href={toPublicPath(
+              "/settings/account/delete-account",
+              sitePathPrefix,
+            )}
+            icon={ICONS.trash}
+            tone="danger"
+            name={t({
+              message: "Delete Account",
+              comment: "@context: Settings item — delete account and all data",
+            })}
+            description={t({
+              message: "Permanently delete all data and reset the blog",
+              comment:
+                "@context: Settings item description for account deletion",
+            })}
+          />
+        </SettingsDirectorySection>
       )}
     </div>
   );

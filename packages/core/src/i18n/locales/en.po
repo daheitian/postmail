@@ -146,8 +146,10 @@ msgstr "Absinthe Green should feel like a mark in the margin, not a spotlight."
 msgid "Accent should feel present, not loud."
 msgstr "Accent should feel present, not loud."
 
+#. @context: Page title for the account settings menu
 #. @context: Settings group label for account settings
 #. @context: Settings item — account settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Account"
@@ -269,6 +271,11 @@ msgstr "API reference"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "API Tokens"
 msgstr "API Tokens"
+
+#. @context: Settings group label for design settings
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Appearance"
+msgstr "Appearance"
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -461,11 +468,6 @@ msgstr "Cancel"
 msgid "Change Password"
 msgstr "Change Password"
 
-#. @context: Settings item description for password change
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Change your sign-in password"
-msgstr "Change your sign-in password"
-
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
@@ -541,9 +543,7 @@ msgid "Color check"
 msgstr "Color check"
 
 #. @context: Appearance settings heading
-#. @context: Settings item description for color theme
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-#: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Color theme"
 msgstr "Color theme"
 
@@ -698,11 +698,6 @@ msgstr "Custom CSS"
 msgid "Custom CSS updated."
 msgstr "Custom CSS updated."
 
-#. @context: Settings item description for custom CSS
-#: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Custom styling"
-msgstr "Custom styling"
-
 #. @context: Settings item — custom URL settings
 #. @context: Settings section heading
 #: src/routes/dash/custom-urls.tsx
@@ -848,9 +843,7 @@ msgstr "Description (optional)"
 #. @context: Collection tag on sample note post
 #. @context: Collection tag on the sample detail article
 #. @context: Color theme preview collection label
-#. @context: Settings group label for design settings
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-#: src/ui/dash/settings/SettingsRootContent.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -922,8 +915,8 @@ msgstr "Done"
 
 #. @context: Settings item description for site export
 #: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Download as a Zola static site (.zip)"
-msgstr "Download as a Zola static site (.zip)"
+msgid "Download a full Zola export as a .zip archive"
+msgstr "Download a full Zola export as a .zip archive"
 
 #. @context: Button to download site backup before deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1055,8 +1048,8 @@ msgstr "Export Site"
 
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Favicon and header icon"
-msgstr "Favicon and header icon"
+msgid "Favicon and the profile mark in your header"
+msgstr "Favicon and the profile mark in your header"
 
 #. @context: Archive visibility filter - featured posts
 #. @context: Browse filter for featured posts
@@ -1122,6 +1115,11 @@ msgstr "File uploaded."
 msgid "Files"
 msgstr "Files"
 
+#. @context: Settings item description for custom CSS
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Fine-grained styling overrides"
+msgstr "Fine-grained styling overrides"
+
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Follow each visitor's system preference."
@@ -1177,8 +1175,8 @@ msgstr "Guide the eye without taking over the layout."
 
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Header links, featured"
-msgstr "Header links, featured"
+msgid "Header links, featured tab, and menu balance"
+msgstr "Header links, featured tab, and menu balance"
 
 #. @context: Bullet item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1444,15 +1442,10 @@ msgstr "Low-distraction palettes for a cleaner, calmer reading rhythm."
 msgid "Lowest rated"
 msgstr "Lowest rated"
 
-#. @context: Settings item description for sessions
+#. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Manage active sign-in sessions"
-msgstr "Manage active sign-in sessions"
-
-#. @context: Intro text on the settings home page below the title
-#: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Manage your site, design, and account."
-msgstr "Manage your site, design, and account."
+msgid "Manage sign-in security, exports, and irreversible actions."
+msgstr "Manage sign-in security, exports, and irreversible actions."
 
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1530,8 +1523,8 @@ msgstr "My Collection"
 
 #. @context: Settings item description for general
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Name, description, language"
-msgstr "Name, description, language"
+msgid "Name, metadata, language, and search defaults"
+msgstr "Name, metadata, language, and search defaults"
 
 #. @context: Settings item — navigation settings
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1740,6 +1733,11 @@ msgstr "Over-polishing the layout until the writing stops feeling personal."
 #: src/ui/pages/BrandPage.tsx
 msgid "Pairing it with bright SaaS blues or neon greens."
 msgstr "Pairing it with bright SaaS blues or neon greens."
+
+#. @context: Settings item description for color theme
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Palette, surface tone, and overall mood"
+msgstr "Palette, surface tone, and overall mood"
 
 #. @context: Theme group description on color theme settings page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2006,8 +2004,8 @@ msgstr "Redirect Type"
 
 #. @context: Settings item description for custom URLs
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Redirects and custom paths"
-msgstr "Redirects and custom paths"
+msgid "Redirects, vanity paths, and URL control"
+msgstr "Redirects, vanity paths, and URL control"
 
 #. @context: Collection tag on sample link post
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2151,6 +2149,11 @@ msgstr "Search snippet"
 msgid "Search..."
 msgstr "Search..."
 
+#. @context: Settings group label for account security settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Security"
+msgstr "Security"
+
 #. @context: Error toast when CSRF token is invalid or expired
 #: src/routes/dash/settings.tsx
 msgid "Security token expired. Refresh the page and try again."
@@ -2160,6 +2163,11 @@ msgstr "Security token expired. Refresh the page and try again."
 #: src/routes/dash/settings.tsx
 msgid "Security token missing. Refresh the page and try again."
 msgstr "Security token missing. Refresh the page and try again."
+
+#. @context: Settings item description for sessions
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "See where you're signed in and revoke old sessions"
+msgstr "See where you're signed in and revoke old sessions"
 
 #. @context: Toast after saving SEO settings
 #. @context: Toast after saving SEO settings
@@ -2622,6 +2630,11 @@ msgstr "Tokens let you access the API from scripts, shortcuts, and other tools w
 msgid "Tune color in a real reading context"
 msgstr "Tune color in a real reading context"
 
+#. @context: Intro text on the settings home page below the title
+#: src/ui/dash/settings/SettingsRootContent.tsx
+msgid "Tune how your site looks, reads, and runs."
+msgstr "Tune how your site looks, reads, and runs."
+
 #. @context: Custom URL form field
 #: src/routes/dash/custom-urls.tsx
 msgid "Type"
@@ -2639,8 +2652,8 @@ msgstr "Type the quote..."
 
 #. @context: Settings item description for font theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Typography"
-msgstr "Typography"
+msgid "Typography choices and reading texture"
+msgstr "Typography choices and reading texture"
 
 #. @context: Brand keyword on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -2665,6 +2678,11 @@ msgstr "Unlisted"
 #: src/ui/pages/ArchivePage.tsx
 msgid "Untitled"
 msgstr "Untitled"
+
+#. @context: Settings item description for password change
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Update the password you use to sign in"
+msgstr "Update the password you use to sign in"
 
 #. @context: Button to upload avatar image
 #: src/ui/dash/settings/AvatarContent.tsx

@@ -286,32 +286,238 @@ svg[stroke-width].icon-fine {
 @layer components {
   .settings-root {
     @apply flex flex-col;
-    gap: clamp(1.5rem, 3vw, 2rem);
+    gap: clamp(1.25rem, 3vw, 1.75rem);
+    padding-bottom: 0.25rem;
   }
 
   .settings-root-header {
     @apply flex flex-col;
-    gap: 0.55rem;
-    padding-bottom: 0.1rem;
+    gap: 0.45rem;
+    padding-bottom: 0.2rem;
   }
 
   .settings-root-title {
     margin: 0;
     font-family: var(--font-heading);
-    font-size: clamp(1.95rem, 4vw, 2.35rem);
+    font-size: clamp(1.65rem, 4vw, 2.2rem);
     font-weight: var(--type-display-weight);
-    line-height: 1.04;
-    letter-spacing: -0.035em;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
     color: var(--color-foreground);
+  }
+
+  .settings-root-title-compact {
+    font-size: clamp(1.65rem, 4vw, 2.2rem);
   }
 
   .settings-root-lead {
     margin: 0;
-    max-width: 36rem;
-    font-size: var(--text-sm);
+    max-width: 38rem;
+    color: var(--site-text-secondary);
+    font-family: var(--font-body);
+    font-size: 0.88rem;
     line-height: 1.65;
     letter-spacing: 0.004em;
-    color: var(--color-muted-foreground);
+  }
+
+  .settings-directory-section {
+    @apply flex flex-col;
+    gap: 0.18rem;
+  }
+
+  .settings-directory-section + .settings-directory-section {
+    padding-top: 0.25rem;
+  }
+
+  .settings-directory-section-title {
+    margin: 0;
+    font-family: var(--font-body);
+    color: var(--site-text-secondary);
+    font-size: 0.76rem;
+    font-weight: var(--fw-medium);
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+
+  .settings-directory-section-title[data-tone="danger"] {
+    color: color-mix(
+      in srgb,
+      var(--color-destructive) 72%,
+      var(--site-text-secondary)
+    );
+  }
+
+  .settings-directory-list {
+    @apply flex flex-col;
+    gap: 0.08rem;
+  }
+
+  .settings-directory-item {
+    @apply flex items-center w-full text-left;
+    gap: 0.75rem;
+    padding: 0.56rem 0.7rem 0.56rem 0;
+    border: none;
+    border-radius: 0.95rem;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    text-decoration: none;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+
+  button.settings-directory-item {
+    appearance: none;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .settings-directory-item:hover {
+    background: color-mix(
+      in srgb,
+      var(--color-foreground) 4%,
+      var(--color-background)
+    );
+  }
+
+  .settings-directory-item:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--site-accent) 28%, transparent);
+    outline-offset: 3px;
+    background: color-mix(in srgb, var(--site-accent) 6%, var(--color-card));
+  }
+
+  .settings-directory-item[data-tone="subtle"] {
+    color: inherit;
+  }
+
+  .settings-directory-item[data-tone="danger"] {
+    color: inherit;
+  }
+
+  .settings-directory-item[data-tone="danger"]:hover,
+  .settings-directory-item[data-tone="danger"]:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--color-destructive) 7%,
+      var(--color-background)
+    );
+  }
+
+  .settings-directory-item-icon {
+    @apply flex items-center justify-center shrink-0;
+    width: 2.8rem;
+    height: 2.8rem;
+    border: 1px solid color-mix(in srgb, var(--color-border) 76%, white 24%);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--color-foreground);
+  }
+
+  .settings-directory-item[data-tone="subtle"] .settings-directory-item-icon {
+    color: color-mix(
+      in srgb,
+      var(--color-foreground) 86%,
+      var(--color-muted-foreground)
+    );
+  }
+
+  .settings-directory-item[data-tone="danger"] .settings-directory-item-icon {
+    border-color: color-mix(
+      in srgb,
+      var(--color-destructive) 16%,
+      var(--color-border)
+    );
+    color: color-mix(
+      in srgb,
+      var(--color-destructive) 86%,
+      var(--color-foreground)
+    );
+  }
+
+  .settings-directory-item-icon svg {
+    width: 1.2rem;
+    height: 1.2rem;
+    stroke-width: 1.9;
+  }
+
+  .settings-directory-item-copy {
+    @apply flex flex-col flex-1 min-w-0;
+    gap: 0.06rem;
+  }
+
+  .settings-directory-item-name {
+    font-family: var(--font-heading);
+    font-size: clamp(1rem, 1.5vw, 1.12rem);
+    font-weight: var(--type-heading-weight);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    color: var(--color-foreground);
+    text-wrap: pretty;
+  }
+
+  .settings-directory-item-desc {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: var(--muted-foreground);
+    text-wrap: pretty;
+  }
+
+  .settings-directory-item-chevron {
+    @apply shrink-0;
+    color: color-mix(
+      in srgb,
+      var(--color-muted-foreground) 82%,
+      var(--color-foreground)
+    );
+    opacity: 0.72;
+    transition:
+      transform 0.18s ease,
+      opacity 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .settings-directory-item:hover .settings-directory-item-chevron,
+  .settings-directory-item:focus-visible .settings-directory-item-chevron {
+    transform: translateX(1px);
+    opacity: 1;
+    color: color-mix(
+      in srgb,
+      var(--color-foreground) 62%,
+      var(--color-muted-foreground)
+    );
+  }
+
+  .settings-root-signout {
+    @apply flex justify-center;
+    padding-top: 0.1rem;
+  }
+
+  .settings-root-signout-btn {
+    @apply inline-flex items-center justify-center cursor-pointer;
+    min-height: 1.8rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-destructive);
+    font-size: 0.82rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: -0.01em;
+    transition:
+      opacity 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .settings-root-signout-btn:hover,
+  .settings-root-signout-btn:focus-visible {
+    opacity: 0.78;
+  }
+
+  .settings-root-signout-btn:focus-visible {
+    outline: 2px solid
+      color-mix(in srgb, var(--color-destructive) 28%, transparent);
+    outline-offset: 3px;
   }
 
   .settings-group-label {
@@ -461,7 +667,24 @@ svg[stroke-width].icon-fine {
   }
 
   .settings-export-form {
-    display: contents;
+    display: block;
+  }
+
+  @media (max-width: 699px) {
+    .settings-directory-item {
+      gap: 0.68rem;
+      padding: 0.5rem 0.56rem 0.5rem 0;
+      border-radius: 0.85rem;
+    }
+
+    .settings-directory-item-icon {
+      width: 2.55rem;
+      height: 2.55rem;
+    }
+
+    .settings-root-signout {
+      justify-content: flex-start;
+    }
   }
 
   button.settings-item {
