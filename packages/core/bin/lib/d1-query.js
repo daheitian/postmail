@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { runLocalWrangler } from "./wrangler-cli.js";
 
 function getD1Flag(runtime) {
   return runtime === "d1-remote" ? "--remote" : "--local";
@@ -38,10 +38,7 @@ function getWranglerError(output) {
 
 function runWrangler(args, options = {}) {
   try {
-    return execFileSync("npx", ["wrangler", ...args], {
-      encoding: "utf-8",
-      stdio: options.stdio ?? "pipe",
-    });
+    return runLocalWrangler(args, options);
   } catch (error) {
     const output = `${error.stdout ?? ""}${error.stderr ?? ""}`.trim();
     const wranglerError = getWranglerError(output);

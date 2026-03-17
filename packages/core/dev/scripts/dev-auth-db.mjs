@@ -1,5 +1,5 @@
-import { execFileSync } from "node:child_process";
 import { randomBytes, scryptSync } from "node:crypto";
+import { runLocalWrangler } from "../../bin/lib/wrangler-cli.js";
 
 export const DEV_EMAIL = "debug@jant.test";
 export const DEFAULT_DEV_PASSWORD = "jant-dev-debug-login";
@@ -31,8 +31,8 @@ function nowSeconds() {
 }
 
 function runWrangler(args, options = {}) {
-  return execFileSync("npx", ["wrangler", "d1", "execute", "DB", ...args], {
-    encoding: "utf8",
+  return runLocalWrangler(["d1", "execute", "DB", ...args], {
+    encoding: "utf-8",
     ...options,
   });
 }
