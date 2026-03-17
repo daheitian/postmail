@@ -6,7 +6,7 @@
 
 -- Reset (clear existing content)
 DELETE FROM post_collection;
-DELETE FROM sidebar_item;
+DELETE FROM collection_directory_item;
 DELETE FROM path_registry;
 DELETE FROM api_token;
 
@@ -54,11 +54,11 @@ INSERT INTO nav_item ("id","type","system_key","label","url","position","created
 INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019ce280-e165-764d-a179-16b150850863','system','rss','RSS','/feed','a2',1773326623,1773326623);
 INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019ce280-e215-745e-a4fb-f089695be32c','system','settings','Settings','/settings','a3',1773326623,1773326623);
 
--- sidebar_item
-INSERT INTO sidebar_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-a140-7074-8490-071f624b6356','collection','019ce8cc-a115-7e0e-9b4e-0426898de54c',NULL,'a0',1773432250,1773432250);
-INSERT INTO sidebar_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-a6f8-7b19-9e88-d3d1da8148ba','collection','019ce8cc-a6db-7596-91ed-6e0ee8163c40',NULL,'a1',1773432252,1773432252);
-INSERT INTO sidebar_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-aca1-7be6-a7cf-190df272ada6','collection','019ce8cc-ac82-7faa-8585-bd461b312645',NULL,'a2',1773432253,1773432253);
-INSERT INTO sidebar_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-b1a5-7f97-984b-1f06b53c47ce','collection','019ce8cc-b188-7184-91cb-411a66ebfdc2',NULL,'a3',1773432254,1773432254);
+-- collection_directory_item
+INSERT INTO collection_directory_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-a140-7074-8490-071f624b6356','collection','019ce8cc-a115-7e0e-9b4e-0426898de54c',NULL,'a0',1773432250,1773432250);
+INSERT INTO collection_directory_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-a6f8-7b19-9e88-d3d1da8148ba','collection','019ce8cc-a6db-7596-91ed-6e0ee8163c40',NULL,'a1',1773432252,1773432252);
+INSERT INTO collection_directory_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-aca1-7be6-a7cf-190df272ada6','collection','019ce8cc-ac82-7faa-8585-bd461b312645',NULL,'a2',1773432253,1773432253);
+INSERT INTO collection_directory_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019ce8cc-b1a5-7f97-984b-1f06b53c47ce','collection','019ce8cc-b188-7184-91cb-411a66ebfdc2',NULL,'a3',1773432254,1773432254);
 
 -- post_collection
 INSERT INTO post_collection ("post_id","collection_id","created_at") VALUES('019ce8cd-4fb6-7aec-bbf3-bd0bd775aa12','019ce8cc-ac82-7faa-8585-bd461b312645',1773432295);

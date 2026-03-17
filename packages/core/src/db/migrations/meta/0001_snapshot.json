@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "1401e519-1a10-4309-9038-edc42388c520",
-  "prevId": "75028554-835e-472e-9a21-79e62df7b022",
+  "id": "8ac7d6c8-d1dd-4c64-87ea-efd2277f0609",
+  "prevId": "2b70dab0-56c1-44ff-99a7-91f4c4d76220",
   "tables": {
     "account": {
       "name": "account",
@@ -179,6 +179,106 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
+    },
+    "collection_directory_item": {
+      "name": "collection_directory_item",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "position": {
+          "name": "position",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'a0'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "idx_collection_directory_item_collection_id": {
+          "name": "idx_collection_directory_item_collection_id",
+          "columns": ["collection_id"],
+          "isUnique": false
+        },
+        "uq_collection_directory_item_position": {
+          "name": "uq_collection_directory_item_position",
+          "columns": ["position"],
+          "isUnique": true
+        },
+        "uq_collection_directory_item_collection_once": {
+          "name": "uq_collection_directory_item_collection_once",
+          "columns": ["collection_id"],
+          "isUnique": true,
+          "where": "\"collection_directory_item\".\"type\" = 'collection' AND \"collection_directory_item\".\"collection_id\" IS NOT NULL"
+        }
+      },
+      "foreignKeys": {
+        "collection_directory_item_collection_id_collection_id_fk": {
+          "name": "collection_directory_item_collection_id_collection_id_fk",
+          "tableFrom": "collection_directory_item",
+          "tableTo": "collection",
+          "columnsFrom": ["collection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "chk_collection_directory_item_type": {
+          "name": "chk_collection_directory_item_type",
+          "value": "\"collection_directory_item\".\"type\" IN ('collection', 'divider')"
+        },
+        "chk_collection_directory_item_shape": {
+          "name": "chk_collection_directory_item_shape",
+          "value": "(\n        \"collection_directory_item\".\"type\" = 'collection' AND \"collection_directory_item\".\"collection_id\" IS NOT NULL\n      ) OR (\n        \"collection_directory_item\".\"type\" = 'divider' AND \"collection_directory_item\".\"collection_id\" IS NULL\n      )"
+        },
+        "chk_collection_directory_item_label": {
+          "name": "chk_collection_directory_item_label",
+          "value": "\"collection_directory_item\".\"type\" = 'divider' OR \"collection_directory_item\".\"label\" IS NULL"
+        }
+      }
     },
     "collection": {
       "name": "collection",
@@ -1139,106 +1239,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
-    },
-    "sidebar_item": {
-      "name": "sidebar_item",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "type": {
-          "name": "type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "collection_id": {
-          "name": "collection_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "label": {
-          "name": "label",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "position": {
-          "name": "position",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'a0'"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "idx_sidebar_item_collection_id": {
-          "name": "idx_sidebar_item_collection_id",
-          "columns": ["collection_id"],
-          "isUnique": false
-        },
-        "uq_sidebar_item_position": {
-          "name": "uq_sidebar_item_position",
-          "columns": ["position"],
-          "isUnique": true
-        },
-        "uq_sidebar_item_collection_once": {
-          "name": "uq_sidebar_item_collection_once",
-          "columns": ["collection_id"],
-          "isUnique": true,
-          "where": "\"sidebar_item\".\"type\" = 'collection' AND \"sidebar_item\".\"collection_id\" IS NOT NULL"
-        }
-      },
-      "foreignKeys": {
-        "sidebar_item_collection_id_collection_id_fk": {
-          "name": "sidebar_item_collection_id_collection_id_fk",
-          "tableFrom": "sidebar_item",
-          "tableTo": "collection",
-          "columnsFrom": ["collection_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {
-        "chk_sidebar_item_type": {
-          "name": "chk_sidebar_item_type",
-          "value": "\"sidebar_item\".\"type\" IN ('collection', 'divider')"
-        },
-        "chk_sidebar_item_shape": {
-          "name": "chk_sidebar_item_shape",
-          "value": "(\n        \"sidebar_item\".\"type\" = 'collection' AND \"sidebar_item\".\"collection_id\" IS NOT NULL\n      ) OR (\n        \"sidebar_item\".\"type\" = 'divider' AND \"sidebar_item\".\"collection_id\" IS NULL\n      )"
-        },
-        "chk_sidebar_item_label": {
-          "name": "chk_sidebar_item_label",
-          "value": "\"sidebar_item\".\"type\" = 'divider' OR \"sidebar_item\".\"label\" IS NULL"
-        }
-      }
     },
     "user": {
       "name": "user",

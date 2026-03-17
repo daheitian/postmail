@@ -18,7 +18,7 @@ import {
   collections,
   postCollections,
   pathRegistry,
-  sidebarItems,
+  collectionDirectoryItems as sidebarItems,
   navItems,
   settings as settingsTable,
   apiTokens,

@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
-import { collections, sidebarItems } from "../../db/schema.js";
+import {
+  collections,
+  collectionDirectoryItems as sidebarItems,
+} from "../../db/schema.js";
 import { createCollectionService } from "../collection.js";
 import { createPathService } from "../path.js";
 import { createPostService } from "../post.js";

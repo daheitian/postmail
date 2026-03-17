@@ -7,7 +7,7 @@ DELETE FROM post_fts;
 
 -- Clear junction/dependent tables first
 DELETE FROM post_collection;
-DELETE FROM sidebar_item;
+DELETE FROM collection_directory_item;
 DELETE FROM custom_url;
 DELETE FROM api_token;
 

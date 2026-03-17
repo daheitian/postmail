@@ -70,7 +70,7 @@ const tables = [
   ["post_collection"],
   ["collection"],
   ["nav_item"],
-  ["sidebar_item"],
+  ["collection_directory_item"],
   ["custom_url"],
   ["api_token"],
   ["media"],

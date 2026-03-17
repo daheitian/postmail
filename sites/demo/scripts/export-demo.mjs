@@ -137,7 +137,10 @@ const tables = [
   ],
   ["collection", "SELECT * FROM collection ORDER BY created_at, id"],
   ["nav_item", "SELECT * FROM nav_item ORDER BY position, id"],
-  ["sidebar_item", "SELECT * FROM sidebar_item ORDER BY position, id"],
+  [
+    "collection_directory_item",
+    "SELECT * FROM collection_directory_item ORDER BY position, id",
+  ],
   [
     "post_collection",
     `SELECT pc.* FROM post_collection pc

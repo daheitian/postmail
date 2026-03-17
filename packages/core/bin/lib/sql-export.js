@@ -6,7 +6,7 @@ const TABLE_EXPORT_ORDER = [
   "session",
   "collection",
   "nav_item",
-  "sidebar_item",
+  "collection_directory_item",
   "api_token",
   "post",
   "post_collection",

@@ -4,7 +4,7 @@
 
 -- Clear junction/dependent tables first
 DELETE FROM post_collection;
-DELETE FROM sidebar_item;
+DELETE FROM collection_directory_item;
 DELETE FROM path_registry;
 DELETE FROM api_token;
 

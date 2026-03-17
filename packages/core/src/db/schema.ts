@@ -335,11 +335,11 @@ export const pathRegistry = sqliteTable(
 );
 
 // =============================================================================
-// Sidebar Items (unified ordering for collections + dividers)
+// Collection Directory Items (unified ordering for collections + dividers)
 // =============================================================================
 
-export const sidebarItems = sqliteTable(
-  "sidebar_item",
+export const collectionDirectoryItems = sqliteTable(
+  "collection_directory_item",
   {
     id: text("id").primaryKey(),
     type: text("type", { enum: ["collection", "divider"] }).notNull(),
@@ -353,18 +353,18 @@ export const sidebarItems = sqliteTable(
   },
   (table) => [
     check(
-      "chk_sidebar_item_type",
+      "chk_collection_directory_item_type",
       sql`${table.type} IN ('collection', 'divider')`,
     ),
-    index("idx_sidebar_item_collection_id").on(table.collectionId),
-    uniqueIndex("uq_sidebar_item_position").on(table.position),
-    uniqueIndex("uq_sidebar_item_collection_once")
+    index("idx_collection_directory_item_collection_id").on(table.collectionId),
+    uniqueIndex("uq_collection_directory_item_position").on(table.position),
+    uniqueIndex("uq_collection_directory_item_collection_once")
       .on(table.collectionId)
       .where(
         sql`${table.type} = 'collection' AND ${table.collectionId} IS NOT NULL`,
       ),
     check(
-      "chk_sidebar_item_shape",
+      "chk_collection_directory_item_shape",
       sql`(
         ${table.type} = 'collection' AND ${table.collectionId} IS NOT NULL
       ) OR (
@@ -372,7 +372,7 @@ export const sidebarItems = sqliteTable(
       )`,
     ),
     check(
-      "chk_sidebar_item_label",
+      "chk_collection_directory_item_label",
       sql`${table.type} = 'divider' OR ${table.label} IS NULL`,
     ),
   ],

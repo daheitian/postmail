@@ -34,13 +34,21 @@ function sqlValue(v) {
   return "'" + String(v).replaceAll("'", "''") + "'";
 }
 
+function quoteIdentifier(name) {
+  return `"${String(name).replaceAll('"', '""')}"`;
+}
+
 function dumpTable(name, query) {
   const rows = db.prepare(query || `SELECT * FROM ${name}`).all();
   return rows
-    .map(
-      (row) =>
-        `INSERT INTO ${name} VALUES(${Object.values(row).map(sqlValue).join(",")});`,
-    )
+    .map((row) => {
+      const entries = Object.entries(row);
+      const columns = entries
+        .map(([column]) => quoteIdentifier(column))
+        .join(",");
+      const values = entries.map(([, value]) => sqlValue(value)).join(",");
+      return `INSERT INTO ${quoteIdentifier(name)} (${columns}) VALUES(${values});`;
+    })
     .join("\n");
 }
 
@@ -57,7 +65,7 @@ const tables = [
   ["post", "SELECT * FROM post WHERE deleted_at IS NULL"],
   ["post_collection"],
   ["nav_item"],
-  ["sidebar_item"],
+  ["collection_directory_item"],
   ["custom_url"],
   ["api_token"],
 ];

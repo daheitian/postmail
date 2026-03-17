@@ -2,7 +2,7 @@
  * Collection Service (v2)
  *
  * Manages collections. Posts belong to collections via post_collections junction table (M:N).
- * Sidebar ordering is managed through the sidebar_items table with fractional indexing.
+ * Sidebar ordering is managed through the collection_directory_item table with fractional indexing.
  */
 
 import { eq, asc, sql, and, inArray, desc } from "drizzle-orm";
@@ -13,7 +13,7 @@ import { type Database, batchQueryRows } from "../db/index.js";
 import {
   collections,
   pathRegistry,
-  sidebarItems,
+  collectionDirectoryItems as sidebarItems,
   postCollections,
   posts,
 } from "../db/schema.js";

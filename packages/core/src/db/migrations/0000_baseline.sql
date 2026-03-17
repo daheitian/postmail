@@ -26,6 +26,27 @@ CREATE TABLE `api_token` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `api_token_token_hash_unique` ON `api_token` (`token_hash`);--> statement-breakpoint
+CREATE TABLE `collection_directory_item` (
+	`id` text PRIMARY KEY NOT NULL,
+	`type` text NOT NULL,
+	`collection_id` text,
+	`label` text,
+	`position` text DEFAULT 'a0' NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer NOT NULL,
+	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade,
+	CONSTRAINT "chk_collection_directory_item_type" CHECK("collection_directory_item"."type" IN ('collection', 'divider')),
+	CONSTRAINT "chk_collection_directory_item_shape" CHECK((
+        "collection_directory_item"."type" = 'collection' AND "collection_directory_item"."collection_id" IS NOT NULL
+      ) OR (
+        "collection_directory_item"."type" = 'divider' AND "collection_directory_item"."collection_id" IS NULL
+      )),
+	CONSTRAINT "chk_collection_directory_item_label" CHECK("collection_directory_item"."type" = 'divider' OR "collection_directory_item"."label" IS NULL)
+);
+--> statement-breakpoint
+CREATE INDEX `idx_collection_directory_item_collection_id` ON `collection_directory_item` (`collection_id`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_collection_directory_item_position` ON `collection_directory_item` (`position`);--> statement-breakpoint
+CREATE UNIQUE INDEX `uq_collection_directory_item_collection_once` ON `collection_directory_item` (`collection_id`) WHERE "collection_directory_item"."type" = 'collection' AND "collection_directory_item"."collection_id" IS NOT NULL;--> statement-breakpoint
 CREATE TABLE `collection` (
 	`id` text PRIMARY KEY NOT NULL,
 	`title` text NOT NULL,
@@ -240,27 +261,6 @@ CREATE TABLE `setting` (
 	`updated_at` integer NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE `sidebar_item` (
-	`id` text PRIMARY KEY NOT NULL,
-	`type` text NOT NULL,
-	`collection_id` text,
-	`label` text,
-	`position` text DEFAULT 'a0' NOT NULL,
-	`created_at` integer NOT NULL,
-	`updated_at` integer NOT NULL,
-	FOREIGN KEY (`collection_id`) REFERENCES `collection`(`id`) ON UPDATE no action ON DELETE cascade,
-	CONSTRAINT "chk_sidebar_item_type" CHECK("sidebar_item"."type" IN ('collection', 'divider')),
-	CONSTRAINT "chk_sidebar_item_shape" CHECK((
-        "sidebar_item"."type" = 'collection' AND "sidebar_item"."collection_id" IS NOT NULL
-      ) OR (
-        "sidebar_item"."type" = 'divider' AND "sidebar_item"."collection_id" IS NULL
-      )),
-	CONSTRAINT "chk_sidebar_item_label" CHECK("sidebar_item"."type" = 'divider' OR "sidebar_item"."label" IS NULL)
-);
---> statement-breakpoint
-CREATE INDEX `idx_sidebar_item_collection_id` ON `sidebar_item` (`collection_id`);--> statement-breakpoint
-CREATE UNIQUE INDEX `uq_sidebar_item_position` ON `sidebar_item` (`position`);--> statement-breakpoint
-CREATE UNIQUE INDEX `uq_sidebar_item_collection_once` ON `sidebar_item` (`collection_id`) WHERE "sidebar_item"."type" = 'collection' AND "sidebar_item"."collection_id" IS NOT NULL;--> statement-breakpoint
 CREATE TABLE `user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
