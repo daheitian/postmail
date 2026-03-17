@@ -47,6 +47,7 @@ export interface MediaContext {
   r2PublicUrl?: string;
   imageTransformUrl?: string;
   s3PublicUrl?: string;
+  localPublicUrl?: string;
   sitePathPrefix?: string;
 }
 
@@ -61,6 +62,7 @@ export function createMediaContext(appConfig: AppConfig): MediaContext {
     r2PublicUrl: appConfig.r2PublicUrl || undefined,
     imageTransformUrl: appConfig.imageTransformUrl || undefined,
     s3PublicUrl: appConfig.s3PublicUrl || undefined,
+    localPublicUrl: appConfig.localPublicUrl || undefined,
     sitePathPrefix: appConfig.sitePathPrefix || undefined,
   };
 }
@@ -81,6 +83,7 @@ export function toMediaView(media: Media, ctx: MediaContext): MediaView {
     media.provider,
     ctx.r2PublicUrl,
     ctx.s3PublicUrl,
+    ctx.localPublicUrl,
   );
   const url = getMediaUrl(media.storageKey, publicUrl, ctx.sitePathPrefix);
 

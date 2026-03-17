@@ -8,6 +8,7 @@
 import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
+import { getDevApiToken, getSiteUrl } from "../lib/env.js";
 import { UnauthorizedError } from "../lib/errors.js";
 import { getSitePathPrefix, toPublicHref } from "../lib/url.js";
 
@@ -34,16 +35,37 @@ export function isLocalHostname(hostname: string): boolean {
   );
 }
 
+function getRequestHostname(
+  requestUrl: string,
+  requestHost?: string,
+): string | null {
+  if (requestHost) {
+    try {
+      return new URL(`http://${requestHost}`).hostname;
+    } catch {
+      // ignore malformed Host headers and fall back to the request URL
+    }
+  }
+
+  try {
+    return new URL(requestUrl).hostname;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Validates a local-only development token against the current request.
  *
  * @param requestUrl - Full request URL
+ * @param requestHost - Original Host header when available
  * @param providedToken - Token supplied by the caller
  * @param expectedToken - Token configured in the environment
  * @returns `true` when the token matches on a local hostname
  */
 export function hasValidLocalDevToken(
   requestUrl: string,
+  requestHost: string | undefined,
   providedToken: string | undefined,
   expectedToken: string | undefined,
 ): boolean {
@@ -51,7 +73,8 @@ export function hasValidLocalDevToken(
     return false;
   }
 
-  return isLocalHostname(new URL(requestUrl).hostname);
+  const hostname = getRequestHostname(requestUrl, requestHost);
+  return hostname ? isLocalHostname(hostname) : false;
 }
 
 /**
@@ -62,8 +85,7 @@ export function hasValidLocalDevToken(
 export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
   return async (c, next) => {
     const sitePathPrefix =
-      c.var.appConfig?.sitePathPrefix ??
-      getSitePathPrefix(c.env?.SITE_URL || "");
+      c.var.appConfig?.sitePathPrefix ?? getSitePathPrefix(getSiteUrl(c.env));
     const redirectTarget = toPublicHref(redirectTo, sitePathPrefix);
 
     try {
@@ -109,7 +131,14 @@ export function requireAuthApi(): MiddlewareHandler<Env> {
       const rawToken = authHeader.slice(7);
 
       // Dev shortcut: bypass DB lookup when DEV_API_TOKEN matches on a local hostname
-      if (hasValidLocalDevToken(c.req.url, rawToken, c.env?.DEV_API_TOKEN)) {
+      if (
+        hasValidLocalDevToken(
+          c.req.url,
+          c.req.header("host"),
+          rawToken,
+          getDevApiToken(c.env),
+        )
+      ) {
         await next();
         return;
       }

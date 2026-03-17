@@ -98,8 +98,10 @@ export function getPublicUrlForProvider(
   provider: string,
   r2PublicUrl?: string,
   s3PublicUrl?: string,
+  localPublicUrl?: string,
 ): string | undefined {
   if (provider === "s3") return s3PublicUrl;
+  if (provider === "local") return localPublicUrl;
   return r2PublicUrl;
 }
 

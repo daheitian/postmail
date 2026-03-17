@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
+import { getDevApiToken } from "../../lib/env.js";
 import { hasValidLocalDevToken } from "../../middleware/auth.js";
 import { toPublicPath } from "../../lib/url.js";
 
@@ -21,7 +22,14 @@ export const devAuthRoutes = new Hono<Env>();
 devAuthRoutes.get("/__dev/login", async (c) => {
   const token = c.req.query("token");
 
-  if (!hasValidLocalDevToken(c.req.url, token, c.env.DEV_API_TOKEN)) {
+  if (
+    !hasValidLocalDevToken(
+      c.req.url,
+      c.req.header("host"),
+      token,
+      getDevApiToken(c.env),
+    )
+  ) {
     return c.notFound();
   }
 
@@ -30,7 +38,7 @@ devAuthRoutes.get("/__dev/login", async (c) => {
 
   if (!email || !password) {
     return c.text(
-      "Set DEMO_EMAIL and DEMO_PASSWORD in packages/core/.dev.vars before using /__dev/login.",
+      "Set JANT_DEMO_EMAIL and JANT_DEMO_PASSWORD before using /__dev/login.",
       500,
     );
   }

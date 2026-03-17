@@ -1,0 +1,125 @@
+/**
+ * Node development server (`vite dev --config vite.config.node.ts --mode node`).
+ *
+ * Vite owns the HTTP server, client HMR, and SSR module invalidation.
+ * Jant's Node runtime is attached as a middleware behind Vite's own handlers.
+ */
+
+import { getRequestListener } from "@hono/node-server";
+import tailwindcss from "@tailwindcss/vite";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import { defineConfig, loadEnv, type Plugin } from "vite";
+import {
+  createNodeRequestHandler,
+  migrate,
+  resolveHost,
+  resolvePort,
+} from "./src/node/request-handler.js";
+import type { Bindings } from "./src/types/bindings.js";
+import { pkg, swcPlugin } from "./vite.shared";
+import { linguiAutoExtract, ssrReload } from "./vite.dev-plugins";
+
+function applyNodeDevDefaults(env: Bindings): void {
+  if (!env.DATABASE_URL) {
+    env.DATABASE_URL = pathToFileURL(
+      resolve(import.meta.dirname, ".data/jant.sqlite"),
+    ).href;
+  }
+
+  if (!env.JANT_LOCAL_STORAGE_PATH) {
+    env.JANT_LOCAL_STORAGE_PATH = resolve(import.meta.dirname, ".data/media");
+  }
+}
+
+function nodeMiddleware(): Plugin {
+  return {
+    name: "node-dev-middleware",
+    apply: "serve",
+    async configureServer(server) {
+      const env = process.env as unknown as Bindings;
+      const handler = await createNodeRequestHandler({
+        env,
+        assetRoot: null,
+        app: async () => {
+          const module = await server.ssrLoadModule("/dev/entry.ts");
+          return module.default;
+        },
+      });
+      const requestListener = getRequestListener(
+        (request) => handler.fetch(request),
+        { hostname: resolveHost(env) },
+      );
+
+      server.httpServer?.once("close", () => {
+        void handler.close();
+      });
+
+      return () => {
+        server.middlewares.use(async (incoming, outgoing, next) => {
+          if (outgoing.writableEnded) {
+            return;
+          }
+
+          try {
+            await requestListener(incoming, outgoing);
+          } catch (error) {
+            if (error instanceof Error) {
+              server.ssrFixStacktrace(error);
+              next(error);
+              return;
+            }
+
+            next(new Error(String(error)));
+            return;
+          }
+
+          if (!outgoing.writableEnded) {
+            next();
+          }
+        });
+      };
+    },
+  };
+}
+
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, import.meta.dirname, "");
+  Object.assign(process.env, env);
+  process.env.NODE_ENV ||= "development";
+
+  const bindings = process.env as unknown as Bindings;
+  applyNodeDevDefaults(bindings);
+
+  if (command === "serve") {
+    migrate(bindings);
+  }
+
+  return {
+    appType: "custom",
+
+    server: {
+      port: resolvePort(bindings),
+      host: resolveHost(bindings),
+      allowedHosts: true,
+    },
+
+    preview: {
+      port: resolvePort(bindings),
+      host: resolveHost(bindings),
+    },
+
+    define: {
+      __JANT_DEV__: "true",
+      __JANT_VERSION__: JSON.stringify(pkg.version),
+    },
+
+    plugins: [
+      tailwindcss(),
+      swcPlugin(),
+      linguiAutoExtract(),
+      ssrReload(),
+      nodeMiddleware(),
+    ],
+  };
+});

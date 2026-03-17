@@ -185,6 +185,7 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     c.var.appConfig.storageDriver,
     c.var.appConfig.r2PublicUrl,
     c.var.appConfig.s3PublicUrl,
+    c.var.appConfig.localPublicUrl,
   );
   const publicUrl = getMediaUrl(
     data.storageKey,

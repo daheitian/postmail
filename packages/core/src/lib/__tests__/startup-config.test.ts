@@ -2,20 +2,28 @@ import { describe, expect, it } from "vitest";
 import { getStartupConfigurationErrorPage } from "../startup-config.js";
 
 describe("getStartupConfigurationErrorPage", () => {
-  it("does not block startup when AUTH_SECRET is present, even with DEV_API_TOKEN set", () => {
+  it("does not block startup when JANT_AUTH_SECRET is present", () => {
     expect(
       getStartupConfigurationErrorPage({
-        AUTH_SECRET: "test-secret",
-        DEV_API_TOKEN: "jnt_dev_test123",
+        JANT_AUTH_SECRET: "test-secret",
+        JANT_DEV_API_TOKEN: "jnt_dev_test123",
       }),
     ).toBeNull();
   });
 
-  it("returns an error page when AUTH_SECRET is missing", () => {
+  it("returns an error page when JANT_AUTH_SECRET is missing", () => {
     expect(
       getStartupConfigurationErrorPage({
-        DEV_API_TOKEN: "jnt_dev_test123",
+        JANT_DEV_API_TOKEN: "jnt_dev_test123",
       }),
-    ).toContain("AUTH_SECRET is not set");
+    ).toContain("JANT_AUTH_SECRET is not set");
+  });
+
+  it("still accepts the legacy AUTH_SECRET alias during the transition", () => {
+    expect(
+      getStartupConfigurationErrorPage({
+        AUTH_SECRET: "legacy-secret",
+      }),
+    ).toBeNull();
   });
 });

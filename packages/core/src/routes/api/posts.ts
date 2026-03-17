@@ -33,12 +33,14 @@ function toMediaAttachment(
   r2PublicUrl?: string,
   imageTransformUrl?: string,
   s3PublicUrl?: string,
+  localPublicUrl?: string,
   sitePathPrefix?: string,
 ) {
   const publicUrl = getPublicUrlForProvider(
     m.provider,
     r2PublicUrl,
     s3PublicUrl,
+    localPublicUrl,
   );
   const url = getMediaUrl(m.storageKey, publicUrl, sitePathPrefix);
   const previewUrl = getImageUrl(url, imageTransformUrl, {
@@ -91,8 +93,13 @@ postsApiRoutes.get("/", requireAuthApi(), async (c) => {
   // Batch load media for all posts
   const postIds = posts.map((p) => p.id);
   const mediaMap = await c.var.services.media.getByPostIds(postIds);
-  const { r2PublicUrl, imageTransformUrl, s3PublicUrl, sitePathPrefix } =
-    c.var.appConfig;
+  const {
+    r2PublicUrl,
+    imageTransformUrl,
+    s3PublicUrl,
+    localPublicUrl,
+    sitePathPrefix,
+  } = c.var.appConfig;
 
   return c.json({
     posts: posts.map((p) => ({
@@ -103,6 +110,7 @@ postsApiRoutes.get("/", requireAuthApi(), async (c) => {
           r2PublicUrl,
           imageTransformUrl,
           s3PublicUrl,
+          localPublicUrl,
           sitePathPrefix,
         ),
       ),

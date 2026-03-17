@@ -6,10 +6,9 @@
  */
 
 import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import * as schema from "../../db/schema.js";
 import { readFileSync, readdirSync } from "fs";
 import { resolve } from "path";
+import { createNodeDatabase } from "../../db/index.js";
 
 const MIGRATIONS_DIR = resolve(import.meta.dirname, "../../db/migrations");
 
@@ -119,28 +118,7 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     }
   }
 
-  const db = drizzle(sqlite, { schema });
-
-  // Polyfill D1 batch() for test compatibility.
-  // In production, D1 batch executes statements atomically in a single transaction.
-  // In tests, wrap sequential execution in an explicit transaction so rollback
-  // behavior matches D1's all-or-nothing semantics.
-  Object.defineProperty(db, "batch", {
-    value: async (queries: PromiseLike<unknown>[]) => {
-      sqlite.exec("BEGIN");
-      try {
-        const results = [];
-        for (const q of queries) {
-          results.push(await q);
-        }
-        sqlite.exec("COMMIT");
-        return results;
-      } catch (err) {
-        sqlite.exec("ROLLBACK");
-        throw err;
-      }
-    },
-  });
+  const db = createNodeDatabase(sqlite);
 
   return { db, sqlite };
 }

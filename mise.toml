@@ -32,6 +32,11 @@ pnpm --filter create-jant test-template
 description = "Start development server"
 run = "pnpm --filter @jant/core i18n:build && pnpm --filter @jant/core dev"
 
+[tasks.dev-node]
+alias = "dn"
+description = "Start the Node runtime with Vite-managed HMR"
+run = "pnpm --filter @jant/core i18n:build && pnpm --filter @jant/core dev:node"
+
 [tasks.build-lib]
 alias = "bl"
 description = "Build @jant/core library for publishing"

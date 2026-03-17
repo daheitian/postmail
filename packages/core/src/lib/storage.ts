@@ -5,6 +5,7 @@
  */
 
 import type { Bindings } from "../types.js";
+import { getConfiguredStorageDriver, getEnvString } from "./env.js";
 
 /** Tracks an in-progress multipart upload */
 export interface MultipartUploadSession {
@@ -177,6 +178,10 @@ export interface S3DriverConfig {
   accessKeyId: string;
   secretAccessKey: string;
   region: string;
+}
+
+interface LocalDriverConfig {
+  rootPath: string;
 }
 
 /** Constructor for an S3 command object */
@@ -371,6 +376,301 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
   };
 }
 
+interface LocalMultipartState {
+  contentType?: string;
+  key: string;
+}
+
+interface LocalMetaFile {
+  contentType?: string;
+}
+
+interface NodeFsBundle {
+  appendFile: (path: string, data: Uint8Array) => Promise<void>;
+  createHash: (algorithm: string) => {
+    update: (data: Uint8Array) => void;
+    digest: (encoding: "hex") => string;
+  };
+  createReadStream: (
+    path: string,
+    options?: { start?: number; end?: number },
+  ) => unknown;
+  createWriteStream: (path: string) => unknown;
+  dirname: (path: string) => string;
+  mkdir: (path: string, options?: { recursive?: boolean }) => Promise<unknown>;
+  readFile: (
+    path: string,
+    encoding?: "utf-8" | "utf8",
+  ) => Promise<string | Uint8Array>;
+  readdir: (path: string) => Promise<string[]>;
+  rename: (from: string, to: string) => Promise<void>;
+  resolve: (...paths: string[]) => string;
+  rm: (
+    path: string,
+    options?: { force?: boolean; recursive?: boolean },
+  ) => Promise<void>;
+  stat: (path: string) => Promise<{ size: number }>;
+  writeFile: (path: string, data: string | Uint8Array) => Promise<unknown>;
+  Readable: {
+    fromWeb(stream: ReadableStream): unknown;
+    toWeb(stream: unknown): ReadableStream;
+  };
+  pipeline: (...streams: unknown[]) => Promise<void>;
+  randomUUID: () => string;
+}
+
+let nodeFsBundlePromise: Promise<NodeFsBundle> | null = null;
+
+async function getNodeFsBundle(): Promise<NodeFsBundle> {
+  if (!nodeFsBundlePromise) {
+    nodeFsBundlePromise = Promise.all([
+      import("node:crypto"),
+      import("node:fs"),
+      import("node:fs/promises"),
+      import("node:path"),
+      import("node:stream"),
+      import("node:stream/promises"),
+    ]).then(
+      ([crypto, fs, fsPromises, path, stream, streamPromises]) =>
+        ({
+          appendFile: fsPromises.appendFile,
+          createHash: crypto.createHash,
+          createReadStream: fs.createReadStream,
+          createWriteStream: fs.createWriteStream,
+          dirname: path.dirname,
+          mkdir: fsPromises.mkdir,
+          readFile: fsPromises.readFile,
+          readdir: fsPromises.readdir,
+          rename: fsPromises.rename,
+          resolve: path.resolve,
+          rm: fsPromises.rm,
+          stat: fsPromises.stat,
+          writeFile: fsPromises.writeFile,
+          Readable: stream.Readable,
+          pipeline: streamPromises.pipeline,
+          randomUUID: crypto.randomUUID,
+        }) as unknown as NodeFsBundle,
+    );
+  }
+
+  return nodeFsBundlePromise as Promise<NodeFsBundle>;
+}
+
+function ensureSafeStorageKey(key: string) {
+  if (!key || key.startsWith("/") || key.includes("..")) {
+    throw new Error("Invalid storage key.");
+  }
+}
+
+async function resolveLocalPath(
+  rootPath: string,
+  key: string,
+): Promise<string> {
+  ensureSafeStorageKey(key);
+  const node = await getNodeFsBundle();
+  const root = node.resolve(rootPath);
+  const target = node.resolve(root, key);
+  if (target !== root && !target.startsWith(root + "/")) {
+    throw new Error("Storage key resolves outside the configured root path.");
+  }
+  return target;
+}
+
+async function writeLocalBody(
+  filePath: string,
+  body: ReadableStream | Uint8Array | ArrayBuffer,
+) {
+  const node = await getNodeFsBundle();
+  await node.mkdir(node.dirname(filePath), { recursive: true });
+
+  if (body instanceof Uint8Array) {
+    await node.writeFile(filePath, body);
+    return;
+  }
+
+  if (body instanceof ArrayBuffer) {
+    await node.writeFile(filePath, new Uint8Array(body));
+    return;
+  }
+
+  await node.pipeline(
+    node.Readable.fromWeb(body as ReadableStream),
+    node.createWriteStream(filePath),
+  );
+}
+
+async function writeLocalMeta(filePath: string, meta: LocalMetaFile) {
+  const node = await getNodeFsBundle();
+  await node.writeFile(`${filePath}.meta.json`, JSON.stringify(meta));
+}
+
+async function readLocalMeta(filePath: string): Promise<LocalMetaFile | null> {
+  const node = await getNodeFsBundle();
+  try {
+    const raw = await node.readFile(`${filePath}.meta.json`, "utf-8");
+    return JSON.parse(raw as string) as LocalMetaFile;
+  } catch {
+    return null;
+  }
+}
+
+async function hashLocalFile(filePath: string): Promise<string> {
+  const node = await getNodeFsBundle();
+  const bytes = await node.readFile(filePath);
+  const hash = node.createHash("sha1");
+  hash.update(
+    typeof bytes === "string" ? new TextEncoder().encode(bytes) : bytes,
+  );
+  return hash.digest("hex");
+}
+
+export function createLocalDriver(config: LocalDriverConfig): StorageDriver {
+  async function getMultipartDir(uploadId: string): Promise<string> {
+    const node = await getNodeFsBundle();
+    return node.resolve(config.rootPath, ".multipart", uploadId);
+  }
+
+  async function getMultipartStatePath(uploadId: string): Promise<string> {
+    const dir = await getMultipartDir(uploadId);
+    const node = await getNodeFsBundle();
+    return node.resolve(dir, "upload.json");
+  }
+
+  async function readMultipartState(
+    uploadId: string,
+  ): Promise<LocalMultipartState> {
+    const node = await getNodeFsBundle();
+    const statePath = await getMultipartStatePath(uploadId);
+    const raw = await node.readFile(statePath, "utf-8");
+    return JSON.parse(raw as string) as LocalMultipartState;
+  }
+
+  return {
+    async put(key, body, opts) {
+      const filePath = await resolveLocalPath(config.rootPath, key);
+      await writeLocalBody(filePath, body);
+      await writeLocalMeta(filePath, { contentType: opts?.contentType });
+    },
+
+    async get(key, opts) {
+      const node = await getNodeFsBundle();
+      const filePath = await resolveLocalPath(config.rootPath, key);
+      try {
+        const stat = await node.stat(filePath);
+        const meta = await readLocalMeta(filePath);
+        const stream = node.createReadStream(filePath, {
+          start: opts?.range?.offset,
+          end: opts?.range
+            ? opts.range.offset + opts.range.length - 1
+            : undefined,
+        });
+        return {
+          body: node.Readable.toWeb(stream),
+          contentType: meta?.contentType,
+          size: stat.size,
+        };
+      } catch {
+        return null;
+      }
+    },
+
+    async head(key) {
+      const node = await getNodeFsBundle();
+      const filePath = await resolveLocalPath(config.rootPath, key);
+      try {
+        const stat = await node.stat(filePath);
+        const meta = await readLocalMeta(filePath);
+        return {
+          contentType: meta?.contentType,
+          size: stat.size,
+        };
+      } catch {
+        return null;
+      }
+    },
+
+    async delete(key) {
+      const node = await getNodeFsBundle();
+      const filePath = await resolveLocalPath(config.rootPath, key);
+      await node.rm(filePath, { force: true });
+      await node.rm(`${filePath}.meta.json`, { force: true });
+    },
+
+    async createMultipartUpload(key, opts) {
+      const node = await getNodeFsBundle();
+      const uploadId = node.randomUUID();
+      const dir = await getMultipartDir(uploadId);
+      await node.mkdir(dir, { recursive: true });
+      await node.writeFile(
+        await getMultipartStatePath(uploadId),
+        JSON.stringify({
+          key,
+          contentType: opts?.contentType,
+        } satisfies LocalMultipartState),
+      );
+      return { uploadId, key };
+    },
+
+    async uploadPart(key, uploadId, partNumber, body) {
+      const node = await getNodeFsBundle();
+      const state = await readMultipartState(uploadId);
+      if (state.key !== key) {
+        throw new Error("Multipart upload key mismatch.");
+      }
+
+      const partPath = node.resolve(
+        await getMultipartDir(uploadId),
+        `${partNumber}.part`,
+      );
+      await writeLocalBody(partPath, body);
+      const etag = await hashLocalFile(partPath);
+      return { partNumber, etag };
+    },
+
+    async completeMultipartUpload(key, uploadId, parts) {
+      const node = await getNodeFsBundle();
+      const state = await readMultipartState(uploadId);
+      if (state.key !== key) {
+        throw new Error("Multipart upload key mismatch.");
+      }
+
+      const finalPath = await resolveLocalPath(config.rootPath, key);
+      const tempPath = `${finalPath}.uploading`;
+      await node.mkdir(node.dirname(finalPath), { recursive: true });
+      await node.rm(tempPath, { force: true });
+
+      for (const part of [...parts].sort(
+        (a, b) => a.partNumber - b.partNumber,
+      )) {
+        const partPath = node.resolve(
+          await getMultipartDir(uploadId),
+          `${part.partNumber}.part`,
+        );
+        const bytes = await node.readFile(partPath);
+        await node.appendFile(
+          tempPath,
+          typeof bytes === "string" ? new TextEncoder().encode(bytes) : bytes,
+        );
+      }
+
+      await node.rename(tempPath, finalPath);
+      await writeLocalMeta(finalPath, { contentType: state.contentType });
+      await node.rm(await getMultipartDir(uploadId), {
+        force: true,
+        recursive: true,
+      });
+    },
+
+    async abortMultipartUpload(_key, uploadId) {
+      const node = await getNodeFsBundle();
+      await node.rm(await getMultipartDir(uploadId), {
+        force: true,
+        recursive: true,
+      });
+    },
+  };
+}
+
 /**
  * Creates the appropriate storage driver based on environment configuration.
  *
@@ -388,24 +688,37 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
  * ```
  */
 export function createStorageDriver(env: Bindings): StorageDriver | null {
-  const driver = env.STORAGE_DRIVER || "r2";
+  const driver = getConfiguredStorageDriver(env);
 
   if (driver === "s3") {
-    if (
-      !env.S3_ENDPOINT ||
-      !env.S3_BUCKET ||
-      !env.S3_ACCESS_KEY_ID ||
-      !env.S3_SECRET_ACCESS_KEY
-    ) {
+    const endpoint = getEnvString(env, "JANT_S3_ENDPOINT", "S3_ENDPOINT") || "";
+    const bucket = getEnvString(env, "JANT_S3_BUCKET", "S3_BUCKET") || "";
+    const accessKeyId =
+      getEnvString(env, "JANT_S3_ACCESS_KEY_ID", "S3_ACCESS_KEY_ID") || "";
+    const secretAccessKey =
+      getEnvString(env, "JANT_S3_SECRET_ACCESS_KEY", "S3_SECRET_ACCESS_KEY") ||
+      "";
+    const region = getEnvString(env, "JANT_S3_REGION", "S3_REGION") || "auto";
+
+    if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
       return null;
     }
     return createS3Driver({
-      endpoint: env.S3_ENDPOINT,
-      bucket: env.S3_BUCKET,
-      accessKeyId: env.S3_ACCESS_KEY_ID,
-      secretAccessKey: env.S3_SECRET_ACCESS_KEY,
-      region: env.S3_REGION || "auto",
+      endpoint,
+      bucket,
+      accessKeyId,
+      secretAccessKey,
+      region,
     });
+  }
+
+  if (driver === "local") {
+    const rootPath =
+      getEnvString(env, "JANT_LOCAL_STORAGE_PATH", "LOCAL_STORAGE_PATH") || "";
+    if (!rootPath) {
+      return null;
+    }
+    return createLocalDriver({ rootPath });
   }
 
   // Default: R2

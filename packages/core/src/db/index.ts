@@ -2,13 +2,41 @@
  * Database utilities
  */
 
-import { drizzle } from "drizzle-orm/d1";
+import type BetterSqlite3 from "better-sqlite3";
+import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
+import { drizzle as drizzleD1 } from "drizzle-orm/d1";
 import * as schema from "./schema.js";
 
 export type Database = ReturnType<typeof createDatabase>;
+type BatchQueries = Parameters<Database["batch"]>[0];
+type BatchResults = Awaited<ReturnType<Database["batch"]>>;
 
 export function createDatabase(d1: D1Database) {
-  return drizzle(d1, { schema });
+  return drizzleD1(d1, { schema });
+}
+
+export function createNodeDatabase(sqlite: BetterSqlite3.Database): Database {
+  const db = drizzleSqlite(sqlite, { schema }) as unknown as Database;
+
+  Object.defineProperty(db, "batch", {
+    configurable: true,
+    value: async (queries: BatchQueries): Promise<BatchResults> => {
+      sqlite.exec("BEGIN");
+      try {
+        const results: unknown[] = [];
+        for (const query of queries) {
+          results.push(await (query as unknown as PromiseLike<unknown>));
+        }
+        sqlite.exec("COMMIT");
+        return results as BatchResults;
+      } catch (error) {
+        sqlite.exec("ROLLBACK");
+        throw error;
+      }
+    },
+  });
+
+  return db;
 }
 
 export { schema };

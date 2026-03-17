@@ -52,7 +52,7 @@ export const MEDIA_KINDS = [
 ] as const;
 export type MediaKind = (typeof MEDIA_KINDS)[number];
 
-export const STORAGE_DRIVERS = ["r2", "s3"] as const;
+export const STORAGE_DRIVERS = ["r2", "s3", "local"] as const;
 export type StorageDriver = (typeof STORAGE_DRIVERS)[number];
 
 export const PATH_KINDS = ["slug", "alias", "redirect"] as const;

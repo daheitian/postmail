@@ -270,6 +270,7 @@ uploadApiRoutes.post("/", async (c) => {
         c.var.appConfig.storageDriver,
         c.var.appConfig.r2PublicUrl,
         c.var.appConfig.s3PublicUrl,
+        c.var.appConfig.localPublicUrl,
       );
       const cardHtml = renderMediaCard(
         media,
@@ -300,6 +301,7 @@ uploadApiRoutes.post("/", async (c) => {
       c.var.appConfig.storageDriver,
       c.var.appConfig.r2PublicUrl,
       c.var.appConfig.s3PublicUrl,
+      c.var.appConfig.localPublicUrl,
     );
     const publicUrl = getMediaUrl(storageKey, mediaPublicUrl, sitePathPrefix);
     return c.json({
@@ -333,7 +335,8 @@ uploadApiRoutes.post("/", async (c) => {
 uploadApiRoutes.get("/", async (c) => {
   const limit = parseInt(c.req.query("limit") ?? "50", 10);
   const mediaList = await c.var.services.media.list({ limit });
-  const { r2PublicUrl, s3PublicUrl, sitePathPrefix } = c.var.appConfig;
+  const { r2PublicUrl, s3PublicUrl, localPublicUrl, sitePathPrefix } =
+    c.var.appConfig;
 
   return c.json({
     media: mediaList.map((m) => ({
@@ -341,7 +344,12 @@ uploadApiRoutes.get("/", async (c) => {
       filename: m.filename,
       url: getMediaUrl(
         m.storageKey,
-        getPublicUrlForProvider(m.provider, r2PublicUrl, s3PublicUrl),
+        getPublicUrlForProvider(
+          m.provider,
+          r2PublicUrl,
+          s3PublicUrl,
+          localPublicUrl,
+        ),
         sitePathPrefix,
       ),
       mimeType: m.mimeType,

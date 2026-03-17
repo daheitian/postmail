@@ -19,6 +19,7 @@ import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
  * @param r2PublicUrl - Optional R2 public URL for direct CDN access
  * @param imageTransformUrl - Optional image transformation service URL
  * @param s3PublicUrl - Optional S3 public URL for direct CDN access
+ * @param localPublicUrl - Optional local media public URL
  * @returns Map of post IDs to MediaAttachment arrays
  *
  * @example
@@ -32,6 +33,7 @@ export function buildMediaMap(
   r2PublicUrl?: string,
   imageTransformUrl?: string,
   s3PublicUrl?: string,
+  localPublicUrl?: string,
   sitePathPrefix?: string,
 ): Map<string, MediaAttachment[]> {
   const mediaMap = new Map<string, MediaAttachment[]>();
@@ -43,6 +45,7 @@ export function buildMediaMap(
           m.provider,
           r2PublicUrl,
           s3PublicUrl,
+          localPublicUrl,
         );
         const mediaUrl = getMediaUrl(m.storageKey, publicUrl, sitePathPrefix);
         // Only apply image transforms for image MIME types

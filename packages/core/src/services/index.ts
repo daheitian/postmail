@@ -5,6 +5,7 @@
  */
 
 import type { Database } from "../db/index.js";
+import type { RawQueryClient } from "../db/raw-query.js";
 import { createSettingsService, type SettingsService } from "./settings.js";
 import { createPostService, type PostService } from "./post.js";
 import { createCustomUrlService, type CustomUrlService } from "./custom-url.js";
@@ -34,7 +35,7 @@ export interface Services {
 
 export function createServices(
   db: Database,
-  d1: D1Database,
+  rawQuery: RawQueryClient,
   config?: { slugIdLength?: number },
 ): Services {
   const settings = createSettingsService(db);
@@ -52,7 +53,7 @@ export function createServices(
     customUrls: createCustomUrlService(db, paths),
     media: createMediaService(db),
     collections: createCollectionService(db, paths),
-    search: createSearchService(d1),
+    search: createSearchService(rawQuery),
     navItems: createNavItemService(db),
     auth: createAuthService(db, settings),
     apiTokens: createApiTokenService(db),

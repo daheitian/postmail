@@ -1,6 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { Hono } from "hono";
-import { requireAuth, requireAuthApi, isLocalHostname } from "../auth.js";
+import {
+  requireAuth,
+  requireAuthApi,
+  isLocalHostname,
+  hasValidLocalDevToken,
+} from "../auth.js";
 import { errorHandler } from "../error-handler.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
@@ -44,6 +49,41 @@ describe("isLocalHostname", () => {
     ["localtest.me.evil.com", false],
   ])("isLocalHostname(%s) → %s", (hostname, expected) => {
     expect(isLocalHostname(hostname)).toBe(expected);
+  });
+});
+
+describe("hasValidLocalDevToken", () => {
+  it("accepts a local Host header even when the canonical request URL is remote", () => {
+    expect(
+      hasValidLocalDevToken(
+        "https://jant.me/api/posts",
+        "127.0.0.1:8020",
+        "jnt_dev",
+        "jnt_dev",
+      ),
+    ).toBe(true);
+  });
+
+  it("falls back to the request URL hostname when Host is absent", () => {
+    expect(
+      hasValidLocalDevToken(
+        "http://127.0.0.1:8020/api/posts",
+        undefined,
+        "jnt_dev",
+        "jnt_dev",
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects non-local hosts even with a matching token", () => {
+    expect(
+      hasValidLocalDevToken(
+        "https://jant.me/api/posts",
+        "jant.me",
+        "jnt_dev",
+        "jnt_dev",
+      ),
+    ).toBe(false);
   });
 });
 
@@ -291,6 +331,37 @@ describe("requireAuthApi", () => {
     const res = await app.request("https://jant.localtest.me/api/data", {
       headers: { Authorization: `Bearer ${devToken}` },
     });
+    expect(res.status).toBe(200);
+    expect(mockApiTokens.verify).not.toHaveBeenCalled();
+  });
+
+  it("allows DEV_API_TOKEN when JANT_SITE_URL canonicalizes to a remote host", async () => {
+    const devToken = "jnt_dev_test123";
+    const mockApiTokens = createMockApiTokenService();
+
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.env = {
+        ...c.env,
+        DEV_API_TOKEN: devToken,
+        JANT_SITE_URL: "https://jant.me",
+      } as Bindings;
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: mockApiTokens,
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
+
+    const res = await app.request("https://jant.me/api/data", {
+      headers: {
+        Authorization: `Bearer ${devToken}`,
+        Host: "127.0.0.1:9020",
+      },
+    });
+
     expect(res.status).toBe(200);
     expect(mockApiTokens.verify).not.toHaveBeenCalled();
   });

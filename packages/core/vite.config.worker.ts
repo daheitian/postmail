@@ -1,5 +1,5 @@
 /**
- * Library build: bundles all server code into a single dist/index.js.
+ * Library build: bundles the shared app entry plus the Node runtime entry.
  *
  * Run via: `vite build --config vite.config.worker.ts`
  *
@@ -22,9 +22,12 @@ export default defineConfig({
 
   build: {
     lib: {
-      entry: resolve(dir, "src/index.ts"),
+      entry: {
+        index: resolve(dir, "src/index.ts"),
+        node: resolve(dir, "src/node/index.ts"),
+      },
       formats: ["es"],
-      fileName: "index",
+      fileName: (_format, entryName) => `${entryName}.js`,
     },
     rollupOptions: {
       external: (id: string) => {
@@ -39,7 +42,7 @@ export default defineConfig({
     },
     target: "esnext",
     minify: false,
-    emptyOutDir: false,
+    emptyOutDir: true,
   },
 
   plugins: [swcPlugin()],

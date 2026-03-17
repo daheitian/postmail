@@ -38,6 +38,16 @@ describe("getPublicUrlForProvider", () => {
     expect(result).toBeUndefined();
   });
 
+  it("returns localPublicUrl for local provider", () => {
+    const result = getPublicUrlForProvider(
+      "local",
+      "https://r2.example.com",
+      "https://s3.example.com",
+      "https://media.example.com",
+    );
+    expect(result).toBe("https://media.example.com");
+  });
+
   it("defaults to r2PublicUrl for unknown providers", () => {
     const result = getPublicUrlForProvider(
       "unknown",

@@ -7,6 +7,7 @@
  */
 
 import type { Post, Status, Format, SearchResult } from "../types.js";
+import type { RawQueryClient } from "../db/raw-query.js";
 import { escapeHtml } from "../lib/html.js";
 
 export type { SearchResult };
@@ -92,7 +93,7 @@ function mapRow(row: RawSearchRow): SearchResult {
   };
 }
 
-export function createSearchService(d1: D1Database): SearchService {
+export function createSearchService(rawQuery: RawQueryClient): SearchService {
   async function searchFts(
     query: string,
     options: SearchOptions,
@@ -114,7 +115,7 @@ export function createSearchService(d1: D1Database): SearchService {
     const formatFilter = options.format ? "AND post.format = ?" : "";
     const formatParams = options.format ? [options.format] : [];
 
-    const stmt = d1.prepare(`
+    const stmt = rawQuery.prepare(`
       SELECT
         post.*,
         COALESCE(post.visibility, root_post.visibility) AS effective_visibility,
@@ -155,7 +156,7 @@ export function createSearchService(d1: D1Database): SearchService {
     const formatFilter = options.format ? "AND post.format = ?" : "";
     const formatParams = options.format ? [options.format] : [];
 
-    const stmt = d1.prepare(`
+    const stmt = rawQuery.prepare(`
       SELECT
         post.*,
         COALESCE(post.visibility, root_post.visibility) AS effective_visibility,

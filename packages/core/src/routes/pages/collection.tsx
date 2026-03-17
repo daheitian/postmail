@@ -182,6 +182,7 @@ collectionRoutes.get("/:slug/feed", async (c) => {
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.localPublicUrl,
     mediaCtx.sitePathPrefix,
   );
 

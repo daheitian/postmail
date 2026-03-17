@@ -3,9 +3,6 @@
  */
 
 import { Hono } from "hono";
-import { createDatabase } from "./db/index.js";
-import { createServices } from "./services/index.js";
-import { createAuth } from "./auth.js";
 import { i18nMiddleware } from "./i18n/index.js";
 import type { Bindings } from "./types.js";
 
@@ -57,7 +54,7 @@ import { errorHandler } from "./middleware/error-handler.js";
 import { withConfig } from "./middleware/config.js";
 import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
 
-import { createStorageDriver } from "./lib/storage.js";
+import { getSiteUrl } from "./lib/env.js";
 import { getStartupConfigurationErrorPage } from "./lib/startup-config.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
 import { isAssetPath } from "./lib/asset-path.js";
@@ -66,6 +63,7 @@ import {
   stripSitePathPrefix,
   toPublicHref,
 } from "./lib/url.js";
+import { createRequestRuntime } from "./runtime/index.js";
 import { type AppVariables, type App } from "./types/app-context.js";
 
 export type { AppVariables, App };
@@ -125,7 +123,7 @@ export function createApp(): App {
     const bindings = env as Bindings | undefined;
     const preparedRequest = prepareRequestForRouting(
       request,
-      getSitePathPrefix(bindings?.SITE_URL || ""),
+      getSitePathPrefix(getSiteUrl(bindings)),
     );
     if (preparedRequest instanceof Response) {
       return preparedRequest;
@@ -149,34 +147,10 @@ export function createApp(): App {
     if (startupConfigError) {
       return c.html(startupConfigError, 500);
     }
-    const authSecret = c.env.AUTH_SECRET;
-    if (!authSecret) {
-      throw new Error("AUTH_SECRET should be set after startup validation.");
-    }
-
-    // Use withSession() to enable D1 Read Replication
-    const session = c.env.DB.withSession();
-
-    // Note: Drizzle ORM doesn't officially support D1DatabaseSession yet (issue #2226)
-    // but it works at runtime. We use type assertion as a temporary workaround.
-    const db = createDatabase(session as unknown as D1Database);
-    const slugIdLength = parseInt(c.env.SLUG_ID_LENGTH ?? "5", 10) || 5;
-    c.set(
-      "services",
-      createServices(db, session as unknown as D1Database, { slugIdLength }),
-    );
-    c.set("storage", createStorageDriver(c.env));
-
-    const requestUrl = new URL(publicRequestUrl);
-    const baseURL = c.env.SITE_URL || requestUrl.origin;
-    c.set(
-      "auth",
-      createAuth(session as unknown as D1Database, {
-        secret: authSecret,
-        baseURL,
-        useSecureCookies: requestUrl.protocol === "https:",
-      }),
-    );
+    const runtime = await createRequestRuntime(c.env, publicRequestUrl);
+    c.set("services", runtime.services);
+    c.set("storage", runtime.storage);
+    c.set("auth", runtime.auth);
 
     await next();
   });
@@ -372,7 +346,7 @@ export function createApp(): App {
     const customUrl = await c.var.services.customUrls.getByPath(path.slice(1));
     if (customUrl?.targetType === "redirect" && customUrl.toPath) {
       return c.redirect(
-        toPublicHref(customUrl.toPath, getSitePathPrefix(c.env.SITE_URL || "")),
+        toPublicHref(customUrl.toPath, getSitePathPrefix(getSiteUrl(c.env))),
         customUrl.redirectType ?? 301,
       );
     }

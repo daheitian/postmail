@@ -23,7 +23,7 @@ const SORT_ORDERS = ["newest", "oldest", "rating_desc", "rating_asc"] as const;
 const NAV_ITEM_TYPES = ["link", "system"] as const;
 const SYSTEM_NAV_KEYS = ["rss", "settings", "collections", "archive"] as const;
 const MEDIA_KINDS = ["image", "video", "audio", "text", "document"] as const;
-const STORAGE_DRIVERS = ["r2", "s3"] as const;
+const STORAGE_DRIVERS = ["r2", "s3", "local"] as const;
 
 function sqlTextEnum(values: readonly string[]) {
   return sql.raw(values.map((value) => `'${value}'`).join(", "));

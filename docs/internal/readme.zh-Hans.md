@@ -4,6 +4,10 @@
 > 强调低调、去社交化的个人表达
 > 简单低摩擦的发布体验
 
+相关实现设计：
+
+- [Node / Docker 运行时设计](./node-runtime-design.zh-Hans.md)
+
 ## 1. 产品定位
 
 **一句话**：像 Threads.net 一样丝滑的个人轻博客系统。

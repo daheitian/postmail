@@ -50,6 +50,13 @@
       "when": 1773692242546,
       "tag": "0005_happy_slyde",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1773753605346,
+      "tag": "0007_even_red_hulk",
+      "breakpoints": true
     }
   ]
 }

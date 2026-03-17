@@ -13,6 +13,12 @@ import type { Bindings } from "../types/bindings.js";
 import type { AppConfig } from "../types/config.js";
 import { CONFIG_FIELDS } from "../types/config.js";
 import { ASSET_BASE_PATH } from "./asset-path.js";
+import {
+  getAuthSecret,
+  getConfiguredStorageDriver,
+  getEnvString,
+  getSiteUrl,
+} from "./env.js";
 import { getPublicUrlForProvider, getMediaUrl } from "./image.js";
 import { getSiteOrigin, getSitePathPrefix, normalizeSiteUrl } from "./url.js";
 
@@ -31,6 +37,7 @@ function resolve(
 ): string {
   const field = CONFIG_FIELDS[key as keyof typeof CONFIG_FIELDS];
   if (!field) return "";
+  const envKeys = "envKeys" in field ? field.envKeys : undefined;
 
   // User-configurable: DB > ENV > Default
   if (!field.envOnly) {
@@ -39,8 +46,8 @@ function resolve(
   }
 
   // ENV > Default
-  const envValue = env[key as keyof Bindings];
-  if (envValue && typeof envValue === "string") return envValue;
+  const envValue = getEnvString(env, ...(envKeys ?? []));
+  if (envValue) return envValue;
 
   return field.defaultValue;
 }
@@ -56,9 +63,10 @@ function resolve(
 function resolveFallback(key: string, env: Bindings): string {
   const field = CONFIG_FIELDS[key as keyof typeof CONFIG_FIELDS];
   if (!field) return "";
+  const envKeys = "envKeys" in field ? field.envKeys : undefined;
 
-  const envValue = env[key as keyof Bindings];
-  if (envValue && typeof envValue === "string") return envValue;
+  const envValue = getEnvString(env, ...(envKeys ?? []));
+  if (envValue) return envValue;
 
   return field.defaultValue;
 }
@@ -82,14 +90,19 @@ export function resolveConfig(
   env: Bindings,
   allSettings: Record<string, string>,
 ): AppConfig {
-  const siteUrl = normalizeSiteUrl(env.SITE_URL || "");
+  const siteUrl = normalizeSiteUrl(getSiteUrl(env));
   const siteOrigin = getSiteOrigin(siteUrl);
   const sitePathPrefix = getSitePathPrefix(siteUrl);
-  const storageDriver = env.STORAGE_DRIVER || "r2";
-  const r2PublicUrl = env.R2_PUBLIC_URL || "";
-  const s3PublicUrl = env.S3_PUBLIC_URL || "";
-  const imageTransformUrl = env.IMAGE_TRANSFORM_URL || "";
-  const demoMode = env.DEMO_MODE === "true";
+  const storageDriver = getConfiguredStorageDriver(env);
+  const r2PublicUrl =
+    getEnvString(env, "JANT_R2_PUBLIC_URL", "R2_PUBLIC_URL") || "";
+  const s3PublicUrl =
+    getEnvString(env, "JANT_S3_PUBLIC_URL", "S3_PUBLIC_URL") || "";
+  const localPublicUrl =
+    getEnvString(env, "JANT_LOCAL_PUBLIC_URL", "LOCAL_PUBLIC_URL") || "";
+  const imageTransformUrl =
+    getEnvString(env, "JANT_IMAGE_TRANSFORM_URL", "IMAGE_TRANSFORM_URL") || "";
+  const demoMode = getEnvString(env, "JANT_DEMO_MODE", "DEMO_MODE") === "true";
 
   // Resolve avatar URL from storage key
   const siteAvatar = allSettings["SITE_AVATAR"] ?? "";
@@ -99,17 +112,19 @@ export function resolveConfig(
       storageDriver,
       r2PublicUrl,
       s3PublicUrl,
+      localPublicUrl,
     );
     siteAvatarUrl = getMediaUrl(siteAvatar, publicUrl, sitePathPrefix);
   }
 
   // Description is "explicit" when set in DB or ENV (not just the default)
   const dbDescription = allSettings["SITE_DESCRIPTION"];
-  const envDescription = env.SITE_DESCRIPTION;
-  const siteDescriptionExplicit = !!(
-    dbDescription ||
-    (typeof envDescription === "string" && envDescription)
+  const envDescription = getEnvString(
+    env,
+    "JANT_SITE_DESCRIPTION",
+    "SITE_DESCRIPTION",
   );
+  const siteDescriptionExplicit = !!(dbDescription || envDescription);
 
   return {
     // Site identity (DB > ENV > Default)
@@ -136,38 +151,71 @@ export function resolveConfig(
     siteOrigin,
     sitePathPrefix,
     assetBasePath: ASSET_BASE_PATH,
-    authConfigured: !!env.AUTH_SECRET,
+    authConfigured: !!getAuthSecret(env),
 
     // Media (ENV only)
     storageDriver,
     r2PublicUrl,
     s3PublicUrl,
+    localPublicUrl,
     imageTransformUrl,
 
     // Upload (ENV only)
     uploadMaxFileSize:
-      parseInt(env.UPLOAD_MAX_FILE_SIZE_MB ?? "500", 10) || 500,
+      parseInt(
+        getEnvString(
+          env,
+          "JANT_UPLOAD_MAX_FILE_SIZE_MB",
+          "UPLOAD_MAX_FILE_SIZE_MB",
+        ) ?? "500",
+        10,
+      ) || 500,
 
     // Summary extraction (ENV only)
-    summaryMaxParagraphs: parseInt(env.SUMMARY_MAX_PARAGRAPHS ?? "5", 10) || 5,
-    summaryMaxChars: parseInt(env.SUMMARY_MAX_CHARS ?? "500", 10) || 500,
+    summaryMaxParagraphs:
+      parseInt(
+        getEnvString(
+          env,
+          "JANT_SUMMARY_MAX_PARAGRAPHS",
+          "SUMMARY_MAX_PARAGRAPHS",
+        ) ?? "5",
+        10,
+      ) || 5,
+    summaryMaxChars:
+      parseInt(
+        getEnvString(env, "JANT_SUMMARY_MAX_CHARS", "SUMMARY_MAX_CHARS") ??
+          "500",
+        10,
+      ) || 500,
 
     // Slug (ENV only)
-    slugIdLength: parseInt(env.SLUG_ID_LENGTH ?? "5", 10) || 5,
+    slugIdLength:
+      parseInt(
+        getEnvString(env, "JANT_SLUG_ID_LENGTH", "SLUG_ID_LENGTH") ?? "5",
+        10,
+      ) || 5,
 
     // Pagination/Feed (ENV only)
-    pageSize: parseInt(env.PAGE_SIZE ?? "20", 10) || 20,
-    rssFeedLimit: parseInt(env.RSS_FEED_LIMIT ?? "50", 10) || 50,
+    pageSize:
+      parseInt(getEnvString(env, "JANT_PAGE_SIZE", "PAGE_SIZE") ?? "20", 10) ||
+      20,
+    rssFeedLimit:
+      parseInt(
+        getEnvString(env, "JANT_RSS_FEED_LIMIT", "RSS_FEED_LIMIT") ?? "50",
+        10,
+      ) || 50,
 
     // Demo (ENV only)
-    demoEmail: env.DEMO_EMAIL || "",
-    demoPassword: env.DEMO_PASSWORD || "",
+    demoEmail: getEnvString(env, "JANT_DEMO_EMAIL", "DEMO_EMAIL") || "",
+    demoPassword:
+      getEnvString(env, "JANT_DEMO_PASSWORD", "DEMO_PASSWORD") || "",
     demoMode,
 
     // Theme (DB internal)
     themeId: allSettings["THEME"] ?? "",
     defaultThemeId:
-      env.DEFAULT_THEME || CONFIG_FIELDS.DEFAULT_THEME.defaultValue,
+      getEnvString(env, "JANT_DEFAULT_THEME", "DEFAULT_THEME") ||
+      CONFIG_FIELDS.DEFAULT_THEME.defaultValue,
     fontThemeId: allSettings["FONT_THEME"] ?? "",
     themeMode:
       allSettings["THEME_MODE"] === "light" ||

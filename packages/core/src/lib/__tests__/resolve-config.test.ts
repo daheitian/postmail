@@ -6,12 +6,12 @@ function makeEnv(overrides: Partial<Bindings> = {}): Bindings {
   return {
     DB: {} as D1Database,
     R2: undefined as unknown as R2Bucket,
-    AUTH_SECRET: "",
-    SITE_URL: "https://example.com",
-    R2_PUBLIC_URL: "",
-    IMAGE_TRANSFORM_URL: "",
-    S3_PUBLIC_URL: "",
-    STORAGE_DRIVER: "",
+    JANT_AUTH_SECRET: "",
+    JANT_SITE_URL: "https://example.com",
+    JANT_R2_PUBLIC_URL: "",
+    JANT_IMAGE_TRANSFORM_URL: "",
+    JANT_S3_PUBLIC_URL: "",
+    JANT_STORAGE_DRIVER: "",
     ...overrides,
   } as Bindings;
 }
@@ -35,19 +35,15 @@ describe("resolveConfig", () => {
   });
 
   it("DB settings override ENV and defaults", () => {
-    const config = resolveConfig(
-      makeEnv({ SITE_NAME: "FromEnv" } as Partial<Bindings>),
-      { SITE_NAME: "FromDB" },
-    );
+    const config = resolveConfig(makeEnv({ JANT_SITE_NAME: "FromEnv" }), {
+      SITE_NAME: "FromDB",
+    });
 
     expect(config.siteName).toBe("FromDB");
   });
 
   it("ENV overrides defaults when DB is empty", () => {
-    const config = resolveConfig(
-      makeEnv({ SITE_NAME: "FromEnv" } as Partial<Bindings>),
-      {},
-    );
+    const config = resolveConfig(makeEnv({ JANT_SITE_NAME: "FromEnv" }), {});
 
     expect(config.siteName).toBe("FromEnv");
   });
@@ -66,8 +62,8 @@ describe("resolveConfig", () => {
     // ENV setting -> explicit
     const config3 = resolveConfig(
       makeEnv({
-        SITE_DESCRIPTION: "Env description",
-      } as Partial<Bindings>),
+        JANT_SITE_DESCRIPTION: "Env description",
+      }),
       {},
     );
     expect(config3.siteDescriptionExplicit).toBe(true);
@@ -76,10 +72,11 @@ describe("resolveConfig", () => {
   it("resolves media URLs from env", () => {
     const config = resolveConfig(
       makeEnv({
-        R2_PUBLIC_URL: "https://r2.example.com",
-        IMAGE_TRANSFORM_URL: "https://img.example.com",
-        S3_PUBLIC_URL: "https://s3.example.com",
-        STORAGE_DRIVER: "s3",
+        JANT_R2_PUBLIC_URL: "https://r2.example.com",
+        JANT_IMAGE_TRANSFORM_URL: "https://img.example.com",
+        JANT_S3_PUBLIC_URL: "https://s3.example.com",
+        JANT_LOCAL_PUBLIC_URL: "https://media.example.com",
+        JANT_STORAGE_DRIVER: "s3",
       }),
       {},
     );
@@ -87,14 +84,26 @@ describe("resolveConfig", () => {
     expect(config.r2PublicUrl).toBe("https://r2.example.com");
     expect(config.imageTransformUrl).toBe("https://img.example.com");
     expect(config.s3PublicUrl).toBe("https://s3.example.com");
+    expect(config.localPublicUrl).toBe("https://media.example.com");
     expect(config.storageDriver).toBe("s3");
+  });
+
+  it("defaults to local storage in the Node runtime", () => {
+    const config = resolveConfig(
+      makeEnv({
+        NODE_SQLITE: {} as Bindings["NODE_SQLITE"],
+      }),
+      {},
+    );
+
+    expect(config.storageDriver).toBe("local");
   });
 
   it("resolves siteAvatarUrl from storage key", () => {
     const config = resolveConfig(
       makeEnv({
-        R2_PUBLIC_URL: "https://r2.example.com",
-        STORAGE_DRIVER: "r2",
+        JANT_R2_PUBLIC_URL: "https://r2.example.com",
+        JANT_STORAGE_DRIVER: "r2",
       }),
       { SITE_AVATAR: "media/2024/01/avatar.jpg" },
     );
@@ -125,7 +134,7 @@ describe("resolveConfig", () => {
   it("forces noindex when DEMO_MODE is enabled", () => {
     const config = resolveConfig(
       makeEnv({
-        DEMO_MODE: "true",
+        JANT_DEMO_MODE: "true",
       }),
       {},
     );
@@ -134,11 +143,14 @@ describe("resolveConfig", () => {
     expect(config.noindex).toBe(true);
   });
 
-  it("resolves authConfigured from AUTH_SECRET", () => {
+  it("resolves authConfigured from JANT_AUTH_SECRET", () => {
     const noAuth = resolveConfig(makeEnv(), {});
     expect(noAuth.authConfigured).toBe(false);
 
-    const withAuth = resolveConfig(makeEnv({ AUTH_SECRET: "supersecret" }), {});
+    const withAuth = resolveConfig(
+      makeEnv({ JANT_AUTH_SECRET: "supersecret" }),
+      {},
+    );
     expect(withAuth.authConfigured).toBe(true);
   });
 
@@ -146,8 +158,8 @@ describe("resolveConfig", () => {
     // Valid numbers
     const config1 = resolveConfig(
       makeEnv({
-        PAGE_SIZE: "10",
-        RSS_FEED_LIMIT: "25",
+        JANT_PAGE_SIZE: "10",
+        JANT_RSS_FEED_LIMIT: "25",
       }),
       {},
     );
@@ -157,8 +169,8 @@ describe("resolveConfig", () => {
     // Invalid numbers fall back to defaults
     const config2 = resolveConfig(
       makeEnv({
-        PAGE_SIZE: "not-a-number",
-        RSS_FEED_LIMIT: "invalid",
+        JANT_PAGE_SIZE: "not-a-number",
+        JANT_RSS_FEED_LIMIT: "invalid",
       }),
       {},
     );
@@ -167,10 +179,9 @@ describe("resolveConfig", () => {
   });
 
   it("resolves fallbacks without DB values", () => {
-    const config = resolveConfig(
-      makeEnv({ SITE_NAME: "EnvName" } as Partial<Bindings>),
-      { SITE_NAME: "DBName" },
-    );
+    const config = resolveConfig(makeEnv({ JANT_SITE_NAME: "EnvName" }), {
+      SITE_NAME: "DBName",
+    });
 
     // fallback should use ENV > Default, skipping DB
     expect(config.fallbacks.siteName).toBe("EnvName");
@@ -221,14 +232,32 @@ describe("resolveConfig", () => {
   });
 
   it("resolves defaultThemeId from env", () => {
-    const config = resolveConfig(
-      makeEnv({ DEFAULT_THEME: "dark" } as Partial<Bindings>),
-      {},
-    );
+    const config = resolveConfig(makeEnv({ JANT_DEFAULT_THEME: "dark" }), {});
     expect(config.defaultThemeId).toBe("dark");
 
     // Falls back to default
     const config2 = resolveConfig(makeEnv(), {});
     expect(config2.defaultThemeId).toBe("linen");
+  });
+
+  it("still accepts legacy env aliases while the migration is in progress", () => {
+    const config = resolveConfig(
+      makeEnv({
+        JANT_SITE_URL: "",
+        JANT_AUTH_SECRET: "",
+        JANT_STORAGE_DRIVER: "",
+        JANT_S3_PUBLIC_URL: "",
+        SITE_URL: "https://legacy.example.com",
+        AUTH_SECRET: "legacy-secret",
+        STORAGE_DRIVER: "s3",
+        S3_PUBLIC_URL: "https://legacy-s3.example.com",
+      }),
+      {},
+    );
+
+    expect(config.siteUrl).toBe("https://legacy.example.com/");
+    expect(config.authConfigured).toBe(true);
+    expect(config.storageDriver).toBe("s3");
+    expect(config.s3PublicUrl).toBe("https://legacy-s3.example.com");
   });
 });

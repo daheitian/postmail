@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Test assertions use ! for readability */
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it, expect, vi } from "vitest";
-import { createR2Driver, createStorageDriver } from "../storage.js";
+import {
+  createR2Driver,
+  createStorageDriver,
+  supportsMultipart,
+} from "../storage.js";
 import type { Bindings } from "../../types.js";
 
 describe("createStorageDriver", () => {
@@ -19,7 +26,7 @@ describe("createStorageDriver", () => {
     expect(driver).not.toBeNull();
   });
 
-  it("returns R2 driver by default even with STORAGE_DRIVER unset", () => {
+  it("returns R2 driver by default even with JANT_STORAGE_DRIVER unset", () => {
     const env = {
       DB: {},
       R2: { put: vi.fn(), get: vi.fn(), delete: vi.fn() },
@@ -28,11 +35,21 @@ describe("createStorageDriver", () => {
     expect(driver).not.toBeNull();
   });
 
+  it("defaults to local storage for the Node runtime", () => {
+    const env = {
+      NODE_SQLITE: {} as Bindings["NODE_SQLITE"],
+      JANT_LOCAL_STORAGE_PATH: "/tmp/jant-local-default",
+    } as Bindings;
+
+    const driver = createStorageDriver(env);
+    expect(driver).not.toBeNull();
+  });
+
   it("returns null for S3 driver when S3 config is incomplete", () => {
     const env = {
       DB: {},
-      STORAGE_DRIVER: "s3",
-      S3_ENDPOINT: "https://s3.example.com",
+      JANT_STORAGE_DRIVER: "s3",
+      JANT_S3_ENDPOINT: "https://s3.example.com",
       // Missing S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
     } as unknown as Bindings;
     const driver = createStorageDriver(env);
@@ -42,12 +59,12 @@ describe("createStorageDriver", () => {
   it("returns S3 driver when fully configured", () => {
     const env = {
       DB: {},
-      STORAGE_DRIVER: "s3",
-      S3_ENDPOINT: "https://s3.example.com",
-      S3_BUCKET: "my-bucket",
-      S3_ACCESS_KEY_ID: "access-key",
-      S3_SECRET_ACCESS_KEY: "secret-key",
-      S3_REGION: "us-east-1",
+      JANT_STORAGE_DRIVER: "s3",
+      JANT_S3_ENDPOINT: "https://s3.example.com",
+      JANT_S3_BUCKET: "my-bucket",
+      JANT_S3_ACCESS_KEY_ID: "access-key",
+      JANT_S3_SECRET_ACCESS_KEY: "secret-key",
+      JANT_S3_REGION: "us-east-1",
     } as unknown as Bindings;
     const driver = createStorageDriver(env);
     expect(driver).not.toBeNull();
@@ -56,27 +73,41 @@ describe("createStorageDriver", () => {
   it("defaults S3_REGION to 'auto' when not set", () => {
     const env = {
       DB: {},
-      STORAGE_DRIVER: "s3",
-      S3_ENDPOINT: "https://s3.example.com",
-      S3_BUCKET: "my-bucket",
-      S3_ACCESS_KEY_ID: "access-key",
-      S3_SECRET_ACCESS_KEY: "secret-key",
+      JANT_STORAGE_DRIVER: "s3",
+      JANT_S3_ENDPOINT: "https://s3.example.com",
+      JANT_S3_BUCKET: "my-bucket",
+      JANT_S3_ACCESS_KEY_ID: "access-key",
+      JANT_S3_SECRET_ACCESS_KEY: "secret-key",
     } as unknown as Bindings;
     // Should not throw - region defaults to "auto"
     const driver = createStorageDriver(env);
     expect(driver).not.toBeNull();
   });
 
-  it("prefers S3 driver over R2 when STORAGE_DRIVER=s3", () => {
+  it("prefers S3 driver over R2 when JANT_STORAGE_DRIVER=s3", () => {
     const env = {
       DB: {},
       R2: { put: vi.fn(), get: vi.fn(), delete: vi.fn() },
+      JANT_STORAGE_DRIVER: "s3",
+      JANT_S3_ENDPOINT: "https://s3.example.com",
+      JANT_S3_BUCKET: "my-bucket",
+      JANT_S3_ACCESS_KEY_ID: "access-key",
+      JANT_S3_SECRET_ACCESS_KEY: "secret-key",
+    } as unknown as Bindings;
+    const driver = createStorageDriver(env);
+    expect(driver).not.toBeNull();
+  });
+
+  it("still accepts legacy storage env aliases during the transition", () => {
+    const env = {
+      DB: {},
       STORAGE_DRIVER: "s3",
       S3_ENDPOINT: "https://s3.example.com",
       S3_BUCKET: "my-bucket",
       S3_ACCESS_KEY_ID: "access-key",
       S3_SECRET_ACCESS_KEY: "secret-key",
     } as unknown as Bindings;
+
     const driver = createStorageDriver(env);
     expect(driver).not.toBeNull();
   });
@@ -158,5 +189,97 @@ describe("createR2Driver", () => {
     await driver.delete("media/test.jpg");
 
     expect(mockR2.delete).toHaveBeenCalledWith("media/test.jpg");
+  });
+});
+
+describe("local storage driver", () => {
+  async function createTempDir() {
+    return mkdtemp(join(tmpdir(), "jant-local-storage-"));
+  }
+
+  it("returns null when local storage is selected without a path", () => {
+    const env = {
+      DB: {},
+      JANT_STORAGE_DRIVER: "local",
+    } as unknown as Bindings;
+
+    expect(createStorageDriver(env)).toBeNull();
+  });
+
+  it("stores and retrieves files from the local media root", async () => {
+    const rootPath = await createTempDir();
+    try {
+      const driver = createStorageDriver({
+        DB: {},
+        JANT_STORAGE_DRIVER: "local",
+        JANT_LOCAL_STORAGE_PATH: rootPath,
+      } as unknown as Bindings);
+
+      expect(driver).not.toBeNull();
+      await driver!.put(
+        "media/2026/03/example.txt",
+        new TextEncoder().encode("hello local storage"),
+        { contentType: "text/plain" },
+      );
+
+      const head = await driver!.head("media/2026/03/example.txt");
+      expect(head).toEqual({
+        contentType: "text/plain",
+        size: 19,
+      });
+
+      const object = await driver!.get("media/2026/03/example.txt");
+      expect(object).not.toBeNull();
+      expect(await new Response(object!.body).text()).toBe(
+        "hello local storage",
+      );
+    } finally {
+      await rm(rootPath, { recursive: true, force: true });
+    }
+  });
+
+  it("supports multipart uploads for local storage", async () => {
+    const rootPath = await createTempDir();
+    try {
+      const driver = createStorageDriver({
+        DB: {},
+        JANT_STORAGE_DRIVER: "local",
+        JANT_LOCAL_STORAGE_PATH: rootPath,
+      } as unknown as Bindings);
+
+      expect(driver).not.toBeNull();
+      expect(supportsMultipart(driver!)).toBe(true);
+      if (!supportsMultipart(driver!)) {
+        throw new Error("Local driver should support multipart uploads.");
+      }
+
+      const upload = await driver.createMultipartUpload(
+        "media/2026/03/multipart.txt",
+        { contentType: "text/plain" },
+      );
+      const part1 = await driver.uploadPart(
+        upload.key,
+        upload.uploadId,
+        1,
+        new TextEncoder().encode("hello "),
+      );
+      const part2 = await driver.uploadPart(
+        upload.key,
+        upload.uploadId,
+        2,
+        new TextEncoder().encode("multipart"),
+      );
+
+      await driver.completeMultipartUpload(upload.key, upload.uploadId, [
+        part1,
+        part2,
+      ]);
+
+      const object = await driver.get(upload.key);
+      expect(object).not.toBeNull();
+      expect(await new Response(object!.body).text()).toBe("hello multipart");
+    } finally {
+      await rm(rootPath, { recursive: true, force: true });
+    }
   });
 });

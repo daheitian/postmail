@@ -71,6 +71,7 @@ export async function assemblePostCardView(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.localPublicUrl,
     mediaCtx.sitePathPrefix,
   );
   const rootPermalink = post.replyToId
@@ -131,6 +132,7 @@ export async function assemblePostPageDisplay(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.localPublicUrl,
     mediaCtx.sitePathPrefix,
   );
 

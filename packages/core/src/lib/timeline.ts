@@ -46,6 +46,7 @@ async function buildTimelineItems(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.localPublicUrl,
     mediaCtx.sitePathPrefix,
   );
 
@@ -68,6 +69,7 @@ async function buildTimelineItems(
                 mediaCtx.r2PublicUrl,
                 mediaCtx.imageTransformUrl,
                 mediaCtx.s3PublicUrl,
+                mediaCtx.localPublicUrl,
                 mediaCtx.sitePathPrefix,
               ),
             ),
@@ -175,6 +177,7 @@ async function buildCuratedThreadItems(
     mediaCtx.r2PublicUrl,
     mediaCtx.imageTransformUrl,
     mediaCtx.s3PublicUrl,
+    mediaCtx.localPublicUrl,
     mediaCtx.sitePathPrefix,
   );
 

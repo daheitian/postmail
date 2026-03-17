@@ -8,6 +8,10 @@
       "types": "./src/index.ts",
       "default": "./dist/index.js"
     },
+    "./node": {
+      "types": "./src/node/index.ts",
+      "default": "./dist/node.js"
+    },
     "./i18n": "./src/i18n/index.ts"
   },
   "bin": {
@@ -34,6 +38,7 @@
     "i18n:compile": "lingui compile --typescript",
     "i18n:build": "pnpm i18n:extract && pnpm i18n:compile",
     "dev": "pnpm db:migrate:local && vite dev",
+    "dev:node": "vite dev --config vite.config.node.ts --mode node",
     "dev:debug": "node dev/scripts/start-dev-debug.mjs",
     "db:migrate:local": "echo y | wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
@@ -50,6 +55,7 @@
     "@fontsource-variable/newsreader": "^5.2.10",
     "@fontsource-variable/source-sans-3": "^5.2.9",
     "@fontsource/news-cycle": "^5.2.7",
+    "@hono/node-server": "^1.19.11",
     "@lingui/core": "^5.9.0",
     "@lingui/react": "^5.9.0",
     "@tailwindcss/typography": "^0.5.19",
@@ -79,7 +85,8 @@
     "tiptap-markdown": "^0.9.0",
     "uuidv7": "^1.1.0",
     "yaml": "^2.8.2",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "better-sqlite3": "^12.8.0"
   },
   "peerDependencies": {
     "hono": "^4.0.0",
@@ -98,7 +105,6 @@
     "@tailwindcss/vite": "^4.1.18",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.1.0",
-    "better-sqlite3": "^12.6.2",
     "cn-font-split": "^7.4.1",
     "drizzle-kit": "^0.31.8",
     "glob": "^13.0.0",
