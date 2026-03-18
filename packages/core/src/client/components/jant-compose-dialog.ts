@@ -99,6 +99,8 @@ interface ComposeStateSnapshot {
   attachmentOrder: string[];
 }
 
+const EDITOR_FLOATING_UI_SELECTOR = "[data-editor-floating-ui]";
+
 function toComposeCollections(value: unknown): ComposeCollection[] {
   if (!Array.isArray(value)) return [];
 
@@ -215,6 +217,7 @@ export class JantComposeDialog extends LitElement {
   private _slugCheckRequestId = 0;
   private _slugSuggestionKey = "";
   private _suppressBeforeUnload = false;
+  private _dialogEl: HTMLDialogElement | null = null;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -1042,9 +1045,10 @@ export class JantComposeDialog extends LitElement {
     window.addEventListener("beforeunload", this._onBeforeUnload);
 
     // Intercept native dialog cancel (ESC) to route through requestClose
-    const dialog = this.closest("dialog");
-    if (dialog) {
-      dialog.addEventListener("cancel", this._handleDialogCancel);
+    this._dialogEl = this.closest("dialog");
+    if (this._dialogEl) {
+      this._dialogEl.addEventListener("cancel", this._handleDialogCancel);
+      this._dialogEl.addEventListener("click", this._handleDialogClick);
     }
 
     if (this.pageMode) {
@@ -1074,14 +1078,33 @@ export class JantComposeDialog extends LitElement {
     this._destroyAttachedEditor();
     this._cancelDraftSaveTimer();
 
-    const dialog = this.closest("dialog");
-    if (dialog) {
-      dialog.removeEventListener("cancel", this._handleDialogCancel);
+    if (this._dialogEl) {
+      this._dialogEl.removeEventListener("cancel", this._handleDialogCancel);
+      this._dialogEl.removeEventListener("click", this._handleDialogClick);
+      this._dialogEl = null;
     }
   }
 
   private _handleDialogCancel = (e: Event) => {
     e.preventDefault();
+    this.requestClose();
+  };
+
+  private _handleDialogClick = (e: Event) => {
+    if (!this._dialogEl || e.target !== this._dialogEl) return;
+
+    const mouseEvent = e as MouseEvent;
+    const hitTarget = document.elementFromPoint(
+      mouseEvent.clientX,
+      mouseEvent.clientY,
+    );
+    if (
+      hitTarget instanceof globalThis.Element &&
+      hitTarget.closest(EDITOR_FLOATING_UI_SELECTOR)
+    ) {
+      return;
+    }
+
     this.requestClose();
   };
 

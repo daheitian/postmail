@@ -17,6 +17,10 @@ import {
   isComposeDockedToolbar,
   type FormattingToolbarMode,
 } from "./toolbar-mode.js";
+import {
+  getFixedFloatingContainerRect,
+  getFloatingPosition,
+} from "./floating-position.js";
 
 const linkToolbarKey = new PluginKey("linkToolbar");
 
@@ -114,6 +118,7 @@ export const LinkToolbar = Extension.create({
       // --- Input popup ---
       inputEl = document.createElement("div");
       inputEl.className = "tiptap-link-input";
+      inputEl.dataset.editorFloatingUi = "true";
       inputEl.style.display = "none";
 
       inputField = document.createElement("input");
@@ -158,6 +163,7 @@ export const LinkToolbar = Extension.create({
       // --- Preview tooltip ---
       previewEl = document.createElement("div");
       previewEl.className = "tiptap-link-preview";
+      previewEl.dataset.editorFloatingUi = "true";
       previewEl.style.display = "none";
 
       const urlSpan = document.createElement("span");
@@ -224,18 +230,27 @@ export const LinkToolbar = Extension.create({
         return;
       }
 
+      const dialog = view.dom.closest("dialog");
       const start = view.coordsAtPos(from);
       const end = view.coordsAtPos(to);
-      const cx = (start.left + end.right) / 2;
-      const top = start.top;
-
-      const dialog = view.dom.closest("dialog");
-      const offsetX = dialog?.getBoundingClientRect().left ?? 0;
-      const offsetY = dialog?.getBoundingClientRect().top ?? 0;
-
       const rect = el.getBoundingClientRect();
-      el.style.left = `${cx - rect.width / 2 - offsetX}px`;
-      el.style.top = `${top - rect.height - 8 - offsetY}px`;
+      const layout = getFloatingPosition({
+        anchorRect: {
+          left: start.left,
+          right: end.right,
+          top: Math.min(start.top, end.top),
+          bottom: Math.max(start.bottom, end.bottom),
+        },
+        containerRect: getFixedFloatingContainerRect(dialog),
+        floatingWidth: rect.width,
+        floatingHeight: rect.height,
+        preferredPlacement: "top",
+        fallbackPlacement: "bottom",
+        align: "center",
+      });
+
+      el.style.left = `${layout.left}px`;
+      el.style.top = `${layout.top}px`;
     }
 
     function showInput(

@@ -420,11 +420,7 @@ export const ComposeDialog: FC<ComposeDialogProps> = ({
   uploadMaxFileSize,
 }) => {
   return (
-    <dialog
-      id="compose-dialog"
-      class="compose-dialog"
-      data-on:click="evt.target === el && el.querySelector('jant-compose-dialog')?.requestClose()"
-    >
+    <dialog id="compose-dialog" class="compose-dialog">
       <ComposeForm
         collections={collections}
         uploadMaxFileSize={uploadMaxFileSize}

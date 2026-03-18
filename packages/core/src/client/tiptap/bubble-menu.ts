@@ -15,6 +15,10 @@ import {
   isComposeDockedToolbar,
   type FormattingToolbarMode,
 } from "./toolbar-mode.js";
+import {
+  getFixedFloatingContainerRect,
+  getFloatingPosition,
+} from "./floating-position.js";
 
 const bubbleMenuKey = new PluginKey("bubbleMenu");
 
@@ -165,6 +169,7 @@ export const BubbleMenu = Extension.create({
     function create() {
       el = document.createElement("div");
       el.className = "tiptap-bubble-menu";
+      el.dataset.editorFloatingUi = "true";
       el.style.position = "fixed";
       el.style.display = "none";
 
@@ -209,18 +214,25 @@ export const BubbleMenu = Extension.create({
       const { from, to } = view.state.selection;
       const start = view.coordsAtPos(from);
       const end = view.coordsAtPos(to);
-      const cx = (start.left + end.right) / 2;
-      const top = start.top;
-
-      // Dialog offset (same pattern as slash commands)
       const dialog = view.dom.closest("dialog");
-      const offsetX = dialog?.getBoundingClientRect().left ?? 0;
-      const offsetY = dialog?.getBoundingClientRect().top ?? 0;
-
-      // Measure width after display
       const rect = el.getBoundingClientRect();
-      el.style.left = `${cx - rect.width / 2 - offsetX}px`;
-      el.style.top = `${top - rect.height - 8 - offsetY}px`;
+      const layout = getFloatingPosition({
+        anchorRect: {
+          left: start.left,
+          right: end.right,
+          top: Math.min(start.top, end.top),
+          bottom: Math.max(start.bottom, end.bottom),
+        },
+        containerRect: getFixedFloatingContainerRect(dialog),
+        floatingWidth: rect.width,
+        floatingHeight: rect.height,
+        preferredPlacement: "top",
+        fallbackPlacement: "bottom",
+        align: "center",
+      });
+
+      el.style.left = `${layout.left}px`;
+      el.style.top = `${layout.top}px`;
 
       syncActive();
     }

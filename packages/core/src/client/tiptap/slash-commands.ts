@@ -12,6 +12,10 @@ import Suggestion, {
   type SuggestionKeyDownProps,
 } from "@tiptap/suggestion";
 import type { Editor, Range } from "@tiptap/core";
+import {
+  getFixedFloatingContainerRect,
+  getFloatingPosition,
+} from "./floating-position.js";
 
 // SVG icons (18×18, stroke-based, Lucide style)
 const ICONS = {
@@ -178,6 +182,7 @@ let outsideClickHandler: ((e: MouseEvent) => void) | null = null;
 function createPopup(): HTMLElement {
   const el = document.createElement("div");
   el.className = "tiptap-slash-menu";
+  el.dataset.editorFloatingUi = "true";
   el.style.position = "fixed";
   return el;
 }
@@ -271,34 +276,26 @@ function positionPopup(
 
   // Reset inline max-height so offsetHeight reflects the natural size
   popupEl.style.maxHeight = "";
+  const layout = getFloatingPosition({
+    anchorRect: {
+      left: rect.left,
+      right: rect.left,
+      top: rect.top,
+      bottom: rect.bottom,
+    },
+    containerRect: getFixedFloatingContainerRect(container),
+    floatingWidth: popupEl.offsetWidth,
+    floatingHeight: popupEl.offsetHeight,
+    preferredPlacement: "bottom",
+    fallbackPlacement: "top",
+    align: "start",
+    gap: 4,
+  });
 
-  const offsetX = container?.getBoundingClientRect().left ?? 0;
-  const offsetY = container?.getBoundingClientRect().top ?? 0;
-  const containerHeight = container?.clientHeight ?? window.innerHeight;
-  const popupHeight = popupEl.offsetHeight;
-  const gap = 4;
-
-  const left = rect.left - offsetX;
-  const belowTop = rect.bottom + gap - offsetY;
-  const spaceBelow = containerHeight - belowTop;
-  const spaceAbove = rect.top - offsetY - gap;
-
-  popupEl.style.left = `${left}px`;
-
-  if (popupHeight > spaceBelow && spaceAbove > spaceBelow) {
-    // Not enough space below and more room above — flip
-    const maxH = Math.min(popupHeight, spaceAbove);
-    if (popupHeight > spaceAbove) {
-      popupEl.style.maxHeight = `${spaceAbove}px`;
-    }
-    popupEl.style.top = `${rect.top - offsetY - maxH - gap}px`;
-  } else {
-    // Show below (constrain if needed)
-    if (popupHeight > spaceBelow) {
-      popupEl.style.maxHeight = `${spaceBelow}px`;
-    }
-    popupEl.style.top = `${belowTop}px`;
-  }
+  popupEl.style.left = `${layout.left}px`;
+  popupEl.style.top = `${layout.top}px`;
+  popupEl.style.maxHeight =
+    layout.maxHeight !== null ? `${layout.maxHeight}px` : "";
 }
 
 /** Install a click-outside handler to dismiss the suggestion on external clicks */

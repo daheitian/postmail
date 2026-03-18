@@ -185,8 +185,8 @@ async function createElement(
 
 describe("JantComposeDialog", () => {
   beforeEach(() => {
-    document.body.innerHTML = "";
     vi.restoreAllMocks();
+    document.body.innerHTML = "";
   });
 
   it("renders with collections and labels", async () => {
@@ -1404,6 +1404,58 @@ describe("JantComposeDialog", () => {
 
     expect(el._confirmPanelOpen).toBe(false);
     expect(el.querySelector(".compose-confirm-panel")).toBeNull();
+  });
+
+  it("treats dialog backdrop clicks as close requests", async () => {
+    const el = await createElement();
+    const dialog = document.createElement("dialog");
+    const requestCloseSpy = vi.spyOn(el, "requestClose");
+    (
+      el as unknown as {
+        _dialogEl: HTMLDialogElement | null;
+        _handleDialogClick: (event: Event) => void;
+      }
+    )._dialogEl = dialog;
+    vi.spyOn(document, "elementFromPoint").mockReturnValue(dialog);
+
+    (
+      el as unknown as {
+        _handleDialogClick: (event: Event) => void;
+      }
+    )._handleDialogClick({
+      target: dialog,
+      clientX: 24,
+      clientY: 24,
+    } as unknown as Event);
+
+    expect(requestCloseSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores backdrop clicks that actually land on editor floating UI", async () => {
+    const el = await createElement();
+    const dialog = document.createElement("dialog");
+    const requestCloseSpy = vi.spyOn(el, "requestClose");
+    const floatingUi = document.createElement("div");
+    floatingUi.setAttribute("data-editor-floating-ui", "true");
+    (
+      el as unknown as {
+        _dialogEl: HTMLDialogElement | null;
+        _handleDialogClick: (event: Event) => void;
+      }
+    )._dialogEl = dialog;
+    vi.spyOn(document, "elementFromPoint").mockReturnValue(floatingUi);
+
+    (
+      el as unknown as {
+        _handleDialogClick: (event: Event) => void;
+      }
+    )._handleDialogClick({
+      target: dialog,
+      clientX: 24,
+      clientY: 24,
+    } as unknown as Event);
+
+    expect(requestCloseSpy).not.toHaveBeenCalled();
   });
 
   it("beforeunload does not warn when dialog was only opened", async () => {
