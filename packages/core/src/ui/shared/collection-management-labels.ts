@@ -111,7 +111,7 @@ const collectionMutationMessages = {
     comment: "@context: Button label to dismiss a dialog or action",
   }),
   saved: msg({
-    message: "Saved",
+    message: "Collection saved.",
     comment: "@context: Toast after saving a collection",
   }),
   saveFailed: msg({
@@ -119,7 +119,7 @@ const collectionMutationMessages = {
     comment: "@context: Toast when save fails",
   }),
   deleted: msg({
-    message: "Deleted",
+    message: "Collection deleted.",
     comment: "@context: Toast after deleting a collection",
   }),
 } as const;

@@ -128,7 +128,7 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       comment: "@context: Compose collection combobox search placeholder",
     }),
     noCollections: t({
-      message: "No matching collections.",
+      message: "No collections match that search. Try a different name.",
       comment:
         "@context: Compose collection combobox empty state when search has no results",
     }),
@@ -259,13 +259,8 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       message: "Reply",
       comment: "@context: Compose button - reply to post",
     }),
-    publishFeatured: t({
-      message: "Post as Featured",
-      comment:
-        "@context: Compose dropdown option - publish post and mark it as featured",
-    }),
     publishUnlisted: t({
-      message: "Post Unlisted",
+      message: "Post as Unlisted",
       comment:
         "@context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed",
     }),
@@ -309,15 +304,6 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       message: "Only visible when signed in.",
       comment:
         "@context: Compose publish settings help text for private visibility",
-    }),
-    publishFeaturedLabel: t({
-      message: "Featured",
-      comment: "@context: Compose publish settings featured toggle label",
-    }),
-    publishFeaturedHint: t({
-      message: "Also appears in Featured and the main RSS /feed.",
-      comment:
-        "@context: Compose publish settings help text for featured toggle",
     }),
     publishSlugLabel: t({
       message: "Custom link",

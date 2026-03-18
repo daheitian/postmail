@@ -100,7 +100,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
       comment: "@context: Empty state message on collections page",
     }),
     orderSaved: t({
-      message: "Order saved",
+      message: "Collection order updated.",
       comment: "@context: Toast after reordering collections",
     }),
     ...mutationLabels,

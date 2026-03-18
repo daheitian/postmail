@@ -71,7 +71,6 @@ interface ComposeStateSnapshot {
   collectionIds: string[];
   slug: string;
   visibility: ComposeVisibility;
-  featured: boolean;
   title: string;
   bodyJson: JSONContent | null;
   url: string;
@@ -133,7 +132,6 @@ export class JantComposeDialog extends LitElement {
     _replyExpanded: { state: true },
     _slug: { state: true },
     _visibility: { state: true },
-    _featured: { state: true },
     _showPublishPanel: { state: true },
     _moreSlugExpanded: { state: true },
     _suggestedSlug: { state: true },
@@ -174,7 +172,6 @@ export class JantComposeDialog extends LitElement {
   declare _replyExpanded: boolean;
   declare _slug: string;
   declare _visibility: ComposeVisibility;
-  declare _featured: boolean;
   declare _showPublishPanel: boolean;
   declare _moreSlugExpanded: boolean;
   declare _suggestedSlug: string;
@@ -246,7 +243,6 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshId = null;
     this._slug = "";
     this._visibility = "public";
-    this._featured = false;
     this._showPublishPanel = false;
     this._moreSlugExpanded = false;
     this._suggestedSlug = "";
@@ -281,8 +277,7 @@ export class JantComposeDialog extends LitElement {
       changed.has("_format") ||
       changed.has("_collectionIds") ||
       changed.has("_slug") ||
-      changed.has("_visibility") ||
-      changed.has("_featured")
+      changed.has("_visibility")
     ) {
       // Schedule draft auto-save for new-post mode only
       if (!this._editPostId && !this._draftSourceId) {
@@ -320,7 +315,6 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshId = null;
     this._slug = "";
     this._visibility = "public";
-    this._featured = false;
     this._showPublishPanel = false;
     this._moreSlugExpanded = false;
     this._suggestedSlug = "";
@@ -358,7 +352,6 @@ export class JantComposeDialog extends LitElement {
     this._suggestedSlugLoading = false;
     this._slugSuggestionKey = "";
     this._visibility = post.visibility ?? "public";
-    this._featured = false;
     this._visibilityLocked = Boolean(post.replyToId);
 
     // Pre-fill collection memberships if present
@@ -561,7 +554,6 @@ export class JantComposeDialog extends LitElement {
       collectionIds: [...this._collectionIds],
       slug: this._slug,
       visibility: this._visibility,
-      featured: this._featured,
       title: editor._title,
       bodyJson: editor._bodyJson,
       url: editor._url,
@@ -1279,7 +1271,6 @@ export class JantComposeDialog extends LitElement {
     this._suggestedSlugLoading = false;
     this._slugSuggestionKey = "";
     this._visibility = post.visibility ?? "public";
-    this._featured = false;
     this._visibilityLocked = Boolean(post.replyToId);
 
     if (post.collectionIds?.length) {
@@ -1475,7 +1466,6 @@ export class JantComposeDialog extends LitElement {
       quoteAuthor: data.quoteAuthor,
       slug: this._slug,
       visibility: this._visibility,
-      featured: this._featured,
       rating: data.rating,
       showTitle: editor._showTitle,
       showRating: editor._showRating,
@@ -1543,7 +1533,6 @@ export class JantComposeDialog extends LitElement {
     this._suggestedSlugLoading = false;
     this._slugSuggestionKey = "";
     this._visibility = draft.visibility ?? "public";
-    this._featured = false;
 
     // Restore reply context if this draft was a reply
     if (draft.replyToId) {

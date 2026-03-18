@@ -66,7 +66,7 @@ msgstr "更平靜、更溫暖的強調色，讓預設主題更安靜，也更有
 #. @context: Section title for the usage guidance section on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "A few simple rules."
-msgstr ""
+msgstr "幾項簡單規則."
 
 #. @context: Second paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -97,7 +97,7 @@ msgstr "用於評估強調色在較柔和、引用密集內容上的呈現的引
 #. @context: Description for the square logo PNG asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "A ready-made 1:1 PNG for decks, mockups, directories, and other square placements."
-msgstr ""
+msgstr "已製作好的 1:1 PNG，適用於簡報、樣機、目錄及其他方形配置。"
 
 #. @context: Excerpt for the sample link post
 #. @context: Plain-text summary for the sample link post
@@ -114,7 +114,7 @@ msgstr "供搜尋引擎與訂閱閱讀器使用的簡短介紹。僅限純文字
 #. @context: Description for the brand pack card
 #: src/ui/pages/BrandPage.tsx
 msgid "A single ZIP with the main logo, reverse logo, square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and social preview image."
-msgstr ""
+msgstr "一個 ZIP 檔，內含主標誌、反向標誌、方形 PNG、圓角、方形及圓形圖示，另外還有 favicon、Apple touch icon 與社群預覽圖像。"
 
 #. @context: Main sample article title
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -225,10 +225,10 @@ msgstr "全部可見性"
 msgid "All years"
 msgstr "所有年份"
 
-#. @context: Compose publish settings help text for featured toggle
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Also appears in Featured and the main RSS /feed."
-msgstr "同時出現在 Featured 和主 RSS /feed 中。"
+#. @context: Checkbox for allowing search engine indexing
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Allow search engines to index my site"
+msgstr "允許搜尋引擎收錄我的網站"
 
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -270,7 +270,7 @@ msgstr "外觀"
 #. @context: Title for the apple touch icon asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Apple touch icon"
-msgstr ""
+msgstr "Apple 觸控圖示"
 
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -338,7 +338,7 @@ msgstr "頭像顯示已更新。"
 #. @context: Usage label for the circle tile asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Avatar-ready"
-msgstr ""
+msgstr "可用作頭像"
 
 #. @context: Link back from the new post page
 #: src/ui/pages/ComposePage.tsx
@@ -347,8 +347,8 @@ msgstr "返回"
 
 #. @context: Confirmation text after downloading backup in delete flow
 #: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Backup downloaded"
-msgstr "備份已下載"
+msgid "Backup downloaded."
+msgstr "備份已下載。"
 
 #. @context: Settings item description for API tokens
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -375,21 +375,21 @@ msgstr "部落格頭像"
 #: src/routes/pages/brand.tsx
 #: src/ui/pages/BrandPage.tsx
 msgid "Brand assets"
-msgstr ""
+msgstr "品牌資產"
 
 #. @context: Title for the brand pack card
 #. @context: Title for the brand pack card
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/BrandPage.tsx
 msgid "Brand pack"
-msgstr ""
+msgstr "品牌包"
 
 #. @context: Asset keyword on the public brand asset page
 #. @context: Title for the brand tile asset card
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/BrandPage.tsx
 msgid "Brand tile"
-msgstr ""
+msgstr "品牌圖塊"
 
 #. @context: Breadcrumb label on collection detail page
 #. @context: Breadcrumb label on collection editor page
@@ -401,17 +401,17 @@ msgstr "麵包屑導覽"
 #. @context: Secondary hero button label to jump to the file list
 #: src/ui/pages/BrandPage.tsx
 msgid "Browse files"
-msgstr ""
+msgstr "瀏覽檔案"
 
 #. @context: Usage label for the favicon asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Browser tab"
-msgstr ""
+msgstr "瀏覽器分頁"
 
 #. @context: Usage label for the brand tile asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Built-in background"
-msgstr ""
+msgstr "內建背景"
 
 #. @context: Sample note post second paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -468,19 +468,19 @@ msgstr "為你的網站選擇一種排版方向。每個主題都會同時改變
 #. @context: Body copy for the logo downloads section
 #: src/ui/pages/BrandPage.tsx
 msgid "Choose the standard logo for most placements and the reverse logo when you need more contrast."
-msgstr ""
+msgstr "大多數版位請選擇標準 logo，需要更高對比時請使用反白 logo。"
 
 #. @context: Guidance body on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Choose the standard logo for websites, docs, directories, and editorial layouts."
-msgstr ""
+msgstr "為網站、檔案、目錄與編輯版面選擇標準標誌。"
 
 #. @context: Asset keyword on the public brand asset page
 #. @context: Title for the circle tile asset card
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/BrandPage.tsx
 msgid "Circle tile"
-msgstr ""
+msgstr "圓形圖塊"
 
 #. @context: Archive filter button label to clear the active filter
 #. @context: Archive filter button label to clear the active filter
@@ -512,10 +512,25 @@ msgstr "選集"
 msgid "Collection created."
 msgstr "選集已建立。"
 
+#. @context: Toast after deleting a collection
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection deleted."
+msgstr "選集已刪除。"
+
 #. @context: Collection form field
 #: src/ui/shared/collection-management-labels.ts
 msgid "Collection link"
 msgstr "選集連結"
+
+#. @context: Toast after reordering collections
+#: src/ui/shared/CollectionsManager.tsx
+msgid "Collection order updated."
+msgstr "選集排序已更新。"
+
+#. @context: Toast after saving a collection
+#: src/ui/shared/collection-management-labels.ts
+msgid "Collection saved."
+msgstr "選集已儲存。"
 
 #. @context: Plural collection count label
 #. @context: Plural collection count label
@@ -568,8 +583,8 @@ msgstr "完成設定"
 
 #. @context: Step 2 heading — user must type confirmation phrase
 #: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Confirm deletion"
-msgstr "確認刪除"
+msgid "Confirm account deletion"
+msgstr "確認刪除帳號"
 
 #. @context: Password form field
 #: src/ui/dash/settings/AccountContent.tsx
@@ -723,7 +738,7 @@ msgstr "深色"
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/BrandPage.tsx
 msgid "Dark backgrounds"
-msgstr ""
+msgstr "深色背景"
 
 #. @context: Settings group label for data export/import
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -740,7 +755,7 @@ msgstr "預設"
 #. @context: Usage label for the default logo card
 #: src/ui/pages/BrandPage.tsx
 msgid "Default logo"
-msgstr ""
+msgstr "預設標誌"
 
 #. @context: Inline link label in the sample link post body
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -750,7 +765,7 @@ msgstr "預設筆記範例"
 #. @context: Description for the social preview image asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Default preview image for social shares and link unfurls."
-msgstr ""
+msgstr "社群分享與連結展開時的預設預覽圖片。"
 
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
@@ -789,11 +804,6 @@ msgstr "永久刪除此部落格？ 此操作無法復原。"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Delete this collection permanently? Posts inside won't be removed."
 msgstr "要永久刪除此選集嗎？裡面的貼文不會被刪除。"
-
-#. @context: Toast after deleting a collection
-#: src/ui/shared/collection-management-labels.ts
-msgid "Deleted"
-msgstr "已刪除"
 
 #. @context: Hint shown on signin page when demo credentials are pre-filled
 #: src/routes/auth/signin.tsx
@@ -881,7 +891,7 @@ msgstr "分隔線"
 #. @context: Guidance body on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Do not recolor, stretch, rotate, outline, or add effects to the logo."
-msgstr ""
+msgstr "請勿變更顏色、拉伸、旋轉、描邊或對標誌新增任何效果。"
 
 #. @context: Confirm close action sheet subtitle when editing a published post
 #: src/ui/compose/ComposeDialog.tsx
@@ -917,7 +927,7 @@ msgstr "下載備份"
 #. @context: Primary hero button label for the brand pack ZIP
 #: src/ui/pages/BrandPage.tsx
 msgid "Download Brand Pack"
-msgstr ""
+msgstr "下載品牌套件"
 
 #. @context: Alert when backup download fails during account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -927,27 +937,27 @@ msgstr "下載失敗。請再試一次。"
 #. @context: Download button label for a non-SVG brand asset
 #: src/ui/pages/BrandPage.tsx
 msgid "Download file"
-msgstr ""
+msgstr "下載檔案"
 
 #. @context: Meta description for the public brand asset page
 #: src/routes/pages/brand.tsx
 msgid "Download official Jant logos, icons, and preview assets."
-msgstr ""
+msgstr "下載官方 Jant 標誌、圖示與預覽資產。"
 
 #. @context: Download button label for a PNG logo asset
 #: src/ui/pages/BrandPage.tsx
 msgid "Download PNG"
-msgstr ""
+msgstr "下載 PNG"
 
 #. @context: Download button label for a logo asset
 #: src/ui/pages/BrandPage.tsx
 msgid "Download SVG"
-msgstr ""
+msgstr "下載 SVG"
 
 #. @context: Hero title on the public brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Download the official Jant logo, icons, and preview files."
-msgstr ""
+msgstr "下載官方 Jant 標誌、圖示與預覽檔案。"
 
 #. @context: Step 1 heading — user must download backup before deleting
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1050,17 +1060,17 @@ msgstr "項目"
 #. @context: Usage label for the brand pack card
 #: src/ui/pages/BrandPage.tsx
 msgid "Everything in one download"
-msgstr ""
+msgstr "一次下載所有內容"
 
 #. @context: Section title for the quick-start panel on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Everything most people need is in one ZIP."
-msgstr ""
+msgstr "大多數人需要的東西都在同一個 ZIP 檔案中。"
 
 #. @context: Intro paragraph on the public brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Everything on this page is ready to use for articles, launch posts, directories, and product coverage."
-msgstr ""
+msgstr "此頁面上的所有內容皆可直接用於文章、發布貼文、名錄及產品報導。"
 
 #. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1075,7 +1085,7 @@ msgstr "匯出網站"
 #. @context: Title for the favicon asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Favicon"
-msgstr ""
+msgstr "網站圖示"
 
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1089,13 +1099,11 @@ msgstr "Favicon 與您標頭上的個人標記"
 #. @context: Browse filter label for featured posts
 #. @context: Browser page title for the featured feed
 #. @context: Browser page title for the featured feed
-#. @context: Compose publish settings featured toggle label
 #. @context: Inactive browse tab label on sample page
 #. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
 #: src/routes/pages/featured.tsx
 #: src/routes/pages/home.tsx
-#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1222,17 +1230,22 @@ msgstr "引導視線而不搶佔版面。"
 #. @context: Section kicker for the usage guidance section on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Guidelines"
-msgstr ""
+msgstr "使用指引"
 
 #. @context: Usage label for the square tile asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Hard edge"
-msgstr ""
+msgstr "銳利邊緣"
+
+#. @context: Toast after saving max visible nav links setting
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Header link limit updated."
+msgstr "頁首連結數量上限已更新。"
 
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Header links, featured tab, and menu balance"
-msgstr "頁首連結、精選分頁與選單餘額"
+msgid "Header links, home feed, and overflow menu"
+msgstr "頁首連結、首頁檢視與溢出選單"
 
 #. @context: Bullet item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1256,15 +1269,15 @@ msgstr "不會出現在公開列表和 feed 中，但知道連結的人仍可存
 msgid "Highest rated"
 msgstr "評分最高"
 
+#. @context: Toast after saving home default view setting
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Home feed updated."
+msgstr "首頁檢視已更新。"
+
 #. @context: Description for the apple touch icon asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Home screen icon for iPhone and iPad shortcuts."
-msgstr ""
-
-#. @context: Toast after saving home default view setting
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Home view saved"
-msgstr "首頁檢視已儲存"
+msgstr "供 iPhone 與 iPad 捷徑使用的主畫面圖示。"
 
 #. @context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1274,7 +1287,7 @@ msgstr "我想刪除 {siteName}"
 #. @context: Section kicker for the icon and preview downloads section
 #: src/ui/pages/BrandPage.tsx
 msgid "Icons and previews"
-msgstr ""
+msgstr "圖示與預覽"
 
 #. @context: Closing paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1319,17 +1332,12 @@ msgstr "供閱讀的介面應該引導視線，而不是不斷搶奪注意力。
 #. @context: Usage label for the apple touch icon asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "iOS home screen"
-msgstr ""
-
-#. @context: Checkbox for allowing search engine indexing
-#: src/ui/dash/settings/GeneralContent.tsx
-msgid "It's OK for search engines to index my site"
-msgstr "允許搜尋引擎索引我的網站"
+msgstr "iOS 主畫面"
 
 #. @context: Accessible label for the Jant logo mark
 #: src/ui/pages/BrandPage.tsx
 msgid "Jant logo"
-msgstr ""
+msgstr "Jant 標誌"
 
 #. @context: Body paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1344,7 +1352,7 @@ msgstr "日誌"
 #. @context: Guidance title on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Keep the artwork unchanged."
-msgstr ""
+msgstr "保持圖稿不變."
 
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1478,12 +1486,12 @@ msgstr "載入更多"
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/BrandPage.tsx
 msgid "Logo"
-msgstr ""
+msgstr "標誌"
 
 #. @context: Section kicker for the logo downloads section
 #: src/ui/pages/BrandPage.tsx
 msgid "Logos"
-msgstr ""
+msgstr "標誌"
 
 #. @context: Ordered list item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1521,11 +1529,6 @@ msgstr "3月15日"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Markdown supported"
 msgstr "支援 Markdown"
-
-#. @context: Toast after saving max visible nav links setting
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Max visible links saved"
-msgstr "已儲存最大可見導覽連結數"
 
 #. @context: Compose toolbar - media tooltip
 #: src/ui/compose/ComposeDialog.tsx
@@ -1591,6 +1594,11 @@ msgstr "導覽與閱讀狀態"
 msgid "Navigation items"
 msgstr "導覽項目"
 
+#. @context: Toast after saving navigation item order
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Navigation order updated."
+msgstr "導覽排序已更新。"
+
 #. @context: Label for nav preview section
 #. @context: Label for nav preview section
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1653,8 +1661,13 @@ msgstr "下一頁"
 
 #. @context: Empty state when no sessions exist (shouldn't normally appear)
 #: src/ui/dash/settings/SessionsContent.tsx
-msgid "No active sessions found."
-msgstr "找不到任何活動中的工作階段。"
+msgid "No active sessions right now. Signed-in devices show up here."
+msgstr "目前沒有活動中的工作階段。已登入的裝置會顯示在這裡。"
+
+#. @context: Compose collection combobox empty state when search has no results
+#: src/ui/compose/ComposeDialog.tsx
+msgid "No collections match that search. Try a different name."
+msgstr "沒有選集符合這次搜尋。試試其他名稱。"
 
 #. @context: Empty state message on collections page
 #. @context: Empty state message on collections page
@@ -1675,22 +1688,12 @@ msgstr "尚未有自訂網址。建立一個來新增轉址或為文章設定自
 msgid "No drafts yet. Save a draft to find it here."
 msgstr "還沒有草稿。儲存草稿後就會顯示在這裡。"
 
-#. @context: Empty state message on featured page
-#: src/ui/pages/FeaturedPage.tsx
-msgid "No featured posts. Mark a post as featured to highlight it here."
-msgstr "目前沒有精選貼文。將貼文標記為精選後，就會顯示在這裡。"
-
 #. @context: Error toast when no file was selected for upload
 #. @context: Error when no file was selected for upload
 #: src/routes/api/upload.ts
 #: src/routes/dash/settings.tsx
 msgid "No file selected. Choose a file to upload."
 msgstr "未選取任何檔案。請選擇要上傳的檔案。"
-
-#. @context: Compose collection combobox empty state when search has no results
-#: src/ui/compose/ComposeDialog.tsx
-msgid "No matching collections."
-msgstr "找不到符合的選集。"
 
 #. @context: Empty state for navigation items
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1735,6 +1738,11 @@ msgstr "筆記"
 msgid "Nothing here yet."
 msgstr "這裡還沒有內容。"
 
+#. @context: Empty state message on featured page
+#: src/ui/pages/FeaturedPage.tsx
+msgid "Nothing in Featured yet. Mark a post as featured to show it here."
+msgstr "精選裡還沒有內容。將貼文標記為精選後，就會顯示在這裡。"
+
 #. @context: Collection sort order option
 #. @context: Collection sort order option
 #: src/ui/pages/CollectionPage.tsx
@@ -1755,29 +1763,17 @@ msgstr "開啟幾個連結，檢查它們是否仍然與頁面原生風格相符
 #. @context: Button label to open a raw brand asset in the browser
 #: src/ui/pages/BrandPage.tsx
 msgid "Open raw asset"
-msgstr ""
+msgstr "開啟原始檔案"
 
 #. @context: Button label to open the raw PNG asset in the browser
 #: src/ui/pages/BrandPage.tsx
 msgid "Open raw PNG"
-msgstr ""
+msgstr "開啟原始 PNG 檔案"
 
 #. @context: Button label to open the raw SVG asset in the browser
 #: src/ui/pages/BrandPage.tsx
 msgid "Open raw SVG"
-msgstr ""
-
-#. @context: Switch label for setting featured posts as default homepage
-#: src/ui/dash/appearance/NavigationContent.tsx
-msgid "Open with Featured posts"
-msgstr "以精選貼文開啟"
-
-#. @context: Toast after reordering collections
-#. @context: Toast after saving navigation item order
-#: src/ui/dash/appearance/NavigationContent.tsx
-#: src/ui/shared/CollectionsManager.tsx
-msgid "Order saved"
-msgstr "排序已儲存"
+msgstr "在瀏覽器中開啟原始 SVG"
 
 #. @context: Menu action to organize collections
 #: src/ui/shared/CollectionsManager.tsx
@@ -1865,15 +1861,15 @@ msgstr "已釘選"
 msgid "Post"
 msgstr "發佈"
 
-#. @context: Compose dropdown option - publish post and mark it as featured
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Post as Featured"
-msgstr "發佈並設為精選"
-
 #. @context: Compose dropdown option - publish post visible only when logged in
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post as Private"
 msgstr "以私密方式發佈"
+
+#. @context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post as Unlisted"
+msgstr "發佈為未列出"
 
 #. @context: Compose publish button for private visibility
 #: src/ui/compose/ComposeDialog.tsx
@@ -1884,11 +1880,6 @@ msgstr "私密發布"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post unlisted"
 msgstr "不公開發布"
-
-#. @context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Post Unlisted"
-msgstr "發佈為未列出"
 
 #. @context: Ghost button label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1917,12 +1908,12 @@ msgstr "主要按鈕"
 #. @context: Description for the default logo asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Primary Jant logo for websites, docs, press coverage, and editorial layouts."
-msgstr ""
+msgstr "Jant 的主要標誌，用於網站、檔案、媒體報導與編輯版面。"
 
 #. @context: Section title for the logo downloads section
 #: src/ui/pages/BrandPage.tsx
 msgid "Primary logo files"
-msgstr ""
+msgstr "主要標誌檔案"
 
 #. @context: Archive visibility filter - private posts
 #. @context: Compose publish settings visibility option
@@ -2101,7 +2092,7 @@ msgstr "重設密碼"
 #: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/BrandPage.tsx
 msgid "Reverse logo"
-msgstr ""
+msgstr "反白標誌"
 
 #. @context: Button to revoke API token
 #. @context: Button to revoke a session
@@ -2162,11 +2153,6 @@ msgstr "儲存到草稿，稍後可編輯並發佈。"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Save to drafts?"
 msgstr "要儲存為草稿嗎？"
-
-#. @context: Toast after saving a collection
-#: src/ui/shared/collection-management-labels.ts
-msgid "Saved"
-msgstr "已儲存"
 
 #. @context: Search icon link in browse nav
 #. @context: Search page title
@@ -2249,7 +2235,7 @@ msgstr "設定已更新。"
 #. @context: Usage label for the social preview image asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Shared links"
-msgstr ""
+msgstr "已分享的連結"
 
 #. @context: Checkbox for showing the optional Jant credit link on the home page
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2330,17 +2316,17 @@ msgstr "網站名稱"
 #. @context: Description for the favicon asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Small browser icon used in tabs and bookmarks."
-msgstr ""
+msgstr "用於分頁與書籤的小型瀏覽器圖示。"
 
 #. @context: Asset keyword on the public brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Social preview"
-msgstr ""
+msgstr "社群預覽"
 
 #. @context: Title for the social preview image asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Social preview image"
-msgstr ""
+msgstr "社群預覽圖片"
 
 #. @context: Color theme preview card body sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2381,27 +2367,27 @@ msgstr "來源連結（選填）"
 #. @context: Section title for the icon and preview downloads section
 #: src/ui/pages/BrandPage.tsx
 msgid "Square assets for avatars, apps, browsers, and shared links"
-msgstr ""
+msgstr "方形資產，用於頭像、應用程式、瀏覽器和分享連結"
 
 #. @context: Asset keyword on the public brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Square logo"
-msgstr ""
+msgstr "方形標誌"
 
 #. @context: Title for the square logo PNG asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Square logo PNG"
-msgstr ""
+msgstr "方形標誌 PNG"
 
 #. @context: Title for the square tile asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Square tile"
-msgstr ""
+msgstr "方形磁貼"
 
 #. @context: Heading for the quick-start panel on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Start here"
-msgstr ""
+msgstr "從這裡開始"
 
 #. @context: Table cell in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2436,7 +2422,7 @@ msgstr "切換色盤與模式，無需開啟設定或變更啟用中的網站主
 #. @context: Guidance body on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Switch to the white logo when the standard green version would lose contrast."
-msgstr ""
+msgstr "在標準綠色版本對比度不足時，改用白色標誌。"
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -2490,7 +2476,7 @@ msgstr "最好的預設顏色是那種只有閱讀一段時間後才會注意到
 #. @context: Intro copy for the quick-start panel on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image."
-msgstr ""
+msgstr "品牌套件包含 SVG 標誌、透明方形 PNG、圓角、方形與圓形圖塊、favicon、Apple touch icon，以及預設的社交預覽圖片。"
 
 #. @context: Custom URL path help text
 #: src/routes/dash/custom-urls.tsx
@@ -2701,7 +2687,7 @@ msgstr "權杖讓你不必登入，也能從腳本、捷徑和其他工具存取
 #. @context: Usage label for the square logo PNG asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Transparent square"
-msgstr ""
+msgstr "透明方形"
 
 #. @context: Title on the public theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2796,7 +2782,12 @@ msgstr "使用方式"
 #. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Use automatic"
-msgstr ""
+msgstr "改用自動"
+
+#. @context: Switch label for setting featured posts as default homepage
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Use Featured as the home feed"
+msgstr "將精選設為首頁檢視"
 
 #. @context: Collection slug validation error for invalid characters
 #. @context: Compose custom slug validation error for invalid characters
@@ -2808,27 +2799,27 @@ msgstr "只能使用小寫字母、數字和連字號。"
 #. @context: Guidance title on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Use the logo on light backgrounds."
-msgstr ""
+msgstr "在淺色背景上使用標誌。"
 
 #. @context: Guidance title on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Use the reverse logo on dark backgrounds."
-msgstr ""
+msgstr "在深色背景上使用反白標誌。"
 
 #. @context: Body copy for the icon and preview downloads section
 #: src/ui/pages/BrandPage.tsx
 msgid "Use these when you need a transparent square logo, a shaped tile with a built-in background, a browser icon, or a default preview image."
-msgstr ""
+msgstr "請在需要透明的方形標誌、帶內建背景的造型方塊、瀏覽器圖示，或預設預覽圖片時使用這些檔案。"
 
 #. @context: Description for the default logo card
 #: src/ui/pages/BrandPage.tsx
 msgid "Use this for websites, docs, articles, and other light or neutral surfaces."
-msgstr ""
+msgstr "用於網站、檔案、文章，以及其他淺色或中性背景。"
 
 #. @context: Description for the reverse logo card
 #: src/ui/pages/BrandPage.tsx
 msgid "Use this on dark backgrounds, image-backed surfaces, and any placement where the green logo would lose contrast."
-msgstr ""
+msgstr "將此用於深色背景、以影像為背景的表面，以及任何會使綠色 logo 失去對比的配置"
 
 #. @context: Introductory description on the public theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2899,8 +2890,8 @@ msgstr "這個選集是關於什麼的？"
 
 #. @context: Description for featured default toggle, explains what happens when off
 #: src/ui/dash/appearance/NavigationContent.tsx
-msgid "When off, visitors see your latest posts first"
-msgstr "關閉時, 訪客會先看到你的最新文章"
+msgid "When off, the homepage opens with your latest posts."
+msgstr "關閉後，首頁會先顯示你的最新貼文。"
 
 #. @context: Textarea value on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2915,17 +2906,17 @@ msgstr "當強調色更溫暖一點、也沒那麼直白時，整頁會更像寫
 #. @context: Description for the circle tile asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "White logo on the Jant green circle for profile images, badges, and other round placements where you want a ready-made asset."
-msgstr ""
+msgstr "白色標誌置於 Jant 綠色圓形，適用於個人資料圖片、徽章及其他需要即用圓形配置的情境。"
 
 #. @context: Description for the brand tile asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "White logo on the Jant green rounded tile for app icon mockups, touch icons, directory listings, and other square placements that should feel softer."
-msgstr ""
+msgstr "白色標誌置於 Jant 綠色圓角方塊上，適用於應用程式圖示模擬、觸控圖示、目錄列表及其他需呈現較柔和感受的方形配置。"
 
 #. @context: Description for the square tile asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "White logo on the Jant green square tile for platforms and layouts that expect a true edge-to-edge square."
-msgstr ""
+msgstr "白色 logo 放在 Jant 綠色方形圖塊上，適用於需要真正從邊到邊方形的平台與版面配置。"
 
 #. @context: Sample note post title on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx

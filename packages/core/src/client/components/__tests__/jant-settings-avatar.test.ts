@@ -39,7 +39,7 @@ const labels: SettingsLabels = {
   footerHelp: "Displayed at the bottom of posts.",
   showJantBrandingOnHome:
     'Show "Build with Jant" at the bottom of the home page',
-  allowIndexing: "It's OK for search engines to index my site",
+  allowIndexing: "Allow search engines to index my site",
   demoSeoLocked: "Demo sites always stay hidden from search engines.",
   save: "Save",
   cancel: "Cancel",

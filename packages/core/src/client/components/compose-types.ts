@@ -62,7 +62,6 @@ export interface LocalDraft {
   quoteAuthor: string;
   slug: string;
   visibility: ComposeVisibility;
-  featured: boolean;
   rating: number;
   showTitle: boolean;
   showRating: boolean;
@@ -139,7 +138,6 @@ export interface ComposeLabels {
   collectionCountLabel: string;
   draftRestored: string;
   reply: string;
-  publishFeatured: string;
   publishUnlisted: string;
   publishPrivate: string;
   publishSettings: string;
@@ -150,8 +148,6 @@ export interface ComposeLabels {
   publishVisibilityUnlistedHint: string;
   publishVisibilityPrivate: string;
   publishVisibilityPrivateHint: string;
-  publishFeaturedLabel: string;
-  publishFeaturedHint: string;
   publishSlugLabel: string;
   publishSlugPlaceholder: string;
   publishSlugHint: string;
@@ -191,7 +187,6 @@ export interface ComposeSubmitDetail {
   attachmentOrder: string[];
   /** clientId → mediaId for already-uploaded file attachments (captured at submit time) */
   mediaClientMap: Record<string, string>;
-  featured?: boolean;
   editPostId?: string;
   replyToId?: string;
   replyThreadRootId?: string;

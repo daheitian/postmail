@@ -95,7 +95,7 @@ export function NavigationContent({
       comment: "@context: Remove system item from navigation",
     }),
     orderSaved: t({
-      message: "Order saved",
+      message: "Navigation order updated.",
       comment: "@context: Toast after saving navigation item order",
     }),
     labelRequired: t({
@@ -142,21 +142,21 @@ export function NavigationContent({
         "@context: Description for max visible nav links, explains overflow behavior",
     }),
     maxVisibleSaved: t({
-      message: "Max visible links saved",
+      message: "Header link limit updated.",
       comment: "@context: Toast after saving max visible nav links setting",
     }),
     useFeaturedAsDefault: t({
-      message: "Open with Featured posts",
+      message: "Use Featured as the home feed",
       comment:
         "@context: Switch label for setting featured posts as default homepage",
     }),
     useFeaturedAsDefaultDescription: t({
-      message: "When off, visitors see your latest posts first",
+      message: "When off, the homepage opens with your latest posts.",
       comment:
         "@context: Description for featured default toggle, explains what happens when off",
     }),
     homeViewSaved: t({
-      message: "Home view saved",
+      message: "Home feed updated.",
       comment: "@context: Toast after saving home default view setting",
     }),
     latest: t({

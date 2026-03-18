@@ -165,7 +165,8 @@ export function SessionsContent({
       ) : (
         <p class="text-sm text-muted-foreground">
           {t({
-            message: "No active sessions found.",
+            message:
+              "No active sessions right now. Signed-in devices show up here.",
             comment:
               "@context: Empty state when no sessions exist (shouldn't normally appear)",
           })}

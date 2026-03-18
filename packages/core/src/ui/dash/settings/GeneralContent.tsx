@@ -82,7 +82,7 @@ export function GeneralContent({
       comment: "@context: Placeholder hint for markdown-enabled textareas",
     }),
     allowIndexing: t({
-      message: "It's OK for search engines to index my site",
+      message: "Allow search engines to index my site",
       comment: "@context: Checkbox for allowing search engine indexing",
     }),
     demoSeoLocked: t({

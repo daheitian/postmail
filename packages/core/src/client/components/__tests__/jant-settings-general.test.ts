@@ -40,7 +40,7 @@ const labels: SettingsLabels = {
   showJantBrandingOnHome:
     'Show "Build with Jant" at the bottom of the home page',
   markdownSupported: "Markdown supported",
-  allowIndexing: "It's OK for search engines to index my site",
+  allowIndexing: "Allow search engines to index my site",
   demoSeoLocked: "Demo sites always stay hidden from search engines.",
   save: "Save",
   cancel: "Cancel",

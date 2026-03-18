@@ -158,7 +158,7 @@ export function DeleteAccountContent({
               <path d="m9 12 2 2 4-4" />
             </svg>
             {t({
-              message: "Backup downloaded",
+              message: "Backup downloaded.",
               comment:
                 "@context: Confirmation text after downloading backup in delete flow",
             })}
@@ -177,7 +177,7 @@ export function DeleteAccountContent({
           <div>
             <h2 class="delete-account-step-title">
               {t({
-                message: "Confirm deletion",
+                message: "Confirm account deletion",
                 comment:
                   "@context: Step 2 heading — user must type confirmation phrase",
               })}

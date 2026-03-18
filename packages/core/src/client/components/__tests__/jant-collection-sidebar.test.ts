@@ -42,10 +42,10 @@ const labels: CollectionManagerLabels = {
   entrySingular: "entry",
   entryPlural: "entries",
   emptyState: "Create a collection to get started.",
-  orderSaved: "Order saved.",
-  saved: "Saved.",
+  orderSaved: "Collection order updated.",
+  saved: "Collection saved.",
   saveFailed: "Save failed.",
-  deleted: "Deleted.",
+  deleted: "Collection deleted.",
   formLabels: {
     titleLabel: "Title",
     titlePlaceholder: "My Collection",

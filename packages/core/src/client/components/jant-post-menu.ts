@@ -388,7 +388,7 @@ export class JantPostMenu extends LitElement {
       }
       this._data = { ...this._data, featured };
 
-      showToast(featured ? "Post featured." : "Post unfeatured.");
+      showToast(featured ? "Added to Featured." : "Removed from Featured.");
     } catch {
       showToast("Could not update post. Try again.", "error");
     }
@@ -685,7 +685,7 @@ export class JantPostMenu extends LitElement {
     </svg>`;
   }
 
-  // Lucide: heart (feature) / heart-off (unfeature)
+  // Lucide: heart (add to Featured) / heart-off (remove from Featured)
   #iconHeart() {
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1209,7 +1209,9 @@ export class JantPostMenu extends LitElement {
               @click=${() => this.#setFeatured(!isFeatured)}
             >
               <span class="post-menu-item-label"
-                >${isFeatured ? "Unfeature" : "Feature"}</span
+                >${isFeatured
+                  ? "Remove from Featured"
+                  : "Add to Featured"}</span
               >
               <span class="post-menu-item-trailing"
                 >${isFeatured ? this.#iconHeartOff() : this.#iconHeart()}</span

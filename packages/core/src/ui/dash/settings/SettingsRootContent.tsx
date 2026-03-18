@@ -122,7 +122,7 @@ export function SettingsRootContent({
             comment: "@context: Settings item — navigation settings",
           })}
           description={t({
-            message: "Header links, featured tab, and menu balance",
+            message: "Header links, home feed, and overflow menu",
             comment: "@context: Settings item description for navigation",
           })}
         />

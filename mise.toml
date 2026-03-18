@@ -9,6 +9,7 @@ pnpm = "10.28.2"
 # Checks
 # =============================================================================
 [tasks.check-ci]
+alias = "ci"
 description = "Run all CI checks (test + build + i18n + template)"
 run = """
 # Phase 1: Build @jant/core once (Vite lib mode → single dist/index.js)
@@ -230,6 +231,7 @@ echo "Done! Local database is ready."
 # i18n (Lingui)
 # =============================================================================
 [tasks.i18n-refresh]
+alias ="i18n"
 description = "Extract, translate with AI, and compile (requires OPENAI_API_KEY)"
 run = "mise run i18n-extract && mise run i18n-translate && mise run i18n-compile"
 
