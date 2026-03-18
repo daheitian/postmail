@@ -28,9 +28,6 @@ export const PostStatusBadges: FC = () => {
         </svg>
         Pinned
       </span>
-      <span class="post-status-separator" aria-hidden="true">
-        &middot;
-      </span>
       <span class="post-status-badge post-status-featured">
         <svg
           xmlns="http://www.w3.org/2000/svg"

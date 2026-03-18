@@ -71,7 +71,6 @@ async function createMenu(): Promise<{
     <article
       data-post
       data-post-id="post-1"
-      data-post-permalink="/post-1"
       data-post-visibility="unlisted"
     >
       <button

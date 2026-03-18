@@ -1593,12 +1593,13 @@
   .post-status-badges {
     display: none;
     align-items: center;
+    flex-wrap: wrap;
     gap: 6px;
-    margin-bottom: 4px;
-    font-size: 11px;
+    margin-bottom: 5px;
+    font-size: 12px;
     font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    line-height: 1;
+    letter-spacing: 0.01em;
     color: var(--site-text-placeholder);
   }
 
@@ -1613,6 +1614,8 @@
     display: none;
     align-items: center;
     gap: 4px;
+    color: inherit;
+    white-space: nowrap;
   }
 
   article[data-post-pinned] .post-status-pinned {
@@ -1628,24 +1631,22 @@
   }
 
   .post-status-badge svg {
-    width: 12px;
-    height: 12px;
+    width: 11px;
+    height: 11px;
     flex-shrink: 0;
+    opacity: 0.82;
   }
 
-  /* Dot separator — only visible when pinned AND (featured or private) */
-  .post-status-separator {
+  [data-page="featured"] article[data-post-featured] .post-status-featured {
     display: none;
-    user-select: none;
   }
 
-  article[data-post-pinned][data-post-featured] .post-status-separator {
-    display: inline;
-  }
-
-  article[data-post-pinned][data-post-visibility="private"]
-    .post-status-separator {
-    display: inline;
+  [data-page="featured"]
+    article[data-post-featured]:not([data-post-pinned]):not(
+      [data-post-visibility="private"]
+    )
+    .post-status-badges {
+    display: none;
   }
 
   .post-menu-footer {
