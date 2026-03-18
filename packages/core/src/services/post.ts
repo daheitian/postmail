@@ -1133,6 +1133,9 @@ export function createPostService(
       const needsReplyVisibilityCleanup =
         !isThreadReply(existing) && (statusChanged || visibilityChanged);
       const needsCollectionSync = data.collectionIds !== undefined;
+      const nextCollectionIds = needsCollectionSync
+        ? [...new Set(data.collectionIds ?? [])]
+        : [];
       const needsThreadActivityRecalc =
         statusChanged || publishedAtChanged || existing.status === "draft";
       const hasExtraWrites =
@@ -1154,6 +1157,9 @@ export function createPostService(
 
       // Complex case: batch cascade + update + collection sync atomically
       const writeQueries: BatchItem<"sqlite">[] = [];
+      const existingCollectionIds = needsCollectionSync
+        ? await getCollectionIdsForPost(id)
+        : [];
 
       if (needsCascade) {
         writeQueries.push(
@@ -1188,18 +1194,36 @@ export function createPostService(
       );
 
       if (needsCollectionSync) {
-        writeQueries.push(
-          db.delete(postCollections).where(eq(postCollections.postId, id)),
+        const existingIds = new Set(existingCollectionIds);
+        const nextIds = new Set(nextCollectionIds);
+        const removedIds = existingCollectionIds.filter(
+          (cid) => !nextIds.has(cid),
         );
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by needsCollectionSync
-        if (data.collectionIds!.length > 0) {
+        const addedIds = nextCollectionIds.filter(
+          (cid) => !existingIds.has(cid),
+        );
+
+        if (removedIds.length > 0) {
+          writeQueries.push(
+            db
+              .delete(postCollections)
+              .where(
+                and(
+                  eq(postCollections.postId, id),
+                  inArray(postCollections.collectionId, removedIds),
+                ),
+              ),
+          );
+        }
+
+        if (addedIds.length > 0) {
+          const collectionTimestamp = now();
           writeQueries.push(
             db.insert(postCollections).values(
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by needsCollectionSync
-              data.collectionIds!.map((collectionId) => ({
+              addedIds.map((collectionId) => ({
                 postId: id,
                 collectionId,
-                createdAt: now(),
+                createdAt: collectionTimestamp,
               })),
             ),
           );

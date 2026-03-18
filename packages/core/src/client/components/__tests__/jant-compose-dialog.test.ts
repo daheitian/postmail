@@ -967,6 +967,35 @@ describe("JantComposeDialog", () => {
     expect(actionRow).not.toBeNull();
   });
 
+  it("refreshes collections from the compose-sorted endpoint", async () => {
+    const el = await createElement([{ id: "col-1", title: "Books" }]);
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          collections: [
+            { id: "col-2", title: "Movies" },
+            { id: "col-1", title: "Books" },
+          ],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    const refreshed = await el.refreshCollections();
+
+    expect(refreshed).toBe(true);
+    expect(fetchSpy).toHaveBeenCalledWith("/api/collections?view=compose", {
+      headers: { Accept: "application/json" },
+    });
+    expect(el.collections).toEqual([
+      { id: "col-2", title: "Movies" },
+      { id: "col-1", title: "Books" },
+    ]);
+  });
+
   it("opens a quick collection dialog from the collection selector", async () => {
     const el = await createElement();
     const trigger = requireElement(

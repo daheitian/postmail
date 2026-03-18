@@ -99,6 +99,20 @@ interface ComposeStateSnapshot {
   attachmentOrder: string[];
 }
 
+function toComposeCollections(value: unknown): ComposeCollection[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+
+    const id = Reflect.get(item, "id");
+    const title = Reflect.get(item, "title");
+    if (typeof id !== "string" || typeof title !== "string") return [];
+
+    return [{ id, title }];
+  });
+}
+
 export class JantComposeDialog extends LitElement {
   static properties = {
     collections: { type: Array },
@@ -334,6 +348,25 @@ export class JantComposeDialog extends LitElement {
     this._destroyAttachedEditor();
     this._editor?.reset();
     this._captureInitialSnapshot();
+  }
+
+  async refreshCollections(): Promise<boolean> {
+    try {
+      const res = await fetch("/api/collections?view=compose", {
+        headers: { Accept: "application/json" },
+      });
+      if (!res.ok) return false;
+
+      const body = (await res.json().catch(() => null)) as {
+        collections?: unknown;
+      } | null;
+      if (!Array.isArray(body?.collections)) return false;
+
+      this.collections = toComposeCollections(body.collections);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async openEdit(id: string) {
@@ -2169,7 +2202,13 @@ export class JantComposeDialog extends LitElement {
         title: created.title,
       };
 
-      this.collections = [...this.collections, newCollection];
+      const refreshed = await this.refreshCollections();
+      if (
+        !refreshed ||
+        !this.collections.some((col) => col.id === created.id)
+      ) {
+        this.collections = [...this.collections, newCollection];
+      }
       this._collectionIds = [...this._collectionIds, created.id];
       this._closeAddCollectionPanel();
       showToast(this.labels.collectionFormLabels.createdLabel);

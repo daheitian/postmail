@@ -37,8 +37,22 @@ const UpdateSidebarItemSchema = z.object({
   label: z.string().trim().max(60).nullable().optional(),
 });
 
+const ListCollectionsQuerySchema = z.object({
+  view: z.enum(["compose"]).optional(),
+});
+
 // List collections (includes post counts and sidebar items)
 collectionsApiRoutes.get("/", async (c) => {
+  const query = parseValidated(ListCollectionsQuerySchema, c.req.query());
+
+  if (query.view === "compose") {
+    const collections = await c.var.services.collections.listByRecentActivity();
+    return c.json({
+      collections,
+      sidebarItems: [],
+    });
+  }
+
   const directoryData = await c.var.services.collections.listDirectoryData();
 
   return c.json({

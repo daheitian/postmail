@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import {
   collections,
@@ -148,6 +148,41 @@ describe("CollectionService", () => {
 
       const list = await collectionService.list();
       expect(list).toHaveLength(3);
+    });
+  });
+
+  describe("listByRecentActivity", () => {
+    it("breaks recent-added ties by newer collections first", async () => {
+      vi.useFakeTimers();
+
+      try {
+        vi.setSystemTime(new Date("2024-01-01T00:00:00Z"));
+        const older = await collectionService.create({
+          slug: "older",
+          title: "Older",
+        });
+
+        vi.setSystemTime(new Date("2024-01-01T00:00:10Z"));
+        const newer = await collectionService.create({
+          slug: "newer",
+          title: "Newer",
+        });
+
+        vi.setSystemTime(new Date("2024-01-01T00:01:00Z"));
+        await postService.create({
+          format: "note",
+          bodyMarkdown: "shared add",
+          collectionIds: [older.id, newer.id],
+        });
+
+        const collections = await collectionService.listByRecentActivity();
+        expect(collections.map((collection) => collection.id)).toEqual([
+          newer.id,
+          older.id,
+        ]);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 

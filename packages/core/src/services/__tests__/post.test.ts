@@ -1,9 +1,10 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { eq } from "drizzle-orm";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { posts } from "../../db/schema.js";
 import { createPostService } from "../post.js";
 import { createMediaService } from "../media.js";
+import { createCollectionService } from "../collection.js";
 import type { Database } from "../../db/index.js";
 import { createPathService } from "../path.js";
 import type { MediaService } from "../media.js";
@@ -41,11 +42,13 @@ function createMockStorage() {
 describe("PostService", () => {
   let db: Database;
   let postService: ReturnType<typeof createPostService>;
+  let collectionService: ReturnType<typeof createCollectionService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
     postService = createPostService(db, { slugIdLength: 5 });
+    collectionService = createCollectionService(db);
   });
 
   describe("create", () => {
@@ -981,6 +984,54 @@ describe("PostService", () => {
       });
 
       expect(updated?.updatedAt).toBeGreaterThanOrEqual(originalUpdatedAt);
+    });
+
+    it("does not refresh recent-added ordering when collection memberships stay the same", async () => {
+      vi.useFakeTimers();
+
+      try {
+        vi.setSystemTime(new Date("2024-01-01T00:00:00Z"));
+        const olderCollection = await collectionService.create({
+          slug: "older",
+          title: "Older",
+        });
+        const firstPost = await postService.create({
+          format: "note",
+          bodyMarkdown: "first",
+          collectionIds: [olderCollection.id],
+        });
+
+        vi.setSystemTime(new Date("2024-01-01T00:01:00Z"));
+        const newerCollection = await collectionService.create({
+          slug: "newer",
+          title: "Newer",
+        });
+        await postService.create({
+          format: "note",
+          bodyMarkdown: "second",
+          collectionIds: [newerCollection.id],
+        });
+
+        expect(
+          (await collectionService.listByRecentActivity()).map(
+            (collection) => collection.id,
+          ),
+        ).toEqual([newerCollection.id, olderCollection.id]);
+
+        vi.setSystemTime(new Date("2024-01-01T00:02:00Z"));
+        await postService.update(firstPost.id, {
+          bodyMarkdown: "first updated",
+          collectionIds: [olderCollection.id],
+        });
+
+        expect(
+          (await collectionService.listByRecentActivity()).map(
+            (collection) => collection.id,
+          ),
+        ).toEqual([newerCollection.id, olderCollection.id]);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it("sets publishedAt when publishing a draft", async () => {

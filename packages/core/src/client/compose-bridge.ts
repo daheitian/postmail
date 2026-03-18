@@ -463,8 +463,7 @@ function buildPostBody(detail: ComposeSubmitDetail) {
     status: detail.status,
     visibility: detail.visibility || undefined,
     rating: detail.rating || undefined,
-    collectionIds:
-      detail.collectionIds.length > 0 ? detail.collectionIds : undefined,
+    collectionIds: detail.collectionIds,
     mediaIds: detail.mediaIds.length > 0 ? detail.mediaIds : undefined,
     mediaAlts:
       Object.keys(detail.mediaAlts).length > 0 ? detail.mediaAlts : undefined,
@@ -563,6 +562,9 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   const clearPageLoading = () => {
     if (!isPageMode || !composeEl) return;
     composeEl.loading = false;
+  };
+  const refreshComposeCollections = async () => {
+    await composeEl?.refreshCollections();
   };
   const leavePageAfterConfirmSave = () => {
     if (!isPageMode || !composeEl) return false;
@@ -689,6 +691,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
           const retryData = await readJsonObject(retryRes);
           const fallbackMsg =
             labels?.publishFailedDraft ?? "Couldn't publish. Saved as draft.";
+          await refreshComposeCollections();
           if (!leavePageAfterConfirmSave()) {
             resetPageCompose();
           }
@@ -719,6 +722,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     if (draftFallback === "upload") {
       const fallbackMsg =
         labels?.uploadFailedDraft ?? "Some uploads failed. Saved as draft.";
+      await refreshComposeCollections();
       resetPageCompose();
       toastMsg(fallbackMsg);
       return;
@@ -734,6 +738,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
         composeEl?.preparePageLeave?.();
         globalThis.location.assign(permalink);
       } else if (detail.replyToId) {
+        await refreshComposeCollections();
         const updated = await refreshReplyTarget(detail);
         if (!updated) {
           globalThis.location.reload();
@@ -744,6 +749,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
         globalThis.location.reload();
       }
     } else {
+      await refreshComposeCollections();
       if (!leavePageAfterConfirmSave()) {
         resetPageCompose();
       }

@@ -224,6 +224,15 @@ export function createCollectionService(
       .filter((row): row is Collection => row !== null);
   }
 
+  async function getPostCollectionIds(postId: string): Promise<string[]> {
+    const rows = await db
+      .select({ collectionId: postCollections.collectionId })
+      .from(postCollections)
+      .where(eq(postCollections.postId, postId));
+
+    return rows.map((row) => row.collectionId);
+  }
+
   async function listDirectoryCollections(): Promise<
     CollectionDirectoryCollection[]
   > {
@@ -378,7 +387,7 @@ export function createCollectionService(
           eq(collections.id, postCollections.collectionId),
         )
         .groupBy(collections.id)
-        .orderBy(desc(sql`last_added_at`), asc(collections.createdAt));
+        .orderBy(desc(sql`last_added_at`), desc(collections.createdAt));
       return hydrateCollections(rows.map((row) => row.collection));
     },
 
@@ -720,24 +729,51 @@ export function createCollectionService(
     },
 
     async syncPostCollections(postId, collectionIds) {
-      if (collectionIds.length === 0) {
-        await db
-          .delete(postCollections)
-          .where(eq(postCollections.postId, postId));
+      const nextCollectionIds = [...new Set(collectionIds)];
+      const existingCollectionIds = await getPostCollectionIds(postId);
+      const existingIds = new Set(existingCollectionIds);
+      const nextIds = new Set(nextCollectionIds);
+      const removedIds = existingCollectionIds.filter((id) => !nextIds.has(id));
+      const addedIds = nextCollectionIds.filter((id) => !existingIds.has(id));
+
+      if (removedIds.length === 0 && addedIds.length === 0) {
         return;
       }
 
-      const deleteQuery = db
-        .delete(postCollections)
-        .where(eq(postCollections.postId, postId));
-      const insertQuery = db.insert(postCollections).values(
-        collectionIds.map((collectionId) => ({
-          postId,
-          collectionId,
-          createdAt: now(),
-        })),
+      const writeQueries: BatchItem<"sqlite">[] = [];
+
+      if (removedIds.length > 0) {
+        writeQueries.push(
+          db
+            .delete(postCollections)
+            .where(
+              and(
+                eq(postCollections.postId, postId),
+                inArray(postCollections.collectionId, removedIds),
+              ),
+            ),
+        );
+      }
+
+      if (addedIds.length > 0) {
+        const timestamp = now();
+        writeQueries.push(
+          db.insert(postCollections).values(
+            addedIds.map((collectionId) => ({
+              postId,
+              collectionId,
+              createdAt: timestamp,
+            })),
+          ),
+        );
+      }
+
+      await db.batch(
+        writeQueries as [
+          (typeof writeQueries)[number],
+          ...(typeof writeQueries)[number][],
+        ],
       );
-      await db.batch([deleteQuery, insertQuery]);
     },
   };
 }

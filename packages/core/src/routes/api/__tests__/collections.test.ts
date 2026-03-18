@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { collectionsApiRoutes } from "../collections.js";
 
@@ -63,6 +63,45 @@ describe("Collections API Routes", () => {
           label: "Notes",
         }),
       );
+    });
+
+    it("returns compose-sorted collections when view=compose", async () => {
+      vi.useFakeTimers();
+
+      try {
+        const { app, services } = createTestApp({ authenticated: true });
+        app.route("/api/collections", collectionsApiRoutes);
+
+        vi.setSystemTime(new Date("2024-01-01T00:00:00Z"));
+        const older = await services.collections.create({
+          slug: "older",
+          title: "Older",
+        });
+
+        vi.setSystemTime(new Date("2024-01-01T00:00:10Z"));
+        const newer = await services.collections.create({
+          slug: "newer",
+          title: "Newer",
+        });
+
+        vi.setSystemTime(new Date("2024-01-01T00:01:00Z"));
+        await services.posts.create({
+          format: "note",
+          bodyMarkdown: "shared add",
+          collectionIds: [older.id, newer.id],
+        });
+
+        const res = await app.request("/api/collections?view=compose");
+        expect(res.status).toBe(200);
+
+        const body = await res.json();
+        expect(body.sidebarItems).toEqual([]);
+        expect(
+          body.collections.map((collection: { id: string }) => collection.id),
+        ).toEqual([newer.id, older.id]);
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
