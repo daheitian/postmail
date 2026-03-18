@@ -1,3 +1,4 @@
+import { strFromU8, unzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 import {
   buildJantAppIconSvgMarkup,
@@ -97,6 +98,18 @@ describe("jant-branding", () => {
     expect(getDefaultJantSquareTilePngBytes()).not.toHaveLength(0);
     expect(getDefaultJantCircleTilePngBytes()).not.toHaveLength(0);
     expect(getDefaultJantBrandPackBytes()).not.toHaveLength(0);
+  });
+
+  it("packages the social preview under the social folder in the brand pack", () => {
+    const archive = unzipSync(getDefaultJantBrandPackBytes());
+
+    expect(Object.keys(archive)).toContain("social/jant-social-preview.png");
+    expect(Object.keys(archive)).not.toContain(
+      "previews/jant-social-preview.png",
+    );
+    expect(strFromU8(archive["README.txt"] ?? new Uint8Array())).toContain(
+      "social/jant-social-preview.png",
+    );
   });
 
   it("resolves bundled assets by filename", () => {

@@ -378,7 +378,7 @@ function buildJantBrandPackReadme(): string {
     "- icons/jant-circle-tile-512.png",
     "- icons/jant-favicon.ico",
     "- icons/jant-apple-touch-icon.png",
-    "- previews/jant-social-preview.png",
+    "- social/jant-social-preview.png",
     "",
     "Basic usage:",
     "- Use the main logo on light or neutral backgrounds.",
@@ -412,7 +412,7 @@ export function getDefaultJantBrandPackBytes(): Uint8Array {
         "icons/jant-circle-tile-512.png": getDefaultJantCircleTilePngBytes(),
         "icons/jant-favicon.ico": getDefaultJantFaviconIcoBytes(),
         "icons/jant-apple-touch-icon.png": getDefaultJantAppleTouchIconBytes(),
-        "previews/jant-social-preview.png": getDefaultJantSocialImageBytes(),
+        "social/jant-social-preview.png": getDefaultJantSocialImageBytes(),
       },
       { level: 0 },
     );
