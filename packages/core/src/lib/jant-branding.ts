@@ -4,6 +4,8 @@ import {
   JANT_APP_ICON_CORNER_RADIUS,
   JANT_APP_ICON_SVG,
   JANT_BRAND_TILE_512_PNG_BASE64,
+  JANT_CIRCLE_TILE_512_PNG_BASE64,
+  JANT_CIRCLE_TILE_SVG,
   JANT_DEFAULT_APPLE_TOUCH_ICON_PNG_BASE64,
   JANT_DEFAULT_FAVICON_ICO_BASE64,
   JANT_DEFAULT_SOCIAL_IMAGE_PNG_BASE64,
@@ -14,6 +16,8 @@ import {
   JANT_LOGO_POSITIVE_FILL,
   JANT_LOGO_POSITIVE_SVG,
   JANT_LOGO_VIEW_BOX,
+  JANT_SQUARE_TILE_512_PNG_BASE64,
+  JANT_SQUARE_TILE_SVG,
 } from "./jant-branding-generated.js";
 import { toPublicPath } from "./url.js";
 
@@ -45,6 +49,10 @@ const JANT_LEGACY_APP_ICON_SVG_FILENAME = "jant-app-icon.svg";
 export const JANT_ICON_FILENAMES = {
   brandTileSvg: "jant-brand-tile.svg",
   brandTilePng: "jant-brand-tile-512.png",
+  squareTileSvg: "jant-square-tile.svg",
+  squareTilePng: "jant-square-tile-512.png",
+  circleTileSvg: "jant-circle-tile.svg",
+  circleTilePng: "jant-circle-tile-512.png",
   favicon: "jant-favicon.ico",
   appleTouch: "jant-apple-touch-icon.png",
   socialImage: "jant-social-preview.png",
@@ -63,6 +71,10 @@ interface JantBrandAssetDefinition {
   logoSvg: Record<JantLogoVariant, string>;
   appIconSvg: string;
   brandTilePngBase64: string;
+  squareTileSvg: string;
+  squareTilePngBase64: string;
+  circleTileSvg: string;
+  circleTilePngBase64: string;
   faviconIcoBase64: string;
   appleTouchPngBase64: string;
   socialImagePngBase64: string;
@@ -86,6 +98,10 @@ const JANT_BRAND_ASSET_DEFINITIONS: Record<
     },
     appIconSvg: JANT_APP_ICON_SVG,
     brandTilePngBase64: JANT_BRAND_TILE_512_PNG_BASE64,
+    squareTileSvg: JANT_SQUARE_TILE_SVG,
+    squareTilePngBase64: JANT_SQUARE_TILE_512_PNG_BASE64,
+    circleTileSvg: JANT_CIRCLE_TILE_SVG,
+    circleTilePngBase64: JANT_CIRCLE_TILE_512_PNG_BASE64,
     faviconIcoBase64: JANT_DEFAULT_FAVICON_ICO_BASE64,
     appleTouchPngBase64: JANT_DEFAULT_APPLE_TOUCH_ICON_PNG_BASE64,
     socialImagePngBase64: JANT_DEFAULT_SOCIAL_IMAGE_PNG_BASE64,
@@ -264,6 +280,24 @@ export function buildJantAppIconSvgMarkup(): string {
 }
 
 /**
+ * Render the hard-edge square Jant tile SVG.
+ *
+ * @returns SVG markup string with the baked-in square tile
+ */
+export function buildJantSquareTileSvgMarkup(): string {
+  return getJantBrandAssetDefinition().squareTileSvg;
+}
+
+/**
+ * Render the circular Jant tile SVG.
+ *
+ * @returns SVG markup string with the baked-in circular tile
+ */
+export function buildJantCircleTileSvgMarkup(): string {
+  return getJantBrandAssetDefinition().circleTileSvg;
+}
+
+/**
  * Decode the bundled ICO fallback used when the site has no uploaded avatar.
  *
  * @returns ICO bytes
@@ -300,6 +334,24 @@ export function getDefaultJantBrandTilePngBytes(): Uint8Array {
 }
 
 /**
+ * Decode the bundled hard-edge square Jant tile PNG.
+ *
+ * @returns PNG bytes
+ */
+export function getDefaultJantSquareTilePngBytes(): Uint8Array {
+  return base64ToUint8Array(getJantBrandAssetDefinition().squareTilePngBase64);
+}
+
+/**
+ * Decode the bundled circular Jant tile PNG.
+ *
+ * @returns PNG bytes
+ */
+export function getDefaultJantCircleTilePngBytes(): Uint8Array {
+  return base64ToUint8Array(getJantBrandAssetDefinition().circleTilePngBase64);
+}
+
+/**
  * Decode the bundled transparent positive logo PNG.
  *
  * @returns PNG bytes
@@ -320,6 +372,10 @@ function buildJantBrandPackReadme(): string {
     "- logos/jant-square-logo.png",
     "- icons/jant-brand-tile.svg",
     "- icons/jant-brand-tile-512.png",
+    "- icons/jant-square-tile.svg",
+    "- icons/jant-square-tile-512.png",
+    "- icons/jant-circle-tile.svg",
+    "- icons/jant-circle-tile-512.png",
     "- icons/jant-favicon.ico",
     "- icons/jant-apple-touch-icon.png",
     "- previews/jant-social-preview.png",
@@ -350,6 +406,10 @@ export function getDefaultJantBrandPackBytes(): Uint8Array {
         "logos/jant-square-logo.png": getDefaultJantPositiveLogoPngBytes(),
         "icons/jant-brand-tile.svg": strToU8(buildJantAppIconSvgMarkup()),
         "icons/jant-brand-tile-512.png": getDefaultJantBrandTilePngBytes(),
+        "icons/jant-square-tile.svg": strToU8(buildJantSquareTileSvgMarkup()),
+        "icons/jant-square-tile-512.png": getDefaultJantSquareTilePngBytes(),
+        "icons/jant-circle-tile.svg": strToU8(buildJantCircleTileSvgMarkup()),
+        "icons/jant-circle-tile-512.png": getDefaultJantCircleTilePngBytes(),
         "icons/jant-favicon.ico": getDefaultJantFaviconIcoBytes(),
         "icons/jant-apple-touch-icon.png": getDefaultJantAppleTouchIconBytes(),
         "previews/jant-social-preview.png": getDefaultJantSocialImageBytes(),
@@ -389,6 +449,34 @@ export function getJantBundledAsset(filename: string): JantBundledAsset | null {
   if (filename === JANT_ICON_FILENAMES.brandTilePng) {
     return {
       body: getDefaultJantBrandTilePngBytes(),
+      contentType: "image/png",
+    };
+  }
+
+  if (filename === JANT_ICON_FILENAMES.squareTileSvg) {
+    return {
+      body: buildJantSquareTileSvgMarkup(),
+      contentType: "image/svg+xml; charset=utf-8",
+    };
+  }
+
+  if (filename === JANT_ICON_FILENAMES.squareTilePng) {
+    return {
+      body: getDefaultJantSquareTilePngBytes(),
+      contentType: "image/png",
+    };
+  }
+
+  if (filename === JANT_ICON_FILENAMES.circleTileSvg) {
+    return {
+      body: buildJantCircleTileSvgMarkup(),
+      contentType: "image/svg+xml; charset=utf-8",
+    };
+  }
+
+  if (filename === JANT_ICON_FILENAMES.circleTilePng) {
+    return {
+      body: getDefaultJantCircleTilePngBytes(),
       contentType: "image/png",
     };
   }

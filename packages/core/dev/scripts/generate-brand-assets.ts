@@ -14,16 +14,23 @@ const outputPath = resolve(packageRoot, "src/lib/jant-branding-generated.ts");
 
 const NEGATIVE_FILL = "#FFFFFF";
 const APP_ICON_CORNER_RADIUS = 22;
+const SQUARE_TILE_CORNER_RADIUS = 0;
 const POSITIVE_PNG_SIZE = 512;
 const BRAND_TILE_PNG_SIZE = 512;
+const SQUARE_TILE_PNG_SIZE = 512;
+const CIRCLE_TILE_PNG_SIZE = 512;
 const SOCIAL_IMAGE_SIZE = 512;
 
 interface BrandAssetBundle {
   positiveFill: string;
   positiveSvg: string;
   negativeSvg: string;
-  appIconSvg: string;
+  roundedTileSvg: string;
+  squareTileSvg: string;
+  circleTileSvg: string;
   brandTilePng: ArrayBuffer;
+  squareTilePng: ArrayBuffer;
+  circleTilePng: ArrayBuffer;
   positiveLogoPng: ArrayBuffer;
   faviconIco: ArrayBuffer;
   appleTouchPng: ArrayBuffer;
@@ -82,13 +89,29 @@ function buildAppIconSvgMarkup({
   pathData,
   backgroundFill,
   markFill,
+  cornerRadius,
+}: {
+  viewBox: string;
+  pathData: string;
+  backgroundFill: string;
+  markFill: string;
+  cornerRadius: number;
+}): string {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"><rect width="100" height="100" rx="${cornerRadius}" fill="${backgroundFill}"/><path fill="${markFill}" d="${pathData}"/></svg>`;
+}
+
+function buildCircleTileSvgMarkup({
+  viewBox,
+  pathData,
+  backgroundFill,
+  markFill,
 }: {
   viewBox: string;
   pathData: string;
   backgroundFill: string;
   markFill: string;
 }): string {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"><rect width="100" height="100" rx="${APP_ICON_CORNER_RADIUS}" fill="${backgroundFill}"/><path fill="${markFill}" d="${pathData}"/></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"><circle cx="50" cy="50" r="50" fill="${backgroundFill}"/><path fill="${markFill}" d="${pathData}"/></svg>`;
 }
 
 async function rasterizeSvg(svg: string, size: number): Promise<ArrayBuffer> {
@@ -146,7 +169,21 @@ async function buildAssetBundle({
     pathData,
     fill: NEGATIVE_FILL,
   });
-  const appIconSvg = buildAppIconSvgMarkup({
+  const roundedTileSvg = buildAppIconSvgMarkup({
+    viewBox,
+    pathData,
+    backgroundFill: positiveFill,
+    markFill: NEGATIVE_FILL,
+    cornerRadius: APP_ICON_CORNER_RADIUS,
+  });
+  const squareTileSvg = buildAppIconSvgMarkup({
+    viewBox,
+    pathData,
+    backgroundFill: positiveFill,
+    markFill: NEGATIVE_FILL,
+    cornerRadius: SQUARE_TILE_CORNER_RADIUS,
+  });
+  const circleTileSvg = buildCircleTileSvgMarkup({
     viewBox,
     pathData,
     backgroundFill: positiveFill,
@@ -154,14 +191,16 @@ async function buildAssetBundle({
   });
 
   const positiveLogoPng = await rasterizeSvg(positiveSvg, POSITIVE_PNG_SIZE);
-  const brandTilePng = await rasterizeSvg(appIconSvg, BRAND_TILE_PNG_SIZE);
-  const favicon16 = await rasterizeSvg(appIconSvg, FAVICON_SIZES.ICO_16);
-  const favicon32 = await rasterizeSvg(appIconSvg, FAVICON_SIZES.ICO_32);
+  const brandTilePng = await rasterizeSvg(roundedTileSvg, BRAND_TILE_PNG_SIZE);
+  const squareTilePng = await rasterizeSvg(squareTileSvg, SQUARE_TILE_PNG_SIZE);
+  const circleTilePng = await rasterizeSvg(circleTileSvg, CIRCLE_TILE_PNG_SIZE);
+  const favicon16 = await rasterizeSvg(roundedTileSvg, FAVICON_SIZES.ICO_16);
+  const favicon32 = await rasterizeSvg(roundedTileSvg, FAVICON_SIZES.ICO_32);
   const appleTouchPng = await rasterizeSvg(
-    appIconSvg,
+    roundedTileSvg,
     FAVICON_SIZES.APPLE_TOUCH,
   );
-  const socialImagePng = await rasterizeSvg(appIconSvg, SOCIAL_IMAGE_SIZE);
+  const socialImagePng = await rasterizeSvg(roundedTileSvg, SOCIAL_IMAGE_SIZE);
   const faviconIco = await encodeIco([
     { size: FAVICON_SIZES.ICO_16, png: favicon16 },
     { size: FAVICON_SIZES.ICO_32, png: favicon32 },
@@ -171,8 +210,12 @@ async function buildAssetBundle({
     positiveFill,
     positiveSvg,
     negativeSvg,
-    appIconSvg,
+    roundedTileSvg,
+    squareTileSvg,
+    circleTileSvg,
     brandTilePng,
+    squareTilePng,
+    circleTilePng,
     positiveLogoPng,
     faviconIco,
     appleTouchPng,
@@ -213,10 +256,22 @@ ${formatStringExport("JANT_LOGO_VIEW_BOX", viewBox)}${formatStringExport(
     defaultBundle.negativeSvg,
   )}${formatStringExport(
     "JANT_APP_ICON_SVG",
-    defaultBundle.appIconSvg,
+    defaultBundle.roundedTileSvg,
+  )}${formatStringExport(
+    "JANT_SQUARE_TILE_SVG",
+    defaultBundle.squareTileSvg,
+  )}${formatStringExport(
+    "JANT_CIRCLE_TILE_SVG",
+    defaultBundle.circleTileSvg,
   )}${formatBase64Export(
     "JANT_BRAND_TILE_512_PNG_BASE64",
     toBase64(defaultBundle.brandTilePng),
+  )}${formatBase64Export(
+    "JANT_SQUARE_TILE_512_PNG_BASE64",
+    toBase64(defaultBundle.squareTilePng),
+  )}${formatBase64Export(
+    "JANT_CIRCLE_TILE_512_PNG_BASE64",
+    toBase64(defaultBundle.circleTilePng),
   )}${formatBase64Export(
     "JANT_DEFAULT_FAVICON_ICO_BASE64",
     toBase64(defaultBundle.faviconIco),
