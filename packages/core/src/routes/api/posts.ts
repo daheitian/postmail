@@ -96,6 +96,19 @@ const ListPostsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional().default(100),
 });
 
+const PostSlugQuerySchema = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("suggest"),
+    title: z.string().trim().max(300).optional(),
+    postId: z.string().uuid().optional(),
+  }),
+  z.object({
+    mode: z.literal("check"),
+    slug: z.string().trim().toLowerCase().min(1).max(200),
+    postId: z.string().uuid().optional(),
+  }),
+]);
+
 // List posts (requires auth)
 postsApiRoutes.get("/", requireAuthApi(), async (c) => {
   const { format, status, cursor, limit } = parseValidated(
@@ -138,6 +151,28 @@ postsApiRoutes.get("/", requireAuthApi(), async (c) => {
 
     nextCursor:
       posts.length === limit ? (posts[posts.length - 1]?.id ?? null) : null,
+  });
+});
+
+// Suggest or validate a post slug (requires auth)
+postsApiRoutes.get("/slug", requireAuthApi(), async (c) => {
+  const query = parseValidated(PostSlugQuerySchema, c.req.query());
+
+  if (query.mode === "suggest") {
+    const slug = await c.var.services.posts.suggestSlug({
+      title: query.title,
+      excludePostId: query.postId,
+    });
+    return c.json({ slug });
+  }
+
+  const available = await c.var.services.posts.checkSlugAvailability(
+    query.slug,
+    query.postId,
+  );
+  return c.json({
+    slug: query.slug,
+    available,
   });
 });
 

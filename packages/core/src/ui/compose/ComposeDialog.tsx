@@ -337,6 +337,31 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       comment:
         "@context: Compose publish settings slug summary when no custom slug is set",
     }),
+    publishSlugReset: t({
+      message: "Use automatic",
+      comment:
+        "@context: Compose custom slug action that clears the manual slug and falls back to automatic generation",
+    }),
+    publishSlugSuggested: t({
+      message: "Suggested link",
+      comment:
+        "@context: Compose custom slug helper label for the suggested slug",
+    }),
+    publishSlugGenerating: t({
+      message: "Generating a link...",
+      comment:
+        "@context: Compose custom slug helper while generating a suggested slug",
+    }),
+    publishSlugChecking: t({
+      message: "Checking link...",
+      comment:
+        "@context: Compose custom slug helper while checking whether a manual slug is available",
+    }),
+    publishSlugTaken: t({
+      message: "This link is already in use. Choose something else.",
+      comment:
+        "@context: Compose custom slug validation error when the entered slug is already taken",
+    }),
     publishSlugInvalid: t({
       message: "Use lowercase letters, numbers, and hyphens only.",
       comment:

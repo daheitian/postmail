@@ -26,6 +26,7 @@ import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { generatePostSlug } from "../lib/slug.js";
+import { getSlugValidationIssue } from "../lib/slug-format.js";
 import { normalizePath, slugify } from "../lib/url.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
@@ -114,6 +115,12 @@ interface CollectionThreadRootPageOptions extends ThreadRootPageOptions {
 export interface PostService {
   getById(id: string): Promise<Post | null>;
   getBySlug(slug: string): Promise<Post | null>;
+  suggestSlug(input: {
+    title?: string;
+    slug?: string;
+    excludePostId?: string;
+  }): Promise<string>;
+  checkSlugAvailability(slug: string, excludePostId?: string): Promise<boolean>;
   list(filters?: PostFilters): Promise<Post[]>;
   /** Count posts matching filters (ignores cursor, offset, limit) */
   count(filters?: PostFilters): Promise<number>;
@@ -280,6 +287,20 @@ export function createPostService(
   /** Check if a slug is available (not used by posts or custom_urls) */
   async function isSlugAvailable(slug: string): Promise<boolean> {
     return paths.isPathAvailable(slug);
+  }
+
+  async function isSlugAvailableForPost(
+    slug: string,
+    excludePostId?: string,
+  ): Promise<boolean> {
+    const resolved = await paths.resolve(slug);
+    if (!resolved) return true;
+
+    return Boolean(
+      excludePostId &&
+      resolved.kind === "slug" &&
+      resolved.postId === excludePostId,
+    );
   }
 
   async function pathExists(path: string): Promise<boolean> {
@@ -641,6 +662,28 @@ export function createPostService(
         return null;
       }
       return this.getById(resolved.postId);
+    },
+
+    async suggestSlug(input) {
+      return generatePostSlug({
+        slug: input.slug,
+        title: input.title,
+        idLength: config.slugIdLength,
+        isAvailable: (candidate) =>
+          isSlugAvailableForPost(candidate, input.excludePostId),
+      });
+    },
+
+    async checkSlugAvailability(slug, excludePostId) {
+      const issue = getSlugValidationIssue(slug);
+      if (issue === "invalid") {
+        throw new ValidationError("Slug contains invalid characters");
+      }
+      if (issue === "reserved") {
+        throw new ValidationError("Slug is reserved");
+      }
+
+      return isSlugAvailableForPost(slug, excludePostId);
     },
 
     async list(filters = {}) {

@@ -455,6 +455,11 @@ msgstr "取消"
 msgid "Change Password"
 msgstr "變更密碼"
 
+#. @context: Compose custom slug helper while checking whether a manual slug is available
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Checking link..."
+msgstr "正在檢查連結..."
+
 #. @context: Password reset page description
 #: src/routes/auth/reset.tsx
 msgid "Choose a new password."
@@ -1210,6 +1215,11 @@ msgstr "自動生成"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Generate Token"
 msgstr "產生 Token"
+
+#. @context: Compose custom slug helper while generating a suggested slug
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Generating a link..."
+msgstr "正在產生連結..."
 
 #. @context: Compose link title placeholder
 #: src/ui/compose/ComposeDialog.tsx
@@ -2434,6 +2444,11 @@ msgstr ""
 msgid "Stay sturdy and readable."
 msgstr "保持穩健且易讀."
 
+#. @context: Compose custom slug helper label for the suggested slug
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Suggested link"
+msgstr "建議連結"
+
 #. @context: Textarea label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Summary"
@@ -2614,6 +2629,11 @@ msgstr "這在檢查顏色時很有用，因為它把重點色放在引文樣式
 #: src/routes/auth/reset.tsx
 msgid "This Link Has Expired"
 msgstr "此連結已過期"
+
+#. @context: Compose custom slug validation error when the entered slug is already taken
+#: src/ui/compose/ComposeDialog.tsx
+msgid "This link is already in use. Choose something else."
+msgstr "這個連結已被佔用。換一個試試。"
 
 #. @context: Collection slug validation error for reserved paths
 #. @context: Compose custom slug validation error for reserved paths
@@ -2808,6 +2828,11 @@ msgstr "URL"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
 msgstr "使用方式"
+
+#. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Use automatic"
+msgstr ""
 
 #. @context: Collection slug validation error for invalid characters
 #. @context: Compose custom slug validation error for invalid characters
