@@ -28,7 +28,7 @@ We follow [Semantic Versioning](https://semver.org/):
 1. **Make changes** in a feature branch
 2. **Create a changeset**:
    ```bash
-   mise run changeset
+   mise run release-changeset-create
    ```
 3. **Commit** the changeset file with your changes
 4. **Open PR** and merge to main
@@ -46,19 +46,19 @@ When PRs with changesets are merged:
 
 ```bash
 # Create a new changeset
-mise run changeset
+mise run release-changeset-create
 
 # Check pending changesets
-mise run cs:status
+mise run release-changeset-status
 
 # Apply changesets locally (bump versions)
-mise run version
+mise run release-version
 
 # Dry run publish
-mise run release:dry
+mise run release-publish-dry
 
 # Publish (usually done by CI)
-mise run release
+mise run release-publish
 ```
 
 ---
@@ -74,10 +74,10 @@ Packages must exist on npm before configuring Trusted Publishing.
 npm login
 
 # Publish @jant/core (builds automatically)
-mise run publish:core
+mise run release-publish-core
 
 # Publish create-jant
-mise run publish:create
+mise run release-publish-create
 ```
 
 ### Step 2: Configure Trusted Publishing on npm

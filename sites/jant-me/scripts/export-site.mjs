@@ -56,8 +56,8 @@ function dumpTable(name, query) {
 
 const header = `-- =============================================================================
 -- Site data for Jant (jant.me)
--- Exported from remote D1 database via: mise run site-export
--- Usage: edit this file, then mise run site-push
+-- Exported from remote D1 database via: mise run db-site-export
+-- Usage: edit this file, then mise run db-site-push
 -- =============================================================================
 `;
 

@@ -55,7 +55,7 @@ Prefer `localhost` for browser auth flows. `jant.localtest.me` is still accepted
 For browser or agent debugging, Jant can prepare local auth helpers for you:
 
 ```bash
-mise run dev-auth-setup
+mise run dev-auth-bootstrap
 ```
 
 This creates or updates `packages/core/.dev.vars`, ensures a local credential admin exists, marks onboarding complete when needed, and prints both the sign-in URL and the local-only auto-login URL. Use the printed `http://localhost:19xxx/...` URL for browser testing.
@@ -142,37 +142,38 @@ All commands are run via `mise run <command>`. You never need to `cd` into subdi
 ```bash
 mise run dev              # Start Vite dev server (defaults to 9020; set PORT to override)
 mise run dev-debug        # Start debug server on the first free port from 19020 and prepare local auth helpers
-mise run dev-auth-setup   # Sync local demo credentials + print auth debug URLs
+mise run dev-auth-bootstrap # Sync local demo credentials + print auth debug URLs
 mise run build            # Build @jant/core (lib + client assets)
-mise run site-dev         # Build @jant/core + start jant.me dev server
-mise run site-deploy      # Build @jant/core + deploy jant.me to Workers
+mise run dev-site         # Build @jant/core + start jant.me dev server
+mise run deploy-site      # Build @jant/core + deploy jant.me to Workers
 ```
 
 ### Code Quality
 
 ```bash
-mise run lint             # Run ESLint
-mise run typecheck        # Run TypeScript type checking (all packages)
-mise run format           # Format code with Prettier
-mise run format-check     # Check formatting without writing
+mise run check-lint       # Run ESLint
+mise run check-types      # Run TypeScript type checking (all packages)
+mise run fix-format       # Format code with Prettier
+mise run check-format     # Check formatting without writing
 ```
 
 ### Testing
 
 ```bash
-mise run test             # Run all tests (must pass before committing)
-mise run test:watch       # Run tests in watch mode
-mise run test:coverage    # Run tests with coverage report
+mise run check-tests          # Run all tests (must pass before committing)
+mise run check-tests-watch    # Run tests in watch mode
+mise run check-tests-coverage # Run tests with coverage report
 ```
 
 ### Database
 
 ```bash
-mise run db-generate      # Generate Drizzle migrations (from core schema)
-mise run db-migrate       # Apply migrations (local D1) — usually not needed, dev auto-runs this
-mise run db-export        # Export current local D1 data to seed-local.sql
-mise run db-reset         # Reset local database and load dev seed data
-mise run db-clean         # Delete local D1 database (.wrangler)
+mise run db-schema-generate # Generate Drizzle migrations (from core schema)
+mise run db-local-migrate   # Apply migrations (local D1) — usually not needed, dev auto-runs this
+mise run db-local-export    # Export current local D1 data to seed-local.sql
+mise run db-local-load-demo # Reload canonical demo content into the current local DB
+mise run db-local-reset     # Recreate the local DB, bootstrap dev auth, and load demo content
+mise run db-local-clean     # Delete local D1 database (.wrangler)
 ```
 
 ### Auth Debugging
@@ -191,36 +192,36 @@ Then use one of these:
 ### i18n
 
 ```bash
-mise run i18n             # Extract + AI translate + compile (needs OPENAI_API_KEY)
+mise run i18n-refresh     # Extract + AI translate + compile (needs OPENAI_API_KEY)
 mise run i18n-extract     # Extract messages from source
 mise run i18n-compile     # Compile PO files to JS
-mise run i18n-no-translate # Extract and compile only (without AI translation)
-mise run translate        # Auto-translate all locales using AI (needs OPENAI_API_KEY)
+mise run i18n-build       # Extract and compile only (without AI translation)
+mise run i18n-translate   # Auto-translate all locales using AI (needs OPENAI_API_KEY)
 ```
 
 ### Release
 
 ```bash
-mise run changeset        # Create a changeset for your changes
-mise run changeset-status # Show pending changesets
-mise run version          # Apply changesets (bump versions, generate CHANGELOG)
-mise run release          # Build and publish packages to npm (CI only)
-mise run release-dry      # Dry run publish
+mise run release-changeset-create # Create a changeset for your changes
+mise run release-changeset-status # Show pending changesets
+mise run release-version          # Apply changesets (bump versions, generate CHANGELOG)
+mise run release-publish          # Build and publish packages to npm (CI only)
+mise run release-publish-dry      # Dry run publish
 ```
 
 ### Utilities
 
 ```bash
-mise run clean            # Clean build artifacts (dist, .wrangler)
-mise run nuke             # Remove all node_modules and reinstall
-mise run fresh            # Nuclear reset — delete everything and start fresh
-mise run reset-password   # Generate password reset link (local)
+mise run clean-build      # Clean build artifacts (dist, .wrangler)
+mise run clean-deps       # Remove all node_modules and reinstall
+mise run clean-reset      # Nuclear reset — delete everything and start fresh
+mise run auth-reset-token # Generate password reset link (local)
 ```
 
 ### CI
 
 ```bash
-mise run ci               # Run all CI checks (lint + typecheck + test + build + i18n + template)
+mise run check-ci         # Run all CI checks (lint + typecheck + test + build + i18n + template)
 ```
 
 ## Development Workflow
@@ -246,13 +247,13 @@ mise run ci               # Run all CI checks (lint + typecheck + test + build +
 5. **Run checks:**
 
    ```bash
-   mise run test && mise run lint && mise run typecheck
+   mise run check-tests && mise run check-lint && mise run check-types
    ```
 
 6. **Create a changeset** (if your changes affect published packages):
 
    ```bash
-   mise run changeset
+   mise run release-changeset-create
    ```
 
 7. **Commit and push:**
@@ -280,8 +281,8 @@ Instead of switching branches, you can use git worktrees to work on multiple fea
 #### Creating a Feature Worktree
 
 ```bash
-mise run draft feat/login         # Creates ../feat-login/ on feat/login branch
-mise run draft fix/auth develop   # Creates ../fix-auth/ branched from develop
+mise run worktree-create feat/login       # Creates ../feat-login/ on feat/login branch
+mise run worktree-create fix/auth develop # Creates ../fix-auth/ branched from develop
 ```
 
 This creates the worktree, copies `.dev.vars`, and runs `pnpm install`.
@@ -289,7 +290,7 @@ This creates the worktree, copies `.dev.vars`, and runs `pnpm install`.
 #### Reviewing a Remote Branch
 
 ```bash
-mise run review feat/login        # Creates ../review-feat-login/ from origin/feat/login
+mise run worktree-review feat/login # Creates ../review-feat-login/ from origin/feat/login
 ```
 
 Fetches the latest remote state, creates a worktree, and installs dependencies.
@@ -297,14 +298,13 @@ Fetches the latest remote state, creates a worktree, and installs dependencies.
 #### Listing Worktrees
 
 ```bash
-mise run wt-list                  # Lists all git worktrees
+mise run worktree-list            # Lists all git worktrees
 ```
 
 #### Cleaning Up
 
 ```bash
-mise run trash feat-login         # Removes ../feat-login/ worktree (keeps the branch)
-git branch -d feat/login          # Optionally delete the branch too
+mise run worktree-remove feat/login # Removes ../feat-login/ worktree and deletes the branch
 ```
 
 #### Port Conflicts
@@ -313,7 +313,7 @@ Each worktree is a full copy of the project. If you run `mise run dev` in multip
 
 ## Testing
 
-Every new feature, bug fix, or logic change must include tests. Run `mise run test` to verify all tests pass.
+Every new feature, bug fix, or logic change must include tests. Run `mise run check-tests` to verify all tests pass.
 
 ### Framework
 
@@ -374,7 +374,7 @@ const res = await app.request("/api/posts");
 2. Test happy paths, edge cases, and error cases.
 3. Don't test third-party library internals (better-auth, Drizzle ORM, etc.).
 4. Don't test JSX rendering — focus on logic.
-5. `mise run test` must pass before submitting a PR.
+5. `mise run check-tests` must pass before submitting a PR.
 
 ## Code Style
 
@@ -418,11 +418,11 @@ Migrations are managed by Drizzle ORM. The schema lives in `packages/core/src/db
 
 ```bash
 # After changing the schema:
-mise run db-generate      # Generate migration files
+mise run db-schema-generate # Generate migration files
 mise run dev              # Migrations auto-apply on dev server start
 ```
 
-You rarely need to run `mise run db-migrate` manually — both `dev` and `dev-debug` auto-apply migrations.
+You rarely need to run `mise run db-local-migrate` manually — both `dev` and `dev-debug` auto-apply migrations.
 
 ### Seeding (Development Data)
 
@@ -433,24 +433,30 @@ The project includes a workflow for maintaining development seed data:
 2. **Export the data:**
 
    ```bash
-   mise run db-export
+   mise run db-local-export
    ```
 
-   This saves the current local D1 data to `packages/core/scripts/seed-local.sql`.
+   This saves the current local D1 data to `packages/core/dev/scripts/seed-local.sql`.
 
-3. **Load seed data** (on a fresh clone or after reset):
+3. **Recreate the local demo dataset** (on a fresh clone or after reset):
 
    ```bash
-   mise run db-reset
+   mise run db-local-reset
    ```
 
-   This resets the local database, runs migrations, clears existing data, and loads `seed-local.sql`.
+   This recreates the local database, runs migrations, bootstraps local debug auth, and loads the canonical demo content from `sites/demo/scripts/seed-demo.sql`.
+
+4. **Import an arbitrary SQL export** when you need a one-off dataset:
+
+   ```bash
+   mise run db-local-import path/to/export.sql
+   ```
 
 ### Reset
 
 ```bash
-mise run db-clean         # Delete local D1 database only
-mise run fresh            # Nuclear reset — everything (node_modules, dist, db, cache, lockfile)
+mise run db-local-clean   # Delete local D1 database only
+mise run clean-reset      # Nuclear reset — everything (node_modules, dist, db, cache, lockfile)
 ```
 
 After any reset, just run `mise run dev` — migrations are applied automatically.
@@ -478,7 +484,7 @@ The i18n workflow is mostly automatic:
 
 1. Add `t()` calls in your code.
 2. Commit — the pre-commit hook automatically extracts and compiles messages, then stages the updated locale files.
-3. For AI-powered translation to other languages, run `mise run i18n` (requires `OPENAI_API_KEY`).
+3. For AI-powered translation to other languages, run `mise run i18n-refresh` (requires `OPENAI_API_KEY`).
 
 ### Language
 
@@ -491,13 +497,13 @@ The site language is a site-wide setting (from `settings.SITE_LANGUAGE` in the d
 1. Run all checks:
 
    ```bash
-   mise run test && mise run lint && mise run typecheck
+   mise run check-tests && mise run check-lint && mise run check-types
    ```
 
 2. If changing published packages, add a changeset:
 
    ```bash
-   mise run changeset
+   mise run release-changeset-create
    ```
 
 3. Update documentation if needed.
@@ -535,7 +541,7 @@ We use [Changesets](https://github.com/changesets/changesets) for version manage
 After making changes that should be released:
 
 ```bash
-mise run changeset
+mise run release-changeset-create
 ```
 
 This will prompt you to:
@@ -554,17 +560,17 @@ This will prompt you to:
 
 ### Release Workflow
 
-1. Make changes and create a changeset (`mise run changeset`).
+1. Make changes and create a changeset (`mise run release-changeset-create`).
 2. Open a PR and merge to `main`.
 3. A Release PR is auto-created (or updated) by the bot.
 4. Merge the Release PR to publish to npm automatically.
 
 ```bash
 # Check pending changesets
-mise run changeset-status
+mise run release-changeset-status
 
 # Dry run publish (no actual publish)
-mise run release-dry
+mise run release-publish-dry
 ```
 
 For detailed release documentation, see [docs/RELEASING.md](docs/RELEASING.md).

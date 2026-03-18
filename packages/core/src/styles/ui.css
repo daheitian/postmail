@@ -384,54 +384,7 @@
   .collections-page-heading {
     min-width: 0;
     flex: 1 1 18rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
     max-width: 42rem;
-  }
-
-  .collections-page-title-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .collections-page-meta-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem 1rem;
-    flex-wrap: wrap;
-  }
-
-  .collections-page-title {
-    margin: 0;
-    font-family: var(--font-heading);
-    font-size: clamp(1.65rem, 4vw, 2.2rem);
-    font-weight: var(--type-display-weight);
-    line-height: 1.02;
-    letter-spacing: -0.04em;
-  }
-
-  .collections-page-badge {
-    display: block;
-    margin: 0;
-    padding: 0;
-    border: none;
-    border-radius: 999px;
-    background: transparent;
-    color: var(--site-text-secondary);
-    font-size: 0.76rem;
-    line-height: 1;
-    letter-spacing: 0.05em;
-  }
-
-  .collections-page-hint {
-    margin: 0;
-    color: var(--site-text-secondary);
-    font-size: 0.88rem;
-    line-height: 1.65;
   }
 
   .collections-page-actions {
@@ -987,10 +940,6 @@
 
     .collection-directory-updated {
       white-space: normal;
-    }
-
-    .collections-page-title {
-      font-size: clamp(1.5rem, 9vw, 1.9rem);
     }
 
     .collection-page-title-row {
@@ -5955,23 +5904,15 @@
 
   /* --- Tiles -------------------------------------------------------------- */
 
-  .archive-page-title {
+  .archive-page-header {
     display: flex;
-    align-items: baseline;
-    gap: 0.7rem;
-    margin: 0 0 1.2rem;
-    font-size: 1.5rem;
-    font-weight: var(--fw-semibold);
-    line-height: 1.15;
-    color: var(--site-text-primary);
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.95rem;
+    margin-bottom: 1.5rem;
   }
 
-  .archive-page-summary {
-    margin: 0;
-    color: var(--site-text-secondary);
-    font-size: 0.875rem;
-    font-weight: var(--fw-medium);
+  .archive-page-meta {
+    padding-top: 0.12rem;
   }
 
   .archive-page-summary-count,
@@ -6996,9 +6937,9 @@
   }
 
   @media (max-width: 699px) {
-    .archive-page-title {
-      gap: 0.45rem;
-      margin-bottom: 1rem;
+    .archive-page-header {
+      gap: 0.8rem;
+      margin-bottom: 1.25rem;
     }
 
     .archive-list-month-header {

@@ -109,12 +109,12 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
   return (
     <div class="collections-page-shell" data-collections-manager-root>
       <header class="collections-page-header">
-        <div class="collections-page-heading">
-          <div class="collections-page-title-row">
-            <h1 class="collections-page-title">{labels.collectionsTitle}</h1>
+        <div class="collections-page-heading page-intro">
+          <div class="page-intro-title-row">
+            <h1 class="page-intro-title">{labels.collectionsTitle}</h1>
           </div>
-          <div class="collections-page-meta-row">
-            <p class="collections-page-badge" data-collections-count>
+          <div class="page-intro-meta-row">
+            <p class="page-intro-meta" data-collections-count>
               {collectionCountLabel}
             </p>
             <div class="collections-page-actions">
@@ -208,7 +208,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
               </div>
             </div>
           </div>
-          <p class="collections-page-hint" data-collections-hint hidden>
+          <p class="page-intro-description" data-collections-hint hidden>
             {labels.organizeHint}
           </p>
         </div>

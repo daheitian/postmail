@@ -1,6 +1,6 @@
 -- Reset script for Jant official site (jant.me) (v2 schema)
 -- Clears content data while preserving users/settings/schema
--- Usage: mise run site-export (embeds this), then mise run site-push
+-- Usage: mise run db-site-export (embeds this), then mise run db-site-push
 
 -- Clear FTS index first (to avoid trigger issues)
 DELETE FROM post_fts;

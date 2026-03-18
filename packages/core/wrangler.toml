@@ -11,8 +11,8 @@ port = 9020
 [vars]
 SITE_URL = "https://jant.localtest.me"
 PAGE_SIZE = 50
-# R2_PUBLIC_URL = "https://demo-media.jant.me"
-# IMAGE_TRANSFORM_URL = "https://demo-media.jant.me/cdn-cgi/image"
+R2_PUBLIC_URL = "https://demo-media.jant.me"
+IMAGE_TRANSFORM_URL = "https://demo-media.jant.me/cdn-cgi/image"
 
 
 [[d1_databases]]
@@ -25,7 +25,7 @@ migrations_dir = "src/db/migrations"
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "jant-demo-media"
-remote = false
+remote = true
 
 # ============================================
 # Preview environment (deploy current branch)

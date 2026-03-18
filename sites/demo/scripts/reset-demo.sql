@@ -1,6 +1,6 @@
 -- Reset script for Jant demo site (demo.jant.me) (v2 schema)
 -- Clears content data while preserving users/settings/schema
--- Usage: mise run demo-reset (runs this then seed-demo.sql)
+-- Usage: mise run db-demo-reset (runs this then seed-demo.sql)
 
 -- Clear junction/dependent tables first
 DELETE FROM post_collection;
