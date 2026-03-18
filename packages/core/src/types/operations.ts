@@ -8,7 +8,30 @@ import type {
   Visibility,
   SortOrder,
   SystemNavKey,
+  TextAttachmentContentFormat,
 } from "./constants.js";
+
+export type PostAttachmentInput =
+  | {
+      type: "media";
+      mediaId: string;
+      alt?: string;
+    }
+  | {
+      type: "text";
+      contentFormat: TextAttachmentContentFormat;
+      content: string;
+      summary?: string;
+    };
+
+export interface TextAttachmentContent {
+  id: string;
+  type: "text";
+  contentFormat: TextAttachmentContentFormat;
+  content: string;
+  summary: string | null;
+  chars: number | null;
+}
 
 export interface CreatePost {
   format: Format;

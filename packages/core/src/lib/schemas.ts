@@ -17,6 +17,7 @@ import {
   NAV_ITEM_TYPES,
   SYSTEM_NAV_KEY_VALUES,
   MAX_MEDIA_ATTACHMENTS,
+  TEXT_ATTACHMENT_CONTENT_FORMATS,
 } from "../types.js";
 import { ValidationError } from "./errors.js";
 import { isCollectionIconPalette } from "./collection-icon-palette.js";
@@ -162,6 +163,51 @@ const PostFieldsSchema = z.object({
   mediaAlts: z.record(z.string(), z.string()).optional(),
 });
 
+const ApiMediaAttachmentInputSchema = z
+  .object({
+    type: z.literal("media"),
+    mediaId: z.string().min(1),
+    alt: z
+      .string()
+      .max(500)
+      .transform((s) => s.replace(CONTROL_CHAR_RE, "").trim())
+      .optional()
+      .or(z.literal("").transform(() => "")),
+  })
+  .strict();
+
+const ApiTextAttachmentInputSchema = z
+  .object({
+    type: z.literal("text"),
+    contentFormat: z.enum(TEXT_ATTACHMENT_CONTENT_FORMATS),
+    content: z.string().refine((value) => value.trim().length > 0, {
+      message: "Text attachments need content.",
+    }),
+    summary: sanitizeText(300)
+      .optional()
+      .or(z.literal("").transform(() => undefined)),
+  })
+  .strict();
+
+export const PostAttachmentInputSchema = z.discriminatedUnion("type", [
+  ApiMediaAttachmentInputSchema,
+  ApiTextAttachmentInputSchema,
+]);
+
+const ApiPostFieldsSchema = PostFieldsSchema.omit({
+  mediaIds: true,
+  mediaAlts: true,
+})
+  .extend({
+    attachments: z
+      .array(PostAttachmentInputSchema)
+      .max(MAX_MEDIA_ATTACHMENTS, {
+        message: `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} attachments`,
+      })
+      .optional(),
+  })
+  .strict();
+
 /** Mutual exclusivity: body and bodyMarkdown cannot both be provided */
 function refineBodyExclusivity<
   T extends { body?: string; bodyMarkdown?: string },
@@ -244,11 +290,19 @@ export const CreatePostSchema = refineSlugPathExclusivity(
   refineCreatePostFormatShape(refineBodyExclusivity(PostFieldsSchema)),
 );
 
+export const CreatePostApiSchema = refineSlugPathExclusivity(
+  refineCreatePostFormatShape(refineBodyExclusivity(ApiPostFieldsSchema)),
+);
+
 /**
  * API request body schema for updating a post
  */
 export const UpdatePostSchema = refineSlugPathExclusivity(
   refineBodyExclusivity(PostFieldsSchema.partial()),
+);
+
+export const UpdatePostApiSchema = refineSlugPathExclusivity(
+  refineBodyExclusivity(ApiPostFieldsSchema.partial()),
 );
 
 /**
@@ -452,15 +506,15 @@ export function parseFormDataOptional<T>(
 }
 
 /**
- * Validates media attachment count for a post.
- * All formats allow 0-20 media attachments.
+ * Validates attachment count for a post.
+ * All formats allow 0-20 attachments.
  *
- * @param mediaIds - Array of media IDs to attach
+ * @param attachments - Array of attachments to attach
  * @returns null if valid, error string if invalid
  */
-export function validateMediaCount(mediaIds: string[]): string | null {
-  if (mediaIds.length > MAX_MEDIA_ATTACHMENTS) {
-    return `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} media attachments`;
+export function validateAttachmentCount(attachments: unknown[]): string | null {
+  if (attachments.length > MAX_MEDIA_ATTACHMENTS) {
+    return `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} attachments`;
   }
   return null;
 }

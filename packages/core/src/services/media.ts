@@ -9,19 +9,46 @@ import { generateKeyBetween } from "fractional-indexing";
 import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { media } from "../db/schema.js";
+import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
+import { extractBodyText } from "../lib/summary.js";
 import { now } from "../lib/time.js";
 import type { StorageDriver } from "../lib/storage.js";
-import { toMediaKind } from "../lib/upload.js";
-import type { Media, MediaKind } from "../types.js";
+import { renderTiptapJson } from "../lib/tiptap-render.js";
+import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
+import {
+  generateStorageKey,
+  toMediaKind,
+  validateUploadFileMetadata,
+} from "../lib/upload.js";
+import type {
+  Media,
+  MediaKind,
+  TextAttachmentContent,
+  TextAttachmentContentFormat,
+} from "../types.js";
 import { MAX_MEDIA_ATTACHMENTS } from "../types.js";
-import { ValidationError } from "../lib/errors.js";
+import { ConfigurationError, ValidationError } from "../lib/errors.js";
 
 const DEFAULT_MEDIA_POSITION = "a0";
+const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
+const ATTACHED_TEXT_FILENAME = "attached-text.md";
 
 export interface MediaFilters {
   limit?: number;
   /** Filter by MIME type prefix, e.g. "image/" */
   mimePrefix?: string;
+}
+
+export interface CreateTextAttachmentData {
+  contentFormat: TextAttachmentContentFormat;
+  content: string;
+  summary?: string;
+}
+
+export interface TextAttachmentDeps {
+  storage?: StorageDriver | null;
+  storageDriver: string;
+  maxFileSizeMB: number;
 }
 
 export interface MediaService {
@@ -55,6 +82,14 @@ export interface MediaService {
    */
   deleteByIds(ids: string[], storage?: StorageDriver | null): Promise<void>;
   getByStorageKey(storageKey: string, provider: string): Promise<Media | null>;
+  createTextAttachment(
+    data: CreateTextAttachmentData,
+    deps: TextAttachmentDeps,
+  ): Promise<Media>;
+  getTextAttachmentContent(
+    id: string,
+    storage?: StorageDriver | null,
+  ): Promise<TextAttachmentContent | null>;
   attachToPost(postId: string, mediaIds: string[]): Promise<void>;
   detachFromPost(postId: string): Promise<void>;
   updateAlt(id: string, alt: string): Promise<void>;
@@ -211,13 +246,15 @@ export function createMediaService(db: Database): MediaService {
 
       if (ids.length > MAX_MEDIA_ATTACHMENTS) {
         throw new ValidationError(
-          `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} media attachments`,
+          `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} attachments`,
         );
       }
 
       const existing = await this.getByIds(ids);
       if (existing.length !== ids.length) {
-        throw new ValidationError("One or more media IDs are invalid");
+        throw new ValidationError(
+          "One or more attachments reference invalid media IDs",
+        );
       }
     },
 
@@ -262,6 +299,85 @@ export function createMediaService(db: Database): MediaService {
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- DB insert with .returning() always returns inserted row
       return toMedia(result[0]!);
+    },
+
+    async createTextAttachment(data, deps) {
+      if (!deps.storage) {
+        throw new ConfigurationError(
+          "File storage isn't set up. Check your server config.",
+        );
+      }
+      if (data.contentFormat !== "markdown") {
+        throw new ValidationError("Unsupported text attachment format");
+      }
+
+      const bodyJson = markdownToTiptapJson(data.content);
+      const bodyHtml = renderTiptapJson(bodyJson);
+      const bodyText = extractBodyText(bodyJson) ?? "";
+      const summary = data.summary?.trim() || bodyText.slice(0, 100).trim();
+      const envelope = JSON.stringify({
+        json: JSON.parse(bodyJson) as unknown,
+        html: bodyHtml,
+      });
+      const bytes = new TextEncoder().encode(envelope);
+      const uploadError = validateUploadFileMetadata(
+        ATTACHED_TEXT_MIME_TYPE,
+        bytes.byteLength,
+        {
+          maxFileSizeMB: deps.maxFileSizeMB,
+        },
+      );
+      if (uploadError) {
+        throw new ValidationError(uploadError);
+      }
+
+      const { id, filename, storageKey } = generateStorageKey(
+        ATTACHED_TEXT_FILENAME,
+      );
+      await deps.storage.put(storageKey, bytes, {
+        contentType: ATTACHED_TEXT_MIME_TYPE,
+      });
+
+      return this.create({
+        id,
+        filename,
+        originalName: ATTACHED_TEXT_FILENAME,
+        mimeType: ATTACHED_TEXT_MIME_TYPE,
+        size: bytes.byteLength,
+        storageKey,
+        provider: deps.storageDriver,
+        summary: summary || undefined,
+        chars: bodyText.length,
+        mediaKind: "text",
+      });
+    },
+
+    async getTextAttachmentContent(id, storage) {
+      const record = await this.getById(id);
+      if (!record || record.mimeType !== ATTACHED_TEXT_MIME_TYPE) {
+        return null;
+      }
+      if (!storage) {
+        throw new ConfigurationError(
+          "File storage isn't set up. Check your server config.",
+        );
+      }
+
+      const object = await storage.get(record.storageKey);
+      if (!object) return null;
+
+      const raw = await new Response(object.body).text();
+      const envelope = JSON.parse(raw) as { json?: unknown };
+      const json = envelope.json ? JSON.stringify(envelope.json) : "";
+
+      return {
+        id: record.id,
+        type: "text",
+        contentFormat: "markdown",
+        content: tiptapJsonToMarkdown(json),
+        summary: record.summary,
+        chars: record.chars,
+      };
     },
 
     async attachToPost(postId, mediaIds) {

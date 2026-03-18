@@ -32,6 +32,7 @@ import { customUrlsRoutes } from "./routes/dash/custom-urls.js";
 
 // Routes - API
 import { postsApiRoutes } from "./routes/api/posts.js";
+import { attachmentsApiRoutes } from "./routes/api/attachments.js";
 import { navItemsApiRoutes } from "./routes/api/nav-items.js";
 import { collectionsApiRoutes } from "./routes/api/collections.js";
 import { settingsApiRoutes } from "./routes/api/settings.js";
@@ -166,6 +167,8 @@ export function createApp(): App {
 
   // Health check
   app.get("/health", (c) => c.json({ status: "ok" }));
+
+  app.route("/api/attachments", attachmentsApiRoutes);
 
   // Fetch text media content by ID (same-origin proxy to avoid CORS with CDN URLs)
   app.get("/api/media/:id/content", async (c) => {

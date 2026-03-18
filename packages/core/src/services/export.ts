@@ -163,8 +163,9 @@ export function createExportService(
       for (const collection of allCollections) {
         const slug = collectionSlugMap.get(collection.id) ?? collection.slug;
         const section = buildCollectionSection(collection);
-        files[`content/jant-collections/${slug}/_index.md`] =
-          new TextEncoder().encode(section);
+        files[`content/c/${slug}/_index.md`] = new TextEncoder().encode(
+          section,
+        );
       }
 
       // Generate scaffold
@@ -294,6 +295,10 @@ function buildPostMarkdown(
   parts.push(`  format: ${root.format}`);
   parts.push(`  status: ${root.status}`);
   parts.push(`  visibility: ${root.visibility}`);
+  const summaryText = getArchiveSummaryText(root);
+  if (summaryText) {
+    parts.push(`  summary_text: ${yamlString(summaryText)}`);
+  }
   if (root.url) {
     parts.push(`  link_url: ${yamlString(root.url)}`);
   }
@@ -376,6 +381,24 @@ function buildCollectionSection(collection: Collection): string {
   parts.push("+++");
   parts.push("");
   return parts.join("\n");
+}
+
+function normalizeArchiveText(text: string | null | undefined): string {
+  return (text ?? "").replace(/\s+/g, " ").trim();
+}
+
+function getArchiveSummaryText(post: Post): string | null {
+  const candidates =
+    post.format === "quote"
+      ? [post.summary, post.quoteText, post.bodyText, post.url]
+      : [post.summary, post.bodyText, post.quoteText, post.url];
+
+  for (const candidate of candidates) {
+    const normalized = normalizeArchiveText(candidate);
+    if (normalized) return normalized;
+  }
+
+  return null;
 }
 
 function buildAttachmentBlock(
@@ -647,7 +670,7 @@ config.toml          — Site configuration (title, URL, language)
 content/
   _index.md          — Root section (homepage settings)
   {slug}/index.md    — Individual posts (threads are merged into one page)
-  jant-collections/{slug}/_index.md — Hidden collection metadata for round-trip import
+  c/{slug}/_index.md — Collection display metadata for taxonomy pages and round-trip import
 templates/           — Tera templates (Zola's template engine)
 static/
   style.css          — Base exported stylesheet
@@ -773,17 +796,9 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
 
 {% block content %}
 <div data-page="home">
-  <div class="site-home-header">
-    <nav class="site-browse-nav" aria-label="Browse">
-      <span class="site-browse-link site-browse-link-active">
-        {% if config.extra.jant.home_default_view == "featured" %}Featured{% else %}Latest{% endif %}
-      </span>
-    </nav>
-    {% if paginator.current_index > 1 %}
-    <p class="page-context-label">Page {{ paginator.current_index }}</p>
-    {% endif %}
-  </div>
-
+  {% if paginator.current_index > 1 %}
+  <p class="page-context-label">Page {{ paginator.current_index }}</p>
+  {% endif %}
   <div data-feed>
     <div id="timeline-feed">
       <div id="timeline-items">
@@ -889,30 +904,43 @@ const TEMPLATE_ARCHIVE = `{% extends "base.html" %}
   </header>
 
   <div class="archive-list">
-    {% for page in root.pages %}
-      {% if page.extra.visibility | default(value="public") == "public" %}
-      {% set archive_title = page.title | default(value="") %}
-      {% if archive_title == "" %}
-        {% set archive_title = page.summary | default(value=page.content) | striptags | trim | truncate(length=92) %}
-      {% endif %}
-      <article class="archive-entry">
-        <time class="archive-entry-date" datetime="{{ page.date }}">
-          {{ page.date | date(format="%b %e, %Y") }}
-        </time>
-        <div class="archive-entry-main">
-          <a href="{{ page.permalink }}" class="archive-entry-title">
-            {{ archive_title | default(value="Untitled") }}
-          </a>
-          <div class="archive-entry-meta">
-            <span class="archive-entry-format">{{ page.extra.format | default(value="note") }}</span>
-            {% set collections = page.taxonomies.c | default(value=[]) %}
-            {% for col in collections %}
-            <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="archive-entry-tag">{{ col }}</a>
-            {% endfor %}
-          </div>
-        </div>
-      </article>
-      {% endif %}
+    {% for year, year_pages in root.pages | group_by(attribute="year") %}
+      {% for month, month_pages in year_pages | group_by(attribute="month") %}
+    <section class="archive-month-group">
+      <header class="archive-month-heading">
+        {{ month_pages[0].date | date(format="%B %Y") }}
+      </header>
+        {% for page in month_pages %}
+          {% if page.extra.visibility | default(value="public") == "public" %}
+          {% set archive_title = page.title | default(value="") %}
+          {% if archive_title == "" %}
+            {% set archive_title = page.extra.summary_text | default(value="") %}
+          {% endif %}
+          {% if archive_title == "" %}
+            {% set archive_title = page.summary | default(value=page.content) | striptags | trim %}
+          {% endif %}
+          <article class="archive-entry">
+            <time class="archive-entry-date" datetime="{{ page.date }}">
+              {{ page.date | date(format="%b %e, %Y") }}
+            </time>
+            <div class="archive-entry-main">
+              <a href="{{ page.permalink }}" class="archive-entry-title">
+                {{ archive_title | default(value="Untitled") | truncate(length=92) }}
+              </a>
+              <div class="archive-entry-meta">
+                <span class="archive-entry-format">{{ page.extra.format | default(value="note") }}</span>
+                {% set collections = page.taxonomies.c | default(value=[]) %}
+                {% for col in collections %}
+                {% set col_meta = get_section(path='c/' ~ col ~ '/_index.md') %}
+                <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="archive-entry-tag">{{ col_meta.title | default(value=col) }}</a>
+                {% endfor %}
+              </div>
+            </div>
+          </article>
+          {% endif %}
+        {% endfor %}
+    </section>
+      {% endfor %}
     {% endfor %}
   </div>
 </div>
@@ -931,8 +959,16 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
   </header>
   <ul class="collection-list">
     {% for term in terms %}
+    {% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}
+    {% set latest_page = term.pages | first %}
     <li class="collection-list-item">
-      <a href="{{ term.permalink }}" class="collection-list-link">{{ term.name }}</a>
+      <a href="{{ term.permalink }}" class="collection-list-link">{{ term_meta.title | default(value=term.name) }}</a>
+      <div class="collection-list-meta">
+        <span>{{ term.pages | length }} entries</span>
+        {% if latest_page %}
+        <span>Updated {{ latest_page.updated | default(value=latest_page.date) | date(format="%Y-%m-%d") }}</span>
+        {% endif %}
+      </div>
     </li>
     {% endfor %}
   </ul>
@@ -943,12 +979,16 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
 const TEMPLATE_TAXONOMY_SINGLE = `{% extends "base.html" %}
 {% import "macros.html" as macros %}
 
-{% block title %}{{ term.name }} &mdash; {{ config.title }}{% endblock %}
+{% block title %}{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} &mdash; {{ config.title }}{% endblock %}
 
 {% block content %}
+{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}
 <div class="section-shell">
   <header class="section-header">
-    <h1 class="section-title">{{ term.name }}</h1>
+    <h1 class="section-title">{{ term_meta.title | default(value=term.name) }}</h1>
+    {% if term_meta.description %}
+    <p class="section-description">{{ term_meta.description }}</p>
+    {% endif %}
   </header>
   <div data-feed>
     <div id="timeline-feed">
@@ -970,12 +1010,12 @@ const TEMPLATE_TAXONOMY_SINGLE = `{% extends "base.html" %}
 
 const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ lang }}">
-  <title>{% if section is defined and section.title %}{{ section.title }} · {% elif term is defined and term.name %}{{ term.name }} · {% endif %}{{ config.title }}</title>
+  <title>{% if section is defined and section.title %}{{ section.title }} · {% elif term is defined and taxonomy.name == "c" %}{% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}{{ term_meta.title | default(value=term.name) }} · {% elif term is defined and term.name %}{{ term.name }} · {% endif %}{{ config.title }}</title>
   {% if config.description %}
   <subtitle>{{ config.description }}</subtitle>
   {% endif %}
-  <link rel="self" type="application/atom+xml" href="{{ feed_url | safe }}">
-  <link rel="alternate" type="text/html" href="{% if section is defined %}{{ section.permalink }}{% elif term is defined %}{{ term.permalink }}{% else %}{{ config.base_url }}{% endif %}">
+  <link rel="self" type="application/atom+xml" href="{{ feed_url | safe }}" />
+  <link rel="alternate" type="text/html" href="{% if section is defined %}{{ section.permalink }}{% elif term is defined %}{{ term.permalink }}{% else %}{{ config.base_url }}{% endif %}" />
   <id>{{ feed_url | safe }}</id>
   {% if last_updated is defined %}
   <updated>{{ last_updated | date(format="%+") }}</updated>
@@ -989,15 +1029,27 @@ const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
   {% for page in pages %}
     {% if page.extra.visibility | default(value="public") == "public" %}
   <entry>
-    <title>{{ page.title | default(value="Untitled") }}</title>
-    <link rel="alternate" type="text/html" href="{{ page.permalink | safe }}">
+    {% set entry_title = page.title | default(value="") %}
+    {% if entry_title == "" %}
+      {% set entry_title = page.extra.summary_text | default(value="") %}
+    {% endif %}
+    {% if entry_title == "" %}
+      {% set entry_title = page.summary | default(value=page.content) | striptags | trim %}
+    {% endif %}
+    {% set entry_summary = page.extra.summary_text | default(value="") %}
+    {% if entry_summary == "" %}
+      {% set entry_summary = page.summary | default(value=page.content) | striptags | trim %}
+    {% endif %}
+    {% if entry_summary == "" %}
+      {% set entry_summary = entry_title | default(value="Untitled") %}
+    {% endif %}
+    <title>{{ entry_title | default(value="Untitled") }}</title>
+    <link rel="alternate" type="text/html" href="{{ page.permalink | safe }}" />
     <published>{{ page.date | date(format="%+") }}</published>
     <updated>{{ page.updated | default(value=page.date) | date(format="%+") }}</updated>
     <id>{{ page.permalink | safe }}</id>
-    {% if page.summary %}
-    <summary type="html">{{ page.summary | safe }}</summary>
-    {% endif %}
-    <content type="html">{{ page.content | safe }}</content>
+    <summary type="text">{{ entry_summary }}</summary>
+    <content type="html">&lt;p&gt;{{ entry_summary }}&lt;/p&gt;</content>
   </entry>
     {% endif %}
   {% endfor %}
@@ -1067,7 +1119,8 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     <span class="post-collection-tags">
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
       {% for col in collections %}
-      <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="post-collection-tag">{{ col }}</a>
+      {% set col_meta = get_section(path='c/' ~ col ~ '/_index.md') %}
+      <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="post-collection-tag">{{ col_meta.title | default(value=col) }}</a>
       {% endfor %}
     </span>
     {% endif %}
@@ -1513,7 +1566,7 @@ img {
 }
 
 .page-context-label {
-  margin: 0;
+  margin: 0 0 1rem;
   color: var(--site-text-secondary);
   font-size: var(--text-sm);
 }
@@ -2041,6 +2094,15 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
   text-decoration: underline;
 }
 
+.collection-list-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0 0 0.95rem;
+  color: var(--site-text-secondary);
+  font-size: var(--text-sm);
+}
+
 .archive-shell {
   gap: 1.35rem;
 }
@@ -2048,6 +2110,19 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
 .archive-list {
   display: grid;
   gap: 0;
+}
+
+.archive-month-group + .archive-month-group {
+  margin-top: 1.35rem;
+}
+
+.archive-month-heading {
+  margin: 0 0 0.45rem;
+  color: var(--site-text-secondary);
+  font-size: 0.82rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .archive-entry {

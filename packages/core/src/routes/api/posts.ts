@@ -7,8 +7,8 @@ import type { Bindings, Media } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { z } from "zod";
 import {
-  CreatePostSchema,
-  UpdatePostSchema,
+  CreatePostApiSchema,
+  UpdatePostApiSchema,
   FormatSchema,
   StatusSchema,
   parseValidated,
@@ -20,15 +20,17 @@ import {
   getPublicUrlForProvider,
 } from "../../lib/image.js";
 import { assertFound, NotFoundError, parseIdParam } from "../../lib/errors.js";
+import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const postsApiRoutes = new Hono<Env>();
+const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
 
 /**
- * Converts a Media record to a MediaAttachment API response shape.
+ * Converts a Media record to an ordered attachment API response shape.
  */
-function toMediaAttachment(
+function toApiAttachment(
   m: Media,
   r2PublicUrl?: string,
   imageTransformUrl?: string,
@@ -43,6 +45,21 @@ function toMediaAttachment(
     localPublicUrl,
   );
   const url = getMediaUrl(m.storageKey, publicUrl, sitePathPrefix);
+
+  if (m.mimeType === ATTACHED_TEXT_MIME_TYPE) {
+    return {
+      type: "text" as const,
+      id: m.id,
+      contentFormat: "markdown" as const,
+      contentUrl: toPublicPath(
+        `/api/attachments/${m.id}/content`,
+        sitePathPrefix,
+      ),
+      summary: m.summary,
+      chars: m.chars,
+    };
+  }
+
   const previewUrl = getImageUrl(url, imageTransformUrl, {
     width: 1200,
     height: 768,
@@ -55,6 +72,7 @@ function toMediaAttachment(
     : null;
 
   return {
+    type: "media" as const,
     id: m.id,
     url,
     previewUrl,
@@ -63,9 +81,11 @@ function toMediaAttachment(
     blurhash: m.blurhash,
     width: m.width,
     height: m.height,
-    position: m.position,
     mimeType: m.mimeType,
+    originalName: m.originalName,
+    size: m.size,
     summary: m.summary,
+    chars: m.chars,
   };
 }
 
@@ -104,8 +124,8 @@ postsApiRoutes.get("/", requireAuthApi(), async (c) => {
   return c.json({
     posts: posts.map((p) => ({
       ...p,
-      mediaAttachments: (mediaMap.get(p.id) ?? []).map((m) =>
-        toMediaAttachment(
+      attachments: (mediaMap.get(p.id) ?? []).map((m) =>
+        toApiAttachment(
           m,
           r2PublicUrl,
           imageTransformUrl,
@@ -132,19 +152,25 @@ postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
     c.var.services.collections.getCollectionsByPostId(id),
   ]);
   assertFound(post, "Post");
-  const { r2PublicUrl, imageTransformUrl, s3PublicUrl, sitePathPrefix } =
-    c.var.appConfig;
+  const {
+    r2PublicUrl,
+    imageTransformUrl,
+    s3PublicUrl,
+    localPublicUrl,
+    sitePathPrefix,
+  } = c.var.appConfig;
   const collectionIds = postCollections.map((col) => col.id);
 
   return c.json({
     ...post,
     collectionIds,
-    mediaAttachments: mediaList.map((m) =>
-      toMediaAttachment(
+    attachments: mediaList.map((m) =>
+      toApiAttachment(
         m,
         r2PublicUrl,
         imageTransformUrl,
         s3PublicUrl,
+        localPublicUrl,
         sitePathPrefix,
       ),
     ),
@@ -153,14 +179,9 @@ postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
 
 // Create post (requires auth)
 postsApiRoutes.post("/", requireAuthApi(), async (c) => {
-  const body = parseValidated(CreatePostSchema, await c.req.json());
+  const body = parseValidated(CreatePostApiSchema, await c.req.json());
 
-  // Validate media IDs
-  if (body.mediaIds) {
-    await c.var.services.media.validateIds(body.mediaIds);
-  }
-
-  const post = await c.var.services.posts.create(
+  const post = await c.var.services.posts.createWithAttachments(
     {
       format: body.format,
       title: body.title,
@@ -179,30 +200,38 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
       replyToId: body.replyToId,
       publishedAt: body.publishedAt,
     },
+    body.attachments,
+    {
+      media: c.var.services.media,
+      storage: c.var.storage,
+      storageDriver: c.var.appConfig.storageDriver,
+      maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+    },
     {
       maxParagraphs: c.var.appConfig.summaryMaxParagraphs,
       maxChars: c.var.appConfig.summaryMaxChars,
     },
   );
 
-  // Attach media
-  if (body.mediaIds && body.mediaIds.length > 0) {
-    await c.var.services.media.attachToPost(post.id, body.mediaIds);
-  }
-
   const mediaList = await c.var.services.media.getByPostId(post.id);
-  const { r2PublicUrl, imageTransformUrl, s3PublicUrl, sitePathPrefix } =
-    c.var.appConfig;
+  const {
+    r2PublicUrl,
+    imageTransformUrl,
+    s3PublicUrl,
+    localPublicUrl,
+    sitePathPrefix,
+  } = c.var.appConfig;
 
   return c.json(
     {
       ...post,
-      mediaAttachments: mediaList.map((m) =>
-        toMediaAttachment(
+      attachments: mediaList.map((m) =>
+        toApiAttachment(
           m,
           r2PublicUrl,
           imageTransformUrl,
           s3PublicUrl,
+          localPublicUrl,
           sitePathPrefix,
         ),
       ),
@@ -215,15 +244,10 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
 postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
   const id = parseIdParam(c.req.param("id"));
 
-  const body = parseValidated(UpdatePostSchema, await c.req.json());
-
-  // Validate media IDs if provided
-  if (body.mediaIds !== undefined) {
-    await c.var.services.media.validateIds(body.mediaIds);
-  }
+  const body = parseValidated(UpdatePostApiSchema, await c.req.json());
 
   const post = assertFound(
-    await c.var.services.posts.update(
+    await c.var.services.posts.updateWithAttachments(
       id,
       {
         format: body.format,
@@ -241,6 +265,13 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
         collectionIds: body.collectionIds,
         publishedAt: body.publishedAt,
       },
+      body.attachments,
+      {
+        media: c.var.services.media,
+        storage: c.var.storage,
+        storageDriver: c.var.appConfig.storageDriver,
+        maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+      },
       {
         maxParagraphs: c.var.appConfig.summaryMaxParagraphs,
         maxChars: c.var.appConfig.summaryMaxChars,
@@ -249,23 +280,24 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
     "Post",
   );
 
-  // Update media attachments if provided (including empty array to clear)
-  if (body.mediaIds !== undefined) {
-    await c.var.services.media.attachToPost(post.id, body.mediaIds);
-  }
-
   const mediaList = await c.var.services.media.getByPostId(post.id);
-  const { r2PublicUrl, imageTransformUrl, s3PublicUrl, sitePathPrefix } =
-    c.var.appConfig;
+  const {
+    r2PublicUrl,
+    imageTransformUrl,
+    s3PublicUrl,
+    localPublicUrl,
+    sitePathPrefix,
+  } = c.var.appConfig;
 
   return c.json({
     ...post,
-    mediaAttachments: mediaList.map((m) =>
-      toMediaAttachment(
+    attachments: mediaList.map((m) =>
+      toApiAttachment(
         m,
         r2PublicUrl,
         imageTransformUrl,
         s3PublicUrl,
+        localPublicUrl,
         sitePathPrefix,
       ),
     ),

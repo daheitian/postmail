@@ -39,6 +39,22 @@ function escapeCdata(str: string): string {
   return str.replaceAll("]]>", "]]]]><![CDATA[>");
 }
 
+function stripUnsafeFeedHtml(html: string): string {
+  return html.replaceAll(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+}
+
+function getFeedSummaryText(post: PostView): string {
+  return (
+    post.summary || post.excerpt || post.title || post.url || `Post #${post.id}`
+  );
+}
+
+function getFeedTitle(post: PostView): string {
+  return (
+    post.title || post.excerpt || post.summary || post.url || `Post #${post.id}`
+  );
+}
+
 /**
  * Render a star rating as HTML for feed content.
  */
@@ -76,11 +92,15 @@ function buildFeedContent(post: PostView): string {
   }
 
   if (post.bodyHtml) {
-    parts.push(post.bodyHtml);
+    parts.push(stripUnsafeFeedHtml(post.bodyHtml));
   }
 
   if (post.rating && post.rating > 0) {
     parts.push(renderRatingHtml(post.rating));
+  }
+
+  if (parts.length === 0) {
+    parts.push(`<p>${escapeXml(getFeedSummaryText(post))}</p>`);
   }
 
   return parts.join("\n");
@@ -99,7 +119,7 @@ export function defaultRssRenderer(data: FeedData): string {
   const items = posts
     .map((post) => {
       const link = escapeXml(new URL(post.permalink, siteUrl).toString());
-      const title = post.title || `Post #${post.id}`;
+      const title = getFeedTitle(post);
       const pubDate = new Date(post.publishedAt).toUTCString();
 
       // Add enclosure for first media attachment
@@ -110,7 +130,7 @@ export function defaultRssRenderer(data: FeedData): string {
 
       return `
     <item>
-      <title><![CDATA[${escapeCdata(escapeXml(title))}]]></title>
+      <title><![CDATA[${escapeCdata(title)}]]></title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
@@ -144,7 +164,8 @@ export function defaultAtomRenderer(data: FeedData): string {
   const entries = posts
     .map((post) => {
       const link = escapeXml(new URL(post.permalink, siteUrl).toString());
-      const title = post.title || `Post #${post.id}`;
+      const title = getFeedTitle(post);
+      const summary = getFeedSummaryText(post);
 
       return `
   <entry>
@@ -153,6 +174,7 @@ export function defaultAtomRenderer(data: FeedData): string {
     <id>${link}</id>
     <published>${post.publishedAt}</published>
     <updated>${post.updatedAt}</updated>
+    <summary type="text">${escapeXml(summary)}</summary>
     <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post))}]]></content>
   </entry>`;
     })

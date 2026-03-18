@@ -5,6 +5,39 @@ import { createMediaService } from "../media.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
 
+function createMockStorage() {
+  const files = new Map<string, { body: Uint8Array; contentType?: string }>();
+
+  return {
+    files,
+    async put(
+      key: string,
+      body: Uint8Array | ReadableStream,
+      opts?: { contentType?: string },
+    ) {
+      const bytes =
+        body instanceof Uint8Array
+          ? body
+          : new Uint8Array(await new Response(body).arrayBuffer());
+      files.set(key, {
+        body: bytes,
+        contentType: opts?.contentType,
+      });
+    },
+    async get(key: string) {
+      const file = files.get(key);
+      if (!file) return null;
+      return {
+        body: new Response(file.body).body as ReadableStream,
+        contentType: file.contentType,
+      };
+    },
+    async delete(key: string) {
+      files.delete(key);
+    },
+  };
+}
+
 describe("MediaService", () => {
   let db: Database;
   let mediaService: ReturnType<typeof createMediaService>;
@@ -189,6 +222,72 @@ describe("MediaService", () => {
     });
   });
 
+  describe("createTextAttachment", () => {
+    it("stores markdown text attachments as TipTap-backed text media", async () => {
+      const storage = createMockStorage();
+
+      const media = await mediaService.createTextAttachment(
+        {
+          contentFormat: "markdown",
+          content: "# Heading\n\nBody text",
+        },
+        {
+          storage,
+          storageDriver: "local",
+          maxFileSizeMB: 1,
+        },
+      );
+
+      expect(media.mimeType).toBe("text/x-tiptap+json");
+      expect(media.provider).toBe("local");
+      expect(media.summary).toBe("Heading Body text");
+      expect(media.chars).toBe(17);
+      expect(storage.files.get(media.storageKey)?.contentType).toBe(
+        "text/x-tiptap+json",
+      );
+    });
+  });
+
+  describe("getTextAttachmentContent", () => {
+    it("returns markdown content for TipTap-backed text attachments", async () => {
+      const storage = createMockStorage();
+      const media = await mediaService.createTextAttachment(
+        {
+          contentFormat: "markdown",
+          content: "# Heading\n\nBody text",
+        },
+        {
+          storage,
+          storageDriver: "local",
+          maxFileSizeMB: 1,
+        },
+      );
+
+      const content = await mediaService.getTextAttachmentContent(
+        media.id,
+        storage,
+      );
+
+      expect(content).toEqual({
+        id: media.id,
+        type: "text",
+        contentFormat: "markdown",
+        content: "# Heading\n\nBody text",
+        summary: "Heading Body text",
+        chars: 17,
+      });
+    });
+
+    it("returns null for non-text attachments", async () => {
+      const media = await mediaService.create(sampleMedia);
+      const storage = createMockStorage();
+
+      await expect(
+        mediaService.getTextAttachmentContent(media.id, storage),
+      ).resolves.toBeNull();
+    });
+  });
+
   describe("getById", () => {
     it("returns media by ID", async () => {
       const created = await mediaService.create(sampleMedia);
@@ -356,7 +455,7 @@ describe("MediaService", () => {
     it("throws ValidationError when count exceeds limit", async () => {
       const ids = Array.from({ length: 21 }, (_, i) => `fake-id-${i}`);
       await expect(mediaService.validateIds(ids)).rejects.toThrow(
-        "at most 20 media attachments",
+        "at most 20 attachments",
       );
     });
 
@@ -368,13 +467,13 @@ describe("MediaService", () => {
 
       await expect(
         mediaService.validateIds([m1.id, "nonexistent-id"]),
-      ).rejects.toThrow("media IDs are invalid");
+      ).rejects.toThrow("invalid media IDs");
     });
 
     it("throws ValidationError for all nonexistent IDs", async () => {
       await expect(
         mediaService.validateIds(["fake-1", "fake-2"]),
-      ).rejects.toThrow("media IDs are invalid");
+      ).rejects.toThrow("invalid media IDs");
     });
   });
 

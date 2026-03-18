@@ -29,6 +29,7 @@ import { generatePostSlug } from "../lib/slug.js";
 import { normalizePath, slugify } from "../lib/url.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
+import { MAX_MEDIA_ATTACHMENTS } from "../types.js";
 import type {
   Format,
   Status,
@@ -37,6 +38,7 @@ import type {
   MediaKind,
   Post,
   CreatePost,
+  PostAttachmentInput,
   UpdatePost,
   ThreadTimelineContext,
 } from "../types.js";
@@ -51,6 +53,11 @@ import { createPathService, type PathService } from "./path.js";
 export interface PostDeleteDeps {
   media: MediaService;
   storage?: StorageDriver | null;
+}
+
+export interface PostAttachmentDeps extends PostDeleteDeps {
+  storageDriver: string;
+  maxFileSizeMB: number;
 }
 
 export interface PostFilters {
@@ -115,9 +122,22 @@ export interface PostService {
     filters?: PostFilters,
   ): Promise<{ yearMonth: string; count: number }[]>;
   create(data: CreatePost, summaryConfig?: SummaryConfig): Promise<Post>;
+  createWithAttachments(
+    data: CreatePost,
+    attachments: PostAttachmentInput[] | undefined,
+    deps: PostAttachmentDeps,
+    summaryConfig?: SummaryConfig,
+  ): Promise<Post>;
   update(
     id: string,
     data: UpdatePost,
+    summaryConfig?: SummaryConfig,
+  ): Promise<Post | null>;
+  updateWithAttachments(
+    id: string,
+    data: UpdatePost,
+    attachments: PostAttachmentInput[] | undefined,
+    deps: PostAttachmentDeps,
     summaryConfig?: SummaryConfig,
   ): Promise<Post | null>;
   /**
@@ -506,6 +526,105 @@ export function createPostService(
     return conditions;
   }
 
+  function isMediaAttachmentInput(
+    attachment: PostAttachmentInput,
+  ): attachment is Extract<PostAttachmentInput, { type: "media" }> {
+    return attachment.type === "media";
+  }
+
+  async function createAttachmentMediaIds(
+    attachments: PostAttachmentInput[],
+    deps: PostAttachmentDeps,
+  ) {
+    if (attachments.length > MAX_MEDIA_ATTACHMENTS) {
+      throw new ValidationError(
+        `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} attachments`,
+      );
+    }
+
+    const orderedMediaIds: string[] = [];
+    const createdTextMediaIds: string[] = [];
+    const referencedMediaIds = attachments
+      .filter(isMediaAttachmentInput)
+      .map((attachment) => attachment.mediaId);
+
+    await deps.media.validateIds(referencedMediaIds);
+
+    try {
+      for (const attachment of attachments) {
+        if (isMediaAttachmentInput(attachment)) {
+          orderedMediaIds.push(attachment.mediaId);
+          continue;
+        }
+
+        const created = await deps.media.createTextAttachment(attachment, {
+          storage: deps.storage,
+          storageDriver: deps.storageDriver,
+          maxFileSizeMB: deps.maxFileSizeMB,
+        });
+        orderedMediaIds.push(created.id);
+        createdTextMediaIds.push(created.id);
+      }
+    } catch (error) {
+      await cleanupCreatedTextAttachments(createdTextMediaIds, deps);
+      throw error;
+    }
+
+    return { orderedMediaIds, createdTextMediaIds };
+  }
+
+  async function applyAttachmentAltUpdates(
+    attachments: PostAttachmentInput[],
+    deps: PostAttachmentDeps,
+  ) {
+    const altUpdates = attachments
+      .filter(isMediaAttachmentInput)
+      .filter((attachment) => attachment.alt !== undefined)
+      .map((attachment) =>
+        deps.media.updateAlt(attachment.mediaId, attachment.alt ?? ""),
+      );
+
+    await Promise.all(altUpdates);
+  }
+
+  async function cleanupCreatedTextAttachments(
+    mediaIds: string[],
+    deps: PostAttachmentDeps,
+  ) {
+    if (mediaIds.length === 0) return;
+    await deps.media.deleteByIds(mediaIds, deps.storage).catch(() => undefined);
+  }
+
+  async function getCollectionIdsForPost(postId: string): Promise<string[]> {
+    const rows = await db
+      .select({ collectionId: postCollections.collectionId })
+      .from(postCollections)
+      .where(eq(postCollections.postId, postId));
+
+    return rows.map((row) => row.collectionId);
+  }
+
+  function buildRollbackUpdate(
+    post: Post,
+    collectionIds: string[],
+  ): UpdatePost {
+    return {
+      format: post.format,
+      title: post.title,
+      body: post.body ?? null,
+      slug: post.slug,
+      status: post.status,
+      visibility: post.visibility,
+      pinned: post.pinnedAt !== null,
+      featured: post.featuredAt !== null,
+      url: post.url,
+      quoteText: post.quoteText,
+      rating: post.rating,
+      collectionIds,
+      publishedAt: post.publishedAt ?? undefined,
+    };
+  }
+
   return {
     async getById(id) {
       const result = await db
@@ -816,6 +935,35 @@ export function createPostService(
       return post;
     },
 
+    async createWithAttachments(data, attachments, deps, summaryConfig) {
+      const attachmentInputs = attachments ?? [];
+      const { orderedMediaIds, createdTextMediaIds } =
+        await createAttachmentMediaIds(attachmentInputs, deps);
+
+      try {
+        const post = await this.create(data, summaryConfig);
+
+        try {
+          if (orderedMediaIds.length > 0) {
+            await deps.media.attachToPost(post.id, orderedMediaIds);
+          }
+          await applyAttachmentAltUpdates(attachmentInputs, deps);
+          return post;
+        } catch (error) {
+          await deps.media.attachToPost(post.id, []).catch(() => undefined);
+          await this.delete(post.id, {
+            media: deps.media,
+            storage: deps.storage,
+          }).catch(() => undefined);
+          await cleanupCreatedTextAttachments(createdTextMediaIds, deps);
+          throw error;
+        }
+      } catch (error) {
+        await cleanupCreatedTextAttachments(createdTextMediaIds, deps);
+        throw error;
+      }
+    },
+
     async update(id, data, summaryConfig) {
       const existing = await this.getById(id);
       if (!existing) return null;
@@ -1029,6 +1177,80 @@ export function createPostService(
         return this.getById(id);
       }
       return hydratePost(updateResult?.[0]);
+    },
+
+    async updateWithAttachments(id, data, attachments, deps, summaryConfig) {
+      if (attachments === undefined) {
+        return this.update(id, data, summaryConfig);
+      }
+
+      const existingPost = await this.getById(id);
+      if (!existingPost) return null;
+
+      const existingCollectionIds = await getCollectionIdsForPost(id);
+      const rollbackData = buildRollbackUpdate(
+        existingPost,
+        existingCollectionIds,
+      );
+      const existingAttachments = await deps.media.getByPostId(id);
+      const previousMediaIds = existingAttachments.map(
+        (attachment) => attachment.id,
+      );
+      const previousAltMap = new Map(
+        existingAttachments.map((attachment) => [
+          attachment.id,
+          attachment.alt ?? "",
+        ]),
+      );
+      const { orderedMediaIds, createdTextMediaIds } =
+        await createAttachmentMediaIds(attachments, deps);
+      const post = await this.update(id, data, summaryConfig);
+
+      if (!post) {
+        await cleanupCreatedTextAttachments(createdTextMediaIds, deps);
+        return null;
+      }
+
+      let replacedAttachments = false;
+
+      try {
+        await deps.media.attachToPost(post.id, orderedMediaIds);
+        replacedAttachments = true;
+        await applyAttachmentAltUpdates(attachments, deps);
+
+        const nextAttachmentIds = new Set(orderedMediaIds);
+        const removedTextAttachmentIds = existingAttachments
+          .filter(
+            (attachment) =>
+              attachment.mimeType === "text/x-tiptap+json" &&
+              !nextAttachmentIds.has(attachment.id),
+          )
+          .map((attachment) => attachment.id);
+        await deps.media
+          .deleteByIds(removedTextAttachmentIds, deps.storage)
+          .catch(() => undefined);
+
+        return post;
+      } catch (error) {
+        if (replacedAttachments) {
+          await deps.media
+            .attachToPost(post.id, previousMediaIds)
+            .catch(() => undefined);
+          await Promise.all(
+            existingAttachments.map((attachment) =>
+              deps.media.updateAlt(
+                attachment.id,
+                previousAltMap.get(attachment.id) ?? "",
+              ),
+            ),
+          ).catch(() => undefined);
+        }
+        await this.update(id, rollbackData, summaryConfig).catch(
+          () => undefined,
+        );
+        await cleanupCreatedTextAttachments(createdTextMediaIds, deps);
+        throw error;
+      }
     },
 
     async delete(id, deps) {

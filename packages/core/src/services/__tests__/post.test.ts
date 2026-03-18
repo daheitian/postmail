@@ -3,8 +3,40 @@ import { eq } from "drizzle-orm";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { posts } from "../../db/schema.js";
 import { createPostService } from "../post.js";
+import { createMediaService } from "../media.js";
 import type { Database } from "../../db/index.js";
 import { createPathService } from "../path.js";
+import type { MediaService } from "../media.js";
+
+function createMockStorage() {
+  const files = new Map<string, { body: Uint8Array; contentType?: string }>();
+
+  return {
+    files,
+    async put(
+      key: string,
+      body: Uint8Array | ReadableStream,
+      opts?: { contentType?: string },
+    ) {
+      const bytes =
+        body instanceof Uint8Array
+          ? body
+          : new Uint8Array(await new Response(body).arrayBuffer());
+      files.set(key, { body: bytes, contentType: opts?.contentType });
+    },
+    async get(key: string) {
+      const file = files.get(key);
+      if (!file) return null;
+      return {
+        body: new Response(file.body).body as ReadableStream,
+        contentType: file.contentType,
+      };
+    },
+    async delete(key: string) {
+      files.delete(key);
+    },
+  };
+}
 
 describe("PostService", () => {
   let db: Database;
@@ -1106,6 +1138,77 @@ describe("PostService", () => {
           format: "note",
         }),
       ).rejects.toThrow("Notes can't include a URL.");
+    });
+
+    it("rolls back post fields when attachment replacement fails", async () => {
+      const mediaService = createMediaService(db);
+      const storage = createMockStorage();
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "before",
+      });
+      const originalAttachment = await mediaService.create({
+        filename: "original.jpg",
+        originalName: "original.jpg",
+        mimeType: "image/jpeg",
+        size: 1024,
+        storageKey: "media/2025/01/original.jpg",
+        alt: "original alt",
+      });
+      const replacementAttachment = await mediaService.create({
+        filename: "replacement.jpg",
+        originalName: "replacement.jpg",
+        mimeType: "image/jpeg",
+        size: 2048,
+        storageKey: "media/2025/01/replacement.jpg",
+      });
+      await mediaService.attachToPost(post.id, [originalAttachment.id]);
+
+      const failingMediaService: MediaService = {
+        ...mediaService,
+        async updateAlt() {
+          throw new Error("boom");
+        },
+      };
+
+      await expect(
+        postService.updateWithAttachments(
+          post.id,
+          {
+            bodyMarkdown: "after",
+            title: "Updated title",
+          },
+          [
+            {
+              type: "media",
+              mediaId: replacementAttachment.id,
+              alt: "replacement alt",
+            },
+          ],
+          {
+            media: failingMediaService,
+            storage,
+            storageDriver: "local",
+            maxFileSizeMB: 1,
+          },
+        ),
+      ).rejects.toThrow("boom");
+
+      const rolledBack = await postService.getById(post.id);
+      expect(rolledBack?.bodyText).toBe("before");
+      expect(rolledBack?.title).toBeNull();
+
+      const restoredAttachments = await mediaService.getByPostId(post.id);
+      expect(restoredAttachments.map((attachment) => attachment.id)).toEqual([
+        originalAttachment.id,
+      ]);
+      expect(restoredAttachments[0]?.alt).toBe("original alt");
+      expect(
+        await mediaService.getById(replacementAttachment.id),
+      ).toMatchObject({
+        id: replacementAttachment.id,
+        postId: null,
+      });
     });
   });
 

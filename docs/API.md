@@ -10,7 +10,7 @@ All endpoints return JSON. Timestamps are Unix seconds (not milliseconds).
 
 ## Authentication
 
-Read-only endpoints (GET) are public. All write operations (POST, PUT, DELETE) require authentication.
+Most API endpoints require authentication. Public endpoints are explicitly marked.
 
 ### API Tokens (recommended for scripts)
 
@@ -70,6 +70,7 @@ The `details` field is only present for validation errors and contains field-lev
 | `NOT_FOUND`              | 404         | Resource doesn't exist                |
 | `CONFLICT`               | 409         | Slug conflict or constraint violation |
 | `RATE_LIMIT`             | 429         | Too many requests                     |
+| `CONFIGURATION_ERROR`    | 500         | Missing or invalid server config      |
 | `EXTERNAL_SERVICE_ERROR` | 500         | Internal failure                      |
 
 All ID parameters must be valid UUIDs. Invalid IDs return `400`.
@@ -94,7 +95,7 @@ Jant has three post formats:
 GET /api/posts
 ```
 
-Public. No auth required.
+**Auth required.**
 
 **Query parameters:**
 
@@ -132,8 +133,9 @@ Public. No auth required.
       "lastActivityAt": 1706000000,
       "createdAt": 1706000000,
       "updatedAt": 1706000000,
-      "mediaAttachments": [
+      "attachments": [
         {
+          "type": "media",
           "id": "019513a2-...",
           "url": "/media/2025/01/019513a2.jpg",
           "previewUrl": "/media/2025/01/019513a2.jpg",
@@ -142,8 +144,9 @@ Public. No auth required.
           "blurhash": null,
           "width": 800,
           "height": 600,
-          "position": 0,
           "mimeType": "image/jpeg",
+          "originalName": "photo.jpg",
+          "size": 1024000,
           "summary": null
         }
       ]
@@ -161,7 +164,7 @@ Public. No auth required.
 GET /api/posts/:id
 ```
 
-Public. Returns the full post with `collectionIds` and `mediaAttachments`.
+**Auth required.** Returns the full post with `collectionIds` and ordered `attachments`.
 
 **Response (200):**
 
@@ -170,7 +173,7 @@ Public. Returns the full post with `collectionIds` and `mediaAttachments`.
   "id": "019513a2-...",
   "format": "note",
   "collectionIds": ["019513b1-...", "019513b2-..."],
-  "mediaAttachments": [],
+  "attachments": [],
   "...": "same fields as list"
 }
 ```
@@ -195,7 +198,14 @@ POST /api/posts
   "publishedAt": 1706000000,
   "slug": "my-first-post",
   "collectionIds": ["collection-uuid"],
-  "mediaIds": ["media-uuid-1", "media-uuid-2"]
+  "attachments": [
+    { "type": "media", "mediaId": "media-uuid-1" },
+    {
+      "type": "text",
+      "contentFormat": "markdown",
+      "content": "# Attached note\n\nExtra context here."
+    }
+  ]
 }
 ```
 
@@ -219,7 +229,21 @@ POST /api/posts
 | `collectionIds` | string[]                            | no       | —           | Collection UUIDs to add the post to                                                                                                                                                                          |
 | `replyToId`     | string (UUID)                       | no       | —           | Create as a reply in a thread                                                                                                                                                                                |
 | `publishedAt`   | integer                             | no       | now         | Unix timestamp in seconds                                                                                                                                                                                    |
-| `mediaIds`      | string[]                            | no       | —           | Media UUIDs to attach (max 20). Upload files first via `/api/upload`                                                                                                                                         |
+| `attachments`   | attachment[]                        | no       | —           | Ordered attachments (max 20). Use `type: "media"` for uploaded files and `type: "text"` for inline text attachments                                                                                          |
+
+### Attachments
+
+Posts accept and return an ordered `attachments` array. Array order is the attachment order shown on the post.
+
+Input objects:
+
+- Media attachment: `{ "type": "media", "mediaId": "uploaded-media-id", "alt": "Optional alt text" }`
+- Text attachment: `{ "type": "text", "contentFormat": "markdown", "content": "# Heading", "summary": "Optional card summary" }`
+
+Response objects:
+
+- Media attachment: includes `url`, `previewUrl`, `mimeType`, `originalName`, `size`, and optional display metadata
+- Text attachment: includes `contentFormat`, `summary`, `chars`, and `contentUrl` for fetching the Markdown body
 
 **Slug rules:**
 
@@ -233,7 +257,7 @@ POST /api/posts
 - Setting `replyToId` makes this post a reply in an existing thread
 - Replies inherit `status` and `visibility` from the thread root
 
-**Response (201):** Full post object with `mediaAttachments`.
+**Response (201):** Full post object with ordered `attachments`.
 
 ### Update Post
 
@@ -250,13 +274,34 @@ PUT /api/posts/:id
 }
 ```
 
-**Media behavior:**
+**Attachment behavior:**
 
-- Omitting `mediaIds` → keeps existing attachments
-- `"mediaIds": []` → removes all attachments
-- `"mediaIds": ["new-id"]` → replaces all attachments
+- Omitting `attachments` → keeps existing attachments
+- `"attachments": []` → removes all attachments
+- `"attachments": [...]` → replaces all attachments in the given order
 
-**Response (200):** Updated post with `mediaAttachments`.
+**Response (200):** Updated post with ordered `attachments`.
+
+### Get Text Attachment Content
+
+```
+GET /api/attachments/:id/content
+```
+
+**Auth required.** Returns the Markdown body for a `type: "text"` attachment.
+
+**Response (200):**
+
+```json
+{
+  "id": "019513a2-...",
+  "type": "text",
+  "contentFormat": "markdown",
+  "content": "# Attached note\n\nExtra context here.",
+  "summary": "Attached note Extra context here.",
+  "chars": 33
+}
+```
 
 ### Delete Post
 
@@ -321,7 +366,7 @@ This is ~~strikethrough~~ text.
 ![Alt text](https://example.com/image.png)
 ```
 
-For media attachments, use the `/api/upload` endpoint and `mediaIds` instead.
+For file attachments, upload first via `/api/upload`, then reference the returned ID in `attachments` with `type: "media"`.
 
 ### Lists
 
@@ -423,7 +468,7 @@ POST /api/upload
 }
 ```
 
-Save the `id` — you'll need it to attach the file to a post via `mediaIds`.
+Save the `id` — you'll need it to attach the file to a post with `{ "type": "media", "mediaId": "..." }`.
 
 Example:
 
@@ -1015,7 +1060,10 @@ curl -X POST https://your-site.com/api/posts \
     "status": "published",
     "publishedAt": 1609459200,
     "collectionIds": ["collection-uuid"],
-    "mediaIds": ["media-uuid-1", "media-uuid-2"]
+    "attachments": [
+      { "type": "media", "mediaId": "media-uuid-1" },
+      { "type": "media", "mediaId": "media-uuid-2" }
+    ]
   }'
 ```
 
@@ -1024,7 +1072,7 @@ Key fields for migration:
 - **`publishedAt`**: Set to the original publish date (Unix seconds) to preserve chronological order
 - **`slug`**: Set to match the original URL path for link continuity
 - **`collectionIds`**: Map old categories/tags to Jant collections
-- **`mediaIds`**: Attach previously uploaded media
+- **`attachments`**: Attach previously uploaded media in the order you want them to appear
 
 ### Step 4: Configure Site
 
@@ -1075,7 +1123,10 @@ async function createPost(post) {
       slug: post.slug,
       status: "published",
       publishedAt: Math.floor(new Date(post.date).getTime() / 1000),
-      mediaIds: post.mediaIds || [],
+      attachments: (post.mediaIds || []).map((mediaId) => ({
+        type: "media",
+        mediaId,
+      })),
       collectionIds: post.collectionIds || [],
     }),
   });
@@ -1160,7 +1211,7 @@ Without `--url`, `jant site export` exports from the local Node SQLite runtime. 
 config.toml              # Zola site config
 content/_index.md        # Root section
 content/{slug}/index.md  # One file per post (threads merged)
-content/jant-collections/{slug}/_index.md  # Hidden collection metadata
+content/c/{slug}/_index.md  # Collection title/description metadata for /c/{slug}/
 templates/               # Zola templates (index, page, section, etc.)
 static/style.css         # Theme CSS (dark mode included)
 ```
@@ -1171,6 +1222,7 @@ static/style.css         # Theme CSS (dark mode included)
 - Attachments are preserved as `data-jant-node="attachments"` HTML blocks for re-import
 - Rich image blocks preserve Jant-only attributes such as caption, link target, and layout
 - Collections are exported as Zola taxonomies under `/c/`
+- Collection display titles and descriptions are exported via `content/c/{slug}/_index.md`
 - A static `/archive/` page is exported so archive nav items still work in Zola
 - `config.toml` includes `[extra.jant_export]` metadata so importers can recognize the export format version
 

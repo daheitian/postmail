@@ -43,6 +43,10 @@ export const SYSTEM_NAV_KEYS = {
 export const MAX_MEDIA_ATTACHMENTS = 20;
 export const MAX_PINNED_POSTS = 3;
 
+export const TEXT_ATTACHMENT_CONTENT_FORMATS = ["markdown"] as const;
+export type TextAttachmentContentFormat =
+  (typeof TEXT_ATTACHMENT_CONTENT_FORMATS)[number];
+
 export const MEDIA_KINDS = [
   "image",
   "video",

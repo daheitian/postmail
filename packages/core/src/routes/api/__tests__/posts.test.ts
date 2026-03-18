@@ -2,6 +2,36 @@ import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { postsApiRoutes } from "../posts.js";
 
+function createMockStorage() {
+  const files = new Map<string, { body: Uint8Array; contentType?: string }>();
+
+  return {
+    files,
+    async put(
+      key: string,
+      body: Uint8Array | ReadableStream,
+      opts?: { contentType?: string },
+    ) {
+      const bytes =
+        body instanceof Uint8Array
+          ? body
+          : new Uint8Array(await new Response(body).arrayBuffer());
+      files.set(key, { body: bytes, contentType: opts?.contentType });
+    },
+    async get(key: string) {
+      const file = files.get(key);
+      if (!file) return null;
+      return {
+        body: new Response(file.body).body as ReadableStream,
+        contentType: file.contentType,
+      };
+    },
+    async delete(key: string) {
+      files.delete(key);
+    },
+  };
+}
+
 describe("Posts API Routes", () => {
   describe("GET /api/posts", () => {
     it("returns 401 when not authenticated", async () => {
@@ -41,7 +71,7 @@ describe("Posts API Routes", () => {
       expect(body.posts[0].id).toBeTruthy();
     });
 
-    it("includes mediaAttachments in list response", async () => {
+    it("includes attachments in list response", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
@@ -65,12 +95,12 @@ describe("Posts API Routes", () => {
       const res = await app.request("/api/posts");
       const body = await res.json();
 
-      expect(body.posts[0].mediaAttachments).toHaveLength(1);
-      expect(body.posts[0].mediaAttachments[0].id).toBe(media.id);
-      expect(body.posts[0].mediaAttachments[0].mimeType).toBe("image/jpeg");
-      expect(body.posts[0].mediaAttachments[0].url).toBeTruthy();
-      expect(body.posts[0].mediaAttachments[0].previewUrl).toBeTruthy();
-      expect(body.posts[0].mediaAttachments[0].position).toBe("a0");
+      expect(body.posts[0].attachments).toHaveLength(1);
+      expect(body.posts[0].attachments[0].id).toBe(media.id);
+      expect(body.posts[0].attachments[0].type).toBe("media");
+      expect(body.posts[0].attachments[0].mimeType).toBe("image/jpeg");
+      expect(body.posts[0].attachments[0].url).toBeTruthy();
+      expect(body.posts[0].attachments[0].previewUrl).toBeTruthy();
     });
 
     it("filters by status", async () => {
@@ -142,7 +172,7 @@ describe("Posts API Routes", () => {
       expect(body.id).toBe(post.id);
     });
 
-    it("includes mediaAttachments in single post response", async () => {
+    it("includes attachments in single post response", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
@@ -164,8 +194,9 @@ describe("Posts API Routes", () => {
       const res = await app.request(`/api/posts/${post.id}`);
       const body = await res.json();
 
-      expect(body.mediaAttachments).toHaveLength(1);
-      expect(body.mediaAttachments[0].id).toBe(media.id);
+      expect(body.attachments).toHaveLength(1);
+      expect(body.attachments[0].id).toBe(media.id);
+      expect(body.attachments[0].type).toBe("media");
     });
 
     it("returns 400 for invalid ID", async () => {
@@ -222,7 +253,7 @@ describe("Posts API Routes", () => {
       const body = await res.json();
       expect(body.bodyText).toBe("Hello from API");
       expect(body.id).toBeTruthy();
-      expect(body.mediaAttachments).toEqual([]);
+      expect(body.attachments).toEqual([]);
     });
 
     it("creates a post with bodyMarkdown", async () => {
@@ -264,7 +295,7 @@ describe("Posts API Routes", () => {
       expect(body.error).toContain("Provide either body or bodyMarkdown");
     });
 
-    it("creates a post with mediaIds and attaches them", async () => {
+    it("creates a post with ordered attachments", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
@@ -289,20 +320,66 @@ describe("Posts API Routes", () => {
         body: JSON.stringify({
           format: "note",
           bodyMarkdown: "with images",
-          mediaIds: [m1.id, m2.id],
+          attachments: [
+            { type: "media", mediaId: m1.id },
+            { type: "media", mediaId: m2.id },
+          ],
         }),
       });
 
       expect(res.status).toBe(201);
       const body = await res.json();
-      expect(body.mediaAttachments).toHaveLength(2);
-      expect(body.mediaAttachments[0].id).toBe(m1.id);
-      expect(body.mediaAttachments[0].position).toBe("a0");
-      expect(body.mediaAttachments[1].id).toBe(m2.id);
-      expect(body.mediaAttachments[1].position).toBe("a1");
+      expect(body.attachments).toHaveLength(2);
+      expect(body.attachments[0]).toMatchObject({
+        type: "media",
+        id: m1.id,
+      });
+      expect(body.attachments[1]).toMatchObject({
+        type: "media",
+        id: m2.id,
+      });
     });
 
-    it("returns 400 for invalid media IDs", async () => {
+    it("creates text attachments through the posts API", async () => {
+      const storage = createMockStorage();
+      const { app } = createTestApp({
+        authenticated: true,
+        storage,
+      });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "note",
+          bodyMarkdown: "test",
+          attachments: [
+            {
+              type: "text",
+              contentFormat: "markdown",
+              content: "# Attached\n\nHello text attachment",
+            },
+          ],
+        }),
+      });
+
+      expect(res.status).toBe(201);
+
+      const body = await res.json();
+      expect(body.attachments).toEqual([
+        expect.objectContaining({
+          type: "text",
+          contentFormat: "markdown",
+          summary: "Attached Hello text attachment",
+          chars: 30,
+        }),
+      ]);
+      expect(body.attachments[0].contentUrl).toContain("/api/attachments/");
+      expect(storage.files.size).toBe(1);
+    });
+
+    it("returns 400 for invalid attachment media IDs", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
@@ -312,13 +389,13 @@ describe("Posts API Routes", () => {
         body: JSON.stringify({
           format: "note",
           bodyMarkdown: "test",
-          mediaIds: ["nonexistent-id"],
+          attachments: [{ type: "media", mediaId: "nonexistent-id" }],
         }),
       });
 
       expect(res.status).toBe(400);
       const body = await res.json();
-      expect(body.error).toContain("media IDs are invalid");
+      expect(body.error).toContain("invalid media IDs");
     });
 
     it("returns 400 for invalid body", async () => {
@@ -388,10 +465,10 @@ describe("Posts API Routes", () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.bodyText).toBe("updated");
-      expect(body.mediaAttachments).toEqual([]);
+      expect(body.attachments).toEqual([]);
     });
 
-    it("updates post with mediaIds to replace attachments", async () => {
+    it("updates post with attachments to replace attachments", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
@@ -421,16 +498,21 @@ describe("Posts API Routes", () => {
       const res = await app.request(`/api/posts/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mediaIds: [m2.id] }),
+        body: JSON.stringify({
+          attachments: [{ type: "media", mediaId: m2.id }],
+        }),
       });
 
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.mediaAttachments).toHaveLength(1);
-      expect(body.mediaAttachments[0].id).toBe(m2.id);
+      expect(body.attachments).toHaveLength(1);
+      expect(body.attachments[0]).toMatchObject({
+        type: "media",
+        id: m2.id,
+      });
     });
 
-    it("preserves existing attachments when mediaIds is omitted", async () => {
+    it("preserves existing attachments when attachments is omitted", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
 
@@ -457,8 +539,11 @@ describe("Posts API Routes", () => {
 
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.mediaAttachments).toHaveLength(1);
-      expect(body.mediaAttachments[0].id).toBe(m1.id);
+      expect(body.attachments).toHaveLength(1);
+      expect(body.attachments[0]).toMatchObject({
+        type: "media",
+        id: m1.id,
+      });
     });
 
     it("returns 404 for non-existent post", async () => {

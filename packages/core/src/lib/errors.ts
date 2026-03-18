@@ -72,6 +72,13 @@ export class ExternalServiceError extends DomainError {
   }
 }
 
+/** Invalid or missing server configuration — 500 */
+export class ConfigurationError extends DomainError {
+  constructor(message: string) {
+    super(message, 500, "CONFIGURATION_ERROR");
+  }
+}
+
 // =============================================================================
 // Route Helpers
 // =============================================================================

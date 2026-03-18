@@ -25,11 +25,14 @@ export type {
   Setting,
   CreatePost,
   UpdatePost,
+  PostAttachmentInput,
+  TextAttachmentContent,
   CreateNavItem,
   UpdateNavItem,
   CreateCollection,
   UpdateCollection,
   AppConfig,
+  TextAttachmentContentFormat,
   // View Model types
   PostView,
   MediaView,
@@ -55,6 +58,7 @@ export {
   NAV_ITEM_TYPES,
   MAX_MEDIA_ATTACHMENTS,
   MAX_PINNED_POSTS,
+  TEXT_ATTACHMENT_CONTENT_FORMATS,
   MEDIA_KINDS,
 } from "./types.js";
 

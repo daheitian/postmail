@@ -4,13 +4,15 @@ import {
   StatusSchema,
   RedirectTypeSchema,
   CreatePostSchema,
+  CreatePostApiSchema,
   UpdatePostSchema,
+  UpdatePostApiSchema,
   SetupSchema,
   SigninSchema,
   normalizeEmail,
   parseFormData,
   parseFormDataOptional,
-  validateMediaCount,
+  validateAttachmentCount,
 } from "../schemas.js";
 import { z } from "zod";
 import { FORMATS, STATUSES, MAX_MEDIA_ATTACHMENTS } from "../../types.js";
@@ -460,6 +462,75 @@ describe("UpdatePostSchema", () => {
   });
 });
 
+describe("CreatePostApiSchema", () => {
+  const validPost = {
+    format: "note",
+    bodyMarkdown: "Hello world",
+    status: "published",
+  };
+
+  it("accepts ordered attachment inputs", () => {
+    const result = CreatePostApiSchema.parse({
+      ...validPost,
+      attachments: [
+        { type: "media", mediaId: "media-1", alt: "" },
+        {
+          type: "text",
+          contentFormat: "markdown",
+          content: "# Attached",
+          summary: "Attached",
+        },
+      ],
+    });
+
+    expect(result.attachments).toEqual([
+      { type: "media", mediaId: "media-1", alt: "" },
+      {
+        type: "text",
+        contentFormat: "markdown",
+        content: "# Attached",
+        summary: "Attached",
+      },
+    ]);
+  });
+
+  it("rejects legacy mediaIds in API requests", () => {
+    expect(() =>
+      CreatePostApiSchema.parse({
+        ...validPost,
+        mediaIds: ["media-1"],
+      }),
+    ).toThrow();
+  });
+
+  it("rejects text attachments without content", () => {
+    expect(() =>
+      CreatePostApiSchema.parse({
+        ...validPost,
+        attachments: [
+          {
+            type: "text",
+            contentFormat: "markdown",
+            content: "   ",
+          },
+        ],
+      }),
+    ).toThrow("Text attachments need content.");
+  });
+});
+
+describe("UpdatePostApiSchema", () => {
+  it("accepts omitted attachments", () => {
+    const result = UpdatePostApiSchema.parse({ bodyMarkdown: "Updated" });
+    expect(result.attachments).toBeUndefined();
+  });
+
+  it("accepts empty attachments array", () => {
+    const result = UpdatePostApiSchema.parse({ attachments: [] });
+    expect(result.attachments).toEqual([]);
+  });
+});
+
 describe("parseFormData", () => {
   it("parses a valid form field", () => {
     const form = new FormData();
@@ -506,22 +577,22 @@ describe("parseFormDataOptional", () => {
   });
 });
 
-describe("validateMediaCount", () => {
-  it("returns null for empty media array", () => {
-    expect(validateMediaCount([])).toBeNull();
+describe("validateAttachmentCount", () => {
+  it("returns null for empty attachment array", () => {
+    expect(validateAttachmentCount([])).toBeNull();
   });
 
-  it("returns null for media within limit", () => {
-    const media = Array.from({ length: 5 }, (_, i) => `id-${i}`);
-    expect(validateMediaCount(media)).toBeNull();
+  it("returns null for attachments within limit", () => {
+    const attachments = Array.from({ length: 5 }, (_, i) => `id-${i}`);
+    expect(validateAttachmentCount(attachments)).toBeNull();
   });
 
   it("returns null for exactly MAX_MEDIA_ATTACHMENTS", () => {
-    const media = Array.from(
+    const attachments = Array.from(
       { length: MAX_MEDIA_ATTACHMENTS },
       (_, i) => `id-${i}`,
     );
-    expect(validateMediaCount(media)).toBeNull();
+    expect(validateAttachmentCount(attachments)).toBeNull();
   });
 
   it("returns error when exceeding MAX_MEDIA_ATTACHMENTS", () => {
@@ -529,9 +600,9 @@ describe("validateMediaCount", () => {
       { length: MAX_MEDIA_ATTACHMENTS + 1 },
       (_, i) => `id-${i}`,
     );
-    const error = validateMediaCount(tooMany);
+    const error = validateAttachmentCount(tooMany);
     expect(error).toBe(
-      `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} media attachments`,
+      `Posts allow at most ${MAX_MEDIA_ATTACHMENTS} attachments`,
     );
   });
 });
