@@ -2097,7 +2097,11 @@ export class JantComposeDialog extends LitElement {
       return html`
         <button
           type="button"
-          class="compose-post-btn"
+          class=${classMap({
+            "btn-outline": true,
+            "compose-publish-single": true,
+            "compose-publish-single-loading": this._loading,
+          })}
           ?disabled=${!canPublish}
           @click=${() => this._submit("published")}
         >
@@ -2116,37 +2120,47 @@ export class JantComposeDialog extends LitElement {
               }}
             ></div>`
           : nothing}
-        <button
-          type="button"
-          class="compose-publish-main"
-          ?disabled=${!canPublish}
-          @click=${() => this._submit("published")}
-        >
-          ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
-        </button>
-        <button
-          type="button"
-          class="compose-publish-toggle"
-          ?disabled=${!canPublish}
-          aria-haspopup="menu"
-          aria-expanded=${this._showVisibilityMenu}
-          @click=${() => {
-            this._showVisibilityMenu = !this._showVisibilityMenu;
-          }}
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        <div role="group" class="button-group compose-publish-buttons">
+          <button
+            type="button"
+            class=${classMap({
+              "btn-outline": true,
+              "compose-publish-main": true,
+              "compose-publish-main-loading": this._loading,
+            })}
+            ?disabled=${!canPublish}
+            @click=${() => this._submit("published")}
           >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
-        </button>
+            ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
+          </button>
+          <button
+            type="button"
+            class=${classMap({
+              "btn-icon-outline": true,
+              "compose-publish-toggle": true,
+              "compose-publish-toggle-loading": this._loading,
+            })}
+            ?disabled=${!canPublish}
+            aria-haspopup="menu"
+            aria-expanded=${this._showVisibilityMenu}
+            @click=${() => {
+              this._showVisibilityMenu = !this._showVisibilityMenu;
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+        </div>
         ${this._showVisibilityMenu
           ? html`
               <div class="compose-dropdown" role="menu">

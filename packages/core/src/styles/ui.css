@@ -3474,7 +3474,11 @@
     border-radius: 10px;
     padding: 8px 18px;
     cursor: pointer;
-    transition: opacity 0.2s ease;
+    transition:
+      opacity 0.2s ease,
+      background-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease;
     flex-shrink: 0;
   }
 
@@ -3487,9 +3491,14 @@
   .compose-post-btn:hover {
     opacity: 0.85;
   }
-  .compose-post-btn:disabled {
+
+  .compose-post-btn:disabled:not(.compose-post-btn-loading) {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .compose-post-btn-loading {
+    cursor: progress;
   }
 
   .compose-publish-group {
@@ -3498,57 +3507,58 @@
     flex-shrink: 0;
   }
 
+  .compose-publish-single,
   .compose-publish-main {
-    font-size: 0.84rem;
-    font-weight: var(--fw-medium);
-    letter-spacing: 0.02em;
-    color: var(--site-elevated-bg);
-    background-color: var(--site-text-primary);
-    border: none;
-    border-radius: 10px 0 0 10px;
-    padding: 8px 16px;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    min-width: 5.5rem;
   }
 
-  @media (min-width: 700px) {
-    .compose-publish-main {
-      padding: 8px 20px;
-    }
+  .compose-publish-single:not(:disabled),
+  .compose-publish-main:not(:disabled),
+  .compose-publish-toggle:not(:disabled) {
+    color: var(--site-accent-text);
+    background-color: var(--site-accent);
+    border-color: color-mix(in srgb, var(--site-accent) 72%, var(--border));
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.12) inset,
+      0 1px 2px color-mix(in srgb, var(--site-accent) 16%, transparent);
   }
 
-  .compose-publish-main:hover {
-    opacity: 0.85;
+  .compose-publish-single:hover:not(:disabled),
+  .compose-publish-main:hover:not(:disabled),
+  .compose-publish-toggle:hover:not(:disabled),
+  .compose-publish-toggle[aria-expanded="true"]:not(:disabled) {
+    color: var(--site-accent-text);
+    background-color: color-mix(
+      in srgb,
+      var(--site-accent) 88%,
+      var(--site-text-primary)
+    );
+    border-color: color-mix(in srgb, var(--site-accent) 82%, var(--border));
   }
-  .compose-publish-main:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+
+  .compose-publish-single:disabled:not(.compose-publish-single-loading),
+  .compose-publish-main:disabled:not(.compose-publish-main-loading),
+  .compose-publish-toggle:disabled:not(.compose-publish-toggle-loading) {
+    opacity: 1;
+    color: var(--site-text-secondary);
+    background-color: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 58%,
+      var(--site-elevated-bg)
+    );
+    border-color: color-mix(in srgb, var(--site-divider) 84%, transparent);
+    box-shadow: none;
+  }
+
+  .compose-publish-single-loading:disabled,
+  .compose-publish-main-loading:disabled,
+  .compose-publish-toggle-loading:disabled {
+    opacity: 1;
+    cursor: progress;
   }
 
   .compose-publish-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--site-elevated-bg);
-    background-color: var(--site-text-primary);
-    border: none;
-    border-left: 1px solid
-      color-mix(in srgb, var(--site-elevated-bg) 20%, transparent);
-    border-radius: 0 10px 10px 0;
-    padding: 8px 6px;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-  }
-
-  .compose-publish-toggle:hover {
-    opacity: 0.85;
-  }
-  .compose-publish-toggle:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    flex-shrink: 0;
   }
 
   .compose-publish-group .compose-dropdown {

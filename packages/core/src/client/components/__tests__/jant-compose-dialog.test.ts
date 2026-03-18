@@ -279,7 +279,7 @@ describe("JantComposeDialog", () => {
     });
 
     requireElement(
-      el.querySelector<HTMLButtonElement>(".compose-post-btn"),
+      el.querySelector<HTMLButtonElement>(".compose-publish-single"),
       "expected reply button",
     ).click();
 
