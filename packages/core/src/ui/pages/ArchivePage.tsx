@@ -1077,17 +1077,22 @@ export const ArchivePage: FC<ArchivePageProps> = ({
 
   return (
     <div class="py-6" data-page="archive">
-      <header class="mb-6">
-        <h1 class="archive-page-title">
-          {t({ message: "Archive", comment: "@context: Archive page title" })}
-          <span
-            class="archive-page-summary"
-            aria-label={`${totalCount} ${totalCountUnit}`}
-          >
-            <span class="archive-page-summary-count">{totalCount}</span>{" "}
-            {totalCountUnit}
-          </span>
-        </h1>
+      <header class="archive-page-header page-intro">
+        <div class="page-intro-title-row">
+          <h1 class="page-intro-title">
+            {t({
+              message: "Archive",
+              comment: "@context: Archive page title",
+            })}
+          </h1>
+        </div>
+        <p
+          class="page-intro-meta archive-page-meta"
+          aria-label={`${totalCount} ${totalCountUnit}`}
+        >
+          <span class="archive-page-summary-count">{totalCount}</span>{" "}
+          {totalCountUnit}
+        </p>
 
         <FilterBar
           filters={filters}

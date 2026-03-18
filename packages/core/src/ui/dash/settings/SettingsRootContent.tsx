@@ -59,14 +59,14 @@ export function SettingsRootContent({
           </section>
         </div>
       )}
-      <header class="settings-root-header">
-        <h1 class="settings-root-title">
+      <header class="page-intro">
+        <h1 class="page-intro-title">
           {t({
             message: "Settings",
             comment: "@context: Page title for the settings home page",
           })}
         </h1>
-        <p class="settings-root-lead">
+        <p class="page-intro-description">
           {t({
             message: "Tune how your site looks, reads, and runs.",
             comment:

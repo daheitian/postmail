@@ -28,14 +28,14 @@ export function AccountMenuContent({
 
   return (
     <div class="settings-root">
-      <header class="settings-root-header">
-        <h1 class="settings-root-title settings-root-title-compact">
+      <header class="page-intro">
+        <h1 class="page-intro-title page-intro-title-compact">
           {t({
             message: "Account",
             comment: "@context: Page title for the account settings menu",
           })}
         </h1>
-        <p class="settings-root-lead">
+        <p class="page-intro-description">
           {t({
             message:
               "Manage sign-in security, exports, and irreversible actions.",

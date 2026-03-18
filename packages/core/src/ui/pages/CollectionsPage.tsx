@@ -48,17 +48,17 @@ export const CollectionsPage: FC<CollectionsPageProps> = ({
     <div class="py-6" data-page="collections">
       <div class="collections-page-shell">
         <header class="collections-page-header">
-          <div class="collections-page-heading">
-            <div class="collections-page-title-row">
-              <h1 class="collections-page-title">
+          <div class="collections-page-heading page-intro">
+            <div class="page-intro-title-row">
+              <h1 class="page-intro-title">
                 {t({
                   message: "Collections",
                   comment: "@context: Collections page heading",
                 })}
               </h1>
             </div>
-            <div class="collections-page-meta-row">
-              <p class="collections-page-badge">{collectionCountLabel}</p>
+            <div class="page-intro-meta-row">
+              <p class="page-intro-meta">{collectionCountLabel}</p>
             </div>
           </div>
         </header>
