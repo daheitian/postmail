@@ -62,8 +62,6 @@ export interface PostFormInitial {
 export interface PostCollectionOption {
   id: number;
   title: string;
-  icon?: string | null;
-  iconHtml?: string | null;
 }
 
 export interface PostMediaItem {

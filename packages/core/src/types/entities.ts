@@ -88,7 +88,6 @@ export interface Collection {
   slug: string;
   title: string;
   description: string | null;
-  icon: string | null;
   sortOrder: SortOrder;
   createdAt: number;
   updatedAt: number;

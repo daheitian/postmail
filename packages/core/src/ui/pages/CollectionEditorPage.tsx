@@ -35,14 +35,12 @@ export const CollectionEditorPage: FC<CollectionEditorPageProps> = ({
         slug: collection.slug,
         description: collection.description ?? "",
         sortOrder: collection.sortOrder ?? "newest",
-        icon: collection.icon ?? "",
       }
     : {
         title: "",
         slug: "",
         description: "",
         sortOrder: "newest",
-        icon: "",
       };
   const title =
     mode === "create"

@@ -94,7 +94,6 @@ export interface CreateCollection {
   slug: string;
   title: string;
   description?: string;
-  icon?: string;
   sortOrder?: SortOrder;
 }
 
@@ -102,7 +101,6 @@ export interface UpdateCollection {
   slug?: string;
   title?: string;
   description?: string | null;
-  icon?: string | null;
   sortOrder?: SortOrder;
 }
 

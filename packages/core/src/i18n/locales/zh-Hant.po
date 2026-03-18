@@ -398,11 +398,6 @@ msgstr ""
 msgid "Breadcrumb"
 msgstr "麵包屑導覽"
 
-#. @context: Label for the full icon browser view
-#: src/ui/shared/collection-management-labels.ts
-msgid "Browse all icons"
-msgstr "瀏覽所有圖示"
-
 #. @context: Secondary hero button label to jump to the file list
 #: src/ui/pages/BrandPage.tsx
 msgid "Browse files"
@@ -1034,11 +1029,6 @@ msgstr "電子郵件"
 msgid "Emoji"
 msgstr "表情符號"
 
-#. @context: Emoji picker tab label
-#: src/ui/shared/collection-management-labels.ts
-msgid "Emojis"
-msgstr "表情符號"
-
 #. @context: Plural entry count label
 #. @context: Plural entry count label
 #. @context: Plural entry count label
@@ -1101,7 +1091,6 @@ msgstr "Favicon 與您標頭上的個人標記"
 #. @context: Browser page title for the featured feed
 #. @context: Compose publish settings featured toggle label
 #. @context: Inactive browse tab label on sample page
-#. @context: Label for the default featured icon picker view
 #. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
 #: src/routes/pages/featured.tsx
@@ -1115,7 +1104,6 @@ msgstr "Favicon 與您標頭上的個人標記"
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/FeaturedPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
-#: src/ui/shared/collection-management-labels.ts
 msgid "Featured"
 msgstr "精選"
 
@@ -1282,11 +1270,6 @@ msgstr "首頁檢視已儲存"
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "I want to delete {siteName}"
 msgstr "我想刪除 {siteName}"
-
-#. @context: Icon picker tab label
-#: src/ui/shared/collection-management-labels.ts
-msgid "Icons"
-msgstr "圖示"
 
 #. @context: Section kicker for the icon and preview downloads section
 #: src/ui/pages/BrandPage.tsx
@@ -2073,12 +2056,10 @@ msgstr "重新導向、自訂路徑與 URL 控制"
 msgid "References"
 msgstr "參考資料"
 
-#. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove system item from navigation
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
-#: src/ui/shared/collection-management-labels.ts
 msgid "Remove"
 msgstr "移除"
 
@@ -2196,16 +2177,6 @@ msgstr "已儲存"
 msgid "Search"
 msgstr "搜尋"
 
-#. @context: Emoji picker search placeholder
-#: src/ui/shared/collection-management-labels.ts
-msgid "Search emojis..."
-msgstr "搜尋表情符號..."
-
-#. @context: Icon picker search placeholder
-#: src/ui/shared/collection-management-labels.ts
-msgid "Search icons..."
-msgstr "搜尋圖示..."
-
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx
 msgid "Search posts..."
@@ -2286,11 +2257,9 @@ msgid "Show \"Build with Jant\" at the bottom of the home page"
 msgstr "在首頁底部顯示「Build with Jant」"
 
 #. @context: Button to collapse expanded thread context
-#. @context: Button to collapse the collection icon picker back to featured icons
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/feed/ThreadPreview.tsx
-#: src/ui/shared/collection-management-labels.ts
 msgid "Show less"
 msgstr "顯示較少"
 
@@ -2300,11 +2269,6 @@ msgstr "顯示較少"
 #: src/ui/feed/ThreadPreview.tsx
 msgid "Show more"
 msgstr "顯示更多"
-
-#. @context: Button to expand the collection icon picker into category browsing
-#: src/ui/shared/collection-management-labels.ts
-msgid "Show more icons"
-msgstr "顯示更多圖示"
 
 #. @context: Description for the settings system navigation toggle
 #: src/ui/shared/navigation-labels.ts

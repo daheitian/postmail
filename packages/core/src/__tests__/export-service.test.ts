@@ -45,7 +45,6 @@ describe("createExportService", () => {
       slug: "programming",
       title: "编程开发",
       description: "Posts about building and shipping software.",
-      icon: "⌘",
       sortOrder: "newest",
       createdAt: 1773014400,
       updatedAt: 1773014400,

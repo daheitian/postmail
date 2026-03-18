@@ -398,11 +398,6 @@ msgstr "Brand tile"
 msgid "Breadcrumb"
 msgstr "Breadcrumb"
 
-#. @context: Label for the full icon browser view
-#: src/ui/shared/collection-management-labels.ts
-msgid "Browse all icons"
-msgstr "Browse all icons"
-
 #. @context: Secondary hero button label to jump to the file list
 #: src/ui/pages/BrandPage.tsx
 msgid "Browse files"
@@ -1034,11 +1029,6 @@ msgstr "Email"
 msgid "Emoji"
 msgstr "Emoji"
 
-#. @context: Emoji picker tab label
-#: src/ui/shared/collection-management-labels.ts
-msgid "Emojis"
-msgstr "Emojis"
-
 #. @context: Plural entry count label
 #. @context: Plural entry count label
 #. @context: Plural entry count label
@@ -1101,7 +1091,6 @@ msgstr "Favicon and the profile mark in your header"
 #. @context: Browser page title for the featured feed
 #. @context: Compose publish settings featured toggle label
 #. @context: Inactive browse tab label on sample page
-#. @context: Label for the default featured icon picker view
 #. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
 #: src/routes/pages/featured.tsx
@@ -1115,7 +1104,6 @@ msgstr "Favicon and the profile mark in your header"
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/FeaturedPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
-#: src/ui/shared/collection-management-labels.ts
 msgid "Featured"
 msgstr "Featured"
 
@@ -1282,11 +1270,6 @@ msgstr "Home view saved"
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "I want to delete {siteName}"
 msgstr "I want to delete {siteName}"
-
-#. @context: Icon picker tab label
-#: src/ui/shared/collection-management-labels.ts
-msgid "Icons"
-msgstr "Icons"
 
 #. @context: Section kicker for the icon and preview downloads section
 #: src/ui/pages/BrandPage.tsx
@@ -2073,12 +2056,10 @@ msgstr "Redirects, vanity paths, and URL control"
 msgid "References"
 msgstr "References"
 
-#. @context: Button to remove icon
 #. @context: Button to remove the blog avatar
 #. @context: Remove system item from navigation
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
-#: src/ui/shared/collection-management-labels.ts
 msgid "Remove"
 msgstr "Remove"
 
@@ -2196,16 +2177,6 @@ msgstr "Saved"
 msgid "Search"
 msgstr "Search"
 
-#. @context: Emoji picker search placeholder
-#: src/ui/shared/collection-management-labels.ts
-msgid "Search emojis..."
-msgstr "Search emojis..."
-
-#. @context: Icon picker search placeholder
-#: src/ui/shared/collection-management-labels.ts
-msgid "Search icons..."
-msgstr "Search icons..."
-
 #. @context: Search input placeholder
 #: src/ui/pages/SearchPage.tsx
 msgid "Search posts..."
@@ -2286,11 +2257,9 @@ msgid "Show \"Build with Jant\" at the bottom of the home page"
 msgstr "Show \"Build with Jant\" at the bottom of the home page"
 
 #. @context: Button to collapse expanded thread context
-#. @context: Button to collapse the collection icon picker back to featured icons
 #. @context: Collapse reply context
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/feed/ThreadPreview.tsx
-#: src/ui/shared/collection-management-labels.ts
 msgid "Show less"
 msgstr "Show less"
 
@@ -2300,11 +2269,6 @@ msgstr "Show less"
 #: src/ui/feed/ThreadPreview.tsx
 msgid "Show more"
 msgstr "Show more"
-
-#. @context: Button to expand the collection icon picker into category browsing
-#: src/ui/shared/collection-management-labels.ts
-msgid "Show more icons"
-msgstr "Show more icons"
 
 #. @context: Description for the settings system navigation toggle
 #: src/ui/shared/navigation-labels.ts

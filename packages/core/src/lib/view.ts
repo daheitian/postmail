@@ -32,7 +32,6 @@ import {
 import { getMediaUrl, getImageUrl, getPublicUrlForProvider } from "./image.js";
 import { getHtmlExcerpt } from "./excerpt.js";
 import { highlightText } from "./search-snippet.js";
-import { renderCollectionIcon } from "./icons.js";
 import { escapeHtml } from "./html.js";
 import { toPublicPath } from "./url.js";
 
@@ -220,15 +219,11 @@ export function toPostView(
   }
 
   // Convert collection tags
-  const collections: CollectionTagView[] = (postCollections ?? []).map((c) => {
-    const iconHtml = renderCollectionIcon(c.icon, { size: 12 }) || undefined;
-    return {
-      slug: c.slug,
-      title: c.title,
-      url: toPublicPath(`/c/${c.slug}`, ctx.sitePathPrefix),
-      iconHtml,
-    };
-  });
+  const collections: CollectionTagView[] = (postCollections ?? []).map((c) => ({
+    slug: c.slug,
+    title: c.title,
+    url: toPublicPath(`/c/${c.slug}`, ctx.sitePathPrefix),
+  }));
 
   // Convert media attachments
   const media: MediaView[] = post.mediaAttachments.map((m) => ({

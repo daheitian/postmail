@@ -1,7 +1,6 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionDirectoryItem } from "../../types.js";
-import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import { toPublicPath } from "../../lib/url.js";
 
@@ -80,17 +79,7 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
               </span>
               <div class="collection-directory-title-row">
                 <span class="collection-directory-title">
-                  <span
-                    class="collection-directory-title-marker"
-                    aria-hidden="true"
-                    dangerouslySetInnerHTML={{
-                      __html: renderCollectionIcon(collection.icon, {
-                        size: 14,
-                        fallback: true,
-                      }),
-                    }}
-                  />
-                  <span>{collection.title}</span>
+                  {collection.title}
                 </span>
               </div>
               <p class="collection-directory-summary">

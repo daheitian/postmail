@@ -14,7 +14,6 @@
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
 import { classMap } from "lit/directives/class-map.js";
-import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import Sortable from "sortablejs";
 import {
   captureSortableRevertNextSibling,
@@ -27,13 +26,35 @@ import {
 import { showConfirmDialog } from "../confirm.js";
 import { publicPath } from "../runtime-paths.js";
 import { showToast } from "../toast.js";
-import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import type {
   CollectionManagerItem,
   CollectionManagerLabels,
   ManagedCollection,
 } from "./collection-manager-types.js";
+
+interface CollectionsResponse {
+  collections?: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    description: string | null;
+    sortOrder: string;
+    postCount: number;
+    recentActivityAt: number;
+  }>;
+  sidebarItems?: Array<{
+    id: string;
+    type: "collection" | "divider";
+    collectionId: string | null;
+    label: string | null;
+    position: string;
+  }>;
+}
+
+interface SidebarItemUpdateResponse {
+  label?: string | null;
+}
 
 export class JantCollectionsManager extends LitElement {
   static properties = {
@@ -258,25 +279,7 @@ export class JantCollectionsManager extends LitElement {
     }
   }
 
-  #toItems(json: {
-    collections?: Array<{
-      id: string;
-      slug: string;
-      title: string;
-      description: string | null;
-      icon: string | null;
-      sortOrder: string;
-      postCount: number;
-      recentActivityAt: number;
-    }>;
-    sidebarItems?: Array<{
-      id: string;
-      type: "collection" | "divider";
-      collectionId: string | null;
-      label: string | null;
-      position: string;
-    }>;
-  }): CollectionManagerItem[] {
+  #toItems(json: CollectionsResponse): CollectionManagerItem[] {
     const collections = json.collections ?? [];
     const sidebarItems = json.sidebarItems ?? [];
     const collectionMap = new Map<string, ManagedCollection>();
@@ -287,7 +290,6 @@ export class JantCollectionsManager extends LitElement {
         slug: collection.slug,
         title: collection.title,
         description: collection.description,
-        icon: collection.icon,
         sortOrder: collection.sortOrder,
         postCount: collection.postCount ?? 0,
         recentActivityAt: collection.recentActivityAt,
@@ -339,7 +341,7 @@ export class JantCollectionsManager extends LitElement {
     try {
       const res = await fetch("/api/collections");
       if (!res.ok) return;
-      const json = await res.json();
+      const json = (await res.json()) as CollectionsResponse;
       this._items = this.#toItems(json);
     } catch {
       // stale UI is acceptable
@@ -485,7 +487,7 @@ export class JantCollectionsManager extends LitElement {
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const updated = await res.json();
+      const updated = (await res.json()) as SidebarItemUpdateResponse;
       this._items = this._items.map((item) =>
         item.id === id ? { ...item, label: updated.label ?? null } : item,
       );
@@ -530,17 +532,7 @@ export class JantCollectionsManager extends LitElement {
           ${String(sequence).padStart(2, "0")}
         </span>
         <div class="collection-directory-title-row">
-          <span class="collection-directory-title">
-            <span class="collection-directory-title-marker" aria-hidden="true">
-              ${unsafeHTML(
-                renderCollectionIcon(collection.icon, {
-                  size: 14,
-                  fallback: true,
-                }),
-              )}
-            </span>
-            <span>${collection.title}</span>
-          </span>
+          <span class="collection-directory-title">${collection.title}</span>
         </div>
         <p class="collection-directory-summary">
           <span class="collection-directory-meta"

@@ -36,7 +36,6 @@ export interface ManagedCollection {
   slug: string;
   title: string;
   description: string | null;
-  icon: string | null;
   sortOrder: string;
   postCount: number;
   recentActivityAt: number;

@@ -20,8 +20,6 @@ export interface CollectionTagView {
   title: string;
   /** Public collection URL, including any configured site path prefix. */
   url: string;
-  /** Pre-rendered icon HTML (SVG or emoji span) */
-  iconHtml?: string;
 }
 
 /**

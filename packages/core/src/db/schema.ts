@@ -260,7 +260,6 @@ export const collections = sqliteTable(
     id: text("id").primaryKey(),
     title: text("title").notNull(),
     description: text("description"),
-    icon: text("icon"),
     sortOrder: text("sort_order", {
       enum: SORT_ORDERS,
     })

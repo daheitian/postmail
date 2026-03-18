@@ -16,7 +16,7 @@ import type {
 } from "../../types.js";
 import type { PostView } from "../../types/views.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
-import { getIconSvg, renderCollectionIcon } from "../../lib/icons.js";
+import { getIconSvg } from "../../lib/icons.js";
 import { toPublicPath } from "../../lib/url.js";
 import { toMediaKind } from "../../lib/upload.js";
 import { PagePagination } from "../shared/Pagination.js";
@@ -498,7 +498,7 @@ const FILTER_ICONS = {
 const FilterBar: FC<{
   filters: ArchiveFilters;
   availableYears: number[];
-  availableCollections: { slug: string; title: string; icon: string | null }[];
+  availableCollections: { slug: string; title: string }[];
   isAuthenticated: boolean;
   sitePathPrefix?: string;
 }> = ({
@@ -553,9 +553,6 @@ const FilterBar: FC<{
     },
     ...availableCollections.map((col) => ({
       label: col.title,
-      iconHtml:
-        renderCollectionIcon(col.icon, { size: 16, fallback: true }) ||
-        undefined,
       value: buildFilterUrl(
         filters,
         { collectionSlug: col.slug },
@@ -739,12 +736,6 @@ const FilterBar: FC<{
               sitePathPrefix,
             )}
             activeLabel={filters.collectionTitle}
-            activeIconHtml={
-              renderCollectionIcon(filters.collectionIcon ?? null, {
-                size: 16,
-                fallback: true,
-              }) || undefined
-            }
             iconOnly
           />
         )}

@@ -29,11 +29,41 @@ import type { JantComposeEditor } from "./jant-compose-editor.js";
 import { getMediaCategory } from "../../lib/upload.js";
 import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
-import { renderCollectionIcon } from "../../lib/icons.js";
 
 interface ReplyToData {
   contentHtml: string;
   dateText: string;
+}
+
+interface ComposeMediaAttachmentResponse {
+  id: string;
+  previewUrl: string;
+  alt?: string;
+  mimeType: string;
+  url?: string;
+  summary?: string;
+}
+
+interface ComposePostResponse {
+  id: string;
+  threadId?: string;
+  format: ComposeFormat;
+  slug?: string | null;
+  visibility?: ComposeVisibility | null;
+  replyToId?: string | null;
+  collectionIds?: string[];
+  mediaAttachments?: ComposeMediaAttachmentResponse[];
+  title?: string | null;
+  body?: string | null;
+  url?: string | null;
+  quoteText?: string | null;
+  rating?: number | null;
+  publishedAt?: number | null;
+  bodyHtml?: string | null;
+}
+
+interface DraftsResponse {
+  posts?: Record<string, unknown>[];
 }
 
 interface ComposeStateSnapshot {
@@ -317,7 +347,7 @@ export class JantComposeDialog extends LitElement {
 
     const res = await fetch(`/api/posts/${id}`);
     if (!res.ok) return;
-    const post = await res.json();
+    const post = (await res.json()) as ComposePostResponse;
 
     this._editPostId = id;
     this._format = post.format;
@@ -351,7 +381,7 @@ export class JantComposeDialog extends LitElement {
     // Fetch text content for TipTap text media items (stored as { json, html } envelope)
     const textAttachments = await Promise.all(
       textMedia.map(
-        async (m: { id: string; url: string; summary?: string }) => {
+        async (m: { id: string; url?: string; summary?: string }) => {
           try {
             const textRes = await fetch(`/api/media/${m.id}/content`);
             if (textRes.ok) {
@@ -452,7 +482,7 @@ export class JantComposeDialog extends LitElement {
     try {
       const res = await fetch(`/api/posts/${replyToId}`);
       if (!res.ok) return;
-      const post = await res.json();
+      const post = (await res.json()) as ComposePostResponse;
       this._replyThreadRootId = (post.replyToId as string | null)
         ? (post.threadId as string)
         : (post.id as string);
@@ -1192,8 +1222,10 @@ export class JantComposeDialog extends LitElement {
     try {
       const res = await fetch("/api/posts?status=draft&limit=50");
       if (!res.ok) throw new Error("Failed to load drafts");
-      const json = await res.json();
-      const posts = json.posts ?? json;
+      const json = (await res.json()) as
+        | DraftsResponse
+        | Record<string, unknown>[];
+      const posts = Array.isArray(json) ? json : (json.posts ?? []);
       this._drafts = (posts as Record<string, unknown>[]).map(
         (p): DraftItem => ({
           id: p.id as string,
@@ -1236,7 +1268,7 @@ export class JantComposeDialog extends LitElement {
 
     const res = await fetch(`/api/posts/${id}`);
     if (!res.ok) return;
-    const post = await res.json();
+    const post = (await res.json()) as ComposePostResponse;
 
     this._draftSourceId = id;
     this._format = post.format;
@@ -1274,7 +1306,7 @@ export class JantComposeDialog extends LitElement {
     // Fetch text content for TipTap text media items (stored as { json, html } envelope)
     const textAttachments = await Promise.all(
       textMedia.map(
-        async (m: { id: string; url: string; summary?: string }) => {
+        async (m: { id: string; url?: string; summary?: string }) => {
           try {
             const textRes = await fetch(`/api/media/${m.id}/content`);
             if (textRes.ok) {
@@ -2069,12 +2101,6 @@ export class JantComposeDialog extends LitElement {
                       : nothing}
                     @click=${() => this._toggleCollection(col.id)}
                   >
-                    ${col.iconHtml
-                      ? html`<span
-                          class="inline-flex items-center justify-center w-4 h-4 shrink-0"
-                          >${unsafeHTML(col.iconHtml)}</span
-                        >`
-                      : nothing}
                     ${col.title}
                   </div>
                 `,
@@ -2138,7 +2164,6 @@ export class JantComposeDialog extends LitElement {
       const created = (await res.json().catch(() => null)) as {
         id: string;
         title: string;
-        icon?: string | null;
         error?: string;
       } | null;
 
@@ -2153,7 +2178,6 @@ export class JantComposeDialog extends LitElement {
       const newCollection: ComposeCollection = {
         id: created.id,
         title: created.title,
-        iconHtml: renderCollectionIcon(created.icon ?? null, { size: 16 }),
       };
 
       this.collections = [...this.collections, newCollection];

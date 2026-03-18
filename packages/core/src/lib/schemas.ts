@@ -20,7 +20,6 @@ import {
   TEXT_ATTACHMENT_CONTENT_FORMATS,
 } from "../types.js";
 import { ValidationError } from "./errors.js";
-import { isCollectionIconPalette } from "./collection-icon-palette.js";
 import { normalizeSlug } from "./slug-format.js";
 import { sanitizeUrl, normalizePath } from "./url.js";
 
@@ -357,29 +356,6 @@ export const CreateCollectionSchema = z.object({
   description: sanitizeText(500)
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  icon: z
-    .string()
-    .optional()
-    .refine(
-      (val) => {
-        if (!val || !val.startsWith("{")) return true;
-        try {
-          const parsed = JSON.parse(val) as Record<string, unknown>;
-          return (
-            typeof parsed.name === "string" &&
-            typeof parsed.svg === "string" &&
-            typeof parsed.palette === "string" &&
-            isCollectionIconPalette(parsed.palette)
-          );
-        } catch {
-          return false;
-        }
-      },
-      {
-        message:
-          "Icon palette must be one of Jant's built-in collection colors",
-      },
-    ),
   sortOrder: SortOrderSchema.optional(),
 });
 

@@ -1,3 +1,5 @@
+/// <reference types="@cloudflare/workers-types/latest" />
+
 import type BetterSqlite3 from "better-sqlite3";
 
 /**

@@ -21,7 +21,6 @@ export const collectionsApiRoutes = new Hono<Env>();
 // API update schema extends shared schema with nullable fields for explicit clearing
 const UpdateCollectionSchema = CreateCollectionSchema.partial().extend({
   description: z.string().nullable().optional(),
-  icon: z.string().nullable().optional(),
   sortOrder: SortOrderSchema.optional(),
 });
 
@@ -116,7 +115,6 @@ collectionsApiRoutes.post("/", requireAuthApi(), async (c) => {
     slug: body.slug,
     title: body.title,
     description: body.description,
-    icon: body.icon,
     sortOrder: body.sortOrder as SortOrder | undefined,
   });
 

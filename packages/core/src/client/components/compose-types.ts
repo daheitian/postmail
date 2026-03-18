@@ -202,5 +202,4 @@ export interface ComposeSubmitDetail {
 export interface ComposeCollection {
   id: string;
   title: string;
-  iconHtml: string;
 }

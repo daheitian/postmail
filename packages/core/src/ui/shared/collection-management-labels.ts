@@ -58,44 +58,6 @@ const collectionFormMessages = {
     message: "What's this collection about?",
     comment: "@context: Collection description placeholder",
   }),
-  featuredIconsLabel: msg({
-    message: "Featured",
-    comment: "@context: Label for the default featured icon picker view",
-  }),
-  browseAllIconsLabel: msg({
-    message: "Browse all icons",
-    comment: "@context: Label for the full icon browser view",
-  }),
-  showMoreIcons: msg({
-    message: "Show more icons",
-    comment:
-      "@context: Button to expand the collection icon picker into category browsing",
-  }),
-  showLessIcons: msg({
-    message: "Show less",
-    comment:
-      "@context: Button to collapse the collection icon picker back to featured icons",
-  }),
-  removeIcon: msg({
-    message: "Remove",
-    comment: "@context: Button to remove icon",
-  }),
-  iconsTab: msg({
-    message: "Icons",
-    comment: "@context: Icon picker tab label",
-  }),
-  emojisTab: msg({
-    message: "Emojis",
-    comment: "@context: Emoji picker tab label",
-  }),
-  searchIconsPlaceholder: msg({
-    message: "Search icons...",
-    comment: "@context: Icon picker search placeholder",
-  }),
-  searchEmojisPlaceholder: msg({
-    message: "Search emojis...",
-    comment: "@context: Emoji picker search placeholder",
-  }),
   sortOrderLabel: msg({
     message: "Sort Order",
     comment: "@context: Collection form field",
@@ -176,15 +138,6 @@ export const getCollectionFormLabels = (t: Translate) => ({
   createdLabel: t(collectionFormMessages.createdLabel),
   descriptionLabel: t(collectionFormMessages.descriptionLabel),
   descriptionPlaceholder: t(collectionFormMessages.descriptionPlaceholder),
-  featuredIconsLabel: t(collectionFormMessages.featuredIconsLabel),
-  browseAllIconsLabel: t(collectionFormMessages.browseAllIconsLabel),
-  showMoreIcons: t(collectionFormMessages.showMoreIcons),
-  showLessIcons: t(collectionFormMessages.showLessIcons),
-  removeIcon: t(collectionFormMessages.removeIcon),
-  iconsTab: t(collectionFormMessages.iconsTab),
-  emojisTab: t(collectionFormMessages.emojisTab),
-  searchIconsPlaceholder: t(collectionFormMessages.searchIconsPlaceholder),
-  searchEmojisPlaceholder: t(collectionFormMessages.searchEmojisPlaceholder),
   sortOrderLabel: t(collectionFormMessages.sortOrderLabel),
   sortNewest: t(collectionFormMessages.sortNewest),
   sortOldest: t(collectionFormMessages.sortOldest),
