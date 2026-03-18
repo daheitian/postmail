@@ -28,6 +28,10 @@ function resolveDevPort(): number {
 }
 
 export default defineConfig({
+  // Vite 8 switched the default transform pipeline from esbuild to Oxc.
+  // Keep Oxc disabled anywhere SWC owns the server-side transforms.
+  oxc: false,
+
   server: {
     port: resolveDevPort(),
     host: true,

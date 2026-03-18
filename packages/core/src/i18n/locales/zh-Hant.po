@@ -345,10 +345,10 @@ msgstr "可用作頭像"
 msgid "Back"
 msgstr "返回"
 
-#. @context: Confirmation text after downloading backup in delete flow
-#: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Backup downloaded."
-msgstr "備份已下載。"
+#. @context: Link to backup and restore documentation from account settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Backup & Restore Guide"
+msgstr "備份與復原指南"
 
 #. @context: Settings item description for API tokens
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -360,10 +360,10 @@ msgstr "用於腳本與自動化的 Bearer 權杖"
 msgid "before deciding whether the accent is carrying too much product energy."
 msgstr "再判斷這個強調色是否帶上了過多產品化的氣息。"
 
-#. @context: Step 1 description for data backup
+#. @context: Step 1 description for site export before account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Before deleting, download a backup of all your content. You won't be able to recover it after deletion."
-msgstr "刪除前，請下載您所有內容的備份。刪除後將無法復原。"
+msgid "Before deleting, download a site export. You won't be able to recover this account after deletion."
+msgstr "刪除之前先下載站點匯出。刪除後將無法復原這個帳戶。"
 
 #. @context: Settings section heading for avatar
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -914,22 +914,27 @@ msgstr "不儲存"
 msgid "Done"
 msgstr "完成"
 
-#. @context: Settings item description for site export
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Download a full Zola export as a .zip archive"
-msgstr "下載完整的 Zola 匯出為 .zip 封存"
-
-#. @context: Button to download site backup before deletion
+#. @context: Step 1 heading — user must download a site export before deleting
 #: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Download Backup"
-msgstr "下載備份"
+msgid "Download a site export"
+msgstr "下載站點匯出"
+
+#. @context: Settings item description for static site export
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Download a Zola site ZIP for static publishing or import into another Jant."
+msgstr "下載一個 Zola 站點 ZIP，可用於靜態發佈或匯入另一套 Jant。"
 
 #. @context: Primary hero button label for the brand pack ZIP
 #: src/ui/pages/BrandPage.tsx
 msgid "Download Brand Pack"
 msgstr "下載品牌套件"
 
-#. @context: Alert when backup download fails during account deletion
+#. @context: Button to download the site export ZIP before deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Download Export ZIP"
+msgstr "下載匯出 ZIP"
+
+#. @context: Alert when site export download fails during account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Download failed. Please try again."
 msgstr "下載失敗。請再試一次。"
@@ -958,11 +963,6 @@ msgstr "下載 SVG"
 #: src/ui/pages/BrandPage.tsx
 msgid "Download the official Jant logo, icons, and preview files."
 msgstr "下載官方 Jant 標誌、圖示與預覽檔案。"
-
-#. @context: Step 1 heading — user must download backup before deleting
-#: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Download your data"
-msgstr "下載您的資料"
 
 #. @context: Post status badge - draft
 #: src/ui/dash/StatusBadge.tsx
@@ -1077,10 +1077,15 @@ msgstr "此頁面上的所有內容皆可直接用於文章、發布貼文、名
 msgid "Export and demo limits"
 msgstr "匯出與示範限制"
 
-#. @context: Settings item — export site as Zola ZIP
+#. @context: Confirmation text after downloading the site export in delete flow
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Export downloaded."
+msgstr "匯出已下載。"
+
+#. @context: Settings item — export a Zola static site ZIP
 #: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Export Site"
-msgstr "匯出網站"
+msgid "Export Static Site"
+msgstr "匯出靜態站點"
 
 #. @context: Title for the favicon asset card
 #: src/ui/pages/BrandPage.tsx
@@ -2902,6 +2907,11 @@ msgstr "當 primary 太僵硬時，整個頁面讀起來像產品介面，而非
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
 msgstr "當強調色更溫暖一點、也沒那麼直白時，整頁會更像寫作空間，而不是產品介面。"
+
+#. @context: Description for backup and restore documentation link in account settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "When to use site export, database backups, and recovery drills."
+msgstr "何時該用站點匯出、資料庫備份與復原演練。"
 
 #. @context: Description for the circle tile asset card
 #: src/ui/pages/BrandPage.tsx

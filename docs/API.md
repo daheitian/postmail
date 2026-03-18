@@ -1160,7 +1160,7 @@ async function migrate(posts) {
 
 ## Export & Import
 
-Jant has built-in export and import for full site backup and migration between instances.
+Jant has built-in site export and import for static publishing, offline inspection, and migration between instances.
 
 ### Export
 
@@ -1168,7 +1168,7 @@ Export your entire site as a [Zola](https://www.getzola.org/) static site in a Z
 
 **From the dashboard:**
 
-Go to **Settings > Account > Export Site** and click the button. Your browser will download `jant-export.zip`.
+Go to **Settings > Account > Export Static Site** and click the button. Your browser will download `jant-export.zip`.
 
 **From the API:**
 
@@ -1201,6 +1201,8 @@ zola serve
 ```
 
 Without `--url`, `jant site export` exports from the local Node SQLite runtime. With `--url`, it calls the authenticated export API. The CLI localizes referenced media into `static/media/` by default; pass `--no-localize-media` to keep original URLs. `jant export` remains available as a compatibility alias for database SQL export via `jant db export`.
+
+For backup planning, see [Backups & Recovery](backups.md). The site export is useful for migration and archival, but it is not the same thing as a full database-and-storage disaster-recovery plan.
 
 **What's in the ZIP:**
 

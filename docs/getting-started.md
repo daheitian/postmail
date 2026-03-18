@@ -85,5 +85,6 @@ Organize posts into themed collections:
 ## Next Steps
 
 - [Deploy to Cloudflare](deployment.md)
+- [Plan backups and recovery](backups.md)
 - [Configure your site](configuration.md)
 - [Customize the theme](theming.md)

@@ -345,10 +345,10 @@ msgstr "Avatar-ready"
 msgid "Back"
 msgstr "Back"
 
-#. @context: Confirmation text after downloading backup in delete flow
-#: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Backup downloaded."
-msgstr "Backup downloaded."
+#. @context: Link to backup and restore documentation from account settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Backup & Restore Guide"
+msgstr "Backup & Restore Guide"
 
 #. @context: Settings item description for API tokens
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -360,10 +360,10 @@ msgstr "Bearer tokens for scripts and automation"
 msgid "before deciding whether the accent is carrying too much product energy."
 msgstr "before deciding whether the accent is carrying too much product energy."
 
-#. @context: Step 1 description for data backup
+#. @context: Step 1 description for site export before account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Before deleting, download a backup of all your content. You won't be able to recover it after deletion."
-msgstr "Before deleting, download a backup of all your content. You won't be able to recover it after deletion."
+msgid "Before deleting, download a site export. You won't be able to recover this account after deletion."
+msgstr "Before deleting, download a site export. You won't be able to recover this account after deletion."
 
 #. @context: Settings section heading for avatar
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -914,22 +914,27 @@ msgstr "Don't save"
 msgid "Done"
 msgstr "Done"
 
-#. @context: Settings item description for site export
-#: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Download a full Zola export as a .zip archive"
-msgstr "Download a full Zola export as a .zip archive"
-
-#. @context: Button to download site backup before deletion
+#. @context: Step 1 heading — user must download a site export before deleting
 #: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Download Backup"
-msgstr "Download Backup"
+msgid "Download a site export"
+msgstr "Download a site export"
+
+#. @context: Settings item description for static site export
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Download a Zola site ZIP for static publishing or import into another Jant."
+msgstr "Download a Zola site ZIP for static publishing or import into another Jant."
 
 #. @context: Primary hero button label for the brand pack ZIP
 #: src/ui/pages/BrandPage.tsx
 msgid "Download Brand Pack"
 msgstr "Download Brand Pack"
 
-#. @context: Alert when backup download fails during account deletion
+#. @context: Button to download the site export ZIP before deletion
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Download Export ZIP"
+msgstr "Download Export ZIP"
+
+#. @context: Alert when site export download fails during account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Download failed. Please try again."
 msgstr "Download failed. Please try again."
@@ -958,11 +963,6 @@ msgstr "Download SVG"
 #: src/ui/pages/BrandPage.tsx
 msgid "Download the official Jant logo, icons, and preview files."
 msgstr "Download the official Jant logo, icons, and preview files."
-
-#. @context: Step 1 heading — user must download backup before deleting
-#: src/ui/dash/settings/DeleteAccountContent.tsx
-msgid "Download your data"
-msgstr "Download your data"
 
 #. @context: Post status badge - draft
 #: src/ui/dash/StatusBadge.tsx
@@ -1077,10 +1077,15 @@ msgstr "Everything on this page is ready to use for articles, launch posts, dire
 msgid "Export and demo limits"
 msgstr "Export and demo limits"
 
-#. @context: Settings item — export site as Zola ZIP
+#. @context: Confirmation text after downloading the site export in delete flow
+#: src/ui/dash/settings/DeleteAccountContent.tsx
+msgid "Export downloaded."
+msgstr "Export downloaded."
+
+#. @context: Settings item — export a Zola static site ZIP
 #: src/ui/dash/settings/AccountMenuContent.tsx
-msgid "Export Site"
-msgstr "Export Site"
+msgid "Export Static Site"
+msgstr "Export Static Site"
 
 #. @context: Title for the favicon asset card
 #: src/ui/pages/BrandPage.tsx
@@ -2902,6 +2907,11 @@ msgstr "When primary is too rigid, the whole page starts reading like product UI
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
 msgstr "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
+
+#. @context: Description for backup and restore documentation link in account settings
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "When to use site export, database backups, and recovery drills."
+msgstr "When to use site export, database backups, and recovery drills."
 
 #. @context: Description for the circle tile asset card
 #: src/ui/pages/BrandPage.tsx

@@ -145,3 +145,5 @@ pnpm run deploy
 ```
 
 Schema migrations and data backfills run automatically on deploy.
+
+For backup and restore planning, see [Backups & Recovery](backups.md).

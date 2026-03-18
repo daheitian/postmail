@@ -87,6 +87,8 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     appType: "custom",
+    // SWC owns the Node-side transforms; disable Vite 8's default Oxc layer.
+    oxc: false,
 
     server: {
       port: resolvePort(bindings),

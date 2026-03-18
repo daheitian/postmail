@@ -41,6 +41,7 @@ npm run dev
 ## Documentation
 
 - [Getting Started](docs/getting-started.md)
+- [Backups & Recovery](docs/backups.md)
 - [Deployment](docs/deployment.md)
 - [Docker Deployment](docs/deployment-docker.md)
 - [Configuration](docs/configuration.md)

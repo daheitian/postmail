@@ -70,15 +70,25 @@ export function SettingsDirectoryLink({
   tone = "default",
   name,
   description,
+  target,
+  rel,
 }: {
   href: string;
   icon: string;
   tone?: SettingsDirectoryTone;
   name: string;
   description: string;
+  target?: "_blank" | "_self";
+  rel?: string;
 }) {
   return (
-    <a href={href} class="settings-directory-item" data-tone={tone}>
+    <a
+      href={href}
+      target={target}
+      rel={rel}
+      class="settings-directory-item"
+      data-tone={tone}
+    >
       <SettingsDirectoryItemContent
         icon={icon}
         name={name}

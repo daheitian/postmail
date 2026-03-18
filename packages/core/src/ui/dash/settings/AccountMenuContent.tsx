@@ -10,10 +10,14 @@ import {
   SettingsDirectorySection,
 } from "./SettingsDirectory.js";
 
+const BACKUPS_DOCS_URL =
+  "https://github.com/jant-me/jant/blob/main/docs/backups.md";
+
 const ICONS = {
   monitor: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>`,
   lock: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
   download: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>`,
+  book: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18V5a2 2 0 0 1 2-2h6v18H5a2 2 0 0 1-2-2Z"/><path d="M21 18V5a2 2 0 0 0-2-2h-7v18h7a2 2 0 0 0 2-2Z"/></svg>`,
   trash: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
 };
 
@@ -117,16 +121,37 @@ export function AccountMenuContent({
             <SettingsDirectoryItemContent
               icon={ICONS.download}
               name={t({
-                message: "Export Site",
-                comment: "@context: Settings item — export site as Zola ZIP",
+                message: "Export Static Site",
+                comment:
+                  "@context: Settings item — export a Zola static site ZIP",
               })}
               description={t({
-                message: "Download a full Zola export as a .zip archive",
-                comment: "@context: Settings item description for site export",
+                message:
+                  "Download a Zola site ZIP for static publishing or import into another Jant.",
+                comment:
+                  "@context: Settings item description for static site export",
               })}
             />
           </button>
         </form>
+        <SettingsDirectoryLink
+          href={BACKUPS_DOCS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          icon={ICONS.book}
+          tone="subtle"
+          name={t({
+            message: "Backup & Restore Guide",
+            comment:
+              "@context: Link to backup and restore documentation from account settings",
+          })}
+          description={t({
+            message:
+              "When to use site export, database backups, and recovery drills.",
+            comment:
+              "@context: Description for backup and restore documentation link in account settings",
+          })}
+        />
       </SettingsDirectorySection>
 
       {!demoMode && (

@@ -15,6 +15,9 @@ import { pkg, swcPlugin } from "./vite.shared";
 const dir = import.meta.dirname;
 
 export default defineConfig({
+  // SWC handles the server/library transforms in this build.
+  oxc: false,
+
   define: {
     __JANT_VERSION__: JSON.stringify(pkg.version),
     // __JANT_DEV__ intentionally omitted — typeof check evaluates to false

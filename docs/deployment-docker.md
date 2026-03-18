@@ -125,9 +125,11 @@ docker compose down
 
 ## Backups
 
+For the full backup and recovery guide, see [Backups & Recovery](backups.md).
+
 Back up both of these paths from the mounted volume:
 
 - `data/jant.sqlite`
 - `data/media/`
 
-Together they represent the full site state.
+With the default local storage setup, together they represent the full site state. If you use S3-compatible storage, back up `data/jant.sqlite` and manage the media bucket separately.

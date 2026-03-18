@@ -1,7 +1,7 @@
 /**
  * Delete Account — multi-step confirmation page
  *
- * Step 1: Download data backup (export)
+ * Step 1: Download site export
  * Step 2: Type confirmation phrase
  * Step 3: Delete account
  */
@@ -63,23 +63,24 @@ export function DeleteAccountContent({
         })}
       </p>
 
-      {/* Step 1: Download backup */}
+      {/* Step 1: Download site export */}
       <div class="delete-account-step">
         <div class="delete-account-step-header">
           <span class="delete-account-step-number">1</span>
           <div>
             <h2 class="delete-account-step-title">
               {t({
-                message: "Download your data",
+                message: "Download a site export",
                 comment:
-                  "@context: Step 1 heading — user must download backup before deleting",
+                  "@context: Step 1 heading — user must download a site export before deleting",
               })}
             </h2>
             <p class="text-sm text-muted-foreground">
               {t({
                 message:
-                  "Before deleting, download a backup of all your content. You won't be able to recover it after deletion.",
-                comment: "@context: Step 1 description for data backup",
+                  "Before deleting, download a site export. You won't be able to recover this account after deletion.",
+                comment:
+                  "@context: Step 1 description for site export before account deletion",
               })}
             </p>
           </div>
@@ -104,7 +105,7 @@ export function DeleteAccountContent({
                   URL.revokeObjectURL(a.href);
                   if ($_deleteStep < 2) $_deleteStep = 2
                 })
-                .catch(function() { alert('${t({ message: "Download failed. Please try again.", comment: "@context: Alert when backup download fails during account deletion" }).replace(/'/g, "\\'")}') })
+                .catch(function() { alert('${t({ message: "Download failed. Please try again.", comment: "@context: Alert when site export download fails during account deletion" }).replace(/'/g, "\\'")}') })
                 .finally(function() { $_downloadLoading = false })
             `}
           >
@@ -131,9 +132,9 @@ export function DeleteAccountContent({
               <line x1="12" x2="12" y1="15" y2="3" />
             </svg>
             {t({
-              message: "Download Backup",
+              message: "Download Export ZIP",
               comment:
-                "@context: Button to download site backup before deletion",
+                "@context: Button to download the site export ZIP before deletion",
             })}
           </button>
 
@@ -158,9 +159,9 @@ export function DeleteAccountContent({
               <path d="m9 12 2 2 4-4" />
             </svg>
             {t({
-              message: "Backup downloaded.",
+              message: "Export downloaded.",
               comment:
-                "@context: Confirmation text after downloading backup in delete flow",
+                "@context: Confirmation text after downloading the site export in delete flow",
             })}
           </span>
         </div>
