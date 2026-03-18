@@ -1145,9 +1145,14 @@ npx jant site export --output jant-export.zip
 # Export a remote site
 export JANT_TOKEN=jnt_YOUR_TOKEN
 npx jant site export --url https://your-site.com --output jant-export.zip
+
+# Export directly to a directory for theme debugging
+npx jant site export --directory ./my-site
+cd ./my-site
+zola serve
 ```
 
-Without `--url`, `jant site export` exports from the local Node SQLite runtime. With `--url`, it calls the authenticated export API. `jant export` remains available as a compatibility alias for database SQL export via `jant db export`.
+Without `--url`, `jant site export` exports from the local Node SQLite runtime. With `--url`, it calls the authenticated export API. The CLI localizes referenced media into `static/media/` by default; pass `--no-localize-media` to keep original URLs. `jant export` remains available as a compatibility alias for database SQL export via `jant db export`.
 
 **What's in the ZIP:**
 
@@ -1162,9 +1167,11 @@ static/style.css         # Theme CSS (dark mode included)
 
 - Threads are merged: the root post and all replies appear in one file, separated by `<!-- jant:reply ... -->` marker comments
 - Reply URLs become Zola `aliases` so existing links still work
-- Media is not localized into the ZIP, but attachments are preserved as `data-jant-node="attachments"` HTML blocks for re-import
+- The raw export API only writes content files. The CLI localizes media by default unless you pass `--no-localize-media`
+- Attachments are preserved as `data-jant-node="attachments"` HTML blocks for re-import
 - Rich image blocks preserve Jant-only attributes such as caption, link target, and layout
 - Collections are exported as Zola taxonomies under `/c/`
+- A static `/archive/` page is exported so archive nav items still work in Zola
 - `config.toml` includes `[extra.jant_export]` metadata so importers can recognize the export format version
 
 **Building the static site:**

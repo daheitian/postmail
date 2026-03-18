@@ -172,7 +172,13 @@ export function createExportService(
         buildConfigToml(siteConfig),
       );
       files["content/_index.md"] = new TextEncoder().encode(buildRootSection());
+      files["content/archive/_index.md"] = new TextEncoder().encode(
+        buildArchiveSection(),
+      );
       files["templates/base.html"] = new TextEncoder().encode(TEMPLATE_BASE);
+      files["templates/archive.html"] = new TextEncoder().encode(
+        TEMPLATE_ARCHIVE,
+      );
       files["templates/index.html"] = new TextEncoder().encode(TEMPLATE_INDEX);
       files["templates/page.html"] = new TextEncoder().encode(TEMPLATE_PAGE);
       files["templates/section.html"] = new TextEncoder().encode(
@@ -509,6 +515,7 @@ function buildConfigToml(config: SiteConfig): string {
     "[extra.jant_export]",
     'format = "jant-site"',
     "version = 1",
+    `generated_at = "${escapeToml(toISOString(Math.floor(Date.now() / 1000)))}"`,
     "",
     "[extra.jant]",
     `home_default_view = "${escapeToml(config.homeDefaultView)}"`,
@@ -574,6 +581,14 @@ function buildRootSection(): string {
   return `+++
 sort_by = "date"
 paginate_by = 20
++++
+`;
+}
+
+function buildArchiveSection(): string {
+  return `+++
+title = "Archive"
+template = "archive.html"
 +++
 `;
 }
@@ -646,11 +661,12 @@ static/
 - **Jant metadata** — \`config.toml\` stores \`[extra.jant_export]\` and \`[extra.jant]\` for round-trip import.
 - **Styles** — edit \`static/style.css\`. The theme supports light and dark modes via \`prefers-color-scheme\`.
 - **Templates** — edit files in \`templates/\`. Zola uses the [Tera](https://keats.github.io/tera/) template engine.
+- **Debugging** — export to a directory with \`jant site export --directory ./my-site\`, then run \`cd my-site && zola serve\`.
 - **Collections** — posts are tagged with collections via the \`c\` taxonomy. Browse them at \`/c/\`.
 
 ## Notes
 
-- Media files are **not localized** in the export ZIP. Structured attachment blocks still point at the original site until you localize them.
+- The raw export API only writes content files. The CLI localizes media by default unless you pass \`--no-localize-media\`.
 - Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (\`<!-- jant:reply ... -->\`).
 - Attachments are preserved as Jant HTML blocks (\`data-jant-node="attachments"\`) so \`jant site import\` can reconstruct them.
 - Posts with \`draft: true\` in front matter are only built when you pass the \`--drafts\` flag to \`zola build\` or \`zola serve\`.
@@ -661,15 +677,24 @@ static/
 // Zola theme templates
 // ---------------------------------------------------------------------------
 
+const DECORATIVE_QUOTE_MARK_SVG = `<span class="decorative-quote-mark feed-quote-mark" aria-hidden="true">
+  <svg viewBox="0 0 96 96" role="presentation" focusable="false">
+    <path fill="currentColor" d="M24.4 10.5C16.9 17.7 11.5 26.8 8.2 37.7C4.9 48.7 4.8 58.9 7.8 68.2C10.3 75.7 15.4 79.5 22.9 79.5C28 79.5 32.2 77.8 35.4 74.2C38.6 70.7 40.2 66.5 40.2 61.4C40.2 56.5 38.8 52.6 36 49.6C33.3 46.6 29.7 45.1 25.2 45.1C23.4 45.1 21.8 45.3 20.2 45.8C22.2 37.3 26.7 29.2 33.6 21.4L24.4 10.5Z" />
+    <path fill="currentColor" d="M60.8 10.5C53.3 17.7 47.9 26.8 44.6 37.7C41.3 48.7 41.2 58.9 44.2 68.2C46.7 75.7 51.8 79.5 59.3 79.5C64.4 79.5 68.6 77.8 71.8 74.2C75 70.7 76.6 66.5 76.6 61.4C76.6 56.5 75.2 52.6 72.4 49.6C69.7 46.6 66.1 45.1 61.6 45.1C59.8 45.1 58.2 45.3 56.6 45.8C58.6 37.3 63.1 29.2 70 21.4L60.8 10.5Z" />
+  </svg>
+</span>`;
+
 const TEMPLATE_BASE = `<!DOCTYPE html>
-<html lang="{{ config.default_language }}">
+<html lang="{{ config.default_language }}" data-theme-mode="{{ config.extra.jant.theme_mode | default(value='auto') }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ config.title }}{% endblock %}</title>
+  {% if config.description %}
   <meta name="description" content="{{ config.description }}">
+  {% endif %}
   {% if config.extra.jant.noindex %}
-  <meta name="robots" content="noindex">
+  <meta name="robots" content="noindex, nofollow">
   {% endif %}
   {% set favicon_url = config.extra.jant.favicon_url | default(value="") %}
   {% if favicon_url %}
@@ -684,30 +709,57 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
   <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml') }}">
 </head>
 <body>
-  <header class="site-header">
-    <a href="{{ config.base_url }}" class="site-title">
-      {% if config.extra.jant.show_header_avatar and config.extra.jant.site_avatar_url %}
-      <img src="{{ config.extra.jant.site_avatar_url }}" class="site-logo-avatar" alt="">
-      {% endif %}
-      <span>{{ config.title }}</span>
-    </a>
-    <nav>
-      {% if config.extra.jant.nav and config.extra.jant.nav | length > 0 %}
-        {% for item in config.extra.jant.nav %}
-        <a href="{{ item.url }}">{{ item.label }}</a>
-        {% endfor %}
-      {% else %}
-      <a href="{{ config.base_url }}/c/">Collections</a>
-      <a href="{{ get_url(path='atom.xml') }}">RSS</a>
-      {% endif %}
-    </nav>
-  </header>
-  <main class="site-main">
-    {% block content %}{% endblock %}
-  </main>
-  {% if config.extra.jant.site_footer_html %}
-  <footer class="site-footer">{{ config.extra.jant.site_footer_html | safe }}</footer>
-  {% endif %}
+  <div class="site-page">
+    <header class="site-header">
+      <div class="site-header-inner">
+        <div class="{% block header_top_class %}site-header-top site-header-top-bordered{% endblock %}">
+          <a href="{{ config.base_url }}" class="site-logo">
+            {% if config.extra.jant.show_header_avatar and config.extra.jant.site_avatar_url %}
+            <img src="{{ config.extra.jant.site_avatar_url }}" class="site-logo-avatar" alt="">
+            {% endif %}
+            <span>{{ config.title }}</span>
+          </a>
+          <div class="site-header-right">
+            <nav class="site-header-nav" aria-label="Primary">
+              {% if config.extra.jant.nav and config.extra.jant.nav | length > 0 %}
+                {% for item in config.extra.jant.nav %}
+                  {% if item.system_key == "settings" %}
+                  {% elif item.system_key == "collections" %}
+                <a href="{{ get_url(path='c') }}" class="site-header-link">{{ item.label }}</a>
+                  {% elif item.system_key == "rss" %}
+                <a href="{{ get_url(path='atom.xml') }}" class="site-header-link">{{ item.label }}</a>
+                  {% elif item.system_key == "archive" %}
+                <a href="{{ get_url(path='archive') }}" class="site-header-link">{{ item.label }}</a>
+                  {% else %}
+                <a href="{{ item.url }}" class="site-header-link">{{ item.label }}</a>
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+              <a href="{{ config.base_url }}/c/" class="site-header-link">Collections</a>
+              <a href="{{ get_url(path='atom.xml') }}" class="site-header-link">RSS</a>
+              {% endif %}
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <div class="site-container">
+        <div class="{% block site_content_class %}site-content{% endblock %}">
+          {% block content %}{% endblock %}
+        </div>
+      </div>
+    </main>
+
+    {% if config.extra.jant.site_footer_html %}
+    <footer class="site-footer" data-footer>
+      <div class="site-container">
+        <div class="prose">{{ config.extra.jant.site_footer_html | safe }}</div>
+      </div>
+    </footer>
+    {% endif %}
+  </div>
 </body>
 </html>
 `;
@@ -716,27 +768,67 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
 {% import "macros.html" as macros %}
 
 {% block title %}{{ config.title }}{% endblock %}
+{% block header_top_class %}site-header-top site-header-top-bordered site-header-top-home{% endblock %}
+{% block site_content_class %}site-content site-content-home{% endblock %}
 
 {% block content %}
-<div class="post-list">
-  {% for page in paginator.pages %}
-    {% if page.extra.visibility | default(value="public") != "unlisted" %}
-    {{ macros::post_card(page=page) }}
+<div data-page="home">
+  <div class="site-home-header">
+    <nav class="site-browse-nav" aria-label="Browse">
+      <span class="site-browse-link site-browse-link-active">
+        {% if config.extra.jant.home_default_view == "featured" %}Featured{% else %}Latest{% endif %}
+      </span>
+    </nav>
+    {% if paginator.current_index > 1 %}
+    <p class="page-context-label">Page {{ paginator.current_index }}</p>
     {% endif %}
-  {% endfor %}
-</div>
+  </div>
 
-{% if paginator.previous or paginator.next %}
-<nav class="pagination">
-  {% if paginator.previous %}<a href="{{ paginator.previous }}">&larr; Newer</a>{% endif %}
-  {% if paginator.next %}<a href="{{ paginator.next }}">Older &rarr;</a>{% endif %}
-</nav>
-{% endif %}
-{% if config.extra.jant.show_jant_branding_on_home %}
-<div class="jant-branding">
-  <p>${HOME_BRANDING_PREFIX} <a href="${JANT_REPO_URL}">${buildJantLogoSvgMarkup("positive")}<span>${HOME_BRANDING_LINK_LABEL}</span></a></p>
+  <div data-feed>
+    <div id="timeline-feed">
+      <div id="timeline-items">
+        {% for page in paginator.pages %}
+          {% if page.extra.visibility | default(value="public") != "unlisted" %}
+          <div class="feed-item" data-timeline-item data-timeline-item-content>
+            {% if not loop.first %}<hr class="feed-divider">{% endif %}
+            {{ macros::post_card(page=page) }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if paginator.previous or paginator.next %}
+  <nav class="pagination" aria-label="Pagination">
+    <div class="pagination-side">
+      {% if paginator.previous %}
+      <a href="{{ paginator.previous }}" class="pagination-link">&larr; Previous</a>
+      {% endif %}
+    </div>
+    <div class="pagination-center">
+      {% if paginator.number_pagers > 1 %}
+      <span class="pagination-label">Page {{ paginator.current_index }} of {{ paginator.number_pagers }}</span>
+      {% endif %}
+    </div>
+    <div class="pagination-side pagination-side-end">
+      {% if paginator.next %}
+      <a href="{{ paginator.next }}" class="pagination-link">Next &rarr;</a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  {% if config.extra.jant.show_jant_branding_on_home %}
+  <footer class="home-branding-credit">
+    ${HOME_BRANDING_PREFIX}
+    <a href="${JANT_REPO_URL}" target="_blank" rel="noopener noreferrer">
+      ${buildJantLogoSvgMarkup("positive")}
+      <span>${HOME_BRANDING_LINK_LABEL}</span>
+    </a>
+  </footer>
+  {% endif %}
 </div>
-{% endif %}
 {% endblock %}
 `;
 
@@ -746,7 +838,9 @@ const TEMPLATE_PAGE = `{% extends "base.html" %}
 {% block title %}{% if page.title %}{{ page.title }} &mdash; {% endif %}{{ config.title }}{% endblock %}
 
 {% block content %}
-{{ macros::post_card(page=page, detail=true) }}
+<div data-page="post">
+  {{ macros::post_card(page=page, detail=true) }}
+</div>
 {% endblock %}
 `;
 
@@ -756,17 +850,71 @@ const TEMPLATE_SECTION = `{% extends "base.html" %}
 {% block title %}{{ section.title }} &mdash; {{ config.title }}{% endblock %}
 
 {% block content %}
-<h1>{{ section.title }}</h1>
-{% if section.description %}
-<p class="section-description">{{ section.description }}</p>
-{% endif %}
-
-<div class="post-list">
-  {% for page in section.pages %}
-    {% if page.extra.visibility | default(value="public") != "unlisted" %}
-    {{ macros::post_card(page=page) }}
+<div class="section-shell">
+  <header class="section-header">
+    <h1 class="section-title">{{ section.title }}</h1>
+    {% if section.description %}
+    <p class="section-description">{{ section.description }}</p>
     {% endif %}
-  {% endfor %}
+  </header>
+
+  <div data-feed>
+    <div id="timeline-feed">
+      <div id="timeline-items">
+        {% for page in section.pages %}
+          {% if page.extra.visibility | default(value="public") != "unlisted" %}
+          <div class="feed-item" data-timeline-item data-timeline-item-content>
+            {% if not loop.first %}<hr class="feed-divider">{% endif %}
+            {{ macros::post_card(page=page) }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+`;
+
+const TEMPLATE_ARCHIVE = `{% extends "base.html" %}
+
+{% block title %}Archive &mdash; {{ config.title }}{% endblock %}
+
+{% block content %}
+{% set root = get_section(path="_index.md") %}
+<div class="section-shell archive-shell">
+  <header class="section-header">
+    <h1 class="section-title">Archive</h1>
+    <p class="section-description">Every exported post in one chronological list.</p>
+  </header>
+
+  <div class="archive-list">
+    {% for page in root.pages %}
+      {% if page.extra.visibility | default(value="public") == "public" %}
+      {% set archive_title = page.title | default(value="") %}
+      {% if archive_title == "" %}
+        {% set archive_title = page.summary | default(value=page.content) | striptags | trim | truncate(length=92) %}
+      {% endif %}
+      <article class="archive-entry">
+        <time class="archive-entry-date" datetime="{{ page.date }}">
+          {{ page.date | date(format="%b %e, %Y") }}
+        </time>
+        <div class="archive-entry-main">
+          <a href="{{ page.permalink }}" class="archive-entry-title">
+            {{ archive_title | default(value="Untitled") }}
+          </a>
+          <div class="archive-entry-meta">
+            <span class="archive-entry-format">{{ page.extra.format | default(value="note") }}</span>
+            {% set collections = page.taxonomies.c | default(value=[]) %}
+            {% for col in collections %}
+            <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="archive-entry-tag">{{ col }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+      {% endif %}
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}
 `;
@@ -776,15 +924,19 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
 {% block title %}Collections &mdash; {{ config.title }}{% endblock %}
 
 {% block content %}
-<h1>Collections</h1>
-<ul class="collection-list">
-  {% for term in terms %}
-  <li>
-    <a href="{{ term.permalink }}">{{ term.name }}</a>
-    <span class="count">({{ term.pages | length }})</span>
-  </li>
-  {% endfor %}
-</ul>
+<div class="section-shell">
+  <header class="section-header">
+    <h1 class="section-title">Collections</h1>
+    <p class="section-description">Browse exported posts by collection.</p>
+  </header>
+  <ul class="collection-list">
+    {% for term in terms %}
+    <li class="collection-list-item">
+      <a href="{{ term.permalink }}" class="collection-list-link">{{ term.name }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}
 `;
 
@@ -794,13 +946,24 @@ const TEMPLATE_TAXONOMY_SINGLE = `{% extends "base.html" %}
 {% block title %}{{ term.name }} &mdash; {{ config.title }}{% endblock %}
 
 {% block content %}
-<h1>{{ term.name }}</h1>
-<div class="post-list">
-  {% for page in term.pages %}
-    {% if page.extra.visibility | default(value="public") != "unlisted" %}
-    {{ macros::post_card(page=page) }}
-    {% endif %}
-  {% endfor %}
+<div class="section-shell">
+  <header class="section-header">
+    <h1 class="section-title">{{ term.name }}</h1>
+  </header>
+  <div data-feed>
+    <div id="timeline-feed">
+      <div id="timeline-items">
+        {% for page in term.pages %}
+          {% if page.extra.visibility | default(value="public") != "unlisted" %}
+          <div class="feed-item" data-timeline-item data-timeline-item-content>
+            {% if not loop.first %}<hr class="feed-divider">{% endif %}
+            {{ macros::post_card(page=page) }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 `;
@@ -814,7 +977,11 @@ const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
   <link rel="self" type="application/atom+xml" href="{{ feed_url | safe }}">
   <link rel="alternate" type="text/html" href="{% if section is defined %}{{ section.permalink }}{% elif term is defined %}{{ term.permalink }}{% else %}{{ config.base_url }}{% endif %}">
   <id>{{ feed_url | safe }}</id>
+  {% if last_updated is defined %}
   <updated>{{ last_updated | date(format="%+") }}</updated>
+  {% else %}
+  <updated>{{ config.extra.jant_export.generated_at | default(value="1970-01-01T00:00:00Z") }}</updated>
+  {% endif %}
   {% set author_name = config.author | default(value="") %}
   {% if author_name %}
   <author><name>{{ author_name }}</name></author>
@@ -841,63 +1008,200 @@ const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
 // Shared macro — single post card used by all list/detail templates
 // ---------------------------------------------------------------------------
 
-const TEMPLATE_MACROS = `{% macro post_card(page, detail=false) %}
-<article class="{% if detail %}post-detail{% else %}post-card{% endif %}{% if page.extra.pinned %} pinned{% endif %}" data-format="{{ page.extra.format | default(value='note') }}">
-  {% if page.extra.format == "link" and page.extra.link_url %}
-  <div class="post-meta link-domain">
-    <a href="{{ page.extra.link_url }}" rel="noopener noreferrer" target="_blank">{{ page.extra.link_url | split(pat="//") | nth(n=1) | split(pat="/") | first }}</a>
-  </div>
-  {% endif %}
+const TEMPLATE_MACROS = `{% macro post_status_badges() %}
+<div class="post-status-badges">
+  <span class="post-status-badge post-status-pinned">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" x2="12" y1="17" y2="22" />
+      <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z" />
+    </svg>
+    Pinned
+  </span>
+  <span class="post-status-separator" aria-hidden="true">&middot;</span>
+  <span class="post-status-badge post-status-featured">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    </svg>
+    Featured
+  </span>
+  <span class="post-status-badge post-status-private">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+      <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+      <path d="m2 2 20 20" />
+    </svg>
+    Private
+  </span>
+</div>
+{% endmacro %}
 
-  {% if page.title %}
-    {% if detail %}
-    <h1 class="post-title">
-      {% if page.extra.format == "link" and page.extra.link_url %}
-        <a href="{{ page.extra.link_url }}" rel="noopener noreferrer" target="_blank">{{ page.title }}</a>
-      {% else %}
-        {{ page.title }}
-      {% endif %}
-    </h1>
-    {% else %}
-    <h2 class="post-title">
-      {% if page.extra.format == "link" and page.extra.link_url %}
-        <a href="{{ page.extra.link_url }}" rel="noopener noreferrer" target="_blank">{{ page.title }}</a>
-      {% else %}
-        <a href="{{ page.permalink }}">{{ page.title }}</a>
-      {% endif %}
-    </h2>
+{% macro post_rating(page) %}
+{% if page.extra.rating %}
+<div class="post-rating" aria-label="{{ page.extra.rating }} out of 5">
+  {% for i in range(end=5) %}
+  <span class="{% if i < page.extra.rating %}post-star-filled{% else %}post-star-empty{% endif %}">★</span>
+  {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro post_footer(page, detail=false) %}
+{% set collections = page.taxonomies.c | default(value=[]) %}
+<footer class="post-menu-footer{% if detail %} post-footer-detail{% endif %}" data-post-meta>
+  <div class="post-footer-meta">
+    <a href="{{ page.permalink }}" class="u-url post-date-link">
+      <time class="dt-published" datetime="{{ page.date }}" title="{{ page.date }}">
+        {{ page.date | date(format="%b %e, %Y") }}
+      </time>
+    </a>
+    {% if page.extra.format == "link" and page.extra.link_url %}
+    <a href="{{ page.extra.link_url }}" class="post-footer-external-link" target="_blank" rel="noopener noreferrer" aria-label="Open external link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 17 17 7" />
+        <path d="M9 7h8v8" />
+      </svg>
+    </a>
     {% endif %}
-  {% endif %}
-
-  {% if page.extra.format == "quote" and page.extra.quote_text %}
-  <blockquote class="feed-quote">
-    <p>{{ page.extra.quote_text }}</p>
-  </blockquote>
-  {% endif %}
-
-  {% if not detail and page.summary %}
-  <div class="post-body prose">{{ page.summary | safe }}</div>
-  {% elif page.content %}
-  <div class="post-body prose">{{ page.content | safe }}</div>
-  {% endif %}
-
-  {% if page.extra.rating %}
-  <div class="star-rating">
-    {% for i in range(end=page.extra.rating) %}<span class="star filled">&#9733;</span>{% endfor %}{% for i in range(start=page.extra.rating, end=5) %}<span class="star">&#9734;</span>{% endfor %}
-  </div>
-  {% endif %}
-
-  <footer class="post-footer">
-    <a href="{{ page.permalink }}" class="post-date"><time datetime="{{ page.date }}">{{ page.date | date(format="%b %e, %Y") }}</time></a>
-    {% if page.taxonomies.c %}
-    <span class="post-collections">
-      {% for col in page.taxonomies.c %}
-        <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="collection-tag">{{ col }}</a>
+    {% if collections | length > 0 %}
+    <span class="post-collection-tags">
+      <span class="post-collection-sep" aria-hidden="true">&middot;</span>
+      {% for col in collections %}
+      <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="post-collection-tag">{{ col }}</a>
       {% endfor %}
     </span>
     {% endif %}
-  </footer>
+  </div>
+</footer>
+{% endmacro %}
+
+{% macro note_card(page, detail=false) %}
+<article
+  class="h-entry post-menu-target {% if detail %}post-detail-shell{% else %}post-card-shell{% endif %}"
+  {% if detail %}data-page="post"{% endif %}
+  data-post
+  data-format="note"
+  data-post-permalink="{{ page.permalink }}"
+  {% if page.title %}data-post-has-title{% endif %}
+  {% if page.extra.pinned %}data-post-pinned{% endif %}
+  {% if page.extra.featured %}data-post-featured{% endif %}
+  data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
+>
+  {{ self::post_status_badges() }}
+  {% if page.title %}
+    {% if detail %}
+    <h1 class="p-name detail-title">{{ page.title }}</h1>
+    {% else %}
+    <h2 class="p-name feed-note-title">
+      <a href="{{ page.permalink }}" class="u-url post-title-link">{{ page.title }}</a>
+    </h2>
+    {% endif %}
+  {% endif %}
+  {% if detail and page.content %}
+  <div class="e-content prose" data-post-body>{{ page.content | safe }}</div>
+  {% elif not detail and page.summary %}
+  <div class="e-content prose {% if page.title %}post-body-summary{% endif %}" data-post-body>{{ page.summary | safe }}</div>
+  {% elif page.content %}
+  <div class="e-content prose {% if page.title and not detail %}post-body-summary{% endif %}" data-post-body>{{ page.content | safe }}</div>
+  {% endif %}
+  {{ self::post_rating(page=page) }}
+  {{ self::post_footer(page=page, detail=detail) }}
 </article>
+{% endmacro %}
+
+{% macro link_card(page, detail=false) %}
+<article
+  class="h-entry post-menu-target {% if detail %}post-detail-shell post-detail-link{% else %}feed-card feed-card-link{% endif %}"
+  {% if detail %}data-page="post"{% endif %}
+  data-post
+  data-format="link"
+  data-post-permalink="{{ page.permalink }}"
+  {% if page.title %}data-post-has-title{% endif %}
+  {% if page.extra.pinned %}data-post-pinned{% endif %}
+  {% if page.extra.featured %}data-post-featured{% endif %}
+  data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
+>
+  {{ self::post_status_badges() }}
+  {% if page.extra.link_url %}
+  <a href="{{ page.extra.link_url }}" class="feed-link-domain" rel="noopener noreferrer" target="_blank">
+    <svg class="feed-link-domain-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+      <path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+    </svg>
+    <span>{{ page.extra.link_url | split(pat='//') | nth(n=1) | split(pat='/') | first }}</span>
+  </a>
+  {% endif %}
+  {% if page.title %}
+    {% if detail %}
+    <h1 class="p-name detail-title feed-link-title">
+      <a href="{{ page.extra.link_url | default(value=page.permalink) }}" class="u-url feed-link-title-link" {% if page.extra.link_url %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ page.title }}</a>
+    </h1>
+    {% else %}
+    <h2 class="p-name feed-link-title">
+      <a href="{{ page.extra.link_url | default(value=page.permalink) }}" class="u-url feed-link-title-link" {% if page.extra.link_url %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ page.title }}</a>
+    </h2>
+    {% endif %}
+  {% endif %}
+  {% if detail and page.content %}
+  <div class="e-content prose feed-link-summary" data-post-body>{{ page.content | safe }}</div>
+  {% elif not detail and page.summary %}
+  <div class="e-content prose feed-link-summary" data-post-body>{{ page.summary | safe }}</div>
+  {% elif page.content %}
+  <div class="e-content prose feed-link-summary" data-post-body>{{ page.content | safe }}</div>
+  {% endif %}
+  {{ self::post_rating(page=page) }}
+  {{ self::post_footer(page=page, detail=detail) }}
+</article>
+{% endmacro %}
+
+{% macro quote_card(page, detail=false) %}
+<article
+  class="h-entry post-menu-target feed-quote-post {% if detail %}post-detail-shell{% endif %}"
+  {% if detail %}data-page="post"{% endif %}
+  data-post
+  data-format="quote"
+  data-post-permalink="{{ page.permalink }}"
+  {% if page.extra.pinned %}data-post-pinned{% endif %}
+  {% if page.extra.featured %}data-post-featured{% endif %}
+  data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
+>
+  {{ self::post_status_badges() }}
+  {% if page.extra.quote_text %}
+  <blockquote class="feed-quote feed-quote-card">
+    ${DECORATIVE_QUOTE_MARK_SVG}
+    <div class="e-content feed-quote-content">{{ page.extra.quote_text }}</div>
+  </blockquote>
+  {% endif %}
+  {% if page.title or page.extra.link_url %}
+  <div class="feed-quote-attribution">
+    {% if page.extra.link_url %}
+    <a href="{{ page.extra.link_url }}" class="feed-quote-source" target="_blank" rel="noopener noreferrer">
+      {{ page.title | default(value=page.extra.link_url | split(pat='//') | nth(n=1) | split(pat='/') | first) }}
+    </a>
+    {% else %}
+    <span>{{ page.title }}</span>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if detail and page.content %}
+  <div class="feed-quote-commentary prose" data-post-body>{{ page.content | safe }}</div>
+  {% elif not detail and page.summary %}
+  <div class="feed-quote-commentary prose" data-post-body>{{ page.summary | safe }}</div>
+  {% elif page.content %}
+  <div class="feed-quote-commentary prose" data-post-body>{{ page.content | safe }}</div>
+  {% endif %}
+  {{ self::post_rating(page=page) }}
+  {{ self::post_footer(page=page, detail=detail) }}
+</article>
+{% endmacro %}
+
+{% macro post_card(page, detail=false) %}
+{% if page.extra.format == "link" %}
+{{ self::link_card(page=page, detail=detail) }}
+{% elif page.extra.format == "quote" %}
+{{ self::quote_card(page=page, detail=detail) }}
+{% else %}
+{{ self::note_card(page=page, detail=detail) }}
+{% endif %}
 {% endmacro %}
 `;
 
@@ -905,38 +1209,103 @@ const TEMPLATE_MACROS = `{% macro post_card(page, detail=false) %}
 // CSS — Jant "Organic Minimalism" approximation
 // ---------------------------------------------------------------------------
 
-const STYLE_CSS = `/* Jant Export Theme — Organic Minimalism */
+const STYLE_CSS = `/* Jant Export Theme */
 
 :root {
+  color-scheme: light;
   --site-width: 500px;
-  --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, Menlo, Monaco, Consolas, "Courier New", monospace;
-
-  --bg: #fafaf9;
-  --fg: #1c1917;
-  --muted: #78716c;
-  --border: #e7e5e4;
-  --accent: #292524;
-  --accent-fg: #fff;
-  --card-bg: #fff;
-  --quote-border: #d6d3d1;
-  --star-color: #f59e0b;
-  --link-color: #292524;
+  --font-cjk-serif-fallback:
+    "Songti SC", STSong, SimSun, "Songti TC", PMingLiU, MingLiU,
+    "Noto Serif SC", "Noto Serif CJK SC", "Noto Serif TC", "Noto Serif CJK TC";
+  --font-body:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Helvetica, Arial, "PingFang TC", "PingFang SC",
+    "Hiragino Sans CNS", "Hiragino Sans GB", "Microsoft JhengHei",
+    "Microsoft YaHei", "Noto Sans CJK TC", "Noto Sans CJK SC", sans-serif;
+  --font-heading:
+    "New York Small", "New York", "Iowan Old Style", Charter,
+    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+    var(--font-cjk-serif-fallback), ui-serif, serif;
+  --font-serif:
+    var(--font-cjk-serif-fallback), ui-serif, "New York Small", "New York",
+    "Iowan Old Style", Charter, Georgia, "Times New Roman", Times, serif;
+  --font-mono:
+    ui-monospace, Menlo, Monaco, Consolas, "Cascadia Code", "Courier New",
+    monospace;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --feed-note-title-size: 1.25rem;
+  --feed-note-title-leading: 1.3;
+  --type-body-size: var(--text-base);
+  --type-body-leading: 1.66;
+  --type-body-tracking: 0.002em;
+  --type-heading-weight: var(--fw-medium);
+  --type-heading-leading: 1.26;
+  --type-heading-tracking: -0.02em;
+  --type-display-leading: 1.04;
+  --type-label-weight: var(--fw-medium);
+  --type-label-tracking: 0.08em;
+  --site-padding: 1.5rem;
+  --content-gap: 1rem;
+  --space-xl: 2rem;
+  --avatar-size: 28px;
+  --avatar-radius: 50%;
+  --media-radius: 0.5rem;
+  --background: oklch(0.975 0.015 92);
+  --foreground: oklch(0.29 0.01 70);
+  --card: oklch(0.975 0.015 92);
+  --primary: oklch(0.4347 0.0569 149.44);
+  --primary-foreground: oklch(0.985 0.008 92);
+  --muted: oklch(0.942 0.014 96);
+  --muted-foreground: oklch(0.52 0.008 70);
+  --accent: oklch(0.942 0.014 96);
+  --border: oklch(0.892 0.014 98);
+  --site-accent: var(--primary);
+  --site-accent-text: var(--primary-foreground);
+  --site-page-bg: var(--background);
+  --site-elevated-bg: var(--background);
+  --site-nav-hover-bg: var(--accent);
+  --site-text-primary: var(--foreground);
+  --site-text-secondary: var(--muted-foreground);
+  --site-text-placeholder: oklch(from var(--muted-foreground) l c h / 0.5);
+  --site-divider: var(--border);
+  --site-feed-card-bg: color-mix(
+    in srgb,
+    var(--site-elevated-bg) 88%,
+    var(--site-nav-hover-bg)
+  );
+  --site-feed-card-border: color-mix(
+    in srgb,
+    var(--site-divider) 78%,
+    transparent
+  );
+  --site-feed-card-shadow: color-mix(
+    in srgb,
+    var(--site-text-primary) 12%,
+    transparent
+  );
+  --site-feed-divider-color: color-mix(
+    in srgb,
+    var(--site-text-secondary) 30%,
+    transparent
+  );
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1c1917;
-    --fg: #e7e5e4;
-    --muted: #a8a29e;
-    --border: #44403c;
-    --accent: #e7e5e4;
-    --accent-fg: #1c1917;
-    --card-bg: #292524;
-    --quote-border: #57534e;
-    --star-color: #fbbf24;
-    --link-color: #e7e5e4;
+  :root:not([data-theme-mode="light"]) {
+    color-scheme: dark;
+    --background: oklch(0.182 0.003 95);
+    --foreground: oklch(0.895 0.006 88);
+    --card: oklch(0.182 0.003 95);
+    --primary: oklch(0.768 0.04 149);
+    --primary-foreground: oklch(0.17 0.003 95);
+    --muted: oklch(0.238 0.003 95);
+    --muted-foreground: oklch(0.67 0.005 88);
+    --accent: oklch(0.238 0.003 95);
+    --border: oklch(0.305 0.003 95);
   }
 }
 
@@ -944,354 +1313,917 @@ const STYLE_CSS = `/* Jant Export Theme — Organic Minimalism */
 *::before,
 *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 16px;
+  background-color: var(--site-page-bg);
+  color: var(--site-text-primary);
 }
 
 body {
+  margin: 0;
   font-family: var(--font-body);
-  color: var(--fg);
-  background: var(--bg);
-  max-width: var(--site-width);
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  letter-spacing: var(--type-body-tracking);
+  color: var(--site-text-primary);
+  background: var(--site-page-bg);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--link-color);
+  color: inherit;
   text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
-a:hover {
-  text-decoration: none;
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
 }
 
-/* Header */
+img {
+  height: auto;
+}
+
+.site-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: var(--site-page-bg);
+}
+
 .site-header {
+  max-width: var(--site-width);
+  margin: 0 auto;
+  padding: 24px var(--site-padding) 0;
+}
+
+.site-header-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.site-header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2rem;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  min-height: 2.5rem;
+  width: 100%;
 }
 
-.site-title {
+.site-header-top-bordered {
+  padding-bottom: 15px;
+  border-bottom: 0.5px solid
+    color-mix(in srgb, var(--site-divider) 72%, transparent);
+}
+
+.site-header-top-home {
+  border-bottom-color: transparent;
+  padding-bottom: 14px;
+}
+
+.site-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-left: auto;
+  min-width: 0;
+}
+
+.site-logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  font-weight: 700;
-  font-size: 1.125rem;
+  gap: 10px;
+  padding: 0.15rem 0;
+  font-size: clamp(1.18rem, 1.08rem + 0.45vw, 1.34rem);
+  font-weight: var(--fw-medium);
+  font-family: var(--font-heading);
+  letter-spacing: -0.03em;
+  color: var(--site-text-primary);
   text-decoration: none;
-  color: var(--fg);
+  line-height: var(--type-display-leading);
 }
 
 .site-logo-avatar {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
+  width: calc(var(--avatar-size) + 2px);
+  height: calc(var(--avatar-size) + 2px);
+  border-radius: var(--avatar-radius);
   object-fit: cover;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--site-divider) 82%, transparent);
 }
 
-.site-header nav {
+.site-header-nav {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 1rem;
 }
 
-.site-header nav a {
-  color: var(--muted);
+.site-header-link {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  min-height: 2rem;
+  padding: 0.2rem 0 0.5rem;
+  cursor: pointer;
+  font-size: 0.84rem;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--site-text-secondary);
   text-decoration: none;
-  font-size: 0.875rem;
+  transition:
+    color 0.15s,
+    opacity 0.15s;
 }
 
-.site-header nav a:hover {
-  color: var(--fg);
+.site-header-link::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1.5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--site-accent) 62%, var(--site-divider));
+  opacity: 0;
+  transform: scaleX(0.52);
+  transform-origin: center;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
-/* Post list */
-.post-list {
+.site-header-link:hover {
+  color: var(--site-text-primary);
+  opacity: 1;
+}
+
+.site-header-link:hover::after {
+  opacity: 0.42;
+  transform: scaleX(0.82);
+}
+
+.site-container {
+  max-width: var(--site-width);
+  margin: 0 auto;
+}
+
+.site-content {
+  background-color: var(--site-elevated-bg);
+  padding: 1rem var(--site-padding) var(--space-xl);
+}
+
+.site-content-home {
+  padding-top: 0;
+}
+
+.site-home-header {
   display: flex;
   flex-direction: column;
+  gap: 0.15rem;
+  margin-bottom: var(--space-xl);
 }
 
-.post-card {
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--border);
+.site-browse-nav {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 14px 0 4px;
 }
 
-.post-card:last-child {
-  border-bottom: none;
+.site-browse-link {
+  font-size: var(--text-base);
+  font-weight: var(--fw-regular);
+  color: var(--site-text-primary);
+  opacity: 0.42;
 }
 
-.post-title {
-  font-size: 1.0625rem;
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  line-height: 1.4;
+.site-browse-link-active {
+  opacity: 1;
+  font-weight: var(--fw-medium);
 }
 
-.post-title a {
+.page-context-label {
+  margin: 0;
+  color: var(--site-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.feed-item {
+  position: relative;
+}
+
+.site-content hr.feed-divider {
+  border: none;
+  width: 30px;
+  height: 9px;
+  margin: 2.5rem auto;
+  color: var(--site-feed-divider-color);
+  background-color: currentColor;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='black' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 13'%3E%3Cpath fill='black' transform='translate(0,0) rotate(90 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(16,0) rotate(100 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3Cpath fill='black' transform='translate(32,0) rotate(80 6 6.5)' d='M6.765.5.177 6.093l2.61 5.966 8.39-3.17L6.765.5Z'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.post-menu-target {
+  position: relative;
+}
+
+.post-card-shell,
+.post-detail-shell {
+  position: relative;
+  padding: 0.45rem 0 0.35rem;
+}
+
+.feed-card {
+  position: relative;
+  padding: 1rem 1.1rem 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--site-divider) 78%, transparent);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--site-accent) 4%, transparent),
+      transparent 58%
+    ),
+    color-mix(in srgb, var(--site-elevated-bg) 88%, var(--site-nav-hover-bg));
+  box-shadow: 0 20px 40px -36px var(--site-feed-card-shadow);
+}
+
+.feed-card-link {
+  border-radius: 14px;
+}
+
+.feed-link-domain {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  margin-bottom: 0.65rem;
+  color: var(--site-text-secondary);
+  font-size: 0.75rem;
+  font-weight: var(--type-label-weight);
+  line-height: 1;
+  letter-spacing: var(--type-label-tracking);
   text-decoration: none;
-  color: var(--fg);
 }
 
-.post-title a:hover {
+.feed-link-domain-icon {
+  width: 0.72rem;
+  height: 0.72rem;
+  flex-shrink: 0;
+}
+
+.feed-link-title,
+.feed-note-title,
+.detail-title,
+.section-title,
+.p-name {
+  font-family: var(--font-heading);
+}
+
+.feed-link-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: var(--type-heading-weight);
+  line-height: var(--type-heading-leading);
+  letter-spacing: var(--type-heading-tracking);
+}
+
+.feed-link-title-link,
+.post-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.feed-link-title-link:hover,
+.post-title-link:hover {
   text-decoration: underline;
 }
 
-/* Link format domain indicator */
-.link-domain {
-  font-size: 0.8125rem;
-  color: var(--muted);
-  margin-bottom: 0.25rem;
+.feed-note-title {
+  margin: 0 0 0.48rem;
+  font-size: var(--feed-note-title-size);
+  line-height: var(--feed-note-title-leading);
+  letter-spacing: var(--type-heading-tracking);
+  text-wrap: pretty;
 }
 
-.link-domain a {
-  color: var(--muted);
-  text-decoration: none;
+.detail-title {
+  margin: 0 0 1rem;
+  font-size: clamp(1.56rem, 1.34rem + 1vw, 2.02rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
 }
 
-/* Quote format */
+.feed-quote-post {
+  position: relative;
+  padding: 0.45rem 0 0.35rem;
+}
+
 .feed-quote {
-  border-left: 2px solid var(--quote-border);
-  padding-left: 1rem;
-  margin: 0.5rem 0;
-  font-style: italic;
-  color: var(--fg);
+  margin: 0;
 }
 
-/* Body / prose */
-.post-body {
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  color: var(--fg);
+.feed-quote-card {
+  padding-left: 0;
+  border-left: none;
 }
 
-.post-body p {
-  margin: 0.75rem 0;
+.decorative-quote-mark {
+  display: block;
+  line-height: 0;
 }
 
-.post-body p:first-child {
+.decorative-quote-mark svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.feed-quote-mark {
+  width: clamp(1.46rem, 1.38rem + 0.36vw, 1.76rem);
+  margin-bottom: -0.1rem;
+  margin-left: -0.04rem;
+  color: color-mix(in srgb, var(--site-accent) 14%, var(--site-divider));
+  opacity: 0.66;
+}
+
+.feed-quote-content {
+  font-family: var(--font-serif);
+  color: var(--site-text-primary);
+  font-size: clamp(1.34rem, 1.23rem + 0.44vw, 1.58rem);
+  line-height: 1.36;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+
+.feed-quote-attribution {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 0.95rem;
+  color: var(--site-text-secondary);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+.feed-quote-attribution::before {
+  content: "";
+  width: 0.9rem;
+  height: 1px;
+  background: color-mix(in srgb, var(--site-text-secondary) 38%, var(--site-divider));
+}
+
+.feed-quote-source {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--site-text-secondary) 55%, transparent);
+}
+
+.feed-quote-commentary {
+  position: relative;
+  max-width: 34rem;
+  margin-top: 1.1rem;
+  padding-top: 0.95rem;
+  color: color-mix(in srgb, var(--site-text-secondary) 84%, var(--site-text-primary));
+}
+
+.feed-quote-commentary::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--site-divider) 48%, transparent) 16%,
+    color-mix(in srgb, var(--site-divider) 78%, transparent) 50%,
+    color-mix(in srgb, var(--site-divider) 48%, transparent) 84%,
+    transparent 100%
+  );
+}
+
+.post-status-badges {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--site-text-placeholder);
+}
+
+article[data-post-pinned] .post-status-badges,
+article[data-post-featured] .post-status-badges,
+article[data-post-visibility="private"] .post-status-badges {
+  display: flex;
+}
+
+.post-status-badge {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+
+article[data-post-pinned] .post-status-pinned,
+article[data-post-featured] .post-status-featured,
+article[data-post-visibility="private"] .post-status-private {
+  display: inline-flex;
+}
+
+.post-status-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.post-status-separator {
+  display: none;
+}
+
+article[data-post-pinned][data-post-featured] .post-status-separator,
+article[data-post-pinned][data-post-visibility="private"] .post-status-separator {
+  display: inline;
+}
+
+.prose {
+  max-width: 35rem;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-leading);
+  letter-spacing: var(--type-body-tracking);
+  color: var(--site-text-primary);
+}
+
+.post-body-summary {
+  color: color-mix(in srgb, var(--site-text-secondary) 88%, var(--site-text-primary));
+}
+
+.prose > :first-child {
   margin-top: 0;
 }
 
-.post-body img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 0.5rem;
+.prose > :last-child {
+  margin-bottom: 0;
 }
 
-.post-body figure {
-  margin: 1rem 0;
+.prose p {
+  margin: 0;
 }
 
-.post-body figure figcaption {
-  margin-top: 0.5rem;
-  color: var(--muted);
-  font-size: 0.875rem;
+.prose p + p,
+.prose ul,
+.prose ol,
+.prose blockquote,
+.prose pre,
+.prose table,
+.prose figure {
+  margin-top: 1.05rem;
 }
 
-.post-body [data-jant-node="attachments"] {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1.25rem;
+.prose :is(h1, h2, h3, h4) {
+  margin: 1.25rem 0 0.35rem;
+  font-family: var(--font-heading);
+  font-weight: var(--type-heading-weight);
+  line-height: var(--type-heading-leading);
+  letter-spacing: var(--type-heading-tracking);
 }
 
-.post-body [data-jant-node="attachment"] {
-  padding: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: var(--card-bg);
+.prose ul,
+.prose ol {
+  padding-left: 1.3rem;
 }
 
-.post-body [data-jant-node="attachment"] audio,
-.post-body [data-jant-node="attachment"] video {
-  width: 100%;
+.prose li {
+  margin: 0.2rem 0;
 }
 
-.post-body [data-jant-node="attachment"] > a {
-  font-weight: 600;
+.prose blockquote {
+  padding-left: 0.95rem;
+  border-left: 2px solid color-mix(in srgb, var(--site-divider) 75%, transparent);
+  color: var(--site-text-secondary);
 }
 
-.post-body pre {
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-  padding: 0.75rem 1rem;
-  overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-}
-
-.post-body code {
+.prose code {
   font-family: var(--font-mono);
   font-size: 0.875em;
-  background: var(--card-bg);
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--site-nav-hover-bg) 80%, transparent);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.32rem;
 }
 
-.post-body pre code {
-  background: none;
+.prose pre {
+  overflow-x: auto;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--site-divider) 82%, transparent);
+  background: color-mix(in srgb, var(--site-nav-hover-bg) 78%, transparent);
+}
+
+.prose pre code {
+  background: transparent;
   padding: 0;
 }
 
-.post-body blockquote {
-  border-left: 2px solid var(--quote-border);
-  padding-left: 1rem;
-  color: var(--muted);
-  margin: 0.75rem 0;
-}
-
-.post-body h1, .post-body h2, .post-body h3,
-.post-body h4, .post-body h5, .post-body h6 {
-  margin: 1.5rem 0 0.5rem;
-  line-height: 1.3;
-}
-
-.post-body ul, .post-body ol {
-  padding-left: 1.5rem;
-  margin: 0.75rem 0;
-}
-
-.post-body table {
+.prose table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0.75rem 0;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
 }
 
-.post-body th, .post-body td {
-  border: 1px solid var(--border);
-  padding: 0.375rem 0.75rem;
+.prose th,
+.prose td {
+  border: 1px solid color-mix(in srgb, var(--site-divider) 86%, transparent);
+  padding: 0.45rem 0.7rem;
   text-align: left;
 }
 
-.post-body th {
-  font-weight: 600;
-  background: var(--card-bg);
+.prose th {
+  background: color-mix(in srgb, var(--site-nav-hover-bg) 74%, transparent);
 }
 
-/* Star rating */
-.star-rating {
-  margin: 0.25rem 0;
-  font-size: 0.875rem;
+.prose img,
+.prose video {
+  width: 100%;
+  border-radius: var(--media-radius);
 }
 
-.star-rating .star {
-  color: var(--border);
+.prose figure[data-jant-node="image"] {
+  margin-inline: 0;
 }
 
-.star-rating .star.filled {
-  color: var(--star-color);
+.prose figcaption {
+  margin-top: 0.55rem;
+  color: var(--site-text-secondary);
+  font-size: var(--text-sm);
 }
 
-/* Post footer */
-.post-footer {
+[data-jant-node="attachments"] {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+[data-jant-node="attachment"] {
+  margin: 0;
+  padding: 0.95rem;
+  border: 1px solid color-mix(in srgb, var(--site-divider) 84%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--site-nav-hover-bg) 66%, transparent);
+}
+
+[data-jant-node="attachment"] > script[data-jant-meta] {
+  display: none;
+}
+
+[data-jant-node="attachment"][data-jant-kind="image"] {
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+[data-jant-node="attachment"] audio,
+[data-jant-node="attachment"] video {
+  width: 100%;
+}
+
+[data-jant-node="attachment"] > a {
+  display: inline-flex;
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+}
+
+.post-rating {
+  display: flex;
+  gap: 1px;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.post-star-filled {
+  color: oklch(0.75 0.15 70);
+}
+
+.post-star-empty {
+  color: var(--site-divider);
+}
+
+.post-menu-footer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 0.9rem;
+}
+
+.post-footer-detail {
+  margin-top: 1.35rem;
+  padding-top: 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--site-divider) 86%, transparent);
+}
+
+.post-footer-meta {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--muted);
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
-.post-date {
-  color: var(--muted);
+.post-date-link {
+  color: var(--site-text-secondary);
   text-decoration: none;
 }
 
-.post-date:hover {
-  color: var(--fg);
+.post-date-link:hover {
+  color: var(--site-text-primary);
+  text-decoration: underline;
 }
 
-.collection-tag {
-  color: var(--muted);
+.post-footer-external-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--site-text-secondary);
+}
+
+.post-footer-external-link svg {
+  width: 0.82rem;
+  height: 0.82rem;
+}
+
+.post-collection-tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.post-collection-sep {
+  color: var(--site-text-secondary);
+}
+
+.post-collection-tag {
+  color: var(--site-text-secondary);
   text-decoration: none;
-  font-size: 0.75rem;
-  border: 1px solid var(--border);
-  padding: 0.0625rem 0.375rem;
-  border-radius: 999px;
 }
 
-.collection-tag:hover {
-  color: var(--fg);
-  border-color: var(--fg);
+.post-collection-tag:hover {
+  color: var(--site-text-primary);
+  text-decoration: underline;
 }
 
-/* Detail page */
-.post-detail {
-  padding: 1rem 0;
+.section-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
 }
 
-.post-detail .post-title {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
-.post-detail .post-body {
-  margin: 1rem 0;
+.section-title {
+  margin: 0;
+  font-size: clamp(1.45rem, 1.3rem + 0.5vw, 1.85rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
 }
 
-/* Section / Collection */
 .section-description {
-  color: var(--muted);
-  margin-bottom: 1.5rem;
+  margin: 0;
+  max-width: 38rem;
+  color: var(--site-text-secondary);
 }
 
 .collection-list {
-  list-style: none;
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
-.collection-list li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--border);
+.collection-list-item {
+  border-top: 1px solid color-mix(in srgb, var(--site-divider) 84%, transparent);
 }
 
-.collection-list .count {
-  color: var(--muted);
-  font-size: 0.8125rem;
+.collection-list-link {
+  display: block;
+  padding: 0.95rem 0;
+  text-decoration: none;
 }
 
-/* Pagination */
-.pagination {
+.collection-list-link:hover {
+  text-decoration: underline;
+}
+
+.archive-shell {
+  gap: 1.35rem;
+}
+
+.archive-list {
+  display: grid;
+  gap: 0;
+}
+
+.archive-entry {
+  display: grid;
+  grid-template-columns: minmax(6.75rem, auto) minmax(0, 1fr);
+  gap: 0.9rem 1.25rem;
+  align-items: start;
+  padding: 0.9rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--site-divider) 84%, transparent);
+}
+
+.archive-entry:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.archive-entry-date {
+  color: var(--site-text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  text-decoration: none;
+}
+
+.archive-entry-main {
+  min-width: 0;
+}
+
+.archive-entry-title {
+  display: inline-block;
+  color: var(--site-text-primary);
+  font-family: var(--font-heading);
+  font-size: 1.03rem;
+  font-weight: var(--type-heading-weight);
+  line-height: 1.34;
+  letter-spacing: var(--type-heading-tracking);
+  text-decoration: none;
+  text-wrap: pretty;
+}
+
+.archive-entry-title:hover {
+  text-decoration: underline;
+}
+
+.archive-entry-meta {
   display: flex;
-  justify-content: space-between;
-  padding: 2rem 0 1rem;
-  font-size: 0.875rem;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 0.38rem;
+  color: var(--site-text-secondary);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-/* Footer */
-.site-footer {
-  margin-top: 3rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
+.archive-entry-format {
+  opacity: 0.7;
+}
+
+.archive-entry-tag {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 0.5px solid color-mix(in srgb, var(--site-divider) 82%, transparent);
+}
+
+.archive-entry-tag:hover {
+  color: var(--site-text-primary);
+  border-bottom-color: currentColor;
+}
+
+.pagination {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 0 0.5rem;
+}
+
+.pagination-side-end {
+  text-align: right;
+}
+
+.pagination-center {
   text-align: center;
-  font-size: 0.8125rem;
-  color: var(--muted);
 }
 
-.jant-branding {
-  margin-top: 2rem;
-  color: var(--muted);
-  font-size: 0.8125rem;
-.jant-branding a {
+.pagination-link {
+  color: var(--site-text-secondary);
+  text-decoration: underline;
+}
+
+.pagination-link:hover {
+  color: var(--site-text-primary);
+}
+
+.pagination-label {
+  color: var(--site-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.site-footer {
+  max-width: var(--site-width);
+  margin: var(--space-xl) auto 0;
+  padding: 0 var(--site-padding) var(--space-xl);
+  color: var(--site-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.site-footer > .site-container {
+  border-top: 0.5px solid var(--site-divider);
+  padding-top: var(--content-gap);
+}
+
+.home-branding-credit {
+  margin-top: var(--space-xl);
+  text-align: center;
+  color: var(--site-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.home-branding-credit a {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 0.38rem;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 0.5px solid
+    color-mix(in srgb, var(--site-text-secondary) 45%, transparent);
 }
 
-.jant-branding a svg {
+.home-branding-credit a svg {
   width: 1rem;
   height: 1rem;
   flex: none;
+}
+
+@media (min-width: 700px) {
+  .site-header {
+    padding-top: 30px;
+  }
+
+  .site-header-top-bordered {
+    padding-bottom: 18px;
+  }
+}
+
+@media (max-width: 699px) {
+  :root {
+    --site-padding: 1.875rem;
+  }
+
+  .site-header-right {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .site-header-nav {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .archive-entry {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+
+  .pagination {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .pagination-side-end,
+  .pagination-center {
+    text-align: left;
+  }
 }
 `;
