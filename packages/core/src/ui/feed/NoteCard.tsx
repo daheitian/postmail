@@ -30,7 +30,6 @@ export const NoteCard: FC<TimelineCardProps> = ({
       data-format="note"
       data-post-id={post.id}
       data-thread-root-id={post.threadRootId ?? post.id}
-      data-post-permalink={post.permalink}
       {...(post.pinned ? { "data-post-pinned": "" } : {})}
       {...(post.featured ? { "data-post-featured": "" } : {})}
       data-post-visibility={post.visibility}

@@ -750,3 +750,4 @@ run = "pnpm --filter @jant/core build && cd packages/core && npm publish --acces
 [tasks.release-publish-create]
 description = "Build and publish create-jant to npm"
 run = "pnpm --filter create-jant build && cd packages/create-jant && npm publish --access public --no-provenance --no-git-checks"
+

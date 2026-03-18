@@ -24,7 +24,6 @@ import type { CollectionSubmitDetail } from "./collection-types.js";
 
 interface PostMenuData {
   id: string;
-  permalink: string;
   pinned: boolean;
   featured: boolean;
   visibility: string;
@@ -290,7 +289,6 @@ export class JantPostMenu extends LitElement {
 
       this._data = {
         id: postId,
-        permalink: article.dataset.postPermalink ?? "",
         pinned: article.hasAttribute("data-post-pinned"),
         featured: article.hasAttribute("data-post-featured"),
         visibility: article.dataset.postVisibility ?? "public",
@@ -509,19 +507,6 @@ export class JantPostMenu extends LitElement {
       showToast("Could not delete post. Try again.", "error");
       trigger?.focus();
     }
-  }
-
-  async #copyLink() {
-    if (!this._data) return;
-    try {
-      await globalThis.navigator.clipboard.writeText(
-        window.location.origin + this._data.permalink,
-      );
-      showToast("Link copied.");
-    } catch {
-      showToast("Could not copy link.", "error");
-    }
-    this.#close();
   }
 
   async #openCollectionPicker() {
@@ -827,21 +812,6 @@ export class JantPostMenu extends LitElement {
       <path d="M3 6h18" />
       <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
       <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-    </svg>`;
-  }
-
-  #iconLink() {
-    return html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.75"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
     </svg>`;
   }
 
@@ -1311,16 +1281,6 @@ export class JantPostMenu extends LitElement {
                     >
                   </button>
                 `}
-
-            <button
-              type="button"
-              role="menuitem"
-              class="post-menu-item"
-              @click=${() => this.#copyLink()}
-            >
-              <span class="post-menu-item-label">Copy link</span>
-              <span class="post-menu-item-trailing">${this.#iconLink()}</span>
-            </button>
           </div>
 
           <div class="post-menu-section post-menu-section-danger">
