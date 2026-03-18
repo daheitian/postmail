@@ -3458,31 +3458,40 @@
 
   .compose-publish-single,
   .compose-publish-main {
-    min-width: 5.5rem;
+    min-width: 4.75rem;
   }
 
   .compose-publish-single:not(:disabled),
   .compose-publish-main:not(:disabled),
   .compose-publish-toggle:not(:disabled) {
-    color: var(--primary-foreground);
-    background-color: var(--primary);
-    border-color: color-mix(in srgb, var(--primary) 72%, var(--border));
-    box-shadow:
-      0 1px 0 rgb(255 255 255 / 0.12) inset,
-      0 1px 2px color-mix(in srgb, var(--primary) 16%, transparent);
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 82%,
+      var(--site-text-secondary)
+    );
+    background-color: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 96%,
+      var(--site-nav-hover-bg)
+    );
+    border-color: color-mix(in srgb, var(--site-text-primary) 15%, transparent);
   }
 
   .compose-publish-single:hover:not(:disabled),
   .compose-publish-main:hover:not(:disabled),
   .compose-publish-toggle:hover:not(:disabled),
   .compose-publish-toggle[aria-expanded="true"]:not(:disabled) {
-    color: var(--primary-foreground);
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 90%,
+      var(--site-text-secondary)
+    );
     background-color: color-mix(
       in srgb,
-      var(--primary) 88%,
-      var(--site-text-primary)
+      var(--site-elevated-bg) 91%,
+      var(--site-nav-hover-bg)
     );
-    border-color: color-mix(in srgb, var(--primary) 82%, var(--border));
+    border-color: color-mix(in srgb, var(--site-text-primary) 17%, transparent);
   }
 
   .compose-publish-single:disabled:not(.compose-publish-single-loading),

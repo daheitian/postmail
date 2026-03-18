@@ -2098,7 +2098,7 @@ export class JantComposeDialog extends LitElement {
         <button
           type="button"
           class=${classMap({
-            "btn-outline": true,
+            "btn-sm-outline": true,
             "compose-publish-single": true,
             "compose-publish-single-loading": this._loading,
           })}
@@ -2124,7 +2124,7 @@ export class JantComposeDialog extends LitElement {
           <button
             type="button"
             class=${classMap({
-              "btn-outline": true,
+              "btn-sm-outline": true,
               "compose-publish-main": true,
               "compose-publish-main-loading": this._loading,
             })}
@@ -2136,7 +2136,7 @@ export class JantComposeDialog extends LitElement {
           <button
             type="button"
             class=${classMap({
-              "btn-icon-outline": true,
+              "btn-sm-icon-outline": true,
               "compose-publish-toggle": true,
               "compose-publish-toggle-loading": this._loading,
             })}
@@ -2153,7 +2153,7 @@ export class JantComposeDialog extends LitElement {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="2.5"
+              stroke-width="2.1"
               stroke-linecap="round"
               stroke-linejoin="round"
             >
