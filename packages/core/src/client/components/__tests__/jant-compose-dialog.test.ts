@@ -45,6 +45,7 @@ const labels: ComposeLabels = {
   rate: "Rate",
   emoji: "Emoji",
   title: "Title",
+  fullscreen: "Fullscreen",
   collection: "Collection",
   searchCollections: "Search...",
   noCollections: "No collections found.",
@@ -160,6 +161,12 @@ describe("JantComposeDialog", () => {
       "expected post button",
     );
     expect(postBtn.textContent?.trim()).toBe("Post");
+    expect(postBtn.disabled).toBe(true);
+    expect(
+      el.querySelector<HTMLButtonElement>(
+        '.compose-tool-btn-view[aria-label="Fullscreen"]',
+      ),
+    ).not.toBeNull();
   });
 
   it("format switching updates active state", async () => {
@@ -235,11 +242,6 @@ describe("JantComposeDialog", () => {
 
   it("includes the thread root id when replying", async () => {
     const el = await createElement();
-    const editor = requireElement(
-      el.querySelector<JantComposeEditor>("jant-compose-editor"),
-      "expected compose editor",
-    );
-
     await el.openReply(
       "019ce8ce-d6d8-7fda-a5df-c2da2bef5ade",
       {
@@ -253,6 +255,10 @@ describe("JantComposeDialog", () => {
       },
     );
 
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
     editor._bodyJson = {
       type: "doc",
       content: [
@@ -260,6 +266,7 @@ describe("JantComposeDialog", () => {
       ],
     };
     await editor.updateComplete;
+    await el.updateComplete;
 
     let receivedDetail:
       | (ComposeSubmitDetail & { pendingAttachments: unknown[] })

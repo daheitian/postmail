@@ -10,6 +10,11 @@ import { Extension, type Editor } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import { isLinkToolbarInputActive } from "./link-toolbar.js";
+import {
+  applyDockedToolbarOffset,
+  isComposeDockedToolbar,
+  type FormattingToolbarMode,
+} from "./toolbar-mode.js";
 
 const bubbleMenuKey = new PluginKey("bubbleMenu");
 
@@ -21,6 +26,7 @@ const ICONS = {
   h2: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"/></svg>`,
   blockquote: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>`,
   link: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+  clear: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h14"/><path d="M11 6v12"/><path d="M7 18h8"/><path d="M4 4 20 20"/></svg>`,
 } as const;
 
 interface BubbleBtn {
@@ -31,7 +37,56 @@ interface BubbleBtn {
   isActive: (view: EditorView) => boolean;
 }
 
-function getButtons(editor: Editor): BubbleBtn[] {
+function getButtons(
+  editor: Editor,
+  toolbarMode: FormattingToolbarMode,
+): BubbleBtn[] {
+  if (toolbarMode === "compose") {
+    return [
+      {
+        key: "bold",
+        icon: ICONS.bold,
+        title: "Bold",
+        action: () => editor.chain().focus().toggleBold().run(),
+        isActive: () => editor.isActive("bold"),
+      },
+      {
+        key: "italic",
+        icon: ICONS.italic,
+        title: "Italic",
+        action: () => editor.chain().focus().toggleItalic().run(),
+        isActive: () => editor.isActive("italic"),
+      },
+      {
+        key: "sep",
+        icon: "",
+        title: "",
+        action: () => {},
+        isActive: () => false,
+      },
+      {
+        key: "link",
+        icon: ICONS.link,
+        title: "Link",
+        action: (view: EditorView) => {
+          if (editor.isActive("link")) {
+            editor.chain().focus().unsetLink().run();
+          } else {
+            view.dom.dispatchEvent(new CustomEvent("tiptap:open-link-input"));
+          }
+        },
+        isActive: () => editor.isActive("link"),
+      },
+      {
+        key: "clear",
+        icon: ICONS.clear,
+        title: "Clear formatting",
+        action: () => editor.chain().focus().unsetAllMarks().clearNodes().run(),
+        isActive: () => false,
+      },
+    ];
+  }
+
   return [
     {
       key: "bold",
@@ -94,8 +149,15 @@ function getButtons(editor: Editor): BubbleBtn[] {
 export const BubbleMenu = Extension.create({
   name: "bubbleMenu",
 
+  addOptions() {
+    return {
+      toolbarMode: "default" as FormattingToolbarMode,
+    };
+  },
+
   addProseMirrorPlugins() {
     const editor = this.editor;
+    const toolbarMode = this.options.toolbarMode as FormattingToolbarMode;
     let el: HTMLElement | null = null;
     let buttons: BubbleBtn[] = [];
     const btnEls: Map<string, HTMLButtonElement> = new Map();
@@ -106,7 +168,7 @@ export const BubbleMenu = Extension.create({
       el.style.position = "fixed";
       el.style.display = "none";
 
-      buttons = getButtons(editor);
+      buttons = getButtons(editor, toolbarMode);
       for (const btn of buttons) {
         if (btn.key === "sep") {
           const sep = document.createElement("span");
@@ -130,6 +192,18 @@ export const BubbleMenu = Extension.create({
 
     function show(view: EditorView) {
       if (!el) return;
+      const docked = isComposeDockedToolbar(toolbarMode);
+
+      el.classList.toggle("tiptap-bubble-menu-docked", docked);
+      el.style.display = "flex";
+
+      if (docked) {
+        applyDockedToolbarOffset(el, view);
+        el.style.removeProperty("left");
+        el.style.removeProperty("top");
+        syncActive();
+        return;
+      }
 
       // Position above selection center
       const { from, to } = view.state.selection;
@@ -143,7 +217,6 @@ export const BubbleMenu = Extension.create({
       const offsetX = dialog?.getBoundingClientRect().left ?? 0;
       const offsetY = dialog?.getBoundingClientRect().top ?? 0;
 
-      el.style.display = "flex";
       // Measure width after display
       const rect = el.getBoundingClientRect();
       el.style.left = `${cx - rect.width / 2 - offsetX}px`;

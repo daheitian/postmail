@@ -21,9 +21,11 @@ import { PasteImage } from "./paste-image.js";
 import { BubbleMenu } from "./bubble-menu.js";
 import { LinkToolbar } from "./link-toolbar.js";
 import { ExitableMarks } from "./exitable-marks.js";
+import type { FormattingToolbarMode } from "./toolbar-mode.js";
 
 export interface EditorExtensionOptions {
   placeholder?: string;
+  toolbarMode?: FormattingToolbarMode;
 }
 
 /**
@@ -58,8 +60,12 @@ export function createEditorExtensions(
     MoreBreak,
     SlashCommands,
     PasteImage,
-    BubbleMenu,
-    LinkToolbar,
+    BubbleMenu.configure({
+      toolbarMode: options.toolbarMode ?? "default",
+    }),
+    LinkToolbar.configure({
+      toolbarMode: options.toolbarMode ?? "default",
+    }),
     ExitableMarks,
   ];
 }

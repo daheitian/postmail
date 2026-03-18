@@ -51,6 +51,7 @@ const labels: ComposeLabels = {
   rate: "Rate",
   emoji: "Emoji",
   title: "Title",
+  fullscreen: "Fullscreen",
   collection: "Collection",
   searchCollections: "Search...",
   noCollections: "No collections found.",
@@ -182,11 +183,8 @@ describe("JantComposeEditor", () => {
     expect(el.querySelector(".compose-star-rating")).toBeNull();
 
     // Click score button to show rating
-    const toolButtons =
-      el.querySelectorAll<HTMLButtonElement>(".compose-tool-btn");
-    const scoreBtnEl = requireItem(
-      toolButtons,
-      2,
+    const scoreBtnEl = requireElement(
+      el.querySelector<HTMLButtonElement>('.compose-tool-btn[title="Rate"]'),
       "expected score tool button",
     );
     scoreBtnEl.click();
@@ -245,12 +243,30 @@ describe("JantComposeEditor", () => {
 
   it("shows title toggle only in note mode", async () => {
     const el = await createElement("note");
-    const toolSep = el.querySelector(".compose-tool-sep");
-    expect(toolSep).not.toBeNull();
+    expect(el.querySelector('.compose-tool-btn[title="Title"]')).not.toBeNull();
 
     el.format = "link";
     await el.updateComplete;
-    expect(el.querySelector(".compose-tool-sep")).toBeNull();
+    expect(el.querySelector('.compose-tool-btn[title="Title"]')).toBeNull();
+  });
+
+  it("keeps title after rate and places fullscreen at the far right of the toolbar", async () => {
+    const el = await createElement("note");
+    const toolTitles = [
+      ...el.querySelectorAll<HTMLButtonElement>(".compose-tool-btn"),
+    ].map((button) => button.getAttribute("title"));
+
+    expect(toolTitles).toEqual([
+      "Media",
+      "Attached Text",
+      "Emoji",
+      "Rate",
+      "Title",
+      "Fullscreen",
+    ]);
+    expect(
+      el.querySelector('.compose-tool-btn-view[aria-label="Fullscreen"]'),
+    ).not.toBeNull();
   });
 
   it("getData returns current field values", async () => {

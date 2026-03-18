@@ -99,6 +99,7 @@ export interface ComposeLabels {
   rate: string;
   emoji: string;
   title: string;
+  fullscreen: string;
   collection: string;
   searchCollections: string;
   noCollections: string;

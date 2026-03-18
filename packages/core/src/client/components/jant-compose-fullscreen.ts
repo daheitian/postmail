@@ -173,6 +173,7 @@ export class JantComposeFullscreen extends LitElement {
       element: container,
       placeholder: this.labels.bodyPlaceholder ?? "Write something…",
       content: this._content,
+      toolbarMode: "compose",
       onUpdate: (json) => {
         this._content = json;
       },

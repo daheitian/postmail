@@ -328,6 +328,7 @@ export class JantComposeEditor extends LitElement {
           ? this.labels.bodyPlaceholder
           : this.labels.thoughtsPlaceholder,
       content: this._bodyJson,
+      toolbarMode: "compose",
       onUpdate: (json) => {
         this._bodyJson = json;
         this._ensureScrollBuffer();
@@ -1567,7 +1568,6 @@ export class JantComposeEditor extends LitElement {
     const hasAttached = this._attachedTexts.length > 0;
     return html`
       <div class="compose-tools-row">
-        <!-- Media / Add -->
         <button
           type="button"
           class=${classMap({
@@ -1600,7 +1600,6 @@ export class JantComposeEditor extends LitElement {
             : nothing}
         </button>
 
-        <!-- Attached Text -->
         <button
           type="button"
           class=${classMap({
@@ -1632,7 +1631,42 @@ export class JantComposeEditor extends LitElement {
             : nothing}
         </button>
 
-        <!-- Rate -->
+        <button
+          type="button"
+          class=${classMap({
+            "compose-tool-btn": true,
+            "compose-emoji-btn": true,
+            "compose-tool-btn-active": this._showEmojiPicker,
+          })}
+          title=${this.labels.emoji}
+          @click=${() => this._toggleEmojiPicker()}
+        >
+          <svg
+            class="icon-fine"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="9" cy="9" r="7" />
+            <path d="M6 10.5c.5 1.2 1.5 2 3 2s2.5-.8 3-2" />
+            <circle cx="6.5" cy="7" r="0.5" fill="currentColor" stroke="none" />
+            <circle
+              cx="11.5"
+              cy="7"
+              r="0.5"
+              fill="currentColor"
+              stroke="none"
+            />
+          </svg>
+        </button>
+
+        <div class="compose-tool-sep"></div>
+
         <button
           type="button"
           class=${classMap({
@@ -1672,112 +1706,74 @@ export class JantComposeEditor extends LitElement {
           </svg>
         </button>
 
-        <!-- Emoji -->
-        <button
-          type="button"
-          class=${classMap({
-            "compose-tool-btn": true,
-            "compose-emoji-btn": true,
-            "compose-tool-btn-active": this._showEmojiPicker,
-          })}
-          title=${this.labels.emoji}
-          @click=${() => this._toggleEmojiPicker()}
-        >
-          <svg
-            class="icon-fine"
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="9" cy="9" r="7" />
-            <path d="M6 10.5c.5 1.2 1.5 2 3 2s2.5-.8 3-2" />
-            <circle cx="6.5" cy="7" r="0.5" fill="currentColor" stroke="none" />
-            <circle
-              cx="11.5"
-              cy="7"
-              r="0.5"
-              fill="currentColor"
-              stroke="none"
-            />
-          </svg>
-        </button>
-
-        <!-- Title toggle (Note only) -->
         ${this.format === "note"
           ? html`
-              <div class="flex items-center gap-0.5">
-                <div class="compose-tool-sep"></div>
-                <button
-                  type="button"
-                  class=${classMap({
-                    "compose-tool-btn": true,
-                    "compose-tool-btn-active": this._showTitle,
-                  })}
-                  title=${this.labels.title}
-                  @click=${() => {
-                    const willShow = !this._showTitle;
-                    this._showTitle = willShow;
-                    if (willShow) {
-                      this.updateComplete.then(() => {
-                        this.querySelector<HTMLInputElement>(
-                          ".compose-note-title",
-                        )?.focus();
-                      });
-                    }
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                    <text
-                      x="3.5"
-                      y="14"
-                      font-family="serif"
-                      font-size="14"
-                      font-weight="400"
-                      fill="currentColor"
-                    >
-                      T
-                    </text>
-                  </svg>
-                </button>
-              </div>
+              <button
+                type="button"
+                class=${classMap({
+                  "compose-tool-btn": true,
+                  "compose-tool-btn-active": this._showTitle,
+                })}
+                title=${this.labels.title}
+                @click=${() => {
+                  const willShow = !this._showTitle;
+                  this._showTitle = willShow;
+                  if (willShow) {
+                    this.updateComplete.then(() => {
+                      this.querySelector<HTMLInputElement>(
+                        ".compose-note-title",
+                      )?.focus();
+                    });
+                  }
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <text
+                    x="3.5"
+                    y="14"
+                    font-family="serif"
+                    font-size="14"
+                    font-weight="400"
+                    fill="currentColor"
+                  >
+                    T
+                  </text>
+                </svg>
+              </button>
             `
           : nothing}
 
-        <div class="flex-1"></div>
-
-        <!-- Expand to fullscreen -->
-        <button
-          type="button"
-          class="compose-tool-btn"
-          @click=${() => this._openFullscreen()}
-        >
-          <svg
-            class="icon-fine"
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+        <div class="compose-tool-view-group">
+          <button
+            type="button"
+            class="compose-tool-btn compose-tool-btn-view"
+            title=${this.labels.fullscreen}
+            aria-label=${this.labels.fullscreen}
+            @click=${() => this.openFullscreen()}
           >
-            <polyline points="6 2 2 2 2 6" />
-            <polyline points="12 16 16 16 16 12" />
-            <line x1="2" y1="2" x2="7" y2="7" />
-            <line x1="16" y1="16" x2="11" y2="11" />
-          </svg>
-        </button>
+            <svg
+              class="icon-fine"
+              width="16"
+              height="16"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 2 2 2 2 6" />
+              <polyline points="12 16 16 16 16 12" />
+              <line x1="2" y1="2" x2="7" y2="7" />
+              <line x1="16" y1="16" x2="11" y2="11" />
+            </svg>
+          </button>
+        </div>
       </div>
     `;
   }
 
-  private _openFullscreen() {
+  openFullscreen() {
     const state = this.getEditorState();
     this.dispatchEvent(
       new CustomEvent("jant:fullscreen-open", {

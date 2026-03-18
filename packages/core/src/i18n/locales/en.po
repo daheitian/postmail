@@ -1165,6 +1165,11 @@ msgstr "Found {0} results"
 msgid "Found 1 result"
 msgstr "Found 1 result"
 
+#. @context: Compose dialog - open fullscreen editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Fullscreen"
+msgstr "Fullscreen"
+
 #. @context: Settings item — general settings
 #. @context: Settings section heading
 #: src/ui/dash/settings/GeneralContent.tsx

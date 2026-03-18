@@ -116,6 +116,10 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       message: "Title",
       comment: "@context: Compose toolbar - title tooltip",
     }),
+    fullscreen: t({
+      message: "Fullscreen",
+      comment: "@context: Compose dialog - open fullscreen editor",
+    }),
     collection: t({
       message: "Collection",
       comment: "@context: Compose collection selector trigger label",

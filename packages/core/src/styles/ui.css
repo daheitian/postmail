@@ -3153,6 +3153,7 @@
     font-weight: var(--type-heading-weight);
     line-height: var(--type-body-leading);
     letter-spacing: var(--type-body-tracking);
+    min-height: 7.5rem;
   }
 
   @media (min-width: 700px) {
@@ -3344,6 +3345,31 @@
     margin: 0 2px;
     border-radius: 1px;
     flex-shrink: 0;
+  }
+
+  .compose-tool-view-group {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .compose-tool-btn-view {
+    color: color-mix(
+      in oklab,
+      var(--site-text-secondary) 88%,
+      var(--site-text-primary)
+    );
+  }
+
+  .compose-tool-btn-view:hover,
+  .compose-tool-btn-view:focus-visible {
+    color: var(--site-text-primary);
+  }
+
+  @media (max-width: 700px), (max-height: 760px) {
+    .compose-tool-view-group {
+      display: none;
+    }
   }
 
   /* --- Emoji picker ------------------------------------------------------- */
@@ -5463,6 +5489,19 @@
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
   }
 
+  .tiptap-bubble-menu-docked {
+    left: 50% !important;
+    top: auto !important;
+    bottom: calc(
+      env(safe-area-inset-bottom) + var(--tiptap-docked-offset, 16px)
+    );
+    transform: translateX(-50%);
+    gap: 4px;
+    padding: 6px;
+    border-radius: 12px;
+    max-width: calc(100vw - 24px);
+  }
+
   .tiptap-bubble-menu::after {
     content: "";
     position: absolute;
@@ -5472,6 +5511,10 @@
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     border-top: 5px solid var(--color-foreground);
+  }
+
+  .tiptap-bubble-menu-docked::after {
+    display: none;
   }
 
   .tiptap-bubble-btn {
@@ -5522,6 +5565,17 @@
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
   }
 
+  .tiptap-link-input-docked {
+    left: 50% !important;
+    top: auto !important;
+    bottom: calc(
+      env(safe-area-inset-bottom) + var(--tiptap-docked-offset, 16px)
+    );
+    transform: translateX(-50%);
+    width: min(calc(100vw - 24px), 420px);
+    max-width: calc(100vw - 24px);
+  }
+
   .tiptap-link-input::before {
     content: "";
     position: absolute;
@@ -5544,6 +5598,11 @@
     border-top: 5px solid var(--color-background);
   }
 
+  .tiptap-link-input-docked::before,
+  .tiptap-link-input-docked::after {
+    display: none;
+  }
+
   .tiptap-link-input-field {
     border: none;
     outline: none;
@@ -5551,6 +5610,11 @@
     font-size: 0.875rem;
     min-width: 240px;
     color: var(--color-foreground);
+  }
+
+  .tiptap-link-input-docked .tiptap-link-input-field {
+    min-width: 0;
+    width: 100%;
   }
 
   .tiptap-link-input-field::placeholder {
@@ -5590,6 +5654,17 @@
     max-width: 360px;
   }
 
+  .tiptap-link-preview-docked {
+    left: 50% !important;
+    top: auto !important;
+    bottom: calc(
+      env(safe-area-inset-bottom) + var(--tiptap-docked-offset, 16px)
+    );
+    transform: translateX(-50%);
+    width: min(calc(100vw - 24px), 420px);
+    max-width: calc(100vw - 24px);
+  }
+
   .tiptap-link-preview::after {
     content: "";
     position: absolute;
@@ -5601,6 +5676,10 @@
     border-top: 5px solid var(--color-foreground);
   }
 
+  .tiptap-link-preview-docked::after {
+    display: none;
+  }
+
   .tiptap-link-preview-url {
     font-size: 0.8125rem;
     color: var(--color-background);
@@ -5609,6 +5688,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 220px;
+  }
+
+  .tiptap-link-preview-docked .tiptap-link-preview-url {
+    flex: 1;
+    max-width: none;
   }
 
   .tiptap-link-preview-btn {

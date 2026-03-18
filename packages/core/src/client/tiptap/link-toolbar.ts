@@ -12,6 +12,11 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import type { EditorState } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
+import {
+  applyDockedToolbarOffset,
+  isComposeDockedToolbar,
+  type FormattingToolbarMode,
+} from "./toolbar-mode.js";
 
 const linkToolbarKey = new PluginKey("linkToolbar");
 
@@ -84,8 +89,15 @@ function getLinkRange(state: EditorState): LinkRange | null {
 export const LinkToolbar = Extension.create({
   name: "linkToolbar",
 
+  addOptions() {
+    return {
+      toolbarMode: "default" as FormattingToolbarMode,
+    };
+  },
+
   addProseMirrorPlugins() {
     const editor = this.editor;
+    const toolbarMode = this.options.toolbarMode as FormattingToolbarMode;
 
     // DOM elements
     let inputEl: HTMLElement | null = null;
@@ -122,9 +134,11 @@ export const LinkToolbar = Extension.create({
       inputField.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
+          e.stopPropagation();
           confirmLink();
         } else if (e.key === "Escape") {
           e.preventDefault();
+          e.stopPropagation();
           hideAll();
           editor.commands.focus();
         }
@@ -188,12 +202,28 @@ export const LinkToolbar = Extension.create({
       });
     }
 
-    function positionAbove(
+    function positionPopup(
       el: HTMLElement,
       view: EditorView,
       from: number,
       to: number,
     ) {
+      const docked = isComposeDockedToolbar(toolbarMode);
+      const dockedClass =
+        el === inputEl
+          ? "tiptap-link-input-docked"
+          : "tiptap-link-preview-docked";
+
+      el.classList.toggle(dockedClass, docked);
+      el.style.display = "flex";
+
+      if (docked) {
+        applyDockedToolbarOffset(el, view);
+        el.style.removeProperty("left");
+        el.style.removeProperty("top");
+        return;
+      }
+
       const start = view.coordsAtPos(from);
       const end = view.coordsAtPos(to);
       const cx = (start.left + end.right) / 2;
@@ -203,7 +233,6 @@ export const LinkToolbar = Extension.create({
       const offsetX = dialog?.getBoundingClientRect().left ?? 0;
       const offsetY = dialog?.getBoundingClientRect().top ?? 0;
 
-      el.style.display = "flex";
       const rect = el.getBoundingClientRect();
       el.style.left = `${cx - rect.width / 2 - offsetX}px`;
       el.style.top = `${top - rect.height - 8 - offsetY}px`;
@@ -231,7 +260,7 @@ export const LinkToolbar = Extension.create({
 
       currentMode = "input";
       inputField.value = href;
-      positionAbove(inputEl, view, savedFrom, savedTo);
+      positionPopup(inputEl, view, savedFrom, savedTo);
 
       // Focus field after a tick so positioning is settled
       const field = inputField;
@@ -269,7 +298,7 @@ export const LinkToolbar = Extension.create({
         urlSpan.setAttribute("title", range.href);
       }
 
-      positionAbove(previewEl, view, range.from, range.to);
+      positionPopup(previewEl, view, range.from, range.to);
     }
 
     function hideAll() {
@@ -338,7 +367,7 @@ export const LinkToolbar = Extension.create({
               // While input is open, just reposition
               if (currentMode === "input") {
                 if (inputEl) {
-                  positionAbove(inputEl, view, savedFrom, savedTo);
+                  positionPopup(inputEl, view, savedFrom, savedTo);
                 }
                 return;
               }

@@ -813,6 +813,7 @@ export class JantComposeDialog extends LitElement {
       this._handleConfirmSave();
     } else if ((ke.metaKey || ke.ctrlKey) && ke.key === "Enter") {
       e.preventDefault();
+      if (!this._canPublish()) return;
       this._submit("published");
     }
   };
@@ -873,6 +874,7 @@ export class JantComposeDialog extends LitElement {
         element: container,
         placeholder: this.labels.attachedTextPlaceholder,
         content,
+        toolbarMode: "compose",
       });
       this._attachedEditor.commands.focus();
     });
@@ -1117,6 +1119,7 @@ export class JantComposeDialog extends LitElement {
   private static _DRAFT_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   private _onContentChanged = () => {
+    this.requestUpdate();
     // Schedule localStorage auto-save for new-post mode only
     if (!this._editPostId && !this._draftSourceId) {
       this._scheduleDraftSave();
@@ -1515,7 +1518,7 @@ export class JantComposeDialog extends LitElement {
               `}
         </div>
 
-        <div class="flex items-center gap-0.5 shrink-0">
+        <div class="flex items-center gap-1 shrink-0">
           ${this._editPostId
             ? nothing
             : html`<button
@@ -2051,6 +2054,21 @@ export class JantComposeDialog extends LitElement {
     return this.labels.post;
   }
 
+  private _canPublish(): boolean {
+    if (this._loading) return false;
+    const editor = this._editor;
+    if (!editor) return false;
+
+    const data = editor.getData();
+    if (this._format === "link") {
+      return data.url.trim().length > 0;
+    }
+    if (this._format === "quote") {
+      return data.quoteText.trim().length > 0;
+    }
+    return this._hasContent();
+  }
+
   private _submitWithVisibility(visibility: ComposeVisibility) {
     this._visibility = visibility;
     this._showVisibilityMenu = false;
@@ -2072,6 +2090,7 @@ export class JantComposeDialog extends LitElement {
     >
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>`;
+    const canPublish = this._canPublish();
 
     // In edit mode or reply mode, show a simple button (no visibility split)
     if (this._editPostId || this._replyToId) {
@@ -2079,7 +2098,7 @@ export class JantComposeDialog extends LitElement {
         <button
           type="button"
           class="compose-post-btn"
-          ?disabled=${this._loading}
+          ?disabled=${!canPublish}
           @click=${() => this._submit("published")}
         >
           ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
@@ -2100,7 +2119,7 @@ export class JantComposeDialog extends LitElement {
         <button
           type="button"
           class="compose-publish-main"
-          ?disabled=${this._loading}
+          ?disabled=${!canPublish}
           @click=${() => this._submit("published")}
         >
           ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
@@ -2108,7 +2127,7 @@ export class JantComposeDialog extends LitElement {
         <button
           type="button"
           class="compose-publish-toggle"
-          ?disabled=${this._loading}
+          ?disabled=${!canPublish}
           aria-haspopup="menu"
           aria-expanded=${this._showVisibilityMenu}
           @click=${() => {
