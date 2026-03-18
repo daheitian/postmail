@@ -56,7 +56,7 @@ export async function start(
             }
             closed = true;
             await new Promise<void>((resolveClose, rejectClose) => {
-              server.close((error) => {
+              server.close((error?: Error) => {
                 if (error) {
                   rejectClose(error);
                   return;

@@ -13,28 +13,73 @@ function toInlineStyle(variables: Record<string, string>): string {
     .join(";");
 }
 
+function getThemePreviewColor(
+  variables: Record<string, string>,
+  keys: string[],
+  fallback: string,
+): string {
+  for (const key of keys) {
+    const value = variables[key];
+    if (value) {
+      return value;
+    }
+  }
+
+  return fallback;
+}
+
 function getPreviewVariables(theme: ColorTheme): Record<string, string> {
   return {
-    "--preview-bg-light": theme.light["--background"] ?? theme.preview.lightBg,
-    "--preview-fg-light":
-      theme.light["--foreground"] ?? theme.preview.lightText,
-    "--preview-border-light":
-      theme.light["--border"] ?? theme.preview.lightText,
-    "--preview-muted-light":
-      theme.light["--muted-foreground"] ?? theme.preview.lightText,
-    "--preview-primary-light":
-      theme.light["--site-accent"] ??
-      theme.light["--primary"] ??
-      theme.preview.lightLink,
-    "--preview-bg-dark": theme.dark["--background"] ?? theme.preview.darkBg,
-    "--preview-fg-dark": theme.dark["--foreground"] ?? theme.preview.darkText,
-    "--preview-border-dark": theme.dark["--border"] ?? theme.preview.darkText,
-    "--preview-muted-dark":
-      theme.dark["--muted-foreground"] ?? theme.preview.darkText,
-    "--preview-primary-dark":
-      theme.dark["--site-accent"] ??
-      theme.dark["--primary"] ??
-      theme.preview.darkLink,
+    "--preview-bg-light": getThemePreviewColor(
+      theme.light,
+      ["--background", "--card", "--popover"],
+      "transparent",
+    ),
+    "--preview-fg-light": getThemePreviewColor(
+      theme.light,
+      ["--foreground", "--card-foreground", "--popover-foreground"],
+      "currentColor",
+    ),
+    "--preview-border-light": getThemePreviewColor(
+      theme.light,
+      ["--border", "--foreground"],
+      "currentColor",
+    ),
+    "--preview-muted-light": getThemePreviewColor(
+      theme.light,
+      ["--muted-foreground", "--foreground"],
+      "currentColor",
+    ),
+    "--preview-primary-light": getThemePreviewColor(
+      theme.light,
+      ["--site-accent", "--primary", "--foreground"],
+      "currentColor",
+    ),
+    "--preview-bg-dark": getThemePreviewColor(
+      theme.dark,
+      ["--background", "--card", "--popover"],
+      "transparent",
+    ),
+    "--preview-fg-dark": getThemePreviewColor(
+      theme.dark,
+      ["--foreground", "--card-foreground", "--popover-foreground"],
+      "currentColor",
+    ),
+    "--preview-border-dark": getThemePreviewColor(
+      theme.dark,
+      ["--border", "--foreground"],
+      "currentColor",
+    ),
+    "--preview-muted-dark": getThemePreviewColor(
+      theme.dark,
+      ["--muted-foreground", "--foreground"],
+      "currentColor",
+    ),
+    "--preview-primary-dark": getThemePreviewColor(
+      theme.dark,
+      ["--site-accent", "--primary", "--foreground"],
+      "currentColor",
+    ),
   };
 }
 

@@ -204,7 +204,8 @@ function parseJantImageHtml(html: string): TiptapNode | null {
   if (!src) return null;
 
   const captionMatch = innerHtml.match(/<figcaption>([\s\S]*?)<\/figcaption>/i);
-  const caption = captionMatch ? decodeHtml(captionMatch[1].trim()) : undefined;
+  const rawCaption = captionMatch?.[1];
+  const caption = rawCaption ? decodeHtml(rawCaption.trim()) : undefined;
 
   const attrs: Record<string, unknown> = {
     src: decodeHtml(src),

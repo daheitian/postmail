@@ -1,8 +1,7 @@
 /**
  * Built-in Color Themes
  *
- * Each theme defines CSS variable overrides for light and dark modes,
- * plus preview colors for the theme picker UI.
+ * Each theme defines CSS variable overrides for light and dark modes.
  */
 
 /**
@@ -17,15 +16,6 @@ export interface ColorTheme {
   light: Record<string, string>;
   /** CSS variable overrides for dark mode */
   dark: Record<string, string>;
-  /** Preview colors (hex) for theme picker cards */
-  preview: {
-    lightBg: string;
-    lightText: string;
-    lightLink: string;
-    darkBg: string;
-    darkText: string;
-    darkLink: string;
-  };
 }
 
 export interface ColorThemeGroup {
@@ -82,7 +72,6 @@ const DEFAULTS = {
 function defineTheme(opts: {
   id: string;
   name: string;
-  preview: ColorTheme["preview"];
   light: ThemeModeColors;
   dark: ThemeModeColors;
 }): ColorTheme {
@@ -90,7 +79,6 @@ function defineTheme(opts: {
   return {
     id: opts.id,
     name: opts.name,
-    preview: opts.preview,
     light: {
       "--background": light.bg,
       "--foreground": light.fg,
@@ -168,14 +156,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "linen",
     name: "Linen",
-    preview: {
-      lightBg: "#f7f1e4",
-      lightText: "#342f28",
-      lightLink: "#5c735d",
-      darkBg: "#121212",
-      darkText: "#e3dfd7",
-      darkLink: "#c0d3bf",
-    },
     light: {
       bg: "oklch(0.975 0.015 92)",
       fg: "oklch(0.29 0.01 70)",
@@ -209,14 +189,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "dune",
     name: "Dune",
-    preview: {
-      lightBg: "#f7efe3",
-      lightText: "#3b332a",
-      lightLink: "#2d756f",
-      darkBg: "#243f45",
-      darkText: "#e3d7c7",
-      darkLink: "#82cdc1",
-    },
     light: {
       bg: "oklch(0.972 0.01 82)",
       fg: "oklch(0.29 0.018 55)",
@@ -252,14 +224,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "clay",
     name: "Clay",
-    preview: {
-      lightBg: "#f6ede5",
-      lightText: "#403028",
-      lightLink: "#a35b3f",
-      darkBg: "#261a16",
-      darkText: "#e4d3ca",
-      darkLink: "#e29c77",
-    },
     light: {
       bg: "oklch(0.973 0.011 45)",
       fg: "oklch(0.29 0.022 35)",
@@ -295,14 +259,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "parchment",
     name: "Parchment",
-    preview: {
-      lightBg: "#f7f1e2",
-      lightText: "#3b3128",
-      lightLink: "#8d6d43",
-      darkBg: "#241d16",
-      darkText: "#e1d7c3",
-      darkLink: "#d0b07b",
-    },
     light: {
       bg: "oklch(0.978 0.018 87)",
       fg: "oklch(0.31 0.014 72)",
@@ -338,14 +294,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "ink",
     name: "Ink",
-    preview: {
-      lightBg: "#f8f7f5",
-      lightText: "#262320",
-      lightLink: "#536074",
-      darkBg: "#1f2024",
-      darkText: "#e6e5e0",
-      darkLink: "#b0bdd1",
-    },
     light: {
       bg: "oklch(0.985 0.002 85)",
       fg: "oklch(0.24 0.004 85)",
@@ -381,14 +329,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "stone",
     name: "Stone",
-    preview: {
-      lightBg: "#efeeeb",
-      lightText: "#3e3b38",
-      lightLink: "#677184",
-      darkBg: "#202126",
-      darkText: "#d1cec8",
-      darkLink: "#aeb7c5",
-    },
     light: {
       bg: "oklch(0.96 0.002 90)",
       fg: "oklch(0.31 0.005 90)",
@@ -424,14 +364,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "mist",
     name: "Mist",
-    preview: {
-      lightBg: "#edf2f5",
-      lightText: "#2d3640",
-      lightLink: "#4c7192",
-      darkBg: "#1c232c",
-      darkText: "#d7dfe7",
-      darkLink: "#9fbad1",
-    },
     light: {
       bg: "oklch(0.978 0.006 230)",
       fg: "oklch(0.29 0.015 240)",
@@ -467,14 +399,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "slate",
     name: "Slate",
-    preview: {
-      lightBg: "#eef1f5",
-      lightText: "#2b3440",
-      lightLink: "#4f6b86",
-      darkBg: "#171d26",
-      darkText: "#d9e0e8",
-      darkLink: "#96b2c8",
-    },
     light: {
       bg: "oklch(0.958 0.008 238)",
       fg: "oklch(0.28 0.014 242)",
@@ -510,14 +434,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "ember",
     name: "Ember",
-    preview: {
-      lightBg: "#f5ede1",
-      lightText: "#39291d",
-      lightLink: "#9d5428",
-      darkBg: "#22160f",
-      darkText: "#e5ccb2",
-      darkLink: "#e69463",
-    },
     light: {
       bg: "oklch(0.968 0.014 68)",
       fg: "oklch(0.28 0.03 45)",
@@ -553,14 +469,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "moss",
     name: "Moss",
-    preview: {
-      lightBg: "#d7dbc7",
-      lightText: "#2f382d",
-      lightLink: "#446b4f",
-      darkBg: "#1a211b",
-      darkText: "#bcc5b3",
-      darkLink: "#86b796",
-    },
     light: {
       bg: "oklch(0.882 0.026 125)",
       fg: "oklch(0.27 0.032 140)",
@@ -596,14 +504,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "iris",
     name: "Iris",
-    preview: {
-      lightBg: "#f5edf5",
-      lightText: "#332634",
-      lightLink: "#8a518d",
-      darkBg: "#201724",
-      darkText: "#ddcfe0",
-      darkLink: "#d0a0d8",
-    },
     light: {
       bg: "oklch(0.972 0.01 320)",
       fg: "oklch(0.28 0.018 315)",
@@ -639,14 +539,6 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
   defineTheme({
     id: "nocturne",
     name: "Nocturne",
-    preview: {
-      lightBg: "#f1eef7",
-      lightText: "#31293b",
-      lightLink: "#685e9a",
-      darkBg: "#17141f",
-      darkText: "#e2dceb",
-      darkLink: "#aaa7e1",
-    },
     light: {
       bg: "oklch(0.962 0.01 280)",
       fg: "oklch(0.27 0.018 276)",
