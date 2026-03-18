@@ -21,7 +21,14 @@ import { getMediaUrl, getPublicUrlForProvider } from "../lib/image.js";
 import { escapeHtml } from "../lib/html.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
 import { toISOString } from "../lib/time.js";
-import type { Post, Collection, Media, NavItem } from "../types.js";
+import type { StorageDriver } from "../lib/storage.js";
+import type {
+  Post,
+  Collection,
+  Media,
+  NavItem,
+  TextAttachmentContent,
+} from "../types.js";
 
 export interface ExportService {
   generateZolaSite(): Promise<Uint8Array>;
@@ -61,8 +68,8 @@ interface SiteConfig {
 
 interface AttachmentExportMeta {
   kind: Media["mediaKind"];
-  src: string;
-  poster: string | null;
+  src?: string;
+  poster?: string | null;
   mimeType: string;
   originalName: string;
   size: number;
@@ -74,6 +81,8 @@ interface AttachmentExportMeta {
   waveform: string | null;
   summary: string | null;
   chars: number | null;
+  contentFormat?: TextAttachmentContent["contentFormat"];
+  content?: string;
 }
 
 export function createExportService(
@@ -84,6 +93,7 @@ export function createExportService(
     media: MediaService;
   },
   siteConfig: SiteConfig,
+  deps: { storage?: StorageDriver | null } = {},
 ): ExportService {
   return {
     async generateZolaSite() {
@@ -114,6 +124,11 @@ export function createExportService(
         services.paths.getPostAliases(rootPostIds),
         services.paths.getCollectionSlugMap(allCollections.map((c) => c.id)),
       ]);
+      const textAttachmentContents = await buildTextAttachmentContentMap(
+        rawMediaByPost,
+        services.media,
+        deps.storage,
+      );
 
       // 2. Group replies by threadId
       const repliesByThread = new Map<string, Post[]>();
@@ -155,6 +170,7 @@ export function createExportService(
           rootMedia,
           rawMediaByPost,
           siteConfig,
+          textAttachmentContents,
         );
 
         files[`content/${slug}/index.md`] = new TextEncoder().encode(markdown);
@@ -251,6 +267,7 @@ function buildPostMarkdown(
   rootMedia: Media[],
   mediaByPost: Map<string, Media[]>,
   siteConfig: SiteConfig,
+  textAttachmentContents: Map<string, TextAttachmentContent>,
 ): string {
   const parts: string[] = [];
 
@@ -321,7 +338,7 @@ function buildPostMarkdown(
   // Root body
   const rootBlocks = [
     root.body ? tiptapJsonToMarkdown(root.body) : "",
-    buildAttachmentBlock(rootMedia, siteConfig),
+    buildAttachmentBlock(rootMedia, siteConfig, textAttachmentContents),
   ].filter(Boolean);
   if (rootBlocks.length > 0) {
     parts.push(rootBlocks.join("\n\n"));
@@ -355,7 +372,11 @@ function buildPostMarkdown(
 
     const replyBlocks = [
       reply.body ? tiptapJsonToMarkdown(reply.body) : "",
-      buildAttachmentBlock(mediaByPost.get(reply.id) ?? [], siteConfig),
+      buildAttachmentBlock(
+        mediaByPost.get(reply.id) ?? [],
+        siteConfig,
+        textAttachmentContents,
+      ),
     ].filter(Boolean);
     if (replyBlocks.length > 0) {
       parts.push(replyBlocks.join("\n\n"));
@@ -404,18 +425,29 @@ function getArchiveSummaryText(post: Post): string | null {
 function buildAttachmentBlock(
   mediaList: Media[],
   siteConfig: SiteConfig,
+  textAttachmentContents: Map<string, TextAttachmentContent>,
 ): string {
   if (mediaList.length === 0) return "";
 
   const figures = mediaList
-    .map((media) => buildAttachmentFigure(media, siteConfig))
+    .map((media) =>
+      buildAttachmentFigure(media, siteConfig, textAttachmentContents),
+    )
     .join("\n");
 
   return `<div data-jant-node="attachments">\n${figures}\n</div>`;
 }
 
-function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
-  const meta = buildAttachmentMeta(media, siteConfig);
+function buildAttachmentFigure(
+  media: Media,
+  siteConfig: SiteConfig,
+  textAttachmentContents: Map<string, TextAttachmentContent>,
+): string {
+  const meta = buildAttachmentMeta(
+    media,
+    siteConfig,
+    textAttachmentContents.get(media.id),
+  );
   const metaJson = safeJsonForHtml(meta);
   const name = escapeHtml(meta.originalName);
   const caption =
@@ -423,11 +455,33 @@ function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
       ? `<figcaption>${escapeHtml(media.summary)}</figcaption>`
       : "";
 
+  if (
+    meta.kind === "text" &&
+    meta.contentFormat === "markdown" &&
+    typeof meta.content === "string"
+  ) {
+    const summaryLabel = escapeHtml(
+      media.summary?.trim() || meta.originalName || "Text attachment",
+    );
+    return `<figure data-jant-node="attachment" data-jant-kind="text">
+  <script type="application/json" data-jant-meta>${metaJson}</script>
+  <details>
+    <summary>${summaryLabel}</summary>
+    <div class="prose jant-attachment-text-preview">${renderMarkdown(meta.content)}</div>
+  </details>
+</figure>`;
+  }
+
+  const src = meta.src;
+  if (!src) {
+    throw new Error(`Attachment ${media.id} is missing an export URL`);
+  }
+
   if (meta.kind === "image") {
     const alt = media.alt ? ` alt="${escapeHtml(media.alt)}"` : ' alt=""';
     return `<figure data-jant-node="attachment" data-jant-kind="image">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <img src="${escapeHtml(meta.src)}"${alt}>
+  <img src="${escapeHtml(src)}"${alt}>
   ${caption}
 </figure>`;
   }
@@ -439,7 +493,7 @@ function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
     return `<figure data-jant-node="attachment" data-jant-kind="video">
   <script type="application/json" data-jant-meta>${metaJson}</script>
   <video controls preload="metadata"${posterAttr}>
-    <source src="${escapeHtml(meta.src)}" type="${escapeHtml(meta.mimeType)}">
+    <source src="${escapeHtml(src)}" type="${escapeHtml(meta.mimeType)}">
   </video>
   ${caption}
 </figure>`;
@@ -448,7 +502,7 @@ function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
   if (meta.kind === "audio") {
     return `<figure data-jant-node="attachment" data-jant-kind="audio">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <audio controls preload="metadata" src="${escapeHtml(meta.src)}"></audio>
+  <audio controls preload="metadata" src="${escapeHtml(src)}"></audio>
   ${caption}
 </figure>`;
   }
@@ -459,7 +513,7 @@ function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
     : "";
   return `<figure data-jant-node="attachment" data-jant-kind="${escapeHtml(meta.kind)}">
   <script type="application/json" data-jant-meta>${metaJson}</script>
-  <a href="${escapeHtml(meta.src)}">${name}</a>
+  <a href="${escapeHtml(src)}">${name}</a>
   ${figcaption}
 </figure>`;
 }
@@ -481,7 +535,33 @@ function buildAttachmentTextDescription(media: Media): string {
 function buildAttachmentMeta(
   media: Media,
   siteConfig: SiteConfig,
+  textAttachmentContent?: TextAttachmentContent,
 ): AttachmentExportMeta {
+  if (media.mimeType === "text/x-tiptap+json") {
+    if (!textAttachmentContent) {
+      throw new Error(
+        `Text attachment ${media.id} content is unavailable for export`,
+      );
+    }
+
+    return {
+      kind: media.mediaKind,
+      mimeType: media.mimeType,
+      originalName: media.originalName,
+      size: media.size,
+      width: media.width,
+      height: media.height,
+      alt: media.alt,
+      position: media.position,
+      blurhash: media.blurhash,
+      waveform: media.waveform,
+      summary: media.summary,
+      chars: media.chars,
+      contentFormat: textAttachmentContent.contentFormat,
+      content: textAttachmentContent.content,
+    };
+  }
+
   const publicUrl = getPublicUrlForProvider(
     media.provider,
     siteConfig.r2PublicUrl,
@@ -507,6 +587,37 @@ function buildAttachmentMeta(
     summary: media.summary,
     chars: media.chars,
   };
+}
+
+async function buildTextAttachmentContentMap(
+  mediaByPost: Map<string, Media[]>,
+  mediaService: Pick<MediaService, "getTextAttachmentContent">,
+  storage?: StorageDriver | null,
+): Promise<Map<string, TextAttachmentContent>> {
+  const textAttachments = [...mediaByPost.values()]
+    .flat()
+    .filter((media) => media.mimeType === "text/x-tiptap+json");
+
+  if (textAttachments.length === 0) {
+    return new Map();
+  }
+
+  const contents = await Promise.all(
+    textAttachments.map(async (media) => {
+      const content = await mediaService.getTextAttachmentContent(
+        media.id,
+        storage,
+      );
+      if (!content) {
+        throw new Error(
+          `Text attachment ${media.id} content is unavailable for export`,
+        );
+      }
+      return [media.id, content] as const;
+    }),
+  );
+
+  return new Map(contents);
 }
 
 function escapeCommentAttribute(value: string): string {
@@ -691,7 +802,7 @@ static/
 
 - The raw export API only writes content files. The CLI localizes media by default unless you pass \`--no-localize-media\`.
 - Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (\`<!-- jant:reply ... -->\`).
-- Attachments are preserved as Jant HTML blocks (\`data-jant-node="attachments"\`) so \`jant site import\` can reconstruct them.
+- Attachments are preserved as Jant HTML blocks (\`data-jant-node="attachments"\`). Text attachments embed canonical Markdown in the block metadata, while the rendered preview is display-only and ignored by \`jant site import\`.
 - Posts with \`draft: true\` in front matter are only built when you pass the \`--drafts\` flag to \`zola build\` or \`zola serve\`.
 `;
 }
@@ -1030,20 +1141,14 @@ const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
     {% if page.extra.visibility | default(value="public") == "public" %}
   <entry>
     {% set entry_title = page.title | default(value="") %}
-    {% if entry_title == "" %}
-      {% set entry_title = page.extra.summary_text | default(value="") %}
-    {% endif %}
-    {% if entry_title == "" %}
-      {% set entry_title = page.summary | default(value=page.content) | striptags | trim %}
-    {% endif %}
     {% set entry_summary = page.extra.summary_text | default(value="") %}
     {% if entry_summary == "" %}
       {% set entry_summary = page.summary | default(value=page.content) | striptags | trim %}
     {% endif %}
     {% if entry_summary == "" %}
-      {% set entry_summary = entry_title | default(value="Untitled") %}
+      {% set entry_summary = page.permalink %}
     {% endif %}
-    <title>{{ entry_title | default(value="Untitled") }}</title>
+    <title>{{ entry_title }}</title>
     <link rel="alternate" type="text/html" href="{{ page.permalink | safe }}" />
     <published>{{ page.date | date(format="%+") }}</published>
     <updated>{{ page.updated | default(value=page.date) | date(format="%+") }}</updated>
@@ -1965,6 +2070,27 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
   display: inline-flex;
   font-weight: var(--fw-medium);
   text-decoration: none;
+}
+
+[data-jant-node="attachment"][data-jant-kind="text"] details {
+  width: 100%;
+}
+
+[data-jant-node="attachment"][data-jant-kind="text"] summary {
+  cursor: pointer;
+  font-weight: var(--fw-medium);
+}
+
+.jant-attachment-text-preview {
+  margin-top: 0.85rem;
+}
+
+.jant-attachment-text-preview > :first-child {
+  margin-top: 0;
+}
+
+.jant-attachment-text-preview > :last-child {
+  margin-bottom: 0;
 }
 
 .post-rating {

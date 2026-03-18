@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { unzipSync } from "fflate";
 import { createExportService } from "../services/export.js";
-import type { Collection, Post } from "../types.js";
+import type { Collection, Media, Post } from "../types.js";
 
 function decodeZipEntry(
   files: Record<string, Uint8Array>,
@@ -126,10 +126,123 @@ describe("createExportService", () => {
     expect(atomTemplate).toContain('rel="self" type="application/atom+xml"');
     expect(atomTemplate).toContain('href="{{ feed_url | safe }}" />');
     expect(atomTemplate).toContain("page.extra.summary_text");
+    expect(atomTemplate).toContain("<title>{{ entry_title }}</title>");
+    expect(atomTemplate).not.toContain('default(value="Untitled")');
     expect(atomTemplate).toContain('<summary type="text">');
     expect(atomTemplate).toContain("&lt;p&gt;{{ entry_summary }}&lt;/p&gt;");
     expect(atomTemplate).not.toContain("page.content | safe");
     expect(atomTemplate).not.toContain('<summary type="html">{{ page.summary');
     expect(atomTemplate).not.toContain('<content type="html">{{ page.content');
+  });
+
+  it("embeds markdown payloads for text attachments and renders preview markup", async () => {
+    const rootPost: Post = {
+      id: "post-1",
+      format: "note",
+      status: "published",
+      visibility: "public",
+      pinnedAt: null,
+      featuredAt: null,
+      slug: "desk-note",
+      title: "Desk note",
+      url: null,
+      body: null,
+      bodyHtml: null,
+      bodyText: null,
+      quoteText: null,
+      summary: null,
+      rating: null,
+      replyToId: null,
+      threadId: "post-1",
+      deletedAt: null,
+      publishedAt: 1773014400,
+      lastActivityAt: 1773014400,
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const textAttachment: Media = {
+      id: "media-1",
+      postId: "post-1",
+      filename: "attached-text.json",
+      originalName: "attached-text.md",
+      mimeType: "text/x-tiptap+json",
+      size: 128,
+      storageKey: "media/2026/03/attached-text.json",
+      provider: "local",
+      width: null,
+      height: null,
+      alt: null,
+      position: "a0",
+      blurhash: null,
+      waveform: null,
+      posterKey: null,
+      summary: "Attached note",
+      chars: 24,
+      mediaKind: "text",
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const services = {
+      posts: {
+        list: async () => [rootPost],
+      },
+      paths: {
+        getPostSlugMap: async () => new Map([["post-1", "desk-note"]]),
+        getPostAliases: async () => new Map([["post-1", []]]),
+        getCollectionSlugMap: async () => new Map(),
+      },
+      collections: {
+        list: async () => [],
+        getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+      },
+      media: {
+        getByPostIds: async () => new Map([["post-1", [textAttachment]]]),
+        getTextAttachmentContent: async () => ({
+          id: "media-1",
+          type: "text" as const,
+          contentFormat: "markdown" as const,
+          content: "# Attached note\n\nHello export",
+          summary: "Attached note",
+          chars: 24,
+        }),
+      },
+    } as unknown as Parameters<typeof createExportService>[0];
+
+    const siteConfig: Parameters<typeof createExportService>[1] = {
+      siteName: "Jant",
+      siteUrl: "https://example.com",
+      siteDescription: "Export test",
+      siteLanguage: "en",
+      showJantBrandingOnHome: true,
+      homeDefaultView: "latest",
+      headerNavMaxVisible: 4,
+      siteFooter: "",
+      showHeaderAvatar: false,
+      siteAvatarUrl: "",
+      themeId: "paper",
+      defaultThemeId: "paper",
+      fontThemeId: "system",
+      themeMode: "auto",
+      noindex: false,
+      navItems: [],
+    };
+
+    const zip = await createExportService(services, siteConfig, {
+      storage: {} as never,
+    }).generateZolaSite();
+    const files = unzipSync(zip);
+    const postMarkdown = decodeZipEntry(files, "content/desk-note/index.md");
+
+    expect(postMarkdown).toContain('data-jant-kind="text"');
+    expect(postMarkdown).toContain('"contentFormat":"markdown"');
+    expect(postMarkdown).toContain(
+      '"content":"# Attached note\\n\\nHello export"',
+    );
+    expect(postMarkdown).toContain("<details>");
+    expect(postMarkdown).toContain("<summary>Attached note</summary>");
+    expect(postMarkdown).toContain("<h1>Attached note</h1>");
+    expect(postMarkdown).not.toContain('"src":"');
   });
 });

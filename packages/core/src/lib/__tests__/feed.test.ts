@@ -36,8 +36,19 @@ function makeFeedData(post: PostView): FeedData {
 }
 
 describe("feed renderers", () => {
-  it("uses excerpt fallback for untitled Atom entries and strips script tags from content", () => {
-    const xml = defaultAtomRenderer(
+  it("keeps Atom entry titles empty for untitled posts and strips script tags from content", () => {
+    const atomXml = defaultAtomRenderer(
+      makeFeedData(
+        makePostView({
+          title: undefined,
+          summary: "哈哈哈😍",
+          excerpt: "哈哈哈😍",
+          bodyHtml:
+            '<p>哈哈哈😍</p><script type="application/json" data-jant-meta>{"kind":"text"}</script>',
+        }),
+      ),
+    );
+    const rssXml = defaultRssRenderer(
       makeFeedData(
         makePostView({
           title: undefined,
@@ -49,11 +60,13 @@ describe("feed renderers", () => {
       ),
     );
 
-    expect(xml).toContain("<title>哈哈哈😍</title>");
-    expect(xml).toContain('<summary type="text">哈哈哈😍</summary>');
-    expect(xml).toContain("<![CDATA[<p>哈哈哈😍</p>]]>");
-    expect(xml).not.toContain("data-jant-meta");
-    expect(xml).not.toContain('{"kind":"text"}');
+    expect(atomXml).toContain("<title></title>");
+    expect(atomXml).toContain('<summary type="text">哈哈哈😍</summary>');
+    expect(atomXml).toContain("<![CDATA[<p>哈哈哈😍</p>]]>");
+    expect(atomXml).not.toContain("data-jant-meta");
+    expect(atomXml).not.toContain('{"kind":"text"}');
+    expect(rssXml).not.toContain("<title><![CDATA[哈哈哈😍]]></title>");
+    expect(rssXml).not.toContain("data-jant-meta");
   });
 
   it("does not double-escape RSS titles inside CDATA", () => {

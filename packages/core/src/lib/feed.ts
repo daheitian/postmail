@@ -49,10 +49,8 @@ function getFeedSummaryText(post: PostView): string {
   );
 }
 
-function getFeedTitle(post: PostView): string {
-  return (
-    post.title || post.excerpt || post.summary || post.url || `Post #${post.id}`
-  );
+function getAtomTitle(post: PostView): string {
+  return post.title || "";
 }
 
 /**
@@ -119,7 +117,6 @@ export function defaultRssRenderer(data: FeedData): string {
   const items = posts
     .map((post) => {
       const link = escapeXml(new URL(post.permalink, siteUrl).toString());
-      const title = getFeedTitle(post);
       const pubDate = new Date(post.publishedAt).toUTCString();
 
       // Add enclosure for first media attachment
@@ -130,8 +127,7 @@ export function defaultRssRenderer(data: FeedData): string {
 
       return `
     <item>
-      <title><![CDATA[${escapeCdata(title)}]]></title>
-      <link>${link}</link>
+      ${post.title ? `<title><![CDATA[${escapeCdata(post.title)}]]></title>\n      ` : ""}<link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
       <description><![CDATA[${escapeCdata(buildFeedContent(post))}]]></description>${enclosure}
@@ -164,7 +160,7 @@ export function defaultAtomRenderer(data: FeedData): string {
   const entries = posts
     .map((post) => {
       const link = escapeXml(new URL(post.permalink, siteUrl).toString());
-      const title = getFeedTitle(post);
+      const title = getAtomTitle(post);
       const summary = getFeedSummaryText(post);
 
       return `

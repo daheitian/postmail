@@ -122,23 +122,55 @@ function findImageUrls(markdown) {
  */
 function extractAttachmentBlocks(markdown) {
   const attachments = [];
-  const blockRegex =
-    /<div\s+data-jant-node="attachments">[\s\S]*?<\/div>/g;
+  const blockStartRegex = /<div\s+data-jant-node="attachments">/g;
   const figureRegex =
     /<figure\b[^>]*data-jant-node="attachment"[\s\S]*?<script\b[^>]*data-jant-meta[^>]*>([\s\S]*?)<\/script>[\s\S]*?<\/figure>/g;
+  const tagRegex = /<div\b[^>]*>|<\/div>/gi;
 
-  const stripped = markdown.replace(blockRegex, (block) => {
-    let match;
-    while ((match = figureRegex.exec(block)) !== null) {
+  let stripped = "";
+  let cursor = 0;
+  let match;
+  while ((match = blockStartRegex.exec(markdown)) !== null) {
+    const blockStart = match.index;
+    const contentStart = blockStartRegex.lastIndex;
+    tagRegex.lastIndex = contentStart;
+
+    let depth = 1;
+    let blockEnd = -1;
+    let tagMatch;
+    while ((tagMatch = tagRegex.exec(markdown)) !== null) {
+      if (tagMatch[0].startsWith("</div")) {
+        depth -= 1;
+      } else {
+        depth += 1;
+      }
+
+      if (depth === 0) {
+        blockEnd = tagRegex.lastIndex;
+        break;
+      }
+    }
+
+    if (blockEnd === -1) {
+      continue;
+    }
+
+    stripped += markdown.slice(cursor, blockStart);
+    const block = markdown.slice(blockStart, blockEnd);
+    let figureMatch;
+    while ((figureMatch = figureRegex.exec(block)) !== null) {
       try {
-        attachments.push(JSON.parse(match[1].trim()));
+        attachments.push(JSON.parse(figureMatch[1].trim()));
       } catch {
         // Ignore malformed attachment metadata and keep importing the rest.
       }
     }
     figureRegex.lastIndex = 0;
-    return "";
-  });
+    cursor = blockEnd;
+    blockStartRegex.lastIndex = blockEnd;
+  }
+
+  stripped += markdown.slice(cursor);
 
   return {
     markdown: stripped.replace(/\n{3,}/g, "\n\n").trim(),
@@ -315,6 +347,60 @@ function normalizeMediaSpec(spec, siteConfig) {
     summary: typeof spec.summary === "string" ? spec.summary : undefined,
     chars: typeof spec.chars === "number" ? spec.chars : undefined,
   };
+}
+
+function normalizeTextAttachmentSpec(spec) {
+  if (
+    !spec ||
+    spec.kind !== "text" ||
+    spec.contentFormat !== "markdown" ||
+    typeof spec.content !== "string" ||
+    spec.content.trim() === ""
+  ) {
+    return null;
+  }
+
+  return {
+    type: "text",
+    contentFormat: "markdown",
+    content: spec.content,
+    summary: typeof spec.summary === "string" ? spec.summary : undefined,
+  };
+}
+
+async function buildImportedAttachments(
+  attachmentSpecs,
+  target,
+  siteConfig,
+  options = {},
+) {
+  const attachments = [];
+  let uploaded = 0;
+
+  for (const spec of attachmentSpecs) {
+    const textAttachment = normalizeTextAttachmentSpec(spec);
+    if (textAttachment) {
+      attachments.push(textAttachment);
+      continue;
+    }
+
+    if (options.skipUploads) {
+      continue;
+    }
+
+    const normalized = normalizeMediaSpec(spec, siteConfig);
+    if (!normalized || normalized.src.startsWith("data:")) continue;
+    const result = await target.uploadMedia(normalized);
+    if (!result) continue;
+    attachments.push({
+      type: "media",
+      mediaId: result.id,
+      ...(typeof normalized.alt === "string" ? { alt: normalized.alt } : {}),
+    });
+    uploaded += 1;
+  }
+
+  return { attachments, uploaded };
 }
 
 async function uploadMediaList(mediaSpecs, target, siteConfig) {
@@ -665,11 +751,18 @@ async function createLocalTarget(env = process.env) {
       return runtime.services.collections.create(data);
     },
     async createPost(data) {
-      const post = await runtime.services.posts.create(data, summaryConfig);
-      if (data.mediaIds && data.mediaIds.length > 0) {
-        await runtime.services.media.attachToPost(post.id, data.mediaIds);
-      }
-      return post;
+      const { attachments, ...postData } = data;
+      return runtime.services.posts.createWithAttachments(
+        postData,
+        attachments,
+        {
+          media: runtime.services.media,
+          storage: runtime.storage,
+          storageDriver: appConfig.storageDriver,
+          maxFileSizeMB: appConfig.uploadMaxFileSize,
+        },
+        summaryConfig,
+      );
     },
     async createAlias(path, targetSlug) {
       const post = await runtime.services.posts.getBySlug(targetSlug);
@@ -806,6 +899,9 @@ async function walkContent(rootDir, postFiles, collectionFiles) {
 export const __test__ = {
   resolveImportUrl,
   normalizeMediaSpec,
+  normalizeTextAttachmentSpec,
+  extractAttachmentBlocks,
+  buildImportedAttachments,
   buildSettingsUpdatesFromConfig,
   normalizeImportedNavItems,
   buildSiteAvatarImport,
@@ -839,7 +935,9 @@ export async function run(argv) {
       "  --path        Path to export directory or ZIP file (default: .)",
     );
     console.log("  --dry-run     Parse and validate without making API calls");
-    console.log("  --skip-media  Skip image download/upload");
+    console.log(
+      "  --skip-media  Skip remote media download/upload (embedded text attachments still import)",
+    );
     console.log("");
     console.log("Authentication:");
     console.log("  Set JANT_TOKEN env var (recommended):");
@@ -1074,21 +1172,26 @@ export async function run(argv) {
       attachments: rootAttachments,
     } = extractAttachmentBlocks(rootBody);
     rootBody = rootBodyWithoutAttachments;
-    let mediaIds = [];
+    let importedAttachments = [];
 
     if (!skipMedia && !dryRun) {
       const imageMedia = findImageUrls(rootBody).map((src) => ({ src }));
-      const uploadResult = await uploadMediaList(
-        [...rootAttachments, ...imageMedia],
-        target,
-        siteConfig,
-      );
-      mediaIds = uploadResult.mediaIds;
+      const uploadResult = await uploadMediaList(imageMedia, target, siteConfig);
       mediaUploaded += uploadResult.uploaded;
 
       if (uploadResult.urlMap.size > 0) {
         rootBody = replaceImageUrls(rootBody, uploadResult.urlMap);
       }
+    }
+    if (!dryRun) {
+      const attachmentResult = await buildImportedAttachments(
+        rootAttachments,
+        target,
+        siteConfig,
+        { skipUploads: skipMedia },
+      );
+      importedAttachments = attachmentResult.attachments;
+      mediaUploaded += attachmentResult.uploaded;
     }
 
     const extra = frontMatter.extra || {};
@@ -1113,7 +1216,8 @@ export async function run(argv) {
       status: postStatus,
       visibility: postVisibility,
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
-      mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
+      attachments:
+        importedAttachments.length > 0 ? importedAttachments : undefined,
       publishedAt:
         postStatus === "published" && frontMatter.date
           ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
@@ -1196,24 +1300,33 @@ export async function run(argv) {
       let replyBody = replySegment.body || "";
       const {
         markdown: replyBodyWithoutAttachments,
-        attachments: replyAttachments,
+        attachments: replyAttachmentSpecs,
       } = extractAttachmentBlocks(replyBody);
       replyBody = replyBodyWithoutAttachments;
-      let replyMediaIds = [];
+      let replyAttachments = [];
 
       if (!skipMedia && !dryRun) {
         const imageMedia = findImageUrls(replyBody).map((src) => ({ src }));
         const uploadResult = await uploadMediaList(
-          [...replyAttachments, ...imageMedia],
+          imageMedia,
           target,
           siteConfig,
         );
-        replyMediaIds = uploadResult.mediaIds;
         mediaUploaded += uploadResult.uploaded;
 
         if (uploadResult.urlMap.size > 0) {
           replyBody = replaceImageUrls(replyBody, uploadResult.urlMap);
         }
+      }
+      if (!dryRun) {
+        const attachmentResult = await buildImportedAttachments(
+          replyAttachmentSpecs,
+          target,
+          siteConfig,
+          { skipUploads: skipMedia },
+        );
+        replyAttachments = attachmentResult.attachments;
+        mediaUploaded += attachmentResult.uploaded;
       }
 
       const replyFormat = replyAttrs.format || "note";
@@ -1233,7 +1346,7 @@ export async function run(argv) {
         replyToId: post.id,
         slug: replyAttrs.slug || undefined,
         visibility: replyVisibility,
-        mediaIds: replyMediaIds.length > 0 ? replyMediaIds : undefined,
+        attachments: replyAttachments.length > 0 ? replyAttachments : undefined,
         publishedAt: replyAttrs.date
           ? Math.floor(new Date(replyAttrs.date).getTime() / 1000)
           : undefined,
