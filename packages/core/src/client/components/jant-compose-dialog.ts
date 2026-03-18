@@ -954,6 +954,16 @@ export class JantComposeDialog extends LitElement {
     });
   }
 
+  private _resetCustomSlug() {
+    this._slug = "";
+    this._slugTaken = false;
+    this._slugCheckLoading = false;
+    this._scheduleSuggestedSlugRefresh(true);
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLInputElement>(".compose-more-slug-input")?.focus();
+    });
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener("keydown", this._handleKeydown);
@@ -1842,7 +1852,13 @@ export class JantComposeDialog extends LitElement {
               return;
             }
             this._showMoreMenu = true;
-            this._moreSlugExpanded = Boolean(this._slug.trim());
+            this._moreSlugExpanded = true;
+            this._scheduleSuggestedSlugRefresh(true);
+            this.updateComplete.then(() => {
+              this.querySelector<HTMLInputElement>(
+                ".compose-more-slug-input",
+              )?.focus();
+            });
           }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
@@ -1855,103 +1871,76 @@ export class JantComposeDialog extends LitElement {
           ? html`
               <div
                 class="compose-dropdown compose-dropdown-right compose-more-menu"
+                data-compose-meta-panel
               >
-                <button
-                  type="button"
-                  class="compose-dropdown-item compose-dropdown-item-toggle"
-                  aria-expanded=${this._moreSlugExpanded ? "true" : "false"}
-                  @click=${() => this._toggleMoreSlugField()}
-                >
-                  <span>${this.labels.publishSlugLabel}</span>
-                  <svg
-                    class="compose-dropdown-toggle-icon"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="m6 9 6 6 6-6" />
-                  </svg>
-                </button>
-                ${this._moreSlugExpanded
-                  ? html`
-                      <div class="compose-dropdown-field">
-                        <div class="compose-dropdown-input-wrap">
-                          <span class="compose-dropdown-input-prefix">/</span>
-                          <input
-                            type="text"
-                            class="compose-input compose-more-slug-input"
-                            .value=${this._slug}
-                            placeholder=${this.labels.publishSlugPlaceholder}
-                            aria-invalid=${slugError ? "true" : "false"}
-                            spellcheck="false"
-                            autocapitalize="off"
-                            autocomplete="off"
-                            @input=${(e: Event) => this._onSlugInput(e)}
-                          />
-                        </div>
-                        ${showSuggestion
-                          ? html`
-                              <button
-                                type="button"
-                                class="compose-slug-suggestion"
-                                @click=${() => this._useSuggestedSlug()}
-                              >
-                                <span class="compose-slug-suggestion-label"
-                                  >${this.labels.publishSlugSuggested}</span
-                                >
-                                <span class="compose-slug-suggestion-value"
-                                  >/${this._suggestedSlug}</span
-                                >
-                              </button>
-                            `
-                          : nothing}
-                        ${slugStatus
-                          ? html`<p
-                              class=${classMap({
-                                "compose-slug-status": true,
-                                "compose-slug-status-error": Boolean(slugError),
-                              })}
-                              data-compose-slug-error=${slugError
-                                ? "true"
-                                : nothing}
+                <div class="compose-meta-panel-section">
+                  <div class="compose-meta-panel-header">
+                    <div class="compose-meta-panel-copy">
+                      <p class="compose-meta-panel-title">
+                        ${this.labels.publishSlugLabel}
+                      </p>
+                      <p class="compose-meta-panel-subtitle">
+                        ${this.labels.publishSlugHint}
+                      </p>
+                    </div>
+                    ${this._hasManualSlug()
+                      ? html`
+                          <button
+                            type="button"
+                            class="compose-meta-panel-action"
+                            @click=${() => this._resetCustomSlug()}
+                          >
+                            ${this.labels.publishSlugReset}
+                          </button>
+                        `
+                      : nothing}
+                  </div>
+                  <div class="compose-dropdown-field compose-meta-panel-field">
+                    <div class="compose-dropdown-input-wrap">
+                      <span class="compose-dropdown-input-prefix">/</span>
+                      <input
+                        type="text"
+                        class="compose-input compose-more-slug-input"
+                        .value=${this._slug}
+                        placeholder=${this.labels.publishSlugPlaceholder}
+                        aria-invalid=${slugError ? "true" : "false"}
+                        spellcheck="false"
+                        autocapitalize="off"
+                        autocomplete="off"
+                        @input=${(e: Event) => this._onSlugInput(e)}
+                      />
+                    </div>
+                    ${showSuggestion
+                      ? html`
+                          <button
+                            type="button"
+                            class="compose-slug-suggestion"
+                            @click=${() => this._useSuggestedSlug()}
+                          >
+                            <span class="compose-slug-suggestion-label"
+                              >${this.labels.publishSlugSuggested}</span
                             >
-                              ${slugStatus}
-                            </p>`
-                          : nothing}
-                      </div>
-                    `
-                  : nothing}
-                <div class="compose-dropdown-divider"></div>
-                <button
-                  type="button"
-                  class="compose-dropdown-item"
-                  ?disabled=${this._loading || !this._canSaveDraft()}
-                  @click=${() => {
-                    this._submit("draft");
-                    this._showMoreMenu = false;
-                    this._moreSlugExpanded = false;
-                  }}
-                >
-                  ${this.labels.saveAsDraft}
-                </button>
-                <div class="compose-dropdown-divider"></div>
-                <button
-                  type="button"
-                  class="compose-dropdown-item compose-dropdown-item-danger"
-                  @click=${() => {
-                    this._showMoreMenu = false;
-                    this._moreSlugExpanded = false;
-                    this._discardAndClose();
-                  }}
-                >
-                  ${this.labels.discard}
-                </button>
+                            <span class="compose-slug-suggestion-value"
+                              >/${this._suggestedSlug}</span
+                            >
+                          </button>
+                        `
+                      : nothing}
+                    ${slugStatus
+                      ? html`<p
+                          class=${classMap({
+                            "compose-slug-status": true,
+                            "compose-slug-status-error": Boolean(slugError),
+                          })}
+                          data-compose-slug-error=${slugError
+                            ? "true"
+                            : nothing}
+                        >
+                          ${slugStatus}
+                        </p>`
+                      : nothing}
+                  </div>
+                </div>
               </div>
             `
           : nothing}
@@ -2461,13 +2450,6 @@ export class JantComposeDialog extends LitElement {
     });
   }
 
-  private _canSaveDraft(): boolean {
-    if (this._loading) return false;
-    if (this._getSlugValidationMessage()) return false;
-    if (this._hasManualSlug() && this._slugCheckLoading) return false;
-    return true;
-  }
-
   private _canPublish(): boolean {
     if (this._loading) return false;
     const editor = this._editor;
@@ -2497,16 +2479,6 @@ export class JantComposeDialog extends LitElement {
     if (this._visibilityLocked) return;
     this._visibility = visibility;
     this._showPublishPanel = false;
-  }
-
-  private _toggleMoreSlugField() {
-    this._moreSlugExpanded = !this._moreSlugExpanded;
-    if (!this._moreSlugExpanded) return;
-
-    this._scheduleSuggestedSlugRefresh(true);
-    this.updateComplete.then(() => {
-      this.querySelector<HTMLInputElement>(".compose-more-slug-input")?.focus();
-    });
   }
 
   private _onSlugInput(e: Event) {

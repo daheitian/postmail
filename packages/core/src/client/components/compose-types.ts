@@ -156,6 +156,7 @@ export interface ComposeLabels {
   publishSlugPlaceholder: string;
   publishSlugHint: string;
   publishSlugAuto: string;
+  publishSlugReset: string;
   publishSlugSuggested: string;
   publishSlugGenerating: string;
   publishSlugChecking: string;

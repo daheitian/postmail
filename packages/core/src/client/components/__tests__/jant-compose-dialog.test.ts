@@ -132,6 +132,7 @@ const labels: ComposeLabels = {
   publishSlugPlaceholder: "your-post-link",
   publishSlugHint: "Leave blank to generate one automatically.",
   publishSlugAuto: "Generate automatically",
+  publishSlugReset: "Use automatic",
   publishSlugSuggested: "Suggested link",
   publishSlugGenerating: "Generating a link...",
   publishSlugChecking: "Checking link...",
@@ -426,12 +427,6 @@ describe("JantComposeDialog", () => {
     );
     moreBtn.click();
     await el.updateComplete;
-
-    const slugToggle = Array.from(
-      el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
-    ).find((button) => button.textContent?.includes("Custom link"));
-    requireElement(slugToggle ?? null, "expected custom link toggle").click();
-    await el.updateComplete;
     await flushUpdates(el);
 
     const slugInput = requireElement(
@@ -478,14 +473,6 @@ describe("JantComposeDialog", () => {
 
     moreBtn.click();
     await el.updateComplete;
-
-    requireElement(
-      Array.from(
-        el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
-      ).find((button) => button.textContent?.includes("Custom link")) ?? null,
-      "expected custom link toggle",
-    ).click();
-    await el.updateComplete;
     await flushUpdates(el);
 
     const slugInput = requireElement(
@@ -527,14 +514,6 @@ describe("JantComposeDialog", () => {
       "expected more button",
     );
     moreBtn.click();
-    await el.updateComplete;
-
-    requireElement(
-      Array.from(
-        el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
-      ).find((button) => button.textContent?.includes("Custom link")) ?? null,
-      "expected custom link toggle",
-    ).click();
     await el.updateComplete;
     await flushUpdates(el);
 
@@ -599,14 +578,6 @@ describe("JantComposeDialog", () => {
     );
     moreBtn.click();
     await el.updateComplete;
-
-    requireElement(
-      Array.from(
-        el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
-      ).find((button) => button.textContent?.includes("Custom link")) ?? null,
-      "expected custom link toggle",
-    ).click();
-    await el.updateComplete;
     await flushUpdates(el);
 
     expect(
@@ -625,6 +596,73 @@ describe("JantComposeDialog", () => {
 
     expect(receivedDetail).not.toBeNull();
     expect((receivedDetail as ComposeSubmitDetail).slug).toBeUndefined();
+  });
+
+  it("shows only meta settings in the more panel", async () => {
+    const el = await createElement();
+
+    const moreBtn = requireElement(
+      el.querySelectorAll<HTMLButtonElement>(".compose-dialog-header-btn")[1] ??
+        null,
+      "expected more button",
+    );
+    moreBtn.click();
+    await el.updateComplete;
+
+    const panel = requireElement(
+      el.querySelector<HTMLElement>("[data-compose-meta-panel]"),
+      "expected meta settings panel",
+    );
+    expect(panel.textContent).toContain("Custom link");
+    expect(panel.textContent).not.toContain("Save as draft");
+    expect(panel.textContent).not.toContain("Discard");
+    expect(panel.querySelector(".compose-more-slug-input")).not.toBeNull();
+  });
+
+  it("clears the custom slug with the reset action", async () => {
+    mockSlugApi((url) => {
+      if (url.searchParams.get("mode") === "suggest") {
+        return { body: { slug: "hello-world" } };
+      }
+      if (url.searchParams.get("mode") === "check") {
+        return { body: { slug: "manual-link", available: true } };
+      }
+      throw new Error(`Unexpected slug mode: ${url.search}`);
+    });
+
+    const el = await createElement();
+    const moreBtn = requireElement(
+      el.querySelectorAll<HTMLButtonElement>(".compose-dialog-header-btn")[1] ??
+        null,
+      "expected more button",
+    );
+    moreBtn.click();
+    await el.updateComplete;
+    await flushUpdates(el);
+
+    const slugInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
+      "expected custom link input",
+    );
+    slugInput.value = "manual-link";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await el.updateComplete;
+
+    requireElement(
+      Array.from(
+        el.querySelectorAll<HTMLButtonElement>(".compose-meta-panel-action"),
+      ).find((button) => button.textContent?.includes("Use automatic")) ?? null,
+      "expected reset action",
+    ).click();
+    await flushUpdates(el);
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
+        "expected custom link input",
+      ).value,
+    ).toBe("");
   });
 
   it("does not request or show a suggested slug when no title is available", async () => {
@@ -646,14 +684,6 @@ describe("JantComposeDialog", () => {
       "expected more button",
     );
     moreBtn.click();
-    await el.updateComplete;
-
-    requireElement(
-      Array.from(
-        el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
-      ).find((button) => button.textContent?.includes("Custom link")) ?? null,
-      "expected custom link toggle",
-    ).click();
     await el.updateComplete;
     await flushUpdates(el);
 
@@ -693,14 +723,6 @@ describe("JantComposeDialog", () => {
         "expected more button",
       );
       moreBtn.click();
-      await el.updateComplete;
-
-      requireElement(
-        Array.from(
-          el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
-        ).find((button) => button.textContent?.includes("Custom link")) ?? null,
-        "expected custom link toggle",
-      ).click();
       await el.updateComplete;
       await flushUpdates(el);
 
@@ -759,14 +781,6 @@ describe("JantComposeDialog", () => {
         "expected more button",
       );
       moreBtn.click();
-      await el.updateComplete;
-
-      requireElement(
-        Array.from(
-          el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
-        ).find((button) => button.textContent?.includes("Custom link")) ?? null,
-        "expected custom link toggle",
-      ).click();
       await el.updateComplete;
       await flushUpdates(el);
 

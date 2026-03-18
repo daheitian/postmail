@@ -2829,6 +2829,11 @@ msgstr "URL"
 msgid "Usage"
 msgstr "用法"
 
+#. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Use automatic"
+msgstr ""
+
 #. @context: Collection slug validation error for invalid characters
 #. @context: Compose custom slug validation error for invalid characters
 #: src/ui/compose/ComposeDialog.tsx
