@@ -6,6 +6,9 @@
  * supported by `tiptap-render.ts`.
  */
 
+import { escapeHtml } from "./html.js";
+import { sanitizeUrl } from "./url.js";
+
 interface TiptapMark {
   type: string;
   attrs?: Record<string, unknown>;
@@ -104,6 +107,24 @@ function renderBlockNode(node: TiptapNode, indent: string): string | null {
       const src = String(node.attrs?.src ?? "");
       const alt = node.attrs?.alt ? String(node.attrs.alt) : "";
       const title = node.attrs?.title ? String(node.attrs.title) : "";
+      const caption = node.attrs?.caption ? String(node.attrs.caption) : "";
+      const layout =
+        node.attrs?.layout && String(node.attrs.layout) !== "regular"
+          ? String(node.attrs.layout)
+          : "";
+      const href = node.attrs?.href ? sanitizeUrl(String(node.attrs.href)) : "";
+
+      if (caption || layout || href) {
+        return `${indent}${renderRichImageHtml({
+          src,
+          alt,
+          title,
+          caption,
+          href,
+          layout,
+        })}`;
+      }
+
       const titlePart = title ? ` "${title}"` : "";
       return `${indent}![${alt}](${src}${titlePart})`;
     }
@@ -117,6 +138,34 @@ function renderBlockNode(node: TiptapNode, indent: string): string | null {
       }
       return null;
   }
+}
+
+function renderRichImageHtml(image: {
+  src: string;
+  alt: string;
+  title: string;
+  caption: string;
+  href: string;
+  layout: string;
+}): string {
+  const attrs = ['data-jant-node="image"'];
+  if (image.layout) {
+    attrs.push(`data-jant-layout="${escapeHtml(image.layout)}"`);
+  }
+
+  const imgAttrs = [`src="${escapeHtml(image.src)}"`];
+  if (image.alt) imgAttrs.push(`alt="${escapeHtml(image.alt)}"`);
+  if (image.title) imgAttrs.push(`title="${escapeHtml(image.title)}"`);
+
+  const imgTag = `<img ${imgAttrs.join(" ")}>`;
+  const content = image.href
+    ? `<a href="${escapeHtml(image.href)}">${imgTag}</a>`
+    : imgTag;
+  const figcaption = image.caption
+    ? `<figcaption>${escapeHtml(image.caption)}</figcaption>`
+    : "";
+
+  return `<figure ${attrs.join(" ")}>${content}${figcaption}</figure>`;
 }
 
 function renderList(

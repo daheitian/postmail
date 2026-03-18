@@ -1,6 +1,14 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { settingsApiRoutes } from "../settings.js";
+
+function createMockStorage() {
+  return {
+    put: vi.fn().mockResolvedValue(undefined),
+    get: vi.fn().mockResolvedValue(null),
+    delete: vi.fn().mockResolvedValue(undefined),
+  };
+}
 
 describe("Settings API Routes", () => {
   describe("GET /api/settings", () => {
@@ -172,6 +180,174 @@ describe("Settings API Routes", () => {
       expect(body.settings.SITE_NAME).toBe("Demo Blog");
       expect(body.settings.NOINDEX).toBe("true");
       expect(body.rejectedKeys).toContain("NOINDEX");
+    });
+  });
+
+  describe("POST /api/settings/avatar", () => {
+    it("returns 401 when not authenticated", async () => {
+      const storage = createMockStorage();
+      const { app } = createTestApp({
+        authenticated: false,
+        storage,
+      });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const formData = new FormData();
+      formData.append(
+        "file",
+        new File([new Uint8Array([1, 2, 3])], "avatar.png", {
+          type: "image/png",
+        }),
+      );
+
+      const res = await app.request("/api/settings/avatar", {
+        method: "POST",
+        body: formData,
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it("returns 500 when storage is unavailable", async () => {
+      const { app } = createTestApp({
+        authenticated: true,
+        storage: null,
+      });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const formData = new FormData();
+      formData.append(
+        "file",
+        new File([new Uint8Array([1, 2, 3])], "avatar.png", {
+          type: "image/png",
+        }),
+      );
+
+      const res = await app.request("/api/settings/avatar", {
+        method: "POST",
+        body: formData,
+      });
+
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body.error).toContain("storage");
+    });
+
+    it("returns 400 when no file is provided", async () => {
+      const storage = createMockStorage();
+      const { app } = createTestApp({
+        authenticated: true,
+        storage,
+      });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings/avatar", {
+        method: "POST",
+        body: new FormData(),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("No file selected");
+    });
+
+    it("uploads the avatar and optional apple-touch icon", async () => {
+      const storage = createMockStorage();
+      const { app, services } = createTestApp({
+        authenticated: true,
+        storage,
+      });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const formData = new FormData();
+      formData.append(
+        "file",
+        new File([new Uint8Array([1, 2, 3])], "avatar.png", {
+          type: "image/png",
+        }),
+      );
+      formData.append(
+        "appleTouch",
+        new File([new Uint8Array([137, 80, 78, 71])], "apple-touch-icon.png", {
+          type: "image/png",
+        }),
+      );
+
+      const res = await app.request("/api/settings/avatar", {
+        method: "POST",
+        body: formData,
+      });
+
+      expect(res.status).toBe(201);
+      expect(await services.settings.get("SITE_AVATAR")).toContain("media/");
+      expect(await services.settings.get("SITE_FAVICON_APPLE_TOUCH")).toBe(
+        "favicon/apple-touch-icon.png",
+      );
+      expect(await services.settings.get("SITE_FAVICON_VERSION")).toMatch(
+        /^\d{12}$/,
+      );
+      expect(storage.put).toHaveBeenCalledTimes(2);
+
+      const mediaList = await services.media.list();
+      expect(mediaList).toHaveLength(1);
+      expect(mediaList[0]?.originalName).toBe("avatar.png");
+    });
+  });
+
+  describe("DELETE /api/settings/avatar", () => {
+    it("returns 401 when not authenticated", async () => {
+      const storage = createMockStorage();
+      const { app } = createTestApp({
+        authenticated: false,
+        storage,
+      });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings/avatar", {
+        method: "DELETE",
+      });
+
+      expect(res.status).toBe(401);
+    });
+
+    it("removes avatar-related settings and deletes the apple-touch icon", async () => {
+      const storage = createMockStorage();
+      const { app, services } = createTestApp({
+        authenticated: true,
+        storage,
+      });
+      app.route("/api/settings", settingsApiRoutes);
+
+      await services.settings.set(
+        "SITE_AVATAR" as never,
+        "media/2026/03/avatar.png",
+      );
+      await services.settings.set("SITE_FAVICON_ICO" as never, "ZmFrZQ==");
+      await services.settings.set(
+        "SITE_FAVICON_APPLE_TOUCH" as never,
+        "favicon/apple-touch-icon.png",
+      );
+      await services.settings.set(
+        "SITE_FAVICON_VERSION" as never,
+        "202603181200",
+      );
+
+      const res = await app.request("/api/settings/avatar", {
+        method: "DELETE",
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(await services.settings.get("SITE_AVATAR")).toBeNull();
+      expect(await services.settings.get("SITE_FAVICON_ICO")).toBeNull();
+      expect(
+        await services.settings.get("SITE_FAVICON_APPLE_TOUCH"),
+      ).toBeNull();
+      expect(await services.settings.get("SITE_FAVICON_VERSION")).toBeNull();
+      expect(storage.delete).toHaveBeenCalledWith(
+        "favicon/apple-touch-icon.png",
+      );
     });
   });
 });

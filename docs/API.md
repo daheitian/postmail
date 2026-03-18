@@ -1116,7 +1116,7 @@ Jant has built-in export and import for full site backup and migration between i
 
 ### Export
 
-Export your entire site as a [Zola](https://www.getzola.org/) static site in a ZIP file. The export includes all published posts, collections, threads (merged into single pages), and a complete Zola theme — you can build it into a standalone static site or import it into another Jant instance.
+Export your entire site as a [Zola](https://www.getzola.org/) static site in a ZIP file. The export includes posts, collections, thread structure, and Jant-specific metadata for round-trip import — you can build it into a standalone static site or import it into another Jant instance.
 
 **From the dashboard:**
 
@@ -1136,20 +1136,36 @@ curl -X POST https://your-site.com/api/export/zola \
   -o jant-export.zip
 ```
 
+**From the CLI:**
+
+```bash
+# Export the local Node SQLite site
+npx jant site export --output jant-export.zip
+
+# Export a remote site
+export JANT_TOKEN=jnt_YOUR_TOKEN
+npx jant site export --url https://your-site.com --output jant-export.zip
+```
+
+Without `--url`, `jant site export` exports from the local Node SQLite runtime. With `--url`, it calls the authenticated export API. `jant export` remains available as a compatibility alias for database SQL export via `jant db export`.
+
 **What's in the ZIP:**
 
 ```
 config.toml              # Zola site config
 content/_index.md        # Root section
 content/{slug}/index.md  # One file per post (threads merged)
+content/jant-collections/{slug}/_index.md  # Hidden collection metadata
 templates/               # Zola templates (index, page, section, etc.)
 static/style.css         # Theme CSS (dark mode included)
 ```
 
 - Threads are merged: the root post and all replies appear in one file, separated by `<!-- jant:reply ... -->` marker comments
 - Reply URLs become Zola `aliases` so existing links still work
-- Media URLs point to the original site (files are not copied into the ZIP)
+- Media is not localized into the ZIP, but attachments are preserved as `data-jant-node="attachments"` HTML blocks for re-import
+- Rich image blocks preserve Jant-only attributes such as caption, link target, and layout
 - Collections are exported as Zola taxonomies under `/c/`
+- `config.toml` includes `[extra.jant_export]` metadata so importers can recognize the export format version
 
 **Building the static site:**
 
@@ -1166,19 +1182,21 @@ Restore an export ZIP into a Jant instance using the CLI:
 
 ```bash
 export JANT_TOKEN=jnt_YOUR_TOKEN
-npx jant import-site --url https://your-site.com --path ./export
+npx jant site import --url https://your-site.com --path ./export
 ```
 
-**Authentication:** Set the `JANT_TOKEN` environment variable. This avoids exposing the token in shell history or process lists.
+Without `--url`, `jant site import` imports into the local Node SQLite runtime. With `--url`, it imports into a remote site and requires `JANT_TOKEN` (unless using `--dry-run`). `jant import-site` remains available as a compatibility alias.
+
+**Authentication:** Set the `JANT_TOKEN` environment variable for remote imports. This avoids exposing the token in shell history or process lists.
 
 **Options:**
 
 | Flag           | Required | Default           | Description                                 |
 | -------------- | -------- | ----------------- | ------------------------------------------- |
-| `--url`        | **yes**  | —                 | Target Jant instance URL                    |
+| `--url`        | no       | local runtime     | Target Jant instance URL                    |
 | `--path`       | no       | `.` (current dir) | Path to export directory or ZIP file        |
 | `--dry-run`    | no       | `false`           | Parse and validate without making API calls |
-| `--skip-media` | no       | `false`           | Skip downloading and re-uploading images    |
+| `--skip-media` | no       | `false`           | Skip downloading and re-uploading media     |
 | `-h, --help`   | no       | —                 | Show usage information                      |
 
 **What it does:**
@@ -1194,7 +1212,7 @@ npx jant import-site --url https://your-site.com --path ./export
 
 ```bash
 # Preview what would be imported (no changes made)
-npx jant import-site \
+npx jant site import \
   --url https://new-site.com \
   --path ./jant-export \
   --dry-run
@@ -1207,7 +1225,7 @@ export JANT_TOKEN=jnt_YOUR_TOKEN
 
 # Unzip first, inspect content, then import
 unzip jant-export.zip -d jant-export
-npx jant import-site \
+npx jant site import \
   --url https://new-site.com \
   --path ./jant-export
 ```
@@ -1216,7 +1234,7 @@ npx jant import-site \
 
 ```bash
 export JANT_TOKEN=jnt_YOUR_TOKEN
-npx jant import-site \
+npx jant site import \
   --url https://new-site.com \
   --path jant-export.zip
 ```
@@ -1225,7 +1243,7 @@ npx jant import-site \
 
 ```bash
 export JANT_TOKEN=jnt_YOUR_TOKEN
-npx jant import-site \
+npx jant site import \
   --url https://new-site.com \
   --skip-media
 ```

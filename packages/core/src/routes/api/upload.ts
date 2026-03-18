@@ -228,6 +228,7 @@ uploadApiRoutes.post("/", async (c) => {
     // Read optional client-side metadata
     const widthRaw = parseInt(formData.get("width") as string) || undefined;
     const heightRaw = parseInt(formData.get("height") as string) || undefined;
+    const altRaw = (formData.get("alt") as string) || undefined;
     const blurhashRaw = (formData.get("blurhash") as string) || undefined;
     const waveformRaw = (formData.get("waveform") as string) || undefined;
 
@@ -255,6 +256,7 @@ uploadApiRoutes.post("/", async (c) => {
       provider: c.var.appConfig.storageDriver,
       width: widthRaw && widthRaw > 0 ? widthRaw : undefined,
       height: heightRaw && heightRaw > 0 ? heightRaw : undefined,
+      alt: altRaw?.trim() || undefined,
       blurhash:
         blurhashRaw && blurhashRaw.length < 200 ? blurhashRaw : undefined,
       waveform:

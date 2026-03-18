@@ -92,3 +92,57 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
     ...(rejectedKeys.length > 0 && { rejectedKeys }),
   });
 });
+
+// Upload site avatar (requires auth)
+settingsApiRoutes.post("/avatar", requireAuthApi(), async (c) => {
+  const storage = c.var.storage;
+  if (!storage) {
+    return c.json(
+      { error: "File storage isn't set up. Check your server config." },
+      500,
+    );
+  }
+
+  const formData = await c.req.formData();
+  const file = formData.get("file") as File | null;
+  if (!file) {
+    return c.json({ error: "No file selected. Choose a file to upload." }, 400);
+  }
+
+  const faviconFile = formData.get("favicon") as File | null;
+  const appleTouchFile = formData.get("appleTouch") as File | null;
+
+  try {
+    await c.var.services.settings.uploadAvatar(
+      {
+        file,
+        faviconIco: faviconFile ? await faviconFile.arrayBuffer() : undefined,
+        appleTouchIcon: appleTouchFile
+          ? await appleTouchFile.arrayBuffer()
+          : undefined,
+      },
+      {
+        media: c.var.services.media,
+        storage,
+        storageProvider: c.var.appConfig.storageDriver,
+        maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
+      },
+    );
+
+    return c.json({ success: true }, 201);
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return c.json({ error: error.message }, 400);
+    }
+    return c.json(
+      { error: "Upload didn't go through. Try again in a moment." },
+      500,
+    );
+  }
+});
+
+// Remove site avatar (requires auth)
+settingsApiRoutes.delete("/avatar", requireAuthApi(), async (c) => {
+  await c.var.services.settings.removeAvatar(c.var.storage);
+  return c.json({ success: true });
+});

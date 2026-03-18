@@ -49,7 +49,7 @@ function createNodeSqlRunner(sqlite) {
 function createD1SqlRunner(runtime, options) {
   return {
     execute(sql) {
-      executeD1(sql, runtime, options);
+      executeD1(sql, runtime, { ...options, quiet: true });
     },
     query(sql) {
       return queryD1(sql, runtime, options);
@@ -80,13 +80,10 @@ function applySqlFiles(runner, options) {
     return 0;
   }
 
-  console.log(`${headline} to be applied:`);
-  for (const file of pendingFiles) {
-    console.log(`- ${file.name}`);
-  }
+  console.log(`Applying ${headline.toLowerCase()} (${pendingFiles.length} pending)...`);
 
   const table = quoteIdentifier(tableName);
-  for (const file of pendingFiles) {
+  for (const [index, file] of pendingFiles.entries()) {
     const sql = normalizeSqlFile(readFileSync(file.path, "utf-8"));
     if (!sql) {
       throw new Error(`${headline.slice(0, -1)} file is empty: ${file.path}`);
@@ -96,7 +93,9 @@ function applySqlFiles(runner, options) {
       runner.execute(
         `\n${sql}\nINSERT INTO ${table} ("name") VALUES (${quoteString(file.name)});`,
       );
+      console.log(`[${index + 1}/${pendingFiles.length}] ${file.name} ✅`);
     } catch (error) {
+      console.log(`[${index + 1}/${pendingFiles.length}] ${file.name} ❌`);
       throw new Error(`Failed to apply ${file.name}: ${error.message}`, {
         cause: error,
       });

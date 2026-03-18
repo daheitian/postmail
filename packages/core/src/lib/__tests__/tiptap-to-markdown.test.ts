@@ -261,6 +261,23 @@ describe("tiptapJsonToMarkdown", () => {
         '![Alt](https://example.com/img.png "Title")',
       );
     });
+
+    it("converts rich images to Jant figure HTML", () => {
+      const json = doc({
+        type: "image",
+        attrs: {
+          src: "https://example.com/img.png",
+          alt: "Alt",
+          title: "Title",
+          caption: "Caption",
+          href: "https://example.com/source",
+          layout: "wide",
+        },
+      });
+      expect(tiptapJsonToMarkdown(json)).toBe(
+        '<figure data-jant-node="image" data-jant-layout="wide"><a href="https://example.com/source"><img src="https://example.com/img.png" alt="Alt" title="Title"></a><figcaption>Caption</figcaption></figure>',
+      );
+    });
   });
 
   describe("tables", () => {
@@ -327,6 +344,12 @@ describe("tiptapJsonToMarkdown", () => {
       const result = roundtrip(md);
       expect(result).toContain("- Item 1");
       expect(result).toContain("- Item 2");
+    });
+
+    it("round-trips a rich image figure", () => {
+      const md =
+        '<figure data-jant-node="image" data-jant-layout="wide"><a href="https://example.com/source"><img src="https://example.com/img.png" alt="Alt" title="Title"></a><figcaption>Caption</figcaption></figure>';
+      expect(roundtrip(md)).toBe(md);
     });
   });
 

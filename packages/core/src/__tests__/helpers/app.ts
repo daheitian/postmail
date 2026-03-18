@@ -23,6 +23,7 @@ import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
 import { createI18n } from "../../i18n/i18n.js";
 import { resolveConfig } from "../../lib/resolve-config.js";
+import type { StorageDriver } from "../../lib/storage.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -33,6 +34,8 @@ interface TestAppOptions {
   fts?: boolean;
   /** Enable public demo restrictions in appConfig */
   demoMode?: boolean;
+  /** Optional storage driver for upload/settings route tests */
+  storage?: StorageDriver | null;
 }
 
 /**
@@ -79,7 +82,7 @@ export function createTestApp(options: TestAppOptions = {}) {
     const allSettings = await services.settings.getAll();
     c.set("allSettings", allSettings);
     c.set("appConfig", resolveConfig(c.env, allSettings));
-    c.set("storage", null);
+    c.set("storage", options.storage ?? null);
 
     // i18n (English default for tests)
     const i18n = createI18n("en");

@@ -9,14 +9,18 @@
 import type { PostService } from "./post.js";
 import type { PathService } from "./path.js";
 import type { CollectionService } from "./collection.js";
+import type { MediaService } from "./media.js";
 import {
   HOME_BRANDING_LINK_LABEL,
   HOME_BRANDING_PREFIX,
   JANT_REPO_URL,
 } from "../lib/jant-branding.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
+import { getMediaUrl, getPublicUrlForProvider } from "../lib/image.js";
+import { escapeHtml } from "../lib/html.js";
+import { render as renderMarkdown } from "../lib/markdown.js";
 import { toISOString } from "../lib/time.js";
-import type { Post, Collection } from "../types.js";
+import type { Post, Collection, Media, NavItem } from "../types.js";
 
 export interface ExportService {
   generateZolaSite(): Promise<Uint8Array>;
@@ -28,6 +32,47 @@ interface SiteConfig {
   siteDescription: string;
   siteLanguage: string;
   showJantBrandingOnHome: boolean;
+  homeDefaultView: string;
+  headerNavMaxVisible: number;
+  siteFooter: string;
+  showHeaderAvatar: boolean;
+  siteAvatarUrl: string;
+  appleTouchIconUrl?: string;
+  faviconUrl?: string;
+  faviconVersion?: string;
+  themeId: string;
+  defaultThemeId: string;
+  fontThemeId: string;
+  themeMode: string;
+  noindex: boolean;
+  themeCss?: string;
+  customCss?: string;
+  r2PublicUrl?: string;
+  s3PublicUrl?: string;
+  localPublicUrl?: string;
+  imageTransformUrl?: string;
+  sitePathPrefix?: string;
+  navItems: Pick<
+    NavItem,
+    "type" | "systemKey" | "label" | "url" | "position"
+  >[];
+}
+
+interface AttachmentExportMeta {
+  kind: Media["mediaKind"];
+  src: string;
+  poster: string | null;
+  mimeType: string;
+  originalName: string;
+  size: number;
+  width: number | null;
+  height: number | null;
+  alt: string | null;
+  position: string;
+  blurhash: string | null;
+  waveform: string | null;
+  summary: string | null;
+  chars: number | null;
 }
 
 export function createExportService(
@@ -35,6 +80,7 @@ export function createExportService(
     posts: PostService;
     paths: PathService;
     collections: CollectionService;
+    media: MediaService;
   },
   siteConfig: SiteConfig,
 ): ExportService {
@@ -54,13 +100,19 @@ export function createExportService(
       const replies = allPosts.filter((p) => p.replyToId !== null);
       const rootPostIds = roots.map((p) => p.id);
 
-      const [collectionsByPost, slugMap, aliasMap, collectionSlugMap] =
-        await Promise.all([
-          services.collections.getCollectionsByPostIds(allPostIds),
-          services.paths.getPostSlugMap(allPostIds),
-          services.paths.getPostAliases(rootPostIds),
-          services.paths.getCollectionSlugMap(allCollections.map((c) => c.id)),
-        ]);
+      const [
+        collectionsByPost,
+        rawMediaByPost,
+        slugMap,
+        aliasMap,
+        collectionSlugMap,
+      ] = await Promise.all([
+        services.collections.getCollectionsByPostIds(allPostIds),
+        services.media.getByPostIds(allPostIds),
+        services.paths.getPostSlugMap(allPostIds),
+        services.paths.getPostAliases(rootPostIds),
+        services.paths.getCollectionSlugMap(allCollections.map((c) => c.id)),
+      ]);
 
       // 2. Group replies by threadId
       const repliesByThread = new Map<string, Post[]>();
@@ -84,6 +136,7 @@ export function createExportService(
         const threadReplies = repliesByThread.get(root.id) ?? [];
         const postCollections = collectionsByPost.get(root.id) ?? [];
         const aliases = aliasMap.get(root.id) ?? [];
+        const rootMedia = rawMediaByPost.get(root.id) ?? [];
 
         // Collect reply slugs as aliases
         for (const reply of threadReplies) {
@@ -98,9 +151,19 @@ export function createExportService(
           aliases,
           slugMap,
           collectionSlugMap,
+          rootMedia,
+          rawMediaByPost,
+          siteConfig,
         );
 
         files[`content/${slug}/index.md`] = new TextEncoder().encode(markdown);
+      }
+
+      for (const collection of allCollections) {
+        const slug = collectionSlugMap.get(collection.id) ?? collection.slug;
+        const section = buildCollectionSection(collection);
+        files[`content/jant-collections/${slug}/_index.md`] =
+          new TextEncoder().encode(section);
       }
 
       // Generate scaffold
@@ -109,9 +172,7 @@ export function createExportService(
       );
       files["content/_index.md"] = new TextEncoder().encode(buildRootSection());
       files["templates/base.html"] = new TextEncoder().encode(TEMPLATE_BASE);
-      files["templates/index.html"] = new TextEncoder().encode(
-        buildIndexTemplate(siteConfig.showJantBrandingOnHome),
-      );
+      files["templates/index.html"] = new TextEncoder().encode(TEMPLATE_INDEX);
       files["templates/page.html"] = new TextEncoder().encode(TEMPLATE_PAGE);
       files["templates/section.html"] = new TextEncoder().encode(
         TEMPLATE_SECTION,
@@ -122,10 +183,17 @@ export function createExportService(
       files["templates/taxonomy_single.html"] = new TextEncoder().encode(
         TEMPLATE_TAXONOMY_SINGLE,
       );
+      files["templates/atom.xml"] = new TextEncoder().encode(TEMPLATE_ATOM);
       files["templates/macros.html"] = new TextEncoder().encode(
         TEMPLATE_MACROS,
       );
       files["static/style.css"] = new TextEncoder().encode(STYLE_CSS);
+      files["static/theme.css"] = new TextEncoder().encode(
+        siteConfig.themeCss ?? "",
+      );
+      files["static/custom.css"] = new TextEncoder().encode(
+        siteConfig.customCss ?? "",
+      );
       files["README.md"] = new TextEncoder().encode(
         buildReadme(siteConfig.siteName),
       );
@@ -141,7 +209,11 @@ export function createExportService(
 
 /** Escape a string for use inside a TOML double-quoted value */
 function escapeToml(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\r/g, "\\r")
+    .replace(/\n/g, "\\n");
 }
 
 /** Escape a string for use in YAML (wrap in quotes if needed) */
@@ -168,6 +240,9 @@ function buildPostMarkdown(
   aliases: string[],
   slugMap: Map<string, string>,
   collectionSlugMap: Map<string, string>,
+  rootMedia: Media[],
+  mediaByPost: Map<string, Media[]>,
+  siteConfig: SiteConfig,
 ): string {
   const parts: string[] = [];
 
@@ -183,7 +258,7 @@ function buildPostMarkdown(
   if (root.updatedAt && root.updatedAt !== root.publishedAt) {
     parts.push(`updated: ${toISOString(root.updatedAt)}`);
   }
-  if (root.status === "draft") {
+  if (root.status === "draft" || root.visibility === "private") {
     parts.push("draft: true");
   }
 
@@ -210,6 +285,8 @@ function buildPostMarkdown(
   // Extra metadata
   parts.push("extra:");
   parts.push(`  format: ${root.format}`);
+  parts.push(`  status: ${root.status}`);
+  parts.push(`  visibility: ${root.visibility}`);
   if (root.url) {
     parts.push(`  link_url: ${yamlString(root.url)}`);
   }
@@ -230,8 +307,12 @@ function buildPostMarkdown(
   parts.push("");
 
   // Root body
-  if (root.body) {
-    parts.push(tiptapJsonToMarkdown(root.body));
+  const rootBlocks = [
+    root.body ? tiptapJsonToMarkdown(root.body) : "",
+    buildAttachmentBlock(rootMedia, siteConfig),
+  ].filter(Boolean);
+  if (rootBlocks.length > 0) {
+    parts.push(rootBlocks.join("\n\n"));
   }
 
   // Thread replies
@@ -240,9 +321,8 @@ function buildPostMarkdown(
 
     // Reply marker comment
     const replySlug = slugMap.get(reply.id) ?? reply.slug;
-    const esc = (s: string) =>
-      s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n");
-    let marker = `<!-- jant:reply date="${reply.publishedAt ? toISOString(reply.publishedAt) : ""}" slug="${esc(replySlug)}" format="${reply.format}"`;
+    const esc = escapeCommentAttribute;
+    let marker = `<!-- jant:reply date="${reply.publishedAt ? toISOString(reply.publishedAt) : ""}" slug="${esc(replySlug)}" format="${reply.format}" status="${reply.status}" visibility="${reply.visibility}"`;
 
     if (reply.format === "link" && reply.url) {
       marker += ` url="${esc(reply.url)}"`;
@@ -261,31 +341,231 @@ function buildPostMarkdown(
     parts.push(marker);
     parts.push("");
 
-    if (reply.body) {
-      parts.push(tiptapJsonToMarkdown(reply.body));
+    const replyBlocks = [
+      reply.body ? tiptapJsonToMarkdown(reply.body) : "",
+      buildAttachmentBlock(mediaByPost.get(reply.id) ?? [], siteConfig),
+    ].filter(Boolean);
+    if (replyBlocks.length > 0) {
+      parts.push(replyBlocks.join("\n\n"));
     }
   }
 
   return parts.join("\n");
 }
 
+function buildCollectionSection(collection: Collection): string {
+  const parts: string[] = ["+++"];
+  parts.push(`title = "${escapeToml(collection.title)}"`);
+  parts.push("render = false");
+  if (collection.description) {
+    parts.push(`description = "${escapeToml(collection.description)}"`);
+  }
+  parts.push("[extra]");
+  if (collection.icon) {
+    parts.push(`icon = "${escapeToml(collection.icon)}"`);
+  }
+  parts.push(`sort_order = "${escapeToml(collection.sortOrder)}"`);
+  parts.push("jant_collection = true");
+  parts.push("+++");
+  parts.push("");
+  return parts.join("\n");
+}
+
+function buildAttachmentBlock(
+  mediaList: Media[],
+  siteConfig: SiteConfig,
+): string {
+  if (mediaList.length === 0) return "";
+
+  const figures = mediaList
+    .map((media) => buildAttachmentFigure(media, siteConfig))
+    .join("\n");
+
+  return `<div data-jant-node="attachments">\n${figures}\n</div>`;
+}
+
+function buildAttachmentFigure(media: Media, siteConfig: SiteConfig): string {
+  const meta = buildAttachmentMeta(media, siteConfig);
+  const metaJson = safeJsonForHtml(meta);
+  const name = escapeHtml(meta.originalName);
+  const caption =
+    media.summary && media.summary !== media.originalName
+      ? `<figcaption>${escapeHtml(media.summary)}</figcaption>`
+      : "";
+
+  if (meta.kind === "image") {
+    const alt = media.alt ? ` alt="${escapeHtml(media.alt)}"` : ' alt=""';
+    return `<figure data-jant-node="attachment" data-jant-kind="image">
+  <script type="application/json" data-jant-meta>${metaJson}</script>
+  <img src="${escapeHtml(meta.src)}"${alt}>
+  ${caption}
+</figure>`;
+  }
+
+  if (meta.kind === "video") {
+    const posterAttr = meta.poster
+      ? ` poster="${escapeHtml(meta.poster)}"`
+      : "";
+    return `<figure data-jant-node="attachment" data-jant-kind="video">
+  <script type="application/json" data-jant-meta>${metaJson}</script>
+  <video controls preload="metadata"${posterAttr}>
+    <source src="${escapeHtml(meta.src)}" type="${escapeHtml(meta.mimeType)}">
+  </video>
+  ${caption}
+</figure>`;
+  }
+
+  if (meta.kind === "audio") {
+    return `<figure data-jant-node="attachment" data-jant-kind="audio">
+  <script type="application/json" data-jant-meta>${metaJson}</script>
+  <audio controls preload="metadata" src="${escapeHtml(meta.src)}"></audio>
+  ${caption}
+</figure>`;
+  }
+
+  const description = buildAttachmentTextDescription(media);
+  const figcaption = description
+    ? `<figcaption>${escapeHtml(description)}</figcaption>`
+    : "";
+  return `<figure data-jant-node="attachment" data-jant-kind="${escapeHtml(meta.kind)}">
+  <script type="application/json" data-jant-meta>${metaJson}</script>
+  <a href="${escapeHtml(meta.src)}">${name}</a>
+  ${figcaption}
+</figure>`;
+}
+
+function buildAttachmentTextDescription(media: Media): string {
+  if (media.mediaKind === "text") {
+    const summary = media.summary?.trim();
+    if (summary) return summary;
+    if (media.chars) return `${media.chars} chars`;
+  }
+
+  if (media.summary?.trim()) {
+    return media.summary.trim();
+  }
+
+  return media.mimeType;
+}
+
+function buildAttachmentMeta(
+  media: Media,
+  siteConfig: SiteConfig,
+): AttachmentExportMeta {
+  const publicUrl = getPublicUrlForProvider(
+    media.provider,
+    siteConfig.r2PublicUrl,
+    siteConfig.s3PublicUrl,
+    siteConfig.localPublicUrl,
+  );
+
+  return {
+    kind: media.mediaKind,
+    src: getMediaUrl(media.storageKey, publicUrl, siteConfig.sitePathPrefix),
+    poster: media.posterKey
+      ? getMediaUrl(media.posterKey, publicUrl, siteConfig.sitePathPrefix)
+      : null,
+    mimeType: media.mimeType,
+    originalName: media.originalName,
+    size: media.size,
+    width: media.width,
+    height: media.height,
+    alt: media.alt,
+    position: media.position,
+    blurhash: media.blurhash,
+    waveform: media.waveform,
+    summary: media.summary,
+    chars: media.chars,
+  };
+}
+
+function escapeCommentAttribute(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n");
+}
+
+function safeJsonForHtml(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+}
+
 function buildConfigToml(config: SiteConfig): string {
-  return `base_url = "${escapeToml(config.siteUrl || "https://example.com")}"
-title = "${escapeToml(config.siteName)}"
-description = "${escapeToml(config.siteDescription)}"
-default_language = "${escapeToml(config.siteLanguage)}"
-generate_feeds = true
-compile_sass = false
+  const footerHtml = config.siteFooter ? renderMarkdown(config.siteFooter) : "";
+  const parts = [
+    `base_url = "${escapeToml(config.siteUrl || "https://example.com")}"`,
+    `title = "${escapeToml(config.siteName)}"`,
+    `description = "${escapeToml(config.siteDescription)}"`,
+    `default_language = "${escapeToml(config.siteLanguage)}"`,
+    "generate_feeds = true",
+    "compile_sass = false",
+    "",
+    'feed_filenames = ["atom.xml"]',
+    "",
+    "[extra.jant_export]",
+    'format = "jant-site"',
+    "version = 1",
+    "",
+    "[extra.jant]",
+    `home_default_view = "${escapeToml(config.homeDefaultView)}"`,
+    `header_nav_max_visible = ${config.headerNavMaxVisible}`,
+    `show_jant_branding_on_home = ${config.showJantBrandingOnHome}`,
+    `show_header_avatar = ${config.showHeaderAvatar}`,
+    `noindex = ${config.noindex}`,
+    "nav_exported = true",
+    `theme_id = "${escapeToml(config.themeId || config.defaultThemeId)}"`,
+    `default_theme_id = "${escapeToml(config.defaultThemeId)}"`,
+    `font_theme_id = "${escapeToml(config.fontThemeId)}"`,
+    `theme_mode = "${escapeToml(config.themeMode)}"`,
+  ];
 
-[[taxonomies]]
-name = "c"
-feed = true
+  if (config.siteAvatarUrl) {
+    parts.push(`site_avatar_url = "${escapeToml(config.siteAvatarUrl)}"`);
+  }
+  if (config.faviconUrl || config.siteAvatarUrl) {
+    parts.push(
+      `favicon_url = "${escapeToml(config.faviconUrl || config.siteAvatarUrl)}"`,
+    );
+  }
+  if (config.appleTouchIconUrl) {
+    parts.push(
+      `apple_touch_icon_url = "${escapeToml(config.appleTouchIconUrl)}"`,
+    );
+  }
+  if (config.faviconVersion) {
+    parts.push(`favicon_version = "${escapeToml(config.faviconVersion)}"`);
+  }
+  if (footerHtml) {
+    parts.push(`site_footer_html = "${escapeToml(footerHtml)}"`);
+  }
+  if (config.siteFooter) {
+    parts.push(`site_footer_markdown = "${escapeToml(config.siteFooter)}"`);
+  }
 
-[markdown]
-highlight_code = true
-highlight_theme = "css"
+  for (const item of config.navItems) {
+    parts.push("");
+    parts.push("[[extra.jant.nav]]");
+    parts.push(`type = "${escapeToml(item.type)}"`);
+    parts.push(`label = "${escapeToml(item.label)}"`);
+    parts.push(`url = "${escapeToml(item.url)}"`);
+    if (item.systemKey) {
+      parts.push(`system_key = "${escapeToml(item.systemKey)}"`);
+    }
+  }
 
-[extra]
+  parts.push("");
+  parts.push("[[taxonomies]]");
+  parts.push('name = "c"');
+  parts.push("feed = true");
+  parts.push("");
+  parts.push("[markdown]");
+  parts.push("highlight_code = true");
+  parts.push('highlight_theme = "css"');
+
+  return `${parts.join("\n")}
 `;
 }
 
@@ -351,22 +631,27 @@ config.toml          — Site configuration (title, URL, language)
 content/
   _index.md          — Root section (homepage settings)
   {slug}/index.md    — Individual posts (threads are merged into one page)
+  jant-collections/{slug}/_index.md — Hidden collection metadata for round-trip import
 templates/           — Tera templates (Zola's template engine)
 static/
-  style.css          — Stylesheet
+  style.css          — Base exported stylesheet
+  theme.css          — Resolved Jant theme variables
+  custom.css         — Exported custom CSS overrides
 \`\`\`
 
 ## Customizing
 
 - **Site settings** — edit \`config.toml\` to change the title, URL, or language.
+- **Jant metadata** — \`config.toml\` stores \`[extra.jant_export]\` and \`[extra.jant]\` for round-trip import.
 - **Styles** — edit \`static/style.css\`. The theme supports light and dark modes via \`prefers-color-scheme\`.
 - **Templates** — edit files in \`templates/\`. Zola uses the [Tera](https://keats.github.io/tera/) template engine.
 - **Collections** — posts are tagged with collections via the \`c\` taxonomy. Browse them at \`/c/\`.
 
 ## Notes
 
-- Media files (images, etc.) are **not** included in the export. They link back to the original site.
+- Media files are **not localized** in the export ZIP. Structured attachment blocks still point at the original site until you localize them.
 - Thread replies are merged into the root post as a single page. Reply metadata is preserved in HTML comments (\`<!-- jant:reply ... -->\`).
+- Attachments are preserved as Jant HTML blocks (\`data-jant-node="attachments"\`) so \`jant site import\` can reconstruct them.
 - Posts with \`draft: true\` in front matter are only built when you pass the \`--drafts\` flag to \`zola build\` or \`zola serve\`.
 `;
 }
@@ -382,33 +667,51 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{{ config.title }}{% endblock %}</title>
   <meta name="description" content="{{ config.description }}">
+  {% if config.extra.jant.noindex %}
+  <meta name="robots" content="noindex">
+  {% endif %}
+  {% set favicon_url = config.extra.jant.favicon_url | default(value="") %}
+  {% if favicon_url %}
+  <link rel="icon" href="{{ favicon_url }}">
+  {% endif %}
+  {% if config.extra.jant.apple_touch_icon_url %}
+  <link rel="apple-touch-icon" href="{{ config.extra.jant.apple_touch_icon_url }}">
+  {% endif %}
   <link rel="stylesheet" href="{{ get_url(path='style.css') }}">
+  <link rel="stylesheet" href="{{ get_url(path='theme.css') }}">
+  <link rel="stylesheet" href="{{ get_url(path='custom.css') }}">
   <link rel="alternate" type="application/atom+xml" title="{{ config.title }}" href="{{ get_url(path='atom.xml') }}">
 </head>
 <body>
   <header class="site-header">
-    <a href="{{ config.base_url }}" class="site-title">{{ config.title }}</a>
+    <a href="{{ config.base_url }}" class="site-title">
+      {% if config.extra.jant.show_header_avatar and config.extra.jant.site_avatar_url %}
+      <img src="{{ config.extra.jant.site_avatar_url }}" class="site-logo-avatar" alt="">
+      {% endif %}
+      <span>{{ config.title }}</span>
+    </a>
     <nav>
+      {% if config.extra.jant.nav and config.extra.jant.nav | length > 0 %}
+        {% for item in config.extra.jant.nav %}
+        <a href="{{ item.url }}">{{ item.label }}</a>
+        {% endfor %}
+      {% else %}
       <a href="{{ config.base_url }}/c/">Collections</a>
       <a href="{{ get_url(path='atom.xml') }}">RSS</a>
+      {% endif %}
     </nav>
   </header>
   <main class="site-main">
     {% block content %}{% endblock %}
   </main>
+  {% if config.extra.jant.site_footer_html %}
+  <footer class="site-footer">{{ config.extra.jant.site_footer_html | safe }}</footer>
+  {% endif %}
 </body>
 </html>
 `;
 
-function buildIndexTemplate(showJantBrandingOnHome: boolean): string {
-  const branding = showJantBrandingOnHome
-    ? `
-<footer class="site-footer">
-  <p>${HOME_BRANDING_PREFIX} <a href="${JANT_REPO_URL}">${HOME_BRANDING_LINK_LABEL}</a></p>
-</footer>`
-    : "";
-
-  return `{% extends "base.html" %}
+const TEMPLATE_INDEX = `{% extends "base.html" %}
 {% import "macros.html" as macros %}
 
 {% block title %}{{ config.title }}{% endblock %}
@@ -416,7 +719,9 @@ function buildIndexTemplate(showJantBrandingOnHome: boolean): string {
 {% block content %}
 <div class="post-list">
   {% for page in paginator.pages %}
+    {% if page.extra.visibility | default(value="public") != "unlisted" %}
     {{ macros::post_card(page=page) }}
+    {% endif %}
   {% endfor %}
 </div>
 
@@ -426,10 +731,13 @@ function buildIndexTemplate(showJantBrandingOnHome: boolean): string {
   {% if paginator.next %}<a href="{{ paginator.next }}">Older &rarr;</a>{% endif %}
 </nav>
 {% endif %}
-${branding}
+{% if config.extra.jant.show_jant_branding_on_home %}
+<div class="jant-branding">
+  <p>${HOME_BRANDING_PREFIX} <a href="${JANT_REPO_URL}">${HOME_BRANDING_LINK_LABEL}</a></p>
+</div>
+{% endif %}
 {% endblock %}
 `;
-}
 
 const TEMPLATE_PAGE = `{% extends "base.html" %}
 {% import "macros.html" as macros %}
@@ -454,7 +762,9 @@ const TEMPLATE_SECTION = `{% extends "base.html" %}
 
 <div class="post-list">
   {% for page in section.pages %}
+    {% if page.extra.visibility | default(value="public") != "unlisted" %}
     {{ macros::post_card(page=page) }}
+    {% endif %}
   {% endfor %}
 </div>
 {% endblock %}
@@ -486,10 +796,44 @@ const TEMPLATE_TAXONOMY_SINGLE = `{% extends "base.html" %}
 <h1>{{ term.name }}</h1>
 <div class="post-list">
   {% for page in term.pages %}
+    {% if page.extra.visibility | default(value="public") != "unlisted" %}
     {{ macros::post_card(page=page) }}
+    {% endif %}
   {% endfor %}
 </div>
 {% endblock %}
+`;
+
+const TEMPLATE_ATOM = `<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{{ lang }}">
+  <title>{% if section is defined and section.title %}{{ section.title }} · {% elif term is defined and term.name %}{{ term.name }} · {% endif %}{{ config.title }}</title>
+  {% if config.description %}
+  <subtitle>{{ config.description }}</subtitle>
+  {% endif %}
+  <link rel="self" type="application/atom+xml" href="{{ feed_url | safe }}">
+  <link rel="alternate" type="text/html" href="{% if section is defined %}{{ section.permalink }}{% elif term is defined %}{{ term.permalink }}{% else %}{{ config.base_url }}{% endif %}">
+  <id>{{ feed_url | safe }}</id>
+  <updated>{{ last_updated | date(format="%+") }}</updated>
+  {% set author_name = config.author | default(value="") %}
+  {% if author_name %}
+  <author><name>{{ author_name }}</name></author>
+  {% endif %}
+  {% for page in pages %}
+    {% if page.extra.visibility | default(value="public") == "public" %}
+  <entry>
+    <title>{{ page.title | default(value="Untitled") }}</title>
+    <link rel="alternate" type="text/html" href="{{ page.permalink | safe }}">
+    <published>{{ page.date | date(format="%+") }}</published>
+    <updated>{{ page.updated | default(value=page.date) | date(format="%+") }}</updated>
+    <id>{{ page.permalink | safe }}</id>
+    {% if page.summary %}
+    <summary type="html">{{ page.summary | safe }}</summary>
+    {% endif %}
+    <content type="html">{{ page.content | safe }}</content>
+  </entry>
+    {% endif %}
+  {% endfor %}
+</feed>
 `;
 
 // ---------------------------------------------------------------------------
@@ -638,10 +982,20 @@ a:hover {
 }
 
 .site-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
   font-weight: 700;
   font-size: 1.125rem;
   text-decoration: none;
   color: var(--fg);
+}
+
+.site-logo-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  object-fit: cover;
 }
 
 .site-header nav {
@@ -730,6 +1084,38 @@ a:hover {
   max-width: 100%;
   height: auto;
   border-radius: 0.5rem;
+}
+
+.post-body figure {
+  margin: 1rem 0;
+}
+
+.post-body figure figcaption {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.post-body [data-jant-node="attachments"] {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.post-body [data-jant-node="attachment"] {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--card-bg);
+}
+
+.post-body [data-jant-node="attachment"] audio,
+.post-body [data-jant-node="attachment"] video {
+  width: 100%;
+}
+
+.post-body [data-jant-node="attachment"] > a {
+  font-weight: 600;
 }
 
 .post-body pre {
@@ -890,5 +1276,11 @@ a:hover {
   text-align: center;
   font-size: 0.8125rem;
   color: var(--muted);
+}
+
+.jant-branding {
+  margin-top: 2rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 `;

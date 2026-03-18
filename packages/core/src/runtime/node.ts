@@ -19,6 +19,12 @@ export interface NodeRequestRuntime {
   storage: StorageDriver | null;
 }
 
+export interface NodeCliRuntime {
+  db: Database;
+  services: Services;
+  storage: StorageDriver | null;
+}
+
 function createBetterSqliteRawQuery(
   sqlite: BetterSqlite3.Database,
 ): RawQueryClient {
@@ -82,5 +88,34 @@ export async function createNodeRequestRuntime(
       baseURL,
       useSecureCookies: shouldUseSecureCookies(env, publicRequestUrl),
     }),
+  };
+}
+
+/**
+ * Builds the runtime objects needed by local CLI commands.
+ *
+ * Unlike the request runtime, this path does not require auth configuration.
+ */
+export async function createNodeCliRuntime(
+  env: Bindings,
+): Promise<NodeCliRuntime> {
+  const sqlite = env.NODE_SQLITE;
+  if (!sqlite) {
+    throw new Error("Node CLI runtime requires NODE_SQLITE.");
+  }
+
+  const db = createNodeDatabase(sqlite);
+  const slugIdLength =
+    parseInt(
+      getEnvString(env, "JANT_SLUG_ID_LENGTH", "SLUG_ID_LENGTH") ?? "5",
+      10,
+    ) || 5;
+
+  return {
+    db,
+    services: createServices(db, createBetterSqliteRawQuery(sqlite), {
+      slugIdLength,
+    }),
+    storage: createStorageDriver(env),
   };
 }

@@ -202,6 +202,19 @@ describe("markdownToTiptapJson", () => {
       expect(img?.attrs?.alt).toBe("Alt text");
     });
 
+    it("converts Jant image figures to image nodes", () => {
+      const doc = parse(
+        '<figure data-jant-node="image" data-jant-layout="wide"><a href="https://example.com/source"><img src="https://example.com/img.png" alt="Alt text" title="Title"></a><figcaption>Caption</figcaption></figure>',
+      );
+      expect(doc.content[0].type).toBe("image");
+      expect(doc.content[0].attrs.src).toBe("https://example.com/img.png");
+      expect(doc.content[0].attrs.alt).toBe("Alt text");
+      expect(doc.content[0].attrs.title).toBe("Title");
+      expect(doc.content[0].attrs.href).toBe("https://example.com/source");
+      expect(doc.content[0].attrs.caption).toBe("Caption");
+      expect(doc.content[0].attrs.layout).toBe("wide");
+    });
+
     it("converts nested marks (bold + italic)", () => {
       const doc = parse("***bold and italic***");
       const content = doc.content[0].content;
@@ -317,6 +330,17 @@ describe("end-to-end: Markdown → markdownToTiptapJson → renderTiptapJson", (
     const json = markdownToTiptapJson("This is ~~deleted~~ text");
     const html = renderTiptapJson(json);
     expect(html).toContain("<s>deleted</s>");
+  });
+
+  it("renders Jant image figures correctly", () => {
+    const json = markdownToTiptapJson(
+      '<figure data-jant-node="image" data-jant-layout="wide"><a href="https://example.com/source"><img src="https://example.com/img.png" alt="Alt text" title="Title"></a><figcaption>Caption</figcaption></figure>',
+    );
+    const html = renderTiptapJson(json);
+    expect(html).toContain('<figure data-layout="wide">');
+    expect(html).toContain('href="https://example.com/source"');
+    expect(html).toContain('src="https://example.com/img.png"');
+    expect(html).toContain("<figcaption>Caption</figcaption>");
   });
 
   it("renders a complex document", () => {

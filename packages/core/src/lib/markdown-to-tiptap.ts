@@ -124,6 +124,10 @@ function blockTokenToNodes(token: Token): TiptapNode[] {
       if (t.text.trim() === "<!--more-->") {
         return [{ type: "moreBreak" }];
       }
+      const richImage = parseJantImageHtml(t.text);
+      if (richImage) {
+        return [richImage];
+      }
       // Other raw HTML: wrap in a paragraph as plain text
       return [
         {
@@ -176,6 +180,58 @@ function blockTokenToNodes(token: Token): TiptapNode[] {
     default:
       return [];
   }
+}
+
+function parseJantImageHtml(html: string): TiptapNode | null {
+  const normalized = html.trim();
+  const figureMatch = normalized.match(
+    /^<figure\b([^>]*)data-jant-node="image"([^>]*)>([\s\S]*?)<\/figure>$/i,
+  );
+  if (!figureMatch) return null;
+
+  const figureAttrs = `${figureMatch[1] ?? ""} ${figureMatch[2] ?? ""}`;
+  const innerHtml = figureMatch[3] ?? "";
+  const layout =
+    getHtmlAttribute(figureAttrs, "data-jant-layout") ||
+    getHtmlAttribute(figureAttrs, "data-layout") ||
+    undefined;
+  const anchorHref = innerHtml.match(/<a\b[^>]*href="([^"]*)"[^>]*>/i)?.[1];
+  const imgMatch = innerHtml.match(/<img\b([^>]*)>/i);
+  if (!imgMatch) return null;
+
+  const imgAttrs = imgMatch[1] ?? "";
+  const src = getHtmlAttribute(imgAttrs, "src");
+  if (!src) return null;
+
+  const captionMatch = innerHtml.match(/<figcaption>([\s\S]*?)<\/figcaption>/i);
+  const caption = captionMatch ? decodeHtml(captionMatch[1].trim()) : undefined;
+
+  const attrs: Record<string, unknown> = {
+    src: decodeHtml(src),
+  };
+  const alt = getHtmlAttribute(imgAttrs, "alt");
+  const title = getHtmlAttribute(imgAttrs, "title");
+  if (alt) attrs.alt = decodeHtml(alt);
+  if (title) attrs.title = decodeHtml(title);
+  if (caption) attrs.caption = caption;
+  if (anchorHref) attrs.href = decodeHtml(anchorHref);
+  if (layout && layout !== "regular") attrs.layout = decodeHtml(layout);
+
+  return { type: "image", attrs };
+}
+
+function getHtmlAttribute(source: string, name: string): string | null {
+  const match = source.match(new RegExp(`${name}="([^"]*)"`, "i"));
+  return match?.[1] ?? null;
+}
+
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 }
 
 function listItemToNode(item: Tokens.ListItem): TiptapNode {

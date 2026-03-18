@@ -37,7 +37,7 @@ export async function run(argv) {
   });
 
   if (values.help) {
-    console.log("Usage: jant export [--local | --remote] [--output <file>]");
+    console.log("Usage: jant db export [--local | --remote] [--output <file>]");
     console.log("");
     console.log("Export the current database to a SQL file.");
     console.log("");
@@ -53,6 +53,8 @@ export async function run(argv) {
     console.log(
       "If DATABASE_URL or JANT_DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite.",
     );
+    console.log("");
+    console.log("Compatibility alias: jant export");
     process.exit(0);
   }
 

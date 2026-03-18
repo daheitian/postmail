@@ -1,6 +1,9 @@
 import { readFile, readdir, stat } from "node:fs/promises";
-import { resolve, join, relative } from "node:path";
+import { resolve, join, relative, extname } from "node:path";
 import { parseArgs } from "node:util";
+import { uuidv7 } from "uuidv7";
+import { openNodeSqlite } from "../lib/node-sqlite.js";
+import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 
 /**
  * Parse front matter from a Markdown file.
@@ -25,6 +28,29 @@ async function parseFrontMatter(content) {
   }
 
   return { frontMatter: {}, body: content };
+}
+
+async function parseToml(content) {
+  const { parse } = await import("smol-toml");
+  return parse(content);
+}
+
+function resolveImportUrl(url, siteConfig) {
+  if (typeof url !== "string" || url.trim() === "" || url.startsWith("data:")) {
+    return url;
+  }
+
+  const baseUrl =
+    typeof siteConfig?.base_url === "string" ? siteConfig.base_url : "";
+  if (!baseUrl) {
+    return url;
+  }
+
+  try {
+    return new URL(url, baseUrl).toString();
+  } catch {
+    return url;
+  }
 }
 
 /**
@@ -78,29 +104,89 @@ function splitReplies(body) {
  * Find image URLs in markdown and return them.
  */
 function findImageUrls(markdown) {
-  const urls = [];
+  const urls = new Set();
   const regex = /!\[[^\]]*\]\(([^)\s]+)/g;
   let match;
   while ((match = regex.exec(markdown)) !== null) {
-    urls.push(match[1]);
+    urls.add(match[1]);
   }
-  return urls;
+  const htmlRegex = /<img\b[^>]*src="([^"]+)"/g;
+  while ((match = htmlRegex.exec(markdown)) !== null) {
+    urls.add(match[1]);
+  }
+  return [...urls];
 }
 
 /**
- * Download an image and upload it to the Jant API.
+ * Remove exported Jant attachment blocks from markdown and return their metadata.
+ */
+function extractAttachmentBlocks(markdown) {
+  const attachments = [];
+  const blockRegex =
+    /<div\s+data-jant-node="attachments">[\s\S]*?<\/div>/g;
+  const figureRegex =
+    /<figure\b[^>]*data-jant-node="attachment"[\s\S]*?<script\b[^>]*data-jant-meta[^>]*>([\s\S]*?)<\/script>[\s\S]*?<\/figure>/g;
+
+  const stripped = markdown.replace(blockRegex, (block) => {
+    let match;
+    while ((match = figureRegex.exec(block)) !== null) {
+      try {
+        attachments.push(JSON.parse(match[1].trim()));
+      } catch {
+        // Ignore malformed attachment metadata and keep importing the rest.
+      }
+    }
+    figureRegex.lastIndex = 0;
+    return "";
+  });
+
+  return {
+    markdown: stripped.replace(/\n{3,}/g, "\n\n").trim(),
+    attachments,
+  };
+}
+
+/**
+ * Download a media file and upload it to the Jant API.
  * Returns the new URL, or null on failure.
  */
-async function uploadImage(imageUrl, apiUrl, token) {
+async function uploadRemoteMedia(media, apiUrl, token) {
   try {
-    const response = await fetch(imageUrl);
+    const response = await fetch(media.src);
     if (!response.ok) return null;
 
-    const blob = await response.blob();
-    const filename = imageUrl.split("/").pop() || "image.jpg";
+    const bytes = await response.arrayBuffer();
+    const filename = media.originalName || getFilenameFromUrl(media.src);
+    const fileType =
+      media.mimeType ||
+      response.headers.get("content-type")?.split(";")[0] ||
+      guessMimeType(filename);
+    const blob = new Blob([bytes], { type: fileType });
 
     const formData = new FormData();
     formData.append("file", blob, filename);
+    if (media.alt) formData.append("alt", media.alt);
+    if (media.summary) formData.append("summary", media.summary);
+    if (media.width) formData.append("width", String(media.width));
+    if (media.height) formData.append("height", String(media.height));
+    if (media.blurhash) formData.append("blurhash", media.blurhash);
+    if (media.waveform) formData.append("waveform", media.waveform);
+
+    if (media.poster) {
+      const posterResponse = await fetch(media.poster);
+      if (posterResponse.ok) {
+        const posterBytes = await posterResponse.arrayBuffer();
+        const posterName = getFilenameFromUrl(media.poster);
+        const posterType =
+          posterResponse.headers.get("content-type")?.split(";")[0] ||
+          guessMimeType(posterName);
+        formData.append(
+          "poster",
+          new Blob([posterBytes], { type: posterType }),
+          posterName,
+        );
+      }
+    }
 
     const uploadResponse = await fetch(`${apiUrl}/api/upload`, {
       method: "POST",
@@ -116,6 +202,84 @@ async function uploadImage(imageUrl, apiUrl, token) {
   }
 }
 
+function getFilenameFromUrl(fileUrl) {
+  try {
+    const pathname = new URL(fileUrl).pathname;
+    return pathname.split("/").pop() || "file";
+  } catch {
+    return fileUrl.split("/").pop() || "file";
+  }
+}
+
+function guessMimeType(filename) {
+  const ext = extname(filename).toLowerCase();
+  switch (ext) {
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".png":
+      return "image/png";
+    case ".gif":
+      return "image/gif";
+    case ".webp":
+      return "image/webp";
+    case ".svg":
+      return "image/svg+xml";
+    case ".avif":
+      return "image/avif";
+    case ".bmp":
+      return "image/bmp";
+    case ".ico":
+      return "image/x-icon";
+    case ".mp4":
+      return "video/mp4";
+    case ".mp3":
+      return "audio/mpeg";
+    case ".pdf":
+      return "application/pdf";
+    case ".json":
+      return "application/json";
+    case ".md":
+      return "text/markdown";
+    case ".csv":
+      return "text/csv";
+    case ".txt":
+      return "text/plain";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+function generateImportedStorageKey(originalName) {
+  const id = uuidv7();
+  const extension = extname(originalName) || "";
+  const date = new Date();
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const filename = `${id}${extension}`;
+  return {
+    id,
+    filename,
+    storageKey: `media/${year}/${month}/${filename}`,
+  };
+}
+
+function getMediaPublicUrl(storageKey, provider, appConfig) {
+  const base =
+    provider === "s3"
+      ? appConfig.s3PublicUrl
+      : provider === "local"
+        ? appConfig.localPublicUrl
+        : appConfig.r2PublicUrl;
+
+  if (base) {
+    return `${base.replace(/\/+$/, "")}/${storageKey}`;
+  }
+
+  const prefix = appConfig.sitePathPrefix || "";
+  return `${prefix}/${storageKey}`.replace(/\/{2,}/g, "/");
+}
+
 /**
  * Replace image URLs in markdown with newly uploaded URLs.
  */
@@ -125,6 +289,144 @@ function replaceImageUrls(markdown, urlMap) {
     result = result.replaceAll(oldUrl, newUrl);
   }
   return result;
+}
+
+function normalizeMediaSpec(spec, siteConfig) {
+  if (!spec || typeof spec.src !== "string" || spec.src.trim() === "") {
+    return null;
+  }
+
+  return {
+    kind: spec.kind,
+    src: resolveImportUrl(spec.src, siteConfig),
+    poster:
+      typeof spec.poster === "string"
+        ? resolveImportUrl(spec.poster, siteConfig)
+        : null,
+    mimeType: spec.mimeType || undefined,
+    originalName: spec.originalName || undefined,
+    size: typeof spec.size === "number" ? spec.size : undefined,
+    width: typeof spec.width === "number" ? spec.width : undefined,
+    height: typeof spec.height === "number" ? spec.height : undefined,
+    alt: typeof spec.alt === "string" ? spec.alt : undefined,
+    position: typeof spec.position === "string" ? spec.position : undefined,
+    blurhash: typeof spec.blurhash === "string" ? spec.blurhash : undefined,
+    waveform: typeof spec.waveform === "string" ? spec.waveform : undefined,
+    summary: typeof spec.summary === "string" ? spec.summary : undefined,
+    chars: typeof spec.chars === "number" ? spec.chars : undefined,
+  };
+}
+
+async function uploadMediaList(mediaSpecs, target, siteConfig) {
+  const urlMap = new Map();
+  const mediaIds = [];
+  let uploaded = 0;
+
+  for (const spec of mediaSpecs) {
+    const normalized = normalizeMediaSpec(spec, siteConfig);
+    if (!normalized || normalized.src.startsWith("data:")) continue;
+    const result = await target.uploadMedia(normalized);
+    if (!result) continue;
+    urlMap.set(normalized.src, result.url);
+    mediaIds.push(result.id);
+    uploaded += 1;
+  }
+
+  return { urlMap, mediaIds, uploaded };
+}
+
+function buildSettingsUpdatesFromConfig(siteConfig, customCss = "") {
+  const jant = siteConfig?.extra?.jant || {};
+  const themeId = String(jant.theme_id || "");
+  const defaultThemeId = String(jant.default_theme_id || "");
+  const fontThemeId = String(jant.font_theme_id || "");
+  const themeMode = String(jant.theme_mode || "");
+  const headerNavMaxVisible = Number(jant.header_nav_max_visible);
+
+  return {
+    SITE_NAME: String(siteConfig?.title || ""),
+    SITE_DESCRIPTION: String(siteConfig?.description || ""),
+    SITE_LANGUAGE: String(siteConfig?.default_language || "en"),
+    SITE_FOOTER: String(jant.site_footer_markdown || ""),
+    HOME_DEFAULT_VIEW:
+      String(jant.home_default_view || "") === "featured" ? "featured" : "",
+    HEADER_NAV_MAX_VISIBLE:
+      Number.isFinite(headerNavMaxVisible) && headerNavMaxVisible !== 2
+        ? String(headerNavMaxVisible)
+        : "",
+    SHOW_JANT_BRANDING_ON_HOME: jant.show_jant_branding_on_home ? "true" : "",
+    NOINDEX: jant.noindex ? "true" : "",
+    SHOW_HEADER_AVATAR: jant.show_header_avatar ? "true" : "",
+    THEME: themeId && themeId !== defaultThemeId ? themeId : "",
+    FONT_THEME: fontThemeId && fontThemeId !== "default" ? fontThemeId : "",
+    THEME_MODE:
+      themeMode === "light" || themeMode === "dark" ? themeMode : "",
+    CUSTOM_CSS: customCss,
+  };
+}
+
+function normalizeImportedNavItems(siteConfig) {
+  const jant = siteConfig?.extra?.jant || {};
+  const navItems = jant.nav;
+  if (!Array.isArray(navItems)) {
+    return {
+      exported: Boolean(jant.nav_exported),
+      items: [],
+    };
+  }
+
+  return {
+    exported: true,
+    items: navItems
+      .map((item) => {
+        if (!item || typeof item !== "object") return null;
+        const type = item.type === "system" ? "system" : "link";
+        if (type === "system" && typeof item.system_key === "string") {
+          return { type, systemKey: item.system_key };
+        }
+        if (
+          type === "link" &&
+          typeof item.label === "string" &&
+          typeof item.url === "string"
+        ) {
+          return { type, label: item.label, url: item.url };
+        }
+        return null;
+      })
+      .filter(Boolean),
+  };
+}
+
+function buildSiteAvatarImport(siteConfig) {
+  const exportInfo = siteConfig?.extra?.jant_export || {};
+  if (exportInfo.format !== "jant-site") {
+    return null;
+  }
+
+  const jant = siteConfig?.extra?.jant || {};
+  if (!jant.site_avatar_url || typeof jant.site_avatar_url !== "string") {
+    return { mode: "remove" };
+  }
+
+  return {
+    mode: "set",
+    avatarUrl: resolveImportUrl(jant.site_avatar_url, siteConfig),
+    appleTouchUrl:
+      typeof jant.apple_touch_icon_url === "string"
+        ? resolveImportUrl(jant.apple_touch_icon_url, siteConfig)
+        : null,
+  };
+}
+
+function createUploadFile(name, type, bytes) {
+  return {
+    name,
+    type,
+    size: bytes.byteLength,
+    stream() {
+      return new Blob([bytes], { type }).stream();
+    },
+  };
 }
 
 class ApiError extends Error {
@@ -172,6 +474,295 @@ async function apiCall(method, path, apiUrl, token, body) {
   return response.json();
 }
 
+function createRemoteTarget(apiUrl, token) {
+  return {
+    async close() {},
+    async updateSettings(updates) {
+      return apiCall("PUT", "/api/settings", apiUrl, token, updates);
+    },
+    async listNavItems() {
+      const result = await apiCall("GET", "/api/nav-items", apiUrl, token);
+      return result.navItems || [];
+    },
+    async createNavItem(data) {
+      return apiCall("POST", "/api/nav-items", apiUrl, token, data);
+    },
+    async deleteNavItem(id) {
+      return apiCall("DELETE", `/api/nav-items/${id}`, apiUrl, token);
+    },
+    async removeSiteAvatar() {
+      return apiCall("DELETE", "/api/settings/avatar", apiUrl, token);
+    },
+    async uploadSiteAvatar(data) {
+      const avatarResponse = await fetch(data.avatarUrl);
+      if (!avatarResponse.ok) {
+        throw new Error(`Failed to fetch site avatar: ${data.avatarUrl}`);
+      }
+
+      const avatarBytes = await avatarResponse.arrayBuffer();
+      const avatarName = getFilenameFromUrl(data.avatarUrl) || "avatar";
+      const avatarType =
+        avatarResponse.headers.get("content-type")?.split(";")[0] ||
+        guessMimeType(avatarName);
+
+      const formData = new FormData();
+      formData.append(
+        "file",
+        new Blob([avatarBytes], { type: avatarType }),
+        avatarName,
+      );
+
+      if (data.appleTouchUrl) {
+        const appleTouchResponse = await fetch(data.appleTouchUrl);
+        if (appleTouchResponse.ok) {
+          const appleTouchBytes = await appleTouchResponse.arrayBuffer();
+          const appleTouchName =
+            getFilenameFromUrl(data.appleTouchUrl) || "apple-touch-icon.png";
+          const appleTouchType =
+            appleTouchResponse.headers.get("content-type")?.split(";")[0] ||
+            guessMimeType(appleTouchName);
+          formData.append(
+            "appleTouch",
+            new Blob([appleTouchBytes], { type: appleTouchType }),
+            appleTouchName,
+          );
+        }
+      }
+
+      const response = await fetch(`${apiUrl}/api/settings/avatar`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      }
+
+      return response.json();
+    },
+    async syncSiteAvatar(data) {
+      await this.removeSiteAvatar();
+      if (!data) {
+        return { success: true };
+      }
+      return this.uploadSiteAvatar(data);
+    },
+    async listCollections() {
+      const existing = await apiCall("GET", "/api/collections", apiUrl, token);
+      return existing.collections || [];
+    },
+    async createCollection(data) {
+      return apiCall("POST", "/api/collections", apiUrl, token, data);
+    },
+    async createPost(data) {
+      return apiCall("POST", "/api/posts", apiUrl, token, data);
+    },
+    async createAlias(path, targetSlug) {
+      return apiCall("POST", "/api/custom-urls", apiUrl, token, {
+        path,
+        targetType: "post",
+        targetId: targetSlug,
+      });
+    },
+    async uploadMedia(media) {
+      return uploadRemoteMedia(media, apiUrl, token);
+    },
+    async findPostBySlug() {
+      return null;
+    },
+  };
+}
+
+async function createLocalTarget(env = process.env) {
+  const { sqlite } = openNodeSqlite(env);
+  const { createNodeCliRuntime, resolveConfig } = await loadNodeRuntime();
+  const bindings = {
+    ...(env ?? {}),
+    NODE_SQLITE: sqlite,
+  };
+  const runtime = await createNodeCliRuntime(bindings);
+  const allSettings = await runtime.services.settings.getAll();
+  const appConfig = resolveConfig(bindings, allSettings);
+  const summaryConfig = {
+    maxParagraphs: appConfig.summaryMaxParagraphs,
+    maxChars: appConfig.summaryMaxChars,
+  };
+
+  return {
+    async close() {
+      sqlite.close();
+    },
+    async updateSettings(updates) {
+      await runtime.services.settings.setMany(updates);
+      return { settings: updates };
+    },
+    async listNavItems() {
+      return runtime.services.navItems.list();
+    },
+    async createNavItem(data) {
+      return runtime.services.navItems.create(data);
+    },
+    async deleteNavItem(id) {
+      return runtime.services.navItems.delete(id);
+    },
+    async removeSiteAvatar() {
+      return runtime.services.settings.removeAvatar(runtime.storage);
+    },
+    async uploadSiteAvatar(data) {
+      if (!runtime.storage) {
+        throw new Error("Local import requires configured storage.");
+      }
+
+      const avatarResponse = await fetch(data.avatarUrl);
+      if (!avatarResponse.ok) {
+        throw new Error(`Failed to fetch site avatar: ${data.avatarUrl}`);
+      }
+      const avatarBytes = await avatarResponse.arrayBuffer();
+      const avatarName = getFilenameFromUrl(data.avatarUrl) || "avatar";
+      const avatarType =
+        avatarResponse.headers.get("content-type")?.split(";")[0] ||
+        guessMimeType(avatarName);
+
+      let appleTouchIcon;
+      if (data.appleTouchUrl) {
+        const appleTouchResponse = await fetch(data.appleTouchUrl);
+        if (appleTouchResponse.ok) {
+          appleTouchIcon = await appleTouchResponse.arrayBuffer();
+        }
+      }
+
+      await runtime.services.settings.uploadAvatar(
+        {
+          file: createUploadFile(
+            avatarName,
+            avatarType,
+            new Uint8Array(avatarBytes),
+          ),
+          appleTouchIcon,
+        },
+        {
+          media: runtime.services.media,
+          storage: runtime.storage,
+          storageProvider: appConfig.storageDriver,
+          maxFileSizeMB: appConfig.uploadMaxFileSize,
+        },
+      );
+
+      return { success: true };
+    },
+    async syncSiteAvatar(data) {
+      await this.removeSiteAvatar();
+      if (!data) {
+        return { success: true };
+      }
+      return this.uploadSiteAvatar(data);
+    },
+    async listCollections() {
+      return runtime.services.collections.list();
+    },
+    async createCollection(data) {
+      return runtime.services.collections.create(data);
+    },
+    async createPost(data) {
+      const post = await runtime.services.posts.create(data, summaryConfig);
+      if (data.mediaIds && data.mediaIds.length > 0) {
+        await runtime.services.media.attachToPost(post.id, data.mediaIds);
+      }
+      return post;
+    },
+    async createAlias(path, targetSlug) {
+      const post = await runtime.services.posts.getBySlug(targetSlug);
+      if (!post) {
+        throw new Error(`Post with slug "${targetSlug}" not found`);
+      }
+      return runtime.services.customUrls.create({
+        path,
+        targetType: "post",
+        targetId: post.id,
+      });
+    },
+    async uploadMedia(mediaSpec) {
+      if (!runtime.storage) {
+        throw new Error("Local import requires configured storage.");
+      }
+
+      const response = await fetch(mediaSpec.src);
+      if (!response.ok) return null;
+
+      const originalName =
+        mediaSpec.originalName || getFilenameFromUrl(mediaSpec.src) || "file";
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      const { id, filename, storageKey } = generateImportedStorageKey(
+        originalName,
+      );
+      const mimeType =
+        mediaSpec.mimeType ||
+        response.headers.get("content-type")?.split(";")[0] ||
+        guessMimeType(originalName);
+      let posterKey;
+
+      if (mediaSpec.poster) {
+        const posterResponse = await fetch(mediaSpec.poster);
+        if (posterResponse.ok) {
+          const posterName =
+            getFilenameFromUrl(mediaSpec.poster) || "poster.webp";
+          const posterExt = extname(posterName) || ".webp";
+          posterKey = storageKey.replace(
+            /(\.[^.]+)?$/,
+            `-poster${posterExt}`,
+          );
+          await runtime.storage.put(
+            posterKey,
+            new Uint8Array(await posterResponse.arrayBuffer()),
+            {
+              contentType:
+                posterResponse.headers.get("content-type")?.split(";")[0] ||
+                guessMimeType(posterName),
+            },
+          );
+        }
+      }
+
+      await runtime.storage.put(storageKey, bytes, {
+        contentType: mimeType,
+      });
+
+      const createdMedia = await runtime.services.media.create({
+        id,
+        filename,
+        originalName,
+        mimeType,
+        size: mediaSpec.size ?? bytes.byteLength,
+        storageKey,
+        provider: appConfig.storageDriver,
+        width: mediaSpec.width ?? undefined,
+        height: mediaSpec.height ?? undefined,
+        alt: mediaSpec.alt ?? undefined,
+        position: mediaSpec.position ?? undefined,
+        blurhash: mediaSpec.blurhash ?? undefined,
+        waveform: mediaSpec.waveform ?? undefined,
+        posterKey,
+        summary: mediaSpec.summary ?? undefined,
+        chars: mediaSpec.chars ?? undefined,
+        mediaKind: mediaSpec.kind ?? undefined,
+      });
+
+      return {
+        id: createdMedia.id,
+        url: getMediaPublicUrl(
+          createdMedia.storageKey,
+          createdMedia.provider,
+          appConfig,
+        ),
+      };
+    },
+    async findPostBySlug(slug) {
+      return runtime.services.posts.getBySlug(slug);
+    },
+  };
+}
+
 /**
  * Recursively walk a directory's content/ folder and collect post/collection files.
  */
@@ -193,7 +784,8 @@ async function walkContent(rootDir, postFiles, collectionFiles) {
         const relPath = relative(rootDir, fullPath).replace(/\\/g, "/");
         const content = await readFile(fullPath, "utf-8");
         if (
-          relPath.startsWith("content/c/") &&
+          (relPath.startsWith("content/jant-collections/") ||
+            relPath.startsWith("content/c/")) &&
           relPath.endsWith("/_index.md")
         ) {
           collectionFiles.push({ path: relPath, content });
@@ -211,6 +803,14 @@ async function walkContent(rootDir, postFiles, collectionFiles) {
   await walk(contentDir);
 }
 
+export const __test__ = {
+  resolveImportUrl,
+  normalizeMediaSpec,
+  buildSettingsUpdatesFromConfig,
+  normalizeImportedNavItems,
+  buildSiteAvatarImport,
+};
+
 export async function run(argv) {
   const { values } = parseArgs({
     args: argv,
@@ -225,12 +825,16 @@ export async function run(argv) {
   });
 
   if (values.help) {
-    console.log("Usage: jant import-site --url <url> [options]");
+    console.log("Usage: jant site import [--url <url>] [options]");
     console.log("");
     console.log("Import a Zola export ZIP into a Jant instance.");
     console.log("");
+    console.log("Modes:");
+    console.log("  Local           No --url; imports into the local Node SQLite runtime");
+    console.log("  Remote          --url requires JANT_TOKEN or --token");
+    console.log("");
     console.log("Options:");
-    console.log("  --url         Target Jant instance URL (required)");
+    console.log("  --url         Target remote Jant instance URL");
     console.log(
       "  --path        Path to export directory or ZIP file (default: .)",
     );
@@ -240,28 +844,30 @@ export async function run(argv) {
     console.log("Authentication:");
     console.log("  Set JANT_TOKEN env var (recommended):");
     console.log("    export JANT_TOKEN=jnt_your_token");
-    console.log("    jant import-site --url https://your-site.com");
+    console.log("    jant site import --url https://your-site.com");
+    console.log("");
+    console.log("Compatibility alias: jant import-site");
     process.exit(0);
   }
 
-  if (!values.url) {
-    console.error("Error: --url is required");
-    process.exit(1);
-  }
-
   const token = process.env.JANT_TOKEN || values.token;
-  if (!token && !values["dry-run"]) {
+  if (values.url && !token && !values["dry-run"]) {
     console.error(
-      "Error: JANT_TOKEN env var is required (unless using --dry-run)",
+      "Error: JANT_TOKEN env var is required for remote import (unless using --dry-run)",
     );
     console.error("");
     console.error("  export JANT_TOKEN=jnt_your_token");
     process.exit(1);
   }
 
-  const apiUrl = values.url.replace(/\/$/, "");
+  const apiUrl = values.url?.replace(/\/$/, "");
   const dryRun = values["dry-run"];
   const skipMedia = values["skip-media"];
+  const target = dryRun
+    ? null
+    : values.url
+      ? createRemoteTarget(apiUrl, token)
+      : await createLocalTarget(process.env);
 
   // 1. Read source — directory or ZIP
   const inputPath = resolve(process.cwd(), values.path);
@@ -274,10 +880,19 @@ export async function run(argv) {
 
   const postFiles = [];
   const collectionFiles = [];
+  let siteConfig = null;
+  let customCss = "";
 
   if (inputStat.isDirectory()) {
     console.log(`Reading directory ${inputPath}...`);
     await walkContent(inputPath, postFiles, collectionFiles);
+    const configPath = join(inputPath, "config.toml");
+    const configContent = await readFile(configPath, "utf-8").catch(() => null);
+    if (configContent) {
+      siteConfig = await parseToml(configContent);
+    }
+    customCss = await readFile(join(inputPath, "static", "custom.css"), "utf-8")
+      .catch(() => "");
   } else {
     console.log(`Reading ZIP ${inputPath}...`);
     const zipData = await readFile(inputPath);
@@ -285,8 +900,19 @@ export async function run(argv) {
     const files = unzipSync(new Uint8Array(zipData));
     const decoder = new TextDecoder();
 
+    if (files["config.toml"]) {
+      siteConfig = await parseToml(decoder.decode(files["config.toml"]));
+    }
+    if (files["static/custom.css"]) {
+      customCss = decoder.decode(files["static/custom.css"]);
+    }
+
     for (const [path, data] of Object.entries(files)) {
-      if (path.startsWith("content/c/") && path.endsWith("/_index.md")) {
+      if (
+        (path.startsWith("content/jant-collections/") ||
+          path.startsWith("content/c/")) &&
+        path.endsWith("/_index.md")
+      ) {
         collectionFiles.push({ path, content: decoder.decode(data) });
       } else if (
         path.startsWith("content/") &&
@@ -302,13 +928,73 @@ export async function run(argv) {
     `Found ${postFiles.length} posts and ${collectionFiles.length} collections`,
   );
 
+  if (siteConfig) {
+    const settingsUpdates = buildSettingsUpdatesFromConfig(siteConfig, customCss);
+    const importedNav = normalizeImportedNavItems(siteConfig);
+    const avatarImport = buildSiteAvatarImport(siteConfig);
+
+    if (dryRun) {
+      console.log("[dry-run] Would apply exported site settings");
+      if (importedNav.exported) {
+        console.log(
+          `[dry-run] Would replace navigation with ${importedNav.items.length} items`,
+        );
+      }
+      if (avatarImport && !skipMedia) {
+        if (avatarImport.mode === "remove") {
+          console.log("[dry-run] Would remove existing site avatar");
+        } else {
+          console.log("[dry-run] Would import exported site avatar");
+        }
+      }
+    } else {
+      try {
+        const result = await target.updateSettings(settingsUpdates);
+        if (result?.rejectedKeys?.length) {
+          console.warn(
+            `Warning: Some site settings were rejected: ${result.rejectedKeys.join(", ")}`,
+          );
+        }
+      } catch (err) {
+        console.error(`Error applying exported site settings: ${err.message}`);
+        process.exit(1);
+      }
+
+      if (importedNav.exported) {
+        try {
+          const existingNavItems = await target.listNavItems();
+          for (const item of existingNavItems) {
+            await target.deleteNavItem(item.id);
+          }
+          for (const item of importedNav.items) {
+            await target.createNavItem(item);
+          }
+        } catch (err) {
+          console.error(`Error importing navigation: ${err.message}`);
+          process.exit(1);
+        }
+      }
+
+      if (avatarImport && !skipMedia) {
+        try {
+          await target.syncSiteAvatar(
+            avatarImport.mode === "set" ? avatarImport : null,
+          );
+        } catch (err) {
+          console.error(`Error importing site avatar: ${err.message}`);
+          process.exit(1);
+        }
+      }
+    }
+  }
+
   // 3. Fetch existing collections and create missing ones
   const collectionSlugToId = new Map();
 
   if (!dryRun) {
     try {
-      const existing = await apiCall("GET", "/api/collections", apiUrl, token);
-      for (const col of existing.collections || []) {
+      const existingCollections = await target.listCollections();
+      for (const col of existingCollections) {
         collectionSlugToId.set(col.slug, col.id);
       }
     } catch (err) {
@@ -319,7 +1005,10 @@ export async function run(argv) {
 
   for (const { path, content } of collectionFiles) {
     const { frontMatter } = await parseFrontMatter(content);
-    const slug = path.replace("content/c/", "").replace("/_index.md", "");
+    const slug = path
+      .replace("content/jant-collections/", "")
+      .replace("content/c/", "")
+      .replace("/_index.md", "");
 
     if (collectionSlugToId.has(slug)) {
       console.log(`Skipped collection (exists): ${frontMatter.title || slug}`);
@@ -335,10 +1024,17 @@ export async function run(argv) {
     }
 
     try {
-      const result = await apiCall("POST", "/api/collections", apiUrl, token, {
+      const collectionExtra = frontMatter.extra || {};
+      const result = await target.createCollection({
         title: frontMatter.title || slug,
         slug,
         description: frontMatter.description || null,
+        icon:
+          collectionExtra.icon != null
+            ? String(collectionExtra.icon)
+            : undefined,
+        sortOrder:
+          collectionExtra.sort_order || collectionExtra.sortOrder || undefined,
       });
       collectionSlugToId.set(slug, result.id);
       console.log(`Created collection: ${frontMatter.title || slug}`);
@@ -351,7 +1047,7 @@ export async function run(argv) {
   // 4. Process posts
   let postsCreated = 0;
   let repliesCreated = 0;
-  let imagesUploaded = 0;
+  let mediaUploaded = 0;
   let aliasesCreated = 0;
   let skipped = 0;
 
@@ -373,40 +1069,53 @@ export async function run(argv) {
 
     // Process images in root body
     let rootBody = rootSegment?.body || "";
-    const mediaIds = [];
+    const {
+      markdown: rootBodyWithoutAttachments,
+      attachments: rootAttachments,
+    } = extractAttachmentBlocks(rootBody);
+    rootBody = rootBodyWithoutAttachments;
+    let mediaIds = [];
 
-    if (!skipMedia && !dryRun && rootBody) {
-      const imageUrls = findImageUrls(rootBody);
-      const urlMap = new Map();
+    if (!skipMedia && !dryRun) {
+      const imageMedia = findImageUrls(rootBody).map((src) => ({ src }));
+      const uploadResult = await uploadMediaList(
+        [...rootAttachments, ...imageMedia],
+        target,
+        siteConfig,
+      );
+      mediaIds = uploadResult.mediaIds;
+      mediaUploaded += uploadResult.uploaded;
 
-      for (const imageUrl of imageUrls) {
-        if (imageUrl.startsWith("data:")) continue;
-        const result = await uploadImage(imageUrl, apiUrl, token);
-        if (result) {
-          urlMap.set(imageUrl, result.url);
-          mediaIds.push(result.id);
-          imagesUploaded++;
-        }
-      }
-
-      if (urlMap.size > 0) {
-        rootBody = replaceImageUrls(rootBody, urlMap);
+      if (uploadResult.urlMap.size > 0) {
+        rootBody = replaceImageUrls(rootBody, uploadResult.urlMap);
       }
     }
 
     const extra = frontMatter.extra || {};
     const format = extra.format || "note";
+    const postStatus =
+      extra.status === "draft" || extra.status === "published"
+        ? extra.status
+        : frontMatter.draft
+          ? "draft"
+          : "published";
+    const postVisibility =
+      extra.visibility === "unlisted" || extra.visibility === "private"
+        ? extra.visibility
+        : undefined;
 
     const postData = {
       format,
       title: frontMatter.title != null ? String(frontMatter.title) : undefined,
       bodyMarkdown: rootBody || undefined,
       slug: frontMatter.slug != null ? String(frontMatter.slug) : undefined,
-      status: frontMatter.draft ? "draft" : "published",
+      path: frontMatter.path != null ? String(frontMatter.path) : undefined,
+      status: postStatus,
+      visibility: postVisibility,
       collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
       mediaIds: mediaIds.length > 0 ? mediaIds : undefined,
       publishedAt:
-        !frontMatter.draft && frontMatter.date
+        postStatus === "published" && frontMatter.date
           ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
           : undefined,
       pinned: extra.pinned || undefined,
@@ -436,21 +1145,29 @@ export async function run(argv) {
     const postLabel = frontMatter.title || frontMatter.slug || "(untitled)";
 
     const progress = `[${postsCreated + skipped + 1}/${postFiles.length}]`;
+    const existingPost =
+      postData.slug && !dryRun ? await target.findPostBySlug(postData.slug) : null;
 
     let post;
-    try {
-      post = await apiCall("POST", "/api/posts", apiUrl, token, postData);
-      postsCreated++;
-      const replyInfo =
-        replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
-      console.log(`${progress} Created: ${postLabel}${replyInfo}`);
-    } catch (err) {
-      if (err.status === 409) {
-        console.log(`${progress} Skipped: ${postLabel}`);
-        skipped++;
-      } else {
-        console.error(`Error creating post "${postLabel}": ${err.message}`);
-        process.exit(1);
+    if (existingPost) {
+      post = existingPost;
+      console.log(`${progress} Skipped: ${postLabel}`);
+      skipped++;
+    } else {
+      try {
+        post = await target.createPost(postData);
+        postsCreated++;
+        const replyInfo =
+          replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
+        console.log(`${progress} Created: ${postLabel}${replyInfo}`);
+      } catch (err) {
+        if (err.status === 409) {
+          console.log(`${progress} Skipped: ${postLabel}`);
+          skipped++;
+        } else {
+          console.error(`Error creating post "${postLabel}": ${err.message}`);
+          process.exit(1);
+        }
       }
     }
 
@@ -462,11 +1179,7 @@ export async function run(argv) {
       const aliasPath = alias.startsWith("/") ? alias : `/${alias}`;
       if (aliasPath === `/${postSlug}`) continue; // skip self-reference
       try {
-        await apiCall("POST", "/api/custom-urls", apiUrl, token, {
-          path: aliasPath,
-          targetType: "post",
-          targetId: postSlug,
-        });
+        await target.createAlias(aliasPath, postSlug);
         aliasesCreated++;
       } catch (err) {
         if (err.status === 409) continue; // alias already exists
@@ -481,33 +1194,45 @@ export async function run(argv) {
     for (const replySegment of replySegments) {
       const replyAttrs = replySegment.attrs || {};
       let replyBody = replySegment.body || "";
-      const replyMediaIds = [];
+      const {
+        markdown: replyBodyWithoutAttachments,
+        attachments: replyAttachments,
+      } = extractAttachmentBlocks(replyBody);
+      replyBody = replyBodyWithoutAttachments;
+      let replyMediaIds = [];
 
-      if (!skipMedia && replyBody) {
-        const imageUrls = findImageUrls(replyBody);
-        const urlMap = new Map();
+      if (!skipMedia && !dryRun) {
+        const imageMedia = findImageUrls(replyBody).map((src) => ({ src }));
+        const uploadResult = await uploadMediaList(
+          [...replyAttachments, ...imageMedia],
+          target,
+          siteConfig,
+        );
+        replyMediaIds = uploadResult.mediaIds;
+        mediaUploaded += uploadResult.uploaded;
 
-        for (const imageUrl of imageUrls) {
-          if (imageUrl.startsWith("data:")) continue;
-          const result = await uploadImage(imageUrl, apiUrl, token);
-          if (result) {
-            urlMap.set(imageUrl, result.url);
-            replyMediaIds.push(result.id);
-            imagesUploaded++;
-          }
-        }
-
-        if (urlMap.size > 0) {
-          replyBody = replaceImageUrls(replyBody, urlMap);
+        if (uploadResult.urlMap.size > 0) {
+          replyBody = replaceImageUrls(replyBody, uploadResult.urlMap);
         }
       }
 
       const replyFormat = replyAttrs.format || "note";
+      const replyStatus =
+        replyAttrs.status === "draft" || replyAttrs.status === "published"
+          ? replyAttrs.status
+          : "published";
+      const replyVisibility =
+        replyAttrs.visibility === "unlisted" || replyAttrs.visibility === "private"
+          ? replyAttrs.visibility
+          : undefined;
       const replyData = {
         format: replyFormat,
+        status: replyStatus,
         title: replyAttrs.title || undefined,
         bodyMarkdown: replyBody || undefined,
         replyToId: post.id,
+        slug: replyAttrs.slug || undefined,
+        visibility: replyVisibility,
         mediaIds: replyMediaIds.length > 0 ? replyMediaIds : undefined,
         publishedAt: replyAttrs.date
           ? Math.floor(new Date(replyAttrs.date).getTime() / 1000)
@@ -522,8 +1247,16 @@ export async function run(argv) {
         replyData.quoteText = decodeURIComponent(replyAttrs.quote_text);
       }
 
+      const existingReply =
+        replyData.slug ? await target.findPostBySlug(replyData.slug) : null;
+      if (existingReply) {
+        console.log(`  Skipped reply (exists)`);
+        skipped++;
+        continue;
+      }
+
       try {
-        await apiCall("POST", "/api/posts", apiUrl, token, replyData);
+        await target.createPost(replyData);
         repliesCreated++;
       } catch (err) {
         if (err.status === 409) {
@@ -537,12 +1270,14 @@ export async function run(argv) {
     }
   }
 
+  await target?.close();
+
   // 5. Summary
   console.log("");
   console.log("Import complete:");
   console.log(`  Posts created: ${postsCreated}`);
   console.log(`  Replies created: ${repliesCreated}`);
-  console.log(`  Images uploaded: ${imagesUploaded}`);
+  console.log(`  Media uploaded: ${mediaUploaded}`);
   if (aliasesCreated > 0) {
     console.log(`  Aliases created: ${aliasesCreated}`);
   }

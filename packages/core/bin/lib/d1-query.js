@@ -62,6 +62,20 @@ export function executeD1(sql, runtime, options = {}) {
     options,
   );
 
+  if (options.quiet) {
+    const output = runWrangler([...args, "--json"]);
+    const parsed = JSON.parse(output);
+    const statements = Array.isArray(parsed) ? parsed : [parsed];
+
+    for (const statement of statements) {
+      if (statement?.error?.text) {
+        throw new Error(`Wrangler error: ${statement.error.text}`);
+      }
+    }
+
+    return statements;
+  }
+
   runWrangler(args, { stdio: "inherit" });
 }
 
