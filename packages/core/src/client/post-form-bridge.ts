@@ -11,6 +11,7 @@ import type {
   PostFormLabels,
 } from "./components/post-form-types.js";
 import type { JantPostForm } from "./components/jant-post-form.js";
+import { getJsonString, readJsonObject } from "./json.js";
 import { showToast } from "./toast.js";
 
 function findPostForm(
@@ -54,9 +55,11 @@ async function handlePostSubmit(event: Event) {
     if (!res.ok) {
       let message = detail.messages.error;
       try {
-        const json = await res.json();
-        if (typeof json?.error === "string") message = json.error;
-        else if (typeof json?.message === "string") message = json.message;
+        const json = await readJsonObject(res);
+        message =
+          getJsonString(json, "error") ??
+          getJsonString(json, "message") ??
+          message;
       } catch {
         // Ignore JSON parse failure; keep fallback message.
       }
@@ -74,7 +77,7 @@ async function handlePostSubmit(event: Event) {
           });
 
           if (retryRes.ok) {
-            const retryJson = await retryRes.json();
+            const retryJson = await readJsonObject(retryRes);
             const labelsAttr = formEl.getAttribute("labels");
             let fallbackMsg = "Couldn't publish. Saved as draft.";
             if (labelsAttr) {
@@ -90,12 +93,11 @@ async function handlePostSubmit(event: Event) {
             }
             showToast(fallbackMsg);
 
-            if (
-              retryJson?.status === "redirect" &&
-              typeof retryJson.url === "string"
-            ) {
+            const retryStatus = getJsonString(retryJson, "status");
+            const retryUrl = getJsonString(retryJson, "url");
+            if (retryStatus === "redirect" && retryUrl) {
               formEl.clearDirty();
-              window.location.href = retryJson.url;
+              window.location.href = retryUrl;
               return;
             }
             formEl.clearDirty();
@@ -109,11 +111,13 @@ async function handlePostSubmit(event: Event) {
       throw new Error(message);
     }
 
-    const json = await res.json();
+    const json = await readJsonObject(res);
+    const status = getJsonString(json, "status");
+    const url = getJsonString(json, "url");
 
-    if (json?.status === "redirect" && typeof json.url === "string") {
+    if (status === "redirect" && url) {
       formEl.clearDirty();
-      window.location.href = json.url;
+      window.location.href = url;
       return;
     }
 

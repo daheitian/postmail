@@ -6,6 +6,8 @@
  * when a file is larger than MULTIPART_THRESHOLD.
  */
 
+import { getJsonNumber, getJsonString, readJsonObject } from "./json.js";
+
 /** Files at or above this size use multipart upload (95MB, below 100MB Worker limit) */
 export const MULTIPART_THRESHOLD = 95 * 1024 * 1024;
 
@@ -56,18 +58,19 @@ export async function uploadMultipart(
   });
 
   if (!initRes.ok) {
-    const data = await initRes.json();
-    throw new Error(data.error ?? "Failed to start upload");
+    const data = await readJsonObject(initRes);
+    throw new Error(getJsonString(data, "error") ?? "Failed to start upload");
   }
 
-  const { id, uploadId, storageKey, filename, originalName } =
-    (await initRes.json()) as {
-      id: string;
-      uploadId: string;
-      storageKey: string;
-      filename: string;
-      originalName: string;
-    };
+  const initData = await readJsonObject(initRes);
+  const id = getJsonString(initData, "id");
+  const uploadId = getJsonString(initData, "uploadId");
+  const storageKey = getJsonString(initData, "storageKey");
+  const filename = getJsonString(initData, "filename");
+  const originalName = getJsonString(initData, "originalName");
+  if (!id || !uploadId || !storageKey || !filename || !originalName) {
+    throw new Error("Failed to start upload");
+  }
 
   try {
     // 2. Upload poster if present (small file, single request)
@@ -85,8 +88,11 @@ export async function uploadMultipart(
         throw new Error("Failed to upload poster");
       }
 
-      const posterData = (await posterRes.json()) as { posterKey: string };
-      posterKey = posterData.posterKey;
+      const posterData = await readJsonObject(posterRes);
+      posterKey = getJsonString(posterData, "posterKey");
+      if (!posterKey) {
+        throw new Error("Failed to upload poster");
+      }
     }
 
     // 3. Slice file into chunks and upload each part
@@ -113,11 +119,13 @@ export async function uploadMultipart(
         throw new Error(`Failed to upload part ${partNumber}`);
       }
 
-      const partData = (await partRes.json()) as {
-        partNumber: number;
-        etag: string;
-      };
-      parts.push(partData);
+      const partData = await readJsonObject(partRes);
+      const uploadedPartNumber = getJsonNumber(partData, "partNumber");
+      const etag = getJsonString(partData, "etag");
+      if (!uploadedPartNumber || !etag) {
+        throw new Error(`Failed to upload part ${partNumber}`);
+      }
+      parts.push({ partNumber: uploadedPartNumber, etag });
 
       uploadedBytes += end - start;
       onProgress?.(uploadedBytes / totalSize);
@@ -147,7 +155,29 @@ export async function uploadMultipart(
       throw new Error("Failed to complete upload");
     }
 
-    return (await completeRes.json()) as MultipartUploadResult;
+    const completeData = await readJsonObject(completeRes);
+    const resultId = getJsonString(completeData, "id");
+    const resultFilename = getJsonString(completeData, "filename");
+    const resultUrl = getJsonString(completeData, "url");
+    const resultMimeType = getJsonString(completeData, "mimeType");
+    const resultSize = getJsonNumber(completeData, "size");
+    if (
+      !resultId ||
+      !resultFilename ||
+      !resultUrl ||
+      !resultMimeType ||
+      resultSize === undefined
+    ) {
+      throw new Error("Failed to complete upload");
+    }
+
+    return {
+      id: resultId,
+      filename: resultFilename,
+      url: resultUrl,
+      mimeType: resultMimeType,
+      size: resultSize,
+    };
   } catch (err) {
     // Abort on any failure — fire-and-forget cleanup
     fetch(`/api/upload/multipart/${id}/abort`, {

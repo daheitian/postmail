@@ -15,6 +15,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import type {
+  SettingsInitialData,
   SettingsLabels,
   SettingsTimezone,
   SettingsLanguage,
@@ -120,15 +121,7 @@ export class JantSettingsGeneral extends LitElement {
   }
 
   /** Initialize form state from data attributes set by the bridge */
-  initData(data: {
-    siteName: string;
-    siteDescription: string;
-    siteLanguage: string;
-    timeZone: string;
-    siteFooter: string;
-    showJantBrandingOnHome: boolean;
-    noindex: boolean;
-  }) {
+  initData(data: SettingsInitialData) {
     this._siteName = data.siteName;
     this._siteDescription = data.siteDescription;
     this._siteFooter = data.siteFooter;

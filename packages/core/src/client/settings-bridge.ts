@@ -9,10 +9,44 @@
 import type {
   SettingsSaveDetail,
   AvatarRemoveDetail,
+  SettingsInitialData,
 } from "./components/settings-types.js";
 import type { JantSettingsGeneral } from "./components/jant-settings-general.js";
 import type { JantSettingsAvatar } from "./components/jant-settings-avatar.js";
+import { getJsonBoolean, getJsonString, readJsonObject } from "./json.js";
 import { showToast } from "./toast.js";
+
+function parseSettingsInitialData(data: unknown): SettingsInitialData | null {
+  const siteName = getJsonString(data, "siteName");
+  const siteDescription = getJsonString(data, "siteDescription");
+  const siteLanguage = getJsonString(data, "siteLanguage");
+  const timeZone = getJsonString(data, "timeZone");
+  const siteFooter = getJsonString(data, "siteFooter");
+  const showJantBrandingOnHome = getJsonBoolean(data, "showJantBrandingOnHome");
+  const noindex = getJsonBoolean(data, "noindex");
+
+  if (
+    siteName === undefined ||
+    siteDescription === undefined ||
+    siteLanguage === undefined ||
+    timeZone === undefined ||
+    siteFooter === undefined ||
+    showJantBrandingOnHome === undefined ||
+    noindex === undefined
+  ) {
+    return null;
+  }
+
+  return {
+    siteName,
+    siteDescription,
+    siteLanguage,
+    timeZone,
+    siteFooter,
+    showJantBrandingOnHome,
+    noindex,
+  };
+}
 
 // ── Settings save handler ───────────────────────────────────────────
 
@@ -41,15 +75,18 @@ document.addEventListener("jant:settings-save", async (e: Event) => {
       throw new Error(`HTTP ${res.status}`);
     }
 
-    const json = await res.json();
+    const json = await readJsonObject(res);
+    const status = getJsonString(json, "status");
+    const url = getJsonString(json, "url");
+    const toast = getJsonString(json, "toast");
 
-    if (json.status === "redirect") {
-      window.location.href = json.url;
+    if (status === "redirect" && url) {
+      window.location.href = url;
       return;
     }
 
-    if (json.toast) {
-      showToast(json.toast);
+    if (toast) {
+      showToast(toast);
     }
 
     // Notify the component that save succeeded
@@ -88,10 +125,12 @@ document.addEventListener("jant:avatar-remove", async (e: Event) => {
       throw new Error(`HTTP ${res.status}`);
     }
 
-    const json = await res.json();
+    const json = await readJsonObject(res);
+    const status = getJsonString(json, "status");
+    const url = getJsonString(json, "url");
 
-    if (json.status === "redirect") {
-      window.location.href = json.url;
+    if (status === "redirect" && url) {
+      window.location.href = url;
       return;
     }
   } catch {
@@ -111,8 +150,10 @@ function initSettingsData() {
   if (!dataEl?.textContent) return;
 
   try {
-    const data = JSON.parse(dataEl.textContent);
-    el.initData(data);
+    const data = parseSettingsInitialData(JSON.parse(dataEl.textContent));
+    if (data) {
+      el.initData(data);
+    }
   } catch {
     // Data parsing failed, form will use defaults
   }

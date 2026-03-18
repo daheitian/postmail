@@ -21,6 +21,7 @@ import {
   showPersistentToast,
   replaceWithAutoClose,
 } from "./toast.js";
+import { getJsonString, readJsonObject } from "./json.js";
 import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
 import { publicPath } from "./runtime-paths.js";
 import { setupThreadContexts } from "./thread-context.js";
@@ -347,15 +348,20 @@ async function uploadFile(
     });
 
     if (!res.ok) {
-      const data = await res.json();
-      const error = data.error ?? "Upload failed";
+      const data = await readJsonObject(res);
+      const error = getJsonString(data, "error") ?? "Upload failed";
       editor?.updateAttachmentStatus(clientId, "error", null, error);
       showToast(error, "error");
       return null;
     }
 
-    const data = await res.json();
-    const mediaId = data.id as string;
+    const data = await readJsonObject(res);
+    const mediaId = getJsonString(data, "id");
+    if (!mediaId) {
+      editor?.updateAttachmentStatus(clientId, "error", null, "Upload failed");
+      showToast("Upload failed", "error");
+      return null;
+    }
     editor?.updateAttachmentStatus(clientId, "done", mediaId, null);
     return mediaId;
   } catch {
@@ -500,8 +506,11 @@ async function uploadTextAttachments(
         body: formData,
       });
       if (res.ok) {
-        const data = await res.json();
-        clientIdToMediaId.set(item.clientId, data.id as string);
+        const data = await readJsonObject(res);
+        const mediaId = getJsonString(data, "id");
+        if (mediaId) {
+          clientIdToMediaId.set(item.clientId, mediaId);
+        }
       }
     } catch {
       // Upload failed — skip this item
@@ -678,21 +687,22 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
         if (retryRes.ok) {
           draftFallback = "server";
-          const retryData = await retryRes.json();
+          const retryData = await readJsonObject(retryRes);
           const fallbackMsg =
             labels?.publishFailedDraft ?? "Couldn't publish. Saved as draft.";
           if (!leavePageAfterConfirmSave()) {
             resetPageCompose();
           }
           toastMsg(fallbackMsg);
-          if (retryData.toast) toastMsg(retryData.toast);
+          const retryToast = getJsonString(retryData, "toast");
+          if (retryToast) toastMsg(retryToast);
           return;
         }
       }
 
-      const data = await res.json();
+      const data = await readJsonObject(res);
       clearPageLoading();
-      toastMsg(data.error ?? "Something went wrong", "error");
+      toastMsg(getJsonString(data, "error") ?? "Something went wrong", "error");
       return;
     }
 
@@ -715,12 +725,15 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       return;
     }
 
-    const data = await res.json();
+    const data = await readJsonObject(res);
+    const status = getJsonString(data, "status");
+    const permalink = getJsonString(data, "permalink");
+    const toast = getJsonString(data, "toast");
 
-    if (data.status === "published") {
-      if (isPageMode && data.permalink) {
+    if (status === "published") {
+      if (isPageMode && permalink) {
         composeEl?.preparePageLeave?.();
-        globalThis.location.assign(data.permalink);
+        globalThis.location.assign(permalink);
       } else if (detail.replyToId) {
         const updated = await refreshReplyTarget(detail);
         if (!updated) {
@@ -735,7 +748,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       if (!leavePageAfterConfirmSave()) {
         resetPageCompose();
       }
-      toastMsg(data.toast ?? "Draft saved.");
+      toastMsg(toast ?? "Draft saved.");
     }
   } catch {
     clearPageLoading();

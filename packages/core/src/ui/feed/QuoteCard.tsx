@@ -17,6 +17,7 @@ import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 import { sanitizeUrl, extractDisplayDomain } from "../../lib/url.js";
 import { DecorativeQuoteMark } from "../shared/DecorativeQuoteMark.js";
+import { MediaGallery } from "../shared/MediaGallery.js";
 
 export const QuoteCard: FC<TimelineCardProps> = ({
   post,
@@ -75,6 +76,11 @@ export const QuoteCard: FC<TimelineCardProps> = ({
           data-post-body
           dangerouslySetInnerHTML={{ __html: commentaryHtml }}
         />
+      )}
+      {!isCompact && post.media.length > 0 && (
+        <div class="mt-3" data-post-media>
+          <MediaGallery attachments={post.media} />
+        </div>
       )}
       {!isCompact && !display?.hideRating && (
         <StarRating rating={post.rating} />

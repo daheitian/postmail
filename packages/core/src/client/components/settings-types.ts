@@ -47,6 +47,16 @@ export interface SettingsLanguage {
   label: string;
 }
 
+export interface SettingsInitialData {
+  siteName: string;
+  siteDescription: string;
+  siteLanguage: string;
+  timeZone: string;
+  siteFooter: string;
+  showJantBrandingOnHome: boolean;
+  noindex: boolean;
+}
+
 /** Event detail dispatched when a settings form is saved */
 export interface SettingsSaveDetail {
   endpoint: string;

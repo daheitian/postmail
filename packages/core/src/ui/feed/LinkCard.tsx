@@ -10,6 +10,7 @@ import { StarRating } from "../shared/StarRating.js";
 import { PostFooter } from "../shared/PostFooter.js";
 import { PostStatusBadges } from "./PostStatusBadges.js";
 import { sanitizeUrl, extractDisplayDomain } from "../../lib/url.js";
+import { MediaGallery } from "../shared/MediaGallery.js";
 
 export const LinkCard: FC<TimelineCardProps> = ({
   post,
@@ -104,6 +105,11 @@ export const LinkCard: FC<TimelineCardProps> = ({
           data-post-body
           dangerouslySetInnerHTML={{ __html: post.bodyHtml }}
         />
+      )}
+      {!isCompact && post.media.length > 0 && (
+        <div class="mt-3" data-post-media>
+          <MediaGallery attachments={post.media} />
+        </div>
       )}
       {!isCompact && !display?.hideRating && (
         <StarRating rating={post.rating} />
