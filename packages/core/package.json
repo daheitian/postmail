@@ -29,6 +29,7 @@
     "build": "pnpm build:lib && pnpm build:client",
     "build:client": "vite build --config vite.config.client.ts",
     "build:lib": "vite build --config vite.config.worker.ts",
+    "brand:generate": "tsx dev/scripts/generate-brand-assets.ts",
     "typecheck": "tsc -b --noEmit",
     "db:generate": "drizzle-kit generate",
     "fonts:generate:cjk": "node dev/scripts/generate-noto-serif-cjk.mjs all",
@@ -68,6 +69,7 @@
     "@tiptap/suggestion": "^3.20.0",
     "basecoat-css": "^0.3.10",
     "better-auth": "^1.4.18",
+    "better-sqlite3": "^12.8.0",
     "blurhash": "^2.0.5",
     "drizzle-orm": "^0.45.1",
     "emoji-mart": "^5.6.0",
@@ -85,8 +87,7 @@
     "tiptap-markdown": "^0.9.0",
     "uuidv7": "^1.1.0",
     "yaml": "^2.8.2",
-    "zod": "^4.3.6",
-    "better-sqlite3": "^12.8.0"
+    "zod": "^4.3.6"
   },
   "peerDependencies": {
     "hono": "^4.0.0",
@@ -109,6 +110,7 @@
     "drizzle-kit": "^0.31.8",
     "glob": "^13.0.0",
     "happy-dom": "^20.6.3",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",

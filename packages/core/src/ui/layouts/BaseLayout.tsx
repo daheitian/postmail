@@ -11,7 +11,8 @@
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { Context } from "hono";
 import { toAssetPath } from "../../lib/asset-path.js";
-import { toPublicPath } from "../../lib/url.js";
+import { getJantIconHref } from "../../lib/jant-branding.js";
+import { isFullUrl, toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import { CORE_VERSION, IS_VITE_DEV } from "../../lib/version.js";
 import { I18nProvider } from "../../i18n/index.js";
 
@@ -26,8 +27,11 @@ export interface BaseLayoutProps {
   lang?: string;
   c?: Context;
   toast?: ToastProps;
+  faviconHref?: string;
+  appleTouchHref?: string;
   faviconUrl?: string;
   faviconVersion?: string;
+  socialImageUrl?: string;
   noindex?: boolean;
   isAuthenticated?: boolean;
   clientBundle?: "public" | "full";
@@ -39,8 +43,11 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   lang,
   c,
   toast,
+  faviconHref,
+  appleTouchHref,
   faviconUrl,
   faviconVersion,
+  socialImageUrl,
   noindex,
   isAuthenticated = false,
   clientBundle,
@@ -51,8 +58,11 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
 
   // Read favicon/noindex from appConfig when not provided as prop
   const appConfig = c ? c.get("appConfig") : undefined;
-  const resolvedFaviconUrl =
-    faviconUrl ?? (appConfig?.siteAvatarUrl || undefined);
+  const resolvedSocialImagePath =
+    socialImageUrl ??
+    faviconUrl ??
+    appConfig?.siteAvatarUrl ??
+    getJantIconHref("socialImage", appConfig?.sitePathPrefix || "");
   const resolvedFaviconVersion =
     faviconVersion ?? (appConfig?.faviconVersion || undefined);
   const resolvedNoindex = noindex ?? appConfig?.noindex;
@@ -98,15 +108,30 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     : resolvedClientBundle === "full"
       ? toAssetPath(`/client-auth.js?v=${CORE_VERSION}`)
       : toAssetPath(`/client.js?v=${CORE_VERSION}`);
-  const faviconHref = resolvedFaviconVersion
-    ? toPublicPath(`/favicon.ico?v=${resolvedFaviconVersion}`, sitePathPrefix)
-    : toPublicPath("/favicon.ico", sitePathPrefix);
-  const appleTouchHref = resolvedFaviconVersion
-    ? toPublicPath(
-        `/apple-touch-icon.png?v=${resolvedFaviconVersion}`,
-        sitePathPrefix,
-      )
-    : toPublicPath("/apple-touch-icon.png", sitePathPrefix);
+  const faviconAssetVersion = resolvedFaviconVersion || CORE_VERSION;
+  const resolvedFaviconHref =
+    faviconHref ??
+    (faviconAssetVersion
+      ? toPublicPath(`/favicon.ico?v=${faviconAssetVersion}`, sitePathPrefix)
+      : toPublicPath("/favicon.ico", sitePathPrefix));
+  const resolvedAppleTouchHref =
+    appleTouchHref ??
+    (faviconAssetVersion
+      ? toPublicPath(
+          `/apple-touch-icon.png?v=${faviconAssetVersion}`,
+          sitePathPrefix,
+        )
+      : toPublicPath("/apple-touch-icon.png", sitePathPrefix));
+  const socialImageHref =
+    resolvedSocialImagePath &&
+    (isFullUrl(resolvedSocialImagePath) ||
+    resolvedSocialImagePath.startsWith("//")
+      ? resolvedSocialImagePath
+      : toAbsoluteSiteUrl(
+          resolvedSocialImagePath,
+          appConfig?.siteUrl || "",
+          sitePathPrefix,
+        ));
 
   return (
     <html
@@ -125,6 +150,9 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         {description && (
           <meta property="og:description" content={description} />
         )}
+        {socialImageHref && (
+          <meta property="og:image" content={socialImageHref} />
+        )}
         {siteName && <meta property="og:site_name" content={siteName} />}
         {currentUrl && <meta property="og:url" content={currentUrl} />}
         <meta name="twitter:card" content="summary" />
@@ -132,17 +160,16 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         {description && (
           <meta name="twitter:description" content={description} />
         )}
-        {resolvedNoindex && <meta name="robots" content="noindex, nofollow" />}
-        {resolvedFaviconUrl && (
-          <>
-            <link rel="icon" href={faviconHref} sizes="16x16 32x32" />
-            <link
-              rel="apple-touch-icon"
-              href={appleTouchHref}
-              sizes="180x180"
-            />
-          </>
+        {socialImageHref && (
+          <meta name="twitter:image" content={socialImageHref} />
         )}
+        {resolvedNoindex && <meta name="robots" content="noindex, nofollow" />}
+        <link rel="icon" href={resolvedFaviconHref} sizes="16x16 32x32" />
+        <link
+          rel="apple-touch-icon"
+          href={resolvedAppleTouchHref}
+          sizes="180x180"
+        />
         {IS_VITE_DEV && (
           <script type="module" src={assetPath("/@vite/client")} />
         )}

@@ -11,15 +11,31 @@ import tailwindcss from "@tailwindcss/vite";
 import { pkg, clientBuildOptions, swcPlugin } from "./vite.shared";
 import { linguiAutoExtract, ssrReload } from "./vite.dev-plugins";
 
+const DEFAULT_DEV_PORT = 9020;
+
+function resolveDevPort(): number {
+  const rawPort = process.env.PORT;
+  if (!rawPort) {
+    return DEFAULT_DEV_PORT;
+  }
+
+  const port = Number.parseInt(rawPort, 10);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error("PORT must be an integer between 1 and 65535.");
+  }
+
+  return port;
+}
+
 export default defineConfig({
   server: {
-    port: 9020,
+    port: resolveDevPort(),
     host: true,
     allowedHosts: true,
   },
 
   preview: {
-    port: 9020,
+    port: resolveDevPort(),
   },
 
   define: {

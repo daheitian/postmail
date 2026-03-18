@@ -11,6 +11,7 @@ import type { PathService } from "./path.js";
 import type { CollectionService } from "./collection.js";
 import type { MediaService } from "./media.js";
 import {
+  buildJantLogoSvgMarkup,
   HOME_BRANDING_LINK_LABEL,
   HOME_BRANDING_PREFIX,
   JANT_REPO_URL,
@@ -733,7 +734,7 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
 {% endif %}
 {% if config.extra.jant.show_jant_branding_on_home %}
 <div class="jant-branding">
-  <p>${HOME_BRANDING_PREFIX} <a href="${JANT_REPO_URL}">${HOME_BRANDING_LINK_LABEL}</a></p>
+  <p>${HOME_BRANDING_PREFIX} <a href="${JANT_REPO_URL}">${buildJantLogoSvgMarkup("positive")}<span>${HOME_BRANDING_LINK_LABEL}</span></a></p>
 </div>
 {% endif %}
 {% endblock %}
@@ -1282,5 +1283,15 @@ a:hover {
   margin-top: 2rem;
   color: var(--muted);
   font-size: 0.8125rem;
+.jant-branding a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.jant-branding a svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
 }
 `;

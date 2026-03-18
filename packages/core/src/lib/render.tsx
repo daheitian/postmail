@@ -17,6 +17,12 @@ export interface RenderPublicPageOptions {
   title: string;
   /** Page description for meta tag */
   description?: string;
+  /** Optional explicit favicon asset href */
+  faviconHref?: string;
+  /** Optional explicit apple-touch-icon href */
+  appleTouchHref?: string;
+  /** Optional explicit social image href */
+  socialImageUrl?: string;
   /** Navigation data (from getNavigationData) */
   navData: NavigationData;
   /** Page content JSX to render inside SiteLayout */
@@ -52,6 +58,9 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
   const {
     title,
     description,
+    faviconHref,
+    appleTouchHref,
+    socialImageUrl,
     navData,
     content,
     sidebar,
@@ -92,6 +101,9 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
       title={title}
       description={metaDescription}
       c={c}
+      faviconHref={faviconHref}
+      appleTouchHref={appleTouchHref}
+      socialImageUrl={socialImageUrl}
       faviconUrl={faviconUrl}
       faviconVersion={faviconVersion}
       noindex={noindex}
