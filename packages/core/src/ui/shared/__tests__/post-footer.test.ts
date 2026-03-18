@@ -8,7 +8,6 @@ function createCollection(slug: string, title: string): CollectionTagView {
     slug,
     title,
     url: `/c/${slug}`,
-    iconHtml: '<span aria-hidden="true">#</span>',
   };
 }
 

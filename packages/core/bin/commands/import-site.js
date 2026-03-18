@@ -1029,10 +1029,6 @@ export async function run(argv) {
         title: frontMatter.title || slug,
         slug,
         description: frontMatter.description || null,
-        icon:
-          collectionExtra.icon != null
-            ? String(collectionExtra.icon)
-            : undefined,
         sortOrder:
           collectionExtra.sort_order || collectionExtra.sortOrder || undefined,
       });

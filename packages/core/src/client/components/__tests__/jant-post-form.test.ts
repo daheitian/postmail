@@ -65,8 +65,8 @@ const initial: PostFormInitial = {
 };
 
 const collections: PostCollectionOption[] = [
-  { id: 1, title: "General", icon: null },
-  { id: 2, title: "Favorites", icon: "★" },
+  { id: 1, title: "General" },
+  { id: 2, title: "Favorites" },
 ];
 
 const media: PostMediaItem[] = [
@@ -142,8 +142,9 @@ describe("JantPostForm", () => {
     el._body = JSON.stringify(el._bodyJson);
 
     // Set visibility to "unlisted" via the select dropdown
-    const visibilitySelect =
-      el.querySelectorAll<HTMLSelectElement>("select.select")[2]; // [0]=format, [1]=status, [2]=visibility
+    const visibilitySelect = el
+      .querySelectorAll("select.select")
+      .item(2) as unknown as HTMLSelectElement | null; // [0]=format, [1]=status, [2]=visibility
     expect(visibilitySelect).not.toBeNull();
     if (!visibilitySelect) throw new Error("Visibility select not found");
     visibilitySelect.value = "unlisted";

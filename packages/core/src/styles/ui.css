@@ -650,10 +650,6 @@
     color: var(--accent-foreground);
   }
 
-  .collection-icon-category-strip::-webkit-scrollbar {
-    display: none;
-  }
-
   .collection-directory-divider {
     padding: 1.5rem 0 0.85rem;
   }
@@ -1707,12 +1703,6 @@
   .post-collection-sep {
     color: var(--site-text-secondary);
     user-select: none;
-  }
-
-  .post-collection-icon {
-    display: inline-flex;
-    align-items: center;
-    vertical-align: middle;
   }
 
   .post-collection-tag {

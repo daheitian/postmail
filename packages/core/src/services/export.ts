@@ -373,9 +373,6 @@ function buildCollectionSection(collection: Collection): string {
     parts.push(`description = "${escapeToml(collection.description)}"`);
   }
   parts.push("[extra]");
-  if (collection.icon) {
-    parts.push(`icon = "${escapeToml(collection.icon)}"`);
-  }
   parts.push(`sort_order = "${escapeToml(collection.sortOrder)}"`);
   parts.push("jant_collection = true");
   parts.push("+++");

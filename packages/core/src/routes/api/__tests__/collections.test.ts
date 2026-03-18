@@ -138,29 +138,6 @@ describe("Collections API Routes", () => {
       expect(body.description).toBe("Tech articles");
     });
 
-    it("accepts structured icon payloads that use a semantic palette", async () => {
-      const { app } = createTestApp({ authenticated: true });
-      app.route("/api/collections", collectionsApiRoutes);
-
-      const res = await app.request("/api/collections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug: "reading",
-          title: "Reading",
-          icon: JSON.stringify({
-            name: "library",
-            svg: "<svg>test</svg>",
-            palette: "stone",
-          }),
-        }),
-      });
-
-      expect(res.status).toBe(201);
-      const body = await res.json();
-      expect(body.icon).toContain('"palette":"stone"');
-    });
-
     it("returns 400 for missing required fields", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
@@ -169,27 +146,6 @@ describe("Collections API Routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ slug: "tech" }),
-      });
-
-      expect(res.status).toBe(400);
-    });
-
-    it("rejects structured icon payloads with an unknown palette", async () => {
-      const { app } = createTestApp({ authenticated: true });
-      app.route("/api/collections", collectionsApiRoutes);
-
-      const res = await app.request("/api/collections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug: "notes",
-          title: "Notes",
-          icon: JSON.stringify({
-            name: "library",
-            svg: "<svg>test</svg>",
-            palette: "electric-blue",
-          }),
-        }),
       });
 
       expect(res.status).toBe(400);

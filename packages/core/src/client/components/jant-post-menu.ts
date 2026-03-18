@@ -11,13 +11,7 @@
  */
 
 import { LitElement, html, nothing } from "lit";
-import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import { showConfirmDialog } from "../confirm.js";
-import {
-  getCollectionIconColorVar,
-  isCollectionIconPalette,
-  mapLegacyCollectionIconColor,
-} from "../../lib/collection-icon-palette.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
@@ -34,7 +28,18 @@ interface CollectionItem {
   id: string;
   title: string;
   slug: string;
-  icon: string | null;
+}
+
+interface CollectionsResponse {
+  collections?: CollectionItem[];
+}
+
+interface PostCollectionsResponse {
+  collectionIds?: string[];
+}
+
+interface ErrorResponse {
+  error?: string;
 }
 
 type PostMenuView = "menu" | "collections" | "visibility";
@@ -65,54 +70,6 @@ export function removeLeadingFeedDivider(
       child instanceof HTMLElement && child.classList.contains("feed-divider"),
   );
   firstDivider?.remove();
-}
-
-/**
- * Render a collection icon from its raw DB value (JSON or legacy emoji).
- * Inline helper to avoid pulling lucide-static into the post-menu bundle.
- */
-function renderIconHtml(icon: string | null): string {
-  if (!icon) return "";
-  if (icon.startsWith("{")) {
-    try {
-      const parsed = JSON.parse(icon) as {
-        svg?: string;
-        palette?: string;
-        color?: string;
-      };
-      if (typeof parsed.svg === "string") {
-        let svg = parsed.svg
-          .replace(/width="\d+"/, 'width="16"')
-          .replace(/height="\d+"/, 'height="16"');
-        const palette =
-          typeof parsed.palette === "string" &&
-          isCollectionIconPalette(parsed.palette)
-            ? parsed.palette
-            : typeof parsed.color === "string"
-              ? mapLegacyCollectionIconColor(parsed.color)
-              : null;
-        if (palette) {
-          svg = svg.replace(
-            /^<svg/,
-            `<svg style="color: ${getCollectionIconColorVar(palette)}"`,
-          );
-        }
-        return svg;
-      }
-    } catch {
-      /* not JSON — treat as text */
-    }
-  }
-  // Legacy emoji/text value
-  return `<span>${escapeHtml(icon)}</span>`;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 export class JantPostMenu extends LitElement {
@@ -526,11 +483,12 @@ export class JantPostMenu extends LitElement {
       ]);
 
       if (!collectionsRes.ok) throw new Error();
-      const collectionsData = await collectionsRes.json();
+      const collectionsData =
+        (await collectionsRes.json()) as CollectionsResponse;
       this._collections = collectionsData.collections ?? [];
 
       if (postRes.ok) {
-        const postData = await postRes.json();
+        const postData = (await postRes.json()) as PostCollectionsResponse;
         this._postCollectionIds = postData.collectionIds ?? [];
       }
     } catch {
@@ -566,7 +524,9 @@ export class JantPostMenu extends LitElement {
           body: JSON.stringify({ postId: this._data.id }),
         });
         if (!res.ok) {
-          const body = await res.json().catch(() => null);
+          const body = (await res
+            .json()
+            .catch(() => null)) as ErrorResponse | null;
           if (res.status === 409 || body?.error?.includes("already")) {
             if (!this._postCollectionIds.includes(collectionId)) {
               this._postCollectionIds = [
@@ -636,7 +596,6 @@ export class JantPostMenu extends LitElement {
         id: string;
         title: string;
         slug: string;
-        icon?: string | null;
         error?: string;
       } | null;
 
@@ -652,7 +611,6 @@ export class JantPostMenu extends LitElement {
         id: created.id,
         title: created.title,
         slug: created.slug,
-        icon: created.icon ?? null,
       };
 
       this._collections = [...(this._collections ?? []), newItem];
@@ -923,7 +881,6 @@ export class JantPostMenu extends LitElement {
             : filtered.length > 0
               ? filtered.map((c) => {
                   const selected = this._postCollectionIds.includes(c.id);
-                  const iconStr = renderIconHtml(c.icon);
                   return html`
                     <button
                       type="button"
@@ -934,11 +891,6 @@ export class JantPostMenu extends LitElement {
                       }`}
                       @click=${() => this.#toggleCollection(c.id)}
                     >
-                      ${iconStr
-                        ? html`<span class="post-menu-picker-icon"
-                            >${unsafeHTML(iconStr)}</span
-                          >`
-                        : nothing}
                       <span class="post-menu-picker-title">${c.title}</span>
                       ${selected
                         ? html`<span

@@ -157,15 +157,6 @@ const labels: ComposeLabels = {
     createdLabel: "Collection created.",
     descriptionLabel: "Description (optional)",
     descriptionPlaceholder: "What's this collection about?",
-    featuredIconsLabel: "Featured",
-    browseAllIconsLabel: "Browse all icons",
-    showMoreIcons: "Show more icons",
-    showLessIcons: "Show less",
-    removeIcon: "Remove",
-    iconsTab: "Icons",
-    emojisTab: "Emojis",
-    searchIconsPlaceholder: "Search icons...",
-    searchEmojisPlaceholder: "Search emojis...",
     sortOrderLabel: "Sort Order",
     sortNewest: "Newest first",
     sortOldest: "Oldest first",
@@ -177,8 +168,8 @@ const labels: ComposeLabels = {
 };
 
 const collections: ComposeCollection[] = [
-  { id: "col-1", title: "Books", iconHtml: "" },
-  { id: "col-2", title: "Movies", iconHtml: "<span>🎬</span>" },
+  { id: "col-1", title: "Books" },
+  { id: "col-2", title: "Movies" },
 ];
 
 async function createElement(
@@ -365,8 +356,12 @@ describe("JantComposeDialog", () => {
     ).click();
 
     expect(receivedDetail).not.toBeNull();
-    expect((receivedDetail as ComposeSubmitDetail).visibility).toBe("unlisted");
-    expect((receivedDetail as ComposeSubmitDetail).slug).toBeUndefined();
+    expect((receivedDetail as unknown as ComposeSubmitDetail).visibility).toBe(
+      "unlisted",
+    );
+    expect(
+      (receivedDetail as unknown as ComposeSubmitDetail).slug,
+    ).toBeUndefined();
   });
 
   it("updates the publish button label for private visibility", async () => {
@@ -449,7 +444,9 @@ describe("JantComposeDialog", () => {
     ).click();
 
     expect(receivedDetail).not.toBeNull();
-    expect((receivedDetail as ComposeSubmitDetail).slug).toBe("custom-link");
+    expect((receivedDetail as unknown as ComposeSubmitDetail).slug).toBe(
+      "custom-link",
+    );
   });
 
   it("reopens the more menu with custom link expanded when a slug exists", async () => {
@@ -595,7 +592,9 @@ describe("JantComposeDialog", () => {
     ).click();
 
     expect(receivedDetail).not.toBeNull();
-    expect((receivedDetail as ComposeSubmitDetail).slug).toBeUndefined();
+    expect(
+      (receivedDetail as unknown as ComposeSubmitDetail).slug,
+    ).toBeUndefined();
   });
 
   it("shows only meta settings in the more panel", async () => {
@@ -895,8 +894,12 @@ describe("JantComposeDialog", () => {
     ).click();
 
     expect(receivedDetail).not.toBeNull();
-    expect((receivedDetail as ComposeSubmitDetail).visibility).toBeUndefined();
-    expect((receivedDetail as ComposeSubmitDetail).slug).toBe("reply-note");
+    expect(
+      (receivedDetail as unknown as ComposeSubmitDetail).visibility,
+    ).toBeUndefined();
+    expect((receivedDetail as unknown as ComposeSubmitDetail).slug).toBe(
+      "reply-note",
+    );
   });
 
   it("collection selector toggles IDs", async () => {

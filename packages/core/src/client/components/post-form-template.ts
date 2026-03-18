@@ -1,6 +1,5 @@
 import { html, nothing } from "lit";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
-import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import type { JantPostForm } from "./jant-post-form.js";
 import type { PostMediaItem } from "./post-form-types.js";
 import { getMediaCategory } from "../../lib/upload.js";
@@ -138,11 +137,6 @@ function renderCollections(component: JantPostForm) {
     <label class="label">${component.labels.collectionsLabel}</label>
     <div class="flex flex-col gap-1">
       ${component.collections.map((col) => {
-        const iconNode = col.iconHtml
-          ? html`<span class="inline-flex items-center justify-center w-5 h-5">
-              ${unsafeHTML(col.iconHtml)}
-            </span>`
-          : nothing;
         return html`<label class="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -150,7 +144,6 @@ function renderCollections(component: JantPostForm) {
             .checked=${component._collectionIds.includes(col.id)}
             @change=${() => component.toggleCollection(col.id)}
           />
-          ${iconNode}
           <span>${col.title}</span>
         </label>`;
       })}

@@ -119,7 +119,6 @@ export function createCollectionService(
       slug,
       title: row.title,
       description: row.description,
-      icon: row.icon,
       sortOrder: row.sortOrder as SortOrder,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
@@ -396,7 +395,6 @@ export function createCollectionService(
               id,
               title: data.title,
               description: data.description ?? null,
-              icon: data.icon ?? null,
               sortOrder: data.sortOrder ?? "newest",
               createdAt: timestamp,
               updatedAt: timestamp,
@@ -476,7 +474,6 @@ export function createCollectionService(
       if (data.description !== undefined) {
         updates.description = data.description;
       }
-      if (data.icon !== undefined) updates.icon = data.icon;
       if (data.sortOrder !== undefined) updates.sortOrder = data.sortOrder;
 
       const result = await db

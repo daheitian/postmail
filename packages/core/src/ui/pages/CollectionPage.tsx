@@ -7,7 +7,6 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionPageProps } from "../../types.js";
-import { renderCollectionIcon } from "../../lib/icons.js";
 import { formatPageLabel } from "../../lib/pagination.js";
 import { toPublicPath } from "../../lib/url.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
@@ -30,7 +29,6 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   sitePathPrefix = "",
 }) => {
   const { t } = useLingui();
-  const iconHtml = renderCollectionIcon(collection.icon, { size: 28 });
   const collectionUrl = toPublicPath(`/c/${collection.slug}`, sitePathPrefix);
   const editCollectionUrl = toPublicPath(
     `/c/${collection.slug}/edit?returnTo=${encodeURIComponent(collectionUrl)}`,
@@ -122,12 +120,6 @@ export const CollectionPage: FC<CollectionPageProps> = ({
         <div class="collection-page-title-row">
           <div class="collection-page-title-block">
             <h1 class="collection-page-title">
-              {iconHtml && (
-                <span
-                  class="shrink-0"
-                  dangerouslySetInnerHTML={{ __html: iconHtml }}
-                />
-              )}
               <span>{collection.title}</span>
             </h1>
             {collection.description ? (

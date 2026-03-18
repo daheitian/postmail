@@ -16,15 +16,6 @@ export interface CollectionFormLabels {
   createdLabel: string;
   descriptionLabel: string;
   descriptionPlaceholder: string;
-  featuredIconsLabel: string;
-  browseAllIconsLabel: string;
-  showMoreIcons: string;
-  showLessIcons: string;
-  removeIcon: string;
-  iconsTab: string;
-  emojisTab: string;
-  searchIconsPlaceholder: string;
-  searchEmojisPlaceholder: string;
   sortOrderLabel: string;
   sortNewest: string;
   sortOldest: string;
@@ -39,7 +30,6 @@ export interface CollectionFormInitial {
   slug: string;
   description: string;
   sortOrder: string;
-  icon: string;
 }
 
 export interface CollectionSubmitDetail {
@@ -48,7 +38,6 @@ export interface CollectionSubmitDetail {
     title: string;
     slug: string;
     description?: string;
-    icon?: string;
     sortOrder?: string;
   };
   isEdit: boolean;

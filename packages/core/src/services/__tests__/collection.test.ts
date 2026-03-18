@@ -33,7 +33,6 @@ describe("CollectionService", () => {
       expect(collection.slug).toBe("my-collection");
       expect(collection.title).toBe("My Collection");
       expect(collection.description).toBeNull();
-      expect(collection.icon).toBeNull();
       expect(collection.sortOrder).toBe("newest");
     });
 
@@ -42,14 +41,12 @@ describe("CollectionService", () => {
         slug: "tech",
         title: "Tech Posts",
         description: "Posts about technology",
-        icon: "laptop",
         sortOrder: "oldest",
       });
 
       expect(collection.slug).toBe("tech");
       expect(collection.title).toBe("Tech Posts");
       expect(collection.description).toBe("Posts about technology");
-      expect(collection.icon).toBe("laptop");
       expect(collection.sortOrder).toBe("oldest");
     });
 
@@ -245,30 +242,25 @@ describe("CollectionService", () => {
         slug: "test",
         title: "Test",
         description: "Some desc",
-        icon: "star",
       });
 
       const updated = await collectionService.update(collection.id, {
         description: null,
-        icon: null,
       });
 
       expect(updated?.description).toBeNull();
-      expect(updated?.icon).toBeNull();
     });
 
-    it("updates icon and sortOrder", async () => {
+    it("updates sortOrder", async () => {
       const collection = await collectionService.create({
         slug: "test",
         title: "Test",
       });
 
       const updated = await collectionService.update(collection.id, {
-        icon: "rocket",
         sortOrder: "rating_desc",
       });
 
-      expect(updated?.icon).toBe("rocket");
       expect(updated?.sortOrder).toBe("rating_desc");
     });
 

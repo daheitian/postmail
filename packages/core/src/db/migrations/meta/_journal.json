@@ -15,6 +15,13 @@
       "when": 1773779866794,
       "tag": "0001_fts_setup",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1773861001608,
+      "tag": "0002_open_black_bolt",
+      "breakpoints": true
     }
   ]
 }

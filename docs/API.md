@@ -542,7 +542,6 @@ Public.
       "slug": "reading",
       "title": "Reading",
       "description": "Books I've read",
-      "icon": null,
       "sortOrder": "newest",
       "createdAt": 1706000000,
       "updatedAt": 1706000000,
@@ -594,7 +593,6 @@ POST /api/collections
   "slug": "reading",
   "title": "Reading",
   "description": "Books I've read",
-  "icon": "📚",
   "sortOrder": "newest"
 }
 ```
@@ -604,7 +602,6 @@ POST /api/collections
 | `slug`        | string | **yes**  | —        | URL slug (same rules as post slugs)                   |
 | `title`       | string | **yes**  | —        | Collection name                                       |
 | `description` | string | no       | —        | Description text                                      |
-| `icon`        | string | no       | —        | Emoji or icon identifier                              |
 | `sortOrder`   | string | no       | `newest` | `newest` \| `oldest` \| `rating_desc` \| `rating_asc` |
 
 **Response (201):** Created collection object.
@@ -615,7 +612,7 @@ POST /api/collections
 PUT /api/collections/:id
 ```
 
-**Auth required.** All fields optional. Set `description` or `icon` to `null` to clear.
+**Auth required.** All fields optional. Set `description` to `null` to clear.
 
 ### Delete Collection
 

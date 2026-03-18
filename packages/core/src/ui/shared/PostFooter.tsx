@@ -38,12 +38,6 @@ const CompactCollectionTags: FC<{
         </span>
       )}
       <a href={first.url} class="post-collection-tag">
-        {first.iconHtml && (
-          <span
-            class="post-collection-icon"
-            dangerouslySetInnerHTML={{ __html: first.iconHtml }}
-          />
-        )}
         {first.title}
       </a>
       {rest.length > 0 && (
@@ -58,12 +52,6 @@ const CompactCollectionTags: FC<{
           <div class="post-collection-popover" data-collection-popover>
             {rest.map((c) => (
               <a key={c.slug} href={c.url} class="post-collection-popover-item">
-                {c.iconHtml && (
-                  <span
-                    class="post-collection-icon"
-                    dangerouslySetInnerHTML={{ __html: c.iconHtml }}
-                  />
-                )}
                 {c.title}
               </a>
             ))}

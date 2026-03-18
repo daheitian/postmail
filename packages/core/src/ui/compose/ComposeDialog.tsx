@@ -10,7 +10,6 @@
 
 import type { FC } from "hono/jsx";
 import type { Collection } from "../../types.js";
-import { renderCollectionIcon } from "../../lib/icons.js";
 import { useLingui } from "@lingui/react/macro";
 import { getCollectionFormLabels } from "../shared/collection-management-labels.js";
 
@@ -409,7 +408,6 @@ export const ComposeForm: FC<ComposeFormProps> = ({
     (collections ?? []).map((c) => ({
       id: c.id,
       title: c.title,
-      iconHtml: renderCollectionIcon(c.icon, { size: 16 }),
     })),
   ).replace(/</g, "\\u003c");
 
