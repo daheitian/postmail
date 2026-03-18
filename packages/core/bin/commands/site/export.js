@@ -223,42 +223,42 @@ async function exportLocalSite(env = process.env) {
       fontOverrides,
     );
     const appleTouchKey = allSettings.SITE_FAVICON_APPLE_TOUCH || "";
-    const exportService = createExportService(runtime.services, {
-      siteName: appConfig.siteName,
-      siteUrl: appConfig.siteUrl,
-      siteDescription: appConfig.siteDescription,
-      siteLanguage: appConfig.siteLanguage,
-      showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
-      homeDefaultView: appConfig.homeDefaultView,
-      headerNavMaxVisible: appConfig.headerNavMaxVisible,
-      siteFooter: appConfig.siteFooter,
-      showHeaderAvatar: appConfig.showHeaderAvatar,
-      siteAvatarUrl: appConfig.siteAvatarUrl,
-      appleTouchIconUrl: appleTouchKey
-        ? getMediaPublicUrl(
-            appleTouchKey,
-            appConfig.storageDriver,
-            appConfig,
-          )
-        : undefined,
-      faviconUrl: appConfig.siteAvatarUrl || undefined,
-      faviconVersion: appConfig.faviconVersion,
-      themeId: appConfig.themeId,
-      defaultThemeId: appConfig.defaultThemeId,
-      fontThemeId: appConfig.fontThemeId,
-      themeMode: appConfig.themeMode,
-      noindex: appConfig.noindex,
-      themeCss,
-      customCss: appConfig.customCSS,
-      r2PublicUrl: appConfig.r2PublicUrl,
-      s3PublicUrl: appConfig.s3PublicUrl,
-      localPublicUrl: appConfig.localPublicUrl,
-      imageTransformUrl: appConfig.imageTransformUrl,
-      sitePathPrefix: appConfig.sitePathPrefix,
-      navItems,
-    }, {
-      storage: runtime.storage,
-    });
+    const exportService = createExportService(
+      runtime.services,
+      {
+        siteName: appConfig.siteName,
+        siteUrl: appConfig.siteUrl,
+        siteDescription: appConfig.siteDescription,
+        siteLanguage: appConfig.siteLanguage,
+        showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
+        homeDefaultView: appConfig.homeDefaultView,
+        headerNavMaxVisible: appConfig.headerNavMaxVisible,
+        siteFooter: appConfig.siteFooter,
+        showHeaderAvatar: appConfig.showHeaderAvatar,
+        siteAvatarUrl: appConfig.siteAvatarUrl,
+        appleTouchIconUrl: appleTouchKey
+          ? getMediaPublicUrl(appleTouchKey, appConfig.storageDriver, appConfig)
+          : undefined,
+        faviconUrl: appConfig.siteAvatarUrl || undefined,
+        faviconVersion: appConfig.faviconVersion,
+        themeId: appConfig.themeId,
+        defaultThemeId: appConfig.defaultThemeId,
+        fontThemeId: appConfig.fontThemeId,
+        themeMode: appConfig.themeMode,
+        noindex: appConfig.noindex,
+        themeCss,
+        customCss: appConfig.customCSS,
+        r2PublicUrl: appConfig.r2PublicUrl,
+        s3PublicUrl: appConfig.s3PublicUrl,
+        localPublicUrl: appConfig.localPublicUrl,
+        imageTransformUrl: appConfig.imageTransformUrl,
+        sitePathPrefix: appConfig.sitePathPrefix,
+        navItems,
+      },
+      {
+        storage: runtime.storage,
+      },
+    );
 
     return {
       zip: await exportService.generateZolaSite(),
@@ -296,7 +296,9 @@ export async function run(argv) {
     console.log("Export a Jant site as a Zola ZIP archive or directory.");
     console.log("");
     console.log("Modes:");
-    console.log("  Local           No --url; exports from the local Node SQLite runtime");
+    console.log(
+      "  Local           No --url; exports from the local Node SQLite runtime",
+    );
     console.log("  Remote          --url requires JANT_TOKEN or --token");
     console.log("");
     console.log("Options:");

@@ -108,14 +108,11 @@ async function main() {
 
   await runCommand(process.execPath, ["dev/scripts/setup-dev-auth.mjs"], env);
   await runCommand(PNPM_BIN, ["db:migrate:local"], env);
-  await runCommand(PNPM_BIN, [
-    "exec",
-    "vite",
-    "dev",
-    "--port",
-    String(debugPort),
-    "--strictPort",
-  ], env);
+  await runCommand(
+    PNPM_BIN,
+    ["exec", "vite", "dev", "--port", String(debugPort), "--strictPort"],
+    env,
+  );
 }
 
 try {

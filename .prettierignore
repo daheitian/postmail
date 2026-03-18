@@ -12,12 +12,16 @@ dist/
 **/i18n/locales/*.ts
 *.po
 *.pot
+pnpm-lock.yaml
 
 # Config
 .lingui/
+references/
+packages/create-jant/template/
 
 # Assets
 **/src/assets/
+sites/demo/static-site-export/templates/
 
 # Logs
 *.log

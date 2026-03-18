@@ -35,6 +35,7 @@ import {
 import type { MediaCategory } from "../../lib/upload.js";
 import { showToast } from "../toast.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
+import { uploadAndInsertInlineImage } from "../tiptap/inline-image-upload.js";
 
 export class JantComposeEditor extends LitElement {
   static properties = {
@@ -155,57 +156,10 @@ export class JantComposeEditor extends LitElement {
     this._slashImageInput.click();
   }
 
-  private async _uploadAndInsertImage(file: File) {
-    if (!this._editor) return;
-
-    const placeholderUrl = URL.createObjectURL(file);
-    this._editor.chain().focus().setImage({ src: placeholderUrl }).run();
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
-      const data = (await response.json()) as { url: string };
-
-      const { doc } = this._editor.state;
-      let replaced = false;
-      doc.descendants((node, pos) => {
-        if (
-          replaced ||
-          node.type.name !== "image" ||
-          node.attrs.src !== placeholderUrl
-        )
-          return;
-        this._editor
-          ?.chain()
-          .focus()
-          .command(({ tr }) => {
-            tr.setNodeMarkup(pos, undefined, { ...node.attrs, src: data.url });
-            return true;
-          })
-          .run();
-        replaced = true;
-      });
-    } catch {
-      const { doc } = this._editor.state;
-      doc.descendants((node, pos) => {
-        if (node.type.name === "image" && node.attrs.src === placeholderUrl) {
-          this._editor
-            ?.chain()
-            .command(({ tr }) => {
-              tr.delete(pos, pos + node.nodeSize);
-              return true;
-            })
-            .run();
-        }
-      });
-    } finally {
-      URL.revokeObjectURL(placeholderUrl);
-    }
+  private _uploadAndInsertImage(file: File) {
+    const editor = this._editor;
+    if (!editor) return;
+    void uploadAndInsertInlineImage(editor, file);
   }
 
   private _isEmptyDoc(json: JSONContent): boolean {
@@ -335,6 +289,12 @@ export class JantComposeEditor extends LitElement {
       },
       onFocus: () => {
         this._lastFocusedField = null;
+      },
+      pasteMedia: {
+        shouldInsertInline: (file) => this._shouldPasteInlineImage(file),
+        onPasteFiles: (files) => {
+          this.addFiles(files);
+        },
       },
     });
 
@@ -780,6 +740,20 @@ export class JantComposeEditor extends LitElement {
     this._rating = this._rating === star ? 0 : star;
   }
 
+  private _shouldPasteInlineImage(file: File): boolean {
+    if (!file.type.startsWith("image/")) return false;
+
+    if (this.format === "quote") {
+      return false;
+    }
+
+    if (this.format === "note") {
+      return this._showTitle && this._title.trim().length > 0;
+    }
+
+    return this._title.trim().length > 0;
+  }
+
   private _openFilePicker() {
     if (!this._fileInput) {
       this._fileInput = document.createElement("input");
@@ -797,12 +771,19 @@ export class JantComposeEditor extends LitElement {
   }
 
   private _handleFilesSelected() {
-    if (!this._fileInput?.files?.length) return;
+    const files = this._fileInput?.files;
+    if (!files || files.length === 0) return;
+    this.addFiles(files);
+  }
+
+  addFiles(files: Iterable<File>) {
+    const selectedFiles = Array.from(files);
+    if (selectedFiles.length === 0) return;
 
     const newAttachments: ComposeAttachment[] = [];
-    const files: { file: File; clientId: string }[] = [];
+    const uploadQueue: { file: File; clientId: string }[] = [];
 
-    for (const file of Array.from(this._fileInput.files)) {
+    for (const file of selectedFiles) {
       // Validate before creating attachment preview
       const error = validateUploadFile(file, {
         maxFileSizeMB: this.uploadMaxFileSize,
@@ -826,7 +807,7 @@ export class JantComposeEditor extends LitElement {
         summary: null,
         chars: null,
       });
-      files.push({ file, clientId });
+      uploadQueue.push({ file, clientId });
     }
 
     if (newAttachments.length === 0) return;
@@ -854,7 +835,7 @@ export class JantComposeEditor extends LitElement {
     this.dispatchEvent(
       new CustomEvent("jant:files-selected", {
         bubbles: true,
-        detail: { files },
+        detail: { files: uploadQueue },
       }),
     );
   }

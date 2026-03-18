@@ -278,6 +278,9 @@ export class JantPostForm extends LitElement {
         this._bodyJson = json;
         this._body = JSON.stringify(json);
       },
+      pasteMedia: {
+        shouldInsertInline: (file) => file.type.startsWith("image/"),
+      },
     });
   }
 

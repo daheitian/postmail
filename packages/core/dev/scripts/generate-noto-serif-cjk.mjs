@@ -42,8 +42,13 @@ const variants = {
 
 const requestedVariant = process.argv[2];
 
-if (!requestedVariant || !(requestedVariant in variants || requestedVariant === "all")) {
-  console.error("Usage: node dev/scripts/generate-noto-serif-cjk.mjs <sc|tc|all>");
+if (
+  !requestedVariant ||
+  !(requestedVariant in variants || requestedVariant === "all")
+) {
+  console.error(
+    "Usage: node dev/scripts/generate-noto-serif-cjk.mjs <sc|tc|all>",
+  );
   process.exit(1);
 }
 
@@ -159,7 +164,9 @@ try {
       await mkdir(outputDir, { recursive: true });
 
       const generatedFiles = await readdir(tempDir);
-      for (const file of generatedFiles.filter((entry) => entry.endsWith(".woff2"))) {
+      for (const file of generatedFiles.filter((entry) =>
+        entry.endsWith(".woff2"),
+      )) {
         await copyFile(resolve(tempDir, file), resolve(outputDir, file));
       }
 

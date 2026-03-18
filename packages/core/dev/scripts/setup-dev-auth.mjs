@@ -51,7 +51,9 @@ function upsertEnvValue(lines, key, value) {
 const password =
   process.argv.find(
     (arg) =>
-      !arg.startsWith("-") && arg !== process.argv[0] && arg !== process.argv[1],
+      !arg.startsWith("-") &&
+      arg !== process.argv[0] &&
+      arg !== process.argv[1],
   ) || DEFAULT_DEV_PASSWORD;
 const debugPort = Number(process.env.JANT_DEBUG_PORT || "19020");
 const localPort = Number(process.env.PORT || "9020");
@@ -125,7 +127,11 @@ console.log(
 console.log(
   `  ${localtestDebugBaseUrl}/__dev/login?token=${devApiToken}&redirect=/settings`,
 );
-console.log("  Prefer localhost in browsers to avoid HTTPS upgrades on *.localtest.me.");
+console.log(
+  "  Prefer localhost in browsers to avoid HTTPS upgrades on *.localtest.me.",
+);
 console.log("");
 console.log("HTTP agent flow:");
-console.log("  Request the /__dev/login URL directly, capture Set-Cookie, then reuse it.");
+console.log(
+  "  Request the /__dev/login URL directly, capture Set-Cookie, then reuse it.",
+);

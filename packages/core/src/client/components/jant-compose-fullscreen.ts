@@ -12,7 +12,7 @@ import { LitElement, html, nothing } from "lit";
 import type { Editor, JSONContent } from "@tiptap/core";
 import type { ComposeLabels } from "./compose-types.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
-import { uploadWithMetadata } from "../upload-with-metadata.js";
+import { uploadAndInsertInlineImage } from "../tiptap/inline-image-upload.js";
 
 export class JantComposeFullscreen extends LitElement {
   static properties = {
@@ -86,52 +86,10 @@ export class JantComposeFullscreen extends LitElement {
     this._fileInput.click();
   }
 
-  private async _uploadAndInsertImage(file: File) {
-    if (!this._editor) return;
-
-    const placeholderUrl = URL.createObjectURL(file);
-    this._editor.chain().focus().setImage({ src: placeholderUrl }).run();
-
-    try {
-      const data = await uploadWithMetadata(file);
-
-      // Replace placeholder with real URL
-      const { doc } = this._editor.state;
-      let replaced = false;
-      doc.descendants((node, pos) => {
-        if (
-          replaced ||
-          node.type.name !== "image" ||
-          node.attrs.src !== placeholderUrl
-        )
-          return;
-        this._editor
-          ?.chain()
-          .focus()
-          .command(({ tr }) => {
-            tr.setNodeMarkup(pos, undefined, { ...node.attrs, src: data.url });
-            return true;
-          })
-          .run();
-        replaced = true;
-      });
-    } catch {
-      // Remove placeholder on failure
-      const { doc } = this._editor.state;
-      doc.descendants((node, pos) => {
-        if (node.type.name === "image" && node.attrs.src === placeholderUrl) {
-          this._editor
-            ?.chain()
-            .command(({ tr }) => {
-              tr.delete(pos, pos + node.nodeSize);
-              return true;
-            })
-            .run();
-        }
-      });
-    } finally {
-      URL.revokeObjectURL(placeholderUrl);
-    }
+  private _uploadAndInsertImage(file: File) {
+    const editor = this._editor;
+    if (!editor) return;
+    void uploadAndInsertInlineImage(editor, file);
   }
 
   private _onOpen = (
@@ -176,6 +134,9 @@ export class JantComposeFullscreen extends LitElement {
       toolbarMode: "compose",
       onUpdate: (json) => {
         this._content = json;
+      },
+      pasteMedia: {
+        shouldInsertInline: (file) => file.type.startsWith("image/"),
       },
     });
   }

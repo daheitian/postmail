@@ -11,7 +11,9 @@ const flag = isRemote ? "--remote" : "--local";
 const password =
   process.argv.find(
     (arg) =>
-      !arg.startsWith("-") && arg !== process.argv[0] && arg !== process.argv[1],
+      !arg.startsWith("-") &&
+      arg !== process.argv[0] &&
+      arg !== process.argv[1],
   ) || DEFAULT_DEV_PASSWORD;
 
 const result = await setLocalDevPassword({

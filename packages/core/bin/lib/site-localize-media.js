@@ -124,7 +124,9 @@ function createLocalizedRelativePath(resolvedUrl, contentType, usedPaths) {
     .update(resolvedUrl)
     .digest("hex")
     .slice(0, 12);
-  const stem = extname(fileName) ? fileName.slice(0, -extname(fileName).length) : fileName;
+  const stem = extname(fileName)
+    ? fileName.slice(0, -extname(fileName).length)
+    : fileName;
   const extension = extname(fileName);
   let relativePath = `media/${hash}-${stem}${extension}`;
   let suffix = 1;
@@ -321,10 +323,7 @@ async function unpackZipToDirectory(zipBytes, rootDir) {
   );
 }
 
-export async function localizeSiteExportDirectory(
-  rootDir,
-  options = {},
-) {
+export async function localizeSiteExportDirectory(rootDir, options = {}) {
   const logger =
     typeof options.logger === "function" ? options.logger : () => {};
   const configPath = join(rootDir, "config.toml");

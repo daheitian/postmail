@@ -17,7 +17,8 @@ import {
 import { ImageNode } from "./image-node.js";
 import { MoreBreak } from "./more-break.js";
 import { SlashCommands } from "./slash-commands.js";
-import { PasteImage } from "./paste-image.js";
+import { PasteMedia } from "./paste-media.js";
+import type { PasteMediaOptions } from "./paste-media.js";
 import { BubbleMenu } from "./bubble-menu.js";
 import { LinkToolbar } from "./link-toolbar.js";
 import { ExitableMarks } from "./exitable-marks.js";
@@ -26,6 +27,7 @@ import type { FormattingToolbarMode } from "./toolbar-mode.js";
 export interface EditorExtensionOptions {
   placeholder?: string;
   toolbarMode?: FormattingToolbarMode;
+  pasteMedia?: PasteMediaOptions;
 }
 
 /**
@@ -59,7 +61,7 @@ export function createEditorExtensions(
     ImageNode,
     MoreBreak,
     SlashCommands,
-    PasteImage,
+    PasteMedia.configure(options.pasteMedia ?? {}),
     BubbleMenu.configure({
       toolbarMode: options.toolbarMode ?? "default",
     }),

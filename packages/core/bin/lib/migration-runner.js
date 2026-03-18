@@ -80,7 +80,9 @@ function applySqlFiles(runner, options) {
     return 0;
   }
 
-  console.log(`Applying ${headline.toLowerCase()} (${pendingFiles.length} pending)...`);
+  console.log(
+    `Applying ${headline.toLowerCase()} (${pendingFiles.length} pending)...`,
+  );
 
   const table = quoteIdentifier(tableName);
   for (const [index, file] of pendingFiles.entries()) {

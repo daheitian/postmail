@@ -17,6 +17,7 @@ import { createEditorExtensions } from "./extensions.js";
 import { ImageNode } from "./image-node.js";
 import { MoreBreak } from "./more-break.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
+import type { PasteMediaOptions } from "./paste-media.js";
 
 export interface CreateEditorOptions {
   element: HTMLElement;
@@ -25,6 +26,7 @@ export interface CreateEditorOptions {
   onUpdate?: (json: JSONContent) => void;
   onFocus?: () => void;
   toolbarMode?: FormattingToolbarMode;
+  pasteMedia?: PasteMediaOptions;
 }
 
 /**
@@ -39,6 +41,7 @@ export function createTiptapEditor(options: CreateEditorOptions): Editor {
     extensions: createEditorExtensions({
       placeholder: options.placeholder,
       toolbarMode: options.toolbarMode,
+      pasteMedia: options.pasteMedia,
     }),
     content: options.content ?? undefined,
     editorProps: {

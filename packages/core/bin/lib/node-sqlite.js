@@ -3,10 +3,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-export function resolveDatabasePath(
-  databaseUrl,
-  cwd = process.cwd(),
-) {
+export function resolveDatabasePath(databaseUrl, cwd = process.cwd()) {
   if (!databaseUrl) {
     throw new Error(
       "DATABASE_URL must be set. Example: DATABASE_URL=file:./data/jant.sqlite",
@@ -89,10 +86,7 @@ export function assertDatabaseInitialized(sqlite) {
   }
 }
 
-export function openNodeSqlite(
-  env = process.env,
-  options = {},
-) {
+export function openNodeSqlite(env = process.env, options = {}) {
   applyNodeRuntimeDefaults(env);
   const databasePath = resolveDatabasePath(env.DATABASE_URL ?? "");
 

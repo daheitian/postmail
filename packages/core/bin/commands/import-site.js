@@ -445,8 +445,7 @@ function buildSettingsUpdatesFromConfig(siteConfig, customCss = "") {
     SHOW_HEADER_AVATAR: jant.show_header_avatar ? "true" : "",
     THEME: themeId && themeId !== defaultThemeId ? themeId : "",
     FONT_THEME: fontThemeId && fontThemeId !== "default" ? fontThemeId : "",
-    THEME_MODE:
-      themeMode === "light" || themeMode === "dark" ? themeMode : "",
+    THEME_MODE: themeMode === "light" || themeMode === "dark" ? themeMode : "",
     CUSTOM_CSS: customCss,
   };
 }
@@ -786,9 +785,8 @@ async function createLocalTarget(env = process.env) {
       const originalName =
         mediaSpec.originalName || getFilenameFromUrl(mediaSpec.src) || "file";
       const bytes = new Uint8Array(await response.arrayBuffer());
-      const { id, filename, storageKey } = generateImportedStorageKey(
-        originalName,
-      );
+      const { id, filename, storageKey } =
+        generateImportedStorageKey(originalName);
       const mimeType =
         mediaSpec.mimeType ||
         response.headers.get("content-type")?.split(";")[0] ||
@@ -801,10 +799,7 @@ async function createLocalTarget(env = process.env) {
           const posterName =
             getFilenameFromUrl(mediaSpec.poster) || "poster.webp";
           const posterExt = extname(posterName) || ".webp";
-          posterKey = storageKey.replace(
-            /(\.[^.]+)?$/,
-            `-poster${posterExt}`,
-          );
+          posterKey = storageKey.replace(/(\.[^.]+)?$/, `-poster${posterExt}`);
           await runtime.storage.put(
             posterKey,
             new Uint8Array(await posterResponse.arrayBuffer()),
@@ -926,7 +921,9 @@ export async function run(argv) {
     console.log("Import a Zola export ZIP into a Jant instance.");
     console.log("");
     console.log("Modes:");
-    console.log("  Local           No --url; imports into the local Node SQLite runtime");
+    console.log(
+      "  Local           No --url; imports into the local Node SQLite runtime",
+    );
     console.log("  Remote          --url requires JANT_TOKEN or --token");
     console.log("");
     console.log("Options:");
@@ -989,8 +986,10 @@ export async function run(argv) {
     if (configContent) {
       siteConfig = await parseToml(configContent);
     }
-    customCss = await readFile(join(inputPath, "static", "custom.css"), "utf-8")
-      .catch(() => "");
+    customCss = await readFile(
+      join(inputPath, "static", "custom.css"),
+      "utf-8",
+    ).catch(() => "");
   } else {
     console.log(`Reading ZIP ${inputPath}...`);
     const zipData = await readFile(inputPath);
@@ -1027,7 +1026,10 @@ export async function run(argv) {
   );
 
   if (siteConfig) {
-    const settingsUpdates = buildSettingsUpdatesFromConfig(siteConfig, customCss);
+    const settingsUpdates = buildSettingsUpdatesFromConfig(
+      siteConfig,
+      customCss,
+    );
     const importedNav = normalizeImportedNavItems(siteConfig);
     const avatarImport = buildSiteAvatarImport(siteConfig);
 
@@ -1172,7 +1174,11 @@ export async function run(argv) {
 
     if (!skipMedia && !dryRun) {
       const imageMedia = findImageUrls(rootBody).map((src) => ({ src }));
-      const uploadResult = await uploadMediaList(imageMedia, target, siteConfig);
+      const uploadResult = await uploadMediaList(
+        imageMedia,
+        target,
+        siteConfig,
+      );
       mediaUploaded += uploadResult.uploaded;
 
       if (uploadResult.urlMap.size > 0) {
@@ -1246,7 +1252,9 @@ export async function run(argv) {
 
     const progress = `[${postsCreated + skipped + 1}/${postFiles.length}]`;
     const existingPost =
-      postData.slug && !dryRun ? await target.findPostBySlug(postData.slug) : null;
+      postData.slug && !dryRun
+        ? await target.findPostBySlug(postData.slug)
+        : null;
 
     let post;
     if (existingPost) {
@@ -1331,7 +1339,8 @@ export async function run(argv) {
           ? replyAttrs.status
           : "published";
       const replyVisibility =
-        replyAttrs.visibility === "unlisted" || replyAttrs.visibility === "private"
+        replyAttrs.visibility === "unlisted" ||
+        replyAttrs.visibility === "private"
           ? replyAttrs.visibility
           : undefined;
       const replyData = {
@@ -1356,8 +1365,9 @@ export async function run(argv) {
         replyData.quoteText = decodeURIComponent(replyAttrs.quote_text);
       }
 
-      const existingReply =
-        replyData.slug ? await target.findPostBySlug(replyData.slug) : null;
+      const existingReply = replyData.slug
+        ? await target.findPostBySlug(replyData.slug)
+        : null;
       if (existingReply) {
         console.log(`  Skipped reply (exists)`);
         skipped++;

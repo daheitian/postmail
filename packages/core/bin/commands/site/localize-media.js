@@ -109,7 +109,9 @@ export async function run(argv) {
   });
   console.log(`Writing ${values.output || values.path}...`);
   writeFileSync(outputPath, Buffer.from(zipBytes));
-  console.log(`Localized media in ${values.path} -> ${values.output || values.path}`);
+  console.log(
+    `Localized media in ${values.path} -> ${values.output || values.path}`,
+  );
   console.log(
     `Media localization: localized ${stats.downloaded} media files, ${stats.reused} already localized, ${stats.failed} failed and were left as original URLs`,
   );

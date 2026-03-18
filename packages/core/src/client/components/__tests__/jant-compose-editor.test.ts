@@ -1,9 +1,14 @@
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+vi.mock("../../upload-with-metadata.js", () => ({
+  uploadWithMetadata: vi.fn(),
+}));
+import type { Editor } from "@tiptap/core";
 import type { ComposeLabels } from "../compose-types.js";
 import "../jant-compose-editor.js";
 import type { JantComposeEditor } from "../jant-compose-editor.js";
+import { uploadWithMetadata } from "../../upload-with-metadata.js";
 
 function requireElement<T extends globalThis.Element>(
   element: T | null,
@@ -25,6 +30,75 @@ function requireItem<T extends globalThis.Element>(
     throw new Error(message);
   }
   return item;
+}
+
+function requireValue<T>(value: T | null | undefined, message: string): T {
+  if (value === null || value === undefined) {
+    throw new Error(message);
+  }
+  return value;
+}
+
+interface MockClipboardItem {
+  kind: string;
+  type: string;
+  getAsFile(): File | null;
+}
+
+interface MockClipboardData {
+  items: MockClipboardItem[];
+  files: File[];
+}
+
+type MockPasteEvent = globalThis.ClipboardEvent & {
+  clipboardData: MockClipboardData;
+  defaultPrevented: boolean;
+};
+
+function createPasteEvent(files: File[]): MockPasteEvent {
+  let defaultPrevented = false;
+  return {
+    clipboardData: {
+      items: files.map((file) => ({
+        kind: "file",
+        type: file.type,
+        getAsFile: () => file,
+      })),
+      files,
+    },
+    preventDefault() {
+      defaultPrevented = true;
+    },
+    get defaultPrevented() {
+      return defaultPrevented;
+    },
+  } as unknown as MockPasteEvent;
+}
+
+function triggerEditorPaste(el: JantComposeEditor, files: File[]) {
+  const editor = requireValue(
+    (el as unknown as { _editor?: Editor | null })._editor,
+    "expected compose editor instance",
+  );
+  const event = createPasteEvent(files);
+  let handled = false;
+
+  editor.view.someProp("handlePaste", (handler: unknown) => {
+    const pasteHandler = handler as (
+      view: Editor["view"],
+      event: globalThis.ClipboardEvent,
+      slice: unknown,
+    ) => boolean | void;
+    const result = pasteHandler(
+      editor.view,
+      event as globalThis.ClipboardEvent,
+      undefined,
+    );
+    handled = result === true;
+    return handled;
+  });
+
+  return { handled, event };
 }
 
 const labels: ComposeLabels = {
@@ -152,6 +226,7 @@ async function createElement(
 describe("JantComposeEditor", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    vi.clearAllMocks();
   });
 
   it("renders note fields by default", async () => {
@@ -540,5 +615,67 @@ describe("JantComposeEditor", () => {
     expect(items[0]).toBe(el._attachmentOrder[0]);
     expect(items[1]).toBe(el._attachmentOrder[1]);
     expect(el._attachmentOrder[0]).toBe("t1");
+  });
+
+  it("pastes clipboard files into attachments when no visible title is set", async () => {
+    const uploadWithMetadataMock = vi.mocked(uploadWithMetadata);
+    const el = await createElement("note");
+    const events: CustomEvent[] = [];
+    el.addEventListener("jant:files-selected", (event) => {
+      events.push(event as CustomEvent);
+    });
+
+    const image = new File(["image"], "clipboard.png", { type: "image/png" });
+    const video = new File(["video"], "clipboard.mp4", { type: "video/mp4" });
+    const { handled, event } = triggerEditorPaste(el, [image, video]);
+    await el.updateComplete;
+
+    expect(handled).toBe(true);
+    expect(event.defaultPrevented).toBe(true);
+    expect(uploadWithMetadataMock).not.toHaveBeenCalled();
+    expect(el._attachments.map((attachment) => attachment.file.name)).toEqual([
+      "clipboard.png",
+      "clipboard.mp4",
+    ]);
+    expect(el._attachmentOrder).toHaveLength(2);
+    expect(events).toHaveLength(1);
+    expect(
+      events[0].detail.files.map(
+        (entry: { file: File; clientId: string }) => entry.file.name,
+      ),
+    ).toEqual(["clipboard.png", "clipboard.mp4"]);
+  });
+
+  it("pastes images inline and videos as attachments when a title is present", async () => {
+    const uploadWithMetadataMock = vi.mocked(uploadWithMetadata);
+    uploadWithMetadataMock.mockResolvedValue({
+      id: "media-inline",
+      url: "/uploads/clipboard.webp",
+    });
+
+    const el = await createElement("note");
+    el._showTitle = true;
+    el._title = "Essay";
+    await el.updateComplete;
+
+    const image = new File(["image"], "clipboard.png", { type: "image/png" });
+    const video = new File(["video"], "clipboard.mp4", { type: "video/mp4" });
+    const { handled, event } = triggerEditorPaste(el, [image, video]);
+    await Promise.resolve();
+    await Promise.resolve();
+    await el.updateComplete;
+
+    expect(handled).toBe(true);
+    expect(event.defaultPrevented).toBe(true);
+    expect(uploadWithMetadataMock).toHaveBeenCalledTimes(1);
+    expect(uploadWithMetadataMock).toHaveBeenCalledWith(image);
+    expect(el._attachments.map((attachment) => attachment.file.name)).toEqual([
+      "clipboard.mp4",
+    ]);
+    expect(
+      JSON.stringify(
+        (el as unknown as { _editor?: Editor | null })._editor?.getJSON(),
+      ),
+    ).toContain("/uploads/clipboard.webp");
   });
 });

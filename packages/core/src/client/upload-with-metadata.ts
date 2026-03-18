@@ -3,7 +3,7 @@
  *
  * Processes images via ImageProcessor, extracts dimensions + blurhash,
  * and uploads with metadata attached to the FormData.
- * Used by paste-image, image-node replace, and fullscreen compose.
+ * Used by paste-media, image-node replace, and inline compose editors.
  */
 
 import { ImageProcessor } from "./image-processor.js";
