@@ -35,6 +35,8 @@ const labels: CollectionFormLabels = {
   titlePlaceholder: "Placeholder Title",
   slugLabel: "Collection link",
   slugHelp: "Help text",
+  slugInvalidHelp: "Use lowercase letters, numbers, and hyphens only.",
+  slugReservedHelp: "This link is reserved. Choose something else.",
   editSlugLabel: "Edit link",
   resetSlugLabel: "Reset link",
   quickHint: "More options are available after you create it.",
@@ -189,6 +191,35 @@ describe("JantCollectionForm", () => {
     expect(d.data.icon).toBeDefined();
     expect(d.data.icon).toContain('"name":"library"');
     expect(d.data.icon).toContain('"palette":"stone"');
+  });
+
+  it("shows a slug error and blocks submit when the slug is invalid", async () => {
+    const el = await createElement();
+
+    const titleInput = el.querySelectorAll<HTMLInputElement>("input")[0];
+    const slugInput = el.querySelectorAll<HTMLInputElement>("input")[1];
+
+    titleInput.value = "Books";
+    titleInput.dispatchEvent(new Event("input", { bubbles: true }));
+    slugInput.value = "books/2025";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    let detail: CollectionSubmitDetail | null = null;
+    el.addEventListener("jant:collection-submit", (event) => {
+      detail = (event as CustomEvent<CollectionSubmitDetail>).detail;
+    });
+
+    el.querySelector("form")?.dispatchEvent(
+      new Event("submit", { bubbles: true, cancelable: true }),
+    );
+    await el.updateComplete;
+
+    expect(detail).toBeNull();
+    expect(
+      el.querySelector("[data-collection-slug-error]")?.textContent?.trim(),
+    ).toBe("Use lowercase letters, numbers, and hyphens only.");
+    expect(slugInput.getAttribute("aria-invalid")).toBe("true");
   });
 
   it("renders a quick variant with only the primary field visible", async () => {

@@ -33,6 +33,7 @@ import {
   ICON_CATALOG,
 } from "../../lib/icon-catalog.js";
 import { EMOJI_CATALOG } from "../../lib/emoji-catalog.js";
+import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { slugify } from "../lazy-slugify.js";
 import { publicPath } from "../runtime-paths.js";
 import type {
@@ -431,6 +432,13 @@ export class JantCollectionForm extends LitElement {
     this._slugEdited = true;
   }
 
+  #getSlugValidationMessage(): string | null {
+    const issue = getSlugValidationIssue(this._slug);
+    if (issue === "invalid") return this.labels.slugInvalidHelp;
+    if (issue === "reserved") return this.labels.slugReservedHelp;
+    return null;
+  }
+
   #showSlugEditor() {
     if (this._showSlugEditor) return;
     this._showSlugEditor = true;
@@ -463,6 +471,16 @@ export class JantCollectionForm extends LitElement {
   }
 
   #renderSlugHelper() {
+    const slugError = this.#getSlugValidationMessage();
+    if (slugError) {
+      return html`<p
+        class="text-xs text-destructive mt-1"
+        data-collection-slug-error
+      >
+        ${slugError}
+      </p>`;
+    }
+
     if (!this._slug.trim()) {
       return html`<p class="text-xs text-muted-foreground mt-1">
         ${this.labels.slugHelp}
@@ -508,8 +526,11 @@ export class JantCollectionForm extends LitElement {
               class="input"
               data-collection-slug-input
               required
-              pattern="[a-z0-9\\-]+"
+              pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
               .value=${this._slug}
+              aria-invalid=${this.#getSlugValidationMessage()
+                ? "true"
+                : "false"}
               placeholder="my-collection"
               @input=${(event: Event) => this.#handleSlugInput(event)}
             />
@@ -548,7 +569,12 @@ export class JantCollectionForm extends LitElement {
 
     const title = this._title.trim();
     const slug = this._slug.trim();
-    if (!title || !slug) {
+    if (!title || !slug || this.#getSlugValidationMessage()) {
+      this.updateComplete.then(() => {
+        this.querySelector<HTMLInputElement>(
+          "[data-collection-slug-input]",
+        )?.focus();
+      });
       return;
     }
 
@@ -902,8 +928,11 @@ export class JantCollectionForm extends LitElement {
                   class="input"
                   data-collection-slug-input
                   required
-                  pattern="[a-z0-9\\-]+"
+                  pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
                   .value=${this._slug}
+                  aria-invalid=${this.#getSlugValidationMessage()
+                    ? "true"
+                    : "false"}
                   placeholder=${this.isEdit ? nothing : "my-collection"}
                   @input=${(event: Event) => this.#handleSlugInput(event)}
                 />

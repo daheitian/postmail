@@ -85,6 +85,25 @@ const labels: ComposeLabels = {
   publishFeatured: "Post as Featured",
   publishUnlisted: "Post Unlisted",
   publishPrivate: "Post as Private",
+  publishSettings: "Publish settings",
+  publishVisibilityLabel: "Visibility",
+  publishVisibilityPublic: "Public",
+  publishVisibilityPublicHint: "Shows up in the public timeline and /feed/all.",
+  publishVisibilityUnlisted: "Unlisted",
+  publishVisibilityUnlistedHint:
+    "Hidden from public lists and feeds, but anyone with the link can still view it.",
+  publishVisibilityPrivate: "Private",
+  publishVisibilityPrivateHint: "Only visible when signed in.",
+  publishFeaturedLabel: "Featured",
+  publishFeaturedHint: "Also appears in Featured and the main RSS /feed.",
+  publishSlugLabel: "Custom link",
+  publishSlugPlaceholder: "your-post-link",
+  publishSlugHint: "Leave blank to generate one automatically.",
+  publishSlugAuto: "Generate automatically",
+  publishSlugInvalid: "Use lowercase letters, numbers, and hyphens only.",
+  publishSlugReserved: "This link is reserved. Choose something else.",
+  postUnlisted: "Post unlisted",
+  postPrivately: "Post privately",
   showMore: "Show more",
   showLess: "Show less",
   collectionFormLabels: {
@@ -92,6 +111,8 @@ const labels: ComposeLabels = {
     titlePlaceholder: "My Collection",
     slugLabel: "Collection link",
     slugHelp: "This is the last part of the collection link.",
+    slugInvalidHelp: "Use lowercase letters, numbers, and hyphens only.",
+    slugReservedHelp: "This link is reserved. Choose something else.",
     editSlugLabel: "Edit link",
     resetSlugLabel: "Reset link",
     quickHint: "More options are available after you create it.",
@@ -163,10 +184,28 @@ describe("JantComposeDialog", () => {
     expect(postBtn.textContent?.trim()).toBe("Post");
     expect(postBtn.disabled).toBe(true);
     expect(
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+        "expected publish settings toggle",
+      ).disabled,
+    ).toBe(false);
+    expect(
       el.querySelector<HTMLButtonElement>(
         '.compose-tool-btn-view[aria-label="Fullscreen"]',
       ),
     ).not.toBeNull();
+  });
+
+  it("opens publish settings even when publish is disabled", async () => {
+    const el = await createElement();
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    expect(el.querySelector(".compose-publish-panel")).not.toBeNull();
   });
 
   it("format switching updates active state", async () => {
@@ -240,6 +279,232 @@ describe("JantComposeDialog", () => {
     expect(detail.pendingAttachments).toEqual([]);
   });
 
+  it("includes publish settings in the submit payload", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Configured post" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    const options = el.querySelectorAll<HTMLButtonElement>(
+      ".compose-publish-option[role='radio']",
+    );
+    expect(options).toHaveLength(3);
+    options[1]?.click();
+    await el.updateComplete;
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+        "expected publish button",
+      ).textContent?.trim(),
+    ).toBe("Post unlisted");
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+      "expected publish button",
+    ).click();
+
+    expect(receivedDetail).not.toBeNull();
+    expect((receivedDetail as ComposeSubmitDetail).visibility).toBe("unlisted");
+    expect((receivedDetail as ComposeSubmitDetail).slug).toBeUndefined();
+  });
+
+  it("updates the publish button label for private visibility", async () => {
+    const el = await createElement();
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    const options = el.querySelectorAll<HTMLButtonElement>(
+      ".compose-publish-option[role='radio']",
+    );
+    expect(options).toHaveLength(3);
+    options[2]?.click();
+    await el.updateComplete;
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+        "expected publish button",
+      ).textContent?.trim(),
+    ).toBe("Post privately");
+  });
+
+  it("includes a custom slug from the more menu in the submit payload", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Configured post" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    const moreBtn = requireElement(
+      el.querySelectorAll<HTMLButtonElement>(".compose-dialog-header-btn")[1] ??
+        null,
+      "expected more button",
+    );
+    moreBtn.click();
+    await el.updateComplete;
+
+    const slugToggle = Array.from(
+      el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
+    ).find((button) => button.textContent?.includes("Custom link"));
+    requireElement(slugToggle ?? null, "expected custom link toggle").click();
+    await el.updateComplete;
+
+    const slugInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
+      "expected custom link input",
+    );
+    slugInput.value = "custom-link";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+      "expected publish button",
+    ).click();
+
+    expect(receivedDetail).not.toBeNull();
+    expect((receivedDetail as ComposeSubmitDetail).slug).toBe("custom-link");
+  });
+
+  it("reopens the more menu with custom link expanded when a slug exists", async () => {
+    const el = await createElement();
+
+    const moreBtn = requireElement(
+      el.querySelectorAll<HTMLButtonElement>(".compose-dialog-header-btn")[1] ??
+        null,
+      "expected more button",
+    );
+
+    moreBtn.click();
+    await el.updateComplete;
+
+    requireElement(
+      Array.from(
+        el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
+      ).find((button) => button.textContent?.includes("Custom link")) ?? null,
+      "expected custom link toggle",
+    ).click();
+    await el.updateComplete;
+
+    const slugInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
+      "expected custom link input",
+    );
+    slugInput.value = "reading-notes";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    moreBtn.click();
+    await el.updateComplete;
+    moreBtn.click();
+    await el.updateComplete;
+
+    expect(el.querySelector(".compose-more-slug-input")).not.toBeNull();
+  });
+
+  it("shows a slug error and blocks publish when the custom link is invalid", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Hello world" }] },
+      ],
+    };
+    await editor.updateComplete;
+
+    const moreBtn = requireElement(
+      el.querySelectorAll<HTMLButtonElement>(".compose-dialog-header-btn")[1] ??
+        null,
+      "expected more button",
+    );
+    moreBtn.click();
+    await el.updateComplete;
+
+    requireElement(
+      Array.from(
+        el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
+      ).find((button) => button.textContent?.includes("Custom link")) ?? null,
+      "expected custom link toggle",
+    ).click();
+    await el.updateComplete;
+
+    const slugInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
+      "expected custom link input",
+    );
+    slugInput.value = "bad/slug";
+    slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+        "expected publish button",
+      ).disabled,
+    ).toBe(true);
+    expect(
+      el.querySelector("[data-compose-slug-error]")?.textContent?.trim(),
+    ).toBe("Use lowercase letters, numbers, and hyphens only.");
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+      "expected publish button",
+    ).click();
+
+    expect(receivedDetail).toBeNull();
+  });
+
   it("includes the thread root id when replying", async () => {
     const el = await createElement();
     await el.openReply(
@@ -293,6 +558,43 @@ describe("JantComposeDialog", () => {
     );
     expect(detail.replyRefreshKind).toBe("timeline-item");
     expect(detail.replyRefreshId).toBe("019ce8cf-19a1-7d16-9a75-017a9ac7299d");
+  });
+
+  it("omits visibility from locked edit submissions", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    el._editPostId = "post-123";
+    el._visibilityLocked = true;
+    el._slug = "reply-note";
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Edited reply" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+    await el.updateComplete;
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-single"),
+      "expected publish button",
+    ).click();
+
+    expect(receivedDetail).not.toBeNull();
+    expect((receivedDetail as ComposeSubmitDetail).visibility).toBeUndefined();
+    expect((receivedDetail as ComposeSubmitDetail).slug).toBe("reply-note");
   });
 
   it("collection selector toggles IDs", async () => {

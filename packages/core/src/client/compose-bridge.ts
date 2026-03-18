@@ -453,6 +453,7 @@ function buildPostBody(detail: ComposeSubmitDetail) {
     body: detail.body || undefined,
     url: detail.url || undefined,
     quoteText: detail.quoteText || undefined,
+    slug: detail.slug || undefined,
     status: detail.status,
     visibility: detail.visibility || undefined,
     featured: detail.featured || undefined,

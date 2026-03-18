@@ -275,6 +275,86 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       comment:
         "@context: Compose dropdown option - publish post visible only when logged in",
     }),
+    publishSettings: t({
+      message: "Publish settings",
+      comment: "@context: Compose publish settings panel title",
+    }),
+    publishVisibilityLabel: t({
+      message: "Visibility",
+      comment: "@context: Compose publish settings section label",
+    }),
+    publishVisibilityPublic: t({
+      message: "Public",
+      comment: "@context: Compose publish settings visibility option",
+    }),
+    publishVisibilityPublicHint: t({
+      message: "Shows up in the public timeline and /feed/all.",
+      comment:
+        "@context: Compose publish settings help text for public visibility",
+    }),
+    publishVisibilityUnlisted: t({
+      message: "Unlisted",
+      comment: "@context: Compose publish settings visibility option",
+    }),
+    publishVisibilityUnlistedHint: t({
+      message:
+        "Hidden from public lists and feeds, but anyone with the link can still view it.",
+      comment:
+        "@context: Compose publish settings help text for unlisted visibility",
+    }),
+    publishVisibilityPrivate: t({
+      message: "Private",
+      comment: "@context: Compose publish settings visibility option",
+    }),
+    publishVisibilityPrivateHint: t({
+      message: "Only visible when signed in.",
+      comment:
+        "@context: Compose publish settings help text for private visibility",
+    }),
+    publishFeaturedLabel: t({
+      message: "Featured",
+      comment: "@context: Compose publish settings featured toggle label",
+    }),
+    publishFeaturedHint: t({
+      message: "Also appears in Featured and the main RSS /feed.",
+      comment:
+        "@context: Compose publish settings help text for featured toggle",
+    }),
+    publishSlugLabel: t({
+      message: "Custom link",
+      comment: "@context: Compose publish settings slug section label",
+    }),
+    publishSlugPlaceholder: t({
+      message: "your-post-link",
+      comment: "@context: Compose publish settings slug input placeholder",
+    }),
+    publishSlugHint: t({
+      message: "Leave blank to generate one automatically.",
+      comment: "@context: Compose publish settings slug help text",
+    }),
+    publishSlugAuto: t({
+      message: "Generate automatically",
+      comment:
+        "@context: Compose publish settings slug summary when no custom slug is set",
+    }),
+    publishSlugInvalid: t({
+      message: "Use lowercase letters, numbers, and hyphens only.",
+      comment:
+        "@context: Compose custom slug validation error for invalid characters",
+    }),
+    publishSlugReserved: t({
+      message: "This link is reserved. Choose something else.",
+      comment:
+        "@context: Compose custom slug validation error for reserved paths",
+    }),
+    postUnlisted: t({
+      message: "Post unlisted",
+      comment: "@context: Compose publish button for unlisted visibility",
+    }),
+    postPrivately: t({
+      message: "Post privately",
+      comment: "@context: Compose publish button for private visibility",
+    }),
     showMore: t({
       message: "Show more",
       comment: "@context: Expand reply context",

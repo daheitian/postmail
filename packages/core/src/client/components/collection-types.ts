@@ -7,6 +7,8 @@ export interface CollectionFormLabels {
   titlePlaceholder: string;
   slugLabel: string;
   slugHelp: string;
+  slugInvalidHelp: string;
+  slugReservedHelp: string;
   editSlugLabel: string;
   resetSlugLabel: string;
   quickHint: string;

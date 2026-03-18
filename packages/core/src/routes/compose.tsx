@@ -86,6 +86,7 @@ composeRoutes.post("/", async (c) => {
   const post = await c.var.services.posts.create(
     {
       format: data.format,
+      slug: data.slug || undefined,
       title: data.title || undefined,
       body: data.body || undefined,
       bodyMarkdown: data.bodyMarkdown || undefined,

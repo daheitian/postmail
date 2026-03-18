@@ -1,0 +1,34 @@
+import { describe, expect, it } from "vitest";
+import {
+  getSlugValidationIssue,
+  isValidSlug,
+  normalizeSlug,
+} from "../slug-format.js";
+
+describe("slug-format", () => {
+  it("normalizes arbitrary text into a slug", () => {
+    expect(normalizeSlug("My Cool Page!")).toBe("my-cool-page");
+    expect(normalizeSlug("  hello  world  ")).toBe("hello-world");
+  });
+
+  it("treats empty slugs as valid so they can be auto-generated", () => {
+    expect(getSlugValidationIssue("")).toBeNull();
+    expect(isValidSlug("")).toBe(true);
+  });
+
+  it("flags illegal characters", () => {
+    expect(getSlugValidationIssue("bad/slug")).toBe("invalid");
+    expect(getSlugValidationIssue("bad slug")).toBe("invalid");
+    expect(getSlugValidationIssue("-bad-slug")).toBe("invalid");
+  });
+
+  it("flags reserved paths", () => {
+    expect(getSlugValidationIssue("compose")).toBe("reserved");
+    expect(isValidSlug("compose")).toBe(false);
+  });
+
+  it("accepts valid slugs", () => {
+    expect(getSlugValidationIssue("reading-notes")).toBeNull();
+    expect(isValidSlug("reading-notes")).toBe(true);
+  });
+});

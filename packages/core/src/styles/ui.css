@@ -2732,7 +2732,7 @@
     max-height: calc(100dvh - var(--compose-margin-top) - 20px);
     position: relative;
     border-radius: inherit;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .compose-dialog-inner > jant-compose-editor {
@@ -2752,6 +2752,7 @@
     justify-content: space-between;
     padding: 10px 12px;
     position: relative;
+    z-index: 4;
   }
 
   @media (min-width: 700px) {
@@ -3338,6 +3339,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    position: relative;
+    z-index: 3;
     background-color: var(--site-elevated-bg);
   }
 
@@ -3519,10 +3522,89 @@
     flex-shrink: 0;
   }
 
-  .compose-publish-group .compose-dropdown {
-    bottom: calc(100% + 6px);
-    top: auto;
+  .compose-publish-panel {
+    position: absolute;
     right: 0;
+    top: calc(100% + 6px);
+    width: min(13.5rem, calc(100vw - 1.5rem));
+    padding: 6px;
+    background-color: var(--site-elevated-bg);
+    border: 1px solid var(--site-column-outline);
+    border-radius: 12px;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      0 1px 4px rgba(0, 0, 0, 0.05);
+    z-index: 120;
+    animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .compose-publish-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .compose-publish-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease;
+  }
+
+  .compose-publish-option:hover:not(:disabled) {
+    background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-publish-option:disabled {
+    cursor: default;
+    opacity: 0.72;
+  }
+
+  .compose-publish-option-selected {
+    background-color: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 68%,
+      transparent
+    );
+  }
+
+  .compose-publish-row-label {
+    color: var(--site-text-primary);
+    font-size: 0.88rem;
+    font-weight: var(--fw-medium);
+    line-height: 1.2;
+  }
+
+  .compose-publish-row-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    margin-left: auto;
+  }
+
+  .compose-publish-row-value {
+    color: var(--site-text-secondary);
+    font-size: 0.78rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .compose-publish-row-check {
+    flex-shrink: 0;
+    color: var(--site-text-primary);
   }
 
   /* --- Dropdowns ---------------------------------------------------------- */
@@ -3543,13 +3625,18 @@
       0 8px 32px rgba(0, 0, 0, 0.1),
       0 1px 4px rgba(0, 0, 0, 0.05);
     padding: 5px;
-    z-index: 100;
+    z-index: 120;
     animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .compose-dropdown-right {
     top: calc(100% + 6px);
     right: 0;
+  }
+
+  .compose-more-menu {
+    min-width: 210px;
+    max-width: min(250px, calc(100vw - 1.5rem));
   }
 
   .compose-dropdown-item {
@@ -3571,6 +3658,67 @@
   .compose-dropdown-item:hover {
     background-color: var(--site-nav-hover-bg);
   }
+
+  .compose-dropdown-item-toggle {
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .compose-dropdown-toggle-icon {
+    flex-shrink: 0;
+    color: var(--site-text-secondary);
+    transition:
+      transform 0.16s ease,
+      color 0.16s ease;
+  }
+
+  .compose-dropdown-item-toggle[aria-expanded="true"]
+    .compose-dropdown-toggle-icon {
+    transform: rotate(180deg);
+    color: var(--site-text-primary);
+  }
+
+  .compose-dropdown-field {
+    padding: 0 10px 8px;
+  }
+
+  .compose-dropdown-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 2.3rem;
+    padding: 0 10px;
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 12%, transparent);
+    border-radius: 9px;
+    background-color: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 98%,
+      var(--site-nav-hover-bg)
+    );
+  }
+
+  .compose-dropdown-input-prefix {
+    flex-shrink: 0;
+    color: var(--site-text-secondary);
+    font-size: 0.94rem;
+    line-height: 1;
+  }
+
+  .compose-more-slug-input {
+    min-width: 0;
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .compose-more-slug-input:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
   .compose-dropdown-item-muted {
     color: var(--site-text-secondary);
   }

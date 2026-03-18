@@ -225,6 +225,11 @@ msgstr "所有可见性"
 msgid "All years"
 msgstr "所有年份"
 
+#. @context: Compose publish settings help text for featured toggle
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Also appears in Featured and the main RSS /feed."
+msgstr "同时出现在 Featured 和主 RSS /feed 中。"
+
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Always show the dark version of the theme."
@@ -682,6 +687,11 @@ msgstr "自定义 CSS"
 msgid "Custom CSS updated."
 msgstr "自定义 CSS 已更新。"
 
+#. @context: Compose publish settings slug section label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Custom link"
+msgstr "自定义链接"
+
 #. @context: Settings item — custom URL settings
 #. @context: Settings section heading
 #: src/routes/dash/custom-urls.tsx
@@ -1084,12 +1094,14 @@ msgstr "网站图标及页眉中的个人头像"
 #. @context: Browse filter label for featured posts
 #. @context: Browser page title for the featured feed
 #. @context: Browser page title for the featured feed
+#. @context: Compose publish settings featured toggle label
 #. @context: Inactive browse tab label on sample page
 #. @context: Label for the default featured icon picker view
 #. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
 #: src/routes/pages/featured.tsx
 #: src/routes/pages/home.tsx
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1189,6 +1201,11 @@ msgstr "全屏"
 msgid "General"
 msgstr "通用"
 
+#. @context: Compose publish settings slug summary when no custom slug is set
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Generate automatically"
+msgstr "自动生成"
+
 #. @context: Button to create new API token
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Generate Token"
@@ -1228,6 +1245,11 @@ msgstr "即使强调变弱，标题也应保持其层次结构。"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Helps screen readers describe the image"
 msgstr "帮助屏幕阅读器描述图片"
+
+#. @context: Compose publish settings help text for unlisted visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Hidden from public lists and feeds, but anyone with the link can still view it."
+msgstr "不会出现在公开列表和 feed 中，但知道链接的人仍可访问。"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1380,6 +1402,11 @@ msgstr "上次使用 {0}"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Latest"
 msgstr "最新"
+
+#. @context: Compose publish settings slug help text
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Leave blank to generate one automatically."
+msgstr "留空则自动生成。"
 
 #. @context: Suffix after Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1722,6 +1749,11 @@ msgstr "这里还没有内容。"
 msgid "Oldest first"
 msgstr "最旧优先"
 
+#. @context: Compose publish settings help text for private visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Only visible when signed in."
+msgstr "仅登录后可见。"
+
 #. @context: Ordered list item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Open a few links and check whether they still feel native to the page."
@@ -1850,6 +1882,16 @@ msgstr "发布为精选"
 msgid "Post as Private"
 msgstr "以私密方式发布"
 
+#. @context: Compose publish button for private visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post privately"
+msgstr "私密发布"
+
+#. @context: Compose publish button for unlisted visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post unlisted"
+msgstr "不公开发布"
+
 #. @context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post Unlisted"
@@ -1890,6 +1932,8 @@ msgid "Primary logo files"
 msgstr ""
 
 #. @context: Archive visibility filter - private posts
+#. @context: Compose publish settings visibility option
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Private"
 msgstr "私密"
@@ -1900,6 +1944,8 @@ msgid "Processing..."
 msgstr "处理中..."
 
 #. @context: Archive visibility filter - public posts
+#. @context: Compose publish settings visibility option
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Public"
 msgstr "公开"
@@ -1910,6 +1956,11 @@ msgstr "公开"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Publish"
 msgstr "发布"
+
+#. @context: Compose publish settings panel title
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Publish settings"
+msgstr "发布设置"
 
 #. @context: Post status badge - published
 #: src/ui/dash/StatusBadge.tsx
@@ -2250,6 +2301,11 @@ msgstr "显示更多图标"
 msgid "Shows 'Settings' when logged in, 'Sign in' when logged out"
 msgstr "登录时显示“设置”，未登录时显示“登录”"
 
+#. @context: Compose publish settings help text for public visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Shows up in the public timeline and /feed/all."
+msgstr "出现在公开时间线和 /feed/all 中。"
+
 #. @context: Built-in navigation label shown when auth is required
 #: src/ui/shared/navigation-labels.ts
 msgid "Sign in"
@@ -2559,6 +2615,13 @@ msgstr "这对于颜色检查很有用，因为它将强调色放在引用样式
 msgid "This Link Has Expired"
 msgstr "此链接已过期"
 
+#. @context: Collection slug validation error for reserved paths
+#. @context: Compose custom slug validation error for reserved paths
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "This link is reserved. Choose something else."
+msgstr "这个链接是保留地址，请换一个。"
+
 #. @context: Sample link post body prefix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "This reference is useful because it treats links and citations as part of the reading rhythm. Keep that in mind while tuning the"
@@ -2692,7 +2755,9 @@ msgid "Unknown device"
 msgstr "未知设备"
 
 #. @context: Archive visibility filter - unlisted posts
+#. @context: Compose publish settings visibility option
 #. @context: Post badge - unlisted
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/pages/ArchivePage.tsx
 msgid "Unlisted"
@@ -2744,6 +2809,13 @@ msgstr "URL"
 msgid "Usage"
 msgstr "用法"
 
+#. @context: Collection slug validation error for invalid characters
+#. @context: Compose custom slug validation error for invalid characters
+#: src/ui/compose/ComposeDialog.tsx
+#: src/ui/shared/collection-management-labels.ts
+msgid "Use lowercase letters, numbers, and hyphens only."
+msgstr "只能使用小写字母、数字和连字符。"
+
 #. @context: Guidance title on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Use the logo on light backgrounds."
@@ -2790,6 +2862,11 @@ msgstr "查看"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "View earlier notes in this thread"
 msgstr "查看这个帖子串里更早的笔记"
+
+#. @context: Compose publish settings section label
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Visibility"
+msgstr "可见性"
 
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2880,3 +2957,8 @@ msgstr "你有未保存的更改"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Your thoughts (optional)"
 msgstr "你的想法 (可选)"
+
+#. @context: Compose publish settings slug input placeholder
+#: src/ui/compose/ComposeDialog.tsx
+msgid "your-post-link"
+msgstr "my-post-link"

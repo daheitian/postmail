@@ -20,6 +20,7 @@ import {
 } from "../types.js";
 import { ValidationError } from "./errors.js";
 import { isCollectionIconPalette } from "./collection-icon-palette.js";
+import { normalizeSlug } from "./slug-format.js";
 import { sanitizeUrl, normalizePath } from "./url.js";
 
 // =============================================================================
@@ -402,26 +403,7 @@ export const ResetPasswordSchema = z
 // Slug Normalization
 // =============================================================================
 
-/**
- * Normalize a string into a valid slug format.
- * Lowercases, replaces non-alphanumeric characters with dashes,
- * collapses consecutive dashes, and trims leading/trailing dashes.
- *
- * @param s - Raw input string
- * @returns Normalized slug
- * @example
- * ```ts
- * normalizeSlug("My Cool Page!") // "my-cool-page"
- * normalizeSlug("  hello  world  ") // "hello-world"
- * ```
- */
-export function normalizeSlug(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, "-")
-    .replace(/-{2,}/g, "-")
-    .replace(/^-|-$/g, "");
-}
+export { normalizeSlug } from "./slug-format.js";
 
 // =============================================================================
 // Form Data Helpers

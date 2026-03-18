@@ -20,6 +20,15 @@ const collectionFormMessages = {
     message: "This is the last part of the collection link.",
     comment: "@context: Collection link help text",
   }),
+  slugInvalidHelp: msg({
+    message: "Use lowercase letters, numbers, and hyphens only.",
+    comment:
+      "@context: Collection slug validation error for invalid characters",
+  }),
+  slugReservedHelp: msg({
+    message: "This link is reserved. Choose something else.",
+    comment: "@context: Collection slug validation error for reserved paths",
+  }),
   editSlugLabel: msg({
     message: "Edit link",
     comment: "@context: Button to manually edit the collection link",
@@ -158,6 +167,8 @@ export const getCollectionFormLabels = (t: Translate) => ({
   titlePlaceholder: t(collectionFormMessages.titlePlaceholder),
   slugLabel: t(collectionFormMessages.slugLabel),
   slugHelp: t(collectionFormMessages.slugHelp),
+  slugInvalidHelp: t(collectionFormMessages.slugInvalidHelp),
+  slugReservedHelp: t(collectionFormMessages.slugReservedHelp),
   editSlugLabel: t(collectionFormMessages.editSlugLabel),
   resetSlugLabel: t(collectionFormMessages.resetSlugLabel),
   quickHint: t(collectionFormMessages.quickHint),
