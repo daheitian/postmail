@@ -197,6 +197,7 @@ function BrandTileResourceCard({
   downloadPngLabel,
   downloadSvgLabel,
   rawPngLabel,
+  previewClassName,
 }: {
   title: string;
   usage: string;
@@ -209,11 +210,14 @@ function BrandTileResourceCard({
   downloadPngLabel: string;
   downloadSvgLabel: string;
   rawPngLabel: string;
+  previewClassName?: string;
 }) {
   return (
     <article class="brand-logo-card brand-icon-card">
       <div class="brand-icon-preview">
-        <div class="brand-icon-preview-tile">
+        <div
+          class={`brand-icon-preview-tile${previewClassName ? ` ${previewClassName}` : ""}`}
+        >
           <JantBrandMark
             variant="negative"
             class="brand-icon-preview-mark"
@@ -264,6 +268,10 @@ export function BrandPage({
   const positiveLogoPngHref = getJantPositiveLogoPngHref(sitePathPrefix);
   const brandTileSvgHref = getJantIconHref("brandTileSvg", sitePathPrefix);
   const brandTilePngHref = getJantIconHref("brandTilePng", sitePathPrefix);
+  const squareTileSvgHref = getJantIconHref("squareTileSvg", sitePathPrefix);
+  const squareTilePngHref = getJantIconHref("squareTilePng", sitePathPrefix);
+  const circleTileSvgHref = getJantIconHref("circleTileSvg", sitePathPrefix);
+  const circleTilePngHref = getJantIconHref("circleTilePng", sitePathPrefix);
   const faviconAssetHref = getJantIconHref("favicon", sitePathPrefix);
   const appleTouchHref = getJantIconHref("appleTouch", sitePathPrefix);
   const socialImageHref = getJantIconHref("socialImage", sitePathPrefix);
@@ -272,6 +280,10 @@ export function BrandPage({
   const positiveLogoPngFilename = JANT_POSITIVE_LOGO_PNG_FILENAME;
   const brandTileSvgFilename = getJantIconFilename("brandTileSvg");
   const brandTilePngFilename = getJantIconFilename("brandTilePng");
+  const squareTileSvgFilename = getJantIconFilename("squareTileSvg");
+  const squareTilePngFilename = getJantIconFilename("squareTilePng");
+  const circleTileSvgFilename = getJantIconFilename("circleTileSvg");
+  const circleTilePngFilename = getJantIconFilename("circleTilePng");
   const faviconAssetFilename = getJantIconFilename("favicon");
   const appleTouchFilename = getJantIconFilename("appleTouch");
   const socialImageFilename = getJantIconFilename("socialImage");
@@ -323,7 +335,7 @@ export function BrandPage({
   });
   const brandPackBody = t({
     message:
-      "A single ZIP with the main logo, reverse logo, square PNG, brand tile, favicon, Apple touch icon, and social preview image.",
+      "A single ZIP with the main logo, reverse logo, square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and social preview image.",
     comment: "@context: Description for the brand pack card",
   });
 
@@ -399,6 +411,11 @@ export function BrandPage({
                   "@context: Asset keyword on the public brand asset page",
               }),
               t({
+                message: "Circle tile",
+                comment:
+                  "@context: Asset keyword on the public brand asset page",
+              }),
+              t({
                 message: "Social preview",
                 comment:
                   "@context: Asset keyword on the public brand asset page",
@@ -432,7 +449,7 @@ export function BrandPage({
           <p class="brand-panel-body brand-manifest-body">
             {t({
               message:
-                "The brand pack includes SVG logos, a transparent square PNG, the brand tile, favicon, Apple touch icon, and the default social preview image.",
+                "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image.",
               comment:
                 "@context: Intro copy for the quick-start panel on the brand asset page",
             })}
@@ -731,7 +748,7 @@ export function BrandPage({
             <p>
               {t({
                 message:
-                  "Use these when you need a square asset with or without a background, a browser icon, or a default preview image.",
+                  "Use these when you need a transparent square logo, a shaped tile with a built-in background, a browser icon, or a default preview image.",
                 comment:
                   "@context: Body copy for the icon and preview downloads section",
               })}
@@ -777,7 +794,7 @@ export function BrandPage({
             })}
             body={t({
               message:
-                "White logo on the Jant green tile for avatars, app icon mockups, directory listings, and other square placements that need a background.",
+                "White logo on the Jant green rounded tile for app icon mockups, touch icons, directory listings, and other square placements that should feel softer.",
               comment: "@context: Description for the brand tile asset card",
             })}
             badge="512"
@@ -788,6 +805,54 @@ export function BrandPage({
             downloadPngLabel={downloadPngLabel}
             downloadSvgLabel={downloadSvgLabel}
             rawPngLabel={openRawPngLabel}
+          />
+          <BrandTileResourceCard
+            title={t({
+              message: "Square tile",
+              comment: "@context: Title for the square tile asset card",
+            })}
+            usage={t({
+              message: "Hard edge",
+              comment: "@context: Usage label for the square tile asset card",
+            })}
+            body={t({
+              message:
+                "White logo on the Jant green square tile for platforms and layouts that expect a true edge-to-edge square.",
+              comment: "@context: Description for the square tile asset card",
+            })}
+            badge="512"
+            pngHref={squareTilePngHref}
+            pngFilename={squareTilePngFilename}
+            svgHref={squareTileSvgHref}
+            svgFilename={squareTileSvgFilename}
+            downloadPngLabel={downloadPngLabel}
+            downloadSvgLabel={downloadSvgLabel}
+            rawPngLabel={openRawPngLabel}
+            previewClassName="brand-icon-preview-tile-square"
+          />
+          <BrandTileResourceCard
+            title={t({
+              message: "Circle tile",
+              comment: "@context: Title for the circle tile asset card",
+            })}
+            usage={t({
+              message: "Avatar-ready",
+              comment: "@context: Usage label for the circle tile asset card",
+            })}
+            body={t({
+              message:
+                "White logo on the Jant green circle for profile images, badges, and other round placements where you want a ready-made asset.",
+              comment: "@context: Description for the circle tile asset card",
+            })}
+            badge="512"
+            pngHref={circleTilePngHref}
+            pngFilename={circleTilePngFilename}
+            svgHref={circleTileSvgHref}
+            svgFilename={circleTileSvgFilename}
+            downloadPngLabel={downloadPngLabel}
+            downloadSvgLabel={downloadSvgLabel}
+            rawPngLabel={openRawPngLabel}
+            previewClassName="brand-icon-preview-tile-circle"
           />
           <IconResourceCard
             title={t({

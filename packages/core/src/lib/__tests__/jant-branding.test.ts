@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   buildJantAppIconSvgMarkup,
+  buildJantCircleTileSvgMarkup,
+  buildJantSquareTileSvgMarkup,
   getDefaultJantAppleTouchIconBytes,
   getDefaultJantBrandPackBytes,
+  getDefaultJantBrandTilePngBytes,
+  getDefaultJantCircleTilePngBytes,
   getDefaultJantFaviconIcoBytes,
   getDefaultJantPositiveLogoPngBytes,
+  getDefaultJantSquareTilePngBytes,
   getDefaultJantSocialImageBytes,
   getJantBundledAsset,
   getJantBrandPackHref,
@@ -32,6 +37,18 @@ describe("jant-branding", () => {
     );
     expect(getJantIconHref("brandTilePng", "/demo")).toBe(
       "/demo/_/brand/assets/jant-brand-tile-512.png",
+    );
+    expect(getJantIconHref("squareTileSvg")).toBe(
+      "/_/brand/assets/jant-square-tile.svg",
+    );
+    expect(getJantIconHref("squareTilePng", "/demo")).toBe(
+      "/demo/_/brand/assets/jant-square-tile-512.png",
+    );
+    expect(getJantIconHref("circleTileSvg")).toBe(
+      "/_/brand/assets/jant-circle-tile.svg",
+    );
+    expect(getJantIconHref("circleTilePng", "/demo")).toBe(
+      "/demo/_/brand/assets/jant-circle-tile-512.png",
     );
     expect(getJantIconHref("favicon")).toBe("/_/brand/assets/jant-favicon.ico");
     expect(getJantIconHref("socialImage", "/demo")).toBe(
@@ -67,6 +84,8 @@ describe("jant-branding", () => {
     expect(buildJantAppIconSvgMarkup()).toContain('rect width="100"');
     expect(buildJantAppIconSvgMarkup()).toContain('fill="#3A5A40"');
     expect(buildJantAppIconSvgMarkup()).toContain('fill="#FFFFFF"');
+    expect(buildJantSquareTileSvgMarkup()).toContain('rx="0"');
+    expect(buildJantCircleTileSvgMarkup()).toContain("<circle");
   });
 
   it("exposes bundled icon bytes for fallback routes", () => {
@@ -74,6 +93,9 @@ describe("jant-branding", () => {
     expect(getDefaultJantAppleTouchIconBytes()).not.toHaveLength(0);
     expect(getDefaultJantSocialImageBytes()).not.toHaveLength(0);
     expect(getDefaultJantPositiveLogoPngBytes()).not.toHaveLength(0);
+    expect(getDefaultJantBrandTilePngBytes()).not.toHaveLength(0);
+    expect(getDefaultJantSquareTilePngBytes()).not.toHaveLength(0);
+    expect(getDefaultJantCircleTilePngBytes()).not.toHaveLength(0);
     expect(getDefaultJantBrandPackBytes()).not.toHaveLength(0);
   });
 
@@ -86,6 +108,26 @@ describe("jant-branding", () => {
     });
     expect(
       getJantBundledAsset(getJantIconFilename("brandTilePng")),
+    ).toMatchObject({
+      contentType: "image/png",
+    });
+    expect(
+      getJantBundledAsset(getJantIconFilename("squareTileSvg")),
+    ).toMatchObject({
+      contentType: "image/svg+xml; charset=utf-8",
+    });
+    expect(
+      getJantBundledAsset(getJantIconFilename("squareTilePng")),
+    ).toMatchObject({
+      contentType: "image/png",
+    });
+    expect(
+      getJantBundledAsset(getJantIconFilename("circleTileSvg")),
+    ).toMatchObject({
+      contentType: "image/svg+xml; charset=utf-8",
+    });
+    expect(
+      getJantBundledAsset(getJantIconFilename("circleTilePng")),
     ).toMatchObject({
       contentType: "image/png",
     });

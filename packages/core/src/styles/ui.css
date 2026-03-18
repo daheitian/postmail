@@ -6687,6 +6687,14 @@
       color-mix(in srgb, var(--site-text-primary) 34%, transparent);
   }
 
+  .brand-icon-preview-tile-square {
+    border-radius: 0;
+  }
+
+  .brand-icon-preview-tile-circle {
+    border-radius: 999px;
+  }
+
   .brand-icon-preview-tile-light {
     background:
       radial-gradient(

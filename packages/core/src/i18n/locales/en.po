@@ -113,8 +113,8 @@ msgstr "A short intro for search engines and feed readers. Plain text only."
 
 #. @context: Description for the brand pack card
 #: src/ui/pages/BrandPage.tsx
-msgid "A single ZIP with the main logo, reverse logo, square PNG, brand tile, favicon, Apple touch icon, and social preview image."
-msgstr "A single ZIP with the main logo, reverse logo, square PNG, brand tile, favicon, Apple touch icon, and social preview image."
+msgid "A single ZIP with the main logo, reverse logo, square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and social preview image."
+msgstr "A single ZIP with the main logo, reverse logo, square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and social preview image."
 
 #. @context: Main sample article title
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -330,6 +330,11 @@ msgstr "Avatar"
 msgid "Avatar display updated."
 msgstr "Avatar display updated."
 
+#. @context: Usage label for the circle tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Avatar-ready"
+msgstr "Avatar-ready"
+
 #. @context: Link back from the new post page
 #: src/ui/pages/ComposePage.tsx
 msgid "Back"
@@ -464,6 +469,13 @@ msgstr "Choose the standard logo for most placements and the reverse logo when y
 #: src/ui/pages/BrandPage.tsx
 msgid "Choose the standard logo for websites, docs, directories, and editorial layouts."
 msgstr "Choose the standard logo for websites, docs, directories, and editorial layouts."
+
+#. @context: Asset keyword on the public brand asset page
+#. @context: Title for the circle tile asset card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Circle tile"
+msgstr "Circle tile"
 
 #. @context: Archive filter button label to clear the active filter
 #. @context: Archive filter button label to clear the active filter
@@ -1191,6 +1203,11 @@ msgstr "Guide the eye without taking over the layout."
 #: src/ui/pages/BrandPage.tsx
 msgid "Guidelines"
 msgstr "Guidelines"
+
+#. @context: Usage label for the square tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Hard edge"
+msgstr "Hard edge"
 
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -2341,6 +2358,11 @@ msgstr "Square logo"
 msgid "Square logo PNG"
 msgstr "Square logo PNG"
 
+#. @context: Title for the square tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Square tile"
+msgstr "Square tile"
+
 #. @context: Heading for the quick-start panel on the brand asset page
 #: src/ui/pages/BrandPage.tsx
 msgid "Start here"
@@ -2427,8 +2449,8 @@ msgstr "The best default color is the one you notice only after reading for a wh
 
 #. @context: Intro copy for the quick-start panel on the brand asset page
 #: src/ui/pages/BrandPage.tsx
-msgid "The brand pack includes SVG logos, a transparent square PNG, the brand tile, favicon, Apple touch icon, and the default social preview image."
-msgstr "The brand pack includes SVG logos, a transparent square PNG, the brand tile, favicon, Apple touch icon, and the default social preview image."
+msgid "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image."
+msgstr "The brand pack includes SVG logos, a transparent square PNG, rounded, square, and circle tiles, plus favicon, Apple touch icon, and the default social preview image."
 
 #. @context: Custom URL path help text
 #: src/routes/dash/custom-urls.tsx
@@ -2729,8 +2751,8 @@ msgstr "Use the reverse logo on dark backgrounds."
 
 #. @context: Body copy for the icon and preview downloads section
 #: src/ui/pages/BrandPage.tsx
-msgid "Use these when you need a square asset with or without a background, a browser icon, or a default preview image."
-msgstr "Use these when you need a square asset with or without a background, a browser icon, or a default preview image."
+msgid "Use these when you need a transparent square logo, a shaped tile with a built-in background, a browser icon, or a default preview image."
+msgstr "Use these when you need a transparent square logo, a shaped tile with a built-in background, a browser icon, or a default preview image."
 
 #. @context: Description for the default logo card
 #: src/ui/pages/BrandPage.tsx
@@ -2819,10 +2841,20 @@ msgstr "When primary is too rigid, the whole page starts reading like product UI
 msgid "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
 msgstr "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
 
+#. @context: Description for the circle tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "White logo on the Jant green circle for profile images, badges, and other round placements where you want a ready-made asset."
+msgstr "White logo on the Jant green circle for profile images, badges, and other round placements where you want a ready-made asset."
+
 #. @context: Description for the brand tile asset card
 #: src/ui/pages/BrandPage.tsx
-msgid "White logo on the Jant green tile for avatars, app icon mockups, directory listings, and other square placements that need a background."
-msgstr "White logo on the Jant green tile for avatars, app icon mockups, directory listings, and other square placements that need a background."
+msgid "White logo on the Jant green rounded tile for app icon mockups, touch icons, directory listings, and other square placements that should feel softer."
+msgstr "White logo on the Jant green rounded tile for app icon mockups, touch icons, directory listings, and other square placements that should feel softer."
+
+#. @context: Description for the square tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "White logo on the Jant green square tile for platforms and layouts that expect a true edge-to-edge square."
+msgstr "White logo on the Jant green square tile for platforms and layouts that expect a true edge-to-edge square."
 
 #. @context: Sample note post title on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
