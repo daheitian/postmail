@@ -193,6 +193,7 @@ dir = "packages/core"
 run = "node ./bin/jant.js migrate --remote"
 
 [tasks.db-local-clean]
+alias ="clean"
 description = "Delete the local development D1 database state"
 run = "rm -rf packages/core/.wrangler"
 

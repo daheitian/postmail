@@ -918,7 +918,7 @@ export async function run(argv) {
   if (values.help) {
     console.log("Usage: jant site import [--url <url>] [options]");
     console.log("");
-    console.log("Import a Zola export ZIP into a Jant instance.");
+    console.log("Import a Zola export directory or ZIP into a Jant instance.");
     console.log("");
     console.log("Modes:");
     console.log(
@@ -940,6 +940,10 @@ export async function run(argv) {
     console.log("  Set JANT_TOKEN env var (recommended):");
     console.log("    export JANT_TOKEN=jnt_your_token");
     console.log("    jant site import --url https://your-site.com");
+    console.log("");
+    console.log("Examples:");
+    console.log("  jant site import --path ./jant-site");
+    console.log("  jant site import --path ./jant-site-export.zip");
     console.log("");
     console.log("Compatibility alias: jant import-site");
     process.exit(0);
