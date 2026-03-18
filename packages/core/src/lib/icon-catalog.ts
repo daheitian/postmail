@@ -181,7 +181,7 @@ export function getAllCatalogIconNames(): string[] {
 }
 
 /** All available Lucide icon names (kebab-case), sorted alphabetically.
- * Generated from lucide-static — run `mise run generate-icons` to update. */
+ * Generated from lucide-static — run `mise run codegen-icons` to update. */
 export const ALL_ICON_NAMES: string[] = [
   "a-arrow-down",
   "a-arrow-up",
@@ -1869,7 +1869,7 @@ export const ALL_ICON_NAMES: string[] = [
 ];
 
 /** All Lucide icons grouped by official category.
- * Generated from lucide.dev — run `mise run generate-icons` to update. */
+ * Generated from lucide.dev — run `mise run codegen-icons` to update. */
 export const ALL_ICON_CATEGORIES: Record<string, string[]> = {
   accessibility: [
     "accessibility",

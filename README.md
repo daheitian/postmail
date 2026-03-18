@@ -75,6 +75,12 @@ pnpm install   # installs dependencies
 # Start development server (defaults to http://localhost:9020)
 mise run dev
 
+# Recreate the local D1 database with dev auth + canonical demo content
+mise run db-local-reset
+
+# Reload just the canonical demo content into the current local DB
+mise run db-local-load-demo
+
 # Override the dev port
 PORT=9030 mise run dev
 ```

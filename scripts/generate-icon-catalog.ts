@@ -87,13 +87,13 @@ const catEntries = sortedCategories
 const block = `
 
 /** All available Lucide icon names (kebab-case), sorted alphabetically.
- * Generated from lucide-static — run \`mise run generate-icons\` to update. */
+ * Generated from lucide-static — run \`mise run codegen-icons\` to update. */
 export const ALL_ICON_NAMES: string[] = [
 ${nameEntries}
 ];
 
 /** All Lucide icons grouped by official category.
- * Generated from lucide.dev — run \`mise run generate-icons\` to update. */
+ * Generated from lucide.dev — run \`mise run codegen-icons\` to update. */
 export const ALL_ICON_CATEGORIES: Record<string, string[]> = {
 ${catEntries}
 };

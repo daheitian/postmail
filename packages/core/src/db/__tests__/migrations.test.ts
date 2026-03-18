@@ -3,7 +3,7 @@
  *
  * Schema migrations stay append-only and must remain tracked in the Drizzle
  * journal. Most schema changes should be generated from `src/db/schema.ts`
- * via `mise run db-generate`.
+ * via `mise run db-schema-generate`.
  *
  * Rare manual schema exceptions are allowed when Drizzle cannot express the
  * object, such as FTS virtual tables or triggers. Those files still belong in
@@ -129,7 +129,7 @@ describe("migration integrity", () => {
       [
         "These migration files are not tracked in meta/_journal.json.",
         "This usually means the file was added without matching Drizzle metadata.",
-        "Default flow: update src/db/schema.ts first, then run `mise run db-generate`.",
+        "Default flow: update src/db/schema.ts first, then run `mise run db-schema-generate`.",
         "Manual schema exceptions must add the matching journal and snapshot files in the same change.",
         `Untracked files: ${untracked.map((t) => `${t}.sql`).join(", ")}`,
       ].join("\n"),
@@ -187,7 +187,7 @@ describe("migration integrity", () => {
       [
         `Missing snapshot for latest migration: meta/${prefix}_snapshot.json`,
         "This means the migration metadata is incomplete.",
-        "Fix: run `mise run db-generate`, or add the matching snapshot for a manual schema exception.",
+        "Fix: run `mise run db-schema-generate`, or add the matching snapshot for a manual schema exception.",
       ].join("\n"),
     ).toBe(true);
   });

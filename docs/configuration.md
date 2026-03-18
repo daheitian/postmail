@@ -240,7 +240,7 @@ JANT_DEMO_MODE=false
 - `/signin` uses `JANT_DEMO_EMAIL` and `JANT_DEMO_PASSWORD` to pre-fill the sign-in form.
 - `/__dev/login?token=...` accepts `JANT_DEV_API_TOKEN` only on `localhost`, `127.0.0.1`, `::1`, and `*.localtest.me`.
 
-Run `mise run dev-auth-setup` to generate or update these values automatically. `mise run dev-debug` runs the same setup before it starts the local debug server.
+Run `mise run dev-auth-bootstrap` to generate or update these values automatically. `mise run dev-debug` runs the same setup before it starts the local debug server.
 
 ### Demo Mode
 

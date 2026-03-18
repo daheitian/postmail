@@ -102,10 +102,7 @@ function getSettingMap(flag) {
 }
 
 function getNavCount(flag) {
-  const result = executeJson(
-    flag,
-    "SELECT COUNT(*) AS count FROM nav_item",
-  );
+  const result = executeJson(flag, "SELECT COUNT(*) AS count FROM nav_item");
 
   return Number(result[0]?.results?.[0]?.count ?? 0);
 }
@@ -121,7 +118,7 @@ export async function setLocalDevPassword({
   if (!targetUser) {
     const lines = [
       "No credential user found in the local database.",
-      "Run `mise run dev-auth-setup` to bootstrap a local debug account.",
+      "Run `mise run dev-auth-bootstrap` to bootstrap a local debug account.",
     ];
 
     if (allowMissingAdmin) {

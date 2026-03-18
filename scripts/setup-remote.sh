@@ -35,8 +35,5 @@ mise install
 # Install dependencies
 pnpm install
 
-# Set up local database with seed data
-mise run db-reset
-
-# Set up demo login helpers for browser/agent debugging
-mise run dev-auth-setup
+# Set up local database, dev auth, and demo content
+mise run db-local-reset

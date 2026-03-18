@@ -42,14 +42,14 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build packages
-        run: mise run build-all
+        run: mise run build-packages
 
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
         with:
-          version: mise run version
-          publish: mise run release
+          version: mise run release-version
+          publish: mise run release-publish
           title: "chore: release packages"
           commit: "chore: release packages"
         env:

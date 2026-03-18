@@ -119,8 +119,8 @@ function validateSeed(sql) {
 
 const header = `-- =============================================================================
 -- Demo seed data for Jant (demo.jant.me)
--- Exported from remote demo D1 database via: mise run demo-export
--- Usage: mise run demo-reset
+-- Exported from remote demo D1 database via: mise run db-demo-export
+-- Usage: mise run db-demo-reset
 -- =============================================================================
 `;
 

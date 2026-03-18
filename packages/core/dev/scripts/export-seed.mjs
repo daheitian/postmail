@@ -55,19 +55,42 @@ function dumpTable(name, query) {
 const header = `-- =============================================================================
 -- ${noMedia ? "Seed data (without media)" : "Local development seed data"} for Jant
 -- Exported from local D1 database
--- Usage: mise run db-reset
+-- Companion reset script: dev/scripts/reset-local.sql
 -- =============================================================================
 `;
 
 const tables = [
   ...(!noAuth ? [["setting"], ["user"], ["account"]] : []),
-  ["collection"],
-  ["post", "SELECT * FROM post WHERE deleted_at IS NULL"],
-  ["post_collection"],
-  ["nav_item"],
-  ["collection_directory_item"],
-  ["custom_url"],
-  ["api_token"],
+  ["collection", "SELECT * FROM collection ORDER BY created_at, id"],
+  [
+    "post",
+    `SELECT * FROM post
+     WHERE deleted_at IS NULL
+     ORDER BY CASE WHEN reply_to_id IS NULL THEN 0 ELSE 1 END, created_at, id`,
+  ],
+  [
+    "post_collection",
+    `SELECT pc.* FROM post_collection pc
+     JOIN post p ON p.id = pc.post_id
+     WHERE p.deleted_at IS NULL
+     ORDER BY pc.created_at, pc.collection_id, pc.post_id`,
+  ],
+  ["nav_item", "SELECT * FROM nav_item ORDER BY position, id"],
+  [
+    "collection_directory_item",
+    "SELECT * FROM collection_directory_item ORDER BY position, id",
+  ],
+  [
+    "path_registry",
+    `SELECT pr.* FROM path_registry pr
+     LEFT JOIN post p ON p.id = pr.post_id
+     LEFT JOIN collection c ON c.id = pr.collection_id
+     WHERE pr.kind = 'redirect'
+        OR (pr.post_id IS NOT NULL AND p.deleted_at IS NULL)
+        OR (pr.collection_id IS NOT NULL AND c.id IS NOT NULL)
+     ORDER BY pr.path, pr.id`,
+  ],
+  ["api_token", "SELECT * FROM api_token ORDER BY created_at, id"],
 ];
 
 // Include media table only when --no-media is not set
