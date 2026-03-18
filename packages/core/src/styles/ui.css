@@ -3683,6 +3683,50 @@
     padding: 0 10px 8px;
   }
 
+  .compose-slug-suggestion {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-top: 8px;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 9px;
+    background-color: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 58%,
+      transparent
+    );
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.16s ease;
+  }
+
+  .compose-slug-suggestion:hover {
+    background-color: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 82%,
+      transparent
+    );
+  }
+
+  .compose-slug-suggestion-label {
+    color: var(--site-text-secondary);
+    font-size: 0.72rem;
+    font-weight: var(--fw-medium);
+  }
+
+  .compose-slug-suggestion-value {
+    color: var(--site-text-primary);
+    font-size: 0.78rem;
+    font-weight: var(--fw-medium);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .compose-dropdown-input-wrap {
     display: flex;
     align-items: center;
@@ -3718,6 +3762,17 @@
   .compose-more-slug-input:focus {
     outline: none;
     box-shadow: none;
+  }
+
+  .compose-slug-status {
+    margin-top: 8px;
+    color: var(--site-text-secondary);
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .compose-slug-status-error {
+    color: var(--destructive);
   }
 
   .compose-dropdown-item-muted {

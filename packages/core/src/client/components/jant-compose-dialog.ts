@@ -106,6 +106,10 @@ export class JantComposeDialog extends LitElement {
     _featured: { state: true },
     _showPublishPanel: { state: true },
     _moreSlugExpanded: { state: true },
+    _suggestedSlug: { state: true },
+    _suggestedSlugLoading: { state: true },
+    _slugCheckLoading: { state: true },
+    _slugTaken: { state: true },
     _visibilityLocked: { state: true },
   };
 
@@ -143,6 +147,10 @@ export class JantComposeDialog extends LitElement {
   declare _featured: boolean;
   declare _showPublishPanel: boolean;
   declare _moreSlugExpanded: boolean;
+  declare _suggestedSlug: string;
+  declare _suggestedSlugLoading: boolean;
+  declare _slugCheckLoading: boolean;
+  declare _slugTaken: boolean;
   declare _visibilityLocked: boolean;
 
   private _attachedEditor: Editor | null = null;
@@ -160,6 +168,11 @@ export class JantComposeDialog extends LitElement {
     | "post-view"
     | null = null;
   private _replyRefreshId: string | null = null;
+  private _slugCheckTimer: ReturnType<typeof setTimeout> | null = null;
+  private _slugSuggestTimer: ReturnType<typeof setTimeout> | null = null;
+  private _slugSuggestRequestId = 0;
+  private _slugCheckRequestId = 0;
+  private _slugSuggestionKey = "";
   private _suppressBeforeUnload = false;
 
   createRenderRoot() {
@@ -206,6 +219,10 @@ export class JantComposeDialog extends LitElement {
     this._featured = false;
     this._showPublishPanel = false;
     this._moreSlugExpanded = false;
+    this._suggestedSlug = "";
+    this._suggestedSlugLoading = false;
+    this._slugCheckLoading = false;
+    this._slugTaken = false;
     this._visibilityLocked = false;
   }
 
@@ -276,12 +293,20 @@ export class JantComposeDialog extends LitElement {
     this._featured = false;
     this._showPublishPanel = false;
     this._moreSlugExpanded = false;
+    this._suggestedSlug = "";
+    this._suggestedSlugLoading = false;
+    this._slugCheckLoading = false;
+    this._slugTaken = false;
+    this._slugSuggestionKey = "";
     this._visibilityLocked = false;
     this._confirmForDrafts = false;
     this._initialSnapshot = null;
     this._pageFocusApplied = false;
     this._pageLeaveRequested = false;
+    this._slugSuggestRequestId += 1;
+    this._slugCheckRequestId += 1;
     this._suppressBeforeUnload = false;
+    this._cancelSlugTimers();
     this._destroyAttachedEditor();
     this._editor?.reset();
     this._captureInitialSnapshot();
@@ -297,6 +322,11 @@ export class JantComposeDialog extends LitElement {
     this._editPostId = id;
     this._format = post.format;
     this._slug = post.slug ?? "";
+    this._slugTaken = false;
+    this._slugCheckLoading = false;
+    this._suggestedSlug = "";
+    this._suggestedSlugLoading = false;
+    this._slugSuggestionKey = "";
     this._visibility = post.visibility ?? "public";
     this._featured = false;
     this._visibilityLocked = Boolean(post.replyToId);
@@ -755,6 +785,175 @@ export class JantComposeDialog extends LitElement {
       .replace("%count%", String(ids.length - 1));
   }
 
+  private _cancelSlugTimers() {
+    if (this._slugCheckTimer !== null) {
+      clearTimeout(this._slugCheckTimer);
+      this._slugCheckTimer = null;
+    }
+    if (this._slugSuggestTimer !== null) {
+      clearTimeout(this._slugSuggestTimer);
+      this._slugSuggestTimer = null;
+    }
+  }
+
+  private _currentSlugOwnerId(): string | undefined {
+    return this._editPostId ?? this._draftSourceId ?? undefined;
+  }
+
+  private _hasManualSlug(): boolean {
+    return this._slug.trim().length > 0;
+  }
+
+  private _currentSuggestionTitle(): string {
+    return this._editor?.getData().title.trim() ?? "";
+  }
+
+  private _canSuggestSlug(): boolean {
+    return this._currentSuggestionTitle().length > 0;
+  }
+
+  private _currentSuggestionKey(): string {
+    return `${this._currentSlugOwnerId() ?? ""}::${this._currentSuggestionTitle()}`;
+  }
+
+  private _scheduleSuggestedSlugRefresh(immediate = false) {
+    if (!this._moreSlugExpanded || this._hasManualSlug()) return;
+    if (!this._canSuggestSlug()) {
+      this._slugSuggestRequestId += 1;
+      this._suggestedSlug = "";
+      this._suggestedSlugLoading = false;
+      this._slugSuggestionKey = "";
+      return;
+    }
+
+    const key = this._currentSuggestionKey();
+    if (this._slugSuggestionKey !== key) {
+      this._suggestedSlug = "";
+    }
+    if (
+      !immediate &&
+      !this._suggestedSlugLoading &&
+      this._suggestedSlug &&
+      this._slugSuggestionKey === key
+    ) {
+      return;
+    }
+
+    if (this._slugSuggestTimer !== null) {
+      clearTimeout(this._slugSuggestTimer);
+      this._slugSuggestTimer = null;
+    }
+
+    const run = () => void this._refreshSuggestedSlug(key);
+    if (immediate) {
+      run();
+      return;
+    }
+    this._slugSuggestTimer = setTimeout(run, 250);
+  }
+
+  private async _refreshSuggestedSlug(key: string) {
+    this._slugSuggestTimer = null;
+    if (this._hasManualSlug() || !this._canSuggestSlug()) return;
+
+    const requestId = ++this._slugSuggestRequestId;
+    this._suggestedSlugLoading = true;
+
+    const params = new URLSearchParams({ mode: "suggest" });
+    const title = this._currentSuggestionTitle();
+    if (title) params.set("title", title);
+    const postId = this._currentSlugOwnerId();
+    if (postId) params.set("postId", postId);
+
+    try {
+      const res = await fetch(`/api/posts/slug?${params.toString()}`);
+      if (!res.ok) return;
+      const json = (await res.json()) as { slug?: string };
+      if (
+        requestId !== this._slugSuggestRequestId ||
+        this._hasManualSlug() ||
+        !this._moreSlugExpanded
+      ) {
+        return;
+      }
+      this._suggestedSlug = json.slug?.trim() ?? "";
+      this._slugSuggestionKey = key;
+    } catch {
+      // Suggestion is a convenience only — publish still works without it.
+    } finally {
+      if (requestId === this._slugSuggestRequestId) {
+        this._suggestedSlugLoading = false;
+      }
+    }
+  }
+
+  private _scheduleSlugAvailabilityCheck() {
+    if (!this._hasManualSlug()) {
+      this._slugTaken = false;
+      this._slugCheckLoading = false;
+      return;
+    }
+
+    if (this._slugCheckTimer !== null) {
+      clearTimeout(this._slugCheckTimer);
+      this._slugCheckTimer = null;
+    }
+
+    const syncError = this._getSlugSyncValidationMessage();
+    if (syncError) {
+      this._slugTaken = false;
+      this._slugCheckLoading = false;
+      return;
+    }
+
+    this._slugCheckLoading = true;
+    const slug = this._slug.trim();
+    this._slugCheckTimer = setTimeout(() => {
+      void this._checkSlugAvailability(slug);
+    }, 250);
+  }
+
+  private async _checkSlugAvailability(slug: string) {
+    this._slugCheckTimer = null;
+    const requestId = ++this._slugCheckRequestId;
+
+    const params = new URLSearchParams({
+      mode: "check",
+      slug,
+    });
+    const postId = this._currentSlugOwnerId();
+    if (postId) params.set("postId", postId);
+
+    try {
+      const res = await fetch(`/api/posts/slug?${params.toString()}`);
+      if (!res.ok) return;
+      const json = (await res.json()) as { available?: boolean };
+      if (
+        requestId !== this._slugCheckRequestId ||
+        this._slug.trim() !== slug
+      ) {
+        return;
+      }
+      this._slugTaken = json.available === false;
+    } catch {
+      // Server-side create/update remains the final authority.
+    } finally {
+      if (requestId === this._slugCheckRequestId) {
+        this._slugCheckLoading = false;
+      }
+    }
+  }
+
+  private _useSuggestedSlug() {
+    if (!this._suggestedSlug) return;
+    this._slug = this._suggestedSlug;
+    this._slugTaken = false;
+    this._slugCheckLoading = false;
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLInputElement>(".compose-more-slug-input")?.focus();
+    });
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener("keydown", this._handleKeydown);
@@ -806,6 +1005,7 @@ export class JantComposeDialog extends LitElement {
       this._handleFullscreenClose as EventListener,
     );
     window.removeEventListener("beforeunload", this._onBeforeUnload);
+    this._cancelSlugTimers();
     this._destroyAttachedEditor();
     this._cancelDraftSaveTimer();
 
@@ -1031,6 +1231,11 @@ export class JantComposeDialog extends LitElement {
     this._draftSourceId = id;
     this._format = post.format;
     this._slug = post.slug ?? "";
+    this._slugTaken = false;
+    this._slugCheckLoading = false;
+    this._suggestedSlug = "";
+    this._suggestedSlugLoading = false;
+    this._slugSuggestionKey = "";
     this._visibility = post.visibility ?? "public";
     this._featured = false;
     this._visibilityLocked = Boolean(post.replyToId);
@@ -1160,6 +1365,9 @@ export class JantComposeDialog extends LitElement {
 
   private _onContentChanged = () => {
     this.requestUpdate();
+    if (!this._hasManualSlug()) {
+      this._scheduleSuggestedSlugRefresh();
+    }
     // Schedule localStorage auto-save for new-post mode only
     if (!this._editPostId && !this._draftSourceId) {
       this._scheduleDraftSave();
@@ -1287,6 +1495,11 @@ export class JantComposeDialog extends LitElement {
     this._format = draft.format;
     this._collectionIds = [...(draft.collectionIds ?? [])];
     this._slug = draft.slug ?? "";
+    this._slugTaken = false;
+    this._slugCheckLoading = false;
+    this._suggestedSlug = "";
+    this._suggestedSlugLoading = false;
+    this._slugSuggestionKey = "";
     this._visibility = draft.visibility ?? "public";
     this._featured = false;
 
@@ -1598,6 +1811,12 @@ export class JantComposeDialog extends LitElement {
 
   private _renderMoreMenu() {
     const slugError = this._getSlugValidationMessage();
+    const slugStatus = this._getSlugStatusMessage();
+    const showSuggestion =
+      this._moreSlugExpanded &&
+      !this._hasManualSlug() &&
+      !this._suggestedSlugLoading &&
+      Boolean(this._suggestedSlug);
 
     return html`
       <div class="relative">
@@ -1676,12 +1895,33 @@ export class JantComposeDialog extends LitElement {
                             @input=${(e: Event) => this._onSlugInput(e)}
                           />
                         </div>
-                        ${slugError
+                        ${showSuggestion
+                          ? html`
+                              <button
+                                type="button"
+                                class="compose-slug-suggestion"
+                                @click=${() => this._useSuggestedSlug()}
+                              >
+                                <span class="compose-slug-suggestion-label"
+                                  >${this.labels.publishSlugSuggested}</span
+                                >
+                                <span class="compose-slug-suggestion-value"
+                                  >/${this._suggestedSlug}</span
+                                >
+                              </button>
+                            `
+                          : nothing}
+                        ${slugStatus
                           ? html`<p
-                              class="text-xs text-destructive mt-1"
-                              data-compose-slug-error
+                              class=${classMap({
+                                "compose-slug-status": true,
+                                "compose-slug-status-error": Boolean(slugError),
+                              })}
+                              data-compose-slug-error=${slugError
+                                ? "true"
+                                : nothing}
                             >
-                              ${slugError}
+                              ${slugStatus}
                             </p>`
                           : nothing}
                       </div>
@@ -1691,7 +1931,7 @@ export class JantComposeDialog extends LitElement {
                 <button
                   type="button"
                   class="compose-dropdown-item"
-                  ?disabled=${this._loading || Boolean(slugError)}
+                  ?disabled=${this._loading || !this._canSaveDraft()}
                   @click=${() => {
                     this._submit("draft");
                     this._showMoreMenu = false;
@@ -2174,10 +2414,37 @@ export class JantComposeDialog extends LitElement {
     return this.labels.post;
   }
 
-  private _getSlugValidationMessage(): string | null {
+  private _getSlugSyncValidationMessage(): string | null {
     const issue = getSlugValidationIssue(this._slug);
     if (issue === "invalid") return this.labels.publishSlugInvalid;
     if (issue === "reserved") return this.labels.publishSlugReserved;
+    return null;
+  }
+
+  private _getSlugValidationMessage(): string | null {
+    const syncMessage = this._getSlugSyncValidationMessage();
+    if (syncMessage) return syncMessage;
+    if (this._hasManualSlug() && this._slugTaken) {
+      return this.labels.publishSlugTaken;
+    }
+    return null;
+  }
+
+  private _getSlugStatusMessage(): string | null {
+    if (this._hasManualSlug()) {
+      if (this._getSlugValidationMessage()) {
+        return this._getSlugValidationMessage();
+      }
+      if (this._slugCheckLoading) {
+        return this.labels.publishSlugChecking;
+      }
+      return null;
+    }
+
+    if (this._suggestedSlugLoading) {
+      return this.labels.publishSlugGenerating;
+    }
+
     return null;
   }
 
@@ -2188,9 +2455,17 @@ export class JantComposeDialog extends LitElement {
     this._showMoreMenu = true;
     this._moreSlugExpanded = true;
     this._confirmPanelOpen = false;
+    this._scheduleSuggestedSlugRefresh(true);
     this.updateComplete.then(() => {
       this.querySelector<HTMLInputElement>(".compose-more-slug-input")?.focus();
     });
+  }
+
+  private _canSaveDraft(): boolean {
+    if (this._loading) return false;
+    if (this._getSlugValidationMessage()) return false;
+    if (this._hasManualSlug() && this._slugCheckLoading) return false;
+    return true;
   }
 
   private _canPublish(): boolean {
@@ -2198,6 +2473,7 @@ export class JantComposeDialog extends LitElement {
     const editor = this._editor;
     if (!editor) return false;
     if (this._getSlugValidationMessage()) return false;
+    if (this._hasManualSlug() && this._slugCheckLoading) return false;
 
     const data = editor.getData();
     if (this._format === "link") {
@@ -2227,6 +2503,7 @@ export class JantComposeDialog extends LitElement {
     this._moreSlugExpanded = !this._moreSlugExpanded;
     if (!this._moreSlugExpanded) return;
 
+    this._scheduleSuggestedSlugRefresh(true);
     this.updateComplete.then(() => {
       this.querySelector<HTMLInputElement>(".compose-more-slug-input")?.focus();
     });
@@ -2235,6 +2512,13 @@ export class JantComposeDialog extends LitElement {
   private _onSlugInput(e: Event) {
     const value = (e.target as HTMLInputElement).value;
     this._slug = value.toLowerCase();
+    this._slugTaken = false;
+    this._slugCheckLoading = false;
+    if (this._hasManualSlug()) {
+      this._scheduleSlugAvailabilityCheck();
+      return;
+    }
+    this._scheduleSuggestedSlugRefresh();
   }
 
   private _renderPublishVisibilityOption(

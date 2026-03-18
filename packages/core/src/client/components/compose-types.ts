@@ -156,6 +156,10 @@ export interface ComposeLabels {
   publishSlugPlaceholder: string;
   publishSlugHint: string;
   publishSlugAuto: string;
+  publishSlugSuggested: string;
+  publishSlugGenerating: string;
+  publishSlugChecking: string;
+  publishSlugTaken: string;
   publishSlugInvalid: string;
   publishSlugReserved: string;
   postUnlisted: string;

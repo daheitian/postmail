@@ -113,6 +113,63 @@ describe("Posts API Routes", () => {
     });
   });
 
+  describe("GET /api/posts/slug", () => {
+    it("suggests a title-based slug", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request(
+        "/api/posts/slug?mode=suggest&title=Hello World",
+      );
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.slug).toBe("hello-world");
+    });
+
+    it("adds a suffix when the base slug is already taken", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      await services.posts.create({
+        format: "note",
+        title: "Hello World",
+        bodyMarkdown: "taken",
+      });
+
+      const res = await app.request(
+        "/api/posts/slug?mode=suggest&title=Hello World",
+      );
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.slug).toMatch(/^hello-world-[a-z0-9]{5}$/);
+    });
+
+    it("treats the current post slug as available when editing", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "note",
+        title: "Hello World",
+        bodyMarkdown: "hello",
+      });
+
+      const takenRes = await app.request(
+        "/api/posts/slug?mode=check&slug=hello-world",
+      );
+      expect(takenRes.status).toBe(200);
+      expect((await takenRes.json()).available).toBe(false);
+
+      const ownRes = await app.request(
+        `/api/posts/slug?mode=check&slug=hello-world&postId=${post.id}`,
+      );
+      expect(ownRes.status).toBe(200);
+      expect((await ownRes.json()).available).toBe(true);
+    });
+  });
+
   describe("GET /api/posts/:id", () => {
     it("returns 401 when not authenticated", async () => {
       const { app, services } = createTestApp({ authenticated: false });

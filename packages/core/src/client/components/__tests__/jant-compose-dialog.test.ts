@@ -21,6 +21,38 @@ function requireElement<T extends globalThis.Element>(
   return element;
 }
 
+async function flushUpdates(el?: JantComposeDialog) {
+  await Promise.resolve();
+  await Promise.resolve();
+  if (el) {
+    await el.updateComplete;
+  }
+}
+
+function mockSlugApi(
+  handler: (url: URL) => { status?: number; body: unknown },
+): ReturnType<typeof vi.spyOn> {
+  return vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const raw =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url;
+    const url = new URL(raw, "http://localhost");
+
+    if (url.pathname === "/api/posts/slug") {
+      const { status = 200, body } = handler(url);
+      return new Response(JSON.stringify(body), {
+        status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    throw new Error(`Unexpected fetch: ${url.pathname}${url.search}`);
+  });
+}
+
 const labels: ComposeLabels = {
   cancel: "Cancel",
   note: "Note",
@@ -100,6 +132,10 @@ const labels: ComposeLabels = {
   publishSlugPlaceholder: "your-post-link",
   publishSlugHint: "Leave blank to generate one automatically.",
   publishSlugAuto: "Generate automatically",
+  publishSlugSuggested: "Suggested link",
+  publishSlugGenerating: "Generating a link...",
+  publishSlugChecking: "Checking link...",
+  publishSlugTaken: "This link is already in use. Choose something else.",
   publishSlugInvalid: "Use lowercase letters, numbers, and hyphens only.",
   publishSlugReserved: "This link is reserved. Choose something else.",
   postUnlisted: "Post unlisted",
@@ -161,6 +197,7 @@ async function createElement(
 describe("JantComposeDialog", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    vi.restoreAllMocks();
   });
 
   it("renders with collections and labels", async () => {
@@ -356,6 +393,16 @@ describe("JantComposeDialog", () => {
   });
 
   it("includes a custom slug from the more menu in the submit payload", async () => {
+    mockSlugApi((url) => {
+      if (url.searchParams.get("mode") === "suggest") {
+        return { body: { slug: "configured-post" } };
+      }
+      if (url.searchParams.get("mode") === "check") {
+        return { body: { slug: "custom-link", available: true } };
+      }
+      throw new Error(`Unexpected slug mode: ${url.search}`);
+    });
+
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
@@ -385,6 +432,7 @@ describe("JantComposeDialog", () => {
     ).find((button) => button.textContent?.includes("Custom link"));
     requireElement(slugToggle ?? null, "expected custom link toggle").click();
     await el.updateComplete;
+    await flushUpdates(el);
 
     const slugInput = requireElement(
       el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
@@ -392,6 +440,7 @@ describe("JantComposeDialog", () => {
     );
     slugInput.value = "custom-link";
     slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     await el.updateComplete;
 
     let receivedDetail: ComposeSubmitDetail | null = null;
@@ -409,6 +458,16 @@ describe("JantComposeDialog", () => {
   });
 
   it("reopens the more menu with custom link expanded when a slug exists", async () => {
+    mockSlugApi((url) => {
+      if (url.searchParams.get("mode") === "suggest") {
+        return { body: { slug: "reading-notes" } };
+      }
+      if (url.searchParams.get("mode") === "check") {
+        return { body: { slug: "reading-notes", available: true } };
+      }
+      throw new Error(`Unexpected slug mode: ${url.search}`);
+    });
+
     const el = await createElement();
 
     const moreBtn = requireElement(
@@ -427,6 +486,7 @@ describe("JantComposeDialog", () => {
       "expected custom link toggle",
     ).click();
     await el.updateComplete;
+    await flushUpdates(el);
 
     const slugInput = requireElement(
       el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
@@ -434,6 +494,7 @@ describe("JantComposeDialog", () => {
     );
     slugInput.value = "reading-notes";
     slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 300));
     await el.updateComplete;
 
     moreBtn.click();
@@ -445,6 +506,8 @@ describe("JantComposeDialog", () => {
   });
 
   it("shows a slug error and blocks publish when the custom link is invalid", async () => {
+    mockSlugApi(() => ({ body: { slug: "hello-world" } }));
+
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
@@ -473,6 +536,7 @@ describe("JantComposeDialog", () => {
       "expected custom link toggle",
     ).click();
     await el.updateComplete;
+    await flushUpdates(el);
 
     const slugInput = requireElement(
       el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
@@ -503,6 +567,230 @@ describe("JantComposeDialog", () => {
     ).click();
 
     expect(receivedDetail).toBeNull();
+  });
+
+  it("shows a suggested slug without submitting it by default", async () => {
+    mockSlugApi((url) => {
+      if (url.searchParams.get("mode") === "suggest") {
+        return { body: { slug: "hello-world" } };
+      }
+      throw new Error(`Unexpected slug mode: ${url.search}`);
+    });
+
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._showTitle = true;
+    editor._title = "Hello World";
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Hello world" }] },
+      ],
+    };
+    await editor.updateComplete;
+
+    const moreBtn = requireElement(
+      el.querySelectorAll<HTMLButtonElement>(".compose-dialog-header-btn")[1] ??
+        null,
+      "expected more button",
+    );
+    moreBtn.click();
+    await el.updateComplete;
+
+    requireElement(
+      Array.from(
+        el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
+      ).find((button) => button.textContent?.includes("Custom link")) ?? null,
+      "expected custom link toggle",
+    ).click();
+    await el.updateComplete;
+    await flushUpdates(el);
+
+    expect(
+      el.querySelector(".compose-slug-suggestion-value")?.textContent?.trim(),
+    ).toBe("/hello-world");
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+      "expected publish button",
+    ).click();
+
+    expect(receivedDetail).not.toBeNull();
+    expect((receivedDetail as ComposeSubmitDetail).slug).toBeUndefined();
+  });
+
+  it("does not request or show a suggested slug when no title is available", async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async () => {
+        throw new Error(
+          "slug suggestion should not be requested without a title",
+        );
+      });
+
+    const el = await createElement();
+    el._format = "quote";
+    await el.updateComplete;
+
+    const moreBtn = requireElement(
+      el.querySelectorAll<HTMLButtonElement>(".compose-dialog-header-btn")[1] ??
+        null,
+      "expected more button",
+    );
+    moreBtn.click();
+    await el.updateComplete;
+
+    requireElement(
+      Array.from(
+        el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
+      ).find((button) => button.textContent?.includes("Custom link")) ?? null,
+      "expected custom link toggle",
+    ).click();
+    await el.updateComplete;
+    await flushUpdates(el);
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(el.querySelector(".compose-slug-suggestion")).toBeNull();
+    expect(el.querySelector(".compose-slug-status")).toBeNull();
+  });
+
+  it("refreshes the suggested slug when the title changes", async () => {
+    vi.useFakeTimers();
+    mockSlugApi((url) => {
+      if (url.searchParams.get("mode") === "suggest") {
+        const title = url.searchParams.get("title");
+        return {
+          body: {
+            slug: title === "Updated Title" ? "updated-title" : "hello-world",
+          },
+        };
+      }
+      throw new Error(`Unexpected slug mode: ${url.search}`);
+    });
+
+    try {
+      const el = await createElement();
+      const editor = requireElement(
+        el.querySelector<JantComposeEditor>("jant-compose-editor"),
+        "expected compose editor",
+      );
+      editor._showTitle = true;
+      editor._title = "Hello World";
+      await editor.updateComplete;
+
+      const moreBtn = requireElement(
+        el.querySelectorAll<HTMLButtonElement>(
+          ".compose-dialog-header-btn",
+        )[1] ?? null,
+        "expected more button",
+      );
+      moreBtn.click();
+      await el.updateComplete;
+
+      requireElement(
+        Array.from(
+          el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
+        ).find((button) => button.textContent?.includes("Custom link")) ?? null,
+        "expected custom link toggle",
+      ).click();
+      await el.updateComplete;
+      await flushUpdates(el);
+
+      expect(
+        el.querySelector(".compose-slug-suggestion-value")?.textContent?.trim(),
+      ).toBe("/hello-world");
+
+      editor._title = "Updated Title";
+      el.dispatchEvent(
+        new CustomEvent("jant:compose-content-changed", { bubbles: true }),
+      );
+      await vi.runAllTimersAsync();
+      await flushUpdates(el);
+
+      expect(
+        el.querySelector(".compose-slug-suggestion-value")?.textContent?.trim(),
+      ).toBe("/updated-title");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("shows an async error when the manual custom link is already taken", async () => {
+    vi.useFakeTimers();
+    mockSlugApi((url) => {
+      if (url.searchParams.get("mode") === "suggest") {
+        return { body: { slug: "hello-world" } };
+      }
+      if (url.searchParams.get("mode") === "check") {
+        return { body: { slug: "taken-link", available: false } };
+      }
+      throw new Error(`Unexpected slug mode: ${url.search}`);
+    });
+
+    try {
+      const el = await createElement();
+      const editor = requireElement(
+        el.querySelector<JantComposeEditor>("jant-compose-editor"),
+        "expected compose editor",
+      );
+      editor._bodyJson = {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Configured post" }],
+          },
+        ],
+      };
+      await editor.updateComplete;
+
+      const moreBtn = requireElement(
+        el.querySelectorAll<HTMLButtonElement>(
+          ".compose-dialog-header-btn",
+        )[1] ?? null,
+        "expected more button",
+      );
+      moreBtn.click();
+      await el.updateComplete;
+
+      requireElement(
+        Array.from(
+          el.querySelectorAll<HTMLButtonElement>(".compose-dropdown-item"),
+        ).find((button) => button.textContent?.includes("Custom link")) ?? null,
+        "expected custom link toggle",
+      ).click();
+      await el.updateComplete;
+      await flushUpdates(el);
+
+      const slugInput = requireElement(
+        el.querySelector<HTMLInputElement>(".compose-more-slug-input"),
+        "expected custom link input",
+      );
+      slugInput.value = "taken-link";
+      slugInput.dispatchEvent(new Event("input", { bubbles: true }));
+      await vi.runAllTimersAsync();
+      await el.updateComplete;
+
+      expect(
+        el.querySelector("[data-compose-slug-error]")?.textContent?.trim(),
+      ).toBe("This link is already in use. Choose something else.");
+      expect(
+        requireElement(
+          el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+          "expected publish button",
+        ).disabled,
+      ).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("includes the thread root id when replying", async () => {
