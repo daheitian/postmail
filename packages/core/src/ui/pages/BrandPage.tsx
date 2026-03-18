@@ -1,124 +1,407 @@
 import { useLingui } from "@lingui/react/macro";
-import { toPublicPath } from "../../lib/url.js";
-import type { ThemeMode } from "../../types/config.js";
-import type { ColorTheme } from "../color-themes.js";
+import {
+  getJantBrandPackHref,
+  getJantIconFilename,
+  getJantIconHref,
+  getJantPositiveLogoPngHref,
+  getJantLogoFilename,
+  getJantLogoHref,
+  JANT_BRAND_PACK_FILENAME,
+  JANT_POSITIVE_LOGO_PNG_FILENAME,
+  type JantIconAsset,
+  type JantLogoVariant,
+} from "../../lib/jant-branding.js";
+import { JantBrandMark } from "../shared/JantBrandMark.js";
 
-function buildBrandHref(mode: ThemeMode, sitePathPrefix = ""): string {
-  const params = new URLSearchParams({ mode });
-  return toPublicPath(`/_/brand?${params.toString()}`, sitePathPrefix);
-}
-
-function ModePill({
-  href,
-  isActive,
-  label,
-}: {
-  href: string;
-  isActive: boolean;
-  label: string;
-}) {
-  return (
-    <a href={href} class={isActive ? "btn" : "btn-outline"}>
-      {label}
-    </a>
-  );
-}
-
-function ColorSpecCard({
+function LogoResourceCard({
   title,
-  role,
-  value,
-  surface,
+  usage,
+  body,
+  variant,
+  href,
+  filename,
+  downloadLabel,
+  pngDownloadHref,
+  pngFilename,
+  pngDownloadLabel,
+  rawLabel,
 }: {
   title: string;
-  role: string;
-  value: string;
-  surface: string;
+  usage: string;
+  body: string;
+  variant: JantLogoVariant;
+  href: string;
+  filename: string;
+  downloadLabel: string;
+  pngDownloadHref?: string;
+  pngFilename?: string;
+  pngDownloadLabel?: string;
+  rawLabel: string;
 }) {
   return (
-    <article class="brand-spec-card">
+    <article class="brand-logo-card">
       <div
-        class="brand-spec-card-swatch"
-        style={`background:${surface}`}
-        aria-hidden="true"
-      />
-      <div class="brand-spec-card-copy">
-        <p class="brand-spec-card-role">{role}</p>
-        <h3 class="brand-spec-card-title">{title}</h3>
-        <code class="brand-spec-card-value">{value}</code>
+        class={`brand-logo-preview${variant === "negative" ? " brand-logo-preview-dark" : ""}`}
+      >
+        <JantBrandMark
+          variant={variant}
+          class="brand-logo-preview-mark"
+          label={title}
+        />
+      </div>
+      <div class="brand-logo-copy">
+        <p class="brand-spec-card-role">{usage}</p>
+        <h3 class="brand-logo-title">{title}</h3>
+        <p class="brand-logo-body">{body}</p>
+        <code class="brand-spec-card-value">{filename}</code>
+      </div>
+      <div class="brand-logo-actions">
+        <a href={href} download={filename} class="btn-primary">
+          {downloadLabel}
+        </a>
+        {pngDownloadHref && pngFilename && pngDownloadLabel && (
+          <a href={pngDownloadHref} download={pngFilename} class="btn-outline">
+            {pngDownloadLabel}
+          </a>
+        )}
+        <a href={href} class="btn-outline">
+          {rawLabel}
+        </a>
       </div>
     </article>
   );
 }
 
+function IconResourceCard({
+  title,
+  usage,
+  body,
+  asset,
+  href,
+  filename,
+  badge,
+  downloadLabel,
+  rawLabel,
+}: {
+  title: string;
+  usage: string;
+  body: string;
+  asset: JantIconAsset;
+  href: string;
+  filename: string;
+  badge: string;
+  downloadLabel: string;
+  rawLabel: string;
+}) {
+  return (
+    <article class="brand-logo-card brand-icon-card">
+      <div class="brand-icon-preview">
+        <div class="brand-icon-preview-tile">
+          <JantBrandMark
+            variant="negative"
+            class="brand-icon-preview-mark"
+            label={title}
+          />
+        </div>
+        <span class="brand-icon-preview-badge">
+          {asset === "favicon" ? "ICO" : badge}
+        </span>
+      </div>
+      <div class="brand-logo-copy">
+        <p class="brand-spec-card-role">{usage}</p>
+        <h3 class="brand-logo-title">{title}</h3>
+        <p class="brand-logo-body">{body}</p>
+        <code class="brand-spec-card-value">{filename}</code>
+      </div>
+      <div class="brand-logo-actions">
+        <a href={href} download={filename} class="btn-primary">
+          {downloadLabel}
+        </a>
+        <a href={href} class="btn-outline">
+          {rawLabel}
+        </a>
+      </div>
+    </article>
+  );
+}
+
+function SquareLogoResourceCard({
+  title,
+  usage,
+  body,
+  variant,
+  badge,
+  pngHref,
+  pngFilename,
+  svgHref,
+  svgFilename,
+  downloadPngLabel,
+  downloadSvgLabel,
+  rawPngLabel,
+}: {
+  title: string;
+  usage: string;
+  body: string;
+  variant: JantLogoVariant;
+  badge: string;
+  pngHref: string;
+  pngFilename: string;
+  svgHref: string;
+  svgFilename: string;
+  downloadPngLabel: string;
+  downloadSvgLabel: string;
+  rawPngLabel: string;
+}) {
+  return (
+    <article class="brand-logo-card brand-icon-card">
+      <div class="brand-icon-preview">
+        <div class="brand-icon-preview-tile brand-icon-preview-tile-light">
+          <JantBrandMark
+            variant={variant}
+            class="brand-icon-preview-mark"
+            label={title}
+          />
+        </div>
+        <span class="brand-icon-preview-badge">{badge}</span>
+      </div>
+      <div class="brand-logo-copy">
+        <p class="brand-spec-card-role">{usage}</p>
+        <h3 class="brand-logo-title">{title}</h3>
+        <p class="brand-logo-body">{body}</p>
+        <code class="brand-spec-card-value">{pngFilename}</code>
+      </div>
+      <div class="brand-logo-actions">
+        <a href={pngHref} download={pngFilename} class="btn-primary">
+          {downloadPngLabel}
+        </a>
+        <a href={svgHref} download={svgFilename} class="btn-outline">
+          {downloadSvgLabel}
+        </a>
+        <a href={pngHref} class="btn-outline">
+          {rawPngLabel}
+        </a>
+      </div>
+    </article>
+  );
+}
+
+function BrandTileResourceCard({
+  title,
+  usage,
+  body,
+  badge,
+  pngHref,
+  pngFilename,
+  svgHref,
+  svgFilename,
+  downloadPngLabel,
+  downloadSvgLabel,
+  rawPngLabel,
+}: {
+  title: string;
+  usage: string;
+  body: string;
+  badge: string;
+  pngHref: string;
+  pngFilename: string;
+  svgHref: string;
+  svgFilename: string;
+  downloadPngLabel: string;
+  downloadSvgLabel: string;
+  rawPngLabel: string;
+}) {
+  return (
+    <article class="brand-logo-card brand-icon-card">
+      <div class="brand-icon-preview">
+        <div class="brand-icon-preview-tile">
+          <JantBrandMark
+            variant="negative"
+            class="brand-icon-preview-mark"
+            label={title}
+          />
+        </div>
+        <span class="brand-icon-preview-badge">{badge}</span>
+      </div>
+      <div class="brand-logo-copy">
+        <p class="brand-spec-card-role">{usage}</p>
+        <h3 class="brand-logo-title">{title}</h3>
+        <p class="brand-logo-body">{body}</p>
+        <code class="brand-spec-card-value">{pngFilename}</code>
+      </div>
+      <div class="brand-logo-actions">
+        <a href={pngHref} download={pngFilename} class="btn-primary">
+          {downloadPngLabel}
+        </a>
+        <a href={svgHref} download={svgFilename} class="btn-outline">
+          {downloadSvgLabel}
+        </a>
+        <a href={pngHref} class="btn-outline">
+          {rawPngLabel}
+        </a>
+      </div>
+    </article>
+  );
+}
+
+function GuidanceCard({ title, body }: { title: string; body: string }) {
+  return (
+    <article class="brand-guidance-card">
+      <h3 class="brand-guidance-title">{title}</h3>
+      <p class="brand-guidance-body">{body}</p>
+    </article>
+  );
+}
+
 export function BrandPage({
-  theme,
-  currentMode,
   sitePathPrefix = "",
 }: {
-  theme: ColorTheme;
-  currentMode: ThemeMode;
   sitePathPrefix?: string;
 }) {
   const { t } = useLingui();
-  const light = theme.light;
-  const dark = theme.dark;
-
-  const coreBrand = light["--primary"] ?? "";
-  const supportBrand = light["--site-accent"] ?? "";
-  const paper = light["--background"] ?? "";
-  const ink = light["--foreground"] ?? "";
-  const success = light["--success"] ?? "";
-  const modes: ThemeMode[] = ["auto", "light", "dark"];
+  const brandPackHref = getJantBrandPackHref(sitePathPrefix);
+  const positiveLogoHref = getJantLogoHref("positive", sitePathPrefix);
+  const negativeLogoHref = getJantLogoHref("negative", sitePathPrefix);
+  const positiveLogoPngHref = getJantPositiveLogoPngHref(sitePathPrefix);
+  const brandTileSvgHref = getJantIconHref("brandTileSvg", sitePathPrefix);
+  const brandTilePngHref = getJantIconHref("brandTilePng", sitePathPrefix);
+  const faviconAssetHref = getJantIconHref("favicon", sitePathPrefix);
+  const appleTouchHref = getJantIconHref("appleTouch", sitePathPrefix);
+  const socialImageHref = getJantIconHref("socialImage", sitePathPrefix);
+  const positiveLogoFilename = getJantLogoFilename("positive");
+  const negativeLogoFilename = getJantLogoFilename("negative");
+  const positiveLogoPngFilename = JANT_POSITIVE_LOGO_PNG_FILENAME;
+  const brandTileSvgFilename = getJantIconFilename("brandTileSvg");
+  const brandTilePngFilename = getJantIconFilename("brandTilePng");
+  const faviconAssetFilename = getJantIconFilename("favicon");
+  const appleTouchFilename = getJantIconFilename("appleTouch");
+  const socialImageFilename = getJantIconFilename("socialImage");
+  const logoLabel = t({
+    message: "Jant logo",
+    comment: "@context: Accessible label for the Jant logo mark",
+  });
+  const downloadSvgLabel = t({
+    message: "Download SVG",
+    comment: "@context: Download button label for a logo asset",
+  });
+  const downloadPngLabel = t({
+    message: "Download PNG",
+    comment: "@context: Download button label for a PNG logo asset",
+  });
+  const openRawPngLabel = t({
+    message: "Open raw PNG",
+    comment: "@context: Button label to open the raw PNG asset in the browser",
+  });
+  const openRawSvgLabel = t({
+    message: "Open raw SVG",
+    comment: "@context: Button label to open the raw SVG asset in the browser",
+  });
+  const downloadFileLabel = t({
+    message: "Download file",
+    comment: "@context: Download button label for a non-SVG brand asset",
+  });
+  const openRawAssetLabel = t({
+    message: "Open raw asset",
+    comment: "@context: Button label to open a raw brand asset in the browser",
+  });
+  const downloadBrandPackLabel = t({
+    message: "Download Brand Pack",
+    comment: "@context: Primary hero button label for the brand pack ZIP",
+  });
+  const browseFilesLabel = t({
+    message: "Browse files",
+    comment: "@context: Secondary hero button label to jump to the file list",
+  });
+  const defaultLogoBody = t({
+    message:
+      "Use this for websites, docs, articles, and other light or neutral surfaces.",
+    comment: "@context: Description for the default logo card",
+  });
+  const reverseLogoBody = t({
+    message:
+      "Use this on dark backgrounds, image-backed surfaces, and any placement where the green logo would lose contrast.",
+    comment: "@context: Description for the reverse logo card",
+  });
+  const brandPackBody = t({
+    message:
+      "A single ZIP with the main logo, reverse logo, square PNG, brand tile, favicon, Apple touch icon, and social preview image.",
+    comment: "@context: Description for the brand pack card",
+  });
 
   return (
     <div class="brand-page py-8" data-page="brand">
       <section class="brand-hero">
         <div class="brand-hero-copy">
-          <p class="brand-eyebrow">
-            {t({
-              message: "Jant brand",
-              comment: "@context: Eyebrow on the public brand page",
-            })}
-          </p>
+          <div class="brand-mark-lockup">
+            <JantBrandMark class="brand-hero-mark" label={logoLabel} />
+            <p class="brand-eyebrow">
+              {t({
+                message: "Brand assets",
+                comment: "@context: Eyebrow on the public brand asset page",
+              })}
+            </p>
+          </div>
           <h1 class="brand-title">
             {t({
               message:
-                "A calm writing brand built around absinthe green and warm linen.",
-              comment: "@context: Hero title on the public brand page",
+                "Download the official Jant logo, icons, and preview files.",
+              comment: "@context: Hero title on the public brand asset page",
             })}
           </h1>
           <p class="brand-lead">
             {t({
               message:
-                "Jant should feel unhurried, private, and confident without becoming polished product theater. The palette is meant to read like paper, ink, and a quiet mark left in the margin.",
-              comment: "@context: Intro paragraph on the public brand page",
+                "Everything on this page is ready to use for articles, launch posts, directories, and product coverage.",
+              comment:
+                "@context: Intro paragraph on the public brand asset page",
             })}
           </p>
+
+          <div class="brand-hero-actions">
+            <a
+              href={brandPackHref}
+              download={JANT_BRAND_PACK_FILENAME}
+              class="btn-primary"
+            >
+              {downloadBrandPackLabel}
+            </a>
+            <a href="#brand-files" class="btn-outline">
+              {browseFilesLabel}
+            </a>
+          </div>
 
           <div
             class="brand-keywords"
             aria-label={t({
-              message: "Brand attributes",
-              comment: "@context: Accessible label for the brand keyword list",
+              message: "Included assets",
+              comment:
+                "@context: Accessible label for the asset keyword list on the public brand page",
             })}
           >
             {[
               t({
-                message: "Quiet",
-                comment: "@context: Brand keyword on the public brand page",
+                message: "Logo",
+                comment:
+                  "@context: Asset keyword on the public brand asset page",
               }),
               t({
-                message: "Humble",
-                comment: "@context: Brand keyword on the public brand page",
+                message: "Reverse logo",
+                comment:
+                  "@context: Asset keyword on the public brand asset page",
               }),
               t({
-                message: "Unhurried",
-                comment: "@context: Brand keyword on the public brand page",
+                message: "Square logo",
+                comment:
+                  "@context: Asset keyword on the public brand asset page",
               }),
               t({
-                message: "Personal",
-                comment: "@context: Brand keyword on the public brand page",
+                message: "Brand tile",
+                comment:
+                  "@context: Asset keyword on the public brand asset page",
+              }),
+              t({
+                message: "Social preview",
+                comment:
+                  "@context: Asset keyword on the public brand asset page",
               }),
             ].map((keyword) => (
               <span key={keyword} class="brand-keyword">
@@ -130,430 +413,447 @@ export function BrandPage({
 
         <aside class="brand-manifest">
           <div class="brand-manifest-header">
-            <h2>
+            <p class="brand-panel-kicker">
               {t({
-                message: "Core palette",
-                comment: "@context: Heading for the core palette card",
+                message: "Start here",
+                comment:
+                  "@context: Heading for the quick-start panel on the brand asset page",
+              })}
+            </p>
+            <h2 class="brand-panel-title">
+              {t({
+                message: "Everything most people need is in one ZIP.",
+                comment:
+                  "@context: Section title for the quick-start panel on the brand asset page",
               })}
             </h2>
-            <div class="flex flex-wrap gap-2">
-              {modes.map((mode) => (
-                <ModePill
-                  key={mode}
-                  href={buildBrandHref(mode, sitePathPrefix)}
-                  isActive={currentMode === mode}
-                  label={
-                    mode === "auto"
-                      ? t({
-                          message: "Auto",
-                          comment:
-                            "@context: Theme mode option on the brand page",
-                        })
-                      : mode === "light"
-                        ? t({
-                            message: "Light",
-                            comment:
-                              "@context: Theme mode option on the brand page",
-                          })
-                        : t({
-                            message: "Dark",
-                            comment:
-                              "@context: Theme mode option on the brand page",
-                          })
-                  }
-                />
-              ))}
-            </div>
           </div>
 
-          <div class="brand-manifest-swatches">
-            <ColorSpecCard
-              title={t({
-                message: "Absinthe Green",
-                comment: "@context: Name of the primary brand swatch",
-              })}
-              role={t({
-                message: "Brand core",
-                comment: "@context: Label for the primary brand swatch",
-              })}
-              value={coreBrand}
-              surface={coreBrand}
-            />
-            <ColorSpecCard
-              title={t({
-                message: "Warm Linen",
-                comment: "@context: Name of the paper swatch",
-              })}
-              role={t({
-                message: "Base surface",
-                comment: "@context: Label for the paper swatch",
-              })}
-              value={paper}
-              surface={paper}
-            />
-            <ColorSpecCard
-              title={t({
-                message: "Soft Charcoal",
-                comment: "@context: Name of the text swatch",
-              })}
-              role={t({
-                message: "Reading ink",
-                comment: "@context: Label for the text swatch",
-              })}
-              value={ink}
-              surface={ink}
-            />
-            <ColorSpecCard
-              title={t({
-                message: "Absinthe Accent",
-                comment: "@context: Name of the secondary accent swatch",
-              })}
-              role={t({
-                message: "Content accent",
-                comment: "@context: Label for the secondary accent swatch",
-              })}
-              value={supportBrand}
-              surface={supportBrand}
-            />
-            <ColorSpecCard
-              title={t({
-                message: "Leaf Green",
-                comment: "@context: Name of the success swatch",
-              })}
-              role={t({
-                message: "Status color",
-                comment: "@context: Label for the success swatch",
-              })}
-              value={success}
-              surface={success}
-            />
+          <p class="brand-panel-body brand-manifest-body">
+            {t({
+              message:
+                "The brand pack includes SVG logos, a transparent square PNG, the brand tile, favicon, Apple touch icon, and the default social preview image.",
+              comment:
+                "@context: Intro copy for the quick-start panel on the brand asset page",
+            })}
+          </p>
+
+          <div class="brand-logo-actions brand-manifest-actions">
+            <a
+              href={brandPackHref}
+              download={JANT_BRAND_PACK_FILENAME}
+              class="btn-primary"
+            >
+              {downloadBrandPackLabel}
+            </a>
+          </div>
+
+          <div class="brand-entry-grid">
+            <article class="brand-entry-card">
+              <div class="brand-entry-preview">
+                <div class="brand-entry-surface">
+                  <JantBrandMark
+                    class="brand-entry-mark"
+                    label={t({
+                      message: "Logo",
+                      comment:
+                        "@context: Asset keyword on the public brand asset page",
+                    })}
+                  />
+                </div>
+              </div>
+              <div class="brand-entry-copy">
+                <p class="brand-spec-card-role">
+                  {t({
+                    message: "Default logo",
+                    comment: "@context: Usage label for the default logo card",
+                  })}
+                </p>
+                <h3 class="brand-logo-title">
+                  {t({
+                    message: "Logo",
+                    comment: "@context: Title for the default logo card",
+                  })}
+                </h3>
+                <p class="brand-logo-body">{defaultLogoBody}</p>
+              </div>
+              <div class="brand-logo-actions">
+                <a
+                  href={positiveLogoHref}
+                  download={positiveLogoFilename}
+                  class="btn-primary"
+                >
+                  {downloadSvgLabel}
+                </a>
+                <a
+                  href={positiveLogoPngHref}
+                  download={positiveLogoPngFilename}
+                  class="btn-outline"
+                >
+                  {downloadPngLabel}
+                </a>
+              </div>
+            </article>
+
+            <article class="brand-entry-card">
+              <div class="brand-entry-preview brand-entry-preview-dark">
+                <div class="brand-entry-surface brand-entry-surface-dark">
+                  <JantBrandMark
+                    variant="negative"
+                    class="brand-entry-mark"
+                    label={t({
+                      message: "Reverse logo",
+                      comment: "@context: Title for the reverse logo card",
+                    })}
+                  />
+                </div>
+              </div>
+              <div class="brand-entry-copy">
+                <p class="brand-spec-card-role">
+                  {t({
+                    message: "Dark backgrounds",
+                    comment: "@context: Usage label for the reverse logo card",
+                  })}
+                </p>
+                <h3 class="brand-logo-title">
+                  {t({
+                    message: "Reverse logo",
+                    comment: "@context: Title for the reverse logo card",
+                  })}
+                </h3>
+                <p class="brand-logo-body">{reverseLogoBody}</p>
+              </div>
+              <div class="brand-logo-actions">
+                <a
+                  href={negativeLogoHref}
+                  download={negativeLogoFilename}
+                  class="btn-primary"
+                >
+                  {downloadSvgLabel}
+                </a>
+                <a href={negativeLogoHref} class="btn-outline">
+                  {openRawSvgLabel}
+                </a>
+              </div>
+            </article>
+
+            <article class="brand-entry-card">
+              <div class="brand-entry-preview">
+                <div class="brand-entry-surface brand-entry-surface-stack">
+                  <JantBrandMark
+                    class="brand-entry-mark"
+                    label={t({
+                      message: "Brand pack",
+                      comment: "@context: Title for the brand pack card",
+                    })}
+                  />
+                  <div class="brand-entry-files" aria-hidden="true">
+                    {["SVG", "PNG", "ICO", "ZIP"].map((label) => (
+                      <span key={label} class="brand-entry-filechip">
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div class="brand-entry-copy">
+                <p class="brand-spec-card-role">
+                  {t({
+                    message: "Everything in one download",
+                    comment: "@context: Usage label for the brand pack card",
+                  })}
+                </p>
+                <h3 class="brand-logo-title">
+                  {t({
+                    message: "Brand pack",
+                    comment: "@context: Title for the brand pack card",
+                  })}
+                </h3>
+                <p class="brand-logo-body">{brandPackBody}</p>
+                <code class="brand-spec-card-value">
+                  {JANT_BRAND_PACK_FILENAME}
+                </code>
+              </div>
+              <div class="brand-logo-actions">
+                <a
+                  href={brandPackHref}
+                  download={JANT_BRAND_PACK_FILENAME}
+                  class="btn-primary"
+                >
+                  {downloadBrandPackLabel}
+                </a>
+                <a href="#brand-files" class="btn-outline">
+                  {browseFilesLabel}
+                </a>
+              </div>
+            </article>
           </div>
         </aside>
       </section>
 
-      <section class="brand-grid">
+      <section class="brand-logo-resources" id="brand-files">
         <article class="brand-panel">
           <p class="brand-panel-kicker">
             {t({
-              message: "Brand logic",
-              comment: "@context: Section kicker on the public brand page",
+              message: "Guidelines",
+              comment:
+                "@context: Section kicker for the usage guidance section on the brand asset page",
             })}
           </p>
           <h2 class="brand-panel-title">
             {t({
-              message: "One color family, three jobs.",
-              comment: "@context: Section title on the public brand page",
+              message: "A few simple rules.",
+              comment:
+                "@context: Section title for the usage guidance section on the brand asset page",
+            })}
+          </h2>
+          <div class="brand-guidance-grid">
+            <GuidanceCard
+              title={t({
+                message: "Use the logo on light backgrounds.",
+                comment: "@context: Guidance title on the brand asset page",
+              })}
+              body={t({
+                message:
+                  "Choose the standard logo for websites, docs, directories, and editorial layouts.",
+                comment: "@context: Guidance body on the brand asset page",
+              })}
+            />
+            <GuidanceCard
+              title={t({
+                message: "Use the reverse logo on dark backgrounds.",
+                comment: "@context: Guidance title on the brand asset page",
+              })}
+              body={t({
+                message:
+                  "Switch to the white logo when the standard green version would lose contrast.",
+                comment: "@context: Guidance body on the brand asset page",
+              })}
+            />
+            <GuidanceCard
+              title={t({
+                message: "Keep the artwork unchanged.",
+                comment: "@context: Guidance title on the brand asset page",
+              })}
+              body={t({
+                message:
+                  "Do not recolor, stretch, rotate, outline, or add effects to the logo.",
+                comment: "@context: Guidance body on the brand asset page",
+              })}
+            />
+          </div>
+        </article>
+
+        <article class="brand-panel brand-panel-resource" id="brand-logos">
+          <p class="brand-panel-kicker">
+            {t({
+              message: "Logos",
+              comment:
+                "@context: Section kicker for the logo downloads section",
+            })}
+          </p>
+          <h2 class="brand-panel-title">
+            {t({
+              message: "Primary logo files",
+              comment: "@context: Section title for the logo downloads section",
             })}
           </h2>
           <div class="brand-panel-body">
             <p>
               {t({
                 message:
-                  "Absinthe Green is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout.",
-                comment: "@context: Body copy on the public brand page",
+                  "Choose the standard logo for most placements and the reverse logo when you need more contrast.",
+                comment: "@context: Body copy for the logo downloads section",
               })}
             </p>
+          </div>
+        </article>
+
+        <div class="brand-logo-grid">
+          <LogoResourceCard
+            title={t({
+              message: "Logo",
+              comment: "@context: Title for the default logo asset card",
+            })}
+            usage={t({
+              message: "Default",
+              comment: "@context: Usage label for the default logo asset card",
+            })}
+            body={t({
+              message:
+                "Primary Jant logo for websites, docs, press coverage, and editorial layouts.",
+              comment: "@context: Description for the default logo asset card",
+            })}
+            variant="positive"
+            href={positiveLogoHref}
+            filename={positiveLogoFilename}
+            downloadLabel={downloadSvgLabel}
+            pngDownloadHref={positiveLogoPngHref}
+            pngFilename={positiveLogoPngFilename}
+            pngDownloadLabel={downloadPngLabel}
+            rawLabel={openRawSvgLabel}
+          />
+          <LogoResourceCard
+            title={t({
+              message: "Reverse logo",
+              comment: "@context: Title for the reverse logo asset card",
+            })}
+            usage={t({
+              message: "Dark backgrounds",
+              comment: "@context: Usage label for the reverse logo asset card",
+            })}
+            body={reverseLogoBody}
+            variant="negative"
+            href={negativeLogoHref}
+            filename={negativeLogoFilename}
+            downloadLabel={downloadSvgLabel}
+            rawLabel={openRawSvgLabel}
+          />
+        </div>
+
+        <article class="brand-panel brand-panel-resource">
+          <p class="brand-panel-kicker">
+            {t({
+              message: "Icons and previews",
+              comment:
+                "@context: Section kicker for the icon and preview downloads section",
+            })}
+          </p>
+          <h2 class="brand-panel-title">
+            {t({
+              message:
+                "Square assets for avatars, apps, browsers, and shared links",
+              comment:
+                "@context: Section title for the icon and preview downloads section",
+            })}
+          </h2>
+          <div class="brand-panel-body">
             <p>
               {t({
                 message:
-                  "Primary is used for committed actions. Site accent is used for content links and thread cues. Success is intentionally cleaner so state feedback does not blur into the brand voice.",
-                comment: "@context: Body copy on the public brand page",
+                  "Use these when you need a square asset with or without a background, a browser icon, or a default preview image.",
+                comment:
+                  "@context: Body copy for the icon and preview downloads section",
               })}
             </p>
           </div>
         </article>
 
-        <article class="brand-panel">
-          <p class="brand-panel-kicker">
-            {t({
-              message: "Voice",
-              comment: "@context: Section kicker on the public brand page",
-            })}
-          </p>
-          <h2 class="brand-panel-title">
-            {t({
-              message: "How Jant should feel in one glance.",
-              comment: "@context: Section title on the public brand page",
-            })}
-          </h2>
-          <ul class="brand-principles">
-            <li>
-              <strong>
-                {t({
-                  message: "Private, not precious.",
-                  comment: "@context: Brand principle on the public brand page",
-                })}
-              </strong>{" "}
-              {t({
-                message:
-                  "The palette should feel personal and lived-in, not premium for the sake of premium.",
-                comment:
-                  "@context: Brand principle explanation on the public brand page",
-              })}
-            </li>
-            <li>
-              <strong>
-                {t({
-                  message: "Calm, not sleepy.",
-                  comment: "@context: Brand principle on the public brand page",
-                })}
-              </strong>{" "}
-              {t({
-                message:
-                  "Muted colors can still carry rhythm and hierarchy when typography does the heavy lifting.",
-                comment:
-                  "@context: Brand principle explanation on the public brand page",
-              })}
-            </li>
-            <li>
-              <strong>
-                {t({
-                  message: "Humble, not anonymous.",
-                  comment: "@context: Brand principle on the public brand page",
-                })}
-              </strong>{" "}
-              {t({
-                message:
-                  "The green note gives Jant a recognizable identity without turning the brand into a loud signature.",
-                comment:
-                  "@context: Brand principle explanation on the public brand page",
-              })}
-            </li>
-          </ul>
-        </article>
-      </section>
-
-      <section class="brand-showcase">
-        <div class="brand-showcase-copy">
-          <p class="brand-panel-kicker">
-            {t({
-              message: "In use",
-              comment: "@context: Section kicker on the public brand page",
-            })}
-          </p>
-          <h2 class="brand-panel-title">
-            {t({
-              message: "The brand should read like a page first.",
-              comment: "@context: Section title on the public brand page",
-            })}
-          </h2>
-          <p class="brand-panel-body">
-            {t({
-              message:
-                "The brand is working when the writing still leads, but the interface quietly holds the page together. Links should feel editorial. Buttons should feel steady. Metadata should stay out of the way.",
-              comment: "@context: Body copy on the public brand page",
-            })}
-          </p>
-        </div>
-
-        <div class="brand-live-sheet">
-          <div class="brand-live-meta">
-            <span>
-              {t({
-                message: "March 2026",
-                comment: "@context: Meta label on the public brand page",
-              })}
-            </span>
-            <span aria-hidden="true">&middot;</span>
-            <span>
-              {t({
-                message: "Brand note",
-                comment: "@context: Meta label on the public brand page",
-              })}
-            </span>
-          </div>
-
-          <h3 class="brand-live-title">
-            {t({
-              message:
-                "Absinthe Green should feel like a mark in the margin, not a spotlight.",
-              comment: "@context: Showcase title on the public brand page",
-            })}
-          </h3>
-
-          <p class="brand-live-body">
-            {t({
-              message: "This is the test: a content link like",
-              comment:
-                "@context: Showcase paragraph prefix on the public brand page",
-            })}{" "}
-            <a
-              href={toPublicPath("/_/brand", sitePathPrefix)}
-              class="content-link"
-            >
-              {t({
-                message: "read the full brand note",
-                comment:
-                  "@context: Showcase content link on the public brand page",
-              })}
-            </a>{" "}
-            {t({
-              message:
-                "should feel present, but it should never start acting like a product CTA inside the paragraph.",
-              comment:
-                "@context: Showcase paragraph suffix on the public brand page",
-            })}
-          </p>
-
-          <blockquote class="brand-live-quote">
-            {t({
-              message:
-                "A quiet brand still leaves a signature. It simply does it without urgency.",
-              comment: "@context: Showcase quote on the public brand page",
-            })}
-          </blockquote>
-
-          <div class="brand-live-actions">
-            <button type="button" class="btn-primary">
-              {t({
-                message: "Use Absinthe Green",
-                comment:
-                  "@context: Showcase primary button on the public brand page",
-              })}
-            </button>
-            <button type="button" class="btn-outline">
-              {t({
-                message: "View token values",
-                comment:
-                  "@context: Showcase secondary button on the public brand page",
-              })}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section class="brand-rules-grid">
-        <article class="brand-rule-card brand-rule-card-do">
-          <p class="brand-panel-kicker">
-            {t({
-              message: "Use it for",
-              comment: "@context: Section kicker on the public brand page",
-            })}
-          </p>
-          <ul class="brand-rule-list">
-            <li>
-              {t({
-                message: "Primary actions that need confidence, not flash.",
-                comment:
-                  "@context: Positive brand usage guidance on the public brand page",
-              })}
-            </li>
-            <li>
-              {t({
-                message: "Content links, thread markers, and quiet emphasis.",
-                comment:
-                  "@context: Positive brand usage guidance on the public brand page",
-              })}
-            </li>
-            <li>
-              {t({
-                message:
-                  "Editorial surfaces where the page should feel soft and composed.",
-                comment:
-                  "@context: Positive brand usage guidance on the public brand page",
-              })}
-            </li>
-          </ul>
-        </article>
-
-        <article class="brand-rule-card brand-rule-card-avoid">
-          <p class="brand-panel-kicker">
-            {t({
-              message: "Avoid",
-              comment: "@context: Section kicker on the public brand page",
-            })}
-          </p>
-          <ul class="brand-rule-list">
-            <li>
-              {t({
-                message: "Pairing it with bright SaaS blues or neon greens.",
-                comment:
-                  "@context: Negative brand usage guidance on the public brand page",
-              })}
-            </li>
-            <li>
-              {t({
-                message:
-                  "Using brand green for every state, including success and warnings.",
-                comment:
-                  "@context: Negative brand usage guidance on the public brand page",
-              })}
-            </li>
-            <li>
-              {t({
-                message:
-                  "Over-polishing the layout until the writing stops feeling personal.",
-                comment:
-                  "@context: Negative brand usage guidance on the public brand page",
-              })}
-            </li>
-          </ul>
-        </article>
-      </section>
-
-      <section class="brand-dark-panel">
-        <div class="brand-dark-copy">
-          <p class="brand-panel-kicker">
-            {t({
-              message: "Dark mode",
-              comment: "@context: Section kicker on the public brand page",
-            })}
-          </p>
-          <h2 class="brand-panel-title">
-            {t({
-              message:
-                "In dark mode, keep the same calm. Only lift the contrast.",
-              comment: "@context: Section title on the public brand page",
-            })}
-          </h2>
-          <p class="brand-panel-body">
-            {t({
-              message:
-                "Dark Jant should still feel like paper and ink translated into evening light. The brand green becomes softer and milkier, but it should not turn electric.",
-              comment: "@context: Body copy on the public brand page",
-            })}
-          </p>
-        </div>
-
-        <div class="brand-dark-swatches">
-          <ColorSpecCard
+        <div class="brand-icon-grid" id="brand-icons">
+          <SquareLogoResourceCard
             title={t({
-              message: "Dark primary",
+              message: "Square logo PNG",
+              comment: "@context: Title for the square logo PNG asset card",
+            })}
+            usage={t({
+              message: "Transparent square",
               comment:
-                "@context: Label for dark primary swatch on the public brand page",
+                "@context: Usage label for the square logo PNG asset card",
             })}
-            role={t({
-              message: "Button tone",
-              comment: "@context: Role label for dark primary swatch",
+            body={t({
+              message:
+                "A ready-made 1:1 PNG for decks, mockups, directories, and other square placements.",
+              comment:
+                "@context: Description for the square logo PNG asset card",
             })}
-            value={dark["--primary"] ?? ""}
-            surface={dark["--primary"] ?? ""}
+            variant="positive"
+            badge="512"
+            pngHref={positiveLogoPngHref}
+            pngFilename={positiveLogoPngFilename}
+            svgHref={positiveLogoHref}
+            svgFilename={positiveLogoFilename}
+            downloadPngLabel={downloadPngLabel}
+            downloadSvgLabel={downloadSvgLabel}
+            rawPngLabel={openRawPngLabel}
           />
-          <ColorSpecCard
+          <BrandTileResourceCard
             title={t({
-              message: "Dark accent",
-              comment:
-                "@context: Label for dark accent swatch on the public brand page",
+              message: "Brand tile",
+              comment: "@context: Title for the brand tile asset card",
             })}
-            role={t({
-              message: "Link tone",
-              comment: "@context: Role label for dark accent swatch",
+            usage={t({
+              message: "Built-in background",
+              comment: "@context: Usage label for the brand tile asset card",
             })}
-            value={dark["--site-accent"] ?? ""}
-            surface={dark["--site-accent"] ?? ""}
+            body={t({
+              message:
+                "White logo on the Jant green tile for avatars, app icon mockups, directory listings, and other square placements that need a background.",
+              comment: "@context: Description for the brand tile asset card",
+            })}
+            badge="512"
+            pngHref={brandTilePngHref}
+            pngFilename={brandTilePngFilename}
+            svgHref={brandTileSvgHref}
+            svgFilename={brandTileSvgFilename}
+            downloadPngLabel={downloadPngLabel}
+            downloadSvgLabel={downloadSvgLabel}
+            rawPngLabel={openRawPngLabel}
           />
-          <ColorSpecCard
+          <IconResourceCard
             title={t({
-              message: "Dark paper",
+              message: "Favicon",
+              comment: "@context: Title for the favicon asset card",
+            })}
+            usage={t({
+              message: "Browser tab",
+              comment: "@context: Usage label for the favicon asset card",
+            })}
+            body={t({
+              message: "Small browser icon used in tabs and bookmarks.",
+              comment: "@context: Description for the favicon asset card",
+            })}
+            asset="favicon"
+            href={faviconAssetHref}
+            filename={faviconAssetFilename}
+            badge="ICO"
+            downloadLabel={downloadFileLabel}
+            rawLabel={openRawAssetLabel}
+          />
+          <IconResourceCard
+            title={t({
+              message: "Apple touch icon",
+              comment: "@context: Title for the apple touch icon asset card",
+            })}
+            usage={t({
+              message: "iOS home screen",
               comment:
-                "@context: Label for dark background swatch on the public brand page",
+                "@context: Usage label for the apple touch icon asset card",
             })}
-            role={t({
-              message: "Base surface",
-              comment: "@context: Role label for dark background swatch",
+            body={t({
+              message: "Home screen icon for iPhone and iPad shortcuts.",
+              comment:
+                "@context: Description for the apple touch icon asset card",
             })}
-            value={dark["--background"] ?? ""}
-            surface={dark["--background"] ?? ""}
+            asset="appleTouch"
+            href={appleTouchHref}
+            filename={appleTouchFilename}
+            badge="180"
+            downloadLabel={downloadFileLabel}
+            rawLabel={openRawAssetLabel}
+          />
+          <IconResourceCard
+            title={t({
+              message: "Social preview image",
+              comment:
+                "@context: Title for the social preview image asset card",
+            })}
+            usage={t({
+              message: "Shared links",
+              comment:
+                "@context: Usage label for the social preview image asset card",
+            })}
+            body={t({
+              message:
+                "Default preview image for social shares and link unfurls.",
+              comment:
+                "@context: Description for the social preview image asset card",
+            })}
+            asset="socialImage"
+            href={socialImageHref}
+            filename={socialImageFilename}
+            badge="512"
+            downloadLabel={downloadFileLabel}
+            rawLabel={openRawAssetLabel}
           />
         </div>
       </section>

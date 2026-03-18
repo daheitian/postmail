@@ -32,15 +32,29 @@ function loadImage(file: File): Promise<HTMLImageElement> {
  *
  * @param img - Source HTMLImageElement
  * @param size - Target width and height in pixels
+ * @param options - Optional rendering settings
  * @returns PNG Blob at the target size
  */
-function resizeToSquarePng(img: HTMLImageElement, size: number): Promise<Blob> {
+function resizeToSquarePng(
+  img: HTMLImageElement,
+  size: number,
+  options?: {
+    backgroundColor?: string;
+  },
+): Promise<Blob> {
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
 
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Failed to get canvas context");
+
+  // Apple touch icons should be opaque. iOS applies its own mask/background
+  // to transparent images, which can turn a transparent mark into a dark tile.
+  if (options?.backgroundColor) {
+    ctx.fillStyle = options.backgroundColor;
+    ctx.fillRect(0, 0, size, size);
+  }
 
   // Cover crop: scale to fill square, crop center
   const scale = Math.max(size / img.width, size / img.height);
@@ -97,7 +111,7 @@ async function handleAvatarUpload(
     const [png16, png32, png180] = await Promise.all([
       resizeToSquarePng(img, 16),
       resizeToSquarePng(img, 32),
-      resizeToSquarePng(img, 180),
+      resizeToSquarePng(img, 180, { backgroundColor: "#FFFFFF" }),
     ]);
 
     // Encode ICO with 16x16 and 32x32

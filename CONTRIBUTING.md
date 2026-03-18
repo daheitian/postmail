@@ -40,8 +40,11 @@ mise install
 # Install dependencies
 pnpm install
 
-# Start development server (http://localhost:9020)
+# Start development server (defaults to http://localhost:9020)
 mise run dev
+
+# Override the dev port
+PORT=9030 mise run dev
 ```
 
 `mise run dev` automatically runs database migrations before starting the server — no manual migration step needed.
@@ -137,7 +140,7 @@ All commands are run via `mise run <command>`. You never need to `cd` into subdi
 ### Development
 
 ```bash
-mise run dev              # Start Vite dev server on port 9020 (auto-runs migrations)
+mise run dev              # Start Vite dev server (defaults to 9020; set PORT to override)
 mise run dev-debug        # Start debug server on the first free port from 19020 and prepare local auth helpers
 mise run dev-auth-setup   # Sync local demo credentials + print auth debug URLs
 mise run build            # Build @jant/core (lib + client assets)

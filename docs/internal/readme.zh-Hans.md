@@ -1,16 +1,12 @@
 # Jant - 产品设计文档
 
+**一句话**：像 Threads, Tumblr 一样丝滑的个人轻博客系统。
+
 > **Jant** = Jantelagen（詹代法则）缩写
 > j 强调低调、去社交化的个人表达
 > 简单低摩擦的发布体验
 
-相关实现设计：
-
-- [Node / Docker 运行时设计](./node-runtime-design.zh-Hans.md)
-
 ## 1. 产品定位
-
-**一句话**：像 Threads 一样丝滑的个人轻博客系统。
 
 **核心特征**：
 
@@ -23,6 +19,10 @@
 - 极简部署（Cloudflare Workers，一键启动）
 
 ---
+
+相关实现设计：
+
+- [Node / Docker 运行时设计](./node-runtime-design.zh-Hans.md)
 
 ## 2. 内容模型
 

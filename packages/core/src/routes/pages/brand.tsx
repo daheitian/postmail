@@ -1,12 +1,17 @@
 /**
  * Brand Page Route
  *
- * Internal brand spec page for Jant's default visual direction.
- * Uses the Linen theme regardless of the site's current theme.
+ * Public brand asset page for Jant's default visual system.
+ * Uses the Linen theme regardless of the site's current theme and stays
+ * noindexed because every Jant site exposes the same resource page.
  */
 
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { msg } from "@lingui/core/macro";
+import {
+  getJantBundledAsset,
+  getJantIconHref,
+} from "../../lib/jant-branding.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { getNavigationData } from "../../lib/navigation.js";
@@ -14,9 +19,11 @@ import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
 import { buildThemeStyle } from "../../lib/theme.js";
 import { getI18n } from "../../i18n/index.js";
-import { BUILTIN_COLOR_THEMES } from "../../ui/color-themes.js";
+import {
+  BUILTIN_COLOR_THEMES,
+  type ColorTheme,
+} from "../../ui/color-themes.js";
 import { BrandPage } from "../../ui/pages/BrandPage.js";
-import { THEME_MODES, type ThemeMode } from "../../types/config.js";
 import {
   BUILTIN_FONT_THEMES,
   getFontThemeCssVariables,
@@ -24,32 +31,22 @@ import {
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-function resolveThemeMode(
-  value: string | undefined,
-  fallback: ThemeMode,
-): ThemeMode {
-  return THEME_MODES.includes(value as ThemeMode)
-    ? (value as ThemeMode)
-    : fallback;
+function getLinenTheme(): ColorTheme | undefined {
+  return (
+    BUILTIN_COLOR_THEMES.find((theme) => theme.id === "linen") ??
+    BUILTIN_COLOR_THEMES[0]
+  );
 }
 
-export const brandRoutes = new Hono<Env>();
-
-brandRoutes.get("/brand", async (c) => {
+async function renderBrandSpecPage(
+  c: Context<Env>,
+  options: {
+    theme: ColorTheme;
+    pageTitle: string;
+    description: string;
+  },
+) {
   const navData = await getNavigationData(c);
-  const i18n = getI18n(c);
-  const fallbackTheme = BUILTIN_COLOR_THEMES[0];
-  if (!fallbackTheme) {
-    return c.notFound();
-  }
-
-  const brandTheme =
-    BUILTIN_COLOR_THEMES.find((theme) => theme.id === "linen") ?? fallbackTheme;
-  const selectedMode = resolveThemeMode(
-    c.req.query("mode"),
-    c.var.appConfig.themeMode,
-  );
-
   const fontTheme = c.var.appConfig.fontThemeId
     ? BUILTIN_FONT_THEMES.find(
         (theme) => theme.id === c.var.appConfig.fontThemeId,
@@ -59,37 +56,64 @@ brandRoutes.get("/brand", async (c) => {
 
   c.set("appConfig", {
     ...c.var.appConfig,
-    themeId: brandTheme.id,
-    themeMode: selectedMode,
+    themeId: options.theme.id,
+    themeMode: "light",
     noindex: true,
   });
   c.header("X-Robots-Tag", "noindex, nofollow");
-  c.set("themeStyle", buildThemeStyle(brandTheme, selectedMode, fontOverrides));
+  c.set("themeStyle", buildThemeStyle(options.theme, "light", fontOverrides));
+  const socialImageUrl = getJantIconHref("socialImage", navData.sitePathPrefix);
+  const faviconHref = getJantIconHref("favicon", navData.sitePathPrefix);
+  const appleTouchHref = getJantIconHref("appleTouch", navData.sitePathPrefix);
 
   return renderPublicPage(c, {
-    title: buildPageTitle(
-      i18n._(
-        msg({
-          message: "Brand",
-          comment: "@context: Browser page title for the public brand page",
-        }),
-      ),
-      navData.siteName,
+    title: buildPageTitle(options.pageTitle, navData.siteName),
+    description: options.description,
+    socialImageUrl,
+    faviconHref,
+    appleTouchHref,
+    navData,
+    content: <BrandPage sitePathPrefix={navData.sitePathPrefix} />,
+  });
+}
+
+export const brandRoutes = new Hono<Env>();
+
+brandRoutes.get("/brand/assets/:filename", async (c) => {
+  const asset = getJantBundledAsset(c.req.param("filename"));
+
+  if (!asset) {
+    return c.notFound();
+  }
+
+  return new Response(asset.body, {
+    headers: {
+      "Content-Type": asset.contentType,
+      "Cache-Control": "public, max-age=86400",
+    },
+  });
+});
+
+brandRoutes.get("/brand", async (c) => {
+  const i18n = getI18n(c);
+  const brandTheme = getLinenTheme();
+  if (!brandTheme) {
+    return c.notFound();
+  }
+
+  return renderBrandSpecPage(c, {
+    theme: brandTheme,
+    pageTitle: i18n._(
+      msg({
+        message: "Brand assets",
+        comment: "@context: Browser page title for the public brand asset page",
+      }),
     ),
     description: i18n._(
       msg({
-        message:
-          "Public brand spec for Jant, including palette, voice, and usage guidance.",
-        comment: "@context: Meta description for the public brand page",
+        message: "Download official Jant logos, icons, and preview assets.",
+        comment: "@context: Meta description for the public brand asset page",
       }),
-    ),
-    navData,
-    content: (
-      <BrandPage
-        theme={brandTheme}
-        currentMode={selectedMode}
-        sitePathPrefix={navData.sitePathPrefix}
-      />
     ),
   });
 });

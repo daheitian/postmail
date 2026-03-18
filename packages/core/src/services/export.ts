@@ -10,6 +10,7 @@ import type { PostService } from "./post.js";
 import type { PathService } from "./path.js";
 import type { CollectionService } from "./collection.js";
 import {
+  buildJantLogoSvgMarkup,
   HOME_BRANDING_LINK_LABEL,
   HOME_BRANDING_PREFIX,
   JANT_REPO_URL,
@@ -401,10 +402,11 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
 `;
 
 function buildIndexTemplate(showJantBrandingOnHome: boolean): string {
+  const brandingMark = buildJantLogoSvgMarkup("positive");
   const branding = showJantBrandingOnHome
     ? `
 <footer class="site-footer">
-  <p>${HOME_BRANDING_PREFIX} <a href="${JANT_REPO_URL}">${HOME_BRANDING_LINK_LABEL}</a></p>
+  <p>${HOME_BRANDING_PREFIX} <a href="${JANT_REPO_URL}">${brandingMark}<span>${HOME_BRANDING_LINK_LABEL}</span></a></p>
 </footer>`
     : "";
 
@@ -890,5 +892,17 @@ a:hover {
   text-align: center;
   font-size: 0.8125rem;
   color: var(--muted);
+}
+
+.site-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.site-footer a svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
 }
 `;

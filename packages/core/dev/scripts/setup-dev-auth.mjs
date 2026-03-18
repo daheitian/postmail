@@ -54,9 +54,10 @@ const password =
       !arg.startsWith("-") && arg !== process.argv[0] && arg !== process.argv[1],
   ) || DEFAULT_DEV_PASSWORD;
 const debugPort = Number(process.env.JANT_DEBUG_PORT || "19020");
-const localBaseUrl = "http://localhost:9020";
+const localPort = Number(process.env.PORT || "9020");
+const localBaseUrl = `http://localhost:${localPort}`;
 const debugBaseUrl = `http://localhost:${debugPort}`;
-const localtestBaseUrl = "http://jant.localtest.me:9020";
+const localtestBaseUrl = `http://jant.localtest.me:${localPort}`;
 const localtestDebugBaseUrl = `http://jant.localtest.me:${debugPort}`;
 
 let lines = readEnvLines();

@@ -152,6 +152,13 @@
       color-mix(in srgb, var(--site-divider) 82%, transparent);
   }
 
+  .jant-brand-mark {
+    display: block;
+    width: 1em;
+    height: 1em;
+    flex: none;
+  }
+
   .site-header-nav {
     display: flex;
     align-items: center;
@@ -4993,6 +5000,9 @@
   }
 
   .home-branding-credit a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.38rem;
     color: inherit;
     text-decoration: none;
     border-bottom: 0.5px solid
@@ -5006,6 +5016,12 @@
   .home-branding-credit a:focus-visible {
     color: var(--site-text-primary);
     border-color: currentColor;
+  }
+
+  .home-branding-mark {
+    width: 1rem;
+    height: 1rem;
+    margin-top: -0.03rem;
   }
 
   /* =========================================================================
@@ -6375,11 +6391,7 @@
     gap: 1.5rem;
   }
 
-  .brand-hero,
-  .brand-grid,
-  .brand-showcase,
-  .brand-rules-grid,
-  .brand-dark-panel {
+  .brand-hero {
     display: grid;
     gap: 1.25rem;
   }
@@ -6392,9 +6404,7 @@
   .brand-hero-copy,
   .brand-manifest,
   .brand-panel,
-  .brand-live-sheet,
-  .brand-rule-card,
-  .brand-dark-panel {
+  .brand-logo-card {
     border: 1px solid color-mix(in srgb, var(--site-divider) 86%, transparent);
     border-radius: 24px;
     background:
@@ -6412,10 +6422,20 @@
     padding: clamp(1.75rem, 4vw, 3rem);
   }
 
+  .brand-mark-lockup {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .brand-hero-mark {
+    width: clamp(2.9rem, 5vw, 4.2rem);
+    height: auto;
+  }
+
   .brand-manifest,
   .brand-panel,
-  .brand-rule-card,
-  .brand-dark-panel {
+  .brand-logo-card {
     padding: 1.5rem;
   }
 
@@ -6455,6 +6475,13 @@
     text-wrap: pretty;
   }
 
+  .brand-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
   .brand-keywords {
     display: flex;
     flex-wrap: wrap;
@@ -6475,16 +6502,13 @@
   }
 
   .brand-manifest-header {
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    gap: 1rem;
+    display: grid;
+    gap: 0.5rem;
     margin-bottom: 1rem;
   }
 
   .brand-manifest-header h2,
-  .brand-panel-title,
-  .brand-live-title {
+  .brand-panel-title {
     margin: 0;
     font-family: var(--font-heading);
     font-size: clamp(1.35rem, 2vw, 1.8rem);
@@ -6494,39 +6518,100 @@
     text-wrap: balance;
   }
 
-  .brand-manifest-swatches,
-  .brand-dark-swatches {
+  .brand-entry-grid {
     display: grid;
     gap: 0.85rem;
   }
 
-  .brand-spec-card {
+  .brand-entry-card {
     display: grid;
-    grid-template-columns: 4.25rem minmax(0, 1fr);
     gap: 0.9rem;
-    align-items: center;
-    padding: 0.85rem;
+    padding: 1rem;
     border-radius: 18px;
     background: color-mix(in srgb, var(--site-page-bg) 92%, white 8%);
     border: 1px solid color-mix(in srgb, var(--site-divider) 76%, transparent);
   }
 
-  .brand-spec-card-swatch {
+  .brand-entry-preview {
     width: 100%;
-    height: 4.25rem;
-    border-radius: 15px;
-    border: 1px solid
-      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    min-height: 5.75rem;
   }
 
-  .brand-spec-card-copy {
+  .brand-entry-surface,
+  .brand-entry-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    background:
+      radial-gradient(
+        circle at top,
+        color-mix(in srgb, var(--site-accent) 9%, transparent) 0%,
+        transparent 58%
+      ),
+      color-mix(in srgb, var(--site-page-bg) 94%, white 6%);
+  }
+
+  .brand-entry-surface {
+    min-height: 5.75rem;
+    padding: 1rem;
+  }
+
+  .brand-entry-surface-stack {
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .brand-entry-preview-dark {
+    color-scheme: dark;
+  }
+
+  .brand-entry-surface-dark {
+    background: var(--primary);
+    border-color: color-mix(in srgb, var(--primary) 74%, white 12%);
+  }
+
+  .brand-entry-tile {
+    width: clamp(4.6rem, 11vw, 5.4rem);
+    aspect-ratio: 1;
+    background: var(--primary);
+    box-shadow: 0 20px 34px -24px
+      color-mix(in srgb, var(--site-text-primary) 34%, transparent);
+  }
+
+  .brand-entry-mark {
+    width: clamp(2.6rem, 7vw, 3.5rem);
+    height: auto;
+  }
+
+  .brand-entry-copy {
     min-width: 0;
   }
 
-  .brand-spec-card-title {
-    margin: 0.25rem 0 0;
-    font-size: 1.02rem;
-    line-height: 1.25;
+  .brand-entry-files {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.45rem;
+  }
+
+  .brand-entry-filechip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    padding: 0.38rem 0.62rem;
+    border-radius: 999px;
+    border: 1px solid
+      color-mix(in srgb, var(--site-accent) 20%, var(--site-divider));
+    background: color-mix(in srgb, var(--site-page-bg) 92%, white 8%);
+    color: var(--site-text-primary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .brand-spec-card-value {
@@ -6538,108 +6623,197 @@
     overflow-wrap: anywhere;
   }
 
-  .brand-grid,
-  .brand-rules-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .brand-principles,
-  .brand-rule-list {
+  .brand-logo-resources {
     display: grid;
-    gap: 0.8rem;
-    margin: 1rem 0 0;
-    padding: 0;
-    list-style: none;
+    gap: 1.25rem;
   }
 
-  .brand-principles li,
-  .brand-rule-list li {
+  .brand-logo-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .brand-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .brand-logo-card {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .brand-panel-resource {
+    margin-top: 0.25rem;
+  }
+
+  .brand-manifest-body {
+    margin-top: 0;
+  }
+
+  .brand-manifest-actions {
+    margin-top: 1rem;
+    margin-bottom: 1.15rem;
+  }
+
+  .brand-guidance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+  }
+
+  .brand-guidance-card {
+    padding: 1rem 1.05rem;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--site-divider) 76%, transparent);
+    background: color-mix(in srgb, var(--site-page-bg) 93%, white 7%);
+  }
+
+  .brand-guidance-title {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.35;
+  }
+
+  .brand-guidance-body {
+    margin: 0.55rem 0 0;
     color: color-mix(
       in srgb,
       var(--site-text-secondary) 88%,
       var(--site-text-primary)
     );
-    line-height: 1.72;
+    line-height: 1.65;
   }
 
-  .brand-showcase {
-    grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
-    align-items: start;
-  }
-
-  .brand-live-sheet {
-    padding: clamp(1.5rem, 3vw, 2.3rem);
-  }
-
-  .brand-live-meta {
+  .brand-logo-preview {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    color: var(--site-text-secondary);
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
+    justify-content: center;
+    min-height: 13rem;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    background:
+      radial-gradient(
+        circle at top,
+        color-mix(in srgb, var(--site-accent) 9%, transparent) 0%,
+        transparent 58%
+      ),
+      color-mix(in srgb, var(--site-page-bg) 94%, white 6%);
+  }
+
+  .brand-logo-preview-dark {
+    background: var(--primary);
+  }
+
+  .brand-logo-preview-mark {
+    width: min(11rem, 56%);
+    height: auto;
+  }
+
+  .brand-icon-preview {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 13rem;
+    padding: 1.25rem;
+    border-radius: 20px;
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    background:
+      radial-gradient(
+        circle at top,
+        color-mix(in srgb, var(--site-accent) 9%, transparent) 0%,
+        transparent 58%
+      ),
+      color-mix(in srgb, var(--site-page-bg) 94%, white 6%);
+  }
+
+  .brand-icon-preview-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(4.5rem, 16vw, 6rem);
+    aspect-ratio: 1;
+    border-radius: 1.35rem;
+    background: var(--primary);
+    box-shadow: 0 20px 34px -24px
+      color-mix(in srgb, var(--site-text-primary) 34%, transparent);
+  }
+
+  .brand-icon-preview-tile-light {
+    background:
+      radial-gradient(
+        circle at top,
+        color-mix(in srgb, var(--site-accent) 10%, transparent) 0%,
+        transparent 62%
+      ),
+      color-mix(in srgb, var(--site-page-bg) 95%, white 5%);
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    box-shadow: 0 20px 34px -24px
+      color-mix(in srgb, var(--site-text-primary) 18%, transparent);
+  }
+
+  .brand-icon-preview-mark {
+    width: 56%;
+    height: auto;
+  }
+
+  .brand-icon-preview-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    padding: 0.42rem 0.7rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--site-accent) 13%, var(--site-page-bg));
+    border: 1px solid
+      color-mix(in srgb, var(--site-accent) 22%, var(--site-divider));
+    color: var(--site-text-primary);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
-  .brand-live-body {
-    margin: 1rem 0 0;
-    color: var(--site-text-primary);
-    line-height: 1.78;
+  .brand-logo-copy {
+    display: grid;
+    gap: 0.4rem;
   }
 
-  .brand-live-quote {
-    margin: 1.15rem 0 0;
-    padding: 0.9rem 0 0 1rem;
-    border-left: 2px solid
-      color-mix(in srgb, var(--site-accent) 26%, var(--site-divider));
+  .brand-logo-title {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.25;
+  }
+
+  .brand-logo-body {
+    margin: 0;
     color: color-mix(
       in srgb,
-      var(--site-text-secondary) 76%,
+      var(--site-text-secondary) 88%,
       var(--site-text-primary)
     );
-    font-family: var(--font-serif);
-    font-size: 1.18rem;
-    line-height: 1.56;
+    line-height: 1.68;
   }
 
-  .brand-live-actions {
+  .brand-logo-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    margin-top: 1.4rem;
-  }
-
-  .brand-rule-card-do {
-    background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--success) 7%, transparent) 0%,
-        transparent 44%
-      ),
-      color-mix(in srgb, var(--site-page-bg) 96%, white 4%);
-  }
-
-  .brand-rule-card-avoid {
-    background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--destructive) 6%, transparent) 0%,
-        transparent 44%
-      ),
-      color-mix(in srgb, var(--site-page-bg) 96%, white 4%);
-  }
-
-  .brand-dark-panel {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    align-items: start;
   }
 
   @media (max-width: 959px) {
     .brand-hero,
-    .brand-grid,
-    .brand-showcase,
-    .brand-rules-grid,
-    .brand-dark-panel {
+    .brand-guidance-grid,
+    .brand-logo-grid,
+    .brand-icon-grid {
       grid-template-columns: 1fr;
     }
   }
@@ -6648,9 +6822,7 @@
     .brand-hero-copy,
     .brand-manifest,
     .brand-panel,
-    .brand-live-sheet,
-    .brand-rule-card,
-    .brand-dark-panel {
+    .brand-logo-card {
       padding: 1.1rem;
       border-radius: 20px;
     }
@@ -6660,16 +6832,36 @@
       font-size: clamp(2.2rem, 12vw, 3.4rem);
     }
 
-    .brand-manifest-header {
-      flex-direction: column;
+    .brand-mark-lockup {
+      gap: 0.65rem;
     }
 
-    .brand-spec-card {
-      grid-template-columns: 1fr;
+    .brand-logo-preview {
+      min-height: 10.5rem;
+      padding: 1.1rem;
     }
 
-    .brand-spec-card-swatch {
-      height: 3.3rem;
+    .brand-icon-preview {
+      min-height: 10.5rem;
+      padding: 1rem;
+    }
+
+    .brand-icon-preview-tile {
+      width: 4.5rem;
+      border-radius: 1.15rem;
+    }
+
+    .brand-entry-card {
+      padding: 0.85rem;
+    }
+
+    .brand-entry-surface {
+      min-height: 4.9rem;
+    }
+
+    .brand-entry-tile {
+      width: 4.5rem;
+      border-radius: 1.15rem;
     }
   }
 

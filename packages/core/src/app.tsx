@@ -57,6 +57,10 @@ import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
 import { getSiteUrl } from "./lib/env.js";
 import { getStartupConfigurationErrorPage } from "./lib/startup-config.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
+import {
+  getDefaultJantAppleTouchIconBytes,
+  getDefaultJantFaviconIcoBytes,
+} from "./lib/jant-branding.js";
 import { isAssetPath } from "./lib/asset-path.js";
 import {
   getSitePathPrefix,
@@ -292,7 +296,14 @@ export function createApp(): App {
   // Favicon routes - serve from DB settings (small files, avoids R2 round-trip)
   app.get("/favicon.ico", async (c) => {
     const data = await c.var.services.settings.get("SITE_FAVICON_ICO");
-    if (!data) return c.notFound();
+    if (!data) {
+      return new Response(getDefaultJantFaviconIcoBytes(), {
+        headers: {
+          "Content-Type": "image/x-icon",
+          "Cache-Control": "public, max-age=86400",
+        },
+      });
+    }
 
     return new Response(base64ToUint8Array(data), {
       headers: {
@@ -307,10 +318,24 @@ export function createApp(): App {
     const storageKey = await c.var.services.settings.get(
       "SITE_FAVICON_APPLE_TOUCH",
     );
-    if (!storage || !storageKey) return c.notFound();
+    if (!storage || !storageKey) {
+      return new Response(getDefaultJantAppleTouchIconBytes(), {
+        headers: {
+          "Content-Type": "image/png",
+          "Cache-Control": "public, max-age=86400",
+        },
+      });
+    }
 
     const object = await storage.get(storageKey);
-    if (!object) return c.notFound();
+    if (!object) {
+      return new Response(getDefaultJantAppleTouchIconBytes(), {
+        headers: {
+          "Content-Type": "image/png",
+          "Cache-Control": "public, max-age=86400",
+        },
+      });
+    }
 
     return new Response(object.body, {
       headers: {

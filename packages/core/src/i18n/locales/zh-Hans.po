@@ -51,11 +51,6 @@ msgstr "301 (永久)"
 msgid "302 (Temporary)"
 msgstr "302 (临时)"
 
-#. @context: Hero title on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "A calm writing brand built around absinthe green and warm linen."
-msgstr "一个围绕苦艾绿与暖亚麻色建立的平静书写品牌。"
-
 #. @context: Search snippet prefix on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "A calmer accent makes"
@@ -67,6 +62,11 @@ msgstr "更柔和的强调色会让"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "A calmer, warmer accent makes the default theme feel quieter and more intentional."
 msgstr "更平静、更温暖的强调色，让默认主题更安静，也更有分寸。"
+
+#. @context: Section title for the usage guidance section on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "A few simple rules."
+msgstr ""
 
 #. @context: Second paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -87,17 +87,17 @@ msgstr "用于在真实阅读环境中检查默认调色板的长篇文章示例
 msgid "A practical checklist"
 msgstr "实用清单"
 
-#. @context: Showcase quote on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "A quiet brand still leaves a signature. It simply does it without urgency."
-msgstr "沉静的品牌依然会留下印记。它只是从容地做到这一点。"
-
 #. @context: Excerpt for the sample quote post
 #. @context: Plain-text summary for the sample quote post
 #: src/ui/pages/ThemeSamplePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "A quote card for judging accent color against softer, citation-heavy content."
 msgstr "用于在更柔和、引用密集的内容上评估强调色的引用卡片。"
+
+#. @context: Description for the square logo PNG asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "A ready-made 1:1 PNG for decks, mockups, directories, and other square placements."
+msgstr ""
 
 #. @context: Excerpt for the sample link post
 #. @context: Plain-text summary for the sample link post
@@ -111,6 +111,11 @@ msgstr "用于检查语气是否偏向编辑性而非宣传性的参考链接"
 msgid "A short intro for search engines and feed readers. Plain text only."
 msgstr "供搜索引擎和订阅源阅读器使用的简短简介。仅限纯文本。"
 
+#. @context: Description for the brand pack card
+#: src/ui/pages/BrandPage.tsx
+msgid "A single ZIP with the main logo, reverse logo, square PNG, brand tile, favicon, Apple touch icon, and social preview image."
+msgstr ""
+
 #. @context: Main sample article title
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "A softer blue feels more like ink than product chrome."
@@ -120,26 +125,6 @@ msgstr "较柔和的蓝色感觉更像墨水，而不是产品镀铬的光泽。
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "About this blog"
 msgstr "关于此博客"
-
-#. @context: Name of the secondary accent swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Absinthe Accent"
-msgstr "苦艾强调色"
-
-#. @context: Name of the primary brand swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Absinthe Green"
-msgstr "苦艾绿"
-
-#. @context: Body copy on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Absinthe Green is the brand center. Warm Linen keeps the space soft. Soft Charcoal carries most of the weight so the interface never needs to shout."
-msgstr "苦艾绿是品牌中心。暖亚麻色让空间保持柔和。柔炭色承担大部分阅读重量，让界面不必大声说话。"
-
-#. @context: Showcase title on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Absinthe Green should feel like a mark in the margin, not a spotlight."
-msgstr "苦艾绿应该像页边的一笔记号，而不是聚光灯。"
 
 #. @context: Thread helper text on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -277,6 +262,11 @@ msgstr "API 令牌"
 msgid "Appearance"
 msgstr "外观"
 
+#. @context: Title for the apple touch icon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Apple touch icon"
+msgstr ""
+
 #. @context: Appearance settings description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Applies to your entire site, including admin pages. Pick a palette, then choose whether it follows the system or stays fixed."
@@ -318,9 +308,7 @@ msgstr "作者（可选）"
 
 #. @context: Theme mode option label
 #. @context: Theme mode option on sample page
-#. @context: Theme mode option on the brand page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-#: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Auto"
 msgstr "自动"
@@ -342,11 +330,6 @@ msgstr "头像"
 msgid "Avatar display updated."
 msgstr "头像显示已更新。"
 
-#. @context: Section kicker on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Avoid"
-msgstr "避免"
-
 #. @context: Link back from the new post page
 #: src/ui/pages/ComposePage.tsx
 msgid "Back"
@@ -356,13 +339,6 @@ msgstr "返回"
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Backup downloaded"
 msgstr "备份已下载"
-
-#. @context: Label for the paper swatch
-#. @context: Role label for dark background swatch
-#: src/ui/pages/BrandPage.tsx
-#: src/ui/pages/BrandPage.tsx
-msgid "Base surface"
-msgstr "基底表面"
 
 #. @context: Settings item description for API tokens
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -384,30 +360,26 @@ msgstr "在删除之前，请下载所有内容的备份。删除后将无法恢
 msgid "Blog Avatar"
 msgstr "博客头像"
 
-#. @context: Browser page title for the public brand page
+#. @context: Browser page title for the public brand asset page
+#. @context: Eyebrow on the public brand asset page
 #: src/routes/pages/brand.tsx
-msgid "Brand"
-msgstr "品牌"
-
-#. @context: Accessible label for the brand keyword list
 #: src/ui/pages/BrandPage.tsx
-msgid "Brand attributes"
-msgstr "品牌属性"
+msgid "Brand assets"
+msgstr ""
 
-#. @context: Label for the primary brand swatch
+#. @context: Title for the brand pack card
+#. @context: Title for the brand pack card
 #: src/ui/pages/BrandPage.tsx
-msgid "Brand core"
-msgstr "品牌主色"
+#: src/ui/pages/BrandPage.tsx
+msgid "Brand pack"
+msgstr ""
 
-#. @context: Section kicker on the public brand page
+#. @context: Asset keyword on the public brand asset page
+#. @context: Title for the brand tile asset card
 #: src/ui/pages/BrandPage.tsx
-msgid "Brand logic"
-msgstr "品牌理念"
-
-#. @context: Meta label on the public brand page
 #: src/ui/pages/BrandPage.tsx
-msgid "Brand note"
-msgstr "品牌 笔记"
+msgid "Brand tile"
+msgstr ""
 
 #. @context: Breadcrumb label on collection detail page
 #. @context: Breadcrumb label on collection editor page
@@ -421,20 +393,25 @@ msgstr "面包屑导航"
 msgid "Browse all icons"
 msgstr "浏览全部图标"
 
-#. @context: Role label for dark primary swatch
+#. @context: Secondary hero button label to jump to the file list
 #: src/ui/pages/BrandPage.tsx
-msgid "Button tone"
-msgstr "按钮色调"
+msgid "Browse files"
+msgstr ""
+
+#. @context: Usage label for the favicon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Browser tab"
+msgstr ""
+
+#. @context: Usage label for the brand tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Built-in background"
+msgstr ""
 
 #. @context: Sample note post second paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Buttons can stay steady, but links, thread markers, and subtle emphasis should feel closer to ink on paper than dashboard chrome."
 msgstr "按钮可以保持稳重，但链接、帖子串标记和细微的强调应该更像纸上的墨迹，而不是仪表盘的装饰"
-
-#. @context: Brand principle on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Calm, not sleepy."
-msgstr "平静，但不昏昏欲睡。"
 
 #. @context: Button label to dismiss a dialog or action
 #. @context: Button label to dismiss a dialog or action
@@ -477,6 +454,16 @@ msgstr "设置新密码."
 #: src/ui/dash/appearance/FontThemeContent.tsx
 msgid "Choose a typographic direction for your site. Each theme changes both the font pairing and the reading rhythm."
 msgstr "为你的站点选择一种排版方向。每个主题都会同时改变字体搭配和阅读节奏。"
+
+#. @context: Body copy for the logo downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Choose the standard logo for most placements and the reverse logo when you need more contrast."
+msgstr ""
+
+#. @context: Guidance body on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Choose the standard logo for websites, docs, directories, and editorial layouts."
+msgstr ""
 
 #. @context: Archive filter button label to clear the active filter
 #. @context: Archive filter button label to clear the active filter
@@ -577,16 +564,6 @@ msgstr "确认新密码"
 msgid "Confirm Password"
 msgstr "确认密码"
 
-#. @context: Label for the secondary accent swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Content accent"
-msgstr "内容强调色"
-
-#. @context: Positive brand usage guidance on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Content links, thread markers, and quiet emphasis."
-msgstr "内容链接、帖子串标记和低调强调。"
-
 #. @context: Controls section heading on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Controls"
@@ -608,11 +585,6 @@ msgstr "复制令牌"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Copy your token now — it won't be shown again."
 msgstr "现在复制你的令牌 — 它将不再显示。"
-
-#. @context: Heading for the core palette card
-#: src/ui/pages/BrandPage.tsx
-msgid "Core palette"
-msgstr "核心调色板"
 
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
@@ -719,37 +691,17 @@ msgstr "危险区"
 
 #. @context: Theme mode option label
 #. @context: Theme mode option on sample page
-#. @context: Theme mode option on the brand page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-#: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Dark"
 msgstr "深色"
 
-#. @context: Label for dark accent swatch on the public brand page
+#. @context: Usage label for the reverse logo asset card
+#. @context: Usage label for the reverse logo card
 #: src/ui/pages/BrandPage.tsx
-msgid "Dark accent"
-msgstr "深色强调色"
-
-#. @context: Body copy on the public brand page
 #: src/ui/pages/BrandPage.tsx
-msgid "Dark Jant should still feel like paper and ink translated into evening light. The brand green becomes softer and milkier, but it should not turn electric."
-msgstr "Dark Jant 应该仍然给人像是在暮光中把纸与墨转译过来的感觉。品牌绿色会变得更柔和、更乳白，但不应变成刺目的电光色"
-
-#. @context: Section kicker on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Dark mode"
-msgstr "深色模式"
-
-#. @context: Label for dark background swatch on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Dark paper"
-msgstr "深色背景"
-
-#. @context: Label for dark primary swatch on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Dark primary"
-msgstr "深色主色"
+msgid "Dark backgrounds"
+msgstr ""
 
 #. @context: Settings group label for data export/import
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -757,14 +709,26 @@ msgid "Data"
 msgstr "数据"
 
 #. @context: Badge label on sample page
+#. @context: Usage label for the default logo asset card
+#: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Default"
 msgstr "默认"
+
+#. @context: Usage label for the default logo card
+#: src/ui/pages/BrandPage.tsx
+msgid "Default logo"
+msgstr ""
 
 #. @context: Inline link label in the sample link post body
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "default note sample"
 msgstr "默认笔记示例"
+
+#. @context: Description for the social preview image asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Default preview image for social shares and link unfurls."
+msgstr ""
 
 #. @context: Button to delete custom URL
 #. @context: Button to delete item
@@ -892,6 +856,11 @@ msgstr "鲜明氛围"
 msgid "Divider"
 msgstr "分隔线"
 
+#. @context: Guidance body on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Do not recolor, stretch, rotate, outline, or add effects to the logo."
+msgstr ""
+
 #. @context: Confirm close action sheet subtitle when editing a published post
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Do you want to publish your changes or discard them?"
@@ -923,10 +892,40 @@ msgstr "下载完整的 Zola 导出为 .zip 归档"
 msgid "Download Backup"
 msgstr "下载备份"
 
+#. @context: Primary hero button label for the brand pack ZIP
+#: src/ui/pages/BrandPage.tsx
+msgid "Download Brand Pack"
+msgstr ""
+
 #. @context: Alert when backup download fails during account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "Download failed. Please try again."
 msgstr "下载失败。请重试。"
+
+#. @context: Download button label for a non-SVG brand asset
+#: src/ui/pages/BrandPage.tsx
+msgid "Download file"
+msgstr ""
+
+#. @context: Meta description for the public brand asset page
+#: src/routes/pages/brand.tsx
+msgid "Download official Jant logos, icons, and preview assets."
+msgstr ""
+
+#. @context: Download button label for a PNG logo asset
+#: src/ui/pages/BrandPage.tsx
+msgid "Download PNG"
+msgstr ""
+
+#. @context: Download button label for a logo asset
+#: src/ui/pages/BrandPage.tsx
+msgid "Download SVG"
+msgstr ""
+
+#. @context: Hero title on the public brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Download the official Jant logo, icons, and preview files."
+msgstr ""
 
 #. @context: Step 1 heading — user must download backup before deleting
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -996,11 +995,6 @@ msgstr "编辑帖子"
 msgid "Editorial interfaces worth borrowing from"
 msgstr "值得借鉴的编辑界面"
 
-#. @context: Positive brand usage guidance on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Editorial surfaces where the page should feel soft and composed."
-msgstr "用于编辑类界面，当页面应呈现柔和且沉稳的感觉时使用。"
-
 #. @context: Setup/signin form field - email
 #. @context: Setup/signin form field - email
 #: src/routes/auth/setup.tsx
@@ -1036,6 +1030,21 @@ msgstr "条目"
 msgid "entry"
 msgstr "条目"
 
+#. @context: Usage label for the brand pack card
+#: src/ui/pages/BrandPage.tsx
+msgid "Everything in one download"
+msgstr ""
+
+#. @context: Section title for the quick-start panel on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Everything most people need is in one ZIP."
+msgstr ""
+
+#. @context: Intro paragraph on the public brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Everything on this page is ready to use for articles, launch posts, directories, and product coverage."
+msgstr ""
+
 #. @context: Settings item description for account settings on the settings home page when demo restrictions are enabled
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Export and demo limits"
@@ -1045,6 +1054,11 @@ msgstr "导出与演示限制"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Export Site"
 msgstr "导出站点"
+
+#. @context: Title for the favicon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Favicon"
+msgstr ""
 
 #. @context: Settings item description for avatar
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1173,6 +1187,11 @@ msgstr "给它起个标题..."
 msgid "Guide the eye without taking over the layout."
 msgstr "引导视线而不主导布局."
 
+#. @context: Section kicker for the usage guidance section on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Guidelines"
+msgstr ""
+
 #. @context: Settings item description for navigation
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Header links, featured tab, and menu balance"
@@ -1195,25 +1214,15 @@ msgstr "帮助屏幕阅读器描述图片"
 msgid "Highest rated"
 msgstr "评分最高"
 
+#. @context: Description for the apple touch icon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Home screen icon for iPhone and iPad shortcuts."
+msgstr ""
+
 #. @context: Toast after saving home default view setting
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Home view saved"
 msgstr "主页视图已保存"
-
-#. @context: Section title on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "How Jant should feel in one glance."
-msgstr "让人一眼就能感受到 Jant 的风格"
-
-#. @context: Brand keyword on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Humble"
-msgstr "Humble"
-
-#. @context: Brand principle on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Humble, not anonymous."
-msgstr "谦逊, 不匿名."
 
 #. @context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1224,6 +1233,11 @@ msgstr "我想删除 {siteName}"
 #: src/ui/shared/collection-management-labels.ts
 msgid "Icons"
 msgstr "图标"
+
+#. @context: Section kicker for the icon and preview downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Icons and previews"
+msgstr ""
 
 #. @context: Closing paragraph on the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1240,15 +1254,10 @@ msgstr "如果这一页显得太有品牌姿态，最先该收一收的是默认
 msgid "Images"
 msgstr "图片"
 
-#. @context: Section title on the public brand page
+#. @context: Accessible label for the asset keyword list on the public brand page
 #: src/ui/pages/BrandPage.tsx
-msgid "In dark mode, keep the same calm. Only lift the contrast."
-msgstr "在深色模式下，保持同样的宁静。仅提升对比度。"
-
-#. @context: Section kicker on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "In use"
-msgstr "使用中"
+msgid "Included assets"
+msgstr "包含资源"
 
 #. @context: Site accent sample badge
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1270,30 +1279,35 @@ msgstr "而不是把它当作孤立的色样来判断。"
 msgid "Interfaces for reading should guide the eye, not keep asking for attention."
 msgstr "供阅读的界面应该引导视线，而不是不断争取注意力。"
 
+#. @context: Usage label for the apple touch icon asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "iOS home screen"
+msgstr ""
+
 #. @context: Checkbox for allowing search engine indexing
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "It's OK for search engines to index my site"
 msgstr "允许搜索引擎索引我的网站"
 
-#. @context: Eyebrow on the public brand page
+#. @context: Accessible label for the Jant logo mark
 #: src/ui/pages/BrandPage.tsx
-msgid "Jant brand"
-msgstr "Jant 品牌"
+msgid "Jant logo"
+msgstr ""
 
 #. @context: Body paragraph on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Jant looks best when the accent feels editorial. Buttons can stay sturdy, but inline emphasis should feel like a pen mark, not a dashboard highlight."
 msgstr "Jant 在强调采用编辑式风格时效果最好。按钮可以保持稳重，但行内强调应该像笔迹，而不是仪表盘式的高亮。"
 
-#. @context: Intro paragraph on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Jant should feel unhurried, private, and confident without becoming polished product theater. The palette is meant to read like paper, ink, and a quiet mark left in the margin."
-msgstr "Jant 应该让人感到从容、私密且自信，而不会变成过度雕饰的产品秀场。配色旨在呈现纸张、墨水以及留在页边的那抹静谧痕迹。"
-
 #. @context: Active nav link label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Journal"
 msgstr "日志"
+
+#. @context: Guidance title on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Keep the artwork unchanged."
+msgstr ""
 
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1345,11 +1359,6 @@ msgstr "上次使用 {0}"
 msgid "Latest"
 msgstr "最新"
 
-#. @context: Name of the success swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Leaf Green"
-msgstr "叶绿"
-
 #. @context: Suffix after Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "lets you override any theme variable."
@@ -1357,9 +1366,7 @@ msgstr "可让你覆盖任意主题变量。"
 
 #. @context: Theme mode option label
 #. @context: Theme mode option on sample page
-#. @context: Theme mode option on the brand page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
-#: src/ui/pages/BrandPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Light"
 msgstr "浅色"
@@ -1387,11 +1394,6 @@ msgstr "链接到文章归档页"
 #: src/ui/shared/navigation-labels.ts
 msgid "Link to your collections page"
 msgstr "链接到你的合集页"
-
-#. @context: Role label for dark accent swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Link tone"
-msgstr "链接色调"
 
 #. @context: Post format label plural - links
 #: src/ui/pages/ArchivePage.tsx
@@ -1425,6 +1427,22 @@ msgstr "实时主题控制"
 msgid "Load more"
 msgstr "加载更多"
 
+#. @context: Asset keyword on the public brand asset page
+#. @context: Asset keyword on the public brand asset page
+#. @context: Title for the default logo asset card
+#. @context: Title for the default logo card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Logo"
+msgstr ""
+
+#. @context: Section kicker for the logo downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Logos"
+msgstr ""
+
 #. @context: Ordered list item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Look at the footer metadata last, to make sure the accent is not fighting the typography."
@@ -1456,11 +1474,6 @@ msgstr "3 月 14 日"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "March 15"
 msgstr "3月15日"
-
-#. @context: Meta label on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "March 2026"
-msgstr "2026年3月"
 
 #. @context: Placeholder hint for markdown-enabled textareas
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -1510,11 +1523,6 @@ msgstr "更多配色"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Muted"
 msgstr "柔和"
-
-#. @context: Brand principle explanation on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Muted colors can still carry rhythm and hierarchy when typography does the heavy lifting."
-msgstr "当排版承担主要任务时，柔和的颜色仍然可以传达节奏和层次。"
 
 #. @context: Collection title placeholder
 #: src/ui/shared/collection-management-labels.ts
@@ -1692,15 +1700,25 @@ msgstr "这里还没有内容。"
 msgid "Oldest first"
 msgstr "最旧优先"
 
-#. @context: Section title on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "One color family, three jobs."
-msgstr "一种色系，三种用途。"
-
 #. @context: Ordered list item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Open a few links and check whether they still feel native to the page."
 msgstr "打开几个链接，检查它们是否仍然像页面原生的一部分"
+
+#. @context: Button label to open a raw brand asset in the browser
+#: src/ui/pages/BrandPage.tsx
+msgid "Open raw asset"
+msgstr ""
+
+#. @context: Button label to open the raw PNG asset in the browser
+#: src/ui/pages/BrandPage.tsx
+msgid "Open raw PNG"
+msgstr ""
+
+#. @context: Button label to open the raw SVG asset in the browser
+#: src/ui/pages/BrandPage.tsx
+msgid "Open raw SVG"
+msgstr ""
 
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1723,16 +1741,6 @@ msgstr "整理"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Outline"
 msgstr "线框"
-
-#. @context: Negative brand usage guidance on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Over-polishing the layout until the writing stops feeling personal."
-msgstr "过度润饰布局，直到文字不再显得有人情味。"
-
-#. @context: Negative brand usage guidance on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Pairing it with bright SaaS blues or neon greens."
-msgstr "将其与鲜艳的SaaS蓝色或霓虹绿色搭配."
 
 #. @context: Settings item description for color theme
 #: src/ui/dash/settings/SettingsRootContent.tsx
@@ -1796,11 +1804,6 @@ msgstr "路径"
 msgid "Permanently delete all data and reset the blog"
 msgstr "永久删除所有数据并重置博客"
 
-#. @context: Brand keyword on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Personal"
-msgstr "个人"
-
 #. @context: Post badge - pinned
 #: src/ui/dash/StatusBadge.tsx
 msgid "Pinned"
@@ -1849,30 +1852,25 @@ msgstr "上一页"
 msgid "Primary"
 msgstr "主色"
 
-#. @context: Positive brand usage guidance on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Primary actions that need confidence, not flash."
-msgstr "主要操作应体现自信，而非浮夸。"
-
 #. @context: Table cell in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Primary button"
 msgstr "主按钮"
 
-#. @context: Body copy on the public brand page
+#. @context: Description for the default logo asset card
 #: src/ui/pages/BrandPage.tsx
-msgid "Primary is used for committed actions. Site accent is used for content links and thread cues. Success is intentionally cleaner so state feedback does not blur into the brand voice."
-msgstr "主色用于确定性操作。站点强调色用于内容链接和帖子串提示。成功色刻意保持更简洁，以免状态反馈与品牌语调混淆。"
+msgid "Primary Jant logo for websites, docs, press coverage, and editorial layouts."
+msgstr ""
+
+#. @context: Section title for the logo downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Primary logo files"
+msgstr ""
 
 #. @context: Archive visibility filter - private posts
 #: src/ui/pages/ArchivePage.tsx
 msgid "Private"
 msgstr "私密"
-
-#. @context: Brand principle on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Private, not precious."
-msgstr "私密，但不矫情."
 
 #. @context: Avatar upload button text while generating favicon variants
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -1883,11 +1881,6 @@ msgstr "处理中..."
 #: src/ui/pages/ArchivePage.tsx
 msgid "Public"
 msgstr "公开"
-
-#. @context: Meta description for the public brand page
-#: src/routes/pages/brand.tsx
-msgid "Public brand spec for Jant, including palette, voice, and usage guidance."
-msgstr "Jant 的公开品牌规范，涵盖配色、语气和使用指南。"
 
 #. @context: Confirm close action sheet - publish update button for editing published post
 #. @context: Primary button label on sample page
@@ -1905,11 +1898,6 @@ msgstr "已发布"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Published!"
 msgstr "已发布！"
-
-#. @context: Brand keyword on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Quiet"
-msgstr "安静"
 
 #. @context: Search highlight text on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1955,11 +1943,6 @@ msgstr "引用"
 msgid "Rate"
 msgstr "评分"
 
-#. @context: Showcase content link on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "read the full brand note"
-msgstr "阅读完整品牌笔记"
-
 #. @context: Ordered list item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Read the page from top to bottom without looking at the swatches."
@@ -1979,11 +1962,6 @@ msgstr "了解原因"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Reading"
 msgstr "阅读"
-
-#. @context: Label for the text swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Reading ink"
-msgstr "阅读墨色"
 
 #. @context: Section heading for real post component samples on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2049,6 +2027,17 @@ msgstr "重置链接"
 #: src/routes/auth/reset.tsx
 msgid "Reset Password"
 msgstr "重置密码"
+
+#. @context: Asset keyword on the public brand asset page
+#. @context: Title for the reverse logo asset card
+#. @context: Title for the reverse logo card
+#. @context: Title for the reverse logo card
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+#: src/ui/pages/BrandPage.tsx
+msgid "Reverse logo"
+msgstr ""
 
 #. @context: Button to revoke API token
 #. @context: Button to revoke a session
@@ -2203,10 +2192,10 @@ msgstr "设置"
 msgid "Settings updated."
 msgstr "设置已更新。"
 
-#. @context: Showcase paragraph suffix on the public brand page
+#. @context: Usage label for the social preview image asset card
 #: src/ui/pages/BrandPage.tsx
-msgid "should feel present, but it should never start acting like a product CTA inside the paragraph."
-msgstr "应该有存在感，但绝不应该在段落中表现得像产品的 CTA。"
+msgid "Shared links"
+msgstr ""
 
 #. @context: Checkbox for showing the optional Jant credit link on the home page
 #: src/ui/dash/settings/GeneralContent.tsx
@@ -2286,10 +2275,20 @@ msgstr "网站页脚"
 msgid "Site Name"
 msgstr "站点名称"
 
-#. @context: Name of the text swatch
+#. @context: Description for the favicon asset card
 #: src/ui/pages/BrandPage.tsx
-msgid "Soft Charcoal"
-msgstr "柔和木炭色"
+msgid "Small browser icon used in tabs and bookmarks."
+msgstr ""
+
+#. @context: Asset keyword on the public brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Social preview"
+msgstr ""
+
+#. @context: Title for the social preview image asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Social preview image"
+msgstr ""
 
 #. @context: Color theme preview card body sentence
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2327,10 +2326,25 @@ msgstr "排序方式"
 msgid "Source link (optional)"
 msgstr "来源链接 (可选)"
 
-#. @context: Label for the success swatch
+#. @context: Section title for the icon and preview downloads section
 #: src/ui/pages/BrandPage.tsx
-msgid "Status color"
-msgstr "状态颜色"
+msgid "Square assets for avatars, apps, browsers, and shared links"
+msgstr ""
+
+#. @context: Asset keyword on the public brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Square logo"
+msgstr ""
+
+#. @context: Title for the square logo PNG asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Square logo PNG"
+msgstr ""
+
+#. @context: Heading for the quick-start panel on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Start here"
+msgstr ""
 
 #. @context: Table cell in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2356,6 +2370,11 @@ msgstr "表面"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Switch the palette and mode without opening settings or changing the active site theme."
 msgstr "在不打开设置或更改当前站点主题的情况下切换调色板和模式。"
+
+#. @context: Guidance body on the brand asset page
+#: src/ui/pages/BrandPage.tsx
+msgid "Switch to the white logo when the standard green version would lose contrast."
+msgstr ""
 
 #. @context: Nav item type badge
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -2406,15 +2425,10 @@ msgstr "该主题不可用。请选择另一个。"
 msgid "The best default color is the one you notice only after reading for a while."
 msgstr "最合适的默认颜色，是那种只有在阅读一段时间后才会注意到的颜色。"
 
-#. @context: Body copy on the public brand page
+#. @context: Intro copy for the quick-start panel on the brand asset page
 #: src/ui/pages/BrandPage.tsx
-msgid "The brand is working when the writing still leads, but the interface quietly holds the page together. Links should feel editorial. Buttons should feel steady. Metadata should stay out of the way."
-msgstr "当文字仍然主导，而界面默默地维系页面时，品牌就起作用了。链接应该有编辑感。按钮应给人稳重的感觉。元数据应尽量不显眼。"
-
-#. @context: Section title on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "The brand should read like a page first."
-msgstr "品牌首先应当像页面一样可读"
+msgid "The brand pack includes SVG logos, a transparent square PNG, the brand tile, favicon, Apple touch icon, and the default social preview image."
+msgstr ""
 
 #. @context: Custom URL path help text
 #: src/routes/dash/custom-urls.tsx
@@ -2436,20 +2450,10 @@ msgstr "默认强调色应以可读性为先。先将其与"
 msgid "The default accent works best when it reads like a fountain-pen underline. Compare it against the"
 msgstr "默认强调色在像钢笔下划线那样呈现时效果最佳。将其与"
 
-#. @context: Brand principle explanation on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "The green note gives Jant a recognizable identity without turning the brand into a loud signature."
-msgstr "这一点绿色让 Jant 有了可辨识的身份，但不会把品牌变成吵闹的签名。"
-
 #. @context: Caption for the sample detail article image
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "The image should sit quietly inside the article instead of feeling like a card preview."
 msgstr "图片应安静地置于文章中，而不是像卡片预览那样突出。"
-
-#. @context: Brand principle explanation on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "The palette should feel personal and lived-in, not premium for the sake of premium."
-msgstr "配色应该显得亲切、有生活气息，而不是为了高端而显得高端。"
 
 #. @context: Description for max visible nav links, explains overflow behavior
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -2512,11 +2516,6 @@ msgstr "该合集为空。从编辑器添加文章。"
 #: src/ui/shared/collection-management-labels.ts
 msgid "This is the last part of the collection link."
 msgstr "这是合集链接的最后一段。"
-
-#. @context: Showcase paragraph prefix on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "This is the test: a content link like"
-msgstr "这是测试：像这样的内容链接"
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2625,6 +2624,11 @@ msgstr "令牌名称"
 msgid "Tokens let you access the API from scripts, shortcuts, and other tools without signing in."
 msgstr "令牌可让您在不登录的情况下从脚本、快捷方式和其他工具访问 API。"
 
+#. @context: Usage label for the square logo PNG asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "Transparent square"
+msgstr ""
+
 #. @context: Title on the public theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Tune color in a real reading context"
@@ -2654,11 +2658,6 @@ msgstr "输入引用..."
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Typography choices and reading texture"
 msgstr "排版选项与阅读体验"
-
-#. @context: Brand keyword on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Unhurried"
-msgstr "从容"
 
 #. @context: Fallback label when session device can't be identified
 #: src/ui/dash/settings/SessionsContent.tsx
@@ -2718,25 +2717,35 @@ msgstr "URL"
 msgid "Usage"
 msgstr "用法"
 
-#. @context: Showcase primary button on the public brand page
+#. @context: Guidance title on the brand asset page
 #: src/ui/pages/BrandPage.tsx
-msgid "Use Absinthe Green"
-msgstr "使用苦艾绿"
+msgid "Use the logo on light backgrounds."
+msgstr ""
 
-#. @context: Section kicker on the public brand page
+#. @context: Guidance title on the brand asset page
 #: src/ui/pages/BrandPage.tsx
-msgid "Use it for"
-msgstr "可用于"
+msgid "Use the reverse logo on dark backgrounds."
+msgstr ""
+
+#. @context: Body copy for the icon and preview downloads section
+#: src/ui/pages/BrandPage.tsx
+msgid "Use these when you need a square asset with or without a background, a browser icon, or a default preview image."
+msgstr ""
+
+#. @context: Description for the default logo card
+#: src/ui/pages/BrandPage.tsx
+msgid "Use this for websites, docs, articles, and other light or neutral surfaces."
+msgstr ""
+
+#. @context: Description for the reverse logo card
+#: src/ui/pages/BrandPage.tsx
+msgid "Use this on dark backgrounds, image-backed surfaces, and any placement where the green logo would lose contrast."
+msgstr ""
 
 #. @context: Introductory description on the public theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Use this page to judge buttons, links, cards, forms, thread accents, and quiet surfaces before changing a theme globally."
 msgstr "在全局更改主题之前，使用此页面来评估按钮、链接、卡片、表单、帖子串强调和低调表面。"
-
-#. @context: Negative brand usage guidance on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Using brand green for every state, including success and warnings."
-msgstr "在所有状态下都使用品牌绿色，包括成功和警告。"
 
 #. @context: Archive media filter - video
 #: src/ui/pages/ArchivePage.tsx
@@ -2755,16 +2764,6 @@ msgstr "查看"
 msgid "View earlier notes in this thread"
 msgstr "查看这个帖子串里更早的笔记"
 
-#. @context: Showcase secondary button on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "View token values"
-msgstr "查看令牌值"
-
-#. @context: Section kicker on the public brand page
-#: src/ui/pages/BrandPage.tsx
-msgid "Voice"
-msgstr "品牌语调"
-
 #. @context: Prefix before Custom CSS link on color theme page
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Want more control?"
@@ -2774,11 +2773,6 @@ msgstr "想调得更细？"
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Warm Editorial"
 msgstr "暖调编辑风"
-
-#. @context: Name of the paper swatch
-#: src/ui/pages/BrandPage.tsx
-msgid "Warm Linen"
-msgstr "Warm Linen"
 
 #. @context: Setup page welcome heading
 #: src/routes/auth/setup.tsx
@@ -2824,6 +2818,11 @@ msgstr "当 primary 过于僵硬时，整个页面开始像产品界面，而不
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "When the accent is slightly warmer and less literal, the whole page feels more like a writing space and less like product UI."
 msgstr "当强调色更温暖一点、也没那么直白时，整页会更像写作空间，而不是产品界面。"
+
+#. @context: Description for the brand tile asset card
+#: src/ui/pages/BrandPage.tsx
+msgid "White logo on the Jant green tile for avatars, app icon mockups, directory listings, and other square placements that need a background."
+msgstr ""
 
 #. @context: Sample note post title on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx

@@ -6,7 +6,7 @@
 
 import type { Context } from "hono";
 import type { FC, PropsWithChildren } from "hono/jsx";
-import type { I18n, MessageDescriptor } from "@lingui/core";
+import type { I18n } from "@lingui/core";
 import { getI18n as getI18nFromContext } from "./i18n.js";
 
 /**
@@ -84,8 +84,10 @@ export function useLingui() {
   }
 
   const translate = (descriptor: TranslationDescriptor) => {
+    const { values, ...message } = descriptor;
+    const id = message.id ?? message.message;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- currentI18n is checked above
-    return currentI18n!._(descriptor as MessageDescriptor);
+    return currentI18n!._(id, values, message);
   };
 
   return {
