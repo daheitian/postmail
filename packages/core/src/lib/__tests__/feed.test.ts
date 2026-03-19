@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { defaultAtomRenderer, defaultRssRenderer } from "../feed.js";
-import type { FeedData, PostView } from "../../types.js";
+import type { FeedData, FeedPostView } from "../../types.js";
 
-function makePostView(overrides: Partial<PostView> = {}): PostView {
+function makePostView(overrides: Partial<FeedPostView> = {}): FeedPostView {
   return {
     id: "post-1",
     permalink: "/post-1",
@@ -24,7 +24,7 @@ function makePostView(overrides: Partial<PostView> = {}): PostView {
   };
 }
 
-function makeFeedData(post: PostView): FeedData {
+function makeFeedData(post: FeedPostView): FeedData {
   return {
     siteName: "Jant",
     siteDescription: "Thoughts, links, and quotes — one post at a time",
@@ -117,5 +117,31 @@ describe("feed renderers", () => {
     expect(rssXml).not.toContain("<title><![CDATA[Marcus Aurelius]]></title>");
     expect(rssXml).toContain("What stands in the way becomes the way.");
     expect(rssXml).toContain("https://example.com/meditations");
+  });
+
+  it("uses feed-specific timestamps when provided", () => {
+    const rssXml = defaultRssRenderer(
+      makeFeedData(
+        makePostView({
+          feedPublishedAt: "2026-03-20T08:30:00.000Z",
+        }),
+      ),
+    );
+    const atomXml = defaultAtomRenderer(
+      makeFeedData(
+        makePostView({
+          feedPublishedAt: "2026-03-20T08:30:00.000Z",
+          feedUpdatedAt: "2026-03-20T09:45:00.000Z",
+        }),
+      ),
+    );
+
+    expect(rssXml).toContain(
+      "<pubDate>Fri, 20 Mar 2026 08:30:00 GMT</pubDate>",
+    );
+    expect(atomXml).toContain(
+      "<published>2026-03-20T08:30:00.000Z</published>",
+    );
+    expect(atomXml).toContain("<updated>2026-03-20T09:45:00.000Z</updated>");
   });
 });

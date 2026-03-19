@@ -78,7 +78,7 @@ describe("Compose Routes", () => {
           format: "quote",
           bodyMarkdown: "Great insight",
           quoteText: "The original quote",
-          url: "https://example.com/source",
+          sourceUrl: "https://example.com/source",
         }),
       });
 

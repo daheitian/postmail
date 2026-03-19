@@ -1,16 +1,20 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import { postCollections } from "../../db/schema.js";
 import { createPostService } from "../post.js";
+import { createCollectionService } from "../collection.js";
 import type { Database } from "../../db/index.js";
 
 describe("PostService - Timeline features", () => {
   let db: Database;
   let postService: ReturnType<typeof createPostService>;
+  let collectionService: ReturnType<typeof createCollectionService>;
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
     postService = createPostService(db, { slugIdLength: 5 });
+    collectionService = createCollectionService(db);
   });
 
   describe("format filter", () => {
@@ -439,6 +443,54 @@ describe("PostService - Timeline features", () => {
 
       expect(posts).toHaveLength(1);
       expect(posts[0]?.bodyText).toBe("a published note");
+    });
+  });
+
+  describe("listCollectionFeedEntries", () => {
+    it("orders collection feeds by latest addedAt and returns thread roots", async () => {
+      const collection = await collectionService.create({
+        slug: "reading",
+        title: "Reading",
+      });
+      const firstRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "First root",
+      });
+      const collectedReply = await postService.create({
+        format: "note",
+        bodyMarkdown: "Collected reply",
+        replyToId: firstRoot.id,
+      });
+      const secondRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Second root",
+      });
+
+      await db.insert(postCollections).values([
+        {
+          postId: collectedReply.id,
+          collectionId: collection.id,
+          createdAt: 100,
+        },
+        {
+          postId: secondRoot.id,
+          collectionId: collection.id,
+          createdAt: 200,
+        },
+      ]);
+
+      const entries = await postService.listCollectionFeedEntries(
+        collection.id,
+        {
+          status: "published",
+        },
+      );
+
+      expect(entries).toHaveLength(2);
+      expect(entries[0]?.post.id).toBe(secondRoot.id);
+      expect(entries[0]?.collectedAt).toBe(200);
+      expect(entries[1]?.post.id).toBe(firstRoot.id);
+      expect(entries[1]?.collectedAt).toBe(100);
     });
   });
 });

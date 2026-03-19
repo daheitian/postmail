@@ -13,6 +13,7 @@ import type { Bindings, FeedData, Format } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { defaultRssRenderer, defaultAtomRenderer } from "../../lib/feed.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
+import { toISOString } from "../../lib/time.js";
 import { FORMATS } from "../../types/constants.js";
 
 import { createMediaContext, toPostViews } from "../../lib/view.js";
@@ -77,7 +78,17 @@ async function buildFeedData(
       mediaAttachments: mediaMap.get(p.id) ?? [],
     })),
     mediaCtx,
-  );
+  ).map((post, index) => {
+    const featuredAt = opts?.featured ? posts[index]?.featuredAt : null;
+    if (!featuredAt) return post;
+
+    const feedTimestamp = toISOString(featuredAt);
+    return {
+      ...post,
+      feedPublishedAt: feedTimestamp,
+      feedUpdatedAt: feedTimestamp,
+    };
+  });
 
   return {
     siteName,

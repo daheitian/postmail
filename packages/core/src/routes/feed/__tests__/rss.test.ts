@@ -1,14 +1,17 @@
 import { describe, it, expect } from "vitest";
+import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
 import { createTestDatabase } from "../../../__tests__/helpers/db.js";
+import { posts as postTable } from "../../../db/schema.js";
 import { createPostService } from "../../../services/post.js";
 import { createPathService } from "../../../services/path.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createMediaService } from "../../../services/media.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
 import { rssRoutes } from "../rss.js";
+import type { Database } from "../../../db/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -41,7 +44,7 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
 
   app.route("/feed", rssRoutes);
 
-  return { app, services };
+  return { app, services, db: db as unknown as Database };
 }
 
 describe("RSS Feed Routes", () => {
@@ -96,6 +99,44 @@ describe("RSS Feed Routes", () => {
       expect(res.headers.get("Content-Type")).toBe(
         "application/rss+xml; charset=utf-8",
       );
+    });
+
+    it("orders items and pubDate by featuredAt rather than publishedAt", async () => {
+      const { app, services, db } = createFeedTestApp();
+
+      const olderPublished = await services.posts.create({
+        format: "note",
+        title: "Older published",
+        bodyMarkdown: "Old body",
+        status: "published",
+        publishedAt: 1000,
+      });
+      const newerPublished = await services.posts.create({
+        format: "note",
+        title: "Newer published",
+        bodyMarkdown: "New body",
+        status: "published",
+        publishedAt: 2000,
+      });
+
+      await db
+        .update(postTable)
+        .set({ featuredAt: 4000 })
+        .where(eq(postTable.id, olderPublished.id));
+      await db
+        .update(postTable)
+        .set({ featuredAt: 3000 })
+        .where(eq(postTable.id, newerPublished.id));
+
+      const res = await app.request("/feed");
+      expect(res.status).toBe(200);
+
+      const xml = await res.text();
+      expect(xml.indexOf("Older published")).toBeLessThan(
+        xml.indexOf("Newer published"),
+      );
+      expect(xml).toContain("<pubDate>Thu, 01 Jan 1970 01:06:40 GMT</pubDate>");
+      expect(xml).toContain("<pubDate>Thu, 01 Jan 1970 00:50:00 GMT</pubDate>");
     });
   });
 

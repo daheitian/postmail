@@ -271,8 +271,8 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `/c`                 | 合集列表页                                                            |
 | `/archive`           | 归档（支持 ?format= &featured= 筛选）                                 |
 | `/search`            | 搜索                                                                  |
-| `/feed`              | RSS 2.0（仅精选帖子，面向订阅者的精选内容）                           |
-| `/feed/atom.xml`     | Atom Feed（仅精选帖子）                                               |
+| `/feed`              | RSS 2.0（仅精选帖子，按 featured 时间倒序，面向订阅者的精选内容）     |
+| `/feed/atom.xml`     | Atom Feed（仅精选帖子，按 featured 时间倒序）                         |
 | `/feed/all`          | RSS 2.0（所有 published 帖子，支持 `?format=` 筛选）                  |
 | `/feed/all/atom.xml` | Atom Feed（所有 published 帖子）                                      |
 | `/c/{slug}/feed`     | 单个合集的 RSS Feed                                                   |
@@ -308,11 +308,11 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **Feed**（三级结构）：
 
-- `/feed` — RSS 2.0，仅精选帖子（面向订阅者的精选内容）
-- `/feed/atom.xml` — Atom 格式，仅精选帖子
+- `/feed` — RSS 2.0，仅精选帖子，按 featured 时间倒序（面向订阅者的精选内容）
+- `/feed/atom.xml` — Atom 格式，仅精选帖子，按 featured 时间倒序
 - `/feed/all` — RSS 2.0，所有 published 帖子（支持 `?format=note` 等格式筛选）
 - `/feed/all/atom.xml` — Atom 格式，所有 published 帖子
-- `/c/{slug}/feed` — 单个合集的 RSS Feed
+- `/c/{slug}/feed` — 单个合集的 RSS Feed，按加入合集时间倒序
 
 **Sitemap**：自动生成，包含所有公开帖子和页面。
 

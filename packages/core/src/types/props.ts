@@ -6,6 +6,7 @@ import type { CollectionSortOrder, Format, MediaKind } from "./constants.js";
 import type { Collection, CollectionDirectoryItem } from "./entities.js";
 import type {
   PostView,
+  FeedPostView,
   TimelineItemView,
   SearchResultView,
   ArchiveGroup,
@@ -122,7 +123,7 @@ export interface FeedData {
   siteUrl: string;
   siteLanguage: string;
   selfUrl: string;
-  posts: PostView[];
+  posts: FeedPostView[];
 }
 
 /** Data passed to sitemap renderers */

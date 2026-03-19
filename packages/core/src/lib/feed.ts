@@ -131,7 +131,9 @@ export function defaultRssRenderer(data: FeedData): string {
   const items = posts
     .map((post) => {
       const link = escapeXml(new URL(post.permalink, siteUrl).toString());
-      const pubDate = new Date(post.publishedAt).toUTCString();
+      const pubDate = new Date(
+        post.feedPublishedAt ?? post.publishedAt,
+      ).toUTCString();
       const itemTitle = post.format === "quote" ? "" : (post.title ?? "");
 
       // Add enclosure for first media attachment
@@ -177,14 +179,16 @@ export function defaultAtomRenderer(data: FeedData): string {
       const link = escapeXml(new URL(post.permalink, siteUrl).toString());
       const title = getAtomTitle(post);
       const summary = getFeedSummaryText(post);
+      const publishedAt = post.feedPublishedAt ?? post.publishedAt;
+      const updatedAt = post.feedUpdatedAt ?? post.updatedAt;
 
       return `
   <entry>
     <title>${escapeXml(title)}</title>
     <link href="${link}" rel="alternate"/>
     <id>${link}</id>
-    <published>${post.publishedAt}</published>
-    <updated>${post.updatedAt}</updated>
+    <published>${publishedAt}</published>
+    <updated>${updatedAt}</updated>
     <summary type="text">${escapeXml(summary)}</summary>
     <content type="html"><![CDATA[${escapeCdata(buildFeedContent(post))}]]></content>
   </entry>`;

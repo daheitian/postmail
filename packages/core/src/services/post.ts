@@ -113,6 +113,11 @@ interface CollectionThreadRootPageOptions extends ThreadRootPageOptions {
   sortOrder?: CollectionSortOrder;
 }
 
+export interface CollectionFeedEntry {
+  post: Post;
+  collectedAt: number;
+}
+
 export interface PostService {
   getById(id: string): Promise<Post | null>;
   getBySlug(slug: string): Promise<Post | null>;
@@ -187,6 +192,11 @@ export interface PostService {
     collectionId: string,
     options?: CollectionThreadRootPageOptions,
   ): Promise<string[]>;
+  /** List collection feed entries ordered by latest added-at timestamp */
+  listCollectionFeedEntries(
+    collectionId: string,
+    options?: ThreadRootPageOptions,
+  ): Promise<CollectionFeedEntry[]>;
   /** Fetch all published, non-deleted posts for each requested thread root */
   getPublishedThreads(rootIds: string[]): Promise<Map<string, Post[]>>;
   /** For each thread, return post IDs that belong to the given collection */
@@ -1669,6 +1679,42 @@ export function createPostService(
 
       const rows = await query;
       return rows.map((row) => row.threadId);
+    },
+
+    async listCollectionFeedEntries(collectionId, options = {}) {
+      const conditions = [
+        ...buildThreadRootPageConditions(options),
+        eq(postCollections.collectionId, collectionId),
+      ];
+      const collectedAt = sql<number>`MAX(${postCollections.createdAt})`.as(
+        "collected_at",
+      );
+
+      let query = db
+        .select({
+          threadId: posts.threadId,
+          collectedAt,
+        })
+        .from(posts)
+        .innerJoin(postCollections, eq(postCollections.postId, posts.id))
+        .where(and(...conditions))
+        .groupBy(posts.threadId)
+        .orderBy(desc(collectedAt), desc(posts.threadId));
+
+      if (options.limit !== undefined) {
+        query = query.limit(options.limit) as typeof query;
+      }
+      if (options.offset !== undefined) {
+        query = query.offset(options.offset) as typeof query;
+      }
+
+      const rows = await query;
+      const postsById = await hydratePostsById(rows.map((row) => row.threadId));
+
+      return rows.flatMap((row) => {
+        const post = postsById.get(row.threadId);
+        return post ? [{ post, collectedAt: row.collectedAt }] : [];
+      });
     },
 
     async getPublishedThreads(rootIds) {

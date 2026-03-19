@@ -20,6 +20,7 @@ import {
 import { assembleCollectionTimeline } from "../../lib/timeline.js";
 import { defaultRssRenderer } from "../../lib/feed.js";
 import { buildMediaMap } from "../../lib/media-helpers.js";
+import { toISOString } from "../../lib/time.js";
 import { createMediaContext, toPostViews } from "../../lib/view.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 
@@ -164,13 +165,15 @@ collectionRoutes.get("/:slug/feed", async (c) => {
   const siteLanguage = appConfig.siteLanguage;
   const feedLimit = appConfig.rssFeedLimit;
 
-  const posts = await c.var.services.posts.list({
-    collectionId: collection.id,
-    status: "published",
-    excludeReplies: true,
-    excludePrivate: true,
-    limit: feedLimit,
-  });
+  const entries = await c.var.services.posts.listCollectionFeedEntries(
+    collection.id,
+    {
+      status: "published",
+      excludePrivate: true,
+      limit: feedLimit,
+    },
+  );
+  const posts = entries.map((entry) => entry.post);
 
   // Batch load media for enclosures
   const postIds = posts.map((p) => p.id);
@@ -191,7 +194,17 @@ collectionRoutes.get("/:slug/feed", async (c) => {
       mediaAttachments: mediaMap.get(p.id) ?? [],
     })),
     mediaCtx,
-  );
+  ).map((post, index) => {
+    const collectedAt = entries[index]?.collectedAt;
+    if (!collectedAt) return post;
+
+    const feedTimestamp = toISOString(collectedAt);
+    return {
+      ...post,
+      feedPublishedAt: feedTimestamp,
+      feedUpdatedAt: feedTimestamp,
+    };
+  });
 
   const xml = defaultRssRenderer({
     siteName: buildPageTitle(collection.title, siteName),

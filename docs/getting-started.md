@@ -68,7 +68,7 @@ Every post has a visibility level:
 
 ### Featured
 
-Featured is an independent curation flag, not a visibility level. Any post (including thread replies) can be featured. Featured posts appear in the main RSS feed (`/feed`) and on the Featured page. Feature a post from the post menu or use "Post as Featured" in the compose dialog.
+Featured is an independent curation flag, not a visibility level. Any post (including thread replies) can be featured. Featured posts appear in the main RSS feed (`/feed`) and on the Featured page. Both are ordered by when you featured each post, while post cards still show the original publish date. Feature a post from the post menu or use "Post as Featured" in the compose dialog.
 
 ## Threads
 
@@ -81,6 +81,8 @@ Organize posts into themed collections:
 - `/c/reading-2024` - Book notes from this year
 - `/c/recipes` - Your cooking experiments
 - `/c/thoughts-on-ai` - A series on AI
+
+Collection pages are for browsing and can use their own sort options. Collection feeds (`/c/{slug}/feed`) are ordered by when posts were added to the collection.
 
 ## Next Steps
 

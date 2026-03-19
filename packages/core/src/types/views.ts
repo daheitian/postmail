@@ -95,6 +95,18 @@ export interface PostView {
 }
 
 /**
+ * Render-ready post data for feeds.
+ * Feed timestamps can differ from on-page timestamps when a feed represents a
+ * curation event rather than original publication time.
+ */
+export interface FeedPostView extends PostView {
+  /** Optional ISO 8601 timestamp used for RSS pubDate / Atom published */
+  feedPublishedAt?: string;
+  /** Optional ISO 8601 timestamp used for Atom updated */
+  feedUpdatedAt?: string;
+}
+
+/**
  * Render-ready media data for theme components.
  * URLs are pre-computed -- no lib/ imports needed.
  */

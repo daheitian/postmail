@@ -1018,8 +1018,8 @@ Environment-only config keys (like `AUTH_SECRET`) are silently rejected. If all 
 | Endpoint                 | Auth | Description                                                    |
 | ------------------------ | ---- | -------------------------------------------------------------- |
 | `GET /health`            | No   | Returns `{ "status": "ok" }`                                   |
-| `GET /feed`              | No   | RSS 2.0 feed (featured posts only)                             |
-| `GET /feed/atom.xml`     | No   | Atom feed (featured posts only)                                |
+| `GET /feed`              | No   | RSS 2.0 feed (featured posts only, ordered by featured time)   |
+| `GET /feed/atom.xml`     | No   | Atom feed (featured posts only, ordered by featured time)      |
 | `GET /feed/all`          | No   | RSS 2.0 feed (all published posts, supports `?format=` filter) |
 | `GET /feed/all/atom.xml` | No   | Atom feed (all published posts)                                |
 
