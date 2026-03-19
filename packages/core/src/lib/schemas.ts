@@ -135,6 +135,9 @@ const PostFieldsSchema = z.object({
   title: sanitizeText(300)
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  sourceName: sanitizeText(300)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   body: z.string().optional(),
   bodyMarkdown: z.string().optional(),
   status: StatusSchema.optional(),
@@ -144,6 +147,13 @@ const PostFieldsSchema = z.object({
     .optional(),
   featured: z.boolean().optional(),
   url: z
+    .url()
+    .refine((val) => sanitizeUrl(val) !== "", {
+      message: "URL must use http:, https:, or mailto: protocol",
+    })
+    .optional()
+    .or(z.literal("")),
+  sourceUrl: z
     .url()
     .refine((val) => sanitizeUrl(val) !== "", {
       message: "URL must use http:, https:, or mailto: protocol",
@@ -222,11 +232,21 @@ function hasNonEmptyText(value: string | null | undefined): boolean {
 }
 
 function refineCreatePostFormatShape<
-  T extends { format: string; url?: string; quoteText?: string },
+  T extends {
+    format: string;
+    title?: string;
+    sourceName?: string;
+    url?: string;
+    sourceUrl?: string;
+    quoteText?: string;
+  },
 >(schema: z.ZodType<T>) {
   return schema.superRefine((data, ctx) => {
     const hasUrl = hasNonEmptyText(data.url);
+    const hasSourceUrl = hasNonEmptyText(data.sourceUrl);
     const hasQuoteText = hasNonEmptyText(data.quoteText);
+    const hasTitle = hasNonEmptyText(data.title);
+    const hasSourceName = hasNonEmptyText(data.sourceName);
 
     if (data.format === "note") {
       if (hasUrl) {
@@ -241,6 +261,20 @@ function refineCreatePostFormatShape<
           code: z.ZodIssueCode.custom,
           path: ["quoteText"],
           message: "Notes can't include quoted text.",
+        });
+      }
+      if (hasSourceName) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["sourceName"],
+          message: "Notes can't include a source name.",
+        });
+      }
+      if (hasSourceUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["sourceUrl"],
+          message: "Notes can't include a source URL.",
         });
       }
     }
@@ -260,6 +294,20 @@ function refineCreatePostFormatShape<
           message: "Link posts can't include quoted text.",
         });
       }
+      if (hasSourceName) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["sourceName"],
+          message: "Link posts can't include a source name.",
+        });
+      }
+      if (hasSourceUrl) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["sourceUrl"],
+          message: "Link posts can't include a source URL.",
+        });
+      }
     }
 
     if (data.format === "quote" && !hasQuoteText) {
@@ -267,6 +315,22 @@ function refineCreatePostFormatShape<
         code: z.ZodIssueCode.custom,
         path: ["quoteText"],
         message: "Quote posts need quoted text.",
+      });
+    }
+
+    if (data.format === "quote" && hasTitle) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["title"],
+        message: "Quote posts use sourceName instead of title.",
+      });
+    }
+
+    if (data.format === "quote" && hasUrl) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["url"],
+        message: "Quote posts use sourceUrl instead of url.",
       });
     }
   });

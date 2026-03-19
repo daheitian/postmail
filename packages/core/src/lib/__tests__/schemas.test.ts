@@ -311,6 +311,19 @@ describe("CreatePostSchema", () => {
     expect(result.quoteText).toBe("A wise person once said...");
   });
 
+  it("accepts sourceName and sourceUrl for quote posts", () => {
+    const result = CreatePostSchema.parse({
+      ...validPost,
+      format: "quote",
+      quoteText: "A wise person once said...",
+      sourceName: "Marcus Aurelius",
+      sourceUrl: "https://example.com/meditations",
+    });
+
+    expect(result.sourceName).toBe("Marcus Aurelius");
+    expect(result.sourceUrl).toBe("https://example.com/meditations");
+  });
+
   it("rejects note posts with a URL", () => {
     expect(() =>
       CreatePostSchema.parse({
@@ -356,6 +369,28 @@ describe("CreatePostSchema", () => {
         format: "quote",
       }),
     ).toThrow("Quote posts need quoted text.");
+  });
+
+  it("rejects quote posts with legacy title", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        format: "quote",
+        title: "Marcus Aurelius",
+        quoteText: "A wise person once said...",
+      }),
+    ).toThrow("Quote posts use sourceName instead of title.");
+  });
+
+  it("rejects quote posts with legacy url", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        format: "quote",
+        url: "https://example.com/meditations",
+        quoteText: "A wise person once said...",
+      }),
+    ).toThrow("Quote posts use sourceUrl instead of url.");
   });
 
   it("accepts optional rating (1-5)", () => {
@@ -517,6 +552,36 @@ describe("CreatePostApiSchema", () => {
       }),
     ).toThrow("Text attachments need content.");
   });
+
+  it("accepts sourceName and sourceUrl for quote API requests", () => {
+    const result = CreatePostApiSchema.parse({
+      format: "quote",
+      quoteText: "What stands in the way becomes the way.",
+      sourceName: "Marcus Aurelius",
+      sourceUrl: "https://example.com/meditations",
+    });
+
+    expect(result.sourceName).toBe("Marcus Aurelius");
+    expect(result.sourceUrl).toBe("https://example.com/meditations");
+  });
+
+  it("rejects legacy title and url for quote API requests", () => {
+    expect(() =>
+      CreatePostApiSchema.parse({
+        format: "quote",
+        quoteText: "What stands in the way becomes the way.",
+        title: "Marcus Aurelius",
+      }),
+    ).toThrow("Quote posts use sourceName instead of title.");
+
+    expect(() =>
+      CreatePostApiSchema.parse({
+        format: "quote",
+        quoteText: "What stands in the way becomes the way.",
+        url: "https://example.com/meditations",
+      }),
+    ).toThrow("Quote posts use sourceUrl instead of url.");
+  });
 });
 
 describe("UpdatePostApiSchema", () => {
@@ -528,6 +593,16 @@ describe("UpdatePostApiSchema", () => {
   it("accepts empty attachments array", () => {
     const result = UpdatePostApiSchema.parse({ attachments: [] });
     expect(result.attachments).toEqual([]);
+  });
+
+  it("accepts quote attribution updates via sourceName and sourceUrl", () => {
+    const result = UpdatePostApiSchema.parse({
+      sourceName: "Epictetus",
+      sourceUrl: "https://example.com/discourses",
+    });
+
+    expect(result.sourceName).toBe("Epictetus");
+    expect(result.sourceUrl).toBe("https://example.com/discourses");
   });
 });
 

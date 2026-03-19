@@ -137,8 +137,10 @@ describe("createExportService", () => {
     expect(styleCss).toContain(
       ".post-collection-more-wrap:hover .post-collection-popover",
     );
+    expect(styleCss).toContain(".post-collection-more-wrap::after");
     expect(styleCss).toContain(".site-header-top-home");
     expect(styleCss).toContain(".site-content-home");
+    expect(styleCss).toContain("padding-top: 0.75rem;");
     expect(styleCss).toContain(
       "border-bottom-color: color-mix(in srgb, var(--site-divider) 72%, transparent);",
     );
@@ -267,6 +269,90 @@ describe("createExportService", () => {
     expect(styleCss).toContain(".jant-attachment-text-preview blockquote");
     expect(styleCss).toContain("padding-left: 0;");
     expect(styleCss).toContain("border-left: none;");
+  });
+
+  it("exports quote posts with source_name and source_url instead of title", async () => {
+    const rootPost: Post = {
+      id: "post-quote-1",
+      format: "quote",
+      status: "published",
+      visibility: "public",
+      pinnedAt: null,
+      featuredAt: null,
+      slug: "from-marcus-aurelius",
+      title: "Marcus Aurelius",
+      url: "https://example.com/meditations",
+      body: null,
+      bodyHtml: null,
+      bodyText: "A short note about the quote.",
+      quoteText: "What stands in the way becomes the way.",
+      summary: "What stands in the way becomes the way.",
+      rating: null,
+      replyToId: null,
+      threadId: "post-quote-1",
+      deletedAt: null,
+      publishedAt: 1773014400,
+      lastActivityAt: 1773014400,
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const services = {
+      posts: {
+        list: async () => [rootPost],
+      },
+      paths: {
+        getPostSlugMap: async () =>
+          new Map([["post-quote-1", "from-marcus-aurelius"]]),
+        getPostAliases: async () => new Map([["post-quote-1", []]]),
+        getCollectionSlugMap: async () => new Map(),
+      },
+      collections: {
+        list: async () => [],
+        getCollectionsByPostIds: async () => new Map([["post-quote-1", []]]),
+      },
+      media: {
+        getByPostIds: async () => new Map(),
+      },
+    } as unknown as Parameters<typeof createExportService>[0];
+
+    const siteConfig: Parameters<typeof createExportService>[1] = {
+      siteName: "Jant",
+      siteUrl: "https://example.com",
+      siteDescription: "Export test",
+      siteLanguage: "en",
+      showJantBrandingOnHome: true,
+      homeDefaultView: "latest",
+      headerNavMaxVisible: 4,
+      siteFooter: "",
+      showHeaderAvatar: false,
+      siteAvatarUrl: "",
+      themeId: "paper",
+      defaultThemeId: "paper",
+      fontThemeId: "system",
+      themeMode: "auto",
+      noindex: false,
+      navItems: [],
+    };
+
+    const zip = await createExportService(
+      services,
+      siteConfig,
+    ).generateZolaSite();
+    const files = unzipSync(zip);
+    const postMarkdown = decodeZipEntry(
+      files,
+      "content/from-marcus-aurelius/index.md",
+    );
+    const macrosTemplate = decodeZipEntry(files, "templates/macros.html");
+
+    expect(postMarkdown).not.toContain("\ntitle:");
+    expect(postMarkdown).toContain("source_name:");
+    expect(postMarkdown).toContain("source_url:");
+    expect(postMarkdown).toContain("quote_text:");
+    expect(postMarkdown).not.toContain("link_url:");
+    expect(macrosTemplate).toContain("page.extra.source_name");
+    expect(macrosTemplate).toContain("page.extra.source_url");
   });
 
   it("separates root aliases from reply route aliases in exported front matter", async () => {

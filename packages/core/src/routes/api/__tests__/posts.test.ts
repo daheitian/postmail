@@ -141,6 +141,31 @@ describe("Posts API Routes", () => {
       expect(body.posts).toHaveLength(2);
       expect(body.nextCursor).toBeTruthy();
     });
+
+    it("serializes quote attribution as sourceName/sourceUrl", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      await services.posts.create({
+        format: "quote",
+        title: "Marcus Aurelius",
+        url: "https://example.com/meditations",
+        quoteText: "What stands in the way becomes the way.",
+      });
+
+      const res = await app.request("/api/posts");
+      const body = await res.json();
+
+      expect(body.posts).toHaveLength(1);
+      expect(body.posts[0].format).toBe("quote");
+      expect(body.posts[0].sourceName).toBe("Marcus Aurelius");
+      expect(body.posts[0].sourceUrl).toBe("https://example.com/meditations");
+      expect(body.posts[0].quoteText).toBe(
+        "What stands in the way becomes the way.",
+      );
+      expect(body.posts[0]).not.toHaveProperty("title");
+      expect(body.posts[0]).not.toHaveProperty("url");
+    });
   });
 
   describe("GET /api/posts/slug", () => {
@@ -254,6 +279,27 @@ describe("Posts API Routes", () => {
       expect(body.attachments).toHaveLength(1);
       expect(body.attachments[0].id).toBe(media.id);
       expect(body.attachments[0].type).toBe("media");
+    });
+
+    it("returns quote posts with sourceName/sourceUrl", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "quote",
+        title: "Marcus Aurelius",
+        url: "https://example.com/meditations",
+        quoteText: "What stands in the way becomes the way.",
+      });
+
+      const res = await app.request(`/api/posts/${post.id}`);
+      const body = await res.json();
+
+      expect(body.sourceName).toBe("Marcus Aurelius");
+      expect(body.sourceUrl).toBe("https://example.com/meditations");
+      expect(body.quoteText).toBe("What stands in the way becomes the way.");
+      expect(body).not.toHaveProperty("title");
+      expect(body).not.toHaveProperty("url");
     });
 
     it("returns 400 for invalid ID", async () => {
@@ -434,6 +480,32 @@ describe("Posts API Routes", () => {
       ]);
       expect(body.attachments[0].contentUrl).toContain("/api/attachments/");
       expect(storage.files.size).toBe(1);
+    });
+
+    it("creates quote posts with sourceName/sourceUrl", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "quote",
+          sourceName: "Marcus Aurelius",
+          sourceUrl: "https://example.com/meditations",
+          quoteText: "What stands in the way becomes the way.",
+        }),
+      });
+
+      expect(res.status).toBe(201);
+
+      const body = await res.json();
+      expect(body.format).toBe("quote");
+      expect(body.sourceName).toBe("Marcus Aurelius");
+      expect(body.sourceUrl).toBe("https://example.com/meditations");
+      expect(body.quoteText).toBe("What stands in the way becomes the way.");
+      expect(body).not.toHaveProperty("title");
+      expect(body).not.toHaveProperty("url");
     });
 
     it("returns 400 for invalid attachment media IDs", async () => {
@@ -635,6 +707,35 @@ describe("Posts API Routes", () => {
       });
 
       expect(res.status).toBe(400);
+    });
+
+    it("updates quote attribution through sourceName/sourceUrl", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const post = await services.posts.create({
+        format: "quote",
+        title: "Marcus Aurelius",
+        url: "https://example.com/meditations",
+        quoteText: "What stands in the way becomes the way.",
+      });
+
+      const res = await app.request(`/api/posts/${post.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceName: "Epictetus",
+          sourceUrl: "https://example.com/discourses",
+        }),
+      });
+
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.sourceName).toBe("Epictetus");
+      expect(body.sourceUrl).toBe("https://example.com/discourses");
+      expect(body).not.toHaveProperty("title");
+      expect(body).not.toHaveProperty("url");
     });
   });
 

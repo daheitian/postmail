@@ -82,4 +82,40 @@ describe("feed renderers", () => {
     expect(xml).toContain("<title><![CDATA[Tom & Jerry]]></title>");
     expect(xml).not.toContain("<title><![CDATA[Tom &amp; Jerry]]></title>");
   });
+
+  it("does not expose quote attribution as feed title", () => {
+    const atomXml = defaultAtomRenderer(
+      makeFeedData(
+        makePostView({
+          format: "quote",
+          title: "Marcus Aurelius",
+          url: "https://example.com/meditations",
+          quoteText: "What stands in the way becomes the way.",
+          summary: undefined,
+          excerpt: undefined,
+        }),
+      ),
+    );
+    const rssXml = defaultRssRenderer(
+      makeFeedData(
+        makePostView({
+          format: "quote",
+          title: "Marcus Aurelius",
+          url: "https://example.com/meditations",
+          quoteText: "What stands in the way becomes the way.",
+          summary: undefined,
+          excerpt: undefined,
+        }),
+      ),
+    );
+
+    expect(atomXml).toContain("<title></title>");
+    expect(atomXml).toContain(
+      '<summary type="text">What stands in the way becomes the way.</summary>',
+    );
+    expect(atomXml).toContain("Marcus Aurelius");
+    expect(rssXml).not.toContain("<title><![CDATA[Marcus Aurelius]]></title>");
+    expect(rssXml).toContain("What stands in the way becomes the way.");
+    expect(rssXml).toContain("https://example.com/meditations");
+  });
 });
