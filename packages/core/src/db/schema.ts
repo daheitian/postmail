@@ -19,7 +19,7 @@ import { sql } from "drizzle-orm";
 const FORMATS = ["note", "link", "quote"] as const;
 const STATUSES = ["draft", "published"] as const;
 const VISIBILITIES = ["public", "unlisted", "private"] as const;
-const SORT_ORDERS = ["newest", "oldest", "rating_desc", "rating_asc"] as const;
+const COLLECTION_SORT_ORDERS = ["newest", "oldest", "rating_desc"] as const;
 const NAV_ITEM_TYPES = ["link", "system"] as const;
 const SYSTEM_NAV_KEYS = ["rss", "settings", "collections", "archive"] as const;
 const MEDIA_KINDS = ["image", "video", "audio", "text", "document"] as const;
@@ -261,7 +261,7 @@ export const collections = sqliteTable(
     title: text("title").notNull(),
     description: text("description"),
     sortOrder: text("sort_order", {
-      enum: SORT_ORDERS,
+      enum: COLLECTION_SORT_ORDERS,
     })
       .notNull()
       .default("newest"),
@@ -271,7 +271,7 @@ export const collections = sqliteTable(
   (table) => [
     check(
       "chk_collection_sort_order",
-      sql`${table.sortOrder} IN (${sqlTextEnum(SORT_ORDERS)})`,
+      sql`${table.sortOrder} IN (${sqlTextEnum(COLLECTION_SORT_ORDERS)})`,
     ),
   ],
 );

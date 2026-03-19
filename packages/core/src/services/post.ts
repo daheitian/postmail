@@ -32,6 +32,7 @@ import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import { MAX_MEDIA_ATTACHMENTS } from "../types.js";
 import type {
+  CollectionSortOrder,
   Format,
   Status,
   Visibility,
@@ -109,7 +110,7 @@ interface ThreadRootPageOptions {
 }
 
 interface CollectionThreadRootPageOptions extends ThreadRootPageOptions {
-  sortOrder?: SortOrder;
+  sortOrder?: CollectionSortOrder;
 }
 
 export interface PostService {
@@ -1631,10 +1632,9 @@ export function createPostService(
           ELSE 1
         END
       )`.as("rating_presence");
-      const ratingValue =
-        sortOrder === "rating_asc"
-          ? sql<number | null>`MIN(${posts.rating})`.as("rating_value")
-          : sql<number | null>`MAX(${posts.rating})`.as("rating_value");
+      const ratingValue = sql<number | null>`MAX(${posts.rating})`.as(
+        "rating_value",
+      );
 
       const baseQuery = db
         .select({
@@ -1658,14 +1658,7 @@ export function createPostService(
                 desc(collectedAt),
                 desc(posts.threadId),
               )
-            : sortOrder === "rating_asc"
-              ? baseQuery.orderBy(
-                  desc(ratingPresence),
-                  asc(ratingValue),
-                  desc(collectedAt),
-                  desc(posts.threadId),
-                )
-              : baseQuery.orderBy(desc(collectedAt), desc(posts.threadId));
+            : baseQuery.orderBy(desc(collectedAt), desc(posts.threadId));
 
       if (options.limit !== undefined) {
         query = query.limit(options.limit) as typeof query;

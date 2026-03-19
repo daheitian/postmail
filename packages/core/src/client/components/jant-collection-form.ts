@@ -11,6 +11,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
+import type { CollectionSortOrder } from "../../types.js";
 import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { slugify } from "../lazy-slugify.js";
 import { publicPath } from "../runtime-paths.js";
@@ -49,7 +50,7 @@ export class JantCollectionForm extends LitElement {
   declare _title: string;
   declare _slug: string;
   declare _description: string;
-  declare _sortOrder: string;
+  declare _sortOrder: CollectionSortOrder;
   declare _showSlugEditor: boolean;
   declare _slugEdited: boolean;
   declare _suggestedSlug: string;
@@ -416,16 +417,13 @@ export class JantCollectionForm extends LitElement {
                     .value=${this._sortOrder}
                     @change=${(event: Event) => {
                       const target = event.target as HTMLSelectElement;
-                      this._sortOrder = target.value;
+                      this._sortOrder = target.value as CollectionSortOrder;
                     }}
                   >
                     <option value="newest">${this.labels.sortNewest}</option>
                     <option value="oldest">${this.labels.sortOldest}</option>
                     <option value="rating_desc">
                       ${this.labels.sortRatingDesc}
-                    </option>
-                    <option value="rating_asc">
-                      ${this.labels.sortRatingAsc}
                     </option>
                   </select>
                 </div>

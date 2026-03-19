@@ -608,12 +608,12 @@ POST /api/collections
 }
 ```
 
-| Field         | Type   | Required | Default  | Description                                           |
-| ------------- | ------ | -------- | -------- | ----------------------------------------------------- |
-| `slug`        | string | **yes**  | —        | URL slug (same rules as post slugs)                   |
-| `title`       | string | **yes**  | —        | Collection name                                       |
-| `description` | string | no       | —        | Description text                                      |
-| `sortOrder`   | string | no       | `newest` | `newest` \| `oldest` \| `rating_desc` \| `rating_asc` |
+| Field         | Type   | Required | Default  | Description                           |
+| ------------- | ------ | -------- | -------- | ------------------------------------- |
+| `slug`        | string | **yes**  | —        | URL slug (same rules as post slugs)   |
+| `title`       | string | **yes**  | —        | Collection name                       |
+| `description` | string | no       | —        | Description text                      |
+| `sortOrder`   | string | no       | `newest` | `newest` \| `oldest` \| `rating_desc` |
 
 **Response (201):** Created collection object.
 

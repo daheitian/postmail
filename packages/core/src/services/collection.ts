@@ -28,7 +28,7 @@ import type {
   CreateCollection,
   UpdateCollection,
   UpdateSidebarItem,
-  SortOrder,
+  CollectionSortOrder,
 } from "../types.js";
 import { ConflictError } from "../lib/errors.js";
 import {
@@ -119,7 +119,7 @@ export function createCollectionService(
       slug,
       title: row.title,
       description: row.description,
-      sortOrder: row.sortOrder as SortOrder,
+      sortOrder: row.sortOrder as CollectionSortOrder,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

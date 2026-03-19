@@ -8,7 +8,6 @@ import {
 describe("isRatingSortOrder", () => {
   it("returns true for rating-based sort orders", () => {
     expect(isRatingSortOrder("rating_desc")).toBe(true);
-    expect(isRatingSortOrder("rating_asc")).toBe(true);
   });
 
   it("returns false for time-based sort orders", () => {
@@ -39,9 +38,6 @@ describe("resolveCollectionSortOrder", () => {
   });
 
   it("falls back to newest when rating sort is unavailable", () => {
-    expect(resolveCollectionSortOrder("rating_asc", "oldest", false)).toBe(
-      "newest",
-    );
     expect(resolveCollectionSortOrder(undefined, "rating_desc", false)).toBe(
       "newest",
     );

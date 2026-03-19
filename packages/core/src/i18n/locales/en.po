@@ -1508,13 +1508,6 @@ msgstr "Look at the footer metadata last, to make sure the accent is not fightin
 msgid "Low-distraction palettes for a cleaner, calmer reading rhythm."
 msgstr "Low-distraction palettes for a cleaner, calmer reading rhythm."
 
-#. @context: Collection sort order option
-#. @context: Collection sort order option
-#: src/ui/pages/CollectionPage.tsx
-#: src/ui/shared/collection-management-labels.ts
-msgid "Lowest rated"
-msgstr "Lowest rated"
-
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage sign-in security, exports, and irreversible actions."

@@ -1508,13 +1508,6 @@ msgstr "最后查看页脚的元数据，确保强调色不会与排版产生冲
 msgid "Low-distraction palettes for a cleaner, calmer reading rhythm."
 msgstr "低干扰配色，带来更干净、更平静的阅读节奏。"
 
-#. @context: Collection sort order option
-#. @context: Collection sort order option
-#: src/ui/pages/CollectionPage.tsx
-#: src/ui/shared/collection-management-labels.ts
-msgid "Lowest rated"
-msgstr "评分最低"
-
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage sign-in security, exports, and irreversible actions."

@@ -41,7 +41,6 @@ const labels: CollectionFormLabels = {
   sortNewest: "Newest first",
   sortOldest: "Oldest first",
   sortRatingDesc: "Highest rated",
-  sortRatingAsc: "Lowest rated",
   submitLabel: "Create Collection",
   cancelLabel: "Cancel",
 };
@@ -82,11 +81,20 @@ describe("JantCollectionForm", () => {
 
   it("renders the core form fields", async () => {
     const el = await createElement();
+    const select = el.querySelector("select") as HTMLSelectElement | null;
 
     expect(el.querySelector("[data-collection-title-input]")).not.toBeNull();
     expect(el.querySelector("[data-collection-slug-input]")).not.toBeNull();
     expect(el.querySelector("textarea")).not.toBeNull();
-    expect(el.querySelector("select")).not.toBeNull();
+    if (!select) {
+      throw new Error("Expected sort order select");
+    }
+
+    expect(Array.from(select.options).map((option) => option.value)).toEqual([
+      "newest",
+      "oldest",
+      "rating_desc",
+    ]);
     expect(
       el.querySelector<HTMLButtonElement>("button[type=submit]")?.textContent,
     ).toContain("Create Collection");

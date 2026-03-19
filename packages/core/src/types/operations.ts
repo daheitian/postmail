@@ -6,7 +6,7 @@ import type {
   Format,
   Status,
   Visibility,
-  SortOrder,
+  CollectionSortOrder,
   SystemNavKey,
   TextAttachmentContentFormat,
 } from "./constants.js";
@@ -94,14 +94,14 @@ export interface CreateCollection {
   slug: string;
   title: string;
   description?: string;
-  sortOrder?: SortOrder;
+  sortOrder?: CollectionSortOrder;
 }
 
 export interface UpdateCollection {
   slug?: string;
   title?: string;
   description?: string | null;
-  sortOrder?: SortOrder;
+  sortOrder?: CollectionSortOrder;
 }
 
 export interface UpdateSidebarItem {

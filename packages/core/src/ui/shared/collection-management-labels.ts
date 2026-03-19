@@ -74,10 +74,6 @@ const collectionFormMessages = {
     message: "Highest rated",
     comment: "@context: Collection sort order option",
   }),
-  sortRatingAsc: msg({
-    message: "Lowest rated",
-    comment: "@context: Collection sort order option",
-  }),
   submitLabel: msg({
     message: "Save",
     comment: "@context: Button to save collection",
@@ -142,7 +138,6 @@ export const getCollectionFormLabels = (t: Translate) => ({
   sortNewest: t(collectionFormMessages.sortNewest),
   sortOldest: t(collectionFormMessages.sortOldest),
   sortRatingDesc: t(collectionFormMessages.sortRatingDesc),
-  sortRatingAsc: t(collectionFormMessages.sortRatingAsc),
   submitLabel: t(collectionFormMessages.submitLabel),
   cancelLabel: t(collectionFormMessages.cancelLabel),
 });

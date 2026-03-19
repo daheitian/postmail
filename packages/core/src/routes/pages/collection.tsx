@@ -12,7 +12,7 @@ import { getNavigationData } from "../../lib/navigation.js";
 import { formatPageLabel, parsePageNumber } from "../../lib/pagination.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
-import { SortOrderSchema } from "../../lib/schemas.js";
+import { CollectionSortOrderSchema } from "../../lib/schemas.js";
 import {
   resolveCollectionSortOrder,
   supportsCollectionRatingSort,
@@ -84,8 +84,8 @@ collectionRoutes.get("/:slug", async (c) => {
   if (!collection) return c.notFound();
   const sortQuery = c.req.query("sort");
   const requestedSort =
-    sortQuery && SortOrderSchema.safeParse(sortQuery).success
-      ? SortOrderSchema.parse(sortQuery)
+    sortQuery && CollectionSortOrderSchema.safeParse(sortQuery).success
+      ? CollectionSortOrderSchema.parse(sortQuery)
       : undefined;
 
   const [totalCount, ratedPostCount] = await Promise.all([
