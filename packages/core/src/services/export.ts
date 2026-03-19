@@ -1077,21 +1077,26 @@ const TEMPLATE_TAXONOMY_LIST = `{% extends "base.html" %}
     <h1 class="section-title">Collections</h1>
     <p class="section-description">Browse exported posts by collection.</p>
   </header>
-  <ul class="collection-list">
+  <ol class="collection-list">
     {% for term in terms %}
     {% set term_meta = get_section(path='c/' ~ term.name ~ '/_index.md') %}
     {% set latest_page = term.pages | first %}
     <li class="collection-list-item">
-      <a href="{{ term.permalink }}" class="collection-list-link">{{ term_meta.title | default(value=term.name) }}</a>
-      <div class="collection-list-meta">
-        <span>{{ term.pages | length }} entries</span>
-        {% if latest_page %}
-        <span>Updated {{ latest_page.updated | default(value=latest_page.date) | date(format="%Y-%m-%d") }}</span>
-        {% endif %}
-      </div>
+      <a href="{{ term.permalink }}" class="collection-list-link">
+        <span class="collection-list-sequence" aria-hidden="true"></span>
+        <span class="collection-list-content">
+          <span class="collection-list-title">{{ term_meta.title | default(value=term.name) }}</span>
+          <span class="collection-list-meta">
+            <span>{{ term.pages | length }} entries</span>
+            {% if latest_page %}
+            <span>Updated {{ latest_page.updated | default(value=latest_page.date) | date(format="%Y-%m-%d") }}</span>
+            {% endif %}
+          </span>
+        </span>
+      </a>
     </li>
     {% endfor %}
-  </ul>
+  </ol>
 </div>
 {% endblock %}
 `;
@@ -1230,12 +1235,27 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     </a>
     {% endif %}
     {% if collections | length > 0 %}
+    {% set first_collection = collections | first %}
+    {% set first_collection_meta = get_section(path='c/' ~ first_collection ~ '/_index.md') %}
+    {% set hidden_collection_count = collections | length %}
     <span class="post-collection-tags">
       <span class="post-collection-sep" aria-hidden="true">&middot;</span>
-      {% for col in collections %}
-      {% set col_meta = get_section(path='c/' ~ col ~ '/_index.md') %}
-      <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="post-collection-tag">{{ col_meta.title | default(value=col) }}</a>
-      {% endfor %}
+      <a href="{{ get_taxonomy_url(kind='c', name=first_collection) }}" class="post-collection-tag">{{ first_collection_meta.title | default(value=first_collection) }}</a>
+      {% if hidden_collection_count > 1 %}
+      <span class="post-collection-more-wrap">
+        <button type="button" class="post-collection-more" aria-haspopup="menu" data-collection-popover-trigger>
+          and {{ hidden_collection_count - 1 }} more
+        </button>
+        <span class="post-collection-popover" role="menu" data-collection-popover>
+          {% for col in collections %}
+          {% if not loop.first %}
+          {% set col_meta = get_section(path='c/' ~ col ~ '/_index.md') %}
+          <a href="{{ get_taxonomy_url(kind='c', name=col) }}" class="post-collection-popover-item" role="menuitem">{{ col_meta.title | default(value=col) }}</a>
+          {% endif %}
+          {% endfor %}
+        </span>
+      </span>
+      {% endif %}
     </span>
     {% endif %}
   </div>
@@ -1552,7 +1572,7 @@ img {
 }
 
 .site-header-top-home {
-  border-bottom-color: transparent;
+  border-bottom-color: color-mix(in srgb, var(--site-divider) 72%, transparent);
   padding-bottom: 14px;
 }
 
@@ -1650,6 +1670,9 @@ img {
 
 .site-content-home {
   padding-top: 0;
+  padding-bottom: calc(var(--space-xl) - 0.25rem);
+  border-bottom: 0.5px solid
+    color-mix(in srgb, var(--site-divider) 84%, transparent);
 }
 
 .site-home-header {
@@ -2102,6 +2125,13 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
   margin-bottom: 0;
 }
 
+.jant-attachment-text-preview blockquote {
+  margin-left: 0;
+  padding-left: 0;
+  border-left: none;
+  color: inherit;
+}
+
 .post-rating {
   display: flex;
   gap: 1px;
@@ -2183,6 +2213,67 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
   text-decoration: underline;
 }
 
+.post-collection-more-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.post-collection-more {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: inherit;
+  color: var(--site-text-secondary);
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.post-collection-more-wrap:hover .post-collection-more,
+.post-collection-more-wrap:focus-within .post-collection-more {
+  color: var(--site-text-primary);
+}
+
+.post-collection-popover {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 50;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 4px;
+  border-radius: 6px;
+  background: var(--site-elevated-bg);
+  border: 1px solid var(--site-divider);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.post-collection-more-wrap:hover .post-collection-popover,
+.post-collection-more-wrap:focus-within .post-collection-popover {
+  display: flex;
+}
+
+.post-collection-popover-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--site-text-secondary);
+  text-decoration: none;
+}
+
+.post-collection-popover-item:hover {
+  background: var(--site-nav-hover-bg);
+  color: var(--site-text-primary);
+}
+
 .section-shell {
   display: flex;
   flex-direction: column;
@@ -2213,27 +2304,71 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
   margin: 0;
   padding: 0;
   list-style: none;
+  counter-reset: collection-list;
 }
 
 .collection-list-item {
+  counter-increment: collection-list;
   border-top: 1px solid color-mix(in srgb, var(--site-divider) 84%, transparent);
 }
 
 .collection-list-link {
-  display: block;
+  display: grid;
+  grid-template-columns: 3.5ch minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: start;
   padding: 0.95rem 0;
   text-decoration: none;
 }
 
-.collection-list-link:hover {
+.collection-list-link:hover .collection-list-title {
   text-decoration: underline;
+}
+
+.collection-list-link:hover .collection-list-sequence {
+  color: var(--site-text-primary);
+}
+
+.collection-list-sequence {
+  display: block;
+  width: 3.5ch;
+  padding-top: 0.2rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.18;
+  letter-spacing: 0.14em;
+  color: var(--site-text-secondary);
+  transition: color 0.15s ease;
+}
+
+.collection-list-sequence::before {
+  content: counter(collection-list, decimal-leading-zero);
+}
+
+.collection-list-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.collection-list-title {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  font-weight: var(--fw-medium);
+  line-height: 1.18;
+  letter-spacing: -0.01em;
 }
 
 .collection-list-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
-  padding: 0 0 0.95rem;
   color: var(--site-text-secondary);
   font-size: var(--text-sm);
 }
