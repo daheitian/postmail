@@ -106,6 +106,8 @@ describe("createExportService", () => {
       "templates/taxonomy_list.html",
     );
     const atomTemplate = decodeZipEntry(files, "templates/atom.xml");
+    const macrosTemplate = decodeZipEntry(files, "templates/macros.html");
+    const styleCss = decodeZipEntry(files, "static/style.css");
 
     expect(collectionMetadata).toContain('title = "编程开发"');
     expect(collectionMetadata).toContain(
@@ -120,8 +122,26 @@ describe("createExportService", () => {
     expect(archiveTemplate).toContain(
       "get_section(path='c/' ~ col ~ '/_index.md')",
     );
+    expect(taxonomyListTemplate).toContain('<ol class="collection-list">');
+    expect(taxonomyListTemplate).toContain("collection-list-sequence");
+    expect(taxonomyListTemplate).toContain("collection-list-title");
     expect(taxonomyListTemplate).toContain("term.pages | length");
     expect(taxonomyListTemplate).toContain("latest_page.updated");
+    expect(macrosTemplate).toContain("first_collection = collections | first");
+    expect(macrosTemplate).toContain(
+      "and {{ hidden_collection_count - 1 }} more",
+    );
+    expect(macrosTemplate).toContain("data-collection-popover-trigger");
+    expect(macrosTemplate).toContain('class="post-collection-popover-item"');
+    expect(styleCss).toContain(".collection-list-sequence::before");
+    expect(styleCss).toContain(
+      ".post-collection-more-wrap:hover .post-collection-popover",
+    );
+    expect(styleCss).toContain(".site-header-top-home");
+    expect(styleCss).toContain(".site-content-home");
+    expect(styleCss).toContain(
+      "border-bottom-color: color-mix(in srgb, var(--site-divider) 72%, transparent);",
+    );
     expect(atomTemplate).toContain('rel="self" type="application/atom+xml"');
     expect(atomTemplate).toContain('href="{{ feed_url | safe }}" />');
     expect(atomTemplate).toContain("page.extra.summary_text");
@@ -233,6 +253,7 @@ describe("createExportService", () => {
     }).generateZolaSite();
     const files = unzipSync(zip);
     const postMarkdown = decodeZipEntry(files, "content/desk-note/index.md");
+    const styleCss = decodeZipEntry(files, "static/style.css");
 
     expect(postMarkdown).toContain('data-jant-kind="text"');
     expect(postMarkdown).toContain('"contentFormat":"markdown"');
@@ -243,6 +264,9 @@ describe("createExportService", () => {
     expect(postMarkdown).toContain("<summary>Attached note</summary>");
     expect(postMarkdown).toContain("<h1>Attached note</h1>");
     expect(postMarkdown).not.toContain('"src":"');
+    expect(styleCss).toContain(".jant-attachment-text-preview blockquote");
+    expect(styleCss).toContain("padding-left: 0;");
+    expect(styleCss).toContain("border-left: none;");
   });
 
   it("separates root aliases from reply route aliases in exported front matter", async () => {
