@@ -2,11 +2,18 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import "../compose-bridge.js";
+import { QUEUED_TOAST_STORAGE_KEY } from "../toast.js";
 
 type ComposeHarness = HTMLElement & {
   refreshCollections: () => Promise<boolean>;
   pageMode?: boolean;
-  labels?: { uploadFailedDraft?: string; publishFailedDraft?: string };
+  preparePageLeave?: () => void;
+  labels?: {
+    uploadFailedDraft?: string;
+    publishFailedDraft?: string;
+    published?: string;
+    view?: string;
+  };
 };
 
 function flushAsyncWork() {
@@ -17,6 +24,7 @@ describe("compose bridge", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.restoreAllMocks();
+    globalThis.sessionStorage.clear();
   });
 
   it("keeps empty collectionIds in the request and refreshes compose collections after draft save", async () => {
@@ -91,5 +99,82 @@ describe("compose bridge", () => {
 
     expect(fetchSpy).toHaveBeenCalled();
     expect(refreshCollections).toHaveBeenCalledTimes(1);
+  });
+
+  it("queues a success toast before navigating away after page-mode publish", async () => {
+    const composeEl = document.createElement(
+      "jant-compose-dialog",
+    ) as ComposeHarness;
+    composeEl.refreshCollections = vi.fn(async () => true);
+    composeEl.pageMode = true;
+    composeEl.preparePageLeave = vi.fn();
+    composeEl.labels = {
+      published: "Published!",
+      view: "View",
+    };
+    document.body.appendChild(composeEl);
+
+    const assignSpy = vi
+      .spyOn(globalThis.location, "assign")
+      .mockImplementation(() => {});
+
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const raw =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.toString()
+            : input.url;
+      const url = new URL(raw, "http://localhost");
+
+      if (url.pathname === "/compose") {
+        return new Response(
+          JSON.stringify({
+            status: "published",
+            permalink: "/published-post",
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      throw new Error(`Unexpected fetch: ${url.pathname}`);
+    });
+
+    composeEl.dispatchEvent(
+      new CustomEvent("jant:compose-submit-deferred", {
+        bubbles: true,
+        detail: {
+          format: "note",
+          title: "",
+          body: "Published body",
+          url: "",
+          quoteText: "",
+          quoteAuthor: "",
+          slug: "",
+          status: "published",
+          visibility: "public",
+          rating: 0,
+          collectionIds: [],
+          mediaIds: [],
+          mediaAlts: {},
+          attachedTexts: [],
+          attachmentOrder: [],
+          mediaClientMap: {},
+          pendingAttachments: [],
+        },
+      }),
+    );
+
+    await flushAsyncWork();
+    await flushAsyncWork();
+
+    expect(composeEl.preparePageLeave).toHaveBeenCalledTimes(1);
+    expect(assignSpy).toHaveBeenCalledWith("/published-post");
+    expect(globalThis.sessionStorage.getItem(QUEUED_TOAST_STORAGE_KEY)).toBe(
+      '{"message":"Published!","type":"success"}',
+    );
   });
 });

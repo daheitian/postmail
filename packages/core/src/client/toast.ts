@@ -5,10 +5,76 @@
  * Appends a temporary notification to `#toast-container`.
  */
 
+export type ToastType = "success" | "error";
+
+export interface ToastAction {
+  label: string;
+  href: string;
+}
+
+interface QueuedToast {
+  message: string;
+  type: ToastType;
+  action?: ToastAction;
+}
+
+export const QUEUED_TOAST_STORAGE_KEY = "jant.pendingToast";
+
 /** Ensure the toast container is in the top layer (above <dialog> etc.) */
 function ensureTopLayer(container: HTMLElement): void {
-  if (!container.matches(":popover-open")) {
+  if (
+    !container.matches(":popover-open") &&
+    typeof container.showPopover === "function"
+  ) {
     container.showPopover();
+  }
+}
+
+function getToastContainer(): HTMLElement | null {
+  return document.getElementById("toast-container");
+}
+
+function canUseSessionStorage(): boolean {
+  try {
+    return typeof globalThis.sessionStorage !== "undefined";
+  } catch {
+    return false;
+  }
+}
+
+function readQueuedToast(): QueuedToast | null {
+  if (!canUseSessionStorage()) return null;
+
+  const raw = globalThis.sessionStorage.getItem(QUEUED_TOAST_STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<QueuedToast>;
+    if (
+      typeof parsed.message !== "string" ||
+      (parsed.type !== "success" && parsed.type !== "error")
+    ) {
+      globalThis.sessionStorage.removeItem(QUEUED_TOAST_STORAGE_KEY);
+      return null;
+    }
+
+    if (
+      parsed.action &&
+      (typeof parsed.action.label !== "string" ||
+        typeof parsed.action.href !== "string")
+    ) {
+      globalThis.sessionStorage.removeItem(QUEUED_TOAST_STORAGE_KEY);
+      return null;
+    }
+
+    return {
+      message: parsed.message,
+      type: parsed.type,
+      action: parsed.action,
+    };
+  } catch {
+    globalThis.sessionStorage.removeItem(QUEUED_TOAST_STORAGE_KEY);
+    return null;
   }
 }
 
@@ -22,9 +88,9 @@ const TOAST_ICONS = {
 /** Build toast inner content using safe DOM APIs (icon is trusted, text uses textContent). */
 function setToastContent(
   toast: HTMLElement,
-  type: "success" | "error",
+  type: ToastType,
   message: string,
-  action?: { label: string; href: string },
+  action?: ToastAction,
 ): void {
   toast.innerHTML = TOAST_ICONS[type];
   const span = document.createElement("span");
@@ -49,13 +115,10 @@ function setToastContent(
  * showToast("Saved successfully.");
  * showToast("Something went wrong", "error");
  */
-export function showToast(
-  message: string,
-  type: "success" | "error" = "success",
-): void {
+export function showToast(message: string, type: ToastType = "success"): void {
   if (!message) return;
 
-  const container = document.getElementById("toast-container");
+  const container = getToastContainer();
   if (!container) return;
 
   ensureTopLayer(container);
@@ -83,12 +146,12 @@ export function showToast(
  */
 export function showToastWithAction(
   message: string,
-  action: { label: string; href: string },
-  type: "success" | "error" = "success",
+  action: ToastAction,
+  type: ToastType = "success",
 ): void {
   if (!message) return;
 
-  const container = document.getElementById("toast-container");
+  const container = getToastContainer();
   if (!container) return;
 
   ensureTopLayer(container);
@@ -118,9 +181,9 @@ export function showToastWithAction(
 export function showPersistentToast(
   id: string,
   message: string,
-  type: "success" | "error" = "success",
+  type: ToastType = "success",
 ): HTMLElement | null {
-  const container = document.getElementById("toast-container");
+  const container = getToastContainer();
   if (!container) return null;
 
   ensureTopLayer(container);
@@ -180,7 +243,7 @@ export function dismissToast(id: string): void {
 export function replaceWithAutoClose(
   id: string,
   message: string,
-  type: "success" | "error" = "success",
+  type: ToastType = "success",
 ): void {
   const toast = document.getElementById(`toast-${id}`);
   if (!toast) {
@@ -212,8 +275,8 @@ export function replaceWithAutoClose(
 export function replaceWithAutoCloseAction(
   id: string,
   message: string,
-  action: { label: string; href: string },
-  type: "success" | "error" = "success",
+  action: ToastAction,
+  type: ToastType = "success",
 ): void {
   const toast = document.getElementById(`toast-${id}`);
   if (!toast) {
@@ -230,3 +293,60 @@ export function replaceWithAutoCloseAction(
     toast.addEventListener("animationend", () => toast.remove());
   }, 3000);
 }
+
+/**
+ * Queue a toast to be shown after the next navigation or reload.
+ *
+ * @param message - Text to display on the next page
+ * @param type - Visual style: "success" (default) or "error"
+ * @param action - Optional action link rendered on the destination page
+ */
+export function queueToastForNextPage(
+  message: string,
+  type: ToastType = "success",
+  action?: ToastAction,
+): void {
+  if (!message || !canUseSessionStorage()) return;
+
+  globalThis.sessionStorage.setItem(
+    QUEUED_TOAST_STORAGE_KEY,
+    JSON.stringify({ message, type, action } satisfies QueuedToast),
+  );
+}
+
+/**
+ * Show a queued toast, if one exists for the current page load.
+ *
+ * @returns True when a queued toast was consumed
+ */
+export function consumeQueuedToast(): boolean {
+  const queued = readQueuedToast();
+  if (!queued || !getToastContainer()) return false;
+
+  globalThis.sessionStorage.removeItem(QUEUED_TOAST_STORAGE_KEY);
+
+  if (queued.action) {
+    showToastWithAction(queued.message, queued.action, queued.type);
+  } else {
+    showToast(queued.message, queued.type);
+  }
+
+  return true;
+}
+
+function initQueuedToastConsumer(): void {
+  const showQueuedToast = () => {
+    consumeQueuedToast();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", showQueuedToast, {
+      once: true,
+    });
+    return;
+  }
+
+  showQueuedToast();
+}
+
+initQueuedToastConsumer();

@@ -20,6 +20,7 @@ import {
   showToast,
   showPersistentToast,
   replaceWithAutoClose,
+  queueToastForNextPage,
 } from "./toast.js";
 import { openReplyForArticle } from "./compose-launch.js";
 import { getJsonString, readJsonObject } from "./json.js";
@@ -488,6 +489,8 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   const labels = composeEl?.labels;
   const uploadingMsg = labels?.uploading ?? "Uploading...";
   const hasPending = detail.pendingAttachments.length > 0;
+  const publishedMsg = labels?.published ?? "Published!";
+  const viewLabel = labels?.view ?? "View";
 
   // Show persistent toast only when uploads are still in flight
   if (hasPending) {
@@ -517,6 +520,12 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
   };
   const refreshComposeCollections = async () => {
     await composeEl?.refreshCollections();
+  };
+  const queueSuccessToast = (
+    msg: string,
+    action?: { label: string; href: string },
+  ) => {
+    queueToastForNextPage(msg, "success", action);
   };
   const leavePageAfterConfirmSave = () => {
     if (!isPageMode || !composeEl) return false;
@@ -661,7 +670,7 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
     }
 
     if (isEdit) {
-      toastMsg("Post updated.");
+      queueSuccessToast("Post updated.");
       if (isPageMode) {
         globalThis.location.assign(globalThis.location.pathname);
       } else {
@@ -687,19 +696,31 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
 
     if (status === "published") {
       if (isPageMode && permalink) {
+        queueSuccessToast(publishedMsg);
         composeEl?.preparePageLeave?.();
         globalThis.location.assign(permalink);
       } else if (detail.replyToId) {
         await refreshComposeCollections();
         const updated = await refreshReplyTarget(detail);
         if (!updated) {
+          queueSuccessToast(
+            publishedMsg,
+            permalink ? { label: viewLabel, href: permalink } : undefined,
+          );
           globalThis.location.reload();
+          return;
         }
+        toastMsg(publishedMsg);
       } else {
         // Reload the page so the timeline picks up the new post via a
         // full assembleTimeline() pass (correct thread previews, filters, etc.)
+        queueSuccessToast(
+          publishedMsg,
+          permalink ? { label: viewLabel, href: permalink } : undefined,
+        );
         globalThis.location.reload();
       }
+      return;
     } else {
       await refreshComposeCollections();
       if (!leavePageAfterConfirmSave()) {

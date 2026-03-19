@@ -12,7 +12,7 @@ import type {
 } from "./components/post-form-types.js";
 import type { JantPostForm } from "./components/jant-post-form.js";
 import { getJsonString, readJsonObject } from "./json.js";
-import { showToast } from "./toast.js";
+import { queueToastForNextPage, showToast } from "./toast.js";
 
 function findPostForm(
   target: globalThis.EventTarget | null,
@@ -91,15 +91,16 @@ async function handlePostSubmit(event: Event) {
                 // Ignore parse failure; use default message
               }
             }
-            showToast(fallbackMsg);
 
             const retryStatus = getJsonString(retryJson, "status");
             const retryUrl = getJsonString(retryJson, "url");
             if (retryStatus === "redirect" && retryUrl) {
               formEl.clearDirty();
+              queueToastForNextPage(fallbackMsg);
               window.location.href = retryUrl;
               return;
             }
+            showToast(fallbackMsg);
             formEl.clearDirty();
             return;
           }
@@ -117,6 +118,7 @@ async function handlePostSubmit(event: Event) {
 
     if (status === "redirect" && url) {
       formEl.clearDirty();
+      queueToastForNextPage(detail.messages.success);
       window.location.href = url;
       return;
     }
