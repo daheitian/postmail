@@ -105,7 +105,12 @@ export const ActionButtons: FC<ActionButtonsProps> = ({
         </a>
       )}
       {viewHref && (
-        <a href={viewHref} class={viewClass} target="_blank">
+        <a
+          href={viewHref}
+          class={viewClass}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {viewLabel || defaultViewLabel}
         </a>
       )}

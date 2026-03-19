@@ -266,6 +266,9 @@ describe("end-to-end: Markdown → markdownToTiptapJson → renderTiptapJson", (
     const json = markdownToTiptapJson("[click](https://example.com)");
     const html = renderTiptapJson(json);
     expect(html).toContain('href="https://example.com"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).not.toContain("nofollow");
     expect(html).toContain("click");
   });
 

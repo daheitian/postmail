@@ -44,9 +44,7 @@ function renderMarks(text: string, marks: TiptapMark[]): string {
         const target = mark.attrs?.target
           ? ` target="${escapeHtml(String(mark.attrs.target))}"`
           : "";
-        const rel = mark.attrs?.target
-          ? ' rel="noopener noreferrer nofollow"'
-          : "";
+        const rel = mark.attrs?.target ? ' rel="noopener noreferrer"' : "";
         result = `<a href="${href}"${target}${rel}>${result}</a>`;
         break;
       }

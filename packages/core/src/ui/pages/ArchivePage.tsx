@@ -956,7 +956,7 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
     <a
       href={post.permalink}
       target="_blank"
-      rel="noopener"
+      rel="noopener noreferrer"
       class={`archive-tile archive-tile-${variant}`}
       data-post
       data-format={post.format}
