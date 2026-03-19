@@ -11,6 +11,10 @@
  */
 
 import { LitElement, html, nothing } from "lit";
+import {
+  FEATURED_SPARKLE_OFF_SLASH_PATH,
+  FEATURED_SPARKLE_PATH,
+} from "../../lib/featured-icons.js";
 import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
@@ -685,8 +689,8 @@ export class JantPostMenu extends LitElement {
     </svg>`;
   }
 
-  // Lucide: heart (add to Featured) / heart-off (remove from Featured)
-  #iconHeart() {
+  // Shared featured sparkle icon / custom off variant
+  #iconFeatured() {
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
@@ -696,29 +700,23 @@ export class JantPostMenu extends LitElement {
       stroke-linecap="round"
       stroke-linejoin="round"
     >
-      <path
-        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-      />
+      <path d=${FEATURED_SPARKLE_PATH} />
     </svg>`;
   }
 
-  #iconHeartOff() {
+  #iconFeaturedOff() {
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       stroke-width="1.75"
+      style="--icon-stroke: 1.5"
       stroke-linecap="round"
       stroke-linejoin="round"
     >
-      <line x1="2" y1="2" x2="22" y2="22" />
-      <path
-        d="M16.5 16.5 12 21l-7-7c-1.5-1.45-3-3.2-3-5.5a5.5 5.5 0 0 1 2.14-4.35"
-      />
-      <path
-        d="M8.76 3.1c1.15.22 2.13.78 3.24 1.9 1.5-1.5 2.74-2 4.5-2A5.5 5.5 0 0 1 22 8.5c0 2.12-1.3 3.78-2.67 5.17"
-      />
+      <path d=${FEATURED_SPARKLE_PATH} />
+      <path d=${FEATURED_SPARKLE_OFF_SLASH_PATH} />
     </svg>`;
   }
 
@@ -1214,7 +1212,9 @@ export class JantPostMenu extends LitElement {
                   : "Add to Featured"}</span
               >
               <span class="post-menu-item-trailing"
-                >${isFeatured ? this.#iconHeartOff() : this.#iconHeart()}</span
+                >${isFeatured
+                  ? this.#iconFeaturedOff()
+                  : this.#iconFeatured()}</span
               >
             </button>
 

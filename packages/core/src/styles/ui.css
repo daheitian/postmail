@@ -1925,7 +1925,7 @@
     position: relative;
   }
 
-  /* --- Post status badges (pinned / featured) ----------------------------- */
+  /* --- Post status badges (pinned / private) ------------------------------ */
   /* Visibility driven by parent article's data attributes so the post menu
      can toggle badges instantly without a page reload. */
 
@@ -1944,7 +1944,6 @@
 
   /* Show the container when at least one status is active */
   article[data-post-pinned] .post-status-badges,
-  article[data-post-featured] .post-status-badges,
   article[data-post-visibility="private"] .post-status-badges {
     display: flex;
   }
@@ -1961,10 +1960,6 @@
     display: inline-flex;
   }
 
-  article[data-post-featured] .post-status-featured {
-    display: inline-flex;
-  }
-
   article[data-post-visibility="private"] .post-status-private {
     display: inline-flex;
   }
@@ -1974,18 +1969,6 @@
     height: 11px;
     flex-shrink: 0;
     opacity: 0.82;
-  }
-
-  [data-page="featured"] article[data-post-featured] .post-status-featured {
-    display: none;
-  }
-
-  [data-page="featured"]
-    article[data-post-featured]:not([data-post-pinned]):not(
-      [data-post-visibility="private"]
-    )
-    .post-status-badges {
-    display: none;
   }
 
   .post-menu-footer {
@@ -2006,9 +1989,52 @@
   .post-footer-meta {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     flex-wrap: wrap;
     min-width: 0;
+    line-height: 1.35;
+  }
+
+  .post-footer-featured {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: color-mix(
+      in srgb,
+      var(--search-mark-color) 72%,
+      var(--site-text-secondary)
+    );
+    --icon-stroke: 1.35;
+    flex-shrink: 0;
+  }
+
+  article[data-post-featured] .post-footer-featured {
+    display: inline-flex;
+  }
+
+  .post-footer-featured svg {
+    width: 1rem;
+    height: 1rem;
+    opacity: 0.9;
+  }
+
+  .post-footer-link {
+    color: var(--site-text-secondary);
+    font-size: 13px;
+    text-decoration: none;
+  }
+
+  .post-footer-link:hover {
+    color: var(--site-text-primary);
+    text-decoration: underline;
+  }
+
+  .post-footer-detail .post-footer-link {
+    font-size: inherit;
+  }
+
+  [data-page="featured"] article[data-post-featured] .post-footer-featured {
+    display: none;
   }
 
   .post-footer-external-link {
@@ -2035,7 +2061,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 12px;
+    font-size: 13px;
     position: relative;
   }
 

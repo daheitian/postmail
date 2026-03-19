@@ -16,6 +16,7 @@ import type {
 } from "../../types.js";
 import type { PostView } from "../../types/views.js";
 import { FORMATS, MEDIA_KINDS } from "../../types.js";
+import { getFeaturedIconSvg } from "../../lib/featured-icons.js";
 import { getIconSvg } from "../../lib/icons.js";
 import { toPublicPath } from "../../lib/url.js";
 import { toMediaKind } from "../../lib/upload.js";
@@ -486,6 +487,10 @@ const VISIBILITY_ICONS: Record<ArchiveVisibility, string> = {
   featured: "star",
 };
 
+const FEATURED_VISIBILITY_ICON_HTML = getFeaturedIconSvg({
+  className: "icon-fine",
+});
+
 /** Chip icon for each filter dimension. */
 const FILTER_ICONS = {
   year: "calendar",
@@ -678,7 +683,9 @@ const FilterBar: FC<{
     },
     ...ARCHIVE_VISIBILITIES.map((v) => ({
       label: getVisibilityLabel(v),
-      icon: VISIBILITY_ICONS[v],
+      ...(v === "featured"
+        ? { iconHtml: FEATURED_VISIBILITY_ICON_HTML }
+        : { icon: VISIBILITY_ICONS[v] }),
       value: buildFilterUrl(filters, { visibility: v }, sitePathPrefix),
     })),
   ];
@@ -776,8 +783,13 @@ const FilterBar: FC<{
                 : undefined
             }
             activeIcon={
-              filters.visibility
+              filters.visibility && filters.visibility !== "featured"
                 ? VISIBILITY_ICONS[filters.visibility]
+                : undefined
+            }
+            activeIconHtml={
+              filters.visibility === "featured"
+                ? FEATURED_VISIBILITY_ICON_HTML
                 : undefined
             }
             iconOnly

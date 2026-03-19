@@ -66,4 +66,19 @@ describe("PostFooter", () => {
     expect(html.match(/href="\/c\/writing"/g)).toHaveLength(1);
     expect(html.match(/href="\/c\/studio"/g)).toHaveLength(1);
   });
+
+  it("renders the featured icon before the timestamp for client-side toggles", () => {
+    const html = renderToString(
+      PostFooter({
+        post: createPostView({ featured: true }),
+      }),
+    );
+
+    expect(html).toContain('class="post-footer-featured"');
+    expect(html).toContain('title="Featured"');
+    expect(html).toContain('<span class="sr-only">Featured</span>');
+    expect(html.indexOf('class="post-footer-featured"')).toBeLessThan(
+      html.indexOf('class="u-url post-footer-link"'),
+    );
+  });
 });

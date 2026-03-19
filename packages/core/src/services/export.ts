@@ -20,6 +20,7 @@ import {
 } from "../lib/jant-branding.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import { getMediaUrl, getPublicUrlForProvider } from "../lib/image.js";
+import { FEATURED_SPARKLE_PATH } from "../lib/featured-icons.js";
 import { escapeHtml } from "../lib/html.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
 import { toISOString } from "../lib/time.js";
@@ -1271,13 +1272,6 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     </svg>
     Pinned
   </span>
-  <span class="post-status-separator" aria-hidden="true">&middot;</span>
-  <span class="post-status-badge post-status-featured">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-    </svg>
-    Featured
-  </span>
   <span class="post-status-badge post-status-private">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
       <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
@@ -1304,6 +1298,12 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
 {% set collections = page.taxonomies.c | default(value=[]) %}
 <footer class="post-menu-footer{% if detail %} post-footer-detail{% endif %}" data-post-meta>
   <div class="post-footer-meta">
+    <span class="post-footer-featured" title="Featured">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="${FEATURED_SPARKLE_PATH}" />
+      </svg>
+      <span class="sr-only">Featured</span>
+    </span>
     <a href="{{ page.permalink }}" class="u-url post-date-link">
       <time class="dt-published" datetime="{{ page.date }}" title="{{ page.date }}">
         {{ page.date | date(format="%b %e, %Y") }}
@@ -2010,7 +2010,6 @@ img {
 }
 
 article[data-post-pinned] .post-status-badges,
-article[data-post-featured] .post-status-badges,
 article[data-post-visibility="private"] .post-status-badges {
   display: flex;
 }
@@ -2022,7 +2021,6 @@ article[data-post-visibility="private"] .post-status-badges {
 }
 
 article[data-post-pinned] .post-status-pinned,
-article[data-post-featured] .post-status-featured,
 article[data-post-visibility="private"] .post-status-private {
   display: inline-flex;
 }
@@ -2032,13 +2030,39 @@ article[data-post-visibility="private"] .post-status-private {
   height: 12px;
 }
 
-.post-status-separator {
+.post-footer-featured {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--search-mark-color) 72%, var(--site-text-secondary));
+  --icon-stroke: 1.35;
+  flex-shrink: 0;
+}
+
+article[data-post-featured] .post-footer-featured {
+  display: inline-flex;
+}
+
+.post-footer-featured svg {
+  width: 1.12rem;
+  height: 1.12rem;
+  opacity: 0.88;
+}
+
+[data-page="featured"] article[data-post-featured] .post-footer-featured {
   display: none;
 }
 
-article[data-post-pinned][data-post-featured] .post-status-separator,
-article[data-post-pinned][data-post-visibility="private"] .post-status-separator {
-  display: inline;
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .prose {
@@ -2240,18 +2264,24 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
 .post-footer-meta {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   flex-wrap: wrap;
+  line-height: 1.35;
 }
 
 .post-date-link {
   color: var(--site-text-secondary);
   text-decoration: none;
+  font-size: 13px;
 }
 
 .post-date-link:hover {
   color: var(--site-text-primary);
   text-decoration: underline;
+}
+
+.post-footer-detail .post-date-link {
+  font-size: inherit;
 }
 
 .post-footer-external-link {
@@ -2272,7 +2302,7 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .post-collection-sep {

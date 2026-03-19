@@ -11,6 +11,7 @@ import type {
   CollectionTagView,
   PostFooterDisplayOptions,
 } from "../../types.js";
+import { FEATURED_SPARKLE_PATH } from "../../lib/featured-icons.js";
 import { sanitizeUrl } from "../../lib/url.js";
 
 interface PostFooterProps {
@@ -63,6 +64,7 @@ const CompactCollectionTags: FC<{
 };
 
 export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
+  const featuredLabel = "Featured";
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
   const showTimestamp = !display?.hideTimestamp;
@@ -79,11 +81,23 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
       data-post-meta
     >
       <div class="post-footer-meta">
-        {showTimestamp && (
-          <a
-            href={post.permalink}
-            class={`u-url hover:underline${detail ? "" : " text-xs text-muted-foreground"}`}
+        <span class="post-footer-featured" title={featuredLabel}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.35"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
           >
+            <path d={FEATURED_SPARKLE_PATH} />
+          </svg>
+          <span class="sr-only">{featuredLabel}</span>
+        </span>
+        {showTimestamp && (
+          <a href={post.permalink} class="u-url post-footer-link">
             <time
               class="dt-published"
               datetime={post.publishedAt}
@@ -121,10 +135,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
           </span>
         )}
         {showThreadLink && post.threadRootPermalink && (
-          <a
-            href={post.threadRootPermalink}
-            class="text-xs text-muted-foreground hover:underline"
-          >
+          <a href={post.threadRootPermalink} class="post-footer-link">
             In thread &rarr;
           </a>
         )}
