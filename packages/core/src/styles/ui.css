@@ -3796,7 +3796,30 @@
   .compose-publish-group {
     position: relative;
     display: inline-flex;
+    align-items: center;
+    gap: 8px;
     flex-shrink: 0;
+  }
+
+  .compose-publish-shortcut {
+    display: none;
+  }
+
+  @media (min-width: 700px) {
+    .compose-publish-shortcut {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      line-height: 1;
+      white-space: nowrap;
+      user-select: none;
+      opacity: 0.78;
+    }
+
+    .compose-publish-shortcut-plus {
+      opacity: 0.45;
+    }
   }
 
   .compose-publish-single,
