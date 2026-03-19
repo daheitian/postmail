@@ -3066,6 +3066,17 @@
     position: relative;
   }
 
+  .compose-dialog:has(.compose-dialog-inner-suspended) {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .compose-dialog:has(.compose-dialog-inner-suspended)
+    .collection-quick-dialog-backdrop {
+    background: transparent;
+  }
+
   .compose-dialog-inner {
     display: flex;
     flex-direction: column;
@@ -3073,6 +3084,12 @@
     position: relative;
     border-radius: inherit;
     overflow: visible;
+  }
+
+  .compose-dialog-inner-suspended {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .compose-dialog-inner > jant-compose-editor {
@@ -3123,6 +3140,17 @@
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+  }
+
+  .compose-dialog-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+  }
+
+  .compose-dialog-more-wrap {
+    margin-left: -5px;
   }
 
   .compose-dialog-title {

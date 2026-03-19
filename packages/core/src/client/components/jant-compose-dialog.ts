@@ -1920,7 +1920,7 @@ export class JantComposeDialog extends LitElement {
               `}
         </div>
 
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="compose-dialog-header-actions">
           ${this._editPostId
             ? nothing
             : html`<button
@@ -1942,12 +1942,16 @@ export class JantComposeDialog extends LitElement {
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 >
-                  <path
-                    d="M5 2.75h4.9L13.5 6.3v7.2a1.25 1.25 0 01-1.25 1.25H5a1.25 1.25 0 01-1.25-1.25V4A1.25 1.25 0 015 2.75z"
+                  <rect
+                    x="3.35"
+                    y="3.15"
+                    width="10.75"
+                    height="10.75"
+                    rx="2.35"
                   />
-                  <path d="M9.75 2.75V6.2h3.45" />
-                  <path d="M6 8.35h5.9" />
-                  <path d="M6 11h4.7" />
+                  <path d="M10.75 3.15v2.7a1.5 1.5 0 001.5 1.5h1.85" />
+                  <path d="M6.1 8.35h5.85" />
+                  <path d="M6.1 11h4.6" />
                 </svg>
               </button>`}
           ${this._renderMoreMenu()}
@@ -1966,7 +1970,7 @@ export class JantComposeDialog extends LitElement {
       Boolean(this._suggestedSlug);
 
     return html`
-      <div class="relative">
+      <div class="compose-dialog-more-wrap relative">
         ${this._showMoreMenu
           ? html`<div
               class="compose-dropdown-backdrop"
@@ -2905,7 +2909,10 @@ export class JantComposeDialog extends LitElement {
         class=${classMap({
           "compose-dialog-inner": true,
           "compose-dialog-inner-page": this.pageMode,
+          "compose-dialog-inner-suspended": this._addCollectionPanelOpen,
         })}
+        aria-hidden=${this._addCollectionPanelOpen ? "true" : "false"}
+        ?inert=${this._addCollectionPanelOpen}
       >
         ${this._renderHeader()}
         ${isReply

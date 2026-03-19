@@ -1157,7 +1157,15 @@ describe("JantComposeDialog", () => {
     addAction.click();
     await el.updateComplete;
 
+    const composeInner = requireElement(
+      el.querySelector<HTMLElement>(".compose-dialog-inner"),
+      "expected compose dialog inner",
+    );
     expect(el.querySelector("[data-collection-quick-dialog]")).not.toBeNull();
+    expect(
+      composeInner.classList.contains("compose-dialog-inner-suspended"),
+    ).toBe(true);
+    expect(composeInner.getAttribute("aria-hidden")).toBe("true");
     expect(
       el.querySelector("[data-collection-quick-dialog] textarea"),
     ).toBeNull();
@@ -1185,6 +1193,126 @@ describe("JantComposeDialog", () => {
     expect(el.textContent).toContain(
       "More options are available after you create it.",
     );
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(
+        "[data-collection-quick-dialog] .collection-quick-dialog-cancel",
+      ),
+      "expected quick dialog cancel button",
+    ).click();
+    await flushUpdates(el);
+
+    expect(el.querySelector("[data-collection-quick-dialog]")).toBeNull();
+    expect(
+      composeInner.classList.contains("compose-dialog-inner-suspended"),
+    ).toBe(false);
+    expect(composeInner.getAttribute("aria-hidden")).toBe("false");
+  });
+
+  it("restores compose after creating a collection from the quick dialog", async () => {
+    const el = await createElement();
+    const trigger = requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-collection-trigger"),
+      "expected collection trigger",
+    );
+
+    trigger.click();
+    await el.updateComplete;
+
+    requireElement(
+      el.querySelector<HTMLElement>(".compose-collection-add-action"),
+      "expected add collection action",
+    ).click();
+    await el.updateComplete;
+
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (input, init) => {
+        const raw =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url;
+        const url = new URL(raw, "http://localhost");
+        const method =
+          init?.method ??
+          (typeof input === "string" || input instanceof URL
+            ? "GET"
+            : input.method);
+
+        if (url.pathname === "/api/collections" && method === "POST") {
+          return new Response(
+            JSON.stringify({ id: "col-3", title: "Travel" }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+
+        if (
+          url.pathname === "/api/collections" &&
+          url.searchParams.get("view") === "compose"
+        ) {
+          return new Response(
+            JSON.stringify({
+              collections: [
+                { id: "col-3", title: "Travel" },
+                { id: "col-1", title: "Books" },
+                { id: "col-2", title: "Movies" },
+              ],
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+
+        throw new Error(`Unexpected fetch: ${url.pathname}${url.search}`);
+      });
+
+    const form = requireElement(
+      el.querySelector<HTMLElement>(
+        "[data-collection-quick-dialog] jant-collection-form",
+      ),
+      "expected quick collection form",
+    );
+    form.dispatchEvent(
+      new CustomEvent("jant:collection-submit", {
+        bubbles: true,
+        detail: {
+          data: {
+            title: "Travel",
+            slug: "travel",
+            description: "",
+            sortOrder: "newest",
+            icon: "",
+          },
+        },
+      }),
+    );
+
+    await vi.waitFor(() => {
+      expect(el.querySelector("[data-collection-quick-dialog]")).toBeNull();
+    });
+
+    const composeInner = requireElement(
+      el.querySelector<HTMLElement>(".compose-dialog-inner"),
+      "expected compose dialog inner",
+    );
+    expect(fetchSpy).toHaveBeenCalled();
+    expect(el.querySelector("[data-collection-quick-dialog]")).toBeNull();
+    expect(
+      composeInner.classList.contains("compose-dialog-inner-suspended"),
+    ).toBe(false);
+    expect(el._collectionIds).toContain("col-3");
+    expect(el.collections).toEqual([
+      { id: "col-3", title: "Travel" },
+      { id: "col-1", title: "Books" },
+      { id: "col-2", title: "Movies" },
+    ]);
   });
 
   it("draft button with content shows confirm panel", async () => {
