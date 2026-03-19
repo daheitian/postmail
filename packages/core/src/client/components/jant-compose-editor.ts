@@ -1734,8 +1734,8 @@ export class JantComposeEditor extends LitElement {
           >
             <svg
               class="icon-fine"
-              width="16"
-              height="16"
+              width="15"
+              height="15"
               viewBox="0 0 18 18"
               fill="none"
               stroke="currentColor"

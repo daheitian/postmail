@@ -323,7 +323,7 @@ export const ComposeForm: FC<ComposeFormProps> = ({
         "@context: Compose publish settings slug summary when no custom slug is set",
     }),
     publishSlugReset: t({
-      message: "Use automatic",
+      message: "Reset link",
       comment:
         "@context: Compose custom slug action that clears the manual slug and falls back to automatic generation",
     }),
