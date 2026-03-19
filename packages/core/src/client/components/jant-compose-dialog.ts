@@ -1925,7 +1925,8 @@ export class JantComposeDialog extends LitElement {
             ? nothing
             : html`<button
                 type="button"
-                class="compose-dialog-header-btn"
+                class="compose-dialog-header-btn compose-dialog-draft-btn"
+                aria-label=${this.labels.saveDraft}
                 title=${this.labels.saveDraft}
                 ?disabled=${this._loading}
                 @click=${() => this._handleDraftButtonClick()}
@@ -1937,12 +1938,16 @@ export class JantComposeDialog extends LitElement {
                   viewBox="0 0 18 18"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="1.3"
+                  stroke-width="1.35"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 >
-                  <path d="M14 2.5L15.5 4 7 12.5l-3 .5.5-3L14 2.5z" />
-                  <path d="M4 15h10" />
+                  <path
+                    d="M5 2.75h4.9L13.5 6.3v7.2a1.25 1.25 0 01-1.25 1.25H5a1.25 1.25 0 01-1.25-1.25V4A1.25 1.25 0 015 2.75z"
+                  />
+                  <path d="M9.75 2.75V6.2h3.45" />
+                  <path d="M6 8.35h5.9" />
+                  <path d="M6 11h4.7" />
                 </svg>
               </button>`}
           ${this._renderMoreMenu()}
@@ -1973,7 +1978,7 @@ export class JantComposeDialog extends LitElement {
           : nothing}
         <button
           type="button"
-          class="compose-dialog-header-btn"
+          class="compose-dialog-header-btn compose-dialog-more-btn"
           @click=${() => {
             this._showCollection = false;
             this._collectionSearch = "";
@@ -2626,6 +2631,83 @@ export class JantComposeDialog extends LitElement {
     this._scheduleSuggestedSlugRefresh();
   }
 
+  private _renderVisibilityIcon(
+    visibility: ComposeVisibility,
+    variant: "menu" | "toggle" = "menu",
+  ) {
+    const iconClasses = classMap({
+      "compose-publish-visibility-icon": true,
+      "compose-publish-visibility-icon-toggle": variant === "toggle",
+      "compose-publish-visibility-icon-public": visibility === "public",
+      "compose-publish-visibility-icon-unlisted": visibility === "unlisted",
+      "compose-publish-visibility-icon-private": visibility === "private",
+    });
+
+    if (visibility === "private") {
+      return html`
+        <span class=${iconClasses} aria-hidden="true">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.45"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="4.25" y="7" width="7.5" height="5.75" rx="1.5" />
+            <path
+              d="M5.75 7V5.7A2.25 2.25 0 018 3.45a2.25 2.25 0 012.25 2.25V7"
+            />
+          </svg>
+        </span>
+      `;
+    }
+
+    if (visibility === "unlisted") {
+      return html`
+        <span class=${iconClasses} aria-hidden="true">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.45"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M6.1 9.9l3.8-3.8" />
+            <path d="M5.15 11a2.1 2.1 0 010-2.95L7 6.2a2.1 2.1 0 012.95 0" />
+            <path d="M10.85 5a2.1 2.1 0 010 2.95L9 9.8a2.1 2.1 0 01-2.95 0" />
+          </svg>
+        </span>
+      `;
+    }
+
+    return html`
+      <span class=${iconClasses} aria-hidden="true">
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.45"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="8" cy="8" r="5.25" />
+          <path d="M2.75 8h10.5" />
+          <path
+            d="M8 2.75c1.45 1.35 2.3 3.24 2.3 5.25S9.45 11.9 8 13.25C6.55 11.9 5.7 10.01 5.7 8S6.55 4.1 8 2.75"
+          />
+        </svg>
+      </span>
+    `;
+  }
+
   private _renderPublishVisibilityOption(
     visibility: ComposeVisibility,
     label: string,
@@ -2645,6 +2727,7 @@ export class JantComposeDialog extends LitElement {
         ?disabled=${this._visibilityLocked}
         @click=${() => this._setVisibility(visibility)}
       >
+        ${this._renderVisibilityIcon(visibility)}
         <span class="compose-publish-copy">
           <span class="compose-publish-row-label">${label}</span>
           <span class="compose-publish-row-hint">${hint}</span>
@@ -2723,7 +2806,6 @@ export class JantComposeDialog extends LitElement {
           <button
             type="button"
             class=${classMap({
-              "btn-sm-outline": true,
               "compose-publish-single": true,
               "compose-publish-single-loading": this._loading,
             })}
@@ -2747,11 +2829,16 @@ export class JantComposeDialog extends LitElement {
               }}
             ></div>`
           : nothing}
-        <div role="group" class="button-group compose-publish-buttons">
+        <div
+          role="group"
+          class=${classMap({
+            "compose-publish-buttons": true,
+            "compose-publish-buttons-inactive": !canPublish && !this._loading,
+          })}
+        >
           <button
             type="button"
             class=${classMap({
-              "btn-sm-outline": true,
               "compose-publish-main": true,
               "compose-publish-main-loading": this._loading,
             })}
@@ -2763,16 +2850,18 @@ export class JantComposeDialog extends LitElement {
           <button
             type="button"
             class=${classMap({
-              "btn-sm-icon-outline": true,
               "compose-publish-toggle": true,
               "compose-publish-toggle-loading": this._loading,
             })}
             ?disabled=${this._loading}
             aria-haspopup="menu"
             aria-expanded=${this._showPublishPanel ? "true" : "false"}
+            aria-label=${this.labels.publishVisibilityLabel}
+            title=${this.labels.publishVisibilityLabel}
             @click=${() => this._togglePublishPanel()}
           >
             <svg
+              class="compose-publish-toggle-chevron"
               width="14"
               height="14"
               viewBox="0 0 24 24"
