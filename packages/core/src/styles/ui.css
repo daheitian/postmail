@@ -1824,6 +1824,17 @@
 
   .post-collection-more-wrap {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .post-collection-more-wrap::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: -6px;
+    right: -6px;
+    height: 10px;
   }
 
   .post-collection-more {
@@ -1842,6 +1853,11 @@
     color: var(--site-text-primary);
   }
 
+  .post-collection-more-wrap:hover .post-collection-more,
+  .post-collection-more-wrap:focus-within .post-collection-more {
+    color: var(--site-text-primary);
+  }
+
   .post-collection-popover {
     display: none;
     position: absolute;
@@ -1857,6 +1873,8 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
+  .post-collection-more-wrap:hover .post-collection-popover,
+  .post-collection-more-wrap:focus-within .post-collection-popover,
   .post-collection-popover.open {
     display: flex;
   }

@@ -278,7 +278,7 @@ function buildPostMarkdown(
 
   // Front matter (YAML)
   parts.push("---");
-  if (root.title) {
+  if (root.title && root.format !== "quote") {
     parts.push(`title: ${yamlString(root.title)}`);
   }
   const date = root.publishedAt ?? root.createdAt;
@@ -321,8 +321,14 @@ function buildPostMarkdown(
   if (summaryText) {
     parts.push(`  summary_text: ${yamlString(summaryText)}`);
   }
-  if (root.url) {
+  if (root.format === "link" && root.url) {
     parts.push(`  link_url: ${yamlString(root.url)}`);
+  }
+  if (root.format === "quote" && root.title) {
+    parts.push(`  source_name: ${yamlString(root.title)}`);
+  }
+  if (root.format === "quote" && root.url) {
+    parts.push(`  source_url: ${yamlString(root.url)}`);
   }
   if (root.quoteText) {
     parts.push(`  quote_text: ${yamlString(root.quoteText)}`);
@@ -371,10 +377,16 @@ function buildPostMarkdown(
     if (reply.format === "quote" && reply.quoteText) {
       marker += ` quote_text="${encodeURIComponent(reply.quoteText)}"`;
     }
+    if (reply.format === "quote" && reply.title) {
+      marker += ` source_name="${esc(reply.title)}"`;
+    }
+    if (reply.format === "quote" && reply.url) {
+      marker += ` source_url="${esc(reply.url)}"`;
+    }
     if (reply.rating !== null) {
       marker += ` rating="${reply.rating}"`;
     }
-    if (reply.title) {
+    if (reply.title && reply.format !== "quote") {
       marker += ` title="${esc(reply.title)}"`;
     }
     marker += " -->";
@@ -1358,14 +1370,14 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
     <div class="e-content feed-quote-content">{{ page.extra.quote_text }}</div>
   </blockquote>
   {% endif %}
-  {% if page.title or page.extra.link_url %}
+  {% if page.extra.source_name or page.extra.source_url %}
   <div class="feed-quote-attribution">
-    {% if page.extra.link_url %}
-    <a href="{{ page.extra.link_url }}" class="feed-quote-source" target="_blank" rel="noopener noreferrer">
-      {{ page.title | default(value=page.extra.link_url | split(pat='//') | nth(n=1) | split(pat='/') | first) }}
+    {% if page.extra.source_url %}
+    <a href="{{ page.extra.source_url }}" class="feed-quote-source" target="_blank" rel="noopener noreferrer">
+      {{ page.extra.source_name | default(value=page.extra.source_url | split(pat='//') | nth(n=1) | split(pat='/') | first) }}
     </a>
     {% else %}
-    <span>{{ page.title }}</span>
+    <span>{{ page.extra.source_name }}</span>
     {% endif %}
   </div>
   {% endif %}
@@ -1669,7 +1681,7 @@ img {
 }
 
 .site-content-home {
-  padding-top: 0;
+  padding-top: 0.75rem;
   padding-bottom: calc(var(--space-xl) - 0.25rem);
   border-bottom: 0.5px solid
     color-mix(in srgb, var(--site-divider) 84%, transparent);
@@ -2217,6 +2229,15 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
   position: relative;
   display: inline-flex;
   align-items: center;
+}
+
+.post-collection-more-wrap::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: -6px;
+  right: -6px;
+  height: 10px;
 }
 
 .post-collection-more {

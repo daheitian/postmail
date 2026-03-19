@@ -87,7 +87,7 @@ Jant has three post formats:
 | ------- | -------------------------------------------------------- | -------------------------------------------- |
 | `note`  | Original content (short thoughts, long articles, images) | `bodyMarkdown`, `title` (optional)           |
 | `link`  | Shared reference (articles, tools, videos)               | `url` (important), `bodyMarkdown` (optional) |
-| `quote` | Cited text (book excerpts, quotes)                       | `quoteText`, `url` (optional source)         |
+| `quote` | Cited text (book excerpts, quotes)                       | `quoteText`, `sourceName`, `sourceUrl`       |
 
 ### List Posts
 
@@ -158,6 +158,8 @@ GET /api/posts
 
 `nextCursor` is `null` when there are no more pages.
 
+Quote posts use `sourceName` and `sourceUrl` in API responses. They do not expose `title` or `url`.
+
 ### Get Post
 
 ```
@@ -178,6 +180,8 @@ GET /api/posts/:id
 }
 ```
 
+Quote posts returned from `GET /api/posts/:id` also use `sourceName` and `sourceUrl` instead of `title` and `url`.
+
 ### Create Post
 
 ```
@@ -190,13 +194,15 @@ POST /api/posts
 
 ```json
 {
-  "format": "note",
-  "title": "My First Post",
-  "bodyMarkdown": "Hello world!\n\nThis is **bold** and *italic* text.",
+  "format": "quote",
+  "quoteText": "What stands in the way becomes the way.",
+  "sourceName": "Marcus Aurelius",
+  "sourceUrl": "https://example.com/meditations",
+  "bodyMarkdown": "Still one of the clearest lines in the book.",
   "status": "published",
   "visibility": "public",
   "publishedAt": 1706000000,
-  "slug": "my-first-post",
+  "slug": "from-marcus-aurelius",
   "collectionIds": ["collection-uuid"],
   "attachments": [
     { "type": "media", "mediaId": "media-uuid-1" },
@@ -214,7 +220,7 @@ POST /api/posts
 | Field           | Type                                | Required | Default     | Description                                                                                                                                                                                                  |
 | --------------- | ----------------------------------- | -------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `format`        | `note` \| `link` \| `quote`         | **yes**  | —           | Post format                                                                                                                                                                                                  |
-| `title`         | string                              | no       | —           | Post title. Notes with titles render as articles                                                                                                                                                             |
+| `title`         | string                              | no       | —           | Post title. Used by `note` and `link` posts                                                                                                                                                                  |
 | `body`          | string                              | no       | —           | Post content as TipTap JSON (used by the editor UI)                                                                                                                                                          |
 | `bodyMarkdown`  | string                              | no       | —           | Post content in Markdown (see [Body Format](#body-format))                                                                                                                                                   |
 | `slug`          | string                              | no       | auto        | URL slug. Auto-generated from title or as random ID. Mutually exclusive with `path`                                                                                                                          |
@@ -223,7 +229,9 @@ POST /api/posts
 | `visibility`    | `public` \| `unlisted` \| `private` | no       | `public`    |                                                                                                                                                                                                              |
 | `pinned`        | boolean                             | no       | `false`     | Pin to top of timeline (max 3)                                                                                                                                                                               |
 | `featured`      | boolean                             | no       | `false`     | Mark as featured content                                                                                                                                                                                     |
-| `url`           | string (URL)                        | no       | —           | Link URL (for `link` format) or source URL (for `quote`)                                                                                                                                                     |
+| `url`           | string (URL)                        | no       | —           | Link URL (for `link` format)                                                                                                                                                                                 |
+| `sourceName`    | string                              | no       | —           | Quote source or attribution name (for `quote` format)                                                                                                                                                        |
+| `sourceUrl`     | string (URL)                        | no       | —           | Quote source URL (for `quote` format)                                                                                                                                                                        |
 | `quoteText`     | string                              | no       | —           | Quoted text (for `quote` format)                                                                                                                                                                             |
 | `rating`        | integer (1–5)                       | no       | —           | Rating score                                                                                                                                                                                                 |
 | `collectionIds` | string[]                            | no       | —           | Collection UUIDs to add the post to                                                                                                                                                                          |
@@ -269,10 +277,13 @@ PUT /api/posts/:id
 
 ```json
 {
-  "title": "Updated Title",
-  "bodyMarkdown": "Updated content in **Markdown**."
+  "sourceName": "Epictetus",
+  "sourceUrl": "https://example.com/discourses",
+  "bodyMarkdown": "Updated commentary in **Markdown**."
 }
 ```
+
+For quote posts, use `sourceName` and `sourceUrl` when creating or updating attribution. `title` and `url` are reserved for note/link post semantics.
 
 **Attachment behavior:**
 
@@ -861,12 +872,19 @@ Public. Searches published posts by title and body text.
       "slug": "hello-world",
       "snippet": "...matched <mark>hello</mark> text...",
       "publishedAt": 1706000000,
-      "url": "/hello-world"
+      "permalink": "/hello-world",
+      "url": null
     }
   ],
   "count": 1
 }
 ```
+
+All search results include `permalink`.
+
+- `note` results use `title`
+- `link` results may also include `url` for the external link target
+- `quote` results use `sourceName` and `sourceUrl` instead of `title`
 
 ---
 

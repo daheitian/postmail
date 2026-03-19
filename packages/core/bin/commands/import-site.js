@@ -1418,7 +1418,10 @@ export async function run(argv) {
       extra.visibility === "unlisted" || extra.visibility === "private"
         ? extra.visibility
         : undefined;
-    const postLabel = frontMatter.title || postSlug || "(untitled)";
+    const postLabel =
+      (format === "quote" ? extra.source_name : frontMatter.title) ||
+      postSlug ||
+      "(untitled)";
 
     if (!dryRun && postSlug) {
       await assertImportSlugAvailable(target, postSlug, postLabel, "post");
@@ -1461,7 +1464,14 @@ export async function run(argv) {
 
     const postData = {
       format,
-      title: frontMatter.title != null ? String(frontMatter.title) : undefined,
+      title:
+        format === "quote"
+          ? typeof extra.source_name === "string"
+            ? extra.source_name
+            : undefined
+          : frontMatter.title != null
+            ? String(frontMatter.title)
+            : undefined,
       bodyMarkdown: rootBody || undefined,
       slug: postSlug,
       path: frontMatter.path != null ? String(frontMatter.path) : undefined,
@@ -1484,6 +1494,9 @@ export async function run(argv) {
     }
     if (format === "quote" && extra.quote_text) {
       postData.quoteText = extra.quote_text;
+      if (typeof extra.source_url === "string" && extra.source_url.trim()) {
+        postData.url = extra.source_url;
+      }
     }
 
     if (dryRun) {
@@ -1517,7 +1530,8 @@ export async function run(argv) {
     for (const replySegment of replySegments) {
       const replyAttrs = replySegment.attrs || {};
       const replySlug = replyAttrs.slug || undefined;
-      const replyLabel = replyAttrs.title || replySlug || "(untitled reply)";
+      const replyLabel =
+        replyAttrs.source_name || replyAttrs.title || replySlug || "(untitled reply)";
       if (!dryRun && replySlug) {
         await assertImportSlugAvailable(
           target,
@@ -1573,7 +1587,10 @@ export async function run(argv) {
       const replyData = {
         format: replyFormat,
         status: replyStatus,
-        title: replyAttrs.title || undefined,
+        title:
+          replyFormat === "quote"
+            ? replyAttrs.source_name || undefined
+            : replyAttrs.title || undefined,
         bodyMarkdown: replyBody || undefined,
         replyToId: post.id,
         slug: replySlug,
@@ -1590,6 +1607,9 @@ export async function run(argv) {
       }
       if (replyFormat === "quote" && replyAttrs.quote_text) {
         replyData.quoteText = decodeURIComponent(replyAttrs.quote_text);
+        if (replyAttrs.source_url) {
+          replyData.url = replyAttrs.source_url;
+        }
       }
 
       try {

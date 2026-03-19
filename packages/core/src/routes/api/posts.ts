@@ -3,7 +3,7 @@
  */
 
 import { Hono } from "hono";
-import type { Bindings, Media } from "../../types.js";
+import type { Bindings, Media, Post } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { z } from "zod";
 import {
@@ -89,6 +89,41 @@ function toApiAttachment(
   };
 }
 
+type ApiPostResponse = Omit<Post, "title" | "url"> & {
+  attachments?: ReturnType<typeof toApiAttachment>[];
+  collectionIds?: string[];
+  title?: string | null;
+  url?: string | null;
+  sourceName?: string | null;
+  sourceUrl?: string | null;
+};
+
+function toApiPost(
+  post: Post,
+  extras: {
+    attachments?: ReturnType<typeof toApiAttachment>[];
+    collectionIds?: string[];
+  } = {},
+): ApiPostResponse {
+  const { title, url, ...rest } = post;
+
+  if (post.format === "quote") {
+    return {
+      ...rest,
+      ...extras,
+      sourceName: title ?? null,
+      sourceUrl: url ?? null,
+    };
+  }
+
+  return {
+    ...rest,
+    ...extras,
+    title: title ?? null,
+    url: url ?? null,
+  };
+}
+
 const ListPostsQuerySchema = z.object({
   format: FormatSchema.optional(),
   status: StatusSchema.optional(),
@@ -135,19 +170,20 @@ postsApiRoutes.get("/", requireAuthApi(), async (c) => {
   } = c.var.appConfig;
 
   return c.json({
-    posts: posts.map((p) => ({
-      ...p,
-      attachments: (mediaMap.get(p.id) ?? []).map((m) =>
-        toApiAttachment(
-          m,
-          r2PublicUrl,
-          imageTransformUrl,
-          s3PublicUrl,
-          localPublicUrl,
-          sitePathPrefix,
+    posts: posts.map((p) =>
+      toApiPost(p, {
+        attachments: (mediaMap.get(p.id) ?? []).map((m) =>
+          toApiAttachment(
+            m,
+            r2PublicUrl,
+            imageTransformUrl,
+            s3PublicUrl,
+            localPublicUrl,
+            sitePathPrefix,
+          ),
         ),
-      ),
-    })),
+      }),
+    ),
 
     nextCursor:
       posts.length === limit ? (posts[posts.length - 1]?.id ?? null) : null,
@@ -196,20 +232,21 @@ postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
   } = c.var.appConfig;
   const collectionIds = postCollections.map((col) => col.id);
 
-  return c.json({
-    ...post,
-    collectionIds,
-    attachments: mediaList.map((m) =>
-      toApiAttachment(
-        m,
-        r2PublicUrl,
-        imageTransformUrl,
-        s3PublicUrl,
-        localPublicUrl,
-        sitePathPrefix,
+  return c.json(
+    toApiPost(post, {
+      collectionIds,
+      attachments: mediaList.map((m) =>
+        toApiAttachment(
+          m,
+          r2PublicUrl,
+          imageTransformUrl,
+          s3PublicUrl,
+          localPublicUrl,
+          sitePathPrefix,
+        ),
       ),
-    ),
-  });
+    }),
+  );
 });
 
 // Create post (requires auth)
@@ -219,7 +256,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   const post = await c.var.services.posts.createWithAttachments(
     {
       format: body.format,
-      title: body.title,
+      title: body.format === "quote" ? body.sourceName : body.title,
       body: body.body,
       bodyMarkdown: body.bodyMarkdown,
       slug: body.slug || undefined,
@@ -228,7 +265,10 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
       visibility: body.visibility,
       pinned: body.pinned,
       featured: body.featured,
-      url: body.url || undefined,
+      url:
+        body.format === "quote"
+          ? body.sourceUrl || undefined
+          : body.url || undefined,
       quoteText: body.quoteText,
       rating: body.rating || undefined,
       collectionIds: body.collectionIds,
@@ -258,8 +298,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
   } = c.var.appConfig;
 
   return c.json(
-    {
-      ...post,
+    toApiPost(post, {
       attachments: mediaList.map((m) =>
         toApiAttachment(
           m,
@@ -270,7 +309,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
           sitePathPrefix,
         ),
       ),
-    },
+    }),
     201,
   );
 });
@@ -286,7 +325,7 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
       id,
       {
         format: body.format,
-        title: body.title,
+        title: body.sourceName ?? body.title,
         body: body.body,
         bodyMarkdown: body.bodyMarkdown,
         slug: body.slug,
@@ -294,7 +333,7 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
         visibility: body.visibility,
         pinned: body.pinned,
         featured: body.featured,
-        url: body.url,
+        url: body.sourceUrl ?? body.url,
         quoteText: body.quoteText,
         rating: body.rating || undefined,
         collectionIds: body.collectionIds,
@@ -324,19 +363,20 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
     sitePathPrefix,
   } = c.var.appConfig;
 
-  return c.json({
-    ...post,
-    attachments: mediaList.map((m) =>
-      toApiAttachment(
-        m,
-        r2PublicUrl,
-        imageTransformUrl,
-        s3PublicUrl,
-        localPublicUrl,
-        sitePathPrefix,
+  return c.json(
+    toApiPost(post, {
+      attachments: mediaList.map((m) =>
+        toApiAttachment(
+          m,
+          r2PublicUrl,
+          imageTransformUrl,
+          s3PublicUrl,
+          localPublicUrl,
+          sitePathPrefix,
+        ),
       ),
-    ),
-  });
+    }),
+  );
 });
 
 // Delete post (requires auth)

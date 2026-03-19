@@ -56,6 +56,8 @@ interface ComposePostResponse {
   title?: string | null;
   body?: string | null;
   url?: string | null;
+  sourceName?: string | null;
+  sourceUrl?: string | null;
   quoteText?: string | null;
   rating?: number | null;
   publishedAt?: number | null;
@@ -448,12 +450,15 @@ export class JantComposeDialog extends LitElement {
 
     this._editor?.populate({
       format: post.format,
-      title: post.title ?? undefined,
+      title: post.format === "quote" ? undefined : (post.title ?? undefined),
       bodyJson: post.body ?? undefined,
-      url: post.url ?? undefined,
+      url:
+        post.format === "quote"
+          ? (post.sourceUrl ?? undefined)
+          : (post.url ?? undefined),
       quoteText: post.quoteText ?? undefined,
       quoteAuthor:
-        post.format === "quote" ? (post.title ?? undefined) : undefined,
+        post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
       rating: post.rating ?? undefined,
       media: nonTextMedia.map(
         (m: {
@@ -1302,10 +1307,16 @@ export class JantComposeDialog extends LitElement {
         (p): DraftItem => ({
           id: p.id as string,
           format: p.format as ComposeFormat,
-          title: (p.title as string) ?? null,
+          title:
+            ((p.format as ComposeFormat) === "quote"
+              ? (p.sourceName as string)
+              : (p.title as string)) ?? null,
           bodyText: (p.bodyText as string) ?? null,
           bodyHtml: (p.bodyHtml as string) ?? null,
-          url: (p.url as string) ?? null,
+          url:
+            ((p.format as ComposeFormat) === "quote"
+              ? (p.sourceUrl as string)
+              : (p.url as string)) ?? null,
           quoteText: (p.quoteText as string) ?? null,
           replyToId: (p.replyToId as string) ?? null,
           updatedAt: p.updatedAt as number,
@@ -1408,12 +1419,15 @@ export class JantComposeDialog extends LitElement {
 
     this._editor?.populate({
       format: post.format,
-      title: post.title ?? undefined,
+      title: post.format === "quote" ? undefined : (post.title ?? undefined),
       bodyJson: post.body ?? undefined,
-      url: post.url ?? undefined,
+      url:
+        post.format === "quote"
+          ? (post.sourceUrl ?? undefined)
+          : (post.url ?? undefined),
       quoteText: post.quoteText ?? undefined,
       quoteAuthor:
-        post.format === "quote" ? (post.title ?? undefined) : undefined,
+        post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
       rating: post.rating ?? undefined,
       media: nonTextMedia.map(
         (m: {

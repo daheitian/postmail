@@ -44,12 +44,24 @@ function stripUnsafeFeedHtml(html: string): string {
 }
 
 function getFeedSummaryText(post: PostView): string {
+  if (post.format === "quote") {
+    return (
+      post.summary ||
+      post.excerpt ||
+      post.quoteText ||
+      post.title ||
+      post.url ||
+      `Post #${post.id}`
+    );
+  }
+
   return (
     post.summary || post.excerpt || post.title || post.url || `Post #${post.id}`
   );
 }
 
 function getAtomTitle(post: PostView): string {
+  if (post.format === "quote") return "";
   return post.title || "";
 }
 
@@ -70,14 +82,16 @@ function buildFeedContent(post: PostView): string {
   const parts: string[] = [];
 
   if (post.format === "quote" && post.quoteText) {
-    const attribution = post.title || post.url || "";
-    const cite = post.url ? ` cite="${escapeXml(post.url)}"` : "";
+    const sourceName = post.title || "";
+    const sourceUrl = post.url || "";
+    const attribution = sourceName || sourceUrl;
+    const cite = sourceUrl ? ` cite="${escapeXml(sourceUrl)}"` : "";
     parts.push(
       `<blockquote${cite}><p>${escapeXml(post.quoteText)}</p></blockquote>`,
     );
     if (attribution) {
-      const source = post.url
-        ? `<a href="${escapeXml(post.url)}">${escapeXml(post.title || extractDisplayDomain(post.url) || post.url)}</a>`
+      const source = sourceUrl
+        ? `<a href="${escapeXml(sourceUrl)}">${escapeXml(sourceName || extractDisplayDomain(sourceUrl) || sourceUrl)}</a>`
         : escapeXml(attribution);
       parts.push(`<p>— ${source}</p>`);
     }
@@ -118,6 +132,7 @@ export function defaultRssRenderer(data: FeedData): string {
     .map((post) => {
       const link = escapeXml(new URL(post.permalink, siteUrl).toString());
       const pubDate = new Date(post.publishedAt).toUTCString();
+      const itemTitle = post.format === "quote" ? "" : (post.title ?? "");
 
       // Add enclosure for first media attachment
       const firstMedia = post.media[0];
@@ -127,7 +142,7 @@ export function defaultRssRenderer(data: FeedData): string {
 
       return `
     <item>
-      ${post.title ? `<title><![CDATA[${escapeCdata(post.title)}]]></title>\n      ` : ""}<link>${link}</link>
+      ${itemTitle ? `<title><![CDATA[${escapeCdata(itemTitle)}]]></title>\n      ` : ""}<link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
       <description><![CDATA[${escapeCdata(buildFeedContent(post))}]]></description>${enclosure}
