@@ -292,7 +292,7 @@ export const ComposeForm: FC<ComposeFormProps> = ({
     }),
     publishVisibilityUnlistedHint: t({
       message:
-        "Hidden from public lists and feeds, but anyone with the link can still view it.",
+        "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds.",
       comment:
         "@context: Compose publish settings help text for unlisted visibility",
     }),
