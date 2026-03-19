@@ -311,7 +311,7 @@ describe("Timeline data assembly", () => {
       bodyMarkdown: "Featured root",
       featured: true,
     });
-    await postService.create({
+    const reply = await postService.create({
       format: "note",
       bodyMarkdown: "Reply",
       replyToId: root.id,
@@ -323,9 +323,37 @@ describe("Timeline data assembly", () => {
 
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.post.id).toBe(root.id);
+    expect(result.items[0]?.curatedThread?.segments).toEqual([
+      expect.objectContaining({
+        post: expect.objectContaining({ id: root.id }),
+        hiddenBeforeCount: 0,
+        highlighted: true,
+      }),
+      expect.objectContaining({
+        post: expect.objectContaining({ id: reply.id }),
+        hiddenBeforeCount: 0,
+        highlighted: false,
+      }),
+    ]);
     expect(result.items[0]?.post.threadRootPermalink).toBe(
       result.items[0]?.post.permalink,
     );
+  });
+
+  it("renders a standalone featured root without curated thread chrome", async () => {
+    const root = await postService.create({
+      format: "note",
+      bodyMarkdown: "Featured solo root",
+      featured: true,
+    });
+
+    const result = await assembleFeaturedTimeline(createTimelineContext(), {
+      isAuthenticated: true,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.post.id).toBe(root.id);
+    expect(result.items[0]?.curatedThread).toBeUndefined();
   });
 
   it("groups featured replies under their thread root with hidden gaps", async () => {
@@ -372,12 +400,60 @@ describe("Timeline data assembly", () => {
     expect(result.items[0]?.curatedThread?.rootPost.id).toBe(root.id);
     expect(result.items[0]?.curatedThread?.segments).toEqual([
       expect.objectContaining({
+        post: expect.objectContaining({ id: root.id }),
+        hiddenBeforeCount: 0,
+        highlighted: false,
+      }),
+      expect.objectContaining({
         post: expect.objectContaining({ id: featuredReplyA.id }),
         hiddenBeforeCount: 1,
+        highlighted: true,
       }),
       expect.objectContaining({
         post: expect.objectContaining({ id: featuredReplyB.id }),
         hiddenBeforeCount: 1,
+        highlighted: true,
+      }),
+    ]);
+  });
+
+  it("keeps the last post visible around a featured middle reply", async () => {
+    const root = await postService.create({
+      format: "note",
+      bodyMarkdown: "Root",
+    });
+    const featuredMiddle = await postService.create({
+      format: "note",
+      bodyMarkdown: "Featured middle",
+      replyToId: root.id,
+      featured: true,
+    });
+    const lastReply = await postService.create({
+      format: "note",
+      bodyMarkdown: "Last reply",
+      replyToId: featuredMiddle.id,
+    });
+
+    const result = await assembleFeaturedTimeline(createTimelineContext(), {
+      isAuthenticated: true,
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.curatedThread?.segments).toEqual([
+      expect.objectContaining({
+        post: expect.objectContaining({ id: root.id }),
+        hiddenBeforeCount: 0,
+        highlighted: false,
+      }),
+      expect.objectContaining({
+        post: expect.objectContaining({ id: featuredMiddle.id }),
+        hiddenBeforeCount: 0,
+        highlighted: true,
+      }),
+      expect.objectContaining({
+        post: expect.objectContaining({ id: lastReply.id }),
+        hiddenBeforeCount: 0,
+        highlighted: false,
       }),
     ]);
   });
@@ -480,14 +556,67 @@ describe("Timeline data assembly", () => {
     expect(result.items[1]?.post.id).toBe(firstRoot.id);
     expect(result.items[1]?.curatedThread?.segments).toEqual([
       expect.objectContaining({
+        post: expect.objectContaining({ id: firstRoot.id }),
+        hiddenBeforeCount: 0,
+        highlighted: false,
+      }),
+      expect.objectContaining({
         post: expect.objectContaining({ id: collectedReplyA.id }),
         hiddenBeforeCount: 0,
+        highlighted: true,
       }),
       expect.objectContaining({
         post: expect.objectContaining({ id: collectedReplyB.id }),
         hiddenBeforeCount: 1,
+        highlighted: true,
       }),
     ]);
+  });
+
+  it("keeps the last post visible when a collected root is the only selected post", async () => {
+    const collection = await collectionService.create({
+      slug: "root-only",
+      title: "Root only",
+    });
+    const root = await postService.create({
+      format: "note",
+      bodyMarkdown: "Collected root",
+    });
+    const uncollectedReply = await postService.create({
+      format: "note",
+      bodyMarkdown: "Uncollected reply",
+      replyToId: root.id,
+    });
+
+    await db.insert(postCollections).values({
+      postId: root.id,
+      collectionId: collection.id,
+      createdAt: 100,
+    });
+
+    const result = await assembleCollectionTimeline(createTimelineContext(), {
+      collectionId: collection.id,
+      isAuthenticated: true,
+      sortOrder: "newest",
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.post.id).toBe(root.id);
+    expect(result.items[0]?.curatedThread?.segments).toEqual([
+      expect.objectContaining({
+        post: expect.objectContaining({ id: root.id }),
+        hiddenBeforeCount: 0,
+        highlighted: true,
+      }),
+      expect.objectContaining({
+        post: expect.objectContaining({ id: uncollectedReply.id }),
+        hiddenBeforeCount: 0,
+        highlighted: false,
+      }),
+    ]);
+    expect(result.items[0]?.post.threadRootPermalink).toBe(
+      result.items[0]?.post.permalink,
+    );
   });
 
   it("omits private timeline items from unauthenticated partial refreshes", async () => {

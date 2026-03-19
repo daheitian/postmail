@@ -234,7 +234,11 @@ async function buildCuratedThreadItems(
       rootView.threadRootPermalink = rootView.permalink;
     }
 
-    const segments = selectedIndices.reduce<
+    const selectedIndexSet = new Set(selectedIndices);
+    const visibleIndices = [
+      ...new Set([0, postViews.length - 1, ...selectedIndices]),
+    ].sort((left, right) => left - right);
+    const segments = visibleIndices.reduce<
       NonNullable<TimelineItemView["curatedThread"]>["segments"]
     >((items, index, segmentIndex) => {
       const postView = postViews[index];
@@ -243,7 +247,7 @@ async function buildCuratedThreadItems(
       }
 
       const previousIndex =
-        segmentIndex === 0 ? undefined : selectedIndices[segmentIndex - 1];
+        segmentIndex === 0 ? undefined : visibleIndices[segmentIndex - 1];
 
       items.push({
         post: postView,
@@ -253,12 +257,21 @@ async function buildCuratedThreadItems(
               ? 0
               : index - 1
             : index - previousIndex - 1,
+        highlighted: selectedIndexSet.has(index),
       });
 
       return items;
     }, []);
 
     if (segments.length === 0) {
+      return items;
+    }
+
+    const isRootOnlySelection =
+      segments.length === 1 && segments[0]?.post.id === rootView.id;
+
+    if (isRootOnlySelection) {
+      items.push({ post: rootView });
       return items;
     }
 

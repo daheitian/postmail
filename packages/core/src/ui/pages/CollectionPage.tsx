@@ -18,7 +18,7 @@ const escapeJson = (data: unknown) =>
 export const CollectionPage: FC<CollectionPageProps> = ({
   collection,
   items,
-  totalCount,
+  totalThreadCount,
   currentPage,
   totalPages,
   baseUrl,
@@ -178,15 +178,17 @@ export const CollectionPage: FC<CollectionPageProps> = ({
         <div class="collection-page-subhead">
           <div class="collection-page-meta-row">
             <p class="collection-page-meta">
-              {totalCount}{" "}
-              {totalCount === 1
+              {totalThreadCount}{" "}
+              {totalThreadCount === 1
                 ? t({
-                    message: "entry",
-                    comment: "@context: Singular entry count label",
+                    message: "thread",
+                    comment:
+                      "@context: Singular thread count label on collection detail page",
                   })
                 : t({
-                    message: "entries",
-                    comment: "@context: Plural entry count label",
+                    message: "threads",
+                    comment:
+                      "@context: Plural thread count label on collection detail page",
                   })}
               {pageLabel ? <span> / {pageLabel}</span> : null}
             </p>

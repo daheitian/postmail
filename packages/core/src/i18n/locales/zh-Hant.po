@@ -1041,8 +1041,6 @@ msgstr "表情符號"
 
 #. @context: Plural entry count label
 #. @context: Plural entry count label
-#. @context: Plural entry count label
-#: src/ui/pages/CollectionPage.tsx
 #: src/ui/shared/CollectionDirectory.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "entries"
@@ -1050,8 +1048,6 @@ msgstr "項目"
 
 #. @context: Singular entry count label
 #. @context: Singular entry count label
-#. @context: Singular entry count label
-#: src/ui/pages/CollectionPage.tsx
 #: src/ui/shared/CollectionDirectory.tsx
 #: src/ui/shared/CollectionsManager.tsx
 msgid "entry"
@@ -2614,8 +2610,10 @@ msgstr "這將永久刪除你所有的資料 — 文章、媒體檔案、選集�
 
 #. @context: Archive month header count unit for a single thread
 #. @context: Archive page summary unit for a single matching thread
+#. @context: Singular thread count label on collection detail page
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/CollectionPage.tsx
 msgid "thread"
 msgstr "個貼文串"
 
@@ -2631,8 +2629,10 @@ msgstr "貼文串 強調色"
 
 #. @context: Archive month header count unit for multiple threads
 #. @context: Archive page summary unit for multiple matching threads
+#. @context: Plural thread count label on collection detail page
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/pages/CollectionPage.tsx
 msgid "threads"
 msgstr "個貼文串"
 

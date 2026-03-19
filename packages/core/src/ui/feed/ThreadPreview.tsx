@@ -15,8 +15,14 @@ import {
   isThreadContextLikelyOverflow,
 } from "./thread-preview-state.js";
 
-const THREAD_CONTEXT_DISPLAY = {
-  hideStatusBadges: true,
+const ROOT_CONTEXT_DISPLAY = {
+  hideRating: true,
+  footer: {
+    hideActions: true,
+  },
+} as const;
+
+const PARENT_CONTEXT_DISPLAY = {
   hideRating: true,
   footer: {
     hideActions: true,
@@ -60,7 +66,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
           <TimelineItemFromPost
             post={rootPost}
             mode="feed"
-            display={THREAD_CONTEXT_DISPLAY}
+            display={ROOT_CONTEXT_DISPLAY}
           />
         </div>
 
@@ -83,7 +89,7 @@ export const ThreadPreview: FC<ThreadPreviewProps> = ({
             <TimelineItemFromPost
               post={parentReply}
               mode="feed"
-              display={THREAD_CONTEXT_DISPLAY}
+              display={PARENT_CONTEXT_DISPLAY}
             />
           </div>
         )}

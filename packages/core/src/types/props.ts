@@ -85,7 +85,7 @@ export interface SearchPageProps {
 export interface CollectionPageProps {
   collection: Collection;
   items: TimelineItemView[];
-  totalCount: number;
+  totalThreadCount: number;
   currentPage: number;
   totalPages: number;
   baseUrl: string;

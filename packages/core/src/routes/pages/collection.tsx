@@ -88,9 +88,8 @@ collectionRoutes.get("/:slug", async (c) => {
       ? CollectionSortOrderSchema.parse(sortQuery)
       : undefined;
 
-  const [totalCount, ratedPostCount] = await Promise.all([
-    c.var.services.posts.count({
-      collectionId: collection.id,
+  const [totalThreadCount, ratedPostCount] = await Promise.all([
+    c.var.services.posts.countCollectionThreadRoots(collection.id, {
       status: "published",
       excludePrivate: !navData.isAuthenticated,
     }),
@@ -131,7 +130,7 @@ collectionRoutes.get("/:slug", async (c) => {
       <CollectionPage
         collection={collection}
         items={items}
-        totalCount={totalCount}
+        totalThreadCount={totalThreadCount}
         currentPage={page}
         totalPages={totalPages}
         baseUrl={

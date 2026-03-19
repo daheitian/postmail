@@ -174,6 +174,7 @@ export interface TimelineItemView {
     segments: {
       post: PostView;
       hiddenBeforeCount: number;
+      highlighted: boolean;
     }[];
   };
 }
