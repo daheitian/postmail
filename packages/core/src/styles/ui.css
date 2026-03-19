@@ -811,8 +811,10 @@
   }
 
   .collection-page-meta {
-    font-size: 0.95rem;
+    font-size: var(--text-sm);
     color: var(--muted-foreground);
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
   }
 
   .collection-page-controls {
