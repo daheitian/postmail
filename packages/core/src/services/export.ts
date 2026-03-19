@@ -12,6 +12,8 @@ import type { CollectionService } from "./collection.js";
 import type { MediaService } from "./media.js";
 import {
   buildJantLogoSvgMarkup,
+  getDefaultJantAppleTouchIconBytes,
+  getDefaultJantFaviconIcoBytes,
   HOME_BRANDING_LINK_LABEL,
   HOME_BRANDING_PREFIX,
   JANT_REPO_URL,
@@ -22,6 +24,7 @@ import { escapeHtml } from "../lib/html.js";
 import { render as renderMarkdown } from "../lib/markdown.js";
 import { toISOString } from "../lib/time.js";
 import type { StorageDriver } from "../lib/storage.js";
+import { base64ToUint8Array } from "../lib/favicon.js";
 import type {
   Post,
   Collection,
@@ -45,8 +48,8 @@ interface SiteConfig {
   siteFooter: string;
   showHeaderAvatar: boolean;
   siteAvatarUrl: string;
-  appleTouchIconUrl?: string;
-  faviconUrl?: string;
+  faviconIcoBase64?: string;
+  appleTouchIconStorageKey?: string;
   faviconVersion?: string;
   themeId: string;
   defaultThemeId: string;
@@ -83,6 +86,15 @@ interface AttachmentExportMeta {
   chars: number | null;
   contentFormat?: TextAttachmentContent["contentFormat"];
   content?: string;
+}
+
+type IconExportMode = "default" | "custom";
+
+interface SiteIconAssets {
+  faviconBytes: Uint8Array;
+  faviconMode: IconExportMode;
+  appleTouchBytes: Uint8Array;
+  appleTouchMode: IconExportMode;
 }
 
 export function createExportService(
@@ -129,6 +141,7 @@ export function createExportService(
         services.media,
         deps.storage,
       );
+      const iconAssets = await buildSiteIconAssets(siteConfig, deps.storage);
 
       // 2. Group replies by threadId
       const repliesByThread = new Map<string, Post[]>();
@@ -188,7 +201,7 @@ export function createExportService(
 
       // Generate scaffold
       files["config.toml"] = new TextEncoder().encode(
-        buildConfigToml(siteConfig),
+        buildConfigToml(siteConfig, iconAssets),
       );
       files["content/_index.md"] = new TextEncoder().encode(buildRootSection());
       files["content/archive/_index.md"] = new TextEncoder().encode(
@@ -220,12 +233,70 @@ export function createExportService(
       files["static/custom.css"] = new TextEncoder().encode(
         siteConfig.customCss ?? "",
       );
+      files["static/favicon.ico"] = iconAssets.faviconBytes;
+      files["static/apple-touch-icon.png"] = iconAssets.appleTouchBytes;
       files["README.md"] = new TextEncoder().encode(
         buildReadme(siteConfig.siteName),
       );
 
       return zipSync(files);
     },
+  };
+}
+
+async function readStorageObjectBytes(
+  storage: StorageDriver,
+  storageKey: string,
+): Promise<Uint8Array | null> {
+  const object = await storage.get(storageKey);
+  if (!object?.body) {
+    return null;
+  }
+
+  return new Uint8Array(await new Response(object.body).arrayBuffer());
+}
+
+async function buildSiteIconAssets(
+  config: SiteConfig,
+  storage?: StorageDriver | null,
+): Promise<SiteIconAssets> {
+  const faviconMode: IconExportMode = config.faviconIcoBase64
+    ? "custom"
+    : "default";
+  const faviconBytes = config.faviconIcoBase64
+    ? base64ToUint8Array(config.faviconIcoBase64)
+    : getDefaultJantFaviconIcoBytes();
+
+  if (!config.appleTouchIconStorageKey) {
+    return {
+      faviconBytes,
+      faviconMode,
+      appleTouchBytes: getDefaultJantAppleTouchIconBytes(),
+      appleTouchMode: "default",
+    };
+  }
+
+  if (!storage) {
+    throw new Error(
+      "Custom apple-touch icon is configured but no storage driver is available for export",
+    );
+  }
+
+  const appleTouchBytes = await readStorageObjectBytes(
+    storage,
+    config.appleTouchIconStorageKey,
+  );
+  if (!appleTouchBytes) {
+    throw new Error(
+      `Custom apple-touch icon "${config.appleTouchIconStorageKey}" is unavailable for export`,
+    );
+  }
+
+  return {
+    faviconBytes,
+    faviconMode,
+    appleTouchBytes,
+    appleTouchMode: "custom",
   };
 }
 
@@ -655,7 +726,10 @@ function safeJsonForHtml(value: unknown): string {
     .replace(/&/g, "\\u0026");
 }
 
-function buildConfigToml(config: SiteConfig): string {
+function buildConfigToml(
+  config: SiteConfig,
+  iconAssets: SiteIconAssets,
+): string {
   const footerHtml = config.siteFooter ? renderMarkdown(config.siteFooter) : "";
   const parts = [
     `base_url = "${escapeToml(config.siteUrl || "https://example.com")}"`,
@@ -678,6 +752,9 @@ function buildConfigToml(config: SiteConfig): string {
     `show_jant_branding_on_home = ${config.showJantBrandingOnHome}`,
     `show_header_avatar = ${config.showHeaderAvatar}`,
     `noindex = ${config.noindex}`,
+    `site_avatar_mode = "${config.siteAvatarUrl ? "custom" : "none"}"`,
+    `favicon_mode = "${iconAssets.faviconMode}"`,
+    `apple_touch_mode = "${iconAssets.appleTouchMode}"`,
     "nav_exported = true",
     `theme_id = "${escapeToml(config.themeId || config.defaultThemeId)}"`,
     `default_theme_id = "${escapeToml(config.defaultThemeId)}"`,
@@ -687,16 +764,6 @@ function buildConfigToml(config: SiteConfig): string {
 
   if (config.siteAvatarUrl) {
     parts.push(`site_avatar_url = "${escapeToml(config.siteAvatarUrl)}"`);
-  }
-  if (config.faviconUrl || config.siteAvatarUrl) {
-    parts.push(
-      `favicon_url = "${escapeToml(config.faviconUrl || config.siteAvatarUrl)}"`,
-    );
-  }
-  if (config.appleTouchIconUrl) {
-    parts.push(
-      `apple_touch_icon_url = "${escapeToml(config.appleTouchIconUrl)}"`,
-    );
   }
   if (config.faviconVersion) {
     parts.push(`favicon_version = "${escapeToml(config.faviconVersion)}"`);
@@ -808,6 +875,8 @@ static/
   style.css          — Base exported stylesheet
   theme.css          — Resolved Jant theme variables
   custom.css         — Exported custom CSS overrides
+  favicon.ico        — Exported site favicon (custom or default fallback)
+  apple-touch-icon.png — Exported Apple touch icon (custom or default fallback)
 \`\`\`
 
 ## Customizing
@@ -851,12 +920,14 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
   {% if config.extra.jant.noindex %}
   <meta name="robots" content="noindex, nofollow">
   {% endif %}
-  {% set favicon_url = config.extra.jant.favicon_url | default(value="") %}
-  {% if favicon_url %}
-  <link rel="icon" href="{{ favicon_url }}">
-  {% endif %}
-  {% if config.extra.jant.apple_touch_icon_url %}
-  <link rel="apple-touch-icon" href="{{ config.extra.jant.apple_touch_icon_url }}">
+  {% set favicon_href = get_url(path='favicon.ico') %}
+  {% set apple_touch_href = get_url(path='apple-touch-icon.png') %}
+  {% if config.extra.jant.favicon_version %}
+  <link rel="icon" href="{{ favicon_href }}?v={{ config.extra.jant.favicon_version }}" sizes="16x16 32x32">
+  <link rel="apple-touch-icon" href="{{ apple_touch_href }}?v={{ config.extra.jant.favicon_version }}" sizes="180x180">
+  {% else %}
+  <link rel="icon" href="{{ favicon_href }}" sizes="16x16 32x32">
+  <link rel="apple-touch-icon" href="{{ apple_touch_href }}" sizes="180x180">
   {% endif %}
   <link rel="stylesheet" href="{{ get_url(path='style.css') }}">
   <link rel="stylesheet" href="{{ get_url(path='theme.css') }}">

@@ -39,6 +39,8 @@ npx jant site export --output jant-site-export.zip
 
 The CLI localizes referenced media into the export by default. That makes it the better option when you want a more self-contained archive or plan to inspect the exported Zola site locally before importing it somewhere else.
 
+The export also includes standard `static/favicon.ico` and `static/apple-touch-icon.png` files. Jant writes mode metadata into `config.toml` so `jant site import` can tell whether those icons were the bundled defaults or user-uploaded custom assets.
+
 ## Cloudflare Workers
 
 If you deploy Jant on Cloudflare Workers with D1 and R2:

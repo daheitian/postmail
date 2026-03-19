@@ -1231,6 +1231,8 @@ content/{slug}/index.md  # One file per post (threads merged)
 content/c/{slug}/_index.md  # Collection title/description metadata for /c/{slug}/
 templates/               # Zola templates (index, page, section, etc.)
 static/style.css         # Theme CSS (dark mode included)
+static/favicon.ico      # Exported favicon (custom or default fallback)
+static/apple-touch-icon.png # Exported Apple touch icon (custom or default fallback)
 ```
 
 - Threads are merged: the root post and all replies appear in one file, separated by `<!-- jant:reply ... -->` marker comments
@@ -1243,6 +1245,7 @@ static/style.css         # Theme CSS (dark mode included)
 - Collection display titles and descriptions are exported via `content/c/{slug}/_index.md`
 - A static `/archive/` page is exported so archive nav items still work in Zola
 - `config.toml` includes `[extra.jant_export]` metadata so importers can recognize the export format version
+- `config.toml` also records `site_avatar_mode`, `favicon_mode`, and `apple_touch_mode` so `jant site import` can distinguish exported defaults from custom uploaded assets
 
 **Building the static site:**
 
