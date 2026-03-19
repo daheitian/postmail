@@ -117,30 +117,6 @@ export const CollectionPage: FC<CollectionPageProps> = ({
               comment: "@context: Collection sort order option",
             }),
           },
-          {
-            value: "rating_asc",
-            icon: (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m12 3.5 2.6 5.27 5.82.85-4.21 4.1.99 5.78L12 16.73 6.8 19.5l.99-5.78-4.21-4.1 5.82-.85L12 3.5Z" />
-                <path d="M8 20h8" />
-              </svg>
-            ),
-            label: t({
-              message: "Lowest rated",
-              comment: "@context: Collection sort order option",
-            }),
-          },
         ]
       : []),
   ] as const;

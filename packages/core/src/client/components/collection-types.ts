@@ -2,6 +2,8 @@
  * Shared type definitions for the collection form Lit component.
  */
 
+import type { CollectionSortOrder } from "../../types.js";
+
 export interface CollectionFormLabels {
   titleLabel: string;
   titlePlaceholder: string;
@@ -20,7 +22,6 @@ export interface CollectionFormLabels {
   sortNewest: string;
   sortOldest: string;
   sortRatingDesc: string;
-  sortRatingAsc: string;
   submitLabel: string;
   cancelLabel: string;
 }
@@ -29,7 +30,7 @@ export interface CollectionFormInitial {
   title: string;
   slug: string;
   description: string;
-  sortOrder: string;
+  sortOrder: CollectionSortOrder;
 }
 
 export interface CollectionSubmitDetail {
@@ -38,7 +39,7 @@ export interface CollectionSubmitDetail {
     title: string;
     slug: string;
     description?: string;
-    sortOrder?: string;
+    sortOrder?: CollectionSortOrder;
   };
   isEdit: boolean;
 }

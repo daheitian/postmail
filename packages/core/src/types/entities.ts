@@ -6,7 +6,7 @@ import type {
   Format,
   Status,
   Visibility,
-  SortOrder,
+  CollectionSortOrder,
   NavItemType,
   SystemNavKey,
   MediaKind,
@@ -88,7 +88,7 @@ export interface Collection {
   slug: string;
   title: string;
   description: string | null;
-  sortOrder: SortOrder;
+  sortOrder: CollectionSortOrder;
   createdAt: number;
   updatedAt: number;
 }

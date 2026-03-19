@@ -6,7 +6,12 @@
  */
 
 import type { Context } from "hono";
-import type { Bindings, Post, SortOrder, TimelineItemView } from "../types.js";
+import type {
+  Bindings,
+  CollectionSortOrder,
+  Post,
+  TimelineItemView,
+} from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { buildMediaMap } from "./media-helpers.js";
 import { createMediaContext, toPostView } from "./view.js";
@@ -433,7 +438,7 @@ export async function assembleCollectionTimeline(
     collectionId: string;
     page?: number;
     isAuthenticated?: boolean;
-    sortOrder?: SortOrder;
+    sortOrder?: CollectionSortOrder;
   },
 ): Promise<TimelineResult> {
   const pageSize = c.var.appConfig.pageSize;

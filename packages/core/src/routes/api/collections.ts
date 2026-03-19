@@ -4,12 +4,12 @@
 
 import { Hono } from "hono";
 import { z } from "zod";
-import type { Bindings, SortOrder } from "../../types.js";
+import type { Bindings, CollectionSortOrder } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import {
+  CollectionSortOrderSchema,
   CreateCollectionSchema,
-  SortOrderSchema,
   parseValidated,
 } from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
@@ -21,7 +21,7 @@ export const collectionsApiRoutes = new Hono<Env>();
 // API update schema extends shared schema with nullable fields for explicit clearing
 const UpdateCollectionSchema = CreateCollectionSchema.partial().extend({
   description: z.string().nullable().optional(),
-  sortOrder: SortOrderSchema.optional(),
+  sortOrder: CollectionSortOrderSchema.optional(),
 });
 
 const PostAssignSchema = z.object({
@@ -129,7 +129,7 @@ collectionsApiRoutes.post("/", requireAuthApi(), async (c) => {
     slug: body.slug,
     title: body.title,
     description: body.description,
-    sortOrder: body.sortOrder as SortOrder | undefined,
+    sortOrder: body.sortOrder as CollectionSortOrder | undefined,
   });
 
   return c.json(collection, 201);

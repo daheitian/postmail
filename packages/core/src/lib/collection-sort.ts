@@ -1,4 +1,4 @@
-import type { SortOrder } from "../types.js";
+import type { CollectionSortOrder } from "../types.js";
 
 /**
  * Returns true when the sort order depends on post ratings.
@@ -12,9 +12,9 @@ import type { SortOrder } from "../types.js";
  * ```
  */
 export function isRatingSortOrder(
-  sortOrder: SortOrder | null | undefined,
+  sortOrder: CollectionSortOrder | null | undefined,
 ): boolean {
-  return sortOrder === "rating_desc" || sortOrder === "rating_asc";
+  return sortOrder === "rating_desc";
 }
 
 /**
@@ -47,10 +47,10 @@ export function supportsCollectionRatingSort(ratedPostCount: number): boolean {
  * ```
  */
 export function resolveCollectionSortOrder(
-  requestedSort: SortOrder | undefined,
-  defaultSort: SortOrder,
+  requestedSort: CollectionSortOrder | undefined,
+  defaultSort: CollectionSortOrder,
   supportsRatingSort: boolean,
-): SortOrder {
+): CollectionSortOrder {
   const candidate = requestedSort ?? defaultSort;
 
   if (supportsRatingSort || !isRatingSortOrder(candidate)) {

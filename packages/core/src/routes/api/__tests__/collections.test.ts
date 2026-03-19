@@ -189,6 +189,23 @@ describe("Collections API Routes", () => {
 
       expect(res.status).toBe(400);
     });
+
+    it("rejects rating_asc as a collection sort order", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const res = await app.request("/api/collections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "tech",
+          title: "Tech",
+          sortOrder: "rating_asc",
+        }),
+      });
+
+      expect(res.status).toBe(400);
+    });
   });
 
   describe("PUT /api/collections/:id", () => {

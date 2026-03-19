@@ -19,6 +19,13 @@ export const SORT_ORDERS = [
 ] as const;
 export type SortOrder = (typeof SORT_ORDERS)[number];
 
+export const COLLECTION_SORT_ORDERS = [
+  "newest",
+  "oldest",
+  "rating_desc",
+] as const;
+export type CollectionSortOrder = (typeof COLLECTION_SORT_ORDERS)[number];
+
 export const NAV_ITEM_TYPES = ["link", "system"] as const;
 export type NavItemType = (typeof NAV_ITEM_TYPES)[number];
 

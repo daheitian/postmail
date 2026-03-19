@@ -14,6 +14,7 @@ import {
   STATUSES,
   VISIBILITIES,
   SORT_ORDERS,
+  COLLECTION_SORT_ORDERS,
   NAV_ITEM_TYPES,
   SYSTEM_NAV_KEY_VALUES,
   MAX_MEDIA_ATTACHMENTS,
@@ -71,9 +72,14 @@ export const FormatSchema = z.enum(FORMATS);
 export const StatusSchema = z.enum(STATUSES);
 
 /**
- * Collection sort order enum schema
+ * Post/general sort order enum schema
  */
 export const SortOrderSchema = z.enum(SORT_ORDERS);
+
+/**
+ * Collection sort order enum schema
+ */
+export const CollectionSortOrderSchema = z.enum(COLLECTION_SORT_ORDERS);
 
 /**
  * Navigation item type enum schema
@@ -420,7 +426,7 @@ export const CreateCollectionSchema = z.object({
   description: sanitizeText(500)
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  sortOrder: SortOrderSchema.optional(),
+  sortOrder: CollectionSortOrderSchema.optional(),
 });
 
 /**

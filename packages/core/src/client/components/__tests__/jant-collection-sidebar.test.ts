@@ -64,7 +64,6 @@ const labels: CollectionManagerLabels = {
     sortNewest: "Newest first",
     sortOldest: "Oldest first",
     sortRatingDesc: "Highest rated",
-    sortRatingAsc: "Lowest rated",
     submitLabel: "Save",
     cancelLabel: "Cancel",
   },

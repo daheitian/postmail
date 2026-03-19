@@ -2,7 +2,7 @@
  * Page-Level Props & Feed Data Types
  */
 
-import type { Format, MediaKind, SortOrder } from "./constants.js";
+import type { CollectionSortOrder, Format, MediaKind } from "./constants.js";
 import type { Collection, CollectionDirectoryItem } from "./entities.js";
 import type {
   PostView,
@@ -89,8 +89,8 @@ export interface CollectionPageProps {
   currentPage: number;
   totalPages: number;
   baseUrl: string;
-  currentSort: SortOrder;
-  defaultSort: SortOrder;
+  currentSort: CollectionSortOrder;
+  defaultSort: CollectionSortOrder;
   showRatingSort: boolean;
   isAuthenticated: boolean;
   sitePathPrefix?: string;

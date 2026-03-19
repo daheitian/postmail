@@ -222,7 +222,7 @@ postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
     c.var.services.media.getByPostId(id),
     c.var.services.collections.getCollectionsByPostId(id),
   ]);
-  assertFound(post, "Post");
+  const foundPost = assertFound(post, "Post");
   const {
     r2PublicUrl,
     imageTransformUrl,
@@ -233,7 +233,7 @@ postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
   const collectionIds = postCollections.map((col) => col.id);
 
   return c.json(
-    toApiPost(post, {
+    toApiPost(foundPost, {
       collectionIds,
       attachments: mediaList.map((m) =>
         toApiAttachment(

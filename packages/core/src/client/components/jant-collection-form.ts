@@ -11,6 +11,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
+import type { CollectionSortOrder } from "../../types.js";
 import { getSlugValidationIssue } from "../../lib/slug-format.js";
 import { slugify } from "../lazy-slugify.js";
 import { publicPath } from "../runtime-paths.js";
@@ -49,7 +50,7 @@ export class JantCollectionForm extends LitElement {
   declare _title: string;
   declare _slug: string;
   declare _description: string;
-  declare _sortOrder: string;
+  declare _sortOrder: CollectionSortOrder;
   declare _showSlugEditor: boolean;
   declare _slugEdited: boolean;
   declare _suggestedSlug: string;
@@ -327,86 +328,105 @@ export class JantCollectionForm extends LitElement {
 
   render() {
     const isQuick = this.variant === "quick";
+    const formClass = isQuick
+      ? "flex flex-col gap-4"
+      : "collection-editor-form";
 
     return html`
       <form
-        class=${isQuick
-          ? "flex flex-col gap-4"
-          : "flex flex-col gap-4 max-w-lg"}
+        class=${formClass}
         @submit=${(event: Event) => void this.#handleSubmit(event)}
       >
-        <div class="field">
-          <label class="label">${this.labels.titleLabel}</label>
-          <input
-            type="text"
-            class="input"
-            data-collection-title-input
-            required
-            .value=${this._title}
-            placeholder=${this.isEdit ? nothing : this.labels.titlePlaceholder}
-            @input=${(event: Event) => void this.#handleTitleInput(event)}
-          />
-        </div>
-
         ${isQuick
-          ? this.#renderQuickSlugControls()
-          : html`
+          ? html`
               <div class="field">
-                <label class="label">${this.labels.slugLabel}</label>
+                <label class="label">${this.labels.titleLabel}</label>
                 <input
                   type="text"
                   class="input"
-                  data-collection-slug-input
+                  data-collection-title-input
                   required
-                  pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-                  .value=${this._slug}
-                  aria-invalid=${this.#getSlugValidationMessage()
-                    ? "true"
-                    : "false"}
-                  placeholder=${this.isEdit ? nothing : "my-collection"}
-                  @input=${(event: Event) => this.#handleSlugInput(event)}
-                />
-                ${this.#renderSlugHelper()}
-              </div>
-            `}
-        ${isQuick
-          ? nothing
-          : html`
-              <div class="field">
-                <label class="label">${this.labels.descriptionLabel}</label>
-                <textarea
-                  class="textarea"
-                  rows="3"
-                  .value=${this._description}
+                  .value=${this._title}
                   placeholder=${this.isEdit
                     ? nothing
-                    : this.labels.descriptionPlaceholder}
-                  @input=${(event: Event) => {
-                    const target = event.target as HTMLTextAreaElement;
-                    this._description = target.value;
-                  }}
-                ></textarea>
+                    : this.labels.titlePlaceholder}
+                  @input=${(event: Event) => void this.#handleTitleInput(event)}
+                />
               </div>
 
-              <div class="field">
-                <label class="label">${this.labels.sortOrderLabel}</label>
-                <select
-                  class="select"
-                  .value=${this._sortOrder}
-                  @change=${(event: Event) => {
-                    const target = event.target as HTMLSelectElement;
-                    this._sortOrder = target.value;
-                  }}
-                >
-                  <option value="newest">${this.labels.sortNewest}</option>
-                  <option value="oldest">${this.labels.sortOldest}</option>
-                  <option value="rating_desc">
-                    ${this.labels.sortRatingDesc}
-                  </option>
-                  <option value="rating_asc">
-                    ${this.labels.sortRatingAsc}
-                  </option>
-                </select>
+              ${this.#renderQuickSlugControls()}
+            `
+          : html`
+              <div class="collection-editor-primary-grid">
+                <div class="field collection-editor-title-field">
+                  <label class="label">${this.labels.titleLabel}</label>
+                  <input
+                    type="text"
+                    class="input"
+                    data-collection-title-input
+                    required
+                    .value=${this._title}
+                    placeholder=${this.isEdit
+                      ? nothing
+                      : this.labels.titlePlaceholder}
+                    @input=${(event: Event) =>
+                      void this.#handleTitleInput(event)}
+                  />
+                </div>
+
+                <div class="field collection-editor-slug-field">
+                  <label class="label">${this.labels.slugLabel}</label>
+                  <input
+                    type="text"
+                    class="input"
+                    data-collection-slug-input
+                    required
+                    pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                    .value=${this._slug}
+                    aria-invalid=${this.#getSlugValidationMessage()
+                      ? "true"
+                      : "false"}
+                    placeholder=${this.isEdit ? nothing : "my-collection"}
+                    @input=${(event: Event) => this.#handleSlugInput(event)}
+                  />
+                  ${this.#renderSlugHelper()}
+                </div>
+              </div>
+
+              <div class="collection-editor-secondary-grid">
+                <div class="field collection-editor-description-field">
+                  <label class="label">${this.labels.descriptionLabel}</label>
+                  <textarea
+                    class="textarea"
+                    rows="4"
+                    .value=${this._description}
+                    placeholder=${this.isEdit
+                      ? nothing
+                      : this.labels.descriptionPlaceholder}
+                    @input=${(event: Event) => {
+                      const target = event.target as HTMLTextAreaElement;
+                      this._description = target.value;
+                    }}
+                  ></textarea>
+                </div>
+
+                <div class="field collection-editor-sort-field">
+                  <label class="label">${this.labels.sortOrderLabel}</label>
+                  <select
+                    class="select"
+                    .value=${this._sortOrder}
+                    @change=${(event: Event) => {
+                      const target = event.target as HTMLSelectElement;
+                      this._sortOrder = target.value as CollectionSortOrder;
+                    }}
+                  >
+                    <option value="newest">${this.labels.sortNewest}</option>
+                    <option value="oldest">${this.labels.sortOldest}</option>
+                    <option value="rating_desc">
+                      ${this.labels.sortRatingDesc}
+                    </option>
+                  </select>
+                </div>
               </div>
             `}
         ${isQuick
@@ -416,8 +436,12 @@ export class JantCollectionForm extends LitElement {
               </button>
             `
           : html`
-              <div class="flex gap-2">
-                <button type="submit" class="btn" ?disabled=${this._loading}>
+              <div class="collection-editor-actions">
+                <button
+                  type="submit"
+                  class="btn collection-editor-submit"
+                  ?disabled=${this._loading}
+                >
                   ${this._loading
                     ? html`<svg
                         class="animate-spin size-4"
@@ -435,7 +459,10 @@ export class JantCollectionForm extends LitElement {
                     : nothing}
                   ${this.labels.submitLabel}
                 </button>
-                <a href=${this.cancelHref} class="btn-outline">
+                <a
+                  href=${this.cancelHref}
+                  class="btn-outline collection-editor-cancel"
+                >
                   ${this.labels.cancelLabel}
                 </a>
               </div>

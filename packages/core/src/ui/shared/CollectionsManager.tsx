@@ -169,6 +169,7 @@ export const CollectionsManager: FC<CollectionsManagerProps> = ({
                     class="collections-page-toolbar-button collections-page-more-btn"
                     aria-label={labels.moreActions}
                     aria-expanded="false"
+                    aria-haspopup="menu"
                     title={labels.moreActions}
                     data-collections-action="toggle-menu"
                   >
