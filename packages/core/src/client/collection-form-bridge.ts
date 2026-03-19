@@ -48,10 +48,13 @@ document.addEventListener("jant:collection-submit", async (event: Event) => {
       );
     }
 
-    if (typeof json?.slug === "string" && json.slug.length > 0) {
-      window.location.href = publicPath(`/c/${json.slug}`);
-      return;
-    }
+    const redirectUrl =
+      detail.isEdit && typeof json?.slug === "string" && json.slug.length > 0
+        ? publicPath(`/c/${json.slug}`)
+        : formEl.cancelHref || publicPath("/c");
+
+    window.location.href = redirectUrl;
+    return;
   } catch (error) {
     showToast(
       error instanceof Error

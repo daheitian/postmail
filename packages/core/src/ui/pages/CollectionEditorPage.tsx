@@ -57,77 +57,79 @@ export const CollectionEditorPage: FC<CollectionEditorPageProps> = ({
   return (
     <div class="py-6" data-page="collection-editor">
       <div class="collection-editor-shell">
-        <nav
-          class="collection-breadcrumb"
-          aria-label={t({
-            message: "Breadcrumb",
-            comment: "@context: Breadcrumb label on collection editor page",
-          })}
-        >
-          <ol>
-            <li>
-              <a href={collectionsHref}>
-                {t({
-                  message: "Collections",
-                  comment: "@context: Breadcrumb link to collections page",
-                })}
-              </a>
-            </li>
-            {mode === "edit" && collectionHref && collection ? (
-              <>
-                <li aria-hidden="true">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </li>
-                <li>
-                  <a href={collectionHref}>{collection.title}</a>
-                </li>
-              </>
-            ) : null}
-            <li aria-hidden="true">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </li>
-            <li>
-              <span>
-                {mode === "create"
-                  ? t({
-                      message: "New Collection",
-                      comment: "@context: Page title for new collection",
-                    })
-                  : t({
-                      message: "Edit",
-                      comment: "@context: Per-collection edit action",
-                    })}
-              </span>
-            </li>
-          </ol>
-        </nav>
+        <header class="collection-editor-header page-intro">
+          <nav
+            class="collection-breadcrumb"
+            aria-label={t({
+              message: "Breadcrumb",
+              comment: "@context: Breadcrumb label on collection editor page",
+            })}
+          >
+            <ol>
+              <li>
+                <a href={collectionsHref}>
+                  {t({
+                    message: "Collections",
+                    comment: "@context: Breadcrumb link to collections page",
+                  })}
+                </a>
+              </li>
+              {mode === "edit" && collectionHref && collection ? (
+                <>
+                  <li aria-hidden="true">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </li>
+                  <li>
+                    <a href={collectionHref}>{collection.title}</a>
+                  </li>
+                </>
+              ) : null}
+              <li aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </li>
+              <li>
+                <span>
+                  {mode === "create"
+                    ? t({
+                        message: "New Collection",
+                        comment: "@context: Page title for new collection",
+                      })
+                    : t({
+                        message: "Edit",
+                        comment: "@context: Per-collection edit action",
+                      })}
+                </span>
+              </li>
+            </ol>
+          </nav>
 
-        <header class="collection-editor-header">
-          <h1 class="collection-editor-title">{title}</h1>
+          <div class="collection-editor-title-block page-intro-title-row">
+            <h1 class="collection-editor-title page-intro-title">{title}</h1>
+          </div>
         </header>
 
         <section
