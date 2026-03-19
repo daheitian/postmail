@@ -453,11 +453,16 @@ document.addEventListener("click", (e: MouseEvent) => {
 
 /** Build the JSON body for both create and update requests */
 function buildPostBody(detail: ComposeSubmitDetail) {
+  const isQuote = detail.format === "quote";
+  const isLink = detail.format === "link";
+
   return {
     format: detail.format,
-    title: detail.title || undefined,
+    title: !isQuote ? detail.title || undefined : undefined,
     body: detail.body || undefined,
-    url: detail.url || undefined,
+    url: isLink ? detail.url || undefined : undefined,
+    sourceName: isQuote ? detail.quoteAuthor || undefined : undefined,
+    sourceUrl: isQuote ? detail.url || undefined : undefined,
     quoteText: detail.quoteText || undefined,
     slug: detail.slug || undefined,
     status: detail.status,

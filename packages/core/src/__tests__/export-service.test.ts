@@ -95,6 +95,7 @@ describe("createExportService", () => {
     ).generateZolaSite();
     const files = unzipSync(zip);
 
+    const configToml = decodeZipEntry(files, "config.toml");
     const collectionMetadata = decodeZipEntry(
       files,
       "content/c/programming/_index.md",
@@ -108,7 +109,12 @@ describe("createExportService", () => {
     const atomTemplate = decodeZipEntry(files, "templates/atom.xml");
     const macrosTemplate = decodeZipEntry(files, "templates/macros.html");
     const styleCss = decodeZipEntry(files, "static/style.css");
+    const faviconFile = files["static/favicon.ico"];
+    const appleTouchFile = files["static/apple-touch-icon.png"];
 
+    expect(configToml).toContain('site_avatar_mode = "none"');
+    expect(configToml).toContain('favicon_mode = "default"');
+    expect(configToml).toContain('apple_touch_mode = "default"');
     expect(collectionMetadata).toContain('title = "编程开发"');
     expect(collectionMetadata).toContain(
       'description = "Posts about building and shipping software."',
@@ -137,8 +143,10 @@ describe("createExportService", () => {
     expect(styleCss).toContain(
       ".post-collection-more-wrap:hover .post-collection-popover",
     );
+    expect(styleCss).toContain(".post-collection-more-wrap::after");
     expect(styleCss).toContain(".site-header-top-home");
     expect(styleCss).toContain(".site-content-home");
+    expect(styleCss).toContain("padding-top: 0.75rem;");
     expect(styleCss).toContain(
       "border-bottom-color: color-mix(in srgb, var(--site-divider) 72%, transparent);",
     );
@@ -152,6 +160,10 @@ describe("createExportService", () => {
     expect(atomTemplate).not.toContain("page.content | safe");
     expect(atomTemplate).not.toContain('<summary type="html">{{ page.summary');
     expect(atomTemplate).not.toContain('<content type="html">{{ page.content');
+    expect(faviconFile).toBeDefined();
+    expect(faviconFile?.byteLength).toBeGreaterThan(0);
+    expect(appleTouchFile).toBeDefined();
+    expect(appleTouchFile?.byteLength).toBeGreaterThan(0);
   });
 
   it("embeds markdown payloads for text attachments and renders preview markup", async () => {
@@ -267,6 +279,179 @@ describe("createExportService", () => {
     expect(styleCss).toContain(".jant-attachment-text-preview blockquote");
     expect(styleCss).toContain("padding-left: 0;");
     expect(styleCss).toContain("border-left: none;");
+  });
+
+  it("exports custom favicon and apple-touch assets with explicit custom modes", async () => {
+    const rootPost: Post = {
+      id: "post-1",
+      format: "note",
+      status: "published",
+      visibility: "public",
+      pinnedAt: null,
+      featuredAt: null,
+      slug: "desk-note",
+      title: "Desk note",
+      url: null,
+      body: null,
+      bodyHtml: null,
+      bodyText: "Desk note",
+      quoteText: null,
+      summary: "Desk note",
+      rating: null,
+      replyToId: null,
+      threadId: "post-1",
+      deletedAt: null,
+      publishedAt: 1773014400,
+      lastActivityAt: 1773014400,
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const customFaviconBytes = new Uint8Array([1, 2, 3, 4]);
+    const customAppleTouchBytes = new Uint8Array([5, 6, 7, 8]);
+
+    const services = {
+      posts: {
+        list: async () => [rootPost],
+      },
+      paths: {
+        getPostSlugMap: async () => new Map([["post-1", "desk-note"]]),
+        getPostAliases: async () => new Map([["post-1", []]]),
+        getCollectionSlugMap: async () => new Map(),
+      },
+      collections: {
+        list: async () => [],
+        getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+      },
+      media: {
+        getByPostIds: async () => new Map(),
+      },
+    } as unknown as Parameters<typeof createExportService>[0];
+
+    const siteConfig: Parameters<typeof createExportService>[1] = {
+      siteName: "Jant",
+      siteUrl: "https://example.com",
+      siteDescription: "Export test",
+      siteLanguage: "en",
+      showJantBrandingOnHome: true,
+      homeDefaultView: "latest",
+      headerNavMaxVisible: 4,
+      siteFooter: "",
+      showHeaderAvatar: true,
+      siteAvatarUrl: "https://example.com/media/avatar.webp",
+      faviconIcoBase64: Buffer.from(customFaviconBytes).toString("base64"),
+      appleTouchIconStorageKey: "favicon/apple-touch-icon.png",
+      faviconVersion: "20260319",
+      themeId: "paper",
+      defaultThemeId: "paper",
+      fontThemeId: "system",
+      themeMode: "auto",
+      noindex: false,
+      navItems: [],
+    };
+
+    const zip = await createExportService(services, siteConfig, {
+      storage: {
+        get: async (key: string) =>
+          key === "favicon/apple-touch-icon.png"
+            ? ({
+                body: new Response(customAppleTouchBytes).body,
+              } as never)
+            : null,
+      } as never,
+    }).generateZolaSite();
+    const files = unzipSync(zip);
+    const configToml = decodeZipEntry(files, "config.toml");
+
+    expect(configToml).toContain('site_avatar_mode = "custom"');
+    expect(configToml).toContain('favicon_mode = "custom"');
+    expect(configToml).toContain('apple_touch_mode = "custom"');
+    expect(files["static/favicon.ico"]).toEqual(customFaviconBytes);
+    expect(files["static/apple-touch-icon.png"]).toEqual(customAppleTouchBytes);
+  });
+
+  it("exports quote posts with source_name and source_url instead of title", async () => {
+    const rootPost: Post = {
+      id: "post-quote-1",
+      format: "quote",
+      status: "published",
+      visibility: "public",
+      pinnedAt: null,
+      featuredAt: null,
+      slug: "from-marcus-aurelius",
+      title: "Marcus Aurelius",
+      url: "https://example.com/meditations",
+      body: null,
+      bodyHtml: null,
+      bodyText: "A short note about the quote.",
+      quoteText: "What stands in the way becomes the way.",
+      summary: "What stands in the way becomes the way.",
+      rating: null,
+      replyToId: null,
+      threadId: "post-quote-1",
+      deletedAt: null,
+      publishedAt: 1773014400,
+      lastActivityAt: 1773014400,
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const services = {
+      posts: {
+        list: async () => [rootPost],
+      },
+      paths: {
+        getPostSlugMap: async () =>
+          new Map([["post-quote-1", "from-marcus-aurelius"]]),
+        getPostAliases: async () => new Map([["post-quote-1", []]]),
+        getCollectionSlugMap: async () => new Map(),
+      },
+      collections: {
+        list: async () => [],
+        getCollectionsByPostIds: async () => new Map([["post-quote-1", []]]),
+      },
+      media: {
+        getByPostIds: async () => new Map(),
+      },
+    } as unknown as Parameters<typeof createExportService>[0];
+
+    const siteConfig: Parameters<typeof createExportService>[1] = {
+      siteName: "Jant",
+      siteUrl: "https://example.com",
+      siteDescription: "Export test",
+      siteLanguage: "en",
+      showJantBrandingOnHome: true,
+      homeDefaultView: "latest",
+      headerNavMaxVisible: 4,
+      siteFooter: "",
+      showHeaderAvatar: false,
+      siteAvatarUrl: "",
+      themeId: "paper",
+      defaultThemeId: "paper",
+      fontThemeId: "system",
+      themeMode: "auto",
+      noindex: false,
+      navItems: [],
+    };
+
+    const zip = await createExportService(
+      services,
+      siteConfig,
+    ).generateZolaSite();
+    const files = unzipSync(zip);
+    const postMarkdown = decodeZipEntry(
+      files,
+      "content/from-marcus-aurelius/index.md",
+    );
+    const macrosTemplate = decodeZipEntry(files, "templates/macros.html");
+
+    expect(postMarkdown).not.toContain("\ntitle:");
+    expect(postMarkdown).toContain("source_name:");
+    expect(postMarkdown).toContain("source_url:");
+    expect(postMarkdown).toContain("quote_text:");
+    expect(postMarkdown).not.toContain("link_url:");
+    expect(macrosTemplate).toContain("page.extra.source_name");
+    expect(macrosTemplate).toContain("page.extra.source_url");
   });
 
   it("separates root aliases from reply route aliases in exported front matter", async () => {

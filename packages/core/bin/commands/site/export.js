@@ -10,22 +10,6 @@ function getSiteUrl(env = process.env) {
   return env.JANT_SITE_URL || env.SITE_URL || "http://localhost";
 }
 
-function getPublicUrl(provider, appConfig) {
-  if (provider === "s3") return appConfig.s3PublicUrl;
-  if (provider === "local") return appConfig.localPublicUrl;
-  return appConfig.r2PublicUrl;
-}
-
-function getMediaPublicUrl(storageKey, provider, appConfig) {
-  const base = getPublicUrl(provider, appConfig);
-  if (base) {
-    return `${base.replace(/\/+$/, "")}/${storageKey}`;
-  }
-
-  const prefix = appConfig.sitePathPrefix || "";
-  return `${prefix}/${storageKey}`.replace(/\/{2,}/g, "/");
-}
-
 async function exportRemoteSite(url, token) {
   const response = await fetch(`${url.replace(/\/$/, "")}/api/export/zola`, {
     method: "POST",
@@ -236,10 +220,8 @@ async function exportLocalSite(env = process.env) {
         siteFooter: appConfig.siteFooter,
         showHeaderAvatar: appConfig.showHeaderAvatar,
         siteAvatarUrl: appConfig.siteAvatarUrl,
-        appleTouchIconUrl: appleTouchKey
-          ? getMediaPublicUrl(appleTouchKey, appConfig.storageDriver, appConfig)
-          : undefined,
-        faviconUrl: appConfig.siteAvatarUrl || undefined,
+        faviconIcoBase64: allSettings.SITE_FAVICON_ICO || undefined,
+        appleTouchIconStorageKey: appleTouchKey || undefined,
         faviconVersion: appConfig.faviconVersion,
         themeId: appConfig.themeId,
         defaultThemeId: appConfig.defaultThemeId,

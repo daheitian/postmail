@@ -56,6 +56,8 @@ interface ComposePostResponse {
   title?: string | null;
   body?: string | null;
   url?: string | null;
+  sourceName?: string | null;
+  sourceUrl?: string | null;
   quoteText?: string | null;
   rating?: number | null;
   publishedAt?: number | null;
@@ -64,6 +66,11 @@ interface ComposePostResponse {
 
 interface DraftsResponse {
   posts?: Record<string, unknown>[];
+}
+
+interface ComposeOpenOptions {
+  collectionId?: string;
+  restoreDraft?: boolean;
 }
 
 interface ComposeStateSnapshot {
@@ -116,6 +123,8 @@ function toComposeCollections(value: unknown): ComposeCollection[] {
 }
 
 export class JantComposeDialog extends LitElement {
+  private static _lastNewPostVisibility: ComposeVisibility = "public";
+
   static properties = {
     collections: { type: Array },
     labels: { type: Object },
@@ -259,7 +268,7 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshKind = null;
     this._replyRefreshId = null;
     this._slug = "";
-    this._visibility = "public";
+    this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
     this._moreSlugExpanded = false;
     this._suggestedSlug = "";
@@ -331,7 +340,7 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshKind = null;
     this._replyRefreshId = null;
     this._slug = "";
-    this._visibility = "public";
+    this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
     this._moreSlugExpanded = false;
     this._suggestedSlug = "";
@@ -441,12 +450,15 @@ export class JantComposeDialog extends LitElement {
 
     this._editor?.populate({
       format: post.format,
-      title: post.title ?? undefined,
+      title: post.format === "quote" ? undefined : (post.title ?? undefined),
       bodyJson: post.body ?? undefined,
-      url: post.url ?? undefined,
+      url:
+        post.format === "quote"
+          ? (post.sourceUrl ?? undefined)
+          : (post.url ?? undefined),
       quoteText: post.quoteText ?? undefined,
       quoteAuthor:
-        post.format === "quote" ? (post.title ?? undefined) : undefined,
+        post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
       rating: post.rating ?? undefined,
       media: nonTextMedia.map(
         (m: {
@@ -470,6 +482,23 @@ export class JantComposeDialog extends LitElement {
       this._editor?.focusInput();
       this._captureInitialSnapshot();
     });
+  }
+
+  async openNew(options?: ComposeOpenOptions) {
+    this.reset();
+
+    if (options?.restoreDraft !== false) {
+      await this.restoreLocalDraft();
+    }
+
+    if (!this._hasContent() && options?.collectionId) {
+      this._collectionIds = [options.collectionId];
+    }
+
+    this.closest("dialog")?.showModal();
+    await this.updateComplete;
+    this._editor?.focusInput();
+    this._captureInitialSnapshot();
   }
 
   /**
@@ -1278,10 +1307,16 @@ export class JantComposeDialog extends LitElement {
         (p): DraftItem => ({
           id: p.id as string,
           format: p.format as ComposeFormat,
-          title: (p.title as string) ?? null,
+          title:
+            ((p.format as ComposeFormat) === "quote"
+              ? (p.sourceName as string)
+              : (p.title as string)) ?? null,
           bodyText: (p.bodyText as string) ?? null,
           bodyHtml: (p.bodyHtml as string) ?? null,
-          url: (p.url as string) ?? null,
+          url:
+            ((p.format as ComposeFormat) === "quote"
+              ? (p.sourceUrl as string)
+              : (p.url as string)) ?? null,
           quoteText: (p.quoteText as string) ?? null,
           replyToId: (p.replyToId as string) ?? null,
           updatedAt: p.updatedAt as number,
@@ -1384,12 +1419,15 @@ export class JantComposeDialog extends LitElement {
 
     this._editor?.populate({
       format: post.format,
-      title: post.title ?? undefined,
+      title: post.format === "quote" ? undefined : (post.title ?? undefined),
       bodyJson: post.body ?? undefined,
-      url: post.url ?? undefined,
+      url:
+        post.format === "quote"
+          ? (post.sourceUrl ?? undefined)
+          : (post.url ?? undefined),
       quoteText: post.quoteText ?? undefined,
       quoteAuthor:
-        post.format === "quote" ? (post.title ?? undefined) : undefined,
+        post.format === "quote" ? (post.sourceName ?? undefined) : undefined,
       rating: post.rating ?? undefined,
       media: nonTextMedia.map(
         (m: {
@@ -2553,6 +2591,9 @@ export class JantComposeDialog extends LitElement {
   private _setVisibility(visibility: ComposeVisibility) {
     if (this._visibilityLocked) return;
     this._visibility = visibility;
+    if (!this._editPostId && !this._draftSourceId && !this._replyToId) {
+      JantComposeDialog._lastNewPostVisibility = visibility;
+    }
     this._showPublishPanel = false;
   }
 
@@ -2571,6 +2612,7 @@ export class JantComposeDialog extends LitElement {
   private _renderPublishVisibilityOption(
     visibility: ComposeVisibility,
     label: string,
+    hint: string,
   ) {
     const selected = this._visibility === visibility;
 
@@ -2586,7 +2628,10 @@ export class JantComposeDialog extends LitElement {
         ?disabled=${this._visibilityLocked}
         @click=${() => this._setVisibility(visibility)}
       >
-        <span class="compose-publish-row-label">${label}</span>
+        <span class="compose-publish-copy">
+          <span class="compose-publish-row-label">${label}</span>
+          <span class="compose-publish-row-hint">${hint}</span>
+        </span>
         ${selected
           ? html`<svg
               class="compose-publish-row-check"
@@ -2620,14 +2665,17 @@ export class JantComposeDialog extends LitElement {
           ${this._renderPublishVisibilityOption(
             "public",
             this.labels.publishVisibilityPublic,
+            this.labels.publishVisibilityPublicHint,
           )}
           ${this._renderPublishVisibilityOption(
             "unlisted",
             this.labels.publishVisibilityUnlisted,
+            this.labels.publishVisibilityUnlistedHint,
           )}
           ${this._renderPublishVisibilityOption(
             "private",
             this.labels.publishVisibilityPrivate,
+            this.labels.publishVisibilityPrivateHint,
           )}
         </div>
       </div>

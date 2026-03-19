@@ -87,13 +87,19 @@ composeRoutes.post("/", async (c) => {
     {
       format: data.format,
       slug: data.slug || undefined,
-      title: data.title || undefined,
+      title:
+        data.format === "quote"
+          ? data.sourceName || undefined
+          : data.title || undefined,
       body: data.body || undefined,
       bodyMarkdown: data.bodyMarkdown || undefined,
       status: data.status ?? "published",
       visibility: data.visibility || undefined,
       featured: data.featured,
-      url: data.url || undefined,
+      url:
+        data.format === "quote"
+          ? data.sourceUrl || undefined
+          : data.url || undefined,
       quoteText: data.quoteText || undefined,
       rating: data.rating || undefined,
       collectionIds: data.collectionIds,

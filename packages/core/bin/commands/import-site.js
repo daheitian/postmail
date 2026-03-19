@@ -54,6 +54,33 @@ function resolveImportUrl(url, siteConfig) {
   }
 }
 
+function resolveImportSiteAssetUrl(path, siteConfig) {
+  if (typeof path !== "string" || path.trim() === "") {
+    return path;
+  }
+
+  const baseUrl =
+    typeof siteConfig?.base_url === "string" ? siteConfig.base_url : "";
+  if (!baseUrl) {
+    return path;
+  }
+
+  try {
+    const parsedBaseUrl = new URL(baseUrl);
+    const sitePathPrefix = getImportSitePathPrefix(siteConfig);
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const publicPath =
+      sitePathPrefix &&
+      normalizedPath !== sitePathPrefix &&
+      !normalizedPath.startsWith(`${sitePathPrefix}/`)
+        ? `${sitePathPrefix}${normalizedPath}`
+        : normalizedPath;
+    return new URL(publicPath, parsedBaseUrl.origin).toString();
+  } catch {
+    return resolveImportUrl(path, siteConfig);
+  }
+}
+
 function getImportSitePathPrefix(siteConfig) {
   const baseUrl =
     typeof siteConfig?.base_url === "string" ? siteConfig.base_url : "";
@@ -155,6 +182,13 @@ async function readImportAsset(options) {
       response.headers.get("content-type")?.split(";")[0] ||
       guessMimeType(filename),
   };
+}
+
+function toArrayBuffer(bytes) {
+  return bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  );
 }
 
 /**
@@ -704,9 +738,42 @@ async function buildSiteAvatarImport(siteConfig, sourceRootDir) {
   }
 
   const jant = siteConfig?.extra?.jant || {};
-  if (!jant.site_avatar_url || typeof jant.site_avatar_url !== "string") {
+  const siteAvatarMode =
+    jant.site_avatar_mode === "custom" ||
+    (typeof jant.site_avatar_url === "string" && jant.site_avatar_url.trim())
+      ? "custom"
+      : "none";
+  const faviconMode = jant.favicon_mode === "custom" ? "custom" : "default";
+  const appleTouchMode =
+    jant.apple_touch_mode === "custom" ||
+    (typeof jant.apple_touch_icon_url === "string" &&
+      jant.apple_touch_icon_url.trim())
+      ? "custom"
+      : "default";
+
+  if (siteAvatarMode !== "custom") {
     return { mode: "remove" };
   }
+
+  if (!jant.site_avatar_url || typeof jant.site_avatar_url !== "string") {
+    throw new Error(
+      'Jant export marked site_avatar_mode="custom" but site_avatar_url is missing',
+    );
+  }
+
+  const faviconRawUrl =
+    faviconMode === "custom"
+      ? typeof jant.favicon_url === "string" && jant.favicon_url.trim()
+        ? jant.favicon_url
+        : "/favicon.ico"
+      : null;
+  const appleTouchRawUrl =
+    appleTouchMode === "custom"
+      ? typeof jant.apple_touch_icon_url === "string" &&
+          jant.apple_touch_icon_url.trim()
+        ? jant.apple_touch_icon_url
+        : "/apple-touch-icon.png"
+      : null;
 
   return {
     mode: "set",
@@ -716,18 +783,26 @@ async function buildSiteAvatarImport(siteConfig, sourceRootDir) {
       siteConfig,
       sourceRootDir,
     ),
-    appleTouchUrl:
-      typeof jant.apple_touch_icon_url === "string"
-        ? resolveImportUrl(jant.apple_touch_icon_url, siteConfig)
-        : null,
-    appleTouchFilePath:
-      typeof jant.apple_touch_icon_url === "string"
-        ? await resolveImportLocalAssetPath(
-            jant.apple_touch_icon_url,
-            siteConfig,
-            sourceRootDir,
-          )
-        : null,
+    faviconUrl: faviconRawUrl
+      ? resolveImportSiteAssetUrl(faviconRawUrl, siteConfig)
+      : null,
+    faviconFilePath: faviconRawUrl
+      ? await resolveImportLocalAssetPath(
+          faviconRawUrl,
+          siteConfig,
+          sourceRootDir,
+        )
+      : null,
+    appleTouchUrl: appleTouchRawUrl
+      ? resolveImportSiteAssetUrl(appleTouchRawUrl, siteConfig)
+      : null,
+    appleTouchFilePath: appleTouchRawUrl
+      ? await resolveImportLocalAssetPath(
+          appleTouchRawUrl,
+          siteConfig,
+          sourceRootDir,
+        )
+      : null,
   };
 }
 
@@ -821,6 +896,24 @@ function createRemoteTarget(apiUrl, token) {
         new Blob([avatarAsset.bytes], { type: avatarAsset.contentType }),
         avatarAsset.filename,
       );
+
+      if (data.faviconUrl || data.faviconFilePath) {
+        const faviconAsset = await readImportAsset({
+          sourceUrl: data.faviconUrl,
+          sourceFilePath: data.faviconFilePath,
+          mimeType: "image/x-icon",
+          originalName: "favicon.ico",
+        });
+        if (faviconAsset) {
+          formData.append(
+            "favicon",
+            new Blob([faviconAsset.bytes], {
+              type: faviconAsset.contentType,
+            }),
+            faviconAsset.filename,
+          );
+        }
+      }
 
       if (data.appleTouchUrl) {
         const appleTouchAsset = await readImportAsset({
@@ -937,6 +1030,19 @@ async function createLocalTarget(env = process.env) {
         throw new Error(`Failed to read site avatar: ${data.avatarUrl}`);
       }
 
+      let faviconIco;
+      if (data.faviconUrl || data.faviconFilePath) {
+        const faviconAsset = await readImportAsset({
+          sourceUrl: data.faviconUrl,
+          sourceFilePath: data.faviconFilePath,
+          mimeType: "image/x-icon",
+          originalName: "favicon.ico",
+        });
+        if (faviconAsset) {
+          faviconIco = toArrayBuffer(faviconAsset.bytes);
+        }
+      }
+
       let appleTouchIcon;
       if (data.appleTouchUrl) {
         const appleTouchAsset = await readImportAsset({
@@ -944,7 +1050,7 @@ async function createLocalTarget(env = process.env) {
           sourceFilePath: data.appleTouchFilePath,
         });
         if (appleTouchAsset) {
-          appleTouchIcon = appleTouchAsset.bytes.buffer;
+          appleTouchIcon = toArrayBuffer(appleTouchAsset.bytes);
         }
       }
 
@@ -955,6 +1061,7 @@ async function createLocalTarget(env = process.env) {
             avatarAsset.contentType,
             avatarAsset.bytes,
           ),
+          faviconIco,
           appleTouchIcon,
         },
         {
@@ -1418,7 +1525,10 @@ export async function run(argv) {
       extra.visibility === "unlisted" || extra.visibility === "private"
         ? extra.visibility
         : undefined;
-    const postLabel = frontMatter.title || postSlug || "(untitled)";
+    const postLabel =
+      (format === "quote" ? extra.source_name : frontMatter.title) ||
+      postSlug ||
+      "(untitled)";
 
     if (!dryRun && postSlug) {
       await assertImportSlugAvailable(target, postSlug, postLabel, "post");
@@ -1461,7 +1571,14 @@ export async function run(argv) {
 
     const postData = {
       format,
-      title: frontMatter.title != null ? String(frontMatter.title) : undefined,
+      title:
+        format === "quote"
+          ? typeof extra.source_name === "string"
+            ? extra.source_name
+            : undefined
+          : frontMatter.title != null
+            ? String(frontMatter.title)
+            : undefined,
       bodyMarkdown: rootBody || undefined,
       slug: postSlug,
       path: frontMatter.path != null ? String(frontMatter.path) : undefined,
@@ -1484,6 +1601,9 @@ export async function run(argv) {
     }
     if (format === "quote" && extra.quote_text) {
       postData.quoteText = extra.quote_text;
+      if (typeof extra.source_url === "string" && extra.source_url.trim()) {
+        postData.url = extra.source_url;
+      }
     }
 
     if (dryRun) {
@@ -1517,7 +1637,8 @@ export async function run(argv) {
     for (const replySegment of replySegments) {
       const replyAttrs = replySegment.attrs || {};
       const replySlug = replyAttrs.slug || undefined;
-      const replyLabel = replyAttrs.title || replySlug || "(untitled reply)";
+      const replyLabel =
+        replyAttrs.source_name || replyAttrs.title || replySlug || "(untitled reply)";
       if (!dryRun && replySlug) {
         await assertImportSlugAvailable(
           target,
@@ -1573,7 +1694,10 @@ export async function run(argv) {
       const replyData = {
         format: replyFormat,
         status: replyStatus,
-        title: replyAttrs.title || undefined,
+        title:
+          replyFormat === "quote"
+            ? replyAttrs.source_name || undefined
+            : replyAttrs.title || undefined,
         bodyMarkdown: replyBody || undefined,
         replyToId: post.id,
         slug: replySlug,
@@ -1590,6 +1714,9 @@ export async function run(argv) {
       }
       if (replyFormat === "quote" && replyAttrs.quote_text) {
         replyData.quoteText = decodeURIComponent(replyAttrs.quote_text);
+        if (replyAttrs.source_url) {
+          replyData.url = replyAttrs.source_url;
+        }
       }
 
       try {

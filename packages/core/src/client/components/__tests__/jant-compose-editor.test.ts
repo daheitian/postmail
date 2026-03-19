@@ -5,6 +5,7 @@ vi.mock("../../upload-with-metadata.js", () => ({
   uploadWithMetadata: vi.fn(),
 }));
 import type { Editor } from "@tiptap/core";
+import type { Slice } from "@tiptap/pm/model";
 import type { ComposeLabels } from "../compose-types.js";
 import "../jant-compose-editor.js";
 import type { JantComposeEditor } from "../jant-compose-editor.js";
@@ -37,6 +38,13 @@ function requireValue<T>(value: T | null | undefined, message: string): T {
     throw new Error(message);
   }
   return value;
+}
+
+function requireEditor(el: JantComposeEditor): Editor {
+  return requireValue(
+    (el as unknown as { _editor?: Editor | null })._editor,
+    "expected compose editor instance",
+  );
 }
 
 interface MockClipboardItem {
@@ -76,10 +84,7 @@ function createPasteEvent(files: File[]): MockPasteEvent {
 }
 
 function triggerEditorPaste(el: JantComposeEditor, files: File[]) {
-  const editor = requireValue(
-    (el as unknown as { _editor?: Editor | null })._editor,
-    "expected compose editor instance",
-  );
+  const editor = requireEditor(el);
   const event = createPasteEvent(files);
   let handled = false;
 
@@ -99,6 +104,30 @@ function triggerEditorPaste(el: JantComposeEditor, files: File[]) {
   });
 
   return { handled, event };
+}
+
+function parsePastedText(el: JantComposeEditor, text: string): Slice | null {
+  const editor = requireEditor(el);
+  let slice: Slice | null = null;
+
+  editor.view.someProp("clipboardTextParser", (handler: unknown) => {
+    const parseClipboardText = handler as (
+      text: string,
+      context: typeof editor.state.selection.$from,
+      plainText: boolean,
+      view: Editor["view"],
+    ) => Slice | null;
+
+    slice = parseClipboardText(
+      text,
+      editor.state.selection.$from,
+      false,
+      editor.view,
+    );
+    return true;
+  });
+
+  return slice;
 }
 
 const labels: ComposeLabels = {
@@ -263,6 +292,75 @@ describe("JantComposeEditor", () => {
       ".compose-quote-author",
     );
     expect(authorInput).not.toBeNull();
+  });
+
+  it("converts typed markdown link syntax into a link mark", async () => {
+    const el = await createElement("note");
+    const editor = requireEditor(el);
+
+    editor.commands.insertContent("[OpenAI](https://openai.com)", {
+      applyInputRules: true,
+    });
+
+    const paragraph = editor.getJSON().content?.[0];
+    const linkTextNode = paragraph?.content?.[0];
+
+    expect(editor.getText()).toBe("OpenAI");
+    expect(linkTextNode).toMatchObject({
+      type: "text",
+      text: "OpenAI",
+      marks: [
+        expect.objectContaining({
+          type: "link",
+          attrs: expect.objectContaining({ href: "https://openai.com" }),
+        }),
+      ],
+    });
+  });
+
+  it("autolinks typed bare URLs", async () => {
+    const el = await createElement("note");
+    const editor = requireEditor(el);
+
+    editor.commands.insertContent("https://openai.com ", {
+      applyInputRules: true,
+    });
+
+    const paragraph = editor.getJSON().content?.[0];
+    const linkTextNode = paragraph?.content?.[0];
+
+    expect(linkTextNode).toMatchObject({
+      type: "text",
+      text: "https://openai.com",
+      marks: [
+        expect.objectContaining({
+          type: "link",
+          attrs: expect.objectContaining({ href: "https://openai.com" }),
+        }),
+      ],
+    });
+  });
+
+  it("parses pasted markdown links into link marks", async () => {
+    const el = await createElement("note");
+
+    const slice = parsePastedText(el, "[OpenAI](https://openai.com)");
+    const linkTextNode = slice?.content.firstChild;
+
+    expect(linkTextNode?.text).toBe("OpenAI");
+    expect(linkTextNode?.marks[0]?.type.name).toBe("link");
+    expect(linkTextNode?.marks[0]?.attrs.href).toBe("https://openai.com");
+  });
+
+  it("linkifies pasted bare URLs", async () => {
+    const el = await createElement("note");
+
+    const slice = parsePastedText(el, "https://openai.com");
+    const linkTextNode = slice?.content.firstChild;
+
+    expect(linkTextNode?.text).toBe("https://openai.com");
+    expect(linkTextNode?.marks[0]?.type.name).toBe("link");
+    expect(linkTextNode?.marks[0]?.attrs.href).toBe("https://openai.com");
   });
 
   it("toggles star rating visibility", async () => {

@@ -63,7 +63,31 @@ describe("Search API Routes", () => {
     expect(body.query).toBe("jant");
     expect(body.results.length).toBeGreaterThanOrEqual(1);
     expect(body.count).toBeGreaterThanOrEqual(1);
-    expect(body.results[0].url).toMatch(/^\/[a-z0-9]/);
+    expect(body.results[0].permalink).toMatch(/^\/[a-z0-9]/);
+  });
+
+  it("returns quote attribution as sourceName/sourceUrl", async () => {
+    const { app, services } = createTestApp({ fts: true });
+    app.route("/api/search", searchApiRoutes);
+
+    await services.posts.create({
+      format: "quote",
+      title: "Marcus Aurelius",
+      url: "https://example.com/meditations",
+      quoteText: "What stands in the way becomes the way.",
+    });
+
+    const res = await app.request("/api/search?q=Marcus");
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.results).toHaveLength(1);
+    expect(body.results[0].format).toBe("quote");
+    expect(body.results[0].sourceName).toBe("Marcus Aurelius");
+    expect(body.results[0].sourceUrl).toBe("https://example.com/meditations");
+    expect(body.results[0].permalink).toMatch(/^\/[a-z0-9]/);
+    expect(body.results[0]).not.toHaveProperty("title");
+    expect(body.results[0]).not.toHaveProperty("url");
   });
 
   it("returns empty results for non-matching query", async () => {

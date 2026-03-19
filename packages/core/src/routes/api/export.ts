@@ -6,7 +6,6 @@ import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
-import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 import { createExportService } from "../../services/export.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -17,12 +16,6 @@ exportApiRoutes.post("/zola", requireAuthApi(), async (c) => {
   const { services, appConfig, allSettings, themeStyle } = c.var;
   const navItems = await services.navItems.list();
   const appleTouchKey = allSettings["SITE_FAVICON_APPLE_TOUCH"] ?? "";
-  const publicUrl = getPublicUrlForProvider(
-    appConfig.storageDriver,
-    appConfig.r2PublicUrl,
-    appConfig.s3PublicUrl,
-    appConfig.localPublicUrl,
-  );
   const exportService = createExportService(
     services,
     {
@@ -36,10 +29,8 @@ exportApiRoutes.post("/zola", requireAuthApi(), async (c) => {
       siteFooter: appConfig.siteFooter,
       showHeaderAvatar: appConfig.showHeaderAvatar,
       siteAvatarUrl: appConfig.siteAvatarUrl,
-      appleTouchIconUrl: appleTouchKey
-        ? getMediaUrl(appleTouchKey, publicUrl, appConfig.sitePathPrefix)
-        : undefined,
-      faviconUrl: appConfig.siteAvatarUrl || undefined,
+      faviconIcoBase64: allSettings["SITE_FAVICON_ICO"] ?? undefined,
+      appleTouchIconStorageKey: appleTouchKey || undefined,
       faviconVersion: appConfig.faviconVersion,
       themeId: appConfig.themeId,
       defaultThemeId: appConfig.defaultThemeId,

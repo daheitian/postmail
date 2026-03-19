@@ -188,21 +188,64 @@ After
   });
 
   it("resolves exported avatar URLs against base_url", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "jant-import-icons-"));
+
+    try {
+      await mkdir(join(rootDir, "static"), { recursive: true });
+      await writeFile(join(rootDir, "static", "favicon.ico"), "ico");
+      await writeFile(
+        join(rootDir, "static", "apple-touch-icon.png"),
+        "apple-touch",
+      );
+
+      await expect(
+        __test__.buildSiteAvatarImport(
+          {
+            base_url: "https://example.com/blog",
+            extra: {
+              jant_export: { format: "jant-site" },
+              jant: {
+                site_avatar_mode: "custom",
+                favicon_mode: "custom",
+                apple_touch_mode: "custom",
+                site_avatar_url: "/blog/media/avatar.webp",
+              },
+            },
+          },
+          rootDir,
+        ),
+      ).resolves.toMatchObject({
+        mode: "set",
+        avatarUrl: "https://example.com/blog/media/avatar.webp",
+        faviconUrl: "https://example.com/blog/favicon.ico",
+        faviconFilePath: join(rootDir, "static", "favicon.ico"),
+        appleTouchUrl: "https://example.com/blog/apple-touch-icon.png",
+        appleTouchFilePath: join(rootDir, "static", "apple-touch-icon.png"),
+      });
+    } finally {
+      await rm(rootDir, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps default exported site icons out of the avatar import payload", async () => {
     await expect(
       __test__.buildSiteAvatarImport({
         base_url: "https://example.com/blog",
         extra: {
           jant_export: { format: "jant-site" },
           jant: {
+            site_avatar_mode: "custom",
+            favicon_mode: "default",
+            apple_touch_mode: "default",
             site_avatar_url: "/blog/media/avatar.webp",
-            apple_touch_icon_url: "/blog/favicon/apple-touch-icon.png",
           },
         },
       }),
     ).resolves.toMatchObject({
       mode: "set",
       avatarUrl: "https://example.com/blog/media/avatar.webp",
-      appleTouchUrl: "https://example.com/blog/favicon/apple-touch-icon.png",
+      faviconUrl: null,
+      appleTouchUrl: null,
     });
   });
 

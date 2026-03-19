@@ -122,7 +122,7 @@ const labels: ComposeLabels = {
   publishVisibilityPublicHint: "Shows up in the public timeline and /feed/all.",
   publishVisibilityUnlisted: "Unlisted",
   publishVisibilityUnlistedHint:
-    "Hidden from public lists and feeds, but anyone with the link can still view it.",
+    "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds.",
   publishVisibilityPrivate: "Private",
   publishVisibilityPrivateHint: "Only visible when signed in.",
   publishSlugLabel: "Custom link",
@@ -187,6 +187,12 @@ describe("JantComposeDialog", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     document.body.innerHTML = "";
+    globalThis.localStorage.clear();
+    (
+      customElements.get("jant-compose-dialog") as typeof HTMLElement & {
+        _lastNewPostVisibility: string;
+      }
+    )._lastNewPostVisibility = "public";
   });
 
   it("renders with collections and labels", async () => {
@@ -232,6 +238,21 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     expect(el.querySelector(".compose-publish-panel")).not.toBeNull();
+  });
+
+  it("shows visibility hints in the publish settings panel", async () => {
+    const el = await createElement();
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    expect(el.textContent).toContain(
+      "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds.",
+    );
+    expect(el.textContent).toContain("Only visible when signed in.");
   });
 
   it("format switching updates active state", async () => {
@@ -383,6 +404,41 @@ describe("JantComposeDialog", () => {
         "expected publish button",
       ).textContent?.trim(),
     ).toBe("Post privately");
+  });
+
+  it("opens a new post with the requested collection and keeps the last visibility until refresh", async () => {
+    const el = await createElement();
+
+    await el.openNew({ collectionId: "col-2", restoreDraft: false });
+    await el.updateComplete;
+
+    expect(el._collectionIds).toEqual(["col-2"]);
+    expect(el._visibility).toBe("public");
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    const options = el.querySelectorAll<HTMLButtonElement>(
+      ".compose-publish-option[role='radio']",
+    );
+    options[1]?.click();
+    await el.updateComplete;
+
+    expect(el._visibility).toBe("unlisted");
+
+    el.reset();
+    await el.updateComplete;
+
+    expect(el._visibility).toBe("unlisted");
+
+    await el.openNew({ collectionId: "col-1", restoreDraft: false });
+    await el.updateComplete;
+
+    expect(el._collectionIds).toEqual(["col-1"]);
+    expect(el._visibility).toBe("unlisted");
   });
 
   it("includes a custom slug from the more menu in the submit payload", async () => {
