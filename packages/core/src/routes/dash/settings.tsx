@@ -39,6 +39,7 @@ import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
 import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
 import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountContent.js";
 import { toPublicPath } from "../../lib/url.js";
+import type { FeedKind } from "../../types/constants.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -146,6 +147,10 @@ settingsRoutes.get("/general", async (c) => {
           siteLanguage={appConfig.siteLanguage}
           siteNameFallback={appConfig.fallbacks.siteName}
           siteDescriptionFallback={appConfig.fallbacks.siteDescription}
+          mainRssFeed={appConfig.mainRssFeed}
+          mainFeedUrl={publicPath(c, "/feed")}
+          latestFeedUrl={publicPath(c, "/feed/latest")}
+          featuredFeedUrl={publicPath(c, "/feed/featured")}
           timeZone={appConfig.timeZone}
           siteFooter={appConfig.siteFooter}
           showJantBrandingOnHome={appConfig.showJantBrandingOnHome}
@@ -165,7 +170,9 @@ settingsRoutes.post("/general", async (c) => {
     siteDescription: string;
     siteFooter: string;
     siteLanguage: string;
-    homeDefaultView?: string;
+    showJantBrandingOnHome: boolean;
+    homeDefaultView?: FeedKind;
+    mainRssFeed?: FeedKind;
     headerNavMaxVisible?: string;
     timeZone: string;
   }>();
@@ -217,19 +224,18 @@ settingsRoutes.post("/general", async (c) => {
         _orig_siteDescription: body.siteDescription,
         _orig_siteFooter: body.siteFooter,
         _orig_siteLanguage: body.siteLanguage,
+        _orig_mainRssFeed: body.mainRssFeed,
         _orig_timeZone: body.timeZone,
+        _orig_showJantBrandingOnHome: body.showJantBrandingOnHome,
         _generalDirty: false,
       });
     }
   });
 });
 
-settingsRoutes.post("/general/seo", async (c) => {
+settingsRoutes.post("/general/search", async (c) => {
   const i18n = getI18n(c);
-  const body = await c.req.json<{
-    noindex: string;
-    showJantBrandingOnHome?: boolean;
-  }>();
+  const body = await c.req.json<{ noindex: string }>();
   const { settings } = c.var.services;
 
   // Checkbox "noindex" is the allow-indexing signal:
@@ -243,12 +249,6 @@ settingsRoutes.post("/general/seo", async (c) => {
     await settings.set("NOINDEX", "true");
   }
 
-  if (body.showJantBrandingOnHome === true) {
-    await settings.set("SHOW_JANT_BRANDING_ON_HOME", "true");
-  } else {
-    await settings.remove("SHOW_JANT_BRANDING_ON_HOME");
-  }
-
   // ── JSON response mode (used by Lit settings bridge) ──────────────
   const wantsJson = c.req.header("accept")?.includes("application/json");
   if (wantsJson) {
@@ -256,8 +256,8 @@ settingsRoutes.post("/general/seo", async (c) => {
       status: "ok" as const,
       toast: i18n._(
         msg({
-          message: "SEO settings updated.",
-          comment: "@context: Toast after saving SEO settings",
+          message: "Search settings updated.",
+          comment: "@context: Toast after saving search settings",
         }),
       ),
     });
@@ -267,15 +267,14 @@ settingsRoutes.post("/general/seo", async (c) => {
     await stream.toast(
       i18n._(
         msg({
-          message: "SEO settings updated.",
-          comment: "@context: Toast after saving SEO settings",
+          message: "Search settings updated.",
+          comment: "@context: Toast after saving search settings",
         }),
       ),
     );
     await stream.patchSignals({
-      _orig_noindex: body.noindex,
-      _orig_showJantBrandingOnHome: body.showJantBrandingOnHome,
-      _seoDirty: false,
+      _orig_noindex: body.noindex !== "true",
+      _searchDirty: false,
     });
   });
 });
@@ -454,6 +453,7 @@ settingsRoutes.get("/navigation", async (c) => {
           navItems={navItems}
           headerNavMaxVisible={headerNavMaxVisible}
           homeDefaultView={homeDefaultView}
+          mainRssFeed={c.var.appConfig.mainRssFeed}
           siteName={navData.siteName}
           sitePathPrefix={c.var.appConfig.sitePathPrefix}
         />

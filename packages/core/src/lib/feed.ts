@@ -125,8 +125,16 @@ function buildFeedContent(post: PostView): string {
  * @returns RSS 2.0 XML string
  */
 export function defaultRssRenderer(data: FeedData): string {
-  const { siteName, siteDescription, siteUrl, siteLanguage, selfUrl, posts } =
-    data;
+  const {
+    siteName,
+    siteDescription,
+    siteUrl,
+    siteLanguage,
+    title,
+    selfUrl,
+    posts,
+  } = data;
+  const feedTitle = title ?? siteName;
 
   const items = posts
     .map((post) => {
@@ -155,7 +163,7 @@ export function defaultRssRenderer(data: FeedData): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${escapeXml(siteName)}</title>
+    <title>${escapeXml(feedTitle)}</title>
     <link>${escapeXml(siteUrl)}</link>
     <description>${escapeXml(siteDescription)}</description>
     <language>${siteLanguage}</language>
@@ -172,7 +180,8 @@ export function defaultRssRenderer(data: FeedData): string {
  * @returns Atom XML string
  */
 export function defaultAtomRenderer(data: FeedData): string {
-  const { siteName, siteDescription, siteUrl, selfUrl, posts } = data;
+  const { siteName, siteDescription, siteUrl, title, selfUrl, posts } = data;
+  const feedTitle = title ?? siteName;
 
   const entries = posts
     .map((post) => {
@@ -199,7 +208,7 @@ export function defaultAtomRenderer(data: FeedData): string {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>${escapeXml(siteName)}</title>
+  <title>${escapeXml(feedTitle)}</title>
   <subtitle>${escapeXml(siteDescription)}</subtitle>
   <link href="${escapeXml(siteUrl)}" rel="alternate"/>
   <link href="${escapeXml(selfUrl)}" rel="self"/>

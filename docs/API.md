@@ -217,27 +217,27 @@ POST /api/posts
 
 **Fields:**
 
-| Field           | Type                                | Required | Default     | Description                                                                                                                                                                                                  |
-| --------------- | ----------------------------------- | -------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `format`        | `note` \| `link` \| `quote`         | **yes**  | —           | Post format                                                                                                                                                                                                  |
-| `title`         | string                              | no       | —           | Post title. Used by `note` and `link` posts                                                                                                                                                                  |
-| `body`          | string                              | no       | —           | Post content as TipTap JSON (used by the editor UI)                                                                                                                                                          |
-| `bodyMarkdown`  | string                              | no       | —           | Post content in Markdown (see [Body Format](#body-format))                                                                                                                                                   |
-| `slug`          | string                              | no       | auto        | URL slug. Auto-generated from title or as random ID. Mutually exclusive with `path`                                                                                                                          |
-| `path`          | string                              | no       | —           | Custom URL path (without leading `/`). If the path is a valid slug, it's used directly; otherwise it's slugified for the URL and the original path is registered as an alias. Mutually exclusive with `slug` |
-| `status`        | `draft` \| `published`              | no       | `published` |                                                                                                                                                                                                              |
-| `visibility`    | `public` \| `unlisted` \| `private` | no       | `public`    |                                                                                                                                                                                                              |
-| `pinned`        | boolean                             | no       | `false`     | Pin to top of timeline (max 3)                                                                                                                                                                               |
-| `featured`      | boolean                             | no       | `false`     | Mark as featured content                                                                                                                                                                                     |
-| `url`           | string (URL)                        | no       | —           | Link URL (for `link` format)                                                                                                                                                                                 |
-| `sourceName`    | string                              | no       | —           | Quote source or attribution name (for `quote` format)                                                                                                                                                        |
-| `sourceUrl`     | string (URL)                        | no       | —           | Quote source URL (for `quote` format)                                                                                                                                                                        |
-| `quoteText`     | string                              | no       | —           | Quoted text (for `quote` format)                                                                                                                                                                             |
-| `rating`        | integer (1–5)                       | no       | —           | Rating score                                                                                                                                                                                                 |
-| `collectionIds` | string[]                            | no       | —           | Collection UUIDs to add the post to                                                                                                                                                                          |
-| `replyToId`     | string (UUID)                       | no       | —           | Create as a reply in a thread                                                                                                                                                                                |
-| `publishedAt`   | integer                             | no       | now         | Unix timestamp in seconds                                                                                                                                                                                    |
-| `attachments`   | attachment[]                        | no       | —           | Ordered attachments (max 20). Use `type: "media"` for uploaded files and `type: "text"` for inline text attachments                                                                                          |
+| Field           | Type                                     | Required | Default     | Description                                                                                                                                                                                                  |
+| --------------- | ---------------------------------------- | -------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `format`        | `note` \| `link` \| `quote`              | **yes**  | —           | Post format                                                                                                                                                                                                  |
+| `title`         | string                                   | no       | —           | Post title. Used by `note` and `link` posts                                                                                                                                                                  |
+| `body`          | string                                   | no       | —           | Post content as TipTap JSON (used by the editor UI)                                                                                                                                                          |
+| `bodyMarkdown`  | string                                   | no       | —           | Post content in Markdown (see [Body Format](#body-format))                                                                                                                                                   |
+| `slug`          | string                                   | no       | auto        | URL slug. Auto-generated from title or as random ID. Mutually exclusive with `path`                                                                                                                          |
+| `path`          | string                                   | no       | —           | Custom URL path (without leading `/`). If the path is a valid slug, it's used directly; otherwise it's slugified for the URL and the original path is registered as an alias. Mutually exclusive with `slug` |
+| `status`        | `draft` \| `published`                   | no       | `published` |                                                                                                                                                                                                              |
+| `visibility`    | `public` \| `latest_hidden` \| `private` | no       | `public`    |                                                                                                                                                                                                              |
+| `pinned`        | boolean                                  | no       | `false`     | Pin to top of timeline (max 3)                                                                                                                                                                               |
+| `featured`      | boolean                                  | no       | `false`     | Mark as featured content                                                                                                                                                                                     |
+| `url`           | string (URL)                             | no       | —           | Link URL (for `link` format)                                                                                                                                                                                 |
+| `sourceName`    | string                                   | no       | —           | Quote source or attribution name (for `quote` format)                                                                                                                                                        |
+| `sourceUrl`     | string (URL)                             | no       | —           | Quote source URL (for `quote` format)                                                                                                                                                                        |
+| `quoteText`     | string                                   | no       | —           | Quoted text (for `quote` format)                                                                                                                                                                             |
+| `rating`        | integer (1–5)                            | no       | —           | Rating score                                                                                                                                                                                                 |
+| `collectionIds` | string[]                                 | no       | —           | Collection UUIDs to add the post to                                                                                                                                                                          |
+| `replyToId`     | string (UUID)                            | no       | —           | Create as a reply in a thread                                                                                                                                                                                |
+| `publishedAt`   | integer                                  | no       | now         | Unix timestamp in seconds                                                                                                                                                                                    |
+| `attachments`   | attachment[]                             | no       | —           | Ordered attachments (max 20). Use `type: "media"` for uploaded files and `type: "text"` for inline text attachments                                                                                          |
 
 ### Attachments
 
@@ -977,6 +977,7 @@ Returns user-configurable settings (not environment-only fields).
     "SITE_DESCRIPTION": "A personal microblog",
     "SITE_LANGUAGE": "en",
     "HOME_DEFAULT_VIEW": "latest",
+    "MAIN_RSS_FEED": "featured",
     "HEADER_NAV_MAX_VISIBLE": "3",
     "TIME_ZONE": "UTC",
     "SITE_FOOTER": "",
@@ -1015,13 +1016,20 @@ Environment-only config keys (like `AUTH_SECRET`) are silently rejected. If all 
 
 ## Other Endpoints
 
-| Endpoint                 | Auth | Description                                                    |
-| ------------------------ | ---- | -------------------------------------------------------------- |
-| `GET /health`            | No   | Returns `{ "status": "ok" }`                                   |
-| `GET /feed`              | No   | RSS 2.0 feed (featured posts only, ordered by featured time)   |
-| `GET /feed/atom.xml`     | No   | Atom feed (featured posts only, ordered by featured time)      |
-| `GET /feed/all`          | No   | RSS 2.0 feed (all published posts, supports `?format=` filter) |
-| `GET /feed/all/atom.xml` | No   | Atom feed (all published posts)                                |
+| Endpoint                      | Auth | Description                                                     |
+| ----------------------------- | ---- | --------------------------------------------------------------- |
+| `GET /health`                 | No   | Returns `{ "status": "ok" }`                                    |
+| `GET /feed`                   | No   | RSS 2.0 canonical site feed (Featured by default, configurable) |
+| `GET /feed/atom.xml`          | No   | Atom canonical site feed (Featured by default, configurable)    |
+| `GET /feed/latest`            | No   | RSS 2.0 latest public posts feed (supports `?format=` filter)   |
+| `GET /feed/latest/atom.xml`   | No   | Atom latest public posts feed (supports `?format=` filter)      |
+| `GET /feed/featured`          | No   | RSS 2.0 featured posts feed                                     |
+| `GET /feed/featured/atom.xml` | No   | Atom featured posts feed                                        |
+
+Legacy aliases:
+
+- `GET /feed/all` → `308` redirect to `/feed/latest`
+- `GET /feed/all/atom.xml` → `308` redirect to `/feed/latest/atom.xml`
 
 ---
 

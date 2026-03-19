@@ -20,6 +20,7 @@ function parseSettingsInitialData(data: unknown): SettingsInitialData | null {
   const siteName = getJsonString(data, "siteName");
   const siteDescription = getJsonString(data, "siteDescription");
   const siteLanguage = getJsonString(data, "siteLanguage");
+  const mainRssFeed = getJsonString(data, "mainRssFeed");
   const timeZone = getJsonString(data, "timeZone");
   const siteFooter = getJsonString(data, "siteFooter");
   const showJantBrandingOnHome = getJsonBoolean(data, "showJantBrandingOnHome");
@@ -29,6 +30,7 @@ function parseSettingsInitialData(data: unknown): SettingsInitialData | null {
     siteName === undefined ||
     siteDescription === undefined ||
     siteLanguage === undefined ||
+    mainRssFeed === undefined ||
     timeZone === undefined ||
     siteFooter === undefined ||
     showJantBrandingOnHome === undefined ||
@@ -41,6 +43,7 @@ function parseSettingsInitialData(data: unknown): SettingsInitialData | null {
     siteName,
     siteDescription,
     siteLanguage,
+    mainRssFeed,
     timeZone,
     siteFooter,
     showJantBrandingOnHome,

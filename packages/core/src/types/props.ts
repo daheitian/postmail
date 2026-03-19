@@ -41,7 +41,11 @@ export interface FeaturedPageProps {
 }
 
 /** Visibility filter values for the archive page (includes "featured" as a virtual value). */
-export type ArchiveVisibility = "public" | "unlisted" | "private" | "featured";
+export type ArchiveVisibility =
+  | "public"
+  | "latest_hidden"
+  | "private"
+  | "featured";
 
 /** View mode for the archive page. */
 export type ArchiveView = "grid" | "list";
@@ -122,6 +126,8 @@ export interface FeedData {
   siteDescription: string;
   siteUrl: string;
   siteLanguage: string;
+  /** Optional feed-specific title shown in RSS/Atom readers. */
+  title?: string;
   selfUrl: string;
   posts: FeedPostView[];
 }

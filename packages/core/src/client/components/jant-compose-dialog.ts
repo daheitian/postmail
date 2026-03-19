@@ -2398,7 +2398,6 @@ export class JantComposeDialog extends LitElement {
     if (this._editPostId) return this.labels.update;
     if (this._replyToId) return this.labels.reply;
     if (this._visibility === "private") return this.labels.postPrivately;
-    if (this._visibility === "unlisted") return this.labels.postUnlisted;
     return this.labels.post;
   }
 
@@ -2530,7 +2529,8 @@ export class JantComposeDialog extends LitElement {
       "compose-publish-visibility-icon": true,
       "compose-publish-visibility-icon-toggle": variant === "toggle",
       "compose-publish-visibility-icon-public": visibility === "public",
-      "compose-publish-visibility-icon-unlisted": visibility === "unlisted",
+      "compose-publish-visibility-icon-latest_hidden":
+        visibility === "latest_hidden",
       "compose-publish-visibility-icon-private": visibility === "private",
     });
 
@@ -2556,7 +2556,7 @@ export class JantComposeDialog extends LitElement {
       `;
     }
 
-    if (visibility === "unlisted") {
+    if (visibility === "latest_hidden") {
       return html`
         <span class=${iconClasses} aria-hidden="true">
           <svg
@@ -2787,9 +2787,9 @@ export class JantComposeDialog extends LitElement {
                     this.labels.publishVisibilityPublicHint,
                   )}
                   ${this._renderPublishVisibilityOption(
-                    "unlisted",
-                    this.labels.publishVisibilityUnlisted,
-                    this.labels.publishVisibilityUnlistedHint,
+                    "latest_hidden",
+                    this.labels.publishVisibilityHiddenFromLatest,
+                    this.labels.publishVisibilityHiddenFromLatestHint,
                   )}
                   ${this._renderPublishVisibilityOption(
                     "private",

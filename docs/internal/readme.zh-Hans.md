@@ -261,22 +261,24 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ### 5.2 前台路由
 
-| URL                  | 内容                                                                  |
-| -------------------- | --------------------------------------------------------------------- |
-| `/`                  | 首页（默认展示最新帖子；`HOME_DEFAULT_VIEW=featured` 时展示精选帖子） |
-| `/latest`            | 最新帖子（当首页已展示最新时，302 重定向到 `/`）                      |
-| `/featured`          | 精选帖子（当首页已展示精选时，302 重定向到 `/`）                      |
-| `/{slug}`            | 单条帖子（slug 自动生成或自定义）                                     |
-| `/c/{slug}`          | 合集帖子列表                                                          |
-| `/c`                 | 合集列表页                                                            |
-| `/archive`           | 归档（支持 ?format= &featured= 筛选）                                 |
-| `/search`            | 搜索                                                                  |
-| `/feed`              | RSS 2.0（仅精选帖子，按 featured 时间倒序，面向订阅者的精选内容）     |
-| `/feed/atom.xml`     | Atom Feed（仅精选帖子，按 featured 时间倒序）                         |
-| `/feed/all`          | RSS 2.0（所有 published 帖子，支持 `?format=` 筛选）                  |
-| `/feed/all/atom.xml` | Atom Feed（所有 published 帖子）                                      |
-| `/c/{slug}/feed`     | 单个合集的 RSS Feed                                                   |
-| `/sitemap.xml`       | 自动生成的站点地图                                                    |
+| URL                       | 内容                                                                  |
+| ------------------------- | --------------------------------------------------------------------- |
+| `/`                       | 首页（默认展示最新帖子；`HOME_DEFAULT_VIEW=featured` 时展示精选帖子） |
+| `/latest`                 | 最新帖子（当首页已展示最新时，302 重定向到 `/`）                      |
+| `/featured`               | 精选帖子（当首页已展示精选时，302 重定向到 `/`）                      |
+| `/{slug}`                 | 单条帖子（slug 自动生成或自定义）                                     |
+| `/c/{slug}`               | 合集帖子列表                                                          |
+| `/c`                      | 合集列表页                                                            |
+| `/archive`                | 归档（支持 ?format= &featured= 筛选）                                 |
+| `/search`                 | 搜索                                                                  |
+| `/feed`                   | RSS 2.0 站点主 Feed（默认精选，可在设置中切换为 Latest）              |
+| `/feed/atom.xml`          | Atom 站点主 Feed（默认精选，可在设置中切换为 Latest）                 |
+| `/feed/latest`            | RSS 2.0 Latest Feed（公开帖子，支持 `?format=` 筛选）                 |
+| `/feed/latest/atom.xml`   | Atom Latest Feed（公开帖子，支持 `?format=` 筛选）                    |
+| `/feed/featured`          | RSS 2.0 Featured Feed（仅精选帖子）                                   |
+| `/feed/featured/atom.xml` | Atom Featured Feed（仅精选帖子）                                      |
+| `/c/{slug}/feed`          | 单个合集的 RSS Feed                                                   |
+| `/sitemap.xml`            | 自动生成的站点地图                                                    |
 
 ### 5.3 后台路由
 
@@ -306,12 +308,14 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 ## 6. RSS 与 SEO
 
-**Feed**（三级结构）：
+**Feed**（主 Feed + 显式 Feed）：
 
-- `/feed` — RSS 2.0，仅精选帖子，按 featured 时间倒序（面向订阅者的精选内容）
-- `/feed/atom.xml` — Atom 格式，仅精选帖子，按 featured 时间倒序
-- `/feed/all` — RSS 2.0，所有 published 帖子（支持 `?format=note` 等格式筛选）
-- `/feed/all/atom.xml` — Atom 格式，所有 published 帖子
+- `/feed` — 站点主 Feed。默认输出精选帖子，也可以在设置中改为 Latest
+- `/feed/atom.xml` — 主 Feed 的 Atom 版本
+- `/feed/latest` — RSS 2.0，Latest 公开帖子（支持 `?format=note` 等格式筛选）
+- `/feed/latest/atom.xml` — Atom 格式，Latest 公开帖子
+- `/feed/featured` — RSS 2.0，仅精选帖子
+- `/feed/featured/atom.xml` — Atom 格式，仅精选帖子
 - `/c/{slug}/feed` — 单个合集的 RSS Feed，按加入合集时间倒序
 
 **Sitemap**：自动生成，包含所有公开帖子和页面。
@@ -349,16 +353,17 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **用户可配置**（后台设置）：
 
-| 字段                     | 说明                              | 默认值   |
-| ------------------------ | --------------------------------- | -------- |
-| `SITE_NAME`              | 站点名称                          | `Jant`   |
-| `SITE_DESCRIPTION`       | 站点描述                          | 自动生成 |
-| `SITE_LANGUAGE`          | 站点语言（en, zh-Hans, zh-Hant）  | `en`     |
-| `HOME_DEFAULT_VIEW`      | 首页默认视图（latest / featured） | `latest` |
-| `HEADER_NAV_MAX_VISIBLE` | 导航栏最大可见链接数              | `3`      |
-| `TIME_ZONE`              | 时区                              | `UTC`    |
-| `SITE_FOOTER`            | 自定义页脚                        |          |
-| `NOINDEX`                | 是否禁止搜索引擎索引              |          |
+| 字段                     | 说明                                  | 默认值     |
+| ------------------------ | ------------------------------------- | ---------- |
+| `SITE_NAME`              | 站点名称                              | `Jant`     |
+| `SITE_DESCRIPTION`       | 站点描述                              | 自动生成   |
+| `SITE_LANGUAGE`          | 站点语言（en, zh-Hans, zh-Hant）      | `en`       |
+| `HOME_DEFAULT_VIEW`      | 首页默认视图（latest / featured）     | `latest`   |
+| `MAIN_RSS_FEED`          | `/feed` 默认输出（featured / latest） | `featured` |
+| `HEADER_NAV_MAX_VISIBLE` | 导航栏最大可见链接数                  | `3`        |
+| `TIME_ZONE`              | 时区                                  | `UTC`      |
+| `SITE_FOOTER`            | 自定义页脚                            |            |
+| `NOINDEX`                | 是否禁止搜索引擎索引                  |            |
 
 **环境配置**（`wrangler.toml` / `.dev.vars`）：
 
@@ -366,6 +371,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | ------------------------------ | -------------------------------- |
 | `JANT_AUTH_SECRET`             | 认证密钥（必填）                 |
 | `JANT_SITE_URL`                | 站点 URL                         |
+| `JANT_MAIN_RSS_FEED`           | 主 RSS Feed（featured / latest） |
 | `JANT_R2_PUBLIC_URL`           | R2 公开 URL（CDN 直接访问）      |
 | `JANT_IMAGE_TRANSFORM_URL`     | 图片转换 URL                     |
 | `JANT_STORAGE_DRIVER`          | 存储驱动（r2 / s3）              |

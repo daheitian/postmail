@@ -39,7 +39,8 @@ const SYSTEM_NAV_TITLES: Partial<Record<SystemNavKey, MessageDescriptor>> = {
 
 const SYSTEM_NAV_DESCRIPTIONS: Record<SystemNavKey, MessageDescriptor> = {
   rss: msg({
-    message: "Add a link to your RSS feed",
+    message:
+      "Add a link to your main RSS feed. Change what /feed returns in General.",
     comment: "@context: Description for the RSS system navigation toggle",
   }),
   settings: msg({

@@ -76,6 +76,7 @@ function insertRootPost(
     title: string;
     bodyText: string;
     createdAt: number;
+    visibility?: "public" | "latest_hidden" | "private";
   },
 ) {
   sqlite
@@ -92,11 +93,12 @@ function insertRootPost(
           published_at,
           created_at,
           updated_at
-        ) VALUES (?, 'note', 'published', 'public', ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, 'note', 'published', ?, ?, ?, ?, ?, ?, ?)
       `,
     )
     .run(
       values.id,
+      values.visibility ?? "public",
       values.title,
       values.bodyText,
       values.id,
@@ -332,5 +334,37 @@ describe("migration integrity", () => {
 
     sqlite.prepare("DELETE FROM post WHERE id = ?").run("post-1");
     expect(searchPostFts(sqlite, "alpha")).toEqual([]);
+  });
+
+  it("baseline schema stores latest_hidden visibility and keeps FTS working", () => {
+    const sqlite = new Database(":memory:");
+    sqlite.pragma("foreign_keys = ON");
+
+    applyMigration(sqlite, "0000_baseline.sql");
+    applyMigration(sqlite, "0001_fts_setup.sql");
+
+    insertRootPost(sqlite, {
+      id: "latest-hidden-post",
+      title: "Latest hidden note",
+      bodyText: "latest hidden body",
+      createdAt: 1,
+      visibility: "latest_hidden",
+    });
+
+    expect(searchPostFts(sqlite, "latest")).toEqual([
+      {
+        rowid: 1,
+        title: "Latest hidden note",
+        bodyText: "latest hidden body",
+      },
+    ]);
+
+    const rows = sqlite
+      .prepare("SELECT id, visibility FROM post WHERE id = ?")
+      .all("latest-hidden-post");
+
+    expect(rows).toEqual([
+      { id: "latest-hidden-post", visibility: "latest_hidden" },
+    ]);
   });
 });

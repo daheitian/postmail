@@ -5,29 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1773779866793,
+      "when": 1773963783636,
       "tag": "0000_baseline",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1773779866794,
+      "when": 1773963784193,
       "tag": "0001_fts_setup",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1773861001608,
-      "tag": "0002_open_black_bolt",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1773930125484,
-      "tag": "0003_great_master_mold",
       "breakpoints": true
     }
   ]

@@ -87,9 +87,9 @@ terms:
     target: 已發佈
     note: 已發佈狀態標籤。
 
-  - source: Unlisted
-    target: 未列出
-    note: 不出現在主列表中的可存取狀態。
+  - source: Hidden from Latest
+    target: 從最新中隱藏
+    note: 不出現在 Latest 中，但仍可透過固定連結和集合存取的狀態。
 
   - source: API Tokens
     target: API 權杖

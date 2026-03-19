@@ -16,17 +16,34 @@ export interface SettingsLabels {
 
   // General
   general: string;
+  site: string;
+  languageAndTime: string;
+  home: string;
+  search: string;
   siteName: string;
   aboutBlog: string;
   aboutBlogHelp: string;
   siteFooter: string;
   footerHelp: string;
+  feeds: string;
+  mainRssFeed: string;
+  mainRssFeedHelp: string;
+  mainRssFeedWarning: string;
+  availableFeedUrls: string;
+  availableFeedUrlsHelp: string;
+  mainFeedUrl: string;
+  latestFeedUrl: string;
+  featuredFeedUrl: string;
+  latestFeedOption: string;
+  latestFeedOptionDescription: string;
+  featuredFeedOption: string;
+  featuredFeedOptionDescription: string;
   showJantBrandingOnHome: string;
   markdownSupported: string;
   language: string;
   timeZone: string;
 
-  // SEO
+  // Search
   allowIndexing: string;
   demoSeoLocked: string;
 
@@ -51,6 +68,7 @@ export interface SettingsInitialData {
   siteName: string;
   siteDescription: string;
   siteLanguage: string;
+  mainRssFeed: string;
   timeZone: string;
   siteFooter: string;
   showJantBrandingOnHome: boolean;

@@ -10,6 +10,7 @@
 
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { Context } from "hono";
+import { msg } from "@lingui/core/macro";
 import { toAssetPath } from "../../lib/asset-path.js";
 import { getJantIconHref } from "../../lib/jant-branding.js";
 import { isFullUrl, toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
@@ -72,6 +73,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     : appConfig?.assetBasePath || toAssetPath("");
   const currentUrl = c ? c.get("publicRequestUrl") : undefined;
   const siteName = appConfig?.siteName;
+  const i18n = c ? c.get("i18n") : undefined;
   const assetPath = (path: string) => (IS_VITE_DEV ? path : toAssetPath(path));
 
   // Automatically wrap with I18nProvider if Context is provided
@@ -132,6 +134,40 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           appConfig?.siteUrl || "",
           sitePathPrefix,
         ));
+  const mainFeedHref = appConfig ? toPublicPath("/feed", sitePathPrefix) : null;
+  const latestFeedHref = appConfig
+    ? toPublicPath("/feed/latest", sitePathPrefix)
+    : null;
+  const featuredFeedHref = appConfig
+    ? toPublicPath("/feed/featured", sitePathPrefix)
+    : null;
+  const mainFeedTitle =
+    i18n?._(
+      msg({
+        message: "Main feed",
+        comment: "@context: RSS autodiscovery title for the site's main feed",
+      }),
+    ) ?? "Main feed";
+  const latestFeedTitle =
+    i18n?._(
+      msg({
+        message: "Latest posts",
+        comment:
+          "@context: RSS autodiscovery title for the latest public posts feed",
+      }),
+    ) ?? "Latest posts";
+  const featuredFeedTitle =
+    i18n?._(
+      msg({
+        message: "Featured posts",
+        comment:
+          "@context: RSS autodiscovery title for the featured posts feed",
+      }),
+    ) ?? "Featured posts";
+  const alternateFeed =
+    appConfig?.mainRssFeed === "latest"
+      ? { href: featuredFeedHref, title: featuredFeedTitle }
+      : { href: latestFeedHref, title: latestFeedTitle };
 
   return (
     <html
@@ -170,6 +206,22 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           href={resolvedAppleTouchHref}
           sizes="180x180"
         />
+        {mainFeedHref && (
+          <link
+            rel="alternate"
+            type="application/rss+xml"
+            title={mainFeedTitle}
+            href={mainFeedHref}
+          />
+        )}
+        {alternateFeed.href && (
+          <link
+            rel="alternate"
+            type="application/rss+xml"
+            title={alternateFeed.title}
+            href={alternateFeed.href}
+          />
+        )}
         {IS_VITE_DEV && (
           <script type="module" src={assetPath("/@vite/client")} />
         )}

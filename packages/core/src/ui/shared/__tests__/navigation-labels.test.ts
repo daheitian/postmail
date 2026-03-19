@@ -96,5 +96,8 @@ describe("system nav labels", () => {
     expect(getSystemNavDescription("archive", translate)).toBe(
       "translated:Link to the post archive",
     );
+    expect(getSystemNavDescription("rss", translate)).toBe(
+      "translated:Add a link to your main RSS feed. Change what /feed returns in General.",
+    );
   });
 });

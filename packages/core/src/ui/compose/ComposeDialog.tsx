@@ -259,10 +259,10 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       message: "Reply",
       comment: "@context: Compose button - reply to post",
     }),
-    publishUnlisted: t({
-      message: "Post as Unlisted",
+    publishHideFromLatest: t({
+      message: "Hide from Latest",
       comment:
-        "@context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed",
+        "@context: Compose dropdown option for hiding a post from the Latest view",
     }),
     publishPrivate: t({
       message: "Post as Private",
@@ -282,19 +282,19 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       comment: "@context: Compose publish settings visibility option",
     }),
     publishVisibilityPublicHint: t({
-      message: "Shows up in the public timeline and /feed/all.",
+      message: "Appears in Latest.",
       comment:
         "@context: Compose publish settings help text for public visibility",
     }),
-    publishVisibilityUnlisted: t({
-      message: "Unlisted",
+    publishVisibilityHiddenFromLatest: t({
+      message: "Hidden from Latest",
       comment: "@context: Compose publish settings visibility option",
     }),
-    publishVisibilityUnlistedHint: t({
+    publishVisibilityHiddenFromLatestHint: t({
       message:
-        "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds.",
+        "Doesn't appear in Latest. Still appears in collections you add it to.",
       comment:
-        "@context: Compose publish settings help text for unlisted visibility",
+        "@context: Compose publish settings help text for posts hidden from Latest",
     }),
     publishVisibilityPrivate: t({
       message: "Private",
@@ -357,9 +357,9 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       comment:
         "@context: Compose custom slug validation error for reserved paths",
     }),
-    postUnlisted: t({
-      message: "Post unlisted",
-      comment: "@context: Compose publish button for unlisted visibility",
+    postHiddenFromLatest: t({
+      message: "Post",
+      comment: "@context: Compose publish button for posts hidden from Latest",
     }),
     postPrivately: t({
       message: "Post privately",

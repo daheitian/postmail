@@ -18,12 +18,10 @@ import { sql } from "drizzle-orm";
 
 const FORMATS = ["note", "link", "quote"] as const;
 const STATUSES = ["draft", "published"] as const;
-const VISIBILITIES = ["public", "unlisted", "private"] as const;
+const VISIBILITIES = ["public", "latest_hidden", "private"] as const;
 const COLLECTION_SORT_ORDERS = ["newest", "oldest", "rating_desc"] as const;
 const NAV_ITEM_TYPES = ["link", "system"] as const;
 const SYSTEM_NAV_KEYS = ["rss", "settings", "collections", "archive"] as const;
-const MEDIA_KINDS = ["image", "video", "audio", "text", "document"] as const;
-const STORAGE_DRIVERS = ["r2", "s3", "local"] as const;
 
 function sqlTextEnum(values: readonly string[]) {
   return sql.raw(values.map((value) => `'${value}'`).join(", "));
@@ -67,25 +65,6 @@ export const posts = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
-    check("chk_post_format", sql`${table.format} IN (${sqlTextEnum(FORMATS)})`),
-    check(
-      "chk_post_status",
-      sql`${table.status} IN (${sqlTextEnum(STATUSES)})`,
-    ),
-    check(
-      "chk_post_visibility",
-      sql`${table.visibility} IN (${sqlTextEnum(VISIBILITIES)})`,
-    ),
-    check(
-      "chk_post_root_visibility_present",
-      sql`(
-        ${table.replyToId} IS NULL
-        AND ${table.visibility} IS NOT NULL
-      ) OR (
-        ${table.replyToId} IS NOT NULL
-        AND ${table.visibility} IS NULL
-      )`,
-    ),
     check(
       "chk_post_reply_to_not_self",
       sql`${table.replyToId} IS NULL OR ${table.replyToId} <> ${table.id}`,
@@ -98,41 +77,6 @@ export const posts = sqliteTable(
       ) OR (
         ${table.replyToId} IS NOT NULL
         AND ${table.threadId} <> ${table.id}
-      )`,
-    ),
-    check(
-      "chk_post_reply_not_pinned",
-      sql`${table.pinnedAt} IS NULL OR ${table.replyToId} IS NULL`,
-    ),
-    check(
-      "chk_post_format_shape",
-      sql`(
-        ${table.format} = 'note'
-        AND (${table.url} IS NULL OR trim(${table.url}) = '')
-        AND (${table.quoteText} IS NULL OR trim(${table.quoteText}) = '')
-      ) OR (
-        ${table.format} = 'link'
-        AND ${table.url} IS NOT NULL
-        AND trim(${table.url}) <> ''
-        AND (${table.quoteText} IS NULL OR trim(${table.quoteText}) = '')
-      ) OR (
-        ${table.format} = 'quote'
-        AND ${table.quoteText} IS NOT NULL
-        AND trim(${table.quoteText}) <> ''
-      )`,
-    ),
-    check(
-      "chk_post_rating_range",
-      sql`${table.rating} IS NULL OR ${table.rating} BETWEEN 1 AND 5`,
-    ),
-    check(
-      "chk_post_status_published_at",
-      sql`(
-        ${table.status} = 'draft'
-        AND ${table.publishedAt} IS NULL
-      ) OR (
-        ${table.status} = 'published'
-        AND ${table.publishedAt} IS NOT NULL
       )`,
     ),
     foreignKey({
@@ -216,14 +160,6 @@ export const media = sqliteTable(
     updatedAt: integer("updated_at").notNull(),
   },
   (table) => [
-    check(
-      "chk_media_provider",
-      sql`${table.provider} IN (${sqlTextEnum(STORAGE_DRIVERS)})`,
-    ),
-    check(
-      "chk_media_media_kind",
-      sql`${table.mediaKind} IN (${sqlTextEnum(MEDIA_KINDS)})`,
-    ),
     check("chk_media_size_positive", sql`${table.size} > 0`),
     check("chk_media_position_not_blank", sql`trim(${table.position}) <> ''`),
     check(

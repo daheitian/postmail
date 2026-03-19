@@ -234,11 +234,10 @@ export function createAuthService(
       await db.delete(media);
       await db.delete(navItems);
 
-      // Posts: break self-referential FKs while satisfying all CHECK constraints,
-      // then delete. Must update reply_to_id, visibility, AND thread_id together
-      // because CHECKs enforce: reply_to_id IS NULL → visibility NOT NULL ∧ thread_id = id
+      // Posts use self-referential thread FKs plus a root/reply thread-shape check.
+      // Flatten replies back into roots before deleting the table contents.
       await db.run(
-        sql`UPDATE post SET reply_to_id = NULL, visibility = 'public', thread_id = id WHERE reply_to_id IS NOT NULL`,
+        sql`UPDATE post SET reply_to_id = NULL, thread_id = id WHERE reply_to_id IS NOT NULL`,
       );
       await db.run(sql`DELETE FROM post`);
 

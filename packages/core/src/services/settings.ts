@@ -18,13 +18,16 @@ import type { MediaService } from "./media.js";
 import { validateUploadFile, generateStorageKey } from "../lib/upload.js";
 import { arrayBufferToBase64 } from "../lib/favicon.js";
 import { ValidationError } from "../lib/errors.js";
+import type { FeedKind } from "../types/constants.js";
 
 export interface GeneralSettingsData {
   siteName: string;
   siteDescription: string;
   siteFooter: string;
   siteLanguage: string;
-  homeDefaultView?: string;
+  showJantBrandingOnHome: boolean;
+  homeDefaultView?: FeedKind;
+  mainRssFeed?: FeedKind;
   headerNavMaxVisible?: string;
   timeZone: string;
 }
@@ -180,6 +183,12 @@ export function createSettingsService(db: Database): SettingsService {
         await this.remove("SITE_FOOTER");
       }
 
+      if (data.showJantBrandingOnHome) {
+        await this.set("SHOW_JANT_BRANDING_ON_HOME", "true");
+      } else {
+        await this.remove("SHOW_JANT_BRANDING_ON_HOME");
+      }
+
       // Language is always stored
       await this.set("SITE_LANGUAGE", data.siteLanguage);
 
@@ -189,6 +198,15 @@ export function createSettingsService(db: Database): SettingsService {
           await this.set("HOME_DEFAULT_VIEW", data.homeDefaultView);
         } else {
           await this.remove("HOME_DEFAULT_VIEW");
+        }
+      }
+
+      // Main RSS feed: only store non-default (default is featured)
+      if (data.mainRssFeed !== undefined) {
+        if (data.mainRssFeed === "latest") {
+          await this.set("MAIN_RSS_FEED", data.mainRssFeed);
+        } else {
+          await this.remove("MAIN_RSS_FEED");
         }
       }
 

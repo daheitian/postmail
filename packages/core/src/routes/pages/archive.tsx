@@ -70,7 +70,7 @@ archiveRoutes.get("/", async (c) => {
   const hasTitle =
     hasTitleParam === "1" ? true : hasTitleParam === "0" ? false : undefined;
 
-  const VALID_VISIBILITIES = ["public", "unlisted", "private", "featured"];
+  const VALID_VISIBILITIES = ["public", "latest_hidden", "private", "featured"];
   const visibilityParam = c.req.query("visibility");
   const visibilityAll = visibilityParam === "all";
   const visibility =
@@ -109,7 +109,7 @@ archiveRoutes.get("/", async (c) => {
 
   // --- Map visibility filter to service-level filters -------------------------
   // Visibility filter is only meaningful when authenticated — unauthenticated
-  // users cannot see unlisted or private posts regardless of the query param.
+  // users cannot see latest_hidden or private posts regardless of the query param.
 
   // Default to "public" when authenticated unless explicitly set to "all"
   const effectiveVisibility = navData.isAuthenticated
@@ -123,7 +123,7 @@ archiveRoutes.get("/", async (c) => {
     status: "published",
     excludeReplies: true,
     excludePrivate: !navData.isAuthenticated,
-    excludeUnlisted: !navData.isAuthenticated,
+    excludeLatestHidden: !navData.isAuthenticated,
     ...(effectiveVisibility === "featured"
       ? { featured: true }
       : effectiveVisibility

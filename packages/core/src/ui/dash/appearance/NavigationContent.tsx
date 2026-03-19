@@ -24,12 +24,14 @@ export function NavigationContent({
   navItems,
   headerNavMaxVisible,
   homeDefaultView,
+  mainRssFeed,
   siteName,
   sitePathPrefix = "",
 }: {
   navItems: NavItem[];
   headerNavMaxVisible: number;
   homeDefaultView: string;
+  mainRssFeed: string;
   siteName: string;
   sitePathPrefix?: string;
 }) {
@@ -51,7 +53,29 @@ export function NavigationContent({
   ).map((key) => ({
     key,
     label: getSystemNavDisplayLabel(key, t),
-    description: getSystemNavDescription(key, t),
+    description:
+      key === "rss"
+        ? t({
+            message:
+              "Header RSS points to your %feed% feed (/feed). Change what /feed returns in General.",
+            comment:
+              "@context: Description for the RSS system navigation toggle. %feed% is either Latest or Featured.",
+            values: {
+              feed:
+                mainRssFeed === "latest"
+                  ? t({
+                      message: "Latest",
+                      comment:
+                        "@context: Feed name in RSS system navigation description",
+                    })
+                  : t({
+                      message: "Featured",
+                      comment:
+                        "@context: Feed name in RSS system navigation description",
+                    }),
+            },
+          })
+        : getSystemNavDescription(key, t),
   }));
 
   const labels: NavManagerLabels = {

@@ -16,6 +16,10 @@ export function GeneralContent({
   siteLanguage,
   siteNameFallback,
   siteDescriptionFallback,
+  mainRssFeed,
+  mainFeedUrl,
+  latestFeedUrl,
+  featuredFeedUrl,
   timeZone,
   siteFooter,
   showJantBrandingOnHome,
@@ -28,6 +32,10 @@ export function GeneralContent({
   siteLanguage: string;
   siteNameFallback: string;
   siteDescriptionFallback: string;
+  mainRssFeed: string;
+  mainFeedUrl: string;
+  latestFeedUrl: string;
+  featuredFeedUrl: string;
   timeZone: string;
   siteFooter: string;
   showJantBrandingOnHome: boolean;
@@ -41,6 +49,24 @@ export function GeneralContent({
     general: t({
       message: "General",
       comment: "@context: Settings section heading",
+    }),
+    site: t({
+      message: "Site",
+      comment: "@context: Settings subsection heading for basic site fields",
+    }),
+    languageAndTime: t({
+      message: "Language & Time",
+      comment:
+        "@context: Settings subsection heading for language and time zone fields",
+    }),
+    home: t({
+      message: "Home",
+      comment: "@context: Settings subsection heading for home page settings",
+    }),
+    search: t({
+      message: "Search",
+      comment:
+        "@context: Settings section heading for search engine indexing settings",
     }),
     siteName: t({
       message: "Site Name",
@@ -66,6 +92,65 @@ export function GeneralContent({
     siteFooter: t({
       message: "Site Footer",
       comment: "@context: Settings section heading for site footer",
+    }),
+    feeds: t({
+      message: "Feeds",
+      comment: "@context: Settings section heading for RSS feed configuration",
+    }),
+    mainRssFeed: t({
+      message: "Main RSS feed",
+      comment: "@context: Settings field label for the canonical /feed output",
+    }),
+    mainRssFeedHelp: t({
+      message: "This controls what /feed returns.",
+      comment:
+        "@context: Help text for choosing whether /feed points to latest or featured posts",
+    }),
+    mainRssFeedWarning: t({
+      message: "Changing this updates what subscribers get from /feed.",
+      comment:
+        "@context: Warning shown when changing the canonical RSS feed selection",
+    }),
+    availableFeedUrls: t({
+      message: "Fixed feed URLs",
+      comment: "@context: Label for the list of stable RSS feed URLs",
+    }),
+    availableFeedUrlsHelp: t({
+      message: "Use these when you want a feed URL that never changes.",
+      comment:
+        "@context: Help text for the explicit latest and featured feed URLs",
+    }),
+    mainFeedUrl: t({
+      message: "Main feed",
+      comment: "@context: Label for the canonical /feed URL",
+    }),
+    latestFeedUrl: t({
+      message: "Latest feed",
+      comment: "@context: Label for the explicit latest RSS feed URL",
+    }),
+    featuredFeedUrl: t({
+      message: "Featured feed",
+      comment: "@context: Label for the explicit featured RSS feed URL",
+    }),
+    latestFeedOption: t({
+      message: "Latest",
+      comment:
+        "@context: Select option for using latest posts as the main RSS feed",
+    }),
+    latestFeedOptionDescription: t({
+      message: "Uses the latest public posts for /feed.",
+      comment:
+        "@context: Description for choosing the latest posts as the main RSS feed",
+    }),
+    featuredFeedOption: t({
+      message: "Featured",
+      comment:
+        "@context: Select option for using featured posts as the main RSS feed",
+    }),
+    featuredFeedOptionDescription: t({
+      message: "Uses featured posts for /feed.",
+      comment:
+        "@context: Description for choosing featured posts as the main RSS feed",
     }),
     footerHelp: t({
       message:
@@ -115,6 +200,7 @@ export function GeneralContent({
     siteName,
     siteDescription,
     siteLanguage,
+    mainRssFeed,
     timeZone,
     siteFooter,
     showJantBrandingOnHome,
@@ -130,6 +216,9 @@ export function GeneralContent({
           languages={languagesJson}
           sitename-fallback={siteNameFallback}
           sitedescription-fallback={siteDescriptionFallback}
+          main-feed-url={mainFeedUrl}
+          latest-feed-url={latestFeedUrl}
+          featured-feed-url={featuredFeedUrl}
           demo-mode={demoMode ? "true" : "false"}
         >
           {/* SSR fallback skeleton */}

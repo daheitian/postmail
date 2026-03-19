@@ -273,8 +273,8 @@ export function renderPostForm(component: JantPostForm) {
           }}
         >
           <option value="public">${component.labels.visibilityPublic}</option>
-          <option value="unlisted">
-            ${component.labels.visibilityUnlisted}
+          <option value="latest_hidden">
+            ${component.labels.visibilityHiddenFromLatest}
           </option>
         </select>
       </div>

@@ -26,6 +26,7 @@ describe("resolveConfig", () => {
     );
     expect(config.siteLanguage).toBe("en");
     expect(config.homeDefaultView).toBe("latest");
+    expect(config.mainRssFeed).toBe("featured");
     expect(config.timeZone).toBe("UTC");
     expect(config.showJantBrandingOnHome).toBe(false);
     expect(config.noindex).toBe(false);
@@ -46,6 +47,23 @@ describe("resolveConfig", () => {
     const config = resolveConfig(makeEnv({ JANT_SITE_NAME: "FromEnv" }), {});
 
     expect(config.siteName).toBe("FromEnv");
+  });
+
+  it("resolves mainRssFeed from DB, env, and defaults", () => {
+    const defaultConfig = resolveConfig(makeEnv(), {});
+    expect(defaultConfig.mainRssFeed).toBe("featured");
+
+    const envConfig = resolveConfig(
+      makeEnv({ JANT_MAIN_RSS_FEED: "latest" }),
+      {},
+    );
+    expect(envConfig.mainRssFeed).toBe("latest");
+
+    const dbConfig = resolveConfig(
+      makeEnv({ JANT_MAIN_RSS_FEED: "featured" }),
+      { MAIN_RSS_FEED: "latest" },
+    );
+    expect(dbConfig.mainRssFeed).toBe("latest");
   });
 
   it("resolves siteDescriptionExplicit correctly", () => {
