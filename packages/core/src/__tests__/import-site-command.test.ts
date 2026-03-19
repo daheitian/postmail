@@ -1,3 +1,6 @@
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { __test__ } from "../../bin/commands/import-site.js";
 
@@ -23,8 +26,8 @@ describe("import-site command helpers", () => {
     ).toBe("data:image/png;base64,abc");
   });
 
-  it("normalizes media specs with relative poster URLs", () => {
-    expect(
+  it("normalizes media specs with relative poster URLs", async () => {
+    await expect(
       __test__.normalizeMediaSpec(
         {
           kind: "video",
@@ -33,11 +36,36 @@ describe("import-site command helpers", () => {
         },
         { base_url: "https://example.com/blog/" },
       ),
-    ).toMatchObject({
+    ).resolves.toMatchObject({
       kind: "video",
       src: "https://example.com/blog/media/video.mp4",
       poster: "https://example.com/blog/media/video-poster.webp",
     });
+  });
+
+  it("prefers localized files from the export directory when present", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "jant-import-media-"));
+
+    try {
+      await mkdir(join(rootDir, "static", "media"), { recursive: true });
+      await writeFile(join(rootDir, "static", "media", "photo.webp"), "photo");
+
+      const normalized = await __test__.normalizeMediaSpec(
+        {
+          kind: "image",
+          src: "/blog/media/photo.webp",
+        },
+        { base_url: "https://example.com/blog/" },
+        rootDir,
+      );
+
+      expect(normalized).toMatchObject({
+        src: "https://example.com/blog/media/photo.webp",
+        srcFilePath: join(rootDir, "static", "media", "photo.webp"),
+      });
+    } finally {
+      await rm(rootDir, { recursive: true, force: true });
+    }
   });
 
   it("extracts text attachment payloads and ignores preview markup", () => {
@@ -147,8 +175,8 @@ After
     expect(uploadMedia).not.toHaveBeenCalled();
   });
 
-  it("treats missing avatar in a Jant export as avatar removal", () => {
-    expect(
+  it("treats missing avatar in a Jant export as avatar removal", async () => {
+    await expect(
       __test__.buildSiteAvatarImport({
         base_url: "https://example.com/blog",
         extra: {
@@ -156,11 +184,11 @@ After
           jant: {},
         },
       }),
-    ).toEqual({ mode: "remove" });
+    ).resolves.toEqual({ mode: "remove" });
   });
 
-  it("resolves exported avatar URLs against base_url", () => {
-    expect(
+  it("resolves exported avatar URLs against base_url", async () => {
+    await expect(
       __test__.buildSiteAvatarImport({
         base_url: "https://example.com/blog",
         extra: {
@@ -171,10 +199,38 @@ After
           },
         },
       }),
-    ).toEqual({
+    ).resolves.toMatchObject({
       mode: "set",
       avatarUrl: "https://example.com/blog/media/avatar.webp",
       appleTouchUrl: "https://example.com/blog/favicon/apple-touch-icon.png",
     });
+  });
+
+  it("reads exported root aliases from extra.jant.root_aliases", () => {
+    expect(
+      __test__.getExportedRootAliases({
+        extra: {
+          jant: {
+            root_aliases: ["/older-root", "legacy/path"],
+          },
+        },
+      }),
+    ).toEqual(["/older-root", "legacy/path"]);
+  });
+
+  it("rejects root aliases that collide with reply slugs", () => {
+    const replySlugPaths = __test__.collectReplySlugPaths([
+      { attrs: { slug: "reply-one" } },
+      { attrs: { slug: "/reply-two" } },
+      { attrs: {} },
+    ]);
+
+    expect(() =>
+      __test__.getRootAliasPathsForImport(
+        ["/root-post", "reply-one", "/older-root"],
+        "root-post",
+        replySlugPaths,
+      ),
+    ).toThrow('Exported root alias "/reply-one" conflicts with a reply slug');
   });
 });

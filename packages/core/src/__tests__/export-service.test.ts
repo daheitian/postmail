@@ -244,4 +244,100 @@ describe("createExportService", () => {
     expect(postMarkdown).toContain("<h1>Attached note</h1>");
     expect(postMarkdown).not.toContain('"src":"');
   });
+
+  it("separates root aliases from reply route aliases in exported front matter", async () => {
+    const rootPost: Post = {
+      id: "post-1",
+      format: "note",
+      status: "published",
+      visibility: "public",
+      pinnedAt: null,
+      featuredAt: null,
+      slug: "thread-root",
+      title: "Thread root",
+      url: null,
+      body: null,
+      bodyHtml: null,
+      bodyText: "Root body",
+      quoteText: null,
+      summary: "Root body",
+      rating: null,
+      replyToId: null,
+      threadId: "post-1",
+      deletedAt: null,
+      publishedAt: 1773014400,
+      lastActivityAt: 1773014400,
+      createdAt: 1773014400,
+      updatedAt: 1773014400,
+    };
+
+    const replyPost: Post = {
+      ...rootPost,
+      id: "post-2",
+      slug: "thread-reply",
+      title: null,
+      replyToId: "post-1",
+      threadId: "post-1",
+      createdAt: 1773100800,
+      updatedAt: 1773100800,
+      publishedAt: 1773100800,
+      lastActivityAt: 1773100800,
+    };
+
+    const services = {
+      posts: {
+        list: async () => [rootPost, replyPost],
+      },
+      paths: {
+        getPostSlugMap: async () =>
+          new Map([
+            ["post-1", "thread-root"],
+            ["post-2", "thread-reply"],
+          ]),
+        getPostAliases: async () => new Map([["post-1", ["/older-root"]]]),
+        getCollectionSlugMap: async () => new Map(),
+      },
+      collections: {
+        list: async () => [],
+        getCollectionsByPostIds: async () => new Map([["post-1", []]]),
+      },
+      media: {
+        getByPostIds: async () => new Map(),
+      },
+    } as unknown as Parameters<typeof createExportService>[0];
+
+    const siteConfig: Parameters<typeof createExportService>[1] = {
+      siteName: "Jant",
+      siteUrl: "https://example.com",
+      siteDescription: "Export test",
+      siteLanguage: "en",
+      showJantBrandingOnHome: true,
+      homeDefaultView: "latest",
+      headerNavMaxVisible: 4,
+      siteFooter: "",
+      showHeaderAvatar: false,
+      siteAvatarUrl: "",
+      themeId: "paper",
+      defaultThemeId: "paper",
+      fontThemeId: "system",
+      themeMode: "auto",
+      noindex: false,
+      navItems: [],
+    };
+
+    const zip = await createExportService(
+      services,
+      siteConfig,
+    ).generateZolaSite();
+    const files = unzipSync(zip);
+    const postMarkdown = decodeZipEntry(files, "content/thread-root/index.md");
+
+    expect(postMarkdown).toContain("aliases:");
+    expect(postMarkdown).toContain("  - /older-root");
+    expect(postMarkdown).toContain("  - /thread-reply");
+    expect(postMarkdown).toContain("  jant:");
+    expect(postMarkdown).toContain("    root_aliases:");
+    expect(postMarkdown).toContain("      - /older-root");
+    expect(postMarkdown).not.toContain("      - /thread-reply");
+  });
 });

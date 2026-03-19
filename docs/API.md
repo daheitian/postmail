@@ -1217,6 +1217,7 @@ static/style.css         # Theme CSS (dark mode included)
 
 - Threads are merged: the root post and all replies appear in one file, separated by `<!-- jant:reply ... -->` marker comments
 - Reply URLs become Zola `aliases` so existing links still work
+- True root aliases are exported separately under `extra.jant.root_aliases` for round-trip import
 - The raw export API only writes content files. The CLI localizes media by default unless you pass `--no-localize-media`
 - Attachments are preserved as `data-jant-node="attachments"` HTML blocks for re-import
 - Rich image blocks preserve Jant-only attributes such as caption, link target, and layout
@@ -1244,6 +1245,8 @@ npx jant site import --url https://your-site.com --path ./export
 ```
 
 Without `--url`, `jant site import` imports into the local Node SQLite runtime. With `--url`, it imports into a remote site and requires `JANT_TOKEN` (unless using `--dry-run`). `jant import-site` remains available as a compatibility alias.
+
+The importer is designed for strict restore into an empty target site. If a collection slug, post slug, reply slug, or alias is already in use, the import stops with a conflict instead of skipping records.
 
 **Authentication:** Set the `JANT_TOKEN` environment variable for remote imports. This avoids exposing the token in shell history or process lists.
 

@@ -1,5 +1,6 @@
-import { readFile, readdir, stat } from "node:fs/promises";
-import { resolve, join, relative, extname } from "node:path";
+import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import { resolve, join, relative, extname, dirname, basename } from "node:path";
+import { tmpdir } from "node:os";
 import { parseArgs } from "node:util";
 import { uuidv7 } from "uuidv7";
 import { openNodeSqlite } from "../lib/node-sqlite.js";
@@ -53,6 +54,109 @@ function resolveImportUrl(url, siteConfig) {
   }
 }
 
+function getImportSitePathPrefix(siteConfig) {
+  const baseUrl =
+    typeof siteConfig?.base_url === "string" ? siteConfig.base_url : "";
+  if (!baseUrl) {
+    return "";
+  }
+
+  try {
+    const pathname = new URL(baseUrl).pathname.replace(/\/+$/, "");
+    return pathname === "/" ? "" : pathname;
+  } catch {
+    return "";
+  }
+}
+
+async function resolveImportLocalAssetPath(rawUrl, siteConfig, sourceRootDir) {
+  if (
+    !sourceRootDir ||
+    typeof rawUrl !== "string" ||
+    rawUrl.trim() === "" ||
+    rawUrl.startsWith("data:")
+  ) {
+    return null;
+  }
+
+  const resolvedUrl = resolveImportUrl(rawUrl, siteConfig);
+  if (typeof resolvedUrl !== "string" || resolvedUrl.trim() === "") {
+    return null;
+  }
+
+  let pathname = "";
+  try {
+    pathname = new URL(
+      resolvedUrl,
+      typeof siteConfig?.base_url === "string" && siteConfig.base_url
+        ? siteConfig.base_url
+        : "https://jant.invalid",
+    ).pathname;
+  } catch {
+    return null;
+  }
+
+  const sitePathPrefix = getImportSitePathPrefix(siteConfig);
+  if (sitePathPrefix && pathname.startsWith(`${sitePathPrefix}/`)) {
+    pathname = pathname.slice(sitePathPrefix.length + 1);
+  } else {
+    pathname = pathname.replace(/^\/+/, "");
+  }
+
+  if (!pathname) {
+    return null;
+  }
+
+  const fullPath = join(sourceRootDir, "static", pathname);
+  const fileStat = await stat(fullPath).catch(() => null);
+  if (!fileStat?.isFile()) {
+    return null;
+  }
+
+  return fullPath;
+}
+
+async function readImportAsset(options) {
+  const {
+    sourceUrl,
+    sourceFilePath,
+    mimeType,
+    originalName,
+  } = options;
+
+  if (sourceFilePath) {
+    const bytes = new Uint8Array(await readFile(sourceFilePath));
+    const filename =
+      originalName || basename(sourceFilePath) || getFilenameFromUrl(sourceUrl);
+    return {
+      bytes,
+      filename,
+      contentType: mimeType || guessMimeType(filename),
+    };
+  }
+
+  if (!sourceUrl) {
+    return null;
+  }
+
+  const response = await fetch(sourceUrl);
+  if (!response.ok) {
+    return null;
+  }
+
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  const filename =
+    originalName || getFilenameFromUrl(sourceUrl) || "file";
+  return {
+    bytes,
+    filename,
+    contentType:
+      mimeType ||
+      response.headers.get("content-type")?.split(";")[0] ||
+      guessMimeType(filename),
+  };
+}
+
 /**
  * Parse reply markers from post body.
  * Returns array of { attrs, body } segments where the first is the root.
@@ -98,6 +202,84 @@ function splitReplies(body) {
   }
 
   return segments;
+}
+
+function normalizeImportPathKey(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed.toLowerCase().replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/");
+}
+
+function normalizeImportAliasPath(value) {
+  const pathKey = normalizeImportPathKey(value);
+  return pathKey ? `/${pathKey}` : null;
+}
+
+function collectReplySlugPaths(replySegments) {
+  const replySlugPaths = new Set();
+
+  for (const replySegment of replySegments) {
+    const replySlugPath = normalizeImportAliasPath(replySegment?.attrs?.slug);
+    if (replySlugPath) {
+      replySlugPaths.add(replySlugPath);
+    }
+  }
+
+  return replySlugPaths;
+}
+
+function getExportedRootAliases(frontMatter) {
+  const aliases = frontMatter?.extra?.jant?.root_aliases;
+  return Array.isArray(aliases) ? aliases : [];
+}
+
+function getRootAliasPathsForImport(aliases, postSlug, replySlugPaths) {
+  const rootSlugPath = normalizeImportAliasPath(postSlug);
+  const aliasPaths = [];
+  const seen = new Set();
+
+  for (const alias of Array.isArray(aliases) ? aliases : []) {
+    const aliasPath = normalizeImportAliasPath(alias);
+    if (!aliasPath) {
+      continue;
+    }
+    if (aliasPath === rootSlugPath) {
+      continue;
+    }
+    if (replySlugPaths.has(aliasPath)) {
+      throw new Error(
+        `Exported root alias "${aliasPath}" conflicts with a reply slug`,
+      );
+    }
+    if (seen.has(aliasPath)) {
+      continue;
+    }
+    seen.add(aliasPath);
+    aliasPaths.push(aliasPath);
+  }
+
+  return aliasPaths;
+}
+
+async function assertImportSlugAvailable(target, slug, label, kind) {
+  if (!slug) {
+    return;
+  }
+
+  const available = await target.checkPostSlugAvailability(slug);
+  if (!available) {
+    console.error(
+      `Import conflict: ${kind} slug "${slug}" for ${label} is already in use. Import into an empty site or remove the existing content first.`,
+    );
+    process.exit(1);
+  }
 }
 
 /**
@@ -184,19 +366,18 @@ function extractAttachmentBlocks(markdown) {
  */
 async function uploadRemoteMedia(media, apiUrl, token) {
   try {
-    const response = await fetch(media.src);
-    if (!response.ok) return null;
+    const asset = await readImportAsset({
+      sourceUrl: media.src,
+      sourceFilePath: media.srcFilePath,
+      mimeType: media.mimeType,
+      originalName: media.originalName,
+    });
+    if (!asset) return null;
 
-    const bytes = await response.arrayBuffer();
-    const filename = media.originalName || getFilenameFromUrl(media.src);
-    const fileType =
-      media.mimeType ||
-      response.headers.get("content-type")?.split(";")[0] ||
-      guessMimeType(filename);
-    const blob = new Blob([bytes], { type: fileType });
+    const blob = new Blob([asset.bytes], { type: asset.contentType });
 
     const formData = new FormData();
-    formData.append("file", blob, filename);
+    formData.append("file", blob, asset.filename);
     if (media.alt) formData.append("alt", media.alt);
     if (media.summary) formData.append("summary", media.summary);
     if (media.width) formData.append("width", String(media.width));
@@ -205,17 +386,15 @@ async function uploadRemoteMedia(media, apiUrl, token) {
     if (media.waveform) formData.append("waveform", media.waveform);
 
     if (media.poster) {
-      const posterResponse = await fetch(media.poster);
-      if (posterResponse.ok) {
-        const posterBytes = await posterResponse.arrayBuffer();
-        const posterName = getFilenameFromUrl(media.poster);
-        const posterType =
-          posterResponse.headers.get("content-type")?.split(";")[0] ||
-          guessMimeType(posterName);
+      const posterAsset = await readImportAsset({
+        sourceUrl: media.poster,
+        sourceFilePath: media.posterFilePath,
+      });
+      if (posterAsset) {
         formData.append(
           "poster",
-          new Blob([posterBytes], { type: posterType }),
-          posterName,
+          new Blob([posterAsset.bytes], { type: posterAsset.contentType }),
+          posterAsset.filename,
         );
       }
     }
@@ -323,17 +502,33 @@ function replaceImageUrls(markdown, urlMap) {
   return result;
 }
 
-function normalizeMediaSpec(spec, siteConfig) {
+async function normalizeMediaSpec(spec, siteConfig, sourceRootDir) {
   if (!spec || typeof spec.src !== "string" || spec.src.trim() === "") {
     return null;
   }
 
+  const src = resolveImportUrl(spec.src, siteConfig);
+  const poster =
+    typeof spec.poster === "string"
+      ? resolveImportUrl(spec.poster, siteConfig)
+      : null;
+
   return {
     kind: spec.kind,
-    src: resolveImportUrl(spec.src, siteConfig),
-    poster:
+    src,
+    srcFilePath: await resolveImportLocalAssetPath(
+      spec.src,
+      siteConfig,
+      sourceRootDir,
+    ),
+    poster,
+    posterFilePath:
       typeof spec.poster === "string"
-        ? resolveImportUrl(spec.poster, siteConfig)
+        ? await resolveImportLocalAssetPath(
+            spec.poster,
+            siteConfig,
+            sourceRootDir,
+          )
         : null,
     mimeType: spec.mimeType || undefined,
     originalName: spec.originalName || undefined,
@@ -372,8 +567,20 @@ async function buildImportedAttachments(
   attachmentSpecs,
   target,
   siteConfig,
+  sourceRootDir,
   options = {},
 ) {
+  if (
+    sourceRootDir &&
+    typeof sourceRootDir === "object" &&
+    !Array.isArray(sourceRootDir) &&
+    options &&
+    Object.keys(options).length === 0
+  ) {
+    options = sourceRootDir;
+    sourceRootDir = null;
+  }
+
   const attachments = [];
   let uploaded = 0;
 
@@ -388,7 +595,11 @@ async function buildImportedAttachments(
       continue;
     }
 
-    const normalized = normalizeMediaSpec(spec, siteConfig);
+    const normalized = await normalizeMediaSpec(
+      spec,
+      siteConfig,
+      sourceRootDir,
+    );
     if (!normalized || normalized.src.startsWith("data:")) continue;
     const result = await target.uploadMedia(normalized);
     if (!result) continue;
@@ -403,13 +614,17 @@ async function buildImportedAttachments(
   return { attachments, uploaded };
 }
 
-async function uploadMediaList(mediaSpecs, target, siteConfig) {
+async function uploadMediaList(mediaSpecs, target, siteConfig, sourceRootDir) {
   const urlMap = new Map();
   const mediaIds = [];
   let uploaded = 0;
 
   for (const spec of mediaSpecs) {
-    const normalized = normalizeMediaSpec(spec, siteConfig);
+    const normalized = await normalizeMediaSpec(
+      spec,
+      siteConfig,
+      sourceRootDir,
+    );
     if (!normalized || normalized.src.startsWith("data:")) continue;
     const result = await target.uploadMedia(normalized);
     if (!result) continue;
@@ -482,7 +697,7 @@ function normalizeImportedNavItems(siteConfig) {
   };
 }
 
-function buildSiteAvatarImport(siteConfig) {
+async function buildSiteAvatarImport(siteConfig, sourceRootDir) {
   const exportInfo = siteConfig?.extra?.jant_export || {};
   if (exportInfo.format !== "jant-site") {
     return null;
@@ -496,9 +711,22 @@ function buildSiteAvatarImport(siteConfig) {
   return {
     mode: "set",
     avatarUrl: resolveImportUrl(jant.site_avatar_url, siteConfig),
+    avatarFilePath: await resolveImportLocalAssetPath(
+      jant.site_avatar_url,
+      siteConfig,
+      sourceRootDir,
+    ),
     appleTouchUrl:
       typeof jant.apple_touch_icon_url === "string"
         ? resolveImportUrl(jant.apple_touch_icon_url, siteConfig)
+        : null,
+    appleTouchFilePath:
+      typeof jant.apple_touch_icon_url === "string"
+        ? await resolveImportLocalAssetPath(
+            jant.apple_touch_icon_url,
+            siteConfig,
+            sourceRootDir,
+          )
         : null,
   };
 }
@@ -579,37 +807,33 @@ function createRemoteTarget(apiUrl, token) {
       return apiCall("DELETE", "/api/settings/avatar", apiUrl, token);
     },
     async uploadSiteAvatar(data) {
-      const avatarResponse = await fetch(data.avatarUrl);
-      if (!avatarResponse.ok) {
-        throw new Error(`Failed to fetch site avatar: ${data.avatarUrl}`);
+      const avatarAsset = await readImportAsset({
+        sourceUrl: data.avatarUrl,
+        sourceFilePath: data.avatarFilePath,
+      });
+      if (!avatarAsset) {
+        throw new Error(`Failed to read site avatar: ${data.avatarUrl}`);
       }
-
-      const avatarBytes = await avatarResponse.arrayBuffer();
-      const avatarName = getFilenameFromUrl(data.avatarUrl) || "avatar";
-      const avatarType =
-        avatarResponse.headers.get("content-type")?.split(";")[0] ||
-        guessMimeType(avatarName);
 
       const formData = new FormData();
       formData.append(
         "file",
-        new Blob([avatarBytes], { type: avatarType }),
-        avatarName,
+        new Blob([avatarAsset.bytes], { type: avatarAsset.contentType }),
+        avatarAsset.filename,
       );
 
       if (data.appleTouchUrl) {
-        const appleTouchResponse = await fetch(data.appleTouchUrl);
-        if (appleTouchResponse.ok) {
-          const appleTouchBytes = await appleTouchResponse.arrayBuffer();
-          const appleTouchName =
-            getFilenameFromUrl(data.appleTouchUrl) || "apple-touch-icon.png";
-          const appleTouchType =
-            appleTouchResponse.headers.get("content-type")?.split(";")[0] ||
-            guessMimeType(appleTouchName);
+        const appleTouchAsset = await readImportAsset({
+          sourceUrl: data.appleTouchUrl,
+          sourceFilePath: data.appleTouchFilePath,
+        });
+        if (appleTouchAsset) {
           formData.append(
             "appleTouch",
-            new Blob([appleTouchBytes], { type: appleTouchType }),
-            appleTouchName,
+            new Blob([appleTouchAsset.bytes], {
+              type: appleTouchAsset.contentType,
+            }),
+            appleTouchAsset.filename,
           );
         }
       }
@@ -653,8 +877,14 @@ function createRemoteTarget(apiUrl, token) {
     async uploadMedia(media) {
       return uploadRemoteMedia(media, apiUrl, token);
     },
-    async findPostBySlug() {
-      return null;
+    async checkPostSlugAvailability(slug) {
+      const result = await apiCall(
+        "GET",
+        `/api/posts/slug?mode=check&slug=${encodeURIComponent(slug)}`,
+        apiUrl,
+        token,
+      );
+      return Boolean(result.available);
     },
   };
 }
@@ -699,30 +929,31 @@ async function createLocalTarget(env = process.env) {
         throw new Error("Local import requires configured storage.");
       }
 
-      const avatarResponse = await fetch(data.avatarUrl);
-      if (!avatarResponse.ok) {
-        throw new Error(`Failed to fetch site avatar: ${data.avatarUrl}`);
+      const avatarAsset = await readImportAsset({
+        sourceUrl: data.avatarUrl,
+        sourceFilePath: data.avatarFilePath,
+      });
+      if (!avatarAsset) {
+        throw new Error(`Failed to read site avatar: ${data.avatarUrl}`);
       }
-      const avatarBytes = await avatarResponse.arrayBuffer();
-      const avatarName = getFilenameFromUrl(data.avatarUrl) || "avatar";
-      const avatarType =
-        avatarResponse.headers.get("content-type")?.split(";")[0] ||
-        guessMimeType(avatarName);
 
       let appleTouchIcon;
       if (data.appleTouchUrl) {
-        const appleTouchResponse = await fetch(data.appleTouchUrl);
-        if (appleTouchResponse.ok) {
-          appleTouchIcon = await appleTouchResponse.arrayBuffer();
+        const appleTouchAsset = await readImportAsset({
+          sourceUrl: data.appleTouchUrl,
+          sourceFilePath: data.appleTouchFilePath,
+        });
+        if (appleTouchAsset) {
+          appleTouchIcon = appleTouchAsset.bytes.buffer;
         }
       }
 
       await runtime.services.settings.uploadAvatar(
         {
           file: createUploadFile(
-            avatarName,
-            avatarType,
-            new Uint8Array(avatarBytes),
+            avatarAsset.filename,
+            avatarAsset.contentType,
+            avatarAsset.bytes,
           ),
           appleTouchIcon,
         },
@@ -845,8 +1076,8 @@ async function createLocalTarget(env = process.env) {
         ),
       };
     },
-    async findPostBySlug(slug) {
-      return runtime.services.posts.getBySlug(slug);
+    async checkPostSlugAvailability(slug) {
+      return runtime.services.posts.checkSlugAvailability(slug);
     },
   };
 }
@@ -900,6 +1131,9 @@ export const __test__ = {
   buildSettingsUpdatesFromConfig,
   normalizeImportedNavItems,
   buildSiteAvatarImport,
+  collectReplySlugPaths,
+  getExportedRootAliases,
+  getRootAliasPathsForImport,
 };
 
 export async function run(argv) {
@@ -934,6 +1168,10 @@ export async function run(argv) {
     console.log("  --dry-run     Parse and validate without making API calls");
     console.log(
       "  --skip-media  Skip remote media download/upload (embedded text attachments still import)",
+    );
+    console.log("");
+    console.log(
+      "Import expects an empty target site and fails on slug or alias conflicts.",
     );
     console.log("");
     console.log("Authentication:");
@@ -981,17 +1219,19 @@ export async function run(argv) {
   const collectionFiles = [];
   let siteConfig = null;
   let customCss = "";
+  let sourceRootDir = inputPath;
+  let tempSourceRootDir = null;
 
   if (inputStat.isDirectory()) {
     console.log(`Reading directory ${inputPath}...`);
-    await walkContent(inputPath, postFiles, collectionFiles);
-    const configPath = join(inputPath, "config.toml");
+    await walkContent(sourceRootDir, postFiles, collectionFiles);
+    const configPath = join(sourceRootDir, "config.toml");
     const configContent = await readFile(configPath, "utf-8").catch(() => null);
     if (configContent) {
       siteConfig = await parseToml(configContent);
     }
     customCss = await readFile(
-      join(inputPath, "static", "custom.css"),
+      join(sourceRootDir, "static", "custom.css"),
       "utf-8",
     ).catch(() => "");
   } else {
@@ -999,115 +1239,110 @@ export async function run(argv) {
     const zipData = await readFile(inputPath);
     const { unzipSync } = await import("fflate");
     const files = unzipSync(new Uint8Array(zipData));
-    const decoder = new TextDecoder();
-
-    if (files["config.toml"]) {
-      siteConfig = await parseToml(decoder.decode(files["config.toml"]));
-    }
-    if (files["static/custom.css"]) {
-      customCss = decoder.decode(files["static/custom.css"]);
-    }
-
+    tempSourceRootDir = await mkdtemp(join(tmpdir(), "jant-site-import-"));
+    sourceRootDir = tempSourceRootDir;
     for (const [path, data] of Object.entries(files)) {
-      if (
-        (path.startsWith("content/jant-collections/") ||
-          path.startsWith("content/c/")) &&
-        path.endsWith("/_index.md")
-      ) {
-        collectionFiles.push({ path, content: decoder.decode(data) });
-      } else if (
-        path.startsWith("content/") &&
-        path.endsWith("/index.md") &&
-        path !== "content/_index.md"
-      ) {
-        postFiles.push({ path, content: decoder.decode(data) });
-      }
+      const fullPath = join(sourceRootDir, path);
+      await mkdir(dirname(fullPath), { recursive: true });
+      await writeFile(fullPath, data);
     }
+
+    await walkContent(sourceRootDir, postFiles, collectionFiles);
+    const configPath = join(sourceRootDir, "config.toml");
+    const configContent = await readFile(configPath, "utf-8").catch(() => null);
+    if (configContent) {
+      siteConfig = await parseToml(configContent);
+    }
+    customCss = await readFile(
+      join(sourceRootDir, "static", "custom.css"),
+      "utf-8",
+    ).catch(() => "");
   }
 
-  console.log(
-    `Found ${postFiles.length} posts and ${collectionFiles.length} collections`,
-  );
-
-  if (siteConfig) {
-    const settingsUpdates = buildSettingsUpdatesFromConfig(
-      siteConfig,
-      customCss,
+  try {
+    console.log(
+      `Found ${postFiles.length} posts and ${collectionFiles.length} collections`,
     );
-    const importedNav = normalizeImportedNavItems(siteConfig);
-    const avatarImport = buildSiteAvatarImport(siteConfig);
 
-    if (dryRun) {
-      console.log("[dry-run] Would apply exported site settings");
-      if (importedNav.exported) {
-        console.log(
-          `[dry-run] Would replace navigation with ${importedNav.items.length} items`,
-        );
-      }
-      if (avatarImport && !skipMedia) {
-        if (avatarImport.mode === "remove") {
-          console.log("[dry-run] Would remove existing site avatar");
-        } else {
-          console.log("[dry-run] Would import exported site avatar");
+    if (siteConfig) {
+      const settingsUpdates = buildSettingsUpdatesFromConfig(
+        siteConfig,
+        customCss,
+      );
+      const importedNav = normalizeImportedNavItems(siteConfig);
+      const avatarImport = await buildSiteAvatarImport(siteConfig, sourceRootDir);
+
+      if (dryRun) {
+        console.log("[dry-run] Would apply exported site settings");
+        if (importedNav.exported) {
+          console.log(
+            `[dry-run] Would replace navigation with ${importedNav.items.length} items`,
+          );
+        }
+        if (avatarImport && !skipMedia) {
+          if (avatarImport.mode === "remove") {
+            console.log("[dry-run] Would remove existing site avatar");
+          } else {
+            console.log("[dry-run] Would import exported site avatar");
+          }
+        }
+      } else {
+        try {
+          const result = await target.updateSettings(settingsUpdates);
+          if (result?.rejectedKeys?.length) {
+            console.warn(
+              `Warning: Some site settings were rejected: ${result.rejectedKeys.join(", ")}`,
+            );
+          }
+        } catch (err) {
+          console.error(`Error applying exported site settings: ${err.message}`);
+          process.exit(1);
+        }
+
+        if (importedNav.exported) {
+          try {
+            const existingNavItems = await target.listNavItems();
+            for (const item of existingNavItems) {
+              await target.deleteNavItem(item.id);
+            }
+            for (const item of importedNav.items) {
+              await target.createNavItem(item);
+            }
+          } catch (err) {
+            console.error(`Error importing navigation: ${err.message}`);
+            process.exit(1);
+          }
+        }
+
+        if (avatarImport && !skipMedia) {
+          try {
+            await target.syncSiteAvatar(
+              avatarImport.mode === "set" ? avatarImport : null,
+            );
+          } catch (err) {
+            console.error(`Error importing site avatar: ${err.message}`);
+            process.exit(1);
+          }
         }
       }
-    } else {
+    }
+
+    // 3. Fetch existing collections and create missing ones
+    const collectionSlugToId = new Map();
+
+    if (!dryRun) {
       try {
-        const result = await target.updateSettings(settingsUpdates);
-        if (result?.rejectedKeys?.length) {
-          console.warn(
-            `Warning: Some site settings were rejected: ${result.rejectedKeys.join(", ")}`,
-          );
+        const existingCollections = await target.listCollections();
+        for (const col of existingCollections) {
+          collectionSlugToId.set(col.slug, col.id);
         }
       } catch (err) {
-        console.error(`Error applying exported site settings: ${err.message}`);
+        console.error(`Error fetching existing collections: ${err.message}`);
         process.exit(1);
       }
-
-      if (importedNav.exported) {
-        try {
-          const existingNavItems = await target.listNavItems();
-          for (const item of existingNavItems) {
-            await target.deleteNavItem(item.id);
-          }
-          for (const item of importedNav.items) {
-            await target.createNavItem(item);
-          }
-        } catch (err) {
-          console.error(`Error importing navigation: ${err.message}`);
-          process.exit(1);
-        }
-      }
-
-      if (avatarImport && !skipMedia) {
-        try {
-          await target.syncSiteAvatar(
-            avatarImport.mode === "set" ? avatarImport : null,
-          );
-        } catch (err) {
-          console.error(`Error importing site avatar: ${err.message}`);
-          process.exit(1);
-        }
-      }
     }
-  }
 
-  // 3. Fetch existing collections and create missing ones
-  const collectionSlugToId = new Map();
-
-  if (!dryRun) {
-    try {
-      const existingCollections = await target.listCollections();
-      for (const col of existingCollections) {
-        collectionSlugToId.set(col.slug, col.id);
-      }
-    } catch (err) {
-      console.error(`Error fetching existing collections: ${err.message}`);
-      process.exit(1);
-    }
-  }
-
-  for (const { path, content } of collectionFiles) {
+    for (const { path, content } of collectionFiles) {
     const { frontMatter } = await parseFrontMatter(content);
     const slug = path
       .replace("content/jant-collections/", "")
@@ -1115,8 +1350,10 @@ export async function run(argv) {
       .replace("/_index.md", "");
 
     if (collectionSlugToId.has(slug)) {
-      console.log(`Skipped collection (exists): ${frontMatter.title || slug}`);
-      continue;
+      console.error(
+        `Import conflict: collection slug "${slug}" is already in use. Import into an empty site or remove the existing collection first.`,
+      );
+      process.exit(1);
     }
 
     if (dryRun) {
@@ -1142,21 +1379,21 @@ export async function run(argv) {
       console.error(`Error creating collection "${slug}": ${err.message}`);
       process.exit(1);
     }
-  }
+    }
 
-  // 4. Process posts
-  let postsCreated = 0;
-  let repliesCreated = 0;
-  let mediaUploaded = 0;
-  let aliasesCreated = 0;
-  let skipped = 0;
+    // 4. Process posts
+    let postsCreated = 0;
+    let repliesCreated = 0;
+    let mediaUploaded = 0;
+    let aliasesCreated = 0;
 
-  for (const { path, content } of postFiles) {
+    for (const { path, content } of postFiles) {
     const { frontMatter, body } = await parseFrontMatter(content);
 
     const segments = splitReplies(body);
     const rootSegment = segments[0];
     const replySegments = segments.slice(1);
+    const replySlugPaths = collectReplySlugPaths(replySegments);
 
     // Resolve collection IDs from taxonomy slugs
     const collectionIds = [];
@@ -1165,6 +1402,26 @@ export async function run(argv) {
     for (const colSlug of taxonomyCollections) {
       const id = collectionSlugToId.get(colSlug);
       if (id) collectionIds.push(id);
+    }
+
+    const extra = frontMatter.extra || {};
+    const format = extra.format || "note";
+    const postSlug =
+      frontMatter.slug != null ? String(frontMatter.slug) : undefined;
+    const postStatus =
+      extra.status === "draft" || extra.status === "published"
+        ? extra.status
+        : frontMatter.draft
+          ? "draft"
+          : "published";
+    const postVisibility =
+      extra.visibility === "unlisted" || extra.visibility === "private"
+        ? extra.visibility
+        : undefined;
+    const postLabel = frontMatter.title || postSlug || "(untitled)";
+
+    if (!dryRun && postSlug) {
+      await assertImportSlugAvailable(target, postSlug, postLabel, "post");
     }
 
     // Process images in root body
@@ -1182,6 +1439,7 @@ export async function run(argv) {
         imageMedia,
         target,
         siteConfig,
+        sourceRootDir,
       );
       mediaUploaded += uploadResult.uploaded;
 
@@ -1194,30 +1452,18 @@ export async function run(argv) {
         rootAttachments,
         target,
         siteConfig,
+        sourceRootDir,
         { skipUploads: skipMedia },
       );
       importedAttachments = attachmentResult.attachments;
       mediaUploaded += attachmentResult.uploaded;
     }
 
-    const extra = frontMatter.extra || {};
-    const format = extra.format || "note";
-    const postStatus =
-      extra.status === "draft" || extra.status === "published"
-        ? extra.status
-        : frontMatter.draft
-          ? "draft"
-          : "published";
-    const postVisibility =
-      extra.visibility === "unlisted" || extra.visibility === "private"
-        ? extra.visibility
-        : undefined;
-
     const postData = {
       format,
       title: frontMatter.title != null ? String(frontMatter.title) : undefined,
       bodyMarkdown: rootBody || undefined,
-      slug: frontMatter.slug != null ? String(frontMatter.slug) : undefined,
+      slug: postSlug,
       path: frontMatter.path != null ? String(frontMatter.path) : undefined,
       status: postStatus,
       visibility: postVisibility,
@@ -1242,7 +1488,7 @@ export async function run(argv) {
 
     if (dryRun) {
       console.log(
-        `[dry-run] Would create post: ${frontMatter.title || frontMatter.slug || "(untitled)"} (${format})`,
+        `[dry-run] Would create post: ${postLabel} (${format})`,
       );
       if (replySegments.length > 0) {
         console.log(`  [dry-run] With ${replySegments.length} replies`);
@@ -1252,59 +1498,34 @@ export async function run(argv) {
       continue;
     }
 
-    const postLabel = frontMatter.title || frontMatter.slug || "(untitled)";
-
-    const progress = `[${postsCreated + skipped + 1}/${postFiles.length}]`;
-    const existingPost =
-      postData.slug && !dryRun
-        ? await target.findPostBySlug(postData.slug)
-        : null;
+    const progress = `[${postsCreated + 1}/${postFiles.length}]`;
 
     let post;
-    if (existingPost) {
-      post = existingPost;
-      console.log(`${progress} Skipped: ${postLabel}`);
-      skipped++;
-    } else {
-      try {
-        post = await target.createPost(postData);
-        postsCreated++;
-        const replyInfo =
-          replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
-        console.log(`${progress} Created: ${postLabel}${replyInfo}`);
-      } catch (err) {
-        if (err.status === 409) {
-          console.log(`${progress} Skipped: ${postLabel}`);
-          skipped++;
-        } else {
-          console.error(`Error creating post "${postLabel}": ${err.message}`);
-          process.exit(1);
-        }
-      }
+    try {
+      post = await target.createPost(postData);
+      postsCreated++;
+      const replyInfo =
+        replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
+      console.log(`${progress} Created: ${postLabel}${replyInfo}`);
+    } catch (err) {
+      console.error(`Error creating post "${postLabel}": ${err.message}`);
+      process.exit(1);
     }
 
-    // Create custom URL aliases from front matter (also for skipped posts)
-    const aliases = frontMatter.aliases || [];
-    const postSlug =
-      frontMatter.slug != null ? String(frontMatter.slug) : post?.slug;
-    for (const alias of aliases) {
-      const aliasPath = alias.startsWith("/") ? alias : `/${alias}`;
-      if (aliasPath === `/${postSlug}`) continue; // skip self-reference
-      try {
-        await target.createAlias(aliasPath, postSlug);
-        aliasesCreated++;
-      } catch (err) {
-        if (err.status === 409) continue; // alias already exists
-        console.warn(
-          `  Warning: Failed to create alias "${aliasPath}": ${err.message}`,
-        );
-      }
-    }
-
-    // Create replies (only for newly created posts)
+    // Create replies before aliases so reply slugs can claim their own paths.
     if (!post) continue;
     for (const replySegment of replySegments) {
       const replyAttrs = replySegment.attrs || {};
+      const replySlug = replyAttrs.slug || undefined;
+      const replyLabel = replyAttrs.title || replySlug || "(untitled reply)";
+      if (!dryRun && replySlug) {
+        await assertImportSlugAvailable(
+          target,
+          replySlug,
+          `${replyLabel} in ${postLabel}`,
+          "reply",
+        );
+      }
       let replyBody = replySegment.body || "";
       const {
         markdown: replyBodyWithoutAttachments,
@@ -1319,6 +1540,7 @@ export async function run(argv) {
           imageMedia,
           target,
           siteConfig,
+          sourceRootDir,
         );
         mediaUploaded += uploadResult.uploaded;
 
@@ -1331,6 +1553,7 @@ export async function run(argv) {
           replyAttachmentSpecs,
           target,
           siteConfig,
+          sourceRootDir,
           { skipUploads: skipMedia },
         );
         replyAttachments = attachmentResult.attachments;
@@ -1353,7 +1576,7 @@ export async function run(argv) {
         title: replyAttrs.title || undefined,
         bodyMarkdown: replyBody || undefined,
         replyToId: post.id,
-        slug: replyAttrs.slug || undefined,
+        slug: replySlug,
         visibility: replyVisibility,
         attachments: replyAttachments.length > 0 ? replyAttachments : undefined,
         publishedAt: replyAttrs.date
@@ -1369,45 +1592,59 @@ export async function run(argv) {
         replyData.quoteText = decodeURIComponent(replyAttrs.quote_text);
       }
 
-      const existingReply = replyData.slug
-        ? await target.findPostBySlug(replyData.slug)
-        : null;
-      if (existingReply) {
-        console.log(`  Skipped reply (exists)`);
-        skipped++;
-        continue;
-      }
-
       try {
         await target.createPost(replyData);
         repliesCreated++;
       } catch (err) {
-        if (err.status === 409) {
-          console.log(`  Skipped reply (exists)`);
-          skipped++;
-          continue;
-        }
         console.error(`  Error creating reply: ${err.message}`);
         process.exit(1);
       }
     }
-  }
 
-  await target?.close();
+    // Create exported root aliases after replies. Reply slugs are handled by
+    // the thread markers; only true root aliases round-trip back into Jant.
+    const rootTargetSlug = postSlug || post.slug;
+    let aliasPaths;
+    try {
+      aliasPaths = getRootAliasPathsForImport(
+        getExportedRootAliases(frontMatter),
+        rootTargetSlug,
+        replySlugPaths,
+      );
+    } catch (err) {
+      console.error(`Error importing aliases for "${postLabel}": ${err.message}`);
+      process.exit(1);
+    }
+    for (const aliasPath of aliasPaths) {
+      try {
+        await target.createAlias(aliasPath, rootTargetSlug);
+        aliasesCreated++;
+      } catch (err) {
+        console.error(
+          `Error creating alias "${aliasPath}" for "${postLabel}": ${err.message}`,
+        );
+        process.exit(1);
+      }
+    }
+    }
 
-  // 5. Summary
-  console.log("");
-  console.log("Import complete:");
-  console.log(`  Posts created: ${postsCreated}`);
-  console.log(`  Replies created: ${repliesCreated}`);
-  console.log(`  Media uploaded: ${mediaUploaded}`);
-  if (aliasesCreated > 0) {
-    console.log(`  Aliases created: ${aliasesCreated}`);
-  }
-  if (skipped > 0) {
-    console.log(`  Skipped (already exist): ${skipped}`);
-  }
-  if (dryRun) {
-    console.log("  (dry-run mode — no changes were made)");
+    await target?.close();
+
+    // 5. Summary
+    console.log("");
+    console.log("Import complete:");
+    console.log(`  Posts created: ${postsCreated}`);
+    console.log(`  Replies created: ${repliesCreated}`);
+    console.log(`  Media uploaded: ${mediaUploaded}`);
+    if (aliasesCreated > 0) {
+      console.log(`  Aliases created: ${aliasesCreated}`);
+    }
+    if (dryRun) {
+      console.log("  (dry-run mode — no changes were made)");
+    }
+  } finally {
+    if (tempSourceRootDir) {
+      await rm(tempSourceRootDir, { recursive: true, force: true });
+    }
   }
 }

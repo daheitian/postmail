@@ -151,20 +151,22 @@ export function createExportService(
         const slug = slugMap.get(root.id) ?? root.slug;
         const threadReplies = repliesByThread.get(root.id) ?? [];
         const postCollections = collectionsByPost.get(root.id) ?? [];
-        const aliases = aliasMap.get(root.id) ?? [];
+        const rootAliases = [...(aliasMap.get(root.id) ?? [])];
+        const zolaAliases = [...rootAliases];
         const rootMedia = rawMediaByPost.get(root.id) ?? [];
 
-        // Collect reply slugs as aliases
+        // Reply URLs must resolve back to the merged thread page in Zola, but
+        // they are not root aliases when round-tripping into Jant.
         for (const reply of threadReplies) {
           const replySlug = slugMap.get(reply.id) ?? reply.slug;
-          aliases.push(`/${replySlug}`);
+          zolaAliases.push(`/${replySlug}`);
         }
 
         const markdown = buildPostMarkdown(
           root,
           threadReplies,
           postCollections,
-          aliases,
+          { rootAliases, zolaAliases },
           slugMap,
           collectionSlugMap,
           rootMedia,
@@ -261,7 +263,10 @@ function buildPostMarkdown(
   root: Post,
   threadReplies: Post[],
   postCollections: Collection[],
-  aliases: string[],
+  aliasData: {
+    rootAliases: string[];
+    zolaAliases: string[];
+  },
   slugMap: Map<string, string>,
   collectionSlugMap: Map<string, string>,
   rootMedia: Media[],
@@ -290,9 +295,9 @@ function buildPostMarkdown(
   const slug = slugMap.get(root.id) ?? root.slug;
   parts.push(`slug: ${yamlString(slug)}`);
 
-  if (aliases.length > 0) {
+  if (aliasData.zolaAliases.length > 0) {
     parts.push("aliases:");
-    for (const a of aliases) {
+    for (const a of aliasData.zolaAliases) {
       parts.push(`  - ${yamlString(a)}`);
     }
   }
@@ -330,6 +335,13 @@ function buildPostMarkdown(
   }
   if (root.featuredAt !== null) {
     parts.push("  featured: true");
+  }
+  if (aliasData.rootAliases.length > 0) {
+    parts.push("  jant:");
+    parts.push("    root_aliases:");
+    for (const alias of aliasData.rootAliases) {
+      parts.push(`      - ${yamlString(alias)}`);
+    }
   }
 
   parts.push("---");
