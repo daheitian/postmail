@@ -46,6 +46,23 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   const sortOptions = [
     {
       value: "newest",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 5v14" />
+          <path d="m7 10 5-5 5 5" />
+        </svg>
+      ),
       label: t({
         message: "Newest first",
         comment: "@context: Collection sort order option",
@@ -53,6 +70,23 @@ export const CollectionPage: FC<CollectionPageProps> = ({
     },
     {
       value: "oldest",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 5v14" />
+          <path d="m7 14 5 5 5-5" />
+        </svg>
+      ),
       label: t({
         message: "Oldest first",
         comment: "@context: Collection sort order option",
@@ -62,6 +96,22 @@ export const CollectionPage: FC<CollectionPageProps> = ({
       ? [
           {
             value: "rating_desc",
+            icon: (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m12 3.5 2.6 5.27 5.82.85-4.21 4.1.99 5.78L12 16.73 6.8 19.5l.99-5.78-4.21-4.1 5.82-.85L12 3.5Z" />
+              </svg>
+            ),
             label: t({
               message: "Highest rated",
               comment: "@context: Collection sort order option",
@@ -69,6 +119,23 @@ export const CollectionPage: FC<CollectionPageProps> = ({
           },
           {
             value: "rating_asc",
+            icon: (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m12 3.5 2.6 5.27 5.82.85-4.21 4.1.99 5.78L12 16.73 6.8 19.5l.99-5.78-4.21-4.1 5.82-.85L12 3.5Z" />
+                <path d="M8 20h8" />
+              </svg>
+            ),
             label: t({
               message: "Lowest rated",
               comment: "@context: Collection sort order option",
@@ -121,63 +188,6 @@ export const CollectionPage: FC<CollectionPageProps> = ({
               </li>
             </ol>
           </nav>
-
-          {isAuthenticated ? (
-            <div
-              class="collection-page-manage"
-              data-collection-page-actions
-              data-collection-id={collection.id}
-              data-collection-page-labels={escapeJson(mutationLabels)}
-              data-collection-page-redirect-url={toPublicPath(
-                "/c",
-                sitePathPrefix,
-              )}
-            >
-              <button
-                type="button"
-                class="collection-page-manage-trigger"
-                aria-label={mutationLabels.moreActions}
-                aria-expanded="false"
-                aria-haspopup="menu"
-                data-collection-page-action="toggle-menu"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <circle cx="5" cy="12" r="2" />
-                  <circle cx="12" cy="12" r="2" />
-                  <circle cx="19" cy="12" r="2" />
-                </svg>
-              </button>
-
-              <div
-                class="collections-page-menu"
-                role="menu"
-                data-collection-page-menu
-                hidden
-              >
-                <a
-                  href={editCollectionUrl}
-                  class="collections-page-menu-item"
-                  role="menuitem"
-                >
-                  {mutationLabels.edit}
-                </a>
-                <button
-                  type="button"
-                  class="collections-page-menu-item collections-page-menu-item-danger"
-                  role="menuitem"
-                  data-collection-page-action="delete"
-                >
-                  {mutationLabels.deleteCollection}
-                </button>
-              </div>
-            </div>
-          ) : null}
         </div>
 
         <div class="collection-page-title-block">
@@ -207,7 +217,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
             <span class="collection-page-meta-divider" aria-hidden="true">
               &middot;
             </span>
-            <div class="collection-sort-menu">
+            <div class="dropdown-menu collection-sort-menu">
               <button
                 type="button"
                 id={sortTriggerId}
@@ -270,7 +280,32 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                         option.value === currentSort ? "true" : undefined
                       }
                     >
-                      {option.label}
+                      <span class="collection-sort-option-leading">
+                        <span class="collection-sort-option-icon">
+                          {option.icon}
+                        </span>
+                        <span>{option.label}</span>
+                      </span>
+                      {option.value === currentSort ? (
+                        <span
+                          class="collection-sort-option-check"
+                          aria-hidden="true"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.25"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <path d="m5 12 4.2 4.2L19 6.5" />
+                          </svg>
+                        </span>
+                      ) : null}
                     </a>
                   ))}
                 </div>
@@ -303,6 +338,106 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                   <path d="M5 12h14" />
                 </svg>
               </button>
+
+              <div
+                class="collection-page-manage"
+                data-collection-page-actions
+                data-collection-id={collection.id}
+                data-collection-page-labels={escapeJson(mutationLabels)}
+                data-collection-page-redirect-url={toPublicPath(
+                  "/c",
+                  sitePathPrefix,
+                )}
+              >
+                <button
+                  type="button"
+                  class="collection-page-manage-trigger"
+                  aria-label={mutationLabels.moreActions}
+                  aria-expanded="false"
+                  aria-haspopup="menu"
+                  data-collection-page-action="toggle-menu"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <circle cx="5" cy="12" r="2" />
+                    <circle cx="12" cy="12" r="2" />
+                    <circle cx="19" cy="12" r="2" />
+                  </svg>
+                </button>
+
+                <div
+                  class="collections-page-menu"
+                  role="menu"
+                  data-collection-page-menu
+                  hidden
+                >
+                  <a
+                    href={editCollectionUrl}
+                    class="collections-page-menu-item"
+                    role="menuitem"
+                  >
+                    <span
+                      class="collections-page-menu-item-icon"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z" />
+                      </svg>
+                    </span>
+                    <span class="collections-page-menu-item-label">
+                      {mutationLabels.edit}
+                    </span>
+                  </a>
+                  <button
+                    type="button"
+                    class="collections-page-menu-item collections-page-menu-item-danger"
+                    role="menuitem"
+                    data-collection-page-action="delete"
+                  >
+                    <span
+                      class="collections-page-menu-item-icon"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M8 6V4h8v2" />
+                        <path d="M19 6l-1 14H6L5 6" />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                      </svg>
+                    </span>
+                    <span class="collections-page-menu-item-label">
+                      {mutationLabels.deleteCollection}
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
           ) : null}
         </div>
