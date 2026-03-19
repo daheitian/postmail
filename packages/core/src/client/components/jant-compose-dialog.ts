@@ -151,7 +151,6 @@ export class JantComposeDialog extends LitElement {
     _loading: { state: true },
     _collectionIds: { state: true },
     _showCollection: { state: true },
-    _showMoreMenu: { state: true },
     _collectionSearch: { state: true },
     _altPanelOpen: { state: true },
     _altPanelIndex: { state: true },
@@ -172,7 +171,6 @@ export class JantComposeDialog extends LitElement {
     _slug: { state: true },
     _visibility: { state: true },
     _showPublishPanel: { state: true },
-    _moreSlugExpanded: { state: true },
     _suggestedSlug: { state: true },
     _suggestedSlugLoading: { state: true },
     _slugCheckLoading: { state: true },
@@ -191,7 +189,6 @@ export class JantComposeDialog extends LitElement {
   declare _loading: boolean;
   declare _collectionIds: string[];
   declare _showCollection: boolean;
-  declare _showMoreMenu: boolean;
   declare _collectionSearch: string;
   declare _altPanelOpen: boolean;
   declare _altPanelIndex: number;
@@ -212,7 +209,6 @@ export class JantComposeDialog extends LitElement {
   declare _slug: string;
   declare _visibility: ComposeVisibility;
   declare _showPublishPanel: boolean;
-  declare _moreSlugExpanded: boolean;
   declare _suggestedSlug: string;
   declare _suggestedSlugLoading: boolean;
   declare _slugCheckLoading: boolean;
@@ -260,7 +256,6 @@ export class JantComposeDialog extends LitElement {
     this._loading = false;
     this._collectionIds = [];
     this._showCollection = false;
-    this._showMoreMenu = false;
     this._collectionSearch = "";
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
@@ -284,7 +279,6 @@ export class JantComposeDialog extends LitElement {
     this._slug = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
-    this._moreSlugExpanded = false;
     this._suggestedSlug = "";
     this._suggestedSlugLoading = false;
     this._slugCheckLoading = false;
@@ -332,7 +326,6 @@ export class JantComposeDialog extends LitElement {
     this._loading = false;
     this._collectionIds = [];
     this._showCollection = false;
-    this._showMoreMenu = false;
     this._collectionSearch = "";
     this._altPanelOpen = false;
     this._altPanelIndex = 0;
@@ -356,7 +349,6 @@ export class JantComposeDialog extends LitElement {
     this._slug = "";
     this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
-    this._moreSlugExpanded = false;
     this._suggestedSlug = "";
     this._suggestedSlugLoading = false;
     this._slugCheckLoading = false;
@@ -691,10 +683,6 @@ export class JantComposeDialog extends LitElement {
       this._showCollection = false;
       this._collectionSearch = "";
     }
-    if (this._showMoreMenu) {
-      this._showMoreMenu = false;
-      this._moreSlugExpanded = false;
-    }
     if (this._showPublishPanel) {
       this._showPublishPanel = false;
     }
@@ -921,7 +909,7 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _scheduleSuggestedSlugRefresh(immediate = false) {
-    if (!this._moreSlugExpanded || this._hasManualSlug()) return;
+    if (!this._showPublishPanel || this._hasManualSlug()) return;
     if (!this._canSuggestSlug()) {
       this._slugSuggestRequestId += 1;
       this._suggestedSlug = "";
@@ -976,7 +964,7 @@ export class JantComposeDialog extends LitElement {
       if (
         requestId !== this._slugSuggestRequestId ||
         this._hasManualSlug() ||
-        !this._moreSlugExpanded
+        !this._showPublishPanel
       ) {
         return;
       }
@@ -1054,7 +1042,9 @@ export class JantComposeDialog extends LitElement {
     this._slugTaken = false;
     this._slugCheckLoading = false;
     this.updateComplete.then(() => {
-      this.querySelector<HTMLInputElement>(".compose-more-slug-input")?.focus();
+      this.querySelector<HTMLInputElement>(
+        ".compose-publish-slug-input",
+      )?.focus();
     });
   }
 
@@ -1064,7 +1054,9 @@ export class JantComposeDialog extends LitElement {
     this._slugCheckLoading = false;
     this._scheduleSuggestedSlugRefresh(true);
     this.updateComplete.then(() => {
-      this.querySelector<HTMLInputElement>(".compose-more-slug-input")?.focus();
+      this.querySelector<HTMLInputElement>(
+        ".compose-publish-slug-input",
+      )?.focus();
     });
   }
 
@@ -1162,9 +1154,6 @@ export class JantComposeDialog extends LitElement {
       if (this._showCollection) {
         this._showCollection = false;
         this._collectionSearch = "";
-      } else if (this._showMoreMenu) {
-        this._showMoreMenu = false;
-        this._moreSlugExpanded = false;
       } else if (this._showPublishPanel) {
         this._showPublishPanel = false;
       } else if (this._addCollectionPanelOpen) {
@@ -1871,6 +1860,9 @@ export class JantComposeDialog extends LitElement {
       link: this.labels.link,
       quote: this.labels.quote,
     };
+    const draftButtonLabel = this._hasContent()
+      ? this.labels.saveAsDraft
+      : this.labels.drafts;
 
     return html`
       <header class="compose-dialog-header">
@@ -1920,163 +1912,42 @@ export class JantComposeDialog extends LitElement {
               `}
         </div>
 
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="compose-dialog-header-actions">
           ${this._editPostId
             ? nothing
             : html`<button
                 type="button"
-                class="compose-dialog-header-btn"
-                title=${this.labels.saveDraft}
+                class="compose-dialog-header-btn compose-dialog-draft-btn"
+                aria-label=${draftButtonLabel}
+                title=${draftButtonLabel}
                 ?disabled=${this._loading}
                 @click=${() => this._handleDraftButtonClick()}
               >
                 <svg
                   class="icon-fine"
-                  width="18"
-                  height="18"
+                  width="19"
+                  height="19"
                   viewBox="0 0 18 18"
                   fill="none"
                   stroke="currentColor"
-                  stroke-width="1.3"
+                  stroke-width="1.35"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 >
-                  <path d="M14 2.5L15.5 4 7 12.5l-3 .5.5-3L14 2.5z" />
-                  <path d="M4 15h10" />
+                  <rect
+                    x="3.35"
+                    y="3.15"
+                    width="10.75"
+                    height="10.75"
+                    rx="2.35"
+                  />
+                  <path d="M10.75 3.15v2.7a1.5 1.5 0 001.5 1.5h1.85" />
+                  <path d="M6.1 8.35h5.85" />
+                  <path d="M6.1 11h4.6" />
                 </svg>
               </button>`}
-          ${this._renderMoreMenu()}
         </div>
       </header>
-    `;
-  }
-
-  private _renderMoreMenu() {
-    const slugError = this._getSlugValidationMessage();
-    const slugStatus = this._getSlugStatusMessage();
-    const showSuggestion =
-      this._moreSlugExpanded &&
-      !this._hasManualSlug() &&
-      !this._suggestedSlugLoading &&
-      Boolean(this._suggestedSlug);
-
-    return html`
-      <div class="relative">
-        ${this._showMoreMenu
-          ? html`<div
-              class="compose-dropdown-backdrop"
-              @click=${() => {
-                this._showMoreMenu = false;
-                this._moreSlugExpanded = false;
-              }}
-            ></div>`
-          : nothing}
-        <button
-          type="button"
-          class="compose-dialog-header-btn"
-          @click=${() => {
-            this._showCollection = false;
-            this._collectionSearch = "";
-            this._showPublishPanel = false;
-            if (this._showMoreMenu) {
-              this._moreSlugExpanded = false;
-              this._showMoreMenu = false;
-              return;
-            }
-            this._showMoreMenu = true;
-            this._moreSlugExpanded = true;
-            this._scheduleSuggestedSlugRefresh(true);
-            this.updateComplete.then(() => {
-              this.querySelector<HTMLInputElement>(
-                ".compose-more-slug-input",
-              )?.focus();
-            });
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-            <circle cx="4.5" cy="9" r="1.3" />
-            <circle cx="9" cy="9" r="1.3" />
-            <circle cx="13.5" cy="9" r="1.3" />
-          </svg>
-        </button>
-        ${this._showMoreMenu
-          ? html`
-              <div
-                class="compose-dropdown compose-dropdown-right compose-more-menu"
-                data-compose-meta-panel
-              >
-                <div class="compose-meta-panel-section">
-                  <div class="compose-meta-panel-header">
-                    <div class="compose-meta-panel-copy">
-                      <p class="compose-meta-panel-title">
-                        ${this.labels.publishSlugLabel}
-                      </p>
-                      <p class="compose-meta-panel-subtitle">
-                        ${this.labels.publishSlugHint}
-                      </p>
-                    </div>
-                    ${this._hasManualSlug()
-                      ? html`
-                          <button
-                            type="button"
-                            class="compose-meta-panel-action"
-                            @click=${() => this._resetCustomSlug()}
-                          >
-                            ${this.labels.publishSlugReset}
-                          </button>
-                        `
-                      : nothing}
-                  </div>
-                  <div class="compose-dropdown-field compose-meta-panel-field">
-                    <div class="compose-dropdown-input-wrap">
-                      <span class="compose-dropdown-input-prefix">/</span>
-                      <input
-                        type="text"
-                        class="compose-input compose-more-slug-input"
-                        .value=${this._slug}
-                        placeholder=${this.labels.publishSlugPlaceholder}
-                        aria-invalid=${slugError ? "true" : "false"}
-                        spellcheck="false"
-                        autocapitalize="off"
-                        autocomplete="off"
-                        @input=${(e: Event) => this._onSlugInput(e)}
-                      />
-                    </div>
-                    ${showSuggestion
-                      ? html`
-                          <button
-                            type="button"
-                            class="compose-slug-suggestion"
-                            @click=${() => this._useSuggestedSlug()}
-                          >
-                            <span class="compose-slug-suggestion-label"
-                              >${this.labels.publishSlugSuggested}</span
-                            >
-                            <span class="compose-slug-suggestion-value"
-                              >/${this._suggestedSlug}</span
-                            >
-                          </button>
-                        `
-                      : nothing}
-                    ${slugStatus
-                      ? html`<p
-                          class=${classMap({
-                            "compose-slug-status": true,
-                            "compose-slug-status-error": Boolean(slugError),
-                          })}
-                          data-compose-slug-error=${slugError
-                            ? "true"
-                            : nothing}
-                        >
-                          ${slugStatus}
-                        </p>`
-                      : nothing}
-                  </div>
-                </div>
-              </div>
-            `
-          : nothing}
-      </div>
     `;
   }
 
@@ -2104,8 +1975,6 @@ export class JantComposeDialog extends LitElement {
             type="button"
             class="compose-collection-trigger"
             @click=${() => {
-              this._showMoreMenu = false;
-              this._moreSlugExpanded = false;
               this._showPublishPanel = false;
               this._showCollection = !this._showCollection;
               if (!this._showCollection) {
@@ -2549,13 +2418,39 @@ export class JantComposeDialog extends LitElement {
     return null;
   }
 
+  private _getSlugPreviewUrl(): string | null {
+    if (!this._hasManualSlug() || this._getSlugValidationMessage()) {
+      return null;
+    }
+
+    const path = publicPath(`/${this._slug.trim()}`);
+    const origin =
+      globalThis.location?.origin && globalThis.location.origin !== "null"
+        ? globalThis.location.origin
+        : "http://localhost";
+    return new URL(path, `${origin}/`).toString();
+  }
+
+  private _getSlugPreviewParts(): {
+    full: string;
+    origin: string;
+    path: string;
+  } | null {
+    const previewUrl = this._getSlugPreviewUrl();
+    if (!previewUrl) return null;
+
+    const url = new URL(previewUrl);
+    return {
+      full: previewUrl,
+      origin: url.origin,
+      path: `${url.pathname}${url.search}${url.hash}`,
+    };
+  }
+
   private _getSlugStatusMessage(): string | null {
     if (this._hasManualSlug()) {
       if (this._getSlugValidationMessage()) {
         return this._getSlugValidationMessage();
-      }
-      if (this._slugCheckLoading) {
-        return this.labels.publishSlugChecking;
       }
       return null;
     }
@@ -2570,13 +2465,13 @@ export class JantComposeDialog extends LitElement {
   private _revealSlugField() {
     this._showCollection = false;
     this._collectionSearch = "";
-    this._showPublishPanel = false;
-    this._showMoreMenu = true;
-    this._moreSlugExpanded = true;
+    this._showPublishPanel = true;
     this._confirmPanelOpen = false;
     this._scheduleSuggestedSlugRefresh(true);
     this.updateComplete.then(() => {
-      this.querySelector<HTMLInputElement>(".compose-more-slug-input")?.focus();
+      this.querySelector<HTMLInputElement>(
+        ".compose-publish-slug-input",
+      )?.focus();
     });
   }
 
@@ -2585,7 +2480,6 @@ export class JantComposeDialog extends LitElement {
     const editor = this._editor;
     if (!editor) return false;
     if (this._getSlugValidationMessage()) return false;
-    if (this._hasManualSlug() && this._slugCheckLoading) return false;
 
     const data = editor.getData();
     if (this._format === "link") {
@@ -2600,9 +2494,11 @@ export class JantComposeDialog extends LitElement {
   private _togglePublishPanel() {
     this._showCollection = false;
     this._collectionSearch = "";
-    this._showMoreMenu = false;
-    this._moreSlugExpanded = false;
-    this._showPublishPanel = !this._showPublishPanel;
+    const nextOpen = !this._showPublishPanel;
+    this._showPublishPanel = nextOpen;
+    if (nextOpen) {
+      this._scheduleSuggestedSlugRefresh(true);
+    }
   }
 
   private _setVisibility(visibility: ComposeVisibility) {
@@ -2626,6 +2522,83 @@ export class JantComposeDialog extends LitElement {
     this._scheduleSuggestedSlugRefresh();
   }
 
+  private _renderVisibilityIcon(
+    visibility: ComposeVisibility,
+    variant: "menu" | "toggle" = "menu",
+  ) {
+    const iconClasses = classMap({
+      "compose-publish-visibility-icon": true,
+      "compose-publish-visibility-icon-toggle": variant === "toggle",
+      "compose-publish-visibility-icon-public": visibility === "public",
+      "compose-publish-visibility-icon-unlisted": visibility === "unlisted",
+      "compose-publish-visibility-icon-private": visibility === "private",
+    });
+
+    if (visibility === "private") {
+      return html`
+        <span class=${iconClasses} aria-hidden="true">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.45"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="4.25" y="7" width="7.5" height="5.75" rx="1.5" />
+            <path
+              d="M5.75 7V5.7A2.25 2.25 0 018 3.45a2.25 2.25 0 012.25 2.25V7"
+            />
+          </svg>
+        </span>
+      `;
+    }
+
+    if (visibility === "unlisted") {
+      return html`
+        <span class=${iconClasses} aria-hidden="true">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.45"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M6.1 9.9l3.8-3.8" />
+            <path d="M5.15 11a2.1 2.1 0 010-2.95L7 6.2a2.1 2.1 0 012.95 0" />
+            <path d="M10.85 5a2.1 2.1 0 010 2.95L9 9.8a2.1 2.1 0 01-2.95 0" />
+          </svg>
+        </span>
+      `;
+    }
+
+    return html`
+      <span class=${iconClasses} aria-hidden="true">
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.45"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="8" cy="8" r="5.25" />
+          <path d="M2.75 8h10.5" />
+          <path
+            d="M8 2.75c1.45 1.35 2.3 3.24 2.3 5.25S9.45 11.9 8 13.25C6.55 11.9 5.7 10.01 5.7 8S6.55 4.1 8 2.75"
+          />
+        </svg>
+      </span>
+    `;
+  }
+
   private _renderPublishVisibilityOption(
     visibility: ComposeVisibility,
     label: string,
@@ -2645,6 +2618,7 @@ export class JantComposeDialog extends LitElement {
         ?disabled=${this._visibilityLocked}
         @click=${() => this._setVisibility(visibility)}
       >
+        ${this._renderVisibilityIcon(visibility)}
         <span class="compose-publish-copy">
           <span class="compose-publish-row-label">${label}</span>
           <span class="compose-publish-row-hint">${hint}</span>
@@ -2669,32 +2643,169 @@ export class JantComposeDialog extends LitElement {
     `;
   }
 
+  private _renderPublishSlugSection() {
+    const slugError = this._getSlugValidationMessage();
+    const slugStatus = this._getSlugStatusMessage();
+    const slugPreview = this._getSlugPreviewParts();
+    const showSuggestion =
+      !this._hasManualSlug() &&
+      !this._suggestedSlugLoading &&
+      Boolean(this._suggestedSlug);
+
+    return html`
+      <section class="compose-publish-section">
+        <div class="compose-publish-section-header">
+          <div class="compose-publish-section-copy">
+            <p class="compose-publish-section-label">
+              ${this.labels.publishSlugLabel}
+            </p>
+            <p class="compose-publish-section-hint">
+              ${this.labels.publishSlugHint}
+            </p>
+          </div>
+          ${this._hasManualSlug()
+            ? html`
+                <button
+                  type="button"
+                  class="compose-publish-section-action"
+                  @click=${() => this._resetCustomSlug()}
+                >
+                  ${this.labels.publishSlugReset}
+                </button>
+              `
+            : nothing}
+        </div>
+        <div class="compose-publish-slug-field">
+          <div class="compose-publish-slug-input-wrap">
+            <span class="compose-publish-slug-prefix">/</span>
+            <input
+              type="text"
+              class="compose-input compose-publish-slug-input"
+              .value=${this._slug}
+              placeholder=${this.labels.publishSlugPlaceholder}
+              aria-invalid=${slugError ? "true" : "false"}
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              @input=${(e: Event) => this._onSlugInput(e)}
+            />
+          </div>
+          ${showSuggestion
+            ? html`
+                <button
+                  type="button"
+                  class="compose-slug-suggestion"
+                  @click=${() => this._useSuggestedSlug()}
+                >
+                  <span class="compose-slug-suggestion-copy">
+                    <span class="compose-slug-suggestion-label"
+                      >${this.labels.publishSlugSuggested}</span
+                    >
+                    <span class="compose-slug-suggestion-chip">
+                      <span class="compose-slug-suggestion-value"
+                        >/${this._suggestedSlug}</span
+                      >
+                    </span>
+                  </span>
+                  <span class="compose-slug-suggestion-icon" aria-hidden="true">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M3 7h8" />
+                      <path d="m8 3 4 4-4 4" />
+                    </svg>
+                  </span>
+                </button>
+              `
+            : nothing}
+          ${slugStatus
+            ? html`<p
+                class=${classMap({
+                  "compose-publish-slug-status": true,
+                  "compose-publish-slug-status-error": Boolean(slugError),
+                })}
+                data-compose-slug-error=${slugError ? "true" : nothing}
+              >
+                ${slugStatus}
+              </p>`
+            : nothing}
+          ${slugPreview
+            ? html`<p
+                class="compose-publish-slug-preview"
+                data-compose-slug-preview
+                title=${slugPreview.full}
+              >
+                <span class="compose-publish-slug-preview-origin"
+                  >${slugPreview.origin}</span
+                ><span class="compose-publish-slug-preview-path"
+                  >${slugPreview.path}</span
+                >
+              </p>`
+            : nothing}
+        </div>
+      </section>
+    `;
+  }
+
   private _renderPublishPanel() {
-    if (!this._showPublishPanel || this._visibilityLocked) return nothing;
+    if (!this._showPublishPanel) return nothing;
 
     return html`
       <div
         class="compose-publish-panel"
-        role="menu"
-        aria-label=${this.labels.publishVisibilityLabel}
+        role="dialog"
+        aria-label=${this.labels.publishSettings}
+        data-compose-publish-panel
       >
-        <div class="compose-publish-list" role="radiogroup">
-          ${this._renderPublishVisibilityOption(
-            "public",
-            this.labels.publishVisibilityPublic,
-            this.labels.publishVisibilityPublicHint,
-          )}
-          ${this._renderPublishVisibilityOption(
-            "unlisted",
-            this.labels.publishVisibilityUnlisted,
-            this.labels.publishVisibilityUnlistedHint,
-          )}
-          ${this._renderPublishVisibilityOption(
-            "private",
-            this.labels.publishVisibilityPrivate,
-            this.labels.publishVisibilityPrivateHint,
-          )}
+        <div class="compose-publish-panel-header">
+          <p class="compose-publish-panel-title">
+            ${this.labels.publishSettings}
+          </p>
         </div>
+        ${this._visibilityLocked
+          ? nothing
+          : html`
+              <section class="compose-publish-section">
+                <div class="compose-publish-section-header">
+                  <div class="compose-publish-section-copy">
+                    <p class="compose-publish-section-label">
+                      ${this.labels.publishVisibilityLabel}
+                    </p>
+                  </div>
+                </div>
+                <div class="compose-publish-list" role="radiogroup">
+                  ${this._renderPublishVisibilityOption(
+                    "public",
+                    this.labels.publishVisibilityPublic,
+                    this.labels.publishVisibilityPublicHint,
+                  )}
+                  ${this._renderPublishVisibilityOption(
+                    "unlisted",
+                    this.labels.publishVisibilityUnlisted,
+                    this.labels.publishVisibilityUnlistedHint,
+                  )}
+                  ${this._renderPublishVisibilityOption(
+                    "private",
+                    this.labels.publishVisibilityPrivate,
+                    this.labels.publishVisibilityPrivateHint,
+                  )}
+                </div>
+              </section>
+            `}
+        ${this._visibilityLocked
+          ? nothing
+          : html`<div
+              class="compose-publish-divider"
+              aria-hidden="true"
+            ></div>`}
+        ${this._renderPublishSlugSection()}
       </div>
     `;
   }
@@ -2716,26 +2827,6 @@ export class JantComposeDialog extends LitElement {
     const canPublish = this._canPublish();
     const shortcutHint = this._renderPublishShortcutHint();
 
-    if (this._replyToId || this._visibilityLocked) {
-      return html`
-        <div class="compose-publish-group">
-          ${shortcutHint}
-          <button
-            type="button"
-            class=${classMap({
-              "btn-sm-outline": true,
-              "compose-publish-single": true,
-              "compose-publish-single-loading": this._loading,
-            })}
-            ?disabled=${!canPublish}
-            @click=${() => this._submit("published")}
-          >
-            ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
-          </button>
-        </div>
-      `;
-    }
-
     return html`
       <div class="compose-publish-group">
         ${shortcutHint}
@@ -2747,11 +2838,16 @@ export class JantComposeDialog extends LitElement {
               }}
             ></div>`
           : nothing}
-        <div role="group" class="button-group compose-publish-buttons">
+        <div
+          role="group"
+          class=${classMap({
+            "compose-publish-buttons": true,
+            "compose-publish-buttons-inactive": !canPublish && !this._loading,
+          })}
+        >
           <button
             type="button"
             class=${classMap({
-              "btn-sm-outline": true,
               "compose-publish-main": true,
               "compose-publish-main-loading": this._loading,
             })}
@@ -2763,16 +2859,18 @@ export class JantComposeDialog extends LitElement {
           <button
             type="button"
             class=${classMap({
-              "btn-sm-icon-outline": true,
               "compose-publish-toggle": true,
               "compose-publish-toggle-loading": this._loading,
             })}
             ?disabled=${this._loading}
-            aria-haspopup="menu"
+            aria-haspopup="dialog"
             aria-expanded=${this._showPublishPanel ? "true" : "false"}
+            aria-label=${this.labels.publishSettings}
+            title=${this.labels.publishSettings}
             @click=${() => this._togglePublishPanel()}
           >
             <svg
+              class="compose-publish-toggle-chevron"
               width="14"
               height="14"
               viewBox="0 0 24 24"
@@ -2816,7 +2914,10 @@ export class JantComposeDialog extends LitElement {
         class=${classMap({
           "compose-dialog-inner": true,
           "compose-dialog-inner-page": this.pageMode,
+          "compose-dialog-inner-suspended": this._addCollectionPanelOpen,
         })}
+        aria-hidden=${this._addCollectionPanelOpen ? "true" : "false"}
+        ?inert=${this._addCollectionPanelOpen}
       >
         ${this._renderHeader()}
         ${isReply

@@ -3092,6 +3092,17 @@
     position: relative;
   }
 
+  .compose-dialog:has(.compose-dialog-inner-suspended) {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .compose-dialog:has(.compose-dialog-inner-suspended)
+    .collection-quick-dialog-backdrop {
+    background: transparent;
+  }
+
   .compose-dialog-inner {
     display: flex;
     flex-direction: column;
@@ -3099,6 +3110,12 @@
     position: relative;
     border-radius: inherit;
     overflow: visible;
+  }
+
+  .compose-dialog-inner-suspended {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .compose-dialog-inner > jant-compose-editor {
@@ -3151,6 +3168,13 @@
     transform: translateX(-50%);
   }
 
+  .compose-dialog-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+  }
+
   .compose-dialog-title {
     font-weight: var(--fw-semibold);
     font-size: var(--text-base);
@@ -3175,6 +3199,22 @@
   .compose-dialog-header-btn:hover {
     color: var(--site-text-primary);
     background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-dialog-draft-btn {
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 58%,
+      var(--site-text-secondary)
+    );
+  }
+
+  .compose-dialog-draft-btn svg {
+    transform: scale(1.04);
+  }
+
+  .compose-dialog-draft-btn:hover {
+    color: var(--site-text-primary);
   }
 
   .compose-dialog-header-btn:disabled {
@@ -3670,6 +3710,9 @@
   }
 
   .compose-tool-btn-view {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
     color: color-mix(
       in oklab,
       var(--site-text-secondary) 88%,
@@ -3835,69 +3878,192 @@
     .compose-publish-shortcut {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      font-size: 0.72rem;
+      gap: 3px;
+      font-size: 0.66rem;
+      font-weight: var(--fw-medium);
       line-height: 1;
       white-space: nowrap;
       user-select: none;
-      opacity: 0.78;
+      color: color-mix(
+        in srgb,
+        var(--site-text-secondary) 68%,
+        var(--site-elevated-bg)
+      );
+    }
+
+    .compose-publish-shortcut .kbd {
+      min-width: 0;
+      height: auto;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+      font-weight: inherit;
     }
 
     .compose-publish-shortcut-plus {
-      opacity: 0.45;
+      font-size: 0.62rem;
+      opacity: 0.42;
     }
   }
 
   .compose-publish-single,
-  .compose-publish-main {
-    min-width: 4.75rem;
+  .compose-publish-main,
+  .compose-publish-toggle {
+    min-height: 2.15rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition:
+      background-color 0.18s ease,
+      color 0.18s ease,
+      box-shadow 0.18s ease;
   }
 
-  .compose-publish-single:not(:disabled),
-  .compose-publish-main:not(:disabled),
-  .compose-publish-toggle:not(:disabled) {
-    color: color-mix(
-      in srgb,
-      var(--site-text-primary) 82%,
-      var(--site-text-secondary)
-    );
-    background-color: color-mix(
-      in srgb,
-      var(--site-elevated-bg) 96%,
-      var(--site-nav-hover-bg)
-    );
-    border-color: color-mix(in srgb, var(--site-text-primary) 15%, transparent);
+  .compose-publish-single,
+  .compose-publish-main {
+    min-width: 5rem;
+    padding: 0 16px;
+    background-color: var(--site-text-primary);
+    color: var(--site-elevated-bg);
+    font-size: 0.84rem;
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.01em;
+    box-shadow: none;
   }
 
   .compose-publish-single:hover:not(:disabled),
-  .compose-publish-main:hover:not(:disabled),
-  .compose-publish-toggle:hover:not(:disabled),
-  .compose-publish-toggle[aria-expanded="true"]:not(:disabled) {
+  .compose-publish-main:hover:not(:disabled) {
+    background-color: color-mix(
+      in srgb,
+      var(--site-text-primary) 94%,
+      var(--site-elevated-bg)
+    );
+  }
+
+  .compose-publish-buttons {
+    display: inline-flex;
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: 999px;
+    box-shadow: none;
+  }
+
+  .compose-publish-buttons .compose-publish-main {
+    border-radius: 999px 0 0 999px;
+  }
+
+  .compose-publish-buttons-inactive .compose-publish-toggle:not(:disabled) {
     color: color-mix(
       in srgb,
-      var(--site-text-primary) 90%,
+      var(--site-text-secondary) 92%,
+      var(--site-elevated-bg)
+    );
+    background-color: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 68%,
+      var(--site-elevated-bg)
+    );
+    --compose-publish-divider-color: color-mix(
+      in srgb,
+      var(--site-divider) 72%,
+      transparent
+    );
+  }
+
+  .compose-publish-buttons-inactive
+    .compose-publish-toggle:not(:disabled):hover,
+  .compose-publish-buttons-inactive
+    .compose-publish-toggle[aria-expanded="true"]:not(:disabled) {
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 68%,
       var(--site-text-secondary)
     );
     background-color: color-mix(
       in srgb,
-      var(--site-elevated-bg) 91%,
-      var(--site-nav-hover-bg)
+      var(--site-nav-hover-bg) 82%,
+      var(--site-elevated-bg)
     );
-    border-color: color-mix(in srgb, var(--site-text-primary) 17%, transparent);
+  }
+
+  .compose-publish-buttons-inactive .compose-publish-toggle-chevron {
+    opacity: 0.62;
+  }
+
+  .compose-publish-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 2.35rem;
+    color: var(--site-elevated-bg);
+    background-color: var(--site-text-primary);
+    border-radius: 0 999px 999px 0;
+    flex-shrink: 0;
+    --compose-publish-divider-color: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 14%,
+      transparent
+    );
+  }
+
+  .compose-publish-toggle::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 1px;
+    height: 0.9rem;
+    transform: translateY(-50%);
+    background-color: var(--compose-publish-divider-color);
+    opacity: 0.7;
+  }
+
+  .compose-publish-toggle:hover:not(:disabled),
+  .compose-publish-toggle[aria-expanded="true"]:not(:disabled) {
+    background-color: color-mix(
+      in srgb,
+      var(--site-text-primary) 94%,
+      var(--site-elevated-bg)
+    );
+  }
+
+  .compose-publish-toggle-chevron {
+    opacity: 0.78;
+  }
+
+  .compose-publish-single:focus-visible,
+  .compose-publish-main:focus-visible,
+  .compose-publish-toggle:focus-visible,
+  .compose-publish-option:focus-visible {
+    outline: 2px solid
+      color-mix(in srgb, var(--site-text-primary) 22%, transparent);
+    outline-offset: 2px;
   }
 
   .compose-publish-single:disabled:not(.compose-publish-single-loading),
-  .compose-publish-main:disabled:not(.compose-publish-main-loading),
+  .compose-publish-main:disabled:not(.compose-publish-main-loading) {
+    opacity: 1;
+    color: var(--site-text-secondary);
+    background-color: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 68%,
+      var(--site-elevated-bg)
+    );
+    box-shadow: none;
+  }
+
   .compose-publish-toggle:disabled:not(.compose-publish-toggle-loading) {
     opacity: 1;
     color: var(--site-text-secondary);
     background-color: color-mix(
       in srgb,
-      var(--site-nav-hover-bg) 58%,
+      var(--site-nav-hover-bg) 68%,
       var(--site-elevated-bg)
     );
-    border-color: color-mix(in srgb, var(--site-divider) 84%, transparent);
-    box-shadow: none;
+    border-left-color: color-mix(in srgb, var(--site-divider) 80%, transparent);
   }
 
   .compose-publish-single-loading:disabled,
@@ -3907,30 +4073,125 @@
     cursor: progress;
   }
 
-  .compose-publish-toggle {
-    flex-shrink: 0;
-  }
-
   .compose-publish-panel {
     position: absolute;
     right: 0;
-    top: calc(100% + 6px);
-    width: min(13.5rem, calc(100vw - 1.5rem));
-    padding: 6px;
+    top: calc(100% + 8px);
+    width: min(21rem, calc(100vw - 1.5rem));
+    padding: 0.75rem;
     background-color: var(--site-elevated-bg);
-    border: 1px solid var(--site-column-outline);
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
     border-radius: 12px;
     box-shadow:
-      0 8px 32px rgba(0, 0, 0, 0.1),
-      0 1px 4px rgba(0, 0, 0, 0.05);
+      0 10px 28px rgba(0, 0, 0, 0.08),
+      0 1px 3px rgba(0, 0, 0, 0.05);
     z-index: 120;
     animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .compose-publish-panel-header {
+    margin-bottom: 0.75rem;
+  }
+
+  .compose-publish-panel-title {
+    color: var(--site-text-primary);
+    font-size: 0.84rem;
+    font-weight: var(--fw-semibold);
+    line-height: 1.2;
+  }
+
+  .compose-publish-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .compose-publish-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .compose-publish-section-copy {
+    min-width: 0;
+  }
+
+  .compose-publish-section-label {
+    color: var(--site-text-primary);
+    font-size: 0.8rem;
+    font-weight: var(--fw-semibold);
+    line-height: 1.2;
+  }
+
+  .compose-publish-section-hint {
+    margin-top: 0.25rem;
+    color: var(--site-text-secondary);
+    font-size: 0.76rem;
+    line-height: 1.35;
+    text-wrap: pretty;
+  }
+
+  .compose-publish-section-action {
+    flex-shrink: 0;
+    min-height: 1.9rem;
+    padding: 0.38rem 0.68rem;
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    border-radius: 999px;
+    background-color: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 92%,
+      var(--site-nav-hover-bg)
+    );
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 74%,
+      var(--site-text-secondary)
+    );
+    font-size: 0.74rem;
+    font-weight: var(--fw-medium);
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      color 0.16s ease,
+      background-color 0.16s ease,
+      border-color 0.16s ease,
+      transform 0.16s ease;
+  }
+
+  .compose-publish-section-action:hover {
+    color: var(--site-text-primary);
+    border-color: color-mix(in srgb, var(--site-text-primary) 14%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 82%,
+      var(--site-nav-hover-bg)
+    );
+    transform: translateY(-1px);
+  }
+
+  .compose-publish-section-action:focus-visible {
+    outline: 2px solid
+      color-mix(in srgb, var(--site-text-primary) 18%, transparent);
+    outline-offset: 2px;
+  }
+
+  .compose-publish-divider {
+    height: 1px;
+    margin: 0.75rem 0;
+    background-color: color-mix(
+      in srgb,
+      var(--site-text-primary) 8%,
+      transparent
+    );
   }
 
   .compose-publish-list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
   }
 
   .compose-publish-option {
@@ -3939,8 +4200,8 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 10px;
-    padding: 9px 11px;
-    border-radius: 9px;
+    padding: 9px 10px;
+    border-radius: 10px;
     border: none;
     background: transparent;
     cursor: pointer;
@@ -3962,15 +4223,39 @@
   .compose-publish-option-selected {
     background-color: color-mix(
       in srgb,
-      var(--site-nav-hover-bg) 68%,
+      var(--site-nav-hover-bg) 74%,
       transparent
     );
   }
 
+  .compose-publish-visibility-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.95rem;
+    height: 0.95rem;
+    flex-shrink: 0;
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 68%,
+      var(--site-text-secondary)
+    );
+    margin-top: 0.18rem;
+  }
+
+  .compose-publish-visibility-icon-toggle {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  .compose-publish-option-selected .compose-publish-visibility-icon {
+    color: var(--site-text-primary);
+  }
+
   .compose-publish-row-label {
     color: var(--site-text-primary);
-    font-size: 0.88rem;
-    font-weight: var(--fw-medium);
+    font-size: 0.84rem;
+    font-weight: var(--fw-semibold);
     line-height: 1.2;
   }
 
@@ -3984,34 +4269,13 @@
 
   .compose-publish-row-hint {
     color: var(--site-text-secondary);
-    font-size: 0.78rem;
-    line-height: 1.35;
+    font-size: 0.75rem;
+    line-height: 1.32;
     text-wrap: pretty;
   }
 
   .compose-publish-row-check {
-    margin-top: 0.14rem;
     flex-shrink: 0;
-  }
-
-  .compose-publish-row-meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    margin-left: auto;
-  }
-
-  .compose-publish-row-value {
-    color: var(--site-text-secondary);
-    font-size: 0.78rem;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .compose-publish-row-check {
     flex-shrink: 0;
     color: var(--site-text-primary);
   }
@@ -4043,11 +4307,6 @@
     right: 0;
   }
 
-  .compose-more-menu {
-    width: min(18.5rem, calc(100vw - 1.5rem));
-    padding: 10px;
-  }
-
   .compose-dropdown-item {
     display: flex;
     align-items: center;
@@ -4068,110 +4327,147 @@
     background-color: var(--site-nav-hover-bg);
   }
 
-  .compose-meta-panel-section {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .compose-meta-panel-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .compose-meta-panel-copy {
-    min-width: 0;
-  }
-
-  .compose-meta-panel-title {
-    color: var(--site-text-primary);
-    font-size: 0.92rem;
-    font-weight: var(--fw-medium);
-    line-height: 1.25;
-  }
-
-  .compose-meta-panel-subtitle {
-    margin-top: 4px;
-    color: var(--site-text-secondary);
-    font-size: 0.78rem;
-    line-height: 1.35;
-  }
-
-  .compose-meta-panel-action {
-    flex-shrink: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--site-text-secondary);
-    font-size: 0.76rem;
-    font-weight: var(--fw-medium);
-    cursor: pointer;
-    transition: color 0.16s ease;
-  }
-
-  .compose-meta-panel-action:hover {
-    color: var(--site-text-primary);
-  }
-
-  .compose-dropdown-field {
-    padding: 0;
-  }
-
-  .compose-meta-panel-field {
-    padding: 0;
-  }
-
   .compose-slug-suggestion {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
     width: 100%;
-    margin-top: 8px;
-    padding: 7px 10px;
-    border: none;
-    border-radius: 9px;
-    background-color: color-mix(
-      in srgb,
-      var(--site-nav-hover-bg) 58%,
-      transparent
-    );
+    padding: 0.7rem 0.75rem 0.72rem;
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    border-radius: 11px;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--site-nav-hover-bg) 50%, transparent),
+        color-mix(in srgb, var(--site-nav-hover-bg) 28%, transparent)
+      ),
+      var(--site-elevated-bg);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--site-elevated-bg) 85%, transparent),
+      0 1px 2px rgba(0, 0, 0, 0.03);
     cursor: pointer;
     text-align: left;
-    transition: background-color 0.16s ease;
+    transition:
+      background-color 0.16s ease,
+      border-color 0.16s ease,
+      transform 0.16s ease,
+      box-shadow 0.16s ease;
   }
 
   .compose-slug-suggestion:hover {
-    background-color: color-mix(
-      in srgb,
-      var(--site-nav-hover-bg) 82%,
-      transparent
-    );
+    border-color: color-mix(in srgb, var(--site-text-primary) 14%, transparent);
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--site-nav-hover-bg) 66%, transparent),
+        color-mix(in srgb, var(--site-nav-hover-bg) 40%, transparent)
+      ),
+      var(--site-elevated-bg);
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--site-elevated-bg) 88%, transparent),
+      0 6px 18px rgba(0, 0, 0, 0.05);
+  }
+
+  .compose-slug-suggestion:focus-visible {
+    outline: 2px solid
+      color-mix(in srgb, var(--site-text-primary) 18%, transparent);
+    outline-offset: 2px;
+  }
+
+  .compose-slug-suggestion-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
   }
 
   .compose-slug-suggestion-label {
     color: var(--site-text-secondary);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: var(--fw-medium);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+
+  .compose-slug-suggestion-chip {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0.32rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid
+      color-mix(in srgb, var(--site-text-primary) 8%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 92%,
+      var(--site-nav-hover-bg)
+    );
+    box-shadow: inset 0 1px 0
+      color-mix(in srgb, var(--site-elevated-bg) 88%, transparent);
   }
 
   .compose-slug-suggestion-value {
+    display: block;
     color: var(--site-text-primary);
     font-size: 0.78rem;
     font-weight: var(--fw-medium);
     line-height: 1.2;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .compose-dropdown-input-wrap {
+  .compose-slug-suggestion-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 999px;
+    background-color: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 88%,
+      var(--site-nav-hover-bg)
+    );
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 76%,
+      var(--site-text-secondary)
+    );
+    transition:
+      transform 0.16s ease,
+      background-color 0.16s ease,
+      color 0.16s ease;
+  }
+
+  .compose-slug-suggestion:hover .compose-slug-suggestion-icon {
+    transform: translateX(1px);
+    background-color: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 76%,
+      var(--site-nav-hover-bg)
+    );
+    color: var(--site-text-primary);
+  }
+
+  .compose-publish-slug-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .compose-publish-slug-input-wrap {
     display: flex;
     align-items: center;
     gap: 8px;
-    min-height: 2.3rem;
+    min-height: 2.5rem;
     padding: 0 10px;
     border: 1px solid
       color-mix(in srgb, var(--site-text-primary) 12%, transparent);
@@ -4183,14 +4479,14 @@
     );
   }
 
-  .compose-dropdown-input-prefix {
+  .compose-publish-slug-prefix {
     flex-shrink: 0;
     color: var(--site-text-secondary);
     font-size: 0.94rem;
     line-height: 1;
   }
 
-  .compose-more-slug-input {
+  .compose-publish-slug-input {
     min-width: 0;
     flex: 1;
     border: none;
@@ -4199,20 +4495,49 @@
     box-shadow: none;
   }
 
-  .compose-more-slug-input:focus {
+  .compose-publish-slug-input:focus {
     outline: none;
     box-shadow: none;
   }
 
-  .compose-slug-status {
-    margin-top: 8px;
+  .compose-publish-slug-status {
     color: var(--site-text-secondary);
     font-size: 0.75rem;
     line-height: 1.35;
   }
 
-  .compose-slug-status-error {
+  .compose-publish-slug-status-error {
     color: var(--destructive);
+  }
+
+  .compose-publish-slug-preview {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    word-break: break-word;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+      "Courier New", monospace;
+  }
+
+  .compose-publish-slug-preview-origin {
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 88%,
+      var(--site-elevated-bg)
+    );
+    font-size: 0.72rem;
+    font-weight: var(--fw-normal);
+  }
+
+  .compose-publish-slug-preview-path {
+    color: var(--site-text-primary);
+    font-size: 0.77rem;
+    font-weight: var(--fw-semibold);
+    overflow-wrap: anywhere;
   }
 
   .compose-dropdown-item-muted {

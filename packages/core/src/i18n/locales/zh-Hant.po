@@ -2068,6 +2068,8 @@ msgid "Reply"
 msgstr "回覆"
 
 #. @context: Button to restore the automatically generated collection link from the title
+#. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/shared/collection-management-labels.ts
 msgid "Reset link"
 msgstr "重設連結"
@@ -2778,11 +2780,6 @@ msgstr "URL"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Usage"
 msgstr "使用方式"
-
-#. @context: Compose custom slug action that clears the manual slug and falls back to automatic generation
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Use automatic"
-msgstr "改用自動"
 
 #. @context: Switch label for setting featured posts as default homepage
 #: src/ui/dash/appearance/NavigationContent.tsx
