@@ -22,6 +22,7 @@ import type { PasteMediaOptions } from "./paste-media.js";
 import { BubbleMenu } from "./bubble-menu.js";
 import { LinkToolbar } from "./link-toolbar.js";
 import { ExitableMarks } from "./exitable-marks.js";
+import { LinkInputRules } from "./link-input-rules.js";
 import type { FormattingToolbarMode } from "./toolbar-mode.js";
 
 export interface EditorExtensionOptions {
@@ -48,9 +49,11 @@ export function createEditorExtensions(
       placeholder: options.placeholder ?? "Write something…",
     }),
     Markdown.configure({
+      linkify: true,
       transformPastedText: true,
       transformCopiedText: false,
     }),
+    LinkInputRules,
     Table.configure({
       resizable: false,
       HTMLAttributes: { class: "tiptap-table" },
