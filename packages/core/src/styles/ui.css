@@ -2420,7 +2420,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px 0;
+    padding: 0;
     margin-bottom: 10px;
     border-bottom: 0.5px solid oklch(from var(--site-divider) l c h / 0.5);
     transition: border-color 0.15s;
@@ -2436,7 +2436,9 @@
     gap: 10px;
     flex: 1;
     min-width: 0;
-    padding: 0;
+    width: 100%;
+    min-height: 56px;
+    padding: 18px 0;
     border: none;
     outline: none;
     background: none;
@@ -2449,6 +2451,12 @@
 
   .compose-prompt-trigger:hover {
     opacity: 0.7;
+  }
+
+  .compose-prompt-trigger:focus-visible {
+    outline: 1px solid color-mix(in srgb, var(--site-accent) 18%, transparent);
+    outline-offset: 0.25rem;
+    border-radius: 0.35rem;
   }
 
   .compose-prompt-avatar {
