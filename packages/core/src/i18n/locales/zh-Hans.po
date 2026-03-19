@@ -1877,6 +1877,11 @@ msgstr "私密发布"
 msgid "Post unlisted"
 msgstr "不公开发布"
 
+#. @context: Hover hint for the homepage compose shortcut
+#: src/ui/compose/ComposePrompt.tsx
+msgid "Press N to write"
+msgstr ""
+
 #. @context: Ghost button label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Preview"

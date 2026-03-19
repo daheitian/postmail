@@ -2804,6 +2804,7 @@
    * ========================================================================= */
 
   .compose-prompt {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -2855,6 +2856,52 @@
 
   .compose-prompt-text {
     font-size: var(--text-base);
+  }
+
+  .compose-prompt-discovery-hint {
+    display: none;
+  }
+
+  @media (min-width: 700px) {
+    .compose-prompt-discovery-hint {
+      position: absolute;
+      top: 50%;
+      right: 0;
+      transform: translate3d(0.35rem, -50%, 0);
+      display: inline-flex;
+      align-items: center;
+      pointer-events: none;
+      opacity: 0;
+      padding: 0.26rem 0.6rem;
+      border-radius: 999px;
+      border: 0.5px solid
+        color-mix(in srgb, var(--site-divider) 84%, transparent);
+      background: color-mix(
+        in srgb,
+        var(--site-elevated-bg) 94%,
+        var(--site-divider)
+      );
+      color: color-mix(
+        in srgb,
+        var(--site-text-secondary) 86%,
+        var(--site-elevated-bg)
+      );
+      box-shadow: 0 0.35rem 1rem oklch(from var(--site-bg) l c h / 0.08);
+      font-size: 0.72rem;
+      font-weight: var(--fw-medium);
+      line-height: 1;
+      white-space: nowrap;
+      user-select: none;
+      transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+    }
+
+    .compose-prompt.compose-prompt-discovery-visible
+      .compose-prompt-discovery-hint {
+      opacity: 1;
+      transform: translate3d(0, -50%, 0);
+    }
   }
 
   /* =========================================================================
@@ -3876,9 +3923,15 @@
 
   @media (min-width: 700px) {
     .compose-publish-shortcut {
+      position: absolute;
+      top: 50%;
+      right: calc(100% + 0.55rem);
       display: inline-flex;
       align-items: center;
       gap: 3px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate3d(0.3rem, -50%, 0);
       font-size: 0.66rem;
       font-weight: var(--fw-medium);
       line-height: 1;
@@ -3889,6 +3942,9 @@
         var(--site-text-secondary) 68%,
         var(--site-elevated-bg)
       );
+      transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
     }
 
     .compose-publish-shortcut .kbd {
@@ -3905,6 +3961,14 @@
     .compose-publish-shortcut-plus {
       font-size: 0.62rem;
       opacity: 0.42;
+    }
+
+    .compose-publish-group:has(.compose-publish-buttons:hover)
+      .compose-publish-shortcut,
+    .compose-publish-group:has(.compose-publish-buttons:focus-within)
+      .compose-publish-shortcut {
+      opacity: 1;
+      transform: translate3d(0, -50%, 0);
     }
   }
 

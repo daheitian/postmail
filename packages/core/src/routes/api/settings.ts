@@ -8,6 +8,8 @@ import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { CONFIG_FIELDS, type ConfigKey } from "../../types.js";
 import { z } from "zod";
+import { now } from "../../lib/time.js";
+import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { parseValidated } from "../../lib/schemas.js";
 import { ValidationError } from "../../lib/errors.js";
 
@@ -18,7 +20,9 @@ const demoLockedKeys = new Set<ConfigKey>(["NOINDEX"]);
 
 /** Config keys that can be modified via the settings API */
 const editableKeys = Object.entries(CONFIG_FIELDS)
-  .filter(([, field]) => !field.envOnly)
+  .filter(
+    ([, field]) => !field.envOnly && !("internal" in field && field.internal),
+  )
   .map(([key]) => key as ConfigKey);
 
 const UpdateSettingsSchema = z.record(z.string(), z.string());
@@ -92,6 +96,25 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
     ...(rejectedKeys.length > 0 && { rejectedKeys }),
   });
 });
+
+settingsApiRoutes.post(
+  "/discovery/compose-open-shortcut",
+  requireAuthApi(),
+  async (c) => {
+    const existing = await c.var.services.settings.get(
+      SETTINGS_KEYS.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT,
+    );
+
+    if (!existing) {
+      await c.var.services.settings.set(
+        SETTINGS_KEYS.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT,
+        String(now()),
+      );
+    }
+
+    return c.json({ learned: true }, existing ? 200 : 201);
+  },
+);
 
 // Upload site avatar (requires auth)
 settingsApiRoutes.post("/avatar", requireAuthApi(), async (c) => {

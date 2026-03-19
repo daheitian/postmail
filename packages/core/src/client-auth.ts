@@ -13,6 +13,7 @@ import "./client/components/jant-compose-dialog.js";
 import "./client/components/jant-compose-editor.js";
 import "./client/components/jant-compose-fullscreen.js";
 import "./client/compose-bridge.js";
+import "./client/compose-discovery-bridge.js";
 import "./client/compose-shortcuts.js";
 import "./client/components/jant-settings-general.js";
 import "./client/components/jant-settings-avatar.js";

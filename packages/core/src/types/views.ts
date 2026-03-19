@@ -226,4 +226,5 @@ export interface SiteLayoutProps {
   uploadMaxFileSize?: number;
   showComposeDialog?: boolean;
   showHeader?: boolean;
+  composeOpenShortcutDiscovered?: boolean;
 }

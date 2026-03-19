@@ -1877,6 +1877,11 @@ msgstr "Post privately"
 msgid "Post unlisted"
 msgstr "Post unlisted"
 
+#. @context: Hover hint for the homepage compose shortcut
+#: src/ui/compose/ComposePrompt.tsx
+msgid "Press N to write"
+msgstr "Press N to write"
+
 #. @context: Ghost button label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Preview"
