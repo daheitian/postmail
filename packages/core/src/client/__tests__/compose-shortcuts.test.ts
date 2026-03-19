@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { __testOnly as composeDiscoveryTestOnly } from "../compose-discovery.js";
 import "../compose-shortcuts.js";
 
 type ComposeHarness = HTMLElement & {
@@ -35,6 +36,8 @@ describe("compose shortcuts", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     vi.restoreAllMocks();
+    globalThis.localStorage.clear();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
   });
 
   it("opens a collection-scoped composer on collection pages with n", () => {
@@ -49,6 +52,23 @@ describe("compose shortcuts", () => {
 
     expect(event.defaultPrevented).toBe(true);
     expect(composeEl.openNew).toHaveBeenCalledWith({ collectionId: "col-2" });
+  });
+
+  it("marks the compose shortcut as discovered when n opens the composer", async () => {
+    createComposeHarness();
+
+    dispatchShortcut(document, "n");
+    await Promise.resolve();
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      composeDiscoveryTestOnly.COMPOSE_OPEN_SHORTCUT_DISCOVERY_API_PATH,
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(
+      composeDiscoveryTestOnly.readComposeOpenShortcutDiscoveryState(),
+    ).toMatchObject({
+      completed: true,
+    });
   });
 
   it("ignores n while focus is inside an input", () => {

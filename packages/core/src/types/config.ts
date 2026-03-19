@@ -229,6 +229,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     envKeys: ["JANT_NOINDEX", "NOINDEX"],
   },
+  DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT: {
+    defaultValue: "",
+    envOnly: false,
+    internal: true,
+  },
   ONBOARDING_STATUS: {
     defaultValue: "pending",
     envOnly: false,

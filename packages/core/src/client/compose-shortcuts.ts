@@ -5,6 +5,7 @@ import {
   openNewCompose,
   openReplyForArticle,
 } from "./compose-launch.js";
+import { markComposeOpenShortcutDiscovered } from "./compose-discovery.js";
 
 const INTERACTIVE_TARGET_SELECTOR = [
   "input",
@@ -46,6 +47,7 @@ document.addEventListener("keydown", (event: globalThis.KeyboardEvent) => {
 
   if (key === "n") {
     event.preventDefault();
+    markComposeOpenShortcutDiscovered();
     const collectionId = getActiveCollectionId();
     void openNewCompose(collectionId ? { collectionId } : undefined);
     return;

@@ -8,11 +8,22 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 
-export const ComposePrompt: FC = () => {
+interface ComposePromptProps {
+  composeOpenShortcutDiscovered?: boolean;
+}
+
+export const ComposePrompt: FC<ComposePromptProps> = ({
+  composeOpenShortcutDiscovered = false,
+}) => {
   const { t } = useLingui();
 
   return (
-    <div class="compose-prompt">
+    <div
+      class="compose-prompt"
+      data-compose-open-shortcut-discovered={
+        composeOpenShortcutDiscovered ? "true" : "false"
+      }
+    >
       <button
         type="button"
         class="compose-prompt-trigger"
@@ -42,6 +53,12 @@ export const ComposePrompt: FC = () => {
           })}
         </span>
       </button>
+      <span class="compose-prompt-discovery-hint" aria-hidden="true">
+        {t({
+          message: "Press N to write",
+          comment: "@context: Hover hint for the homepage compose shortcut",
+        })}
+      </span>
     </div>
   );
 };

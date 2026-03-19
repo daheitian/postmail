@@ -43,6 +43,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   uploadMaxFileSize,
   showComposeDialog = true,
   showHeader = true,
+  composeOpenShortcutDiscovered = false,
   children,
 }) => {
   const { t } = useLingui();
@@ -224,7 +225,13 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
             <div class={contentClass}>
               {isHomePage && (
                 <div class="site-home-header">
-                  {isAuthenticated && <ComposePrompt />}
+                  {isAuthenticated && (
+                    <ComposePrompt
+                      composeOpenShortcutDiscovered={
+                        composeOpenShortcutDiscovered
+                      }
+                    />
+                  )}
                   <nav class="site-browse-nav">
                     {browseLinks.map((link, i) => (
                       <>

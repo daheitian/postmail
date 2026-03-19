@@ -8,6 +8,7 @@
 import type { Context } from "hono";
 import type { Child } from "hono/jsx";
 import type { SiteLayoutProps } from "../types.js";
+import { SETTINGS_KEYS } from "./constants.js";
 import { BaseLayout, type ToastProps } from "../ui/layouts/BaseLayout.js";
 import { SiteLayout } from "../ui/layouts/SiteLayout.js";
 import type { NavigationData } from "./navigation.js";
@@ -74,6 +75,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
 
   // Read favicon, version, and noindex from appConfig
   const appConfig = c.get("appConfig");
+  const allSettings = c.get("allSettings") as Record<string, string>;
 
   const layoutProps: SiteLayoutProps = {
     siteName: navData.siteName,
@@ -91,6 +93,9 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     uploadMaxFileSize: appConfig.uploadMaxFileSize,
     showComposeDialog,
     showHeader,
+    composeOpenShortcutDiscovered: Boolean(
+      allSettings[SETTINGS_KEYS.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT],
+    ),
   };
   const faviconUrl = appConfig.siteAvatarUrl || undefined;
   const faviconVersion = appConfig.faviconVersion || undefined;

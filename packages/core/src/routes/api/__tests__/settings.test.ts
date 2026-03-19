@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
+import { SETTINGS_KEYS } from "../../../lib/constants.js";
 import { settingsApiRoutes } from "../settings.js";
 
 function createMockStorage() {
@@ -11,6 +12,10 @@ function createMockStorage() {
 }
 
 describe("Settings API Routes", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   describe("GET /api/settings", () => {
     it("returns 401 when not authenticated", async () => {
       const { app } = createTestApp({ authenticated: false });
@@ -58,6 +63,21 @@ describe("Settings API Routes", () => {
       // Env-only keys should not be in the response
       expect(body.settings.AUTH_SECRET).toBeUndefined();
       expect(body.settings.SITE_URL).toBeUndefined();
+    });
+
+    it("does not include internal settings", async () => {
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      await services.settings.set(
+        SETTINGS_KEYS.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT,
+        "1773964800",
+      );
+
+      const res = await app.request("/api/settings");
+      const body = await res.json();
+
+      expect(body.settings.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT).toBeUndefined();
     });
 
     it("returns NOINDEX as locked on in demo mode", async () => {
@@ -113,6 +133,25 @@ describe("Settings API Routes", () => {
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.details.rejectedKeys).toContain("AUTH_SECRET");
+    });
+
+    it("rejects internal keys", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT: "1773964800",
+        }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.details.rejectedKeys).toContain(
+        "DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT",
+      );
     });
 
     it("partially applies when mixing editable and env-only keys", async () => {
@@ -180,6 +219,60 @@ describe("Settings API Routes", () => {
       expect(body.settings.SITE_NAME).toBe("Demo Blog");
       expect(body.settings.NOINDEX).toBe("true");
       expect(body.rejectedKeys).toContain("NOINDEX");
+    });
+  });
+
+  describe("POST /api/settings/discovery/compose-open-shortcut", () => {
+    it("returns 401 when not authenticated", async () => {
+      const { app } = createTestApp({ authenticated: false });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request(
+        "/api/settings/discovery/compose-open-shortcut",
+        {
+          method: "POST",
+        },
+      );
+
+      expect(res.status).toBe(401);
+    });
+
+    it("stores the completion timestamp once", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-03-20T00:00:00Z"));
+
+      const { app, services } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const first = await app.request(
+        "/api/settings/discovery/compose-open-shortcut",
+        {
+          method: "POST",
+        },
+      );
+
+      expect(first.status).toBe(201);
+      expect(
+        await services.settings.get(
+          SETTINGS_KEYS.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT,
+        ),
+      ).toBe("1773964800");
+
+      vi.setSystemTime(new Date("2026-03-21T00:00:00Z"));
+
+      const second = await app.request(
+        "/api/settings/discovery/compose-open-shortcut",
+        {
+          method: "POST",
+        },
+      );
+
+      expect(second.status).toBe(200);
+      expect(
+        await services.settings.get(
+          SETTINGS_KEYS.DISCOVERY_COMPOSE_OPEN_SHORTCUT_AT,
+        ),
+      ).toBe("1773964800");
     });
   });
 
