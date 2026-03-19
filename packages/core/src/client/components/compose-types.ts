@@ -138,14 +138,14 @@ export interface ComposeLabels {
   collectionCountLabel: string;
   draftRestored: string;
   reply: string;
-  publishUnlisted: string;
+  publishHideFromLatest: string;
   publishPrivate: string;
   publishSettings: string;
   publishVisibilityLabel: string;
   publishVisibilityPublic: string;
   publishVisibilityPublicHint: string;
-  publishVisibilityUnlisted: string;
-  publishVisibilityUnlistedHint: string;
+  publishVisibilityHiddenFromLatest: string;
+  publishVisibilityHiddenFromLatestHint: string;
   publishVisibilityPrivate: string;
   publishVisibilityPrivateHint: string;
   publishSlugLabel: string;
@@ -159,14 +159,14 @@ export interface ComposeLabels {
   publishSlugTaken: string;
   publishSlugInvalid: string;
   publishSlugReserved: string;
-  postUnlisted: string;
+  postHiddenFromLatest: string;
   postPrivately: string;
   showMore: string;
   showLess: string;
   collectionFormLabels: CollectionFormLabels;
 }
 
-export type ComposeVisibility = "public" | "unlisted" | "private";
+export type ComposeVisibility = "public" | "latest_hidden" | "private";
 
 export interface ComposeSubmitDetail {
   format: ComposeFormat;

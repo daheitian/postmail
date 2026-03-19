@@ -15,6 +15,12 @@ today, but the prefixed names are the ones to document and deploy.
 | `JANT_SITE_URL`    | Your site's public URL (e.g., `https://myblog.com` or `https://example.com/blog`) |
 | `JANT_AUTH_SECRET` | Random string, 32+ characters. Used for session signing.                          |
 
+### Feed Defaults (Optional)
+
+| Variable             | Description                                                     |
+| -------------------- | --------------------------------------------------------------- |
+| `JANT_MAIN_RSS_FEED` | Controls what `/feed` returns: `featured` (default) or `latest` |
+
 ### Public URLs and Subpaths
 
 `JANT_SITE_URL` is the single source of truth for Jant's public base URL.
@@ -198,6 +204,7 @@ JANT_SITE_URL = "https://myblog.com"
 # SITE_NAME = "My Blog"
 # SITE_DESCRIPTION = "A personal blog"
 # SITE_LANGUAGE = "en"
+# JANT_MAIN_RSS_FEED = "featured"
 
 # Optional: R2 and image optimization
 # JANT_R2_PUBLIC_URL = "https://media.myblog.com"

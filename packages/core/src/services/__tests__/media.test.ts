@@ -115,6 +115,28 @@ describe("MediaService", () => {
       expect(media.provider).toBe("s3");
     });
 
+    it("rejects unsupported storage providers", async () => {
+      await expect(
+        mediaService.create({
+          ...sampleMedia,
+          storageKey: "media/2025/01/bad-provider.jpg",
+          provider: "gcs" as never,
+        }),
+      ).rejects.toThrow("Storage provider must be r2, s3, or local.");
+    });
+
+    it("rejects unsupported media kinds", async () => {
+      await expect(
+        mediaService.create({
+          ...sampleMedia,
+          storageKey: "media/2025/01/bad-kind.jpg",
+          mediaKind: "binary" as never,
+        }),
+      ).rejects.toThrow(
+        "Media kind must be image, video, audio, text, or document.",
+      );
+    });
+
     it("creates media with position and blurhash", async () => {
       const media = await mediaService.create({
         ...sampleMedia,

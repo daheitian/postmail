@@ -22,6 +22,7 @@ export interface Bindings {
   JANT_SITE_DESCRIPTION?: string;
   JANT_SITE_LANGUAGE?: string;
   JANT_HOME_DEFAULT_VIEW?: string;
+  JANT_MAIN_RSS_FEED?: string;
   JANT_HEADER_NAV_MAX_VISIBLE?: string;
   JANT_TIME_ZONE?: string;
   JANT_SITE_FOOTER?: string;
@@ -68,6 +69,7 @@ export interface Bindings {
   SITE_NAME?: string;
   SITE_DESCRIPTION?: string;
   SITE_LANGUAGE?: string;
+  MAIN_RSS_FEED?: string;
   SHOW_JANT_BRANDING_ON_HOME?: string;
   // S3-compatible storage (alternative to R2)
   STORAGE_DRIVER?: string;

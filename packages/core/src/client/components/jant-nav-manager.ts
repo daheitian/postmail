@@ -738,8 +738,11 @@ export class JantNavManager extends LitElement {
           ${this.systemNavItems.map((config) => {
             const enabled = this.#isSystemEnabled(config);
             const toggling = this._togglingKeys.has(config.key);
+            const rowClass = toggling
+              ? "flex items-center justify-between gap-4 py-3 opacity-60 cursor-not-allowed"
+              : "flex items-center justify-between gap-4 py-3 cursor-pointer";
             return html`
-              <div class="flex items-center justify-between py-3">
+              <label class=${rowClass}>
                 <div>
                   <p class="font-medium">${config.label}</p>
                   <p class="text-sm text-muted-foreground">
@@ -757,7 +760,7 @@ export class JantNavManager extends LitElement {
                     this.#handleSystemToggle(config, checked);
                   }}
                 />
-              </div>
+              </label>
             `;
           })}
         </div>
@@ -792,11 +795,11 @@ export class JantNavManager extends LitElement {
             }}
           />
         </div>
-        <div class="flex items-start justify-between gap-4">
+        <label class="flex items-start justify-between gap-4 cursor-pointer">
           <div class="flex flex-col gap-0.5">
-            <label class="text-sm font-medium" for="nav-home-view">
+            <span class="text-sm font-medium">
               ${this.labels.useFeaturedAsDefault}
-            </label>
+            </span>
             <p class="text-xs text-muted-foreground">
               ${this.labels.useFeaturedAsDefaultDescription}
             </p>
@@ -813,7 +816,7 @@ export class JantNavManager extends LitElement {
               );
             }}
           />
-        </div>
+        </label>
       </div>
 
       <section class="mt-8">

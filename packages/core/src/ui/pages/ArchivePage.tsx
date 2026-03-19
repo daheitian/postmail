@@ -452,7 +452,7 @@ const ViewToggle: FC<{
 
 const ARCHIVE_VISIBILITIES: ArchiveVisibility[] = [
   "public",
-  "unlisted",
+  "latest_hidden",
   "private",
   "featured",
 ];
@@ -464,9 +464,10 @@ function getVisibilityLabel(v: ArchiveVisibility): string {
       message: "Public",
       comment: "@context: Archive visibility filter - public posts",
     }),
-    unlisted: t({
-      message: "Unlisted",
-      comment: "@context: Archive visibility filter - unlisted posts",
+    latest_hidden: t({
+      message: "Hidden from Latest",
+      comment:
+        "@context: Archive visibility filter for posts hidden from Latest",
     }),
     private: t({
       message: "Private",
@@ -482,7 +483,7 @@ function getVisibilityLabel(v: ArchiveVisibility): string {
 
 const VISIBILITY_ICONS: Record<ArchiveVisibility, string> = {
   public: "globe",
-  unlisted: "eye-off",
+  latest_hidden: "eye-off",
   private: "lock",
   featured: "star",
 };

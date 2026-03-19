@@ -36,7 +36,7 @@ const labels: PostFormLabels = {
   statusDraft: "Draft",
   visibilityLabel: "Visibility",
   visibilityPublic: "Public",
-  visibilityUnlisted: "Unlisted",
+  visibilityHiddenFromLatest: "Hidden from Latest",
   pinnedLabel: "Pinned",
   collectionsLabel: "Collections",
   submitLabel: "Publish",
@@ -141,13 +141,13 @@ describe("JantPostForm", () => {
     };
     el._body = JSON.stringify(el._bodyJson);
 
-    // Set visibility to "unlisted" via the select dropdown
+    // Set visibility to "latest_hidden" via the select dropdown
     const visibilitySelect = el
       .querySelectorAll("select.select")
       .item(2) as unknown as HTMLSelectElement | null; // [0]=format, [1]=status, [2]=visibility
     expect(visibilitySelect).not.toBeNull();
     if (!visibilitySelect) throw new Error("Visibility select not found");
-    visibilitySelect.value = "unlisted";
+    visibilitySelect.value = "latest_hidden";
     visibilitySelect.dispatchEvent(new Event("change", { bubbles: true }));
 
     const checkboxList =
@@ -176,7 +176,7 @@ describe("JantPostForm", () => {
     expect(d.endpoint).toBe("/compose");
     expect(d.data.title).toBe("Sample Post");
     expect(d.data.body).toContain("Hello world");
-    expect(d.data.visibility).toBe("unlisted");
+    expect(d.data.visibility).toBe("latest_hidden");
     expect(d.data.collectionIds).toEqual([collections[0].id]);
     expect(d.data.mediaIds).toEqual(["m1"]);
   });

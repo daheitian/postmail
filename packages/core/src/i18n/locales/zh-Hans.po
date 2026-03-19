@@ -167,8 +167,8 @@ msgstr "添加指向任意 URL 的自定义链接"
 
 #. @context: Description for the RSS system navigation toggle
 #: src/ui/shared/navigation-labels.ts
-msgid "Add a link to your RSS feed"
-msgstr "添加指向你的 RSS 订阅源的链接"
+msgid "Add a link to your main RSS feed. Change what /feed returns in General."
+msgstr "添加指向主 RSS feed 的链接。可在通用设置中修改 /feed 的输出内容。"
 
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
@@ -266,6 +266,11 @@ msgstr "API 令牌"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Appearance"
 msgstr "外观"
+
+#. @context: Compose publish settings help text for public visibility
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Appears in Latest."
+msgstr "会出现在 Latest 中。"
 
 #. @context: Title for the apple touch icon asset card
 #: src/ui/pages/BrandPage.tsx
@@ -449,6 +454,11 @@ msgstr "取消"
 #: src/ui/dash/settings/AccountContent.tsx
 msgid "Change Password"
 msgstr "修改密码"
+
+#. @context: Warning shown when changing the canonical RSS feed selection
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Changing this updates what subscribers get from /feed."
+msgstr "修改后，订阅 /feed 的用户会收到不同内容。"
 
 #. @context: Compose custom slug helper while checking whether a manual slug is available
 #: src/ui/compose/ComposeDialog.tsx
@@ -898,6 +908,11 @@ msgstr "请勿为标志重新着色、拉伸、旋转、描边或添加效果."
 msgid "Do you want to publish your changes or discard them?"
 msgstr "要发布您的更改，还是放弃它们？"
 
+#. @context: Compose publish settings help text for posts hidden from Latest
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Doesn't appear in Latest. Still appears in collections you add it to."
+msgstr "不会出现在 Latest 中，但仍会出现在你添加到的 Collection 里。"
+
 #. @context: Confirm close action sheet - discard button
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Don't save"
@@ -1103,11 +1118,13 @@ msgstr "网站图标及页眉中的个人头像"
 #. @context: Inactive browse tab label on sample page
 #. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
+#. @context: Select option for using featured posts as the main RSS feed
 #: src/routes/pages/featured.tsx
 #: src/routes/pages/home.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/dash/StatusBadge.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/ArchivePage.tsx
@@ -1115,6 +1132,23 @@ msgstr "网站图标及页眉中的个人头像"
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Featured"
 msgstr "精选"
+
+#. @context: Label for the explicit featured RSS feed URL
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Featured feed"
+msgstr "Featured feed"
+
+#. @context: RSS and Atom feed title suffix for the featured posts feed
+#. @context: RSS autodiscovery title for the featured posts feed
+#: src/routes/feed/rss.ts
+#: src/ui/layouts/BaseLayout.tsx
+msgid "Featured posts"
+msgstr "精选帖子"
+
+#. @context: Settings section heading for RSS feed configuration
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Feeds"
+msgstr "订阅源"
 
 #. @context: Search snippet suffix on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -1159,6 +1193,11 @@ msgstr "文件"
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Fine-grained styling overrides"
 msgstr "细粒度样式覆盖"
+
+#. @context: Label for the list of stable RSS feed URLs
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Fixed feed URLs"
+msgstr "固定 feed 链接"
 
 #. @context: Theme mode option description
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1248,6 +1287,11 @@ msgstr "页首链接数量限制已更新。"
 msgid "Header links, home feed, and overflow menu"
 msgstr "页首链接、首页视图和溢出菜单"
 
+#. @context: Description for the RSS system navigation toggle. %feed% is either Latest or Featured.
+#: src/ui/dash/appearance/NavigationContent.tsx
+msgid "Header RSS points to your %feed% feed (/feed). Change what /feed returns in General."
+msgstr "页首 RSS 指向你的 %feed% feed（/feed）。可在通用设置中修改 /feed 的输出内容。"
+
 #. @context: Bullet item in the sample detail article
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Headings should keep their hierarchy even when the accent gets softer."
@@ -1258,10 +1302,19 @@ msgstr "即使强调变弱，标题也应保持其层次结构。"
 msgid "Helps screen readers describe the image"
 msgstr "帮助屏幕阅读器描述图片"
 
-#. @context: Compose publish settings help text for unlisted visibility
+#. @context: Archive visibility filter for posts hidden from Latest
+#. @context: Compose publish settings visibility option
+#. @context: Post badge for posts hidden from Latest
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds."
-msgstr "不会出现在 Latest 和主 feed 里，但仍会显示在你添加到的 Collection 及其 feed 中。"
+#: src/ui/dash/StatusBadge.tsx
+#: src/ui/pages/ArchivePage.tsx
+msgid "Hidden from Latest"
+msgstr "从 Latest 隐藏"
+
+#. @context: Compose dropdown option for hiding a post from the Latest view
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Hide from Latest"
+msgstr "从 Latest 隐藏"
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1269,6 +1322,11 @@ msgstr "不会出现在 Latest 和主 feed 里，但仍会显示在你添加到�
 #: src/ui/shared/collection-management-labels.ts
 msgid "Highest rated"
 msgstr "评分最高"
+
+#. @context: Settings subsection heading for home page settings
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Home"
+msgstr "首页"
 
 #. @context: Toast after saving home default view setting
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1380,6 +1438,11 @@ msgstr "标签为必填项"
 msgid "Language"
 msgstr "语言"
 
+#. @context: Settings subsection heading for language and time zone fields
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Language & Time"
+msgstr "语言与时间"
+
 #. @context: Token last used date
 #. placeholder {0}: formatDate(token.lastUsedAt)
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -1394,16 +1457,30 @@ msgstr "上次使用 {0}"
 #. @context: Browser page title for the latest feed
 #. @context: Browser page title for the latest feed
 #. @context: Page heading for the latest posts feed
+#. @context: Select option for using latest posts as the main RSS feed
 #: src/routes/pages/home.tsx
 #: src/routes/pages/latest.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
+#: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/HomePage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Latest"
 msgstr "最新"
+
+#. @context: Label for the explicit latest RSS feed URL
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Latest feed"
+msgstr "Latest feed"
+
+#. @context: RSS and Atom feed title suffix for the latest public posts feed
+#. @context: RSS autodiscovery title for the latest public posts feed
+#: src/routes/feed/rss.ts
+#: src/ui/layouts/BaseLayout.tsx
+msgid "Latest posts"
+msgstr "最新帖子"
 
 #. @context: Compose publish settings slug help text
 #: src/ui/compose/ComposeDialog.tsx
@@ -1503,6 +1580,18 @@ msgstr "最后查看页脚的元数据，确保强调色不会与排版产生冲
 #: src/ui/dash/appearance/ColorThemeContent.tsx
 msgid "Low-distraction palettes for a cleaner, calmer reading rhythm."
 msgstr "低干扰配色，带来更干净、更平静的阅读节奏。"
+
+#. @context: Label for the canonical /feed URL
+#. @context: RSS autodiscovery title for the site's main feed
+#: src/ui/dash/settings/GeneralContent.tsx
+#: src/ui/layouts/BaseLayout.tsx
+msgid "Main feed"
+msgstr "主 feed"
+
+#. @context: Settings field label for the canonical /feed output
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Main RSS feed"
+msgstr "主 RSS feed"
 
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1849,10 +1938,12 @@ msgid "Pinned"
 msgstr "已置顶"
 
 #. @context: Compose button - publish post
+#. @context: Compose publish button for posts hidden from Latest
 #. @context: Custom URL target type badge for a post
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post"
 msgstr "发布"
@@ -1862,25 +1953,15 @@ msgstr "发布"
 msgid "Post as Private"
 msgstr "以私密方式发布"
 
-#. @context: Compose dropdown option - publish post with unlisted visibility, hidden from main feed
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Post as Unlisted"
-msgstr "发布为未列出"
-
 #. @context: Compose publish button for private visibility
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post privately"
 msgstr "私密发布"
 
-#. @context: Compose publish button for unlisted visibility
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Post unlisted"
-msgstr "不公开发布"
-
 #. @context: Hover hint for the homepage compose shortcut
 #: src/ui/compose/ComposePrompt.tsx
 msgid "Press N to write"
-msgstr ""
+msgstr "按 N 开始写作"
 
 #. @context: Ghost button label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2165,6 +2246,8 @@ msgstr "保存为草稿？"
 #. @context: Search icon link in browse nav
 #. @context: Search page title
 #. @context: Search submit button
+#. @context: Settings section heading for search engine indexing settings
+#: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/layouts/SiteLayout.tsx
 #: src/ui/pages/SearchPage.tsx
 #: src/ui/pages/SearchPage.tsx
@@ -2175,6 +2258,13 @@ msgstr "搜索"
 #: src/ui/pages/SearchPage.tsx
 msgid "Search posts..."
 msgstr "搜索帖子..."
+
+#. @context: Toast after saving search settings
+#. @context: Toast after saving search settings
+#: src/routes/dash/settings.tsx
+#: src/routes/dash/settings.tsx
+msgid "Search settings updated."
+msgstr "搜索设置已更新。"
 
 #. @context: Search snippet label on sample page
 #: src/ui/pages/ThemeSamplePage.tsx
@@ -2205,13 +2295,6 @@ msgstr "安全令牌缺失。请刷新页面后重试。"
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "See where you're signed in and revoke old sessions"
 msgstr "查看您在哪些设备登录并撤销旧会话"
-
-#. @context: Toast after saving SEO settings
-#. @context: Toast after saving SEO settings
-#: src/routes/dash/settings.tsx
-#: src/routes/dash/settings.tsx
-msgid "SEO settings updated."
-msgstr "SEO 设置已更新。"
 
 #. @context: Error shown when session management is blocked in demo mode
 #: src/routes/dash/settings.tsx
@@ -2269,11 +2352,6 @@ msgstr "展开更多"
 msgid "Shows 'Settings' when logged in, 'Sign in' when logged out"
 msgstr "登录时显示“设置”，未登录时显示“登录”"
 
-#. @context: Compose publish settings help text for public visibility
-#: src/ui/compose/ComposeDialog.tsx
-msgid "Shows up in the public timeline and /feed/all."
-msgstr "出现在公开时间线和 /feed/all 中。"
-
 #. @context: Built-in navigation label shown when auth is required
 #: src/ui/shared/navigation-labels.ts
 msgid "Sign in"
@@ -2300,6 +2378,8 @@ msgid "Signed in {0}"
 msgstr "已于 {0} 登录"
 
 #. @context: Settings group label for site settings
+#. @context: Settings subsection heading for basic site fields
+#: src/ui/dash/settings/GeneralContent.tsx
 #: src/ui/dash/settings/SettingsRootContent.tsx
 msgid "Site"
 msgstr "站点"
@@ -2360,7 +2440,7 @@ msgstr "有些内容看起来不对。请检查表单并重试。"
 #. @context: Sort menu label on collection detail page
 #: src/ui/pages/CollectionPage.tsx
 msgid "Sort"
-msgstr ""
+msgstr "排序"
 
 #. @context: Collection form field
 #: src/ui/shared/collection-management-labels.ts
@@ -2568,6 +2648,11 @@ msgstr "这篇文章想回答一个具体问题：当默认强调色要撑起一
 msgid "This collection is empty. Add posts from the editor."
 msgstr "该合集为空。从编辑器添加文章。"
 
+#. @context: Help text for choosing whether /feed points to latest or featured posts
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "This controls what /feed returns."
+msgstr "这会控制 /feed 返回哪一种 feed。"
+
 #. @context: Collection link help text
 #: src/ui/shared/collection-management-labels.ts
 msgid "This is the last part of the collection link."
@@ -2736,15 +2821,6 @@ msgstr "排版选项与阅读体验"
 msgid "Unknown device"
 msgstr "未知设备"
 
-#. @context: Archive visibility filter - unlisted posts
-#. @context: Compose publish settings visibility option
-#. @context: Post badge - unlisted
-#: src/ui/compose/ComposeDialog.tsx
-#: src/ui/dash/StatusBadge.tsx
-#: src/ui/pages/ArchivePage.tsx
-msgid "Unlisted"
-msgstr "未列出"
-
 #. @context: Archive filter - notes without a title
 #. @context: Archive filter - notes without a title
 #: src/ui/pages/ArchivePage.tsx
@@ -2818,6 +2894,11 @@ msgstr "在深色背景上使用反白徽标。"
 msgid "Use these when you need a transparent square logo, a shaped tile with a built-in background, a browser icon, or a default preview image."
 msgstr "当您需要透明的方形徽标、有内置背景的带形状图块、浏览器图标或默认预览图像时，请使用这些。"
 
+#. @context: Help text for the explicit latest and featured feed URLs
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Use these when you want a feed URL that never changes."
+msgstr "当你需要一个不会变化的 feed 链接时，使用这些地址。"
+
 #. @context: Description for the default logo card
 #: src/ui/pages/BrandPage.tsx
 msgid "Use this for websites, docs, articles, and other light or neutral surfaces."
@@ -2832,6 +2913,16 @@ msgstr "在深色背景、有图像背景的表面，以及任何会让绿色标
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Use this page to judge buttons, links, cards, forms, thread accents, and quiet surfaces before changing a theme globally."
 msgstr "在全局更改主题之前，使用此页面来评估按钮、链接、卡片、表单、帖子串强调和低调表面。"
+
+#. @context: Description for choosing featured posts as the main RSS feed
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Uses featured posts for /feed."
+msgstr "将精选帖子用作 /feed 的内容。"
+
+#. @context: Description for choosing the latest posts as the main RSS feed
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Uses the latest public posts for /feed."
+msgstr "将最新公开帖子用作 /feed 的内容。"
 
 #. @context: Archive media filter - video
 #: src/ui/pages/ArchivePage.tsx

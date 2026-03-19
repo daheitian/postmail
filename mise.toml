@@ -363,6 +363,7 @@ echo "Done! Demo has been seeded from local data."
 """
 
 [tasks.db-demo-nuke]
+alias = "demo-nuke"
 description = "Drop ALL tables in demo database (including migrations)"
 run = "node scripts/nuke-db.mjs sites/demo"
 

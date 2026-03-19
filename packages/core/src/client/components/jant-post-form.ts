@@ -60,7 +60,7 @@ const EMPTY_LABELS: PostFormLabels = {
   statusDraft: "",
   visibilityLabel: "",
   visibilityPublic: "",
-  visibilityUnlisted: "",
+  visibilityHiddenFromLatest: "",
   pinnedLabel: "",
   collectionsLabel: "",
   submitLabel: "",

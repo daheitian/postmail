@@ -133,6 +133,7 @@ export function resolveConfig(
     siteDescriptionExplicit,
     siteLanguage: resolve("SITE_LANGUAGE", allSettings, env),
     homeDefaultView: resolve("HOME_DEFAULT_VIEW", allSettings, env),
+    mainRssFeed: resolve("MAIN_RSS_FEED", allSettings, env),
     headerNavMaxVisible: (() => {
       const parsed = parseInt(
         resolve("HEADER_NAV_MAX_VISIBLE", allSettings, env),

@@ -50,11 +50,11 @@ export const StatusBadge: FC<StatusBadgeProps> = ({
           })}
         </span>
       )}
-      {visibility === "unlisted" && (
+      {visibility === "latest_hidden" && (
         <span class="badge-outline">
           {t({
-            message: "Unlisted",
-            comment: "@context: Post badge - unlisted",
+            message: "Hidden from Latest",
+            comment: "@context: Post badge for posts hidden from Latest",
           })}
         </span>
       )}

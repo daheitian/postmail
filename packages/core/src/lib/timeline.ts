@@ -319,13 +319,13 @@ export async function assembleTimeline(
     c.var.services.posts.count({
       status: "published",
       excludeReplies: true,
-      excludeUnlisted: true,
+      excludeLatestHidden: true,
       excludePrivate,
     }),
     c.var.services.posts.list({
       status: "published",
       excludeReplies: true,
-      excludeUnlisted: true,
+      excludeLatestHidden: true,
       excludePrivate,
       limit: pageSize,
       offset,
@@ -365,7 +365,7 @@ export async function assembleTimelineItem(
     !post ||
     post.replyToId !== null ||
     post.status !== "published" ||
-    post.visibility === "unlisted" ||
+    post.visibility === "latest_hidden" ||
     (excludePrivate && post.visibility === "private")
   ) {
     return null;

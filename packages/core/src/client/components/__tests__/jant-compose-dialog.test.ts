@@ -135,15 +135,15 @@ const labels: ComposeLabels = {
   collectionCountLabel: "%name% + %count% more",
   draftRestored: "Draft restored.",
   reply: "Reply",
-  publishUnlisted: "Post as Unlisted",
+  publishHideFromLatest: "Hide from Latest",
   publishPrivate: "Post as Private",
   publishSettings: "Publish settings",
   publishVisibilityLabel: "Visibility",
   publishVisibilityPublic: "Public",
-  publishVisibilityPublicHint: "Shows up in the public timeline and /feed/all.",
-  publishVisibilityUnlisted: "Unlisted",
-  publishVisibilityUnlistedHint:
-    "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds.",
+  publishVisibilityPublicHint: "Appears in Latest.",
+  publishVisibilityHiddenFromLatest: "Hidden from Latest",
+  publishVisibilityHiddenFromLatestHint:
+    "Doesn't appear in Latest. Still appears in collections you add it to.",
   publishVisibilityPrivate: "Private",
   publishVisibilityPrivateHint: "Only visible when signed in.",
   publishSlugLabel: "Custom link",
@@ -157,7 +157,7 @@ const labels: ComposeLabels = {
   publishSlugTaken: "This link is already in use. Choose something else.",
   publishSlugInvalid: "Use lowercase letters, numbers, and hyphens only.",
   publishSlugReserved: "This link is reserved. Choose something else.",
-  postUnlisted: "Post unlisted",
+  postHiddenFromLatest: "Post",
   postPrivately: "Post privately",
   showMore: "Show more",
   showLess: "Show less",
@@ -327,7 +327,7 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     expect(el.textContent).toContain(
-      "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds.",
+      "Doesn't appear in Latest. Still appears in collections you add it to.",
     );
     expect(el.textContent).toContain("Only visible when signed in.");
   });
@@ -438,7 +438,7 @@ describe("JantComposeDialog", () => {
         el.querySelector<HTMLButtonElement>(".compose-publish-main"),
         "expected publish button",
       ).textContent?.trim(),
-    ).toBe("Post unlisted");
+    ).toBe("Post");
 
     let receivedDetail: ComposeSubmitDetail | null = null;
     el.addEventListener("jant:compose-submit-deferred", (event) => {
@@ -452,7 +452,7 @@ describe("JantComposeDialog", () => {
 
     expect(receivedDetail).not.toBeNull();
     expect((receivedDetail as unknown as ComposeSubmitDetail).visibility).toBe(
-      "unlisted",
+      "latest_hidden",
     );
     expect(
       (receivedDetail as unknown as ComposeSubmitDetail).slug,
@@ -504,18 +504,18 @@ describe("JantComposeDialog", () => {
     options[1]?.click();
     await el.updateComplete;
 
-    expect(el._visibility).toBe("unlisted");
+    expect(el._visibility).toBe("latest_hidden");
 
     el.reset();
     await el.updateComplete;
 
-    expect(el._visibility).toBe("unlisted");
+    expect(el._visibility).toBe("latest_hidden");
 
     await el.openNew({ collectionId: "col-1", restoreDraft: false });
     await el.updateComplete;
 
     expect(el._collectionIds).toEqual(["col-1"]);
-    expect(el._visibility).toBe("unlisted");
+    expect(el._visibility).toBe("latest_hidden");
   });
 
   it("prepends the requested collection even when a local draft is restored", async () => {

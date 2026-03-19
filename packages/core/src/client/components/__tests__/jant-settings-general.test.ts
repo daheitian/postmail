@@ -10,14 +10,34 @@ import type {
 import "../jant-settings-general.js";
 import type { JantSettingsGeneral } from "../jant-settings-general.js";
 
-function requireElement<T extends globalThis.Element>(
-  element: T | null,
-  message: string,
-): T {
+function requireElement<T>(element: T | null | undefined, message: string): T {
   if (!element) {
     throw new Error(message);
   }
   return element;
+}
+
+function findSelectByLabel(
+  el: HTMLElement,
+  labelText: string,
+): globalThis.HTMLSelectElement | null {
+  for (const field of Array.from(el.querySelectorAll<HTMLElement>(".field"))) {
+    const label = field.querySelector(".label");
+    if (!label?.textContent?.includes(labelText)) continue;
+    return field.querySelector("select") as globalThis.HTMLSelectElement | null;
+  }
+
+  return null;
+}
+
+function findRadioByValue(
+  el: HTMLElement,
+  name: string,
+  value: string,
+): HTMLInputElement | null {
+  return el.querySelector<HTMLInputElement>(
+    `input[type="radio"][name="${name}"][value="${value}"]`,
+  );
 }
 
 const labels: SettingsLabels = {
@@ -30,11 +50,29 @@ const labels: SettingsLabels = {
   uploading: "Uploading...",
   uploadError: "Upload failed.",
   general: "General",
+  site: "Site",
+  languageAndTime: "Language & Time",
+  home: "Home",
+  search: "Search",
   siteName: "Site Name",
   aboutBlog: "About this blog",
   aboutBlogHelp: "Displayed above your blog posts.",
   language: "Language",
   timeZone: "Time Zone",
+  feeds: "Feeds",
+  mainRssFeed: "Main RSS feed",
+  mainRssFeedHelp: "This controls what /feed returns.",
+  mainRssFeedWarning: "Changing this updates what subscribers get from /feed.",
+  availableFeedUrls: "Fixed feed URLs",
+  availableFeedUrlsHelp:
+    "Use these when you want a feed URL that never changes.",
+  mainFeedUrl: "Main feed",
+  latestFeedUrl: "Latest feed",
+  featuredFeedUrl: "Featured feed",
+  latestFeedOption: "Latest",
+  latestFeedOptionDescription: "Uses the latest public posts for /feed.",
+  featuredFeedOption: "Featured",
+  featuredFeedOptionDescription: "Uses featured posts for /feed.",
   siteFooter: "Site Footer",
   footerHelp: "Displayed at the bottom of posts.",
   showJantBrandingOnHome:
@@ -61,6 +99,7 @@ const initialData = {
   siteDescription: "A test blog",
   siteLanguage: "en",
   timeZone: "UTC",
+  mainRssFeed: "featured",
   siteFooter: "Footer text",
   showJantBrandingOnHome: false,
   noindex: false,
@@ -90,6 +129,9 @@ async function createElement(
   el.languages = languages;
   el.siteNameFallback = "Fallback Name";
   el.siteDescriptionFallback = "Fallback Description";
+  el.mainFeedUrl = "/feed";
+  el.latestFeedUrl = "/feed/latest";
+  el.featuredFeedUrl = "/feed/featured";
   el.demoMode = opts.demoMode ?? false;
   document.body.appendChild(el);
   await el.updateComplete;
@@ -108,7 +150,9 @@ describe("JantSettingsGeneral", () => {
     const headings = el.querySelectorAll("h2");
     const headingTexts = Array.from(headings).map((h) => h.textContent);
     expect(headingTexts).toContain("General");
-    expect(headingTexts).not.toContain("SEO");
+    expect(headingTexts).toContain("Search");
+    expect(el.textContent).toContain(labels.site);
+    expect(el.textContent).toContain(labels.home);
     expect(el.textContent).toContain(labels.allowIndexing);
     expect(el.textContent).toContain(labels.showJantBrandingOnHome);
   });
@@ -128,9 +172,10 @@ describe("JantSettingsGeneral", () => {
 
   it("renders timezone options", async () => {
     const el = await createElement();
-    const selects = el.querySelectorAll("select");
-    // Second select is timezone (language, timezone)
-    const tzSelect = selects[1];
+    const tzSelect = requireElement(
+      findSelectByLabel(el, labels.timeZone),
+      "expected time zone select",
+    );
     const options = tzSelect?.querySelectorAll("option");
     expect(options?.length).toBe(2);
     expect(options?.[0]?.value).toBe("UTC");
@@ -138,12 +183,30 @@ describe("JantSettingsGeneral", () => {
 
   it("renders language options", async () => {
     const el = await createElement();
-    const selects = el.querySelectorAll("select");
-    const langSelect = selects[0];
+    const langSelect = requireElement(
+      findSelectByLabel(el, labels.language),
+      "expected language select",
+    );
     const options = langSelect?.querySelectorAll("option");
     expect(options?.length).toBe(2);
     expect(options?.[0]?.value).toBe("en");
     expect(options?.[1]?.value).toBe("zh-Hans");
+  });
+
+  it("renders main RSS feed controls and fixed feed URLs", async () => {
+    const el = await createElement();
+    const featuredRadio = requireElement(
+      findRadioByValue(el, "main-rss-feed", "featured"),
+      "expected featured radio option",
+    );
+
+    expect(featuredRadio.checked).toBe(true);
+    expect(el.textContent).toContain(labels.mainRssFeedHelp);
+    expect(el.textContent).toContain(labels.mainRssFeedWarning);
+    expect(el.textContent).toContain(labels.featuredFeedOptionDescription);
+    expect(el.textContent).toContain(labels.latestFeedOptionDescription);
+    expect(el.textContent).toContain("/feed/latest");
+    expect(el.textContent).toContain("/feed/featured");
   });
 
   it("tracks general form dirty state on input", async () => {
@@ -212,6 +275,32 @@ describe("JantSettingsGeneral", () => {
     expect(d.endpoint).toBe("/settings/general");
     expect(d.section).toBe("general");
     expect(d.data.siteName).toBe("New Name");
+    expect(d.data.mainRssFeed).toBe("featured");
+  });
+
+  it("includes mainRssFeed in general section save", async () => {
+    const el = await createElement();
+    const latestRadio = requireElement(
+      findRadioByValue(el, "main-rss-feed", "latest"),
+      "expected latest radio option",
+    );
+
+    latestRadio.click();
+    await el.updateComplete;
+
+    let detail: SettingsSaveDetail | null = null;
+    el.addEventListener("jant:settings-save", (event) => {
+      detail = (event as CustomEvent<SettingsSaveDetail>).detail;
+    });
+
+    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    saveBtn?.click();
+    await el.updateComplete;
+
+    expect(detail).not.toBeNull();
+    expect((detail as unknown as SettingsSaveDetail).data.mainRssFeed).toBe(
+      "latest",
+    );
   });
 
   it("sectionSaved resets dirty state and updates originals", async () => {
@@ -237,15 +326,15 @@ describe("JantSettingsGeneral", () => {
 
   it("SEO checkbox toggles noindex state", async () => {
     const el = await createElement();
-    const seoCheckbox = findCheckboxByLabel(el, labels.allowIndexing);
-    expect(seoCheckbox?.checked).toBe(true);
+    const searchCheckbox = findCheckboxByLabel(el, labels.allowIndexing);
+    expect(searchCheckbox?.checked).toBe(true);
 
     // Toggle
-    seoCheckbox?.click();
+    searchCheckbox?.click();
     await el.updateComplete;
 
     // Should now be unchecked
-    expect(seoCheckbox?.checked).toBe(false);
+    expect(searchCheckbox?.checked).toBe(false);
   });
 
   it("includes footer in general section save", async () => {
@@ -277,7 +366,7 @@ describe("JantSettingsGeneral", () => {
     expect(d.data.siteFooter).toBe("New footer");
   });
 
-  it("includes home page Jant branding preference in SEO section save", async () => {
+  it("includes home page Jant branding preference in general section save", async () => {
     const el = await createElement();
     const brandingCheckbox = requireElement(
       findCheckboxByLabel(el, labels.showJantBrandingOnHome) ?? null,
@@ -293,25 +382,23 @@ describe("JantSettingsGeneral", () => {
       detail = customEvent.detail;
     });
 
-    const hr = el.querySelector("hr");
-    const seoSection = hr?.nextElementSibling;
-    const seoSaveBtn = seoSection?.querySelector<HTMLButtonElement>(".btn");
-    seoSaveBtn?.click();
+    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    saveBtn?.click();
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
-    expect(d.endpoint).toBe("/settings/general/seo");
-    expect(d.section).toBe("seo");
+    expect(d.endpoint).toBe("/settings/general");
+    expect(d.section).toBe("general");
     expect(d.data.showJantBrandingOnHome).toBe(true);
   });
 
-  it("dispatches jant:settings-save for SEO section", async () => {
+  it("dispatches jant:settings-save for search section", async () => {
     const el = await createElement();
-    const seoCheckbox = findCheckboxByLabel(el, labels.allowIndexing);
+    const searchCheckbox = findCheckboxByLabel(el, labels.allowIndexing);
 
     // Toggle to make dirty
-    seoCheckbox?.click();
+    searchCheckbox?.click();
     await el.updateComplete;
 
     let detail: SettingsSaveDetail | null = null;
@@ -320,33 +407,34 @@ describe("JantSettingsGeneral", () => {
       detail = customEvent.detail;
     });
 
-    // Find SEO Save button (section after the <hr> divider)
+    // Find Search Save button (section after the <hr> divider)
     const hr = el.querySelector("hr");
-    const seoSection = hr?.nextElementSibling;
-    const seoSaveBtn = seoSection?.querySelector<HTMLButtonElement>(".btn");
-    seoSaveBtn?.click();
+    const searchSection = hr?.nextElementSibling;
+    const searchSaveBtn =
+      searchSection?.querySelector<HTMLButtonElement>(".btn");
+    searchSaveBtn?.click();
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
-    expect(d.endpoint).toBe("/settings/general/seo");
-    expect(d.section).toBe("seo");
+    expect(d.endpoint).toBe("/settings/general/search");
+    expect(d.section).toBe("search");
   });
 
-  it("disables SEO indexing toggle in demo mode", async () => {
+  it("disables search indexing toggle in demo mode", async () => {
     const el = await createElement({ demoMode: true });
-    const seoCheckbox = requireElement(
+    const searchCheckbox = requireElement(
       findCheckboxByLabel(el, labels.allowIndexing) ?? null,
-      "expected SEO checkbox",
+      "expected search checkbox",
     );
 
-    expect(seoCheckbox.disabled).toBe(true);
+    expect(searchCheckbox.disabled).toBe(true);
     expect(el.textContent).toContain(labels.demoSeoLocked);
 
-    seoCheckbox.click();
+    searchCheckbox.click();
     await el.updateComplete;
 
-    expect(seoCheckbox.checked).toBe(true);
+    expect(searchCheckbox.checked).toBe(true);
   });
 
   it("shows loading spinner during save", async () => {

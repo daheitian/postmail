@@ -51,11 +51,10 @@ CREATE TABLE `collection` (
 	`id` text PRIMARY KEY NOT NULL,
 	`title` text NOT NULL,
 	`description` text,
-	`icon` text,
 	`sort_order` text DEFAULT 'newest' NOT NULL,
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
-	CONSTRAINT "chk_collection_sort_order" CHECK("collection"."sort_order" IN ('newest', 'oldest', 'rating_desc', 'rating_asc'))
+	CONSTRAINT "chk_collection_sort_order" CHECK("collection"."sort_order" IN ('newest', 'oldest', 'rating_desc'))
 );
 --> statement-breakpoint
 CREATE TABLE `media` (
@@ -80,8 +79,6 @@ CREATE TABLE `media` (
 	`created_at` integer NOT NULL,
 	`updated_at` integer NOT NULL,
 	FOREIGN KEY (`post_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE set null,
-	CONSTRAINT "chk_media_provider" CHECK("media"."provider" IN ('r2', 's3', 'local')),
-	CONSTRAINT "chk_media_media_kind" CHECK("media"."media_kind" IN ('image', 'video', 'audio', 'text', 'document')),
 	CONSTRAINT "chk_media_size_positive" CHECK("media"."size" > 0),
 	CONSTRAINT "chk_media_position_not_blank" CHECK(trim("media"."position") <> ''),
 	CONSTRAINT "chk_media_dimensions_positive" CHECK((
@@ -189,16 +186,6 @@ CREATE TABLE `post` (
 	FOREIGN KEY (`reply_to_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`thread_id`) REFERENCES `post`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`reply_to_id`,`thread_id`) REFERENCES `post`(`id`,`thread_id`) ON UPDATE no action ON DELETE no action,
-	CONSTRAINT "chk_post_format" CHECK("post"."format" IN ('note', 'link', 'quote')),
-	CONSTRAINT "chk_post_status" CHECK("post"."status" IN ('draft', 'published')),
-	CONSTRAINT "chk_post_visibility" CHECK("post"."visibility" IN ('public', 'unlisted', 'private')),
-	CONSTRAINT "chk_post_root_visibility_present" CHECK((
-        "post"."reply_to_id" IS NULL
-        AND "post"."visibility" IS NOT NULL
-      ) OR (
-        "post"."reply_to_id" IS NOT NULL
-        AND "post"."visibility" IS NULL
-      )),
 	CONSTRAINT "chk_post_reply_to_not_self" CHECK("post"."reply_to_id" IS NULL OR "post"."reply_to_id" <> "post"."id"),
 	CONSTRAINT "chk_post_thread_shape" CHECK((
         "post"."reply_to_id" IS NULL
@@ -206,29 +193,6 @@ CREATE TABLE `post` (
       ) OR (
         "post"."reply_to_id" IS NOT NULL
         AND "post"."thread_id" <> "post"."id"
-      )),
-	CONSTRAINT "chk_post_reply_not_pinned" CHECK("post"."pinned_at" IS NULL OR "post"."reply_to_id" IS NULL),
-	CONSTRAINT "chk_post_format_shape" CHECK((
-        "post"."format" = 'note'
-        AND ("post"."url" IS NULL OR trim("post"."url") = '')
-        AND ("post"."quote_text" IS NULL OR trim("post"."quote_text") = '')
-      ) OR (
-        "post"."format" = 'link'
-        AND "post"."url" IS NOT NULL
-        AND trim("post"."url") <> ''
-        AND ("post"."quote_text" IS NULL OR trim("post"."quote_text") = '')
-      ) OR (
-        "post"."format" = 'quote'
-        AND "post"."quote_text" IS NOT NULL
-        AND trim("post"."quote_text") <> ''
-      )),
-	CONSTRAINT "chk_post_rating_range" CHECK("post"."rating" IS NULL OR "post"."rating" BETWEEN 1 AND 5),
-	CONSTRAINT "chk_post_status_published_at" CHECK((
-        "post"."status" = 'draft'
-        AND "post"."published_at" IS NULL
-      ) OR (
-        "post"."status" = 'published'
-        AND "post"."published_at" IS NOT NULL
       ))
 );
 --> statement-breakpoint

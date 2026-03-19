@@ -71,7 +71,7 @@ async function createMenu(): Promise<{
     <article
       data-post
       data-post-id="post-1"
-      data-post-visibility="unlisted"
+      data-post-visibility="latest_hidden"
     >
       <button
         type="button"
@@ -154,14 +154,14 @@ describe("JantPostMenu", () => {
       "expected visibility button in main menu",
     );
     expect(visibilityButton.textContent).toContain("Visibility");
-    expect(menu.textContent).not.toContain("Make Unlisted");
+    expect(menu.textContent).toContain("Hidden from Latest");
 
     click(visibilityButton);
     await menu.updateComplete;
 
     expect(menu.querySelector("[data-visibility-panel]")).not.toBeNull();
     expect(menu.textContent).toContain("Public");
-    expect(menu.textContent).toContain("Unlisted");
+    expect(menu.textContent).toContain("Hidden from Latest");
     expect(menu.textContent).toContain("Private");
   });
 

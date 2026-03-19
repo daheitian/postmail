@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "2b70dab0-56c1-44ff-99a7-91f4c4d76220",
+  "id": "8879dc78-34c9-4657-a0b7-71c145d199d1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -304,13 +304,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "icon": {
-          "name": "icon",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "sort_order": {
           "name": "sort_order",
           "type": "text",
@@ -341,7 +334,7 @@
       "checkConstraints": {
         "chk_collection_sort_order": {
           "name": "chk_collection_sort_order",
-          "value": "\"collection\".\"sort_order\" IN ('newest', 'oldest', 'rating_desc', 'rating_asc')"
+          "value": "\"collection\".\"sort_order\" IN ('newest', 'oldest', 'rating_desc')"
         }
       }
     },
@@ -529,14 +522,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
-        "chk_media_provider": {
-          "name": "chk_media_provider",
-          "value": "\"media\".\"provider\" IN ('r2', 's3', 'local')"
-        },
-        "chk_media_media_kind": {
-          "name": "chk_media_media_kind",
-          "value": "\"media\".\"media_kind\" IN ('image', 'video', 'audio', 'text', 'document')"
-        },
         "chk_media_size_positive": {
           "name": "chk_media_size_positive",
           "value": "\"media\".\"size\" > 0"
@@ -1080,22 +1065,6 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
-        "chk_post_format": {
-          "name": "chk_post_format",
-          "value": "\"post\".\"format\" IN ('note', 'link', 'quote')"
-        },
-        "chk_post_status": {
-          "name": "chk_post_status",
-          "value": "\"post\".\"status\" IN ('draft', 'published')"
-        },
-        "chk_post_visibility": {
-          "name": "chk_post_visibility",
-          "value": "\"post\".\"visibility\" IN ('public', 'unlisted', 'private')"
-        },
-        "chk_post_root_visibility_present": {
-          "name": "chk_post_root_visibility_present",
-          "value": "(\n        \"post\".\"reply_to_id\" IS NULL\n        AND \"post\".\"visibility\" IS NOT NULL\n      ) OR (\n        \"post\".\"reply_to_id\" IS NOT NULL\n        AND \"post\".\"visibility\" IS NULL\n      )"
-        },
         "chk_post_reply_to_not_self": {
           "name": "chk_post_reply_to_not_self",
           "value": "\"post\".\"reply_to_id\" IS NULL OR \"post\".\"reply_to_id\" <> \"post\".\"id\""
@@ -1103,22 +1072,6 @@
         "chk_post_thread_shape": {
           "name": "chk_post_thread_shape",
           "value": "(\n        \"post\".\"reply_to_id\" IS NULL\n        AND \"post\".\"thread_id\" = \"post\".\"id\"\n      ) OR (\n        \"post\".\"reply_to_id\" IS NOT NULL\n        AND \"post\".\"thread_id\" <> \"post\".\"id\"\n      )"
-        },
-        "chk_post_reply_not_pinned": {
-          "name": "chk_post_reply_not_pinned",
-          "value": "\"post\".\"pinned_at\" IS NULL OR \"post\".\"reply_to_id\" IS NULL"
-        },
-        "chk_post_format_shape": {
-          "name": "chk_post_format_shape",
-          "value": "(\n        \"post\".\"format\" = 'note'\n        AND (\"post\".\"url\" IS NULL OR trim(\"post\".\"url\") = '')\n        AND (\"post\".\"quote_text\" IS NULL OR trim(\"post\".\"quote_text\") = '')\n      ) OR (\n        \"post\".\"format\" = 'link'\n        AND \"post\".\"url\" IS NOT NULL\n        AND trim(\"post\".\"url\") <> ''\n        AND (\"post\".\"quote_text\" IS NULL OR trim(\"post\".\"quote_text\") = '')\n      ) OR (\n        \"post\".\"format\" = 'quote'\n        AND \"post\".\"quote_text\" IS NOT NULL\n        AND trim(\"post\".\"quote_text\") <> ''\n      )"
-        },
-        "chk_post_rating_range": {
-          "name": "chk_post_rating_range",
-          "value": "\"post\".\"rating\" IS NULL OR \"post\".\"rating\" BETWEEN 1 AND 5"
-        },
-        "chk_post_status_published_at": {
-          "name": "chk_post_status_published_at",
-          "value": "(\n        \"post\".\"status\" = 'draft'\n        AND \"post\".\"published_at\" IS NULL\n      ) OR (\n        \"post\".\"status\" = 'published'\n        AND \"post\".\"published_at\" IS NOT NULL\n      )"
         }
       }
     },

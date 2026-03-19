@@ -1,8 +1,8 @@
 {
+  "id": "5cb4145b-c72d-4688-b00d-031bf0c8b713",
+  "prevId": "8879dc78-34c9-4657-a0b7-71c145d199d1",
   "version": "6",
   "dialect": "sqlite",
-  "id": "8ac7d6c8-d1dd-4c64-87ea-efd2277f0609",
-  "prevId": "2b70dab0-56c1-44ff-99a7-91f4c4d76220",
   "tables": {
     "account": {
       "name": "account",
@@ -104,11 +104,11 @@
         "account_user_id_user_id_fk": {
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
-          "tableTo": "user",
           "columnsFrom": ["user_id"],
+          "tableTo": "user",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -248,19 +248,19 @@
         "uq_collection_directory_item_collection_once": {
           "name": "uq_collection_directory_item_collection_once",
           "columns": ["collection_id"],
-          "isUnique": true,
-          "where": "\"collection_directory_item\".\"type\" = 'collection' AND \"collection_directory_item\".\"collection_id\" IS NOT NULL"
+          "where": "\"collection_directory_item\".\"type\" = 'collection' AND \"collection_directory_item\".\"collection_id\" IS NOT NULL",
+          "isUnique": true
         }
       },
       "foreignKeys": {
         "collection_directory_item_collection_id_collection_id_fk": {
           "name": "collection_directory_item_collection_id_collection_id_fk",
           "tableFrom": "collection_directory_item",
-          "tableTo": "collection",
           "columnsFrom": ["collection_id"],
+          "tableTo": "collection",
           "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -304,13 +304,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "icon": {
-          "name": "icon",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "sort_order": {
           "name": "sort_order",
           "type": "text",
@@ -341,7 +334,7 @@
       "checkConstraints": {
         "chk_collection_sort_order": {
           "name": "chk_collection_sort_order",
-          "value": "\"collection\".\"sort_order\" IN ('newest', 'oldest', 'rating_desc', 'rating_asc')"
+          "value": "\"collection\".\"sort_order\" IN ('newest', 'oldest', 'rating_desc')"
         }
       }
     },
@@ -501,8 +494,8 @@
         "uq_media_post_position": {
           "name": "uq_media_post_position",
           "columns": ["post_id", "position"],
-          "isUnique": true,
-          "where": "\"media\".\"post_id\" IS NOT NULL"
+          "where": "\"media\".\"post_id\" IS NOT NULL",
+          "isUnique": true
         },
         "uq_media_provider_storage_key": {
           "name": "uq_media_provider_storage_key",
@@ -519,24 +512,16 @@
         "media_post_id_post_id_fk": {
           "name": "media_post_id_post_id_fk",
           "tableFrom": "media",
-          "tableTo": "post",
           "columnsFrom": ["post_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
-        "chk_media_provider": {
-          "name": "chk_media_provider",
-          "value": "\"media\".\"provider\" IN ('r2', 's3', 'local')"
-        },
-        "chk_media_media_kind": {
-          "name": "chk_media_media_kind",
-          "value": "\"media\".\"media_kind\" IN ('image', 'video', 'audio', 'text', 'document')"
-        },
         "chk_media_size_positive": {
           "name": "chk_media_size_positive",
           "value": "\"media\".\"size\" > 0"
@@ -626,8 +611,8 @@
         "uq_nav_item_system_key": {
           "name": "uq_nav_item_system_key",
           "columns": ["system_key"],
-          "isUnique": true,
-          "where": "\"nav_item\".\"system_key\" IS NOT NULL"
+          "where": "\"nav_item\".\"system_key\" IS NOT NULL",
+          "isUnique": true
         }
       },
       "foreignKeys": {},
@@ -724,14 +709,14 @@
         "uq_path_registry_post_slug": {
           "name": "uq_path_registry_post_slug",
           "columns": ["post_id"],
-          "isUnique": true,
-          "where": "\"path_registry\".\"kind\" = 'slug' AND \"path_registry\".\"post_id\" IS NOT NULL"
+          "where": "\"path_registry\".\"kind\" = 'slug' AND \"path_registry\".\"post_id\" IS NOT NULL",
+          "isUnique": true
         },
         "uq_path_registry_collection_slug": {
           "name": "uq_path_registry_collection_slug",
           "columns": ["collection_id"],
-          "isUnique": true,
-          "where": "\"path_registry\".\"kind\" = 'slug' AND \"path_registry\".\"collection_id\" IS NOT NULL"
+          "where": "\"path_registry\".\"kind\" = 'slug' AND \"path_registry\".\"collection_id\" IS NOT NULL",
+          "isUnique": true
         },
         "idx_path_registry_post_id": {
           "name": "idx_path_registry_post_id",
@@ -748,20 +733,20 @@
         "path_registry_post_id_post_id_fk": {
           "name": "path_registry_post_id_post_id_fk",
           "tableFrom": "path_registry",
-          "tableTo": "post",
           "columnsFrom": ["post_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "path_registry_collection_id_collection_id_fk": {
           "name": "path_registry_collection_id_collection_id_fk",
           "tableFrom": "path_registry",
-          "tableTo": "collection",
           "columnsFrom": ["collection_id"],
+          "tableTo": "collection",
           "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -818,20 +803,20 @@
         "post_collection_post_id_post_id_fk": {
           "name": "post_collection_post_id_post_id_fk",
           "tableFrom": "post_collection",
-          "tableTo": "post",
           "columnsFrom": ["post_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "post_collection_collection_id_collection_id_fk": {
           "name": "post_collection_collection_id_collection_id_fk",
           "tableFrom": "post_collection",
-          "tableTo": "collection",
           "columnsFrom": ["collection_id"],
+          "tableTo": "collection",
           "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -1010,8 +995,8 @@
         "idx_post_thread_live_created": {
           "name": "idx_post_thread_live_created",
           "columns": ["thread_id", "created_at", "id"],
-          "isUnique": false,
-          "where": "\"post\".\"deleted_at\" IS NULL"
+          "where": "\"post\".\"deleted_at\" IS NULL",
+          "isUnique": false
         },
         "idx_post_status_deleted_published": {
           "name": "idx_post_status_deleted_published",
@@ -1026,76 +1011,60 @@
         "idx_post_root_live_published_activity": {
           "name": "idx_post_root_live_published_activity",
           "columns": ["last_activity_at", "id"],
-          "isUnique": false,
-          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NULL AND \"post\".\"status\" = 'published'"
+          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NULL AND \"post\".\"status\" = 'published'",
+          "isUnique": false
         },
         "idx_post_root_live_draft_updated": {
           "name": "idx_post_root_live_draft_updated",
           "columns": ["updated_at", "id"],
-          "isUnique": false,
-          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NULL AND \"post\".\"status\" = 'draft'"
+          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NULL AND \"post\".\"status\" = 'draft'",
+          "isUnique": false
         },
         "idx_post_reply_live_thread_created": {
           "name": "idx_post_reply_live_thread_created",
           "columns": ["thread_id", "created_at", "id"],
-          "isUnique": false,
-          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NOT NULL AND \"post\".\"status\" = 'published'"
+          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"reply_to_id\" IS NOT NULL AND \"post\".\"status\" = 'published'",
+          "isUnique": false
         },
         "idx_post_featured_live_featured_at": {
           "name": "idx_post_featured_live_featured_at",
           "columns": ["featured_at", "thread_id", "id"],
-          "isUnique": false,
-          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"status\" = 'published' AND \"post\".\"featured_at\" IS NOT NULL"
+          "where": "\"post\".\"deleted_at\" IS NULL AND \"post\".\"status\" = 'published' AND \"post\".\"featured_at\" IS NOT NULL",
+          "isUnique": false
         }
       },
       "foreignKeys": {
         "post_reply_to_id_post_id_fk": {
           "name": "post_reply_to_id_post_id_fk",
           "tableFrom": "post",
-          "tableTo": "post",
           "columnsFrom": ["reply_to_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "post_thread_id_post_id_fk": {
           "name": "post_thread_id_post_id_fk",
           "tableFrom": "post",
-          "tableTo": "post",
           "columnsFrom": ["thread_id"],
+          "tableTo": "post",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "post_reply_to_id_thread_id_post_id_thread_id_fk": {
           "name": "post_reply_to_id_thread_id_post_id_thread_id_fk",
           "tableFrom": "post",
-          "tableTo": "post",
           "columnsFrom": ["reply_to_id", "thread_id"],
+          "tableTo": "post",
           "columnsTo": ["id", "thread_id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {
-        "chk_post_format": {
-          "name": "chk_post_format",
-          "value": "\"post\".\"format\" IN ('note', 'link', 'quote')"
-        },
-        "chk_post_status": {
-          "name": "chk_post_status",
-          "value": "\"post\".\"status\" IN ('draft', 'published')"
-        },
-        "chk_post_visibility": {
-          "name": "chk_post_visibility",
-          "value": "\"post\".\"visibility\" IN ('public', 'unlisted', 'private')"
-        },
-        "chk_post_root_visibility_present": {
-          "name": "chk_post_root_visibility_present",
-          "value": "(\n        \"post\".\"reply_to_id\" IS NULL\n        AND \"post\".\"visibility\" IS NOT NULL\n      ) OR (\n        \"post\".\"reply_to_id\" IS NOT NULL\n        AND \"post\".\"visibility\" IS NULL\n      )"
-        },
         "chk_post_reply_to_not_self": {
           "name": "chk_post_reply_to_not_self",
           "value": "\"post\".\"reply_to_id\" IS NULL OR \"post\".\"reply_to_id\" <> \"post\".\"id\""
@@ -1103,22 +1072,6 @@
         "chk_post_thread_shape": {
           "name": "chk_post_thread_shape",
           "value": "(\n        \"post\".\"reply_to_id\" IS NULL\n        AND \"post\".\"thread_id\" = \"post\".\"id\"\n      ) OR (\n        \"post\".\"reply_to_id\" IS NOT NULL\n        AND \"post\".\"thread_id\" <> \"post\".\"id\"\n      )"
-        },
-        "chk_post_reply_not_pinned": {
-          "name": "chk_post_reply_not_pinned",
-          "value": "\"post\".\"pinned_at\" IS NULL OR \"post\".\"reply_to_id\" IS NULL"
-        },
-        "chk_post_format_shape": {
-          "name": "chk_post_format_shape",
-          "value": "(\n        \"post\".\"format\" = 'note'\n        AND (\"post\".\"url\" IS NULL OR trim(\"post\".\"url\") = '')\n        AND (\"post\".\"quote_text\" IS NULL OR trim(\"post\".\"quote_text\") = '')\n      ) OR (\n        \"post\".\"format\" = 'link'\n        AND \"post\".\"url\" IS NOT NULL\n        AND trim(\"post\".\"url\") <> ''\n        AND (\"post\".\"quote_text\" IS NULL OR trim(\"post\".\"quote_text\") = '')\n      ) OR (\n        \"post\".\"format\" = 'quote'\n        AND \"post\".\"quote_text\" IS NOT NULL\n        AND trim(\"post\".\"quote_text\") <> ''\n      )"
-        },
-        "chk_post_rating_range": {
-          "name": "chk_post_rating_range",
-          "value": "\"post\".\"rating\" IS NULL OR \"post\".\"rating\" BETWEEN 1 AND 5"
-        },
-        "chk_post_status_published_at": {
-          "name": "chk_post_status_published_at",
-          "value": "(\n        \"post\".\"status\" = 'draft'\n        AND \"post\".\"published_at\" IS NULL\n      ) OR (\n        \"post\".\"status\" = 'published'\n        AND \"post\".\"published_at\" IS NOT NULL\n      )"
         }
       }
     },
@@ -1198,11 +1151,11 @@
         "session_user_id_user_id_fk": {
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
-          "tableTo": "user",
           "columnsFrom": ["user_id"],
+          "tableTo": "user",
           "columnsTo": ["id"],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1370,9 +1323,9 @@
   "views": {},
   "enums": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
+    "tables": {}
   },
   "internal": {
     "indexes": {}

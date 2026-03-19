@@ -209,14 +209,45 @@ describe("PostService", () => {
       expect(post.publishedAt).toBeNull();
     });
 
-    it("rejects ratings outside the database range", async () => {
+    it("rejects ratings outside the supported range", async () => {
       await expect(
         postService.create({
           format: "note",
           bodyMarkdown: "test",
           rating: 6,
         }),
-      ).rejects.toThrow();
+      ).rejects.toThrow("Rating must be an integer between 1 and 5.");
+    });
+
+    it("rejects unsupported post formats", async () => {
+      await expect(
+        postService.create({
+          format: "essay" as never,
+          bodyMarkdown: "test",
+        }),
+      ).rejects.toThrow("Format must be note, link, or quote.");
+    });
+
+    it("rejects unsupported post statuses", async () => {
+      await expect(
+        postService.create({
+          format: "note",
+          bodyMarkdown: "test",
+          status: "scheduled" as never,
+        }),
+      ).rejects.toThrow("Status must be draft or published.");
+    });
+
+    it("rejects unsupported visibilities", async () => {
+      await expect(
+        postService.create({
+          format: "note",
+          bodyMarkdown: "test",
+          visibility: "friends_only" as never,
+        }),
+      ).rejects.toThrow(
+        "Visibility must be public, hidden from Latest, or private.",
+      );
     });
 
     it("rejects draft posts with an explicit publish time", async () => {
@@ -542,8 +573,8 @@ describe("PostService", () => {
       });
       await postService.create({
         format: "note",
-        bodyMarkdown: "unlisted post",
-        visibility: "unlisted",
+        bodyMarkdown: "latest_hidden post",
+        visibility: "latest_hidden",
       });
       await postService.create({
         format: "note",
@@ -556,10 +587,12 @@ describe("PostService", () => {
       expect(publicPosts[0]?.visibility).toBe("public");
       expect(publicPosts[0]?.bodyText).toBe("public post");
 
-      const unlisted = await postService.list({ visibility: "unlisted" });
-      expect(unlisted).toHaveLength(1);
-      expect(unlisted[0]?.visibility).toBe("unlisted");
-      expect(unlisted[0]?.bodyText).toBe("unlisted post");
+      const latestHidden = await postService.list({
+        visibility: "latest_hidden",
+      });
+      expect(latestHidden).toHaveLength(1);
+      expect(latestHidden[0]?.visibility).toBe("latest_hidden");
+      expect(latestHidden[0]?.bodyText).toBe("latest_hidden post");
 
       const privatePosts = await postService.list({ visibility: "private" });
       expect(privatePosts).toHaveLength(1);
@@ -589,15 +622,15 @@ describe("PostService", () => {
       expect(notFeatured[0]?.bodyText).toBe("normal post");
     });
 
-    it("excludes unlisted posts when requested", async () => {
+    it("excludes posts hidden from Latest when requested", async () => {
       await postService.create({
         format: "note",
         bodyMarkdown: "public post",
       });
       await postService.create({
         format: "note",
-        bodyMarkdown: "unlisted post",
-        visibility: "unlisted",
+        bodyMarkdown: "latest_hidden post",
+        visibility: "latest_hidden",
       });
       await postService.create({
         format: "note",
@@ -605,7 +638,7 @@ describe("PostService", () => {
         featured: true,
       });
 
-      const posts = await postService.list({ excludeUnlisted: true });
+      const posts = await postService.list({ excludeLatestHidden: true });
       expect(posts).toHaveLength(2);
       // Featured posts have visibility "public", so both public and featured appear
       expect(posts.map((p) => p.bodyText).sort()).toEqual([
@@ -779,12 +812,12 @@ describe("PostService", () => {
     it("filters by visibility", async () => {
       await postService.create({
         format: "note",
-        bodyMarkdown: "unlisted",
-        visibility: "unlisted",
+        bodyMarkdown: "latest_hidden",
+        visibility: "latest_hidden",
       });
       await postService.create({ format: "note", bodyMarkdown: "normal" });
 
-      const count = await postService.count({ visibility: "unlisted" });
+      const count = await postService.count({ visibility: "latest_hidden" });
       expect(count).toBe(1);
     });
 
@@ -1092,10 +1125,25 @@ describe("PostService", () => {
       expect(post.visibility).toBe("public");
 
       const updated = await postService.update(post.id, {
-        visibility: "unlisted",
+        visibility: "latest_hidden",
       });
 
-      expect(updated?.visibility).toBe("unlisted");
+      expect(updated?.visibility).toBe("latest_hidden");
+    });
+
+    it("rejects unsupported visibility updates", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "test",
+      });
+
+      await expect(
+        postService.update(post.id, {
+          visibility: "friends_only" as never,
+        }),
+      ).rejects.toThrow(
+        "Visibility must be public, hidden from Latest, or private.",
+      );
     });
 
     it("updates featured flag", async () => {
@@ -1399,7 +1447,7 @@ describe("PostService", () => {
       const root = await postService.create({
         format: "note",
         bodyMarkdown: "root",
-        visibility: "unlisted",
+        visibility: "latest_hidden",
       });
       const reply = await postService.create({
         format: "note",
@@ -1407,7 +1455,7 @@ describe("PostService", () => {
         replyToId: root.id,
       });
 
-      expect(reply.visibility).toBe("unlisted");
+      expect(reply.visibility).toBe("latest_hidden");
     });
 
     it("stores reply visibility as null and resolves it from the root", async () => {
@@ -1544,24 +1592,24 @@ describe("PostService", () => {
         replyToId: root.id,
       });
 
-      await postService.update(root.id, { visibility: "unlisted" });
+      await postService.update(root.id, { visibility: "latest_hidden" });
 
       const thread = await postService.getThread(root.id);
       for (const post of thread) {
-        expect(post.visibility).toBe("unlisted");
+        expect(post.visibility).toBe("latest_hidden");
       }
     });
 
     it("filters replies by the root post visibility", async () => {
-      const unlistedRoot = await postService.create({
+      const latestHiddenRoot = await postService.create({
         format: "note",
         bodyMarkdown: "root",
-        visibility: "unlisted",
+        visibility: "latest_hidden",
       });
-      const unlistedReply = await postService.create({
+      const latestHiddenReply = await postService.create({
         format: "note",
         bodyMarkdown: "reply",
-        replyToId: unlistedRoot.id,
+        replyToId: latestHiddenRoot.id,
       });
       await postService.create({
         format: "note",
@@ -1569,12 +1617,12 @@ describe("PostService", () => {
       });
 
       const postsByVisibility = await postService.list({
-        visibility: "unlisted",
+        visibility: "latest_hidden",
       });
 
       expect(postsByVisibility.map((post) => post.id)).toEqual([
-        unlistedReply.id,
-        unlistedRoot.id,
+        latestHiddenReply.id,
+        latestHiddenRoot.id,
       ]);
     });
 
@@ -1590,7 +1638,7 @@ describe("PostService", () => {
       });
 
       await expect(
-        postService.update(reply.id, { visibility: "unlisted" }),
+        postService.update(reply.id, { visibility: "latest_hidden" }),
       ).rejects.toThrow(
         "Cannot change visibility of a thread reply. Update the root post instead.",
       );

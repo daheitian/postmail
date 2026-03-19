@@ -3,7 +3,7 @@
  *
  * CRUD operations for posts with Thread support.
  * Posts have format (note/link/quote), status (draft/published),
- * visibility (public/unlisted/private), featuredAt, and pinnedAt timestamp.
+ * visibility (public/latest_hidden/private), featuredAt, and pinnedAt timestamp.
  */
 
 import {
@@ -30,7 +30,12 @@ import { getSlugValidationIssue } from "../lib/slug-format.js";
 import { normalizePath, slugify } from "../lib/url.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
-import { MAX_MEDIA_ATTACHMENTS } from "../types.js";
+import {
+  FORMATS,
+  MAX_MEDIA_ATTACHMENTS,
+  STATUSES,
+  VISIBILITIES,
+} from "../types.js";
 import type {
   CollectionSortOrder,
   Format,
@@ -71,8 +76,8 @@ export interface PostFilters {
   collectionId?: string;
   /** Exclude posts that are replies (have replyToId set) */
   excludeReplies?: boolean;
-  /** Exclude unlisted posts from results */
-  excludeUnlisted?: boolean;
+  /** Exclude posts hidden from Latest from results */
+  excludeLatestHidden?: boolean;
   /** Exclude private posts from results */
   excludePrivate?: boolean;
   includeDeleted?: boolean;
@@ -239,6 +244,70 @@ function hasNonEmptyText(value: string | null | undefined): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function ensureAllowedPostValue<T extends string>(
+  value: string,
+  allowed: readonly T[],
+  message: string,
+  ErrorCtor: new (message: string) => Error = ValidationError,
+): T {
+  if ((allowed as readonly string[]).includes(value)) {
+    return value as T;
+  }
+
+  throw new ErrorCtor(message);
+}
+
+function ensurePostFormat(
+  value: string,
+  ErrorCtor: new (message: string) => Error = ValidationError,
+): Format {
+  return ensureAllowedPostValue(
+    value,
+    FORMATS,
+    "Format must be note, link, or quote.",
+    ErrorCtor,
+  );
+}
+
+function ensurePostStatus(
+  value: string,
+  ErrorCtor: new (message: string) => Error = ValidationError,
+): Status {
+  return ensureAllowedPostValue(
+    value,
+    STATUSES,
+    "Status must be draft or published.",
+    ErrorCtor,
+  );
+}
+
+function ensurePostVisibility(
+  value: string,
+  ErrorCtor: new (message: string) => Error = ValidationError,
+): Visibility {
+  return ensureAllowedPostValue(
+    value,
+    VISIBILITIES,
+    "Visibility must be public, hidden from Latest, or private.",
+    ErrorCtor,
+  );
+}
+
+function ensurePostRating(
+  value: number | null | undefined,
+  ErrorCtor: new (message: string) => Error = ValidationError,
+): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  if (Number.isInteger(value) && value >= 1 && value <= 5) {
+    return value;
+  }
+
+  throw new ErrorCtor("Rating must be an integer between 1 and 5.");
+}
+
 function assertPostFormatShape(data: {
   format: Format;
   url?: string | null;
@@ -355,8 +424,8 @@ export function createPostService(
     if (filters.visibility !== undefined) {
       conditions.push(sql`${effectiveVisibilityExpr} = ${filters.visibility}`);
     }
-    if (filters.excludeUnlisted) {
-      conditions.push(sql`${effectiveVisibilityExpr} != 'unlisted'`);
+    if (filters.excludeLatestHidden) {
+      conditions.push(sql`${effectiveVisibilityExpr} != 'latest_hidden'`);
     }
     if (filters.excludePrivate) {
       conditions.push(sql`${effectiveVisibilityExpr} != 'private'`);
@@ -433,13 +502,13 @@ export function createPostService(
   function toPost(
     row: typeof posts.$inferSelect,
     slug: string,
-    visibility: Visibility,
+    visibility: string,
   ): Post {
     return {
       id: row.id,
-      format: row.format as Format,
-      status: row.status as Status,
-      visibility,
+      format: ensurePostFormat(row.format, Error),
+      status: ensurePostStatus(row.status, Error),
+      visibility: ensurePostVisibility(visibility, Error),
       pinnedAt: row.pinnedAt,
       featuredAt: row.featuredAt,
       slug,
@@ -450,7 +519,7 @@ export function createPostService(
       bodyText: row.bodyText,
       quoteText: row.quoteText,
       summary: row.summary,
-      rating: row.rating,
+      rating: ensurePostRating(row.rating, Error),
       replyToId: row.replyToId,
       threadId: row.threadId,
       deletedAt: row.deletedAt,
@@ -470,7 +539,7 @@ export function createPostService(
     const rootVisibilityMap = await getThreadVisibilityMap([row.threadId]);
     const visibility = rootVisibilityMap.get(row.threadId) ?? row.visibility;
     if (!visibility) return null;
-    return toPost(row, slug, visibility as Visibility);
+    return toPost(row, slug, visibility);
   }
 
   async function hydratePosts(
@@ -486,9 +555,7 @@ export function createPostService(
         const slug = slugMap.get(row.id);
         const visibility =
           rootVisibilityMap.get(row.threadId) ?? row.visibility;
-        return slug && visibility
-          ? toPost(row, slug, visibility as Visibility)
-          : null;
+        return slug && visibility ? toPost(row, slug, visibility) : null;
       })
       .filter((row): row is Post => row !== null);
   }
@@ -537,7 +604,7 @@ export function createPostService(
 
     for (const row of rows) {
       if (row.visibility) {
-        result.set(row.id, row.visibility as Visibility);
+        result.set(row.id, ensurePostVisibility(row.visibility, Error));
       }
     }
 
@@ -797,9 +864,17 @@ export function createPostService(
     async create(data, summaryConfig) {
       const id = uuidv7();
       const timestamp = now();
+      const format = ensurePostFormat(data.format);
+      const requestedStatus =
+        data.status !== undefined ? ensurePostStatus(data.status) : undefined;
+      const requestedVisibility =
+        data.visibility !== undefined
+          ? ensurePostVisibility(data.visibility)
+          : undefined;
+      const rating = ensurePostRating(data.rating);
 
       assertPostFormatShape({
-        format: data.format,
+        format,
         url: data.url,
         quoteText: data.quoteText,
       });
@@ -812,7 +887,7 @@ export function createPostService(
 
       // Generate summary for titled notes with body content
       let summary: string | null = null;
-      if (data.format === "note" && data.title && body && summaryConfig) {
+      if (format === "note" && data.title && body && summaryConfig) {
         summary = extractSummary(
           body,
           summaryConfig.maxParagraphs,
@@ -822,8 +897,8 @@ export function createPostService(
 
       // Handle thread relationship
       let threadId = id;
-      let status: Status = data.status ?? "published";
-      let visibility: Visibility | null = data.visibility ?? "public";
+      let status: Status = requestedStatus ?? "published";
+      let visibility: Visibility | null = requestedVisibility ?? "public";
 
       if (data.replyToId) {
         const parent = await this.getById(data.replyToId);
@@ -846,7 +921,7 @@ export function createPostService(
             : await this.getById(parent.threadId);
         if (root) {
           if (data.status !== "draft") {
-            status = root.status as Status;
+            status = root.status;
           }
         }
         visibility = null;
@@ -899,7 +974,7 @@ export function createPostService(
         const writeQueries: BatchItem<"sqlite">[] = [
           db.insert(posts).values({
             id,
-            format: data.format,
+            format,
             status,
             visibility,
             pinnedAt: data.pinned ? timestamp : null,
@@ -911,7 +986,7 @@ export function createPostService(
             bodyText,
             quoteText: data.quoteText ?? null,
             summary,
-            rating: data.rating ?? null,
+            rating,
             replyToId: data.replyToId ?? null,
             threadId,
             publishedAt,
@@ -1023,11 +1098,23 @@ export function createPostService(
       if (!existing) return null;
 
       const timestamp = now();
-      const nextFormat = data.format ?? existing.format;
+      const nextFormat =
+        data.format !== undefined
+          ? ensurePostFormat(data.format)
+          : existing.format;
       const nextUrl = data.url !== undefined ? data.url : existing.url;
       const nextQuoteText =
         data.quoteText !== undefined ? data.quoteText : existing.quoteText;
-      const nextStatus = data.status ?? existing.status;
+      const nextStatus =
+        data.status !== undefined
+          ? ensurePostStatus(data.status)
+          : existing.status;
+      const nextVisibility =
+        data.visibility !== undefined
+          ? ensurePostVisibility(data.visibility)
+          : undefined;
+      const nextRating =
+        data.rating !== undefined ? ensurePostRating(data.rating) : undefined;
 
       assertPostFormatShape({
         format: nextFormat,
@@ -1054,11 +1141,11 @@ export function createPostService(
         }
       }
 
-      if (data.format !== undefined) updates.format = data.format;
+      if (data.format !== undefined) updates.format = nextFormat;
       if (data.title !== undefined) updates.title = data.title;
       if (data.url !== undefined) updates.url = data.url;
       if (data.quoteText !== undefined) updates.quoteText = data.quoteText;
-      if (data.rating !== undefined) updates.rating = data.rating;
+      if (data.rating !== undefined) updates.rating = nextRating;
       if (data.pinned !== undefined)
         updates.pinnedAt = data.pinned ? now() : null;
       if (data.featured !== undefined)
@@ -1079,7 +1166,7 @@ export function createPostService(
 
       // Recompute summary when body, title, or format change
       if (summaryConfig) {
-        const format = data.format ?? (existing.format as Format);
+        const format = nextFormat;
         const title = data.title !== undefined ? data.title : existing.title;
         const body =
           data.bodyMarkdown !== undefined
@@ -1118,8 +1205,7 @@ export function createPostService(
       const statusChanged =
         data.status !== undefined && data.status !== existing.status;
       const visibilityChanged =
-        data.visibility !== undefined &&
-        data.visibility !== existing.visibility;
+        nextVisibility !== undefined && nextVisibility !== existing.visibility;
       const publishedAtChanged = data.publishedAt !== undefined;
       const nextPublishedAt =
         nextStatus === "draft"
@@ -1130,9 +1216,9 @@ export function createPostService(
               ? timestamp
               : (existing.publishedAt ?? timestamp);
 
-      if (statusChanged) updates.status = data.status;
+      if (statusChanged) updates.status = nextStatus;
       if (visibilityChanged && !isThreadReply(existing)) {
-        updates.visibility = data.visibility;
+        updates.visibility = nextVisibility;
       }
       if (statusChanged || publishedAtChanged || existing.status === "draft") {
         updates.publishedAt = nextPublishedAt;
@@ -1177,7 +1263,7 @@ export function createPostService(
           db
             .update(posts)
             .set({
-              status: data.status ?? (existing.status as Status),
+              status: nextStatus,
               publishedAt: nextStatus === "published" ? nextPublishedAt : null,
               lastActivityAt:
                 nextStatus === "published"
@@ -1386,14 +1472,16 @@ export function createPostService(
     },
 
     async updateThreadStatusAndVisibility(rootId, status, visibility) {
+      const nextStatus = ensurePostStatus(status);
+      const nextVisibility = ensurePostVisibility(visibility);
       const timestamp = now();
       await db.batch([
         db
           .update(posts)
           .set({
-            status,
-            visibility,
-            publishedAt: status === "published" ? timestamp : null,
+            status: nextStatus,
+            visibility: nextVisibility,
+            publishedAt: nextStatus === "published" ? timestamp : null,
             lastActivityAt: timestamp,
             updatedAt: timestamp,
           })
@@ -1401,9 +1489,9 @@ export function createPostService(
         db
           .update(posts)
           .set({
-            status,
+            status: nextStatus,
             visibility: null,
-            publishedAt: status === "published" ? timestamp : null,
+            publishedAt: nextStatus === "published" ? timestamp : null,
             lastActivityAt: timestamp,
             updatedAt: timestamp,
           })

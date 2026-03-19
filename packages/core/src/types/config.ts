@@ -50,6 +50,11 @@ export const CONFIG_FIELDS = {
     envOnly: false,
     envKeys: ["JANT_HOME_DEFAULT_VIEW", "HOME_DEFAULT_VIEW"],
   },
+  MAIN_RSS_FEED: {
+    defaultValue: "featured",
+    envOnly: false,
+    envKeys: ["JANT_MAIN_RSS_FEED", "MAIN_RSS_FEED"],
+  },
   HEADER_NAV_MAX_VISIBLE: {
     defaultValue: "2",
     envOnly: false,
@@ -269,6 +274,7 @@ export interface AppConfig {
   siteDescriptionExplicit: boolean;
   siteLanguage: string;
   homeDefaultView: string;
+  mainRssFeed: string;
   headerNavMaxVisible: number;
   timeZone: string;
   siteFooter: string;

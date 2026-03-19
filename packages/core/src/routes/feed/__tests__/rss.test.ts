@@ -39,6 +39,11 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
     const allSettings = await services.settings.getAll();
     c.set("allSettings", allSettings);
     c.set("appConfig", resolveConfig(env, allSettings));
+    c.set("i18n", {
+      _(value: string | { message?: string }) {
+        return typeof value === "string" ? value : (value.message ?? "");
+      },
+    } as AppVariables["i18n"]);
     await next();
   });
 
@@ -48,11 +53,10 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
 }
 
 describe("RSS Feed Routes", () => {
-  describe("/feed — featured only", () => {
-    it("returns only featured posts", async () => {
+  describe("/feed — site main feed", () => {
+    it("defaults to featured posts", async () => {
       const { app, services } = createFeedTestApp();
 
-      // Create a mix of featured and non-featured posts
       await services.posts.create({
         format: "note",
         title: "Regular Post",
@@ -75,21 +79,31 @@ describe("RSS Feed Routes", () => {
       expect(xml).not.toContain("Regular Post");
     });
 
-    it("returns empty feed when no featured posts exist", async () => {
+    it("uses latest posts when MAIN_RSS_FEED is configured", async () => {
       const { app, services } = createFeedTestApp();
+
+      await services.settings.set("MAIN_RSS_FEED", "latest");
 
       await services.posts.create({
         format: "note",
-        title: "Regular Post",
-        bodyMarkdown: "Not featured",
+        title: "Public Post",
+        bodyMarkdown: "Visible in latest",
         status: "published",
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Hidden Post",
+        bodyMarkdown: "Not in latest",
+        status: "published",
+        visibility: "latest_hidden",
       });
 
       const res = await app.request("/feed");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
-      expect(xml).not.toContain("Regular Post");
+      expect(xml).toContain("Public Post");
+      expect(xml).not.toContain("Hidden Post");
     });
 
     it("returns RSS content type", async () => {
@@ -101,7 +115,7 @@ describe("RSS Feed Routes", () => {
       );
     });
 
-    it("orders items and pubDate by featuredAt rather than publishedAt", async () => {
+    it("orders featured items and pubDate by featuredAt rather than publishedAt", async () => {
       const { app, services, db } = createFeedTestApp();
 
       const olderPublished = await services.posts.create({
@@ -140,8 +154,8 @@ describe("RSS Feed Routes", () => {
     });
   });
 
-  describe("/feed/atom.xml — featured only (Atom)", () => {
-    it("returns only featured posts in Atom format", async () => {
+  describe("/feed/atom.xml — site main feed (Atom)", () => {
+    it("returns featured posts in Atom format by default", async () => {
       const { app, services } = createFeedTestApp();
 
       await services.posts.create({
@@ -170,22 +184,36 @@ describe("RSS Feed Routes", () => {
     });
   });
 
-  describe("/feed/all — all published posts", () => {
-    it("returns all published posts", async () => {
+  describe("/feed/latest — latest public posts", () => {
+    it("returns public published posts and excludes hidden, private, and draft posts", async () => {
       const { app, services } = createFeedTestApp();
 
       await services.posts.create({
         format: "note",
-        title: "Regular Post",
-        bodyMarkdown: "Not featured",
+        title: "Public Post",
+        bodyMarkdown: "Public",
         status: "published",
       });
       await services.posts.create({
         format: "note",
         title: "Featured Post",
-        bodyMarkdown: "This is featured",
+        bodyMarkdown: "Featured",
         status: "published",
         featured: true,
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Hidden Post",
+        bodyMarkdown: "Hidden",
+        status: "published",
+        visibility: "latest_hidden",
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Private Post",
+        bodyMarkdown: "Private",
+        status: "published",
+        visibility: "private",
       });
       await services.posts.create({
         format: "note",
@@ -194,12 +222,14 @@ describe("RSS Feed Routes", () => {
         status: "draft",
       });
 
-      const res = await app.request("/feed/all");
+      const res = await app.request("/feed/latest");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
-      expect(xml).toContain("Regular Post");
+      expect(xml).toContain("Public Post");
       expect(xml).toContain("Featured Post");
+      expect(xml).not.toContain("Hidden Post");
+      expect(xml).not.toContain("Private Post");
       expect(xml).not.toContain("Draft Post");
     });
 
@@ -225,7 +255,7 @@ describe("RSS Feed Routes", () => {
         status: "published",
       });
 
-      const res = await app.request("/feed/all?format=note");
+      const res = await app.request("/feed/latest?format=note");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
@@ -250,11 +280,10 @@ describe("RSS Feed Routes", () => {
         status: "published",
       });
 
-      const res = await app.request("/feed/all?format=invalid");
+      const res = await app.request("/feed/latest?format=invalid");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
-      // Invalid format is ignored — all posts returned
       expect(xml).toContain("My Note");
       expect(xml).toContain("My Link");
     });
@@ -262,40 +291,40 @@ describe("RSS Feed Routes", () => {
     it("returns RSS content type", async () => {
       const { app } = createFeedTestApp();
 
-      const res = await app.request("/feed/all");
+      const res = await app.request("/feed/latest");
       expect(res.headers.get("Content-Type")).toBe(
         "application/rss+xml; charset=utf-8",
       );
     });
   });
 
-  describe("/feed/all/atom.xml — all published posts (Atom)", () => {
-    it("returns all published posts in Atom format", async () => {
+  describe("/feed/latest/atom.xml — latest public posts (Atom)", () => {
+    it("returns latest public posts in Atom format", async () => {
       const { app, services } = createFeedTestApp();
 
       await services.posts.create({
         format: "note",
-        title: "Regular Post",
-        bodyMarkdown: "Not featured",
+        title: "Public Post",
+        bodyMarkdown: "Public",
         status: "published",
       });
       await services.posts.create({
         format: "note",
-        title: "Featured Post",
-        bodyMarkdown: "This is featured",
+        title: "Hidden Post",
+        bodyMarkdown: "Hidden",
         status: "published",
-        featured: true,
+        visibility: "latest_hidden",
       });
 
-      const res = await app.request("/feed/all/atom.xml");
+      const res = await app.request("/feed/latest/atom.xml");
       expect(res.status).toBe(200);
       expect(res.headers.get("Content-Type")).toBe(
         "application/atom+xml; charset=utf-8",
       );
 
       const xml = await res.text();
-      expect(xml).toContain("Regular Post");
-      expect(xml).toContain("Featured Post");
+      expect(xml).toContain("Public Post");
+      expect(xml).not.toContain("Hidden Post");
     });
 
     it("supports format filtering", async () => {
@@ -314,7 +343,7 @@ describe("RSS Feed Routes", () => {
         status: "published",
       });
 
-      const res = await app.request("/feed/all/atom.xml?format=link");
+      const res = await app.request("/feed/latest/atom.xml?format=link");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
@@ -323,11 +352,87 @@ describe("RSS Feed Routes", () => {
     });
   });
 
+  describe("/feed/featured — featured posts", () => {
+    it("returns only featured posts", async () => {
+      const { app, services } = createFeedTestApp();
+
+      await services.posts.create({
+        format: "note",
+        title: "Regular Post",
+        bodyMarkdown: "Not featured",
+        status: "published",
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Featured Post",
+        bodyMarkdown: "This is featured",
+        status: "published",
+        featured: true,
+      });
+
+      const res = await app.request("/feed/featured");
+      expect(res.status).toBe(200);
+
+      const xml = await res.text();
+      expect(xml).toContain("Featured Post");
+      expect(xml).not.toContain("Regular Post");
+    });
+  });
+
+  describe("/feed/featured/atom.xml — featured posts (Atom)", () => {
+    it("returns only featured posts in Atom format", async () => {
+      const { app, services } = createFeedTestApp();
+
+      await services.posts.create({
+        format: "note",
+        title: "Regular Post",
+        bodyMarkdown: "Not featured",
+        status: "published",
+      });
+      await services.posts.create({
+        format: "note",
+        title: "Featured Post",
+        bodyMarkdown: "This is featured",
+        status: "published",
+        featured: true,
+      });
+
+      const res = await app.request("/feed/featured/atom.xml");
+      expect(res.status).toBe(200);
+      expect(res.headers.get("Content-Type")).toBe(
+        "application/atom+xml; charset=utf-8",
+      );
+
+      const xml = await res.text();
+      expect(xml).toContain("Featured Post");
+      expect(xml).not.toContain("Regular Post");
+    });
+  });
+
+  describe("legacy feed aliases", () => {
+    it("redirects /feed/all to /feed/latest", async () => {
+      const { app } = createFeedTestApp();
+
+      const res = await app.request("/feed/all?format=note");
+      expect(res.status).toBe(308);
+      expect(res.headers.get("Location")).toBe("/feed/latest?format=note");
+    });
+
+    it("redirects /feed/all/atom.xml to /feed/latest/atom.xml", async () => {
+      const { app } = createFeedTestApp();
+
+      const res = await app.request("/feed/all/atom.xml?format=link");
+      expect(res.status).toBe(308);
+      expect(res.headers.get("Location")).toBe(
+        "/feed/latest/atom.xml?format=link",
+      );
+    });
+  });
+
   describe("RSS_FEED_LIMIT env var", () => {
     it("defaults to 50 when RSS_FEED_LIMIT is not set", async () => {
       const { app, services } = createFeedTestApp();
 
-      // Create 3 featured posts
       for (let i = 0; i < 3; i++) {
         await services.posts.create({
           format: "note",
@@ -342,18 +447,16 @@ describe("RSS Feed Routes", () => {
       expect(res.status).toBe(200);
 
       const xml = await res.text();
-      // All 3 posts should appear (under default limit of 50)
       expect(xml).toContain("Post 0");
       expect(xml).toContain("Post 1");
       expect(xml).toContain("Post 2");
     });
 
-    it("respects RSS_FEED_LIMIT to limit the number of posts", async () => {
+    it("respects RSS_FEED_LIMIT on the latest feed", async () => {
       const { app, services } = createFeedTestApp({
         RSS_FEED_LIMIT: "2",
       });
 
-      // Create 5 posts on /feed/all
       for (let i = 0; i < 5; i++) {
         await services.posts.create({
           format: "note",
@@ -363,12 +466,10 @@ describe("RSS Feed Routes", () => {
         });
       }
 
-      const res = await app.request("/feed/all");
+      const res = await app.request("/feed/latest");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
-      // Posts are ordered by publishedAt DESC, so the latest 2 should appear
-      // With same timestamp they fall back to id DESC, so Post 4 and Post 3
       expect(xml).toContain("Post 4");
       expect(xml).toContain("Post 3");
       expect(xml).not.toContain("Post 2");
@@ -381,7 +482,6 @@ describe("RSS Feed Routes", () => {
         RSS_FEED_LIMIT: "not-a-number",
       });
 
-      // Create 2 posts on /feed/all
       for (let i = 0; i < 2; i++) {
         await services.posts.create({
           format: "note",
@@ -391,16 +491,15 @@ describe("RSS Feed Routes", () => {
         });
       }
 
-      const res = await app.request("/feed/all");
+      const res = await app.request("/feed/latest");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
-      // Both posts should appear (fallback to 50)
       expect(xml).toContain("Post 0");
       expect(xml).toContain("Post 1");
     });
 
-    it("also applies to atom feed", async () => {
+    it("also applies to the featured atom feed", async () => {
       const { app, services } = createFeedTestApp({
         RSS_FEED_LIMIT: "1",
       });
@@ -415,11 +514,10 @@ describe("RSS Feed Routes", () => {
         });
       }
 
-      const res = await app.request("/feed/atom.xml");
+      const res = await app.request("/feed/featured/atom.xml");
       expect(res.status).toBe(200);
 
       const xml = await res.text();
-      // Only the latest post should appear
       expect(xml).toContain("Post 2");
       expect(xml).not.toContain("Post 1");
       expect(xml).not.toContain("Post 0");

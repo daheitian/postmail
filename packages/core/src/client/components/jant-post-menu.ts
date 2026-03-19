@@ -358,7 +358,7 @@ export class JantPostMenu extends LitElement {
 
       const messages: Record<string, string> = {
         public: "Post made public.",
-        unlisted: "Post unlisted.",
+        latest_hidden: "Hidden from Latest.",
         private: "Post made private.",
       };
       showToast(messages[newVisibility] ?? "Visibility updated.");
@@ -665,8 +665,8 @@ export class JantPostMenu extends LitElement {
     switch (visibility) {
       case "private":
         return "Private";
-      case "unlisted":
-        return "Unlisted";
+      case "latest_hidden":
+        return "Hidden from Latest";
       default:
         return "Public";
     }
@@ -1025,21 +1025,21 @@ export class JantPostMenu extends LitElement {
             <button
               type="button"
               role="menuitemradio"
-              aria-checked=${visibility === "unlisted" ? "true" : "false"}
+              aria-checked=${visibility === "latest_hidden" ? "true" : "false"}
               data-post-menu-visibility-option
-              data-post-menu-visibility-current=${visibility === "unlisted"
+              data-post-menu-visibility-current=${visibility === "latest_hidden"
                 ? "true"
                 : "false"}
               class=${`post-menu-item${
-                visibility === "unlisted" ? " post-menu-item-active" : ""
+                visibility === "latest_hidden" ? " post-menu-item-active" : ""
               }`}
               @click=${() =>
-                visibility === "unlisted"
+                visibility === "latest_hidden"
                   ? this.#showMainMenu("[data-post-menu-open-visibility]")
-                  : this.#setVisibility("unlisted")}
+                  : this.#setVisibility("latest_hidden")}
             >
-              <span class="post-menu-item-label">Unlisted</span>
-              ${visibility === "unlisted"
+              <span class="post-menu-item-label">Hidden from Latest</span>
+              ${visibility === "latest_hidden"
                 ? html`<span
                     class="post-menu-item-trailing post-menu-item-check"
                     >${this.#iconCheck()}</span

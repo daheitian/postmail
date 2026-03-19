@@ -8,8 +8,11 @@ export type Format = (typeof FORMATS)[number];
 export const STATUSES = ["draft", "published"] as const;
 export type Status = (typeof STATUSES)[number];
 
-export const VISIBILITIES = ["public", "unlisted", "private"] as const;
+export const VISIBILITIES = ["public", "latest_hidden", "private"] as const;
 export type Visibility = (typeof VISIBILITIES)[number];
+
+export const FEED_KINDS = ["latest", "featured"] as const;
+export type FeedKind = (typeof FEED_KINDS)[number];
 
 export const SORT_ORDERS = [
   "newest",

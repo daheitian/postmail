@@ -1007,7 +1007,7 @@ const TEMPLATE_INDEX = `{% extends "base.html" %}
     <div id="timeline-feed">
       <div id="timeline-items">
         {% for page in paginator.pages %}
-          {% if page.extra.visibility | default(value="public") != "unlisted" %}
+          {% if page.extra.visibility | default(value="public") != "latest_hidden" %}
           <div class="feed-item" data-timeline-item data-timeline-item-content>
             {% if not loop.first %}<hr class="feed-divider">{% endif %}
             {{ macros::post_card(page=page) }}
@@ -1081,7 +1081,7 @@ const TEMPLATE_SECTION = `{% extends "base.html" %}
     <div id="timeline-feed">
       <div id="timeline-items">
         {% for page in section.pages %}
-          {% if page.extra.visibility | default(value="public") != "unlisted" %}
+          {% if page.extra.visibility | default(value="public") != "latest_hidden" %}
           <div class="feed-item" data-timeline-item data-timeline-item-content>
             {% if not loop.first %}<hr class="feed-divider">{% endif %}
             {{ macros::post_card(page=page) }}
@@ -1203,7 +1203,7 @@ const TEMPLATE_TAXONOMY_SINGLE = `{% extends "base.html" %}
     <div id="timeline-feed">
       <div id="timeline-items">
         {% for page in term.pages %}
-          {% if page.extra.visibility | default(value="public") != "unlisted" %}
+          {% if page.extra.visibility | default(value="public") != "latest_hidden" %}
           <div class="feed-item" data-timeline-item data-timeline-item-content>
             {% if not loop.first %}<hr class="feed-divider">{% endif %}
             {{ macros::post_card(page=page) }}

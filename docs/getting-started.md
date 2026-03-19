@@ -59,16 +59,16 @@ Photos with optional captions.
 
 Every post has a visibility level:
 
-| Level        | What it means                                                                         |
-| ------------ | ------------------------------------------------------------------------------------- |
-| **Public**   | Normal publish, visible everywhere (default)                                          |
-| **Unlisted** | Hidden from Latest and the main feeds, but still visible in collections you add it to |
-| **Private**  | Only visible when logged in                                                           |
-| **Draft**    | Work in progress, not published                                                       |
+| Level                  | What it means                                                          |
+| ---------------------- | ---------------------------------------------------------------------- |
+| **Public**             | Normal publish, visible everywhere (default)                           |
+| **Hidden from Latest** | Won't appear in Latest, but still appears in collections you add it to |
+| **Private**            | Only visible when logged in                                            |
+| **Draft**              | Work in progress, not published                                        |
 
 ### Featured
 
-Featured is an independent curation flag, not a visibility level. Any post (including thread replies) can be featured. Featured posts appear in the main RSS feed (`/feed`) and on the Featured page. Both are ordered by when you featured each post, while post cards still show the original publish date. Feature a post from the post menu or use "Post as Featured" in the compose dialog.
+Featured is an independent curation flag, not a visibility level. Any post (including thread replies) can be featured. Featured posts always appear on the Featured page and in the explicit featured feeds (`/feed/featured` and `/feed/featured/atom.xml`). The main feed (`/feed`) points to Featured by default and can be changed to Latest in General settings. Feature a post from the post menu.
 
 ## Threads
 

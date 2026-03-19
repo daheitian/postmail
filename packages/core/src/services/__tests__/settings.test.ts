@@ -101,7 +101,9 @@ describe("SettingsService", () => {
       siteDescription: "",
       siteFooter: "",
       siteLanguage: "en",
+      showJantBrandingOnHome: false,
       homeDefaultView: "latest",
+      mainRssFeed: "featured",
       headerNavMaxVisible: "2",
       timeZone: "UTC",
     };
@@ -152,6 +154,25 @@ describe("SettingsService", () => {
       );
 
       expect(await settingsService.get("HOME_DEFAULT_VIEW")).toBe("featured");
+    });
+
+    it("removes MAIN_RSS_FEED when set to default (featured)", async () => {
+      await settingsService.set("MAIN_RSS_FEED", "latest");
+      await settingsService.updateGeneral(
+        { ...defaults, mainRssFeed: "featured" },
+        { oldLanguage: "en", fallbackSiteName: "Jant" },
+      );
+
+      expect(await settingsService.get("MAIN_RSS_FEED")).toBeNull();
+    });
+
+    it("stores MAIN_RSS_FEED when set to latest", async () => {
+      await settingsService.updateGeneral(
+        { ...defaults, mainRssFeed: "latest" },
+        { oldLanguage: "en", fallbackSiteName: "Jant" },
+      );
+
+      expect(await settingsService.get("MAIN_RSS_FEED")).toBe("latest");
     });
 
     it("removes HEADER_NAV_MAX_VISIBLE when set to default (2)", async () => {
@@ -245,6 +266,29 @@ describe("SettingsService", () => {
       );
 
       expect(await settingsService.get("SITE_FOOTER")).toBeNull();
+    });
+
+    it("stores home branding when enabled", async () => {
+      await settingsService.updateGeneral(
+        { ...defaults, showJantBrandingOnHome: true },
+        { oldLanguage: "en", fallbackSiteName: "Jant" },
+      );
+
+      expect(await settingsService.get("SHOW_JANT_BRANDING_ON_HOME")).toBe(
+        "true",
+      );
+    });
+
+    it("removes home branding when disabled", async () => {
+      await settingsService.set("SHOW_JANT_BRANDING_ON_HOME", "true");
+      await settingsService.updateGeneral(
+        { ...defaults, showJantBrandingOnHome: false },
+        { oldLanguage: "en", fallbackSiteName: "Jant" },
+      );
+
+      expect(
+        await settingsService.get("SHOW_JANT_BRANDING_ON_HOME"),
+      ).toBeNull();
     });
   });
 

@@ -13,6 +13,15 @@
    * Page Layout
    * ========================================================================= */
 
+  /*
+   * Interactive form controls should advertise clickability even when the
+   * upstream BaseCoat component does not set a pointer cursor by default.
+   */
+  .input[type="checkbox"]:not(:disabled),
+  .input[type="radio"]:not(:disabled) {
+    cursor: pointer;
+  }
+
   .site-page {
     min-height: 100vh;
     min-height: 100dvh;

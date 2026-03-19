@@ -26,12 +26,53 @@ import type {
   TextAttachmentContent,
   TextAttachmentContentFormat,
 } from "../types.js";
-import { MAX_MEDIA_ATTACHMENTS } from "../types.js";
+import {
+  MAX_MEDIA_ATTACHMENTS,
+  MEDIA_KINDS,
+  STORAGE_DRIVERS,
+} from "../types.js";
 import { ConfigurationError, ValidationError } from "../lib/errors.js";
 
 const DEFAULT_MEDIA_POSITION = "a0";
 const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
 const ATTACHED_TEXT_FILENAME = "attached-text.md";
+
+function ensureAllowedMediaValue<T extends string>(
+  value: string,
+  allowed: readonly T[],
+  message: string,
+  ErrorCtor: new (message: string) => Error = ValidationError,
+): T {
+  if ((allowed as readonly string[]).includes(value)) {
+    return value as T;
+  }
+
+  throw new ErrorCtor(message);
+}
+
+function ensureStorageProvider(
+  value: string,
+  ErrorCtor: new (message: string) => Error = ValidationError,
+): string {
+  return ensureAllowedMediaValue(
+    value,
+    STORAGE_DRIVERS,
+    "Storage provider must be r2, s3, or local.",
+    ErrorCtor,
+  );
+}
+
+function ensureMediaKind(
+  value: string,
+  ErrorCtor: new (message: string) => Error = ValidationError,
+): MediaKind {
+  return ensureAllowedMediaValue(
+    value,
+    MEDIA_KINDS,
+    "Media kind must be image, video, audio, text, or document.",
+    ErrorCtor,
+  );
+}
 
 export interface MediaFilters {
   limit?: number;
@@ -148,7 +189,7 @@ export function createMediaService(db: Database): MediaService {
       mimeType: row.mimeType,
       size: row.size,
       storageKey: row.storageKey,
-      provider: row.provider,
+      provider: ensureStorageProvider(row.provider, Error),
       width: row.width,
       height: row.height,
       alt: row.alt,
@@ -158,7 +199,7 @@ export function createMediaService(db: Database): MediaService {
       posterKey: row.posterKey,
       summary: row.summary,
       chars: row.chars,
-      mediaKind: row.mediaKind as MediaKind,
+      mediaKind: ensureMediaKind(row.mediaKind, Error),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -261,7 +302,10 @@ export function createMediaService(db: Database): MediaService {
     async create(data) {
       const id = data.id ?? uuidv7();
       const timestamp = now();
-      const mediaKind = data.mediaKind ?? toMediaKind(data.mimeType);
+      const provider = ensureStorageProvider(data.provider ?? "r2");
+      const mediaKind = ensureMediaKind(
+        data.mediaKind ?? toMediaKind(data.mimeType),
+      );
       const lastPosition =
         data.position === undefined && data.postId
           ? await getLastPosition(data.postId)
@@ -277,7 +321,7 @@ export function createMediaService(db: Database): MediaService {
           mimeType: data.mimeType,
           size: data.size,
           storageKey: data.storageKey,
-          provider: data.provider ?? "r2",
+          provider,
           width: data.width ?? null,
           height: data.height ?? null,
           alt: data.alt ?? null,
