@@ -1,80 +1,94 @@
 /**
  * Security Headers Middleware
  *
- * Adds Content-Security-Policy and other security headers via Hono's
- * built-in secureHeaders middleware. Uses a baseline CSP that works with
- * the current tech stack (Datastar, Lit, inline theme styles).
+ * Adds a small set of explicit security headers. Public pages are allowed to
+ * be embedded in iframes, while authoring, auth, and API routes keep
+ * clickjacking protection.
  */
 
 import { secureHeaders } from "hono/secure-headers";
 import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
-import { getEnvString } from "../lib/env.js";
 import { IS_VITE_DEV } from "../lib/version.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
+type SecureHeadersOptions = NonNullable<Parameters<typeof secureHeaders>[0]>;
+type ContentSecurityPolicyOptions = NonNullable<
+  SecureHeadersOptions["contentSecurityPolicy"]
+>;
 
-function toOrigin(value: string | undefined): string | null {
-  if (!value) return null;
-  try {
-    return new URL(value).origin;
-  } catch {
-    return null;
-  }
+const FRAME_PROTECTED_PATH_PREFIXES = [
+  "/api",
+  "/settings",
+  "/compose",
+  "/signin",
+  "/signout",
+  "/reset",
+  "/setup",
+  "/__dev",
+] as const;
+
+function matchesPathPrefix(path: string, prefix: string): boolean {
+  return path === prefix || path.startsWith(`${prefix}/`);
 }
 
-/**
- * Returns external media origins that should be allowed by CSP when media is
- * served from a dedicated public host instead of the app origin.
- *
- * @param env - Worker bindings used to resolve configured public media URLs
- * @returns Unique list of allowed media origins
- * @example
- * ```ts
- * getConfiguredMediaOrigins({ JANT_R2_PUBLIC_URL: "https://cdn.example.com" });
- * ```
- */
-export function getConfiguredMediaOrigins(env: Bindings): string[] {
-  const candidates = [
-    getEnvString(env, "JANT_R2_PUBLIC_URL", "R2_PUBLIC_URL"),
-    getEnvString(env, "JANT_S3_PUBLIC_URL", "S3_PUBLIC_URL"),
-    getEnvString(env, "JANT_LOCAL_PUBLIC_URL", "LOCAL_PUBLIC_URL"),
-  ];
+function shouldBlockFraming(path: string): boolean {
+  return FRAME_PROTECTED_PATH_PREFIXES.some((prefix) =>
+    matchesPathPrefix(path, prefix),
+  );
+}
 
-  return [
-    ...new Set(
-      candidates.map(toOrigin).filter((url): url is string => url !== null),
-    ),
-  ];
+function buildContentSecurityPolicy(
+  path: string,
+): ContentSecurityPolicyOptions {
+  const contentSecurityPolicy: ContentSecurityPolicyOptions = {
+    defaultSrc: ["'self'"],
+    scriptSrc: [
+      "'self'",
+      // Datastar evaluates expressions in data-on-* / data-signals attributes
+      "'unsafe-eval'",
+    ],
+    styleSrc: [
+      "'self'",
+      // Theme styles and custom CSS are injected as inline <style> tags
+      "'unsafe-inline'",
+    ],
+    imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+    mediaSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+    fontSrc: ["'self'"],
+    connectSrc: IS_VITE_DEV ? ["'self'", "ws:"] : ["'self'"],
+    objectSrc: ["'none'"],
+    baseUri: ["'self'"],
+    formAction: ["'self'"],
+  };
+
+  if (shouldBlockFraming(path)) {
+    contentSecurityPolicy.frameAncestors = ["'none'"];
+  }
+
+  return contentSecurityPolicy;
+}
+
+function buildSecureHeadersOptions(path: string): SecureHeadersOptions {
+  return {
+    contentSecurityPolicy: buildContentSecurityPolicy(path),
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false,
+    originAgentCluster: false,
+    referrerPolicy: "strict-origin-when-cross-origin",
+    strictTransportSecurity: true,
+    xContentTypeOptions: true,
+    xDnsPrefetchControl: false,
+    xDownloadOptions: false,
+    xFrameOptions: shouldBlockFraming(path) ? "DENY" : false,
+    xPermittedCrossDomainPolicies: false,
+    xXssProtection: false,
+  };
 }
 
 export function secureHeadersMiddleware(): MiddlewareHandler<Env> {
   return async (c, next) => {
-    const mediaOrigins = getConfiguredMediaOrigins(c.env);
-
-    return secureHeaders({
-      contentSecurityPolicy: {
-        defaultSrc: ["'self'"],
-        scriptSrc: [
-          "'self'",
-          // Datastar evaluates expressions in data-on-* / data-signals attributes
-          "'unsafe-eval'",
-        ],
-        styleSrc: [
-          "'self'",
-          // Theme styles and custom CSS are injected as inline <style> tags
-          "'unsafe-inline'",
-        ],
-        imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
-        mediaSrc: ["'self'", "blob:", "https:", "http:", ...mediaOrigins],
-        fontSrc: ["'self'"],
-        connectSrc: IS_VITE_DEV ? ["'self'", "ws:"] : ["'self'"],
-        frameSrc: ["'none'"],
-        objectSrc: ["'none'"],
-        baseUri: ["'self'"],
-        formAction: ["'self'"],
-      },
-    })(c, next);
+    return secureHeaders(buildSecureHeadersOptions(c.req.path))(c, next);
   };
 }

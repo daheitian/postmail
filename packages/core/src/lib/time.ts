@@ -72,10 +72,11 @@ export function toISOString(timestamp: number): string {
  * Formats a Unix timestamp as a human-readable date string.
  *
  * Converts a Unix timestamp (in seconds) to a localized date string in the format
- * "MMM DD, YYYY" (e.g., "Jan 15, 2024"). Always uses UTC timezone to ensure
- * consistent display regardless of server or client location.
+ * "MMM DD, YYYY" (e.g., "Jan 15, 2024"). Uses the provided timezone and defaults
+ * to UTC when no explicit timezone is given.
  *
  * @param timestamp - Unix timestamp in seconds to format
+ * @param timeZone - IANA timezone identifier used for display
  * @returns Formatted date string in "MMM DD, YYYY" format
  *
  * @example
@@ -84,12 +85,12 @@ export function toISOString(timestamp: number): string {
  * // Returns: "Feb 1, 2024"
  * ```
  */
-export function formatDate(timestamp: number): string {
+export function formatDate(timestamp: number, timeZone = "UTC"): string {
   return new Date(timestamp * 1000).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
-    timeZone: "UTC",
+    timeZone,
   });
 }
 
@@ -97,10 +98,11 @@ export function formatDate(timestamp: number): string {
  * Formats a Unix timestamp as a year-month string for grouping.
  *
  * Converts a Unix timestamp (in seconds) to a "YYYY-MM" format string, useful for
- * grouping posts by month in archives or creating month-based URLs. Always uses
- * UTC timezone for consistency.
+ * grouping posts by month in archives or creating month-based URLs. Uses the
+ * provided timezone and defaults to UTC when no explicit timezone is given.
  *
  * @param timestamp - Unix timestamp in seconds to format
+ * @param timeZone - IANA timezone identifier used for display
  * @returns Year-month string in "YYYY-MM" format
  *
  * @example
@@ -113,9 +115,11 @@ export function formatDate(timestamp: number): string {
  * Formats a Unix timestamp as a 24-hour time string (HH:MM).
  *
  * Converts a Unix timestamp (in seconds) to a zero-padded time string in
- * 24-hour format. Always uses UTC timezone for consistency.
+ * 24-hour format. Uses the provided timezone and defaults to UTC when no
+ * explicit timezone is given.
  *
  * @param timestamp - Unix timestamp in seconds to format
+ * @param timeZone - IANA timezone identifier used for display
  * @returns Formatted time string in "HH:MM" format
  *
  * @example
@@ -124,10 +128,16 @@ export function formatDate(timestamp: number): string {
  * // Returns: "00:00"
  * ```
  */
-export function formatTime(timestamp: number): string {
+export function formatTime(timestamp: number, timeZone = "UTC"): string {
   const date = new Date(timestamp * 1000);
-  const hours = String(date.getUTCHours()).padStart(2, "0");
-  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone,
+  }).formatToParts(date);
+  const hours = parts.find((part) => part.type === "hour")?.value ?? "00";
+  const minutes = parts.find((part) => part.type === "minute")?.value ?? "00";
   return `${hours}:${minutes}`;
 }
 
@@ -138,6 +148,7 @@ export function formatTime(timestamp: number): string {
  * and falls back to "MMM D" (e.g. "Feb 1") for anything older than 7 days.
  *
  * @param timestamp - Unix timestamp in seconds
+ * @param timeZone - IANA timezone identifier used for older calendar labels
  * @returns Short relative time string
  *
  * @example
@@ -150,7 +161,10 @@ export function formatTime(timestamp: number): string {
  * formatRelativeTime(now() - 864000);   // "Feb 6"
  * ```
  */
-export function formatRelativeTime(timestamp: number): string {
+export function formatRelativeTime(
+  timestamp: number,
+  timeZone = "UTC",
+): string {
   const seconds = now() - timestamp;
 
   if (seconds < 60) return "1m";
@@ -169,7 +183,7 @@ export function formatRelativeTime(timestamp: number): string {
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    timeZone: "UTC",
+    timeZone,
   });
 }
 
@@ -181,6 +195,7 @@ export function formatRelativeTime(timestamp: number): string {
  * This helper intentionally stays English-only for ultra-compact UI metadata.
  *
  * @param timestamp - Unix timestamp in seconds
+ * @param timeZone - IANA timezone identifier used for older calendar labels
  * @returns Compact relative age label
  *
  * @example
@@ -192,14 +207,19 @@ export function formatRelativeTime(timestamp: number): string {
  * formatRelativeAge(now() - 864000);  // "Feb 6"
  * ```
  */
-export function formatRelativeAge(timestamp: number): string {
-  const relative = formatRelativeTime(timestamp);
+export function formatRelativeAge(timestamp: number, timeZone = "UTC"): string {
+  const relative = formatRelativeTime(timestamp, timeZone);
   return /^[0-9]+[mhd]$/.test(relative) ? `${relative} ago` : relative;
 }
 
-export function formatYearMonth(timestamp: number): string {
+export function formatYearMonth(timestamp: number, timeZone = "UTC"): string {
   const date = new Date(timestamp * 1000);
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    timeZone,
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value ?? "1970";
+  const month = parts.find((part) => part.type === "month")?.value ?? "01";
   return `${year}-${month}`;
 }

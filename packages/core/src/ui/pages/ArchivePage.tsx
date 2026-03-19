@@ -883,14 +883,17 @@ function getTileText(post: PostView): { title?: string; summary: string } {
   return { summary: getFormatLabel(post.format) };
 }
 
-function getArchiveDateParts(isoDate: string): { shortDate: string } {
+function getArchiveDateParts(
+  isoDate: string,
+  timeZone = "UTC",
+): { shortDate: string } {
   const date = new Date(isoDate);
 
   return {
     shortDate: date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
-      timeZone: "UTC",
+      timeZone,
     }),
   };
 }
@@ -932,13 +935,24 @@ const ArchiveMonthHeader: FC<{
   );
 };
 
-const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
+const ArchiveTile: FC<{ post: PostView; timeZone?: string }> = ({
+  post,
+  timeZone = "UTC",
+}) => {
   const { t } = useLingui();
   const variant = getTileVariant(post);
   const bgImage = getTileBgImage(post);
   const badge = getTileBadge(post);
   const { title, summary } = getTileText(post);
-  const { shortDate } = getArchiveDateParts(post.publishedAt);
+  const { shortDate } = getArchiveDateParts(post.publishedAt, timeZone);
+  const publishedLabel = t({
+    message: "Published on {date} at {time}",
+    comment: "@context: Tooltip text for the archive tile published timestamp",
+    values: {
+      date: post.publishedAtFormatted,
+      time: post.publishedAtTime,
+    },
+  });
   const replyCount = post.replyCount ?? 0;
   const replyCountUnit =
     replyCount === 1
@@ -977,7 +991,7 @@ const ArchiveTile: FC<{ post: PostView }> = ({ post }) => {
         <time
           class="archive-tile-date"
           datetime={post.publishedAt}
-          title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
+          title={publishedLabel}
           aria-label={post.publishedAtFormatted}
         >
           {shortDate}
@@ -1061,6 +1075,7 @@ export const ArchivePage: FC<ArchivePageProps> = ({
   availableCollections,
   isAuthenticated,
   sitePathPrefix = "",
+  timeZone = "UTC",
 }) => {
   const { t } = useLingui();
   const currentView: ArchiveView = filters.view ?? "grid";
@@ -1126,7 +1141,11 @@ export const ArchivePage: FC<ArchivePageProps> = ({
                     count={group.totalCount}
                   />
                   {group.posts.map((post) => (
-                    <ArchiveTile key={post.id} post={post} />
+                    <ArchiveTile
+                      key={post.id}
+                      post={post}
+                      timeZone={timeZone}
+                    />
                   ))}
                 </div>
               ))}

@@ -48,6 +48,7 @@ export interface MediaContext {
   s3PublicUrl?: string;
   localPublicUrl?: string;
   sitePathPrefix?: string;
+  timeZone?: string;
 }
 
 /**
@@ -63,6 +64,7 @@ export function createMediaContext(appConfig: AppConfig): MediaContext {
     s3PublicUrl: appConfig.s3PublicUrl || undefined,
     localPublicUrl: appConfig.localPublicUrl || undefined,
     sitePathPrefix: appConfig.sitePathPrefix || undefined,
+    timeZone: appConfig.timeZone || undefined,
   };
 }
 
@@ -183,7 +185,9 @@ export function toPostView(
 ): PostView {
   const id = post.id;
   const permalink = toPublicPath(`/${post.slug}`, ctx.sitePathPrefix);
+  const timeZone = ctx.timeZone ?? "UTC";
   const publishedAt = post.publishedAt ?? post.updatedAt;
+  const featuredAt = post.featuredAt;
   const summary = getPlainSummary(post);
 
   // Pre-compute excerpt from the unified plain-text summary.
@@ -259,12 +263,17 @@ export function toPostView(
     status: post.status as Status,
     visibility: post.visibility,
     pinned: post.pinnedAt !== null,
-    featured: post.featuredAt !== null,
+    featured: featuredAt !== null,
+    featuredAt: featuredAt !== null ? toISOString(featuredAt) : undefined,
+    featuredAtFormatted:
+      featuredAt !== null ? formatDate(featuredAt, timeZone) : undefined,
+    featuredAtTime:
+      featuredAt !== null ? formatTime(featuredAt, timeZone) : undefined,
     rating: post.rating ?? undefined,
     publishedAt: toISOString(publishedAt),
-    publishedAtFormatted: formatDate(publishedAt),
-    publishedAtTime: formatTime(publishedAt),
-    publishedAtRelative: formatRelativeTime(publishedAt),
+    publishedAtFormatted: formatDate(publishedAt, timeZone),
+    publishedAtTime: formatTime(publishedAt, timeZone),
+    publishedAtRelative: formatRelativeTime(publishedAt, timeZone),
     updatedAt: toISOString(post.updatedAt),
     media,
     collections,

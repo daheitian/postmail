@@ -1,6 +1,9 @@
+import type { Context } from "hono";
 import { renderToString } from "hono/jsx/dom/server";
 import { describe, expect, it } from "vitest";
 import type { MediaView, PostView } from "../../../types.js";
+import { I18nProvider } from "../../../i18n/context.js";
+import { createI18n } from "../../../i18n/i18n.js";
 import { LinkCard } from "../LinkCard.js";
 import { QuoteCard } from "../QuoteCard.js";
 
@@ -40,12 +43,27 @@ function createPostView(overrides: Partial<PostView> = {}): PostView {
   };
 }
 
+function renderWithI18n(
+  html: ReturnType<typeof LinkCard> | ReturnType<typeof QuoteCard>,
+) {
+  const i18n = createI18n("en");
+  const c = {
+    get(key: string) {
+      if (key === "i18n") return i18n;
+      return undefined;
+    },
+  } as unknown as Context;
+
+  I18nProvider({ c, children: "" });
+  return renderToString(html);
+}
+
 describe("timeline cards", () => {
   it("renders link attachments in feed and detail modes", () => {
     const post = createPostView({ format: "link" });
 
-    const feedHtml = renderToString(LinkCard({ post, mode: "feed" }));
-    const detailHtml = renderToString(LinkCard({ post, mode: "detail" }));
+    const feedHtml = renderWithI18n(LinkCard({ post, mode: "feed" }));
+    const detailHtml = renderWithI18n(LinkCard({ post, mode: "detail" }));
 
     expect(feedHtml).toContain("data-post-media");
     expect(feedHtml).toContain('href="/media/full.jpg"');
@@ -56,8 +74,8 @@ describe("timeline cards", () => {
   it("renders quote attachments in feed and detail modes", () => {
     const post = createPostView({ format: "quote" });
 
-    const feedHtml = renderToString(QuoteCard({ post, mode: "feed" }));
-    const detailHtml = renderToString(QuoteCard({ post, mode: "detail" }));
+    const feedHtml = renderWithI18n(QuoteCard({ post, mode: "feed" }));
+    const detailHtml = renderWithI18n(QuoteCard({ post, mode: "detail" }));
 
     expect(feedHtml).toContain("data-post-media");
     expect(feedHtml).toContain('href="/media/full.jpg"');
@@ -69,10 +87,10 @@ describe("timeline cards", () => {
     const linkPost = createPostView({ format: "link" });
     const quotePost = createPostView({ format: "quote" });
 
-    const linkHtml = renderToString(
+    const linkHtml = renderWithI18n(
       LinkCard({ post: linkPost, mode: "compact" }),
     );
-    const quoteHtml = renderToString(
+    const quoteHtml = renderWithI18n(
       QuoteCard({ post: quotePost, mode: "compact" }),
     );
 

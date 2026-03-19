@@ -11,7 +11,13 @@
 import type { MessageDescriptor } from "@lingui/core";
 
 type MacroInput =
-  | { id?: string; message: string; comment?: string; context?: string }
+  | {
+      id?: string;
+      message: string;
+      comment?: string;
+      context?: string;
+      values?: Record<string, unknown>;
+    }
   | TemplateStringsArray;
 
 function toDescriptor(
@@ -19,7 +25,13 @@ function toDescriptor(
   ...args: unknown[]
 ): MessageDescriptor {
   if (typeof input === "object" && "message" in input) {
-    return { id: input.message, message: input.message } as MessageDescriptor;
+    return {
+      id: input.message,
+      message: input.message,
+      ...(input.comment ? { comment: input.comment } : {}),
+      ...(input.context ? { context: input.context } : {}),
+      ...(input.values ? { values: input.values } : {}),
+    } as MessageDescriptor;
   }
   // Template literal form: msg`some text`
   const raw = (input as TemplateStringsArray).reduce(

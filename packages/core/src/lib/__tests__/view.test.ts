@@ -260,6 +260,23 @@ describe("toPostView", () => {
     expect(view.visibility).toBe("public");
     expect(view.pinned).toBe(true);
     expect(view.featured).toBe(true);
+    expect(view.featuredAt).toBe("2024-02-01T00:00:00.000Z");
+    expect(view.featuredAtFormatted).toBe("Feb 1, 2024");
+    expect(view.featuredAtTime).toBe("00:00");
+  });
+
+  it("formats published and featured timestamps in the configured site timezone", () => {
+    const post = makePostWithMedia({
+      publishedAt: 1706747400,
+      featuredAt: 1706747400,
+    });
+    const view = toPostView(post, { timeZone: "America/New_York" });
+
+    expect(view.publishedAtFormatted).toBe("Jan 31, 2024");
+    expect(view.publishedAtTime).toBe("19:30");
+    expect(view.publishedAtRelative).toBeDefined();
+    expect(view.featuredAtFormatted).toBe("Jan 31, 2024");
+    expect(view.featuredAtTime).toBe("19:30");
   });
 
   it("maps default visibility and pinnedAt=null", () => {

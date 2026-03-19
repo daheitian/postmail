@@ -24,6 +24,7 @@ import { ArchivePage } from "../../ui/pages/ArchivePage.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
+import { formatYearMonth } from "../../lib/time.js";
 import {
   createMediaContext,
   toArchiveGroupsWithMedia,
@@ -162,8 +163,7 @@ archiveRoutes.get("/", async (c) => {
   const grouped = new Map<string, PostWithMedia[]>();
   for (const post of posts) {
     const publishedAt = post.publishedAt ?? post.updatedAt;
-    const date = new Date(publishedAt * 1000);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+    const key = formatYearMonth(publishedAt, appConfig.timeZone);
     if (!grouped.has(key)) {
       grouped.set(key, []);
     }
@@ -265,6 +265,7 @@ archiveRoutes.get("/", async (c) => {
         availableCollections={availableCollectionsList}
         isAuthenticated={navData.isAuthenticated}
         sitePathPrefix={navData.sitePathPrefix}
+        timeZone={appConfig.timeZone}
       />
     ),
   });

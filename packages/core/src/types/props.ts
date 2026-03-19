@@ -70,6 +70,7 @@ export interface ArchivePageProps {
   availableCollections: { slug: string; title: string }[];
   isAuthenticated: boolean;
   sitePathPrefix?: string;
+  timeZone?: string;
 }
 
 /** Props for the search page component */

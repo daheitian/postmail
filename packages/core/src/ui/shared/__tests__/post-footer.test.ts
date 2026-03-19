@@ -1,6 +1,9 @@
+import type { Context } from "hono";
 import { renderToString } from "hono/jsx/dom/server";
 import { describe, expect, it } from "vitest";
 import type { CollectionTagView, PostView } from "../../../types.js";
+import { I18nProvider } from "../../../i18n/context.js";
+import { createI18n } from "../../../i18n/i18n.js";
 import { PostFooter } from "../PostFooter.js";
 
 function createCollection(slug: string, title: string): CollectionTagView {
@@ -37,27 +40,32 @@ function createPostView(overrides: Partial<PostView> = {}): PostView {
   };
 }
 
+function renderPostFooter(post: PostView, detail = false): string {
+  const i18n = createI18n("en");
+  const c = {
+    get(key: string) {
+      if (key === "i18n") return i18n;
+      return undefined;
+    },
+  } as unknown as Context;
+
+  I18nProvider({ c, children: "" });
+  return renderToString(PostFooter({ post, detail }));
+}
+
 describe("PostFooter", () => {
   it("links the detail timestamp and keeps compact collection summary", () => {
-    const html = renderToString(
-      PostFooter({
-        post: createPostView(),
-        detail: true,
-      }),
-    );
+    const html = renderPostFooter(createPostView(), true);
 
     expect(html).toContain('href="/hello-world"');
     expect(html).not.toContain(">Permalink<");
     expect(html).toContain("and 2 more");
     expect(html).toContain("data-collection-popover-trigger");
+    expect(html).toContain('title="Published on Mar 17, 2026 at 10:00"');
   });
 
   it("shows only hidden collections inside the more popover", () => {
-    const html = renderToString(
-      PostFooter({
-        post: createPostView(),
-      }),
-    );
+    const html = renderPostFooter(createPostView());
 
     expect(html).toContain("and 2 more");
     expect(html).toContain("data-collection-popover-trigger");
@@ -68,15 +76,19 @@ describe("PostFooter", () => {
   });
 
   it("renders the featured icon before the timestamp for client-side toggles", () => {
-    const html = renderToString(
-      PostFooter({
-        post: createPostView({ featured: true }),
+    const html = renderPostFooter(
+      createPostView({
+        featured: true,
+        featuredAt: "2026-03-18T09:45:00.000Z",
+        featuredAtFormatted: "Mar 18, 2026",
+        featuredAtTime: "09:45",
       }),
     );
 
     expect(html).toContain('class="post-footer-featured"');
-    expect(html).toContain('title="Featured"');
-    expect(html).toContain('<span class="sr-only">Featured</span>');
+    expect(html).toContain('aria-label="Featured on Mar 18, 2026 at 09:45"');
+    expect(html).toContain('data-tooltip="Featured on Mar 18, 2026 at 09:45"');
+    expect(html).not.toContain("data-side=");
     expect(html.indexOf('class="post-footer-featured"')).toBeLessThan(
       html.indexOf('class="u-url post-footer-link"'),
     );

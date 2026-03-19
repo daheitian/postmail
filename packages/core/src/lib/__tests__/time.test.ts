@@ -92,6 +92,12 @@ describe("formatDate", () => {
     const timestamp = 1704067199;
     expect(formatDate(timestamp)).toBe("Dec 31, 2023");
   });
+
+  it("supports formatting in a configured site timezone", () => {
+    // 2024-02-01T00:30:00Z
+    const timestamp = 1706747400;
+    expect(formatDate(timestamp, "America/New_York")).toBe("Jan 31, 2024");
+  });
 });
 
 describe("formatTime", () => {
@@ -113,6 +119,12 @@ describe("formatTime", () => {
   it("formats single-digit hour with padding", () => {
     // 2024-02-01T09:07:00Z = 1706778420
     expect(formatTime(1706778420)).toBe("09:07");
+  });
+
+  it("supports formatting in a configured site timezone", () => {
+    // 2024-02-01T00:30:00Z
+    const timestamp = 1706747400;
+    expect(formatTime(timestamp, "America/New_York")).toBe("19:30");
   });
 });
 
@@ -152,6 +164,13 @@ describe("formatRelativeTime", () => {
     vi.spyOn(Date, "now").mockReturnValue((feb1 + 15 * 86400) * 1000);
     expect(formatRelativeTime(feb1)).toBe("Feb 1");
   });
+
+  it("uses the configured timezone for older calendar labels", () => {
+    // 2024-02-01T00:30:00Z
+    const timestamp = 1706747400;
+    vi.spyOn(Date, "now").mockReturnValue((timestamp + 15 * 86400) * 1000);
+    expect(formatRelativeTime(timestamp, "America/New_York")).toBe("Jan 31");
+  });
 });
 
 describe("formatRelativeAge", () => {
@@ -189,5 +208,11 @@ describe("formatYearMonth", () => {
 
   it("formats epoch start", () => {
     expect(formatYearMonth(0)).toBe("1970-01");
+  });
+
+  it("supports formatting in a configured site timezone", () => {
+    // 2024-02-01T00:30:00Z
+    const timestamp = 1706747400;
+    expect(formatYearMonth(timestamp, "America/New_York")).toBe("2024-01");
   });
 });

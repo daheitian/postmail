@@ -58,6 +58,12 @@ export interface PostView {
   visibility: Visibility;
   pinned: boolean;
   featured: boolean;
+  /** ISO 8601 string for when the post was added to Featured. */
+  featuredAt?: string;
+  /** Human-readable featured date, e.g. "Feb 1, 2024" */
+  featuredAtFormatted?: string;
+  /** 24-hour featured time, e.g. "23:05" */
+  featuredAtTime?: string;
   rating?: number;
 
   // Time -- pre-formatted

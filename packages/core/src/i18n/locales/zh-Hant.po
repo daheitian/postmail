@@ -1947,6 +1947,11 @@ msgstr "發布設定"
 msgid "Published"
 msgstr "已發佈"
 
+#. @context: Tooltip text for the archive tile published timestamp
+#: src/ui/pages/ArchivePage.tsx
+msgid "Published on {date} at {time}"
+msgstr "發佈於 {date} {time}"
+
 #. @context: Toast shown after successful deferred publish
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Published!"

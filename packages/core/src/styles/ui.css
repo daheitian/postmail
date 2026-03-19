@@ -1999,6 +1999,7 @@
     display: none;
     align-items: center;
     justify-content: center;
+    position: relative;
     color: color-mix(
       in srgb,
       var(--search-mark-color) 72%,
@@ -2006,16 +2007,33 @@
     );
     --icon-stroke: 1.35;
     flex-shrink: 0;
+    cursor: default;
+    outline: none;
   }
 
   article[data-post-featured] .post-footer-featured {
     display: inline-flex;
   }
 
+  .post-footer-featured:focus-visible {
+    border-radius: 999px;
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--ring, var(--color-ring)) 38%, transparent);
+  }
+
   .post-footer-featured svg {
     width: 1rem;
     height: 1rem;
     opacity: 0.9;
+  }
+
+  .post-footer-featured[data-tooltip]::before {
+    transition-delay: 0s;
+  }
+
+  .post-footer-featured[data-tooltip]:hover::before,
+  .post-footer-featured[data-tooltip]:focus-visible::before {
+    transition-delay: 220ms;
   }
 
   .post-footer-link {

@@ -11,6 +11,7 @@ import type {
   CollectionTagView,
   PostFooterDisplayOptions,
 } from "../../types.js";
+import { useLingui } from "../../i18n/context.js";
 import { FEATURED_SPARKLE_PATH } from "../../lib/featured-icons.js";
 import { sanitizeUrl } from "../../lib/url.js";
 
@@ -25,6 +26,8 @@ const CompactCollectionTags: FC<{
   collections: CollectionTagView[];
   showSeparator?: boolean;
 }> = ({ collections, showSeparator = true }) => {
+  const { t } = useLingui();
+
   if (collections.length === 0) return null;
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length checked above
@@ -48,7 +51,12 @@ const CompactCollectionTags: FC<{
             class="post-collection-more"
             data-collection-popover-trigger
           >
-            and {rest.length} more
+            {t({
+              message: "and {count} more",
+              comment:
+                "@context: Button label for opening the hidden collection list in the post footer",
+              values: { count: rest.length },
+            })}
           </button>
           <div class="post-collection-popover" data-collection-popover>
             {rest.map((c) => (
@@ -64,7 +72,32 @@ const CompactCollectionTags: FC<{
 };
 
 export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
-  const featuredLabel = "Featured";
+  const { t } = useLingui();
+  const publishedLabel = t({
+    message: "Published on {date} at {time}",
+    comment:
+      "@context: Tooltip text for the published timestamp in the post footer",
+    values: {
+      date: post.publishedAtFormatted,
+      time: post.publishedAtTime,
+    },
+  });
+  const featuredLabel =
+    post.featuredAtFormatted && post.featuredAtTime
+      ? t({
+          message: "Featured on {date} at {time}",
+          comment:
+            "@context: Tooltip and screen reader label for the featured-post icon in the post footer",
+          values: {
+            date: post.featuredAtFormatted,
+            time: post.featuredAtTime,
+          },
+        })
+      : t({
+          message: "Featured",
+          comment:
+            "@context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available",
+        });
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
   const showTimestamp = !display?.hideTimestamp;
@@ -81,7 +114,14 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
       data-post-meta
     >
       <div class="post-footer-meta">
-        <span class="post-footer-featured" title={featuredLabel}>
+        <span
+          class="post-footer-featured"
+          tabindex={0}
+          role="img"
+          aria-label={featuredLabel}
+          data-tooltip={featuredLabel}
+          data-align="center"
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -94,14 +134,13 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
           >
             <path d={FEATURED_SPARKLE_PATH} />
           </svg>
-          <span class="sr-only">{featuredLabel}</span>
         </span>
         {showTimestamp && (
           <a href={post.permalink} class="u-url post-footer-link">
             <time
               class="dt-published"
               datetime={post.publishedAt}
-              title={`${post.publishedAtFormatted} ${post.publishedAtTime} UTC`}
+              title={publishedLabel}
             >
               {post.publishedAtFormatted}
             </time>
@@ -113,7 +152,11 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             class="post-footer-external-link"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Open external link"
+            aria-label={t({
+              message: "Open external link",
+              comment:
+                "@context: Accessible label for the external-link icon in the post footer",
+            })}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -136,7 +179,10 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
         )}
         {showThreadLink && post.threadRootPermalink && (
           <a href={post.threadRootPermalink} class="post-footer-link">
-            In thread &rarr;
+            {t({
+              message: "In thread →",
+              comment: "@context: Link to the thread root from a post footer",
+            })}
           </a>
         )}
         <CompactCollectionTags
@@ -150,7 +196,10 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             <button
               type="button"
               class="reply-trigger"
-              aria-label="Reply"
+              aria-label={t({
+                message: "Reply",
+                comment: "@context: Reply button label in the post footer",
+              })}
               data-reply-trigger
             >
               <svg
@@ -173,7 +222,10 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             type="button"
             class="post-menu-trigger"
             aria-haspopup="menu"
-            aria-label="More actions"
+            aria-label={t({
+              message: "More actions",
+              comment: "@context: Post menu trigger label in the post footer",
+            })}
             aria-expanded="false"
             data-post-menu-trigger
           >
