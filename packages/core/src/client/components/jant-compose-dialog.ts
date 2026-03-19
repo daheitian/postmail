@@ -66,6 +66,11 @@ interface DraftsResponse {
   posts?: Record<string, unknown>[];
 }
 
+interface ComposeOpenOptions {
+  collectionId?: string;
+  restoreDraft?: boolean;
+}
+
 interface ComposeStateSnapshot {
   format: ComposeFormat;
   collectionIds: string[];
@@ -116,6 +121,8 @@ function toComposeCollections(value: unknown): ComposeCollection[] {
 }
 
 export class JantComposeDialog extends LitElement {
+  private static _lastNewPostVisibility: ComposeVisibility = "public";
+
   static properties = {
     collections: { type: Array },
     labels: { type: Object },
@@ -259,7 +266,7 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshKind = null;
     this._replyRefreshId = null;
     this._slug = "";
-    this._visibility = "public";
+    this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
     this._moreSlugExpanded = false;
     this._suggestedSlug = "";
@@ -331,7 +338,7 @@ export class JantComposeDialog extends LitElement {
     this._replyRefreshKind = null;
     this._replyRefreshId = null;
     this._slug = "";
-    this._visibility = "public";
+    this._visibility = JantComposeDialog._lastNewPostVisibility;
     this._showPublishPanel = false;
     this._moreSlugExpanded = false;
     this._suggestedSlug = "";
@@ -470,6 +477,23 @@ export class JantComposeDialog extends LitElement {
       this._editor?.focusInput();
       this._captureInitialSnapshot();
     });
+  }
+
+  async openNew(options?: ComposeOpenOptions) {
+    this.reset();
+
+    if (options?.restoreDraft !== false) {
+      await this.restoreLocalDraft();
+    }
+
+    if (!this._hasContent() && options?.collectionId) {
+      this._collectionIds = [options.collectionId];
+    }
+
+    this.closest("dialog")?.showModal();
+    await this.updateComplete;
+    this._editor?.focusInput();
+    this._captureInitialSnapshot();
   }
 
   /**
@@ -2553,6 +2577,9 @@ export class JantComposeDialog extends LitElement {
   private _setVisibility(visibility: ComposeVisibility) {
     if (this._visibilityLocked) return;
     this._visibility = visibility;
+    if (!this._editPostId && !this._draftSourceId && !this._replyToId) {
+      JantComposeDialog._lastNewPostVisibility = visibility;
+    }
     this._showPublishPanel = false;
   }
 
@@ -2571,6 +2598,7 @@ export class JantComposeDialog extends LitElement {
   private _renderPublishVisibilityOption(
     visibility: ComposeVisibility,
     label: string,
+    hint: string,
   ) {
     const selected = this._visibility === visibility;
 
@@ -2586,7 +2614,10 @@ export class JantComposeDialog extends LitElement {
         ?disabled=${this._visibilityLocked}
         @click=${() => this._setVisibility(visibility)}
       >
-        <span class="compose-publish-row-label">${label}</span>
+        <span class="compose-publish-copy">
+          <span class="compose-publish-row-label">${label}</span>
+          <span class="compose-publish-row-hint">${hint}</span>
+        </span>
         ${selected
           ? html`<svg
               class="compose-publish-row-check"
@@ -2620,14 +2651,17 @@ export class JantComposeDialog extends LitElement {
           ${this._renderPublishVisibilityOption(
             "public",
             this.labels.publishVisibilityPublic,
+            this.labels.publishVisibilityPublicHint,
           )}
           ${this._renderPublishVisibilityOption(
             "unlisted",
             this.labels.publishVisibilityUnlisted,
+            this.labels.publishVisibilityUnlistedHint,
           )}
           ${this._renderPublishVisibilityOption(
             "private",
             this.labels.publishVisibilityPrivate,
+            this.labels.publishVisibilityPrivateHint,
           )}
         </div>
       </div>

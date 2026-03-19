@@ -59,12 +59,12 @@ Photos with optional captions.
 
 Every post has a visibility level:
 
-| Level        | What it means                                |
-| ------------ | -------------------------------------------- |
-| **Public**   | Normal publish, visible everywhere (default) |
-| **Unlisted** | Only accessible via direct link              |
-| **Private**  | Only visible when logged in                  |
-| **Draft**    | Work in progress, not published              |
+| Level        | What it means                                                                         |
+| ------------ | ------------------------------------------------------------------------------------- |
+| **Public**   | Normal publish, visible everywhere (default)                                          |
+| **Unlisted** | Hidden from Latest and the main feeds, but still visible in collections you add it to |
+| **Private**  | Only visible when logged in                                                           |
+| **Draft**    | Work in progress, not published                                                       |
 
 ### Featured
 

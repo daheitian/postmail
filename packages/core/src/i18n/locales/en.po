@@ -1264,8 +1264,8 @@ msgstr "Helps screen readers describe the image"
 
 #. @context: Compose publish settings help text for unlisted visibility
 #: src/ui/compose/ComposeDialog.tsx
-msgid "Hidden from public lists and feeds, but anyone with the link can still view it."
-msgstr "Hidden from public lists and feeds, but anyone with the link can still view it."
+msgid "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds."
+msgstr "Hidden from Latest and the main feed. Still shows up in collections you add it to, including their feeds."
 
 #. @context: Collection sort order option
 #. @context: Collection sort order option
@@ -1642,8 +1642,10 @@ msgid "New Password"
 msgstr "New Password"
 
 #. @context: Browser page title for the new post page
+#. @context: Collection page quick compose button aria label
 #. @context: Page title for the new post page
 #: src/routes/pages/new.tsx
+#: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/ComposePage.tsx
 msgid "New post"
 msgstr "New post"

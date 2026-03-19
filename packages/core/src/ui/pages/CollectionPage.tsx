@@ -39,6 +39,10 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   const pageLabel =
     currentPage > 1 ? formatPageLabel(currentPage, totalPages) : null;
   const mutationLabels = getCollectionMutationLabels(t);
+  const newPostLabel = t({
+    message: "New post",
+    comment: "@context: Collection page quick compose button aria label",
+  });
   const sortOptions = [
     {
       value: "newest",
@@ -80,53 +84,113 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   return (
     <div class="py-6" data-page="collection">
       <header class="collection-page-header">
-        <nav
-          class="collection-breadcrumb"
-          aria-label={t({
-            message: "Breadcrumb",
-            comment: "@context: Breadcrumb label on collection detail page",
-          })}
-        >
-          <ol>
-            <li>
-              <a href={toPublicPath("/c", sitePathPrefix)}>
-                {t({
-                  message: "Collections",
-                  comment: "@context: Breadcrumb link to collections page",
-                })}
-              </a>
-            </li>
-            <li aria-hidden="true">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </li>
-            <li>
-              <span>{collection.title}</span>
-            </li>
-          </ol>
-        </nav>
+        <div class="collection-page-topbar">
+          <nav
+            class="collection-breadcrumb"
+            aria-label={t({
+              message: "Breadcrumb",
+              comment: "@context: Breadcrumb label on collection detail page",
+            })}
+          >
+            <ol>
+              <li>
+                <a href={toPublicPath("/c", sitePathPrefix)}>
+                  {t({
+                    message: "Collections",
+                    comment: "@context: Breadcrumb link to collections page",
+                  })}
+                </a>
+              </li>
+              <li aria-hidden="true">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </li>
+              <li>
+                <span>{collection.title}</span>
+              </li>
+            </ol>
+          </nav>
 
-        <div class="collection-page-title-row">
-          <div class="collection-page-title-block">
-            <h1 class="collection-page-title">
-              <span>{collection.title}</span>
-            </h1>
-            {collection.description ? (
-              <p class="collection-page-description">
-                {collection.description}
-              </p>
-            ) : null}
+          {isAuthenticated ? (
+            <div
+              class="collection-page-manage"
+              data-collection-page-actions
+              data-collection-id={collection.id}
+              data-collection-page-labels={escapeJson(mutationLabels)}
+              data-collection-page-redirect-url={toPublicPath(
+                "/c",
+                sitePathPrefix,
+              )}
+            >
+              <button
+                type="button"
+                class="collection-page-manage-trigger"
+                aria-label={mutationLabels.moreActions}
+                aria-expanded="false"
+                aria-haspopup="menu"
+                data-collection-page-action="toggle-menu"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <circle cx="5" cy="12" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="19" cy="12" r="2" />
+                </svg>
+              </button>
+
+              <div
+                class="collections-page-menu"
+                role="menu"
+                data-collection-page-menu
+                hidden
+              >
+                <a
+                  href={editCollectionUrl}
+                  class="collections-page-menu-item"
+                  role="menuitem"
+                >
+                  {mutationLabels.edit}
+                </a>
+                <button
+                  type="button"
+                  class="collections-page-menu-item collections-page-menu-item-danger"
+                  role="menuitem"
+                  data-collection-page-action="delete"
+                >
+                  {mutationLabels.deleteCollection}
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div class="collection-page-title-block">
+          <h1 class="collection-page-title">
+            <span>{collection.title}</span>
+          </h1>
+          {collection.description ? (
+            <p class="collection-page-description">{collection.description}</p>
+          ) : null}
+        </div>
+
+        <div class="collection-page-subhead">
+          <div class="collection-page-meta-row">
             <p class="collection-page-meta">
               {totalCount}{" "}
               {totalCount === 1
@@ -140,26 +204,27 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                   })}
               {pageLabel ? <span> / {pageLabel}</span> : null}
             </p>
-          </div>
-
-          <div class="collection-page-controls">
+            <span class="collection-page-meta-divider" aria-hidden="true">
+              &middot;
+            </span>
             <div class="collection-sort-menu">
               <button
                 type="button"
                 id={sortTriggerId}
-                class="btn-outline collection-sort-trigger"
+                class="collection-sort-trigger"
                 aria-haspopup="menu"
                 aria-controls={sortPopoverId}
                 aria-expanded="false"
               >
-                <span>
+                <span class="sr-only">
                   {t({
                     message: "Sort",
                     comment:
                       "@context: Sort menu label on collection detail page",
                   })}
-                  : {currentSortLabel}
+                  :{" "}
                 </span>
+                <span>{currentSortLabel}</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="14"
@@ -211,64 +276,35 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 </div>
               </div>
             </div>
-
-            {isAuthenticated ? (
-              <div
-                class="collection-page-manage"
-                data-collection-page-actions
-                data-collection-id={collection.id}
-                data-collection-page-labels={escapeJson(mutationLabels)}
-                data-collection-page-redirect-url={toPublicPath(
-                  "/c",
-                  sitePathPrefix,
-                )}
-              >
-                <button
-                  type="button"
-                  class="btn-outline collection-page-manage-trigger"
-                  aria-label={mutationLabels.moreActions}
-                  aria-expanded="false"
-                  aria-haspopup="menu"
-                  data-collection-page-action="toggle-menu"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <circle cx="5" cy="12" r="2" />
-                    <circle cx="12" cy="12" r="2" />
-                    <circle cx="19" cy="12" r="2" />
-                  </svg>
-                </button>
-
-                <div
-                  class="collections-page-menu"
-                  role="menu"
-                  data-collection-page-menu
-                  hidden
-                >
-                  <a
-                    href={editCollectionUrl}
-                    class="collections-page-menu-item"
-                    role="menuitem"
-                  >
-                    {mutationLabels.edit}
-                  </a>
-                  <button
-                    type="button"
-                    class="collections-page-menu-item collections-page-menu-item-danger"
-                    role="menuitem"
-                    data-collection-page-action="delete"
-                  >
-                    {mutationLabels.deleteCollection}
-                  </button>
-                </div>
-              </div>
-            ) : null}
           </div>
+
+          {isAuthenticated ? (
+            <div class="collection-page-owner-tools">
+              <button
+                type="button"
+                class="collection-page-compose-trigger"
+                aria-label={newPostLabel}
+                title={newPostLabel}
+                data-on:click={`document.getElementById('compose-dialog')?.querySelector('jant-compose-dialog')?.openNew(${escapeJson({ collectionId: collection.id })})`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 5v14" />
+                  <path d="M5 12h14" />
+                </svg>
+              </button>
+            </div>
+          ) : null}
         </div>
       </header>
 
