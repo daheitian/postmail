@@ -276,9 +276,7 @@ describe("createExportService", () => {
     expect(postMarkdown).toContain("<summary>Attached note</summary>");
     expect(postMarkdown).toContain("<h1>Attached note</h1>");
     expect(postMarkdown).not.toContain('"src":"');
-    expect(styleCss).toContain(".jant-attachment-text-preview blockquote");
-    expect(styleCss).toContain("padding-left: 0;");
-    expect(styleCss).toContain("border-left: none;");
+    expect(styleCss).not.toContain(".jant-attachment-text-preview blockquote");
   });
 
   it("exports custom favicon and apple-touch assets with explicit custom modes", async () => {

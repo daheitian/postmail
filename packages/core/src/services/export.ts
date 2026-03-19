@@ -2208,13 +2208,6 @@ article[data-post-pinned][data-post-visibility="private"] .post-status-separator
   margin-bottom: 0;
 }
 
-.jant-attachment-text-preview blockquote {
-  margin-left: 0;
-  padding-left: 0;
-  border-left: none;
-  color: inherit;
-}
-
 .post-rating {
   display: flex;
   gap: 1px;
