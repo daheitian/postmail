@@ -21,6 +21,7 @@ import {
   showPersistentToast,
   replaceWithAutoClose,
 } from "./toast.js";
+import { openReplyForArticle } from "./compose-launch.js";
 import { getJsonString, readJsonObject } from "./json.js";
 import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
 import { publicPath } from "./runtime-paths.js";
@@ -41,36 +42,6 @@ function getComposeDialogFromEventTarget(
   return target instanceof globalThis.Element
     ? (target.closest("jant-compose-dialog") as JantComposeDialog | null)
     : null;
-}
-
-type ReplyRefreshKind = "timeline-item" | "post-card" | "post-view";
-
-interface ReplyRefreshTarget {
-  kind: ReplyRefreshKind;
-  id: string;
-}
-
-function getReplyRefreshTarget(
-  article: HTMLElement,
-): ReplyRefreshTarget | null {
-  const postView = article.closest<HTMLElement>("[data-post-view]");
-  const postViewId = postView?.dataset.postViewId;
-  if (postViewId) {
-    return { kind: "post-view", id: postViewId };
-  }
-
-  const page = article.closest<HTMLElement>("[data-page]")?.dataset.page;
-  const threadRootId = article.dataset.threadRootId ?? article.dataset.postId;
-  if (page === "home" && threadRootId) {
-    return { kind: "timeline-item", id: threadRootId };
-  }
-
-  const postId = article.dataset.postId;
-  if (postId) {
-    return { kind: "post-card", id: postId };
-  }
-
-  return null;
 }
 
 async function fetchPartialHtml(path: string): Promise<string | null> {
@@ -422,31 +393,7 @@ document.addEventListener("click", (e: MouseEvent) => {
 
   const article = trigger.closest<HTMLElement>("article[data-post]");
   if (!article) return;
-
-  const postId = article.dataset.postId;
-  const threadRootId = article.dataset.threadRootId ?? postId;
-  const refreshTarget = getReplyRefreshTarget(article);
-  if (!postId) return;
-
-  // Capture rendered content from the DOM — reuses server-rendered cards
-  // (NoteCard, LinkCard, QuoteCard) with all formats, media, and attachments
-  const clone = article.cloneNode(true) as HTMLElement;
-  clone.querySelector("[data-post-meta]")?.remove();
-  clone.querySelector(".post-status-badges")?.remove();
-  const contentHtml = clone.innerHTML;
-
-  const timeEl = article.querySelector<HTMLElement>("time.dt-published");
-  const dateText = timeEl?.textContent?.trim() ?? "";
-
-  const dialog = document.querySelector(
-    "jant-compose-dialog",
-  ) as JantComposeDialog | null;
-  dialog?.openReply(
-    postId,
-    { contentHtml, dateText },
-    threadRootId,
-    refreshTarget ?? undefined,
-  );
+  void openReplyForArticle(article);
 });
 
 // ── Submit handler ──────────────────────────────────────────────────

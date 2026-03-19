@@ -149,7 +149,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
     sortOptions[0].label;
 
   return (
-    <div class="py-6" data-page="collection">
+    <div class="py-6" data-page="collection" data-collection-id={collection.id}>
       <header class="collection-page-header">
         <div class="collection-page-topbar">
           <nav

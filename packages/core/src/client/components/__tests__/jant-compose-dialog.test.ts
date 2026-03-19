@@ -441,6 +441,44 @@ describe("JantComposeDialog", () => {
     expect(el._visibility).toBe("unlisted");
   });
 
+  it("prepends the requested collection even when a local draft is restored", async () => {
+    const el = await createElement();
+
+    globalThis.localStorage.setItem(
+      "jant:compose-draft",
+      JSON.stringify({
+        format: "note",
+        title: "",
+        bodyJson: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Draft body" }],
+            },
+          ],
+        },
+        url: "",
+        quoteText: "",
+        quoteAuthor: "",
+        slug: "",
+        visibility: "public",
+        rating: 0,
+        showTitle: false,
+        showRating: false,
+        collectionIds: ["col-1"],
+        attachedTexts: [],
+        attachmentOrder: [],
+        savedAt: Date.now(),
+      }),
+    );
+
+    await el.openNew({ collectionId: "col-2" });
+    await flushUpdates(el);
+
+    expect(el._collectionIds).toEqual(["col-2", "col-1"]);
+  });
+
   it("includes a custom slug from the more menu in the submit payload", async () => {
     mockSlugApi((url) => {
       if (url.searchParams.get("mode") === "suggest") {

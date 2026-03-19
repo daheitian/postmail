@@ -491,8 +491,11 @@ export class JantComposeDialog extends LitElement {
       await this.restoreLocalDraft();
     }
 
-    if (!this._hasContent() && options?.collectionId) {
-      this._collectionIds = [options.collectionId];
+    if (
+      options?.collectionId &&
+      !this._collectionIds.includes(options.collectionId)
+    ) {
+      this._collectionIds = [options.collectionId, ...this._collectionIds];
     }
 
     this.closest("dialog")?.showModal();
