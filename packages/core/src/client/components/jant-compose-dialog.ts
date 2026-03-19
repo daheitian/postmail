@@ -68,6 +68,13 @@ interface DraftsResponse {
   posts?: Record<string, unknown>[];
 }
 
+interface NavigatorWithUserAgentData {
+  platform?: string;
+  userAgentData?: {
+    platform?: string;
+  };
+}
+
 interface ComposeOpenOptions {
   collectionId?: string;
   restoreDraft?: boolean;
@@ -120,6 +127,13 @@ function toComposeCollections(value: unknown): ComposeCollection[] {
 
     return [{ id, title }];
   });
+}
+
+function usesAppleCommandKey(): boolean {
+  const nav = globalThis.navigator as NavigatorWithUserAgentData | undefined;
+  const platform = nav?.userAgentData?.platform ?? nav?.platform ?? "";
+
+  return /mac|iphone|ipad|ipod/i.test(platform);
 }
 
 export class JantComposeDialog extends LitElement {
@@ -2700,26 +2714,31 @@ export class JantComposeDialog extends LitElement {
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>`;
     const canPublish = this._canPublish();
+    const shortcutHint = this._renderPublishShortcutHint();
 
     if (this._replyToId || this._visibilityLocked) {
       return html`
-        <button
-          type="button"
-          class=${classMap({
-            "btn-sm-outline": true,
-            "compose-publish-single": true,
-            "compose-publish-single-loading": this._loading,
-          })}
-          ?disabled=${!canPublish}
-          @click=${() => this._submit("published")}
-        >
-          ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
-        </button>
+        <div class="compose-publish-group">
+          ${shortcutHint}
+          <button
+            type="button"
+            class=${classMap({
+              "btn-sm-outline": true,
+              "compose-publish-single": true,
+              "compose-publish-single-loading": this._loading,
+            })}
+            ?disabled=${!canPublish}
+            @click=${() => this._submit("published")}
+          >
+            ${this._loading ? spinner : nothing} ${this._getSubmitLabel()}
+          </button>
+        </div>
       `;
     }
 
     return html`
       <div class="compose-publish-group">
+        ${shortcutHint}
         ${this._showPublishPanel
           ? html`<div
               class="compose-dropdown-backdrop"
@@ -2769,6 +2788,18 @@ export class JantComposeDialog extends LitElement {
         </div>
         ${this._renderPublishPanel()}
       </div>
+    `;
+  }
+
+  private _renderPublishShortcutHint() {
+    const shortcutKeys = usesAppleCommandKey() ? ["⌘", "↵"] : ["Ctrl", "↵"];
+
+    return html`
+      <span class="compose-publish-shortcut" aria-hidden="true">
+        <kbd class="kbd">${shortcutKeys[0]}</kbd>
+        <span class="compose-publish-shortcut-plus">+</span>
+        <kbd class="kbd">${shortcutKeys[1]}</kbd>
+      </span>
     `;
   }
 

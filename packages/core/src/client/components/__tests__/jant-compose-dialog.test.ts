@@ -53,6 +53,27 @@ function mockSlugApi(
   });
 }
 
+function setNavigatorPlatform(platform: string): () => void {
+  const descriptor = Object.getOwnPropertyDescriptor(
+    globalThis.navigator,
+    "platform",
+  );
+
+  Object.defineProperty(globalThis.navigator, "platform", {
+    configurable: true,
+    value: platform,
+  });
+
+  return () => {
+    if (descriptor) {
+      Object.defineProperty(globalThis.navigator, "platform", descriptor);
+      return;
+    }
+
+    Reflect.deleteProperty(globalThis.navigator, "platform");
+  };
+}
+
 const labels: ComposeLabels = {
   cancel: "Cancel",
   note: "Note",
@@ -225,6 +246,36 @@ describe("JantComposeDialog", () => {
         '.compose-tool-btn-view[aria-label="Fullscreen"]',
       ),
     ).not.toBeNull();
+  });
+
+  it("shows the Mac publish shortcut hint on Apple platforms", async () => {
+    const restoreNavigator = setNavigatorPlatform("MacIntel");
+
+    try {
+      const el = await createElement();
+      const keys = Array.from(
+        el.querySelectorAll<HTMLElement>(".compose-publish-shortcut kbd"),
+      ).map((key) => key.textContent?.trim());
+
+      expect(keys).toEqual(["⌘", "↵"]);
+    } finally {
+      restoreNavigator();
+    }
+  });
+
+  it("shows the Ctrl publish shortcut hint on non-Apple platforms", async () => {
+    const restoreNavigator = setNavigatorPlatform("Win32");
+
+    try {
+      const el = await createElement();
+      const keys = Array.from(
+        el.querySelectorAll<HTMLElement>(".compose-publish-shortcut kbd"),
+      ).map((key) => key.textContent?.trim());
+
+      expect(keys).toEqual(["Ctrl", "↵"]);
+    } finally {
+      restoreNavigator();
+    }
   });
 
   it("opens publish settings even when publish is disabled", async () => {
