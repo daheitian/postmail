@@ -201,11 +201,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
         )}
         {resolvedNoindex && <meta name="robots" content="noindex, nofollow" />}
         <link rel="icon" href={resolvedFaviconHref} sizes="16x16 32x32" />
-        <link
-          rel="apple-touch-icon"
-          href={resolvedAppleTouchHref}
-          sizes="180x180"
-        />
+        <link rel="apple-touch-icon" href={resolvedAppleTouchHref} />
         {mainFeedHref && (
           <link
             rel="alternate"

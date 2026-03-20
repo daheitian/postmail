@@ -2719,8 +2719,8 @@ msgstr "這是選集連結的最後一段。"
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/AvatarContent.tsx
-msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
-msgstr "這會用於你的 favicon 和 apple-touch-icon。為達最佳效果，請上傳至少 180x180 像素的正方形圖片。"
+msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
+msgstr "這會用於你的 favicon 和 apple-touch-icon。為達最佳效果，請上傳至少 512×512 像素、帶純色背景的正方形 PNG 圖片。"
 
 #. @context: Sample quote commentary prefix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx

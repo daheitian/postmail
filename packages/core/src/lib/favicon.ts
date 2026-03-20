@@ -12,7 +12,8 @@
 export const FAVICON_SIZES = {
   ICO_16: 16,
   ICO_32: 32,
-  APPLE_TOUCH: 180,
+  // Keep a high-resolution master so iOS can downscale cleanly.
+  APPLE_TOUCH: 512,
 } as const;
 
 /**

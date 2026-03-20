@@ -51,6 +51,7 @@ describe("BaseLayout", () => {
 
     expect(html).toContain(`/favicon.ico?v=${CORE_VERSION}`);
     expect(html).toContain(`/apple-touch-icon.png?v=${CORE_VERSION}`);
+    expect(html).not.toContain('sizes="180x180"');
   });
 
   it("uses explicit favicon and apple-touch asset hrefs when provided", async () => {

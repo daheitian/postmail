@@ -925,10 +925,10 @@ const TEMPLATE_BASE = `<!DOCTYPE html>
   {% set apple_touch_href = get_url(path='apple-touch-icon.png') %}
   {% if config.extra.jant.favicon_version %}
   <link rel="icon" href="{{ favicon_href }}?v={{ config.extra.jant.favicon_version }}" sizes="16x16 32x32">
-  <link rel="apple-touch-icon" href="{{ apple_touch_href }}?v={{ config.extra.jant.favicon_version }}" sizes="180x180">
+  <link rel="apple-touch-icon" href="{{ apple_touch_href }}?v={{ config.extra.jant.favicon_version }}">
   {% else %}
   <link rel="icon" href="{{ favicon_href }}" sizes="16x16 32x32">
-  <link rel="apple-touch-icon" href="{{ apple_touch_href }}" sizes="180x180">
+  <link rel="apple-touch-icon" href="{{ apple_touch_href }}">
   {% endif %}
   <link rel="stylesheet" href="{{ get_url(path='style.css') }}">
   <link rel="stylesheet" href="{{ get_url(path='theme.css') }}">

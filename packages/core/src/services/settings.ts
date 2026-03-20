@@ -358,7 +358,7 @@ export function createSettingsService(db: Database): SettingsService {
         await this.set("SITE_FAVICON_ICO", b64);
       }
 
-      // Store apple-touch-icon in storage (180x180 PNG, not tiny enough for base64)
+      // Store apple-touch-icon in storage (high-resolution PNG, not tiny enough for base64)
       if (data.appleTouchIcon) {
         const appleTouchKey = "favicon/apple-touch-icon.png";
         await deps.storage.put(

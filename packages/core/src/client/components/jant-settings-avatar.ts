@@ -108,17 +108,22 @@ export class JantSettingsAvatar extends LitElement {
   }
 
   private _renderPreview() {
+    const previewClasses =
+      "rounded-full size-16 overflow-hidden border border-border/70 bg-muted/40 flex items-center justify-center shrink-0";
+
     if (this.avatarUrl) {
-      return html`<img
-        src=${this.avatarUrl}
-        alt=""
-        class="rounded-full object-cover size-16"
-      />`;
+      return html`
+        <div class=${previewClasses}>
+          <img
+            src=${this.avatarUrl}
+            alt=""
+            class="w-full h-full object-cover"
+          />
+        </div>
+      `;
     }
     return html`
-      <div
-        class="rounded-full bg-muted flex items-center justify-center text-muted-foreground size-16"
-      >
+      <div class="${previewClasses} text-muted-foreground">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"

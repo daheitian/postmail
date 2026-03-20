@@ -2719,8 +2719,8 @@ msgstr "This is the last part of the collection link."
 
 #. @context: Help text for avatar upload
 #: src/ui/dash/settings/AvatarContent.tsx
-msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
-msgstr "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels."
+msgid "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
+msgstr "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels."
 
 #. @context: Sample quote commentary prefix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx

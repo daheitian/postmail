@@ -30,7 +30,7 @@ export function AvatarContent({
     }),
     avatarHelp: t({
       message:
-        "This is used for your favicon and apple-touch-icon. For best results, upload a square image at least 180x180 pixels.",
+        "This is used for your favicon and apple-touch-icon. For best results, upload a square PNG with a solid background at least 512x512 pixels.",
       comment: "@context: Help text for avatar upload",
     }),
     displayInHeader: t({

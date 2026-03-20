@@ -112,7 +112,7 @@ describe("JantSettingsAvatar", () => {
     const el = await createElement();
     const img = el.querySelector("img");
     expect(img).toBeNull();
-    const placeholder = el.querySelector(".bg-muted");
+    const placeholder = el.querySelector('[class*="bg-muted"]');
     expect(placeholder).not.toBeNull();
   });
 
@@ -121,6 +121,7 @@ describe("JantSettingsAvatar", () => {
     const img = el.querySelector("img");
     expect(img).not.toBeNull();
     expect(img?.src).toBe("https://example.com/avatar.png");
+    expect(img?.parentElement?.className).toContain("border-border/70");
   });
 
   it("shows Remove button when avatar exists", async () => {

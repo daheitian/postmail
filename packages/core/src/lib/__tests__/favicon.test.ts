@@ -13,7 +13,7 @@ describe("FAVICON_SIZES", () => {
   });
 
   it("has correct apple-touch-icon size", () => {
-    expect(FAVICON_SIZES.APPLE_TOUCH).toBe(180);
+    expect(FAVICON_SIZES.APPLE_TOUCH).toBe(512);
   });
 });
 
