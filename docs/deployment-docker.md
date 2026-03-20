@@ -29,13 +29,13 @@ Open `http://127.0.0.1:3000`.
 
 ## Required Configuration
 
-`JANT_AUTH_SECRET` is required. `JANT_SITE_URL` is strongly recommended when you
+`AUTH_SECRET` is required. `SITE_URL` is strongly recommended when you
 want a fixed public origin, subpath deployment, correct RSS/sitemap absolute
 URLs, or proxy-aware canonical URLs.
 
 ```env
-JANT_AUTH_SECRET=replace-with-a-long-random-secret
-# JANT_SITE_URL=https://your-jant.example
+AUTH_SECRET=replace-with-a-long-random-secret
+# SITE_URL=https://your-jant.example
 ```
 
 Generate a secret with:
@@ -47,8 +47,8 @@ openssl rand -base64 32
 The bundled `compose.yml` already defaults the container to the recommended single-node layout:
 
 - `image: owenyoung/jant:latest`
-- `JANT_DATA_DIR=/var/lib/jant`
-- `JANT_TRUST_PROXY=true`
+- `DATA_DIR=/var/lib/jant`
+- `TRUST_PROXY=true`
 - SQLite at `/var/lib/jant/jant.sqlite`
 - Local media at `/var/lib/jant/media/`
 - `./data:/var/lib/jant`
@@ -74,10 +74,10 @@ deployment path is behind Caddy, Nginx, or Traefik. Override it only when you
 need different behavior:
 
 ```env
-JANT_TRUST_PROXY=false
+TRUST_PROXY=false
 ```
 
-Set `JANT_TRUST_PROXY=false` when the container is directly exposed to the
+Set `TRUST_PROXY=false` when the container is directly exposed to the
 internet. The reverse proxy should terminate TLS and forward requests to the
 container on port `3000`.
 

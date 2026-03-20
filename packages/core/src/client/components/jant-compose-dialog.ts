@@ -2197,7 +2197,9 @@ export class JantComposeDialog extends LitElement {
               ? html`<span class="compose-collection-label"
                   >${this._selectedCollectionLabel(collections)}</span
                 >`
-              : html`<span>${this.labels.collection}</span>`}
+              : html`<span class="compose-collection-label"
+                  >${this.labels.collection}</span
+                >`}
             <svg
               width="10"
               height="10"
@@ -2267,7 +2269,9 @@ export class JantComposeDialog extends LitElement {
                       : nothing}
                     @click=${() => this._toggleCollection(col.id)}
                   >
-                    ${col.title}
+                    <span class="compose-collection-option-label"
+                      >${col.title}</span
+                    >
                   </div>
                 `,
               )}

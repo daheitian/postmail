@@ -3,6 +3,7 @@ import {
   getSlugValidationIssue,
   isValidSlug,
   normalizeSlug,
+  truncateSlug,
 } from "../slug-format.js";
 
 describe("slug-format", () => {
@@ -27,8 +28,19 @@ describe("slug-format", () => {
     expect(isValidSlug("compose")).toBe(false);
   });
 
+  it("flags slugs that exceed a configured maximum length", () => {
+    expect(getSlugValidationIssue("a".repeat(121), { maxLength: 120 })).toBe(
+      "too_long",
+    );
+    expect(isValidSlug("a".repeat(121), { maxLength: 120 })).toBe(false);
+  });
+
   it("accepts valid slugs", () => {
     expect(getSlugValidationIssue("reading-notes")).toBeNull();
     expect(isValidSlug("reading-notes")).toBe(true);
+  });
+
+  it("truncates slugs without leaving trailing hyphens", () => {
+    expect(truncateSlug("reading-notes-forever", 8)).toBe("reading");
   });
 });

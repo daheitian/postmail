@@ -1450,6 +1450,11 @@ msgstr "日誌"
 msgid "Keep the artwork unchanged."
 msgstr "保持圖稿不變."
 
+#. @context: Collection slug validation error for links that are too long
+#: src/ui/shared/collection-management-labels.ts
+msgid "Keep this link under 200 characters."
+msgstr "將這個連結控制在 200 個字元以內。"
+
 #. @context: Nav item label field
 #: src/ui/dash/appearance/NavigationContent.tsx
 msgid "Label"

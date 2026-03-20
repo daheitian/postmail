@@ -8,7 +8,6 @@ import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { CreateCustomUrlSchema, parseValidated } from "../../lib/schemas.js";
 import { parseIdParam, NotFoundError } from "../../lib/errors.js";
-import { DEFAULT_PAGE_SIZE } from "../../lib/constants.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -18,16 +17,17 @@ export const customUrlsApiRoutes = new Hono<Env>();
 customUrlsApiRoutes.get("/", requireAuthApi(), async (c) => {
   const pageParam = c.req.query("page");
   const page = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+  const pageSize = c.var.appConfig.pageSize;
 
   const [total, customUrls] = await Promise.all([
     c.var.services.customUrls.count(),
     c.var.services.customUrls.list({
-      limit: DEFAULT_PAGE_SIZE,
-      offset: (page - 1) * DEFAULT_PAGE_SIZE,
+      limit: pageSize,
+      offset: (page - 1) * pageSize,
     }),
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(total / DEFAULT_PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   return c.json({ customUrls, total, page, totalPages });
 });
 

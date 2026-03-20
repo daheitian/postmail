@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
 import { createSettingsService } from "../settings.js";
 import type { Database } from "../../db/index.js";
+import { MAX_SITE_FOOTER_LENGTH } from "../../types.js";
 
 describe("SettingsService", () => {
   let db: Database;
@@ -99,6 +100,22 @@ describe("SettingsService", () => {
       });
 
       expect(await settingsService.get("TIME_ZONE")).toBe("Asia/Shanghai");
+    });
+
+    it("trims site identity fields in bulk updates", async () => {
+      await settingsService.setMany({
+        SITE_NAME: "  My Blog  ",
+      });
+
+      expect(await settingsService.get("SITE_NAME")).toBe("My Blog");
+    });
+
+    it("rejects site footer values beyond the maximum length", async () => {
+      await expect(
+        settingsService.setMany({
+          SITE_FOOTER: "x".repeat(MAX_SITE_FOOTER_LENGTH + 1),
+        }),
+      ).rejects.toThrow();
     });
   });
 

@@ -11,6 +11,7 @@ export interface CollectionFormLabels {
   slugHelp: string;
   slugInvalidHelp: string;
   slugReservedHelp: string;
+  slugTooLongHelp?: string;
   editSlugLabel: string;
   resetSlugLabel: string;
   quickHint: string;

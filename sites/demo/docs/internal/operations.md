@@ -34,9 +34,8 @@ Recommended split:
 - repo root `.env.repo.local`: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`
   Start from [/.env.repo.example](/Users/green/project/jant/main/.env.repo.example).
 - [`sites/demo/.env.example`](/Users/green/project/jant/main/sites/demo/.env.example):
-  copy to `.env.local` for `JANT_INTERNAL_ADMIN_TOKEN`, plus any local
-  overrides such as `JANT_DEMO_PUBLIC_URL`, `JANT_DEMO_EMAIL`, or
-  `JANT_DEMO_PASSWORD`
+  copy to `.env.local` for `INTERNAL_ADMIN_TOKEN`, plus any local
+  overrides such as `JANT_DEMO_PUBLIC_URL`, `DEMO_EMAIL`, or `DEMO_PASSWORD`
 
 ## Expected Flow
 
@@ -53,7 +52,7 @@ Recommended split:
 - `demo-public-rebuild` now deletes only the storage objects referenced by the
   current demo database before importing the canonical snapshot.
 - `demo-public-rebuild` also clears every user-created API token through
-  `JANT_INTERNAL_ADMIN_TOKEN`, so demo tokens are disposable across nightly
+  `INTERNAL_ADMIN_TOKEN`, so demo tokens are disposable across nightly
   resets.
 - Orphaned objects that are already detached from the database are left alone.
 - `db-demo-reseed` remains as a compatibility alias for

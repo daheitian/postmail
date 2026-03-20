@@ -7,7 +7,7 @@ import { loadNodeRuntime } from "../../lib/load-node-runtime.js";
 import { localizeSiteExportZipBytes } from "../../lib/site-localize-media.js";
 
 function getSiteUrl(env = process.env) {
-  return env.JANT_SITE_URL || env.SITE_URL || "http://localhost";
+  return env.SITE_URL || "http://localhost";
 }
 
 async function exportRemoteSite(url, token) {

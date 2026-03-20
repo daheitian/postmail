@@ -140,11 +140,6 @@ function createD1ExportContext(runtime, values) {
     resolveWranglerVarString({
       configPath: values.config,
       env: values.env,
-      key: "JANT_R2_PUBLIC_URL",
-    }) ||
-    resolveWranglerVarString({
-      configPath: values.config,
-      env: values.env,
       key: "R2_PUBLIC_URL",
     });
 
@@ -223,7 +218,7 @@ export async function run(argv) {
     console.log("  --persist-to            Local D1/R2 state directory override");
     console.log("");
     console.log(
-      "If DATABASE_URL or JANT_DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite and the configured storage driver.",
+      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite and the configured storage driver.",
     );
     process.exit(0);
   }

@@ -11,10 +11,10 @@ const AUTH_SECRET_ERROR_HTML = `<!DOCTYPE html>
 </head>
 <body>
 <div>
-<h1>JANT_AUTH_SECRET is not set</h1>
+<h1>AUTH_SECRET is not set</h1>
 <p>Jant needs a 32+ character auth secret to sign sessions.</p>
-<p><strong>Local development:</strong> add <code>JANT_AUTH_SECRET=...</code> to <code>.dev.vars</code>.</p>
-<p><strong>Cloudflare Workers:</strong> add <code>JANT_AUTH_SECRET</code> as a Worker secret in the dashboard under Variables and Secrets, or run <code>wrangler secret put JANT_AUTH_SECRET</code>.</p>
+<p><strong>Local development:</strong> add <code>AUTH_SECRET=...</code> to <code>.dev.vars</code>.</p>
+<p><strong>Cloudflare Workers:</strong> add <code>AUTH_SECRET</code> as a Worker secret in the dashboard under Variables and Secrets, or run <code>wrangler secret put AUTH_SECRET</code>.</p>
 <p><a href="https://github.com/jant-me/jant/blob/main/docs/deployment.md#configure-secrets" target="_blank" rel="noopener noreferrer">Open deployment instructions</a></p>
 </div>
 </body>
@@ -28,14 +28,11 @@ const AUTH_SECRET_ERROR_HTML = `<!DOCTYPE html>
  *
  * @example
  * ```ts
- * getStartupConfigurationErrorPage({ JANT_AUTH_SECRET: "secret" }) // null
+ * getStartupConfigurationErrorPage({ AUTH_SECRET: "secret" }) // null
  * ```
  */
 export function getStartupConfigurationErrorPage(
-  env: Pick<
-    Bindings,
-    "AUTH_SECRET" | "JANT_AUTH_SECRET" | "DEV_API_TOKEN" | "JANT_DEV_API_TOKEN"
-  >,
+  env: Pick<Bindings, "AUTH_SECRET" | "DEV_API_TOKEN">,
 ): string | null {
   if (!getAuthSecret(env)) {
     return AUTH_SECRET_ERROR_HTML;

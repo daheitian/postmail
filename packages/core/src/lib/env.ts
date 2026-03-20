@@ -4,6 +4,22 @@ function toEnvRecord(env: EnvSource): Record<string, unknown> {
   return (env ?? {}) as Record<string, unknown>;
 }
 
+function normalizeEnvScalar(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value.length > 0 ? value : undefined;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : undefined;
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "true" : "false";
+  }
+
+  return undefined;
+}
+
 /**
  * Returns the first non-empty environment variable value from `keys`.
  *
@@ -17,8 +33,8 @@ export function getEnvString(
   const record = toEnvRecord(env);
 
   for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "string" && value.length > 0) {
+    const value = normalizeEnvScalar(record[key]);
+    if (value) {
       return value;
     }
   }
@@ -27,27 +43,27 @@ export function getEnvString(
 }
 
 export function getSiteUrl(env: EnvSource): string {
-  return getEnvString(env, "JANT_SITE_URL", "SITE_URL") ?? "";
+  return getEnvString(env, "SITE_URL") ?? "";
 }
 
 export function getAuthSecret(env: EnvSource): string | undefined {
-  return getEnvString(env, "JANT_AUTH_SECRET", "AUTH_SECRET");
+  return getEnvString(env, "AUTH_SECRET");
 }
 
 export function getDevApiToken(env: EnvSource): string | undefined {
-  return getEnvString(env, "JANT_DEV_API_TOKEN", "DEV_API_TOKEN");
+  return getEnvString(env, "DEV_API_TOKEN");
 }
 
 export function getInternalAdminToken(env: EnvSource): string | undefined {
-  return getEnvString(env, "JANT_INTERNAL_ADMIN_TOKEN");
+  return getEnvString(env, "INTERNAL_ADMIN_TOKEN");
 }
 
 export function getStorageDriverEnv(env: EnvSource): string | undefined {
-  return getEnvString(env, "JANT_STORAGE_DRIVER", "STORAGE_DRIVER");
+  return getEnvString(env, "STORAGE_DRIVER");
 }
 
 export function getDataDir(env: EnvSource): string | undefined {
-  return getEnvString(env, "JANT_DATA_DIR", "DATA_DIR");
+  return getEnvString(env, "DATA_DIR");
 }
 
 function joinDataSubpath(dataDir: string, child: string): string {
@@ -55,11 +71,7 @@ function joinDataSubpath(dataDir: string, child: string): string {
 }
 
 export function getLocalStoragePath(env: EnvSource): string | undefined {
-  const explicit = getEnvString(
-    env,
-    "JANT_LOCAL_STORAGE_PATH",
-    "LOCAL_STORAGE_PATH",
-  );
+  const explicit = getEnvString(env, "LOCAL_STORAGE_PATH");
   if (explicit) {
     return explicit;
   }
@@ -78,7 +90,7 @@ export function getConfiguredStorageDriver(env: EnvSource): string {
 }
 
 export function shouldTrustProxy(env: EnvSource): boolean {
-  return getEnvString(env, "JANT_TRUST_PROXY") === "true";
+  return getEnvString(env, "TRUST_PROXY") === "true";
 }
 
 export function shouldUseSecureCookies(

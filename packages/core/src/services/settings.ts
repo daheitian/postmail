@@ -18,6 +18,7 @@ import type { MediaService } from "./media.js";
 import { validateUploadFile, generateStorageKey } from "../lib/upload.js";
 import { arrayBufferToBase64 } from "../lib/favicon.js";
 import { ValidationError } from "../lib/errors.js";
+import { normalizeEditableSettingValue } from "../lib/schemas.js";
 import { isSupportedTimeZone, normalizeTimeZone } from "../lib/timezones.js";
 import type { FeedKind } from "../types/constants.js";
 
@@ -122,7 +123,7 @@ export interface SettingsService {
 export function createSettingsService(db: Database): SettingsService {
   function normalizeSettingValue(key: SettingsKey, value: string): string {
     if (key !== SETTINGS_KEYS.TIME_ZONE) {
-      return value;
+      return normalizeEditableSettingValue(key, value);
     }
 
     if (!isSupportedTimeZone(value)) {

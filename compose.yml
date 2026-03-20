@@ -6,8 +6,8 @@ services:
     env_file:
       - .env
     environment:
-      JANT_AUTH_SECRET: ${JANT_AUTH_SECRET:?Set JANT_AUTH_SECRET in .env}
-      JANT_TRUST_PROXY: ${JANT_TRUST_PROXY:-true}
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
+      TRUST_PROXY: ${TRUST_PROXY:-true}
     volumes:
       - ./data:/var/lib/jant
     restart: unless-stopped

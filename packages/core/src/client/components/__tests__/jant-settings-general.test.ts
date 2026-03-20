@@ -7,6 +7,11 @@ import type {
   SettingsLanguage,
   SettingsSaveDetail,
 } from "../settings-types.js";
+import {
+  MAX_SITE_DESCRIPTION_LENGTH,
+  MAX_SITE_FOOTER_LENGTH,
+  MAX_SITE_NAME_LENGTH,
+} from "../../../types.js";
 import "../jant-settings-general.js";
 import type { JantSettingsGeneral } from "../jant-settings-general.js";
 
@@ -197,6 +202,9 @@ describe("JantSettingsGeneral", () => {
     const textareas = el.querySelectorAll("textarea");
     expect(textareas[0]?.value).toBe("A test blog");
     expect(textareas[1]?.value).toBe("Footer text");
+    expect(siteNameInput.maxLength).toBe(MAX_SITE_NAME_LENGTH);
+    expect(textareas[0]?.maxLength).toBe(MAX_SITE_DESCRIPTION_LENGTH);
+    expect(textareas[1]?.maxLength).toBe(MAX_SITE_FOOTER_LENGTH);
   });
 
   it("renders timezone options", async () => {

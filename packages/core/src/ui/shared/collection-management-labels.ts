@@ -29,6 +29,11 @@ const collectionFormMessages = {
     message: "This link is reserved. Choose something else.",
     comment: "@context: Collection slug validation error for reserved paths",
   }),
+  slugTooLongHelp: msg({
+    message: "Keep this link under 200 characters.",
+    comment:
+      "@context: Collection slug validation error for links that are too long",
+  }),
   editSlugLabel: msg({
     message: "Edit link",
     comment: "@context: Button to manually edit the collection link",
@@ -127,6 +132,7 @@ export const getCollectionFormLabels = (t: Translate) => ({
   slugHelp: t(collectionFormMessages.slugHelp),
   slugInvalidHelp: t(collectionFormMessages.slugInvalidHelp),
   slugReservedHelp: t(collectionFormMessages.slugReservedHelp),
+  slugTooLongHelp: t(collectionFormMessages.slugTooLongHelp),
   editSlugLabel: t(collectionFormMessages.editSlugLabel),
   resetSlugLabel: t(collectionFormMessages.resetSlugLabel),
   quickHint: t(collectionFormMessages.quickHint),

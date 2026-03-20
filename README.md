@@ -52,10 +52,10 @@ npm run dev
 
 After deploying, configure these in `wrangler.toml` for the best experience:
 
-| Variable                   | Why                                                                                   |
-| -------------------------- | ------------------------------------------------------------------------------------- |
-| `JANT_R2_PUBLIC_URL`       | Serve media directly from CDN instead of proxying through Worker (faster, lower cost) |
-| `JANT_IMAGE_TRANSFORM_URL` | Enable automatic thumbnail generation and image optimization                          |
+| Variable              | Why                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `R2_PUBLIC_URL`       | Serve media directly from CDN instead of proxying through Worker (faster, lower cost) |
+| `IMAGE_TRANSFORM_URL` | Enable automatic thumbnail generation and image optimization                          |
 
 See [Configuration](docs/configuration.md) for full details and setup instructions.
 

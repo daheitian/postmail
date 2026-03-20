@@ -81,7 +81,7 @@ export function createTestApp(options: TestAppOptions = {}) {
     c.env = {
       SITE_URL: "http://localhost:9020",
       DEMO_MODE: options.demoMode ? "true" : "false",
-      JANT_INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
+      INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);

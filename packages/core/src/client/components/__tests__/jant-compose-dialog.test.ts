@@ -1172,6 +1172,12 @@ describe("JantComposeDialog", () => {
     options[0].click();
     await el.updateComplete;
     expect(el._collectionIds).toEqual(["col-1"]);
+    expect(
+      el.querySelector(".compose-collection-label")?.textContent?.trim(),
+    ).toBe("Books");
+    expect(
+      options[0]?.querySelector(".compose-collection-option-label"),
+    ).not.toBeNull();
 
     // Select second collection
     options[1].click();

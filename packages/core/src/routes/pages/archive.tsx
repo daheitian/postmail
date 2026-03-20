@@ -35,12 +35,11 @@ import type { PostFilters } from "../../services/post.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-const PAGE_SIZE = 60;
-
 export const archiveRoutes = new Hono<Env>();
 
 archiveRoutes.get("/", async (c) => {
   const { services, appConfig } = c.var;
+  const pageSize = appConfig.archivePageSize;
 
   // --- Parse query params ---------------------------------------------------
 
@@ -146,8 +145,8 @@ archiveRoutes.get("/", async (c) => {
       services.posts.countByYearMonth(filters),
       services.posts.list({
         ...filters,
-        limit: PAGE_SIZE,
-        offset: (currentPage - 1) * PAGE_SIZE,
+        limit: pageSize,
+        offset: (currentPage - 1) * pageSize,
       }),
       services.posts.getDistinctYears({
         status: "published",
@@ -156,7 +155,7 @@ archiveRoutes.get("/", async (c) => {
       services.collections.list(),
     ]);
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   // --- Group posts by year-month --------------------------------------------
 

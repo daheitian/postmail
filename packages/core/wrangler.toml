@@ -9,8 +9,8 @@ account_id = "03e7294bdb3750ed5a0d6afef6d770e4"
 port = 9020
 
 [vars]
-SITE_URL = "https://jant.localtest.me"
 PAGE_SIZE = 50
+SITE_URL = "https://jant.localtest.me"
 R2_PUBLIC_URL = "https://demo-media.jant.me"
 IMAGE_TRANSFORM_URL = "https://demo-media.jant.me/cdn-cgi/image"
 

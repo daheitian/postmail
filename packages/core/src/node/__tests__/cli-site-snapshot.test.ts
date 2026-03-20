@@ -11,7 +11,6 @@ describe("jant site snapshot export/import", () => {
   const tempDirs: string[] = [];
   const originalEnv = {
     DATABASE_URL: process.env.DATABASE_URL,
-    JANT_LOCAL_STORAGE_PATH: process.env.JANT_LOCAL_STORAGE_PATH,
     LOCAL_STORAGE_PATH: process.env.LOCAL_STORAGE_PATH,
   };
 
@@ -20,12 +19,6 @@ describe("jant site snapshot export/import", () => {
       delete process.env.DATABASE_URL;
     } else {
       process.env.DATABASE_URL = originalEnv.DATABASE_URL;
-    }
-
-    if (originalEnv.JANT_LOCAL_STORAGE_PATH === undefined) {
-      delete process.env.JANT_LOCAL_STORAGE_PATH;
-    } else {
-      process.env.JANT_LOCAL_STORAGE_PATH = originalEnv.JANT_LOCAL_STORAGE_PATH;
     }
 
     if (originalEnv.LOCAL_STORAGE_PATH === undefined) {
@@ -172,7 +165,7 @@ describe("jant site snapshot export/import", () => {
     });
 
     process.env.DATABASE_URL = `file:${sourceDbPath}`;
-    process.env.JANT_LOCAL_STORAGE_PATH = sourceStoragePath;
+    process.env.LOCAL_STORAGE_PATH = sourceStoragePath;
 
     const exportLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     const { run: runExport } =
@@ -193,7 +186,7 @@ describe("jant site snapshot export/import", () => {
     );
 
     process.env.DATABASE_URL = `file:${targetDbPath}`;
-    process.env.JANT_LOCAL_STORAGE_PATH = targetStoragePath;
+    process.env.LOCAL_STORAGE_PATH = targetStoragePath;
 
     const importLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     const { run: runImport } =
@@ -289,7 +282,7 @@ describe("jant site snapshot export/import", () => {
 
     const snapshotPath = join(root, "snapshot");
     process.env.DATABASE_URL = `file:${join(root, "jant.sqlite")}`;
-    process.env.JANT_LOCAL_STORAGE_PATH = join(root, "media");
+    process.env.LOCAL_STORAGE_PATH = join(root, "media");
 
     await rm(snapshotPath, { recursive: true, force: true });
     await mkdir(snapshotPath, { recursive: true });

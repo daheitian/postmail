@@ -16,7 +16,7 @@ port = 9020
 # Environment Variables
 # ============================================
 # Non-sensitive configuration goes here in [vars]
-# Sensitive secrets (like AUTH_SECRET and JANT_INTERNAL_ADMIN_TOKEN) should be:
+# Sensitive secrets (like AUTH_SECRET and INTERNAL_ADMIN_TOKEN) should be:
 # - Local dev: .dev.vars file (not committed)
 # - Production: wrangler secret put AUTH_SECRET
 # Full details: https://github.com/jant-me/jant/blob/main/docs/configuration.md
@@ -33,8 +33,10 @@ SITE_URL = "https://demo.jant.me" # @create-jant: "https://example.com"
 # SITE_DESCRIPTION = "A personal blog powered by Jant"
 # SITE_LANGUAGE = "en"
 
-# Optional: Timeline page size (default: 20)
-# PAGE_SIZE = "20"
+# Optional: Pagination defaults
+# PAGE_SIZE = 50
+# SEARCH_PAGE_SIZE = 25
+# ARCHIVE_PAGE_SIZE = 100
 
 # Optional: R2 Storage (for media uploads)
 # https://github.com/jant-me/jant/blob/main/docs/configuration.md#r2-default

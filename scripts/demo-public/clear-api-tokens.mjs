@@ -13,7 +13,7 @@ function toSiteScopedUrl(siteUrl, path) {
 function getGuidance(siteUrl) {
   return [
     `The deployed demo-public Worker at ${siteUrl} does not expose the internal API token admin route yet.`,
-    "Deploy the latest demo-public Worker code and make sure JANT_INTERNAL_ADMIN_TOKEN is set as a Worker secret.",
+    "Deploy the latest demo-public Worker code and make sure INTERNAL_ADMIN_TOKEN is set as a Worker secret.",
     "Run: mise run deploy-demo-public",
   ].join("\n");
 }
@@ -34,15 +34,15 @@ function formatFailure(status, bodyText) {
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
 const siteUrl = process.env.JANT_DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
-const internalAdminToken = process.env.JANT_INTERNAL_ADMIN_TOKEN;
+const internalAdminToken = process.env.INTERNAL_ADMIN_TOKEN;
 const checkOnly = process.argv.includes("--check");
 
 if (!internalAdminToken) {
   console.error(
     [
-      "JANT_INTERNAL_ADMIN_TOKEN is required for demo-public maintenance.",
+      "INTERNAL_ADMIN_TOKEN is required for demo-public maintenance.",
       "Set it in sites/demo/.env.local for local scripts and as a Worker secret on demo-public.",
-      "Example: wrangler secret put JANT_INTERNAL_ADMIN_TOKEN",
+      "Example: wrangler secret put INTERNAL_ADMIN_TOKEN",
     ].join("\n"),
   );
   process.exit(1);

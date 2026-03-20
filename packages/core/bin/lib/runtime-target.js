@@ -13,7 +13,6 @@ export function resolveCliRuntime(values, env = process.env) {
 
   if (
     (typeof env.DATABASE_URL === "string" && env.DATABASE_URL.length > 0) ||
-    (typeof env.JANT_DATA_DIR === "string" && env.JANT_DATA_DIR.length > 0) ||
     (typeof env.DATA_DIR === "string" && env.DATA_DIR.length > 0)
   ) {
     return "node";

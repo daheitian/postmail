@@ -32,7 +32,7 @@ export function createCloudflareRequestRuntime(
   }
   const authSecret = getAuthSecret(env);
   if (!authSecret) {
-    throw new Error("JANT_AUTH_SECRET should be set after startup validation.");
+    throw new Error("AUTH_SECRET should be set after startup validation.");
   }
 
   // Use withSession() to enable D1 Read Replication.
@@ -42,10 +42,7 @@ export function createCloudflareRequestRuntime(
   // (issue #2226), but it works at runtime.
   const db = createDatabase(session as unknown as D1Database);
   const slugIdLength =
-    parseInt(
-      getEnvString(env, "JANT_SLUG_ID_LENGTH", "SLUG_ID_LENGTH") ?? "5",
-      10,
-    ) || 5;
+    parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5;
   const requestUrl = new URL(publicRequestUrl);
   const baseURL = getSiteUrl(env) || requestUrl.origin;
 

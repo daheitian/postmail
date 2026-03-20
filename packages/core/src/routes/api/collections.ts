@@ -8,6 +8,7 @@ import type { Bindings, CollectionSortOrder } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import {
+  CollectionDescriptionValueSchema,
   CollectionSortOrderSchema,
   CreateCollectionSchema,
   parseValidated,
@@ -20,7 +21,7 @@ export const collectionsApiRoutes = new Hono<Env>();
 
 // API update schema extends shared schema with nullable fields for explicit clearing
 const UpdateCollectionSchema = CreateCollectionSchema.partial().extend({
-  description: z.string().nullable().optional(),
+  description: z.union([CollectionDescriptionValueSchema, z.null()]).optional(),
   sortOrder: CollectionSortOrderSchema.optional(),
 });
 

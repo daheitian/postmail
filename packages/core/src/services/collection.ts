@@ -36,6 +36,12 @@ import {
   toCollectionPath,
   type PathService,
 } from "./path.js";
+import {
+  CollectionDescriptionValueSchema,
+  CollectionSlugSchema,
+  CollectionTitleSchema,
+  parseValidated,
+} from "../lib/schemas.js";
 
 const POSITION_RETRY_ATTEMPTS = 5;
 
@@ -110,6 +116,44 @@ export function createCollectionService(
   db: Database,
   paths: PathService = createPathService(db),
 ): CollectionService {
+  function normalizeCreateCollectionInput(
+    data: CreateCollection,
+  ): CreateCollection {
+    return {
+      slug: parseValidated(CollectionSlugSchema, data.slug),
+      title: parseValidated(CollectionTitleSchema, data.title),
+      description:
+        data.description === undefined
+          ? undefined
+          : parseValidated(CollectionDescriptionValueSchema, data.description),
+      sortOrder: data.sortOrder,
+    };
+  }
+
+  function normalizeUpdateCollectionInput(
+    data: UpdateCollection,
+  ): UpdateCollection {
+    const normalized: UpdateCollection = {};
+
+    if (data.slug !== undefined) {
+      normalized.slug = parseValidated(CollectionSlugSchema, data.slug);
+    }
+    if (data.title !== undefined) {
+      normalized.title = parseValidated(CollectionTitleSchema, data.title);
+    }
+    if (data.description !== undefined) {
+      normalized.description =
+        data.description === null
+          ? null
+          : parseValidated(CollectionDescriptionValueSchema, data.description);
+    }
+    if (data.sortOrder !== undefined) {
+      normalized.sortOrder = data.sortOrder;
+    }
+
+    return normalized;
+  }
+
   function toCollection(
     row: typeof collections.$inferSelect,
     slug: string,
@@ -392,9 +436,10 @@ export function createCollectionService(
     },
 
     async create(data) {
+      const normalizedData = normalizeCreateCollectionInput(data);
       const id = uuidv7();
       const timestamp = now();
-      const slugPath = toCollectionPath(data.slug);
+      const slugPath = toCollectionPath(normalizedData.slug);
 
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
@@ -402,9 +447,9 @@ export function createCollectionService(
           const writeQueries: BatchItem<"sqlite">[] = [
             db.insert(collections).values({
               id,
-              title: data.title,
-              description: data.description ?? null,
-              sortOrder: data.sortOrder ?? "newest",
+              title: normalizedData.title,
+              description: normalizedData.description ?? null,
+              sortOrder: normalizedData.sortOrder ?? "newest",
               createdAt: timestamp,
               updatedAt: timestamp,
             }),
@@ -439,7 +484,7 @@ export function createCollectionService(
           const collection = await this.getById(id);
           if (!collection) {
             throw new ConflictError(
-              `Slug "${data.slug}" could not be resolved`,
+              `Slug "${normalizedData.slug}" could not be resolved`,
             );
           }
           return collection;
@@ -448,7 +493,9 @@ export function createCollectionService(
             throw err;
           }
           if (isUniqueConstraintError(err) && (await pathExists(slugPath))) {
-            throw new ConflictError(`Slug "${data.slug}" is already in use`);
+            throw new ConflictError(
+              `Slug "${normalizedData.slug}" is already in use`,
+            );
           }
           if (attempt === POSITION_RETRY_ATTEMPTS - 1) {
             throw err;
@@ -460,15 +507,21 @@ export function createCollectionService(
     },
 
     async update(id, data) {
+      const normalizedData = normalizeUpdateCollectionInput(data);
       const existing = await this.getById(id);
       if (!existing) return null;
 
-      if (data.slug !== undefined && data.slug !== existing.slug) {
+      if (
+        normalizedData.slug !== undefined &&
+        normalizedData.slug !== existing.slug
+      ) {
         try {
-          await paths.updateCollectionSlug(id, data.slug);
+          await paths.updateCollectionSlug(id, normalizedData.slug);
         } catch (err) {
           if (err instanceof ConflictError) {
-            throw new ConflictError(`Slug "${data.slug}" is already in use`);
+            throw new ConflictError(
+              `Slug "${normalizedData.slug}" is already in use`,
+            );
           }
           throw err;
         }
@@ -479,11 +532,15 @@ export function createCollectionService(
         updatedAt: timestamp,
       };
 
-      if (data.title !== undefined) updates.title = data.title;
-      if (data.description !== undefined) {
-        updates.description = data.description;
+      if (normalizedData.title !== undefined) {
+        updates.title = normalizedData.title;
       }
-      if (data.sortOrder !== undefined) updates.sortOrder = data.sortOrder;
+      if (normalizedData.description !== undefined) {
+        updates.description = normalizedData.description;
+      }
+      if (normalizedData.sortOrder !== undefined) {
+        updates.sortOrder = normalizedData.sortOrder;
+      }
 
       const result = await db
         .update(collections)

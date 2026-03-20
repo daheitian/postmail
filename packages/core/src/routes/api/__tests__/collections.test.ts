@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
+import { MAX_COLLECTION_SLUG_LENGTH } from "../../../types.js";
 import { collectionsApiRoutes } from "../collections.js";
 
 describe("Collections API Routes", () => {
@@ -201,6 +202,22 @@ describe("Collections API Routes", () => {
           slug: "tech",
           title: "Tech",
           sortOrder: "rating_asc",
+        }),
+      });
+
+      expect(res.status).toBe(400);
+    });
+
+    it("rejects slugs longer than the maximum length", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/collections", collectionsApiRoutes);
+
+      const res = await app.request("/api/collections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug: "a".repeat(MAX_COLLECTION_SLUG_LENGTH + 1),
+          title: "Tech",
         }),
       });
 
