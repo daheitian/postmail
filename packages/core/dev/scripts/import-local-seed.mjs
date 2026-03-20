@@ -20,14 +20,14 @@ function findLocalDatabasePath(cwd) {
 
   if (!existsSync(dbDir)) {
     fail(
-      "No local D1 database found. Run `mise run db-local-reset` or `node ./bin/jant.js migrate --local` from packages/core first.",
+      "No local D1 database found. Run `mise run db-local-rebuild-demo` or `node ./bin/jant.js migrate --local` from packages/core first.",
     );
   }
 
   const files = readdirSync(dbDir).filter((entry) => entry.endsWith(".sqlite"));
   if (files.length === 0) {
     fail(
-      "No local D1 database file found. Run `mise run db-local-reset` or `node ./bin/jant.js migrate --local` from packages/core first.",
+      "No local D1 database file found. Run `mise run db-local-rebuild-demo` or `node ./bin/jant.js migrate --local` from packages/core first.",
     );
   }
 

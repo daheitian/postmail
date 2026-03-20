@@ -1,16 +1,15 @@
 -- =============================================================================
 -- Demo seed data for Jant (demo.jant.me)
 -- Exported from remote demo D1 database via: mise run db-demo-export
--- Usage: mise run db-demo-reset
+-- Usage: mise run db-demo-reseed
 -- =============================================================================
+
+BEGIN TRANSACTION;
 
 -- Reset (clear existing content)
 DELETE FROM post_collection;
 DELETE FROM collection_directory_item;
 DELETE FROM path_registry;
-DELETE FROM api_token;
-
-DELETE FROM nav_item;
 DELETE FROM media;
 DELETE FROM post;
 DELETE FROM collection;
@@ -95,12 +94,6 @@ INSERT INTO collection ("id","title","description","sort_order","created_at","up
 INSERT INTO collection ("id","title","description","sort_order","created_at","updated_at") VALUES('019cfd70-0906-7e26-90d8-fb1cb0f00734','City Walks','Routes, corners, and small things I notice outside.','newest',1773778503,1773778503);
 INSERT INTO collection ("id","title","description","sort_order","created_at","updated_at") VALUES('019cfd70-0bc1-759e-af36-81dc8044fd76','Home Cooking','Weeknight dinners, soup weather, and things from the stove.','newest',1773778504,1773778504);
 INSERT INTO collection ("id","title","description","sort_order","created_at","updated_at") VALUES('019cfd70-0ecd-7178-9a30-4a0d73806d24','Tiny Projects','Repairs, setup tweaks, and half-day improvements around the apartment.','newest',1773778505,1773778505);
-
--- nav_item
-INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019cfd66-52f7-7bb1-8643-362b19829c9e','system','collections','Collections','/c','a0',1773777867,1773777867);
-INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019cfd66-536a-73aa-8bce-6c48c116df96','system','archive','Archive','/archive','a1',1773777867,1773777867);
-INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019cfd66-53de-7d61-b3da-3d4830da279b','system','rss','RSS','/feed','a2',1773777867,1773777867);
-INSERT INTO nav_item ("id","type","system_key","label","url","position","created_at","updated_at") VALUES('019cfd66-544c-7f1f-aee7-f7571944406c','system','settings','Settings','/settings','a3',1773777867,1773777867);
 
 -- sidebar_item
 INSERT INTO collection_directory_item ("id","type","collection_id","label","position","created_at","updated_at") VALUES('019cfd70-009a-76ec-895b-ed96e50792c4','collection','019cfd6f-ffe1-7f55-94da-90a7675c7d1f',NULL,'a0',1773778501,1773778501);
@@ -260,9 +253,6 @@ INSERT INTO path_registry ("id","path","kind","post_id","collection_id","redirec
 INSERT INTO path_registry ("id","path","kind","post_id","collection_id","redirect_to_path","redirect_type","created_at","updated_at") VALUES('019cfd70-877b-7405-9d09-158b959740c3','wsgck','slug','019cfd70-851c-7992-9c9b-5b303bbe0d88',NULL,NULL,NULL,1773778535,1773778535);
 INSERT INTO path_registry ("id","path","kind","post_id","collection_id","redirect_to_path","redirect_type","created_at","updated_at") VALUES('019cfd71-a7f4-741e-87d8-f747c4e64da5','z4s9v','slug','019cfd71-a7ea-7b9a-b2c2-14633e5d0241',NULL,NULL,NULL,1773778610,1773778610);
 
--- api_token
-INSERT INTO api_token ("id","name","token_hash","prefix","last_used_at","created_at","updated_at") VALUES('019cfd66-a011-71df-91c2-c2ebbb3a0f18','Demo','f94983b428d2c31595d193b75e51effcdf5184444d1eb2507ebb4feeccdec0b2','d8d785a8',1773778623,1773777887,1773778623);
-
 -- media
 INSERT INTO media ("id","post_id","filename","original_name","mime_type","size","storage_key","provider","width","height","alt","position","blurhash","waveform","poster_key","summary","chars","media_kind","created_at","updated_at") VALUES('019cfd70-1199-7115-a4d9-5bab93d99640','019cfd70-92d3-70c0-9403-445fdd542618','019cfd70-1199-7115-a4d9-5bab93d99640.svg','herbs-window.svg','image/svg+xml',892,'media/2026/03/019cfd70-1199-7115-a4d9-5bab93d99640.svg','r2',1200,900,NULL,'a0',NULL,NULL,NULL,NULL,NULL,'image',1773778507,1773778539);
 INSERT INTO media ("id","post_id","filename","original_name","mime_type","size","storage_key","provider","width","height","alt","position","blurhash","waveform","poster_key","summary","chars","media_kind","created_at","updated_at") VALUES('019cfd70-1782-775c-9cc9-970a95c3496a','019cfd70-a350-7006-83e4-be7ac042c4d5','019cfd70-1782-775c-9cc9-970a95c3496a.svg','balcony-light.svg','image/svg+xml',901,'media/2026/03/019cfd70-1782-775c-9cc9-970a95c3496a.svg','r2',1200,900,NULL,'a0',NULL,NULL,NULL,NULL,NULL,'image',1773778507,1773778544);
@@ -275,3 +265,5 @@ INSERT INTO media ("id","post_id","filename","original_name","mime_type","size",
 
 -- Rebuild FTS after import
 INSERT INTO post_fts(post_fts) VALUES ('rebuild');
+
+COMMIT;

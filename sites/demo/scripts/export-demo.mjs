@@ -73,6 +73,14 @@ function dumpTable(name, query) {
     .join("\n");
 }
 
+function stripEmbeddedResetSql(sql) {
+  return sql
+    .replace(/^--.*\n/gm, "")
+    .replace(/^\s*BEGIN TRANSACTION;\s*$/gim, "")
+    .replace(/^\s*COMMIT;\s*$/gim, "")
+    .trim();
+}
+
 function validateSeed(sql) {
   const persistDir = mkdtempSync(resolve(tmpdir(), "jant-demo-seed-"));
   const seedPath = resolve(persistDir, "seed-demo.sql");
@@ -93,10 +101,9 @@ function validateSeed(sql) {
       "pnpm",
       [
         "exec",
-        "wrangler",
-        "d1",
-        "execute",
-        "DB",
+        "jant",
+        "db",
+        "execute-file",
         "--local",
         "--persist-to",
         persistDir,
@@ -120,7 +127,7 @@ function validateSeed(sql) {
 const header = `-- =============================================================================
 -- Demo seed data for Jant (demo.jant.me)
 -- Exported from remote demo D1 database via: mise run db-demo-export
--- Usage: mise run db-demo-reset
+-- Usage: mise run db-demo-reseed
 -- =============================================================================
 `;
 
@@ -128,7 +135,7 @@ const header = `-- =============================================================
 const resetSql = readFileSync(resolve(__dirname, "reset-demo.sql"), "utf-8");
 
 const tables = [
-  // settings, user, account are preserved by reset-demo.sql — don't export
+  // Managed shell data is bootstrapped separately — export content only.
   [
     "post",
     `SELECT * FROM post
@@ -136,7 +143,6 @@ const tables = [
      ORDER BY CASE WHEN reply_to_id IS NULL THEN 0 ELSE 1 END, created_at, id`,
   ],
   ["collection", "SELECT * FROM collection ORDER BY created_at, id"],
-  ["nav_item", "SELECT * FROM nav_item ORDER BY position, id"],
   [
     "collection_directory_item",
     "SELECT * FROM collection_directory_item ORDER BY position, id",
@@ -158,7 +164,6 @@ const tables = [
         OR (pr.collection_id IS NOT NULL AND c.id IS NOT NULL)
      ORDER BY pr.path, pr.id`,
   ],
-  ["api_token", "SELECT * FROM api_token ORDER BY created_at, id"],
   [
     "media",
     `SELECT m.* FROM media m
@@ -169,13 +174,16 @@ const tables = [
 ];
 
 let sql = header;
+sql += "\nBEGIN TRANSACTION;\n";
 sql += "\n-- Reset (clear existing content)\n";
-sql += resetSql.replace(/^--.*\n/gm, "").trim() + "\n";
+sql += stripEmbeddedResetSql(resetSql) + "\n";
 
 for (const [name, query] of tables) {
   const data = dumpTable(name, query);
   if (data) sql += `\n-- ${name}\n${data}\n`;
 }
+
+sql += "\nCOMMIT;\n";
 
 validateSeed(sql);
 

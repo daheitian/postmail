@@ -1,9 +1,18 @@
 import { randomBytes, scryptSync } from "node:crypto";
+import { generateKeyBetween } from "fractional-indexing";
 import { runLocalWrangler } from "../../bin/lib/wrangler-cli.js";
 
 export const DEV_EMAIL = "debug@jant.test";
 export const DEFAULT_DEV_PASSWORD = "jant-dev-debug-login";
 export const DEFAULT_SITE_NAME = "Jant";
+export const DEFAULT_SITE_LANGUAGE = "en";
+
+const DEFAULT_SYSTEM_NAV_ITEMS = [
+  { systemKey: "collections", label: "Collections", url: "/c" },
+  { systemKey: "archive", label: "Archive", url: "/archive" },
+  { systemKey: "rss", label: "RSS", url: "/feed" },
+  { systemKey: "settings", label: "Settings", url: "/settings" },
+];
 
 const PASSWORD_HASH_PREFIX = "custom-scrypt";
 const PASSWORD_HASH_N = 16_384;
@@ -101,32 +110,77 @@ function getSettingMap(flag) {
   );
 }
 
-function getNavCount(flag) {
-  const result = executeJson(flag, "SELECT COUNT(*) AS count FROM nav_item");
+function getOrderedNavPositions(flag) {
+  const result = executeJson(
+    flag,
+    "SELECT position FROM nav_item ORDER BY position",
+  );
 
-  return Number(result[0]?.results?.[0]?.count ?? 0);
+  return result[0]?.results ?? [];
 }
 
-export async function setLocalDevPassword({
+function getExistingSystemNavKeys(flag) {
+  const result = executeJson(
+    flag,
+    "SELECT system_key AS systemKey FROM nav_item WHERE system_key IS NOT NULL",
+  );
+
+  return new Set(
+    (result[0]?.results ?? []).flatMap((row) =>
+      row.systemKey ? [row.systemKey] : [],
+    ),
+  );
+}
+
+function buildDefaultNavInsertStatements(flag, timestamp) {
+  const existingKeys = getExistingSystemNavKeys(flag);
+  const positions = getOrderedNavPositions(flag);
+  let lastPosition = positions.at(-1)?.position ?? null;
+
+  const statements = [];
+  let seededNavigation = false;
+
+  for (const item of DEFAULT_SYSTEM_NAV_ITEMS) {
+    if (existingKeys.has(item.systemKey)) continue;
+
+    const position = generateKeyBetween(lastPosition, null);
+    statements.push(
+      [
+        "INSERT INTO nav_item (id, type, system_key, label, url, position, created_at, updated_at)",
+        "VALUES (",
+        `${sqlString(randomId())}, 'system', ${sqlString(item.systemKey)}, ${sqlString(item.label)}, ${sqlString(item.url)}, ${sqlString(position)}, ${timestamp}, ${timestamp}`,
+        ")",
+      ].join(" "),
+    );
+
+    lastPosition = position;
+    existingKeys.add(item.systemKey);
+    seededNavigation = true;
+  }
+
+  return { statements, seededNavigation };
+}
+
+export async function setCredentialPassword({
   password,
   flag,
+  email,
   allowMissingAdmin = false,
+  missingAdminMessage = [
+    "No credential user found in the database.",
+    "Run the matching bootstrap command before setting credentials.",
+  ].join("\n"),
 }) {
   const credentialUsers = getCredentialUsers(flag);
   const targetUser = credentialUsers[0];
 
   if (!targetUser) {
-    const lines = [
-      "No credential user found in the local database.",
-      "Run `mise run dev-auth-bootstrap` to bootstrap a local debug account.",
-    ];
-
     if (allowMissingAdmin) {
-      console.warn(lines.join("\n"));
+      console.warn(missingAdminMessage);
       return { updated: false };
     }
 
-    console.error(lines.join("\n"));
+    console.error(missingAdminMessage);
     process.exit(1);
   }
 
@@ -135,7 +189,7 @@ export async function setLocalDevPassword({
   const statements = [
     [
       "UPDATE user",
-      `SET email = ${sqlString(DEV_EMAIL)}, role = 'admin', updated_at = ${timestamp}`,
+      `SET email = ${sqlString(email)}, role = 'admin', updated_at = ${timestamp}`,
       `WHERE id = ${sqlString(targetUser.user_id)}`,
     ].join(" "),
     [
@@ -154,20 +208,24 @@ export async function setLocalDevPassword({
   };
 }
 
-export async function ensureLocalDevSetup({
+export async function ensureManagedSetup({
   password,
   flag,
+  email,
   siteName = DEFAULT_SITE_NAME,
+  siteLanguage = DEFAULT_SITE_LANGUAGE,
+  missingAdminMessage = [
+    "No credential user found in the database.",
+    "Run the matching bootstrap command before setting credentials.",
+  ].join("\n"),
 }) {
   const timestamp = nowSeconds();
   const settings = getSettingMap(flag);
-  const navCount = getNavCount(flag);
   const credentialUsers = getCredentialUsers(flag);
   const statements = [];
 
   let createdCredentialUser = false;
-  let completedOnboarding = settings.ONBOARDING_STATUS !== "completed";
-  let seededNavigation = navCount === 0;
+  const completedOnboarding = settings.ONBOARDING_STATUS !== "completed";
 
   if (credentialUsers.length === 0) {
     const userId = randomId();
@@ -178,7 +236,7 @@ export async function ensureLocalDevSetup({
       [
         "INSERT INTO user (id, name, email, email_verified, image, role, created_at, updated_at)",
         "VALUES (",
-        `${sqlString(userId)}, ${sqlString(siteName)}, ${sqlString(DEV_EMAIL)}, 0, NULL, 'admin', ${timestamp}, ${timestamp}`,
+        `${sqlString(userId)}, ${sqlString(siteName)}, ${sqlString(email)}, 0, NULL, 'admin', ${timestamp}, ${timestamp}`,
         ")",
       ].join(" "),
     );
@@ -196,6 +254,10 @@ export async function ensureLocalDevSetup({
     createdCredentialUser = true;
   }
 
+  const { statements: navStatements, seededNavigation } =
+    buildDefaultNavInsertStatements(flag, timestamp);
+  statements.push(...navStatements);
+
   if (!settings.SITE_NAME) {
     statements.push(
       [
@@ -210,7 +272,7 @@ export async function ensureLocalDevSetup({
     statements.push(
       [
         "INSERT INTO setting (key, value, updated_at) VALUES",
-        `('SITE_LANGUAGE', 'en', ${timestamp})`,
+        `('SITE_LANGUAGE', ${sqlString(siteLanguage)}, ${timestamp})`,
         "ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
       ].join(" "),
     );
@@ -226,34 +288,16 @@ export async function ensureLocalDevSetup({
     );
   }
 
-  if (navCount === 0) {
-    const items = [
-      ["system", "collections", "Collections", "/c", "a0"],
-      ["system", "archive", "Archive", "/archive", "a1"],
-      ["system", "rss", "RSS", "/feed", "a2"],
-      ["system", "settings", "Settings", "/settings", "a3"],
-    ];
-
-    for (const [type, systemKey, label, url, position] of items) {
-      statements.push(
-        [
-          "INSERT INTO nav_item (id, type, system_key, label, url, position, created_at, updated_at)",
-          "VALUES (",
-          `${sqlString(randomId())}, ${sqlString(type)}, ${sqlString(systemKey)}, ${sqlString(label)}, ${sqlString(url)}, ${sqlString(position)}, ${timestamp}, ${timestamp}`,
-          ")",
-        ].join(" "),
-      );
-    }
-  }
-
   if (statements.length > 0) {
     executeSql(flag, statements.join("; "));
   }
 
-  const passwordResult = await setLocalDevPassword({
+  const passwordResult = await setCredentialPassword({
     password,
     flag,
+    email,
     allowMissingAdmin: false,
+    missingAdminMessage,
   });
 
   return {
@@ -262,4 +306,39 @@ export async function ensureLocalDevSetup({
     seededNavigation,
     promotedToAdmin: passwordResult.promotedToAdmin ?? false,
   };
+}
+
+export async function setLocalDevPassword({
+  password,
+  flag,
+  allowMissingAdmin = false,
+}) {
+  return setCredentialPassword({
+    password,
+    flag,
+    email: DEV_EMAIL,
+    allowMissingAdmin,
+    missingAdminMessage: [
+      "No credential user found in the local database.",
+      "Run `mise run dev-auth-bootstrap` to bootstrap a local debug account.",
+    ].join("\n"),
+  });
+}
+
+export async function ensureLocalDevSetup({
+  password,
+  flag,
+  siteName = DEFAULT_SITE_NAME,
+}) {
+  return ensureManagedSetup({
+    password,
+    flag,
+    email: DEV_EMAIL,
+    siteName,
+    siteLanguage: DEFAULT_SITE_LANGUAGE,
+    missingAdminMessage: [
+      "No credential user found in the local database.",
+      "Run `mise run dev-auth-bootstrap` to bootstrap a local debug account.",
+    ].join("\n"),
+  });
 }

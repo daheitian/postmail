@@ -203,26 +203,33 @@ dir = "packages/core"
 run = "node dev/scripts/export-seed.mjs"
 
 [tasks.db-local-import]
-description = "Import a content seed SQL file into the current local development D1 database"
+description = "Import a content seed SQL file into the current local development D1 database shell"
 usage = 'arg "<file>"'
 dir = "packages/core"
 run = 'node dev/scripts/import-local-seed.mjs "$usage_file"'
 
-[tasks.db-local-load-demo]
-description = "Load the canonical demo content seed into the current local development D1 database"
+[tasks.db-local-bootstrap-shell]
+description = "Ensure the local development shell (admin, onboarding, default nav, debug creds)"
+run = """
+echo "Running local migrations..."
+mise run db-local-migrate
+echo "Bootstrapping local development shell..."
+mise run dev-auth-bootstrap
+"""
+
+[tasks.db-local-load-demo-content]
+alias = "db-local-load-demo"
+description = "Load the canonical demo content seed into the current local development D1 database shell"
 dir = "packages/core"
 run = "node dev/scripts/import-local-seed.mjs ../../sites/demo/scripts/seed-demo.sql"
 
-[tasks.db-local-reset]
-description = "Recreate the local development D1 database, bootstrap dev auth, and load the canonical demo seed"
+[tasks.db-local-rebuild-demo]
+description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo content"
 dir = "packages/core"
 run = """
 echo "Resetting local database..."
 rm -rf .wrangler
-echo "Running migrations..."
-node ./bin/jant.js migrate --local
-echo "Bootstrapping local dev auth..."
-node dev/scripts/setup-dev-auth.mjs
+mise run db-local-bootstrap-shell
 echo "Loading canonical demo content..."
 node dev/scripts/import-local-seed.mjs ../../sites/demo/scripts/seed-demo.sql
 echo "Done! Local database is ready."
@@ -331,35 +338,54 @@ description = "Run migrations on demo.jant.me"
 dir = "sites/demo"
 run = "pnpm exec jant migrate --remote"
 
-[tasks.db-demo-reset]
-description = "Reset demo.jant.me content using the canonical demo seed"
+[tasks.db-demo-bootstrap]
+description = "Ensure demo.jant.me has its managed shell (admin, onboarding, default nav)"
 dir = "sites/demo"
-run = "pnpm exec wrangler d1 execute DB --remote --file=scripts/seed-demo.sql"
+run = """
+echo "Running remote migrations..."
+pnpm exec jant migrate --remote
+echo "Bootstrapping managed demo shell..."
+node scripts/bootstrap-demo.mjs
+"""
+
+[tasks.db-demo-reseed]
+description = "Restore demo.jant.me to the canonical demo state"
+dir = "sites/demo"
+run = """
+mise run db-demo-bootstrap
+echo "Loading canonical demo content..."
+pnpm exec jant db execute-file --remote --file scripts/seed-demo.sql
+echo "Done! Demo content has been reset."
+"""
 
 [tasks.db-demo-export]
 description = "Refresh sites/demo/scripts/seed-demo.sql from demo.jant.me"
 dir = "sites/demo"
 run = "node scripts/export-demo.mjs"
 
-[tasks.db-demo-clean]
-description = "Clear demo.jant.me content without reseeding"
+[tasks.db-demo-clear-content]
+alias = "db-demo-clean"
+description = "Clear demo.jant.me content while preserving the managed shell"
 dir = "sites/demo"
 run = """
-echo "Clearing demo data..."
-pnpm exec wrangler d1 execute DB --remote --file=scripts/reset-demo.sql
-echo "Done! Demo data has been cleared."
+mise run db-demo-bootstrap
+echo "Clearing demo content..."
+pnpm exec jant db execute-file --remote --file scripts/reset-demo.sql
+echo "Done! Demo content has been cleared."
 """
 
-[tasks.db-demo-push-local]
-description = "Push the current local development seed data to demo.jant.me"
+[tasks.db-demo-load-local-content]
+alias = "db-demo-push-local"
+description = "Replace demo.jant.me content with the current local development content"
 dir = "sites/demo"
 run = """
 echo "Exporting local data..."
-node ../../packages/core/dev/scripts/export-seed.mjs --no-auth --output seed-demo-upload.sql
-echo "Loading seed data to demo (includes reset)..."
-pnpm exec wrangler d1 execute DB --remote --file=seed-demo-upload.sql
+node ../../packages/core/dev/scripts/export-seed.mjs --no-auth --output ../../../sites/demo/seed-demo-upload.sql
+mise run db-demo-bootstrap
+echo "Loading local content into demo..."
+pnpm exec jant db execute-file --remote --file seed-demo-upload.sql
 rm seed-demo-upload.sql
-echo "Done! Demo has been seeded from local data."
+echo "Done! Demo content has been replaced from local data."
 """
 
 [tasks.db-demo-nuke]
@@ -378,30 +404,40 @@ run = "pnpm --filter @jant/core build && pnpm --filter jant-me dev"
 description = "Deploy jant.me to Cloudflare Workers"
 run = "pnpm --filter @jant/core build && pnpm --filter jant-me run deploy"
 
-[tasks.db-site-export]
+[tasks.db-site-export-content]
+alias = "db-site-export"
 description = "Export jant.me content to scripts/seed-site.sql"
 dir = "sites/jant-me"
 run = "node scripts/export-site.mjs"
 
-[tasks.db-site-clean]
-description = "Clear jant.me content without reseeding"
+[tasks.db-site-clear-content]
+alias = "db-site-clean"
+description = "Clear jant.me content without reseeding (runs remote migrations first)"
 dir = "sites/jant-me"
 run = """
+echo "Running remote migrations..."
+pnpm exec jant migrate --remote
 echo "Clearing jant.me data..."
-pnpm exec wrangler d1 execute DB --remote --file=scripts/reset-site.sql
+pnpm exec jant db execute-file --remote --file scripts/reset-site.sql
 echo "Done! jant.me content has been cleared."
 """
 
-[tasks.db-site-push]
-description = "Push scripts/seed-site.sql to jant.me (runs remote migrations first)"
+[tasks.db-site-load-content]
+alias = "db-site-push"
+description = "Load scripts/seed-site.sql into jant.me (runs remote migrations first)"
 dir = "sites/jant-me"
 run = """
 echo "Running remote migrations..."
 pnpm exec jant migrate --remote
 echo "Loading seed data to jant.me..."
-pnpm exec wrangler d1 execute DB --remote --file=scripts/seed-site.sql
+pnpm exec jant db execute-file --remote --file scripts/seed-site.sql
 echo "Done! jant.me has been seeded from seed-site.sql."
 """
+
+[tasks.db-site-reseed]
+description = "Replace jant.me content with scripts/seed-site.sql (runs remote migrations first)"
+dir = "sites/jant-me"
+run = "mise run db-site-load-content"
 
 [tasks.db-site-nuke]
 description = "Drop ALL tables in jant.me database (including migrations)"
@@ -754,4 +790,3 @@ run = "pnpm --filter @jant/core build && cd packages/core && npm publish --acces
 [tasks.release-publish-create]
 description = "Build and publish create-jant to npm"
 run = "pnpm --filter create-jant build && cd packages/create-jant && npm publish --access public --no-provenance --no-git-checks"
-

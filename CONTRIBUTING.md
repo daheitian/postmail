@@ -171,8 +171,8 @@ mise run check-tests-coverage # Run tests with coverage report
 mise run db-schema-generate # Generate Drizzle migrations (from core schema)
 mise run db-local-migrate   # Apply migrations (local D1) — usually not needed, dev auto-runs this
 mise run db-local-export    # Export current local D1 data to seed-local.sql
-mise run db-local-load-demo # Reload canonical demo content into the current local DB
-mise run db-local-reset     # Recreate the local DB, bootstrap dev auth, and load demo content
+mise run db-local-load-demo-content # Reload canonical demo content into the current local DB shell
+mise run db-local-rebuild-demo      # Recreate the local DB shell and load demo content
 mise run db-local-clean     # Delete local D1 database (.wrangler)
 ```
 
@@ -441,10 +441,10 @@ The project includes a workflow for maintaining development seed data:
 3. **Recreate the local demo dataset** (on a fresh clone or after reset):
 
    ```bash
-   mise run db-local-reset
+   mise run db-local-rebuild-demo
    ```
 
-   This recreates the local database, runs migrations, bootstraps local debug auth, and loads the canonical demo content from `sites/demo/scripts/seed-demo.sql`.
+   This recreates the local database, runs migrations, bootstraps the local shell, and loads the canonical demo content from `sites/demo/scripts/seed-demo.sql`.
 
 4. **Import an arbitrary SQL export** when you need a one-off dataset:
 

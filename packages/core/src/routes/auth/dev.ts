@@ -65,7 +65,7 @@ devAuthRoutes.get("/__dev/login", async (c) => {
     });
   } catch {
     return c.text(
-      "Dev login failed. Finish /setup once or run `mise run db-local-reset`, then retry.",
+      "Dev login failed. Finish /setup once or run `mise run db-local-rebuild-demo`, then retry.",
       500,
     );
   }

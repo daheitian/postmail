@@ -19,6 +19,7 @@ import { createSearchService, type SearchService } from "./search.js";
 import { createNavItemService, type NavItemService } from "./navigation.js";
 import { createAuthService, type AuthService } from "./auth.js";
 import { createApiTokenService, type ApiTokenService } from "./api-token.js";
+import { createBootstrapService, type BootstrapService } from "./bootstrap.js";
 
 export interface Services {
   settings: SettingsService;
@@ -31,6 +32,7 @@ export interface Services {
   navItems: NavItemService;
   auth: AuthService;
   apiTokens: ApiTokenService;
+  bootstrap: BootstrapService;
 }
 
 export function createServices(
@@ -40,6 +42,7 @@ export function createServices(
 ): Services {
   const settings = createSettingsService(db);
   const paths = createPathService(db);
+  const navItems = createNavItemService(db);
   return {
     settings,
     paths,
@@ -54,9 +57,10 @@ export function createServices(
     media: createMediaService(db),
     collections: createCollectionService(db, paths),
     search: createSearchService(rawQuery),
-    navItems: createNavItemService(db),
+    navItems,
     auth: createAuthService(db, settings),
     apiTokens: createApiTokenService(db),
+    bootstrap: createBootstrapService(settings, navItems),
   };
 }
 
@@ -70,3 +74,7 @@ export type { SearchService, SearchResult, SearchOptions } from "./search.js";
 export type { NavItemService } from "./navigation.js";
 export type { AuthService, DeleteAccountDeps } from "./auth.js";
 export type { ApiTokenService } from "./api-token.js";
+export type {
+  BootstrapService,
+  CompleteInitialSetupData,
+} from "./bootstrap.js";

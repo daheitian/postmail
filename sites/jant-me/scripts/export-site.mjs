@@ -54,10 +54,18 @@ function dumpTable(name, query) {
     .join("\n");
 }
 
+function stripEmbeddedResetSql(sql) {
+  return sql
+    .replace(/^--.*\n/gm, "")
+    .replace(/^\s*BEGIN TRANSACTION;\s*$/gim, "")
+    .replace(/^\s*COMMIT;\s*$/gim, "")
+    .trim();
+}
+
 const header = `-- =============================================================================
 -- Site data for Jant (jant.me)
 -- Exported from remote D1 database via: mise run db-site-export
--- Usage: edit this file, then mise run db-site-push
+-- Usage: edit this file, then mise run db-site-load-content
 -- =============================================================================
 `;
 
@@ -65,25 +73,55 @@ const header = `-- =============================================================
 const resetSql = readFileSync(resolve(__dirname, "reset-site.sql"), "utf-8");
 
 const tables = [
-  // settings, user, account are preserved by reset-site.sql — don't export
-  ["post", "SELECT * FROM post WHERE deleted_at IS NULL"],
-  ["post_collection"],
-  ["collection"],
-  ["nav_item"],
-  ["collection_directory_item"],
-  ["custom_url"],
-  ["api_token"],
-  ["media"],
+  // Managed shell/config data is preserved by reset-site.sql — export content only.
+  [
+    "post",
+    `SELECT * FROM post
+     WHERE deleted_at IS NULL
+     ORDER BY CASE WHEN reply_to_id IS NULL THEN 0 ELSE 1 END, created_at, id`,
+  ],
+  [
+    "post_collection",
+    `SELECT pc.* FROM post_collection pc
+     JOIN post p ON p.id = pc.post_id
+     WHERE p.deleted_at IS NULL
+     ORDER BY pc.created_at, pc.collection_id, pc.post_id`,
+  ],
+  ["collection", "SELECT * FROM collection ORDER BY created_at, id"],
+  [
+    "collection_directory_item",
+    "SELECT * FROM collection_directory_item ORDER BY position, id",
+  ],
+  [
+    "path_registry",
+    `SELECT pr.* FROM path_registry pr
+     LEFT JOIN post p ON p.id = pr.post_id
+     LEFT JOIN collection c ON c.id = pr.collection_id
+     WHERE pr.kind = 'redirect'
+        OR (pr.post_id IS NOT NULL AND p.deleted_at IS NULL)
+        OR (pr.collection_id IS NOT NULL AND c.id IS NOT NULL)
+     ORDER BY pr.path, pr.id`,
+  ],
+  [
+    "media",
+    `SELECT m.* FROM media m
+     LEFT JOIN post p ON p.id = m.post_id
+     WHERE m.post_id IS NULL OR p.deleted_at IS NULL
+     ORDER BY m.created_at, m.id`,
+  ],
 ];
 
 let sql = header;
+sql += "\nBEGIN TRANSACTION;\n";
 sql += "\n-- Reset (clear existing content)\n";
-sql += resetSql.replace(/^--.*\n/gm, "").trim() + "\n";
+sql += stripEmbeddedResetSql(resetSql) + "\n";
 
 for (const [name, query] of tables) {
   const data = dumpTable(name, query);
   if (data) sql += `\n-- ${name}\n${data}\n`;
 }
+
+sql += "\nCOMMIT;\n";
 
 const out = resolve(__dirname, "seed-site.sql");
 writeFileSync(out, sql);

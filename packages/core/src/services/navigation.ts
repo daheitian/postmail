@@ -45,6 +45,9 @@ export interface NavItemService {
   list(): Promise<NavItem[]>;
   getById(id: string): Promise<NavItem | null>;
   create(data: CreateNavItem): Promise<NavItem>;
+  ensureSystemDefaults(
+    systemKeys?: readonly SystemNavKey[],
+  ): Promise<NavItem[]>;
   update(id: string, data: UpdateNavItem): Promise<NavItem | null>;
   delete(id: string): Promise<boolean>;
   move(
@@ -55,6 +58,13 @@ export interface NavItemService {
 }
 
 export function createNavItemService(db: Database): NavItemService {
+  const defaultSystemOrder = [
+    "collections",
+    "archive",
+    "rss",
+    "settings",
+  ] as const satisfies readonly SystemNavKey[];
+
   function toNavItem(row: typeof navItems.$inferSelect): NavItem {
     return {
       id: row.id,
@@ -227,6 +237,41 @@ export function createNavItemService(db: Database): NavItemService {
       }
 
       throw new Error("Failed to assign a unique nav item position");
+    },
+
+    async ensureSystemDefaults(systemKeys = defaultSystemOrder) {
+      const existingRows = await db
+        .select({ systemKey: navItems.systemKey })
+        .from(navItems)
+        .where(sql`${navItems.systemKey} IS NOT NULL`);
+      const existing = new Set(
+        existingRows.flatMap((row) =>
+          row.systemKey ? [row.systemKey as SystemNavKey] : [],
+        ),
+      );
+
+      const created: NavItem[] = [];
+      for (const systemKey of systemKeys) {
+        if (existing.has(systemKey)) continue;
+        try {
+          created.push(
+            await this.create({
+              type: "system",
+              systemKey,
+            }),
+          );
+        } catch (error) {
+          if (
+            !(error instanceof ValidationError) ||
+            error.message !== "Built-in navigation item already exists"
+          ) {
+            throw error;
+          }
+        }
+        existing.add(systemKey);
+      }
+
+      return created;
     },
 
     async update(id, data) {

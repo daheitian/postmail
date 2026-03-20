@@ -20,6 +20,12 @@ function appendWranglerContext(args, options = {}) {
   return args;
 }
 
+function commandArgument(sql) {
+  // Inline the value so SQL that starts with `--` comments is not parsed as
+  // additional CLI flags by Wrangler's argument parser.
+  return `--command=${sql}`;
+}
+
 function getWranglerError(output) {
   if (!output) {
     return undefined;
@@ -56,8 +62,7 @@ export function executeD1(sql, runtime, options = {}) {
       "execute",
       options.database ?? "DB",
       getD1Flag(runtime),
-      "--command",
-      sql,
+      commandArgument(sql),
     ],
     options,
   );
@@ -87,8 +92,7 @@ export function queryD1(sql, runtime, options = {}) {
         "execute",
         options.database ?? "DB",
         getD1Flag(runtime),
-        "--command",
-        sql,
+        commandArgument(sql),
         "--json",
       ],
       options,

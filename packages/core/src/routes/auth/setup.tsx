@@ -195,46 +195,26 @@ setupRoutes.post("/setup", async (c) => {
       );
     }
 
-    await c.var.services.settings.completeOnboarding();
-
-    // Save site name
-    await c.var.services.settings.set("SITE_NAME", siteName.trim());
-
-    // Save auto-detected timezone
+    let timeZone: string | undefined;
     if (browserTimezone) {
       const tz = mapIanaToTimezone(browserTimezone);
       if (tz !== "UTC") {
-        await c.var.services.settings.set("TIME_ZONE", tz);
+        timeZone = tz;
       }
     }
 
-    // Save auto-detected language from browser's navigator.language
+    let siteLanguage: string | undefined;
     if (browserLanguage) {
       const detectedLang = detectLocaleFromHeader(browserLanguage);
       if (detectedLang !== baseLocale) {
-        await c.var.services.settings.set("SITE_LANGUAGE", detectedLang);
+        siteLanguage = detectedLang;
       }
     }
 
-    // Seed default navigation items (order: Collections, Archive, RSS, Settings)
-    await c.var.services.navItems.create({
-      type: "system",
-      systemKey: "collections",
-    });
-
-    await c.var.services.navItems.create({
-      type: "system",
-      systemKey: "archive",
-    });
-
-    await c.var.services.navItems.create({
-      type: "system",
-      systemKey: "rss",
-    });
-
-    await c.var.services.navItems.create({
-      type: "system",
-      systemKey: "settings",
+    await c.var.services.bootstrap.completeInitialSetup({
+      siteName,
+      timeZone,
+      siteLanguage,
     });
 
     return dsRedirect(

@@ -1,0 +1,107 @@
+import { readFile } from "node:fs/promises";
+import { parseArgs } from "node:util";
+import { executeD1 } from "../../lib/d1-query.js";
+import { openNodeSqlite } from "../../lib/node-sqlite.js";
+import {
+  getCliRuntimeLabel,
+  resolveCliRuntime,
+} from "../../lib/runtime-target.js";
+
+function formatUsage() {
+  console.log(
+    "Usage: jant db execute-file --file <path> [--local | --remote] [--config <file>] [--env <name>] [--database <binding>]",
+  );
+  console.log("");
+  console.log(
+    "Execute a SQL file against Node SQLite, local D1, or remote D1.",
+  );
+  console.log("");
+  console.log("Options:");
+  console.log("  --file             SQL file to execute");
+  console.log("  --local            Force local D1 instead of DATABASE_URL");
+  console.log("  --remote           Run against remote D1");
+  console.log("  --config           Wrangler config file (default: wrangler.toml)");
+  console.log("  --env              Wrangler environment name");
+  console.log("  --database         D1 binding name (default: DB)");
+  console.log("  --persist-to       Local D1 state directory override");
+  console.log("");
+  console.log(
+    "If DATABASE_URL or JANT_DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite.",
+  );
+}
+
+async function loadSqlFile(filePath) {
+  const sql = await readFile(filePath, "utf-8");
+  if (!sql.trim()) {
+    throw new Error(`SQL file is empty: ${filePath}`);
+  }
+  return sql;
+}
+
+function normalizeD1Sql(sql) {
+  // Remote D1 rejects SQL transaction control statements with code 7500.
+  return sql
+    .replace(/^\s*BEGIN(?:\s+TRANSACTION)?\s*;\s*$/gim, "")
+    .replace(/^\s*COMMIT\s*;\s*$/gim, "")
+    .replace(/^\s*ROLLBACK\s*;\s*$/gim, "")
+    .trim();
+}
+
+export async function run(argv) {
+  const { values } = parseArgs({
+    args: argv,
+    options: {
+      config: { type: "string" },
+      database: { type: "string", default: "DB" },
+      env: { type: "string" },
+      file: { type: "string" },
+      help: { type: "boolean", short: "h" },
+      local: { type: "boolean", default: false },
+      "persist-to": { type: "string" },
+      remote: { type: "boolean", default: false },
+    },
+  });
+
+  if (values.help) {
+    formatUsage();
+    process.exit(0);
+  }
+
+  if (!values.file) {
+    throw new Error("Missing required --file <path> argument.");
+  }
+
+  const runtime = resolveCliRuntime(values);
+  const sql = await loadSqlFile(values.file);
+
+  if (runtime === "node") {
+    const { databasePath, sqlite } = openNodeSqlite(process.env);
+    try {
+      sqlite.exec(sql);
+    } finally {
+      sqlite.close();
+    }
+
+    console.log(`Executed ${values.file} against Node SQLite (${databasePath}).`);
+    return;
+  }
+
+  const d1Sql = normalizeD1Sql(sql);
+  if (!d1Sql) {
+    throw new Error(`SQL file has no executable statements for D1: ${values.file}`);
+  }
+
+  const statements = executeD1(d1Sql, runtime, {
+    configPath: values.config,
+    database: values.database,
+    env: values.env,
+    quiet: true,
+    persistTo: values["persist-to"],
+  });
+
+  const statementCount = Array.isArray(statements) ? statements.length : 0;
+  const statementLabel = statementCount === 1 ? "statement" : "statements";
+  console.log(
+    `Executed ${statementCount} ${statementLabel} from ${values.file} against ${getCliRuntimeLabel(runtime)}.`,
+  );
+}

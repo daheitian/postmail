@@ -52,10 +52,18 @@ function dumpTable(name, query) {
     .join("\n");
 }
 
+function stripEmbeddedResetSql(sql) {
+  return sql
+    .replace(/^--.*\n/gm, "")
+    .replace(/^\s*BEGIN TRANSACTION;\s*$/gim, "")
+    .replace(/^\s*COMMIT;\s*$/gim, "")
+    .trim();
+}
+
 const header = `-- =============================================================================
 -- ${noMedia ? "Seed data (without media)" : "Local development seed data"} for Jant
 -- Exported from local D1 database
--- Companion reset script: dev/scripts/reset-local.sql
+-- Companion reset script: ${noAuth ? "dev/scripts/reset-content.sql" : "dev/scripts/reset-local.sql"}
 -- =============================================================================
 `;
 
@@ -75,7 +83,7 @@ const tables = [
      WHERE p.deleted_at IS NULL
      ORDER BY pc.created_at, pc.collection_id, pc.post_id`,
   ],
-  ["nav_item", "SELECT * FROM nav_item ORDER BY position, id"],
+  ...(!noAuth ? [["nav_item", "SELECT * FROM nav_item ORDER BY position, id"]] : []),
   [
     "collection_directory_item",
     "SELECT * FROM collection_directory_item ORDER BY position, id",
@@ -90,7 +98,9 @@ const tables = [
         OR (pr.collection_id IS NOT NULL AND c.id IS NOT NULL)
      ORDER BY pr.path, pr.id`,
   ],
-  ["api_token", "SELECT * FROM api_token ORDER BY created_at, id"],
+  ...(!noAuth
+    ? [["api_token", "SELECT * FROM api_token ORDER BY created_at, id"]]
+    : []),
 ];
 
 // Include media table only when --no-media is not set
@@ -99,6 +109,7 @@ if (!noMedia) {
 }
 
 let sql = header;
+sql += "\nBEGIN TRANSACTION;\n";
 
 // When --no-auth, embed reset statements so everything runs in a single D1 import
 if (noAuth) {
@@ -107,13 +118,15 @@ if (noAuth) {
     "utf-8",
   );
   sql += "\n-- Reset (clear existing content)\n";
-  sql += resetSql.replace(/^--.*\n/gm, "").trim() + "\n";
+  sql += stripEmbeddedResetSql(resetSql) + "\n";
 }
 
 for (const [name, query] of tables) {
   const data = dumpTable(name, query);
   if (data) sql += `\n-- ${name}\n${data}\n`;
 }
+
+sql += "\nCOMMIT;\n";
 
 const out = resolve(__dirname, outputFile);
 writeFileSync(out, sql);

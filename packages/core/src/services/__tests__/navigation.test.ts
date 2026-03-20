@@ -112,6 +112,47 @@ describe("NavItemService", () => {
     });
   });
 
+  describe("ensureSystemDefaults", () => {
+    it("creates the four default system items once", async () => {
+      const created = await navItemService.ensureSystemDefaults();
+
+      expect(created).toHaveLength(4);
+      expect(created.map((item) => item.systemKey)).toEqual([
+        "collections",
+        "archive",
+        "rss",
+        "settings",
+      ]);
+    });
+
+    it("creates only missing default system items", async () => {
+      await navItemService.create({
+        type: "system",
+        systemKey: "archive",
+      });
+
+      const created = await navItemService.ensureSystemDefaults();
+      const items = await navItemService.list();
+
+      expect(created.map((item) => item.systemKey)).toEqual([
+        "collections",
+        "rss",
+        "settings",
+      ]);
+      expect(items.filter((item) => item.type === "system")).toHaveLength(4);
+    });
+
+    it("is idempotent when defaults already exist", async () => {
+      await navItemService.ensureSystemDefaults();
+
+      const created = await navItemService.ensureSystemDefaults();
+      const items = await navItemService.list();
+
+      expect(created).toEqual([]);
+      expect(items.filter((item) => item.type === "system")).toHaveLength(4);
+    });
+  });
+
   describe("getById", () => {
     it("returns a nav item by ID", async () => {
       const created = await navItemService.create({

@@ -18,6 +18,7 @@ import { createSearchService } from "../../services/search.js";
 import { createNavItemService } from "../../services/navigation.js";
 import { createAuthService } from "../../services/auth.js";
 import { createApiTokenService } from "../../services/api-token.js";
+import { createBootstrapService } from "../../services/bootstrap.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
@@ -52,6 +53,7 @@ export function createTestApp(options: TestAppOptions = {}) {
 
   const settingsService = createSettingsService(db);
   const pathService = createPathService(db);
+  const navItemsService = createNavItemService(db);
   const services = {
     paths: pathService,
     posts: createPostService(db, { slugIdLength: 5 }, pathService),
@@ -60,9 +62,10 @@ export function createTestApp(options: TestAppOptions = {}) {
     media: createMediaService(db),
     collections: createCollectionService(db, pathService),
     search: createSearchService(mockD1),
-    navItems: createNavItemService(db),
+    navItems: navItemsService,
     auth: createAuthService(db, settingsService),
     apiTokens: createApiTokenService(db),
+    bootstrap: createBootstrapService(settingsService, navItemsService),
   };
 
   const app = new Hono<Env>();

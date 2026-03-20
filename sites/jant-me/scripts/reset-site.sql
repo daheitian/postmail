@@ -1,6 +1,8 @@
 -- Reset script for Jant official site (jant.me) (v2 schema)
--- Clears content data while preserving users/settings/schema
--- Usage: mise run db-site-export (embeds this), then mise run db-site-push
+-- Clears content data while preserving the site shell and settings
+-- Usage: mise run db-site-clear-content or db-site-reseed
+
+BEGIN TRANSACTION;
 
 -- Clear FTS index first (to avoid trigger issues)
 DELETE FROM post_fts;
@@ -8,14 +10,14 @@ DELETE FROM post_fts;
 -- Clear junction/dependent tables first
 DELETE FROM post_collection;
 DELETE FROM collection_directory_item;
-DELETE FROM custom_url;
-DELETE FROM api_token;
+DELETE FROM path_registry;
 
 -- Clear main tables (order matters for FK constraints)
-DELETE FROM nav_item;
 DELETE FROM media;
 DELETE FROM post;
 DELETE FROM collection;
 
--- Sessions, users, accounts, and settings are preserved
+COMMIT;
+
+-- Sessions, users, accounts, settings, nav items, and API tokens are preserved
 -- (seed-site.sql only contains content data)
