@@ -115,6 +115,10 @@ interface ComposeStateSnapshot {
 
 const EDITOR_FLOATING_UI_SELECTOR = "[data-editor-floating-ui]";
 
+interface ComposeFilePickerCloseDetail {
+  cancelled?: boolean;
+}
+
 function toComposeCollections(value: unknown): ComposeCollection[] {
   if (!Array.isArray(value)) return [];
 
@@ -237,6 +241,8 @@ export class JantComposeDialog extends LitElement {
   private _slugSuggestionKey = "";
   private _suppressBeforeUnload = false;
   private _dialogEl: HTMLDialogElement | null = null;
+  private _filePickerActive = false;
+  private _ignoreNextEscapeClose = false;
 
   createRenderRoot() {
     this.innerHTML = "";
@@ -362,6 +368,8 @@ export class JantComposeDialog extends LitElement {
     this._slugSuggestRequestId += 1;
     this._slugCheckRequestId += 1;
     this._suppressBeforeUnload = false;
+    this._filePickerActive = false;
+    this._ignoreNextEscapeClose = false;
     this._cancelSlugTimers();
     this._destroyAttachedEditor();
     this._editor?.reset();
@@ -598,6 +606,19 @@ export class JantComposeDialog extends LitElement {
 
   preparePageLeave() {
     this._suppressBeforeUnload = true;
+  }
+
+  private _clearFilePickerEscapeState() {
+    this._filePickerActive = false;
+    this._ignoreNextEscapeClose = false;
+  }
+
+  private _shouldIgnoreEscapeClose(): boolean {
+    if (this._filePickerActive || this._ignoreNextEscapeClose) {
+      this._clearFilePickerEscapeState();
+      return true;
+    }
+    return false;
   }
 
   private _hasContent(): boolean {
@@ -1073,6 +1094,12 @@ export class JantComposeDialog extends LitElement {
       "jant:compose-content-changed",
       this._onContentChanged,
     );
+    this.addEventListener("jant:file-picker-open", this._handleFilePickerOpen);
+    this.addEventListener(
+      "jant:file-picker-close",
+      this._handleFilePickerClose as EventListener,
+    );
+    this.addEventListener("pointerdown", this._handlePointerDown);
     // Listen on document — fullscreen element lives on document.body, outside the dialog
     document.addEventListener(
       "jant:fullscreen-close",
@@ -1107,6 +1134,15 @@ export class JantComposeDialog extends LitElement {
       "jant:compose-content-changed",
       this._onContentChanged,
     );
+    this.removeEventListener(
+      "jant:file-picker-open",
+      this._handleFilePickerOpen,
+    );
+    this.removeEventListener(
+      "jant:file-picker-close",
+      this._handleFilePickerClose as EventListener,
+    );
+    this.removeEventListener("pointerdown", this._handlePointerDown);
     document.removeEventListener(
       "jant:fullscreen-close",
       this._handleFullscreenClose as EventListener,
@@ -1123,8 +1159,25 @@ export class JantComposeDialog extends LitElement {
     }
   }
 
+  private _handleFilePickerOpen = () => {
+    this._filePickerActive = true;
+    this._ignoreNextEscapeClose = false;
+  };
+
+  private _handleFilePickerClose = (
+    e: CustomEvent<ComposeFilePickerCloseDetail>,
+  ) => {
+    this._filePickerActive = false;
+    this._ignoreNextEscapeClose = Boolean(e.detail?.cancelled);
+  };
+
+  private _handlePointerDown = () => {
+    this._clearFilePickerEscapeState();
+  };
+
   private _handleDialogCancel = (e: Event) => {
     e.preventDefault();
+    if (this._shouldIgnoreEscapeClose()) return;
     this.requestClose();
   };
 
@@ -1148,9 +1201,13 @@ export class JantComposeDialog extends LitElement {
 
   private _handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
+    if (ke.key !== "Escape") {
+      this._clearFilePickerEscapeState();
+    }
     if (ke.key === "Escape") {
       ke.preventDefault();
       ke.stopPropagation();
+      if (this._shouldIgnoreEscapeClose()) return;
       if (this._showCollection) {
         this._showCollection = false;
         this._collectionSearch = "";

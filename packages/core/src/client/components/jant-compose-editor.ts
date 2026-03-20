@@ -37,6 +37,10 @@ import { showToast } from "../toast.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 import { uploadAndInsertInlineImage } from "../tiptap/inline-image-upload.js";
 
+interface ComposeFilePickerCloseDetail {
+  cancelled: boolean;
+}
+
 export class JantComposeEditor extends LitElement {
   static properties = {
     format: { type: String },
@@ -84,6 +88,7 @@ export class JantComposeEditor extends LitElement {
   private _emojiContainer: HTMLElement | null = null;
   private _onDocClickBound = this._onDocumentClick.bind(this);
   private _scrollBufferApplied = false;
+  private _filePickerCleanup: (() => void) | null = null;
   private _suppressAttachedTextOpenUntil = 0;
   #sortable: { destroy(): void } | null = null;
   #revertNextSibling: globalThis.Node | null = null;
@@ -127,6 +132,8 @@ export class JantComposeEditor extends LitElement {
     document.removeEventListener("jant:slash-image", this._onSlashImage);
     document.removeEventListener("click", this._onDocClickBound, true);
     this._emojiContainer?.remove();
+    this._filePickerCleanup?.();
+    this._filePickerCleanup = null;
   }
 
   private _onSlashImage = () => {
@@ -153,6 +160,7 @@ export class JantComposeEditor extends LitElement {
       });
       document.body.appendChild(this._slashImageInput);
     }
+    this._trackFilePickerSession(this._slashImageInput);
     this._slashImageInput.click();
   }
 
@@ -160,6 +168,52 @@ export class JantComposeEditor extends LitElement {
     const editor = this._editor;
     if (!editor) return;
     void uploadAndInsertInlineImage(editor, file);
+  }
+
+  private _dispatchFilePickerEvent(
+    type: "jant:file-picker-open" | "jant:file-picker-close",
+    detail?: ComposeFilePickerCloseDetail,
+  ) {
+    this.dispatchEvent(
+      new CustomEvent(type, {
+        bubbles: true,
+        composed: true,
+        detail,
+      }),
+    );
+  }
+
+  private _trackFilePickerSession(input: HTMLInputElement) {
+    this._filePickerCleanup?.();
+
+    let closed = false;
+    const close = (cancelled: boolean) => {
+      if (closed) return;
+      closed = true;
+      cleanup();
+      this._dispatchFilePickerEvent("jant:file-picker-close", { cancelled });
+    };
+    const onChange = () => close(false);
+    const onCancel = () => close(true);
+    const onWindowFocus = () => {
+      globalThis.setTimeout(() => {
+        close(!(input.files && input.files.length > 0));
+      }, 0);
+    };
+    const cleanup = () => {
+      input.removeEventListener("change", onChange);
+      input.removeEventListener("cancel", onCancel as EventListener);
+      window.removeEventListener("focus", onWindowFocus);
+      if (this._filePickerCleanup === cleanup) {
+        this._filePickerCleanup = null;
+      }
+    };
+
+    this._filePickerCleanup = cleanup;
+    input.addEventListener("change", onChange, { once: true });
+    input.addEventListener("cancel", onCancel as EventListener, { once: true });
+    window.addEventListener("focus", onWindowFocus, { once: true });
+    this._dispatchFilePickerEvent("jant:file-picker-open");
   }
 
   private _isEmptyDoc(json: JSONContent): boolean {
@@ -767,6 +821,7 @@ export class JantComposeEditor extends LitElement {
       this.appendChild(this._fileInput);
     }
     this._fileInput.value = "";
+    this._trackFilePickerSession(this._fileInput);
     this._fileInput.click();
   }
 

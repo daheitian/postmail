@@ -1898,6 +1898,221 @@ describe("JantComposeDialog", () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
+  it("ignores native dialog cancel right after file picker cancel", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-open", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-close", {
+        bubbles: true,
+        composed: true,
+        detail: { cancelled: true },
+      }),
+    );
+
+    const requestCloseSpy = vi.spyOn(el, "requestClose");
+    const cancelEvent = new Event("cancel", {
+      cancelable: true,
+    });
+
+    (
+      el as unknown as {
+        _handleDialogCancel: (event: Event) => void;
+      }
+    )._handleDialogCancel(cancelEvent);
+
+    expect(cancelEvent.defaultPrevented).toBe(true);
+    expect(requestCloseSpy).not.toHaveBeenCalled();
+  });
+
+  it("ignores Escape right after file picker cancel", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Keep open" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-open", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-close", {
+        bubbles: true,
+        composed: true,
+        detail: { cancelled: true },
+      }),
+    );
+
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+      }),
+    );
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(false);
+  });
+
+  it("still closes normally after file picker selection", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Close after selecting" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-open", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-close", {
+        bubbles: true,
+        composed: true,
+        detail: { cancelled: false },
+      }),
+    );
+
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+      }),
+    );
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(true);
+  });
+
+  it("clears file picker Escape suppression after pointer interaction", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Close after clicking back" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-open", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-close", {
+        bubbles: true,
+        composed: true,
+        detail: { cancelled: true },
+      }),
+    );
+
+    el.dispatchEvent(
+      new globalThis.PointerEvent("pointerdown", {
+        bubbles: true,
+      }),
+    );
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+      }),
+    );
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(true);
+  });
+
+  it("clears file picker Escape suppression after non-Escape key input", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Close after typing again" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-open", {
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    editor.dispatchEvent(
+      new CustomEvent("jant:file-picker-close", {
+        bubbles: true,
+        composed: true,
+        detail: { cancelled: true },
+      }),
+    );
+
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "a",
+        bubbles: true,
+      }),
+    );
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+      }),
+    );
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(true);
+  });
+
   it("requestClose with content shows confirmation panel", async () => {
     const el = await createElement();
     const editor = requireElement(

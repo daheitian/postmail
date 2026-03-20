@@ -293,6 +293,39 @@ describe("JantComposeEditor", () => {
     expect(authorInput).not.toBeNull();
   });
 
+  it("dispatches file picker lifecycle events when media picker is cancelled", async () => {
+    const el = await createElement("note");
+    const states: Array<"open" | "cancelled"> = [];
+
+    el.addEventListener("jant:file-picker-open", () => {
+      states.push("open");
+    });
+    el.addEventListener("jant:file-picker-close", (event) => {
+      const detail = (event as CustomEvent<{ cancelled?: boolean }>).detail;
+      if (detail?.cancelled) {
+        states.push("cancelled");
+      }
+    });
+
+    (
+      el as unknown as {
+        _openFilePicker: () => void;
+      }
+    )._openFilePicker();
+
+    const input = requireValue(
+      (
+        el as unknown as {
+          _fileInput: HTMLInputElement | null;
+        }
+      )._fileInput,
+      "expected file input",
+    );
+    input.dispatchEvent(new Event("cancel"));
+
+    expect(states).toEqual(["open", "cancelled"]);
+  });
+
   it("converts typed markdown link syntax into a link mark", async () => {
     const el = await createElement("note");
     const editor = requireEditor(el);
