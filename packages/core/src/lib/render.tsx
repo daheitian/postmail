@@ -36,6 +36,8 @@ export interface RenderPublicPageOptions {
   showComposeDialog?: boolean;
   /** Whether to render the site header */
   showHeader?: boolean;
+  /** Whether to render the home branding credit after the site footer */
+  showHomeBranding?: boolean;
 }
 
 /**
@@ -68,6 +70,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     toast,
     showComposeDialog,
     showHeader,
+    showHomeBranding,
   } = options;
 
   // Use siteDescription as meta description fallback when not explicitly provided
@@ -89,6 +92,7 @@ export function renderPublicPage(c: Context, options: RenderPublicPageOptions) {
     siteAvatarUrl: navData.siteAvatarUrl,
     showHeaderAvatar: navData.showHeaderAvatar,
     siteFooterHtml: navData.siteFooterHtml,
+    showHomeBranding,
     sidebar,
     uploadMaxFileSize: appConfig.uploadMaxFileSize,
     showComposeDialog,

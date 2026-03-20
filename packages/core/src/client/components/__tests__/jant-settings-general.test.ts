@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import type {
   SettingsLabels,
   SettingsTimezone,
@@ -37,6 +37,28 @@ function findRadioByValue(
 ): HTMLInputElement | null {
   return el.querySelector<HTMLInputElement>(
     `input[type="radio"][name="${name}"][value="${value}"]`,
+  );
+}
+
+function findSectionByHeading(
+  el: HTMLElement,
+  headingText: string,
+): HTMLElement | null {
+  return (
+    Array.from(el.querySelectorAll<HTMLElement>("section")).find((section) =>
+      section.querySelector("h3")?.textContent?.includes(headingText),
+    ) ?? null
+  );
+}
+
+function findSaveButtonByHeading(
+  el: HTMLElement,
+  headingText: string,
+): HTMLButtonElement | null {
+  return (
+    findSectionByHeading(el, headingText)?.querySelector<HTMLButtonElement>(
+      ".btn",
+    ) ?? null
   );
 }
 
@@ -82,6 +104,9 @@ const labels: SettingsLabels = {
   demoSeoLocked: "Demo sites always stay hidden from search engines.",
   save: "Save",
   cancel: "Cancel",
+  copy: "Copy",
+  copyFailed: "Could not copy. Try again.",
+  feedUrlCopied: "Feed URL copied.",
 };
 
 const timezones: SettingsTimezone[] = [
@@ -145,16 +170,20 @@ describe("JantSettingsGeneral", () => {
     document.body.innerHTML = "";
   });
 
-  it("renders general settings heading and search controls", async () => {
+  it("renders grouped sections in the expected order", async () => {
     const el = await createElement();
-    const headings = el.querySelectorAll("h2");
-    const headingTexts = Array.from(headings).map((h) => h.textContent);
-    expect(headingTexts).toContain("General");
-    expect(headingTexts).toContain("Search");
-    expect(el.textContent).toContain(labels.site);
-    expect(el.textContent).toContain(labels.home);
-    expect(el.textContent).toContain(labels.allowIndexing);
-    expect(el.textContent).toContain(labels.showJantBrandingOnHome);
+    const groupTitles = Array.from(el.querySelectorAll("h3")).map((heading) =>
+      heading.textContent?.trim(),
+    );
+
+    expect(el.querySelector("h2")?.textContent).toBe("General");
+    expect(groupTitles).toEqual([
+      labels.site,
+      labels.languageAndTime,
+      labels.feeds,
+      labels.home,
+      labels.search,
+    ]);
   });
 
   it("renders form fields with initial values", async () => {
@@ -199,17 +228,49 @@ describe("JantSettingsGeneral", () => {
       findRadioByValue(el, "main-rss-feed", "featured"),
       "expected featured radio option",
     );
+    const feedSection = requireElement(
+      findSectionByHeading(el, labels.feeds),
+      "expected feeds section",
+    );
+    const feedUrlInputs = feedSection.querySelectorAll<HTMLInputElement>(
+      'input[readonly][type="text"]',
+    );
 
     expect(featuredRadio.checked).toBe(true);
     expect(el.textContent).toContain(labels.mainRssFeedHelp);
     expect(el.textContent).toContain(labels.mainRssFeedWarning);
     expect(el.textContent).toContain(labels.featuredFeedOptionDescription);
     expect(el.textContent).toContain(labels.latestFeedOptionDescription);
-    expect(el.textContent).toContain("/feed/latest");
-    expect(el.textContent).toContain("/feed/featured");
+    expect(Array.from(feedUrlInputs, (input) => input.value)).toEqual([
+      "/feed",
+      "/feed/latest",
+      "/feed/featured",
+    ]);
   });
 
-  it("tracks general form dirty state on input", async () => {
+  it("copies a feed URL from the info block", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(globalThis.navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+
+    const el = await createElement();
+    const feedSection = requireElement(
+      findSectionByHeading(el, labels.feeds),
+      "expected feeds section",
+    );
+    const copyButtons = feedSection.querySelectorAll<HTMLButtonElement>(
+      "button[data-copy-feed-url]",
+    );
+
+    copyButtons[0]?.click();
+    await Promise.resolve();
+
+    expect(writeText).toHaveBeenCalledWith("/feed");
+  });
+
+  it("tracks site group dirty state on input", async () => {
     const el = await createElement();
     const siteNameInput = requireElement(
       el.querySelector<HTMLInputElement>('input[type="text"]'),
@@ -221,40 +282,17 @@ describe("JantSettingsGeneral", () => {
     siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
-    // Save button should be enabled
-    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    const saveBtn = findSaveButtonByHeading(el, labels.site);
     expect(saveBtn?.disabled).toBe(false);
   });
 
-  it("cancel reverts general form to original values", async () => {
+  it("dispatches jant:settings-save for site section", async () => {
     const el = await createElement();
     const siteNameInput = requireElement(
       el.querySelector<HTMLInputElement>('input[type="text"]'),
       "expected site name input",
     );
 
-    // Change the value
-    siteNameInput.value = "Changed";
-    siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
-    await el.updateComplete;
-
-    // Click cancel (second button after Save)
-    const cancelBtn = el.querySelector<HTMLButtonElement>(".btn-outline");
-    cancelBtn?.click();
-    await el.updateComplete;
-
-    // Value should be reverted
-    expect(siteNameInput?.value).toBe("My Blog");
-  });
-
-  it("dispatches jant:settings-save for general section", async () => {
-    const el = await createElement();
-    const siteNameInput = requireElement(
-      el.querySelector<HTMLInputElement>('input[type="text"]'),
-      "expected site name input",
-    );
-
-    // Make dirty
     siteNameInput.value = "New Name";
     siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
@@ -265,20 +303,51 @@ describe("JantSettingsGeneral", () => {
       detail = customEvent.detail;
     });
 
-    // Click save
-    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    const saveBtn = findSaveButtonByHeading(el, labels.site);
     saveBtn?.click();
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
     expect(d.endpoint).toBe("/settings/general");
-    expect(d.section).toBe("general");
+    expect(d.section).toBe("site");
     expect(d.data.siteName).toBe("New Name");
-    expect(d.data.mainRssFeed).toBe("featured");
+    expect(d.data.siteDescription).toBe("A test blog");
   });
 
-  it("includes mainRssFeed in general section save", async () => {
+  it("dispatches jant:settings-save for language and time section", async () => {
+    const el = await createElement();
+    const tzSelect = requireElement(
+      findSelectByLabel(el, labels.timeZone),
+      "expected time zone select",
+    );
+
+    tzSelect.value = "America/New_York";
+    tzSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    await el.updateComplete;
+
+    let detail: SettingsSaveDetail | null = null;
+    el.addEventListener("jant:settings-save", (event) => {
+      detail = (event as CustomEvent<SettingsSaveDetail>).detail;
+    });
+
+    const saveBtn = findSaveButtonByHeading(el, labels.languageAndTime);
+    saveBtn?.click();
+    await el.updateComplete;
+
+    expect(detail).not.toBeNull();
+    expect((detail as unknown as SettingsSaveDetail).endpoint).toBe(
+      "/settings/general/language-time",
+    );
+    expect((detail as unknown as SettingsSaveDetail).section).toBe(
+      "language-time",
+    );
+    expect((detail as unknown as SettingsSaveDetail).data.timeZone).toBe(
+      "America/New_York",
+    );
+  });
+
+  it("includes mainRssFeed in feed section save", async () => {
     const el = await createElement();
     const latestRadio = requireElement(
       findRadioByValue(el, "main-rss-feed", "latest"),
@@ -293,17 +362,20 @@ describe("JantSettingsGeneral", () => {
       detail = (event as CustomEvent<SettingsSaveDetail>).detail;
     });
 
-    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    const saveBtn = findSaveButtonByHeading(el, labels.feeds);
     saveBtn?.click();
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
+    expect((detail as unknown as SettingsSaveDetail).endpoint).toBe(
+      "/settings/general/feeds",
+    );
     expect((detail as unknown as SettingsSaveDetail).data.mainRssFeed).toBe(
       "latest",
     );
   });
 
-  it("sectionSaved resets dirty state and updates originals", async () => {
+  it("sectionSaved resets site dirty state and updates originals", async () => {
     const el = await createElement();
     const siteNameInput = requireElement(
       el.querySelector<HTMLInputElement>('input[type="text"]'),
@@ -315,34 +387,29 @@ describe("JantSettingsGeneral", () => {
     siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
-    // Simulate bridge calling sectionSaved
-    el.sectionSaved("general");
+    el.sectionSaved("site");
     await el.updateComplete;
 
-    // Save button should be disabled again
-    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    const saveBtn = findSaveButtonByHeading(el, labels.site);
     expect(saveBtn?.disabled).toBe(true);
   });
 
-  it("SEO checkbox toggles noindex state", async () => {
+  it("search checkbox toggles noindex state before save completes", async () => {
     const el = await createElement();
     const searchCheckbox = findCheckboxByLabel(el, labels.allowIndexing);
     expect(searchCheckbox?.checked).toBe(true);
 
-    // Toggle
     searchCheckbox?.click();
     await el.updateComplete;
 
-    // Should now be unchecked
     expect(searchCheckbox?.checked).toBe(false);
   });
 
-  it("includes footer in general section save", async () => {
+  it("includes footer in site section save", async () => {
     const el = await createElement();
     const textareas = el.querySelectorAll("textarea");
-    const footerTextarea = textareas[1]; // Second textarea is footer
+    const footerTextarea = textareas[1];
 
-    // Make dirty
     const footer = requireElement(footerTextarea, "expected footer textarea");
     footer.value = "New footer";
     footer.dispatchEvent(new Event("input", { bubbles: true }));
@@ -354,19 +421,45 @@ describe("JantSettingsGeneral", () => {
       detail = customEvent.detail;
     });
 
-    // Click save in the general card (footer is now part of general form)
-    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    const saveBtn = findSaveButtonByHeading(el, labels.site);
     saveBtn?.click();
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
     expect(d.endpoint).toBe("/settings/general");
-    expect(d.section).toBe("general");
+    expect(d.section).toBe("site");
     expect(d.data.siteFooter).toBe("New footer");
   });
 
-  it("includes home page Jant branding preference in general section save", async () => {
+  it("home checkbox auto-saves and does not enable other save buttons", async () => {
+    const el = await createElement();
+    const brandingCheckbox = requireElement(
+      findCheckboxByLabel(el, labels.showJantBrandingOnHome) ?? null,
+      "expected home page branding checkbox",
+    );
+    const siteSaveBtn = findSaveButtonByHeading(el, labels.site);
+
+    expect(siteSaveBtn?.disabled).toBe(true);
+
+    let detail: SettingsSaveDetail | null = null;
+    el.addEventListener("jant:settings-save", (event) => {
+      const customEvent = event as CustomEvent<SettingsSaveDetail>;
+      detail = customEvent.detail;
+    });
+
+    brandingCheckbox.click();
+    await el.updateComplete;
+
+    expect(detail).not.toBeNull();
+    const d = detail as unknown as SettingsSaveDetail;
+    expect(d.endpoint).toBe("/settings/general/home");
+    expect(d.section).toBe("home");
+    expect(d.data.showJantBrandingOnHome).toBe(true);
+    expect(siteSaveBtn?.disabled).toBe(true);
+  });
+
+  it("sectionError for auto-saved home checkbox restores the saved value", async () => {
     const el = await createElement();
     const brandingCheckbox = requireElement(
       findCheckboxByLabel(el, labels.showJantBrandingOnHome) ?? null,
@@ -375,50 +468,32 @@ describe("JantSettingsGeneral", () => {
 
     brandingCheckbox.click();
     await el.updateComplete;
+    expect(brandingCheckbox.checked).toBe(true);
 
-    let detail: SettingsSaveDetail | null = null;
-    el.addEventListener("jant:settings-save", (event) => {
-      const customEvent = event as CustomEvent<SettingsSaveDetail>;
-      detail = customEvent.detail;
-    });
-
-    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
-    saveBtn?.click();
+    el.sectionError("home");
     await el.updateComplete;
 
-    expect(detail).not.toBeNull();
-    const d = detail as unknown as SettingsSaveDetail;
-    expect(d.endpoint).toBe("/settings/general");
-    expect(d.section).toBe("general");
-    expect(d.data.showJantBrandingOnHome).toBe(true);
+    expect(brandingCheckbox.checked).toBe(false);
   });
 
-  it("dispatches jant:settings-save for search section", async () => {
+  it("dispatches jant:settings-save for search section immediately", async () => {
     const el = await createElement();
     const searchCheckbox = findCheckboxByLabel(el, labels.allowIndexing);
 
-    // Toggle to make dirty
-    searchCheckbox?.click();
-    await el.updateComplete;
-
     let detail: SettingsSaveDetail | null = null;
     el.addEventListener("jant:settings-save", (event) => {
       const customEvent = event as CustomEvent<SettingsSaveDetail>;
       detail = customEvent.detail;
     });
 
-    // Find Search Save button (section after the <hr> divider)
-    const hr = el.querySelector("hr");
-    const searchSection = hr?.nextElementSibling;
-    const searchSaveBtn =
-      searchSection?.querySelector<HTMLButtonElement>(".btn");
-    searchSaveBtn?.click();
+    searchCheckbox?.click();
     await el.updateComplete;
 
     expect(detail).not.toBeNull();
     const d = detail as unknown as SettingsSaveDetail;
     expect(d.endpoint).toBe("/settings/general/search");
     expect(d.section).toBe("search");
+    expect(d.data.allowIndexing).toBe(false);
   });
 
   it("disables search indexing toggle in demo mode", async () => {
@@ -437,7 +512,7 @@ describe("JantSettingsGeneral", () => {
     expect(searchCheckbox.checked).toBe(true);
   });
 
-  it("shows loading spinner during save", async () => {
+  it("shows loading spinner during site save", async () => {
     const el = await createElement();
     const siteNameInput = requireElement(
       el.querySelector<HTMLInputElement>('input[type="text"]'),
@@ -449,13 +524,11 @@ describe("JantSettingsGeneral", () => {
     siteNameInput.dispatchEvent(new Event("input", { bubbles: true }));
     await el.updateComplete;
 
-    const saveBtn = el.querySelector<HTMLButtonElement>(".btn");
+    const saveBtn = findSaveButtonByHeading(el, labels.site);
     saveBtn?.click();
     await el.updateComplete;
 
-    // Save button should be disabled during loading
     expect(saveBtn?.disabled).toBe(true);
-    // Spinner should be visible
     const spinner = saveBtn?.querySelector("svg.animate-spin");
     expect(spinner).not.toBeNull();
   });

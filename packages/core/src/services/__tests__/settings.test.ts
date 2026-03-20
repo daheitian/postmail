@@ -324,4 +324,59 @@ describe("SettingsService", () => {
       expect(result).toBe(true);
     });
   });
+
+  describe("grouped settings updates", () => {
+    it("updates site fields and reports when the site name changed", async () => {
+      const result = await settingsService.updateSiteSettings(
+        {
+          siteName: "New Name",
+          siteDescription: "Updated description",
+          siteFooter: "Updated footer",
+        },
+        {
+          oldSiteName: "Old Name",
+          fallbackSiteName: "Jant",
+        },
+      );
+
+      expect(result.displayName).toBe("New Name");
+      expect(result.siteNameChanged).toBe(true);
+      expect(await settingsService.get("SITE_NAME")).toBe("New Name");
+      expect(await settingsService.get("SITE_DESCRIPTION")).toBe(
+        "Updated description",
+      );
+      expect(await settingsService.get("SITE_FOOTER")).toBe("Updated footer");
+    });
+
+    it("updates locale fields and reports when the language changed", async () => {
+      const result = await settingsService.updateLocaleSettings(
+        {
+          siteLanguage: "zh-Hans",
+          timeZone: "America/New_York",
+        },
+        {
+          oldLanguage: "en",
+        },
+      );
+
+      expect(result.languageChanged).toBe(true);
+      expect(await settingsService.get("SITE_LANGUAGE")).toBe("zh-Hans");
+      expect(await settingsService.get("TIME_ZONE")).toBe("America/New_York");
+    });
+
+    it("updates grouped feed, home, and search settings independently", async () => {
+      await settingsService.updateFeedSettings({ mainRssFeed: "latest" });
+      await settingsService.updateHomeBranding(true);
+      await settingsService.updateSearchSettings(false, { demoMode: false });
+
+      expect(await settingsService.get("MAIN_RSS_FEED")).toBe("latest");
+      expect(await settingsService.get("SHOW_JANT_BRANDING_ON_HOME")).toBe(
+        "true",
+      );
+      expect(await settingsService.get("NOINDEX")).toBe("true");
+
+      await settingsService.updateSearchSettings(true, { demoMode: false });
+      expect(await settingsService.get("NOINDEX")).toBeNull();
+    });
+  });
 });

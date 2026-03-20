@@ -33,6 +33,22 @@ export interface GeneralSettingsData {
   timeZone: string;
 }
 
+export interface SiteSettingsData {
+  siteName: string;
+  siteDescription: string;
+  siteFooter: string;
+}
+
+export interface SiteSettingsResult {
+  displayName: string;
+  siteNameChanged: boolean;
+}
+
+export interface LocaleSettingsData {
+  siteLanguage: string;
+  timeZone: string;
+}
+
 export interface GeneralSettingsResult {
   languageChanged: boolean;
   displayName: string;
@@ -59,6 +75,20 @@ export interface SettingsService {
   remove(key: SettingsKey): Promise<void>;
   isOnboardingComplete(): Promise<boolean>;
   completeOnboarding(): Promise<void>;
+  updateSiteSettings(
+    data: SiteSettingsData,
+    opts: { fallbackSiteName: string; oldSiteName: string },
+  ): Promise<SiteSettingsResult>;
+  updateLocaleSettings(
+    data: LocaleSettingsData,
+    opts: { oldLanguage: string },
+  ): Promise<{ languageChanged: boolean }>;
+  updateFeedSettings(data: { mainRssFeed?: FeedKind }): Promise<void>;
+  updateHomeBranding(showJantBrandingOnHome: boolean): Promise<void>;
+  updateSearchSettings(
+    allowIndexing: boolean,
+    opts: { demoMode: boolean },
+  ): Promise<void>;
   /**
    * Update general site settings with trim/set/remove logic.
    * Empty strings are removed. Default values are removed to keep the DB clean.
@@ -180,66 +210,38 @@ export function createSettingsService(db: Database): SettingsService {
       );
     },
 
-    async updateGeneral(data, opts) {
-      // Site name: set if non-empty, remove otherwise
-      if (data.siteName.trim()) {
-        await this.set("SITE_NAME", data.siteName.trim());
+    async updateSiteSettings(data, opts) {
+      const trimmedSiteName = data.siteName.trim();
+      const trimmedDescription = data.siteDescription.trim();
+      const trimmedFooter = data.siteFooter.trim();
+
+      if (trimmedSiteName) {
+        await this.set("SITE_NAME", trimmedSiteName);
       } else {
         await this.remove("SITE_NAME");
       }
 
-      // Site description: set if non-empty, remove otherwise
-      if (data.siteDescription.trim()) {
-        await this.set("SITE_DESCRIPTION", data.siteDescription.trim());
+      if (trimmedDescription) {
+        await this.set("SITE_DESCRIPTION", trimmedDescription);
       } else {
         await this.remove("SITE_DESCRIPTION");
       }
 
-      // Footer: set if non-empty, remove otherwise
-      if (data.siteFooter?.trim()) {
-        await this.set("SITE_FOOTER", data.siteFooter.trim());
+      if (trimmedFooter) {
+        await this.set("SITE_FOOTER", trimmedFooter);
       } else {
         await this.remove("SITE_FOOTER");
       }
 
-      if (data.showJantBrandingOnHome) {
-        await this.set("SHOW_JANT_BRANDING_ON_HOME", "true");
-      } else {
-        await this.remove("SHOW_JANT_BRANDING_ON_HOME");
-      }
+      return {
+        displayName: trimmedSiteName || opts.fallbackSiteName,
+        siteNameChanged: opts.oldSiteName !== trimmedSiteName,
+      };
+    },
 
-      // Language is always stored
+    async updateLocaleSettings(data, opts) {
       await this.set("SITE_LANGUAGE", data.siteLanguage);
 
-      // Homepage default view: only update if provided (may be managed separately)
-      if (data.homeDefaultView !== undefined) {
-        if (data.homeDefaultView === "featured") {
-          await this.set("HOME_DEFAULT_VIEW", data.homeDefaultView);
-        } else {
-          await this.remove("HOME_DEFAULT_VIEW");
-        }
-      }
-
-      // Main RSS feed: only store non-default (default is featured)
-      if (data.mainRssFeed !== undefined) {
-        if (data.mainRssFeed === "latest") {
-          await this.set("MAIN_RSS_FEED", data.mainRssFeed);
-        } else {
-          await this.remove("MAIN_RSS_FEED");
-        }
-      }
-
-      // Header nav max visible: only update if provided (may be managed separately)
-      if (data.headerNavMaxVisible !== undefined) {
-        const navMax = parseInt(String(data.headerNavMaxVisible), 10);
-        if (!isNaN(navMax) && navMax !== 2) {
-          await this.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
-        } else {
-          await this.remove("HEADER_NAV_MAX_VISIBLE");
-        }
-      }
-
-      // Timezone: only store non-default (default is UTC)
       if (data.timeZone) {
         if (!isSupportedTimeZone(data.timeZone)) {
           throw new ValidationError("Choose a valid time zone.");
@@ -257,7 +259,69 @@ export function createSettingsService(db: Database): SettingsService {
 
       return {
         languageChanged: opts.oldLanguage !== data.siteLanguage,
-        displayName: data.siteName.trim() || opts.fallbackSiteName,
+      };
+    },
+
+    async updateFeedSettings(data) {
+      if (data.mainRssFeed !== undefined) {
+        if (data.mainRssFeed === "latest") {
+          await this.set("MAIN_RSS_FEED", data.mainRssFeed);
+        } else {
+          await this.remove("MAIN_RSS_FEED");
+        }
+      }
+    },
+
+    async updateHomeBranding(showJantBrandingOnHome) {
+      if (showJantBrandingOnHome) {
+        await this.set("SHOW_JANT_BRANDING_ON_HOME", "true");
+      } else {
+        await this.remove("SHOW_JANT_BRANDING_ON_HOME");
+      }
+    },
+
+    async updateSearchSettings(allowIndexing, opts) {
+      if (opts.demoMode || !allowIndexing) {
+        await this.set("NOINDEX", "true");
+      } else {
+        await this.remove("NOINDEX");
+      }
+    },
+
+    async updateGeneral(data, opts) {
+      const { displayName } = await this.updateSiteSettings(data, {
+        fallbackSiteName: opts.fallbackSiteName,
+        oldSiteName: data.siteName.trim(),
+      });
+      await this.updateHomeBranding(data.showJantBrandingOnHome);
+      const { languageChanged } = await this.updateLocaleSettings(data, {
+        oldLanguage: opts.oldLanguage,
+      });
+
+      // Homepage default view: only update if provided (may be managed separately)
+      if (data.homeDefaultView !== undefined) {
+        if (data.homeDefaultView === "featured") {
+          await this.set("HOME_DEFAULT_VIEW", data.homeDefaultView);
+        } else {
+          await this.remove("HOME_DEFAULT_VIEW");
+        }
+      }
+
+      await this.updateFeedSettings({ mainRssFeed: data.mainRssFeed });
+
+      // Header nav max visible: only update if provided (may be managed separately)
+      if (data.headerNavMaxVisible !== undefined) {
+        const navMax = parseInt(String(data.headerNavMaxVisible), 10);
+        if (!isNaN(navMax) && navMax !== 2) {
+          await this.set("HEADER_NAV_MAX_VISIBLE", String(navMax));
+        } else {
+          await this.remove("HEADER_NAV_MAX_VISIBLE");
+        }
+      }
+
+      return {
+        languageChanged,
+        displayName,
       };
     },
 

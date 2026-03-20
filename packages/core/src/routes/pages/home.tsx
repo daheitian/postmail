@@ -56,15 +56,14 @@ homeRoutes.get("/", async (c) => {
           ? buildPageTitle(featuredTitle, paginatedPageTitle, navData.siteName)
           : navData.siteName,
       navData,
+      showHomeBranding:
+        c.var.appConfig.showJantBrandingOnHome && currentPage === 1,
       content: (
         <FeaturedPage
           items={items}
           currentPage={currentPage}
           totalPages={totalPages}
           baseUrl={toPublicPath("/", navData.sitePathPrefix)}
-          showJantBranding={
-            c.var.appConfig.showJantBrandingOnHome && currentPage === 1
-          }
         />
       ),
     });
@@ -88,15 +87,14 @@ homeRoutes.get("/", async (c) => {
         ? buildPageTitle(latestTitle, paginatedPageTitle, navData.siteName)
         : navData.siteName,
     navData,
+    showHomeBranding:
+      c.var.appConfig.showJantBrandingOnHome && currentPage === 1,
     content: (
       <HomePage
         items={items}
         baseUrl={toPublicPath("/", navData.sitePathPrefix)}
         currentPage={currentPage}
         totalPages={totalPages}
-        showJantBranding={
-          c.var.appConfig.showJantBrandingOnHome && currentPage === 1
-        }
       />
     ),
   });

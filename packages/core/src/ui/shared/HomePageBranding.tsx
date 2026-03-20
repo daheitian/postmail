@@ -4,7 +4,6 @@ import {
   HOME_BRANDING_PREFIX,
   JANT_REPO_URL,
 } from "../../lib/jant-branding.js";
-import { JantBrandMark } from "./JantBrandMark.js";
 
 export const HomePageBranding: FC = () => {
   return (
@@ -16,7 +15,6 @@ export const HomePageBranding: FC = () => {
         rel="noopener noreferrer"
         class="home-branding-link"
       >
-        <JantBrandMark class="home-branding-mark" />
         <span>{HOME_BRANDING_LINK_LABEL}</span>
       </a>
     </footer>
