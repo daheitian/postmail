@@ -2150,6 +2150,99 @@ describe("JantComposeDialog", () => {
     expect(el._confirmPanelOpen).toBe(true);
   });
 
+  it("dialog cancel closes the emoji picker before prompting to save", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Keep typing" }] },
+      ],
+    };
+    editor._showEmojiPicker = true;
+    await editor.updateComplete;
+
+    const closeEmojiPickerSpy = vi.spyOn(editor, "closeEmojiPicker");
+    const focusSpy = vi.spyOn(editor, "focusInput");
+
+    (
+      el as unknown as {
+        _handleDialogCancel: (event: Event) => void;
+      }
+    )._handleDialogCancel(new Event("cancel", { cancelable: true }));
+    await flushUpdates(el);
+
+    expect(closeEmojiPickerSpy).toHaveBeenCalledWith({ restoreFocus: true });
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(focusSpy).toHaveBeenCalledWith("end");
+  });
+
+  it("dialog cancel closes the collection selector and keeps selected collections", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        { type: "paragraph", content: [{ type: "text", text: "Tagged post" }] },
+      ],
+    };
+    el._showCollection = true;
+    el._collectionIds = ["col-1"];
+    await editor.updateComplete;
+
+    const focusSpy = vi.spyOn(editor, "focusInput");
+
+    (
+      el as unknown as {
+        _handleDialogCancel: (event: Event) => void;
+      }
+    )._handleDialogCancel(new Event("cancel", { cancelable: true }));
+    await flushUpdates(el);
+
+    expect(el._showCollection).toBe(false);
+    expect(el._collectionIds).toEqual(["col-1"]);
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(focusSpy).toHaveBeenCalledWith("end");
+  });
+
+  it("dialog cancel closes publish settings and returns focus to the editor", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Publish panel content" }],
+        },
+      ],
+    };
+    el._showPublishPanel = true;
+    await editor.updateComplete;
+
+    const focusSpy = vi.spyOn(editor, "focusInput");
+
+    (
+      el as unknown as {
+        _handleDialogCancel: (event: Event) => void;
+      }
+    )._handleDialogCancel(new Event("cancel", { cancelable: true }));
+    await flushUpdates(el);
+
+    expect(el._showPublishPanel).toBe(false);
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(focusSpy).toHaveBeenCalledWith("end");
+  });
+
   it("requestClose with content shows confirmation panel", async () => {
     const el = await createElement();
     const editor = requireElement(
@@ -2172,6 +2265,68 @@ describe("JantComposeDialog", () => {
     expect(
       el.querySelector(".compose-confirm-title")?.textContent?.trim(),
     ).toBe("Save to drafts?");
+  });
+
+  it("Cmd/Ctrl+Enter publishes from the main compose editor", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Publish from shortcut" }],
+        },
+      ],
+    };
+    await editor.updateComplete;
+
+    const submitSpy = vi.spyOn(
+      el as unknown as { _submit: (status: "published" | "draft") => void },
+      "_submit",
+    );
+
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Enter",
+        metaKey: true,
+        bubbles: true,
+      }),
+    );
+
+    expect(submitSpy).toHaveBeenCalledWith("published");
+  });
+
+  it("Cmd/Ctrl+Enter finishes an attached text editor instead of publishing", async () => {
+    const el = await createElement();
+    (
+      el as unknown as {
+        _attachedPanelOpen: boolean;
+      }
+    )._attachedPanelOpen = true;
+
+    const doneSpy = vi.spyOn(
+      el as unknown as { _doneAttachedPanel: () => void },
+      "_doneAttachedPanel",
+    );
+    const submitSpy = vi.spyOn(
+      el as unknown as { _submit: (status: "published" | "draft") => void },
+      "_submit",
+    );
+
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Enter",
+        metaKey: true,
+        bubbles: true,
+      }),
+    );
+
+    expect(doneSpy).toHaveBeenCalled();
+    expect(submitSpy).not.toHaveBeenCalled();
   });
 
   it("cancelling an empty attached text editor discards it without confirmation", async () => {
@@ -2232,6 +2387,62 @@ describe("JantComposeDialog", () => {
     expect(el._attachedPanelOpen).toBe(false);
     expect(editor._attachedTexts).toEqual([]);
     expect(editor._attachmentOrder).toEqual([]);
+  });
+
+  it("reopening an attached text editor places the cursor at the end", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    editor._attachedTexts = [
+      {
+        clientId: "t1",
+        bodyJson: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Existing attachment body" }],
+            },
+          ],
+        },
+        bodyHtml: "<p>Existing attachment body</p>",
+        summary: "Existing attachment body",
+      },
+    ];
+    editor._attachmentOrder = ["t1"];
+    await editor.updateComplete;
+
+    (
+      el as unknown as {
+        _handleAttachedPanelOpen: (event: Event) => void;
+      }
+    )._handleAttachedPanelOpen(
+      new CustomEvent("jant:attached-panel-open", {
+        detail: { index: 0 },
+      }),
+    );
+    await flushUpdates(el);
+
+    const attachedEditor = (
+      el as unknown as {
+        _attachedEditor: {
+          state: {
+            selection: { from: number; to: number };
+          };
+        } | null;
+      }
+    )._attachedEditor;
+    if (!attachedEditor) {
+      throw new Error("expected attached editor instance");
+    }
+
+    expect(attachedEditor.state.selection.from).toBeGreaterThan(1);
+    expect(attachedEditor.state.selection.from).toBe(
+      attachedEditor.state.selection.to,
+    );
   });
 
   it("cancelling a dirty attached text editor uses the shared three-action confirm panel", async () => {
@@ -2369,6 +2580,7 @@ describe("JantComposeDialog", () => {
         _attachedEditor: {
           commands: { focus: () => void };
           destroy(): void;
+          getJSON(): unknown;
         } | null;
       }
     )._attachedPanelOpen = true;
@@ -2377,11 +2589,16 @@ describe("JantComposeDialog", () => {
         _attachedEditor: {
           commands: { focus: () => void };
           destroy(): void;
+          getJSON(): unknown;
         } | null;
       }
     )._attachedEditor = {
       commands: { focus: focusSpy },
       destroy: vi.fn(),
+      getJSON: () => ({
+        type: "doc",
+        content: [{ type: "paragraph" }],
+      }),
     };
     await el.updateComplete;
 

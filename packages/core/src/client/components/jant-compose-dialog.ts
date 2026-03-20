@@ -1229,6 +1229,7 @@ export class JantComposeDialog extends LitElement {
   private _handleDialogCancel = (e: Event) => {
     e.preventDefault();
     if (this._shouldIgnoreEscapeClose()) return;
+    if (this._dismissEscapeOverlay()) return;
     this.requestClose();
   };
 
@@ -1250,6 +1251,63 @@ export class JantComposeDialog extends LitElement {
     this.requestClose();
   };
 
+  private _focusPageEditorEnd() {
+    this.updateComplete.then(() => this._editor?.focusInput("end"));
+  }
+
+  private _dismissEscapeOverlay(): boolean {
+    if (this._confirmPanelOpen) {
+      this.requestClose();
+      return true;
+    }
+
+    if (this._addCollectionPanelOpen) {
+      this._closeAddCollectionPanel();
+      return true;
+    }
+
+    if (this._editor?.isEmojiPickerOpen()) {
+      this._editor.closeEmojiPicker({ restoreFocus: true });
+      return true;
+    }
+
+    if (this._showCollection) {
+      this._showCollection = false;
+      this._collectionSearch = "";
+      this._focusPageEditorEnd();
+      return true;
+    }
+
+    if (this._showPublishPanel) {
+      this._showPublishPanel = false;
+      this._focusPageEditorEnd();
+      return true;
+    }
+
+    if (this._altPanelOpen) {
+      this._closeAltPanel();
+      this._focusPageEditorEnd();
+      return true;
+    }
+
+    if (this._draftMenuOpenId) {
+      this._draftMenuOpenId = null;
+      return true;
+    }
+
+    if (this._draftsPanelOpen) {
+      this._closeDraftsPanel();
+      return true;
+    }
+
+    if (this._attachedPanelOpen) {
+      this._cancelAttachedPanel();
+      return true;
+    }
+
+    return false;
+  }
+
   private _handleKeydown = (e: Event) => {
     const ke = e as globalThis.KeyboardEvent;
     if (ke.key !== "Escape") {
@@ -1259,29 +1317,17 @@ export class JantComposeDialog extends LitElement {
       ke.preventDefault();
       ke.stopPropagation();
       if (this._shouldIgnoreEscapeClose()) return;
-      if (this._confirmPanelOpen) {
-        this.requestClose();
-      } else if (this._showCollection) {
-        this._showCollection = false;
-        this._collectionSearch = "";
-      } else if (this._showPublishPanel) {
-        this._showPublishPanel = false;
-      } else if (this._addCollectionPanelOpen) {
-        this._closeAddCollectionPanel();
-      } else if (this._draftMenuOpenId) {
-        this._draftMenuOpenId = null;
-      } else if (this._draftsPanelOpen) {
-        this._closeDraftsPanel();
-      } else if (this._attachedPanelOpen) {
-        this._cancelAttachedPanel();
-      } else {
-        this.requestClose();
-      }
+      if (this._dismissEscapeOverlay()) return;
+      this.requestClose();
     } else if (ke.key === "Enter" && this._confirmPanelOpen) {
       ke.preventDefault();
       this._handleConfirmSave();
     } else if ((ke.metaKey || ke.ctrlKey) && ke.key === "Enter") {
       e.preventDefault();
+      if (this._attachedPanelOpen) {
+        this._doneAttachedPanel();
+        return;
+      }
       if (!this._canPublish()) return;
       this._submit("published");
     }
@@ -1345,9 +1391,18 @@ export class JantComposeDialog extends LitElement {
         content,
         toolbarMode: "compose",
       });
-      this._attachedEditor.commands.focus();
+      this._focusAttachedEditorBoundary(content);
     });
   };
+
+  private _focusAttachedEditorBoundary(content?: JSONContent | null) {
+    if (!this._attachedEditor) return;
+    const targetContent = content ?? this._attachedEditor.getJSON();
+    const focusTarget: "start" | "end" = normalizeComposeDoc(targetContent)
+      ? "end"
+      : "start";
+    this._attachedEditor.commands.focus(focusTarget);
+  }
 
   private _isAttachedTextDirty(): boolean {
     if (!this._attachedEditor) return false;
@@ -1391,7 +1446,7 @@ export class JantComposeDialog extends LitElement {
   private _handleAttachedEditorMouseDown(event: MouseEvent) {
     if (event.target !== event.currentTarget) return;
     event.preventDefault();
-    this._attachedEditor?.commands.focus();
+    this._focusAttachedEditorBoundary();
   }
 
   // ── Drafts panel ─────────────────────────────────────────────────

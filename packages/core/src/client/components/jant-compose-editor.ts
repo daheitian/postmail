@@ -354,14 +354,41 @@ export class JantComposeEditor extends LitElement {
     );
   }
 
-  focusInput() {
+  focusInput(position?: "start" | "end") {
     if (this.format === "link") {
-      this.querySelector<HTMLElement>('.compose-input[type="url"]')?.focus();
-    } else if (this.format === "quote") {
-      this.querySelector<HTMLElement>(".compose-quote-text")?.focus();
-    } else {
-      this._editor?.commands.focus();
+      this._focusTextControl(
+        this.querySelector<HTMLInputElement>('.compose-input[type="url"]'),
+        position,
+      );
+      return;
     }
+    if (this.format === "quote") {
+      this._focusTextControl(
+        this.querySelector<HTMLTextAreaElement>(".compose-quote-text"),
+        position,
+      );
+      return;
+    }
+    if (position) {
+      this._editor?.commands.focus(position);
+      return;
+    }
+    this._editor?.commands.focus();
+  }
+
+  isEmojiPickerOpen(): boolean {
+    return this._showEmojiPicker;
+  }
+
+  private _focusTextControl(
+    field: HTMLInputElement | HTMLTextAreaElement | null,
+    position?: "start" | "end",
+  ) {
+    if (!field) return;
+    field.focus();
+    if (!position) return;
+    const caret = position === "end" ? field.value.length : 0;
+    field.setSelectionRange(caret, caret);
   }
 
   private _initEditor() {
@@ -1032,11 +1059,28 @@ export class JantComposeEditor extends LitElement {
     }
   }
 
-  closeEmojiPicker() {
-    if (!this._showEmojiPicker) return;
+  closeEmojiPicker(options?: { restoreFocus?: boolean }) {
+    if (!this._showEmojiPicker) {
+      if (options?.restoreFocus) {
+        this._restoreEmojiFocus();
+      }
+      return;
+    }
     this._showEmojiPicker = false;
     this._emojiContainer?.remove();
     document.removeEventListener("click", this._onDocClickBound);
+    if (options?.restoreFocus) {
+      this._restoreEmojiFocus();
+    }
+  }
+
+  private _restoreEmojiFocus() {
+    const field = this._lastFocusedField;
+    if (field && this.contains(field) && !field.disabled) {
+      this._focusTextControl(field, "end");
+      return;
+    }
+    this.focusInput("end");
   }
 
   private _onDocumentClick(e: Event) {
