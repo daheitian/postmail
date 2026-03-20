@@ -3998,61 +3998,6 @@
     flex-shrink: 0;
   }
 
-  .compose-publish-shortcut {
-    display: none;
-  }
-
-  @media (min-width: 700px) {
-    .compose-publish-shortcut {
-      position: absolute;
-      top: 50%;
-      right: calc(100% + 0.55rem);
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      pointer-events: none;
-      opacity: 0;
-      transform: translate3d(0.3rem, -50%, 0);
-      font-size: 0.66rem;
-      font-weight: var(--fw-medium);
-      line-height: 1;
-      white-space: nowrap;
-      user-select: none;
-      color: color-mix(
-        in srgb,
-        var(--site-text-secondary) 68%,
-        var(--site-elevated-bg)
-      );
-      transition:
-        opacity 0.18s ease,
-        transform 0.18s ease;
-    }
-
-    .compose-publish-shortcut .kbd {
-      min-width: 0;
-      height: auto;
-      padding: 0;
-      border-radius: 0;
-      background: transparent;
-      color: inherit;
-      font-size: inherit;
-      font-weight: inherit;
-    }
-
-    .compose-publish-shortcut-plus {
-      font-size: 0.62rem;
-      opacity: 0.42;
-    }
-
-    .compose-publish-group:has(.compose-publish-buttons:hover)
-      .compose-publish-shortcut,
-    .compose-publish-group:has(.compose-publish-buttons:focus-within)
-      .compose-publish-shortcut {
-      opacity: 1;
-      transform: translate3d(0, -50%, 0);
-    }
-  }
-
   .compose-publish-single,
   .compose-publish-main,
   .compose-publish-toggle {

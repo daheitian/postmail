@@ -68,13 +68,6 @@ interface DraftsResponse {
   posts?: Record<string, unknown>[];
 }
 
-interface NavigatorWithUserAgentData {
-  platform?: string;
-  userAgentData?: {
-    platform?: string;
-  };
-}
-
 interface ComposeOpenOptions {
   collectionId?: string;
   restoreDraft?: boolean;
@@ -131,13 +124,6 @@ function toComposeCollections(value: unknown): ComposeCollection[] {
 
     return [{ id, title }];
   });
-}
-
-function usesAppleCommandKey(): boolean {
-  const nav = globalThis.navigator as NavigatorWithUserAgentData | undefined;
-  const platform = nav?.userAgentData?.platform ?? nav?.platform ?? "";
-
-  return /mac|iphone|ipad|ipod/i.test(platform);
 }
 
 function isEmptyComposeDoc(json: JSONContent): boolean {
@@ -599,6 +585,8 @@ export class JantComposeDialog extends LitElement {
     const dialog = this.closest("dialog");
     if (dialog) {
       dialog.close();
+      // Prevent browsers from leaving the opener in a lingering :focus-visible state.
+      (document.activeElement as HTMLElement)?.blur();
       return;
     }
 
@@ -709,6 +697,9 @@ export class JantComposeDialog extends LitElement {
   private _hasUnsavedChanges(): boolean {
     const currentSnapshot = this._serializeSnapshot(this._buildSnapshot());
     if (currentSnapshot === null) return false;
+    if (!this._editPostId && !this._draftSourceId && !this._hasContent()) {
+      return false;
+    }
     if (this._initialSnapshot === null) return this._hasContent();
     return currentSnapshot !== this._initialSnapshot;
   }
@@ -774,7 +765,6 @@ export class JantComposeDialog extends LitElement {
     this._confirmPanelOpen = false;
     this._confirmForAttachedText = false;
     this._closeDialog();
-    (document.activeElement as HTMLElement)?.blur();
     this.reset();
   }
 
@@ -954,8 +944,6 @@ export class JantComposeDialog extends LitElement {
       return;
     }
     this._closeDialog();
-    // Prevent browser from restoring focus to the trigger button
-    (document.activeElement as HTMLElement)?.blur();
     this.reset();
   }
 
@@ -3039,11 +3027,9 @@ export class JantComposeDialog extends LitElement {
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>`;
     const canPublish = this._canPublish();
-    const shortcutHint = this._renderPublishShortcutHint();
 
     return html`
       <div class="compose-publish-group">
-        ${shortcutHint}
         ${this._showPublishPanel
           ? html`<div
               class="compose-dropdown-backdrop"
@@ -3100,18 +3086,6 @@ export class JantComposeDialog extends LitElement {
         </div>
         ${this._renderPublishPanel()}
       </div>
-    `;
-  }
-
-  private _renderPublishShortcutHint() {
-    const shortcutKeys = usesAppleCommandKey() ? ["⌘", "↵"] : ["Ctrl", "↵"];
-
-    return html`
-      <span class="compose-publish-shortcut" aria-hidden="true">
-        <kbd class="kbd">${shortcutKeys[0]}</kbd>
-        <span class="compose-publish-shortcut-plus">+</span>
-        <kbd class="kbd">${shortcutKeys[1]}</kbd>
-      </span>
     `;
   }
 

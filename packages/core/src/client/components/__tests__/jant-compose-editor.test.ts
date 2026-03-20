@@ -315,6 +315,20 @@ describe("JantComposeEditor", () => {
     ).toBe("Enter a valid URL starting with http://, https://, or mailto:.");
   });
 
+  it("keeps the link URL quiet when the field is empty on blur", async () => {
+    const el = await createElement("link");
+    const urlInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="url"]'),
+      "expected url input",
+    );
+
+    urlInput.dispatchEvent(new Event("blur"));
+    await el.updateComplete;
+
+    expect(urlInput.getAttribute("aria-invalid")).toBe("false");
+    expect(el.querySelector("[data-compose-url-status]")).toBeNull();
+  });
+
   it("renders quote fields when format is quote", async () => {
     const el = await createElement("quote");
     const quoteTextarea = el.querySelector<HTMLTextAreaElement>(
@@ -343,7 +357,7 @@ describe("JantComposeEditor", () => {
     expect(urlInput.getAttribute("aria-invalid")).toBe("false");
   });
 
-  it("shows a link title error only after the title field blurs", async () => {
+  it("keeps the link title quiet when the field is empty on blur", async () => {
     const el = await createElement("link");
     const titleInput = requireElement(
       el.querySelector<HTMLInputElement>(".compose-link-title"),
@@ -355,10 +369,8 @@ describe("JantComposeEditor", () => {
     titleInput.dispatchEvent(new Event("blur"));
     await el.updateComplete;
 
-    expect(
-      el.querySelector("[data-compose-link-title-error]")?.textContent?.trim(),
-    ).toBe("Add a title before posting this link.");
-    expect(titleInput.getAttribute("aria-invalid")).toBe("true");
+    expect(el.querySelector("[data-compose-link-title-error]")).toBeNull();
+    expect(titleInput.getAttribute("aria-invalid")).toBe("false");
   });
 
   it("dispatches file picker lifecycle events when media picker is cancelled", async () => {

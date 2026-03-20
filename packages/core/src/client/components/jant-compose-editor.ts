@@ -411,6 +411,20 @@ export class JantComposeEditor extends LitElement {
     return this._title.trim() ? null : this.labels.linkTitleRequired;
   }
 
+  private _getInlineUrlValidationMessage(): string | null {
+    if (this.format === "link" && !this._url.trim()) {
+      return null;
+    }
+    return this.getUrlValidationMessage();
+  }
+
+  private _getInlineLinkTitleValidationMessage(): string | null {
+    if (this.format !== "link" || !this._title.trim()) {
+      return null;
+    }
+    return this.getLinkTitleValidationMessage();
+  }
+
   revealUrlValidation(): string | null {
     this._showUrlValidation = true;
     return this.getUrlValidationMessage();
@@ -1327,10 +1341,10 @@ export class JantComposeEditor extends LitElement {
 
   private _renderLinkFields() {
     const urlError = this._showUrlValidation
-      ? this.getUrlValidationMessage()
+      ? this._getInlineUrlValidationMessage()
       : null;
     const titleError = this._showLinkTitleValidation
-      ? this.getLinkTitleValidationMessage()
+      ? this._getInlineLinkTitleValidationMessage()
       : null;
 
     return html`

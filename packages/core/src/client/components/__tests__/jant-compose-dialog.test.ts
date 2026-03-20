@@ -54,27 +54,6 @@ function mockSlugApi(
   });
 }
 
-function setNavigatorPlatform(platform: string): () => void {
-  const descriptor = Object.getOwnPropertyDescriptor(
-    globalThis.navigator,
-    "platform",
-  );
-
-  Object.defineProperty(globalThis.navigator, "platform", {
-    configurable: true,
-    value: platform,
-  });
-
-  return () => {
-    if (descriptor) {
-      Object.defineProperty(globalThis.navigator, "platform", descriptor);
-      return;
-    }
-
-    Reflect.deleteProperty(globalThis.navigator, "platform");
-  };
-}
-
 const labels: ComposeLabels = {
   cancel: "Cancel",
   note: "Note",
@@ -255,36 +234,6 @@ describe("JantComposeDialog", () => {
         '.compose-tool-btn-view[aria-label="Fullscreen"]',
       ),
     ).not.toBeNull();
-  });
-
-  it("shows the Mac publish shortcut hint on Apple platforms", async () => {
-    const restoreNavigator = setNavigatorPlatform("MacIntel");
-
-    try {
-      const el = await createElement();
-      const keys = Array.from(
-        el.querySelectorAll<HTMLElement>(".compose-publish-shortcut kbd"),
-      ).map((key) => key.textContent?.trim());
-
-      expect(keys).toEqual(["⌘", "↵"]);
-    } finally {
-      restoreNavigator();
-    }
-  });
-
-  it("shows the Ctrl publish shortcut hint on non-Apple platforms", async () => {
-    const restoreNavigator = setNavigatorPlatform("Win32");
-
-    try {
-      const el = await createElement();
-      const keys = Array.from(
-        el.querySelectorAll<HTMLElement>(".compose-publish-shortcut kbd"),
-      ).map((key) => key.textContent?.trim());
-
-      expect(keys).toEqual(["Ctrl", "↵"]);
-    } finally {
-      restoreNavigator();
-    }
   });
 
   it("opens publish settings even when publish is disabled", async () => {
@@ -1810,6 +1759,35 @@ describe("JantComposeDialog", () => {
     expect(el.querySelector(".compose-confirm-panel")).toBeNull();
   });
 
+  it("requestClose on empty form clears opener focus after closing", async () => {
+    const el = await createElement();
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    document.body.appendChild(trigger);
+
+    const dialog = document.createElement("dialog");
+    const closeSpy = vi.spyOn(dialog, "close");
+    const closestSpy = vi
+      .spyOn(el, "closest")
+      .mockImplementation((selector: string) =>
+        selector === "dialog"
+          ? dialog
+          : HTMLElement.prototype.closest.call(el, selector),
+      );
+
+    trigger.focus();
+    const blurSpy = vi.spyOn(trigger, "blur");
+
+    el.requestClose();
+    await el.updateComplete;
+
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(blurSpy).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).not.toBe(trigger);
+
+    closestSpy.mockRestore();
+  });
+
   it("treats dialog backdrop clicks as close requests", async () => {
     const el = await createElement();
     const dialog = document.createElement("dialog");
@@ -1869,6 +1847,56 @@ describe("JantComposeDialog", () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn(),
     } as unknown as HTMLDialogElement);
+
+    const event = new Event("beforeunload", {
+      cancelable: true,
+    }) as globalThis.BeforeUnloadEvent;
+
+    window.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(
+      (
+        el as unknown as { _hasUnsavedChanges: () => boolean }
+      )._hasUnsavedChanges(),
+    ).toBe(false);
+  });
+
+  it("beforeunload does not warn after switching to link without entering content", async () => {
+    const el = await createElement();
+    vi.spyOn(el, "closest").mockReturnValue({
+      open: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as HTMLDialogElement);
+
+    el._format = "link";
+    await flushUpdates(el);
+
+    const event = new Event("beforeunload", {
+      cancelable: true,
+    }) as globalThis.BeforeUnloadEvent;
+
+    window.dispatchEvent(event);
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(
+      (
+        el as unknown as { _hasUnsavedChanges: () => boolean }
+      )._hasUnsavedChanges(),
+    ).toBe(false);
+  });
+
+  it("beforeunload does not warn after switching to quote without entering content", async () => {
+    const el = await createElement();
+    vi.spyOn(el, "closest").mockReturnValue({
+      open: true,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as HTMLDialogElement);
+
+    el._format = "quote";
+    await flushUpdates(el);
 
     const event = new Event("beforeunload", {
       cancelable: true,
@@ -2333,7 +2361,7 @@ describe("JantComposeDialog", () => {
     expect(submitSpy).not.toHaveBeenCalled();
   });
 
-  it("blocks publish for link posts without a title", async () => {
+  it("blocks publish for link posts without showing a title error on blur", async () => {
     const el = await createElement();
     el._format = "link";
     await el.updateComplete;
@@ -2359,9 +2387,7 @@ describe("JantComposeDialog", () => {
     titleInput.dispatchEvent(new Event("blur"));
     await el.updateComplete;
 
-    expect(
-      el.querySelector("[data-compose-link-title-error]")?.textContent?.trim(),
-    ).toBe("Add a title before posting this link.");
+    expect(el.querySelector("[data-compose-link-title-error]")).toBeNull();
   });
 
   it("Cmd/Ctrl+Enter finishes an attached text editor instead of publishing", async () => {
