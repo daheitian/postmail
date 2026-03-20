@@ -86,7 +86,10 @@ export function readWranglerDatabaseConfig(options = {}) {
   return {
     configPath,
     configDir: dirname(configPath),
+    accountId: envConfig?.account_id ?? config.account_id ?? null,
     databaseBinding,
+    databaseId: database.database_id ?? null,
+    databaseName: database.database_name ?? null,
     migrationsDir: resolve(
       dirname(configPath),
       database.migrations_dir ?? DEFAULT_D1_MIGRATIONS_DIR,

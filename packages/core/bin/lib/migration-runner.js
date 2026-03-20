@@ -1,5 +1,7 @@
-import { readFileSync } from "node:fs";
-import { executeD1, queryD1 } from "./d1-query.js";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { executeD1, executeD1File, queryD1 } from "./d1-query.js";
 import {
   DEFAULT_DATA_MIGRATION_TABLE,
   listBackfillFiles,
@@ -16,12 +18,139 @@ function quoteString(value) {
   return `'${String(value).replaceAll("'", "''")}'`;
 }
 
-function normalizeSqlFile(sql) {
-  return sql
-    .split("--> statement-breakpoint")
-    .map((statement) => statement.trim())
-    .filter(Boolean)
-    .join("\n");
+export function splitSqlStatements(sql) {
+  if (sql.includes("--> statement-breakpoint")) {
+    return sql
+      .split("--> statement-breakpoint")
+      .map((statement) => statement.trim())
+      .filter(Boolean);
+  }
+
+  const statements = [];
+  let start = 0;
+  let index = 0;
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+  let inBacktick = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  while (index < sql.length) {
+    const char = sql[index];
+    const next = sql[index + 1];
+
+    if (inLineComment) {
+      if (char === "\n") {
+        inLineComment = false;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (char === "*" && next === "/") {
+        inBlockComment = false;
+        index += 2;
+        continue;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inSingleQuote) {
+      if (char === "'" && next === "'") {
+        index += 2;
+        continue;
+      }
+
+      if (char === "'") {
+        inSingleQuote = false;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inDoubleQuote) {
+      if (char === '"') {
+        inDoubleQuote = false;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inBacktick) {
+      if (char === "`") {
+        inBacktick = false;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (char === "-" && next === "-") {
+      inLineComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (char === "/" && next === "*") {
+      inBlockComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (char === "'") {
+      inSingleQuote = true;
+      index += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      inDoubleQuote = true;
+      index += 1;
+      continue;
+    }
+
+    if (char === "`") {
+      inBacktick = true;
+      index += 1;
+      continue;
+    }
+
+    if (char === ";") {
+      const statement = sql.slice(start, index + 1).trim();
+      if (statement) {
+        statements.push(statement);
+      }
+      start = index + 1;
+    }
+
+    index += 1;
+  }
+
+  const tail = sql.slice(start).trim();
+  if (tail) {
+    statements.push(tail);
+  }
+
+  return statements;
+}
+
+function readNormalizedSqlFile(filePath) {
+  const statements = splitSqlStatements(readFileSync(filePath, "utf-8"));
+  if (statements.length === 0) {
+    throw new Error(`SQL file is empty: ${filePath}`);
+  }
+
+  return statements.join("\n");
+}
+
+function readSqlStatements(filePath) {
+  const statements = splitSqlStatements(readFileSync(filePath, "utf-8"));
+  if (statements.length === 0) {
+    throw new Error(`SQL file is empty: ${filePath}`);
+  }
+
+  return statements;
 }
 
 function createTrackingTableSql(tableName) {
@@ -46,10 +175,42 @@ function createNodeSqlRunner(sqlite) {
   };
 }
 
-function createD1SqlRunner(runtime, options) {
+export function createD1SqlRunner(runtime, options) {
+  const trackedExecution = options?.trackedExecution ?? "command";
+
   return {
     execute(sql) {
       executeD1(sql, runtime, { ...options, quiet: true });
+    },
+    executeTrackedFile(filePath, trackingSql) {
+      if (trackedExecution === "segmented") {
+        for (const statement of readSqlStatements(filePath)) {
+          executeD1(statement, runtime, { ...options, quiet: true });
+        }
+        executeD1(trackingSql, runtime, { ...options, quiet: true });
+        return;
+      }
+
+      if (trackedExecution === "file") {
+        const tempDir = mkdtempSync(join(tmpdir(), "jant-d1-migration-"));
+        const tempPath = join(tempDir, "tracked.sql");
+
+        try {
+          writeFileSync(
+            tempPath,
+            `\n${readNormalizedSqlFile(filePath)}\n${trackingSql}\n`,
+          );
+          executeD1File(tempPath, runtime, { ...options, quiet: true });
+        } finally {
+          rmSync(tempDir, { recursive: true, force: true });
+        }
+        return;
+      }
+
+      executeD1(`\n${readNormalizedSqlFile(filePath)}\n${trackingSql}`, runtime, {
+        ...options,
+        quiet: true,
+      });
     },
     query(sql) {
       return queryD1(sql, runtime, options);
@@ -64,7 +225,7 @@ function listAppliedNames(runner, tableName) {
     .map((row) => String(row.name));
 }
 
-function applySqlFiles(runner, options) {
+export function applyTrackedSqlFiles(runner, options) {
   const { files, headline, tableName } = options;
   if (files.length === 0) {
     console.log(`No ${headline.toLowerCase()} to apply.`);
@@ -86,15 +247,14 @@ function applySqlFiles(runner, options) {
 
   const table = quoteIdentifier(tableName);
   for (const [index, file] of pendingFiles.entries()) {
-    const sql = normalizeSqlFile(readFileSync(file.path, "utf-8"));
-    if (!sql) {
-      throw new Error(`${headline.slice(0, -1)} file is empty: ${file.path}`);
-    }
+    const trackingSql = `INSERT INTO ${table} ("name") VALUES (${quoteString(file.name)});`;
 
     try {
-      runner.execute(
-        `\n${sql}\nINSERT INTO ${table} ("name") VALUES (${quoteString(file.name)});`,
-      );
+      if (typeof runner.executeTrackedFile === "function") {
+        runner.executeTrackedFile(file.path, trackingSql);
+      } else {
+        runner.execute(`\n${readNormalizedSqlFile(file.path)}\n${trackingSql}`);
+      }
       console.log(`[${index + 1}/${pendingFiles.length}] ${file.name} ✅`);
     } catch (error) {
       console.log(`[${index + 1}/${pendingFiles.length}] ${file.name} ❌`);
@@ -122,7 +282,7 @@ function resolveD1RunnerOptions(options = {}) {
 
 export function applyD1SchemaMigrations(runtime, options = {}) {
   const { config, runnerOptions } = resolveD1RunnerOptions(options);
-  return applySqlFiles(createD1SqlRunner(runtime, runnerOptions), {
+  return applyTrackedSqlFiles(createD1SqlRunner(runtime, runnerOptions), {
     files: listSchemaMigrationFiles(config.migrationsDir),
     headline: "Schema migrations",
     tableName: config.migrationsTable,
@@ -131,7 +291,7 @@ export function applyD1SchemaMigrations(runtime, options = {}) {
 
 export function applyD1Backfills(runtime, options = {}) {
   const { runnerOptions } = resolveD1RunnerOptions(options);
-  return applySqlFiles(createD1SqlRunner(runtime, runnerOptions), {
+  return applyTrackedSqlFiles(createD1SqlRunner(runtime, runnerOptions), {
     files: listBackfillFiles(resolveBundledBackfillsDir()),
     headline: "Data backfills",
     tableName: DEFAULT_DATA_MIGRATION_TABLE,
@@ -139,7 +299,7 @@ export function applyD1Backfills(runtime, options = {}) {
 }
 
 export function applyNodeBackfills(sqlite) {
-  return applySqlFiles(createNodeSqlRunner(sqlite), {
+  return applyTrackedSqlFiles(createNodeSqlRunner(sqlite), {
     files: listBackfillFiles(resolveBundledBackfillsDir()),
     headline: "Data backfills",
     tableName: DEFAULT_DATA_MIGRATION_TABLE,

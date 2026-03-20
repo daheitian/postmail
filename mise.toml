@@ -213,6 +213,16 @@ description = "Load the canonical demo content seed into the current local devel
 dir = "packages/core"
 run = "node dev/scripts/import-local-seed.mjs ../../sites/demo/scripts/seed-demo.sql"
 
+[tasks.db-rehearse-local]
+description = "Rebuild a local D1 from the frozen migration rehearsal fixture"
+dir = "packages/core"
+run = "node ./bin/jant.js db rehearse --local --fixture src/db/rehearsal-fixtures/demo-current.json --persist-to .wrangler/rehearsal"
+
+[tasks.db-rehearse-remote]
+description = "Run the remote D1 migration rehearsal against the configured rehearsal database"
+dir = "packages/core"
+run = "node ./dev/scripts/run-remote-rehearsal.mjs"
+
 [tasks.db-local-reset]
 description = "Recreate the local development D1 database, bootstrap dev auth, and load the canonical demo seed"
 dir = "packages/core"
@@ -754,4 +764,3 @@ run = "pnpm --filter @jant/core build && cd packages/core && npm publish --acces
 [tasks.release-publish-create]
 description = "Build and publish create-jant to npm"
 run = "pnpm --filter create-jant build && cd packages/create-jant && npm publish --access public --no-provenance --no-git-checks"
-

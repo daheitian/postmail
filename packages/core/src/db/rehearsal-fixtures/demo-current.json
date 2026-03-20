@@ -1,0 +1,25 @@
+{
+  "name": "demo-current",
+  "baseMigrationTag": "0001_fts_setup",
+  "seedPath": "./demo-current.sql",
+  "assertions": [
+    {
+      "name": "published posts exist",
+      "sql": "SELECT COUNT(*) AS count FROM post WHERE deleted_at IS NULL",
+      "column": "count",
+      "atLeast": 1
+    },
+    {
+      "name": "collections exist",
+      "sql": "SELECT COUNT(*) AS count FROM collection",
+      "column": "count",
+      "atLeast": 1
+    },
+    {
+      "name": "fts index populated",
+      "sql": "SELECT COUNT(*) AS count FROM post_fts",
+      "column": "count",
+      "atLeast": 1
+    }
+  ]
+}

@@ -19,8 +19,8 @@ function createSqliteQueryRunner(sqlite) {
 
 function createD1QueryRunner(runtime) {
   return {
-    async query(sql) {
-      return queryD1(sql, runtime);
+    async query(sql, options) {
+      return queryD1(sql, runtime, options);
     },
   };
 }
@@ -29,15 +29,21 @@ export async function run(argv) {
   const { values } = parseArgs({
     args: argv,
     options: {
+      config: { type: "string" },
+      database: { type: "string", default: "DB" },
+      env: { type: "string" },
       local: { type: "boolean", default: false },
       remote: { type: "boolean", default: false },
       output: { type: "string", short: "o", default: "jant-export.sql" },
       help: { type: "boolean", short: "h" },
+      "persist-to": { type: "string" },
     },
   });
 
   if (values.help) {
-    console.log("Usage: jant db export [--local | --remote] [--output <file>]");
+    console.log(
+      "Usage: jant db export [--local | --remote] [--output <file>] [--config <file>] [--env <name>] [--database <binding>]",
+    );
     console.log("");
     console.log("Export the current database to a SQL file.");
     console.log("");
@@ -49,6 +55,12 @@ export async function run(argv) {
     console.log(
       "  --output, -o      Output file path (default: jant-export.sql)",
     );
+    console.log(
+      "  --config          Wrangler config file (default: wrangler.toml)",
+    );
+    console.log("  --env             Wrangler environment name");
+    console.log("  --database        D1 binding name (default: DB)");
+    console.log("  --persist-to      Local D1 state directory override");
     console.log("");
     console.log(
       "If DATABASE_URL or JANT_DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite.",
@@ -72,9 +84,23 @@ export async function run(argv) {
       sqlite.close();
     }
   } else {
-    sql = await dumpDatabaseToSql(createD1QueryRunner(runtime), {
-      source: runtime === "d1-remote" ? "remote" : "local",
-    });
+    const d1Options = {
+      configPath: values.config,
+      database: values.database,
+      env: values.env,
+      persistTo: values["persist-to"],
+    };
+    const queryRunner = createD1QueryRunner(runtime);
+    sql = await dumpDatabaseToSql(
+      {
+        async query(statement) {
+          return queryRunner.query(statement, d1Options);
+        },
+      },
+      {
+        source: runtime === "d1-remote" ? "remote" : "local",
+      },
+    );
   }
 
   const outPath = resolve(process.cwd(), output);
