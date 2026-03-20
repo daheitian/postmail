@@ -170,6 +170,16 @@ msgstr "Add a custom link to any URL"
 msgid "Add a link to your main RSS feed. Change what /feed returns in General."
 msgstr "Add a link to your main RSS feed. Change what /feed returns in General."
 
+#. @context: Compose link title required error
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add a title before posting this link."
+msgstr "Add a title before posting this link."
+
+#. @context: Compose link URL required error
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add a URL before posting this link."
+msgstr "Add a URL before posting this link."
+
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add alt text"
@@ -1065,6 +1075,11 @@ msgstr "Email"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Emoji"
 msgstr "Emoji"
+
+#. @context: Compose URL field error message
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Enter a valid URL starting with http://, https://, or mailto:."
+msgstr "Enter a valid URL starting with http://, https://, or mailto:."
 
 #. @context: Plural entry count label
 #. @context: Plural entry count label

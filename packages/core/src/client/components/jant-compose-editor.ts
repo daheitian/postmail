@@ -10,6 +10,7 @@
 
 import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
+import { ifDefined } from "lit/directives/if-defined.js";
 import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import Sortable from "sortablejs";
@@ -36,6 +37,7 @@ import type { MediaCategory } from "../../lib/upload.js";
 import { showToast } from "../toast.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 import { uploadAndInsertInlineImage } from "../tiptap/inline-image-upload.js";
+import { isSafeAbsoluteUrl } from "../../lib/url.js";
 
 interface ComposeFilePickerCloseDetail {
   cancelled: boolean;
@@ -60,6 +62,8 @@ export class JantComposeEditor extends LitElement {
     _showAltPanel: { state: true },
     _altPanelIndex: { state: true },
     _showEmojiPicker: { state: true },
+    _showUrlValidation: { state: true },
+    _showLinkTitleValidation: { state: true },
   };
 
   declare format: ComposeFormat;
@@ -79,6 +83,8 @@ export class JantComposeEditor extends LitElement {
   declare _showAltPanel: boolean;
   declare _altPanelIndex: number;
   declare _showEmojiPicker: boolean;
+  declare _showUrlValidation: boolean;
+  declare _showLinkTitleValidation: boolean;
 
   private _editor: Editor | null = null;
   private _fileInput: HTMLInputElement | null = null;
@@ -86,6 +92,7 @@ export class JantComposeEditor extends LitElement {
     null;
   private _emojiPickerEl: HTMLElement | null = null;
   private _emojiContainer: HTMLElement | null = null;
+  private readonly _urlStatusId = `compose-url-status-${crypto.randomUUID()}`;
   private _onDocClickBound = this._onDocumentClick.bind(this);
   private _scrollBufferApplied = false;
   private _filePickerCleanup: (() => void) | null = null;
@@ -116,6 +123,8 @@ export class JantComposeEditor extends LitElement {
     this._showAltPanel = false;
     this._altPanelIndex = 0;
     this._showEmojiPicker = false;
+    this._showUrlValidation = false;
+    this._showLinkTitleValidation = false;
   }
 
   connectedCallback() {
@@ -326,6 +335,8 @@ export class JantComposeEditor extends LitElement {
     this._attachmentOrder = [];
     this._showAltPanel = false;
     this._altPanelIndex = 0;
+    this._showUrlValidation = false;
+    this._showLinkTitleValidation = false;
     this.closeEmojiPicker();
   }
 
@@ -356,10 +367,7 @@ export class JantComposeEditor extends LitElement {
 
   focusInput(position?: "start" | "end") {
     if (this.format === "link") {
-      this._focusTextControl(
-        this.querySelector<HTMLInputElement>('.compose-input[type="url"]'),
-        position,
-      );
+      this.focusUrlInput(position);
       return;
     }
     if (this.format === "quote") {
@@ -374,6 +382,43 @@ export class JantComposeEditor extends LitElement {
       return;
     }
     this._editor?.commands.focus();
+  }
+
+  focusUrlInput(position?: "start" | "end") {
+    this._focusTextControl(
+      this.querySelector<HTMLInputElement>(".compose-url-input"),
+      position,
+    );
+  }
+
+  focusLinkTitleInput(position?: "start" | "end") {
+    this._focusTextControl(
+      this.querySelector<HTMLInputElement>(".compose-link-title"),
+      position,
+    );
+  }
+
+  getUrlValidationMessage(): string | null {
+    if (this.format === "note") return null;
+    if (!this._url.trim()) {
+      return this.format === "link" ? this.labels.linkUrlRequired : null;
+    }
+    return isSafeAbsoluteUrl(this._url) ? null : this.labels.urlInvalid;
+  }
+
+  getLinkTitleValidationMessage(): string | null {
+    if (this.format !== "link") return null;
+    return this._title.trim() ? null : this.labels.linkTitleRequired;
+  }
+
+  revealUrlValidation(): string | null {
+    this._showUrlValidation = true;
+    return this.getUrlValidationMessage();
+  }
+
+  revealLinkTitleValidation(): string | null {
+    this._showLinkTitleValidation = true;
+    return this.getLinkTitleValidationMessage();
   }
 
   isEmojiPickerOpen(): boolean {
@@ -473,6 +518,12 @@ export class JantComposeEditor extends LitElement {
     }
 
     if (changed.has("format") && changed.get("format") !== undefined) {
+      if (this._showUrlValidation) {
+        this._showUrlValidation = false;
+      }
+      if (this._showLinkTitleValidation) {
+        this._showLinkTitleValidation = false;
+      }
       // Format changed — recreate editor with appropriate placeholder
       this._destroyEditor();
       // Schedule init after Lit re-renders the new template
@@ -629,6 +680,9 @@ export class JantComposeEditor extends LitElement {
       );
       this._attachmentOrder = [...orderedClientIds, ...remainingClientIds];
     }
+
+    this._showUrlValidation = false;
+    this._showLinkTitleValidation = false;
   }
 
   /** Updates editor content and title from fullscreen close */
@@ -1272,27 +1326,67 @@ export class JantComposeEditor extends LitElement {
   }
 
   private _renderLinkFields() {
+    const urlError = this._showUrlValidation
+      ? this.getUrlValidationMessage()
+      : null;
+    const titleError = this._showLinkTitleValidation
+      ? this.getLinkTitleValidationMessage()
+      : null;
+
     return html`
       <div class="compose-field-enter">
-        <div class="compose-link-url-wrap">
+        <div
+          class=${classMap({
+            "compose-link-url-wrap": true,
+            "compose-link-url-wrap-invalid": Boolean(urlError),
+          })}
+        >
           <span class="text-base opacity-50 shrink-0">🔗</span>
           <input
             type="url"
             .value=${this._url}
             @input=${(e: Event) => this._onInput("_url", e)}
             @focus=${(e: Event) => this._onFieldFocus(e)}
-            class="compose-input text-[0.9rem]"
+            @blur=${() => {
+              this._showUrlValidation = true;
+            }}
+            class="compose-input compose-url-input text-[0.9rem]"
             placeholder=${this.labels.urlPlaceholder}
+            aria-invalid=${urlError ? "true" : "false"}
+            aria-describedby=${ifDefined(
+              urlError ? this._urlStatusId : undefined,
+            )}
           />
         </div>
+        ${urlError
+          ? html`<p
+              id=${this._urlStatusId}
+              class="compose-url-status compose-url-status-error"
+              data-compose-url-status="error"
+            >
+              ${urlError}
+            </p>`
+          : nothing}
         <input
           type="text"
           .value=${this._title}
           @input=${(e: Event) => this._onInput("_title", e)}
           @focus=${(e: Event) => this._onFieldFocus(e)}
+          @blur=${() => {
+            this._showLinkTitleValidation = true;
+          }}
           class="compose-input compose-link-title"
           placeholder=${this.labels.linkTitlePlaceholder}
+          aria-invalid=${titleError ? "true" : "false"}
         />
+        ${titleError
+          ? html`<p
+              class="compose-url-status compose-url-status-error"
+              data-compose-link-title-error="error"
+            >
+              ${titleError}
+            </p>`
+          : nothing}
         <div class="compose-divider"></div>
         <div class="compose-tiptap-body compose-tiptap-thoughts"></div>
       </div>
@@ -1300,6 +1394,10 @@ export class JantComposeEditor extends LitElement {
   }
 
   private _renderQuoteFields() {
+    const urlError = this._showUrlValidation
+      ? this.getUrlValidationMessage()
+      : null;
+
     return html`
       <div class="compose-field-enter">
         <div class="compose-quote-wrap">
@@ -1330,9 +1428,25 @@ export class JantComposeEditor extends LitElement {
             .value=${this._url}
             @input=${(e: Event) => this._onInput("_url", e)}
             @focus=${(e: Event) => this._onFieldFocus(e)}
-            class="compose-input text-[0.78rem]"
+            @blur=${() => {
+              this._showUrlValidation = true;
+            }}
+            class="compose-input compose-url-input text-[0.78rem]"
             placeholder=${this.labels.sourcePlaceholder}
+            aria-invalid=${urlError ? "true" : "false"}
+            aria-describedby=${ifDefined(
+              urlError ? this._urlStatusId : undefined,
+            )}
           />
+          ${urlError
+            ? html`<p
+                id=${this._urlStatusId}
+                class="compose-url-status compose-url-status-error"
+                data-compose-url-status="error"
+              >
+                ${urlError}
+              </p>`
+            : nothing}
         </div>
         <div class="compose-divider"></div>
         <div class="compose-tiptap-body compose-tiptap-thoughts"></div>

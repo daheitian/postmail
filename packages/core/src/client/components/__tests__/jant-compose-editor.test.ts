@@ -141,6 +141,9 @@ const labels: ComposeLabels = {
   titlePlaceholder: "Title",
   bodyPlaceholder: "What's on your mind...",
   urlPlaceholder: "Paste a URL...",
+  urlInvalid: "Enter a valid URL starting with http://, https://, or mailto:.",
+  linkUrlRequired: "Add a URL before posting this link.",
+  linkTitleRequired: "Add a title before posting this link.",
   linkTitlePlaceholder: "Give it a title...",
   thoughtsPlaceholder: "Your thoughts (optional)",
   quotePlaceholder: "Type the quote...",
@@ -283,6 +286,33 @@ describe("JantComposeEditor", () => {
       ".compose-link-title",
     );
     expect(titleInput).not.toBeNull();
+    expect(el.querySelector("[data-compose-url-status]")).toBeNull();
+  });
+
+  it("shows an inline URL error only after the field blurs", async () => {
+    const el = await createElement("link");
+    const urlInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="url"]'),
+      "expected url input",
+    );
+
+    urlInput.value = "example.com";
+    urlInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    expect(el.querySelector("[data-compose-url-status]")).toBeNull();
+    expect(urlInput.getAttribute("aria-invalid")).toBe("false");
+
+    urlInput.dispatchEvent(new Event("blur"));
+    await el.updateComplete;
+
+    expect(el.getUrlValidationMessage()).toBe(
+      "Enter a valid URL starting with http://, https://, or mailto:.",
+    );
+    expect(urlInput.getAttribute("aria-invalid")).toBe("true");
+    expect(
+      el.querySelector("[data-compose-url-status]")?.textContent?.trim(),
+    ).toBe("Enter a valid URL starting with http://, https://, or mailto:.");
   });
 
   it("renders quote fields when format is quote", async () => {
@@ -296,6 +326,39 @@ describe("JantComposeEditor", () => {
       ".compose-quote-author",
     );
     expect(authorInput).not.toBeNull();
+  });
+
+  it("accepts mailto links as valid URLs", async () => {
+    const el = await createElement("link");
+    const urlInput = requireElement(
+      el.querySelector<HTMLInputElement>('input[type="url"]'),
+      "expected url input",
+    );
+
+    urlInput.value = "mailto:test@example.com";
+    urlInput.dispatchEvent(new Event("input", { bubbles: true }));
+    await el.updateComplete;
+
+    expect(el.getUrlValidationMessage()).toBeNull();
+    expect(urlInput.getAttribute("aria-invalid")).toBe("false");
+  });
+
+  it("shows a link title error only after the title field blurs", async () => {
+    const el = await createElement("link");
+    const titleInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-link-title"),
+      "expected link title input",
+    );
+
+    expect(el.querySelector("[data-compose-link-title-error]")).toBeNull();
+
+    titleInput.dispatchEvent(new Event("blur"));
+    await el.updateComplete;
+
+    expect(
+      el.querySelector("[data-compose-link-title-error]")?.textContent?.trim(),
+    ).toBe("Add a title before posting this link.");
+    expect(titleInput.getAttribute("aria-invalid")).toBe("true");
   });
 
   it("dispatches file picker lifecycle events when media picker is cancelled", async () => {

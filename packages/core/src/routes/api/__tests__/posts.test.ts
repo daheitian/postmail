@@ -508,6 +508,24 @@ describe("Posts API Routes", () => {
       expect(body).not.toHaveProperty("url");
     });
 
+    it("returns 400 when creating a link post without a title", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/posts", postsApiRoutes);
+
+      const res = await app.request("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "link",
+          url: "https://example.com",
+        }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Link posts need a title.");
+    });
+
     it("returns 400 for invalid attachment media IDs", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);

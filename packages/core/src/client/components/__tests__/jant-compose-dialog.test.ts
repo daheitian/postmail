@@ -86,6 +86,9 @@ const labels: ComposeLabels = {
   titlePlaceholder: "Title",
   bodyPlaceholder: "What's on your mind...",
   urlPlaceholder: "Paste a URL...",
+  urlInvalid: "Enter a valid URL starting with http://, https://, or mailto:.",
+  linkUrlRequired: "Add a URL before posting this link.",
+  linkTitleRequired: "Add a title before posting this link.",
   linkTitlePlaceholder: "Give it a title...",
   thoughtsPlaceholder: "Your thoughts (optional)",
   quotePlaceholder: "Type the quote...",
@@ -2298,6 +2301,67 @@ describe("JantComposeDialog", () => {
     );
 
     expect(submitSpy).toHaveBeenCalledWith("published");
+  });
+
+  it("Cmd/Ctrl+Enter focuses the link URL when the URL is invalid", async () => {
+    const el = await createElement();
+    el._format = "link";
+    await el.updateComplete;
+
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._url = "example.com";
+    await editor.updateComplete;
+
+    const focusUrlSpy = vi.spyOn(editor, "focusUrlInput");
+    const submitSpy = vi.spyOn(
+      el as unknown as { _submit: (status: "published" | "draft") => void },
+      "_submit",
+    );
+
+    el.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Enter",
+        metaKey: true,
+        bubbles: true,
+      }),
+    );
+
+    expect(focusUrlSpy).toHaveBeenCalledWith("end");
+    expect(submitSpy).not.toHaveBeenCalled();
+  });
+
+  it("blocks publish for link posts without a title", async () => {
+    const el = await createElement();
+    el._format = "link";
+    await el.updateComplete;
+
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._url = "https://example.com";
+    await editor.updateComplete;
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+        "expected publish button",
+      ).disabled,
+    ).toBe(true);
+
+    const titleInput = requireElement(
+      el.querySelector<HTMLInputElement>(".compose-link-title"),
+      "expected link title input",
+    );
+    titleInput.dispatchEvent(new Event("blur"));
+    await el.updateComplete;
+
+    expect(
+      el.querySelector("[data-compose-link-title-error]")?.textContent?.trim(),
+    ).toBe("Add a title before posting this link.");
   });
 
   it("Cmd/Ctrl+Enter finishes an attached text editor instead of publishing", async () => {

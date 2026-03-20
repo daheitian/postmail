@@ -170,6 +170,16 @@ msgstr "新增自訂連結至任意 URL"
 msgid "Add a link to your main RSS feed. Change what /feed returns in General."
 msgstr "新增指向主 RSS feed 的連結。可在一般設定中修改 /feed 的輸出內容。"
 
+#. @context: Compose link title required error
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add a title before posting this link."
+msgstr "先補上標題，再發佈這則連結。"
+
+#. @context: Compose link URL required error
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Add a URL before posting this link."
+msgstr "先補上 URL，再發佈這則連結。"
+
 #. @context: Alt text panel title
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Add alt text"
@@ -1065,6 +1075,11 @@ msgstr "電子郵件"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Emoji"
 msgstr "表情符號"
+
+#. @context: Compose URL field error message
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Enter a valid URL starting with http://, https://, or mailto:."
+msgstr "請輸入以 http://、https:// 或 mailto: 開頭的有效 URL。"
 
 #. @context: Plural entry count label
 #. @context: Plural entry count label

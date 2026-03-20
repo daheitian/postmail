@@ -62,6 +62,18 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       message: "Paste a URL...",
       comment: "@context: Compose link URL placeholder",
     }),
+    urlInvalid: t({
+      message: "Enter a valid URL starting with http://, https://, or mailto:.",
+      comment: "@context: Compose URL field error message",
+    }),
+    linkUrlRequired: t({
+      message: "Add a URL before posting this link.",
+      comment: "@context: Compose link URL required error",
+    }),
+    linkTitleRequired: t({
+      message: "Add a title before posting this link.",
+      comment: "@context: Compose link title required error",
+    }),
     linkTitlePlaceholder: t({
       message: "Give it a title...",
       comment: "@context: Compose link title placeholder",

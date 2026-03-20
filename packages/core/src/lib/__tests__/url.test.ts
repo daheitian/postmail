@@ -4,6 +4,7 @@ import {
   extractDisplayDomain,
   normalizePath,
   isFullUrl,
+  isSafeAbsoluteUrl,
   slugify,
 } from "../url.js";
 
@@ -138,6 +139,30 @@ describe("isFullUrl", () => {
   it("returns false for other protocols", () => {
     expect(isFullUrl("ftp://example.com")).toBe(false);
     expect(isFullUrl("mailto:test@test.com")).toBe(false);
+  });
+});
+
+describe("isSafeAbsoluteUrl", () => {
+  it("accepts http and https URLs", () => {
+    expect(isSafeAbsoluteUrl("https://example.com")).toBe(true);
+    expect(isSafeAbsoluteUrl("http://example.com")).toBe(true);
+  });
+
+  it("accepts mailto URLs", () => {
+    expect(isSafeAbsoluteUrl("mailto:test@example.com")).toBe(true);
+  });
+
+  it("rejects missing protocols", () => {
+    expect(isSafeAbsoluteUrl("example.com")).toBe(false);
+  });
+
+  it("rejects relative paths", () => {
+    expect(isSafeAbsoluteUrl("/about")).toBe(false);
+  });
+
+  it("rejects unsupported protocols", () => {
+    expect(isSafeAbsoluteUrl("javascript:alert(1)")).toBe(false);
+    expect(isSafeAbsoluteUrl("ftp://example.com")).toBe(false);
   });
 });
 

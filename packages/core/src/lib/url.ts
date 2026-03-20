@@ -134,6 +134,34 @@ export function extractDisplayDomain(url: string): string | null {
 const SAFE_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
 
 /**
+ * Checks whether a string is a safe absolute URL.
+ *
+ * Accepts absolute URLs that use `http:`, `https:`, or `mailto:`. Relative
+ * paths are rejected because external post/source URLs must be fully qualified.
+ *
+ * @param url - The URL string to validate
+ * @returns `true` when the URL is absolute and uses an allowed protocol
+ *
+ * @example
+ * ```ts
+ * isSafeAbsoluteUrl("https://example.com"); // true
+ * isSafeAbsoluteUrl("mailto:hello@example.com"); // true
+ * isSafeAbsoluteUrl("example.com"); // false
+ * ```
+ */
+export function isSafeAbsoluteUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+
+  try {
+    const parsed = new URL(trimmed);
+    return SAFE_URL_PROTOCOLS.has(parsed.protocol);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Sanitizes a URL by ensuring it uses a safe protocol.
  *
  * Returns the URL unchanged if it uses an allowed protocol (http:, https:, mailto:)

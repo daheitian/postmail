@@ -274,15 +274,27 @@ describe("PostService", () => {
       await expect(
         postService.create({
           format: "link",
+          title: "A link",
           bodyMarkdown: "commentary",
         }),
       ).rejects.toThrow("Link posts need a URL.");
+    });
+
+    it("rejects link posts without a title", async () => {
+      await expect(
+        postService.create({
+          format: "link",
+          url: "https://example.com",
+          bodyMarkdown: "commentary",
+        }),
+      ).rejects.toThrow("Link posts need a title.");
     });
 
     it("rejects link posts with quoted text", async () => {
       await expect(
         postService.create({
           format: "link",
+          title: "A link",
           url: "https://example.com",
           quoteText: "A notable quote",
         }),
@@ -973,6 +985,7 @@ describe("PostService", () => {
       const post = await postService.create({
         format: "link",
         bodyMarkdown: "link post",
+        title: "Old title",
         url: "https://old.com",
       });
 
@@ -987,6 +1000,7 @@ describe("PostService", () => {
       const post = await postService.create({
         format: "link",
         bodyMarkdown: "test",
+        title: "A link",
         url: "https://example.com",
       });
 
@@ -1221,14 +1235,30 @@ describe("PostService", () => {
       await expect(
         postService.update(post.id, {
           format: "link",
+          title: "A link",
         }),
       ).rejects.toThrow("Link posts need a URL.");
+    });
+
+    it("rejects switching a note to link without adding a title", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "test",
+      });
+
+      await expect(
+        postService.update(post.id, {
+          format: "link",
+          url: "https://example.com",
+        }),
+      ).rejects.toThrow("Link posts need a title.");
     });
 
     it("rejects switching a link to note without clearing the URL", async () => {
       const post = await postService.create({
         format: "link",
         bodyMarkdown: "test",
+        title: "A link",
         url: "https://example.com",
       });
 

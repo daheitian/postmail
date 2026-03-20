@@ -23,6 +23,7 @@ describe("PostService - Timeline features", () => {
       await postService.create({
         format: "link",
         bodyMarkdown: "a link",
+        title: "A link",
         url: "https://example.com",
       });
       await postService.create({
@@ -51,6 +52,7 @@ describe("PostService - Timeline features", () => {
         format: "link",
         bodyMarkdown: "published link",
         status: "published",
+        title: "Published link",
         url: "https://example.com",
       });
 

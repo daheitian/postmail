@@ -310,9 +310,11 @@ function ensurePostRating(
 
 function assertPostFormatShape(data: {
   format: Format;
+  title?: string | null;
   url?: string | null;
   quoteText?: string | null;
 }): void {
+  const hasTitle = hasNonEmptyText(data.title);
   const hasUrl = hasNonEmptyText(data.url);
   const hasQuoteText = hasNonEmptyText(data.quoteText);
 
@@ -327,6 +329,9 @@ function assertPostFormatShape(data: {
   }
 
   if (data.format === "link") {
+    if (!hasTitle) {
+      throw new ValidationError("Link posts need a title.");
+    }
     if (!hasUrl) {
       throw new ValidationError("Link posts need a URL.");
     }
@@ -875,6 +880,7 @@ export function createPostService(
 
       assertPostFormatShape({
         format,
+        title: data.title,
         url: data.url,
         quoteText: data.quoteText,
       });
@@ -1118,6 +1124,7 @@ export function createPostService(
 
       assertPostFormatShape({
         format: nextFormat,
+        title: data.title !== undefined ? data.title : existing.title,
         url: nextUrl,
         quoteText: nextQuoteText,
       });

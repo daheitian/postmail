@@ -119,6 +119,7 @@ describe("CreatePostSchema", () => {
       CreatePostSchema.parse({
         ...validPost,
         format: "link",
+        title: "A link",
         url: "https://example.com",
       }),
     ).not.toThrow();
@@ -201,6 +202,7 @@ describe("CreatePostSchema", () => {
     const result = CreatePostSchema.parse({
       ...validPost,
       format: "link",
+      title: "A link",
       url: "https://example.com",
     });
     expect(result.url).toBe("https://example.com");
@@ -347,8 +349,19 @@ describe("CreatePostSchema", () => {
       CreatePostSchema.parse({
         ...validPost,
         format: "link",
+        title: "A link",
       }),
     ).toThrow("Link posts need a URL.");
+  });
+
+  it("rejects link posts without a title", () => {
+    expect(() =>
+      CreatePostSchema.parse({
+        ...validPost,
+        format: "link",
+        url: "https://example.com",
+      }),
+    ).toThrow("Link posts need a title.");
   });
 
   it("rejects link posts with quoted text", () => {
@@ -356,6 +369,7 @@ describe("CreatePostSchema", () => {
       CreatePostSchema.parse({
         ...validPost,
         format: "link",
+        title: "A link",
         url: "https://example.com",
         quoteText: "A wise person once said...",
       }),
@@ -563,6 +577,15 @@ describe("CreatePostApiSchema", () => {
 
     expect(result.sourceName).toBe("Marcus Aurelius");
     expect(result.sourceUrl).toBe("https://example.com/meditations");
+  });
+
+  it("rejects link API requests without a title", () => {
+    expect(() =>
+      CreatePostApiSchema.parse({
+        format: "link",
+        url: "https://example.com",
+      }),
+    ).toThrow("Link posts need a title.");
   });
 
   it("rejects legacy title and url for quote API requests", () => {

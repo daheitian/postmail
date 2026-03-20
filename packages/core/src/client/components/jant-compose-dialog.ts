@@ -888,12 +888,40 @@ export class JantComposeDialog extends LitElement {
     };
   }
 
+  private _focusBlockedSubmitField(): boolean {
+    if (this._getSlugValidationMessage()) {
+      this._revealSlugField();
+      return true;
+    }
+
+    const editor = this._editor;
+    if (!editor) return false;
+
+    if (editor.getUrlValidationMessage()) {
+      editor.revealUrlValidation();
+      editor.focusUrlInput("end");
+      return true;
+    }
+
+    if (editor.getLinkTitleValidationMessage()) {
+      editor.revealLinkTitleValidation();
+      editor.focusLinkTitleInput("end");
+      return true;
+    }
+
+    if (this._format === "quote" && !editor._quoteText.trim()) {
+      editor.focusInput("end");
+      return true;
+    }
+
+    return false;
+  }
+
   private _dispatchSubmit(status: "published" | "draft"): boolean {
     if (this._loading) return false;
     const editor = this._editor;
     if (!editor) return false;
-    if (this._getSlugValidationMessage()) {
-      this._revealSlugField();
+    if (this._focusBlockedSubmitField()) {
       return false;
     }
 
@@ -1328,7 +1356,10 @@ export class JantComposeDialog extends LitElement {
         this._doneAttachedPanel();
         return;
       }
-      if (!this._canPublish()) return;
+      if (!this._canPublish()) {
+        this._focusBlockedSubmitField();
+        return;
+      }
       this._submit("published");
     }
   };
@@ -2660,6 +2691,8 @@ export class JantComposeDialog extends LitElement {
     const editor = this._editor;
     if (!editor) return false;
     if (this._getSlugValidationMessage()) return false;
+    if (editor.getUrlValidationMessage()) return false;
+    if (editor.getLinkTitleValidationMessage()) return false;
 
     const data = editor.getData();
     if (this._format === "link") {

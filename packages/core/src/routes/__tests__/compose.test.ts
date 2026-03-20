@@ -83,6 +83,7 @@ describe("Compose Routes", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format: "link",
+          title: "Example link",
           bodyMarkdown: "Check this out",
           url: "https://example.com",
         }),

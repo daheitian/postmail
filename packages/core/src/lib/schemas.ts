@@ -286,6 +286,13 @@ function refineCreatePostFormatShape<
     }
 
     if (data.format === "link") {
+      if (!hasTitle) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["title"],
+          message: "Link posts need a title.",
+        });
+      }
       if (!hasUrl) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

@@ -90,6 +90,9 @@ export interface ComposeLabels {
   titlePlaceholder: string;
   bodyPlaceholder: string;
   urlPlaceholder: string;
+  urlInvalid: string;
+  linkUrlRequired: string;
+  linkTitleRequired: string;
   linkTitlePlaceholder: string;
   thoughtsPlaceholder: string;
   quotePlaceholder: string;
