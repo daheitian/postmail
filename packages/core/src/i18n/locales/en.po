@@ -845,11 +845,6 @@ msgstr "Demo credentials are pre-filled — hit Sign In to continue."
 msgid "Demo mode hides sessions, password changes, and account deletion. Export still works."
 msgstr "Demo mode hides sessions, password changes, and account deletion. Export still works."
 
-#. @context: Notice shown on the settings home page when demo restrictions are enabled
-#: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Demo mode keeps search indexing, sessions, passwords, and account deletion locked."
-msgstr "Demo mode keeps search indexing, sessions, passwords, and account deletion locked."
-
 #. @context: Help text explaining that SEO indexing is locked in demo mode
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Demo sites always stay hidden from search engines."

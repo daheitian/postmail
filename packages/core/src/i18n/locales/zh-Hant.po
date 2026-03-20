@@ -845,11 +845,6 @@ msgstr "示範憑證已預先填入 — 按「登入」以繼續。"
 msgid "Demo mode hides sessions, password changes, and account deletion. Export still works."
 msgstr "示範模式下會隱藏工作階段、密碼變更和刪除帳戶。匯出仍可使用。"
 
-#. @context: Notice shown on the settings home page when demo restrictions are enabled
-#: src/ui/dash/settings/SettingsRootContent.tsx
-msgid "Demo mode keeps search indexing, sessions, passwords, and account deletion locked."
-msgstr "示範模式會鎖定搜尋索引、工作階段、密碼和刪除帳戶。"
-
 #. @context: Help text explaining that SEO indexing is locked in demo mode
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Demo sites always stay hidden from search engines."
