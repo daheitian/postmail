@@ -38,6 +38,10 @@ export function getDevApiToken(env: EnvSource): string | undefined {
   return getEnvString(env, "JANT_DEV_API_TOKEN", "DEV_API_TOKEN");
 }
 
+export function getInternalAdminToken(env: EnvSource): string | undefined {
+  return getEnvString(env, "JANT_INTERNAL_ADMIN_TOKEN");
+}
+
 export function getStorageDriverEnv(env: EnvSource): string | undefined {
   return getEnvString(env, "JANT_STORAGE_DRIVER", "STORAGE_DRIVER");
 }

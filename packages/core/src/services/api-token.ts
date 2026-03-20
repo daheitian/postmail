@@ -45,6 +45,16 @@ export interface ApiTokenService {
   delete(id: string): Promise<boolean>;
 
   /**
+   * Deletes all API tokens.
+   *
+   * Intended for demo maintenance flows that should revoke every user-created
+   * token in one pass.
+   *
+   * @returns Number of deleted tokens
+   */
+  deleteAll(): Promise<number>;
+
+  /**
    * Verifies a raw Bearer token against stored hashes.
    *
    * @param rawToken - The full token string (e.g. "jnt_a1b2c3d4...")
@@ -141,6 +151,11 @@ export function createApiTokenService(db: Database): ApiTokenService {
         .where(eq(apiTokens.id, id))
         .returning();
       return result.length > 0;
+    },
+
+    async deleteAll() {
+      const result = await db.delete(apiTokens).returning({ id: apiTokens.id });
+      return result.length;
     },
 
     async verify(rawToken: string) {

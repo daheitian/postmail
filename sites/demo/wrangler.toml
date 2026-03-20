@@ -16,7 +16,7 @@ port = 9020
 # Environment Variables
 # ============================================
 # Non-sensitive configuration goes here in [vars]
-# Sensitive secrets (like AUTH_SECRET) should be:
+# Sensitive secrets (like AUTH_SECRET and JANT_INTERNAL_ADMIN_TOKEN) should be:
 # - Local dev: .dev.vars file (not committed)
 # - Production: wrangler secret put AUTH_SECRET
 # Full details: https://github.com/jant-me/jant/blob/main/docs/configuration.md

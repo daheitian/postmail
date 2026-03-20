@@ -41,6 +41,46 @@ The CLI localizes referenced media into the export by default. That makes it the
 
 The export also includes standard `static/favicon.ico` and `static/apple-touch-icon.png` files. Jant writes mode metadata into `config.toml` so `jant site import` can tell whether those icons were the bundled defaults or user-uploaded custom assets.
 
+## What "Site Snapshot" is for
+
+`jant site snapshot export` and `jant site snapshot import` are for **identity-preserving recovery**.
+
+Use them when you want to round-trip the same Jant content set without regenerating internal IDs or storage keys. A snapshot includes:
+
+- `db.sql` for the content tables and site-facing settings
+- `storage-manifest.json` for referenced storage objects
+- `objects/` with the actual uploaded files
+
+This is different from `jant site export`:
+
+- `site export/import` is a content migration tool. It can rewrite media IDs and storage keys.
+- `site snapshot export/import` is a restore tool. It keeps IDs and storage keys intact.
+
+The current snapshot scope is intentionally limited to content and presentation data:
+
+- `setting` for site-facing keys
+- `collection`
+- `nav_item`
+- `collection_directory_item`
+- `post`
+- `post_collection`
+- `path_registry`
+- `media`
+
+Snapshot import does **not** replace auth and shell state such as:
+
+- `user`
+- `account`
+- `session`
+- `api_token`
+- onboarding markers and reset tokens in `setting`
+
+That makes snapshot restore a good fit for workflows like:
+
+- Rebuilding a demo content set into another environment
+- Restoring a curated content snapshot into the same site
+- Keeping a round-trip-safe archive while leaving login state alone
+
 ## Cloudflare Workers
 
 If you deploy Jant on Cloudflare Workers with D1 and R2:
@@ -109,6 +149,36 @@ npx jant site import --url https://your-site.com --path ./jant-site-export.zip
 ```
 
 This is the right tool for migration and content recovery. It is not the same as restoring your production database and storage byte-for-byte.
+
+### Restore from a Jant site snapshot
+
+Use this when you want to restore content with the same IDs and storage keys.
+
+Export a snapshot:
+
+```bash
+npx jant site snapshot export --output ./jant-site-snapshot
+```
+
+Restore it into another initialized Jant environment:
+
+```bash
+npx jant site snapshot import --path ./jant-site-snapshot --replace
+```
+
+You can also use a ZIP artifact:
+
+```bash
+npx jant site snapshot export --output ./jant-site-snapshot.zip
+npx jant site snapshot import --path ./jant-site-snapshot.zip --replace
+```
+
+On Cloudflare, add `--remote` and point the command at the site's Wrangler config:
+
+```bash
+npx jant site snapshot export --remote --config ./wrangler.toml --output ./jant-site-snapshot.zip
+npx jant site snapshot import --remote --config ./wrangler.toml --path ./jant-site-snapshot.zip --replace
+```
 
 ### Restore on Cloudflare
 

@@ -1,5 +1,8 @@
 import { runLocalWrangler } from "./wrangler-cli.js";
 
+const DEFAULT_RETRY_ATTEMPTS = 4;
+const DEFAULT_RETRY_DELAY_MS = 500;
+
 function getD1Flag(runtime) {
   return runtime === "d1-remote" ? "--remote" : "--local";
 }
@@ -50,16 +53,60 @@ export function parseWranglerError(output) {
   }
 }
 
+function sleepSync(ms) {
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return;
+  }
+
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+export function isRetryableWranglerD1Failure(output, error) {
+  const combined = `${output ?? ""}\n${error?.message ?? ""}`.toLowerCase();
+  return [
+    "timed out",
+    "network connection lost",
+    "fetch failed",
+    "socket hang up",
+    "econnreset",
+    "etimedout",
+    "temporarily unavailable",
+    "temporary failure",
+  ].some((fragment) => combined.includes(fragment));
+}
+
 function runWrangler(args, options = {}) {
-  try {
-    return runLocalWrangler(args, options);
-  } catch (error) {
-    const output = `${error.stdout ?? ""}${error.stderr ?? ""}`.trim();
-    const wranglerError = parseWranglerError(output);
-    if (wranglerError) {
-      throw new Error(`Wrangler error: ${wranglerError}`);
+  const retryAttempts = Math.max(
+    1,
+    Number(options.retryAttempts ?? DEFAULT_RETRY_ATTEMPTS),
+  );
+  const retryDelayMs = Math.max(
+    0,
+    Number(options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS),
+  );
+
+  for (let attempt = 1; attempt <= retryAttempts; attempt += 1) {
+    try {
+      return runLocalWrangler(args, options);
+    } catch (error) {
+      const output = `${error.stdout ?? ""}${error.stderr ?? ""}`.trim();
+      const wranglerError = parseWranglerError(output);
+      const retryable = isRetryableWranglerD1Failure(output, error);
+
+      if (retryable && attempt < retryAttempts) {
+        console.warn(
+          `Transient Wrangler D1 failure (${attempt}/${retryAttempts}) for ${args.slice(0, 4).join(" ")}. Retrying...`,
+        );
+        sleepSync(retryDelayMs * attempt);
+        continue;
+      }
+
+      if (wranglerError) {
+        throw new Error(`Wrangler error: ${wranglerError}`);
+      }
+
+      throw new Error(output || error.message, { cause: error });
     }
-    throw new Error(output || error.message, { cause: error });
   }
 }
 

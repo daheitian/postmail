@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import {
   requireAuth,
   requireAuthApi,
+  requireInternalAdminApi,
   isLocalHostname,
   hasValidLocalDevToken,
 } from "../auth.js";
@@ -34,6 +35,7 @@ function createMockApiTokenService(validToken?: string) {
     create: vi.fn(),
     list: vi.fn(),
     delete: vi.fn(),
+    deleteAll: vi.fn(async () => 0),
   };
 }
 
@@ -364,5 +366,76 @@ describe("requireAuthApi", () => {
 
     expect(res.status).toBe(200);
     expect(mockApiTokens.verify).not.toHaveBeenCalled();
+  });
+});
+
+describe("requireInternalAdminApi", () => {
+  it("returns 404 when the internal admin token is not configured", async () => {
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: createMockApiTokenService(),
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.post("/api/internal/demo", requireInternalAdminApi(), (c) =>
+      c.json({ ok: true }),
+    );
+
+    const res = await app.request("/api/internal/demo", { method: "POST" });
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 401 for an invalid internal admin token", async () => {
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.env = {
+        ...c.env,
+        JANT_INTERNAL_ADMIN_TOKEN: "internal-secret",
+      } as Bindings;
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: createMockApiTokenService(),
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.post("/api/internal/demo", requireInternalAdminApi(), (c) =>
+      c.json({ ok: true }),
+    );
+
+    const res = await app.request("/api/internal/demo", {
+      method: "POST",
+      headers: { Authorization: "Bearer wrong-secret" },
+    });
+    expect(res.status).toBe(401);
+  });
+
+  it("allows requests with the configured internal admin token", async () => {
+    const app = new Hono<Env>();
+    app.onError(errorHandler);
+    app.use("*", async (c, next) => {
+      c.env = {
+        ...c.env,
+        JANT_INTERNAL_ADMIN_TOKEN: "internal-secret",
+      } as Bindings;
+      c.set("auth", createMockAuth(false));
+      c.set("services", {
+        apiTokens: createMockApiTokenService(),
+      } as AppVariables["services"]);
+      await next();
+    });
+    app.post("/api/internal/demo", requireInternalAdminApi(), (c) =>
+      c.json({ ok: true }),
+    );
+
+    const res = await app.request("/api/internal/demo", {
+      method: "POST",
+      headers: { Authorization: "Bearer internal-secret" },
+    });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
   });
 });

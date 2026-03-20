@@ -1,0 +1,339 @@
+import { existsSync } from "node:fs";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join, relative, resolve } from "node:path";
+import { parseArgs } from "node:util";
+import { zipSync } from "fflate";
+import { queryD1 } from "../../../lib/d1-query.js";
+import { loadNodeRuntime } from "../../../lib/load-node-runtime.js";
+import { openNodeSqlite } from "../../../lib/node-sqlite.js";
+import {
+  downloadR2Object,
+  downloadR2ObjectFromPublicUrl,
+} from "../../../lib/r2-query.js";
+import {
+  buildSnapshotMeta,
+  buildSnapshotStorageQuery,
+  collectSnapshotObjects,
+  getSnapshotSelectSql,
+  sha256File,
+  SNAPSHOT_TABLES,
+  snapshotObjectPath,
+} from "../../../lib/site-snapshot.js";
+import { dumpDatabaseToSql } from "../../../lib/sql-export.js";
+import {
+  getCliRuntimeLabel,
+  resolveCliRuntime,
+} from "../../../lib/runtime-target.js";
+import { resolveWranglerVarString } from "../../../lib/wrangler-config.js";
+
+function isZipPath(filePath) {
+  return filePath.toLowerCase().endsWith(".zip");
+}
+
+async function readStorageBody(body) {
+  const reader = body.getReader();
+  const chunks = [];
+  let totalLength = 0;
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    totalLength += value.length;
+  }
+
+  const bytes = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return bytes;
+}
+
+async function readDirectoryEntries(rootDir) {
+  const entries = {};
+
+  async function walk(dir) {
+    const items = await readdir(dir, { withFileTypes: true });
+    for (const item of items) {
+      const fullPath = join(dir, item.name);
+      if (item.isDirectory()) {
+        await walk(fullPath);
+        continue;
+      }
+
+      const relativePath = relative(rootDir, fullPath).replace(/\\/g, "/");
+      entries[relativePath] = new Uint8Array(await readFile(fullPath));
+    }
+  }
+
+  await walk(rootDir);
+  return entries;
+}
+
+async function assertWritableOutput(outputPath, force) {
+  if (!existsSync(outputPath)) {
+    return;
+  }
+
+  if (!force) {
+    throw new Error(
+      `Output already exists: ${outputPath}. Pass --force to overwrite it.`,
+    );
+  }
+
+  await rm(outputPath, { force: true, recursive: true });
+}
+
+async function createNodeExportContext() {
+  const { sqlite } = openNodeSqlite(process.env, { readonly: true });
+  const { createNodeCliRuntime } = await loadNodeRuntime();
+  const runtime = await createNodeCliRuntime({
+    ...(process.env ?? {}),
+    NODE_SQLITE: sqlite,
+  });
+
+  return {
+    async close() {
+      sqlite.close();
+    },
+    async query(sql) {
+      return sqlite.prepare(sql).all();
+    },
+    async downloadObject(key, filePath) {
+      if (!runtime.storage) {
+        throw new Error("Snapshot export requires configured storage.");
+      }
+
+      const object = await runtime.storage.get(key);
+      if (!object?.body) {
+        throw new Error(`Storage object not found: ${key}`);
+      }
+
+      await mkdir(dirname(filePath), { recursive: true });
+      await writeFile(filePath, await readStorageBody(object.body));
+    },
+  };
+}
+
+function createD1ExportContext(runtime, values) {
+  const wranglerOptions = {
+    bucket: values.bucket,
+    bucketBinding: values["bucket-binding"],
+    configPath: values.config,
+    database: values.database,
+    env: values.env,
+    persistTo: values["persist-to"],
+  };
+  const publicUrl =
+    resolveWranglerVarString({
+      configPath: values.config,
+      env: values.env,
+      key: "JANT_R2_PUBLIC_URL",
+    }) ||
+    resolveWranglerVarString({
+      configPath: values.config,
+      env: values.env,
+      key: "R2_PUBLIC_URL",
+    });
+
+  return {
+    async close() {},
+    async query(sql) {
+      return queryD1(sql, runtime, wranglerOptions);
+    },
+    async downloadObject(key, filePath) {
+      await mkdir(dirname(filePath), { recursive: true });
+      if (publicUrl) {
+        try {
+          await downloadR2ObjectFromPublicUrl(publicUrl, key, filePath);
+          return;
+        } catch {
+          console.warn(
+            `Public object download failed for ${key}. Falling back to Wrangler R2 access.`,
+          );
+        }
+      }
+
+      downloadR2Object(key, filePath, runtime, wranglerOptions);
+    },
+  };
+}
+
+export async function run(argv) {
+  const { values } = parseArgs({
+    args: argv,
+    options: {
+      bucket: { type: "string" },
+      "bucket-binding": { type: "string", default: "R2" },
+      config: { type: "string" },
+      database: { type: "string", default: "DB" },
+      env: { type: "string" },
+      force: { type: "boolean", default: false },
+      help: { type: "boolean", short: "h" },
+      local: { type: "boolean", default: false },
+      output: {
+        type: "string",
+        short: "o",
+        default: "jant-site-snapshot",
+      },
+      "persist-to": { type: "string" },
+      remote: { type: "boolean", default: false },
+    },
+  });
+
+  if (values.help) {
+    console.log(
+      "Usage: jant site snapshot export [--local | --remote] [--output <dir|zip>]",
+    );
+    console.log("");
+    console.log(
+      "Export a Jant content snapshot that preserves IDs, storage keys, and object files.",
+    );
+    console.log("");
+    console.log("Options:");
+    console.log("  --local                 Force local D1 instead of DATABASE_URL");
+    console.log("  --remote                Export from remote D1");
+    console.log(
+      "  --output, -o           Output directory or .zip file (default: jant-site-snapshot)",
+    );
+    console.log("  --force                 Overwrite an existing output path");
+    console.log(
+      "  --config                Wrangler config file (default: wrangler.toml)",
+    );
+    console.log("  --env                   Wrangler environment name");
+    console.log("  --database              D1 binding name (default: DB)");
+    console.log(
+      "  --bucket                Override the R2 bucket name used for object export",
+    );
+    console.log(
+      "  --bucket-binding        Wrangler R2 binding to resolve (default: R2)",
+    );
+    console.log("  --persist-to            Local D1/R2 state directory override");
+    console.log("");
+    console.log(
+      "If DATABASE_URL or JANT_DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite and the configured storage driver.",
+    );
+    process.exit(0);
+  }
+
+  const runtime = resolveCliRuntime(values);
+  const outputPath = resolve(process.cwd(), values.output);
+  const shouldZip = isZipPath(outputPath);
+  const scratchDir = shouldZip
+    ? await mkdtemp(join(tmpdir(), "jant-site-snapshot-export-"))
+    : outputPath;
+  const context =
+    runtime === "node"
+      ? await createNodeExportContext()
+      : createD1ExportContext(runtime, values);
+
+  try {
+    await assertWritableOutput(outputPath, values.force);
+    if (!shouldZip) {
+      await mkdir(scratchDir, { recursive: true });
+    }
+
+    const dbSql = await dumpDatabaseToSql(
+      {
+        query(sql) {
+          return context.query(sql);
+        },
+      },
+      {
+        source: runtime,
+        tables: SNAPSHOT_TABLES,
+        selectSqlByTable: Object.fromEntries(
+          SNAPSHOT_TABLES.map((tableName) => [
+            tableName,
+            getSnapshotSelectSql(tableName),
+          ]),
+        ),
+      },
+    );
+
+    const objectRows = await context.query(buildSnapshotStorageQuery());
+    const objects = collectSnapshotObjects(objectRows);
+    const manifestObjects = [];
+
+    await writeFile(join(scratchDir, "db.sql"), dbSql);
+
+    if (objects.length > 0) {
+      console.log(`Downloading ${objects.length} referenced object(s)...`);
+    }
+
+    for (const [index, object] of objects.entries()) {
+      const relativeObjectPath = snapshotObjectPath(object.key);
+      const absoluteObjectPath = join(scratchDir, relativeObjectPath);
+      console.log(`[${index + 1}/${objects.length}] ${object.key}`);
+      await context.downloadObject(object.key, absoluteObjectPath);
+      const fileStat = await stat(absoluteObjectPath);
+      manifestObjects.push({
+        key: object.key,
+        file: relativeObjectPath,
+        contentType: object.contentType || undefined,
+        size: fileStat.size,
+        sha256: await sha256File(absoluteObjectPath),
+      });
+    }
+
+    await writeFile(
+      join(scratchDir, "meta.json"),
+      JSON.stringify(
+        buildSnapshotMeta({
+          runtime,
+          label: getCliRuntimeLabel(runtime),
+        }),
+        null,
+        2,
+      ) + "\n",
+    );
+    await writeFile(
+      join(scratchDir, "storage-manifest.json"),
+      JSON.stringify(
+        {
+          version: 1,
+          objects: manifestObjects,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+
+    if (shouldZip) {
+      await mkdir(dirname(outputPath), { recursive: true });
+      const zipped = zipSync(await readDirectoryEntries(scratchDir), {
+        level: 6,
+      });
+      await writeFile(outputPath, zipped);
+      if (process.env.JANT_SNAPSHOT_SUPPRESS_SUCCESS_LOG !== "true") {
+        console.log(
+          `Exported ${getCliRuntimeLabel(runtime)} snapshot to ${values.output}`,
+        );
+      }
+      return;
+    }
+
+    if (process.env.JANT_SNAPSHOT_SUPPRESS_SUCCESS_LOG !== "true") {
+      console.log(
+        `Exported ${getCliRuntimeLabel(runtime)} snapshot to ${values.output}`,
+      );
+    }
+  } finally {
+    await context.close();
+    if (shouldZip) {
+      await rm(scratchDir, { recursive: true, force: true });
+    }
+  }
+}

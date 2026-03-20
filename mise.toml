@@ -203,7 +203,7 @@ dir = "packages/core"
 run = "node dev/scripts/export-seed.mjs"
 
 [tasks.db-local-import]
-description = "Import a content seed SQL file into the current local development D1 database shell"
+description = "Import a SQL file into the current local development D1 database shell"
 usage = 'arg "<file>"'
 dir = "packages/core"
 run = 'node dev/scripts/import-local-seed.mjs "$usage_file"'
@@ -217,11 +217,14 @@ echo "Bootstrapping local development shell..."
 mise run dev-auth-bootstrap
 """
 
-[tasks.db-local-load-demo-content]
+[tasks.db-local-load-demo-snapshot]
 alias = "db-local-load-demo"
-description = "Load the canonical demo content seed into the current local development D1 database shell"
-dir = "packages/core"
-run = "node dev/scripts/import-local-seed.mjs ../../sites/demo/scripts/seed-demo.sql"
+description = "Load the canonical demo snapshot into the current local development D1 database shell"
+run = "node scripts/demo-local/import-canonical.mjs"
+
+[tasks.db-local-load-demo-content]
+description = "Alias for db-local-load-demo-snapshot"
+run = "mise run db-local-load-demo-snapshot"
 
 [tasks.db-rehearse-local]
 description = "Rebuild a local D1 from the frozen migration rehearsal fixture"
@@ -234,18 +237,18 @@ dir = "packages/core"
 run = "node ./dev/scripts/run-remote-rehearsal.mjs"
 
 [tasks.db-local-reset]
-description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo content"
+description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo snapshot"
 run = "mise run db-local-rebuild-demo"
 
 [tasks.db-local-rebuild-demo]
-description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo content"
+description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo snapshot"
 dir = "packages/core"
 run = """
 echo "Resetting local database..."
 rm -rf .wrangler
 mise run db-local-bootstrap-shell
-echo "Loading canonical demo content..."
-node dev/scripts/import-local-seed.mjs ../../sites/demo/scripts/seed-demo.sql
+echo "Loading canonical demo snapshot..."
+node ../../scripts/demo-local/import-canonical.mjs
 echo "Done! Local database is ready."
 """
 
@@ -341,71 +344,161 @@ dir = "packages/core"
 run = "node ./bin/jant.js migrate --remote --env preview"
 
 # =============================================================================
-# Demo Site
+# Demo Source
 # =============================================================================
-[tasks.deploy-demo]
-description = "Deploy demo site to demo.jant.me"
-run = "pnpm --filter @jant/core build && pnpm --filter jant-demo run deploy"
+[tasks.dev-demo-source]
+description = "Start the private demo-source Worker (build @jant/core first)"
+run = "pnpm --filter @jant/core build && pnpm --filter jant-demo-source dev"
+
+[tasks.deploy-demo-source]
+description = "Deploy the private demo-source Worker to Cloudflare Workers"
+run = """
+pnpm --filter @jant/core build
+node scripts/demo-shared/run-with-env.mjs --site demo-source -- pnpm --filter jant-demo-source run deploy
+"""
+
+[tasks.demo-source-export-canonical]
+description = "Refresh sites/demo-source/canonical/snapshot from the remote demo-source Worker"
+run = "node scripts/demo-source/export-canonical.mjs"
+
+[tasks.db-demo-source-migrate]
+description = "Run migrations on demo-source"
+run = "node scripts/demo-shared/run-with-env.mjs --site demo-source --cwd sites/demo-source -- pnpm exec jant migrate --remote"
+
+[tasks.demo-source-clear-storage]
+description = "Delete demo-source storage objects currently referenced by the remote runtime"
+run = "node scripts/demo-source/clear-storage.mjs"
+
+[tasks.demo-source-nuke]
+description = "Delete referenced demo-source storage, then drop ALL tables in the demo-source database"
+run = """
+echo "Deleting currently referenced demo-source storage..."
+node scripts/demo-source/clear-storage.mjs
+echo "Dropping all demo-source database objects..."
+node scripts/nuke-db.mjs sites/demo-source
+"""
+
+[tasks.db-demo-source-nuke]
+description = "Alias for demo-source-nuke"
+run = "mise run demo-source-nuke"
+
+[tasks.demo-source-reset]
+description = "Reset demo-source to an empty migrated schema"
+run = """
+mise run demo-source-nuke
+echo "Reapplying demo-source migrations..."
+mise run db-demo-source-migrate
+echo "Done! demo-source is empty and migrated. Finish with /setup or site import."
+"""
+
+[tasks.db-demo-source-reset]
+description = "Alias for demo-source-reset"
+run = "mise run demo-source-reset"
+
+[tasks.db-demo-source-export-canonical]
+description = "Alias for demo-source-export-canonical"
+run = "mise run demo-source-export-canonical"
+
+# =============================================================================
+# Demo Public
+# =============================================================================
+[tasks.dev-demo-public]
+description = "Start the public demo Worker locally (build @jant/core first)"
+run = "pnpm --filter @jant/core build && pnpm --filter jant-demo dev"
+
+[tasks.deploy-demo-public]
+alias="deploy-demo"
+description = "Deploy the public demo site to demo.jant.me"
+run = """
+pnpm --filter @jant/core build
+node scripts/demo-shared/run-with-env.mjs --site demo -- pnpm --filter jant-demo run deploy
+"""
 
 [tasks.db-demo-migrate]
 description = "Run migrations on demo.jant.me"
-dir = "sites/demo"
-run = "pnpm exec jant migrate --remote"
+run = "node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- pnpm exec jant migrate --remote"
 
-[tasks.db-demo-bootstrap]
+[tasks.demo-public-bootstrap]
 description = "Ensure demo.jant.me has its managed shell (admin, onboarding, default nav)"
-dir = "sites/demo"
 run = """
 echo "Running remote migrations..."
-pnpm exec jant migrate --remote
+node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- pnpm exec jant migrate --remote
 echo "Bootstrapping managed demo shell..."
-node scripts/bootstrap-demo.mjs
+node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- node scripts/bootstrap-demo.mjs
+"""
+
+[tasks.db-demo-bootstrap]
+description = "Alias for demo-public-bootstrap"
+run = "mise run demo-public-bootstrap"
+
+[tasks.demo-public-clear-storage]
+description = "Delete demo.jant.me storage objects currently referenced by the public runtime"
+run = "node scripts/demo-public/clear-storage.mjs"
+
+[tasks.demo-public-clear-content]
+description = "Clear demo.jant.me content while preserving the managed shell"
+run = """
+mise run demo-public-bootstrap
+echo "Deleting currently referenced demo storage..."
+node scripts/demo-public/clear-storage.mjs
+echo "Clearing demo content..."
+node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- pnpm exec jant db execute-file --remote --file scripts/reset-demo.sql
+echo "Done! demo.jant.me content has been cleared."
+"""
+
+[tasks.db-demo-clear-content]
+description = "Alias for demo-public-clear-content"
+run = "mise run demo-public-clear-content"
+
+[tasks.db-demo-clean]
+description = "Alias for demo-public-clear-content"
+run = "mise run demo-public-clear-content"
+
+[tasks.demo-public-import-canonical]
+description = "Import sites/demo-source/canonical/snapshot into demo.jant.me"
+run = """
+node scripts/demo-public/import-canonical.mjs
+"""
+
+[tasks.demo-public-clear-api-tokens]
+description = "Delete all user-created API tokens from demo.jant.me via the internal admin token"
+run = """
+node scripts/demo-public/clear-api-tokens.mjs
+"""
+
+[tasks.demo-public-verify]
+description = "Verify the public demo after a rebuild"
+run = """
+node scripts/demo-public/verify.mjs
+"""
+
+[tasks.demo-public-rebuild]
+description = "Restore demo.jant.me from sites/demo-source/canonical/snapshot"
+run = """
+node scripts/demo-public/import-canonical.mjs --check
+node scripts/demo-public/clear-api-tokens.mjs --check
+mise run demo-public-bootstrap
+echo "Deleting DB-managed demo storage..."
+node scripts/demo-public/clear-storage.mjs
+echo "Importing canonical demo content..."
+node scripts/demo-public/import-canonical.mjs
+echo "Clearing demo API tokens..."
+node scripts/demo-public/clear-api-tokens.mjs
+mise run demo-public-verify
+echo "Done! demo.jant.me has been rebuilt from the canonical snapshot."
 """
 
 [tasks.db-demo-reseed]
-description = "Restore demo.jant.me to the canonical demo state"
-dir = "sites/demo"
-run = """
-mise run db-demo-bootstrap
-echo "Loading canonical demo content..."
-pnpm exec jant db execute-file --remote --file scripts/seed-demo.sql
-echo "Done! Demo content has been reset."
-"""
+description = "Alias for demo-public-rebuild"
+run = "mise run demo-public-rebuild"
 
-[tasks.db-demo-export]
-description = "Refresh sites/demo/scripts/seed-demo.sql from demo.jant.me"
-dir = "sites/demo"
-run = "node scripts/export-demo.mjs"
-
-[tasks.db-demo-clear-content]
-alias = "db-demo-clean"
-description = "Clear demo.jant.me content while preserving the managed shell"
-dir = "sites/demo"
-run = """
-mise run db-demo-bootstrap
-echo "Clearing demo content..."
-pnpm exec jant db execute-file --remote --file scripts/reset-demo.sql
-echo "Done! Demo content has been cleared."
-"""
-
-[tasks.db-demo-load-local-content]
-alias = "db-demo-push-local"
-description = "Replace demo.jant.me content with the current local development content"
-dir = "sites/demo"
-run = """
-echo "Exporting local data..."
-node ../../packages/core/dev/scripts/export-seed.mjs --no-auth --output ../../../sites/demo/seed-demo-upload.sql
-mise run db-demo-bootstrap
-echo "Loading local content into demo..."
-pnpm exec jant db execute-file --remote --file seed-demo-upload.sql
-rm seed-demo-upload.sql
-echo "Done! Demo content has been replaced from local data."
-"""
+[tasks.demo-nuke]
+description = "Drop ALL tables in the public demo database (including migrations)"
+run = "node scripts/nuke-db.mjs sites/demo"
 
 [tasks.db-demo-nuke]
-alias = "demo-nuke"
-description = "Drop ALL tables in demo database (including migrations)"
-run = "node scripts/nuke-db.mjs sites/demo"
+description = "Alias for demo-nuke"
+run = "mise run demo-nuke"
 
 # =============================================================================
 # Official Site

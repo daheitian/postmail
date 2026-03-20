@@ -41,6 +41,7 @@ import { multipartUploadApiRoutes } from "./routes/api/upload-multipart.js";
 import { searchApiRoutes } from "./routes/api/search.js";
 import { customUrlsApiRoutes } from "./routes/api/custom-urls.js";
 import { exportApiRoutes } from "./routes/api/export.js";
+import { internalApiTokensRoutes } from "./routes/api/internal/api-tokens.js";
 // Routes - Compose
 import { composeRoutes } from "./routes/compose.js";
 
@@ -169,6 +170,7 @@ export function createApp(): App {
   app.get("/health", (c) => c.json({ status: "ok" }));
 
   app.route("/api/attachments", attachmentsApiRoutes);
+  app.route("/api/internal/api-tokens", internalApiTokensRoutes);
 
   // Fetch text media content by ID (same-origin proxy to avoid CORS with CDN URLs)
   app.get("/api/media/:id/content", async (c) => {

@@ -261,6 +261,40 @@ After
     ).toEqual(["/older-root", "legacy/path"]);
   });
 
+  it("maps quote posts to sourceName/sourceUrl for remote imports", () => {
+    expect(
+      __test__.toRemotePostPayload({
+        format: "quote",
+        title: "From Basho",
+        url: "https://en.wikiquote.org/wiki/Matsuo_Basho",
+        quoteText: "Every day is a journey.",
+        slug: "from-basho",
+      }),
+    ).toEqual({
+      format: "quote",
+      sourceName: "From Basho",
+      sourceUrl: "https://en.wikiquote.org/wiki/Matsuo_Basho",
+      quoteText: "Every day is a journey.",
+      slug: "from-basho",
+    });
+  });
+
+  it("leaves non-quote remote post payloads unchanged", () => {
+    expect(
+      __test__.toRemotePostPayload({
+        format: "link",
+        title: "A useful link",
+        url: "https://example.com",
+        slug: "a-useful-link",
+      }),
+    ).toEqual({
+      format: "link",
+      title: "A useful link",
+      url: "https://example.com",
+      slug: "a-useful-link",
+    });
+  });
+
   it("rejects root aliases that collide with reply slugs", () => {
     const replySlugPaths = __test__.collectReplySlugPaths([
       { attrs: { slug: "reply-one" } },

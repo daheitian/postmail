@@ -862,6 +862,21 @@ async function apiCall(method, path, apiUrl, token, body) {
   return response.json();
 }
 
+function toRemotePostPayload(data) {
+  if (data?.format !== "quote") {
+    return data;
+  }
+
+  const { title, url, ...rest } = data;
+  return {
+    ...rest,
+    ...(typeof title === "string" && title.trim()
+      ? { sourceName: title }
+      : {}),
+    ...(typeof url === "string" && url.trim() ? { sourceUrl: url } : {}),
+  };
+}
+
 function createRemoteTarget(apiUrl, token) {
   return {
     async close() {},
@@ -958,7 +973,13 @@ function createRemoteTarget(apiUrl, token) {
       return apiCall("POST", "/api/collections", apiUrl, token, data);
     },
     async createPost(data) {
-      return apiCall("POST", "/api/posts", apiUrl, token, data);
+      return apiCall(
+        "POST",
+        "/api/posts",
+        apiUrl,
+        token,
+        toRemotePostPayload(data),
+      );
     },
     async createAlias(path, targetSlug) {
       return apiCall("POST", "/api/custom-urls", apiUrl, token, {
@@ -1241,6 +1262,7 @@ export const __test__ = {
   collectReplySlugPaths,
   getExportedRootAliases,
   getRootAliasPathsForImport,
+  toRemotePostPayload,
 };
 
 export async function run(argv) {

@@ -65,12 +65,11 @@ JANT_R2_PUBLIC_URL = "https://media.yourdomain.com"
 # Required: Auth secret (must be at least 32 characters!)
 # Generate one with: openssl rand -base64 32
 wrangler secret put JANT_AUTH_SECRET
-
-# Required: Your site URL
-wrangler secret put JANT_SITE_URL
 ```
 
 > **Important**: `JANT_AUTH_SECRET` must be at least 32 characters. If it's shorter, authentication will fail with "JANT_AUTH_SECRET is not set".
+
+You can also set it in Cloudflare Dashboard → Workers & Pages → your Worker → Settings → Variables and Secrets.
 
 ## Run Migrations
 
@@ -95,7 +94,7 @@ Your site is now live at `https://your-worker.workers.dev`.
 
 ## Environment Variables
 
-Set these in `wrangler.toml` under `[vars]`:
+Set non-sensitive values such as `JANT_SITE_URL` in `wrangler.toml` under `[vars]`:
 
 ```toml
 [vars]
@@ -127,7 +126,7 @@ On Cloudflare, make sure your domain or proxy setup sends both of these path gro
 
 `/jant-assets` is a reserved root path for Jant's built assets.
 
-Or use secrets for sensitive values:
+Use Worker secrets for sensitive values:
 
 ```bash
 wrangler secret put JANT_AUTH_SECRET

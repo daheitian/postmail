@@ -37,6 +37,8 @@ interface TestAppOptions {
   demoMode?: boolean;
   /** Optional storage driver for upload/settings route tests */
   storage?: StorageDriver | null;
+  /** Optional internal admin token for internal API route tests */
+  internalAdminToken?: string;
 }
 
 /**
@@ -79,6 +81,7 @@ export function createTestApp(options: TestAppOptions = {}) {
     c.env = {
       SITE_URL: "http://localhost:9020",
       DEMO_MODE: options.demoMode ? "true" : "false",
+      JANT_INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);

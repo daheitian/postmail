@@ -8,8 +8,12 @@
 import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
-import { getDevApiToken, getSiteUrl } from "../lib/env.js";
-import { UnauthorizedError } from "../lib/errors.js";
+import {
+  getDevApiToken,
+  getInternalAdminToken,
+  getSiteUrl,
+} from "../lib/env.js";
+import { NotFoundError, UnauthorizedError } from "../lib/errors.js";
 import { getSitePathPrefix, toPublicHref } from "../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -126,37 +130,94 @@ export function requireAuthApi(): MiddlewareHandler<Env> {
     }
 
     // 2. Try Bearer token auth
-    const authHeader = c.req.header("Authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      const rawToken = authHeader.slice(7);
-
-      // Dev shortcut: bypass DB lookup when JANT_DEV_API_TOKEN matches on a local hostname
-      if (
-        hasValidLocalDevToken(
-          c.req.url,
-          c.req.header("host"),
-          rawToken,
-          getDevApiToken(c.env),
-        )
-      ) {
-        await next();
-        return;
-      }
-
-      const tokenId = await c.var.services.apiTokens.verify(rawToken);
-      if (tokenId) {
-        // Fire-and-forget last-used update (non-blocking)
-        const updatePromise = c.var.services.apiTokens.updateLastUsed(tokenId);
-        try {
-          c.executionCtx.waitUntil(updatePromise);
-        } catch {
-          // executionCtx not available (e.g. in tests) — ignore
-        }
-        await next();
-        return;
-      }
+    if (await hasValidBearerApiToken(c)) {
+      await next();
+      return;
     }
 
     throw new UnauthorizedError();
   };
+}
+
+/**
+ * Middleware for internal maintenance APIs.
+ * Only accepts the environment-provided internal admin token.
+ */
+export function requireInternalAdminApi(): MiddlewareHandler<Env> {
+  return async (c, next) => {
+    const expectedToken = getInternalAdminToken(c.env);
+    if (!expectedToken) {
+      throw new NotFoundError("Internal admin endpoint");
+    }
+
+    const authHeader = c.req.header("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      throw new UnauthorizedError();
+    }
+
+    const providedToken = authHeader.slice(7);
+    if (!timingSafeTokenEquals(providedToken, expectedToken)) {
+      throw new UnauthorizedError();
+    }
+
+    await next();
+  };
+}
+
+function timingSafeTokenEquals(left: string, right: string): boolean {
+  const encoder = new TextEncoder();
+  const leftBytes = encoder.encode(left);
+  const rightBytes = encoder.encode(right);
+  const maxLength = Math.max(leftBytes.length, rightBytes.length);
+  let mismatch = leftBytes.length ^ rightBytes.length;
+
+  for (let index = 0; index < maxLength; index += 1) {
+    mismatch |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
+  }
+
+  return mismatch === 0;
+}
+
+async function hasValidBearerApiToken(c: {
+  env: Bindings;
+  executionCtx?: { waitUntil: (promise: Promise<unknown>) => void };
+  req: {
+    header: (name: string) => string | undefined;
+    url: string;
+  };
+  var: {
+    services: AppVariables["services"];
+  };
+}): Promise<boolean> {
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return false;
+  }
+
+  const rawToken = authHeader.slice(7);
+
+  if (
+    hasValidLocalDevToken(
+      c.req.url,
+      c.req.header("host"),
+      rawToken,
+      getDevApiToken(c.env),
+    )
+  ) {
+    return true;
+  }
+
+  const tokenId = await c.var.services.apiTokens.verify(rawToken);
+  if (!tokenId) {
+    return false;
+  }
+
+  const updatePromise = c.var.services.apiTokens.updateLastUsed(tokenId);
+  try {
+    c.executionCtx?.waitUntil(updatePromise);
+  } catch {
+    // executionCtx not available (e.g. in tests) — ignore
+  }
+
+  return true;
 }

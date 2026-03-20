@@ -122,7 +122,10 @@ export async function getTableColumns(queryRunner, tableName) {
 }
 
 export async function dumpDatabaseToSql(queryRunner, options) {
-  const tables = await listExportTables(queryRunner);
+  const configuredTables = Array.isArray(options.tables)
+    ? sortExportTables(options.tables)
+    : null;
+  const tables = configuredTables ?? (await listExportTables(queryRunner));
   const timestamp = new Date().toISOString();
   let sql = `-- Jant database export\n`;
   sql += `-- Exported: ${timestamp}\n`;
@@ -134,9 +137,10 @@ export async function dumpDatabaseToSql(queryRunner, options) {
       continue;
     }
 
-    const rows = await queryRunner.query(
-      `SELECT * FROM ${quoteIdentifier(tableName)}`,
-    );
+    const selectSql =
+      options.selectSqlByTable?.[tableName] ||
+      `SELECT * FROM ${quoteIdentifier(tableName)}`;
+    const rows = await queryRunner.query(selectSql);
     if (rows.length === 0) {
       continue;
     }

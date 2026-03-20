@@ -36,6 +36,7 @@ export interface Bindings {
   JANT_DEMO_PASSWORD?: string;
   JANT_DEMO_MODE?: string;
   JANT_DEV_API_TOKEN?: string;
+  JANT_INTERNAL_ADMIN_TOKEN?: string;
   JANT_PAGE_SIZE?: string;
   JANT_STORAGE_DRIVER?: string;
   JANT_S3_ENDPOINT?: string;

@@ -19,4 +19,4 @@ COMMIT;
 -- post delete triggers keep post_fts in sync
 
 -- Users, accounts, settings, default nav, and API tokens are preserved
--- (seed-demo.sql only contains demo content data)
+-- Canonical demo publishing now restores from sites/demo-source/canonical/snapshot

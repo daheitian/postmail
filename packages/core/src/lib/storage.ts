@@ -53,6 +53,9 @@ export interface StorageDriver {
   /** Delete a file from storage */
   delete(key: string): Promise<void>;
 
+  /** List all object keys in storage. Used by admin maintenance tasks. */
+  listAllKeys?(prefix?: string): Promise<string[]>;
+
   /** Start a multipart upload (optional — R2 only) */
   createMultipartUpload?(
     key: string,
@@ -146,6 +149,24 @@ export function createR2Driver(r2: R2Bucket): StorageDriver {
       await r2.delete(key);
     },
 
+    async listAllKeys(prefix) {
+      const keys: string[] = [];
+      let cursor: string | undefined;
+
+      for (;;) {
+        const page = await r2.list({
+          cursor,
+          limit: 1000,
+          prefix: prefix || undefined,
+        });
+        keys.push(...page.objects.map((object) => object.key));
+        if (!page.truncated) {
+          return keys;
+        }
+        cursor = page.cursor;
+      }
+    },
+
     async createMultipartUpload(key, opts) {
       const upload = await r2.createMultipartUpload(key, {
         httpMetadata: opts?.contentType
@@ -233,6 +254,19 @@ interface S3HeadObjectOutput {
   ContentLength?: number;
 }
 
+interface ListObjectsV2Input {
+  Bucket: string;
+  ContinuationToken?: string;
+  MaxKeys?: number;
+  Prefix?: string;
+}
+
+interface S3ListObjectsV2Output {
+  Contents?: Array<{ Key?: string }>;
+  IsTruncated?: boolean;
+  NextContinuationToken?: string;
+}
+
 /** Lazy-loaded S3 client bundle */
 interface S3ClientBundle {
   send: (command: unknown) => Promise<unknown>;
@@ -240,6 +274,7 @@ interface S3ClientBundle {
   GetObjectCommand: S3CommandCtor<GetObjectInput>;
   DeleteObjectCommand: S3CommandCtor<ObjectKeyInput>;
   HeadObjectCommand: S3CommandCtor<HeadObjectInput>;
+  ListObjectsV2Command: S3CommandCtor<ListObjectsV2Input>;
   bucket: string;
 }
 
@@ -275,6 +310,7 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
           GetObjectCommand: sdk.GetObjectCommand,
           DeleteObjectCommand: sdk.DeleteObjectCommand,
           HeadObjectCommand: sdk.HeadObjectCommand,
+          ListObjectsV2Command: sdk.ListObjectsV2Command,
           bucket: config.bucket,
         };
       });
@@ -377,6 +413,32 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
       });
       await s3.send(command);
     },
+
+    async listAllKeys(prefix) {
+      const s3 = await getClient();
+      const keys: string[] = [];
+      let continuationToken: string | undefined;
+
+      for (;;) {
+        const command = new s3.ListObjectsV2Command({
+          Bucket: s3.bucket,
+          ContinuationToken: continuationToken,
+          MaxKeys: 1000,
+          Prefix: prefix || undefined,
+        });
+        const response = (await s3.send(command)) as S3ListObjectsV2Output;
+        keys.push(
+          ...(response.Contents ?? [])
+            .map((entry) => entry.Key)
+            .filter((key): key is string => typeof key === "string"),
+        );
+
+        if (!response.IsTruncated || !response.NextContinuationToken) {
+          return keys;
+        }
+        continuationToken = response.NextContinuationToken;
+      }
+    },
   };
 }
 
@@ -413,7 +475,7 @@ interface NodeFsBundle {
     path: string,
     options?: { force?: boolean; recursive?: boolean },
   ) => Promise<void>;
-  stat: (path: string) => Promise<{ size: number }>;
+  stat: (path: string) => Promise<{ size: number; isDirectory(): boolean }>;
   writeFile: (path: string, data: string | Uint8Array) => Promise<unknown>;
   Readable: {
     fromWeb(stream: ReadableStream): unknown;
@@ -598,6 +660,49 @@ export function createLocalDriver(config: LocalDriverConfig): StorageDriver {
       const filePath = await resolveLocalPath(config.rootPath, key);
       await node.rm(filePath, { force: true });
       await node.rm(`${filePath}.meta.json`, { force: true });
+    },
+
+    async listAllKeys(prefix) {
+      const node = await getNodeFsBundle();
+      const root = node.resolve(config.rootPath);
+      const keys: string[] = [];
+
+      async function walk(dir: string) {
+        const entries = await node.readdir(dir);
+
+        for (const entry of entries) {
+          const fullPath = node.resolve(dir, entry);
+          const relativePath = fullPath
+            .slice(root.length + 1)
+            .replace(/\\/g, "/");
+
+          if (relativePath.startsWith(".multipart/")) {
+            continue;
+          }
+
+          try {
+            const stat = await node.stat(fullPath);
+            if (stat.isDirectory()) {
+              await walk(fullPath);
+              continue;
+            }
+          } catch {
+            continue;
+          }
+
+          if (relativePath.endsWith(".meta.json")) {
+            continue;
+          }
+
+          if (!prefix || relativePath.startsWith(prefix)) {
+            keys.push(relativePath);
+          }
+        }
+      }
+
+      await walk(root);
+      keys.sort();
+      return keys;
     },
 
     async createMultipartUpload(key, opts) {

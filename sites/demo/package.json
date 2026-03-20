@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "jant migrate --local && wrangler dev",
-    "deploy": "jant migrate --remote && wrangler deploy",
+    "deploy": "node ../../scripts/demo-shared/run-with-env.mjs --site demo -- pnpm exec jant migrate --remote && node ../../scripts/demo-shared/run-with-env.mjs --site demo -- pnpm exec wrangler deploy",
     "reset-password": "jant reset-password",
     "export": "jant export"
   },

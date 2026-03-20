@@ -35,5 +35,5 @@ mise install
 # Install dependencies
 pnpm install
 
-# Set up local database, dev auth, and demo content
+# Set up local database, dev auth, and the canonical demo snapshot
 mise run db-local-rebuild-demo

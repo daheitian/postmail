@@ -10,12 +10,18 @@
 
 import { execSync } from "node:child_process";
 import { resolve } from "node:path";
+import { loadDemoWorkflowEnv } from "./demo-shared/env.mjs";
 
 const siteDir = process.argv[2];
 if (!siteDir) {
   console.error("Usage: node scripts/nuke-db.mjs <site-dir>");
   process.exit(1);
 }
+
+const envSites = [];
+if (siteDir.endsWith("sites/demo")) envSites.push("demo");
+if (siteDir.endsWith("sites/demo-source")) envSites.push("demo-source");
+loadDemoWorkflowEnv({ sites: envSites });
 
 const cwd = resolve(process.cwd(), siteDir);
 

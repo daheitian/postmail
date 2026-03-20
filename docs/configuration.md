@@ -4,9 +4,11 @@ Jant is configured through environment variables and settings.
 
 ## Environment Variables
 
-Set these in `wrangler.toml` or as Cloudflare secrets.
-Canonical variable names use the `JANT_` prefix. Legacy aliases still work
-today, but the prefixed names are the ones to document and deploy.
+Use `wrangler.toml` for non-sensitive values such as `JANT_SITE_URL`.
+Use `.dev.vars` for local secrets and Cloudflare Worker secrets for production
+secrets such as `JANT_AUTH_SECRET`. Canonical variable names use the `JANT_`
+prefix. Legacy aliases still work today, but the prefixed names are the ones to
+document and deploy.
 
 ### Required
 
@@ -14,6 +16,11 @@ today, but the prefixed names are the ones to document and deploy.
 | ------------------ | --------------------------------------------------------------------------------- |
 | `JANT_SITE_URL`    | Your site's public URL (e.g., `https://myblog.com` or `https://example.com/blog`) |
 | `JANT_AUTH_SECRET` | Random string, 32+ characters. Used for session signing.                          |
+
+`JANT_AUTH_SECRET` is sensitive. Keep it out of `wrangler.toml`.
+
+- Local development: put it in `.dev.vars`
+- Cloudflare production: add it as a Worker secret with `wrangler secret put JANT_AUTH_SECRET` or the Cloudflare dashboard
 
 ### Feed Defaults (Optional)
 
@@ -263,7 +270,11 @@ Set `JANT_DEMO_MODE=true` only for a public shared demo deployment.
 For production, set secrets via Cloudflare:
 
 ```bash
-# Set production secret
+# Generate one first
+openssl rand -base64 32
+
+# Then set the production secret
 wrangler secret put JANT_AUTH_SECRET
-# Enter your secret when prompted
 ```
+
+Or use Cloudflare Dashboard → Workers & Pages → your Worker → Settings → Variables and Secrets.

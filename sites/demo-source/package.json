@@ -1,0 +1,17 @@
+{
+  "name": "jant-demo-source",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "jant migrate --local && wrangler dev",
+    "deploy": "node ../../scripts/demo-shared/run-with-env.mjs --site demo-source -- pnpm exec jant migrate --remote && node ../../scripts/demo-shared/run-with-env.mjs --site demo-source -- pnpm exec wrangler deploy",
+    "reset-password": "jant reset-password",
+    "export-canonical": "node ../../scripts/demo-source/export-canonical.mjs"
+  },
+  "dependencies": {
+    "@jant/core": "workspace:*"
+  },
+  "devDependencies": {
+    "wrangler": "catalog:"
+  }
+}

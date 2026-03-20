@@ -33,7 +33,10 @@ examples/*
 .env
 .env.*
 !.env.example
+!.env.repo.example
 !packages/core/.env.node.example
+!sites/demo/.env.example
+!sites/demo-source/.env.example
 
 # Local Docker volume data
 /data/

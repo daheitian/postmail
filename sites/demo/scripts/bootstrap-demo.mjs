@@ -3,6 +3,9 @@ import {
   DEFAULT_SITE_NAME,
   ensureManagedSetup,
 } from "../../../packages/core/dev/scripts/dev-auth-db.mjs";
+import { loadDemoWorkflowEnv } from "../../../scripts/demo-shared/env.mjs";
+
+loadDemoWorkflowEnv({ sites: ["demo"] });
 
 const DEMO_EMAIL = process.env.JANT_DEMO_EMAIL || "demo@jant.me";
 const DEMO_PASSWORD = process.env.JANT_DEMO_PASSWORD || "jantdemodemojant";

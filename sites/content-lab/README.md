@@ -3,6 +3,8 @@
 `sites/content-lab` is a long-lived Jant environment for manual content entry, visual QA, and collecting real-ish data before freezing a migration rehearsal snapshot.
 
 This site is not part of CI reset flows. Treat it as a human-facing staging space.
+It is not the publishing source for the public demo. That role belongs to
+`sites/demo-source`.
 
 ## Purpose
 
