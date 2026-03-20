@@ -12,6 +12,7 @@ import { toPublicPath } from "../../lib/url.js";
 import { ComposeDialog } from "../compose/ComposeDialog.js";
 import { ComposePrompt } from "../compose/ComposePrompt.js";
 import { getNavItemDisplayLabel } from "../shared/navigation-labels.js";
+import { HomePageBranding } from "../shared/HomePageBranding.js";
 
 function HeaderLink({ link, label }: { link: NavItemView; label: string }) {
   return (
@@ -39,6 +40,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
   siteAvatarUrl,
   showHeaderAvatar,
   siteFooterHtml,
+  showHomeBranding = false,
   sidebar,
   uploadMaxFileSize,
   showComposeDialog = true,
@@ -268,6 +270,7 @@ export const SiteLayout: FC<PropsWithChildren<SiteLayoutProps>> = ({
           </div>
         </footer>
       )}
+      {showHomeBranding && <HomePageBranding />}
 
       <jant-media-lightbox />
       <jant-text-preview />

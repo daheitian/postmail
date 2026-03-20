@@ -184,6 +184,18 @@ export function GeneralContent({
       comment:
         "@context: Button to cancel unsaved changes and revert to original values",
     }),
+    copy: t({
+      message: "Copy",
+      comment: "@context: Button to copy a URL to the clipboard",
+    }),
+    copyFailed: t({
+      message: "Could not copy. Try again.",
+      comment: "@context: Error toast when copying text to the clipboard fails",
+    }),
+    feedUrlCopied: t({
+      message: "Feed URL copied.",
+      comment: "@context: Toast after copying a feed URL to the clipboard",
+    }),
   }).replace(/</g, "\\u003c");
 
   const timezonesJson = JSON.stringify(

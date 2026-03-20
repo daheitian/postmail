@@ -228,6 +228,7 @@ export interface SiteLayoutProps {
   siteAvatarUrl?: string;
   showHeaderAvatar?: boolean;
   siteFooterHtml?: string;
+  showHomeBranding?: boolean;
   sidebar?: import("hono/jsx").Child;
   uploadMaxFileSize?: number;
   showComposeDialog?: boolean;

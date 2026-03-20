@@ -1,13 +1,8 @@
 /**
  * General Settings Component
  *
- * Main container for the General settings page. Contains:
- * - General settings form (site name, description, footer, language,
- *   timezone, main RSS feed, home page branding)
- * - Search settings form
- *
- * Each form section tracks dirty state independently and dispatches
- * `jant:settings-save` events for the bridge to handle.
+ * Main container for the General settings page. Saveable groups track dirty
+ * state independently, while checkbox-only sections save immediately.
  *
  * Light DOM only — BaseCoat and Tailwind classes apply directly.
  */
@@ -19,6 +14,7 @@ import type {
   SettingsTimezone,
   SettingsLanguage,
 } from "./settings-types.js";
+import { showToast } from "../toast.js";
 
 export class JantSettingsGeneral extends LitElement {
   static properties = {
@@ -35,22 +31,35 @@ export class JantSettingsGeneral extends LitElement {
     latestFeedUrl: { type: String, attribute: "latest-feed-url" },
     featuredFeedUrl: { type: String, attribute: "featured-feed-url" },
 
-    // General form
+    // Site group
     _siteName: { state: true },
     _siteDescription: { state: true },
     _siteFooter: { state: true },
-    _siteLanguage: { state: true },
-    _mainRssFeed: { state: true },
-    _timeZone: { state: true },
-    _showJantBrandingOnHome: { state: true },
-    _origGeneral: { state: true },
-    _generalDirty: { state: true },
-    _generalLoading: { state: true },
+    _origSite: { state: true },
+    _siteDirty: { state: true },
+    _siteLoading: { state: true },
 
-    // Search form
+    // Language & time group
+    _siteLanguage: { state: true },
+    _timeZone: { state: true },
+    _origLocale: { state: true },
+    _localeDirty: { state: true },
+    _localeLoading: { state: true },
+
+    // Feed group
+    _mainRssFeed: { state: true },
+    _origMainRssFeed: { state: true },
+    _feedDirty: { state: true },
+    _feedLoading: { state: true },
+
+    // Home auto-save
+    _showJantBrandingOnHome: { state: true },
+    _origShowJantBrandingOnHome: { state: true },
+    _homeLoading: { state: true },
+
+    // Search auto-save
     _noindex: { state: true },
     _origNoindex: { state: true },
-    _searchDirty: { state: true },
     _searchLoading: { state: true },
   };
 
@@ -64,30 +73,42 @@ export class JantSettingsGeneral extends LitElement {
   declare latestFeedUrl: string;
   declare featuredFeedUrl: string;
 
-  // General
+  // Site
   declare _siteName: string;
   declare _siteDescription: string;
   declare _siteFooter: string;
-  declare _siteLanguage: string;
-  declare _mainRssFeed: string;
-  declare _timeZone: string;
-  declare _showJantBrandingOnHome: boolean;
-  declare _origGeneral: {
+  declare _origSite: {
     siteName: string;
     siteDescription: string;
     siteFooter: string;
-    siteLanguage: string;
-    mainRssFeed: string;
-    timeZone: string;
-    showJantBrandingOnHome: boolean;
   };
-  declare _generalDirty: boolean;
-  declare _generalLoading: boolean;
+  declare _siteDirty: boolean;
+  declare _siteLoading: boolean;
+
+  // Language & time
+  declare _siteLanguage: string;
+  declare _timeZone: string;
+  declare _origLocale: {
+    siteLanguage: string;
+    timeZone: string;
+  };
+  declare _localeDirty: boolean;
+  declare _localeLoading: boolean;
+
+  // Feed
+  declare _mainRssFeed: string;
+  declare _origMainRssFeed: string;
+  declare _feedDirty: boolean;
+  declare _feedLoading: boolean;
+
+  // Home
+  declare _showJantBrandingOnHome: boolean;
+  declare _origShowJantBrandingOnHome: boolean;
+  declare _homeLoading: boolean;
 
   // Search
   declare _noindex: boolean;
   declare _origNoindex: boolean;
-  declare _searchDirty: boolean;
   declare _searchLoading: boolean;
 
   createRenderRoot() {
@@ -110,25 +131,34 @@ export class JantSettingsGeneral extends LitElement {
     this._siteName = "";
     this._siteDescription = "";
     this._siteFooter = "";
-    this._siteLanguage = "en";
-    this._mainRssFeed = "featured";
-    this._timeZone = "UTC";
-    this._origGeneral = {
+    this._origSite = {
       siteName: "",
       siteDescription: "",
       siteFooter: "",
-      siteLanguage: "en",
-      mainRssFeed: "featured",
-      timeZone: "UTC",
-      showJantBrandingOnHome: false,
     };
-    this._generalDirty = false;
-    this._generalLoading = false;
+    this._siteDirty = false;
+    this._siteLoading = false;
+
+    this._siteLanguage = "en";
+    this._timeZone = "UTC";
+    this._origLocale = {
+      siteLanguage: "en",
+      timeZone: "UTC",
+    };
+
+    this._localeDirty = false;
+    this._localeLoading = false;
+
+    this._mainRssFeed = "featured";
+    this._origMainRssFeed = "featured";
+    this._feedDirty = false;
+    this._feedLoading = false;
 
     this._noindex = false;
     this._origNoindex = false;
     this._showJantBrandingOnHome = false;
-    this._searchDirty = false;
+    this._origShowJantBrandingOnHome = false;
+    this._homeLoading = false;
     this._searchLoading = false;
   }
 
@@ -137,19 +167,24 @@ export class JantSettingsGeneral extends LitElement {
     this._siteName = data.siteName;
     this._siteDescription = data.siteDescription;
     this._siteFooter = data.siteFooter;
-    this._showJantBrandingOnHome = data.showJantBrandingOnHome;
-    this._siteLanguage = data.siteLanguage;
-    this._mainRssFeed = data.mainRssFeed;
-    this._timeZone = data.timeZone;
-    this._origGeneral = {
+    this._origSite = {
       siteName: data.siteName,
       siteDescription: data.siteDescription,
       siteFooter: data.siteFooter,
-      siteLanguage: data.siteLanguage,
-      mainRssFeed: data.mainRssFeed,
-      timeZone: data.timeZone,
-      showJantBrandingOnHome: data.showJantBrandingOnHome,
     };
+
+    this._siteLanguage = data.siteLanguage;
+    this._timeZone = data.timeZone;
+    this._origLocale = {
+      siteLanguage: data.siteLanguage,
+      timeZone: data.timeZone,
+    };
+
+    this._mainRssFeed = data.mainRssFeed;
+    this._origMainRssFeed = data.mainRssFeed;
+
+    this._showJantBrandingOnHome = data.showJantBrandingOnHome;
+    this._origShowJantBrandingOnHome = data.showJantBrandingOnHome;
 
     this._noindex = data.noindex;
     this._origNoindex = data.noindex;
@@ -157,59 +192,63 @@ export class JantSettingsGeneral extends LitElement {
 
   /** Called by bridge after a section save succeeds */
   sectionSaved(section: string) {
-    if (section === "general") {
-      this._origGeneral = {
+    if (section === "site") {
+      this._origSite = {
         siteName: this._siteName,
         siteDescription: this._siteDescription,
         siteFooter: this._siteFooter,
-        siteLanguage: this._siteLanguage,
-        mainRssFeed: this._mainRssFeed,
-        timeZone: this._timeZone,
-        showJantBrandingOnHome: this._showJantBrandingOnHome,
       };
-      this._generalDirty = false;
-      this._generalLoading = false;
+      this._siteDirty = false;
+      this._siteLoading = false;
+    } else if (section === "language-time") {
+      this._origLocale = {
+        siteLanguage: this._siteLanguage,
+        timeZone: this._timeZone,
+      };
+      this._localeDirty = false;
+      this._localeLoading = false;
+    } else if (section === "feeds") {
+      this._origMainRssFeed = this._mainRssFeed;
+      this._feedDirty = false;
+      this._feedLoading = false;
+    } else if (section === "home") {
+      this._origShowJantBrandingOnHome = this._showJantBrandingOnHome;
+      this._homeLoading = false;
     } else if (section === "search") {
       this._origNoindex = this._noindex;
-      this._searchDirty = false;
       this._searchLoading = false;
     }
   }
 
   /** Called by bridge on save error */
   sectionError(section: string) {
-    if (section === "general") this._generalLoading = false;
-    else if (section === "search") this._searchLoading = false;
+    if (section === "site") {
+      this._siteLoading = false;
+    } else if (section === "language-time") {
+      this._localeLoading = false;
+    } else if (section === "feeds") {
+      this._feedLoading = false;
+    } else if (section === "home") {
+      this._showJantBrandingOnHome = this._origShowJantBrandingOnHome;
+      this._homeLoading = false;
+    } else if (section === "search") {
+      this._noindex = this._origNoindex;
+      this._searchLoading = false;
+    }
   }
 
-  // ── General form helpers ──────────────────────────────────────────
+  // ── Site group helpers ────────────────────────────────────────────
 
-  private _syncGeneralDirty() {
-    this._generalDirty =
-      this._siteName !== this._origGeneral.siteName ||
-      this._siteDescription !== this._origGeneral.siteDescription ||
-      this._siteFooter !== this._origGeneral.siteFooter ||
-      this._siteLanguage !== this._origGeneral.siteLanguage ||
-      this._mainRssFeed !== this._origGeneral.mainRssFeed ||
-      this._timeZone !== this._origGeneral.timeZone ||
-      this._showJantBrandingOnHome !== this._origGeneral.showJantBrandingOnHome;
+  private _syncSiteDirty() {
+    this._siteDirty =
+      this._siteName !== this._origSite.siteName ||
+      this._siteDescription !== this._origSite.siteDescription ||
+      this._siteFooter !== this._origSite.siteFooter;
   }
 
-  private _cancelGeneral() {
-    this._siteName = this._origGeneral.siteName ?? "";
-    this._siteDescription = this._origGeneral.siteDescription ?? "";
-    this._siteFooter = this._origGeneral.siteFooter ?? "";
-    this._siteLanguage = this._origGeneral.siteLanguage ?? "en";
-    this._mainRssFeed = this._origGeneral.mainRssFeed ?? "featured";
-    this._timeZone = this._origGeneral.timeZone ?? "UTC";
-    this._showJantBrandingOnHome =
-      this._origGeneral.showJantBrandingOnHome ?? false;
-    this._generalDirty = false;
-  }
-
-  private _saveGeneral() {
-    if (this._generalLoading || !this._generalDirty) return;
-    this._generalLoading = true;
+  private _saveSite() {
+    if (this._siteLoading || !this._siteDirty) return;
+    this._siteLoading = true;
     this.dispatchEvent(
       new CustomEvent("jant:settings-save", {
         bubbles: true,
@@ -219,32 +258,87 @@ export class JantSettingsGeneral extends LitElement {
             siteName: this._siteName,
             siteDescription: this._siteDescription,
             siteFooter: this._siteFooter,
-            siteLanguage: this._siteLanguage,
-            mainRssFeed: this._mainRssFeed,
-            timeZone: this._timeZone,
-            showJantBrandingOnHome: this._showJantBrandingOnHome,
           },
-          section: "general",
+          section: "site",
         },
       }),
     );
   }
 
-  // ── Search form helpers ───────────────────────────────────────────
+  // ── Language & time group helpers ────────────────────────────────
 
-  private _toggleNoindex() {
-    if (this.demoMode) return;
-    this._noindex = !this._noindex;
-    this._searchDirty = this._noindex !== this._origNoindex;
+  private _syncLocaleDirty() {
+    this._localeDirty =
+      this._siteLanguage !== this._origLocale.siteLanguage ||
+      this._timeZone !== this._origLocale.timeZone;
   }
 
-  private _cancelSearch() {
-    this._noindex = this._origNoindex;
-    this._searchDirty = false;
+  private _saveLocale() {
+    if (this._localeLoading || !this._localeDirty) return;
+    this._localeLoading = true;
+    this.dispatchEvent(
+      new CustomEvent("jant:settings-save", {
+        bubbles: true,
+        detail: {
+          endpoint: "/settings/general/language-time",
+          data: {
+            siteLanguage: this._siteLanguage,
+            timeZone: this._timeZone,
+          },
+          section: "language-time",
+        },
+      }),
+    );
   }
 
-  private _saveSearch() {
-    if (this._searchLoading || !this._searchDirty) return;
+  // ── Feed group helpers ────────────────────────────────────────────
+
+  private _syncFeedDirty() {
+    this._feedDirty = this._mainRssFeed !== this._origMainRssFeed;
+  }
+
+  private _saveFeeds() {
+    if (this._feedLoading || !this._feedDirty) return;
+    this._feedLoading = true;
+    this.dispatchEvent(
+      new CustomEvent("jant:settings-save", {
+        bubbles: true,
+        detail: {
+          endpoint: "/settings/general/feeds",
+          data: {
+            mainRssFeed: this._mainRssFeed,
+          },
+          section: "feeds",
+        },
+      }),
+    );
+  }
+
+  // ── Home auto-save helpers ────────────────────────────────────────
+
+  private _saveHomeToggle(nextValue: boolean) {
+    if (this._homeLoading) return;
+    this._showJantBrandingOnHome = nextValue;
+    this._homeLoading = true;
+    this.dispatchEvent(
+      new CustomEvent("jant:settings-save", {
+        bubbles: true,
+        detail: {
+          endpoint: "/settings/general/home",
+          data: {
+            showJantBrandingOnHome: nextValue,
+          },
+          section: "home",
+        },
+      }),
+    );
+  }
+
+  // ── Search auto-save helpers ──────────────────────────────────────
+
+  private _saveSearchToggle(nextAllowIndexing: boolean) {
+    if (this.demoMode || this._searchLoading) return;
+    this._noindex = !nextAllowIndexing;
     this._searchLoading = true;
     this.dispatchEvent(
       new CustomEvent("jant:settings-save", {
@@ -252,7 +346,7 @@ export class JantSettingsGeneral extends LitElement {
         detail: {
           endpoint: "/settings/general/search",
           data: {
-            noindex: this._noindex ? "" : "true",
+            allowIndexing: nextAllowIndexing,
           },
           section: "search",
         },
@@ -280,14 +374,13 @@ export class JantSettingsGeneral extends LitElement {
 
   // ── Render helpers ────────────────────────────────────────────────
 
-  private _renderActions(
+  private _renderSaveAction(
     loading: boolean,
     dirty: boolean,
     onSave: () => void,
-    onCancel: () => void,
   ) {
     return html`
-      <div class="flex gap-2 mt-4">
+      <div class="flex mt-4">
         <button
           type="button"
           class="btn"
@@ -310,14 +403,6 @@ export class JantSettingsGeneral extends LitElement {
               </svg>`
             : nothing}
           ${this.labels.save}
-        </button>
-        <button
-          type="button"
-          class="btn-outline"
-          ?disabled=${loading || !dirty}
-          @click=${onCancel}
-        >
-          ${this.labels.cancel}
         </button>
       </div>
     `;
@@ -349,7 +434,7 @@ export class JantSettingsGeneral extends LitElement {
           .checked=${checked}
           @change=${() => {
             this._mainRssFeed = value;
-            this._syncGeneralDirty();
+            this._syncFeedDirty();
           }}
         />
         <div>
@@ -360,234 +445,289 @@ export class JantSettingsGeneral extends LitElement {
     `;
   }
 
+  private async _copyFeedUrl(value: string) {
+    try {
+      if (!globalThis.navigator.clipboard?.writeText) {
+        throw new Error("Clipboard unavailable");
+      }
+
+      await globalThis.navigator.clipboard.writeText(value);
+      showToast(this.labels.feedUrlCopied);
+    } catch {
+      showToast(this.labels.copyFailed, "error");
+    }
+  }
+
+  private _renderFeedInfoRow(label: string, value: string) {
+    return html`
+      <div class="flex min-w-0 flex-col gap-1">
+        <p class="text-sm font-medium">${label}</p>
+        <div class="relative">
+          <input
+            type="text"
+            class="input w-full pr-20 font-mono text-sm"
+            .value=${value}
+            readonly
+            aria-label=${label}
+            @click=${(e: Event) =>
+              (e.currentTarget as HTMLInputElement).select()}
+            @focus=${(e: Event) =>
+              (e.currentTarget as HTMLInputElement).select()}
+          />
+          <button
+            type="button"
+            class="btn-sm-outline absolute right-2 top-1/2 h-7 -translate-y-1/2 px-2.5 text-xs"
+            data-copy-feed-url
+            @click=${() => void this._copyFeedUrl(value)}
+          >
+            ${this.labels.copy}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   private _renderGeneralForm() {
     return html`
-      <div
-        @keydown=${(e: globalThis.KeyboardEvent) =>
-          this._onKeydown(
-            e,
-            () => this._saveGeneral(),
-            this._generalDirty,
-            this._generalLoading,
-          )}
-      >
-        <h2 class="text-lg font-semibold mb-4">${this.labels.general}</h2>
-        <div class="flex flex-col gap-6">
-          <section class="flex flex-col gap-4">
-            ${this._renderSectionTitle(this.labels.site)}
-            <div class="field">
-              <label class="label">${this.labels.siteName}</label>
-              <input
-                type="text"
-                class="input"
-                .value=${this._siteName}
-                placeholder=${this.siteNameFallback}
-                @input=${(e: Event) => {
-                  this._siteName = (e.target as HTMLInputElement).value;
-                  this._syncGeneralDirty();
-                }}
-              />
-            </div>
-
-            <div class="field">
-              <label class="label">${this.labels.aboutBlog}</label>
-              <textarea
-                class="textarea"
-                rows="2"
-                .value=${this._siteDescription}
-                placeholder=${this.siteDescriptionFallback}
-                @input=${(e: Event) => {
-                  this._siteDescription = (
-                    e.target as HTMLTextAreaElement
-                  ).value;
-                  this._syncGeneralDirty();
-                }}
-              ></textarea>
-              <p class="text-sm text-muted-foreground mt-1">
-                ${this.labels.aboutBlogHelp}
-              </p>
-            </div>
-
-            <div class="field">
-              <label class="label">${this.labels.siteFooter}</label>
-              <textarea
-                class="textarea font-mono text-sm"
-                rows="4"
-                .value=${this._siteFooter}
-                placeholder=${this.labels.markdownSupported}
-                @input=${(e: Event) => {
-                  this._siteFooter = (e.target as HTMLTextAreaElement).value;
-                  this._syncGeneralDirty();
-                }}
-              ></textarea>
-              <p class="text-sm text-muted-foreground mt-1">
-                ${this.labels.footerHelp}
-              </p>
-            </div>
-          </section>
-
-          <section class="flex flex-col gap-4">
-            ${this._renderSectionTitle(this.labels.languageAndTime)}
-            <div class="field">
-              <label class="label">${this.labels.language}</label>
-              <select
-                class="select"
-                @change=${(e: Event) => {
-                  this._siteLanguage = (e.target as HTMLSelectElement).value;
-                  this._syncGeneralDirty();
-                }}
-              >
-                ${this.languages.map(
-                  (lang) => html`
-                    <option
-                      value=${lang.value}
-                      ?selected=${this._siteLanguage === lang.value}
-                    >
-                      ${lang.label}
-                    </option>
-                  `,
-                )}
-              </select>
-            </div>
-
-            <div class="field">
-              <label class="label">${this.labels.timeZone}</label>
-              <select
-                class="select"
-                @change=${(e: Event) => {
-                  this._timeZone = (e.target as HTMLSelectElement).value;
-                  this._syncGeneralDirty();
-                }}
-              >
-                ${this.timezones.map(
-                  (tz) => html`
-                    <option
-                      value=${tz.value}
-                      ?selected=${this._timeZone === tz.value}
-                    >
-                      ${tz.label}
-                    </option>
-                  `,
-                )}
-              </select>
-            </div>
-          </section>
-
-          <section class="flex flex-col gap-4">
-            ${this._renderSectionTitle(this.labels.feeds)}
-            <div class="field">
-              <p class="label">${this.labels.mainRssFeed}</p>
-              <p class="text-sm text-muted-foreground mt-1">
-                ${this.labels.mainRssFeedHelp}
-              </p>
-              <div class="mt-3 flex flex-col gap-2">
-                ${this._renderMainRssFeedOption(
-                  "featured",
-                  this.labels.featuredFeedOption,
-                  this.labels.featuredFeedOptionDescription,
-                )}
-                ${this._renderMainRssFeedOption(
-                  "latest",
-                  this.labels.latestFeedOption,
-                  this.labels.latestFeedOptionDescription,
-                )}
-              </div>
-              <p class="text-sm text-muted-foreground mt-2">
-                ${this.labels.mainRssFeedWarning}
-              </p>
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <p class="text-sm font-medium">
-                ${this.labels.availableFeedUrls}
-              </p>
-              <p class="text-sm text-muted-foreground">
-                ${this.labels.availableFeedUrlsHelp}
-              </p>
-              <a href=${this.mainFeedUrl} class="site-header-link">
-                ${this.labels.mainFeedUrl}: ${this.mainFeedUrl}
-              </a>
-              <a href=${this.latestFeedUrl} class="site-header-link">
-                ${this.labels.latestFeedUrl}: ${this.latestFeedUrl}
-              </a>
-              <a href=${this.featuredFeedUrl} class="site-header-link">
-                ${this.labels.featuredFeedUrl}: ${this.featuredFeedUrl}
-              </a>
-            </div>
-          </section>
-
-          <section class="flex flex-col gap-4">
-            ${this._renderSectionTitle(this.labels.home)}
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                class="checkbox"
-                .checked=${this._showJantBrandingOnHome}
-                @change=${() => {
-                  this._showJantBrandingOnHome = !this._showJantBrandingOnHome;
-                  this._syncGeneralDirty();
-                }}
-              />
-              <span>${this.labels.showJantBrandingOnHome}</span>
-            </label>
-          </section>
-
-          ${this._renderActions(
-            this._generalLoading,
-            this._generalDirty,
-            () => this._saveGeneral(),
-            () => this._cancelGeneral(),
-          )}
+      <div class="flex flex-col gap-8">
+        <div>
+          <h2 class="text-lg font-semibold">${this.labels.general}</h2>
         </div>
+
+        <section
+          class="flex flex-col gap-4"
+          @keydown=${(e: globalThis.KeyboardEvent) =>
+            this._onKeydown(
+              e,
+              () => this._saveSite(),
+              this._siteDirty,
+              this._siteLoading,
+            )}
+        >
+          ${this._renderSectionTitle(this.labels.site)}
+          <div class="field">
+            <label class="label">${this.labels.siteName}</label>
+            <input
+              type="text"
+              class="input"
+              .value=${this._siteName}
+              placeholder=${this.siteNameFallback}
+              @input=${(e: Event) => {
+                this._siteName = (e.target as HTMLInputElement).value;
+                this._syncSiteDirty();
+              }}
+            />
+          </div>
+
+          <div class="field">
+            <label class="label">${this.labels.aboutBlog}</label>
+            <textarea
+              class="textarea"
+              rows="2"
+              .value=${this._siteDescription}
+              placeholder=${this.siteDescriptionFallback}
+              @input=${(e: Event) => {
+                this._siteDescription = (e.target as HTMLTextAreaElement).value;
+                this._syncSiteDirty();
+              }}
+            ></textarea>
+            <p class="text-sm text-muted-foreground mt-1">
+              ${this.labels.aboutBlogHelp}
+            </p>
+          </div>
+
+          <div class="field">
+            <label class="label">${this.labels.siteFooter}</label>
+            <textarea
+              class="textarea font-mono text-sm"
+              rows="4"
+              .value=${this._siteFooter}
+              placeholder=${this.labels.markdownSupported}
+              @input=${(e: Event) => {
+                this._siteFooter = (e.target as HTMLTextAreaElement).value;
+                this._syncSiteDirty();
+              }}
+            ></textarea>
+            <p class="text-sm text-muted-foreground mt-1">
+              ${this.labels.footerHelp}
+            </p>
+          </div>
+
+          ${this._renderSaveAction(this._siteLoading, this._siteDirty, () =>
+            this._saveSite(),
+          )}
+        </section>
+
+        <section
+          class="flex flex-col gap-4 border-t pt-8"
+          @keydown=${(e: globalThis.KeyboardEvent) =>
+            this._onKeydown(
+              e,
+              () => this._saveLocale(),
+              this._localeDirty,
+              this._localeLoading,
+            )}
+        >
+          ${this._renderSectionTitle(this.labels.languageAndTime)}
+          <div class="field">
+            <label class="label">${this.labels.language}</label>
+            <select
+              class="select"
+              @change=${(e: Event) => {
+                this._siteLanguage = (e.target as HTMLSelectElement).value;
+                this._syncLocaleDirty();
+              }}
+            >
+              ${this.languages.map(
+                (lang) => html`
+                  <option
+                    value=${lang.value}
+                    ?selected=${this._siteLanguage === lang.value}
+                  >
+                    ${lang.label}
+                  </option>
+                `,
+              )}
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label">${this.labels.timeZone}</label>
+            <select
+              class="select"
+              @change=${(e: Event) => {
+                this._timeZone = (e.target as HTMLSelectElement).value;
+                this._syncLocaleDirty();
+              }}
+            >
+              ${this.timezones.map(
+                (tz) => html`
+                  <option
+                    value=${tz.value}
+                    ?selected=${this._timeZone === tz.value}
+                  >
+                    ${tz.label}
+                  </option>
+                `,
+              )}
+            </select>
+          </div>
+
+          ${this._renderSaveAction(this._localeLoading, this._localeDirty, () =>
+            this._saveLocale(),
+          )}
+        </section>
+
+        <section
+          class="flex flex-col gap-4 border-t pt-8"
+          @keydown=${(e: globalThis.KeyboardEvent) =>
+            this._onKeydown(
+              e,
+              () => this._saveFeeds(),
+              this._feedDirty,
+              this._feedLoading,
+            )}
+        >
+          ${this._renderSectionTitle(this.labels.feeds)}
+          <div class="field">
+            <p class="label">${this.labels.mainRssFeed}</p>
+            <p class="text-sm text-muted-foreground mt-1">
+              ${this.labels.mainRssFeedHelp}
+            </p>
+            <div class="mt-3 flex flex-col gap-2">
+              ${this._renderMainRssFeedOption(
+                "featured",
+                this.labels.featuredFeedOption,
+                this.labels.featuredFeedOptionDescription,
+              )}
+              ${this._renderMainRssFeedOption(
+                "latest",
+                this.labels.latestFeedOption,
+                this.labels.latestFeedOptionDescription,
+              )}
+            </div>
+            <p class="text-sm text-muted-foreground mt-2">
+              ${this.labels.mainRssFeedWarning}
+            </p>
+          </div>
+
+          <div class="rounded-xl border border-border/70 bg-muted/30 p-4">
+            <div class="flex flex-col gap-4">
+              <div class="flex flex-col gap-1">
+                <p class="text-sm font-medium">
+                  ${this.labels.availableFeedUrls}
+                </p>
+                <p class="text-sm text-muted-foreground">
+                  ${this.labels.availableFeedUrlsHelp}
+                </p>
+              </div>
+
+              ${this._renderFeedInfoRow(
+                this.labels.mainFeedUrl,
+                this.mainFeedUrl,
+              )}
+              ${this._renderFeedInfoRow(
+                this.labels.latestFeedUrl,
+                this.latestFeedUrl,
+              )}
+              ${this._renderFeedInfoRow(
+                this.labels.featuredFeedUrl,
+                this.featuredFeedUrl,
+              )}
+            </div>
+          </div>
+
+          ${this._renderSaveAction(this._feedLoading, this._feedDirty, () =>
+            this._saveFeeds(),
+          )}
+        </section>
+
+        <section class="flex flex-col gap-4 border-t pt-8 pb-6">
+          ${this._renderSectionTitle(this.labels.home)}
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              class="checkbox"
+              .checked=${this._showJantBrandingOnHome}
+              ?disabled=${this._homeLoading}
+              @change=${(e: Event) =>
+                this._saveHomeToggle((e.target as HTMLInputElement).checked)}
+            />
+            <span>${this.labels.showJantBrandingOnHome}</span>
+          </label>
+        </section>
       </div>
     `;
   }
 
   private _renderSearchForm() {
     return html`
-      <div
-        @keydown=${(e: globalThis.KeyboardEvent) =>
-          this._onKeydown(
-            e,
-            () => this._saveSearch(),
-            this._searchDirty,
-            this._searchLoading,
-          )}
-      >
-        <h2 class="text-lg font-semibold mb-4">${this.labels.search}</h2>
-        <div class="flex flex-col gap-4">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              class="checkbox"
-              .checked=${!this._noindex}
-              ?disabled=${this.demoMode}
-              @change=${this._toggleNoindex}
-            />
-            <span>${this.labels.allowIndexing}</span>
-          </label>
-          ${this.demoMode
-            ? html`<p class="text-sm text-muted-foreground">
-                ${this.labels.demoSeoLocked}
-              </p>`
-            : nothing}
-          ${this._renderActions(
-            this._searchLoading,
-            this._searchDirty,
-            () => this._saveSearch(),
-            () => this._cancelSearch(),
-          )}
-        </div>
-      </div>
+      <section class="flex flex-col gap-4 border-t pt-8">
+        ${this._renderSectionTitle(this.labels.search)}
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            class="checkbox"
+            .checked=${!this._noindex}
+            ?disabled=${this.demoMode || this._searchLoading}
+            @change=${(e: Event) =>
+              this._saveSearchToggle((e.target as HTMLInputElement).checked)}
+          />
+          <span>${this.labels.allowIndexing}</span>
+        </label>
+        ${this.demoMode
+          ? html`<p class="text-sm text-muted-foreground">
+              ${this.labels.demoSeoLocked}
+            </p>`
+          : nothing}
+      </section>
     `;
   }
 
   render() {
     return html`
       <div class="flex flex-col">
-        ${this._renderGeneralForm()}
-        <hr class="my-8" />
-        ${this._renderSearchForm()}
+        ${this._renderGeneralForm()} ${this._renderSearchForm()}
       </div>
     `;
   }

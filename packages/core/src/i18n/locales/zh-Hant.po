@@ -616,6 +616,11 @@ msgstr "控制項"
 msgid "Copied"
 msgstr "已複製"
 
+#. @context: Button to copy a URL to the clipboard
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Copy"
+msgstr "複製"
+
 #. @context: Button to copy API token to clipboard
 #. @context: Button to copy API token to clipboard
 #: src/ui/dash/settings/ApiTokensContent.tsx
@@ -627,6 +632,11 @@ msgstr "複製 Token"
 #: src/ui/dash/settings/ApiTokensContent.tsx
 msgid "Copy your token now — it won't be shown again."
 msgstr "請立即複製您的 token — 之後不會再顯示。"
+
+#. @context: Error toast when copying text to the clipboard fails
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Could not copy. Try again."
+msgstr "無法複製，請再試一次。"
 
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
@@ -1145,6 +1155,16 @@ msgstr "Featured feed"
 msgid "Featured posts"
 msgstr "精選貼文"
 
+#. @context: Toast after saving feed settings
+#: src/routes/dash/settings.tsx
+msgid "Feed settings updated."
+msgstr "訂閱源設定已更新。"
+
+#. @context: Toast after copying a feed URL to the clipboard
+#: src/ui/dash/settings/GeneralContent.tsx
+msgid "Feed URL copied."
+msgstr "訂閱源 URL 已複製。"
+
 #. @context: Settings section heading for RSS feed configuration
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Feeds"
@@ -1338,6 +1358,11 @@ msgstr "首頁檢視已更新。"
 msgid "Home screen icon for iPhone and iPad shortcuts."
 msgstr "供 iPhone 與 iPad 捷徑使用的主畫面圖示。"
 
+#. @context: Toast after auto-saving home settings
+#: src/routes/dash/settings.tsx
+msgid "Home settings updated."
+msgstr "首頁設定已更新。"
+
 #. @context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "I want to delete {siteName}"
@@ -1442,6 +1467,11 @@ msgstr "語言"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Language & Time"
 msgstr "語言與時間"
+
+#. @context: Toast after saving language and time settings
+#: src/routes/dash/settings.tsx
+msgid "Language and time updated."
+msgstr "語言和時間已更新。"
 
 #. @context: Token last used date
 #. placeholder {0}: formatDate(token.lastUsedAt)
@@ -2318,11 +2348,6 @@ msgstr "工作階段、密碼與匯出"
 msgid "Settings"
 msgstr "設定"
 
-#. @context: Toast after saving general settings
-#: src/routes/dash/settings.tsx
-msgid "Settings updated."
-msgstr "設定已更新。"
-
 #. @context: Usage label for the social preview image asset card
 #: src/ui/pages/BrandPage.tsx
 msgid "Shared links"
@@ -2400,6 +2425,11 @@ msgstr "網站頁尾"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Site Name"
 msgstr "網站名稱"
+
+#. @context: Toast after saving site settings
+#: src/routes/dash/settings.tsx
+msgid "Site settings updated."
+msgstr "網站設定已更新。"
 
 #. @context: Description for the favicon asset card
 #: src/ui/pages/BrandPage.tsx

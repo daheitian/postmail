@@ -8,6 +8,7 @@
 
 import { Hono, type Context } from "hono";
 import { msg } from "@lingui/core/macro";
+import { z } from "zod";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { sse, dsRedirect, dsToast } from "../../lib/sse.js";
@@ -16,8 +17,7 @@ import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
-import { TIMEZONES, normalizeTimeZone } from "../../lib/timezones.js";
-import { escapeHtml } from "../../lib/html.js";
+import { TIMEZONES } from "../../lib/timezones.js";
 import { ValidationError } from "../../lib/errors.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { getAvailableThemes } from "../../lib/theme.js";
@@ -38,12 +38,35 @@ import { FontThemeContent } from "../../ui/dash/appearance/FontThemeContent.js";
 import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
 import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
 import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountContent.js";
-import { toPublicPath } from "../../lib/url.js";
-import type { FeedKind } from "../../types/constants.js";
+import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
+import { parseValidated } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const settingsRoutes = new Hono<Env>();
+
+const UpdateSiteSettingsSchema = z.object({
+  siteName: z.string(),
+  siteDescription: z.string(),
+  siteFooter: z.string(),
+});
+
+const UpdateLocaleSettingsSchema = z.object({
+  siteLanguage: z.string(),
+  timeZone: z.string(),
+});
+
+const UpdateFeedSettingsSchema = z.object({
+  mainRssFeed: z.enum(["featured", "latest"]),
+});
+
+const UpdateHomeSettingsSchema = z.object({
+  showJantBrandingOnHome: z.boolean(),
+});
+
+const UpdateSearchSettingsSchema = z.object({
+  allowIndexing: z.boolean(),
+});
 
 function publicPath(c: Context<Env>, path: string): string {
   return toPublicPath(path, c.var.appConfig.sitePathPrefix);
@@ -129,6 +152,8 @@ settingsRoutes.get("/general", async (c) => {
 
   const saved = c.req.query("saved") !== undefined;
   const navData = await getNavigationData(c);
+  const siteUrlForDisplay =
+    appConfig.siteUrl || new URL(publicPath(c, "/"), c.req.url).toString();
 
   return renderPublicPage(c, {
     title: buildPageTitle("General", navData.siteName),
@@ -148,9 +173,21 @@ settingsRoutes.get("/general", async (c) => {
           siteNameFallback={appConfig.fallbacks.siteName}
           siteDescriptionFallback={appConfig.fallbacks.siteDescription}
           mainRssFeed={appConfig.mainRssFeed}
-          mainFeedUrl={publicPath(c, "/feed")}
-          latestFeedUrl={publicPath(c, "/feed/latest")}
-          featuredFeedUrl={publicPath(c, "/feed/featured")}
+          mainFeedUrl={toAbsoluteSiteUrl(
+            "/feed",
+            siteUrlForDisplay,
+            appConfig.sitePathPrefix,
+          )}
+          latestFeedUrl={toAbsoluteSiteUrl(
+            "/feed/latest",
+            siteUrlForDisplay,
+            appConfig.sitePathPrefix,
+          )}
+          featuredFeedUrl={toAbsoluteSiteUrl(
+            "/feed/featured",
+            siteUrlForDisplay,
+            appConfig.sitePathPrefix,
+          )}
           timeZone={appConfig.timeZone}
           siteFooter={appConfig.siteFooter}
           showJantBrandingOnHome={appConfig.showJantBrandingOnHome}
@@ -165,22 +202,18 @@ settingsRoutes.get("/general", async (c) => {
 
 settingsRoutes.post("/general", async (c) => {
   const i18n = getI18n(c);
-  const body = await c.req.json<{
-    siteName: string;
-    siteDescription: string;
-    siteFooter: string;
-    siteLanguage: string;
-    showJantBrandingOnHome: boolean;
-    homeDefaultView?: FeedKind;
-    mainRssFeed?: FeedKind;
-    headerNavMaxVisible?: string;
-    timeZone: string;
-  }>();
+  const body = parseValidated(UpdateSiteSettingsSchema, await c.req.json());
+  const toast = i18n._(
+    msg({
+      message: "Site settings updated.",
+      comment: "@context: Toast after saving site settings",
+    }),
+  );
 
   try {
-    const { languageChanged, displayName } =
-      await c.var.services.settings.updateGeneral(body, {
-        oldLanguage: c.var.allSettings["SITE_LANGUAGE"] ?? "en",
+    const { displayName, siteNameChanged } =
+      await c.var.services.settings.updateSiteSettings(body, {
+        oldSiteName: c.var.allSettings["SITE_NAME"] ?? "",
         fallbackSiteName: c.var.appConfig.fallbacks.siteName,
       });
 
@@ -191,49 +224,26 @@ settingsRoutes.post("/general", async (c) => {
     });
 
     // ── JSON response mode (used by Lit settings bridge) ──────────────
-    // Always redirect — site name appears in the header/title and a full
-    // reload is the simplest way to keep everything in sync.
     const wantsJson = c.req.header("accept")?.includes("application/json");
     if (wantsJson) {
+      if (siteNameChanged) {
+        return c.json({
+          status: "redirect" as const,
+          url: publicPath(c, "/settings/general?saved"),
+        });
+      }
+
       return c.json({
-        status: "redirect" as const,
-        url: publicPath(c, "/settings/general?saved"),
+        status: "ok" as const,
+        toast,
       });
     }
 
-    const normalizedTimeZone = normalizeTimeZone(body.timeZone);
+    if (siteNameChanged) {
+      return dsRedirect(publicPath(c, "/settings/general?saved"));
+    }
 
-    return sse(c, async (stream) => {
-      if (languageChanged) {
-        await stream.redirect(publicPath(c, "/settings/general?saved"));
-      } else {
-        await stream.patchElements(
-          escapeHtml(buildPageTitle("General", displayName)),
-          {
-            mode: "inner",
-            selector: "title",
-          },
-        );
-        await stream.toast(
-          i18n._(
-            msg({
-              message: "Settings updated.",
-              comment: "@context: Toast after saving general settings",
-            }),
-          ),
-        );
-        await stream.patchSignals({
-          _orig_siteName: body.siteName,
-          _orig_siteDescription: body.siteDescription,
-          _orig_siteFooter: body.siteFooter,
-          _orig_siteLanguage: body.siteLanguage,
-          _orig_mainRssFeed: body.mainRssFeed,
-          _orig_timeZone: normalizedTimeZone,
-          _orig_showJantBrandingOnHome: body.showJantBrandingOnHome,
-          _generalDirty: false,
-        });
-      }
-    });
+    return dsToast(toast);
   } catch (error) {
     if (error instanceof ValidationError) {
       const wantsJson = c.req.header("accept")?.includes("application/json");
@@ -248,21 +258,86 @@ settingsRoutes.post("/general", async (c) => {
   }
 });
 
+settingsRoutes.post("/general/language-time", async (c) => {
+  const i18n = getI18n(c);
+  const body = parseValidated(UpdateLocaleSettingsSchema, await c.req.json());
+  const toast = i18n._(
+    msg({
+      message: "Language and time updated.",
+      comment: "@context: Toast after saving language and time settings",
+    }),
+  );
+  const { languageChanged } =
+    await c.var.services.settings.updateLocaleSettings(body, {
+      oldLanguage: c.var.allSettings["SITE_LANGUAGE"] ?? "en",
+    });
+
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    if (languageChanged) {
+      return c.json({
+        status: "redirect" as const,
+        url: publicPath(c, "/settings/general?saved"),
+      });
+    }
+
+    return c.json({
+      status: "ok" as const,
+      toast,
+    });
+  }
+
+  if (languageChanged) {
+    return dsRedirect(publicPath(c, "/settings/general?saved"));
+  }
+
+  return dsToast(toast);
+});
+
+settingsRoutes.post("/general/feeds", async (c) => {
+  const i18n = getI18n(c);
+  const body = parseValidated(UpdateFeedSettingsSchema, await c.req.json());
+  await c.var.services.settings.updateFeedSettings(body);
+
+  const toast = i18n._(
+    msg({
+      message: "Feed settings updated.",
+      comment: "@context: Toast after saving feed settings",
+    }),
+  );
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    return c.json({ status: "ok" as const, toast });
+  }
+
+  return dsToast(toast);
+});
+
+settingsRoutes.post("/general/home", async (c) => {
+  const i18n = getI18n(c);
+  const body = parseValidated(UpdateHomeSettingsSchema, await c.req.json());
+  await c.var.services.settings.updateHomeBranding(body.showJantBrandingOnHome);
+
+  const toast = i18n._(
+    msg({
+      message: "Home settings updated.",
+      comment: "@context: Toast after auto-saving home settings",
+    }),
+  );
+  const wantsJson = c.req.header("accept")?.includes("application/json");
+  if (wantsJson) {
+    return c.json({ status: "ok" as const, toast });
+  }
+
+  return dsToast(toast);
+});
+
 settingsRoutes.post("/general/search", async (c) => {
   const i18n = getI18n(c);
-  const body = await c.req.json<{ noindex: string }>();
-  const { settings } = c.var.services;
-
-  // Checkbox "noindex" is the allow-indexing signal:
-  // checked (value "true") = indexing allowed -> remove NOINDEX
-  // unchecked (value "") = indexing blocked -> set NOINDEX=true
-  if (c.var.appConfig.demoMode) {
-    await settings.set("NOINDEX", "true");
-  } else if (body.noindex === "true") {
-    await settings.remove("NOINDEX");
-  } else {
-    await settings.set("NOINDEX", "true");
-  }
+  const body = parseValidated(UpdateSearchSettingsSchema, await c.req.json());
+  await c.var.services.settings.updateSearchSettings(body.allowIndexing, {
+    demoMode: c.var.appConfig.demoMode,
+  });
 
   // ── JSON response mode (used by Lit settings bridge) ──────────────
   const wantsJson = c.req.header("accept")?.includes("application/json");
@@ -278,20 +353,14 @@ settingsRoutes.post("/general/search", async (c) => {
     });
   }
 
-  return sse(c, async (stream) => {
-    await stream.toast(
-      i18n._(
-        msg({
-          message: "Search settings updated.",
-          comment: "@context: Toast after saving search settings",
-        }),
-      ),
-    );
-    await stream.patchSignals({
-      _orig_noindex: body.noindex !== "true",
-      _searchDirty: false,
-    });
-  });
+  return dsToast(
+    i18n._(
+      msg({
+        message: "Search settings updated.",
+        comment: "@context: Toast after saving search settings",
+      }),
+    ),
+  );
 });
 
 // ===========================================================================

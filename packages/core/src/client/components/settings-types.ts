@@ -50,6 +50,9 @@ export interface SettingsLabels {
   // Actions
   save: string;
   cancel: string;
+  copy: string;
+  copyFailed: string;
+  feedUrlCopied: string;
 }
 
 /** Timezone entry for the select dropdown */

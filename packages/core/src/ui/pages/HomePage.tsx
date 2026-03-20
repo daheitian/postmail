@@ -9,14 +9,12 @@ import { useLingui } from "@lingui/react/macro";
 import type { HomePageProps } from "../../types.js";
 import { TimelineFeed } from "../feed/TimelineFeed.js";
 import { PaginatedPageHeader } from "../shared/PaginatedPageHeader.js";
-import { HomePageBranding } from "../shared/HomePageBranding.js";
 
 export const HomePage: FC<HomePageProps> = ({
   items,
   baseUrl,
   currentPage,
   totalPages,
-  showJantBranding = false,
 }) => {
   const { t } = useLingui();
 
@@ -56,7 +54,6 @@ export const HomePage: FC<HomePageProps> = ({
           totalPages={totalPages}
         />
       )}
-      {showJantBranding && <HomePageBranding />}
     </div>
   );
 };

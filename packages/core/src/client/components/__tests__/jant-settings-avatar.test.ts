@@ -61,6 +61,9 @@ const labels: SettingsLabels = {
   demoSeoLocked: "Demo sites always stay hidden from search engines.",
   save: "Save",
   cancel: "Cancel",
+  copy: "Copy",
+  copyFailed: "Could not copy. Try again.",
+  feedUrlCopied: "Feed URL copied.",
 };
 
 async function createElement(
