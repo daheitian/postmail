@@ -52,6 +52,12 @@ export const SYSTEM_NAV_KEYS = {
 
 export const MAX_MEDIA_ATTACHMENTS = 20;
 export const MAX_PINNED_POSTS = 3;
+export const MAX_COLLECTION_SLUG_LENGTH = 200;
+export const MAX_COLLECTION_TITLE_LENGTH = 120;
+export const MAX_COLLECTION_DESCRIPTION_LENGTH = 500;
+export const MAX_SITE_NAME_LENGTH = 120;
+export const MAX_SITE_DESCRIPTION_LENGTH = 300;
+export const MAX_SITE_FOOTER_LENGTH = 5000;
 
 export const TEXT_ATTACHMENT_CONTENT_FORMATS = ["markdown"] as const;
 export type TextAttachmentContentFormat =

@@ -42,7 +42,7 @@ const CompactCollectionTags: FC<{
         </span>
       )}
       <a href={first.url} class="post-collection-tag">
-        {first.title}
+        <span class="post-collection-tag-text">{first.title}</span>
       </a>
       {rest.length > 0 && (
         <span class="post-collection-more-wrap">

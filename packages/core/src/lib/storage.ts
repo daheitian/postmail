@@ -695,14 +695,11 @@ export function createStorageDriver(env: Bindings): StorageDriver | null {
   const driver = getConfiguredStorageDriver(env);
 
   if (driver === "s3") {
-    const endpoint = getEnvString(env, "JANT_S3_ENDPOINT", "S3_ENDPOINT") || "";
-    const bucket = getEnvString(env, "JANT_S3_BUCKET", "S3_BUCKET") || "";
-    const accessKeyId =
-      getEnvString(env, "JANT_S3_ACCESS_KEY_ID", "S3_ACCESS_KEY_ID") || "";
-    const secretAccessKey =
-      getEnvString(env, "JANT_S3_SECRET_ACCESS_KEY", "S3_SECRET_ACCESS_KEY") ||
-      "";
-    const region = getEnvString(env, "JANT_S3_REGION", "S3_REGION") || "auto";
+    const endpoint = getEnvString(env, "S3_ENDPOINT") || "";
+    const bucket = getEnvString(env, "S3_BUCKET") || "";
+    const accessKeyId = getEnvString(env, "S3_ACCESS_KEY_ID") || "";
+    const secretAccessKey = getEnvString(env, "S3_SECRET_ACCESS_KEY") || "";
+    const region = getEnvString(env, "S3_REGION") || "auto";
 
     if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
       return null;

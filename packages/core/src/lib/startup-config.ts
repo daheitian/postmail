@@ -11,8 +11,8 @@ const AUTH_SECRET_ERROR_HTML = `<!DOCTYPE html>
 </head>
 <body>
 <div>
-<h1>JANT_AUTH_SECRET is not set</h1>
-<p>Set <code>JANT_AUTH_SECRET</code> in your environment or <code>wrangler.toml</code> to start Jant.</p>
+<h1>AUTH_SECRET is not set</h1>
+<p>Set <code>AUTH_SECRET</code> in your environment or <code>wrangler.toml</code> to start Jant.</p>
 </div>
 </body>
 </html>`;
@@ -25,14 +25,11 @@ const AUTH_SECRET_ERROR_HTML = `<!DOCTYPE html>
  *
  * @example
  * ```ts
- * getStartupConfigurationErrorPage({ JANT_AUTH_SECRET: "secret" }) // null
+ * getStartupConfigurationErrorPage({ AUTH_SECRET: "secret" }) // null
  * ```
  */
 export function getStartupConfigurationErrorPage(
-  env: Pick<
-    Bindings,
-    "AUTH_SECRET" | "JANT_AUTH_SECRET" | "DEV_API_TOKEN" | "JANT_DEV_API_TOKEN"
-  >,
+  env: Pick<Bindings, "AUTH_SECRET" | "DEV_API_TOKEN">,
 ): string | null {
   if (!getAuthSecret(env)) {
     return AUTH_SECRET_ERROR_HTML;

@@ -257,7 +257,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 > URL 是产品的一部分。应该简洁、美观、有意义。
 
-帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `JANT_SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义 URL 覆盖通过 `custom_urls` 表管理。合集使用 `/c/{slug}`。
+帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义 URL 覆盖通过 `custom_urls` 表管理。合集使用 `/c/{slug}`。
 
 ### 5.2 前台路由
 
@@ -360,24 +360,27 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 | `SITE_LANGUAGE`          | 站点语言（en, zh-Hans, zh-Hant）               | `en`       |
 | `HOME_DEFAULT_VIEW`      | 首页默认视图（latest / featured）              | `latest`   |
 | `MAIN_RSS_FEED`          | `/feed` 默认输出（featured / latest）          | `featured` |
-| `HEADER_NAV_MAX_VISIBLE` | 导航栏最大可见链接数                           | `3`        |
+| `HEADER_NAV_MAX_VISIBLE` | 导航栏最大可见链接数                           | `2`        |
 | `TIME_ZONE`              | 时区（IANA 标识，例如 `UTC`、`Asia/Shanghai`） | `UTC`      |
 | `SITE_FOOTER`            | 自定义页脚                                     |            |
 | `NOINDEX`                | 是否禁止搜索引擎索引                           |            |
 
 **环境配置**（`wrangler.toml` / `.dev.vars`）：
 
-| 字段                           | 说明                             |
-| ------------------------------ | -------------------------------- |
-| `JANT_AUTH_SECRET`             | 认证密钥（必填）                 |
-| `JANT_SITE_URL`                | 站点 URL                         |
-| `JANT_MAIN_RSS_FEED`           | 主 RSS Feed（featured / latest） |
-| `JANT_R2_PUBLIC_URL`           | R2 公开 URL（CDN 直接访问）      |
-| `JANT_IMAGE_TRANSFORM_URL`     | 图片转换 URL                     |
-| `JANT_STORAGE_DRIVER`          | 存储驱动（r2 / s3）              |
-| `S3_*`                         | S3 兼容存储配置                  |
-| `JANT_SLUG_ID_LENGTH`          | 随机 slug 长度（默认 5）         |
-| `JANT_UPLOAD_MAX_FILE_SIZE_MB` | 上传文件大小上限（MB，默认 500） |
+| 字段                      | 说明                             |
+| ------------------------- | -------------------------------- |
+| `AUTH_SECRET`             | 认证密钥（必填）                 |
+| `SITE_URL`                | 站点 URL                         |
+| `MAIN_RSS_FEED`           | 主 RSS Feed（featured / latest） |
+| `PAGE_SIZE`               | 默认分页大小（默认 50）          |
+| `SEARCH_PAGE_SIZE`        | 搜索页分页覆盖                   |
+| `ARCHIVE_PAGE_SIZE`       | 归档页分页覆盖                   |
+| `R2_PUBLIC_URL`           | R2 公开 URL（CDN 直接访问）      |
+| `IMAGE_TRANSFORM_URL`     | 图片转换 URL                     |
+| `STORAGE_DRIVER`          | 存储驱动（r2 / s3）              |
+| `S3_*`                    | S3 兼容存储配置                  |
+| `SLUG_ID_LENGTH`          | 随机 slug 长度（默认 5）         |
+| `UPLOAD_MAX_FILE_SIZE_MB` | 上传文件大小上限（MB，默认 500） |
 
 ## 9. 技术选型
 

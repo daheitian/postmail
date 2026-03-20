@@ -8,6 +8,11 @@
  */
 
 import { LitElement, html, nothing } from "lit";
+import {
+  MAX_SITE_DESCRIPTION_LENGTH,
+  MAX_SITE_FOOTER_LENGTH,
+  MAX_SITE_NAME_LENGTH,
+} from "../../types.js";
 import type {
   SettingsInitialData,
   SettingsLabels,
@@ -510,6 +515,7 @@ export class JantSettingsGeneral extends LitElement {
             <input
               type="text"
               class="input"
+              maxlength=${MAX_SITE_NAME_LENGTH}
               .value=${this._siteName}
               placeholder=${this.siteNameFallback}
               @input=${(e: Event) => {
@@ -524,6 +530,7 @@ export class JantSettingsGeneral extends LitElement {
             <textarea
               class="textarea"
               rows="2"
+              maxlength=${MAX_SITE_DESCRIPTION_LENGTH}
               .value=${this._siteDescription}
               placeholder=${this.siteDescriptionFallback}
               @input=${(e: Event) => {
@@ -541,6 +548,7 @@ export class JantSettingsGeneral extends LitElement {
             <textarea
               class="textarea font-mono text-sm"
               rows="4"
+              maxlength=${MAX_SITE_FOOTER_LENGTH}
               .value=${this._siteFooter}
               placeholder=${this.labels.markdownSupported}
               @input=${(e: Event) => {

@@ -4,8 +4,8 @@ import {
   ensureManagedSetup,
 } from "../../../packages/core/dev/scripts/dev-auth-db.mjs";
 
-const DEMO_EMAIL = process.env.JANT_DEMO_EMAIL || "demo@jant.me";
-const DEMO_PASSWORD = process.env.JANT_DEMO_PASSWORD || "jantdemodemojant";
+const DEMO_EMAIL = process.env.DEMO_EMAIL || "demo@jant.me";
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD || "jantdemodemojant";
 
 const ensured = await ensureManagedSetup({
   flag: "--remote",

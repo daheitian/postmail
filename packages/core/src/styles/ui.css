@@ -1984,6 +1984,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
     margin-top: 4px;
   }
 
@@ -1997,6 +1998,7 @@
 
   .post-footer-meta {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
     gap: 5px;
     flex-wrap: wrap;
@@ -2086,10 +2088,13 @@
 
   .post-collection-tags {
     display: inline-flex;
+    flex: 1 1 0%;
     align-items: center;
     gap: 4px;
     font-size: 13px;
     position: relative;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .post-footer-detail .post-collection-tags {
@@ -2103,20 +2108,32 @@
 
   .post-collection-tag {
     display: inline-flex;
+    flex: 1 1 auto;
     align-items: center;
     gap: 3px;
     color: var(--site-text-secondary);
     text-decoration: none;
+    min-width: 0;
+    max-width: min(100%, 22ch);
   }
 
   .post-collection-tag:hover {
     color: var(--site-text-primary);
   }
 
+  .post-collection-tag-text {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .post-collection-more-wrap {
     position: relative;
     display: inline-flex;
     align-items: center;
+    flex-shrink: 0;
   }
 
   .post-collection-more-wrap::after {
@@ -3890,6 +3907,8 @@
   .compose-collection-select {
     display: inline-flex;
     position: relative;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .compose-collection-trigger {
@@ -3903,6 +3922,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     max-width: 100%;
+    min-width: 0;
     color: var(--site-text-secondary);
     font-size: var(--text-sm);
   }
@@ -3912,6 +3932,9 @@
   }
 
   .compose-collection-label {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -3930,11 +3953,23 @@
   }
 
   .compose-collection-select [data-popover] [role="option"] {
+    display: flex;
+    align-items: center;
+    min-width: 0;
     cursor: pointer;
   }
 
   .compose-collection-select [data-popover] [role="option"]:hover {
     background-color: var(--site-nav-hover-bg);
+  }
+
+  .compose-collection-option-label {
+    display: block;
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .compose-collection-add-action {

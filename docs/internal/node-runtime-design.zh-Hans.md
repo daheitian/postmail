@@ -177,43 +177,45 @@ Node / Docker 路线采用 env-only 模式。
 
 Jant 专属变量：
 
-- `JANT_SITE_URL`
-- `JANT_AUTH_SECRET`
-- `JANT_R2_PUBLIC_URL`
-- `JANT_DEFAULT_THEME`
-- `JANT_PAGE_SIZE`
-- `JANT_UPLOAD_MAX_FILE_SIZE_MB`
-- `JANT_SUMMARY_MAX_PARAGRAPHS`
-- `JANT_SUMMARY_MAX_CHARS`
-- `JANT_SLUG_ID_LENGTH`
-- `JANT_RSS_FEED_LIMIT`
-- `JANT_IMAGE_TRANSFORM_URL`
-- `JANT_STORAGE_DRIVER`
-- `JANT_TRUST_PROXY`
-- `JANT_DEV_API_TOKEN`
-- `JANT_DEMO_*`
-- `JANT_S3_*`
-- `JANT_LOCAL_STORAGE_PATH`
-- `JANT_LOCAL_PUBLIC_URL`
+- `SITE_URL`
+- `AUTH_SECRET`
+- `R2_PUBLIC_URL`
+- `DEFAULT_THEME`
+- `PAGE_SIZE`
+- `SEARCH_PAGE_SIZE`
+- `ARCHIVE_PAGE_SIZE`
+- `UPLOAD_MAX_FILE_SIZE_MB`
+- `SUMMARY_MAX_PARAGRAPHS`
+- `SUMMARY_MAX_CHARS`
+- `SLUG_ID_LENGTH`
+- `RSS_FEED_LIMIT`
+- `IMAGE_TRANSFORM_URL`
+- `STORAGE_DRIVER`
+- `TRUST_PROXY`
+- `DEV_API_TOKEN`
+- `DEMO_*`
+- `S3_*`
+- `LOCAL_STORAGE_PATH`
+- `LOCAL_PUBLIC_URL`
 
 ### 5.4 变量命名策略
 
-由于项目尚未发布，v1 直接采用混合命名策略：
+由于项目尚未发布，v1 直接采用无前缀策略：
 
-- 生态通用变量保持无前缀
-- Jant 专属变量统一使用 `JANT_` 前缀
+- 生态通用变量保持行业常见名称
+- Jant 专属变量也统一使用无前缀名称
 
 这样做的原因：
 
 - `PORT`、`NODE_ENV`、`DATABASE_URL` 这类变量本来就是 Node / PaaS / 容器生态的事实标准
-- 站点 URL、鉴权密钥、存储后端、功能开关等属于应用私有配置，使用 `JANT_` 前缀更容易识别和隔离
-- 在同一台机器或同一个 compose 环境里部署多个服务时，前缀化能显著降低配置冲突与误读成本
+- Jant 主要面向单应用、自部署场景，直接使用 `SITE_URL`、`AUTH_SECRET`、`PAGE_SIZE` 这类名字更顺手
+- 当前仓库同时支持 Cloudflare 与 Node 路线，统一无前缀能减少配置表、示例和调试说明之间的认知切换
 
 结论：
 
-- Node / Docker 路线按混合命名策略设计
-- Cloudflare 路线在实现时同步迁移到同一套命名
-- 由于项目尚未发布，这次直接做统一重命名，不保留旧变量名作为长期主路径
+- Node / Docker / Cloudflare 路线都按同一套无前缀命名
+- 不保留带 `JANT_` 前缀的长期主路径
+- 配置文档、示例文件和运行时解析保持同一契约
 
 ### 5.5 变量语义
 
@@ -231,7 +233,7 @@ Jant 专属变量：
 
 - 默认 `3000`
 
-`JANT_TRUST_PROXY`
+`TRUST_PROXY`
 
 - 默认 `false`
 - 为 `true` 时才信任 `X-Forwarded-*`
@@ -247,9 +249,9 @@ Jant 专属变量：
 
 运维建议：
 
-- 绑定到 `127.0.0.1` 或私网地址、前面挂 Nginx / Caddy 时，部署文档和示例配置推荐显式设置 `JANT_TRUST_PROXY=true`
+- 绑定到 `127.0.0.1` 或私网地址、前面挂 Nginx / Caddy 时，部署文档和示例配置推荐显式设置 `TRUST_PROXY=true`
 - 直接对外监听时，文档推荐保持关闭
-- 启动时如果检测到常见代理头但未开启 `JANT_TRUST_PROXY`，可以输出 warning，帮助用户排查 cookie / 重定向异常
+- 启动时如果检测到常见代理头但未开启 `TRUST_PROXY`，可以输出 warning，帮助用户排查 cookie / 重定向异常
 
 不将默认值设为 `true` 的原因：
 
@@ -257,18 +259,18 @@ Jant 专属变量：
 - 默认信任代理头会让“直接暴露公网”的部署在无感知情况下接受伪造协议与主机信息
 - 这会影响 secure cookie、绝对 URL 与重定向目标，风险高于少量显式配置成本
 
-`JANT_LOCAL_STORAGE_PATH`
+`LOCAL_STORAGE_PATH`
 
-- 当 `JANT_STORAGE_DRIVER=local` 时必填
+- 当 `STORAGE_DRIVER=local` 时必填
 - 指向媒体文件根目录
 
-`JANT_LOCAL_PUBLIC_URL`
+`LOCAL_PUBLIC_URL`
 
 - 可选
 - 未设置时，媒体通过应用内 `/media/*` 路由代理
-- 设置时，媒体 URL 直接指向该域名 / 前缀，语义与 `JANT_S3_PUBLIC_URL` / `JANT_R2_PUBLIC_URL` 保持一致
+- 设置时，媒体 URL 直接指向该域名 / 前缀，语义与 `S3_PUBLIC_URL` / `R2_PUBLIC_URL` 保持一致
 
-### 5.6 `JANT_STORAGE_DRIVER` 规则
+### 5.6 `STORAGE_DRIVER` 规则
 
 扩展为：
 
@@ -284,7 +286,7 @@ Jant 专属变量：
 文档建议：
 
 - 快速开始文档：使用 `local`
-- 生产部署文档：优先推荐显式设置 `JANT_STORAGE_DRIVER=s3`
+- 生产部署文档：优先推荐显式设置 `STORAGE_DRIVER=s3`
 
 原因：
 
@@ -344,7 +346,7 @@ v1 需要把这部分整理成可复用的运行时装配逻辑。
 - 保留 `DB`
 - 保留现有 env 字段
 - 允许 Node 路线不提供 `R2`
-- 新增 `JANT_LOCAL_STORAGE_PATH`、`JANT_LOCAL_PUBLIC_URL`
+- 新增 `LOCAL_STORAGE_PATH`、`LOCAL_PUBLIC_URL`
 
 注释和命名应从“Cloudflare Worker Bindings”调整为“Application runtime bindings”。
 
@@ -478,11 +480,11 @@ Cloudflare 继续支持：
 
 ### 8.4 本地文件布局
 
-在 `JANT_LOCAL_STORAGE_PATH` 下：
+在 `LOCAL_STORAGE_PATH` 下：
 
-- 媒体文件：`<JANT_LOCAL_STORAGE_PATH>/media/YYYY/MM/...`
+- 媒体文件：`<LOCAL_STORAGE_PATH>/media/YYYY/MM/...`
 - 元数据 sidecar：`<filename>.meta.json`
-- multipart 临时目录：`<JANT_LOCAL_STORAGE_PATH>/.multipart/...`
+- multipart 临时目录：`<LOCAL_STORAGE_PATH>/.multipart/...`
 
 sidecar 至少包含：
 
@@ -490,12 +492,12 @@ sidecar 至少包含：
 
 这样 `storage.get()` / `head()` 无需查询数据库即可正确返回内容类型和大小。
 
-### 8.5 `JANT_LOCAL_PUBLIC_URL`
+### 8.5 `LOCAL_PUBLIC_URL`
 
 本地存储的公开 URL 规则与 S3/R2 保持一致：
 
-- 未设置 `JANT_LOCAL_PUBLIC_URL`：走应用 `/media/*` 路由
-- 设置 `JANT_LOCAL_PUBLIC_URL`：直接拼接为公开媒体地址
+- 未设置 `LOCAL_PUBLIC_URL`：走应用 `/media/*` 路由
+- 设置 `LOCAL_PUBLIC_URL`：直接拼接为公开媒体地址
 
 这允许后续通过 Nginx / Caddy / CDN 直接托管 media，而不要求应用自己代理。
 
@@ -528,7 +530,7 @@ Node 运行时需要自己提供 `/jant-assets/*`：
 
 ### 9.3 反向代理
 
-Node 运行时需要明确 `JANT_TRUST_PROXY` 语义：
+Node 运行时需要明确 `TRUST_PROXY` 语义：
 
 - `false`：只信任直接请求的 URL
 - `true`：允许使用 `X-Forwarded-Proto`、`X-Forwarded-Host`
@@ -539,13 +541,13 @@ Node 运行时需要明确 `JANT_TRUST_PROXY` 语义：
 - 正确决定 secure cookie
 - 正确生成绝对 URL 与重定向地址
 
-### 9.4 Cookie 与 `JANT_SITE_URL`
+### 9.4 Cookie 与 `SITE_URL`
 
 当前 secure cookie 与请求协议关联。Node 路线应改为更稳的策略：
 
 - 优先基于可信代理后的公开协议
 - 若无可信代理，基于直接请求
-- `JANT_SITE_URL` 仍然是公开基准 URL 的权威来源
+- `SITE_URL` 仍然是公开基准 URL 的权威来源
 
 ## 10. CLI 与运维模型
 
@@ -578,7 +580,7 @@ Cloudflare 命令与 Node 命令可以共存，但需要按运行时模式分流
 Node / Docker 路线必须明确：
 
 - 备份 `DATABASE_URL` 指向的 SQLite 文件
-- 备份 `JANT_LOCAL_STORAGE_PATH`
+- 备份 `LOCAL_STORAGE_PATH`
 
 这两者共同构成完整站点状态。
 

@@ -10,10 +10,10 @@ describe("createNodeRequestRuntime", () => {
     const runtime = await createNodeRequestRuntime(
       {
         NODE_SQLITE: sqlite,
-        JANT_AUTH_SECRET: "test-secret",
-        JANT_SITE_URL: "http://localhost:3000",
-        JANT_STORAGE_DRIVER: "local",
-        JANT_LOCAL_STORAGE_PATH: "/tmp/jant-node-runtime-test",
+        AUTH_SECRET: "test-secret",
+        SITE_URL: "http://localhost:3000",
+        STORAGE_DRIVER: "local",
+        LOCAL_STORAGE_PATH: "/tmp/jant-node-runtime-test",
       } as Bindings,
       "http://localhost:3000/health",
     );
@@ -29,10 +29,10 @@ describe("createNodeRequestRuntime", () => {
     const runtime = await createNodeRequestRuntime(
       {
         NODE_SQLITE: sqlite,
-        JANT_AUTH_SECRET: "test-secret-with-enough-entropy-for-node-runtime",
-        JANT_SITE_URL: "http://localhost:3000",
-        JANT_STORAGE_DRIVER: "local",
-        JANT_LOCAL_STORAGE_PATH: "/tmp/jant-node-runtime-test",
+        AUTH_SECRET: "test-secret-with-enough-entropy-for-node-runtime",
+        SITE_URL: "http://localhost:3000",
+        STORAGE_DRIVER: "local",
+        LOCAL_STORAGE_PATH: "/tmp/jant-node-runtime-test",
       } as Bindings,
       "http://localhost:3000/compose",
     );

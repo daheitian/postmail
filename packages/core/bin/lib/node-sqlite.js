@@ -37,14 +37,14 @@ export function resolveDatabasePath(databaseUrl, cwd = process.cwd()) {
 }
 
 export function resolveDataDir(env = process.env, cwd = process.cwd()) {
-  const configured = env.JANT_DATA_DIR ?? env.DATA_DIR;
+  const configured = env.DATA_DIR;
   const candidate = configured || "data";
   return isAbsolute(candidate) ? candidate : resolve(cwd, candidate);
 }
 
 export function applyNodeRuntimeDefaults(env = process.env) {
   let dataDir;
-  if (env.JANT_DATA_DIR || env.DATA_DIR) {
+  if (env.DATA_DIR) {
     dataDir = resolveDataDir(env);
   } else if (env.DATABASE_URL) {
     const databasePath = resolveDatabasePath(env.DATABASE_URL);
@@ -53,16 +53,16 @@ export function applyNodeRuntimeDefaults(env = process.env) {
     dataDir = resolveDataDir(env);
   }
 
-  if (dataDir && !env.JANT_DATA_DIR && !env.DATA_DIR) {
-    env.JANT_DATA_DIR = dataDir;
+  if (dataDir && !env.DATA_DIR) {
+    env.DATA_DIR = dataDir;
   }
 
   if (!env.DATABASE_URL && dataDir) {
     env.DATABASE_URL = pathToFileURL(join(dataDir, "jant.sqlite")).href;
   }
 
-  if (dataDir && !env.JANT_LOCAL_STORAGE_PATH && !env.LOCAL_STORAGE_PATH) {
-    env.JANT_LOCAL_STORAGE_PATH = join(dataDir, "media");
+  if (dataDir && !env.LOCAL_STORAGE_PATH) {
+    env.LOCAL_STORAGE_PATH = join(dataDir, "media");
   }
 }
 

@@ -30,7 +30,7 @@ describe("createStorageDriver", () => {
     expect(driver).not.toBeNull();
   });
 
-  it("returns R2 driver by default even with JANT_STORAGE_DRIVER unset", () => {
+  it("returns R2 driver by default even with STORAGE_DRIVER unset", () => {
     const env = {
       DB: {},
       R2: { put: vi.fn(), get: vi.fn(), delete: vi.fn() },
@@ -42,20 +42,20 @@ describe("createStorageDriver", () => {
   it("defaults to local storage for the Node runtime", () => {
     const env = {
       NODE_SQLITE: {} as Bindings["NODE_SQLITE"],
-      JANT_LOCAL_STORAGE_PATH: "/tmp/jant-local-default",
+      LOCAL_STORAGE_PATH: "/tmp/jant-local-default",
     } as Bindings;
 
     const driver = createStorageDriver(env);
     expect(driver).not.toBeNull();
   });
 
-  it("derives the local storage path from JANT_DATA_DIR", async () => {
+  it("derives the local storage path from DATA_DIR", async () => {
     const rootPath = await createTempDir();
     try {
       const driver = createStorageDriver({
         DB: {},
-        JANT_STORAGE_DRIVER: "local",
-        JANT_DATA_DIR: rootPath,
+        STORAGE_DRIVER: "local",
+        DATA_DIR: rootPath,
       } as unknown as Bindings);
 
       expect(driver).not.toBeNull();
@@ -75,8 +75,8 @@ describe("createStorageDriver", () => {
   it("returns null for S3 driver when S3 config is incomplete", () => {
     const env = {
       DB: {},
-      JANT_STORAGE_DRIVER: "s3",
-      JANT_S3_ENDPOINT: "https://s3.example.com",
+      STORAGE_DRIVER: "s3",
+      S3_ENDPOINT: "https://s3.example.com",
       // Missing S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY
     } as unknown as Bindings;
     const driver = createStorageDriver(env);
@@ -86,12 +86,12 @@ describe("createStorageDriver", () => {
   it("returns S3 driver when fully configured", () => {
     const env = {
       DB: {},
-      JANT_STORAGE_DRIVER: "s3",
-      JANT_S3_ENDPOINT: "https://s3.example.com",
-      JANT_S3_BUCKET: "my-bucket",
-      JANT_S3_ACCESS_KEY_ID: "access-key",
-      JANT_S3_SECRET_ACCESS_KEY: "secret-key",
-      JANT_S3_REGION: "us-east-1",
+      STORAGE_DRIVER: "s3",
+      S3_ENDPOINT: "https://s3.example.com",
+      S3_BUCKET: "my-bucket",
+      S3_ACCESS_KEY_ID: "access-key",
+      S3_SECRET_ACCESS_KEY: "secret-key",
+      S3_REGION: "us-east-1",
     } as unknown as Bindings;
     const driver = createStorageDriver(env);
     expect(driver).not.toBeNull();
@@ -100,41 +100,27 @@ describe("createStorageDriver", () => {
   it("defaults S3_REGION to 'auto' when not set", () => {
     const env = {
       DB: {},
-      JANT_STORAGE_DRIVER: "s3",
-      JANT_S3_ENDPOINT: "https://s3.example.com",
-      JANT_S3_BUCKET: "my-bucket",
-      JANT_S3_ACCESS_KEY_ID: "access-key",
-      JANT_S3_SECRET_ACCESS_KEY: "secret-key",
-    } as unknown as Bindings;
-    // Should not throw - region defaults to "auto"
-    const driver = createStorageDriver(env);
-    expect(driver).not.toBeNull();
-  });
-
-  it("prefers S3 driver over R2 when JANT_STORAGE_DRIVER=s3", () => {
-    const env = {
-      DB: {},
-      R2: { put: vi.fn(), get: vi.fn(), delete: vi.fn() },
-      JANT_STORAGE_DRIVER: "s3",
-      JANT_S3_ENDPOINT: "https://s3.example.com",
-      JANT_S3_BUCKET: "my-bucket",
-      JANT_S3_ACCESS_KEY_ID: "access-key",
-      JANT_S3_SECRET_ACCESS_KEY: "secret-key",
-    } as unknown as Bindings;
-    const driver = createStorageDriver(env);
-    expect(driver).not.toBeNull();
-  });
-
-  it("still accepts legacy storage env aliases during the transition", () => {
-    const env = {
-      DB: {},
       STORAGE_DRIVER: "s3",
       S3_ENDPOINT: "https://s3.example.com",
       S3_BUCKET: "my-bucket",
       S3_ACCESS_KEY_ID: "access-key",
       S3_SECRET_ACCESS_KEY: "secret-key",
     } as unknown as Bindings;
+    // Should not throw - region defaults to "auto"
+    const driver = createStorageDriver(env);
+    expect(driver).not.toBeNull();
+  });
 
+  it("prefers S3 driver over R2 when STORAGE_DRIVER=s3", () => {
+    const env = {
+      DB: {},
+      R2: { put: vi.fn(), get: vi.fn(), delete: vi.fn() },
+      STORAGE_DRIVER: "s3",
+      S3_ENDPOINT: "https://s3.example.com",
+      S3_BUCKET: "my-bucket",
+      S3_ACCESS_KEY_ID: "access-key",
+      S3_SECRET_ACCESS_KEY: "secret-key",
+    } as unknown as Bindings;
     const driver = createStorageDriver(env);
     expect(driver).not.toBeNull();
   });
@@ -223,7 +209,7 @@ describe("local storage driver", () => {
   it("returns null when local storage is selected without a path", () => {
     const env = {
       DB: {},
-      JANT_STORAGE_DRIVER: "local",
+      STORAGE_DRIVER: "local",
     } as unknown as Bindings;
 
     expect(createStorageDriver(env)).toBeNull();
@@ -234,8 +220,8 @@ describe("local storage driver", () => {
     try {
       const driver = createStorageDriver({
         DB: {},
-        JANT_STORAGE_DRIVER: "local",
-        JANT_LOCAL_STORAGE_PATH: rootPath,
+        STORAGE_DRIVER: "local",
+        LOCAL_STORAGE_PATH: rootPath,
       } as unknown as Bindings);
 
       expect(driver).not.toBeNull();
@@ -266,8 +252,8 @@ describe("local storage driver", () => {
     try {
       const driver = createStorageDriver({
         DB: {},
-        JANT_STORAGE_DRIVER: "local",
-        JANT_LOCAL_STORAGE_PATH: rootPath,
+        STORAGE_DRIVER: "local",
+        LOCAL_STORAGE_PATH: rootPath,
       } as unknown as Bindings);
 
       expect(driver).not.toBeNull();

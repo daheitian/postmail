@@ -465,7 +465,7 @@ POST /api/upload
 | `summary`  | string  | no       | Summary for text file attachments    |
 | `poster`   | File    | no       | Poster frame for video files (WebP)  |
 
-**File limits:** Configurable via `JANT_UPLOAD_MAX_FILE_SIZE_MB` env var (default: 500 MB). All MIME types accepted.
+**File limits:** Configurable via `UPLOAD_MAX_FILE_SIZE_MB` env var (default: 500 MB). All MIME types accepted.
 
 **Response (200):**
 
@@ -738,7 +738,7 @@ Three target types:
 GET /api/custom-urls
 ```
 
-Public. Results are sorted by creation date (newest first) and paginated using `DEFAULT_PAGE_SIZE` (100 items per page).
+Requires auth. Results are sorted by creation date (newest first) and paginated using `PAGE_SIZE` (default: 50).
 
 **Query parameters:**
 

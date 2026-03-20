@@ -17,7 +17,6 @@ import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
 import { PagePagination } from "../../ui/shared/Pagination.js";
-import { DEFAULT_PAGE_SIZE } from "../../lib/constants.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -457,16 +456,17 @@ function NewCustomUrlContent({
 customUrlsRoutes.get("/", async (c) => {
   const pageParam = c.req.query("page");
   const currentPage = Math.max(1, parseInt(pageParam || "1", 10) || 1);
+  const pageSize = c.var.appConfig.pageSize;
 
   const [total, customUrlsList] = await Promise.all([
     c.var.services.customUrls.count(),
     c.var.services.customUrls.list({
-      limit: DEFAULT_PAGE_SIZE,
-      offset: (currentPage - 1) * DEFAULT_PAGE_SIZE,
+      limit: pageSize,
+      offset: (currentPage - 1) * pageSize,
     }),
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(total / DEFAULT_PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   // Resolve target UUIDs → slugs for display
   const targetSlugs: Record<string, string> = {};

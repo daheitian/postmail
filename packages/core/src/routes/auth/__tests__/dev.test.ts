@@ -29,8 +29,8 @@ function createApp(options?: {
 
   app.use("*", async (c, next) => {
     c.env = {
-      JANT_SITE_URL: "http://localhost:19020",
-      JANT_DEV_API_TOKEN: options?.devToken ?? "jnt_dev_test123",
+      SITE_URL: "http://localhost:19020",
+      DEV_API_TOKEN: options?.devToken ?? "jnt_dev_test123",
     } as Bindings;
 
     c.set("appConfig", {
@@ -128,9 +128,7 @@ describe("devAuthRoutes", () => {
     );
 
     expect(res.status).toBe(500);
-    expect(await res.text()).toContain(
-      "Set JANT_DEMO_EMAIL and JANT_DEMO_PASSWORD",
-    );
+    expect(await res.text()).toContain("Set DEMO_EMAIL and DEMO_PASSWORD");
     expect(signInEmail).not.toHaveBeenCalled();
   });
 });

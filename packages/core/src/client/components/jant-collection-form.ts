@@ -11,8 +11,13 @@
 
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValueMap } from "lit";
-import type { CollectionSortOrder } from "../../types.js";
-import { getSlugValidationIssue } from "../../lib/slug-format.js";
+import {
+  MAX_COLLECTION_DESCRIPTION_LENGTH,
+  MAX_COLLECTION_SLUG_LENGTH,
+  MAX_COLLECTION_TITLE_LENGTH,
+  type CollectionSortOrder,
+} from "../../types.js";
+import { getSlugValidationIssue, truncateSlug } from "../../lib/slug-format.js";
 import { slugify } from "../lazy-slugify.js";
 import { publicPath } from "../runtime-paths.js";
 import type {
@@ -125,7 +130,10 @@ export class JantCollectionForm extends LitElement {
     }
 
     const currentTitle = target.value;
-    const slug = await slugify(currentTitle);
+    const slug = truncateSlug(
+      await slugify(currentTitle),
+      MAX_COLLECTION_SLUG_LENGTH,
+    );
     if (this._title === currentTitle) {
       this._suggestedSlug = slug;
       if (!this._slugEdited) {
@@ -141,7 +149,15 @@ export class JantCollectionForm extends LitElement {
   }
 
   #getSlugValidationMessage(): string | null {
-    const issue = getSlugValidationIssue(this._slug);
+    const issue = getSlugValidationIssue(this._slug, {
+      maxLength: MAX_COLLECTION_SLUG_LENGTH,
+    });
+    if (issue === "too_long") {
+      return (
+        this.labels.slugTooLongHelp ??
+        `Keep this link under ${MAX_COLLECTION_SLUG_LENGTH} characters.`
+      );
+    }
     if (issue === "invalid") return this.labels.slugInvalidHelp;
     if (issue === "reserved") return this.labels.slugReservedHelp;
     return null;
@@ -235,6 +251,7 @@ export class JantCollectionForm extends LitElement {
               data-collection-slug-input
               required
               pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+              maxlength=${MAX_COLLECTION_SLUG_LENGTH}
               .value=${this._slug}
               aria-invalid=${this.#getSlugValidationMessage()
                 ? "true"
@@ -286,7 +303,7 @@ export class JantCollectionForm extends LitElement {
     }
 
     if (!slug && !this._slugEdited) {
-      slug = await slugify(title);
+      slug = truncateSlug(await slugify(title), MAX_COLLECTION_SLUG_LENGTH);
       this._slug = slug;
       this._suggestedSlug = slug;
     }
@@ -346,6 +363,7 @@ export class JantCollectionForm extends LitElement {
                   class="input"
                   data-collection-title-input
                   required
+                  maxlength=${MAX_COLLECTION_TITLE_LENGTH}
                   .value=${this._title}
                   placeholder=${this.isEdit
                     ? nothing
@@ -365,6 +383,7 @@ export class JantCollectionForm extends LitElement {
                     class="input"
                     data-collection-title-input
                     required
+                    maxlength=${MAX_COLLECTION_TITLE_LENGTH}
                     .value=${this._title}
                     placeholder=${this.isEdit
                       ? nothing
@@ -382,6 +401,7 @@ export class JantCollectionForm extends LitElement {
                     data-collection-slug-input
                     required
                     pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+                    maxlength=${MAX_COLLECTION_SLUG_LENGTH}
                     .value=${this._slug}
                     aria-invalid=${this.#getSlugValidationMessage()
                       ? "true"
@@ -399,6 +419,7 @@ export class JantCollectionForm extends LitElement {
                   <textarea
                     class="textarea"
                     rows="4"
+                    maxlength=${MAX_COLLECTION_DESCRIPTION_LENGTH}
                     .value=${this._description}
                     placeholder=${this.isEdit
                       ? nothing

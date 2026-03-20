@@ -65,15 +65,12 @@ export async function createNodeRequestRuntime(
 
   const authSecret = getAuthSecret(env);
   if (!authSecret) {
-    throw new Error("JANT_AUTH_SECRET should be set after startup validation.");
+    throw new Error("AUTH_SECRET should be set after startup validation.");
   }
 
   const db = createNodeDatabase(sqlite);
   const slugIdLength =
-    parseInt(
-      getEnvString(env, "JANT_SLUG_ID_LENGTH", "SLUG_ID_LENGTH") ?? "5",
-      10,
-    ) || 5;
+    parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5;
   const requestUrl = new URL(publicRequestUrl);
   const baseURL = getSiteUrl(env) || requestUrl.origin;
 
@@ -106,10 +103,7 @@ export async function createNodeCliRuntime(
 
   const db = createNodeDatabase(sqlite);
   const slugIdLength =
-    parseInt(
-      getEnvString(env, "JANT_SLUG_ID_LENGTH", "SLUG_ID_LENGTH") ?? "5",
-      10,
-    ) || 5;
+    parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5;
 
   return {
     db,

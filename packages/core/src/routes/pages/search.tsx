@@ -13,8 +13,6 @@ import { createMediaContext, toSearchResultViews } from "../../lib/view.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
-const PAGE_SIZE = 10;
-
 export const searchRoutes = new Hono<Env>();
 
 searchRoutes.get("/", async (c) => {
@@ -28,19 +26,20 @@ searchRoutes.get("/", async (c) => {
   let results: SearchResult[] = [];
   let error: string | undefined;
   let hasMore = false;
+  const pageSize = c.var.appConfig.searchPageSize;
 
   if (query.trim()) {
     try {
       // Fetch one extra to check for more
       results = await c.var.services.search.search(query, {
-        limit: PAGE_SIZE + 1,
-        offset: (page - 1) * PAGE_SIZE,
+        limit: pageSize + 1,
+        offset: (page - 1) * pageSize,
         status: ["published"],
       });
 
-      hasMore = results.length > PAGE_SIZE;
+      hasMore = results.length > pageSize;
       if (hasMore) {
-        results = results.slice(0, PAGE_SIZE);
+        results = results.slice(0, pageSize);
       }
     } catch (err) {
       // eslint-disable-next-line no-console -- Error logging is intentional

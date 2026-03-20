@@ -130,7 +130,7 @@ export function requireAuthApi(): MiddlewareHandler<Env> {
     if (authHeader?.startsWith("Bearer ")) {
       const rawToken = authHeader.slice(7);
 
-      // Dev shortcut: bypass DB lookup when JANT_DEV_API_TOKEN matches on a local hostname
+      // Dev shortcut: bypass DB lookup when DEV_API_TOKEN matches on a local hostname
       if (
         hasValidLocalDevToken(
           c.req.url,
