@@ -7,7 +7,7 @@
 -- setting
 INSERT INTO "setting" ("key","value","updated_at") VALUES('ONBOARDING_STATUS','completed',1773828785);
 INSERT INTO "setting" ("key","value","updated_at") VALUES('SITE_NAME','Blog',1773828785);
-INSERT INTO "setting" ("key","value","updated_at") VALUES('TIME_ZONE','Beijing',1773828785);
+INSERT INTO "setting" ("key","value","updated_at") VALUES('TIME_ZONE','Asia/Shanghai',1773828785);
 INSERT INTO "setting" ("key","value","updated_at") VALUES('SITE_LANGUAGE','zh-Hans',1773828785);
 
 -- user

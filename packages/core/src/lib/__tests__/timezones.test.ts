@@ -1,12 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { TIMEZONES, mapIanaToTimezone } from "../timezones.js";
+import {
+  TIMEZONES,
+  isSupportedTimeZone,
+  mapIanaToTimezone,
+  normalizeTimeZone,
+} from "../timezones.js";
 
 describe("TIMEZONES", () => {
   it("contains expected timezone entries", () => {
     expect(TIMEZONES.length).toBeGreaterThan(30);
-    const utc = TIMEZONES.find((tz) => tz.value === "UTC");
-    expect(utc).toBeDefined();
-    expect(utc?.offset).toBe("+00:00");
+    const shanghai = TIMEZONES.find((tz) => tz.value === "Asia/Shanghai");
+    expect(shanghai).toBeDefined();
+    expect(shanghai?.label).toBe("(UTC+08:00) Beijing");
   });
 
   it("each entry has required fields", () => {
@@ -25,22 +30,20 @@ describe("TIMEZONES", () => {
 });
 
 describe("mapIanaToTimezone", () => {
-  it("maps Asia/Shanghai to Beijing", () => {
-    expect(mapIanaToTimezone("Asia/Shanghai")).toBe("Beijing");
+  it("maps Asia/Shanghai to the canonical stored value", () => {
+    expect(mapIanaToTimezone("Asia/Shanghai")).toBe("Asia/Shanghai");
   });
 
-  it("maps America/New_York to Eastern Time", () => {
-    expect(mapIanaToTimezone("America/New_York")).toBe(
-      "Eastern Time (US & Canada)",
-    );
+  it("maps America/New_York to the canonical stored value", () => {
+    expect(mapIanaToTimezone("America/New_York")).toBe("America/New_York");
   });
 
-  it("maps Europe/London to London", () => {
-    expect(mapIanaToTimezone("Europe/London")).toBe("London");
+  it("maps Europe/London to the canonical stored value", () => {
+    expect(mapIanaToTimezone("Europe/London")).toBe("Europe/London");
   });
 
-  it("maps Asia/Tokyo to Tokyo", () => {
-    expect(mapIanaToTimezone("Asia/Tokyo")).toBe("Tokyo");
+  it("maps Asia/Tokyo to the canonical stored value", () => {
+    expect(mapIanaToTimezone("Asia/Tokyo")).toBe("Asia/Tokyo");
   });
 
   it("returns UTC for unknown timezone", () => {
@@ -51,11 +54,41 @@ describe("mapIanaToTimezone", () => {
     expect(mapIanaToTimezone("")).toBe("UTC");
   });
 
-  it("maps Pacific/Honolulu to Hawaii", () => {
-    expect(mapIanaToTimezone("Pacific/Honolulu")).toBe("Hawaii");
+  it("maps Pacific/Honolulu to the canonical stored value", () => {
+    expect(mapIanaToTimezone("Pacific/Honolulu")).toBe("Pacific/Honolulu");
   });
 
-  it("maps Australia/Sydney to Sydney", () => {
-    expect(mapIanaToTimezone("Australia/Sydney")).toBe("Sydney");
+  it("maps Australia/Sydney to the canonical stored value", () => {
+    expect(mapIanaToTimezone("Australia/Sydney")).toBe("Australia/Sydney");
+  });
+});
+
+describe("normalizeTimeZone", () => {
+  it("normalizes legacy display values to canonical IANA identifiers", () => {
+    expect(normalizeTimeZone("Beijing")).toBe("Asia/Shanghai");
+    expect(normalizeTimeZone("London")).toBe("Europe/London");
+  });
+
+  it("normalizes accepted IANA aliases to the curated canonical value", () => {
+    expect(normalizeTimeZone("Asia/Calcutta")).toBe("Asia/Kolkata");
+    expect(normalizeTimeZone("Etc/UTC")).toBe("UTC");
+  });
+
+  it("falls back to UTC for missing or unknown values", () => {
+    expect(normalizeTimeZone("")).toBe("UTC");
+    expect(normalizeTimeZone("Unknown/Zone")).toBe("UTC");
+  });
+});
+
+describe("isSupportedTimeZone", () => {
+  it("accepts canonical, aliased, and legacy values", () => {
+    expect(isSupportedTimeZone("Asia/Shanghai")).toBe(true);
+    expect(isSupportedTimeZone("Asia/Calcutta")).toBe(true);
+    expect(isSupportedTimeZone("Beijing")).toBe(true);
+  });
+
+  it("rejects empty and unknown values", () => {
+    expect(isSupportedTimeZone("")).toBe(false);
+    expect(isSupportedTimeZone("Unknown/Zone")).toBe(false);
   });
 });

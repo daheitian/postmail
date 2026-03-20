@@ -168,12 +168,13 @@ JANT_UPLOAD_MAX_FILE_SIZE_MB = "500"  # Allow up to 500MB uploads
 
 These can be changed in `/settings`:
 
-| Setting            | Description                             |
-| ------------------ | --------------------------------------- |
-| `SITE_NAME`        | Your site's display name                |
-| `SITE_DESCRIPTION` | Short description for meta tags and RSS |
-| `SITE_LANGUAGE`    | Primary language (`en`, `zh`, etc.)     |
-| `THEME`            | Color theme name                        |
+| Setting            | Description                                             |
+| ------------------ | ------------------------------------------------------- |
+| `SITE_NAME`        | Your site's display name                                |
+| `SITE_DESCRIPTION` | Short description for meta tags and RSS                 |
+| `SITE_LANGUAGE`    | Primary language (`en`, `zh`, etc.)                     |
+| `TIME_ZONE`        | Display timezone as an IANA ID (`UTC`, `Asia/Shanghai`) |
+| `THEME`            | Color theme name                                        |
 
 ## Reserved Paths
 

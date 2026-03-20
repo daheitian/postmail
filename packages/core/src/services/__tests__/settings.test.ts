@@ -39,6 +39,18 @@ describe("SettingsService", () => {
       const result = await settingsService.get("SITE_NAME");
       expect(result).toBe("Updated");
     });
+
+    it("normalizes legacy timezone values before storing", async () => {
+      await settingsService.set("TIME_ZONE", "Beijing");
+      const result = await settingsService.get("TIME_ZONE");
+      expect(result).toBe("Asia/Shanghai");
+    });
+
+    it("rejects unsupported timezone values", async () => {
+      await expect(settingsService.set("TIME_ZONE", "+8")).rejects.toThrowError(
+        "Choose a valid time zone.",
+      );
+    });
   });
 
   describe("getAll", () => {
@@ -79,6 +91,14 @@ describe("SettingsService", () => {
 
       expect(await settingsService.get("SITE_NAME")).toBe("Original");
       expect(await settingsService.get("SITE_DESCRIPTION")).toBe("New");
+    });
+
+    it("normalizes timezone values in bulk updates", async () => {
+      await settingsService.setMany({
+        TIME_ZONE: "Beijing",
+      });
+
+      expect(await settingsService.get("TIME_ZONE")).toBe("Asia/Shanghai");
     });
   });
 

@@ -353,17 +353,17 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **用户可配置**（后台设置）：
 
-| 字段                     | 说明                                  | 默认值     |
-| ------------------------ | ------------------------------------- | ---------- |
-| `SITE_NAME`              | 站点名称                              | `Jant`     |
-| `SITE_DESCRIPTION`       | 站点描述                              | 自动生成   |
-| `SITE_LANGUAGE`          | 站点语言（en, zh-Hans, zh-Hant）      | `en`       |
-| `HOME_DEFAULT_VIEW`      | 首页默认视图（latest / featured）     | `latest`   |
-| `MAIN_RSS_FEED`          | `/feed` 默认输出（featured / latest） | `featured` |
-| `HEADER_NAV_MAX_VISIBLE` | 导航栏最大可见链接数                  | `3`        |
-| `TIME_ZONE`              | 时区                                  | `UTC`      |
-| `SITE_FOOTER`            | 自定义页脚                            |            |
-| `NOINDEX`                | 是否禁止搜索引擎索引                  |            |
+| 字段                     | 说明                                           | 默认值     |
+| ------------------------ | ---------------------------------------------- | ---------- |
+| `SITE_NAME`              | 站点名称                                       | `Jant`     |
+| `SITE_DESCRIPTION`       | 站点描述                                       | 自动生成   |
+| `SITE_LANGUAGE`          | 站点语言（en, zh-Hans, zh-Hant）               | `en`       |
+| `HOME_DEFAULT_VIEW`      | 首页默认视图（latest / featured）              | `latest`   |
+| `MAIN_RSS_FEED`          | `/feed` 默认输出（featured / latest）          | `featured` |
+| `HEADER_NAV_MAX_VISIBLE` | 导航栏最大可见链接数                           | `3`        |
+| `TIME_ZONE`              | 时区（IANA 标识，例如 `UTC`、`Asia/Shanghai`） | `UTC`      |
+| `SITE_FOOTER`            | 自定义页脚                                     |            |
+| `NOINDEX`                | 是否禁止搜索引擎索引                           |            |
 
 **环境配置**（`wrangler.toml` / `.dev.vars`）：
 

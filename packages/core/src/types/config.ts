@@ -276,6 +276,7 @@ export interface AppConfig {
   homeDefaultView: string;
   mainRssFeed: string;
   headerNavMaxVisible: number;
+  /** Canonical IANA timezone identifier used for date/time display. */
   timeZone: string;
   siteFooter: string;
   showJantBrandingOnHome: boolean;

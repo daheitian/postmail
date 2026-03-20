@@ -20,6 +20,7 @@ import {
   getSiteUrl,
 } from "./env.js";
 import { getPublicUrlForProvider, getMediaUrl } from "./image.js";
+import { normalizeTimeZone } from "./timezones.js";
 import { getSiteOrigin, getSitePathPrefix, normalizeSiteUrl } from "./url.js";
 
 /**
@@ -141,7 +142,7 @@ export function resolveConfig(
       );
       return Math.max(0, Math.min(5, isNaN(parsed) ? 2 : parsed));
     })(),
-    timeZone: resolve("TIME_ZONE", allSettings, env),
+    timeZone: normalizeTimeZone(resolve("TIME_ZONE", allSettings, env)),
     siteFooter: resolve("SITE_FOOTER", allSettings, env),
     showJantBrandingOnHome:
       resolve("SHOW_JANT_BRANDING_ON_HOME", allSettings, env) === "true",

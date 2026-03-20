@@ -66,6 +66,12 @@ describe("resolveConfig", () => {
     expect(dbConfig.mainRssFeed).toBe("latest");
   });
 
+  it("normalizes legacy time zone values from the database", () => {
+    const config = resolveConfig(makeEnv(), { TIME_ZONE: "Beijing" });
+
+    expect(config.timeZone).toBe("Asia/Shanghai");
+  });
+
   it("resolves siteDescriptionExplicit correctly", () => {
     // Default only -> not explicit
     const config1 = resolveConfig(makeEnv(), {});

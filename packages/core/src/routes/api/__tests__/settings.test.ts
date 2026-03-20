@@ -120,6 +120,36 @@ describe("Settings API Routes", () => {
       expect(body.settings.SITE_NAME).toBe("Updated Blog");
     });
 
+    it("normalizes legacy timezone values to canonical IANA identifiers", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ TIME_ZONE: "Beijing" }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.settings.TIME_ZONE).toBe("Asia/Shanghai");
+    });
+
+    it("rejects unsupported timezone values", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ TIME_ZONE: "+8" }),
+      });
+
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toBe("Choose a valid time zone.");
+    });
+
     it("rejects env-only keys", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/settings", settingsApiRoutes);

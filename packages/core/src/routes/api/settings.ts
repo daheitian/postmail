@@ -12,6 +12,7 @@ import { now } from "../../lib/time.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { parseValidated } from "../../lib/schemas.js";
 import { ValidationError } from "../../lib/errors.js";
+import { normalizeTimeZone } from "../../lib/timezones.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -27,6 +28,14 @@ const editableKeys = Object.entries(CONFIG_FIELDS)
 
 const UpdateSettingsSchema = z.record(z.string(), z.string());
 
+function getEditableSettingValue(
+  allSettings: Record<string, string>,
+  key: ConfigKey,
+): string {
+  const value = allSettings[key] ?? CONFIG_FIELDS[key].defaultValue;
+  return key === SETTINGS_KEYS.TIME_ZONE ? normalizeTimeZone(value) : value;
+}
+
 // Get all settings (requires auth)
 settingsApiRoutes.get("/", requireAuthApi(), async (c) => {
   const allSettings = await c.var.services.settings.getAll();
@@ -34,7 +43,7 @@ settingsApiRoutes.get("/", requireAuthApi(), async (c) => {
   // Include default values for editable keys not yet stored in DB
   const result: Record<string, string> = {};
   for (const key of editableKeys) {
-    result[key] = allSettings[key] ?? CONFIG_FIELDS[key].defaultValue;
+    result[key] = getEditableSettingValue(allSettings, key);
   }
   if (c.var.appConfig.demoMode) {
     result.NOINDEX = "true";
@@ -85,7 +94,7 @@ settingsApiRoutes.put("/", requireAuthApi(), async (c) => {
   const allSettings = await c.var.services.settings.getAll();
   const result: Record<string, string> = {};
   for (const key of editableKeys) {
-    result[key] = allSettings[key] ?? CONFIG_FIELDS[key].defaultValue;
+    result[key] = getEditableSettingValue(allSettings, key);
   }
   if (c.var.appConfig.demoMode) {
     result.NOINDEX = "true";

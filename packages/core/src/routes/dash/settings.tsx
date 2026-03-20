@@ -16,7 +16,7 @@ import { renderPublicPage } from "../../lib/render.js";
 import { getNavigationData } from "../../lib/navigation.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { AdminBreadcrumb } from "../../ui/shared/AdminBreadcrumb.js";
-import { TIMEZONES } from "../../lib/timezones.js";
+import { TIMEZONES, normalizeTimeZone } from "../../lib/timezones.js";
 import { escapeHtml } from "../../lib/html.js";
 import { ValidationError } from "../../lib/errors.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
@@ -177,60 +177,75 @@ settingsRoutes.post("/general", async (c) => {
     timeZone: string;
   }>();
 
-  const { languageChanged, displayName } =
-    await c.var.services.settings.updateGeneral(body, {
-      oldLanguage: c.var.allSettings["SITE_LANGUAGE"] ?? "en",
-      fallbackSiteName: c.var.appConfig.fallbacks.siteName,
+  try {
+    const { languageChanged, displayName } =
+      await c.var.services.settings.updateGeneral(body, {
+        oldLanguage: c.var.allSettings["SITE_LANGUAGE"] ?? "en",
+        fallbackSiteName: c.var.appConfig.fallbacks.siteName,
+      });
+
+    // Sync user.name with site name (better-auth requires this field)
+    await c.var.auth.api.updateUser({
+      body: { name: displayName },
+      headers: c.req.raw.headers,
     });
 
-  // Sync user.name with site name (better-auth requires this field)
-  await c.var.auth.api.updateUser({
-    body: { name: displayName },
-    headers: c.req.raw.headers,
-  });
-
-  // ── JSON response mode (used by Lit settings bridge) ──────────────
-  // Always redirect — site name appears in the header/title and a full
-  // reload is the simplest way to keep everything in sync.
-  const wantsJson = c.req.header("accept")?.includes("application/json");
-  if (wantsJson) {
-    return c.json({
-      status: "redirect" as const,
-      url: publicPath(c, "/settings/general?saved"),
-    });
-  }
-
-  return sse(c, async (stream) => {
-    if (languageChanged) {
-      await stream.redirect(publicPath(c, "/settings/general?saved"));
-    } else {
-      await stream.patchElements(
-        escapeHtml(buildPageTitle("General", displayName)),
-        {
-          mode: "inner",
-          selector: "title",
-        },
-      );
-      await stream.toast(
-        i18n._(
-          msg({
-            message: "Settings updated.",
-            comment: "@context: Toast after saving general settings",
-          }),
-        ),
-      );
-      await stream.patchSignals({
-        _orig_siteName: body.siteName,
-        _orig_siteDescription: body.siteDescription,
-        _orig_siteFooter: body.siteFooter,
-        _orig_siteLanguage: body.siteLanguage,
-        _orig_mainRssFeed: body.mainRssFeed,
-        _orig_timeZone: body.timeZone,
-        _orig_showJantBrandingOnHome: body.showJantBrandingOnHome,
-        _generalDirty: false,
+    // ── JSON response mode (used by Lit settings bridge) ──────────────
+    // Always redirect — site name appears in the header/title and a full
+    // reload is the simplest way to keep everything in sync.
+    const wantsJson = c.req.header("accept")?.includes("application/json");
+    if (wantsJson) {
+      return c.json({
+        status: "redirect" as const,
+        url: publicPath(c, "/settings/general?saved"),
       });
     }
-  });
+
+    const normalizedTimeZone = normalizeTimeZone(body.timeZone);
+
+    return sse(c, async (stream) => {
+      if (languageChanged) {
+        await stream.redirect(publicPath(c, "/settings/general?saved"));
+      } else {
+        await stream.patchElements(
+          escapeHtml(buildPageTitle("General", displayName)),
+          {
+            mode: "inner",
+            selector: "title",
+          },
+        );
+        await stream.toast(
+          i18n._(
+            msg({
+              message: "Settings updated.",
+              comment: "@context: Toast after saving general settings",
+            }),
+          ),
+        );
+        await stream.patchSignals({
+          _orig_siteName: body.siteName,
+          _orig_siteDescription: body.siteDescription,
+          _orig_siteFooter: body.siteFooter,
+          _orig_siteLanguage: body.siteLanguage,
+          _orig_mainRssFeed: body.mainRssFeed,
+          _orig_timeZone: normalizedTimeZone,
+          _orig_showJantBrandingOnHome: body.showJantBrandingOnHome,
+          _generalDirty: false,
+        });
+      }
+    });
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      const wantsJson = c.req.header("accept")?.includes("application/json");
+      if (wantsJson) {
+        return c.json({ error: error.message, code: error.code }, 400);
+      }
+
+      return dsToast(error.message, "error");
+    }
+
+    throw error;
+  }
 });
 
 settingsRoutes.post("/general/search", async (c) => {

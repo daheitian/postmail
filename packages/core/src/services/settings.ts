@@ -18,6 +18,7 @@ import type { MediaService } from "./media.js";
 import { validateUploadFile, generateStorageKey } from "../lib/upload.js";
 import { arrayBufferToBase64 } from "../lib/favicon.js";
 import { ValidationError } from "../lib/errors.js";
+import { isSupportedTimeZone, normalizeTimeZone } from "../lib/timezones.js";
 import type { FeedKind } from "../types/constants.js";
 
 export interface GeneralSettingsData {
@@ -89,6 +90,18 @@ export interface SettingsService {
 }
 
 export function createSettingsService(db: Database): SettingsService {
+  function normalizeSettingValue(key: SettingsKey, value: string): string {
+    if (key !== SETTINGS_KEYS.TIME_ZONE) {
+      return value;
+    }
+
+    if (!isSupportedTimeZone(value)) {
+      throw new ValidationError("Choose a valid time zone.");
+    }
+
+    return normalizeTimeZone(value);
+  }
+
   return {
     async get(key) {
       const result = await db
@@ -110,12 +123,13 @@ export function createSettingsService(db: Database): SettingsService {
 
     async set(key, value) {
       const timestamp = now();
+      const normalizedValue = normalizeSettingValue(key, value);
       await db
         .insert(settings)
-        .values({ key, value, updatedAt: timestamp })
+        .values({ key, value: normalizedValue, updatedAt: timestamp })
         .onConflictDoUpdate({
           target: settings.key,
-          set: { value, updatedAt: timestamp },
+          set: { value: normalizedValue, updatedAt: timestamp },
         });
     },
 
@@ -126,7 +140,12 @@ export function createSettingsService(db: Database): SettingsService {
     async setMany(entries) {
       const timestamp = now();
       const pairs = (Object.keys(entries) as SettingsKey[])
-        .map((key) => ({ key, value: entries[key] }))
+        .map((key) => {
+          const value = entries[key];
+          return value === undefined
+            ? { key, value }
+            : { key, value: normalizeSettingValue(key, value) };
+        })
         .filter(
           (pair): pair is { key: SettingsKey; value: string } =>
             pair.value !== undefined,
@@ -221,8 +240,17 @@ export function createSettingsService(db: Database): SettingsService {
       }
 
       // Timezone: only store non-default (default is UTC)
-      if (data.timeZone && data.timeZone !== "UTC") {
-        await this.set("TIME_ZONE", data.timeZone);
+      if (data.timeZone) {
+        if (!isSupportedTimeZone(data.timeZone)) {
+          throw new ValidationError("Choose a valid time zone.");
+        }
+
+        const normalizedTimeZone = normalizeTimeZone(data.timeZone);
+        if (normalizedTimeZone !== "UTC") {
+          await this.set("TIME_ZONE", normalizedTimeZone);
+        } else {
+          await this.remove("TIME_ZONE");
+        }
       } else {
         await this.remove("TIME_ZONE");
       }

@@ -1,54 +1,61 @@
 /**
  * Timezone List
  *
- * Provides a curated list of timezones for the settings UI
- * and a helper to map IANA timezone names to our list entries.
+ * Provides a curated list of timezones for the settings UI and helpers for
+ * normalizing stored values to canonical IANA timezone identifiers.
  */
 
 export interface TimezoneEntry {
-  /** Display value stored in settings */
+  /** Canonical IANA timezone identifier stored in settings */
   value: string;
   /** Human-readable label for the select UI */
   label: string;
   /** UTC offset string, e.g. "+08:00" */
   offset: string;
-  /** IANA timezone names that map to this entry */
+  /** Accepted IANA timezone names that map to this entry */
   iana: string[];
+  /** Historical non-IANA values accepted for backwards compatibility */
+  legacyValues?: string[];
 }
 
 export const TIMEZONES: TimezoneEntry[] = [
   {
-    value: "International Date Line West",
+    value: "Etc/GMT+12",
     label: "(UTC-12:00) International Date Line West",
     offset: "-12:00",
     iana: ["Etc/GMT+12"],
+    legacyValues: ["International Date Line West"],
   },
   {
-    value: "American Samoa",
+    value: "Pacific/Pago_Pago",
     label: "(UTC-11:00) American Samoa",
     offset: "-11:00",
     iana: ["Pacific/Pago_Pago", "Pacific/Midway", "Etc/GMT+11"],
+    legacyValues: ["American Samoa"],
   },
   {
-    value: "Hawaii",
+    value: "Pacific/Honolulu",
     label: "(UTC-10:00) Hawaii",
     offset: "-10:00",
     iana: ["Pacific/Honolulu", "Etc/GMT+10"],
+    legacyValues: ["Hawaii"],
   },
   {
-    value: "Alaska",
+    value: "America/Anchorage",
     label: "(UTC-09:00) Alaska",
     offset: "-09:00",
     iana: ["America/Anchorage", "America/Juneau", "America/Nome"],
+    legacyValues: ["Alaska"],
   },
   {
-    value: "Pacific Time (US & Canada)",
+    value: "America/Los_Angeles",
     label: "(UTC-08:00) Pacific Time (US & Canada)",
     offset: "-08:00",
     iana: ["America/Los_Angeles", "America/Vancouver", "America/Tijuana"],
+    legacyValues: ["Pacific Time (US & Canada)"],
   },
   {
-    value: "Mountain Time (US & Canada)",
+    value: "America/Denver",
     label: "(UTC-07:00) Mountain Time (US & Canada)",
     offset: "-07:00",
     iana: [
@@ -57,9 +64,10 @@ export const TIMEZONES: TimezoneEntry[] = [
       "America/Phoenix",
       "America/Boise",
     ],
+    legacyValues: ["Mountain Time (US & Canada)"],
   },
   {
-    value: "Central Time (US & Canada)",
+    value: "America/Chicago",
     label: "(UTC-06:00) Central Time (US & Canada)",
     offset: "-06:00",
     iana: [
@@ -68,9 +76,10 @@ export const TIMEZONES: TimezoneEntry[] = [
       "America/Mexico_City",
       "America/Guatemala",
     ],
+    legacyValues: ["Central Time (US & Canada)"],
   },
   {
-    value: "Eastern Time (US & Canada)",
+    value: "America/New_York",
     label: "(UTC-05:00) Eastern Time (US & Canada)",
     offset: "-05:00",
     iana: [
@@ -81,9 +90,10 @@ export const TIMEZONES: TimezoneEntry[] = [
       "America/Bogota",
       "America/Lima",
     ],
+    legacyValues: ["Eastern Time (US & Canada)"],
   },
   {
-    value: "Atlantic Time (Canada)",
+    value: "America/Halifax",
     label: "(UTC-04:00) Atlantic Time (Canada)",
     offset: "-04:00",
     iana: [
@@ -92,15 +102,17 @@ export const TIMEZONES: TimezoneEntry[] = [
       "America/Santiago",
       "America/La_Paz",
     ],
+    legacyValues: ["Atlantic Time (Canada)"],
   },
   {
-    value: "Newfoundland",
+    value: "America/St_Johns",
     label: "(UTC-03:30) Newfoundland",
     offset: "-03:30",
     iana: ["America/St_Johns"],
+    legacyValues: ["Newfoundland"],
   },
   {
-    value: "Buenos Aires",
+    value: "America/Argentina/Buenos_Aires",
     label: "(UTC-03:00) Buenos Aires",
     offset: "-03:00",
     iana: [
@@ -108,18 +120,21 @@ export const TIMEZONES: TimezoneEntry[] = [
       "America/Sao_Paulo",
       "America/Montevideo",
     ],
+    legacyValues: ["Buenos Aires"],
   },
   {
-    value: "Mid-Atlantic",
+    value: "Atlantic/South_Georgia",
     label: "(UTC-02:00) Mid-Atlantic",
     offset: "-02:00",
     iana: ["Atlantic/South_Georgia", "Etc/GMT+2"],
+    legacyValues: ["Mid-Atlantic"],
   },
   {
-    value: "Azores",
+    value: "Atlantic/Azores",
     label: "(UTC-01:00) Azores",
     offset: "-01:00",
     iana: ["Atlantic/Azores", "Atlantic/Cape_Verde"],
+    legacyValues: ["Azores"],
   },
   {
     value: "UTC",
@@ -128,13 +143,14 @@ export const TIMEZONES: TimezoneEntry[] = [
     iana: ["Etc/UTC", "UTC", "Etc/GMT", "Africa/Accra"],
   },
   {
-    value: "London",
+    value: "Europe/London",
     label: "(UTC+00:00) London",
     offset: "+00:00",
     iana: ["Europe/London", "Europe/Dublin", "Europe/Lisbon"],
+    legacyValues: ["London"],
   },
   {
-    value: "Central European Time",
+    value: "Europe/Paris",
     label: "(UTC+01:00) Central European Time",
     offset: "+01:00",
     iana: [
@@ -153,9 +169,10 @@ export const TIMEZONES: TimezoneEntry[] = [
       "Europe/Zurich",
       "Africa/Lagos",
     ],
+    legacyValues: ["Central European Time"],
   },
   {
-    value: "Eastern European Time",
+    value: "Europe/Helsinki",
     label: "(UTC+02:00) Eastern European Time",
     offset: "+02:00",
     iana: [
@@ -168,9 +185,10 @@ export const TIMEZONES: TimezoneEntry[] = [
       "Asia/Jerusalem",
       "Asia/Beirut",
     ],
+    legacyValues: ["Eastern European Time"],
   },
   {
-    value: "Moscow",
+    value: "Europe/Moscow",
     label: "(UTC+03:00) Moscow",
     offset: "+03:00",
     iana: [
@@ -181,57 +199,66 @@ export const TIMEZONES: TimezoneEntry[] = [
       "Africa/Nairobi",
       "Asia/Kuwait",
     ],
+    legacyValues: ["Moscow"],
   },
   {
-    value: "Tehran",
+    value: "Asia/Tehran",
     label: "(UTC+03:30) Tehran",
     offset: "+03:30",
     iana: ["Asia/Tehran"],
+    legacyValues: ["Tehran"],
   },
   {
-    value: "Dubai",
+    value: "Asia/Dubai",
     label: "(UTC+04:00) Dubai",
     offset: "+04:00",
     iana: ["Asia/Dubai", "Asia/Muscat", "Asia/Baku", "Asia/Tbilisi"],
+    legacyValues: ["Dubai"],
   },
   {
-    value: "Kabul",
+    value: "Asia/Kabul",
     label: "(UTC+04:30) Kabul",
     offset: "+04:30",
     iana: ["Asia/Kabul"],
+    legacyValues: ["Kabul"],
   },
   {
-    value: "Karachi",
+    value: "Asia/Karachi",
     label: "(UTC+05:00) Karachi",
     offset: "+05:00",
     iana: ["Asia/Karachi", "Asia/Tashkent", "Asia/Yekaterinburg"],
+    legacyValues: ["Karachi"],
   },
   {
-    value: "Mumbai",
+    value: "Asia/Kolkata",
     label: "(UTC+05:30) Mumbai",
     offset: "+05:30",
     iana: ["Asia/Kolkata", "Asia/Calcutta", "Asia/Colombo"],
+    legacyValues: ["Mumbai"],
   },
   {
-    value: "Kathmandu",
+    value: "Asia/Kathmandu",
     label: "(UTC+05:45) Kathmandu",
     offset: "+05:45",
     iana: ["Asia/Kathmandu"],
+    legacyValues: ["Kathmandu"],
   },
   {
-    value: "Dhaka",
+    value: "Asia/Dhaka",
     label: "(UTC+06:00) Dhaka",
     offset: "+06:00",
     iana: ["Asia/Dhaka", "Asia/Almaty", "Asia/Omsk"],
+    legacyValues: ["Dhaka"],
   },
   {
-    value: "Yangon",
+    value: "Asia/Yangon",
     label: "(UTC+06:30) Yangon",
     offset: "+06:30",
     iana: ["Asia/Yangon", "Asia/Rangoon"],
+    legacyValues: ["Yangon"],
   },
   {
-    value: "Bangkok",
+    value: "Asia/Bangkok",
     label: "(UTC+07:00) Bangkok",
     offset: "+07:00",
     iana: [
@@ -240,9 +267,10 @@ export const TIMEZONES: TimezoneEntry[] = [
       "Asia/Ho_Chi_Minh",
       "Asia/Krasnoyarsk",
     ],
+    legacyValues: ["Bangkok"],
   },
   {
-    value: "Beijing",
+    value: "Asia/Shanghai",
     label: "(UTC+08:00) Beijing",
     offset: "+08:00",
     iana: [
@@ -255,21 +283,24 @@ export const TIMEZONES: TimezoneEntry[] = [
       "Asia/Irkutsk",
       "Australia/Perth",
     ],
+    legacyValues: ["Beijing"],
   },
   {
-    value: "Tokyo",
+    value: "Asia/Tokyo",
     label: "(UTC+09:00) Tokyo",
     offset: "+09:00",
     iana: ["Asia/Tokyo", "Asia/Seoul", "Asia/Yakutsk"],
+    legacyValues: ["Tokyo"],
   },
   {
-    value: "Adelaide",
+    value: "Australia/Adelaide",
     label: "(UTC+09:30) Adelaide",
     offset: "+09:30",
     iana: ["Australia/Adelaide", "Australia/Darwin"],
+    legacyValues: ["Adelaide"],
   },
   {
-    value: "Sydney",
+    value: "Australia/Sydney",
     label: "(UTC+10:00) Sydney",
     offset: "+10:00",
     iana: [
@@ -280,46 +311,85 @@ export const TIMEZONES: TimezoneEntry[] = [
       "Pacific/Guam",
       "Asia/Vladivostok",
     ],
+    legacyValues: ["Sydney"],
   },
   {
-    value: "Noumea",
+    value: "Pacific/Noumea",
     label: "(UTC+11:00) Noumea",
     offset: "+11:00",
     iana: ["Pacific/Noumea", "Asia/Magadan", "Pacific/Guadalcanal"],
+    legacyValues: ["Noumea"],
   },
   {
-    value: "Auckland",
+    value: "Pacific/Auckland",
     label: "(UTC+12:00) Auckland",
     offset: "+12:00",
     iana: ["Pacific/Auckland", "Pacific/Fiji", "Asia/Kamchatka"],
+    legacyValues: ["Auckland"],
   },
   {
-    value: "Nuku'alofa",
+    value: "Pacific/Tongatapu",
     label: "(UTC+13:00) Nuku'alofa",
     offset: "+13:00",
     iana: ["Pacific/Tongatapu", "Pacific/Apia"],
+    legacyValues: ["Nuku'alofa"],
   },
 ];
 
+function findTimezoneEntry(value: string): TimezoneEntry | undefined {
+  return TIMEZONES.find(
+    (tz) =>
+      tz.value === value ||
+      tz.iana.includes(value) ||
+      tz.legacyValues?.includes(value),
+  );
+}
+
 /**
- * Maps an IANA timezone name (e.g. "Asia/Shanghai") to our timezone list value
- * (e.g. "Beijing"). Returns "UTC" if no match found.
+ * Normalizes a timezone value from settings, env, or browser detection into the
+ * canonical IANA identifier used by the app. Unknown values fall back to UTC.
  *
- * @param iana - IANA timezone identifier from Intl.DateTimeFormat
- * @returns The matching timezone value from TIMEZONES
+ * @param value - Timezone value to normalize
+ * @returns Canonical IANA timezone identifier
  *
  * @example
  * ```ts
- * mapIanaToTimezone("Asia/Shanghai"); // "Beijing"
- * mapIanaToTimezone("America/New_York"); // "Eastern Time (US & Canada)"
- * mapIanaToTimezone("Unknown/Zone"); // "UTC"
+ * normalizeTimeZone("Asia/Shanghai"); // "Asia/Shanghai"
+ * normalizeTimeZone("Beijing"); // "Asia/Shanghai"
+ * normalizeTimeZone("Unknown/Zone"); // "UTC"
  * ```
  */
-export function mapIanaToTimezone(iana: string): string {
-  for (const tz of TIMEZONES) {
-    if (tz.iana.includes(iana)) {
-      return tz.value;
-    }
+export function normalizeTimeZone(value: string | null | undefined): string {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return "UTC";
   }
-  return "UTC";
+
+  return findTimezoneEntry(trimmed)?.value ?? "UTC";
+}
+
+/**
+ * Returns whether the app recognizes a timezone value from the curated list,
+ * one of its accepted IANA aliases, or a historical legacy value.
+ *
+ * @param value - Timezone value to validate
+ * @returns `true` when the value can be normalized safely
+ */
+export function isSupportedTimeZone(value: string | null | undefined): boolean {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return false;
+  }
+
+  return findTimezoneEntry(trimmed) !== undefined;
+}
+
+/**
+ * Maps an IANA timezone name from the browser to the canonical stored value.
+ *
+ * @param iana - IANA timezone identifier from `Intl.DateTimeFormat`
+ * @returns Canonical IANA timezone identifier used by Jant
+ */
+export function mapIanaToTimezone(iana: string): string {
+  return normalizeTimeZone(iana);
 }

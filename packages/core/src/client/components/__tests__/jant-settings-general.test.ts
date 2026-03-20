@@ -86,7 +86,7 @@ const labels: SettingsLabels = {
 
 const timezones: SettingsTimezone[] = [
   { value: "UTC", label: "(UTC) UTC" },
-  { value: "Eastern Time (US & Canada)", label: "(UTC-05:00) Eastern Time" },
+  { value: "America/New_York", label: "(UTC-05:00) Eastern Time" },
 ];
 
 const languages: SettingsLanguage[] = [
