@@ -42,9 +42,9 @@ describe("resolveDatabasePath", () => {
 });
 
 describe("resolveNodeDataDir", () => {
-  it("resolves JANT_DATA_DIR relative to the current working directory", () => {
+  it("resolves DATA_DIR relative to the current working directory", () => {
     expect(
-      resolveNodeDataDir({ JANT_DATA_DIR: "./data" } as Bindings, {
+      resolveNodeDataDir({ DATA_DIR: "./data" } as Bindings, {
         cwd: "/srv/jant",
       }),
     ).toBe("/srv/jant/data");
@@ -99,11 +99,11 @@ describe("resolveNodeAssetRoot", () => {
 });
 
 describe("resolvePublicRequestUrl", () => {
-  it("uses JANT_SITE_URL as the canonical host and protocol", () => {
+  it("uses SITE_URL as the canonical host and protocol", () => {
     const url = resolvePublicRequestUrl(
       new Request("http://127.0.0.1:3000/posts/test?draft=1"),
       {
-        JANT_SITE_URL: "https://blog.example.com",
+        SITE_URL: "https://blog.example.com",
       } as Bindings,
     );
 
@@ -119,7 +119,7 @@ describe("resolvePublicRequestUrl", () => {
         },
       }),
       {
-        JANT_TRUST_PROXY: "true",
+        TRUST_PROXY: "true",
       } as Bindings,
     );
 
@@ -172,14 +172,14 @@ describe("migrate", () => {
     }
   });
 
-  it("derives the SQLite path from JANT_DATA_DIR when DATABASE_URL is unset", async () => {
+  it("derives the SQLite path from DATA_DIR when DATABASE_URL is unset", async () => {
     const root = await mkdtemp(join(tmpdir(), "jant-node-data-dir-"));
     tempDirs.push(root);
     const dataDir = join(root, "data");
     const databasePath = join(dataDir, "jant.sqlite");
 
     migrate({
-      JANT_DATA_DIR: dataDir,
+      DATA_DIR: dataDir,
     } as Bindings);
 
     await access(databasePath);

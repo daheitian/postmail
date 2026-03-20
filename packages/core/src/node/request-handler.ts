@@ -185,7 +185,7 @@ export function resolveNodeDataDir(
   options?: { cwd?: string; defaultDataDir?: string },
 ): string | undefined {
   const cwd = options?.cwd ?? process.cwd();
-  const configured = getEnvString(env, "JANT_DATA_DIR", "DATA_DIR");
+  const configured = getEnvString(env, "DATA_DIR");
   const candidate = configured ?? options?.defaultDataDir;
   if (!candidate) {
     return undefined;
@@ -222,16 +222,16 @@ export function applyNodeRuntimeEnvDefaults(
     return;
   }
 
-  if (!getEnvString(env, "JANT_DATA_DIR", "DATA_DIR")) {
-    env.JANT_DATA_DIR = dataDir;
+  if (!getEnvString(env, "DATA_DIR")) {
+    env.DATA_DIR = dataDir;
   }
 
   if (!getEnvString(env, "DATABASE_URL")) {
     env.DATABASE_URL = pathToFileURL(join(dataDir, "jant.sqlite")).href;
   }
 
-  if (!getEnvString(env, "JANT_LOCAL_STORAGE_PATH", "LOCAL_STORAGE_PATH")) {
-    env.JANT_LOCAL_STORAGE_PATH = join(dataDir, "media");
+  if (!getEnvString(env, "LOCAL_STORAGE_PATH")) {
+    env.LOCAL_STORAGE_PATH = join(dataDir, "media");
   }
 }
 

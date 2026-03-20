@@ -1,6 +1,7 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
 import { SETTINGS_KEYS } from "../../../lib/constants.js";
+import { MAX_SITE_FOOTER_LENGTH } from "../../../types.js";
 import { settingsApiRoutes } from "../settings.js";
 
 function createMockStorage() {
@@ -120,6 +121,21 @@ describe("Settings API Routes", () => {
       expect(body.settings.SITE_NAME).toBe("Updated Blog");
     });
 
+    it("trims site text settings before storing them", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ SITE_NAME: "  Updated Blog  " }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.settings.SITE_NAME).toBe("Updated Blog");
+    });
+
     it("normalizes legacy timezone values to canonical IANA identifiers", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/settings", settingsApiRoutes);
@@ -148,6 +164,21 @@ describe("Settings API Routes", () => {
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.error).toBe("Choose a valid time zone.");
+    });
+
+    it("rejects site footer values beyond the maximum length", async () => {
+      const { app } = createTestApp({ authenticated: true });
+      app.route("/api/settings", settingsApiRoutes);
+
+      const res = await app.request("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          SITE_FOOTER: "x".repeat(MAX_SITE_FOOTER_LENGTH + 1),
+        }),
+      });
+
+      expect(res.status).toBe(400);
     });
 
     it("rejects env-only keys", async () => {

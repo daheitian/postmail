@@ -38,7 +38,7 @@ devAuthRoutes.get("/__dev/login", async (c) => {
 
   if (!email || !password) {
     return c.text(
-      "Set JANT_DEMO_EMAIL and JANT_DEMO_PASSWORD before using /__dev/login.",
+      "Set DEMO_EMAIL and DEMO_PASSWORD before using /__dev/login.",
       500,
     );
   }

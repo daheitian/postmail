@@ -3,19 +3,28 @@ import {
   FormatSchema,
   StatusSchema,
   RedirectTypeSchema,
+  CreateCollectionSchema,
   CreatePostSchema,
   CreatePostApiSchema,
   UpdatePostSchema,
   UpdatePostApiSchema,
   SetupSchema,
   SigninSchema,
+  UpdateSiteSettingsSchema,
   normalizeEmail,
   parseFormData,
   parseFormDataOptional,
   validateAttachmentCount,
 } from "../schemas.js";
 import { z } from "zod";
-import { FORMATS, STATUSES, MAX_MEDIA_ATTACHMENTS } from "../../types.js";
+import {
+  FORMATS,
+  STATUSES,
+  MAX_MEDIA_ATTACHMENTS,
+  MAX_COLLECTION_SLUG_LENGTH,
+  MAX_COLLECTION_TITLE_LENGTH,
+  MAX_SITE_FOOTER_LENGTH,
+} from "../../types.js";
 
 describe("FormatSchema", () => {
   it("accepts all valid formats", () => {
@@ -92,6 +101,66 @@ describe("SigninSchema", () => {
       SigninSchema.parse({
         email: "  not-an-email  ",
         password: "password123",
+      }),
+    ).toThrow();
+  });
+});
+
+describe("CreateCollectionSchema", () => {
+  it("accepts a valid collection payload", () => {
+    const result = CreateCollectionSchema.parse({
+      slug: "reading-notes",
+      title: "Reading Notes",
+      description: "Lines worth keeping.",
+    });
+
+    expect(result).toEqual({
+      slug: "reading-notes",
+      title: "Reading Notes",
+      description: "Lines worth keeping.",
+    });
+  });
+
+  it("rejects slugs longer than the maximum length", () => {
+    expect(() =>
+      CreateCollectionSchema.parse({
+        slug: "a".repeat(MAX_COLLECTION_SLUG_LENGTH + 1),
+        title: "Too Long",
+      }),
+    ).toThrow();
+  });
+
+  it("rejects titles longer than the maximum length", () => {
+    expect(() =>
+      CreateCollectionSchema.parse({
+        slug: "reading-notes",
+        title: "a".repeat(MAX_COLLECTION_TITLE_LENGTH + 1),
+      }),
+    ).toThrow();
+  });
+});
+
+describe("UpdateSiteSettingsSchema", () => {
+  it("trims and preserves valid site settings values", () => {
+    const result = UpdateSiteSettingsSchema.parse({
+      siteName: "  My Blog  ",
+      siteDescription: "  Notes and links  ",
+      siteFooter: "  [RSS](/feed)  ",
+    });
+
+    expect(result).toEqual({
+      siteName: "My Blog",
+      siteDescription: "Notes and links",
+      siteFooter: "[RSS](/feed)",
+    });
+  });
+
+  it("rejects site footer values beyond the maximum length", () => {
+    expect(() =>
+      UpdateSiteSettingsSchema.parse({
+        siteName: "My Blog",
+        siteDescription: "",
+        siteFooter: "x".repeat(MAX_SITE_FOOTER_LENGTH + 1),
       }),
     ).toThrow();
   });

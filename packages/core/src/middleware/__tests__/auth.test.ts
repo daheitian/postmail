@@ -335,7 +335,7 @@ describe("requireAuthApi", () => {
     expect(mockApiTokens.verify).not.toHaveBeenCalled();
   });
 
-  it("allows DEV_API_TOKEN when JANT_SITE_URL canonicalizes to a remote host", async () => {
+  it("allows DEV_API_TOKEN when SITE_URL canonicalizes to a remote host", async () => {
     const devToken = "jnt_dev_test123";
     const mockApiTokens = createMockApiTokenService();
 
@@ -345,7 +345,7 @@ describe("requireAuthApi", () => {
       c.env = {
         ...c.env,
         DEV_API_TOKEN: devToken,
-        JANT_SITE_URL: "https://jant.me",
+        SITE_URL: "https://jant.me",
       } as Bindings;
       c.set("auth", createMockAuth(false));
       c.set("services", {

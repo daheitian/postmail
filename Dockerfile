@@ -22,7 +22,7 @@ FROM node:24-bookworm-slim AS runtime
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
-ENV JANT_DATA_DIR=/var/lib/jant
+ENV DATA_DIR=/var/lib/jant
 
 WORKDIR /app
 

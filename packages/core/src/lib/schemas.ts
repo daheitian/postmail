@@ -18,7 +18,14 @@ import {
   NAV_ITEM_TYPES,
   SYSTEM_NAV_KEY_VALUES,
   MAX_MEDIA_ATTACHMENTS,
+  MAX_COLLECTION_SLUG_LENGTH,
+  MAX_COLLECTION_TITLE_LENGTH,
+  MAX_COLLECTION_DESCRIPTION_LENGTH,
+  MAX_SITE_NAME_LENGTH,
+  MAX_SITE_DESCRIPTION_LENGTH,
+  MAX_SITE_FOOTER_LENGTH,
   TEXT_ATTACHMENT_CONTENT_FORMATS,
+  type ConfigKey,
 } from "../types.js";
 import { ValidationError } from "./errors.js";
 import { normalizeSlug } from "./slug-format.js";
@@ -57,6 +64,15 @@ function sanitizeText(maxLength: number) {
     .trim()
     .max(maxLength)
     .transform((s) => s.replace(CONTROL_CHAR_RE, "") || undefined);
+}
+
+/** Trim and strip control characters while preserving empty strings. */
+function sanitizeSettingText(maxLength: number) {
+  return z
+    .string()
+    .trim()
+    .max(maxLength)
+    .transform((s) => s.replace(CONTROL_CHAR_RE, ""));
 }
 
 /**
@@ -418,21 +434,35 @@ export const UpdateNavItemSchema = z.object({
 /**
  * API request body schema for creating a collection
  */
+export const CollectionSlugSchema = z
+  .string()
+  .min(1)
+  .max(MAX_COLLECTION_SLUG_LENGTH, {
+    message: `Keep this link under ${MAX_COLLECTION_SLUG_LENGTH} characters.`,
+  })
+  .transform(normalizeSlug)
+  .pipe(
+    z
+      .string()
+      .min(1)
+      .max(MAX_COLLECTION_SLUG_LENGTH, {
+        message: `Keep this link under ${MAX_COLLECTION_SLUG_LENGTH} characters.`,
+      })
+      .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+  );
+
+export const CollectionTitleSchema = sanitizeText(
+  MAX_COLLECTION_TITLE_LENGTH,
+).pipe(z.string().min(1));
+
+export const CollectionDescriptionValueSchema = sanitizeText(
+  MAX_COLLECTION_DESCRIPTION_LENGTH,
+);
+
 export const CreateCollectionSchema = z.object({
-  slug: z
-    .string()
-    .min(1)
-    .transform(normalizeSlug)
-    .pipe(
-      z
-        .string()
-        .min(1)
-        .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
-    ),
-  title: sanitizeText(300).pipe(z.string().min(1)),
-  description: sanitizeText(500)
-    .optional()
-    .or(z.literal("").transform(() => undefined)),
+  slug: CollectionSlugSchema,
+  title: CollectionTitleSchema,
+  description: CollectionDescriptionValueSchema.optional(),
   sortOrder: CollectionSortOrderSchema.optional(),
 });
 
@@ -440,6 +470,36 @@ export const CreateCollectionSchema = z.object({
  * API request body schema for updating a collection
  */
 export const UpdateCollectionSchema = CreateCollectionSchema.partial();
+
+export const SiteNameSettingSchema = sanitizeSettingText(MAX_SITE_NAME_LENGTH);
+export const SiteDescriptionSettingSchema = sanitizeSettingText(
+  MAX_SITE_DESCRIPTION_LENGTH,
+);
+export const SiteFooterSettingSchema = sanitizeSettingText(
+  MAX_SITE_FOOTER_LENGTH,
+);
+
+export const UpdateSiteSettingsSchema = z.object({
+  siteName: SiteNameSettingSchema,
+  siteDescription: SiteDescriptionSettingSchema,
+  siteFooter: SiteFooterSettingSchema,
+});
+
+const EDITABLE_SETTING_VALUE_SCHEMAS: Partial<
+  Record<ConfigKey, z.ZodSchema<string>>
+> = {
+  SITE_NAME: SiteNameSettingSchema,
+  SITE_DESCRIPTION: SiteDescriptionSettingSchema,
+  SITE_FOOTER: SiteFooterSettingSchema,
+};
+
+export function normalizeEditableSettingValue(
+  key: ConfigKey,
+  value: string,
+): string {
+  const schema = EDITABLE_SETTING_VALUE_SCHEMAS[key];
+  return schema ? parseValidated(schema, value) : value;
+}
 
 /**
  * API request body schema for creating a custom URL

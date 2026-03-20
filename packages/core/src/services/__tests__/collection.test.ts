@@ -8,6 +8,7 @@ import { createCollectionService } from "../collection.js";
 import { createPathService } from "../path.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
+import { MAX_COLLECTION_SLUG_LENGTH } from "../../types.js";
 
 describe("CollectionService", () => {
   let db: Database;
@@ -95,6 +96,15 @@ describe("CollectionService", () => {
 
       const rows = await db.select({ id: collections.id }).from(collections);
       expect(rows).toHaveLength(1);
+    });
+
+    it("rejects slugs longer than the maximum length", async () => {
+      await expect(
+        collectionService.create({
+          slug: "a".repeat(MAX_COLLECTION_SLUG_LENGTH + 1),
+          title: "Too Long",
+        }),
+      ).rejects.toThrow();
     });
   });
 

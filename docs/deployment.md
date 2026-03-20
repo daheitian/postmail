@@ -46,7 +46,7 @@ binding = "R2"
 bucket_name = "jant-media"
 ```
 
-**Recommended:** Enable public access on your R2 bucket and set `JANT_R2_PUBLIC_URL` in `wrangler.toml`. This allows media files to be served directly from Cloudflare's CDN instead of being proxied through your Worker.
+**Recommended:** Enable public access on your R2 bucket and set `R2_PUBLIC_URL` in `wrangler.toml`. This allows media files to be served directly from Cloudflare's CDN instead of being proxied through your Worker.
 
 1. Go to Cloudflare Dashboard → R2 → `jant-media` → Settings → Public access
 2. Enable public access (custom domain or `r2.dev` subdomain)
@@ -54,23 +54,23 @@ bucket_name = "jant-media"
 
 ```toml
 [vars]
-JANT_R2_PUBLIC_URL = "https://media.yourdomain.com"
+R2_PUBLIC_URL = "https://media.yourdomain.com"
 ```
 
-> Without `JANT_R2_PUBLIC_URL`, media uploads still work — files are served through a Worker proxy route (`/media/:id`), but this is slower and uses more Worker CPU.
+> Without `R2_PUBLIC_URL`, media uploads still work — files are served through a Worker proxy route (`/media/:id`), but this is slower and uses more Worker CPU.
 
 ## Configure Secrets
 
 ```bash
 # Required: Auth secret (must be at least 32 characters!)
 # Generate one with: openssl rand -base64 32
-wrangler secret put JANT_AUTH_SECRET
+wrangler secret put AUTH_SECRET
 
 # Required: Your site URL
-wrangler secret put JANT_SITE_URL
+wrangler secret put SITE_URL
 ```
 
-> **Important**: `JANT_AUTH_SECRET` must be at least 32 characters. If it's shorter, authentication will fail with "JANT_AUTH_SECRET is not set".
+> **Important**: `AUTH_SECRET` must be at least 32 characters. If it's shorter, authentication will fail with "AUTH_SECRET is not set".
 
 ## Run Migrations
 
@@ -99,18 +99,18 @@ Set these in `wrangler.toml` under `[vars]`:
 
 ```toml
 [vars]
-JANT_SITE_URL = "https://yourdomain.com"
+SITE_URL = "https://yourdomain.com"
 ```
 
-`JANT_SITE_URL` can also include a subpath, such as `https://example.com/blog`.
+`SITE_URL` can also include a subpath, such as `https://example.com/blog`.
 
 ## Deploy Under a Subpath
 
-To serve Jant from a subpath, set `JANT_SITE_URL` to the full public base URL:
+To serve Jant from a subpath, set `SITE_URL` to the full public base URL:
 
 ```toml
 [vars]
-JANT_SITE_URL = "https://example.com/blog"
+SITE_URL = "https://example.com/blog"
 ```
 
 Jant will then use:
@@ -130,7 +130,7 @@ On Cloudflare, make sure your domain or proxy setup sends both of these path gro
 Or use secrets for sensitive values:
 
 ```bash
-wrangler secret put JANT_AUTH_SECRET
+wrangler secret put AUTH_SECRET
 ```
 
 See [Configuration](configuration.md) for all available options.

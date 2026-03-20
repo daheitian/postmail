@@ -39,17 +39,11 @@ import { AdvancedContent } from "../../ui/dash/appearance/AdvancedContent.js";
 import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
 import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountContent.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
-import { parseValidated } from "../../lib/schemas.js";
+import { parseValidated, UpdateSiteSettingsSchema } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const settingsRoutes = new Hono<Env>();
-
-const UpdateSiteSettingsSchema = z.object({
-  siteName: z.string(),
-  siteDescription: z.string(),
-  siteFooter: z.string(),
-});
 
 const UpdateLocaleSettingsSchema = z.object({
   siteLanguage: z.string(),

@@ -20,11 +20,11 @@ describe("resolveCliRuntime", () => {
     ).toBe("d1-local");
   });
 
-  it("prefers Node SQLite when JANT_DATA_DIR is present", () => {
+  it("prefers Node SQLite when DATA_DIR is present", () => {
     expect(
       resolveCliRuntime(
         { local: false, remote: false },
-        { JANT_DATA_DIR: "./data" },
+        { DATA_DIR: "./data" },
       ),
     ).toBe("node");
   });

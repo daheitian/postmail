@@ -72,6 +72,11 @@ function resolveFallback(key: string, env: Bindings): string {
   return field.defaultValue;
 }
 
+function parseConfigInt(value: string, fallback: number): number {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 /**
  * Build a complete AppConfig from environment bindings and DB settings.
  *
@@ -91,19 +96,24 @@ export function resolveConfig(
   env: Bindings,
   allSettings: Record<string, string>,
 ): AppConfig {
+  const pageSize = parseConfigInt(resolve("PAGE_SIZE", allSettings, env), 50);
+  const searchPageSize = parseConfigInt(
+    resolve("SEARCH_PAGE_SIZE", allSettings, env),
+    pageSize,
+  );
+  const archivePageSize = parseConfigInt(
+    resolve("ARCHIVE_PAGE_SIZE", allSettings, env),
+    pageSize,
+  );
   const siteUrl = normalizeSiteUrl(getSiteUrl(env));
   const siteOrigin = getSiteOrigin(siteUrl);
   const sitePathPrefix = getSitePathPrefix(siteUrl);
   const storageDriver = getConfiguredStorageDriver(env);
-  const r2PublicUrl =
-    getEnvString(env, "JANT_R2_PUBLIC_URL", "R2_PUBLIC_URL") || "";
-  const s3PublicUrl =
-    getEnvString(env, "JANT_S3_PUBLIC_URL", "S3_PUBLIC_URL") || "";
-  const localPublicUrl =
-    getEnvString(env, "JANT_LOCAL_PUBLIC_URL", "LOCAL_PUBLIC_URL") || "";
-  const imageTransformUrl =
-    getEnvString(env, "JANT_IMAGE_TRANSFORM_URL", "IMAGE_TRANSFORM_URL") || "";
-  const demoMode = getEnvString(env, "JANT_DEMO_MODE", "DEMO_MODE") === "true";
+  const r2PublicUrl = getEnvString(env, "R2_PUBLIC_URL") || "";
+  const s3PublicUrl = getEnvString(env, "S3_PUBLIC_URL") || "";
+  const localPublicUrl = getEnvString(env, "LOCAL_PUBLIC_URL") || "";
+  const imageTransformUrl = getEnvString(env, "IMAGE_TRANSFORM_URL") || "";
+  const demoMode = getEnvString(env, "DEMO_MODE") === "true";
 
   // Resolve avatar URL from storage key
   const siteAvatar = allSettings["SITE_AVATAR"] ?? "";
@@ -120,11 +130,7 @@ export function resolveConfig(
 
   // Description is "explicit" when set in DB or ENV (not just the default)
   const dbDescription = allSettings["SITE_DESCRIPTION"];
-  const envDescription = getEnvString(
-    env,
-    "JANT_SITE_DESCRIPTION",
-    "SITE_DESCRIPTION",
-  );
+  const envDescription = getEnvString(env, "SITE_DESCRIPTION");
   const siteDescriptionExplicit = !!(dbDescription || envDescription);
 
   return {
@@ -164,59 +170,34 @@ export function resolveConfig(
 
     // Upload (ENV only)
     uploadMaxFileSize:
-      parseInt(
-        getEnvString(
-          env,
-          "JANT_UPLOAD_MAX_FILE_SIZE_MB",
-          "UPLOAD_MAX_FILE_SIZE_MB",
-        ) ?? "500",
-        10,
-      ) || 500,
+      parseInt(getEnvString(env, "UPLOAD_MAX_FILE_SIZE_MB") ?? "500", 10) ||
+      500,
 
     // Summary extraction (ENV only)
     summaryMaxParagraphs:
-      parseInt(
-        getEnvString(
-          env,
-          "JANT_SUMMARY_MAX_PARAGRAPHS",
-          "SUMMARY_MAX_PARAGRAPHS",
-        ) ?? "5",
-        10,
-      ) || 5,
+      parseInt(getEnvString(env, "SUMMARY_MAX_PARAGRAPHS") ?? "5", 10) || 5,
     summaryMaxChars:
-      parseInt(
-        getEnvString(env, "JANT_SUMMARY_MAX_CHARS", "SUMMARY_MAX_CHARS") ??
-          "500",
-        10,
-      ) || 500,
+      parseInt(getEnvString(env, "SUMMARY_MAX_CHARS") ?? "500", 10) || 500,
 
     // Slug (ENV only)
-    slugIdLength:
-      parseInt(
-        getEnvString(env, "JANT_SLUG_ID_LENGTH", "SLUG_ID_LENGTH") ?? "5",
-        10,
-      ) || 5,
+    slugIdLength: parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5,
 
     // Pagination/Feed (ENV only)
-    pageSize:
-      parseInt(getEnvString(env, "JANT_PAGE_SIZE", "PAGE_SIZE") ?? "20", 10) ||
-      20,
+    pageSize,
+    searchPageSize,
+    archivePageSize,
     rssFeedLimit:
-      parseInt(
-        getEnvString(env, "JANT_RSS_FEED_LIMIT", "RSS_FEED_LIMIT") ?? "50",
-        10,
-      ) || 50,
+      parseInt(getEnvString(env, "RSS_FEED_LIMIT") ?? "50", 10) || 50,
 
     // Demo (ENV only)
-    demoEmail: getEnvString(env, "JANT_DEMO_EMAIL", "DEMO_EMAIL") || "",
-    demoPassword:
-      getEnvString(env, "JANT_DEMO_PASSWORD", "DEMO_PASSWORD") || "",
+    demoEmail: getEnvString(env, "DEMO_EMAIL") || "",
+    demoPassword: getEnvString(env, "DEMO_PASSWORD") || "",
     demoMode,
 
     // Theme (DB internal)
     themeId: allSettings["THEME"] ?? "",
     defaultThemeId:
-      getEnvString(env, "JANT_DEFAULT_THEME", "DEFAULT_THEME") ||
+      getEnvString(env, "DEFAULT_THEME") ||
       CONFIG_FIELDS.DEFAULT_THEME.defaultValue,
     fontThemeId: allSettings["FONT_THEME"] ?? "",
     themeMode:
