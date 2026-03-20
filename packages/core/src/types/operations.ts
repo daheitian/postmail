@@ -50,7 +50,7 @@ export interface CreatePost {
   collectionIds?: string[];
   replyToId?: string;
   publishedAt?: number;
-  mediaIds?: string[];
+  attachments?: PostAttachmentInput[];
 }
 
 export interface UpdatePost {
@@ -68,7 +68,7 @@ export interface UpdatePost {
   rating?: number | null;
   collectionIds?: string[];
   publishedAt?: number;
-  mediaIds?: string[];
+  attachments?: PostAttachmentInput[];
 }
 
 export type CreateNavItem =

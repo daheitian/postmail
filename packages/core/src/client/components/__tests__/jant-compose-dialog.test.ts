@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
+
 import type {
   ComposeLabels,
   ComposeCollection,
@@ -120,6 +121,11 @@ const labels: ComposeLabels = {
   confirmCloseSave: "Save",
   confirmCloseCancel: "Cancel",
   confirmCloseDiscard: "Don't save",
+  confirmAttachedTitle: "Save text attachment?",
+  confirmAttachedSubtitle:
+    "Save these changes to the text attachment, discard them, or keep editing.",
+  confirmAttachedSave: "Save",
+  confirmAttachedDiscard: "Don't save",
   confirmEditTitle: "You have unsaved changes",
   confirmEditSubtitle: "Do you want to publish your changes or discard them?",
   confirmEditPublish: "Publish",
@@ -398,8 +404,7 @@ describe("JantComposeDialog", () => {
     expect(detail.status).toBe("published");
     expect(detail.visibility).toBe("public");
     expect(detail.collectionIds).toEqual([]);
-    expect(detail.mediaIds).toEqual([]);
-    expect(detail.mediaAlts).toEqual({});
+    expect(detail.attachments).toEqual([]);
     expect(detail.pendingAttachments).toEqual([]);
   });
 
@@ -1666,7 +1671,7 @@ describe("JantComposeDialog", () => {
     URL.revokeObjectURL(previewUrl);
   });
 
-  it("submit includes mediaIds and mediaAlts from completed attachments", async () => {
+  it("submit includes ordered attachment inputs from completed attachments", async () => {
     const el = await createElement();
     const editor = requireElement(
       el.querySelector<JantComposeEditor>("jant-compose-editor"),
@@ -1691,6 +1696,7 @@ describe("JantComposeDialog", () => {
         chars: null,
       },
     ];
+    editor._attachmentOrder = ["test-id-1"];
     editor._bodyJson = {
       type: "doc",
       content: [
@@ -1721,8 +1727,14 @@ describe("JantComposeDialog", () => {
     const detail = receivedDetail as unknown as ComposeSubmitDetail & {
       pendingAttachments: unknown[];
     };
-    expect(detail.mediaIds).toEqual(["media-1"]);
-    expect(detail.mediaAlts).toEqual({ "media-1": "A test image" });
+    expect(detail.attachments).toEqual([
+      {
+        type: "media",
+        clientId: "test-id-1",
+        mediaId: "media-1",
+        alt: "A test image",
+      },
+    ]);
     expect(detail.pendingAttachments).toEqual([]);
 
     URL.revokeObjectURL(previewUrl);
@@ -1862,6 +1874,31 @@ describe("JantComposeDialog", () => {
     window.dispatchEvent(event);
 
     expect(event.defaultPrevented).toBe(false);
+    expect(
+      (
+        el as unknown as { _hasUnsavedChanges: () => boolean }
+      )._hasUnsavedChanges(),
+    ).toBe(false);
+  });
+
+  it("ignores empty attached text placeholders when checking unsaved changes", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    editor._attachedTexts = [
+      {
+        clientId: "t1",
+        bodyJson: null,
+        bodyHtml: "",
+        summary: "",
+      },
+    ];
+    editor._attachmentOrder = ["t1"];
+    await editor.updateComplete;
+
     expect(
       (
         el as unknown as { _hasUnsavedChanges: () => boolean }
@@ -2135,6 +2172,230 @@ describe("JantComposeDialog", () => {
     expect(
       el.querySelector(".compose-confirm-title")?.textContent?.trim(),
     ).toBe("Save to drafts?");
+  });
+
+  it("cancelling an empty attached text editor discards it without confirmation", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+
+    editor._attachedTexts = [
+      {
+        clientId: "t1",
+        bodyJson: null,
+        bodyHtml: "",
+        summary: "",
+      },
+    ];
+    editor._attachmentOrder = ["t1"];
+    await editor.updateComplete;
+
+    (
+      el as unknown as {
+        _attachedTextIndex: number;
+        _attachedPanelOpen: boolean;
+        _attachedEditor: { getJSON(): unknown; destroy(): void } | null;
+        _attachedTextSnapshot: unknown;
+        _cancelAttachedPanel: () => Promise<void>;
+      }
+    )._attachedTextIndex = 0;
+    (
+      el as unknown as {
+        _attachedPanelOpen: boolean;
+      }
+    )._attachedPanelOpen = true;
+    (
+      el as unknown as {
+        _attachedEditor: { getJSON(): unknown; destroy(): void } | null;
+      }
+    )._attachedEditor = {
+      getJSON: () => ({
+        type: "doc",
+        content: [{ type: "paragraph" }],
+      }),
+      destroy: vi.fn(),
+    };
+    (
+      el as unknown as {
+        _attachedTextSnapshot: unknown;
+      }
+    )._attachedTextSnapshot = null;
+
+    await (
+      el as unknown as {
+        _cancelAttachedPanel: () => Promise<void>;
+      }
+    )._cancelAttachedPanel();
+
+    expect(el._attachedPanelOpen).toBe(false);
+    expect(editor._attachedTexts).toEqual([]);
+    expect(editor._attachmentOrder).toEqual([]);
+  });
+
+  it("cancelling a dirty attached text editor uses the shared three-action confirm panel", async () => {
+    const el = await createElement();
+
+    (
+      el as unknown as {
+        _attachedTextIndex: number;
+        _attachedPanelOpen: boolean;
+        _attachedEditor: {
+          commands: { focus: () => void };
+          destroy(): void;
+          getJSON(): unknown;
+        } | null;
+        _attachedTextSnapshot: unknown;
+        _cancelAttachedPanel: () => void;
+      }
+    )._attachedTextIndex = 0;
+    (
+      el as unknown as {
+        _attachedPanelOpen: boolean;
+      }
+    )._attachedPanelOpen = true;
+    (
+      el as unknown as {
+        _attachedEditor: {
+          commands: { focus: () => void };
+          destroy(): void;
+          getJSON(): unknown;
+        } | null;
+      }
+    )._attachedEditor = {
+      commands: { focus: vi.fn() },
+      destroy: vi.fn(),
+      getJSON: () => ({
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Changed attachment" }],
+          },
+        ],
+      }),
+    };
+    (
+      el as unknown as {
+        _attachedTextSnapshot: unknown;
+      }
+    )._attachedTextSnapshot = null;
+
+    (
+      el as unknown as {
+        _cancelAttachedPanel: () => void;
+      }
+    )._cancelAttachedPanel();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(true);
+    expect(el.querySelector(".compose-confirm-panel")).not.toBeNull();
+    expect(
+      el.querySelector(".compose-confirm-title")?.textContent?.trim(),
+    ).toBe("Save text attachment?");
+    expect(el.querySelector(".compose-confirm-save")?.textContent?.trim()).toBe(
+      "Save",
+    );
+    expect(
+      el.querySelector(".compose-confirm-discard")?.textContent?.trim(),
+    ).toBe("Don't save");
+    expect(
+      el.querySelector(".compose-confirm-cancel")?.textContent?.trim(),
+    ).toBe("Cancel");
+  });
+
+  it("cancel on attached text confirm returns focus to the attached editor", async () => {
+    const el = await createElement();
+    const focusSpy = vi.fn();
+
+    (
+      el as unknown as {
+        _attachedPanelOpen: boolean;
+        _confirmPanelOpen: boolean;
+        _confirmForAttachedText: boolean;
+        _attachedEditor: {
+          commands: { focus: () => void };
+          destroy(): void;
+        } | null;
+      }
+    )._attachedPanelOpen = true;
+    (
+      el as unknown as {
+        _confirmPanelOpen: boolean;
+        _confirmForAttachedText: boolean;
+        _attachedEditor: {
+          commands: { focus: () => void };
+          destroy(): void;
+        } | null;
+      }
+    )._confirmPanelOpen = true;
+    (
+      el as unknown as {
+        _confirmForAttachedText: boolean;
+        _attachedEditor: {
+          commands: { focus: () => void };
+          destroy(): void;
+        } | null;
+      }
+    )._confirmForAttachedText = true;
+    (
+      el as unknown as {
+        _attachedEditor: {
+          commands: { focus: () => void };
+          destroy(): void;
+        } | null;
+      }
+    )._attachedEditor = {
+      commands: { focus: focusSpy },
+      destroy: vi.fn(),
+    };
+
+    el.requestClose();
+    await el.updateComplete;
+    await flushUpdates(el);
+
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(focusSpy).toHaveBeenCalled();
+  });
+
+  it("clicking the empty attached editor area focuses the attached editor", async () => {
+    const el = await createElement();
+    const focusSpy = vi.fn();
+
+    (
+      el as unknown as {
+        _attachedPanelOpen: boolean;
+        _attachedEditor: {
+          commands: { focus: () => void };
+          destroy(): void;
+        } | null;
+      }
+    )._attachedPanelOpen = true;
+    (
+      el as unknown as {
+        _attachedEditor: {
+          commands: { focus: () => void };
+          destroy(): void;
+        } | null;
+      }
+    )._attachedEditor = {
+      commands: { focus: focusSpy },
+      destroy: vi.fn(),
+    };
+    await el.updateComplete;
+
+    const container = requireElement(
+      el.querySelector<HTMLElement>(".compose-attached-tiptap"),
+      "expected attached editor container",
+    );
+    container.dispatchEvent(
+      new MouseEvent("mousedown", {
+        bubbles: true,
+      }),
+    );
+
+    expect(focusSpy).toHaveBeenCalled();
   });
 
   it("confirm save draft dispatches submit-deferred with draft status", async () => {

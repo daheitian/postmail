@@ -913,7 +913,9 @@ msgstr "您要發佈變更還是捨棄它們？"
 msgid "Doesn't appear in Latest. Still appears in collections you add it to."
 msgstr "不會出現在 Latest 中，但仍會出現在你加入的 Collection 裡。"
 
+#. @context: Confirm action sheet - discard text attachment changes button
 #. @context: Confirm close action sheet - discard button
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Don't save"
 msgstr "不儲存"
@@ -2198,8 +2200,10 @@ msgstr "撤銷此權杖？任何使用它的腳本將會停止運作。"
 #. @context: Button to save collection
 #. @context: Button to save settings
 #. @context: Button to save settings changes
+#. @context: Confirm action sheet - save text attachment changes button
 #. @context: Confirm close action sheet - save draft button
 #. @context: Save nav item changes
+#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
 #: src/ui/dash/settings/AvatarContent.tsx
@@ -2228,10 +2232,20 @@ msgstr "儲存 CSS"
 msgid "Save draft"
 msgstr "儲存草稿"
 
+#. @context: Confirm action sheet title when closing text attachment editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save text attachment?"
+msgstr "儲存文字附件？"
+
 #. @context: Filled primary button label
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Save theme"
 msgstr "儲存主題"
+
+#. @context: Confirm action sheet subtitle when closing text attachment editor
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Save these changes to the text attachment, discard them, or keep editing."
+msgstr "儲存對文字附件的變更、不儲存，或繼續編輯。"
 
 #. @context: Confirm close action sheet subtitle
 #: src/ui/compose/ComposeDialog.tsx

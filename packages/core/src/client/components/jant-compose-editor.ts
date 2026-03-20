@@ -225,16 +225,55 @@ export class JantComposeEditor extends LitElement {
     );
   }
 
+  private _normalizeDocJson(json: JSONContent | null): JSONContent | null {
+    if (!json) return null;
+    return this._isEmptyDoc(json) ? null : json;
+  }
+
+  getNormalizedBodyJson(): JSONContent | null {
+    return this._normalizeDocJson(this._bodyJson);
+  }
+
+  getEffectiveAttachedTexts(): AttachedTextItem[] {
+    return this._attachedTexts.flatMap((item) => {
+      const bodyJson = this._normalizeDocJson(item.bodyJson);
+      if (!bodyJson) return [];
+      return [
+        {
+          ...item,
+          bodyJson,
+          originalBodyJson: this._normalizeDocJson(
+            item.originalBodyJson ?? null,
+          ),
+        },
+      ];
+    });
+  }
+
+  getEffectiveAttachmentOrder(): string[] {
+    const attachedTextIds = new Set(
+      this.getEffectiveAttachedTexts().map((item) => item.clientId),
+    );
+    const attachmentIds = new Set(
+      this._attachments.map((item) => item.clientId),
+    );
+
+    return this._attachmentOrder.filter(
+      (clientId) =>
+        attachmentIds.has(clientId) || attachedTextIds.has(clientId),
+    );
+  }
+
   getData() {
-    const body =
-      this._bodyJson && !this._isEmptyDoc(this._bodyJson)
-        ? JSON.stringify(this._bodyJson)
-        : "";
+    const bodyJson = this.getNormalizedBodyJson();
+    const attachedTexts = this.getEffectiveAttachedTexts();
+    const attachmentOrder = this.getEffectiveAttachmentOrder();
+    const body = bodyJson ? JSON.stringify(bodyJson) : "";
     const shared = {
       rating: this._rating,
-      attachedTexts: this._attachedTexts,
+      attachedTexts,
       attachments: this._attachments,
-      attachmentOrder: this._attachmentOrder,
+      attachmentOrder,
     };
 
     switch (this.format) {
@@ -533,6 +572,7 @@ export class JantComposeEditor extends LitElement {
           bodyHtml: t.bodyHtml ?? "",
           summary: t.summary,
           mediaId: t.mediaId,
+          originalBodyJson: parsed,
         };
       });
       this._attachedTexts = texts;
@@ -738,13 +778,14 @@ export class JantComposeEditor extends LitElement {
     bodyJson: JSONContent | null,
     bodyHtml?: string,
   ) {
-    const plainText = this._extractPlainText(bodyJson);
+    const normalizedBodyJson = this._normalizeDocJson(bodyJson);
+    const plainText = this._extractPlainText(normalizedBodyJson);
     this._attachedTexts = this._attachedTexts.map((item, i) =>
       i === index
         ? {
             ...item,
-            bodyJson,
-            bodyHtml: bodyHtml ?? "",
+            bodyJson: normalizedBodyJson,
+            bodyHtml: normalizedBodyJson ? (bodyHtml ?? "") : "",
             summary: this._computeSummary(plainText),
           }
         : item,
@@ -762,8 +803,9 @@ export class JantComposeEditor extends LitElement {
   }
 
   private _hasAttachedTextContent(bodyJson: JSONContent | null): boolean {
-    if (!bodyJson) return false;
-    return this._extractPlainText(bodyJson).trim().length > 0;
+    const normalizedBodyJson = this._normalizeDocJson(bodyJson);
+    if (!normalizedBodyJson) return false;
+    return this._extractPlainText(normalizedBodyJson).trim().length > 0;
   }
 
   private _extractPlainText(json: JSONContent | null): string {

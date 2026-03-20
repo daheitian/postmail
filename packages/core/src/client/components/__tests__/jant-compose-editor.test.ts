@@ -176,6 +176,11 @@ const labels: ComposeLabels = {
   confirmCloseSave: "Save",
   confirmCloseCancel: "Cancel",
   confirmCloseDiscard: "Don't save",
+  confirmAttachedTitle: "Save text attachment?",
+  confirmAttachedSubtitle:
+    "Save these changes to the text attachment, discard them, or keep editing.",
+  confirmAttachedSave: "Save",
+  confirmAttachedDiscard: "Don't save",
   confirmEditTitle: "You have unsaved changes",
   confirmEditSubtitle: "Do you want to publish your changes or discard them?",
   confirmEditPublish: "Publish",
@@ -525,6 +530,39 @@ describe("JantComposeEditor", () => {
     expect(data.url).toBe("");
     expect(data.quoteText).toBe("");
     expect(data.quoteAuthor).toBe("");
+  });
+
+  it("getData omits empty attached text placeholders", async () => {
+    const el = await createElement("note");
+    el._attachedTexts = [
+      {
+        clientId: "t1",
+        bodyJson: null,
+        summary: "",
+        bodyHtml: "",
+      },
+      {
+        clientId: "t2",
+        bodyJson: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "Keep me" }],
+            },
+          ],
+        },
+        summary: "Keep me",
+        bodyHtml: "<p>Keep me</p>",
+      },
+    ];
+    el._attachmentOrder = ["t1", "t2"];
+
+    const data = el.getData();
+
+    expect(data.attachedTexts).toHaveLength(1);
+    expect(data.attachedTexts[0]?.clientId).toBe("t2");
+    expect(data.attachmentOrder).toEqual(["t2"]);
   });
 
   it("getData omits title when showTitle is off in note mode", async () => {

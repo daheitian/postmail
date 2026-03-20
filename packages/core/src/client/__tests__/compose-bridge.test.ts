@@ -84,11 +84,7 @@ describe("compose bridge", () => {
           visibility: "public",
           rating: 0,
           collectionIds: [],
-          mediaIds: [],
-          mediaAlts: {},
-          attachedTexts: [],
-          attachmentOrder: [],
-          mediaClientMap: {},
+          attachments: [],
           pendingAttachments: [],
         },
       }),
@@ -158,11 +154,7 @@ describe("compose bridge", () => {
           visibility: "public",
           rating: 0,
           collectionIds: [],
-          mediaIds: [],
-          mediaAlts: {},
-          attachedTexts: [],
-          attachmentOrder: [],
-          mediaClientMap: {},
+          attachments: [],
           pendingAttachments: [],
         },
       }),
@@ -176,5 +168,93 @@ describe("compose bridge", () => {
     expect(globalThis.sessionStorage.getItem(QUEUED_TOAST_STORAGE_KEY)).toBe(
       '{"message":"Published!","type":"success"}',
     );
+  });
+
+  it("submits inline text attachments through the attachments API shape", async () => {
+    const composeEl = document.createElement(
+      "jant-compose-dialog",
+    ) as ComposeHarness;
+    composeEl.refreshCollections = vi.fn(async () => true);
+    composeEl.pageMode = false;
+    document.body.appendChild(composeEl);
+
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async (input, init) => {
+        const raw =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.toString()
+              : input.url;
+        const url = new URL(raw, "http://localhost");
+
+        if (url.pathname === "/compose") {
+          expect(JSON.parse(String(init?.body))).toMatchObject({
+            attachments: [
+              {
+                type: "text",
+                contentFormat: "markdown",
+                content: "Attached body",
+                summary: "Attached body",
+              },
+            ],
+          });
+
+          return new Response(
+            JSON.stringify({
+              status: "draft",
+              toast: "Draft saved.",
+            }),
+            {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+
+        throw new Error(`Unexpected fetch: ${url.pathname}`);
+      });
+
+    composeEl.dispatchEvent(
+      new CustomEvent("jant:compose-submit-deferred", {
+        bubbles: true,
+        detail: {
+          format: "note",
+          title: "",
+          body: "Draft body",
+          url: "",
+          quoteText: "",
+          quoteAuthor: "",
+          slug: "",
+          status: "draft",
+          visibility: "public",
+          rating: 0,
+          collectionIds: [],
+          attachments: [
+            {
+              type: "text",
+              clientId: "t1",
+              bodyJson: {
+                type: "doc",
+                content: [
+                  {
+                    type: "paragraph",
+                    content: [{ type: "text", text: "Attached body" }],
+                  },
+                ],
+              },
+              summary: "Attached body",
+            },
+          ],
+          pendingAttachments: [],
+        },
+      }),
+    );
+
+    await flushAsyncWork();
+    await flushAsyncWork();
+
+    expect(fetchSpy).toHaveBeenCalled();
   });
 });

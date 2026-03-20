@@ -33,6 +33,8 @@ export interface AttachedTextItem {
   summary: string;
   /** Set for already-persisted text media items (edit mode) */
   mediaId?: string;
+  /** Snapshot from the persisted version, used to avoid rewriting unchanged text attachments */
+  originalBodyJson?: JSONContent | null;
 }
 
 export interface DraftItem {
@@ -123,6 +125,10 @@ export interface ComposeLabels {
   confirmCloseSave: string;
   confirmCloseCancel: string;
   confirmCloseDiscard: string;
+  confirmAttachedTitle: string;
+  confirmAttachedSubtitle: string;
+  confirmAttachedSave: string;
+  confirmAttachedDiscard: string;
   confirmEditTitle: string;
   confirmEditSubtitle: string;
   confirmEditPublish: string;
@@ -168,6 +174,22 @@ export interface ComposeLabels {
 
 export type ComposeVisibility = "public" | "latest_hidden" | "private";
 
+export type ComposeSubmitAttachment =
+  | {
+      type: "media";
+      clientId: string;
+      mediaId: string | null;
+      alt?: string;
+    }
+  | {
+      type: "text";
+      clientId: string;
+      bodyJson: JSONContent;
+      summary: string;
+      mediaId?: string;
+      originalBodyJson?: JSONContent | null;
+    };
+
 export interface ComposeSubmitDetail {
   format: ComposeFormat;
   title: string;
@@ -180,13 +202,7 @@ export interface ComposeSubmitDetail {
   slug?: string;
   rating: number;
   collectionIds: string[];
-  mediaIds: string[];
-  mediaAlts: Record<string, string>;
-  attachedTexts: AttachedTextItem[];
-  /** Interleaved order of media clientIds + text clientIds */
-  attachmentOrder: string[];
-  /** clientId → mediaId for already-uploaded file attachments (captured at submit time) */
-  mediaClientMap: Record<string, string>;
+  attachments: ComposeSubmitAttachment[];
   editPostId?: string;
   replyToId?: string;
   replyThreadRootId?: string;

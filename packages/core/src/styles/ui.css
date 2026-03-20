@@ -3704,6 +3704,11 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    cursor: text;
+  }
+
+  .compose-attached-tiptap .tiptap {
+    min-height: 100%;
   }
 
   .compose-attached-tiptap::-webkit-scrollbar {

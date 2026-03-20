@@ -11,8 +11,7 @@ import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { requireAuth } from "../middleware/auth.js";
-import { CreatePostSchema } from "../lib/schemas.js";
-import { ValidationError } from "../lib/errors.js";
+import { CreatePostApiSchema } from "../lib/schemas.js";
 import { sse, dsToast } from "../lib/sse.js";
 import { getI18n } from "../i18n/index.js";
 import { toPublicPath } from "../lib/url.js";
@@ -34,7 +33,6 @@ const INITIAL_SIGNALS = {
   status: "published",
   rating: 0,
   collectionIds: [],
-  mediaIds: [],
   _composeLoading: false,
   _showRating: false,
   _showCollection: false,
@@ -49,7 +47,7 @@ composeRoutes.post("/", async (c) => {
   const raw = await c.req.json();
   const wantsJson = c.req.header("accept")?.includes("application/json");
 
-  const result = CreatePostSchema.safeParse(raw);
+  const result = CreatePostApiSchema.safeParse(raw);
   if (!result.success) {
     const firstError =
       result.error.issues[0]?.message ??
@@ -68,22 +66,7 @@ composeRoutes.post("/", async (c) => {
 
   const data = result.data;
 
-  // Validate media IDs
-  if (data.mediaIds) {
-    try {
-      await c.var.services.media.validateIds(data.mediaIds);
-    } catch (e) {
-      if (e instanceof ValidationError) {
-        if (wantsJson) {
-          return c.json({ status: "error" as const, error: e.message }, 422);
-        }
-        return dsToast(e.message, "error");
-      }
-      throw e;
-    }
-  }
-
-  const post = await c.var.services.posts.create(
+  const post = await c.var.services.posts.createWithAttachments(
     {
       format: data.format,
       slug: data.slug || undefined,
@@ -104,27 +87,20 @@ composeRoutes.post("/", async (c) => {
       rating: data.rating || undefined,
       collectionIds: data.collectionIds,
       replyToId: data.replyToId,
+      publishedAt: data.publishedAt,
+    },
+    data.attachments,
+    {
+      media: c.var.services.media,
+      storage: c.var.storage,
+      storageDriver: c.var.appConfig.storageDriver,
+      maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
     },
     {
       maxParagraphs: c.var.appConfig.summaryMaxParagraphs,
       maxChars: c.var.appConfig.summaryMaxChars,
     },
   );
-
-  // Attach media if provided
-  if (data.mediaIds && data.mediaIds.length > 0) {
-    await c.var.services.media.attachToPost(post.id, data.mediaIds);
-
-    // Save alt text for each media item
-    if (data.mediaAlts) {
-      const altEntries = Object.entries(data.mediaAlts).filter(
-        ([id, alt]) => alt && (data.mediaIds ?? []).includes(id),
-      );
-      await Promise.all(
-        altEntries.map(([id, alt]) => c.var.services.media.updateAlt(id, alt)),
-      );
-    }
-  }
 
   const isDraft = (data.status ?? "published") === "draft";
 

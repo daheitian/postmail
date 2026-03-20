@@ -2,6 +2,36 @@ import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../__tests__/helpers/app.js";
 import { composeRoutes } from "../compose.js";
 
+function createMockStorage() {
+  const files = new Map<string, { body: Uint8Array; contentType?: string }>();
+
+  return {
+    files,
+    async put(
+      key: string,
+      body: Uint8Array | ReadableStream,
+      opts?: { contentType?: string },
+    ) {
+      const bytes =
+        body instanceof Uint8Array
+          ? body
+          : new Uint8Array(await new Response(body).arrayBuffer());
+      files.set(key, { body: bytes, contentType: opts?.contentType });
+    },
+    async get(key: string) {
+      const file = files.get(key);
+      if (!file) return null;
+      return {
+        body: new Response(file.body).body as ReadableStream,
+        contentType: file.contentType,
+      };
+    },
+    async delete(key: string) {
+      files.delete(key);
+    },
+  };
+}
+
 describe("Compose Routes", () => {
   describe("POST /compose", () => {
     it("redirects to signin when not authenticated", async () => {
@@ -136,7 +166,7 @@ describe("Compose Routes", () => {
       expect(text).toContain("toast-error");
     });
 
-    it("attaches media IDs when provided", async () => {
+    it("attaches ordered attachment inputs when provided", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/compose", composeRoutes);
 
@@ -157,7 +187,7 @@ describe("Compose Routes", () => {
         body: JSON.stringify({
           format: "note",
           bodyMarkdown: "Post with media",
-          mediaIds: [media.id],
+          attachments: [{ type: "media", mediaId: media.id }],
         }),
       });
 
@@ -170,6 +200,48 @@ describe("Compose Routes", () => {
       const attachments = await services.media.getByPostId(posts[0].id);
       expect(attachments).toHaveLength(1);
       expect(attachments[0].id).toBe(media.id);
+    });
+
+    it("creates inline text attachments through the shared attachments schema", async () => {
+      const storage = createMockStorage();
+      const { app, services } = createTestApp({
+        authenticated: true,
+        storage,
+      });
+      app.route("/compose", composeRoutes);
+
+      const res = await app.request("/compose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "note",
+          bodyMarkdown: "Post with attached text",
+          attachments: [
+            {
+              type: "text",
+              contentFormat: "markdown",
+              content: "Attached body",
+              summary: "Attached body",
+            },
+          ],
+        }),
+      });
+
+      expect(res.status).toBe(200);
+
+      const posts = await services.posts.list();
+      expect(posts).toHaveLength(1);
+
+      const attachments = await services.media.getByPostId(posts[0].id);
+      expect(attachments).toHaveLength(1);
+      expect(attachments[0].mimeType).toBe("text/x-tiptap+json");
+
+      const content = await services.media.getTextAttachmentContent(
+        attachments[0].id,
+        storage,
+      );
+      expect(content?.content).toBe("Attached body");
+      expect(storage.files.size).toBe(1);
     });
 
     it("resets compose signals after publishing", async () => {

@@ -7,8 +7,10 @@
 
 import type { ComposeSubmitDetail } from "./components/compose-types.js";
 import type { ComposeAttachment } from "./components/compose-types.js";
+import type { ComposeSubmitAttachment } from "./components/compose-types.js";
 import type { JantComposeDialog } from "./components/jant-compose-dialog.js";
 import type { JantComposeEditor } from "./components/jant-compose-editor.js";
+import type { PostAttachmentInput } from "../types.js";
 import { AudioProcessor } from "./audio-processor.js";
 import { ImageProcessor } from "./image-processor.js";
 import { VideoProcessor } from "./video-processor.js";
@@ -27,6 +29,7 @@ import { getJsonString, readJsonObject } from "./json.js";
 import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
 import { publicPath } from "./runtime-paths.js";
 import { setupThreadContexts } from "./thread-context.js";
+import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
 import { getMediaCategory } from "../lib/upload.js";
 
 function getComposeEditorFromEventTarget(
@@ -400,7 +403,10 @@ document.addEventListener("click", (e: MouseEvent) => {
 // ── Submit handler ──────────────────────────────────────────────────
 
 /** Build the JSON body for both create and update requests */
-function buildPostBody(detail: ComposeSubmitDetail) {
+function buildPostBody(
+  detail: ComposeSubmitDetail,
+  attachments: PostAttachmentInput[],
+) {
   const isQuote = detail.format === "quote";
   const isLink = detail.format === "link";
 
@@ -417,58 +423,57 @@ function buildPostBody(detail: ComposeSubmitDetail) {
     visibility: detail.visibility || undefined,
     rating: detail.rating || undefined,
     collectionIds: detail.collectionIds,
-    mediaIds: detail.mediaIds.length > 0 ? detail.mediaIds : undefined,
-    mediaAlts:
-      Object.keys(detail.mediaAlts).length > 0 ? detail.mediaAlts : undefined,
+    attachments: attachments.length > 0 ? attachments : undefined,
     replyToId: detail.replyToId || undefined,
   };
 }
 
-/**
- * Upload text attachments as files to /api/upload.
- * Returns a map of clientId → mediaId for newly uploaded items.
- */
-async function uploadTextAttachments(
-  attachedTexts: ComposeSubmitDetail["attachedTexts"],
-): Promise<Map<string, string>> {
-  const clientIdToMediaId = new Map<string, string>();
+function hasAttachedTextChanged(
+  attachment: Extract<ComposeSubmitAttachment, { type: "text" }>,
+): boolean {
+  return (
+    JSON.stringify(attachment.bodyJson) !==
+    JSON.stringify(attachment.originalBodyJson ?? null)
+  );
+}
 
-  for (const item of attachedTexts) {
-    // Always re-upload text attachments with content (content may have been edited)
-    if (item.bodyJson === null) {
-      // No content — keep existing mediaId if present
-      if (item.mediaId) {
-        clientIdToMediaId.set(item.clientId, item.mediaId);
-      }
+function buildRequestAttachments(
+  detail: ComposeSubmitDetail,
+  pendingMediaIds: Map<string, string>,
+): PostAttachmentInput[] {
+  const requestAttachments: PostAttachmentInput[] = [];
+
+  for (const attachment of detail.attachments) {
+    if (attachment.type === "media") {
+      const mediaId =
+        attachment.mediaId ?? pendingMediaIds.get(attachment.clientId);
+      if (!mediaId) continue;
+
+      requestAttachments.push({
+        type: "media",
+        mediaId,
+        alt: attachment.alt,
+      });
       continue;
     }
 
-    const envelope = { json: item.bodyJson, html: item.bodyHtml ?? "" };
-    const blob = new Blob([JSON.stringify(envelope)], {
-      type: "text/x-tiptap+json",
-    });
-    const formData = new FormData();
-    formData.append("file", blob, "attached-text.json");
-    formData.append("summary", item.summary);
-
-    try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
+    if (attachment.mediaId && !hasAttachedTextChanged(attachment)) {
+      requestAttachments.push({
+        type: "media",
+        mediaId: attachment.mediaId,
       });
-      if (res.ok) {
-        const data = await readJsonObject(res);
-        const mediaId = getJsonString(data, "id");
-        if (mediaId) {
-          clientIdToMediaId.set(item.clientId, mediaId);
-        }
-      }
-    } catch {
-      // Upload failed — skip this item
+      continue;
     }
+
+    requestAttachments.push({
+      type: "text",
+      contentFormat: "markdown",
+      content: tiptapJsonToMarkdown(JSON.stringify(attachment.bodyJson)),
+      summary: attachment.summary,
+    });
   }
 
-  return clientIdToMediaId;
+  return requestAttachments;
 }
 
 // ── Deferred submit handler ─────────────────────────────────────────
@@ -560,70 +565,28 @@ document.addEventListener("jant:compose-submit-deferred", async (e: Event) => {
       }
     }
 
-    // Merge newly completed mediaIds with already-done ones
-    const newMediaIds = results.filter((id): id is string => id !== null);
-
-    // Build clientId → mediaId map for file attachments
+    // Build clientId → mediaId map for file attachments completed by this submit
     const mediaClientIdMap = new Map<string, string>();
     for (const att of detail.pendingAttachments) {
       const idx = pendingClientIds.indexOf(att.clientId);
       const mediaId = results[idx];
       if (mediaId) mediaClientIdMap.set(att.clientId, mediaId);
     }
-    // Upload text attachments as files
-    const textMediaMap = await uploadTextAttachments(detail.attachedTexts);
-
-    // Merge alt text: for pending attachments that just uploaded,
-    // map their clientId → mediaId and include their alt text
-    const mediaAlts = { ...detail.mediaAlts };
-    for (const att of detail.pendingAttachments) {
-      if (att.alt) {
-        const mediaId = mediaClientIdMap.get(att.clientId);
-        if (mediaId) {
-          mediaAlts[mediaId] = att.alt;
-        }
-      }
-    }
-
-    // Build clientId → mediaId for all file attachments.
-    // Uses mediaClientMap captured at submit time (editor may be reset by now).
-    const fileClientIdMap = new Map<string, string>(mediaClientIdMap);
-    for (const [cid, mid] of Object.entries(detail.mediaClientMap ?? {})) {
-      fileClientIdMap.set(cid, mid);
-    }
-
-    // Build final ordered list from attachmentOrder
-    let allMediaIds: string[];
-    if (detail.attachmentOrder && detail.attachmentOrder.length > 0) {
-      allMediaIds = detail.attachmentOrder
-        .map((clientId) => {
-          // Check file attachments
-          const fileId = fileClientIdMap.get(clientId);
-          if (fileId) return fileId;
-          // Check text attachments
-          const textId = textMediaMap.get(clientId);
-          if (textId) return textId;
-          return null;
-        })
-        .filter((id): id is string => id !== null);
-    } else {
-      // Fallback: combine in order
-      allMediaIds = [
-        ...detail.mediaIds,
-        ...newMediaIds,
-        ...Array.from(textMediaMap.values()),
-      ];
-    }
+    const requestAttachments = buildRequestAttachments(
+      detail,
+      mediaClientIdMap,
+    );
 
     const endpoint = isEdit ? `/api/posts/${detail.editPostId}` : "/compose";
     const method = isEdit ? "PUT" : "POST";
 
-    const bodyPayload = buildPostBody({
-      ...detail,
-      status: draftFallback ? "draft" : detail.status,
-      mediaIds: allMediaIds,
-      mediaAlts,
-    });
+    const bodyPayload = buildPostBody(
+      {
+        ...detail,
+        status: draftFallback ? "draft" : detail.status,
+      },
+      requestAttachments,
+    );
 
     const res = await fetch(endpoint, {
       method,

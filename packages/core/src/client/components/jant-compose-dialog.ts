@@ -17,12 +17,12 @@ import type {
   ComposeLabels,
   ComposeCollection,
   ComposeSubmitDetail,
+  ComposeSubmitAttachment,
   ComposeAttachment,
   DraftItem,
   LocalDraft,
 } from "./compose-types.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
-import { showConfirmDialog } from "../confirm.js";
 import { showToast } from "../toast.js";
 import { publicPath } from "../runtime-paths.js";
 import type { JantComposeEditor } from "./jant-compose-editor.js";
@@ -140,6 +140,19 @@ function usesAppleCommandKey(): boolean {
   return /mac|iphone|ipad|ipod/i.test(platform);
 }
 
+function isEmptyComposeDoc(json: JSONContent): boolean {
+  if (!json.content || json.content.length === 0) return true;
+  return json.content.every(
+    (node) =>
+      node.type === "paragraph" && (!node.content || node.content.length === 0),
+  );
+}
+
+function normalizeComposeDoc(json: JSONContent | null): JSONContent | null {
+  if (!json) return null;
+  return isEmptyComposeDoc(json) ? null : json;
+}
+
 export class JantComposeDialog extends LitElement {
   private static _lastNewPostVisibility: ComposeVisibility = "public";
 
@@ -222,6 +235,7 @@ export class JantComposeDialog extends LitElement {
   private _attachedEditor: Editor | null = null;
   private _attachedTextSnapshot: JSONContent | null = null;
   private _confirmForDrafts = false;
+  private _confirmForAttachedText = false;
   private _draftSaveTimer: ReturnType<typeof setTimeout> | null = null;
   private _draftRestored = false;
   private _initialSnapshot: string | null = null;
@@ -362,6 +376,7 @@ export class JantComposeDialog extends LitElement {
     this._slugSuggestionKey = "";
     this._visibilityLocked = false;
     this._confirmForDrafts = false;
+    this._confirmForAttachedText = false;
     this._initialSnapshot = null;
     this._pageFocusApplied = false;
     this._pageLeaveRequested = false;
@@ -631,7 +646,7 @@ export class JantComposeDialog extends LitElement {
     if (data.url.trim()) return true;
     if (data.quoteText.trim()) return true;
     if (data.quoteAuthor.trim()) return true;
-    if (data.attachedTexts.some((t) => t.bodyJson !== null)) return true;
+    if (data.attachedTexts.length > 0) return true;
     if (data.rating > 0) return true;
     if (data.attachments.length > 0) return true;
     // Collection selection alone isn't content — it's metadata that
@@ -644,13 +659,15 @@ export class JantComposeDialog extends LitElement {
     const editor = this._editor;
     if (!editor) return null;
 
+    const attachedTexts = editor.getEffectiveAttachedTexts();
+
     return {
       format: this._format,
       collectionIds: [...this._collectionIds],
       slug: this._slug,
       visibility: this._visibility,
       title: editor._title,
-      bodyJson: editor._bodyJson,
+      bodyJson: editor.getNormalizedBodyJson(),
       url: editor._url,
       quoteText: editor._quoteText,
       quoteAuthor: editor._quoteAuthor,
@@ -667,14 +684,14 @@ export class JantComposeDialog extends LitElement {
         summary: attachment.summary,
         chars: attachment.chars,
       })),
-      attachedTexts: editor._attachedTexts.map((item) => ({
+      attachedTexts: attachedTexts.map((item) => ({
         clientId: item.clientId,
         mediaId: item.mediaId ?? null,
         bodyJson: item.bodyJson,
         bodyHtml: item.bodyHtml,
         summary: item.summary,
       })),
-      attachmentOrder: [...editor._attachmentOrder],
+      attachmentOrder: editor.getEffectiveAttachmentOrder(),
     };
   }
 
@@ -709,10 +726,18 @@ export class JantComposeDialog extends LitElement {
     }
 
     if (this._confirmPanelOpen) {
+      const restoreAttachedFocus = this._confirmForAttachedText;
       this._confirmPanelOpen = false;
       this._confirmForDrafts = false;
+      this._confirmForAttachedText = false;
       this._pageLeaveRequested = false;
-      this.updateComplete.then(() => this._editor?.focusInput());
+      this.updateComplete.then(() => {
+        if (restoreAttachedFocus) {
+          this._attachedEditor?.commands.focus();
+          return;
+        }
+        this._editor?.focusInput();
+      });
       return;
     }
 
@@ -720,6 +745,7 @@ export class JantComposeDialog extends LitElement {
     if (this._editPostId) {
       if (this._hasUnsavedChanges()) {
         this._confirmForDrafts = false;
+        this._confirmForAttachedText = false;
         this._confirmPanelOpen = true;
       } else {
         this._closeDialog();
@@ -730,6 +756,7 @@ export class JantComposeDialog extends LitElement {
 
     if (this._hasContent()) {
       this._confirmForDrafts = false;
+      this._confirmForAttachedText = false;
       this._confirmPanelOpen = true;
     } else {
       this._closeDialog();
@@ -745,13 +772,25 @@ export class JantComposeDialog extends LitElement {
     }
     this._clearDraftFromStorage();
     this._confirmPanelOpen = false;
+    this._confirmForAttachedText = false;
     this._closeDialog();
     (document.activeElement as HTMLElement)?.blur();
     this.reset();
   }
 
+  private _discardAttachedPanel() {
+    this._confirmForAttachedText = false;
+    this._destroyAttachedEditor();
+    this._attachedPanelOpen = false;
+    this._editor?.closeAttachedPanel(this._attachedTextIndex);
+  }
+
   private _handleConfirmSave() {
-    if (this._confirmForDrafts) {
+    if (this._confirmForAttachedText) {
+      this._confirmPanelOpen = false;
+      this._confirmForAttachedText = false;
+      this._doneAttachedPanel();
+    } else if (this._confirmForDrafts) {
       this._dispatchSubmit("draft");
       this._confirmPanelOpen = false;
       this.reset();
@@ -767,7 +806,10 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _handleConfirmDiscard() {
-    if (this._confirmForDrafts) {
+    if (this._confirmForAttachedText) {
+      this._confirmPanelOpen = false;
+      this._discardAttachedPanel();
+    } else if (this._confirmForDrafts) {
       if (this._draftSourceId) {
         const id = this._draftSourceId;
         fetch(`/api/posts/${id}`, { method: "DELETE" }).catch(() => {});
@@ -788,27 +830,40 @@ export class JantComposeDialog extends LitElement {
     if (!editor) return null;
 
     const editorData = editor.getData();
-    const attachments = editorData.attachments ?? [];
-
-    // Collect mediaIds from completed uploads
-    const mediaIds = attachments
-      .filter((a) => a.status === "done" && a.mediaId)
-      .map((a) => a.mediaId as string);
-
-    // Collect alt text keyed by mediaId
-    const mediaAlts: Record<string, string> = {};
-    for (const a of attachments) {
-      if (a.mediaId && a.alt) {
-        mediaAlts[a.mediaId] = a.alt;
+    const mediaAttachments = new Map(
+      (editorData.attachments ?? []).map((attachment) => [
+        attachment.clientId,
+        attachment,
+      ]),
+    );
+    const textAttachments = new Map(
+      editorData.attachedTexts.map((item) => [item.clientId, item]),
+    );
+    const orderedAttachments: ComposeSubmitAttachment[] = [];
+    for (const clientId of editorData.attachmentOrder) {
+      const mediaAttachment = mediaAttachments.get(clientId);
+      if (mediaAttachment) {
+        orderedAttachments.push({
+          type: "media",
+          clientId,
+          mediaId: mediaAttachment.mediaId,
+          alt: mediaAttachment.alt || undefined,
+        });
+        continue;
       }
-    }
 
-    // Capture clientId → mediaId for all done attachments now,
-    // because the editor will be reset before the deferred handler runs
-    const mediaClientMap: Record<string, string> = {};
-    for (const a of attachments) {
-      if (a.mediaId) {
-        mediaClientMap[a.clientId] = a.mediaId;
+      const textAttachment = textAttachments.get(clientId);
+      if (textAttachment?.bodyJson) {
+        orderedAttachments.push({
+          type: "text",
+          clientId,
+          bodyJson: textAttachment.bodyJson,
+          summary: textAttachment.summary,
+          mediaId: textAttachment.mediaId,
+          originalBodyJson: normalizeComposeDoc(
+            textAttachment.originalBodyJson ?? null,
+          ),
+        });
       }
     }
 
@@ -824,11 +879,7 @@ export class JantComposeDialog extends LitElement {
       visibility: this._visibilityLocked ? undefined : this._visibility,
       rating: editorData.rating,
       collectionIds: [...this._collectionIds],
-      mediaIds,
-      mediaAlts,
-      attachedTexts: editorData.attachedTexts,
-      attachmentOrder: editorData.attachmentOrder ?? [],
-      mediaClientMap,
+      attachments: orderedAttachments,
       editPostId: this._editPostId ?? this._draftSourceId ?? undefined,
       replyToId: this._replyToId ?? undefined,
       replyThreadRootId: this._replyThreadRootId ?? undefined,
@@ -1208,7 +1259,9 @@ export class JantComposeDialog extends LitElement {
       ke.preventDefault();
       ke.stopPropagation();
       if (this._shouldIgnoreEscapeClose()) return;
-      if (this._showCollection) {
+      if (this._confirmPanelOpen) {
+        this.requestClose();
+      } else if (this._showCollection) {
         this._showCollection = false;
         this._collectionSearch = "";
       } else if (this._showPublishPanel) {
@@ -1299,8 +1352,8 @@ export class JantComposeDialog extends LitElement {
   private _isAttachedTextDirty(): boolean {
     if (!this._attachedEditor) return false;
     return (
-      JSON.stringify(this._attachedEditor.getJSON()) !==
-      JSON.stringify(this._attachedTextSnapshot)
+      JSON.stringify(normalizeComposeDoc(this._attachedEditor.getJSON())) !==
+      JSON.stringify(normalizeComposeDoc(this._attachedTextSnapshot))
     );
   }
 
@@ -1318,27 +1371,27 @@ export class JantComposeDialog extends LitElement {
       const html = this._attachedEditor.getHTML();
       this._editor?.updateAttachedText(this._attachedTextIndex, json, html);
     }
+    this._confirmForAttachedText = false;
     this._destroyAttachedEditor();
     this._attachedPanelOpen = false;
     this._editor?.closeAttachedPanel(this._attachedTextIndex);
   }
 
-  private async _cancelAttachedPanel() {
+  private _cancelAttachedPanel() {
     if (this._isAttachedTextDirty()) {
-      const confirmed = await showConfirmDialog({
-        message: this.labels.discardChangesConfirm,
-        confirmLabel: this.labels.discard,
-        cancelLabel: this.labels.cancel,
-        tone: "danger",
-      });
-      if (!confirmed) return;
-      this._destroyAttachedEditor();
-      this._attachedPanelOpen = false;
+      this._confirmForDrafts = false;
+      this._confirmForAttachedText = true;
+      this._confirmPanelOpen = true;
       return;
     }
     // Revert to snapshot — don't save current editor content
-    this._destroyAttachedEditor();
-    this._attachedPanelOpen = false;
+    this._discardAttachedPanel();
+  }
+
+  private _handleAttachedEditorMouseDown(event: MouseEvent) {
+    if (event.target !== event.currentTarget) return;
+    event.preventDefault();
+    this._attachedEditor?.commands.focus();
   }
 
   // ── Drafts panel ─────────────────────────────────────────────────
@@ -1607,7 +1660,7 @@ export class JantComposeDialog extends LitElement {
       !!data.quoteText.trim() ||
       !!data.quoteAuthor.trim() ||
       data.rating > 0 ||
-      data.attachedTexts.some((t) => t.bodyJson !== null);
+      data.attachedTexts.length > 0;
 
     if (!hasContent) {
       globalThis.localStorage.removeItem(JantComposeDialog._DRAFT_KEY);
@@ -1617,7 +1670,7 @@ export class JantComposeDialog extends LitElement {
     const draft: LocalDraft = {
       format: this._format,
       title: data.title,
-      bodyJson: editor._bodyJson,
+      bodyJson: editor.getNormalizedBodyJson(),
       url: data.url,
       quoteText: data.quoteText,
       quoteAuthor: data.quoteAuthor,
@@ -1634,7 +1687,7 @@ export class JantComposeDialog extends LitElement {
         bodyHtml: t.bodyHtml,
         summary: t.summary,
       })),
-      attachmentOrder: [...(data.attachmentOrder ?? [])],
+      attachmentOrder: [...data.attachmentOrder],
       savedAt: Date.now(),
     };
 
@@ -1699,14 +1752,18 @@ export class JantComposeDialog extends LitElement {
 
     await this.updateComplete;
 
-    const textAttachments = draft.attachedTexts
-      ?.filter((t) => t.bodyJson !== null)
-      .map((t) => ({
-        clientId: t.clientId,
-        bodyJson: JSON.stringify(t.bodyJson),
-        bodyHtml: t.bodyHtml,
-        summary: t.summary,
-      }));
+    const textAttachments = draft.attachedTexts?.flatMap((t) => {
+      const bodyJson = normalizeComposeDoc(t.bodyJson);
+      if (!bodyJson) return [];
+      return [
+        {
+          clientId: t.clientId,
+          bodyJson: JSON.stringify(bodyJson),
+          bodyHtml: t.bodyHtml,
+          summary: t.summary,
+        },
+      ];
+    });
 
     this._editor?.populate({
       format: draft.format,
@@ -2321,7 +2378,11 @@ export class JantComposeDialog extends LitElement {
           </button>
         </div>
         <div class="flex-1 p-4 overflow-hidden flex flex-col">
-          <div class="compose-attached-tiptap compose-tiptap-body"></div>
+          <div
+            class="compose-attached-tiptap compose-tiptap-body"
+            @mousedown=${(event: MouseEvent) =>
+              this._handleAttachedEditorMouseDown(event)}
+          ></div>
         </div>
       </div>
     `;
@@ -2405,18 +2466,26 @@ export class JantComposeDialog extends LitElement {
     if (!this._confirmPanelOpen) return nothing;
 
     const isEdit = !!this._editPostId;
-    const title = isEdit
-      ? this.labels.confirmEditTitle
-      : this.labels.confirmCloseTitle;
-    const subtitle = isEdit
-      ? this.labels.confirmEditSubtitle
-      : this.labels.confirmCloseSubtitle;
-    const saveLabel = isEdit
-      ? this.labels.confirmEditPublish
-      : this.labels.confirmCloseSave;
-    const discardLabel = isEdit
-      ? this.labels.confirmEditDiscard
-      : this.labels.confirmCloseDiscard;
+    const title = this._confirmForAttachedText
+      ? this.labels.confirmAttachedTitle
+      : isEdit
+        ? this.labels.confirmEditTitle
+        : this.labels.confirmCloseTitle;
+    const subtitle = this._confirmForAttachedText
+      ? this.labels.confirmAttachedSubtitle
+      : isEdit
+        ? this.labels.confirmEditSubtitle
+        : this.labels.confirmCloseSubtitle;
+    const saveLabel = this._confirmForAttachedText
+      ? this.labels.confirmAttachedSave
+      : isEdit
+        ? this.labels.confirmEditPublish
+        : this.labels.confirmCloseSave;
+    const discardLabel = this._confirmForAttachedText
+      ? this.labels.confirmAttachedDiscard
+      : isEdit
+        ? this.labels.confirmEditDiscard
+        : this.labels.confirmCloseDiscard;
 
     return html`
       <div class="compose-confirm-panel">

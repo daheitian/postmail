@@ -207,6 +207,27 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       message: "Don't save",
       comment: "@context: Confirm close action sheet - discard button",
     }),
+    confirmAttachedTitle: t({
+      message: "Save text attachment?",
+      comment:
+        "@context: Confirm action sheet title when closing text attachment editor",
+    }),
+    confirmAttachedSubtitle: t({
+      message:
+        "Save these changes to the text attachment, discard them, or keep editing.",
+      comment:
+        "@context: Confirm action sheet subtitle when closing text attachment editor",
+    }),
+    confirmAttachedSave: t({
+      message: "Save",
+      comment:
+        "@context: Confirm action sheet - save text attachment changes button",
+    }),
+    confirmAttachedDiscard: t({
+      message: "Don't save",
+      comment:
+        "@context: Confirm action sheet - discard text attachment changes button",
+    }),
     confirmEditTitle: t({
       message: "You have unsaved changes",
       comment:
