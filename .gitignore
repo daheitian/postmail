@@ -80,3 +80,4 @@ Thumbs.db
 
 # Temporary seed files
 templates/jant-site/scripts/seed-demo-upload.sql
+sites/content-lab/scripts/content-lab-snapshot.sql

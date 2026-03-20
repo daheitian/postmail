@@ -73,13 +73,15 @@ Use a separate long-lived Worker plus D1 database for manual content entry and v
 Recommended loop:
 
 1. Capture or curate real content in the content-lab Worker.
-2. Export a SQL snapshot from that site directory.
+2. Run `mise run db-content-lab-export`.
 3. Copy the snapshot into `packages/core/src/db/rehearsal-fixtures/`.
 4. Update the fixture manifest's `baseMigrationTag` to the latest migration tag on `main`.
 5. Verify with `mise run db-rehearse-local`.
 6. Commit the refreshed fixture in a separate change when possible.
 
-Export command example from a site directory with the right `wrangler.toml`:
+The content-lab snapshot is written to `sites/content-lab/scripts/content-lab-snapshot.sql` and stays out of Git by default.
+
+If you want a one-off export command from another site directory with the right `wrangler.toml`, use:
 
 ```sh
 pnpm exec jant db export --remote --output scripts/rehearsal-snapshot.sql

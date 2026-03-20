@@ -388,6 +388,32 @@ run = "pnpm --filter @jant/core build && pnpm --filter jant-me dev"
 description = "Deploy jant.me to Cloudflare Workers"
 run = "pnpm --filter @jant/core build && pnpm --filter jant-me run deploy"
 
+[tasks.dev-content-lab]
+description = "Start the content-lab Worker (build @jant/core first)"
+run = "pnpm --filter @jant/core build && pnpm --filter jant-content-lab dev"
+
+[tasks.deploy-content-lab]
+description = "Deploy the content-lab Worker to Cloudflare Workers"
+run = "pnpm --filter @jant/core build && pnpm --filter jant-content-lab run deploy"
+
+[tasks.db-content-lab-export]
+description = "Export content-lab content to scripts/content-lab-snapshot.sql"
+dir = "sites/content-lab"
+run = "node scripts/export-content-lab.mjs"
+
+[tasks.db-content-lab-clean]
+description = "Clear content-lab content without touching users or settings"
+dir = "sites/content-lab"
+run = """
+echo "Clearing content-lab data..."
+pnpm exec wrangler d1 execute DB --remote --file=scripts/reset-content-lab.sql
+echo "Done! content-lab content has been cleared."
+"""
+
+[tasks.db-content-lab-nuke]
+description = "Drop ALL tables in content-lab database (including migrations)"
+run = "node scripts/nuke-db.mjs sites/content-lab"
+
 [tasks.db-site-export]
 description = "Export jant.me content to scripts/seed-site.sql"
 dir = "sites/jant-me"
