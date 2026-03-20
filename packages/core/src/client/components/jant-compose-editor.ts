@@ -273,13 +273,17 @@ export class JantComposeEditor extends LitElement {
     );
   }
 
+  private _getEffectiveRating(): number {
+    return this._showRating ? this._rating : 0;
+  }
+
   getData() {
     const bodyJson = this.getNormalizedBodyJson();
     const attachedTexts = this.getEffectiveAttachedTexts();
     const attachmentOrder = this.getEffectiveAttachmentOrder();
     const body = bodyJson ? JSON.stringify(bodyJson) : "";
     const shared = {
-      rating: this._rating,
+      rating: this._getEffectiveRating(),
       attachedTexts,
       attachments: this._attachments,
       attachmentOrder,
@@ -1422,7 +1426,7 @@ export class JantComposeEditor extends LitElement {
             @focus=${(e: Event) => this._onFieldFocus(e)}
             class="compose-input compose-quote-text"
             placeholder=${this.labels.quotePlaceholder}
-            rows="3"
+            rows="5"
           ></textarea>
         </div>
         <div class="compose-quote-author-row">
@@ -1463,7 +1467,9 @@ export class JantComposeEditor extends LitElement {
             : nothing}
         </div>
         <div class="compose-divider"></div>
-        <div class="compose-tiptap-body compose-tiptap-thoughts"></div>
+        <div
+          class="compose-tiptap-body compose-tiptap-thoughts compose-tiptap-thoughts-quote"
+        ></div>
       </div>
     `;
   }

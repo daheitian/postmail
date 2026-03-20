@@ -342,6 +342,7 @@ export const LinkToolbar = Extension.create({
           .focus()
           .setTextSelection({ from: savedFrom, to: savedTo })
           .setLink({ href: url })
+          .setTextSelection(savedTo)
           .run();
       } else {
         // Empty URL — remove link if one existed
@@ -350,6 +351,7 @@ export const LinkToolbar = Extension.create({
           .focus()
           .setTextSelection({ from: savedFrom, to: savedTo })
           .unsetLink()
+          .setTextSelection(savedTo)
           .run();
       }
 

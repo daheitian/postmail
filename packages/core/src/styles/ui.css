@@ -3597,11 +3597,11 @@
   .compose-quote-text {
     font-family: var(--font-heading);
     font-size: var(--type-body-size);
-    font-style: italic;
+    font-style: normal;
     font-weight: var(--type-heading-weight);
     line-height: var(--type-body-leading);
     letter-spacing: var(--type-body-tracking);
-    min-height: 7.5rem;
+    min-height: 9rem;
   }
 
   @media (min-width: 700px) {
@@ -6085,6 +6085,10 @@
 
   .compose-tiptap-thoughts .tiptap {
     min-height: 72px;
+  }
+
+  .compose-tiptap-thoughts-quote .tiptap {
+    min-height: 56px;
   }
 
   /* Placeholder */

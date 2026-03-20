@@ -647,21 +647,27 @@ export class JantComposeDialog extends LitElement {
     const editor = this._editor;
     if (!editor) return null;
 
+    const editorData = editor.getData();
     const attachedTexts = editor.getEffectiveAttachedTexts();
+    const showTitle =
+      this._format === "note" && editorData.title.trim().length > 0
+        ? editor._showTitle
+        : false;
+    const showRating = editorData.rating > 0 ? editor._showRating : false;
 
     return {
       format: this._format,
       collectionIds: [...this._collectionIds],
       slug: this._slug,
       visibility: this._visibility,
-      title: editor._title,
+      title: editorData.title,
       bodyJson: editor.getNormalizedBodyJson(),
-      url: editor._url,
-      quoteText: editor._quoteText,
-      quoteAuthor: editor._quoteAuthor,
-      rating: editor._rating,
-      showTitle: editor._showTitle,
-      showRating: editor._showRating,
+      url: editorData.url,
+      quoteText: editorData.quoteText,
+      quoteAuthor: editorData.quoteAuthor,
+      rating: editorData.rating,
+      showTitle,
+      showRating,
       attachments: editor._attachments.map((attachment) => ({
         clientId: attachment.clientId,
         mediaId: attachment.mediaId,
@@ -1751,8 +1757,11 @@ export class JantComposeDialog extends LitElement {
       slug: this._slug,
       visibility: this._visibility,
       rating: data.rating,
-      showTitle: editor._showTitle,
-      showRating: editor._showRating,
+      showTitle:
+        this._format === "note" && data.title.trim().length > 0
+          ? editor._showTitle
+          : false,
+      showRating: data.rating > 0 ? editor._showRating : false,
       collectionIds: [...this._collectionIds],
       replyToId: this._replyToId,
       attachedTexts: data.attachedTexts.map((t) => ({

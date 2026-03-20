@@ -579,6 +579,7 @@ describe("JantComposeEditor", () => {
       ],
     };
     el._rating = 4;
+    el._showRating = true;
     el._attachedTexts = [
       {
         clientId: "t1",
@@ -665,6 +666,31 @@ describe("JantComposeEditor", () => {
     el._showTitle = true;
     await el.updateComplete;
     expect(el.getData().title).toBe("My Title");
+  });
+
+  it("omits rating when the rating control is hidden", async () => {
+    const el = await createElement("note");
+    el._rating = 3;
+    el._showRating = false;
+
+    const data = el.getData();
+    expect(data.rating).toBe(0);
+  });
+
+  it("preserves rating in memory when toggling off and restores on toggle on", async () => {
+    const el = await createElement("note");
+    el._rating = 3;
+    el._showRating = true;
+    await el.updateComplete;
+
+    el._showRating = false;
+    await el.updateComplete;
+    expect(el._rating).toBe(3);
+    expect(el.getData().rating).toBe(0);
+
+    el._showRating = true;
+    await el.updateComplete;
+    expect(el.getData().rating).toBe(3);
   });
 
   it("reset clears all fields", async () => {

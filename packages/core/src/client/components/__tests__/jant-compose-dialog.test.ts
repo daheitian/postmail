@@ -360,6 +360,41 @@ describe("JantComposeDialog", () => {
     expect(detail.pendingAttachments).toEqual([]);
   });
 
+  it("submit omits a hidden rating while keeping the compose body", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._bodyJson = {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "Post without visible rating" }],
+        },
+      ],
+    };
+    editor._rating = 3;
+    editor._showRating = false;
+    await editor.updateComplete;
+
+    let receivedDetail: ComposeSubmitDetail | null = null;
+    el.addEventListener("jant:compose-submit-deferred", (event) => {
+      receivedDetail = (event as CustomEvent<ComposeSubmitDetail>).detail;
+    });
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+      "expected post button",
+    ).click();
+
+    expect(receivedDetail).not.toBeNull();
+    const detail = receivedDetail as unknown as ComposeSubmitDetail;
+    expect(detail.rating).toBe(0);
+    expect(detail.body).toContain("Post without visible rating");
+  });
+
   it("includes publish settings in the submit payload", async () => {
     const el = await createElement();
     const editor = requireElement(
@@ -3106,11 +3141,28 @@ describe("JantComposeDialog", () => {
       "expected compose editor",
     );
     editor._rating = 3;
+    editor._showRating = true;
     await editor.updateComplete;
 
     el.requestClose();
     await el.updateComplete;
 
     expect(el._confirmPanelOpen).toBe(true);
+  });
+
+  it("hidden rating does not trigger confirmation on close", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    editor._rating = 3;
+    editor._showRating = false;
+    await editor.updateComplete;
+
+    el.requestClose();
+    await el.updateComplete;
+
+    expect(el._confirmPanelOpen).toBe(false);
   });
 });
