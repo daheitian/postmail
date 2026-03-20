@@ -1,0 +1,123 @@
+name: Migration Rehearsal
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/migration-rehearsal.yml"
+      - "packages/core/bin/commands/db/rehearse.js"
+      - "packages/core/bin/commands/export.js"
+      - "packages/core/bin/lib/d1-query.js"
+      - "packages/core/bin/lib/migration-artifacts.js"
+      - "packages/core/bin/lib/migration-rehearsal.js"
+      - "packages/core/bin/lib/migration-runner.js"
+      - "packages/core/src/db/schema.ts"
+      - "packages/core/src/db/migrations/**"
+      - "packages/core/src/db/backfills/**"
+      - "packages/core/src/db/rehearsal-fixtures/**"
+      - "packages/core/wrangler.toml"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/migration-rehearsal.yml"
+      - "packages/core/bin/commands/db/rehearse.js"
+      - "packages/core/bin/commands/export.js"
+      - "packages/core/bin/lib/d1-query.js"
+      - "packages/core/bin/lib/migration-artifacts.js"
+      - "packages/core/bin/lib/migration-rehearsal.js"
+      - "packages/core/bin/lib/migration-runner.js"
+      - "packages/core/src/db/schema.ts"
+      - "packages/core/src/db/migrations/**"
+      - "packages/core/src/db/backfills/**"
+      - "packages/core/src/db/rehearsal-fixtures/**"
+      - "packages/core/wrangler.toml"
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  remote-rehearsal:
+    name: Remote D1 Rehearsal
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Cloudflare rehearsal config
+        id: config
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          REHEARSAL_DB_ID: ${{ vars.CF_MIGRATION_REHEARSAL_DB_ID }}
+          REHEARSAL_DB_NAME: ${{ vars.CF_MIGRATION_REHEARSAL_DB_NAME }}
+        run: |
+          if [ -z "$CF_API_TOKEN" ] || [ -z "$CF_ACCOUNT_ID" ] || [ -z "$REHEARSAL_DB_ID" ] || [ -z "$REHEARSAL_DB_NAME" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+
+      - name: Skip notice
+        if: steps.config.outputs.enabled != 'true'
+        run: |
+          echo "Skipping remote migration rehearsal."
+          echo "Configure CF_API_TOKEN, CF_ACCOUNT_ID, CF_MIGRATION_REHEARSAL_DB_ID, and CF_MIGRATION_REHEARSAL_DB_NAME to enable it."
+
+      - name: Setup mise
+        if: steps.config.outputs.enabled == 'true'
+        uses: jdx/mise-action@v2
+
+      - name: Cache pnpm store
+        if: steps.config.outputs.enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store/v10
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        if: steps.config.outputs.enabled == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Write rehearsal Wrangler config
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          REHEARSAL_DB_ID: ${{ vars.CF_MIGRATION_REHEARSAL_DB_ID }}
+          REHEARSAL_DB_NAME: ${{ vars.CF_MIGRATION_REHEARSAL_DB_NAME }}
+          WORKSPACE_ROOT: ${{ github.workspace }}
+        run: |
+          WRANGLER_CONFIG="$RUNNER_TEMP/migration-rehearsal.wrangler.toml"
+
+          cat > "$WRANGLER_CONFIG" <<EOF
+          name = "jant-migration-rehearsal"
+          main = "$WORKSPACE_ROOT/packages/core/dev/preview-entry.js"
+          compatibility_date = "2026-01-20"
+          compatibility_flags = ["nodejs_compat"]
+          account_id = "$CF_ACCOUNT_ID"
+
+          [[d1_databases]]
+          binding = "DB"
+          database_name = "$REHEARSAL_DB_NAME"
+          database_id = "$REHEARSAL_DB_ID"
+          migrations_dir = "$WORKSPACE_ROOT/packages/core/src/db/migrations"
+          EOF
+
+          echo "WRANGLER_CONFIG=$WRANGLER_CONFIG" >> "$GITHUB_ENV"
+
+      - name: Rehearse remote D1 migrations
+        if: steps.config.outputs.enabled == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          node packages/core/bin/jant.js db rehearse \
+            --remote \
+            --config "$WRANGLER_CONFIG" \
+            --fixture packages/core/src/db/rehearsal-fixtures/demo-current.json

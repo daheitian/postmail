@@ -1,10 +1,12 @@
 {
-  "name": "jant-me",
+  "name": "jant-content-lab",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "jant migrate --local && wrangler dev",
-    "deploy": "jant migrate --remote && wrangler deploy"
+    "deploy": "jant migrate --remote && wrangler deploy",
+    "reset-password": "jant reset-password",
+    "export": "node scripts/export-content-lab.mjs"
   },
   "dependencies": {
     "@jant/core": "workspace:*"

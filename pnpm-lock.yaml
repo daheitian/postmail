@@ -4,6 +4,12 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    wrangler:
+      specifier: ^4.76.0
+      version: 4.76.0
+
 importers:
 
   .:
@@ -242,7 +248,7 @@ importers:
         specifier: ^4.1.0
         version: 4.1.0(@types/node@25.5.0)(happy-dom@20.8.4)(vite@8.0.0(@types/node@25.5.0)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       wrangler:
-        specifier: ^4.76.0
+        specifier: 'catalog:'
         version: 4.76.0(@cloudflare/workers-types@4.20260317.1)
 
   packages/create-jant:
@@ -273,6 +279,16 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  sites/content-lab:
+    dependencies:
+      '@jant/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      wrangler:
+        specifier: 'catalog:'
+        version: 4.76.0(@cloudflare/workers-types@4.20260317.1)
+
   sites/demo:
     dependencies:
       '@jant/core':
@@ -280,7 +296,7 @@ importers:
         version: link:../../packages/core
     devDependencies:
       wrangler:
-        specifier: ^4.76.0
+        specifier: 'catalog:'
         version: 4.76.0(@cloudflare/workers-types@4.20260317.1)
 
   sites/jant-me:
@@ -290,7 +306,7 @@ importers:
         version: link:../../packages/core
     devDependencies:
       wrangler:
-        specifier: ^4.76.0
+        specifier: 'catalog:'
         version: 4.76.0(@cloudflare/workers-types@4.20260317.1)
 
 packages:

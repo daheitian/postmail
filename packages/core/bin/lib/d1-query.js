@@ -26,17 +26,25 @@ function commandArgument(sql) {
   return `--command=${sql}`;
 }
 
-function getWranglerError(output) {
+export function parseWranglerError(output) {
   if (!output) {
     return undefined;
   }
 
   try {
     const parsed = JSON.parse(output.trim());
-    if (Array.isArray(parsed)) {
-      return parsed[0]?.error?.text;
+    const error = Array.isArray(parsed) ? parsed[0]?.error : parsed?.error;
+    if (!error?.text) {
+      return undefined;
     }
-    return parsed?.error?.text;
+
+    const notes = Array.isArray(error.notes)
+      ? error.notes
+          .map((note) => note?.text)
+          .filter((text) => typeof text === "string" && text.length > 0)
+      : [];
+    const suffix = notes.length > 0 ? ` (${notes.join(" | ")})` : "";
+    return `${error.text}${suffix}`;
   } catch {
     return undefined;
   }
@@ -47,7 +55,7 @@ function runWrangler(args, options = {}) {
     return runLocalWrangler(args, options);
   } catch (error) {
     const output = `${error.stdout ?? ""}${error.stderr ?? ""}`.trim();
-    const wranglerError = getWranglerError(output);
+    const wranglerError = parseWranglerError(output);
     if (wranglerError) {
       throw new Error(`Wrangler error: ${wranglerError}`);
     }
@@ -106,4 +114,34 @@ export function queryD1(sql, runtime, options = {}) {
   }
 
   return statement?.results ?? [];
+}
+
+export function executeD1File(filePath, runtime, options = {}) {
+  const args = appendWranglerContext(
+    [
+      "d1",
+      "execute",
+      options.database ?? "DB",
+      getD1Flag(runtime),
+      "--file",
+      filePath,
+    ],
+    options,
+  );
+
+  if (options.quiet) {
+    const output = runWrangler([...args, "--json"]);
+    const parsed = JSON.parse(output);
+    const statements = Array.isArray(parsed) ? parsed : [parsed];
+
+    for (const statement of statements) {
+      if (statement?.error?.text) {
+        throw new Error(`Wrangler error: ${statement.error.text}`);
+      }
+    }
+
+    return statements;
+  }
+
+  runWrangler(args, { stdio: "inherit" });
 }

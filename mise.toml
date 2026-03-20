@@ -223,6 +223,20 @@ description = "Load the canonical demo content seed into the current local devel
 dir = "packages/core"
 run = "node dev/scripts/import-local-seed.mjs ../../sites/demo/scripts/seed-demo.sql"
 
+[tasks.db-rehearse-local]
+description = "Rebuild a local D1 from the frozen migration rehearsal fixture"
+dir = "packages/core"
+run = "node ./bin/jant.js db rehearse --local --fixture src/db/rehearsal-fixtures/demo-current.json --persist-to .wrangler/rehearsal"
+
+[tasks.db-rehearse-remote]
+description = "Run the remote D1 migration rehearsal against the configured rehearsal database"
+dir = "packages/core"
+run = "node ./dev/scripts/run-remote-rehearsal.mjs"
+
+[tasks.db-local-reset]
+description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo content"
+run = "mise run db-local-rebuild-demo"
+
 [tasks.db-local-rebuild-demo]
 description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo content"
 dir = "packages/core"
@@ -403,6 +417,32 @@ run = "pnpm --filter @jant/core build && pnpm --filter jant-me dev"
 [tasks.deploy-site]
 description = "Deploy jant.me to Cloudflare Workers"
 run = "pnpm --filter @jant/core build && pnpm --filter jant-me run deploy"
+
+[tasks.dev-content-lab]
+description = "Start the content-lab Worker (build @jant/core first)"
+run = "pnpm --filter @jant/core build && pnpm --filter jant-content-lab dev"
+
+[tasks.deploy-content-lab]
+description = "Deploy the content-lab Worker to Cloudflare Workers"
+run = "pnpm --filter @jant/core build && pnpm --filter jant-content-lab run deploy"
+
+[tasks.db-content-lab-export]
+description = "Export content-lab content to scripts/content-lab-snapshot.sql"
+dir = "sites/content-lab"
+run = "node scripts/export-content-lab.mjs"
+
+[tasks.db-content-lab-clean]
+description = "Clear content-lab content without touching users or settings"
+dir = "sites/content-lab"
+run = """
+echo "Clearing content-lab data..."
+pnpm exec wrangler d1 execute DB --remote --file=scripts/reset-content-lab.sql
+echo "Done! content-lab content has been cleared."
+"""
+
+[tasks.db-content-lab-nuke]
+description = "Drop ALL tables in content-lab database (including migrations)"
+run = "node scripts/nuke-db.mjs sites/content-lab"
 
 [tasks.db-site-export-content]
 alias = "db-site-export"

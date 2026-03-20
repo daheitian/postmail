@@ -1,0 +1,25 @@
+name = "jant-content-lab"
+main = "index.js"
+compatibility_date = "2026-01-20"
+compatibility_flags = ["nodejs_compat"]
+account_id = "03e7294bdb3750ed5a0d6afef6d770e4" # @create-jant: @remove
+
+[assets]
+directory = "./node_modules/@jant/core/dist/client"
+
+[vars]
+SITE_URL = "https://content-lab.jant.me"
+
+# Optional: keep these in wrangler.toml or dashboard vars once your media domain exists.
+R2_PUBLIC_URL = "https://content-lab-media.jant.me"
+IMAGE_TRANSFORM_URL = "https://content-lab-media.jant.me/cdn-cgi/image"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jant-content-lab-db"
+database_id = "fe18c38c-92f3-466b-8744-93206ae5223b"
+migrations_dir = "node_modules/@jant/core/src/db/migrations"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "jant-content-lab-media"

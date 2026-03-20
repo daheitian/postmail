@@ -1,3 +1,6 @@
 packages:
   - "packages/*"
   - "sites/*"
+
+catalog:
+  wrangler: ^4.76.0
