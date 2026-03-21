@@ -3,6 +3,10 @@ import { resolve, join, relative, extname, dirname, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { parseArgs } from "node:util";
 import { typeidUnboxed } from "typeid-js";
+import {
+  CLI_API_TOKEN_ENV_VAR,
+  getCliApiToken,
+} from "../lib/cli-api-token.js";
 import { openNodeDatabase } from "../lib/node-database.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 
@@ -1330,7 +1334,9 @@ export async function run(argv) {
     console.log(
       "  Local           No --url; imports into the local Node database runtime",
     );
-    console.log("  Remote          --url requires API_TOKEN or --token");
+    console.log(
+      `  Remote          --url requires ${CLI_API_TOKEN_ENV_VAR} or --token`,
+    );
     console.log("");
     console.log("Options:");
     console.log("  --url         Target remote Jant instance URL");
@@ -1347,8 +1353,8 @@ export async function run(argv) {
     );
     console.log("");
     console.log("Authentication:");
-    console.log("  Set API_TOKEN env var (recommended):");
-    console.log("    export API_TOKEN=jnt_your_token");
+    console.log(`  Set ${CLI_API_TOKEN_ENV_VAR} env var (recommended):`);
+    console.log(`    export ${CLI_API_TOKEN_ENV_VAR}=jnt_your_token`);
     console.log("    jant site import --url https://your-site.com");
     console.log("");
     console.log("Examples:");
@@ -1359,13 +1365,13 @@ export async function run(argv) {
     process.exit(0);
   }
 
-  const token = process.env.API_TOKEN || values.token;
+  const token = getCliApiToken(process.env, values.token);
   if (values.url && !token && !values["dry-run"]) {
     console.error(
-      "Error: API_TOKEN env var is required for remote import (unless using --dry-run)",
+      `Error: remote import requires ${CLI_API_TOKEN_ENV_VAR} or --token (unless using --dry-run)`,
     );
     console.error("");
-    console.error("  export API_TOKEN=jnt_your_token");
+    console.error(`  export ${CLI_API_TOKEN_ENV_VAR}=jnt_your_token`);
     process.exit(1);
   }
 

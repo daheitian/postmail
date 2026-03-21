@@ -2,6 +2,10 @@ import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { unzipSync } from "fflate";
+import {
+  CLI_API_TOKEN_ENV_VAR,
+  getCliApiToken,
+} from "../../lib/cli-api-token.js";
 import { openNodeDatabase } from "../../lib/node-database.js";
 import { loadNodeRuntime } from "../../lib/load-node-runtime.js";
 import { localizeSiteExportZipBytes } from "../../lib/site-localize-media.js";
@@ -272,7 +276,9 @@ export async function run(argv) {
     console.log(
       "  Local           No --url; exports from the local Node database runtime",
     );
-    console.log("  Remote          --url requires API_TOKEN or --token");
+    console.log(
+      `  Remote          --url requires ${CLI_API_TOKEN_ENV_VAR} or --token`,
+    );
     console.log("");
     console.log("Options:");
     console.log("  --url           Remote Jant site URL");
@@ -290,6 +296,10 @@ export async function run(argv) {
     );
     console.log("  --token         API token for remote export");
     console.log("");
+    console.log("Authentication:");
+    console.log(`  export ${CLI_API_TOKEN_ENV_VAR}=jnt_your_token`);
+    console.log("  jant site export --url https://your-site.com");
+    console.log("");
     console.log("Examples:");
     console.log("  jant site export --directory ./jant-site");
     console.log("  cd ./jant-site && zola serve");
@@ -305,11 +315,13 @@ export async function run(argv) {
   const outputDirectory = values.directory
     ? resolve(process.cwd(), values.directory)
     : null;
-  const token = process.env.API_TOKEN || values.token;
+  const token = getCliApiToken(process.env, values.token);
   const localizeMedia = values["localize-media"] ?? !noLocalizeMedia;
 
   if (values.url && !token) {
-    console.error("Error: API_TOKEN env var is required for remote export");
+    console.error(
+      `Error: remote export requires ${CLI_API_TOKEN_ENV_VAR} or --token`,
+    );
     process.exit(1);
   }
 

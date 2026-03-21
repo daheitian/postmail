@@ -2,13 +2,17 @@
   "format": "jant-site-snapshot",
   "version": 1,
   "scope": "content",
-  "createdAt": "2026-03-21T14:46:34.106Z",
+  "createdAt": "2026-03-21T23:04:03.517Z",
   "source": {
     "runtime": "d1-remote",
     "label": "remote D1"
   },
+  "site": {
+    "id": "sit_01km8yx7gwfqb9exhmdmv237b4",
+    "key": "default"
+  },
   "tables": [
-    "setting",
+    "site_setting",
     "collection",
     "nav_item",
     "collection_directory_item",
