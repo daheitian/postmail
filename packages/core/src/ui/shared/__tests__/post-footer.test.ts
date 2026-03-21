@@ -40,8 +40,12 @@ function createPostView(overrides: Partial<PostView> = {}): PostView {
   };
 }
 
-function renderPostFooter(post: PostView, detail = false): string {
-  const i18n = createI18n("en");
+function renderPostFooter(
+  post: PostView,
+  detail = false,
+  locale: "en" | "zh-Hans" | "zh-Hant" = "en",
+): string {
+  const i18n = createI18n(locale);
   const c = {
     get(key: string) {
       if (key === "i18n") return i18n;
@@ -74,6 +78,13 @@ describe("PostFooter", () => {
     expect(html.match(/href="\/c\/notes"/g)).toHaveLength(1);
     expect(html.match(/href="\/c\/writing"/g)).toHaveLength(1);
     expect(html.match(/href="\/c\/studio"/g)).toHaveLength(1);
+  });
+
+  it("interpolates the hidden collection count in non-English locales", () => {
+    const html = renderPostFooter(createPostView(), false, "zh-Hans");
+
+    expect(html).toContain("2");
+    expect(html).not.toContain("{count}");
   });
 
   it("renders the featured icon before the timestamp for client-side toggles", () => {

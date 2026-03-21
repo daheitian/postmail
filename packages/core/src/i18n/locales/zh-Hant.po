@@ -255,6 +255,11 @@ msgstr "始終顯示主題的淺色版本。"
 msgid "An abstract editorial layout in warm paper colors"
 msgstr "以溫暖紙張色調呈現的抽象編輯版面"
 
+#. @context: Button label for opening the hidden collection list in the post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "and {count} more"
+msgstr "以及另外 {count} 個"
+
 #. @context: Sample link post body suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "and checking whether the accent is guiding attention or pulling too hard."
@@ -1141,6 +1146,7 @@ msgstr "Favicon 與您標頭上的個人標記"
 #. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
 #. @context: Select option for using featured posts as the main RSS feed
+#. @context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available
 #: src/routes/pages/featured.tsx
 #: src/routes/pages/home.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1152,6 +1158,7 @@ msgstr "Favicon 與您標頭上的個人標記"
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/FeaturedPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/PostFooter.tsx
 msgid "Featured"
 msgstr "精選"
 
@@ -1159,6 +1166,11 @@ msgstr "精選"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Featured feed"
 msgstr "Featured feed"
+
+#. @context: Tooltip and screen reader label for the featured-post icon in the post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "Featured on {date} at {time}"
+msgstr "精選於 {date} {time}"
 
 #. @context: RSS and Atom feed title suffix for the featured posts feed
 #. @context: RSS autodiscovery title for the featured posts feed
@@ -1399,6 +1411,11 @@ msgstr "如果這一頁顯得太有品牌姿態，最先該收一收的是預設
 #: src/ui/pages/ArchivePage.tsx
 msgid "Images"
 msgstr "圖片"
+
+#. @context: Link to the thread root from a post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "In thread →"
+msgstr "在線程中 →"
 
 #. @context: Accessible label for the asset keyword list on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -1667,8 +1684,10 @@ msgstr "媒體"
 
 #. @context: Aria-label for collections page more button
 #. @context: Button label for a menu with more actions
+#. @context: Post menu trigger label in the post footer
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/shared/collection-management-labels.ts
+#: src/ui/shared/PostFooter.tsx
 msgid "More actions"
 msgstr "更多操作"
 
@@ -1892,6 +1911,11 @@ msgstr "僅登入後可見。"
 msgid "Open a few links and check whether they still feel native to the page."
 msgstr "開啟幾個連結，檢查它們是否仍然與頁面原生風格相符。"
 
+#. @context: Accessible label for the external-link icon in the post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "Open external link"
+msgstr "打開外部連結"
+
 #. @context: Button label to open a raw brand asset in the browser
 #: src/ui/pages/BrandPage.tsx
 msgid "Open raw asset"
@@ -2081,7 +2105,9 @@ msgid "Published"
 msgstr "已發佈"
 
 #. @context: Tooltip text for the archive tile published timestamp
+#. @context: Tooltip text for the published timestamp in the post footer
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/PostFooter.tsx
 msgid "Published on {date} at {time}"
 msgstr "發佈於 {date} {time}"
 
@@ -2200,8 +2226,10 @@ msgstr "則回覆"
 
 #. @context: Archive tile label for a single thread reply
 #. @context: Compose button - reply to post
+#. @context: Reply button label in the post footer
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/PostFooter.tsx
 msgid "Reply"
 msgstr "回覆"
 

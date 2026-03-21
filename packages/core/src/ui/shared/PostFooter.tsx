@@ -6,6 +6,7 @@
  */
 
 import type { FC } from "hono/jsx";
+import { msg } from "@lingui/core/macro";
 import type {
   PostView,
   CollectionTagView,
@@ -52,9 +53,11 @@ const CompactCollectionTags: FC<{
             data-collection-popover-trigger
           >
             {t({
-              message: "and {count} more",
-              comment:
-                "@context: Button label for opening the hidden collection list in the post footer",
+              ...msg({
+                message: "and {count} more",
+                comment:
+                  "@context: Button label for opening the hidden collection list in the post footer",
+              }),
               values: { count: rest.length },
             })}
           </button>
@@ -74,9 +77,11 @@ const CompactCollectionTags: FC<{
 export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
   const { t } = useLingui();
   const publishedLabel = t({
-    message: "Published on {date} at {time}",
-    comment:
-      "@context: Tooltip text for the published timestamp in the post footer",
+    ...msg({
+      message: "Published on {date} at {time}",
+      comment:
+        "@context: Tooltip text for the published timestamp in the post footer",
+    }),
     values: {
       date: post.publishedAtFormatted,
       time: post.publishedAtTime,
@@ -85,19 +90,23 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
   const featuredLabel =
     post.featuredAtFormatted && post.featuredAtTime
       ? t({
-          message: "Featured on {date} at {time}",
-          comment:
-            "@context: Tooltip and screen reader label for the featured-post icon in the post footer",
+          ...msg({
+            message: "Featured on {date} at {time}",
+            comment:
+              "@context: Tooltip and screen reader label for the featured-post icon in the post footer",
+          }),
           values: {
             date: post.featuredAtFormatted,
             time: post.featuredAtTime,
           },
         })
-      : t({
-          message: "Featured",
-          comment:
-            "@context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available",
-        });
+      : t(
+          msg({
+            message: "Featured",
+            comment:
+              "@context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available",
+          }),
+        );
   const safeExternalUrl =
     post.format === "link" && post.url ? sanitizeUrl(post.url) : "";
   const showTimestamp = !display?.hideTimestamp;
@@ -152,11 +161,13 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             class="post-footer-external-link"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={t({
-              message: "Open external link",
-              comment:
-                "@context: Accessible label for the external-link icon in the post footer",
-            })}
+            aria-label={t(
+              msg({
+                message: "Open external link",
+                comment:
+                  "@context: Accessible label for the external-link icon in the post footer",
+              }),
+            )}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -179,10 +190,12 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
         )}
         {showThreadLink && post.threadRootPermalink && (
           <a href={post.threadRootPermalink} class="post-footer-link">
-            {t({
-              message: "In thread →",
-              comment: "@context: Link to the thread root from a post footer",
-            })}
+            {t(
+              msg({
+                message: "In thread →",
+                comment: "@context: Link to the thread root from a post footer",
+              }),
+            )}
           </a>
         )}
         <CompactCollectionTags
@@ -196,10 +209,12 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             <button
               type="button"
               class="reply-trigger"
-              aria-label={t({
-                message: "Reply",
-                comment: "@context: Reply button label in the post footer",
-              })}
+              aria-label={t(
+                msg({
+                  message: "Reply",
+                  comment: "@context: Reply button label in the post footer",
+                }),
+              )}
               data-reply-trigger
             >
               <svg
@@ -222,10 +237,12 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
             type="button"
             class="post-menu-trigger"
             aria-haspopup="menu"
-            aria-label={t({
-              message: "More actions",
-              comment: "@context: Post menu trigger label in the post footer",
-            })}
+            aria-label={t(
+              msg({
+                message: "More actions",
+                comment: "@context: Post menu trigger label in the post footer",
+              }),
+            )}
             aria-expanded="false"
             data-post-menu-trigger
           >

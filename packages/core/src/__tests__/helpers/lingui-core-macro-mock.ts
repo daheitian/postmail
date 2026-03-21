@@ -42,4 +42,5 @@ function toDescriptor(
 }
 
 export const msg = toDescriptor;
+export const t = toDescriptor;
 export const defineMessage = toDescriptor;

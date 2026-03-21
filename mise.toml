@@ -233,11 +233,9 @@ description = "Run the remote D1 migration rehearsal against the configured rehe
 dir = "packages/core"
 run = "node ./dev/scripts/run-remote-rehearsal.mjs"
 
-[tasks.db-local-reset]
-description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo snapshot"
-run = "mise run db-local-rebuild-demo"
 
 [tasks.db-local-rebuild-demo]
+alias = "db-local-reset"
 description = "Recreate the local development D1 database, bootstrap the local shell, and load the canonical demo snapshot"
 dir = "packages/core"
 run = """

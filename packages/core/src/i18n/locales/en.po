@@ -255,6 +255,11 @@ msgstr "Always show the light version of the theme."
 msgid "An abstract editorial layout in warm paper colors"
 msgstr "An abstract editorial layout in warm paper colors"
 
+#. @context: Button label for opening the hidden collection list in the post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "and {count} more"
+msgstr "and {count} more"
+
 #. @context: Sample link post body suffix on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "and checking whether the accent is guiding attention or pulling too hard."
@@ -1141,6 +1146,7 @@ msgstr "Favicon and the profile mark in your header"
 #. @context: Page heading for the featured posts feed
 #. @context: Post badge - featured
 #. @context: Select option for using featured posts as the main RSS feed
+#. @context: Tooltip and screen reader label for the featured-post icon in the post footer when no featured date is available
 #: src/routes/pages/featured.tsx
 #: src/routes/pages/home.tsx
 #: src/ui/dash/appearance/NavigationContent.tsx
@@ -1152,6 +1158,7 @@ msgstr "Favicon and the profile mark in your header"
 #: src/ui/pages/ArchivePage.tsx
 #: src/ui/pages/FeaturedPage.tsx
 #: src/ui/pages/ThemeSamplePage.tsx
+#: src/ui/shared/PostFooter.tsx
 msgid "Featured"
 msgstr "Featured"
 
@@ -1159,6 +1166,11 @@ msgstr "Featured"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "Featured feed"
 msgstr "Featured feed"
+
+#. @context: Tooltip and screen reader label for the featured-post icon in the post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "Featured on {date} at {time}"
+msgstr "Featured on {date} at {time}"
 
 #. @context: RSS and Atom feed title suffix for the featured posts feed
 #. @context: RSS autodiscovery title for the featured posts feed
@@ -1399,6 +1411,11 @@ msgstr "If this page feels too branded, the first place to soften is the default
 #: src/ui/pages/ArchivePage.tsx
 msgid "Images"
 msgstr "Images"
+
+#. @context: Link to the thread root from a post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "In thread →"
+msgstr "In thread →"
 
 #. @context: Accessible label for the asset keyword list on the public brand page
 #: src/ui/pages/BrandPage.tsx
@@ -1667,8 +1684,10 @@ msgstr "Media"
 
 #. @context: Aria-label for collections page more button
 #. @context: Button label for a menu with more actions
+#. @context: Post menu trigger label in the post footer
 #: src/routes/dash/custom-urls.tsx
 #: src/ui/shared/collection-management-labels.ts
+#: src/ui/shared/PostFooter.tsx
 msgid "More actions"
 msgstr "More actions"
 
@@ -1892,6 +1911,11 @@ msgstr "Only visible when signed in."
 msgid "Open a few links and check whether they still feel native to the page."
 msgstr "Open a few links and check whether they still feel native to the page."
 
+#. @context: Accessible label for the external-link icon in the post footer
+#: src/ui/shared/PostFooter.tsx
+msgid "Open external link"
+msgstr "Open external link"
+
 #. @context: Button label to open a raw brand asset in the browser
 #: src/ui/pages/BrandPage.tsx
 msgid "Open raw asset"
@@ -2081,7 +2105,9 @@ msgid "Published"
 msgstr "Published"
 
 #. @context: Tooltip text for the archive tile published timestamp
+#. @context: Tooltip text for the published timestamp in the post footer
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/PostFooter.tsx
 msgid "Published on {date} at {time}"
 msgstr "Published on {date} at {time}"
 
@@ -2200,8 +2226,10 @@ msgstr "Replies"
 
 #. @context: Archive tile label for a single thread reply
 #. @context: Compose button - reply to post
+#. @context: Reply button label in the post footer
 #: src/ui/compose/ComposeDialog.tsx
 #: src/ui/pages/ArchivePage.tsx
+#: src/ui/shared/PostFooter.tsx
 msgid "Reply"
 msgstr "Reply"
 

@@ -2006,6 +2006,10 @@
     line-height: 1.35;
   }
 
+  .post-menu-footer:not(.post-footer-detail) .post-footer-meta {
+    flex-wrap: nowrap;
+  }
+
   .post-footer-featured {
     display: none;
     align-items: center;
@@ -2088,13 +2092,16 @@
 
   .post-collection-tags {
     display: inline-flex;
-    flex: 1 1 0%;
     align-items: center;
     gap: 4px;
     font-size: 13px;
     position: relative;
     min-width: 0;
     max-width: 100%;
+  }
+
+  .post-menu-footer:not(.post-footer-detail) .post-collection-tags {
+    flex: 0 1 auto;
   }
 
   .post-footer-detail .post-collection-tags {
@@ -2108,7 +2115,6 @@
 
   .post-collection-tag {
     display: inline-flex;
-    flex: 1 1 auto;
     align-items: center;
     gap: 3px;
     color: var(--site-text-secondary);
