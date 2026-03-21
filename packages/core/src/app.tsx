@@ -87,7 +87,7 @@ function prepareRequestForRouting(
   const publicUrl = new URL(request.url);
   const publicPath = publicUrl.pathname;
 
-  if (!sitePathPrefix || isAssetPath(publicPath)) {
+  if (!sitePathPrefix) {
     publicRequestMeta.set(request, {
       publicRequestUrl: publicUrl.toString(),
       publicPath,

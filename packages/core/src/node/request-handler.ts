@@ -21,13 +21,14 @@ import {
 import { pgSchemaBundle, sqliteSchemaBundle } from "../db/schema-bundle.js";
 import * as schema from "../db/schema.js";
 import { resolveDatabaseDialect } from "../db/dialect.js";
-import { ASSET_BASE_PATH } from "../lib/asset-path.js";
+import { getPublicAssetBasePath, isAssetPath } from "../lib/asset-path.js";
 import {
   getEnvString,
   getPort,
   getSiteUrl,
   shouldTrustProxy,
 } from "../lib/env.js";
+import { getSitePathPrefix } from "../lib/url.js";
 import type { App } from "../types/app-context.js";
 import type { Bindings } from "../types/bindings.js";
 
@@ -140,8 +141,8 @@ function applyHostToUrl(url: URL, host: string): void {
 export function resolveNodeAssetRoot(moduleUrl = import.meta.url): string {
   return findExistingPath(
     [
-      fileURLToPath(new URL("./client/jant-assets", moduleUrl).href),
-      fileURLToPath(new URL("../../dist/client/jant-assets", moduleUrl).href),
+      fileURLToPath(new URL("./client/_assets", moduleUrl).href),
+      fileURLToPath(new URL("../../dist/client/_assets", moduleUrl).href),
     ],
     "Node asset directory",
   );
@@ -479,16 +480,17 @@ export function resolvePublicRequestUrl(
 async function serveStaticAsset(
   request: Request,
   assetRoot: string,
+  publicAssetBasePath: string,
 ): Promise<Response | null> {
   const url = new URL(request.url);
-  if (!url.pathname.startsWith(`${ASSET_BASE_PATH}/`)) {
+  if (!isAssetPath(url.pathname, publicAssetBasePath)) {
     return null;
   }
 
   let relativePath: string;
   try {
     relativePath = decodeURIComponent(
-      url.pathname.slice(ASSET_BASE_PATH.length),
+      url.pathname.slice(publicAssetBasePath.length),
     );
   } catch {
     return new Response("Not Found", { status: 404 });
@@ -594,6 +596,9 @@ export async function createNodeRequestHandler(options?: {
     options?.assetRoot === undefined
       ? resolveNodeAssetRoot()
       : options.assetRoot;
+  const publicAssetBasePath = getPublicAssetBasePath(
+    getSitePathPrefix(getSiteUrl(bindings)),
+  );
 
   let closed = false;
 
@@ -609,6 +614,7 @@ export async function createNodeRequestHandler(options?: {
         const staticResponse = await serveStaticAsset(
           preparedRequest,
           assetRoot,
+          publicAssetBasePath,
         );
         if (staticResponse) {
           return staticResponse;

@@ -11,7 +11,7 @@
 import type { FC, PropsWithChildren } from "hono/jsx";
 import type { Context } from "hono";
 import { msg } from "@lingui/core/macro";
-import { toAssetPath } from "../../lib/asset-path.js";
+import { getPublicAssetBasePath, toAssetPath } from "../../lib/asset-path.js";
 import { getJantIconHref } from "../../lib/jant-branding.js";
 import { isFullUrl, toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import { CORE_VERSION, IS_VITE_DEV } from "../../lib/version.js";
@@ -70,11 +70,12 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
   const sitePathPrefix = appConfig?.sitePathPrefix || "";
   const assetBasePath = IS_VITE_DEV
     ? "/"
-    : appConfig?.assetBasePath || toAssetPath("");
+    : appConfig?.assetBasePath || getPublicAssetBasePath(sitePathPrefix);
   const currentUrl = c ? c.get("publicRequestUrl") : undefined;
   const siteName = appConfig?.siteName;
   const i18n = c ? c.get("i18n") : undefined;
-  const assetPath = (path: string) => (IS_VITE_DEV ? path : toAssetPath(path));
+  const assetPath = (path: string) =>
+    IS_VITE_DEV ? path : toAssetPath(path, assetBasePath);
 
   // Automatically wrap with I18nProvider if Context is provided
   const content = c ? <I18nProvider c={c}>{children}</I18nProvider> : children;
@@ -94,22 +95,22 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
     fontLanguage === "zh-sg"
       ? IS_VITE_DEV
         ? assetPath("/src/style-cjk.css")
-        : toAssetPath(`/client-cjk.css?v=${CORE_VERSION}`)
+        : assetPath(`/client-cjk.css?v=${CORE_VERSION}`)
       : fontLanguage === "zh-hant" ||
           fontLanguage === "zh-tw" ||
           fontLanguage === "zh-hk" ||
           fontLanguage === "zh-mo"
         ? IS_VITE_DEV
           ? assetPath("/src/style-cjk-tc.css")
-          : toAssetPath(`/client-cjk-tc.css?v=${CORE_VERSION}`)
+          : assetPath(`/client-cjk-tc.css?v=${CORE_VERSION}`)
         : null;
   const clientScriptPath = IS_VITE_DEV
     ? resolvedClientBundle === "full"
       ? assetPath("/src/client-auth.ts")
       : assetPath("/src/client.ts")
     : resolvedClientBundle === "full"
-      ? toAssetPath(`/client-auth.js?v=${CORE_VERSION}`)
-      : toAssetPath(`/client.js?v=${CORE_VERSION}`);
+      ? assetPath(`/client-auth.js?v=${CORE_VERSION}`)
+      : assetPath(`/client.js?v=${CORE_VERSION}`);
   const faviconAssetVersion = resolvedFaviconVersion || CORE_VERSION;
   const resolvedFaviconHref =
     faviconHref ??
@@ -226,7 +227,7 @@ export const BaseLayout: FC<PropsWithChildren<BaseLayoutProps>> = ({
           href={
             IS_VITE_DEV
               ? assetPath("/src/style.css")
-              : toAssetPath(`/client.css?v=${CORE_VERSION}`)
+              : assetPath(`/client.css?v=${CORE_VERSION}`)
           }
         />
         {cjkStylesheetPath && (

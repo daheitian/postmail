@@ -25,7 +25,7 @@ import { createNavItemService, type NavItemService } from "./navigation.js";
 import { createAuthService, type AuthService } from "./auth.js";
 import { createApiTokenService, type ApiTokenService } from "./api-token.js";
 import { createBootstrapService, type BootstrapService } from "./bootstrap.js";
-import { createSiteMemberService } from "./site-member.js";
+import type { EnsureSingleSiteOptions } from "./site.js";
 
 export interface Services {
   settings: SettingsService;
@@ -49,13 +49,14 @@ export function createServices(
     slugIdLength?: number;
     schema?: DatabaseSchema;
     databaseDialect?: DatabaseDialect;
+    bootstrapSite?: EnsureSingleSiteOptions;
   },
 ): Services {
   const databaseSchema = config?.schema ?? sqliteSchemaBundle;
-  const settings = createSettingsService(db, siteId, databaseSchema);
+  const dialect = config?.databaseDialect ?? "sqlite";
+  const settings = createSettingsService(db, siteId, databaseSchema, dialect);
   const paths = createPathService(db, siteId, databaseSchema);
   const navItems = createNavItemService(db, siteId, databaseSchema);
-  const siteMembers = createSiteMemberService(db, databaseSchema);
   return {
     settings,
     paths,
@@ -63,23 +64,36 @@ export function createServices(
       db,
       {
         slugIdLength: config?.slugIdLength ?? 5,
+        databaseDialect: dialect,
       },
       siteId,
       paths,
       databaseSchema,
     ),
     customUrls: createCustomUrlService(db, siteId, paths, databaseSchema),
-    media: createMediaService(db, siteId, databaseSchema),
-    collections: createCollectionService(db, siteId, paths, databaseSchema),
-    search: createSearchService(
-      rawQuery,
+    media: createMediaService(db, siteId, databaseSchema, dialect),
+    collections: createCollectionService(
+      db,
       siteId,
-      config?.databaseDialect ?? "sqlite",
+      paths,
+      databaseSchema,
+      dialect,
     ),
+    search: createSearchService(rawQuery, siteId, dialect),
     navItems,
-    auth: createAuthService(db, settings, databaseSchema),
+    auth: createAuthService(
+      db,
+      settings,
+      {
+        databaseDialect: dialect,
+      },
+      databaseSchema,
+    ),
     apiTokens: createApiTokenService(db, siteId, databaseSchema),
-    bootstrap: createBootstrapService(settings, navItems, siteMembers, siteId),
+    bootstrap: createBootstrapService(db, {
+      schema: databaseSchema,
+      bootstrapSite: config?.bootstrapSite,
+    }),
   };
 }
 

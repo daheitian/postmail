@@ -113,14 +113,19 @@ For most small Jant sites:
 
 ## Node and Docker
 
-If you run Jant on Node or Docker with the default local storage layout, back up both of these paths:
+If you run Jant on Node or Docker with the default local storage layout and SQLite, back up both of these paths:
 
 - `data/jant.sqlite`
 - `data/media/`
 
+If you use Postgres instead of SQLite, back up:
+
+- Your Postgres database
+- `data/media/` when using default local media storage
+
 If you use S3-compatible storage instead of local media storage, back up:
 
-- `data/jant.sqlite`
+- `data/jant.sqlite` or your Postgres database
 - Your media bucket and its retention policy
 
 ## Restore options

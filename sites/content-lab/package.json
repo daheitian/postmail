@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "jant migrate --local && wrangler dev",
-    "deploy": "jant migrate --remote && wrangler deploy",
+    "deploy": "jant migrate --remote && jant assets prepare --output ./.jant/public-assets && wrangler deploy --assets ./.jant/public-assets",
     "reset-password": "jant reset-password",
     "export": "node scripts/export-content-lab.mjs"
   },

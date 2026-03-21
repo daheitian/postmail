@@ -4,9 +4,15 @@
  * Owns first-run site shell setup after account creation.
  */
 
-import type { NavItemService } from "./navigation.js";
-import type { SettingsService } from "./settings.js";
-import type { SiteMemberService } from "./site-member.js";
+import type { Database } from "../db/index.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
+import { createNavItemService } from "./navigation.js";
+import { createSettingsService } from "./settings.js";
+import { createSiteMemberService } from "./site-member.js";
+import { createSiteService, type EnsureSingleSiteOptions } from "./site.js";
 
 export interface CompleteInitialSetupData {
   ownerUserId: string;
@@ -26,14 +32,25 @@ export interface BootstrapService {
 }
 
 export function createBootstrapService(
-  settings: SettingsService,
-  navItems: NavItemService,
-  siteMembers: SiteMemberService,
-  siteId: string,
+  db: Database,
+  options?: {
+    schema?: DatabaseSchema;
+    bootstrapSite?: EnsureSingleSiteOptions;
+  },
 ): BootstrapService {
+  const databaseSchema = options?.schema ?? sqliteSchemaBundle;
+
   return {
     async completeInitialSetup(data) {
-      await siteMembers.ensure(siteId, data.ownerUserId, "owner");
+      const siteService = createSiteService(db, databaseSchema);
+      const { site } = await siteService.ensureSingleSite(
+        options?.bootstrapSite,
+      );
+      const settings = createSettingsService(db, site.id, databaseSchema);
+      const navItems = createNavItemService(db, site.id, databaseSchema);
+      const siteMembers = createSiteMemberService(db, databaseSchema);
+
+      await siteMembers.ensure(site.id, data.ownerUserId, "owner");
       await navItems.ensureSystemDefaults();
       await settings.set("SITE_NAME", data.siteName.trim());
 

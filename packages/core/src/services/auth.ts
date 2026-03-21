@@ -8,7 +8,12 @@
 
 import { eq, and } from "drizzle-orm";
 import { sql } from "drizzle-orm";
-import { executeStatement, type Database } from "../db/index.js";
+import {
+  executeStatement,
+  supportsDrizzleTransaction,
+  type Database,
+} from "../db/index.js";
+import type { DatabaseDialect } from "../db/dialect.js";
 import {
   sqliteSchemaBundle,
   type DatabaseSchema,
@@ -16,6 +21,7 @@ import {
 import type { SettingsService } from "./settings.js";
 import type { StorageDriver } from "../lib/storage.js";
 import { SETTINGS_KEYS } from "../lib/constants.js";
+import { timingSafeEqualText } from "../lib/crypto.js";
 import { ValidationError, NotFoundError } from "../lib/errors.js";
 import { hashPassword } from "../lib/password.js";
 
@@ -63,8 +69,12 @@ export interface AuthService {
   validateDeleteCsrfToken(token: string): Promise<boolean>;
 
   /**
-   * Delete all user data and reset the blog to its initial state.
-   * Removes all posts, media, collections, settings, auth data, etc.
+   * Delete all user data and reset the instance to a pristine state.
+   *
+   * This clears all content, site-scoped configuration, memberships, auth
+   * data, and site container records so `/setup` can create a completely fresh
+   * single-site instance with a new site identity.
+   *
    * Optionally cleans up storage files.
    *
    * @param deps - Optional storage driver for file cleanup
@@ -75,6 +85,9 @@ export interface AuthService {
 export function createAuthService(
   db: Database,
   settings: SettingsService,
+  config?: {
+    databaseDialect?: DatabaseDialect;
+  },
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): AuthService {
   const {
@@ -88,9 +101,56 @@ export function createAuthService(
     pathRegistry,
     collectionDirectoryItems: sidebarItems,
     navItems,
+    siteMembers,
+    siteDomains,
+    sites,
     settings: settingsTable,
     apiTokens,
   } = databaseSchema;
+  const databaseDialect = config?.databaseDialect ?? "sqlite";
+
+  async function deleteDataRows(targetDb: Database): Promise<void> {
+    // Junction/dependent tables first
+    await targetDb.delete(postCollections);
+    await targetDb.delete(pathRegistry);
+    await targetDb.delete(sidebarItems);
+    await targetDb.delete(media);
+    await targetDb.delete(navItems);
+
+    // Posts use self-referential thread FKs plus a root/reply thread-shape
+    // check. Flatten replies back into roots before deleting the rows.
+    await executeStatement(
+      targetDb,
+      sql`UPDATE post SET reply_to_id = NULL, thread_id = id WHERE reply_to_id IS NOT NULL`,
+    );
+    await executeStatement(targetDb, sql`DELETE FROM post`);
+
+    await targetDb.delete(collections);
+    await targetDb.delete(apiTokens);
+    await targetDb.delete(settingsTable);
+    await targetDb.delete(siteMembers);
+
+    // Auth tables
+    await targetDb.delete(verification);
+    await targetDb.delete(session);
+    await targetDb.delete(account);
+    await targetDb.delete(user);
+
+    // Site container records last so a factory reset removes the current site
+    // identity and any bound domains. A new site is only created when setup is
+    // submitted again.
+    await targetDb.delete(siteDomains);
+    await targetDb.delete(sites);
+
+    if (databaseDialect === "sqlite") {
+      // FTS table is auto-cleaned by triggers when posts are deleted,
+      // but run a rebuild to ensure consistency for SQLite.
+      await executeStatement(
+        targetDb,
+        sql`INSERT INTO post_fts(post_fts) VALUES ('rebuild')`,
+      );
+    }
+  }
 
   async function validateResetToken(token: string): Promise<boolean> {
     const stored = await settings.get(SETTINGS_KEYS.PASSWORD_RESET_TOKEN);
@@ -111,12 +171,7 @@ export function createAuthService(
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
-    const encoder = new TextEncoder();
-    const a = encoder.encode(tokenHash);
-    const b = encoder.encode(storedHash);
-    if (a.byteLength !== b.byteLength) return false;
-
-    return crypto.subtle.timingSafeEqual(a, b);
+    return timingSafeEqualText(tokenHash, storedHash);
   }
 
   async function hashToken(token: string): Promise<string> {
@@ -194,12 +249,7 @@ export function createAuthService(
 
       const tokenHash = await hashToken(token);
 
-      const encoder = new TextEncoder();
-      const a = encoder.encode(tokenHash);
-      const b = encoder.encode(storedHash);
-      if (a.byteLength !== b.byteLength) return false;
-
-      return crypto.subtle.timingSafeEqual(a, b);
+      return timingSafeEqualText(tokenHash, storedHash);
     },
 
     async deleteAllData(deps) {
@@ -232,38 +282,24 @@ export function createAuthService(
         }
       }
 
-      // 2. Delete all DB records in dependency order
-      // Junction/dependent tables first
-      await db.delete(postCollections);
-      await db.delete(pathRegistry);
-      await db.delete(sidebarItems);
-      await db.delete(media);
-      await db.delete(navItems);
+      // 2. Delete DB records.
+      //
+      // Only the Postgres path should use Drizzle transactions here. SQLite
+      // and D1 both run under the "sqlite" dialect, but their transaction
+      // implementations differ:
+      // - better-sqlite3 cannot use an async transaction callback safely
+      // - D1 rejects SQL BEGIN/SAVEPOINT statements entirely
+      //
+      // Running the delete sequence directly keeps both SQLite runtimes
+      // compatible while Postgres still gets an atomic reset.
+      if (!supportsDrizzleTransaction(db, databaseDialect)) {
+        await deleteDataRows(db);
+        return;
+      }
 
-      // Posts use self-referential thread FKs plus a root/reply thread-shape check.
-      // Flatten replies back into roots before deleting the table contents.
-      await executeStatement(
-        db,
-        sql`UPDATE post SET reply_to_id = NULL, thread_id = id WHERE reply_to_id IS NOT NULL`,
-      );
-      await executeStatement(db, sql`DELETE FROM post`);
-
-      await db.delete(collections);
-      await db.delete(apiTokens);
-      await db.delete(settingsTable);
-
-      // Auth tables
-      await db.delete(verification);
-      await db.delete(session);
-      await db.delete(account);
-      await db.delete(user);
-
-      // FTS table is auto-cleaned by triggers when posts are deleted,
-      // but run a rebuild to ensure consistency
-      await executeStatement(
-        db,
-        sql`INSERT INTO post_fts(post_fts) VALUES ('rebuild')`,
-      );
+      await db.transaction(async (tx) => {
+        await deleteDataRows(tx as unknown as Database);
+      });
     },
   };
 }

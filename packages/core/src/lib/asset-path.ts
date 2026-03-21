@@ -1,36 +1,87 @@
 /**
  * Static asset path helpers.
  *
- * Client build artifacts are always served from a reserved root path so they
- * stay reachable even when the site itself is mounted under a path prefix.
+ * Build outputs live under an internal `/_assets` directory, while the public
+ * asset base path may be prefixed by the site's deployment path.
  */
 
-export const ASSET_BASE_SEGMENT = "jant-assets";
+import { toPublicPath } from "./url.js";
+
+export const ASSET_BASE_SEGMENT = "_assets";
 export const ASSET_BASE_PATH = `/${ASSET_BASE_SEGMENT}`;
+export const ASSET_CHUNK_SEGMENT = "chunks";
+
+function normalizeAssetBasePath(basePath: string): string {
+  const trimmed = basePath.trim().replace(/\/+$/, "");
+  if (!trimmed) {
+    return ASSET_BASE_PATH;
+  }
+  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+}
 
 /**
- * Prefix a static asset subpath with the reserved asset base path.
+ * Resolve the public asset base path for the current deployment prefix.
+ *
+ * @param sitePathPrefix - Public site path prefix, such as `/blog`
+ * @returns Public asset base path, such as `/blog/_assets`
+ */
+export function getPublicAssetBasePath(sitePathPrefix = ""): string {
+  return toPublicPath(ASSET_BASE_PATH, sitePathPrefix);
+}
+
+/**
+ * Prefix a static asset subpath with an asset base path.
  *
  * @param path - Asset path relative to the asset base, with or without `/`
+ * @param basePath - Asset base path, defaults to the internal `/_assets`
  * @returns Absolute asset URL path
  *
  * @example
  * ```ts
- * toAssetPath("client.js"); // "/jant-assets/client.js"
- * toAssetPath("/@vite/client"); // "/jant-assets/@vite/client"
+ * toAssetPath("client.js"); // "/_assets/client.js"
+ * toAssetPath("client.js", "/blog/_assets"); // "/blog/_assets/client.js"
  * ```
  */
-export function toAssetPath(path: string): string {
+export function toAssetPath(path: string, basePath = ASSET_BASE_PATH): string {
+  const normalizedBasePath = normalizeAssetBasePath(basePath);
   const normalized = path.replace(/^\/+/, "");
-  return normalized ? `${ASSET_BASE_PATH}/${normalized}` : ASSET_BASE_PATH;
+  return normalized
+    ? `${normalizedBasePath}/${normalized}`
+    : normalizedBasePath;
 }
 
 /**
- * Returns true when a path points at the reserved static asset namespace.
+ * Returns true when a path points at a static asset namespace.
  *
  * @param path - Request pathname
+ * @param basePath - Asset base path, defaults to the internal `/_assets`
  * @returns Whether the pathname is inside the asset namespace
  */
-export function isAssetPath(path: string): boolean {
-  return path === ASSET_BASE_PATH || path.startsWith(`${ASSET_BASE_PATH}/`);
+export function isAssetPath(path: string, basePath = ASSET_BASE_PATH): boolean {
+  const normalizedBasePath = normalizeAssetBasePath(basePath);
+  return (
+    path === normalizedBasePath || path.startsWith(`${normalizedBasePath}/`)
+  );
+}
+
+/**
+ * Convert an internal asset path into its public deployment path.
+ *
+ * @param path - Internal or already-public asset path
+ * @param publicAssetBasePath - Public asset base path for the current site
+ * @returns Public-facing asset path
+ */
+export function toPublicAssetPath(
+  path: string,
+  publicAssetBasePath: string,
+): string {
+  if (isAssetPath(path, publicAssetBasePath)) {
+    return path;
+  }
+  if (!isAssetPath(path)) {
+    return path;
+  }
+
+  const relativePath = path.slice(ASSET_BASE_PATH.length).replace(/^\/+/, "");
+  return toAssetPath(relativePath, publicAssetBasePath);
 }

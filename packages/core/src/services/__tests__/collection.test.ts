@@ -871,5 +871,34 @@ describe("CollectionService", () => {
       );
       expect(collections).toHaveLength(0);
     });
+
+    it("does not call transaction() when syncing collections on sqlite-family backends", async () => {
+      const col = await collectionService.create({
+        slug: "test-sync",
+        title: "Test Sync",
+      });
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "test",
+      });
+
+      const dbWithoutTransaction = db as Database & {
+        transaction: () => Promise<never>;
+      };
+      const originalTransaction = dbWithoutTransaction.transaction.bind(db);
+      dbWithoutTransaction.transaction = async () => {
+        throw new Error(
+          "sqlite syncPostCollections() should not call transaction()",
+        );
+      };
+
+      try {
+        await expect(
+          collectionService.syncPostCollections(post.id, [col.id]),
+        ).resolves.toBeUndefined();
+      } finally {
+        dbWithoutTransaction.transaction = originalTransaction;
+      }
+    });
   });
 });

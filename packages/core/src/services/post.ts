@@ -20,10 +20,11 @@ import {
   lte,
 } from "drizzle-orm";
 import {
-  isNodeSqliteDatabase,
   type Database,
   batchQueryRows,
+  supportsDrizzleTransaction,
 } from "../db/index.js";
+import type { DatabaseDialect } from "../db/dialect.js";
 import {
   sqliteSchemaBundle,
   type DatabaseSchema,
@@ -375,13 +376,30 @@ function assertDraftPublishedAt(
 
 export function createPostService(
   db: Database,
-  config: { slugIdLength: number },
+  config: {
+    slugIdLength: number;
+    databaseDialect?: DatabaseDialect;
+  },
   siteId: string,
   paths: PathService | undefined,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): PostService {
   const resolvedPaths = paths ?? createPathService(db, siteId, databaseSchema);
   const { pathRegistry, posts, postCollections } = databaseSchema;
+  const databaseDialect = config.databaseDialect ?? "sqlite";
+  const usesBatchWrites = !supportsDrizzleTransaction(db, databaseDialect);
+
+  function buildPublishedYearMonthExpr(): SQL<string> {
+    return databaseDialect === "pg"
+      ? sql<string>`to_char(timezone('UTC', to_timestamp(${posts.publishedAt})), 'YYYY-MM')`
+      : sql<string>`strftime('%Y-%m', ${posts.publishedAt}, 'unixepoch')`;
+  }
+
+  function buildPublishedYearExpr(): SQL<string> {
+    return databaseDialect === "pg"
+      ? sql<string>`to_char(timezone('UTC', to_timestamp(${posts.publishedAt})), 'YYYY')`
+      : sql<string>`strftime('%Y', ${posts.publishedAt}, 'unixepoch')`;
+  }
 
   const effectiveVisibilityExpr = sql<string>`coalesce(
     ${posts.visibility},
@@ -1056,21 +1074,17 @@ export function createPostService(
         ...buildFilterConditions(filters),
         isNotNull(posts.publishedAt),
       ];
+      const publishedYearMonthExpr = buildPublishedYearMonthExpr();
 
       return db
         .select({
-          yearMonth:
-            sql<string>`strftime('%Y-%m', ${posts.publishedAt}, 'unixepoch')`.as(
-              "year_month",
-            ),
+          yearMonth: publishedYearMonthExpr.as("year_month"),
           count: sql<number>`count(*)`.as("count"),
         })
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .groupBy(sql`strftime('%Y-%m', ${posts.publishedAt}, 'unixepoch')`)
-        .orderBy(
-          desc(sql`strftime('%Y-%m', ${posts.publishedAt}, 'unixepoch')`),
-        );
+        .groupBy(publishedYearMonthExpr)
+        .orderBy(desc(publishedYearMonthExpr));
     },
 
     async create(data, summaryConfig) {
@@ -1184,7 +1198,7 @@ export function createPostService(
       const collectionIds = [...new Set(data.collectionIds ?? [])];
 
       try {
-        if (isNodeSqliteDatabase(db)) {
+        if (usesBatchWrites) {
           const writeQueries = [];
 
           writeQueries.push(
@@ -1548,7 +1562,7 @@ export function createPostService(
         : [];
       let updateResult: (typeof posts.$inferSelect)[] | undefined;
 
-      if (isNodeSqliteDatabase(db)) {
+      if (usesBatchWrites) {
         const writeQueries = [];
 
         if (needsCascade) {
@@ -1872,7 +1886,7 @@ export function createPostService(
       const nextStatus = ensurePostStatus(status);
       const nextVisibility = ensurePostVisibility(visibility);
       const timestamp = now();
-      if (isNodeSqliteDatabase(db)) {
+      if (usesBatchWrites) {
         await db.batch([
           db
             .update(posts)
@@ -2368,17 +2382,16 @@ export function createPostService(
         ...buildFilterConditions(filters),
         isNotNull(posts.publishedAt),
       ];
+      const publishedYearExpr = buildPublishedYearExpr();
 
       const rows = await db
         .select({
-          year: sql<string>`strftime('%Y', ${posts.publishedAt}, 'unixepoch')`.as(
-            "year",
-          ),
+          year: publishedYearExpr.as("year"),
         })
         .from(posts)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .groupBy(sql`strftime('%Y', ${posts.publishedAt}, 'unixepoch')`)
-        .orderBy(desc(sql`strftime('%Y', ${posts.publishedAt}, 'unixepoch')`));
+        .groupBy(publishedYearExpr)
+        .orderBy(desc(publishedYearExpr));
 
       return rows.map((r) => parseInt(r.year, 10));
     },

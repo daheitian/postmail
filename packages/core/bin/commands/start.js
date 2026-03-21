@@ -16,11 +16,17 @@ export async function run(argv) {
     console.log("");
     console.log("Required:");
     console.log("  AUTH_SECRET=your-secret");
+    console.log("  SITE_URL=https://your-site.example");
     console.log("");
-    console.log("Defaults:");
-    console.log("  DATA_DIR=./data");
+    console.log("Database:");
     console.log("  DATABASE_URL=file:<data-dir>/jant.sqlite");
+    console.log("  DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME");
+    console.log("");
+    console.log("Node defaults:");
+    console.log("  DATA_DIR=./data");
     console.log("  LOCAL_STORAGE_PATH=<data-dir>/media");
+    console.log("  SITE_RESOLUTION_MODE=single-site");
+    console.log("  STORAGE_DRIVER defaults to local on Node");
     process.exit(0);
   }
 

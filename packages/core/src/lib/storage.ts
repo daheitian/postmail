@@ -81,6 +81,36 @@ export interface StorageDriver {
   abortMultipartUpload?(key: string, uploadId: string): Promise<void>;
 }
 
+type StorageRuntime = "cloudflare" | "node" | "unknown";
+
+function resolveStorageRuntime(env: Bindings): StorageRuntime {
+  if (env.NODE_DATABASE || env.NODE_SQLITE) {
+    return "node";
+  }
+
+  if (env.DB || env.R2) {
+    return "cloudflare";
+  }
+
+  return "unknown";
+}
+
+function assertSupportedStorageDriver(env: Bindings, driver: string): void {
+  const runtime = resolveStorageRuntime(env);
+
+  if (runtime === "node" && driver === "r2") {
+    throw new Error(
+      "Node runtime does not support R2 storage. Use STORAGE_DRIVER=local or STORAGE_DRIVER=s3.",
+    );
+  }
+
+  if (runtime === "cloudflare" && driver === "local") {
+    throw new Error(
+      "Cloudflare runtime does not support local storage. Use the default R2 storage or set STORAGE_DRIVER=s3.",
+    );
+  }
+}
+
 /**
  * Type guard that checks whether a storage driver supports multipart uploads.
  *
@@ -798,6 +828,7 @@ export function createLocalDriver(config: LocalDriverConfig): StorageDriver {
  */
 export function createStorageDriver(env: Bindings): StorageDriver | null {
   const driver = getConfiguredStorageDriver(env);
+  assertSupportedStorageDriver(env, driver);
 
   if (driver === "s3") {
     const endpoint = getEnvString(env, "S3_ENDPOINT") || "";

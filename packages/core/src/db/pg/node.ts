@@ -5,6 +5,54 @@ import type { Database } from "../index.js";
 import type { RawQueryClient, RawQueryStatement } from "../raw-query.js";
 import { pgSchemaBundle } from "../schema-bundle.js";
 
+interface PostgresErrorLike extends Error {
+  code?: string;
+}
+
+export function describePostgresTarget(databaseUrl: string): string {
+  try {
+    const parsed = new URL(databaseUrl);
+    const protocol = parsed.protocol.replace(/:$/, "");
+    const username = parsed.username || "<unknown-user>";
+    const hostname = parsed.hostname || "<unknown-host>";
+    const port = parsed.port || "5432";
+    const database = parsed.pathname.replace(/^\/+/, "") || "<unknown-db>";
+    return `${protocol}://${username}@${hostname}:${port}/${database}`;
+  } catch {
+    return "<invalid-postgres-url>";
+  }
+}
+
+export function wrapPostgresConnectionError(
+  error: unknown,
+  databaseUrl: string,
+  action: "connect" | "migrate",
+): Error {
+  const target = describePostgresTarget(databaseUrl);
+  const pgError =
+    error instanceof Error ? (error as PostgresErrorLike) : undefined;
+
+  if (pgError?.code === "28P01") {
+    return new Error(
+      `Postgres authentication failed while attempting to ${action} ${target}. Check the DATABASE_URL username and password.`,
+      { cause: error },
+    );
+  }
+
+  if (pgError?.code === "3D000") {
+    return new Error(
+      `Postgres database does not exist while attempting to ${action} ${target}. Check the DATABASE_URL database name.`,
+      { cause: error },
+    );
+  }
+
+  return error instanceof Error
+    ? error
+    : new Error(`Failed to ${action} Postgres database ${target}.`, {
+        cause: error,
+      });
+}
+
 function convertQuestionMarkParams(query: string): string {
   let parameterIndex = 0;
   return query.replace(/\?/g, () => {
@@ -80,7 +128,7 @@ export async function createNodePgDatabase(
     };
   } catch (error) {
     await pool.end().catch(() => undefined);
-    throw error;
+    throw wrapPostgresConnectionError(error, databaseUrl, "connect");
   }
 }
 
@@ -95,6 +143,8 @@ export async function migrateNodePgDatabase(
   try {
     const db = drizzle(pool, { schema: pgSchemaBundle });
     await drizzleMigrate(db, { migrationsFolder });
+  } catch (error) {
+    throw wrapPostgresConnectionError(error, databaseUrl, "migrate");
   } finally {
     await pool.end();
   }

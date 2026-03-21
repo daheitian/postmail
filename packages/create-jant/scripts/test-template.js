@@ -87,7 +87,7 @@ async function main() {
     projectDir,
     "node_modules/@jant/core/dist/client",
   );
-  const assetDir = path.join(clientDir, "jant-assets");
+  const assetDir = path.join(clientDir, "_assets");
   const clientJs = path.join(assetDir, "client.js");
   const clientCss = path.join(assetDir, "client.css");
 
@@ -99,10 +99,22 @@ async function main() {
     console.error(`  client.css not found at ${clientCss}`);
     process.exit(1);
   }
-  console.log("  jant-assets/client.js and jant-assets/client.css found\n");
+  console.log("  _assets/client.js and _assets/client.css found\n");
 
-  // 6. Verify wrangler.toml is valid
-  console.log("Step 6: Verifying wrangler.toml...");
+  // 6. Verify public asset directory generation
+  console.log("Step 6: Verifying public asset directory generation...");
+  run("pnpm exec jant assets prepare --output ./.jant/public-assets", {
+    cwd: projectDir,
+  });
+  const publicAssetDir = path.join(projectDir, ".jant/public-assets/_assets");
+  if (!(await fs.pathExists(path.join(publicAssetDir, "client.js")))) {
+    console.error(`  prepared client.js not found at ${publicAssetDir}`);
+    process.exit(1);
+  }
+  console.log("  Public asset directory prepared at ./.jant/public-assets\n");
+
+  // 7. Verify wrangler.toml is valid
+  console.log("Step 7: Verifying wrangler.toml...");
   const wranglerToml = await fs.readFile(
     path.join(projectDir, "wrangler.toml"),
     "utf-8",
@@ -113,8 +125,8 @@ async function main() {
   }
   console.log("  wrangler.toml looks correct\n");
 
-  // 7. Verify dotfiles were renamed correctly
-  console.log("Step 7: Verifying dotfiles...");
+  // 8. Verify dotfiles were renamed correctly
+  console.log("Step 8: Verifying dotfiles...");
   const expectedFiles = [
     ".gitignore",
     ".github/workflows/deploy.yml",

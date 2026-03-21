@@ -52,10 +52,10 @@ describe("resolveNodeDataDir", () => {
 });
 
 describe("resolveNodeAssetRoot", () => {
-  it("resolves the reserved jant-assets directory for built Node bundles", async () => {
+  it("resolves the built _assets directory for Node bundles", async () => {
     const root = await mkdtemp(join(tmpdir(), "jant-node-assets-"));
     tempDirs.push(root);
-    const assetRoot = join(root, "dist", "client", "jant-assets");
+    const assetRoot = join(root, "dist", "client", "_assets");
     await mkdir(assetRoot, { recursive: true });
     await writeFile(join(assetRoot, "client.css"), "body{}");
 
@@ -64,10 +64,10 @@ describe("resolveNodeAssetRoot", () => {
     ).toBe(assetRoot);
   });
 
-  it("serves built jant-assets files from the asset root", async () => {
+  it("serves built asset files from the root public asset path", async () => {
     const root = await mkdtemp(join(tmpdir(), "jant-node-assets-server-"));
     tempDirs.push(root);
-    const assetRoot = join(root, "dist", "client", "jant-assets");
+    const assetRoot = join(root, "dist", "client", "_assets");
     const databasePath = join(root, "data", "jant.sqlite");
     await mkdir(assetRoot, { recursive: true });
     await writeFile(join(assetRoot, "client.css"), "body{}");
@@ -84,13 +84,44 @@ describe("resolveNodeAssetRoot", () => {
 
     try {
       const response = await handler.fetch(
-        new Request("http://127.0.0.1:3000/jant-assets/client.css"),
+        new Request("http://127.0.0.1:3000/_assets/client.css"),
       );
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe(
         "text/css; charset=utf-8",
       );
+      expect(await response.text()).toBe("body{}");
+    } finally {
+      await handler.close();
+    }
+  });
+
+  it("serves built asset files from a prefixed public asset path", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-node-assets-subpath-"));
+    tempDirs.push(root);
+    const assetRoot = join(root, "dist", "client", "_assets");
+    const databasePath = join(root, "data", "jant.sqlite");
+    await mkdir(assetRoot, { recursive: true });
+    await writeFile(join(assetRoot, "client.css"), "body{}");
+    await migrate({
+      DATABASE_URL: `file:${databasePath}`,
+    } as Bindings);
+
+    const handler = await createNodeRequestHandler({
+      assetRoot,
+      env: {
+        DATABASE_URL: `file:${databasePath}`,
+        SITE_URL: "https://example.com/blog",
+      } as Bindings,
+    });
+
+    try {
+      const response = await handler.fetch(
+        new Request("http://127.0.0.1:3000/blog/_assets/client.css"),
+      );
+
+      expect(response.status).toBe(200);
       expect(await response.text()).toBe("body{}");
     } finally {
       await handler.close();

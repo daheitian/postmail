@@ -26,8 +26,8 @@ export const RESERVED_PATHS = [
   "compose",
   "static",
   "assets",
+  "_assets",
   "health",
-  "jant-assets",
 ] as const;
 
 export type ReservedPath = (typeof RESERVED_PATHS)[number];

@@ -1,5 +1,5 @@
 {
-  "id": "36064d31-561a-40f4-99d0-694841d0f5c8",
+  "id": "66e580e2-a69a-4c25-8761-1f1749754883",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1351,27 +1351,6 @@
         }
       },
       "indexes": {
-        "uq_post_site_id_id": {
-          "name": "uq_post_site_id_id",
-          "columns": [
-            {
-              "expression": "site_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "idx_post_site_thread_id": {
           "name": "idx_post_site_thread_id",
           "columns": [
@@ -1648,7 +1627,13 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "uq_post_site_id_id": {
+          "name": "uq_post_site_id_id",
+          "nullsNotDistinct": false,
+          "columns": ["site_id", "id"]
+        }
+      },
       "policies": {},
       "checkConstraints": {
         "chk_post_reply_to_not_self": {

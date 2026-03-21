@@ -130,7 +130,7 @@ export function getLocalStoragePath(env: EnvSource): string | undefined {
 
 export function getDefaultStorageDriver(env: EnvSource): "local" | "r2" {
   const record = toEnvRecord(env);
-  return record["NODE_SQLITE"] ? "local" : "r2";
+  return record["NODE_SQLITE"] || record["NODE_DATABASE"] ? "local" : "r2";
 }
 
 export function getConfiguredStorageDriver(env: EnvSource): string {

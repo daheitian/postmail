@@ -8,10 +8,11 @@
 import { eq, asc, sql, and, inArray, desc } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import {
-  isNodeSqliteDatabase,
   type Database,
   batchQueryRows,
+  supportsDrizzleTransaction,
 } from "../db/index.js";
+import type { DatabaseDialect } from "../db/dialect.js";
 import {
   sqliteSchemaBundle,
   type DatabaseSchema,
@@ -117,6 +118,7 @@ export function createCollectionService(
   siteId: string,
   paths: PathService | undefined,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
+  databaseDialect: DatabaseDialect = "sqlite",
 ): CollectionService {
   const resolvedPaths = paths ?? createPathService(db, siteId, databaseSchema);
   const {
@@ -126,6 +128,7 @@ export function createCollectionService(
     postCollections,
     posts,
   } = databaseSchema;
+  const usesBatchWrites = !supportsDrizzleTransaction(db, databaseDialect);
 
   function normalizeCreateCollectionInput(
     data: CreateCollection,
@@ -478,7 +481,7 @@ export function createCollectionService(
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
           const position = await getAppendSidebarPosition();
-          if (isNodeSqliteDatabase(db)) {
+          if (usesBatchWrites) {
             const writeQueries = [
               db.insert(collections).values({
                 id,
@@ -911,7 +914,7 @@ export function createCollectionService(
         return;
       }
 
-      if (isNodeSqliteDatabase(db)) {
+      if (usesBatchWrites) {
         const writeQueries = [];
 
         if (removedIds.length > 0) {

@@ -5,7 +5,8 @@
  */
 
 import { and, eq } from "drizzle-orm";
-import { isNodeSqliteDatabase, type Database } from "../db/index.js";
+import { type Database, supportsDrizzleTransaction } from "../db/index.js";
+import type { DatabaseDialect } from "../db/dialect.js";
 import {
   sqliteSchemaBundle,
   type DatabaseSchema,
@@ -131,6 +132,7 @@ export function createSettingsService(
   db: Database,
   siteId: string,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
+  databaseDialect: DatabaseDialect = "sqlite",
 ): SettingsService {
   const { settings } = databaseSchema;
 
@@ -202,7 +204,7 @@ export function createSettingsService(
 
       if (pairs.length === 0) return;
 
-      if (isNodeSqliteDatabase(db)) {
+      if (!supportsDrizzleTransaction(db, databaseDialect)) {
         const queries = pairs.map(({ key, value }) =>
           db
             .insert(settings)

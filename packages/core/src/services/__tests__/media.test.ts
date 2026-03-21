@@ -645,6 +645,38 @@ describe("MediaService", () => {
       const attached = await mediaService.getByPostId(post.id);
       expect(attached).toHaveLength(0);
     });
+
+    it("does not call transaction() when reordering attachments on sqlite-family backends", async () => {
+      const post = await postService.create({
+        format: "note",
+        bodyMarkdown: "test",
+      });
+
+      const m1 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/sqlite-a.jpg",
+      });
+      const m2 = await mediaService.create({
+        ...sampleMedia,
+        storageKey: "media/sqlite-b.jpg",
+      });
+
+      const dbWithoutTransaction = db as Database & {
+        transaction: () => Promise<never>;
+      };
+      const originalTransaction = dbWithoutTransaction.transaction.bind(db);
+      dbWithoutTransaction.transaction = async () => {
+        throw new Error("sqlite attachToPost() should not call transaction()");
+      };
+
+      try {
+        await expect(
+          mediaService.attachToPost(post.id, [m1.id, m2.id]),
+        ).resolves.toBeUndefined();
+      } finally {
+        dbWithoutTransaction.transaction = originalTransaction;
+      }
+    });
   });
 
   describe("detachFromPost", () => {

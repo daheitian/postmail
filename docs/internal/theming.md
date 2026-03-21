@@ -123,7 +123,7 @@ Jant intentionally keeps these font subsets as real asset files instead of inlin
 
 - The app ships with a strict CSP and keeps `font-src 'self'`.
 - Inline `data:` fonts would require widening CSP to `font-src 'self' data:`.
-- Real font files cache independently from CSS and fit the reserved `/jant-assets/*` asset namespace better.
+- Real font files cache independently from CSS and fit the reserved `/_assets/*` asset namespace better.
 - Tiny subsets are still emitted as files on purpose. This is a policy choice, not an accident.
 
 If you change the font pipeline, preserve that behavior.

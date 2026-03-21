@@ -6,7 +6,8 @@
 
 import { eq, desc, inArray, asc, sql, and } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
-import { isNodeSqliteDatabase, type Database } from "../db/index.js";
+import { type Database, supportsDrizzleTransaction } from "../db/index.js";
+import type { DatabaseDialect } from "../db/dialect.js";
 import {
   sqliteSchemaBundle,
   type DatabaseSchema,
@@ -164,6 +165,7 @@ export function createMediaService(
   db: Database,
   siteId: string,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
+  databaseDialect: DatabaseDialect = "sqlite",
 ): MediaService {
   const { media } = databaseSchema;
 
@@ -464,7 +466,7 @@ export function createMediaService(
       const positions = buildSequentialPositions(validIds.length);
 
       // Clear existing + re-attach atomically
-      if (isNodeSqliteDatabase(db)) {
+      if (!supportsDrizzleTransaction(db, databaseDialect)) {
         const attachQueries = validIds.map((mediaId, index) => {
           const position = positions[index];
           if (!position) {

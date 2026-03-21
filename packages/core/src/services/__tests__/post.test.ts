@@ -354,6 +354,30 @@ describe("PostService", () => {
       const rows = await db.select({ id: posts.id }).from(posts);
       expect(rows).toHaveLength(1);
     });
+
+    it("does not call transaction() when creating posts on sqlite-family backends", async () => {
+      const dbWithoutTransaction = db as Database & {
+        transaction: () => Promise<never>;
+      };
+      const originalTransaction = dbWithoutTransaction.transaction.bind(db);
+      dbWithoutTransaction.transaction = async () => {
+        throw new Error("sqlite create() should not call transaction()");
+      };
+
+      try {
+        await expect(
+          postService.create({
+            format: "note",
+            bodyMarkdown: "no transaction",
+          }),
+        ).resolves.toMatchObject({
+          format: "note",
+          bodyText: "no transaction",
+        });
+      } finally {
+        dbWithoutTransaction.transaction = originalTransaction;
+      }
+    });
   });
 
   describe("getById", () => {
@@ -1343,6 +1367,35 @@ describe("PostService", () => {
         id: replacementAttachment.id,
         postId: null,
       });
+    });
+
+    it("does not call transaction() when cascading threaded updates on sqlite-family backends", async () => {
+      const root = await postService.create({
+        format: "note",
+        bodyMarkdown: "root",
+      });
+      await postService.create({
+        format: "note",
+        bodyMarkdown: "reply",
+        replyToId: root.id,
+      });
+
+      const dbWithoutTransaction = db as Database & {
+        transaction: () => Promise<never>;
+      };
+      const originalTransaction = dbWithoutTransaction.transaction.bind(db);
+      dbWithoutTransaction.transaction = async () => {
+        throw new Error("sqlite update() should not call transaction()");
+      };
+
+      try {
+        const updated = await postService.update(root.id, {
+          visibility: "latest_hidden",
+        });
+        expect(updated?.visibility).toBe("latest_hidden");
+      } finally {
+        dbWithoutTransaction.transaction = originalTransaction;
+      }
     });
   });
 

@@ -4,17 +4,24 @@ import { describe, expect, it, vi } from "vitest";
 vi.stubGlobal("__JANT_DEV__", false);
 vi.stubGlobal("__JANT_VERSION__", "test-version");
 
-function createContext(mainRssFeed: "featured" | "latest") {
+function createContext(
+  mainRssFeed: "featured" | "latest",
+  overrides?: {
+    assetBasePath?: string;
+    sitePathPrefix?: string;
+    siteUrl?: string;
+  },
+) {
   const values = {
     appConfig: {
       mainRssFeed,
-      sitePathPrefix: "",
-      siteUrl: "https://example.com",
+      sitePathPrefix: overrides?.sitePathPrefix ?? "",
+      siteUrl: overrides?.siteUrl ?? "https://example.com",
       siteLanguage: "en",
       noindex: false,
       customCSS: "",
       themeMode: "auto",
-      assetBasePath: "/jant-assets",
+      assetBasePath: overrides?.assetBasePath ?? "/_assets",
     },
     lang: "en",
     i18n: {
@@ -139,5 +146,24 @@ describe("BaseLayout", () => {
     expect(html).toContain('href="/feed"');
     expect(html).toContain('href="/feed/featured"');
     expect(html).not.toContain('href="/feed/latest"');
+  });
+
+  it("uses the public asset base path from appConfig in production", async () => {
+    const { CORE_VERSION, BaseLayout } = await loadBaseLayout();
+    const html = renderToString(
+      BaseLayout({
+        title: "Jant",
+        c: createContext("featured", {
+          sitePathPrefix: "/blog",
+          siteUrl: "https://example.com/blog",
+          assetBasePath: "/blog/_assets",
+        }),
+        children: "Test",
+      }),
+    );
+
+    expect(html).toContain(`src="/blog/_assets/client.js?v=${CORE_VERSION}"`);
+    expect(html).toContain(`href="/blog/_assets/client.css?v=${CORE_VERSION}"`);
+    expect(html).toContain('data-asset-base-path="/blog/_assets"');
   });
 });

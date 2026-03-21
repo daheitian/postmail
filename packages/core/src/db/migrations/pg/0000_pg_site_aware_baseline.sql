@@ -168,6 +168,7 @@ CREATE TABLE "post" (
 	"last_activity_at" integer,
 	"created_at" integer NOT NULL,
 	"updated_at" integer NOT NULL,
+	CONSTRAINT "uq_post_site_id_id" UNIQUE("site_id","id"),
 	CONSTRAINT "chk_post_reply_to_not_self" CHECK ("post"."reply_to_id" IS NULL OR "post"."reply_to_id" <> "post"."id"),
 	CONSTRAINT "chk_post_thread_shape" CHECK ((
         "post"."reply_to_id" IS NULL
@@ -205,8 +206,8 @@ CREATE TABLE "site_domain" (
 	"path_prefix" text,
 	"kind" text DEFAULT 'primary' NOT NULL,
 	"redirect_to_primary" boolean DEFAULT true NOT NULL,
-	"created_at" timestamp with time zone NOT NULL,
-	"updated_at" timestamp with time zone NOT NULL,
+	"created_at" integer NOT NULL,
+	"updated_at" integer NOT NULL,
 	CONSTRAINT "chk_site_domain_kind" CHECK ("site_domain"."kind" IN ('primary', 'alias'))
 );
 --> statement-breakpoint
@@ -236,8 +237,8 @@ CREATE TABLE "user" (
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
 	"role" text DEFAULT 'member',
-	"created_at" integer NOT NULL,
-	"updated_at" integer NOT NULL,
+	"created_at" timestamp with time zone NOT NULL,
+	"updated_at" timestamp with time zone NOT NULL,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
@@ -289,7 +290,6 @@ CREATE INDEX "idx_path_registry_site_post_id" ON "path_registry" USING btree ("s
 CREATE INDEX "idx_path_registry_site_collection_id" ON "path_registry" USING btree ("site_id","collection_id");--> statement-breakpoint
 CREATE INDEX "idx_post_collection_site_collection_id" ON "post_collection" USING btree ("site_id","collection_id");--> statement-breakpoint
 CREATE INDEX "idx_post_collection_site_collection_created_post" ON "post_collection" USING btree ("site_id","collection_id","created_at","post_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "uq_post_site_id_id" ON "post" USING btree ("site_id","id");--> statement-breakpoint
 CREATE INDEX "idx_post_site_thread_id" ON "post" USING btree ("site_id","thread_id");--> statement-breakpoint
 CREATE INDEX "idx_post_site_thread_live_created" ON "post" USING btree ("site_id","thread_id","created_at","id") WHERE "post"."deleted_at" IS NULL;--> statement-breakpoint
 CREATE INDEX "idx_post_site_status_deleted_published" ON "post" USING btree ("site_id","status","deleted_at","published_at");--> statement-breakpoint

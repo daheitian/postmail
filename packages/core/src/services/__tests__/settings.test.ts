@@ -120,6 +120,27 @@ describe("SettingsService", () => {
         }),
       ).rejects.toThrow();
     });
+
+    it("does not call transaction() for bulk updates on sqlite-family backends", async () => {
+      const dbWithoutTransaction = db as Database & {
+        transaction: () => Promise<never>;
+      };
+      const originalTransaction = dbWithoutTransaction.transaction.bind(db);
+      dbWithoutTransaction.transaction = async () => {
+        throw new Error("sqlite setMany() should not call transaction()");
+      };
+
+      try {
+        await expect(
+          settingsService.setMany({
+            SITE_NAME: "My Blog",
+            SITE_DESCRIPTION: "Description",
+          }),
+        ).resolves.toBeUndefined();
+      } finally {
+        dbWithoutTransaction.transaction = originalTransaction;
+      }
+    });
   });
 
   describe("remove", () => {

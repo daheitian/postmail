@@ -22,10 +22,17 @@ export interface EnsureSingleSiteOptions {
   pathPrefix?: string | null;
 }
 
+export interface ResolveSingleSiteOptions extends EnsureSingleSiteOptions {
+  createIfMissing?: boolean;
+}
+
 export interface SiteService {
   list(): Promise<Site[]>;
   getById(id: string): Promise<Site | null>;
   getOnlySite(): Promise<Site | null>;
+  resolveSingleSite(
+    options?: ResolveSingleSiteOptions,
+  ): Promise<SiteLookupResult>;
   ensureSingleSite(
     options?: EnsureSingleSiteOptions,
   ): Promise<SiteLookupResult>;
@@ -58,11 +65,39 @@ function toSiteDomain(row: typeof _sqliteSiteDomains.$inferSelect): SiteDomain {
   };
 }
 
+export const TRANSIENT_SINGLE_SITE_ID = "sit_pending";
+
+function createTransientSingleSite(key = "default"): Site {
+  return {
+    id: TRANSIENT_SINGLE_SITE_ID,
+    key,
+    status: "active",
+    createdAt: 0,
+    updatedAt: 0,
+  };
+}
+
 export function createSiteService(
   db: Database,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): SiteService {
   const { siteDomains, sites } = databaseSchema;
+
+  async function loadSingleSiteRow() {
+    const rows = await db
+      .select()
+      .from(sites)
+      .orderBy(asc(sites.createdAt))
+      .limit(2);
+
+    if (rows.length > 1) {
+      throw new Error(
+        "single-site mode requires exactly one site in the instance.",
+      );
+    }
+
+    return rows[0];
+  }
 
   return {
     async list() {
@@ -80,49 +115,39 @@ export function createSiteService(
     },
 
     async getOnlySite() {
-      const rows = await db
-        .select()
-        .from(sites)
-        .orderBy(asc(sites.createdAt))
-        .limit(2);
-      if (rows.length !== 1) {
+      const row = await loadSingleSiteRow();
+      if (!row) {
         return null;
       }
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- guarded by rows.length === 1
-      return toSite(rows[0]!);
+      return toSite(row);
     },
 
-    async ensureSingleSite(options = {}) {
-      const existingRows = await db
-        .select()
-        .from(sites)
-        .orderBy(asc(sites.createdAt))
-        .limit(2);
-
-      if (existingRows.length > 1) {
-        throw new Error(
-          "single-site mode requires exactly one site in the instance.",
-        );
-      }
-
+    async resolveSingleSite(options = {}) {
+      const shouldCreateIfMissing = options.createIfMissing ?? false;
+      const existingRow = await loadSingleSiteRow();
       const timestamp = now();
-      const created = existingRows[0]
-        ? existingRows[0]
-        : (
-            await db
-              .insert(sites)
-              .values({
-                id: createEntityId("site"),
-                key: options.key?.trim() || "default",
-                status: "active",
-                createdAt: timestamp,
-                updatedAt: timestamp,
-              })
-              .returning()
-          )[0];
+      const created = existingRow
+        ? existingRow
+        : shouldCreateIfMissing
+          ? (
+              await db
+                .insert(sites)
+                .values({
+                  id: createEntityId("site"),
+                  key: options.key?.trim() || "default",
+                  status: "active",
+                  createdAt: timestamp,
+                  updatedAt: timestamp,
+                })
+                .returning()
+            )[0]
+          : null;
 
       if (!created) {
-        throw new Error("Failed to create the default site.");
+        return {
+          site: createTransientSingleSite(options.key?.trim() || "default"),
+          domain: null,
+        };
       }
 
       let domainRow: typeof siteDomains.$inferSelect | undefined;
@@ -137,7 +162,7 @@ export function createSiteService(
 
         domainRow = domainRows[0];
 
-        if (!domainRow) {
+        if (!domainRow && shouldCreateIfMissing) {
           domainRow = (
             await db
               .insert(siteDomains)
@@ -160,6 +185,13 @@ export function createSiteService(
         site: toSite(created),
         domain: domainRow ? toSiteDomain(domainRow) : null,
       };
+    },
+
+    async ensureSingleSite(options = {}) {
+      return this.resolveSingleSite({
+        ...options,
+        createIfMissing: true,
+      });
     },
 
     async resolveByHost(host, pathPrefix) {

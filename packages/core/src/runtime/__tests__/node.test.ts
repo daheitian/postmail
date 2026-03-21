@@ -4,6 +4,8 @@ import { sqliteSchemaBundle } from "../../db/schema-bundle.js";
 import { createRequestRuntime } from "../index.js";
 import { createNodeRequestRuntime } from "../node.js";
 import type { Bindings } from "../../types.js";
+import { siteDomains, sites } from "../../db/schema.js";
+import { TRANSIENT_SINGLE_SITE_ID } from "../../services/site.js";
 
 function createSqliteRawQuery(
   sqlite: ReturnType<typeof createTestDatabase>["sqlite"],
@@ -91,5 +93,35 @@ describe("createNodeRequestRuntime", () => {
 
     expect(runtime.currentSite.id).toBeTruthy();
     expect(runtime.services.posts).toBeDefined();
+  });
+
+  it("uses a transient site during setup instead of bootstrapping immediately", async () => {
+    const { db, sqlite } = createTestDatabase();
+
+    await db.delete(siteDomains);
+    await db.delete(sites);
+
+    const runtime = await createNodeRequestRuntime(
+      {
+        NODE_DATABASE: {
+          db,
+          dialect: "sqlite",
+          rawQuery: createSqliteRawQuery(sqlite),
+          schema: sqliteSchemaBundle,
+        },
+        AUTH_SECRET: "test-secret-with-enough-entropy-for-node-runtime",
+        SITE_URL: "http://localhost:3000",
+        STORAGE_DRIVER: "local",
+        LOCAL_STORAGE_PATH: "/tmp/jant-node-runtime-test",
+      } as Bindings,
+      "http://localhost:3000/setup",
+    );
+
+    const count = sqlite
+      .prepare('SELECT COUNT(*) as count FROM "site"')
+      .get() as { count: number };
+
+    expect(runtime.currentSite.id).toBe(TRANSIENT_SINGLE_SITE_ID);
+    expect(count.count).toBe(0);
   });
 });

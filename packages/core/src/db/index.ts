@@ -6,6 +6,7 @@ import type BetterSqlite3 from "better-sqlite3";
 import type { SQLWrapper } from "drizzle-orm";
 import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
 import { drizzle as drizzleD1 } from "drizzle-orm/d1";
+import type { DatabaseDialect } from "./dialect.js";
 import * as schema from "./schema.js";
 
 export type Database = ReturnType<typeof createDatabase>;
@@ -74,6 +75,22 @@ export function isNodeSqliteDatabase(db: Database): boolean {
     "pragma" in client &&
     typeof (client as NodeSqliteDatabaseClient).pragma === "function"
   );
+}
+
+/**
+ * Returns whether the current binding can safely use Drizzle's async callback
+ * transaction API.
+ *
+ * Jant reserves this path for PostgreSQL. SQLite-family backends use
+ * batch/sequential writes instead:
+ * - better-sqlite3 should not be driven through async callback transactions
+ * - Cloudflare D1 rejects BEGIN/SAVEPOINT statements emitted by Drizzle
+ */
+export function supportsDrizzleTransaction(
+  db: Database,
+  dialect: DatabaseDialect,
+): boolean {
+  return dialect === "pg" && !isNodeSqliteDatabase(db);
 }
 
 export { schema };

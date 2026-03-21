@@ -11,7 +11,10 @@
 import swc from "unplugin-swc";
 import { resolve } from "path";
 import { readFileSync } from "fs";
-import { ASSET_BASE_SEGMENT } from "./src/lib/asset-path.js";
+import {
+  ASSET_BASE_SEGMENT,
+  ASSET_CHUNK_SEGMENT,
+} from "./src/lib/asset-path.js";
 
 const dir = import.meta.dirname;
 
@@ -45,7 +48,7 @@ export const clientBuildOptions = {
     },
     output: {
       entryFileNames: `${ASSET_BASE_SEGMENT}/[name].js`,
-      chunkFileNames: `${ASSET_BASE_SEGMENT}/assets/[name]-[hash].js`,
+      chunkFileNames: `${ASSET_BASE_SEGMENT}/${ASSET_CHUNK_SEGMENT}/[name]-[hash].js`,
       assetFileNames: (assetInfo) => {
         switch (assetInfo.name) {
           case "style.css":
@@ -55,7 +58,7 @@ export const clientBuildOptions = {
           case "style-cjk-tc.css":
             return `${ASSET_BASE_SEGMENT}/client-cjk-tc.css`;
           default:
-            return `${ASSET_BASE_SEGMENT}/assets/[name]-[hash][extname]`;
+            return `${ASSET_BASE_SEGMENT}/${ASSET_CHUNK_SEGMENT}/[name]-[hash][extname]`;
         }
       },
     },

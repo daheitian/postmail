@@ -9,10 +9,11 @@ import {
   createSiteService,
   type EnsureSingleSiteOptions,
   type SiteLookupResult,
+  TRANSIENT_SINGLE_SITE_ID,
 } from "../services/site.js";
 import type { Bindings } from "../types/bindings.js";
 
-function getSingleSiteBootstrapOptions(
+export function getSingleSiteBootstrapOptions(
   env: Bindings,
 ): EnsureSingleSiteOptions | undefined {
   const configuredSiteUrl = getSiteUrl(env).trim();
@@ -37,7 +38,10 @@ export async function resolveRequestSite(
   const resolutionMode = getSiteResolutionMode(env);
 
   if (resolutionMode === "single-site") {
-    return siteService.ensureSingleSite(getSingleSiteBootstrapOptions(env));
+    return siteService.resolveSingleSite({
+      ...getSingleSiteBootstrapOptions(env),
+      createIfMissing: false,
+    });
   }
 
   const requestUrl = new URL(publicRequestUrl);
@@ -57,7 +61,18 @@ export async function resolveCliSite(
   const resolutionMode = getSiteResolutionMode(env);
 
   if (resolutionMode === "single-site") {
-    return siteService.ensureSingleSite(getSingleSiteBootstrapOptions(env));
+    const resolved = await siteService.resolveSingleSite({
+      ...getSingleSiteBootstrapOptions(env),
+      createIfMissing: false,
+    });
+
+    if (resolved.site.id === TRANSIENT_SINGLE_SITE_ID) {
+      throw new Error(
+        "No site is configured for this instance yet. Finish /setup before running this command.",
+      );
+    }
+
+    return resolved;
   }
 
   const onlySite = await siteService.getOnlySite();

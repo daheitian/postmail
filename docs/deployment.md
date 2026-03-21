@@ -84,6 +84,8 @@ pnpm exec jant migrate --remote
 pnpm run deploy
 ```
 
+The default deploy script runs `jant assets prepare --output ./.jant/public-assets` before `wrangler deploy --assets ./.jant/public-assets`, so Cloudflare receives a static directory whose paths already match the final public URLs.
+
 Your site is now live at `https://your-worker.workers.dev`.
 
 ## Custom Domain
@@ -115,16 +117,15 @@ SITE_URL = "https://example.com/blog"
 Jant will then use:
 
 - Page routes under `/blog/*`
-- Static assets under `/jant-assets/*`
+- Static assets under `/blog/_assets/*`
 
-Jant also keeps fonts under `/jant-assets/*` as regular files rather than inline `data:` URLs, so the default `font-src 'self'` CSP stays sufficient.
+Jant also keeps fonts under `/_assets/*` as regular files rather than inline `data:` URLs, so the default `font-src 'self'` CSP stays sufficient.
 
-On Cloudflare, make sure your domain or proxy setup sends both of these path groups to the same Worker:
+On Cloudflare, `npm run deploy` prepares a publishable static directory before calling Wrangler, so the generated asset paths already live inside the site prefix. Route the site prefix itself to the Worker:
 
 - `/blog*`
-- `/jant-assets*`
 
-`/jant-assets` is a reserved root path for Jant's built assets.
+`/_assets` is reserved for Jant's built assets inside each public site prefix.
 
 Use Worker secrets for sensitive values:
 

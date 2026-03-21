@@ -1,4 +1,8 @@
-import { isAssetPath } from "../lib/asset-path.js";
+import {
+  ASSET_BASE_PATH,
+  isAssetPath,
+  toPublicAssetPath,
+} from "../lib/asset-path.js";
 import { toPublicHref } from "../lib/url.js";
 
 type FetchInput = Parameters<typeof fetch>[0];
@@ -7,9 +11,13 @@ function sitePathPrefix(): string {
   return document.documentElement.dataset.sitePathPrefix || "";
 }
 
+function assetBasePath(): string {
+  return document.documentElement.dataset.assetBasePath || ASSET_BASE_PATH;
+}
+
 export function publicPath(path: string): string {
   if (isAssetPath(path)) {
-    return path;
+    return toPublicAssetPath(path, assetBasePath());
   }
   return toPublicHref(path, sitePathPrefix());
 }

@@ -13,6 +13,7 @@ import {
   primaryKey,
   foreignKey,
   index,
+  unique,
   uniqueIndex,
   check,
 } from "drizzle-orm/pg-core";
@@ -166,7 +167,7 @@ export const posts = pgTable(
         AND ${table.threadId} <> ${table.id}
       )`,
     ),
-    uniqueIndex("uq_post_site_id_id").on(table.siteId, table.id),
+    unique("uq_post_site_id_id").on(table.siteId, table.id),
     foreignKey({
       columns: [table.siteId, table.replyToId],
       foreignColumns: [table.siteId, table.id],

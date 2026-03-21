@@ -49,14 +49,52 @@ describe("createStorageDriver", () => {
     expect(driver).not.toBeNull();
   });
 
+  it("defaults to local storage for the Node Postgres runtime", () => {
+    const env = {
+      NODE_DATABASE: {
+        db: {} as Bindings["NODE_DATABASE"]["db"],
+        dialect: "pg",
+        rawQuery: {} as Bindings["NODE_DATABASE"]["rawQuery"],
+        schema: {} as Bindings["NODE_DATABASE"]["schema"],
+      },
+      LOCAL_STORAGE_PATH: "/tmp/jant-local-default-pg",
+    } as Bindings;
+
+    const driver = createStorageDriver(env);
+    expect(driver).not.toBeNull();
+  });
+
+  it("rejects R2 storage in the Node runtime", () => {
+    expect(() =>
+      createStorageDriver({
+        NODE_DATABASE: {
+          db: {} as Bindings["NODE_DATABASE"]["db"],
+          dialect: "pg",
+          rawQuery: {} as Bindings["NODE_DATABASE"]["rawQuery"],
+          schema: {} as Bindings["NODE_DATABASE"]["schema"],
+        },
+        STORAGE_DRIVER: "r2",
+      } as Bindings),
+    ).toThrow(/Node runtime does not support R2 storage/);
+  });
+
+  it("rejects local storage in the Cloudflare runtime", () => {
+    expect(() =>
+      createStorageDriver({
+        DB: {} as Bindings["DB"],
+        STORAGE_DRIVER: "local",
+      } as Bindings),
+    ).toThrow(/Cloudflare runtime does not support local storage/);
+  });
+
   it("derives the local storage path from DATA_DIR", async () => {
     const rootPath = await createTempDir();
     try {
       const driver = createStorageDriver({
-        DB: {},
+        NODE_SQLITE: {} as Bindings["NODE_SQLITE"],
         STORAGE_DRIVER: "local",
         DATA_DIR: rootPath,
-      } as unknown as Bindings);
+      } as Bindings);
 
       expect(driver).not.toBeNull();
       await driver!.put(
@@ -208,9 +246,8 @@ describe("createR2Driver", () => {
 describe("local storage driver", () => {
   it("returns null when local storage is selected without a path", () => {
     const env = {
-      DB: {},
       STORAGE_DRIVER: "local",
-    } as unknown as Bindings;
+    } as Bindings;
 
     expect(createStorageDriver(env)).toBeNull();
   });
@@ -219,10 +256,10 @@ describe("local storage driver", () => {
     const rootPath = await createTempDir();
     try {
       const driver = createStorageDriver({
-        DB: {},
+        NODE_SQLITE: {} as Bindings["NODE_SQLITE"],
         STORAGE_DRIVER: "local",
         LOCAL_STORAGE_PATH: rootPath,
-      } as unknown as Bindings);
+      } as Bindings);
 
       expect(driver).not.toBeNull();
       await driver!.put(
@@ -251,10 +288,10 @@ describe("local storage driver", () => {
     const rootPath = await createTempDir();
     try {
       const driver = createStorageDriver({
-        DB: {},
+        NODE_SQLITE: {} as Bindings["NODE_SQLITE"],
         STORAGE_DRIVER: "local",
         LOCAL_STORAGE_PATH: rootPath,
-      } as unknown as Bindings);
+      } as Bindings);
 
       expect(driver).not.toBeNull();
       expect(supportsMultipart(driver!)).toBe(true);

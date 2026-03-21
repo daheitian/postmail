@@ -2,9 +2,10 @@ import { describe, it, expect } from "vitest";
 import {
   extractDomain,
   extractDisplayDomain,
-  normalizePath,
   isFullUrl,
   isSafeAbsoluteUrl,
+  normalizePath,
+  stripSitePathPrefix,
   slugify,
 } from "../url.js";
 
@@ -211,5 +212,17 @@ describe("slugify", () => {
 
   it("handles CJK characters with spaces", () => {
     expect(slugify("电影 评论")).toBe("dian-ying-ping-lun");
+  });
+});
+
+describe("stripSitePathPrefix", () => {
+  it("rewrites prefixed asset paths into the internal asset namespace", () => {
+    expect(stripSitePathPrefix("/blog/_assets/client.css", "/blog")).toBe(
+      "/_assets/client.css",
+    );
+  });
+
+  it("rejects paths outside the configured site prefix", () => {
+    expect(stripSitePathPrefix("/_assets/client.css", "/blog")).toBe(null);
   });
 });

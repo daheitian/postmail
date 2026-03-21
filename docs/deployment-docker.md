@@ -147,4 +147,4 @@ Back up both of these paths from the mounted volume:
 - `data/jant.sqlite`
 - `data/media/`
 
-With the default local storage setup, together they represent the full site state. If you use S3-compatible storage, back up `data/jant.sqlite` and manage the media bucket separately.
+With the default local storage setup and SQLite, together they represent the full site state. If you use Postgres, back up the database separately. If you use S3-compatible storage, back up `data/jant.sqlite` or your Postgres database and manage the media bucket separately.

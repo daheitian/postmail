@@ -80,7 +80,6 @@ export async function run(argv) {
       },
       {
         env: process.env,
-        createIfMissing: true,
       },
     );
 

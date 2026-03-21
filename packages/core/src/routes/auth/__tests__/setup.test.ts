@@ -1,15 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  createTestDatabase,
-  DEFAULT_TEST_SITE_ID,
-} from "../../../__tests__/helpers/db.js";
-import { createSettingsService } from "../../../services/settings.js";
-import { createNavItemService } from "../../../services/navigation.js";
+import { createTestDatabase } from "../../../__tests__/helpers/db.js";
+import { sql } from "drizzle-orm";
+import { navItems, settings, siteDomains, sites } from "../../../db/schema.js";
 import { createBootstrapService } from "../../../services/bootstrap.js";
-import { createSiteMemberService } from "../../../services/site-member.js";
 import type { Database } from "../../../db/index.js";
-import type { SettingsService } from "../../../services/settings.js";
-import type { NavItemService } from "../../../services/navigation.js";
 import type { BootstrapService } from "../../../services/bootstrap.js";
 
 /**
@@ -25,33 +19,23 @@ async function runSetupBootstrap(services: { bootstrap: BootstrapService }) {
 
 describe("Setup bootstrap logic", () => {
   let services: {
-    settings: SettingsService;
-    navItems: NavItemService;
     bootstrap: BootstrapService;
+    db: Database;
   };
 
   beforeEach(() => {
     const testDb = createTestDatabase();
     const db = testDb.db as unknown as Database;
-    const settings = createSettingsService(db, DEFAULT_TEST_SITE_ID);
-    const navItems = createNavItemService(db, DEFAULT_TEST_SITE_ID);
-    const siteMembers = createSiteMemberService(db);
     services = {
-      settings,
-      navItems,
-      bootstrap: createBootstrapService(
-        settings,
-        navItems,
-        siteMembers,
-        DEFAULT_TEST_SITE_ID,
-      ),
+      db,
+      bootstrap: createBootstrapService(db),
     };
   });
 
   it("creates four nav items: Collections, Archive, RSS, Settings", async () => {
     await runSetupBootstrap(services);
 
-    const navItemsList = await services.navItems.list();
+    const navItemsList = await services.db.select().from(navItems);
     expect(navItemsList).toHaveLength(4);
 
     expect(navItemsList.map((item) => item.systemKey)).toEqual([
@@ -65,20 +49,55 @@ describe("Setup bootstrap logic", () => {
   it("marks onboarding complete", async () => {
     await runSetupBootstrap(services);
 
-    await expect(services.settings.isOnboardingComplete()).resolves.toBe(true);
+    const rows = await services.db.select().from(settings);
+    const onboardingRow = rows.find((row) => row.key === "ONBOARDING_STATUS");
+    expect(onboardingRow?.value).toBe("completed");
   });
 
   it("is idempotent when default navigation already exists", async () => {
-    await services.navItems.create({
-      type: "system",
-      systemKey: "collections",
-    });
+    const timestamp = Math.floor(Date.now() / 1000);
+    await services.db.run(sql`
+      INSERT INTO "nav_item" (
+        "id",
+        "site_id",
+        "type",
+        "system_key",
+        "label",
+        "url",
+        "position",
+        "created_at",
+        "updated_at"
+      )
+      VALUES (
+        'nav_test-existing',
+        'sit_test00000000000000000000000',
+        'system',
+        'collections',
+        'Collections',
+        '/collections',
+        'a0',
+        ${timestamp},
+        ${timestamp}
+      )
+    `);
 
     await runSetupBootstrap(services);
 
-    const navItemsList = await services.navItems.list();
+    const navItemsList = await services.db.select().from(navItems);
     const systemItems = navItemsList.filter((item) => item.type === "system");
 
     expect(systemItems).toHaveLength(4);
+  });
+
+  it("creates a site shell when setup runs after a factory reset", async () => {
+    await services.db.run(sql`DELETE FROM "site_domain"`);
+    await services.db.run(sql`DELETE FROM "site"`);
+
+    await runSetupBootstrap(services);
+
+    const siteRows = await services.db.select().from(sites);
+    const domainRows = await services.db.select().from(siteDomains);
+    expect(siteRows).toHaveLength(1);
+    expect(domainRows).toHaveLength(0);
   });
 });

@@ -10,7 +10,11 @@ import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
 import { createServices, type Services } from "../services/index.js";
 import type { Bindings } from "../types/bindings.js";
 import type { Site, SiteDomain } from "../types/entities.js";
-import { getResolvedSiteBaseUrl, resolveRequestSite } from "./site.js";
+import {
+  getResolvedSiteBaseUrl,
+  getSingleSiteBootstrapOptions,
+  resolveRequestSite,
+} from "./site.js";
 
 export interface CloudflareRequestRuntime {
   auth: Auth;
@@ -60,6 +64,7 @@ export async function createCloudflareRequestRuntime(
     db,
     services: createServices(db, session, siteLookup.site.id, {
       databaseDialect: "sqlite",
+      bootstrapSite: getSingleSiteBootstrapOptions(env),
       slugIdLength,
       schema: sqliteSchemaBundle,
     }),

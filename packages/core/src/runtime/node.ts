@@ -13,6 +13,7 @@ import { createServices, type Services } from "../services/index.js";
 import type { Site, SiteDomain } from "../types/entities.js";
 import type { Bindings } from "../types/bindings.js";
 import {
+  getSingleSiteBootstrapOptions,
   getResolvedSiteBaseUrl,
   resolveCliSite,
   resolveRequestSite,
@@ -106,6 +107,7 @@ export async function createNodeRequestRuntime(
     db,
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,
+      bootstrapSite: getSingleSiteBootstrapOptions(env),
       slugIdLength,
       schema: databaseSchema,
     }),
@@ -151,6 +153,7 @@ export async function createNodeCliRuntime(
     db,
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,
+      bootstrapSite: getSingleSiteBootstrapOptions(env),
       slugIdLength,
       schema: databaseSchema,
     }),

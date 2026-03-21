@@ -71,7 +71,7 @@ function nodeMiddleware(): Plugin {
   };
 }
 
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(async ({ command, mode }) => {
   const env = loadEnv(mode, import.meta.dirname, "");
   Object.assign(process.env, env);
   process.env.NODE_ENV ||= "development";
@@ -82,7 +82,7 @@ export default defineConfig(({ command, mode }) => {
   });
 
   if (command === "serve") {
-    migrate(bindings);
+    await migrate(bindings);
   }
 
   return {

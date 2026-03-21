@@ -12,7 +12,7 @@
 import type { Bindings } from "../types/bindings.js";
 import type { AppConfig } from "../types/config.js";
 import { CONFIG_FIELDS } from "../types/config.js";
-import { ASSET_BASE_PATH } from "./asset-path.js";
+import { getPublicAssetBasePath } from "./asset-path.js";
 import {
   getAuthSecret,
   getConfiguredStorageDriver,
@@ -159,7 +159,7 @@ export function resolveConfig(
     siteUrl,
     siteOrigin,
     sitePathPrefix,
-    assetBasePath: ASSET_BASE_PATH,
+    assetBasePath: getPublicAssetBasePath(sitePathPrefix),
     authConfigured: !!getAuthSecret(env),
 
     // Media (ENV only)

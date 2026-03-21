@@ -1,6 +1,6 @@
 # Jant Node / Docker 运行时设计
 
-状态：拟实施
+状态：历史设计文档（部分内容已落地，当前实现已支持 Node + SQLite 与 Node + Postgres）
 
 本文档定义 Jant 为 Node.js 裸机部署和 Docker 部署增加官方支持时的 v1 目标架构、公开 API、配置模型、实施顺序和文档范围。
 
@@ -15,7 +15,7 @@ v1 采用以下方向：
 - `createApp()` 保持无参数、无副作用；所有运行配置来自环境变量。
 - `.env` 文件由 Node 官方 `--env-file` / `--env-file-if-exists` 处理，Jant 不重复实现 dotenv 解析。
 - v1 采用混合命名策略：生态通用变量保持无前缀，Jant 专属变量使用 `JANT_` 前缀。
-- v1 数据库只支持 SQLite，不支持 Postgres。
+- v1 最初只计划支持 SQLite；当前实现已经支持 Node + SQLite 与 Node + Postgres。
 - v1 新增本地文件存储驱动 `local`，语义对齐现有对象存储抽象；同时保留现有 `s3` 与 `r2`。
 - v1 不为 Node / Docker 增加 `create-jant` 模板；`create-jant` 继续服务 Cloudflare 路线。
 - v1 的默认自托管组合为：`SQLite + local media volume`。
@@ -38,9 +38,9 @@ v1 目标：
 - 保持 Cloudflare 路线继续可用。
 - 让大多数用户通过 `jant start` 或 `@jant/core/node` 的 `start()` 即可运行，不需要自己处理 Hono Node server、静态资源和 SQLite 初始化。
 
-v1 非目标：
+v1 原始非目标：
 
-- Postgres
+- Postgres（已不再适用，当前实现已支持）
 - 多节点 / 多实例部署协调
 - `create-jant --runtime=docker`
 - 将 Node 路线拆成独立 npm 包
@@ -117,7 +117,7 @@ start();
 - 初始化 SQLite 连接
 - 初始化本地或 S3 存储
 - 配置 Hono Node server
-- 挂载 `/jant-assets/*` 静态资源
+- 挂载 `sitePathPrefix + "/_assets/*"` 静态资源
 - 处理反向代理信任策略
 - 启动 HTTP 服务
 
@@ -311,7 +311,7 @@ Node 支持的正确方向是：
 - 当前确实有 `auth`、`search`、`createDatabase()` 直接依赖 `D1Database`
 - 把所有问题都推给 D1 shim 虽然能跑，但会把 Cloudflare 运行时概念继续扩散到 Node 路线
 - Jant 当初选择 Drizzle，就是为了共享 schema 与查询层，而不是把 D1 作为永久中心
-- v1 不做 Postgres，但也不应该把 Node 设计成“伪装成 Cloudflare”
+- 即使加入 Postgres，也不应该把 Node 设计成“伪装成 Cloudflare”
 
 ### 6.2 目标边界
 
@@ -382,14 +382,14 @@ v1 需要把这部分整理成可复用的运行时装配逻辑。
 
 ### 7.1 v1 选择
 
-Node 路线仅支持：
+当前 Node 路线支持：
 
 - SQLite
 - `better-sqlite3`
-
-不支持：
-
 - Postgres
+
+仍不支持：
+
 - libsql
 - 远程 SQLite 服务
 
@@ -523,7 +523,7 @@ Node v1 需要把 multipart 从“R2 特性”改成“存储后端能力”：
 
 ### 9.2 静态资源
 
-Node 运行时需要自己提供 `/jant-assets/*`：
+Node 运行时需要自己提供 `sitePathPrefix + "/_assets/*"`：
 
 - 资源目录来自包内 `dist/client`
 - 与 Cloudflare 路线保持同样的 URL 约定

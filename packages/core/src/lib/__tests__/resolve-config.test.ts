@@ -121,6 +121,22 @@ describe("resolveConfig", () => {
     expect(config.storageDriver).toBe("local");
   });
 
+  it("defaults to local storage in the Node Postgres runtime", () => {
+    const config = resolveConfig(
+      makeEnv({
+        NODE_DATABASE: {
+          db: {} as Bindings["NODE_DATABASE"]["db"],
+          dialect: "pg",
+          rawQuery: {} as Bindings["NODE_DATABASE"]["rawQuery"],
+          schema: {} as Bindings["NODE_DATABASE"]["schema"],
+        },
+      }),
+      {},
+    );
+
+    expect(config.storageDriver).toBe("local");
+  });
+
   it("resolves siteAvatarUrl from storage key", () => {
     const config = resolveConfig(
       makeEnv({
@@ -144,6 +160,17 @@ describe("resolveConfig", () => {
   it("returns empty siteAvatarUrl when no avatar set", () => {
     const config = resolveConfig(makeEnv(), {});
     expect(config.siteAvatarUrl).toBe("");
+  });
+
+  it("derives the public asset base path from the site path prefix", () => {
+    const rootConfig = resolveConfig(makeEnv(), {});
+    const prefixedConfig = resolveConfig(
+      makeEnv({ SITE_URL: "https://example.com/blog" }),
+      {},
+    );
+
+    expect(rootConfig.assetBasePath).toBe("/_assets");
+    expect(prefixedConfig.assetBasePath).toBe("/blog/_assets");
   });
 
   it("resolves boolean fields correctly", () => {

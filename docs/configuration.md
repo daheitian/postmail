@@ -2,6 +2,12 @@
 
 Jant is configured through environment variables and settings.
 
+Some configuration depends on the runtime:
+
+- Cloudflare Workers: `D1 + R2` by default
+- Node / Docker: `SQLite + local storage` by default
+- Node / Docker can also use `Postgres` and `S3-compatible` storage
+
 ## Environment Variables
 
 Use `wrangler.toml` for non-sensitive values such as `SITE_URL`.
@@ -9,6 +15,8 @@ Use runtime-specific secret storage for sensitive values such as
 `AUTH_SECRET`.
 
 ### Required
+
+All runtimes require these variables:
 
 | Variable      | Description                                                                       |
 | ------------- | --------------------------------------------------------------------------------- |
@@ -20,6 +28,45 @@ Use runtime-specific secret storage for sensitive values such as
 - Node and Docker deployments: set it in your `.env` file, another `.env*` file, or the process environment
 - Cloudflare local development: put it in `.dev.vars`
 - Cloudflare production: add it as a Worker secret with `wrangler secret put AUTH_SECRET` or the Cloudflare dashboard
+
+### Node and Docker
+
+For Node and Docker, Jant reads `DATABASE_URL` to decide which database runtime to use:
+
+- `file:` URL: SQLite
+- `postgres:` / `postgresql:` URL: Postgres
+
+Minimal Node / Docker config with Postgres:
+
+```bash
+DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
+AUTH_SECRET=your-32-plus-character-secret-here
+SITE_URL=https://myblog.com
+```
+
+Minimal Node / Docker config with SQLite:
+
+```bash
+DATABASE_URL=file:./data/jant.sqlite
+AUTH_SECRET=your-32-plus-character-secret-here
+SITE_URL=https://myblog.com
+```
+
+Optional Node / Docker variables:
+
+| Variable               | Default            | Description                                                                  |
+| ---------------------- | ------------------ | ---------------------------------------------------------------------------- |
+| `SITE_RESOLUTION_MODE` | `single-site`      | `single-site` for normal self-hosted use, `host-based` for hosted multi-site |
+| `DATA_DIR`             | `./data`           | Base directory for default SQLite and local media paths                      |
+| `LOCAL_STORAGE_PATH`   | `<DATA_DIR>/media` | Override local media storage path                                            |
+| `HOST`                 | `127.0.0.1`        | Bind address for `jant start`                                                |
+| `PORT`                 | `3000`             | Bind port for `jant start`                                                   |
+
+Notes:
+
+- On Node, `SITE_RESOLUTION_MODE` defaults to `single-site`.
+- On Node, storage defaults to `local`.
+- On Node, `R2` is not supported. Use the default local storage or set `STORAGE_DRIVER="s3"`.
 
 ### Feed Defaults (Optional)
 
@@ -48,20 +95,56 @@ In `wrangler.toml`, numeric variables can be written as either TOML numbers (`PA
 
 When `SITE_URL` includes a path:
 
-- Public pages and app routes move under that prefix, such as `/blog`, `/blog/signin`, and `/blog/c/notes`
-- Static build assets stay at the reserved root path `/jant-assets/*`
-- `/jant-assets` is reserved for Jant and should not be used by another app on the same domain
+- Public pages, app routes, and built assets move under that prefix, such as `/blog`, `/blog/signin`, `/blog/c/notes`, and `/blog/_assets/client.js`
+- `/_assets` is reserved for Jant within each site's public prefix
 
-On Cloudflare, a subpath deployment must route both the page prefix and the asset prefix to the same Worker:
+On Cloudflare, the deploy script generates a static directory that already mirrors the final public URLs, so subpath deploys only need the site prefix itself to reach the Worker, such as `/blog*`.
 
-- `/blog*`
-- `/jant-assets*`
+### Site Resolution
+
+Jant supports two site resolution modes:
+
+| Variable               | Values                        | Description                                            |
+| ---------------------- | ----------------------------- | ------------------------------------------------------ |
+| `SITE_RESOLUTION_MODE` | `single-site` or `host-based` | Controls how Jant resolves the current site at runtime |
+
+- `single-site` is the default for self-hosted Node and Docker deployments.
+- `host-based` is intended for future hosted / multi-site deployments.
+
+Most self-hosted users should keep the default `single-site` mode.
 
 ### Storage
 
-Jant supports two storage backends for media uploads: **Cloudflare R2** (default) and **S3-compatible** services.
+Storage support depends on the runtime:
+
+| Runtime            | Default | Supported drivers |
+| ------------------ | ------- | ----------------- |
+| Cloudflare Workers | `r2`    | `r2`, `s3`        |
+| Node / Docker      | `local` | `local`, `s3`     |
+
+- Node runtime rejects `STORAGE_DRIVER="r2"`.
+- Cloudflare runtime rejects `STORAGE_DRIVER="local"`.
+
+Jant supports three storage drivers overall: **Cloudflare R2**, **S3-compatible** services, and **local** filesystem storage.
+
+#### Local Storage (Node / Docker Default)
+
+Node and Docker use local filesystem storage by default. No extra storage configuration is required.
+
+By default:
+
+- `DATA_DIR=./data`
+- `LOCAL_STORAGE_PATH=<DATA_DIR>/media`
+
+If you want to override the media path:
+
+```bash
+LOCAL_STORAGE_PATH=/absolute/path/to/jant-media
+```
 
 #### R2 (Default)
+
+Cloudflare Workers use R2 by default.
 
 | Variable        | Where           | Description                                         |
 | --------------- | --------------- | --------------------------------------------------- |
@@ -80,7 +163,7 @@ R2 uses the `[[r2_buckets]]` binding in `wrangler.toml`. No additional configura
 
 #### S3-Compatible Storage
 
-Use any S3-compatible service (AWS S3, Backblaze B2, MinIO, DigitalOcean Spaces, etc.) as an alternative to R2.
+Use any S3-compatible service (AWS S3, Backblaze B2, MinIO, DigitalOcean Spaces, etc.) as an alternative to R2 on Cloudflare or local storage on Node / Docker.
 
 | Variable               | Where           | Description                                                  |
 | ---------------------- | --------------- | ------------------------------------------------------------ |
@@ -200,7 +283,7 @@ These paths are reserved by Jant and cannot be used as page slugs:
 
 ```
 featured, signin, signout, setup, dash, api, feed, search, archive,
-notes, articles, links, quotes, media, pages, c, static, assets
+notes, articles, links, quotes, media, pages, c, static, assets, _assets
 ```
 
 ## Configuration Files
@@ -249,6 +332,26 @@ database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "jant-media"
+```
+
+### .env / .env.node (Node and Docker)
+
+Node and Docker deployments usually set configuration through `.env`, `.env.node`, or process environment variables:
+
+```bash
+AUTH_SECRET=your-32-plus-character-secret-here
+SITE_URL=http://127.0.0.1:3000
+
+# SQLite
+# DATABASE_URL=file:./data/jant.sqlite
+
+# Or Postgres
+DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
+
+# Optional
+# SITE_RESOLUTION_MODE=single-site
+# HOST=127.0.0.1
+# PORT=3000
 ```
 
 ### .dev.vars (Local Development)
