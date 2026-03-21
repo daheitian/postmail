@@ -144,6 +144,8 @@ description = "Run all tests (typecheck + lint + vitest)"
 run = """
 mise run check-types
 mise run check-lint
+# CLI snapshot tests import dist/node.js via loadNodeRuntime().
+pnpm --filter @jant/core build:lib
 pnpm --filter @jant/core test
 """
 
