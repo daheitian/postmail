@@ -1,8 +1,8 @@
 import { randomBytes, createHash } from "node:crypto";
 import { parseArgs } from "node:util";
 import { executeD1, queryD1 } from "../lib/d1-query.js";
-import { openNodeSqlite } from "../lib/node-sqlite.js";
-import { resolveCliSite } from "../lib/site-selection.js";
+import { openNodeDatabase } from "../lib/node-database.js";
+import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 import {
   getCliRuntimeLabel,
   resolveCliRuntime,
@@ -36,7 +36,7 @@ export async function run(argv) {
     console.log("  --persist-to Local D1 state directory override");
     console.log("");
     console.log(
-      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite.",
+      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
     );
     process.exit(0);
   }
@@ -50,36 +50,14 @@ export async function run(argv) {
   const timestamp = Math.floor(Date.now() / 1000);
 
   if (runtime === "node") {
-    const { sqlite } = openNodeSqlite(process.env);
-    try {
-      const { site } = await resolveCliSite(
-        {
-          async query(sql) {
-            return sqlite.prepare(sql).all();
-          },
-          async execute(sql) {
-            sqlite.exec(sql);
-          },
-        },
-        {
-          env: process.env,
-          createIfMissing: true,
-        },
-      );
+    const { createNodeCliRuntime } = await loadNodeRuntime();
+    const nodeDatabase = await openNodeDatabase(process.env);
 
-      sqlite
-        .prepare(
-          `
-            INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at")
-            VALUES (?, ?, ?, ?)
-            ON CONFLICT ("site_id", "key") DO UPDATE
-            SET "value" = excluded."value",
-                "updated_at" = excluded."updated_at"
-          `,
-        )
-        .run(site.id, "PASSWORD_RESET_TOKEN", value, timestamp);
+    try {
+      const nodeRuntime = await createNodeCliRuntime(nodeDatabase.bindings);
+      await nodeRuntime.services.settings.set("PASSWORD_RESET_TOKEN", value);
     } finally {
-      sqlite.close();
+      await nodeDatabase.close();
     }
   } else {
     const d1Options = {

@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { parseArgs } from "node:util";
 import { executeD1 } from "../../lib/d1-query.js";
-import { openNodeSqlite } from "../../lib/node-sqlite.js";
+import { openNodeDatabase } from "../../lib/node-database.js";
 import {
   getCliRuntimeLabel,
   resolveCliRuntime,
@@ -13,7 +13,7 @@ function formatUsage() {
   );
   console.log("");
   console.log(
-    "Execute a SQL file against Node SQLite, local D1, or remote D1.",
+    "Execute a SQL file against the Node database runtime, local D1, or remote D1.",
   );
   console.log("");
   console.log("Options:");
@@ -26,7 +26,7 @@ function formatUsage() {
   console.log("  --persist-to       Local D1 state directory override");
   console.log("");
   console.log(
-    "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite.",
+    "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
   );
 }
 
@@ -75,14 +75,16 @@ export async function run(argv) {
   const sql = await loadSqlFile(values.file);
 
   if (runtime === "node") {
-    const { databasePath, sqlite } = openNodeSqlite(process.env);
+    const nodeDatabase = await openNodeDatabase(process.env);
     try {
-      sqlite.exec(sql);
+      await nodeDatabase.execute(sql);
     } finally {
-      sqlite.close();
+      await nodeDatabase.close();
     }
 
-    console.log(`Executed ${values.file} against Node SQLite (${databasePath}).`);
+    console.log(
+      `Executed ${values.file} against Node database (${nodeDatabase.location}).`,
+    );
     return;
   }
 

@@ -25,6 +25,7 @@
 - [Node / Docker 运行时设计](./node-runtime-design.zh-Hans.md)
 - [Site-aware Core 设计](./site-aware-core.md)
 - [Site-aware Core 实施计划](./site-aware-core-implementation-plan.md)
+- [Postgres 支持计划](./postgres-support-plan.md)
 - [身份模型设计](./identity-model.md)
 
 ## 2. 内容模型

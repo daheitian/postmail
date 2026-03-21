@@ -6,8 +6,11 @@
 
 import { eq, desc, inArray, asc, sql, and } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
-import type { Database } from "../db/index.js";
-import { media } from "../db/schema.js";
+import { isNodeSqliteDatabase, type Database } from "../db/index.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { createEntityId } from "../lib/ids.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { extractBodyText } from "../lib/summary.js";
@@ -157,7 +160,13 @@ export interface CreateMediaData {
   mediaKind?: MediaKind;
 }
 
-export function createMediaService(db: Database, siteId: string): MediaService {
+export function createMediaService(
+  db: Database,
+  siteId: string,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
+): MediaService {
+  const { media } = databaseSchema;
+
   async function getLastPosition(postId: string): Promise<string | null> {
     const rows = await db
       .select({ position: media.position })
@@ -455,21 +464,48 @@ export function createMediaService(db: Database, siteId: string): MediaService {
       const positions = buildSequentialPositions(validIds.length);
 
       // Clear existing + re-attach atomically
-      const attachQueries = validIds.map((mediaId, i) => {
-        const position = positions[i];
-        if (!position) {
-          throw new Error("Failed to assign a media position");
-        }
+      if (isNodeSqliteDatabase(db)) {
+        const attachQueries = validIds.map((mediaId, index) => {
+          const position = positions[index];
+          if (!position) {
+            throw new Error("Failed to assign a media position");
+          }
 
-        return db
+          return db
+            .update(media)
+            .set({ postId, position, updatedAt: timestamp })
+            .where(and(eq(media.siteId, siteId), eq(media.id, mediaId)));
+        });
+
+        await db.batch([clearQuery, ...attachQueries] as [
+          typeof clearQuery,
+          ...(typeof attachQueries)[number][],
+        ]);
+        return;
+      }
+
+      await db.transaction(async (tx) => {
+        await tx
           .update(media)
-          .set({ postId, position, updatedAt: timestamp })
-          .where(and(eq(media.siteId, siteId), eq(media.id, mediaId)));
+          .set({
+            postId: null,
+            position: DEFAULT_MEDIA_POSITION,
+            updatedAt: timestamp,
+          })
+          .where(and(eq(media.siteId, siteId), eq(media.postId, postId)));
+
+        for (const [index, mediaId] of validIds.entries()) {
+          const position = positions[index];
+          if (!position) {
+            throw new Error("Failed to assign a media position");
+          }
+
+          await tx
+            .update(media)
+            .set({ postId, position, updatedAt: timestamp })
+            .where(and(eq(media.siteId, siteId), eq(media.id, mediaId)));
+        }
       });
-      await db.batch([clearQuery, ...attachQueries] as [
-        typeof clearQuery,
-        ...(typeof attachQueries)[number][],
-      ]);
     },
 
     async detachFromPost(postId) {

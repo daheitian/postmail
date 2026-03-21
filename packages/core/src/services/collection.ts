@@ -6,16 +6,16 @@
  */
 
 import { eq, asc, sql, and, inArray, desc } from "drizzle-orm";
-import type { BatchItem } from "drizzle-orm/batch";
 import { generateKeyBetween } from "fractional-indexing";
-import { type Database, batchQueryRows } from "../db/index.js";
 import {
-  collections,
-  pathRegistry,
-  collectionDirectoryItems as sidebarItems,
-  postCollections,
-  posts,
-} from "../db/schema.js";
+  isNodeSqliteDatabase,
+  type Database,
+  batchQueryRows,
+} from "../db/index.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import type {
@@ -115,8 +115,18 @@ export interface CollectionService {
 export function createCollectionService(
   db: Database,
   siteId: string,
-  paths: PathService = createPathService(db, siteId),
+  paths: PathService | undefined,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): CollectionService {
+  const resolvedPaths = paths ?? createPathService(db, siteId, databaseSchema);
+  const {
+    collections,
+    pathRegistry,
+    collectionDirectoryItems: sidebarItems,
+    postCollections,
+    posts,
+  } = databaseSchema;
+
   function normalizeCreateCollectionInput(
     data: CreateCollection,
   ): CreateCollection {
@@ -255,7 +265,7 @@ export function createCollectionService(
     row: typeof collections.$inferSelect | undefined,
   ): Promise<Collection | null> {
     if (!row) return null;
-    const slug = await paths.getCollectionSlug(row.id);
+    const slug = await resolvedPaths.getCollectionSlug(row.id);
     if (!slug) return null;
     return toCollection(row, slug);
   }
@@ -264,7 +274,9 @@ export function createCollectionService(
     rows: (typeof collections.$inferSelect)[],
   ): Promise<Collection[]> {
     if (rows.length === 0) return [];
-    const slugMap = await paths.getCollectionSlugMap(rows.map((row) => row.id));
+    const slugMap = await resolvedPaths.getCollectionSlugMap(
+      rows.map((row) => row.id),
+    );
     return rows
       .map((row) => {
         const slug = slugMap.get(row.id);
@@ -334,7 +346,7 @@ export function createCollectionService(
 
     if (rows.length === 0) return [];
 
-    const slugMap = await paths.getCollectionSlugMap(
+    const slugMap = await resolvedPaths.getCollectionSlugMap(
       rows.map((row) => row.collection.id),
     );
 
@@ -408,7 +420,7 @@ export function createCollectionService(
     },
 
     async getBySlug(slug) {
-      const resolved = await paths.resolve(toCollectionPath(slug));
+      const resolved = await resolvedPaths.resolve(toCollectionPath(slug));
       if (!resolved || resolved.kind !== "slug" || !resolved.collectionId) {
         return null;
       }
@@ -466,45 +478,82 @@ export function createCollectionService(
       for (let attempt = 0; attempt < POSITION_RETRY_ATTEMPTS; attempt += 1) {
         try {
           const position = await getAppendSidebarPosition();
-          const writeQueries: BatchItem<"sqlite">[] = [
-            db.insert(collections).values({
-              id,
-              siteId,
-              title: normalizedData.title,
-              description: normalizedData.description ?? null,
-              sortOrder: normalizedData.sortOrder ?? "newest",
-              createdAt: timestamp,
-              updatedAt: timestamp,
-            }),
-            db.insert(pathRegistry).values({
-              id: createEntityId("path"),
-              siteId,
-              path: slugPath,
-              kind: "slug",
-              postId: null,
-              collectionId: id,
-              redirectToPath: null,
-              redirectType: null,
-              createdAt: timestamp,
-              updatedAt: timestamp,
-            }),
-            db.insert(sidebarItems).values({
-              id: createEntityId("collectionDirectoryItem"),
-              siteId,
-              type: "collection",
-              collectionId: id,
-              position,
-              createdAt: timestamp,
-              updatedAt: timestamp,
-            }),
-          ];
+          if (isNodeSqliteDatabase(db)) {
+            const writeQueries = [
+              db.insert(collections).values({
+                id,
+                siteId,
+                title: normalizedData.title,
+                description: normalizedData.description ?? null,
+                sortOrder: normalizedData.sortOrder ?? "newest",
+                createdAt: timestamp,
+                updatedAt: timestamp,
+              }),
+              db.insert(pathRegistry).values({
+                id: createEntityId("path"),
+                siteId,
+                path: slugPath,
+                kind: "slug",
+                postId: null,
+                collectionId: id,
+                redirectToPath: null,
+                redirectType: null,
+                createdAt: timestamp,
+                updatedAt: timestamp,
+              }),
+              db.insert(sidebarItems).values({
+                id: createEntityId("collectionDirectoryItem"),
+                siteId,
+                type: "collection",
+                collectionId: id,
+                position,
+                createdAt: timestamp,
+                updatedAt: timestamp,
+              }),
+            ];
 
-          await db.batch(
-            writeQueries as [
-              (typeof writeQueries)[number],
-              ...(typeof writeQueries)[number][],
-            ],
-          );
+            await db.batch(
+              writeQueries as [
+                (typeof writeQueries)[number],
+                ...(typeof writeQueries)[number][],
+              ],
+            );
+          } else {
+            await db.transaction(async (tx) => {
+              await tx.insert(collections).values({
+                id,
+                siteId,
+                title: normalizedData.title,
+                description: normalizedData.description ?? null,
+                sortOrder: normalizedData.sortOrder ?? "newest",
+                createdAt: timestamp,
+                updatedAt: timestamp,
+              });
+
+              await tx.insert(pathRegistry).values({
+                id: createEntityId("path"),
+                siteId,
+                path: slugPath,
+                kind: "slug",
+                postId: null,
+                collectionId: id,
+                redirectToPath: null,
+                redirectType: null,
+                createdAt: timestamp,
+                updatedAt: timestamp,
+              });
+
+              await tx.insert(sidebarItems).values({
+                id: createEntityId("collectionDirectoryItem"),
+                siteId,
+                type: "collection",
+                collectionId: id,
+                position,
+                createdAt: timestamp,
+                updatedAt: timestamp,
+              });
+            });
+          }
 
           const collection = await this.getById(id);
           if (!collection) {
@@ -541,7 +590,7 @@ export function createCollectionService(
         normalizedData.slug !== existing.slug
       ) {
         try {
-          await paths.updateCollectionSlug(id, normalizedData.slug);
+          await resolvedPaths.updateCollectionSlug(id, normalizedData.slug);
         } catch (err) {
           if (err instanceof ConflictError) {
             throw new ConflictError(
@@ -821,7 +870,7 @@ export function createCollectionService(
       );
 
       const collectionRows = rows.map((row) => row.collection);
-      const slugMap = await paths.getCollectionSlugMap(
+      const slugMap = await resolvedPaths.getCollectionSlugMap(
         collectionRows.map((row) => row.id),
       );
 
@@ -862,11 +911,49 @@ export function createCollectionService(
         return;
       }
 
-      const writeQueries: BatchItem<"sqlite">[] = [];
+      if (isNodeSqliteDatabase(db)) {
+        const writeQueries = [];
 
-      if (removedIds.length > 0) {
-        writeQueries.push(
-          db
+        if (removedIds.length > 0) {
+          writeQueries.push(
+            db
+              .delete(postCollections)
+              .where(
+                and(
+                  eq(postCollections.siteId, siteId),
+                  eq(postCollections.postId, postId),
+                  inArray(postCollections.collectionId, removedIds),
+                ),
+              ),
+          );
+        }
+
+        if (addedIds.length > 0) {
+          const timestamp = now();
+          writeQueries.push(
+            db.insert(postCollections).values(
+              addedIds.map((collectionId) => ({
+                siteId,
+                postId,
+                collectionId,
+                createdAt: timestamp,
+              })),
+            ),
+          );
+        }
+
+        await db.batch(
+          writeQueries as [
+            (typeof writeQueries)[number],
+            ...(typeof writeQueries)[number][],
+          ],
+        );
+        return;
+      }
+
+      await db.transaction(async (tx) => {
+        if (removedIds.length > 0) {
+          await tx
             .delete(postCollections)
             .where(
               and(
@@ -874,30 +961,21 @@ export function createCollectionService(
                 eq(postCollections.postId, postId),
                 inArray(postCollections.collectionId, removedIds),
               ),
-            ),
-        );
-      }
+            );
+        }
 
-      if (addedIds.length > 0) {
-        const timestamp = now();
-        writeQueries.push(
-          db.insert(postCollections).values(
+        if (addedIds.length > 0) {
+          const timestamp = now();
+          await tx.insert(postCollections).values(
             addedIds.map((collectionId) => ({
               siteId,
               postId,
               collectionId,
               createdAt: timestamp,
             })),
-          ),
-        );
-      }
-
-      await db.batch(
-        writeQueries as [
-          (typeof writeQueries)[number],
-          ...(typeof writeQueries)[number][],
-        ],
-      );
+          );
+        }
+      });
     },
   };
 }

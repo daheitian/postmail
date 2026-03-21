@@ -8,21 +8,11 @@
 
 import { eq, and } from "drizzle-orm";
 import { sql } from "drizzle-orm";
-import type { Database } from "../db/index.js";
+import { executeStatement, type Database } from "../db/index.js";
 import {
-  user,
-  account,
-  session,
-  verification,
-  media,
-  collections,
-  postCollections,
-  pathRegistry,
-  collectionDirectoryItems as sidebarItems,
-  navItems,
-  settings as settingsTable,
-  apiTokens,
-} from "../db/schema.js";
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import type { SettingsService } from "./settings.js";
 import type { StorageDriver } from "../lib/storage.js";
 import { SETTINGS_KEYS } from "../lib/constants.js";
@@ -85,7 +75,23 @@ export interface AuthService {
 export function createAuthService(
   db: Database,
   settings: SettingsService,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): AuthService {
+  const {
+    user,
+    account,
+    session,
+    verification,
+    media,
+    collections,
+    postCollections,
+    pathRegistry,
+    collectionDirectoryItems: sidebarItems,
+    navItems,
+    settings: settingsTable,
+    apiTokens,
+  } = databaseSchema;
+
   async function validateResetToken(token: string): Promise<boolean> {
     const stored = await settings.get(SETTINGS_KEYS.PASSWORD_RESET_TOKEN);
     if (!stored) return false;
@@ -236,10 +242,11 @@ export function createAuthService(
 
       // Posts use self-referential thread FKs plus a root/reply thread-shape check.
       // Flatten replies back into roots before deleting the table contents.
-      await db.run(
+      await executeStatement(
+        db,
         sql`UPDATE post SET reply_to_id = NULL, thread_id = id WHERE reply_to_id IS NOT NULL`,
       );
-      await db.run(sql`DELETE FROM post`);
+      await executeStatement(db, sql`DELETE FROM post`);
 
       await db.delete(collections);
       await db.delete(apiTokens);
@@ -253,7 +260,10 @@ export function createAuthService(
 
       // FTS table is auto-cleaned by triggers when posts are deleted,
       // but run a rebuild to ensure consistency
-      await db.run(sql`INSERT INTO post_fts(post_fts) VALUES ('rebuild')`);
+      await executeStatement(
+        db,
+        sql`INSERT INTO post_fts(post_fts) VALUES ('rebuild')`,
+      );
     },
   };
 }

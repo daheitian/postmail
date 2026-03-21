@@ -92,7 +92,24 @@ export function sortExportTables(tableNames) {
   });
 }
 
-export async function listExportTables(queryRunner) {
+export async function listExportTables(queryRunner, dialect = "sqlite") {
+  if (dialect === "pg") {
+    const rows = await queryRunner.query(`
+      SELECT table_name AS name
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+      ORDER BY table_name
+    `);
+
+    return sortExportTables(
+      rows
+        .filter((row) => typeof row.name === "string" && row.name.length > 0)
+        .filter((row) => !EXCLUDED_TABLES.has(row.name))
+        .map((row) => row.name),
+    );
+  }
+
   const rows = await queryRunner.query(`
     SELECT name, sql
     FROM sqlite_master
@@ -113,7 +130,23 @@ export async function listExportTables(queryRunner) {
   );
 }
 
-export async function getTableColumns(queryRunner, tableName) {
+export async function getTableColumns(
+  queryRunner,
+  tableName,
+  dialect = "sqlite",
+) {
+  if (dialect === "pg") {
+    const rows = await queryRunner.query(`
+      SELECT column_name AS name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = ${sqlValue(tableName)}
+      ORDER BY ordinal_position
+    `);
+
+    return rows.map((row) => String(row.name));
+  }
+
   const rows = await queryRunner.query(
     `PRAGMA table_info(${quoteIdentifier(tableName)})`,
   );
@@ -125,17 +158,19 @@ export async function getTableColumns(queryRunner, tableName) {
 }
 
 export async function dumpDatabaseToSql(queryRunner, options) {
+  const dialect = options.dialect ?? "sqlite";
   const configuredTables = Array.isArray(options.tables)
     ? sortExportTables(options.tables)
     : null;
-  const tables = configuredTables ?? (await listExportTables(queryRunner));
+  const tables =
+    configuredTables ?? (await listExportTables(queryRunner, dialect));
   const timestamp = new Date().toISOString();
   let sql = `-- Jant database export\n`;
   sql += `-- Exported: ${timestamp}\n`;
   sql += `-- Source: ${options.source}\n\n`;
 
   for (const tableName of tables) {
-    const columnNames = await getTableColumns(queryRunner, tableName);
+    const columnNames = await getTableColumns(queryRunner, tableName, dialect);
     if (columnNames.length === 0) {
       continue;
     }

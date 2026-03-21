@@ -7,6 +7,7 @@
  */
 
 import type { Post, Status, Format, SearchResult } from "../types.js";
+import type { DatabaseDialect } from "../db/dialect.js";
 import type { RawQueryClient } from "../db/raw-query.js";
 import { escapeHtml } from "../lib/html.js";
 
@@ -98,11 +99,16 @@ function mapRow(row: RawSearchRow): SearchResult {
 export function createSearchService(
   rawQuery: RawQueryClient,
   siteId: string,
+  databaseDialect: DatabaseDialect = "sqlite",
 ): SearchService {
   async function searchFts(
     query: string,
     options: SearchOptions,
   ): Promise<SearchResult[]> {
+    if (databaseDialect !== "sqlite") {
+      return [];
+    }
+
     const limit = options.limit ?? 20;
     const offset = options.offset ?? 0;
     const status = options.status ?? ["published"];
@@ -158,6 +164,11 @@ export function createSearchService(
     const offset = options.offset ?? 0;
     const status = options.status ?? ["published"];
     const like = `%${query}%`;
+    const likeOperator = databaseDialect === "pg" ? "ILIKE" : "LIKE";
+    const likeOrderBy =
+      databaseDialect === "pg"
+        ? "ORDER BY post.published_at DESC NULLS LAST"
+        : "ORDER BY post.published_at DESC";
 
     const statusPlaceholders = status.map(() => "?").join(", ");
     const formatFilter = options.format ? "AND post.format = ?" : "";
@@ -177,16 +188,16 @@ export function createSearchService(
        AND path_registry.site_id = post.site_id
        AND path_registry.kind = 'slug'
       WHERE (
-        post.title LIKE ? OR
-        post.body_text LIKE ? OR
-        post.quote_text LIKE ? OR
-        post.url LIKE ?
+        post.title ${likeOperator} ? OR
+        post.body_text ${likeOperator} ? OR
+        post.quote_text ${likeOperator} ? OR
+        post.url ${likeOperator} ?
       )
       AND post.site_id = ?
       AND post.deleted_at IS NULL
       AND post.status IN (${statusPlaceholders})
       ${formatFilter}
-      ORDER BY post.published_at DESC
+      ${likeOrderBy}
       LIMIT ? OFFSET ?
     `);
 

@@ -3,7 +3,7 @@ import { resolve, join, relative, extname, dirname, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { parseArgs } from "node:util";
 import { typeidUnboxed } from "typeid-js";
-import { openNodeSqlite } from "../lib/node-sqlite.js";
+import { openNodeDatabase } from "../lib/node-database.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 
 /**
@@ -1044,12 +1044,9 @@ function createRemoteTarget(apiUrl, token) {
 }
 
 async function createLocalTarget(env = process.env) {
-  const { sqlite } = openNodeSqlite(env);
+  const nodeDatabase = await openNodeDatabase(env);
   const { createNodeCliRuntime, resolveConfig } = await loadNodeRuntime();
-  const bindings = {
-    ...(env ?? {}),
-    NODE_SQLITE: sqlite,
-  };
+  const bindings = nodeDatabase.bindings;
   const runtime = await createNodeCliRuntime(bindings);
   const allSettings = await runtime.services.settings.getAll();
   const appConfig = resolveConfig(bindings, allSettings);
@@ -1060,7 +1057,7 @@ async function createLocalTarget(env = process.env) {
 
   return {
     async close() {
-      sqlite.close();
+      await nodeDatabase.close();
     },
     async getSetupStatus() {
       return runtime.services.settings.isOnboardingComplete();
@@ -1331,7 +1328,7 @@ export async function run(argv) {
     console.log("");
     console.log("Modes:");
     console.log(
-      "  Local           No --url; imports into the local Node SQLite runtime",
+      "  Local           No --url; imports into the local Node database runtime",
     );
     console.log("  Remote          --url requires JANT_TOKEN or --token");
     console.log("");

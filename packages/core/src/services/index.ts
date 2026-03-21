@@ -5,7 +5,12 @@
  */
 
 import type { Database } from "../db/index.js";
+import type { DatabaseDialect } from "../db/dialect.js";
 import type { RawQueryClient } from "../db/raw-query.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { createSettingsService, type SettingsService } from "./settings.js";
 import { createPostService, type PostService } from "./post.js";
 import { createCustomUrlService, type CustomUrlService } from "./custom-url.js";
@@ -40,12 +45,17 @@ export function createServices(
   db: Database,
   rawQuery: RawQueryClient,
   siteId: string,
-  config?: { slugIdLength?: number },
+  config?: {
+    slugIdLength?: number;
+    schema?: DatabaseSchema;
+    databaseDialect?: DatabaseDialect;
+  },
 ): Services {
-  const settings = createSettingsService(db, siteId);
-  const paths = createPathService(db, siteId);
-  const navItems = createNavItemService(db, siteId);
-  const siteMembers = createSiteMemberService(db);
+  const databaseSchema = config?.schema ?? sqliteSchemaBundle;
+  const settings = createSettingsService(db, siteId, databaseSchema);
+  const paths = createPathService(db, siteId, databaseSchema);
+  const navItems = createNavItemService(db, siteId, databaseSchema);
+  const siteMembers = createSiteMemberService(db, databaseSchema);
   return {
     settings,
     paths,
@@ -56,14 +66,19 @@ export function createServices(
       },
       siteId,
       paths,
+      databaseSchema,
     ),
-    customUrls: createCustomUrlService(db, siteId, paths),
-    media: createMediaService(db, siteId),
-    collections: createCollectionService(db, siteId, paths),
-    search: createSearchService(rawQuery, siteId),
+    customUrls: createCustomUrlService(db, siteId, paths, databaseSchema),
+    media: createMediaService(db, siteId, databaseSchema),
+    collections: createCollectionService(db, siteId, paths, databaseSchema),
+    search: createSearchService(
+      rawQuery,
+      siteId,
+      config?.databaseDialect ?? "sqlite",
+    ),
     navItems,
-    auth: createAuthService(db, settings),
-    apiTokens: createApiTokenService(db, siteId),
+    auth: createAuthService(db, settings, databaseSchema),
+    apiTokens: createApiTokenService(db, siteId, databaseSchema),
     bootstrap: createBootstrapService(settings, navItems, siteMembers, siteId),
   };
 }

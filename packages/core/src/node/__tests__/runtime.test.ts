@@ -36,7 +36,7 @@ describe("resolveDatabasePath", () => {
 
   it("rejects non-file database URLs", () => {
     expect(() => resolveDatabasePath("postgres://localhost/jant")).toThrow(
-      /file:/,
+      /SQLite DATABASE_URL/,
     );
   });
 });
@@ -71,7 +71,7 @@ describe("resolveNodeAssetRoot", () => {
     const databasePath = join(root, "data", "jant.sqlite");
     await mkdir(assetRoot, { recursive: true });
     await writeFile(join(assetRoot, "client.css"), "body{}");
-    migrate({
+    await migrate({
       DATABASE_URL: `file:${databasePath}`,
     } as Bindings);
 
@@ -147,7 +147,7 @@ describe("migrate", () => {
     tempDirs.push(root);
     const databasePath = join(root, "data", "jant.sqlite");
 
-    migrate({
+    await migrate({
       DATABASE_URL: `file:${databasePath}`,
     } as Bindings);
 
@@ -190,7 +190,7 @@ describe("migrate", () => {
     const dataDir = join(root, "data");
     const databasePath = join(dataDir, "jant.sqlite");
 
-    migrate({
+    await migrate({
       DATA_DIR: dataDir,
     } as Bindings);
 

@@ -1,9 +1,15 @@
 import { and, asc, eq, isNull } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { siteDomains, sites } from "../db/schema.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import type { Site, SiteDomain } from "../types.js";
+
+const { sites: _sqliteSites, siteDomains: _sqliteSiteDomains } =
+  sqliteSchemaBundle;
 
 export interface SiteLookupResult {
   site: Site;
@@ -29,7 +35,7 @@ export interface SiteService {
   ): Promise<SiteLookupResult | null>;
 }
 
-function toSite(row: typeof sites.$inferSelect): Site {
+function toSite(row: typeof _sqliteSites.$inferSelect): Site {
   return {
     id: row.id,
     key: row.key,
@@ -39,7 +45,7 @@ function toSite(row: typeof sites.$inferSelect): Site {
   };
 }
 
-function toSiteDomain(row: typeof siteDomains.$inferSelect): SiteDomain {
+function toSiteDomain(row: typeof _sqliteSiteDomains.$inferSelect): SiteDomain {
   return {
     id: row.id,
     siteId: row.siteId,
@@ -52,7 +58,12 @@ function toSiteDomain(row: typeof siteDomains.$inferSelect): SiteDomain {
   };
 }
 
-export function createSiteService(db: Database): SiteService {
+export function createSiteService(
+  db: Database,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
+): SiteService {
+  const { siteDomains, sites } = databaseSchema;
+
   return {
     async list() {
       const rows = await db.select().from(sites).orderBy(asc(sites.createdAt));

@@ -5,7 +5,7 @@ import {
   applyNodeBackfills,
 } from "../lib/migration-runner.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
-import { openNodeSqlite } from "../lib/node-sqlite.js";
+import { openNodeSqlite, resolveDatabaseDialect } from "../lib/node-sqlite.js";
 import {
   getCliRuntimeLabel,
   resolveCliRuntime,
@@ -43,7 +43,7 @@ export async function run(argv) {
     console.log("  --persist-to       Local D1 state directory override");
     console.log("");
     console.log(
-      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite.",
+      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
     );
     process.exit(0);
   }
@@ -51,13 +51,18 @@ export async function run(argv) {
   const runtime = resolveCliRuntime(values);
   if (runtime === "node") {
     const { migrate } = await loadNodeRuntime();
-    migrate();
+    await migrate();
 
-    const { sqlite } = openNodeSqlite(process.env);
-    try {
-      applyNodeBackfills(sqlite);
-    } finally {
-      sqlite.close();
+    if (
+      !process.env.DATABASE_URL ||
+      resolveDatabaseDialect(process.env.DATABASE_URL) === "sqlite"
+    ) {
+      const { sqlite } = openNodeSqlite(process.env);
+      try {
+        applyNodeBackfills(sqlite);
+      } finally {
+        sqlite.close();
+      }
     }
   } else {
     const options = {

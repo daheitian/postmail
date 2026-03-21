@@ -1,10 +1,15 @@
 import { and, eq } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { siteMembers } from "../db/schema.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { now } from "../lib/time.js";
 import type { SiteMember, SiteMemberRole } from "../types.js";
 
-function toSiteMember(row: typeof siteMembers.$inferSelect): SiteMember {
+const { siteMembers: _sqliteSiteMembers } = sqliteSchemaBundle;
+
+function toSiteMember(row: typeof _sqliteSiteMembers.$inferSelect): SiteMember {
   return {
     siteId: row.siteId,
     userId: row.userId,
@@ -20,7 +25,12 @@ export interface SiteMemberService {
   ensure(siteId: string, userId: string, role: SiteMemberRole): Promise<void>;
 }
 
-export function createSiteMemberService(db: Database): SiteMemberService {
+export function createSiteMemberService(
+  db: Database,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
+): SiteMemberService {
+  const { siteMembers } = databaseSchema;
+
   return {
     async get(siteId, userId) {
       const rows = await db

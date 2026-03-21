@@ -1,5 +1,6 @@
 import { createAuth, type Auth } from "../auth.js";
 import { createDatabase, type Database } from "../db/index.js";
+import { sqliteSchemaBundle } from "../db/schema-bundle.js";
 import {
   getAuthSecret,
   getEnvString,
@@ -58,12 +59,16 @@ export async function createCloudflareRequestRuntime(
     currentSiteDomain: siteLookup.domain,
     db,
     services: createServices(db, session, siteLookup.site.id, {
+      databaseDialect: "sqlite",
       slugIdLength,
+      schema: sqliteSchemaBundle,
     }),
     storage: createStorageDriver(env),
     auth: createAuth(db, {
       secret: authSecret,
       baseURL,
+      databaseDialect: "sqlite",
+      schema: sqliteSchemaBundle,
       useSecureCookies: shouldUseSecureCookies(env, publicRequestUrl),
     }),
   };

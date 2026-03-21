@@ -2,20 +2,12 @@ import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { queryD1 } from "../lib/d1-query.js";
-import { openNodeSqlite } from "../lib/node-sqlite.js";
+import { openNodeDatabase } from "../lib/node-database.js";
 import { dumpDatabaseToSql } from "../lib/sql-export.js";
 import {
   getCliRuntimeLabel,
   resolveCliRuntime,
 } from "../lib/runtime-target.js";
-
-function createSqliteQueryRunner(sqlite) {
-  return {
-    async query(sql) {
-      return sqlite.prepare(sql).all();
-    },
-  };
-}
 
 function createD1QueryRunner(runtime) {
   return {
@@ -63,7 +55,7 @@ export async function run(argv) {
     console.log("  --persist-to      Local D1 state directory override");
     console.log("");
     console.log(
-      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite.",
+      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime.",
     );
     console.log("");
     console.log("Compatibility alias: jant export");
@@ -75,13 +67,21 @@ export async function run(argv) {
   let sql;
 
   if (runtime === "node") {
-    const { sqlite } = openNodeSqlite(process.env, { readonly: true });
+    const nodeDatabase = await openNodeDatabase(process.env);
     try {
-      sql = await dumpDatabaseToSql(createSqliteQueryRunner(sqlite), {
-        source: "node",
-      });
+      sql = await dumpDatabaseToSql(
+        {
+          async query(statement) {
+            return nodeDatabase.query(statement);
+          },
+        },
+        {
+          source: "node",
+          dialect: nodeDatabase.database.dialect,
+        },
+      );
     } finally {
-      sqlite.close();
+      await nodeDatabase.close();
     }
   } else {
     const d1Options = {
@@ -99,6 +99,7 @@ export async function run(argv) {
       },
       {
         source: runtime === "d1-remote" ? "remote" : "local",
+        dialect: "sqlite",
       },
     );
   }

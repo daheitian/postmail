@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { resolveCliRuntime } from "../../../bin/lib/runtime-target.js";
 
 describe("resolveCliRuntime", () => {
-  it("prefers Node SQLite when DATABASE_URL is present", () => {
+  it("prefers the Node database runtime when DATABASE_URL is present", () => {
     expect(
       resolveCliRuntime(
         { local: false, remote: false },
@@ -20,7 +20,7 @@ describe("resolveCliRuntime", () => {
     ).toBe("d1-local");
   });
 
-  it("prefers Node SQLite when DATA_DIR is present", () => {
+  it("prefers the Node database runtime when DATA_DIR is present", () => {
     expect(
       resolveCliRuntime(
         { local: false, remote: false },

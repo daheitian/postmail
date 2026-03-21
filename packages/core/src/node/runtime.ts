@@ -10,6 +10,7 @@ import {
 
 export {
   applyNodeRuntimeEnvDefaults,
+  createNodeBindings,
   createNodeRequestHandler,
   migrate,
   resolveDatabasePath,

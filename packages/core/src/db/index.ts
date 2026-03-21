@@ -3,6 +3,7 @@
  */
 
 import type BetterSqlite3 from "better-sqlite3";
+import type { SQLWrapper } from "drizzle-orm";
 import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
 import { drizzle as drizzleD1 } from "drizzle-orm/d1";
 import * as schema from "./schema.js";
@@ -37,6 +38,42 @@ export function createNodeDatabase(sqlite: BetterSqlite3.Database): Database {
   });
 
   return db;
+}
+
+type ExecutableDatabase = {
+  execute(query: SQLWrapper | string): PromiseLike<unknown>;
+};
+
+type NodeSqliteDatabaseClient = {
+  pragma(sql: string): unknown;
+};
+
+/**
+ * Execute a raw SQL statement against any supported runtime.
+ *
+ * SQLite/D1 databases expose `run()`, while Postgres databases expose
+ * `execute()`. This helper keeps service code dialect-agnostic.
+ */
+export async function executeStatement(
+  db: Database,
+  query: SQLWrapper | string,
+): Promise<void> {
+  if ("execute" in db) {
+    await (db as Database & ExecutableDatabase).execute(query);
+    return;
+  }
+
+  await db.run(query);
+}
+
+export function isNodeSqliteDatabase(db: Database): boolean {
+  const client = (db as Database & { $client?: unknown }).$client;
+  return (
+    typeof client === "object" &&
+    client !== null &&
+    "pragma" in client &&
+    typeof (client as NodeSqliteDatabaseClient).pragma === "function"
+  );
 }
 
 export { schema };

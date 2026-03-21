@@ -176,8 +176,12 @@ run = "npx prettier --check ."
 # Database (Local D1 + Seed Workflows)
 # =============================================================================
 [tasks.db-schema-generate]
-description = "Generate Drizzle migrations from the current core schema"
+description = "Generate SQLite/D1 Drizzle migrations from the current core schema"
 run = "pnpm --filter @jant/core db:generate"
+
+[tasks.db-schema-generate-pg]
+description = "Generate PostgreSQL Drizzle migrations from the current core schema"
+run = "pnpm --filter @jant/core db:generate:pg"
 
 [tasks.db-local-migrate]
 description = "Run migrations for the local development D1 database"

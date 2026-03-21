@@ -5,17 +5,26 @@
 import { betterAuth, APIError } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import type { Database } from "./db/index.js";
-import * as schema from "./db/schema.js";
+import type { DatabaseDialect } from "./db/dialect.js";
+import { sqliteSchemaBundle, type DatabaseSchema } from "./db/schema-bundle.js";
 import { AUTH_ID_PREFIX, createTypeId } from "./lib/ids.js";
 import { hashPassword, verifyPassword } from "./lib/password.js";
 
 export function createAuth(
   db: Database,
-  options: { secret: string; baseURL: string; useSecureCookies: boolean },
+  options: {
+    secret: string;
+    baseURL: string;
+    useSecureCookies: boolean;
+    databaseDialect?: DatabaseDialect;
+    schema?: DatabaseSchema;
+  },
 ) {
+  const schema = options.schema ?? sqliteSchemaBundle;
+
   return betterAuth({
     database: drizzleAdapter(db, {
-      provider: "sqlite",
+      provider: options.databaseDialect === "pg" ? "pg" : "sqlite",
       schema: {
         user: schema.user,
         session: schema.session,

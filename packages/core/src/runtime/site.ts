@@ -1,4 +1,8 @@
 import type { Database } from "../db/index.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { getSiteResolutionMode, getSiteUrl } from "../lib/env.js";
 import { getSitePathPrefix, normalizeSiteUrl } from "../lib/url.js";
 import {
@@ -27,8 +31,9 @@ export async function resolveRequestSite(
   db: Database,
   env: Bindings,
   publicRequestUrl: string,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): Promise<SiteLookupResult> {
-  const siteService = createSiteService(db);
+  const siteService = createSiteService(db, databaseSchema);
   const resolutionMode = getSiteResolutionMode(env);
 
   if (resolutionMode === "single-site") {
@@ -46,8 +51,9 @@ export async function resolveRequestSite(
 export async function resolveCliSite(
   db: Database,
   env: Bindings,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): Promise<SiteLookupResult> {
-  const siteService = createSiteService(db);
+  const siteService = createSiteService(db, databaseSchema);
   const resolutionMode = getSiteResolutionMode(env);
 
   if (resolutionMode === "single-site") {

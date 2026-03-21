@@ -33,7 +33,7 @@ describe("jant db execute-file", () => {
     const databasePath = join(root, "jant.sqlite");
     const sqlPath = join(root, "seed.sql");
 
-    migrate({ DATABASE_URL: `file:${databasePath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${databasePath}` } as Bindings);
     process.env.DATABASE_URL = `file:${databasePath}`;
 
     await writeFile(
@@ -66,7 +66,7 @@ describe("jant db execute-file", () => {
     }
 
     expect(logSpy).toHaveBeenCalledWith(
-      `Executed ${sqlPath} against Node SQLite (${databasePath}).`,
+      `Executed ${sqlPath} against Node database (${databasePath}).`,
     );
   });
 

@@ -5,8 +5,11 @@
  */
 
 import { and, eq } from "drizzle-orm";
-import type { Database } from "../db/index.js";
-import { settings } from "../db/schema.js";
+import { isNodeSqliteDatabase, type Database } from "../db/index.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { now } from "../lib/time.js";
 import {
   SETTINGS_KEYS,
@@ -127,7 +130,10 @@ export interface SettingsService {
 export function createSettingsService(
   db: Database,
   siteId: string,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): SettingsService {
+  const { settings } = databaseSchema;
+
   function normalizeSettingValue(key: SettingsKey, value: string): string {
     if (key !== SETTINGS_KEYS.TIME_ZONE) {
       return normalizeEditableSettingValue(key, value);
@@ -196,19 +202,34 @@ export function createSettingsService(
 
       if (pairs.length === 0) return;
 
-      const queries = pairs.map(({ key, value }) =>
-        db
-          .insert(settings)
-          .values({ siteId, key, value, updatedAt: timestamp })
-          .onConflictDoUpdate({
-            target: [settings.siteId, settings.key],
-            set: { value, updatedAt: timestamp },
-          }),
-      );
+      if (isNodeSqliteDatabase(db)) {
+        const queries = pairs.map(({ key, value }) =>
+          db
+            .insert(settings)
+            .values({ siteId, key, value, updatedAt: timestamp })
+            .onConflictDoUpdate({
+              target: [settings.siteId, settings.key],
+              set: { value, updatedAt: timestamp },
+            }),
+        );
 
-      await db.batch(
-        queries as [(typeof queries)[number], ...(typeof queries)[number][]],
-      );
+        await db.batch(
+          queries as [(typeof queries)[number], ...(typeof queries)[number][]],
+        );
+        return;
+      }
+
+      await db.transaction(async (tx) => {
+        for (const { key, value } of pairs) {
+          await tx
+            .insert(settings)
+            .values({ siteId, key, value, updatedAt: timestamp })
+            .onConflictDoUpdate({
+              target: [settings.siteId, settings.key],
+              set: { value, updatedAt: timestamp },
+            });
+        }
+      });
     },
 
     async isOnboardingComplete() {

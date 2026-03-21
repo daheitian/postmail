@@ -8,7 +8,10 @@
 
 import { and, eq, inArray, isNotNull, ne } from "drizzle-orm";
 import { type Database, batchQuery } from "../db/index.js";
-import { pathRegistry } from "../db/schema.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import { ConflictError } from "../lib/errors.js";
@@ -71,7 +74,13 @@ function isUniqueConstraintError(err: unknown): boolean {
   return false;
 }
 
-export function createPathService(db: Database, siteId: string): PathService {
+export function createPathService(
+  db: Database,
+  siteId: string,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
+): PathService {
+  const { pathRegistry } = databaseSchema;
+
   function toPathRecord(row: typeof pathRegistry.$inferSelect): PathRecord {
     return {
       id: row.id,

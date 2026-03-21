@@ -2,7 +2,7 @@ import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { unzipSync } from "fflate";
-import { openNodeSqlite } from "../../lib/node-sqlite.js";
+import { openNodeDatabase } from "../../lib/node-database.js";
 import { loadNodeRuntime } from "../../lib/load-node-runtime.js";
 import { localizeSiteExportZipBytes } from "../../lib/site-localize-media.js";
 
@@ -165,7 +165,7 @@ function createLocalAssetLoader(storage, appConfig) {
 }
 
 async function exportLocalSite(env = process.env) {
-  const { sqlite } = openNodeSqlite(env, { readonly: true });
+  const nodeDatabase = await openNodeDatabase(env);
 
   try {
     const {
@@ -178,19 +178,10 @@ async function exportLocalSite(env = process.env) {
       getCjkSerifCssVariables,
       getFontThemeCssVariables,
     } = await loadNodeRuntime();
-    const runtime = await createNodeCliRuntime({
-      ...(env ?? {}),
-      NODE_SQLITE: sqlite,
-    });
+    const runtime = await createNodeCliRuntime(nodeDatabase.bindings);
     const allSettings = await runtime.services.settings.getAll();
     const navItems = await runtime.services.navItems.list();
-    const appConfig = resolveConfig(
-      {
-        ...(env ?? {}),
-        NODE_SQLITE: sqlite,
-      },
-      allSettings,
-    );
+    const appConfig = resolveConfig(nodeDatabase.bindings, allSettings);
     const activeTheme = BUILTIN_COLOR_THEMES.find(
       (theme) => theme.id === (appConfig.themeId || appConfig.defaultThemeId),
     );
@@ -247,7 +238,7 @@ async function exportLocalSite(env = process.env) {
       assetLoader: createLocalAssetLoader(runtime.storage, appConfig),
     };
   } finally {
-    sqlite.close();
+    await nodeDatabase.close();
   }
 }
 
@@ -279,7 +270,7 @@ export async function run(argv) {
     console.log("");
     console.log("Modes:");
     console.log(
-      "  Local           No --url; exports from the local Node SQLite runtime",
+      "  Local           No --url; exports from the local Node database runtime",
     );
     console.log("  Remote          --url requires JANT_TOKEN or --token");
     console.log("");

@@ -1,6 +1,10 @@
 /// <reference types="@cloudflare/workers-types/latest" />
 
 import type BetterSqlite3 from "better-sqlite3";
+import type { Database } from "../db/index.js";
+import type { DatabaseDialect } from "../db/dialect.js";
+import type { RawQueryClient } from "../db/raw-query.js";
+import type { DatabaseSchema } from "../db/schema-bundle.js";
 
 /**
  * Application runtime bindings.
@@ -11,9 +15,18 @@ import type BetterSqlite3 from "better-sqlite3";
 
 type EnvBindingValue = string | number | boolean;
 
+export interface NodeDatabaseBinding {
+  db: Database;
+  dialect: DatabaseDialect;
+  rawQuery: RawQueryClient;
+  schema: DatabaseSchema;
+  close?: () => Promise<void> | void;
+}
+
 export interface Bindings {
   DB?: D1Database;
   R2?: R2Bucket;
+  NODE_DATABASE?: NodeDatabaseBinding;
   NODE_SQLITE?: BetterSqlite3.Database;
   SITE_URL?: EnvBindingValue;
   DEFAULT_THEME?: EnvBindingValue;
@@ -61,6 +74,8 @@ export interface Bindings {
   SLUG_ID_LENGTH?: EnvBindingValue;
   // RSS feed
   RSS_FEED_LIMIT?: EnvBindingValue;
+  // Node runtime database URL. SQLite uses file: URLs; Postgres will use
+  // postgres:/postgresql: URLs once the Node Postgres runtime lands.
   DATABASE_URL?: string;
   JANT_SITE_RESOLUTION_MODE?: EnvBindingValue;
   HOST?: string;

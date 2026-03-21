@@ -12,7 +12,15 @@ import {
   resolve,
 } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { createNodeDatabase } from "../db/index.js";
+import { createNodePgDatabase, migrateNodePgDatabase } from "../db/pg/node.js";
+import {
+  type RawQueryClient,
+  type RawQueryStatement,
+} from "../db/raw-query.js";
+import { pgSchemaBundle, sqliteSchemaBundle } from "../db/schema-bundle.js";
 import * as schema from "../db/schema.js";
+import { resolveDatabaseDialect } from "../db/dialect.js";
 import { ASSET_BASE_PATH } from "../lib/asset-path.js";
 import { getEnvString, getSiteUrl, shouldTrustProxy } from "../lib/env.js";
 import type { App } from "../types/app-context.js";
@@ -135,11 +143,21 @@ export function resolveNodeAssetRoot(moduleUrl = import.meta.url): string {
   );
 }
 
-export function resolveNodeMigrationsDir(moduleUrl = import.meta.url): string {
+export function resolveNodeMigrationsDir(
+  moduleUrl = import.meta.url,
+  databaseDialect: "sqlite" | "pg" = "sqlite",
+): string {
+  const relativePath =
+    databaseDialect === "pg" ? "../db/migrations/pg" : "../db/migrations";
+  const sourceRelativePath =
+    databaseDialect === "pg"
+      ? "../src/db/migrations/pg"
+      : "../src/db/migrations";
+
   return findExistingPath(
     [
-      fileURLToPath(new URL("../db/migrations", moduleUrl).href),
-      fileURLToPath(new URL("../src/db/migrations", moduleUrl).href),
+      fileURLToPath(new URL(relativePath, moduleUrl).href),
+      fileURLToPath(new URL(sourceRelativePath, moduleUrl).href),
     ],
     "Migration directory",
   );
@@ -159,9 +177,9 @@ export function resolveDatabasePath(
     return ":memory:";
   }
 
-  if (!databaseUrl.startsWith("file:")) {
+  if (resolveDatabaseDialect(databaseUrl) !== "sqlite") {
     throw new Error(
-      "DATABASE_URL must use the file: scheme in v1. Example: file:/var/lib/jant/jant.sqlite",
+      "resolveDatabasePath() only supports SQLite DATABASE_URL values. Use a file: URL when running the SQLite Node runtime.",
     );
   }
 
@@ -203,7 +221,10 @@ export function applyNodeRuntimeEnvDefaults(
 
   if (!dataDir) {
     const configuredDatabaseUrl = getEnvString(env, "DATABASE_URL");
-    if (configuredDatabaseUrl) {
+    if (
+      configuredDatabaseUrl &&
+      resolveDatabaseDialect(configuredDatabaseUrl) === "sqlite"
+    ) {
       const databasePath = resolveDatabasePath(configuredDatabaseUrl, cwd);
       if (databasePath !== ":memory:") {
         dataDir = dirname(databasePath);
@@ -326,6 +347,83 @@ function createNodeSqlite(
   return sqlite;
 }
 
+function createBetterSqliteRawQuery(sqlite: Database.Database): RawQueryClient {
+  return {
+    prepare(query: string): RawQueryStatement {
+      let params: unknown[] = [];
+
+      return {
+        bind(...nextParams: unknown[]) {
+          params = nextParams;
+          return this;
+        },
+        async all<T>() {
+          const stmt = sqlite.prepare(query);
+          return {
+            results: stmt.all(...params) as T[],
+          };
+        },
+      };
+    },
+  };
+}
+
+export interface NodeBindingsResult {
+  bindings: Bindings;
+  close(): Promise<void>;
+}
+
+export async function createNodeBindings(
+  env: Bindings,
+): Promise<NodeBindingsResult> {
+  applyNodeRuntimeEnvDefaults(env, { defaultDataDir: "data" });
+  const databaseUrl = getEnvString(env, "DATABASE_URL") ?? "";
+  const dialect = resolveDatabaseDialect(databaseUrl);
+
+  if (dialect === "pg") {
+    const { db, pool, rawQuery } = await createNodePgDatabase(databaseUrl, {
+      requireInitialized: true,
+    });
+
+    return {
+      bindings: {
+        ...env,
+        NODE_DATABASE: {
+          db,
+          dialect: "pg",
+          rawQuery,
+          schema: pgSchemaBundle,
+          close: () => pool.end(),
+        },
+      },
+      async close() {
+        await pool.end();
+      },
+    };
+  }
+
+  const sqlite = createNodeSqlite(env, { requireInitialized: true });
+
+  return {
+    bindings: {
+      ...env,
+      NODE_DATABASE: {
+        db: createNodeDatabase(sqlite),
+        dialect: "sqlite",
+        rawQuery: createBetterSqliteRawQuery(sqlite),
+        schema: sqliteSchemaBundle,
+        close: () => {
+          sqlite.close();
+        },
+      },
+      NODE_SQLITE: sqlite,
+    },
+    async close() {
+      sqlite.close();
+    },
+  };
+}
+
 export function resolveHost(env: Bindings): string {
   return getEnvString(env, "HOST") ?? DEFAULT_HOST;
 }
@@ -445,22 +543,28 @@ async function serveStaticAsset(
   });
 }
 
-function createNodeBindings(
-  env: Bindings,
-  sqlite: Database.Database,
-): Bindings {
-  return {
-    ...env,
-    NODE_SQLITE: sqlite,
-  };
-}
+export async function migrate(
+  env: Bindings = getProcessBindings(),
+): Promise<void> {
+  applyNodeRuntimeEnvDefaults(env, { defaultDataDir: "data" });
+  const databaseUrl = getEnvString(env, "DATABASE_URL") ?? "";
+  const dialect = resolveDatabaseDialect(databaseUrl);
 
-export function migrate(env: Bindings = getProcessBindings()): void {
+  if (dialect === "pg") {
+    await migrateNodePgDatabase(
+      databaseUrl,
+      resolveNodeMigrationsDir(import.meta.url, "pg"),
+    );
+    return;
+  }
+
   const sqlite = createNodeSqlite(env, { createParentDir: true });
 
   try {
     const db = drizzle(sqlite, { schema });
-    drizzleMigrate(db, { migrationsFolder: resolveNodeMigrationsDir() });
+    drizzleMigrate(db, {
+      migrationsFolder: resolveNodeMigrationsDir(import.meta.url, "sqlite"),
+    });
   } finally {
     sqlite.close();
   }
@@ -491,8 +595,7 @@ export async function createNodeRequestHandler(options?: {
   assetRoot?: string | null;
 }): Promise<NodeRequestHandler> {
   const env = options?.env ?? getProcessBindings();
-  const sqlite = createNodeSqlite(env, { requireInitialized: true });
-  const bindings = createNodeBindings(env, sqlite);
+  const { bindings, close } = await createNodeBindings(env);
   const assetRoot =
     options?.assetRoot === undefined
       ? resolveNodeAssetRoot()
@@ -527,7 +630,7 @@ export async function createNodeRequestHandler(options?: {
       }
 
       closed = true;
-      sqlite.close();
+      await close();
     },
   };
 }

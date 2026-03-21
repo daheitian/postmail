@@ -7,7 +7,10 @@
 
 import { and, desc, eq, ne, sql } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { pathRegistry } from "../db/schema.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { isReservedPath } from "../lib/constants.js";
 import { ConflictError, ValidationError } from "../lib/errors.js";
 import { normalizePath } from "../lib/url.js";
@@ -39,8 +42,12 @@ export interface CustomUrlService {
 export function createCustomUrlService(
   db: Database,
   siteId: string,
-  paths: PathService = createPathService(db, siteId),
+  paths: PathService | undefined,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): CustomUrlService {
+  const resolvedPaths = paths ?? createPathService(db, siteId, databaseSchema);
+  const { pathRegistry } = databaseSchema;
+
   function toCustomUrl(row: typeof pathRegistry.$inferSelect): CustomUrl {
     return {
       id: row.id,
@@ -106,7 +113,7 @@ export function createCustomUrlService(
         );
       }
 
-      const existing = await paths.getByPath(normalized);
+      const existing = await resolvedPaths.getByPath(normalized);
       if (existing) {
         if (existing.kind === "slug" && existing.postId) {
           throw new ConflictError(
@@ -121,7 +128,7 @@ export function createCustomUrlService(
           throw new ValidationError("Redirect target path is required");
         }
         const redirectType = data.redirectType ?? 301;
-        const record = await paths.create({
+        const record = await resolvedPaths.create({
           path: normalized,
           kind: "redirect",
           redirectToPath: data.toPath ?? null,
@@ -145,7 +152,7 @@ export function createCustomUrlService(
         throw new ValidationError("Target resource is required");
       }
 
-      const record = await paths.create({
+      const record = await resolvedPaths.create({
         path: normalized,
         kind: "alias",
         postId: data.targetType === "post" ? (data.targetId ?? null) : null,
@@ -205,7 +212,7 @@ export function createCustomUrlService(
     async isPathAvailable(path) {
       const normalized = normalizeInputPath(path);
       if (isReservedPath(normalized)) return false;
-      return paths.isPathAvailable(normalized);
+      return resolvedPaths.isPathAvailable(normalized);
     },
   };
 }

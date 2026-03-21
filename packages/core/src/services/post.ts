@@ -19,9 +19,15 @@ import {
   asc,
   lte,
 } from "drizzle-orm";
-import type { BatchItem } from "drizzle-orm/batch";
-import { type Database, batchQueryRows } from "../db/index.js";
-import { pathRegistry, posts, postCollections } from "../db/schema.js";
+import {
+  isNodeSqliteDatabase,
+  type Database,
+  batchQueryRows,
+} from "../db/index.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
@@ -371,8 +377,12 @@ export function createPostService(
   db: Database,
   config: { slugIdLength: number },
   siteId: string,
-  paths: PathService = createPathService(db, siteId),
+  paths: PathService | undefined,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): PostService {
+  const resolvedPaths = paths ?? createPathService(db, siteId, databaseSchema);
+  const { pathRegistry, posts, postCollections } = databaseSchema;
+
   const effectiveVisibilityExpr = sql<string>`coalesce(
     ${posts.visibility},
     (SELECT root.visibility FROM post AS root WHERE root.id = ${posts.threadId})
@@ -380,14 +390,14 @@ export function createPostService(
 
   /** Check if a slug is available (not used by posts or path_registry) */
   async function isSlugAvailable(slug: string): Promise<boolean> {
-    return paths.isPathAvailable(slug);
+    return resolvedPaths.isPathAvailable(slug);
   }
 
   async function isSlugAvailableForPost(
     slug: string,
     excludePostId?: string,
   ): Promise<boolean> {
-    const resolved = await paths.resolve(slug);
+    const resolved = await resolvedPaths.resolve(slug);
     if (!resolved) return true;
 
     return Boolean(
@@ -718,7 +728,7 @@ export function createPostService(
     row: typeof posts.$inferSelect | undefined,
   ): Promise<Post | null> {
     if (!row) return null;
-    const slug = await paths.getPostSlug(row.id);
+    const slug = await resolvedPaths.getPostSlug(row.id);
     if (!slug) return null;
     const rootVisibilityMap = await getThreadVisibilityMap([row.threadId]);
     const visibility = rootVisibilityMap.get(row.threadId) ?? row.visibility;
@@ -730,7 +740,9 @@ export function createPostService(
     rows: (typeof posts.$inferSelect)[],
   ): Promise<Post[]> {
     if (rows.length === 0) return [];
-    const slugMap = await paths.getPostSlugMap(rows.map((row) => row.id));
+    const slugMap = await resolvedPaths.getPostSlugMap(
+      rows.map((row) => row.id),
+    );
     const rootVisibilityMap = await getThreadVisibilityMap(
       rows.map((row) => row.threadId),
     );
@@ -931,7 +943,7 @@ export function createPostService(
     },
 
     async getBySlug(slug) {
-      const resolved = await paths.resolve(slug);
+      const resolved = await resolvedPaths.resolve(slug);
       if (!resolved || resolved.kind !== "slug" || !resolved.postId) {
         return null;
       }
@@ -1155,7 +1167,7 @@ export function createPostService(
             isAvailable: isSlugAvailable,
           });
           // Verify the alias path is available before proceeding
-          if (!(await paths.isPathAvailable(normalized))) {
+          if (!(await resolvedPaths.isPathAvailable(normalized))) {
             throw new ConflictError(`Path "${normalized}" is already in use`);
           }
           aliasPath = normalized;
@@ -1172,51 +1184,41 @@ export function createPostService(
       const collectionIds = [...new Set(data.collectionIds ?? [])];
 
       try {
-        const writeQueries: BatchItem<"sqlite">[] = [
-          db.insert(posts).values({
-            id,
-            siteId,
-            format,
-            status,
-            visibility,
-            pinnedAt: data.pinned ? timestamp : null,
-            featuredAt: data.featured ? timestamp : null,
-            title: data.title ?? null,
-            url: data.url ?? null,
-            body: body ?? null,
-            bodyHtml,
-            bodyText,
-            quoteText: data.quoteText ?? null,
-            summary,
-            rating,
-            replyToId: data.replyToId ?? null,
-            threadId,
-            publishedAt,
-            lastActivityAt: publishedAt ?? timestamp,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          }),
-          db.insert(pathRegistry).values({
-            id: createEntityId("path"),
-            siteId,
-            path: normalizePath(slug),
-            kind: "slug",
-            postId: id,
-            collectionId: null,
-            redirectToPath: null,
-            redirectType: null,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          }),
-        ];
+        if (isNodeSqliteDatabase(db)) {
+          const writeQueries = [];
 
-        if (aliasPath) {
+          writeQueries.push(
+            db.insert(posts).values({
+              id,
+              siteId,
+              format,
+              status,
+              visibility,
+              pinnedAt: data.pinned ? timestamp : null,
+              featuredAt: data.featured ? timestamp : null,
+              title: data.title ?? null,
+              url: data.url ?? null,
+              body: body ?? null,
+              bodyHtml,
+              bodyText,
+              quoteText: data.quoteText ?? null,
+              summary,
+              rating,
+              replyToId: data.replyToId ?? null,
+              threadId,
+              publishedAt,
+              lastActivityAt: publishedAt ?? timestamp,
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            }),
+          );
+
           writeQueries.push(
             db.insert(pathRegistry).values({
               id: createEntityId("path"),
               siteId,
-              path: normalizePath(aliasPath),
-              kind: "alias",
+              path: normalizePath(slug),
+              kind: "slug",
               postId: id,
               collectionId: null,
               redirectToPath: null,
@@ -1225,27 +1227,109 @@ export function createPostService(
               updatedAt: timestamp,
             }),
           );
-        }
 
-        if (collectionIds.length > 0) {
-          writeQueries.push(
-            db.insert(postCollections).values(
-              collectionIds.map((collectionId) => ({
+          if (aliasPath) {
+            writeQueries.push(
+              db.insert(pathRegistry).values({
+                id: createEntityId("path"),
                 siteId,
+                path: normalizePath(aliasPath),
+                kind: "alias",
                 postId: id,
-                collectionId,
+                collectionId: null,
+                redirectToPath: null,
+                redirectType: null,
                 createdAt: timestamp,
-              })),
-            ),
-          );
-        }
+                updatedAt: timestamp,
+              }),
+            );
+          }
 
-        await db.batch(
-          writeQueries as [
-            (typeof writeQueries)[number],
-            ...(typeof writeQueries)[number][],
-          ],
-        );
+          if (collectionIds.length > 0) {
+            writeQueries.push(
+              db.insert(postCollections).values(
+                collectionIds.map((collectionId) => ({
+                  siteId,
+                  postId: id,
+                  collectionId,
+                  createdAt: timestamp,
+                })),
+              ),
+            );
+          }
+
+          await db.batch(
+            writeQueries as [
+              (typeof writeQueries)[number],
+              ...(typeof writeQueries)[number][],
+            ],
+          );
+        } else {
+          await db.transaction(async (tx) => {
+            await tx.insert(posts).values({
+              id,
+              siteId,
+              format,
+              status,
+              visibility,
+              pinnedAt: data.pinned ? timestamp : null,
+              featuredAt: data.featured ? timestamp : null,
+              title: data.title ?? null,
+              url: data.url ?? null,
+              body: body ?? null,
+              bodyHtml,
+              bodyText,
+              quoteText: data.quoteText ?? null,
+              summary,
+              rating,
+              replyToId: data.replyToId ?? null,
+              threadId,
+              publishedAt,
+              lastActivityAt: publishedAt ?? timestamp,
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            });
+
+            await tx.insert(pathRegistry).values({
+              id: createEntityId("path"),
+              siteId,
+              path: normalizePath(slug),
+              kind: "slug",
+              postId: id,
+              collectionId: null,
+              redirectToPath: null,
+              redirectType: null,
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            });
+
+            if (aliasPath) {
+              await tx.insert(pathRegistry).values({
+                id: createEntityId("path"),
+                siteId,
+                path: normalizePath(aliasPath),
+                kind: "alias",
+                postId: id,
+                collectionId: null,
+                redirectToPath: null,
+                redirectType: null,
+                createdAt: timestamp,
+                updatedAt: timestamp,
+              });
+            }
+
+            if (collectionIds.length > 0) {
+              await tx.insert(postCollections).values(
+                collectionIds.map((collectionId) => ({
+                  siteId,
+                  postId: id,
+                  collectionId,
+                  createdAt: timestamp,
+                })),
+              );
+            }
+          });
+        }
       } catch (err) {
         if (err instanceof ConflictError) {
           throw new ConflictError(`Slug "${slug}" is already in use`);
@@ -1338,7 +1422,7 @@ export function createPostService(
         data.slug !== undefined && data.slug !== existing.slug;
       if (slugChanged && data.slug) {
         try {
-          await paths.updatePostSlug(id, data.slug);
+          await resolvedPaths.updatePostSlug(id, data.slug);
         } catch (err) {
           if (err instanceof ConflictError) {
             throw new ConflictError(`Slug "${data.slug}" is already in use`);
@@ -1458,108 +1542,191 @@ export function createPostService(
         return hydratePost(result[0]);
       }
 
-      // Complex case: batch cascade + update + collection sync atomically
-      const writeQueries: BatchItem<"sqlite">[] = [];
+      // Complex case: cascade + update + collection sync atomically
       const existingCollectionIds = needsCollectionSync
         ? await getCollectionIdsForPost(id)
         : [];
+      let updateResult: (typeof posts.$inferSelect)[] | undefined;
 
-      if (needsCascade) {
-        writeQueries.push(
-          db
-            .update(posts)
-            .set({
-              status: nextStatus,
-              publishedAt: nextStatus === "published" ? nextPublishedAt : null,
-              lastActivityAt:
-                nextStatus === "published"
-                  ? (nextPublishedAt ?? timestamp)
-                  : timestamp,
-              updatedAt: timestamp,
-            })
-            .where(
-              and(
-                eq(posts.siteId, siteId),
-                eq(posts.threadId, id),
-                isNotNull(posts.replyToId),
-              ),
-            ),
-        );
-      }
+      if (isNodeSqliteDatabase(db)) {
+        const writeQueries = [];
 
-      if (needsReplyVisibilityCleanup) {
-        writeQueries.push(
-          db
-            .update(posts)
-            .set({ visibility: null, updatedAt: timestamp })
-            .where(
-              and(
-                eq(posts.siteId, siteId),
-                eq(posts.threadId, id),
-                isNotNull(posts.replyToId),
-              ),
-            ),
-        );
-      }
-
-      // Post update is always present; track its index for result extraction
-      const updateIdx = writeQueries.length;
-      writeQueries.push(
-        db
-          .update(posts)
-          .set(updates)
-          .where(and(eq(posts.siteId, siteId), eq(posts.id, id)))
-          .returning(),
-      );
-
-      if (needsCollectionSync) {
-        const existingIds = new Set(existingCollectionIds);
-        const nextIds = new Set(nextCollectionIds);
-        const removedIds = existingCollectionIds.filter(
-          (cid) => !nextIds.has(cid),
-        );
-        const addedIds = nextCollectionIds.filter(
-          (cid) => !existingIds.has(cid),
-        );
-
-        if (removedIds.length > 0) {
+        if (needsCascade) {
           writeQueries.push(
             db
-              .delete(postCollections)
+              .update(posts)
+              .set({
+                status: nextStatus,
+                publishedAt:
+                  nextStatus === "published" ? nextPublishedAt : null,
+                lastActivityAt:
+                  nextStatus === "published"
+                    ? (nextPublishedAt ?? timestamp)
+                    : timestamp,
+                updatedAt: timestamp,
+              })
               .where(
                 and(
-                  eq(postCollections.siteId, siteId),
-                  eq(postCollections.postId, id),
-                  inArray(postCollections.collectionId, removedIds),
+                  eq(posts.siteId, siteId),
+                  eq(posts.threadId, id),
+                  isNotNull(posts.replyToId),
                 ),
               ),
           );
         }
 
-        if (addedIds.length > 0) {
-          const collectionTimestamp = now();
+        if (needsReplyVisibilityCleanup) {
           writeQueries.push(
-            db.insert(postCollections).values(
-              addedIds.map((collectionId) => ({
-                siteId,
-                postId: id,
-                collectionId,
-                createdAt: collectionTimestamp,
-              })),
-            ),
+            db
+              .update(posts)
+              .set({ visibility: null, updatedAt: timestamp })
+              .where(
+                and(
+                  eq(posts.siteId, siteId),
+                  eq(posts.threadId, id),
+                  isNotNull(posts.replyToId),
+                ),
+              ),
           );
         }
+
+        const updateIdx = writeQueries.length;
+        writeQueries.push(
+          db
+            .update(posts)
+            .set(updates)
+            .where(and(eq(posts.siteId, siteId), eq(posts.id, id)))
+            .returning(),
+        );
+
+        if (needsCollectionSync) {
+          const existingIds = new Set(existingCollectionIds);
+          const nextIds = new Set(nextCollectionIds);
+          const removedIds = existingCollectionIds.filter(
+            (cid) => !nextIds.has(cid),
+          );
+          const addedIds = nextCollectionIds.filter(
+            (cid) => !existingIds.has(cid),
+          );
+
+          if (removedIds.length > 0) {
+            writeQueries.push(
+              db
+                .delete(postCollections)
+                .where(
+                  and(
+                    eq(postCollections.siteId, siteId),
+                    eq(postCollections.postId, id),
+                    inArray(postCollections.collectionId, removedIds),
+                  ),
+                ),
+            );
+          }
+
+          if (addedIds.length > 0) {
+            const collectionTimestamp = now();
+            writeQueries.push(
+              db.insert(postCollections).values(
+                addedIds.map((collectionId) => ({
+                  siteId,
+                  postId: id,
+                  collectionId,
+                  createdAt: collectionTimestamp,
+                })),
+              ),
+            );
+          }
+        }
+
+        const results = await db.batch(
+          writeQueries as [
+            (typeof writeQueries)[number],
+            ...(typeof writeQueries)[number][],
+          ],
+        );
+        updateResult = results[updateIdx] as
+          | (typeof posts.$inferSelect)[]
+          | undefined;
+      } else {
+        await db.transaction(async (tx) => {
+          if (needsCascade) {
+            await tx
+              .update(posts)
+              .set({
+                status: nextStatus,
+                publishedAt:
+                  nextStatus === "published" ? nextPublishedAt : null,
+                lastActivityAt:
+                  nextStatus === "published"
+                    ? (nextPublishedAt ?? timestamp)
+                    : timestamp,
+                updatedAt: timestamp,
+              })
+              .where(
+                and(
+                  eq(posts.siteId, siteId),
+                  eq(posts.threadId, id),
+                  isNotNull(posts.replyToId),
+                ),
+              );
+          }
+
+          if (needsReplyVisibilityCleanup) {
+            await tx
+              .update(posts)
+              .set({ visibility: null, updatedAt: timestamp })
+              .where(
+                and(
+                  eq(posts.siteId, siteId),
+                  eq(posts.threadId, id),
+                  isNotNull(posts.replyToId),
+                ),
+              );
+          }
+
+          updateResult = await tx
+            .update(posts)
+            .set(updates)
+            .where(and(eq(posts.siteId, siteId), eq(posts.id, id)))
+            .returning();
+
+          if (needsCollectionSync) {
+            const existingIds = new Set(existingCollectionIds);
+            const nextIds = new Set(nextCollectionIds);
+            const removedIds = existingCollectionIds.filter(
+              (cid) => !nextIds.has(cid),
+            );
+            const addedIds = nextCollectionIds.filter(
+              (cid) => !existingIds.has(cid),
+            );
+
+            if (removedIds.length > 0) {
+              await tx
+                .delete(postCollections)
+                .where(
+                  and(
+                    eq(postCollections.siteId, siteId),
+                    eq(postCollections.postId, id),
+                    inArray(postCollections.collectionId, removedIds),
+                  ),
+                );
+            }
+
+            if (addedIds.length > 0) {
+              const collectionTimestamp = now();
+              await tx.insert(postCollections).values(
+                addedIds.map((collectionId) => ({
+                  siteId,
+                  postId: id,
+                  collectionId,
+                  createdAt: collectionTimestamp,
+                })),
+              );
+            }
+          }
+        });
       }
 
-      const results = await db.batch(
-        writeQueries as [
-          (typeof writeQueries)[number],
-          ...(typeof writeQueries)[number][],
-        ],
-      );
-      const updateResult = results[updateIdx] as
-        | (typeof posts.$inferSelect)[]
-        | undefined;
       if (needsThreadActivityRecalc) {
         await recalculateThreadLastActivity(existing.threadId);
         return this.getById(id);
@@ -1705,34 +1872,66 @@ export function createPostService(
       const nextStatus = ensurePostStatus(status);
       const nextVisibility = ensurePostVisibility(visibility);
       const timestamp = now();
-      await db.batch([
-        db
-          .update(posts)
-          .set({
-            status: nextStatus,
-            visibility: nextVisibility,
-            publishedAt: nextStatus === "published" ? timestamp : null,
-            lastActivityAt: timestamp,
-            updatedAt: timestamp,
-          })
-          .where(and(eq(posts.siteId, siteId), eq(posts.id, rootId))),
-        db
-          .update(posts)
-          .set({
-            status: nextStatus,
-            visibility: null,
-            publishedAt: nextStatus === "published" ? timestamp : null,
-            lastActivityAt: timestamp,
-            updatedAt: timestamp,
-          })
-          .where(
-            and(
-              eq(posts.siteId, siteId),
-              eq(posts.threadId, rootId),
-              isNotNull(posts.replyToId),
+      if (isNodeSqliteDatabase(db)) {
+        await db.batch([
+          db
+            .update(posts)
+            .set({
+              status: nextStatus,
+              visibility: nextVisibility,
+              publishedAt: nextStatus === "published" ? timestamp : null,
+              lastActivityAt: timestamp,
+              updatedAt: timestamp,
+            })
+            .where(and(eq(posts.siteId, siteId), eq(posts.id, rootId))),
+          db
+            .update(posts)
+            .set({
+              status: nextStatus,
+              visibility: null,
+              publishedAt: nextStatus === "published" ? timestamp : null,
+              lastActivityAt: timestamp,
+              updatedAt: timestamp,
+            })
+            .where(
+              and(
+                eq(posts.siteId, siteId),
+                eq(posts.threadId, rootId),
+                isNotNull(posts.replyToId),
+              ),
             ),
-          ),
-      ]);
+        ]);
+      } else {
+        await db.transaction(async (tx) => {
+          await tx
+            .update(posts)
+            .set({
+              status: nextStatus,
+              visibility: nextVisibility,
+              publishedAt: nextStatus === "published" ? timestamp : null,
+              lastActivityAt: timestamp,
+              updatedAt: timestamp,
+            })
+            .where(and(eq(posts.siteId, siteId), eq(posts.id, rootId)));
+
+          await tx
+            .update(posts)
+            .set({
+              status: nextStatus,
+              visibility: null,
+              publishedAt: nextStatus === "published" ? timestamp : null,
+              lastActivityAt: timestamp,
+              updatedAt: timestamp,
+            })
+            .where(
+              and(
+                eq(posts.siteId, siteId),
+                eq(posts.threadId, rootId),
+                isNotNull(posts.replyToId),
+              ),
+            );
+        });
+      }
       await recalculateThreadLastActivity(rootId);
     },
 

@@ -6,7 +6,7 @@ export async function createRequestRuntime(
   env: Bindings,
   publicRequestUrl: string,
 ) {
-  if (env.NODE_SQLITE) {
+  if (env.NODE_DATABASE || env.NODE_SQLITE) {
     return createNodeRequestRuntime(env, publicRequestUrl);
   }
 

@@ -62,8 +62,8 @@ describe("jant site snapshot export/import", () => {
     const targetStoragePath = join(root, "target-media");
     const snapshotPath = join(root, "snapshot");
 
-    migrate({ DATABASE_URL: `file:${sourceDbPath}` } as Bindings);
-    migrate({ DATABASE_URL: `file:${targetDbPath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${sourceDbPath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${targetDbPath}` } as Bindings);
 
     const sourceStorage = createLocalDriver({ rootPath: sourceStoragePath });
     const targetStorage = createLocalDriver({ rootPath: targetStoragePath });
@@ -204,7 +204,7 @@ describe("jant site snapshot export/import", () => {
       SNAPSHOT_APPLE_TOUCH_KEY,
     ]);
     expect(exportLogSpy).toHaveBeenCalledWith(
-      `Exported Node SQLite snapshot to ${snapshotPath}`,
+      `Exported Node database snapshot to ${snapshotPath}`,
     );
 
     process.env.DATABASE_URL = `file:${targetDbPath}`;

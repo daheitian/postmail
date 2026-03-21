@@ -33,7 +33,7 @@ describe("jant export", () => {
     const databasePath = join(root, "jant.sqlite");
     const exportPath = join(root, "jant-export.sql");
 
-    migrate({ DATABASE_URL: `file:${databasePath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${databasePath}` } as Bindings);
     process.env.DATABASE_URL = `file:${databasePath}`;
 
     const sqlite = new Database(databasePath);
@@ -60,7 +60,7 @@ describe("jant export", () => {
     );
     expect(output).not.toContain("__drizzle_migrations");
     expect(logSpy).toHaveBeenCalledWith(
-      `Exported Node SQLite to ${exportPath}`,
+      `Exported Node database to ${exportPath}`,
     );
   });
 });

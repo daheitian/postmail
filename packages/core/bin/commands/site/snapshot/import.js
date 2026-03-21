@@ -13,7 +13,7 @@ import { parseArgs } from "node:util";
 import { unzipSync } from "fflate";
 import { executeD1, queryD1 } from "../../../lib/d1-query.js";
 import { loadNodeRuntime } from "../../../lib/load-node-runtime.js";
-import { openNodeSqlite } from "../../../lib/node-sqlite.js";
+import { openNodeDatabase } from "../../../lib/node-database.js";
 import {
   deleteR2Object,
   uploadR2Object,
@@ -49,22 +49,19 @@ function createWranglerOptions(values) {
 }
 
 async function createNodeImportContext() {
-  const { sqlite } = openNodeSqlite(process.env);
+  const nodeDatabase = await openNodeDatabase(process.env);
   const { createNodeCliRuntime } = await loadNodeRuntime();
-  const runtime = await createNodeCliRuntime({
-    ...(process.env ?? {}),
-    NODE_SQLITE: sqlite,
-  });
+  const runtime = await createNodeCliRuntime(nodeDatabase.bindings);
 
   return {
     async close() {
-      sqlite.close();
+      await nodeDatabase.close();
     },
     async query(sql) {
-      return sqlite.prepare(sql).all();
+      return nodeDatabase.query(sql);
     },
     async execute(sql) {
-      sqlite.exec(sql);
+      await nodeDatabase.execute(sql);
     },
     async uploadObject(key, filePath, contentType) {
       if (!runtime.storage) {

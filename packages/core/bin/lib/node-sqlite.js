@@ -3,6 +3,38 @@ import { mkdirSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+export function resolveDatabaseDialect(databaseUrl) {
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL must be set.");
+  }
+
+  if (
+    databaseUrl === ":memory:" ||
+    databaseUrl === "file::memory:" ||
+    databaseUrl.startsWith("file:")
+  ) {
+    return "sqlite";
+  }
+
+  try {
+    const parsed = new URL(databaseUrl);
+    if (
+      parsed.protocol === "postgres:" ||
+      parsed.protocol === "postgresql:"
+    ) {
+      return "pg";
+    }
+  } catch {
+    throw new Error(
+      "DATABASE_URL must use the file:, postgres:, or postgresql: scheme.",
+    );
+  }
+
+  throw new Error(
+    "DATABASE_URL must use the file:, postgres:, or postgresql: scheme.",
+  );
+}
+
 export function resolveDatabasePath(databaseUrl, cwd = process.cwd()) {
   if (!databaseUrl) {
     throw new Error(
@@ -14,9 +46,9 @@ export function resolveDatabasePath(databaseUrl, cwd = process.cwd()) {
     return ":memory:";
   }
 
-  if (!databaseUrl.startsWith("file:")) {
+  if (resolveDatabaseDialect(databaseUrl) !== "sqlite") {
     throw new Error(
-      "DATABASE_URL must use the file: scheme in v1. Example: file:/var/lib/jant/jant.sqlite",
+      "resolveDatabasePath() only supports SQLite DATABASE_URL values. Use a file: URL when running SQLite commands.",
     );
   }
 
@@ -47,8 +79,10 @@ export function applyNodeRuntimeDefaults(env = process.env) {
   if (env.DATA_DIR) {
     dataDir = resolveDataDir(env);
   } else if (env.DATABASE_URL) {
-    const databasePath = resolveDatabasePath(env.DATABASE_URL);
-    dataDir = databasePath === ":memory:" ? undefined : dirname(databasePath);
+    if (resolveDatabaseDialect(env.DATABASE_URL) === "sqlite") {
+      const databasePath = resolveDatabasePath(env.DATABASE_URL);
+      dataDir = databasePath === ":memory:" ? undefined : dirname(databasePath);
+    }
   } else {
     dataDir = resolveDataDir(env);
   }

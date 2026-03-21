@@ -7,12 +7,16 @@
 
 import { and, eq } from "drizzle-orm";
 import type { Database } from "../db/index.js";
-import { apiTokens } from "../db/schema.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import type { ApiToken } from "../types/entities.js";
 
 const TOKEN_PREFIX = "jnt_";
+const { apiTokens: _sqliteApiTokens } = sqliteSchemaBundle;
 
 export interface ApiTokenService {
   /**
@@ -99,7 +103,7 @@ function randomHex(byteCount: number): string {
     .join("");
 }
 
-function toApiToken(row: typeof apiTokens.$inferSelect): ApiToken {
+function toApiToken(row: typeof _sqliteApiTokens.$inferSelect): ApiToken {
   return {
     id: row.id,
     siteId: row.siteId,
@@ -114,7 +118,10 @@ function toApiToken(row: typeof apiTokens.$inferSelect): ApiToken {
 export function createApiTokenService(
   db: Database,
   siteId: string,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): ApiTokenService {
+  const { apiTokens } = databaseSchema;
+
   return {
     async create(name: string) {
       const id = createEntityId("apiToken");

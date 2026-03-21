@@ -28,6 +28,6 @@ export function getCliRuntimeLabel(runtime) {
     case "d1-local":
       return "local D1";
     default:
-      return "Node SQLite";
+      return "Node database";
   }
 }

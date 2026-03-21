@@ -1,6 +1,7 @@
 import type BetterSqlite3 from "better-sqlite3";
 import { createNodeDatabase, type Database } from "../db/index.js";
 import type { RawQueryClient, RawQueryStatement } from "../db/raw-query.js";
+import { sqliteSchemaBundle } from "../db/schema-bundle.js";
 import { createAuth, type Auth } from "../auth.js";
 import {
   getAuthSecret,
@@ -67,9 +68,17 @@ export async function createNodeRequestRuntime(
   env: Bindings,
   publicRequestUrl: string,
 ): Promise<NodeRequestRuntime> {
+  const nodeDatabase = env.NODE_DATABASE;
   const sqlite = env.NODE_SQLITE;
-  if (!sqlite) {
-    throw new Error("Node runtime requires NODE_SQLITE.");
+  const db = nodeDatabase?.db ?? (sqlite ? createNodeDatabase(sqlite) : null);
+  const rawQuery =
+    nodeDatabase?.rawQuery ??
+    (sqlite ? createBetterSqliteRawQuery(sqlite) : null);
+  const databaseDialect = nodeDatabase?.dialect ?? "sqlite";
+  const databaseSchema = nodeDatabase?.schema ?? sqliteSchemaBundle;
+
+  if (!db || !rawQuery) {
+    throw new Error("Node runtime requires a resolved database binding.");
   }
 
   const authSecret = getAuthSecret(env);
@@ -77,10 +86,14 @@ export async function createNodeRequestRuntime(
     throw new Error("AUTH_SECRET should be set after startup validation.");
   }
 
-  const db = createNodeDatabase(sqlite);
   const slugIdLength =
     parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5;
-  const siteLookup = await resolveRequestSite(db, env, publicRequestUrl);
+  const siteLookup = await resolveRequestSite(
+    db,
+    env,
+    publicRequestUrl,
+    databaseSchema,
+  );
   const baseURL = getResolvedSiteBaseUrl(
     env,
     publicRequestUrl,
@@ -91,18 +104,17 @@ export async function createNodeRequestRuntime(
     currentSite: siteLookup.site,
     currentSiteDomain: siteLookup.domain,
     db,
-    services: createServices(
-      db,
-      createBetterSqliteRawQuery(sqlite),
-      siteLookup.site.id,
-      {
-        slugIdLength,
-      },
-    ),
+    services: createServices(db, rawQuery, siteLookup.site.id, {
+      databaseDialect,
+      slugIdLength,
+      schema: databaseSchema,
+    }),
     storage: createStorageDriver(env),
     auth: createAuth(db, {
       secret: authSecret,
       baseURL,
+      databaseDialect,
+      schema: databaseSchema,
       useSecureCookies: shouldUseSecureCookies(env, publicRequestUrl),
     }),
   };
@@ -116,28 +128,32 @@ export async function createNodeRequestRuntime(
 export async function createNodeCliRuntime(
   env: Bindings,
 ): Promise<NodeCliRuntime> {
+  const nodeDatabase = env.NODE_DATABASE;
   const sqlite = env.NODE_SQLITE;
-  if (!sqlite) {
-    throw new Error("Node CLI runtime requires NODE_SQLITE.");
+  const db = nodeDatabase?.db ?? (sqlite ? createNodeDatabase(sqlite) : null);
+  const rawQuery =
+    nodeDatabase?.rawQuery ??
+    (sqlite ? createBetterSqliteRawQuery(sqlite) : null);
+  const databaseDialect = nodeDatabase?.dialect ?? "sqlite";
+  const databaseSchema = nodeDatabase?.schema ?? sqliteSchemaBundle;
+
+  if (!db || !rawQuery) {
+    throw new Error("Node CLI runtime requires a resolved database binding.");
   }
 
-  const db = createNodeDatabase(sqlite);
   const slugIdLength =
     parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5;
-  const siteLookup = await resolveCliSite(db, env);
+  const siteLookup = await resolveCliSite(db, env, databaseSchema);
 
   return {
     currentSite: siteLookup.site,
     currentSiteDomain: siteLookup.domain,
     db,
-    services: createServices(
-      db,
-      createBetterSqliteRawQuery(sqlite),
-      siteLookup.site.id,
-      {
-        slugIdLength,
-      },
-    ),
+    services: createServices(db, rawQuery, siteLookup.site.id, {
+      databaseDialect,
+      slugIdLength,
+      schema: databaseSchema,
+    }),
     storage: createStorageDriver(env),
   };
 }

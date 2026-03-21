@@ -30,7 +30,7 @@ describe("jant reset-password", () => {
     tempDirs.push(root);
 
     const databasePath = join(root, "jant.sqlite");
-    migrate({ DATABASE_URL: `file:${databasePath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${databasePath}` } as Bindings);
     process.env.DATABASE_URL = `file:${databasePath}`;
 
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
@@ -55,7 +55,7 @@ describe("jant reset-password", () => {
       sqlite.close();
     }
 
-    expect(logSpy).toHaveBeenCalledWith("Runtime: Node SQLite");
+    expect(logSpy).toHaveBeenCalledWith("Runtime: Node database");
     expect(logSpy).toHaveBeenCalledWith(
       expect.stringMatching(/^Visit: \/reset\?token=[a-f0-9]{64}$/),
     );

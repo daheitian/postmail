@@ -6,6 +6,7 @@ import {
 import { createSearchService } from "../search.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
+import type { RawQueryClient } from "../../db/raw-query.js";
 import type BetterSqlite3 from "better-sqlite3";
 
 /** Wraps plain text in a minimal valid TipTap JSON document. */
@@ -19,6 +20,39 @@ function tiptapDoc(text: string): string {
       },
     ],
   });
+}
+
+function createSearchRow(overrides?: Partial<Record<string, unknown>>) {
+  return {
+    id: "pst_01jpyz2pvf4m7s2k8r5c9t0qce",
+    site_id: DEFAULT_TEST_SITE_ID,
+    format: "note",
+    status: "published",
+    visibility: "public",
+    effective_visibility: "public",
+    pinned_at: null,
+    featured_at: null,
+    slug: "hello-world",
+    title: "Hello World",
+    url: null,
+    body: tiptapDoc("Hello world"),
+    body_html: "<p>Hello world</p>",
+    body_text: "Hello world",
+    quote_text: null,
+    summary: null,
+    rating: null,
+    collection_id: null,
+    reply_to_id: null,
+    thread_id: "pst_01jpyz2pvf4m7s2k8r5c9t0qce",
+    deleted_at: null,
+    published_at: 1774009100,
+    last_activity_at: 1774009100,
+    created_at: 1774009100,
+    updated_at: 1774009100,
+    rank: 0,
+    snippet: null,
+    ...overrides,
+  };
 }
 
 describe("SearchService", () => {
@@ -198,5 +232,65 @@ describe("SearchService", () => {
     // "paragraph" is a JSON key in TipTap but not user content
     const results = await searchService.search("paragraph");
     expect(results).toHaveLength(0);
+  });
+
+  it("uses ILIKE fallback for Postgres searches", async () => {
+    const calls: { params: unknown[]; query: string }[] = [];
+    const rawQuery: RawQueryClient = {
+      prepare(query) {
+        const call = { params: [], query };
+        calls.push(call);
+
+        return {
+          bind(...params: unknown[]) {
+            call.params = params;
+            return this;
+          },
+          async all() {
+            return { results: [createSearchRow()] };
+          },
+        };
+      },
+    };
+
+    const searchService = createSearchService(
+      rawQuery,
+      DEFAULT_TEST_SITE_ID,
+      "pg",
+    );
+    const results = await searchService.search("jant");
+
+    expect(results).toHaveLength(1);
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.query).toContain("ILIKE");
+    expect(calls[0]?.query).not.toContain("post_fts");
+    expect(calls[0]?.params[0]).toBe("%jant%");
+  });
+
+  it("keeps Postgres searches on the LIKE path for short queries", async () => {
+    const calls: string[] = [];
+    const rawQuery: RawQueryClient = {
+      prepare(query) {
+        calls.push(query);
+        return {
+          bind() {
+            return this;
+          },
+          async all() {
+            return { results: [createSearchRow()] };
+          },
+        };
+      },
+    };
+
+    const searchService = createSearchService(
+      rawQuery,
+      DEFAULT_TEST_SITE_ID,
+      "pg",
+    );
+    await searchService.search("自由");
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toContain("ILIKE");
   });
 });

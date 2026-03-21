@@ -14,7 +14,7 @@ import { parseArgs } from "node:util";
 import { zipSync } from "fflate";
 import { queryD1 } from "../../../lib/d1-query.js";
 import { loadNodeRuntime } from "../../../lib/load-node-runtime.js";
-import { openNodeSqlite } from "../../../lib/node-sqlite.js";
+import { openNodeDatabase } from "../../../lib/node-database.js";
 import {
   downloadR2Object,
   downloadR2ObjectFromPublicUrl,
@@ -98,19 +98,17 @@ async function assertWritableOutput(outputPath, force) {
 }
 
 async function createNodeExportContext() {
-  const { sqlite } = openNodeSqlite(process.env, { readonly: true });
+  const nodeDatabase = await openNodeDatabase(process.env);
   const { createNodeCliRuntime } = await loadNodeRuntime();
-  const runtime = await createNodeCliRuntime({
-    ...(process.env ?? {}),
-    NODE_SQLITE: sqlite,
-  });
+  const runtime = await createNodeCliRuntime(nodeDatabase.bindings);
 
   return {
+    dialect: nodeDatabase.database.dialect,
     async close() {
-      sqlite.close();
+      await nodeDatabase.close();
     },
     async query(sql) {
-      return sqlite.prepare(sql).all();
+      return nodeDatabase.query(sql);
     },
     async downloadObject(key, filePath) {
       if (!runtime.storage) {
@@ -145,6 +143,7 @@ function createD1ExportContext(runtime, values) {
     });
 
   return {
+    dialect: "sqlite",
     async close() {},
     async query(sql) {
       return queryD1(sql, runtime, wranglerOptions);
@@ -219,7 +218,7 @@ export async function run(argv) {
     console.log("  --persist-to            Local D1/R2 state directory override");
     console.log("");
     console.log(
-      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses Node SQLite and the configured storage driver.",
+      "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime and the configured storage driver.",
     );
     process.exit(0);
   }
@@ -252,6 +251,7 @@ export async function run(argv) {
         },
       },
       {
+        dialect: context.dialect,
         source: runtime,
         tables: SNAPSHOT_TABLES,
         selectSqlByTable: Object.fromEntries(

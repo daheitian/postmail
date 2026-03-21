@@ -8,7 +8,10 @@
 import { and, eq, asc, sql } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import type { Database } from "../db/index.js";
-import { navItems } from "../db/schema.js";
+import {
+  sqliteSchemaBundle,
+  type DatabaseSchema,
+} from "../db/schema-bundle.js";
 import { createEntityId } from "../lib/ids.js";
 import { ValidationError } from "../lib/errors.js";
 import { now } from "../lib/time.js";
@@ -60,7 +63,10 @@ export interface NavItemService {
 export function createNavItemService(
   db: Database,
   siteId: string,
+  databaseSchema: DatabaseSchema = sqliteSchemaBundle,
 ): NavItemService {
+  const { navItems } = databaseSchema;
+
   const defaultSystemOrder = [
     "collections",
     "archive",

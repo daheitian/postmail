@@ -1,0 +1,651 @@
+/**
+ * Drizzle Schema
+ *
+ * Database schema for Jant v2
+ */
+
+import {
+  pgTable,
+  text,
+  integer,
+  boolean,
+  timestamp,
+  primaryKey,
+  foreignKey,
+  index,
+  uniqueIndex,
+  check,
+} from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
+const SITE_STATUSES = ["active", "suspended"] as const;
+const SITE_DOMAIN_KINDS = ["primary", "alias"] as const;
+const SITE_MEMBER_ROLES = ["owner", "admin", "editor"] as const;
+const FORMATS = ["note", "link", "quote"] as const;
+const STATUSES = ["draft", "published"] as const;
+const VISIBILITIES = ["public", "latest_hidden", "private"] as const;
+const COLLECTION_SORT_ORDERS = ["newest", "oldest", "rating_desc"] as const;
+const NAV_ITEM_TYPES = ["link", "system"] as const;
+const SYSTEM_NAV_KEYS = ["rss", "settings", "collections", "archive"] as const;
+
+function sqlTextEnum(values: readonly string[]) {
+  return sql.raw(values.map((value) => `'${value}'`).join(", "));
+}
+
+// =============================================================================
+// Sites
+// =============================================================================
+
+export const sites = pgTable(
+  "site",
+  {
+    id: text("id").primaryKey(),
+    key: text("key").notNull(),
+    status: text("status", {
+      enum: SITE_STATUSES,
+    })
+      .notNull()
+      .default("active"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_site_key").on(table.key),
+    check(
+      "chk_site_status",
+      sql`${table.status} IN (${sqlTextEnum(SITE_STATUSES)})`,
+    ),
+  ],
+);
+
+export const siteDomains = pgTable(
+  "site_domain",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    host: text("host").notNull(),
+    pathPrefix: text("path_prefix"),
+    kind: text("kind", {
+      enum: SITE_DOMAIN_KINDS,
+    })
+      .notNull()
+      .default("primary"),
+    redirectToPrimary: boolean("redirect_to_primary").notNull().default(true),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_site_domain_host").on(table.host),
+    index("idx_site_domain_site_id").on(table.siteId),
+    check(
+      "chk_site_domain_kind",
+      sql`${table.kind} IN (${sqlTextEnum(SITE_DOMAIN_KINDS)})`,
+    ),
+  ],
+);
+
+export const siteMembers = pgTable(
+  "site_member",
+  {
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    role: text("role", {
+      enum: SITE_MEMBER_ROLES,
+    })
+      .notNull()
+      .default("editor"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.siteId, table.userId] }),
+    index("idx_site_member_user_id").on(table.userId),
+    check(
+      "chk_site_member_role",
+      sql`${table.role} IN (${sqlTextEnum(SITE_MEMBER_ROLES)})`,
+    ),
+  ],
+);
+
+// =============================================================================
+// Posts
+// =============================================================================
+
+export const posts = pgTable(
+  "post",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    format: text("format", {
+      enum: FORMATS,
+    }).notNull(),
+    status: text("status", {
+      enum: STATUSES,
+    })
+      .notNull()
+      .default("published"),
+    visibility: text("visibility", {
+      enum: VISIBILITIES,
+    }).default("public"),
+    pinnedAt: integer("pinned_at"),
+    featuredAt: integer("featured_at"),
+    title: text("title"),
+    url: text("url"),
+    body: text("body"),
+    bodyHtml: text("body_html"),
+    bodyText: text("body_text"),
+    quoteText: text("quote_text"),
+    summary: text("summary"),
+    rating: integer("rating"),
+    replyToId: text("reply_to_id"),
+    threadId: text("thread_id").notNull(),
+    deletedAt: integer("deleted_at"),
+    publishedAt: integer("published_at"),
+    lastActivityAt: integer("last_activity_at"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "chk_post_reply_to_not_self",
+      sql`${table.replyToId} IS NULL OR ${table.replyToId} <> ${table.id}`,
+    ),
+    check(
+      "chk_post_thread_shape",
+      sql`(
+        ${table.replyToId} IS NULL
+        AND ${table.threadId} = ${table.id}
+      ) OR (
+        ${table.replyToId} IS NOT NULL
+        AND ${table.threadId} <> ${table.id}
+      )`,
+    ),
+    uniqueIndex("uq_post_site_id_id").on(table.siteId, table.id),
+    foreignKey({
+      columns: [table.siteId, table.replyToId],
+      foreignColumns: [table.siteId, table.id],
+    }),
+    foreignKey({
+      columns: [table.siteId, table.threadId],
+      foreignColumns: [table.siteId, table.id],
+    }),
+    index("idx_post_site_thread_id").on(table.siteId, table.threadId),
+    index("idx_post_site_thread_live_created")
+      .on(table.siteId, table.threadId, table.createdAt, table.id)
+      .where(sql`${table.deletedAt} IS NULL`),
+    index("idx_post_site_status_deleted_published").on(
+      table.siteId,
+      table.status,
+      table.deletedAt,
+      table.publishedAt,
+    ),
+    index("idx_post_site_status_deleted_activity").on(
+      table.siteId,
+      table.status,
+      table.deletedAt,
+      table.lastActivityAt,
+    ),
+    index("idx_post_site_root_live_published_activity")
+      .on(table.siteId, table.lastActivityAt, table.id)
+      .where(
+        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NULL AND ${table.status} = 'published'`,
+      ),
+    index("idx_post_site_root_live_draft_updated")
+      .on(table.siteId, table.updatedAt, table.id)
+      .where(
+        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NULL AND ${table.status} = 'draft'`,
+      ),
+    index("idx_post_site_reply_live_thread_created")
+      .on(table.siteId, table.threadId, table.createdAt, table.id)
+      .where(
+        sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NOT NULL AND ${table.status} = 'published'`,
+      ),
+    index("idx_post_site_featured_live_featured_at")
+      .on(table.siteId, table.featuredAt, table.threadId, table.id)
+      .where(
+        sql`${table.deletedAt} IS NULL AND ${table.status} = 'published' AND ${table.featuredAt} IS NOT NULL`,
+      ),
+  ],
+);
+
+// =============================================================================
+// Media
+// =============================================================================
+
+export const media = pgTable(
+  "media",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    postId: text("post_id").references(() => posts.id, {
+      onDelete: "set null",
+    }),
+    filename: text("filename").notNull(),
+    originalName: text("original_name").notNull(),
+    mimeType: text("mime_type").notNull(),
+    size: integer("size").notNull(),
+    storageKey: text("storage_key").notNull(),
+    provider: text("provider").notNull().default("r2"),
+    width: integer("width"),
+    height: integer("height"),
+    alt: text("alt"),
+    position: text("position").notNull().default("a0"),
+    blurhash: text("blurhash"),
+    waveform: text("waveform"),
+    posterKey: text("poster_key"),
+    summary: text("summary"),
+    chars: integer("chars"),
+    mediaKind: text("media_kind").notNull().default("document"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check("chk_media_size_positive", sql`${table.size} > 0`),
+    check("chk_media_position_not_blank", sql`trim(${table.position}) <> ''`),
+    check(
+      "chk_media_dimensions_positive",
+      sql`(
+        ${table.width} IS NULL OR ${table.width} > 0
+      ) AND (
+        ${table.height} IS NULL OR ${table.height} > 0
+      )`,
+    ),
+    check(
+      "chk_media_chars_nonnegative",
+      sql`${table.chars} IS NULL OR ${table.chars} >= 0`,
+    ),
+    index("idx_media_site_post_id_position").on(
+      table.siteId,
+      table.postId,
+      table.position,
+    ),
+    uniqueIndex("uq_media_site_post_position")
+      .on(table.siteId, table.postId, table.position)
+      .where(sql`${table.postId} IS NOT NULL`),
+    uniqueIndex("uq_media_provider_storage_key").on(
+      table.provider,
+      table.storageKey,
+    ),
+    index("idx_media_site_media_kind_post_id").on(
+      table.siteId,
+      table.mediaKind,
+      table.postId,
+    ),
+  ],
+);
+
+// =============================================================================
+// Collections
+// =============================================================================
+
+export const collections = pgTable(
+  "collection",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    description: text("description"),
+    sortOrder: text("sort_order", {
+      enum: COLLECTION_SORT_ORDERS,
+    })
+      .notNull()
+      .default("newest"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "chk_collection_sort_order",
+      sql`${table.sortOrder} IN (${sqlTextEnum(COLLECTION_SORT_ORDERS)})`,
+    ),
+    index("idx_collection_site_created_at").on(table.siteId, table.createdAt),
+  ],
+);
+
+// =============================================================================
+// Path Registry (slug + alias + redirect)
+// =============================================================================
+
+export const pathRegistry = pgTable(
+  "path_registry",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
+    kind: text("kind", {
+      enum: ["slug", "alias", "redirect"],
+    }).notNull(),
+    postId: text("post_id").references(() => posts.id, {
+      onDelete: "cascade",
+    }),
+    collectionId: text("collection_id").references(() => collections.id, {
+      onDelete: "cascade",
+    }),
+    redirectToPath: text("redirect_to_path"),
+    redirectType: integer("redirect_type"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "chk_path_registry_kind",
+      sql`${table.kind} IN ('slug', 'alias', 'redirect')`,
+    ),
+    uniqueIndex("uq_path_registry_site_path").on(table.siteId, table.path),
+    uniqueIndex("uq_path_registry_site_post_slug")
+      .on(table.siteId, table.postId)
+      .where(sql`${table.kind} = 'slug' AND ${table.postId} IS NOT NULL`),
+    uniqueIndex("uq_path_registry_site_collection_slug")
+      .on(table.siteId, table.collectionId)
+      .where(sql`${table.kind} = 'slug' AND ${table.collectionId} IS NOT NULL`),
+    index("idx_path_registry_site_post_id").on(table.siteId, table.postId),
+    index("idx_path_registry_site_collection_id").on(
+      table.siteId,
+      table.collectionId,
+    ),
+    check(
+      "chk_path_registry_shape",
+      sql`(
+        ${table.kind} IN ('slug', 'alias')
+        AND (
+          (${table.postId} IS NOT NULL AND ${table.collectionId} IS NULL)
+          OR (${table.postId} IS NULL AND ${table.collectionId} IS NOT NULL)
+        )
+        AND ${table.redirectToPath} IS NULL
+        AND ${table.redirectType} IS NULL
+      ) OR (
+        ${table.kind} = 'redirect'
+        AND ${table.postId} IS NULL
+        AND ${table.collectionId} IS NULL
+        AND ${table.redirectToPath} IS NOT NULL
+        AND ${table.redirectType} IN (301, 302)
+      )`,
+    ),
+  ],
+);
+
+// =============================================================================
+// Collection Directory Items (unified ordering for collections + dividers)
+// =============================================================================
+
+export const collectionDirectoryItems = pgTable(
+  "collection_directory_item",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    type: text("type", { enum: ["collection", "divider"] }).notNull(),
+    collectionId: text("collection_id").references(() => collections.id, {
+      onDelete: "cascade",
+    }),
+    label: text("label"),
+    position: text("position").notNull().default("a0"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "chk_collection_directory_item_type",
+      sql`${table.type} IN ('collection', 'divider')`,
+    ),
+    index("idx_collection_directory_item_site_collection_id").on(
+      table.siteId,
+      table.collectionId,
+    ),
+    uniqueIndex("uq_collection_directory_item_site_position").on(
+      table.siteId,
+      table.position,
+    ),
+    uniqueIndex("uq_collection_directory_item_site_collection_once")
+      .on(table.siteId, table.collectionId)
+      .where(
+        sql`${table.type} = 'collection' AND ${table.collectionId} IS NOT NULL`,
+      ),
+    check(
+      "chk_collection_directory_item_shape",
+      sql`(
+        ${table.type} = 'collection' AND ${table.collectionId} IS NOT NULL
+      ) OR (
+        ${table.type} = 'divider' AND ${table.collectionId} IS NULL
+      )`,
+    ),
+    check(
+      "chk_collection_directory_item_label",
+      sql`${table.type} = 'divider' OR ${table.label} IS NULL`,
+    ),
+  ],
+);
+
+// =============================================================================
+// Post-Collection Junction Table (M:N)
+// =============================================================================
+
+export const postCollections = pgTable(
+  "post_collection",
+  {
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    postId: text("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    collectionId: text("collection_id")
+      .notNull()
+      .references(() => collections.id, { onDelete: "cascade" }),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.siteId, table.postId, table.collectionId] }),
+    index("idx_post_collection_site_collection_id").on(
+      table.siteId,
+      table.collectionId,
+    ),
+    index("idx_post_collection_site_collection_created_post").on(
+      table.siteId,
+      table.collectionId,
+      table.createdAt,
+      table.postId,
+    ),
+  ],
+);
+
+// =============================================================================
+// Navigation Items
+// =============================================================================
+
+export const navItems = pgTable(
+  "nav_item",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    type: text("type", {
+      enum: NAV_ITEM_TYPES,
+    })
+      .notNull()
+      .default("link"),
+    systemKey: text("system_key", {
+      enum: SYSTEM_NAV_KEYS,
+    }),
+    label: text("label").notNull(),
+    url: text("url").notNull(),
+    position: text("position").notNull().default("a0"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "chk_nav_item_type",
+      sql`${table.type} IN (${sqlTextEnum(NAV_ITEM_TYPES)})`,
+    ),
+    check(
+      "chk_nav_item_system_key",
+      sql`${table.systemKey} IS NULL OR ${table.systemKey} IN (${sqlTextEnum(SYSTEM_NAV_KEYS)})`,
+    ),
+    check(
+      "chk_nav_item_shape",
+      sql`(
+        ${table.type} = 'link'
+        AND ${table.systemKey} IS NULL
+      ) OR (
+        ${table.type} = 'system'
+        AND ${table.systemKey} IS NOT NULL
+      )`,
+    ),
+    uniqueIndex("uq_nav_item_site_position").on(table.siteId, table.position),
+    uniqueIndex("uq_nav_item_site_system_key")
+      .on(table.siteId, table.systemKey)
+      .where(sql`${table.systemKey} IS NOT NULL`),
+  ],
+);
+
+// =============================================================================
+// Settings (site-scoped key-value)
+// =============================================================================
+
+export const settings = pgTable(
+  "site_setting",
+  {
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    value: text("value").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.siteId, table.key] }),
+    index("idx_site_setting_site_id").on(table.siteId),
+  ],
+);
+
+// =============================================================================
+// API Tokens
+// =============================================================================
+
+export const apiTokens = pgTable(
+  "api_token",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    prefix: text("prefix").notNull(),
+    lastUsedAt: integer("last_used_at"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [index("idx_api_token_site_id").on(table.siteId)],
+);
+
+// =============================================================================
+// better-auth tables
+// Note: Using { mode: "timestamp" } so drizzle auto-converts Date <-> integer
+// =============================================================================
+
+export const user = pgTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").notNull().default(false),
+  image: text("image"),
+  role: text("role").default("member"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+});
+
+export const session = pgTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: timestamp("expires_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+    updatedAt: timestamp("updated_at", {
+      withTimezone: true,
+      mode: "date",
+    }).notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id),
+  },
+  (table) => [index("idx_session_user_id").on(table.userId)],
+);
+
+export const account = pgTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+});
+
+export const verification = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at", {
+    withTimezone: true,
+    mode: "date",
+  }).notNull(),
+  createdAt: timestamp("created_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
+  updatedAt: timestamp("updated_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
+});

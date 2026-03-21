@@ -1,7 +1,31 @@
 import { describe, expect, it } from "vitest";
 import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import { sqliteSchemaBundle } from "../../db/schema-bundle.js";
+import { createRequestRuntime } from "../index.js";
 import { createNodeRequestRuntime } from "../node.js";
 import type { Bindings } from "../../types.js";
+
+function createSqliteRawQuery(
+  sqlite: ReturnType<typeof createTestDatabase>["sqlite"],
+) {
+  return {
+    prepare(query: string) {
+      let params: unknown[] = [];
+
+      return {
+        bind(...nextParams: unknown[]) {
+          params = nextParams;
+          return this;
+        },
+        async all<T>() {
+          return {
+            results: sqlite.prepare(query).all(...params) as T[],
+          };
+        },
+      };
+    },
+  };
+}
 
 describe("createNodeRequestRuntime", () => {
   it("builds services/auth/storage from NODE_SQLITE bindings", async () => {
@@ -44,5 +68,28 @@ describe("createNodeRequestRuntime", () => {
 
     expect(post.id).toBeTruthy();
     expect(post.body).toContain("hello from node runtime");
+  });
+
+  it("treats NODE_DATABASE bindings as the Node runtime path", async () => {
+    const { db, sqlite } = createTestDatabase();
+
+    const runtime = await createRequestRuntime(
+      {
+        NODE_DATABASE: {
+          db,
+          dialect: "sqlite",
+          rawQuery: createSqliteRawQuery(sqlite),
+          schema: sqliteSchemaBundle,
+        },
+        AUTH_SECRET: "test-secret-with-enough-entropy-for-node-runtime",
+        SITE_URL: "http://localhost:3000",
+        STORAGE_DRIVER: "local",
+        LOCAL_STORAGE_PATH: "/tmp/jant-node-runtime-test",
+      } as Bindings,
+      "http://localhost:3000/compose",
+    );
+
+    expect(runtime.currentSite.id).toBeTruthy();
+    expect(runtime.services.posts).toBeDefined();
   });
 });
