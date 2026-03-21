@@ -10,6 +10,7 @@ import type { Bindings } from "../../types.js";
 describe("jant export", () => {
   const tempDirs: string[] = [];
   const originalEnv = process.env.DATABASE_URL;
+  const siteId = "sit_01jpyz1h3v4m7s2k8r5c9t0qbd";
 
   afterEach(async () => {
     if (originalEnv === undefined) {
@@ -37,14 +38,13 @@ describe("jant export", () => {
 
     const sqlite = new Database(databasePath);
     try {
-      sqlite
-        .prepare(
-          `
-            INSERT INTO "setting" ("key", "value", "updated_at")
-            VALUES ('SITE_NAME', 'Test Site', 1773753605)
-          `,
-        )
-        .run();
+      sqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${siteId}', 'default', 'active', 1773753600, 1773753600);
+
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at")
+        VALUES ('${siteId}', 'SITE_NAME', 'Test Site', 1773753605);
+      `);
     } finally {
       sqlite.close();
     }
@@ -56,7 +56,7 @@ describe("jant export", () => {
     const output = await readFile(exportPath, "utf-8");
     expect(output).toContain("-- Source: node");
     expect(output).toContain(
-      `INSERT INTO "setting" ("key", "value", "updated_at") VALUES('SITE_NAME', 'Test Site', 1773753605);`,
+      `INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES('${siteId}', 'SITE_NAME', 'Test Site', 1773753605);`,
     );
     expect(output).not.toContain("__drizzle_migrations");
     expect(logSpy).toHaveBeenCalledWith(

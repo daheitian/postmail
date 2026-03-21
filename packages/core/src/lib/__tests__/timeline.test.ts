@@ -10,7 +10,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { createPostService } from "../../services/post.js";
 import { createMediaService } from "../../services/media.js";
 import { createPathService } from "../../services/path.js";
@@ -37,10 +40,19 @@ describe("Timeline data assembly", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    const pathService = createPathService(db);
-    postService = createPostService(db, { slugIdLength: 5 }, pathService);
-    mediaService = createMediaService(db);
-    collectionService = createCollectionService(db, pathService);
+    const pathService = createPathService(db, DEFAULT_TEST_SITE_ID);
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+      pathService,
+    );
+    mediaService = createMediaService(db, DEFAULT_TEST_SITE_ID);
+    collectionService = createCollectionService(
+      db,
+      DEFAULT_TEST_SITE_ID,
+      pathService,
+    );
   });
 
   function createTimelineContext(): Context<Env> {
@@ -529,16 +541,19 @@ describe("Timeline data assembly", () => {
 
     await db.insert(postCollections).values([
       {
+        siteId: DEFAULT_TEST_SITE_ID,
         postId: collectedReplyA.id,
         collectionId: collection.id,
         createdAt: 100,
       },
       {
+        siteId: DEFAULT_TEST_SITE_ID,
         postId: collectedReplyB.id,
         collectionId: collection.id,
         createdAt: 200,
       },
       {
+        siteId: DEFAULT_TEST_SITE_ID,
         postId: secondRoot.id,
         collectionId: collection.id,
         createdAt: 300,
@@ -589,6 +604,7 @@ describe("Timeline data assembly", () => {
     });
 
     await db.insert(postCollections).values({
+      siteId: DEFAULT_TEST_SITE_ID,
       postId: root.id,
       collectionId: collection.id,
       createdAt: 100,

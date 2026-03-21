@@ -7,8 +7,9 @@
 import type { MediaKind } from "../types/constants.js";
 import { createEntityId } from "./ids.js";
 
+const ROOT_STORAGE_PREFIX = "sites";
 const MEDIA_STORAGE_PREFIX = "media";
-const SITE_STORAGE_PREFIX = "site";
+const SITE_ASSET_STORAGE_PREFIX = "site-assets";
 
 /** MIME types — images */
 const IMAGE_MIME_TYPES = [
@@ -296,18 +297,22 @@ export function validateUploadFileMetadata(
 }
 
 /**
- * Generates a unique storage key for an uploaded file.
- * Format: `media/{typeid}.{ext}`
+ * Generates a unique storage key for an uploaded media object.
+ * Format: `sites/{siteId}/media/YYYY/MM/{typeid}.{ext}`
  *
+ * @param siteId - Owning site ID
  * @param originalFilename - Original filename to extract extension from
  * @returns Object with generated id, filename, and storageKey
  * @example
  * ```ts
- * const { id, filename, storageKey } = generateStorageKey("photo.jpg");
- * // { id: "med_...", filename: "med_....jpg", storageKey: "media/med_....jpg" }
+ * const { id, filename, storageKey } = generateStorageKey("sit_...", "photo.jpg");
+ * // { id: "med_...", filename: "med_....jpg", storageKey: "sites/sit_.../media/2026/03/med_....jpg" }
  * ```
  */
-export function generateStorageKey(originalFilename: string): {
+export function generateStorageKey(
+  siteId: string,
+  originalFilename: string,
+): {
   id: string;
   filename: string;
   storageKey: string;
@@ -315,14 +320,44 @@ export function generateStorageKey(originalFilename: string): {
   const ext = originalFilename.split(".").pop() || "bin";
   const id = createEntityId("media");
   const filename = `${id}.${ext}`;
-  const storageKey = `${MEDIA_STORAGE_PREFIX}/${filename}`;
+  const now = new Date();
+  const year = String(now.getUTCFullYear());
+  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const storageKey = [
+    ROOT_STORAGE_PREFIX,
+    siteId,
+    MEDIA_STORAGE_PREFIX,
+    year,
+    month,
+    filename,
+  ].join("/");
   return { id, filename, storageKey };
 }
 
-export function getPosterStorageKey(mediaId: string): string {
-  return `${MEDIA_STORAGE_PREFIX}/${mediaId}.poster.webp`;
+export function generateSiteAssetStorageKey(
+  siteId: string,
+  assetKind: "avatar" | "favicon",
+  originalFilename: string,
+): {
+  id: string;
+  filename: string;
+  storageKey: string;
+} {
+  const ext = originalFilename.split(".").pop() || "bin";
+  const id = createEntityId("media");
+  const filename = `${id}.${ext}`;
+  const storageKey = getSiteStorageKey(siteId, assetKind, filename);
+  return { id, filename, storageKey };
 }
 
-export function getSiteStorageKey(filename: string): string {
-  return `${SITE_STORAGE_PREFIX}/${filename}`;
+export function getPosterStorageKey(siteId: string, mediaId: string): string {
+  return `${ROOT_STORAGE_PREFIX}/${siteId}/${MEDIA_STORAGE_PREFIX}/${mediaId}.poster.webp`;
+}
+
+export function getSiteStorageKey(
+  siteId: string,
+  assetKind: "avatar" | "favicon",
+  filename: string,
+): string {
+  return `${ROOT_STORAGE_PREFIX}/${siteId}/${SITE_ASSET_STORAGE_PREFIX}/${assetKind}/${filename}`;
 }

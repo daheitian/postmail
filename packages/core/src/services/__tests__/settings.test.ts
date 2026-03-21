@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { createSettingsService } from "../settings.js";
 import type { Database } from "../../db/index.js";
 import { MAX_SITE_FOOTER_LENGTH } from "../../types.js";
@@ -11,7 +14,7 @@ describe("SettingsService", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    settingsService = createSettingsService(db);
+    settingsService = createSettingsService(db, DEFAULT_TEST_SITE_ID);
   });
 
   describe("get", () => {

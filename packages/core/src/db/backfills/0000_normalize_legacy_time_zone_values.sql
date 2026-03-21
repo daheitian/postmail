@@ -1,4 +1,4 @@
-UPDATE "setting"
+UPDATE "site_setting"
 SET "value" = CASE "value"
   WHEN 'International Date Line West' THEN 'Etc/GMT+12'
   WHEN 'American Samoa' THEN 'Pacific/Pago_Pago'

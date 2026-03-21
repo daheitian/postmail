@@ -1,6 +1,9 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import type { Context } from "hono";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { createCollectionService } from "../../services/collection.js";
 import { createMediaService } from "../../services/media.js";
 import { createPathService } from "../../services/path.js";
@@ -24,10 +27,19 @@ describe("post display assembly", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    const pathService = createPathService(db);
-    postService = createPostService(db, { slugIdLength: 5 }, pathService);
-    mediaService = createMediaService(db);
-    collectionService = createCollectionService(db, pathService);
+    const pathService = createPathService(db, DEFAULT_TEST_SITE_ID);
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+      pathService,
+    );
+    mediaService = createMediaService(db, DEFAULT_TEST_SITE_ID);
+    collectionService = createCollectionService(
+      db,
+      DEFAULT_TEST_SITE_ID,
+      pathService,
+    );
   });
 
   function createContext(): Context<Env> {

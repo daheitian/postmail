@@ -7,7 +7,10 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../../__tests__/helpers/db.js";
 import { createCollectionService } from "../../../services/collection.js";
 import { createPostService } from "../../../services/post.js";
 import type { Database } from "../../../db/index.js";
@@ -20,8 +23,12 @@ describe("Collections Listing Page - Data Logic", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    collectionService = createCollectionService(db);
-    postService = createPostService(db, { slugIdLength: 5 });
+    collectionService = createCollectionService(db, DEFAULT_TEST_SITE_ID);
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+    );
   });
 
   it("returns collections with post counts and recent activity", async () => {

@@ -1,6 +1,6 @@
 {
   "name": "demo-current",
-  "baseMigrationTag": "0001_fts_setup",
+  "baseMigrationTag": "0003_fts_site_aware",
   "seedPath": "./demo-current.sql",
   "assertions": [
     {

@@ -154,19 +154,31 @@ describe("migrate", () => {
     await access(databasePath);
     const sqlite = new Database(databasePath, { readonly: true });
     try {
-      const hasSettingsTable = sqlite
+      const hasSiteTable = sqlite
         .prepare(
           `
             SELECT 1
             FROM sqlite_master
-            WHERE type = 'table' AND name = 'setting'
+            WHERE type = 'table' AND name = 'site'
+            LIMIT 1
+          `,
+        )
+        .pluck()
+        .get();
+      const hasSiteSettingsTable = sqlite
+        .prepare(
+          `
+            SELECT 1
+            FROM sqlite_master
+            WHERE type = 'table' AND name = 'site_setting'
             LIMIT 1
           `,
         )
         .pluck()
         .get();
 
-      expect(hasSettingsTable).toBe(1);
+      expect(hasSiteTable).toBe(1);
+      expect(hasSiteSettingsTable).toBe(1);
     } finally {
       sqlite.close();
     }

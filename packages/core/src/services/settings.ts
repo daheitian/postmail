@@ -4,7 +4,7 @@
  * Key-value store for site configuration
  */
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Database } from "../db/index.js";
 import { settings } from "../db/schema.js";
 import { now } from "../lib/time.js";
@@ -17,7 +17,7 @@ import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
 import {
   validateUploadFile,
-  generateStorageKey,
+  generateSiteAssetStorageKey,
   getSiteStorageKey,
 } from "../lib/upload.js";
 import { arrayBufferToBase64 } from "../lib/favicon.js";
@@ -124,7 +124,10 @@ export interface SettingsService {
   removeAvatar(storage?: StorageDriver | null): Promise<void>;
 }
 
-export function createSettingsService(db: Database): SettingsService {
+export function createSettingsService(
+  db: Database,
+  siteId: string,
+): SettingsService {
   function normalizeSettingValue(key: SettingsKey, value: string): string {
     if (key !== SETTINGS_KEYS.TIME_ZONE) {
       return normalizeEditableSettingValue(key, value);
@@ -142,13 +145,16 @@ export function createSettingsService(db: Database): SettingsService {
       const result = await db
         .select()
         .from(settings)
-        .where(eq(settings.key, key))
+        .where(and(eq(settings.siteId, siteId), eq(settings.key, key)))
         .limit(1);
       return result[0]?.value ?? null;
     },
 
     async getAll() {
-      const rows = await db.select().from(settings);
+      const rows = await db
+        .select()
+        .from(settings)
+        .where(eq(settings.siteId, siteId));
       const result: Record<string, string> = {};
       for (const row of rows) {
         result[row.key] = row.value;
@@ -161,15 +167,17 @@ export function createSettingsService(db: Database): SettingsService {
       const normalizedValue = normalizeSettingValue(key, value);
       await db
         .insert(settings)
-        .values({ key, value: normalizedValue, updatedAt: timestamp })
+        .values({ siteId, key, value: normalizedValue, updatedAt: timestamp })
         .onConflictDoUpdate({
-          target: settings.key,
+          target: [settings.siteId, settings.key],
           set: { value: normalizedValue, updatedAt: timestamp },
         });
     },
 
     async remove(key) {
-      await db.delete(settings).where(eq(settings.key, key));
+      await db
+        .delete(settings)
+        .where(and(eq(settings.siteId, siteId), eq(settings.key, key)));
     },
 
     async setMany(entries) {
@@ -191,9 +199,9 @@ export function createSettingsService(db: Database): SettingsService {
       const queries = pairs.map(({ key, value }) =>
         db
           .insert(settings)
-          .values({ key, value, updatedAt: timestamp })
+          .values({ siteId, key, value, updatedAt: timestamp })
           .onConflictDoUpdate({
-            target: settings.key,
+            target: [settings.siteId, settings.key],
             set: { value, updatedAt: timestamp },
           }),
       );
@@ -339,7 +347,11 @@ export function createSettingsService(db: Database): SettingsService {
         throw new ValidationError(uploadError);
       }
 
-      const { id, filename, storageKey } = generateStorageKey(data.file.name);
+      const { id, filename, storageKey } = generateSiteAssetStorageKey(
+        siteId,
+        "avatar",
+        data.file.name,
+      );
 
       await deps.storage.put(storageKey, data.file.stream(), {
         contentType: data.file.type,
@@ -365,7 +377,11 @@ export function createSettingsService(db: Database): SettingsService {
 
       // Store apple-touch-icon in storage (high-resolution PNG, not tiny enough for base64)
       if (data.appleTouchIcon) {
-        const appleTouchKey = getSiteStorageKey("apple-touch-icon.png");
+        const appleTouchKey = getSiteStorageKey(
+          siteId,
+          "favicon",
+          "apple-touch-icon.png",
+        );
         await deps.storage.put(
           appleTouchKey,
           new Uint8Array(data.appleTouchIcon),

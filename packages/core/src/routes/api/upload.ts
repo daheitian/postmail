@@ -172,7 +172,10 @@ uploadApiRoutes.post("/", async (c) => {
   }
 
   // Generate a media TypeID-backed filename and storage key
-  const { id, filename, storageKey } = generateStorageKey(file.name);
+  const { id, filename, storageKey } = generateStorageKey(
+    c.var.currentSite.id,
+    file.name,
+  );
 
   try {
     const sitePathPrefix = c.var.appConfig.sitePathPrefix;
@@ -240,7 +243,7 @@ uploadApiRoutes.post("/", async (c) => {
     let posterKey: string | undefined;
     const posterFile = formData.get("poster") as File | null;
     if (posterFile && file.type.startsWith("video/")) {
-      posterKey = getPosterStorageKey(id);
+      posterKey = getPosterStorageKey(c.var.currentSite.id, id);
       await storage.put(posterKey, posterFile.stream(), {
         contentType: "image/webp",
       });

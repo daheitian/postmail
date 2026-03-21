@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { eq } from "drizzle-orm";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { posts } from "../../db/schema.js";
 import { createPostService } from "../post.js";
 import { createMediaService } from "../media.js";
@@ -47,8 +50,12 @@ describe("PostService", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    postService = createPostService(db, { slugIdLength: 5 });
-    collectionService = createCollectionService(db);
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+    );
+    collectionService = createCollectionService(db, DEFAULT_TEST_SITE_ID);
   });
 
   describe("create", () => {
@@ -324,7 +331,7 @@ describe("PostService", () => {
         slug: "race-condition",
       });
 
-      const paths = createPathService(db);
+      const paths = createPathService(db, DEFAULT_TEST_SITE_ID);
       const raceyPaths = {
         ...paths,
         isPathAvailable: async () => true,
@@ -332,6 +339,7 @@ describe("PostService", () => {
       const raceyPostService = createPostService(
         db,
         { slugIdLength: 5 },
+        DEFAULT_TEST_SITE_ID,
         raceyPaths,
       );
 
@@ -1267,7 +1275,7 @@ describe("PostService", () => {
     });
 
     it("rolls back post fields when attachment replacement fails", async () => {
-      const mediaService = createMediaService(db);
+      const mediaService = createMediaService(db, DEFAULT_TEST_SITE_ID);
       const storage = createMockStorage();
       const post = await postService.create({
         format: "note",

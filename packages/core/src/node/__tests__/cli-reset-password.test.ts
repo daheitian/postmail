@@ -43,7 +43,7 @@ describe("jant reset-password", () => {
         .prepare(
           `
             SELECT value
-            FROM "setting"
+            FROM "site_setting"
             WHERE "key" = 'PASSWORD_RESET_TOKEN'
           `,
         )

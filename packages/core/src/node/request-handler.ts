@@ -272,19 +272,31 @@ function assertSqliteSearchCapabilities(sqlite: Database.Database): void {
 }
 
 function assertDatabaseInitialized(sqlite: Database.Database): void {
-  const hasSettingsTable = sqlite
+  const hasSiteTable = sqlite
     .prepare(
       `
         SELECT 1
         FROM sqlite_master
-        WHERE type = 'table' AND name = 'setting'
+        WHERE type = 'table' AND name = 'site'
         LIMIT 1
       `,
     )
     .pluck()
     .get();
 
-  if (!hasSettingsTable) {
+  const hasSiteSettingsTable = sqlite
+    .prepare(
+      `
+        SELECT 1
+        FROM sqlite_master
+        WHERE type = 'table' AND name = 'site_setting'
+        LIMIT 1
+      `,
+    )
+    .pluck()
+    .get();
+
+  if (!hasSiteTable || !hasSiteSettingsTable) {
     throw new Error(
       "Database is not initialized. Run `jant migrate` before `jant start`.",
     );

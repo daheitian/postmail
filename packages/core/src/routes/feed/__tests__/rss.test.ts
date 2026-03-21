@@ -3,7 +3,10 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
-import { createTestDatabase } from "../../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../../__tests__/helpers/db.js";
 import { posts as postTable } from "../../../db/schema.js";
 import { createPostService } from "../../../services/post.js";
 import { createPathService } from "../../../services/path.js";
@@ -17,13 +20,18 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
   const { db } = createTestDatabase();
-  const pathService = createPathService(db as never);
+  const pathService = createPathService(db as never, DEFAULT_TEST_SITE_ID);
 
   const services = {
     paths: pathService,
-    posts: createPostService(db as never, { slugIdLength: 5 }, pathService),
-    settings: createSettingsService(db as never),
-    media: createMediaService(db as never),
+    posts: createPostService(
+      db as never,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+      pathService,
+    ),
+    settings: createSettingsService(db as never, DEFAULT_TEST_SITE_ID),
+    media: createMediaService(db as never, DEFAULT_TEST_SITE_ID),
   };
 
   const app = new Hono<Env>();

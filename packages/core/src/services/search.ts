@@ -29,6 +29,7 @@ export interface SearchService {
 
 interface RawSearchRow {
   id: string;
+  site_id: string;
   format: string;
   status: string;
   visibility: string | null;
@@ -60,6 +61,7 @@ function mapRow(row: RawSearchRow): SearchResult {
   return {
     post: {
       id: row.id,
+      siteId: row.site_id,
       format: row.format as Post["format"],
       status: row.status as Post["status"],
       visibility: (row.effective_visibility ??
@@ -93,7 +95,10 @@ function mapRow(row: RawSearchRow): SearchResult {
   };
 }
 
-export function createSearchService(rawQuery: RawQueryClient): SearchService {
+export function createSearchService(
+  rawQuery: RawQueryClient,
+  siteId: string,
+): SearchService {
   async function searchFts(
     query: string,
     options: SearchOptions,
@@ -127,8 +132,10 @@ export function createSearchService(rawQuery: RawQueryClient): SearchService {
       JOIN post AS root_post ON root_post.id = post.thread_id
       JOIN path_registry
         ON path_registry.post_id = post.id
+       AND path_registry.site_id = post.site_id
        AND path_registry.kind = 'slug'
       WHERE post_fts MATCH ?
+        AND post.site_id = ?
         AND post.deleted_at IS NULL
         AND post.status IN (${statusPlaceholders})
         ${formatFilter}
@@ -137,7 +144,7 @@ export function createSearchService(rawQuery: RawQueryClient): SearchService {
     `);
 
     const { results } = await stmt
-      .bind(ftsQuery, ...status, ...formatParams, limit, offset)
+      .bind(ftsQuery, siteId, ...status, ...formatParams, limit, offset)
       .all<RawSearchRow>();
 
     return (results || []).map(mapRow);
@@ -167,6 +174,7 @@ export function createSearchService(rawQuery: RawQueryClient): SearchService {
       JOIN post AS root_post ON root_post.id = post.thread_id
       JOIN path_registry
         ON path_registry.post_id = post.id
+       AND path_registry.site_id = post.site_id
        AND path_registry.kind = 'slug'
       WHERE (
         post.title LIKE ? OR
@@ -174,6 +182,7 @@ export function createSearchService(rawQuery: RawQueryClient): SearchService {
         post.quote_text LIKE ? OR
         post.url LIKE ?
       )
+      AND post.site_id = ?
       AND post.deleted_at IS NULL
       AND post.status IN (${statusPlaceholders})
       ${formatFilter}
@@ -182,7 +191,17 @@ export function createSearchService(rawQuery: RawQueryClient): SearchService {
     `);
 
     const { results } = await stmt
-      .bind(like, like, like, like, ...status, ...formatParams, limit, offset)
+      .bind(
+        like,
+        like,
+        like,
+        like,
+        siteId,
+        ...status,
+        ...formatParams,
+        limit,
+        offset,
+      )
       .all<RawSearchRow>();
 
     return (results || []).map(mapRow);

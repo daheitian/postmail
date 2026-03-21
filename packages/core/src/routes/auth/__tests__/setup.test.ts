@@ -1,8 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../../__tests__/helpers/db.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createNavItemService } from "../../../services/navigation.js";
 import { createBootstrapService } from "../../../services/bootstrap.js";
+import { createSiteMemberService } from "../../../services/site-member.js";
 import type { Database } from "../../../db/index.js";
 import type { SettingsService } from "../../../services/settings.js";
 import type { NavItemService } from "../../../services/navigation.js";
@@ -14,6 +18,7 @@ import type { BootstrapService } from "../../../services/bootstrap.js";
  */
 async function runSetupBootstrap(services: { bootstrap: BootstrapService }) {
   await services.bootstrap.completeInitialSetup({
+    ownerUserId: "usr_test-owner",
     siteName: "Jant Demo",
   });
 }
@@ -28,12 +33,18 @@ describe("Setup bootstrap logic", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     const db = testDb.db as unknown as Database;
-    const settings = createSettingsService(db);
-    const navItems = createNavItemService(db);
+    const settings = createSettingsService(db, DEFAULT_TEST_SITE_ID);
+    const navItems = createNavItemService(db, DEFAULT_TEST_SITE_ID);
+    const siteMembers = createSiteMemberService(db);
     services = {
       settings,
       navItems,
-      bootstrap: createBootstrapService(settings, navItems),
+      bootstrap: createBootstrapService(
+        settings,
+        navItems,
+        siteMembers,
+        DEFAULT_TEST_SITE_ID,
+      ),
     };
   });
 

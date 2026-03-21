@@ -77,3 +77,12 @@ export type StorageDriver = (typeof STORAGE_DRIVERS)[number];
 
 export const PATH_KINDS = ["slug", "alias", "redirect"] as const;
 export type PathKind = (typeof PATH_KINDS)[number];
+
+export const SITE_STATUSES = ["active", "suspended"] as const;
+export type SiteStatus = (typeof SITE_STATUSES)[number];
+
+export const SITE_DOMAIN_KINDS = ["primary", "alias"] as const;
+export type SiteDomainKind = (typeof SITE_DOMAIN_KINDS)[number];
+
+export const SITE_MEMBER_ROLES = ["owner", "admin", "editor"] as const;
+export type SiteMemberRole = (typeof SITE_MEMBER_ROLES)[number];

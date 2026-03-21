@@ -72,6 +72,7 @@ function applyMigration(sqlite: Database.Database, filename: string) {
 function insertRootPost(
   sqlite: Database.Database,
   values: {
+    siteId: string;
     id: string;
     title: string;
     bodyText: string;
@@ -84,6 +85,7 @@ function insertRootPost(
       `
         INSERT INTO post (
           id,
+          site_id,
           format,
           status,
           visibility,
@@ -93,11 +95,12 @@ function insertRootPost(
           published_at,
           created_at,
           updated_at
-        ) VALUES (?, 'note', 'published', ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, 'note', 'published', ?, ?, ?, ?, ?, ?, ?)
       `,
     )
     .run(
       values.id,
+      values.siteId,
       values.visibility ?? "public",
       values.title,
       values.bodyText,
@@ -114,6 +117,20 @@ function searchPostFts(sqlite: Database.Database, query: string) {
       "SELECT rowid, title, body_text AS bodyText FROM post_fts WHERE post_fts MATCH ? ORDER BY rowid",
     )
     .all(query);
+}
+
+function insertSite(
+  sqlite: Database.Database,
+  values: { id: string; key: string; createdAt: number },
+) {
+  sqlite
+    .prepare(
+      `
+        INSERT INTO site (id, key, status, created_at, updated_at)
+        VALUES (?, ?, 'active', ?, ?)
+      `,
+    )
+    .run(values.id, values.key, values.createdAt, values.createdAt);
 }
 
 describe("migration integrity", () => {
@@ -284,15 +301,22 @@ describe("migration integrity", () => {
     sqlite.pragma("foreign_keys = ON");
 
     applyMigration(sqlite, "0000_baseline.sql");
+    applyMigration(sqlite, "0001_fts_setup.sql");
+    applyMigration(sqlite, "0002_site_aware_core.sql");
+    insertSite(sqlite, {
+      id: "sit_test00000000000000000000000",
+      key: "default",
+      createdAt: 1,
+    });
+    applyMigration(sqlite, "0003_fts_site_aware.sql");
 
     insertRootPost(sqlite, {
+      siteId: "sit_test00000000000000000000000",
       id: "post-1",
       title: "Alpha note",
       bodyText: "alpha beta",
       createdAt: 1,
     });
-
-    applyMigration(sqlite, "0001_fts_setup.sql");
 
     expect(searchPostFts(sqlite, "alpha")).toEqual([
       {
@@ -303,6 +327,7 @@ describe("migration integrity", () => {
     ]);
 
     insertRootPost(sqlite, {
+      siteId: "sit_test00000000000000000000000",
       id: "post-2",
       title: "Beta note",
       bodyText: "delta epsilon",
@@ -342,8 +367,16 @@ describe("migration integrity", () => {
 
     applyMigration(sqlite, "0000_baseline.sql");
     applyMigration(sqlite, "0001_fts_setup.sql");
+    applyMigration(sqlite, "0002_site_aware_core.sql");
+    insertSite(sqlite, {
+      id: "sit_test00000000000000000000000",
+      key: "default",
+      createdAt: 1,
+    });
+    applyMigration(sqlite, "0003_fts_site_aware.sql");
 
     insertRootPost(sqlite, {
+      siteId: "sit_test00000000000000000000000",
       id: "latest-hidden-post",
       title: "Latest hidden note",
       bodyText: "latest hidden body",

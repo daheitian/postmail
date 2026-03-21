@@ -11,10 +11,41 @@ import type {
   SystemNavKey,
   MediaKind,
   PathKind,
+  SiteStatus,
+  SiteDomainKind,
+  SiteMemberRole,
 } from "./constants.js";
+
+export interface Site {
+  id: string;
+  key: string;
+  status: SiteStatus;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface SiteDomain {
+  id: string;
+  siteId: string;
+  host: string;
+  pathPrefix: string | null;
+  kind: SiteDomainKind;
+  redirectToPrimary: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface SiteMember {
+  siteId: string;
+  userId: string;
+  role: SiteMemberRole;
+  createdAt: number;
+  updatedAt: number;
+}
 
 export interface Post {
   id: string;
+  siteId: string;
   format: Format;
   status: Status;
   visibility: Visibility;
@@ -40,6 +71,7 @@ export interface Post {
 
 export interface Media {
   id: string; // TypeID
+  siteId: string;
   postId: string | null;
   filename: string;
   originalName: string;
@@ -85,6 +117,7 @@ export interface PostWithMedia extends Post {
 
 export interface Collection {
   id: string;
+  siteId: string;
   slug: string;
   title: string;
   description: string | null;
@@ -102,6 +135,7 @@ export type SidebarItemType = "collection" | "divider";
 
 export interface SidebarItem {
   id: string;
+  siteId: string;
   type: SidebarItemType;
   collectionId: string | null;
   label: string | null;
@@ -124,12 +158,14 @@ export interface CollectionsDirectoryData {
 }
 
 export interface PostCollection {
+  siteId: string;
   postId: string;
   collectionId: string;
 }
 
 export interface NavItem {
   id: string;
+  siteId: string;
   type: NavItemType;
   systemKey?: SystemNavKey;
   label: string;
@@ -151,6 +187,7 @@ export interface CustomUrl {
 
 export interface PathRecord {
   id: string;
+  siteId: string;
   path: string;
   kind: PathKind;
   postId: string | null;
@@ -162,6 +199,7 @@ export interface PathRecord {
 }
 
 export interface Setting {
+  siteId: string;
   key: string;
   value: string;
   updatedAt: number;
@@ -169,6 +207,7 @@ export interface Setting {
 
 export interface ApiToken {
   id: string;
+  siteId: string;
   name: string;
   prefix: string;
   lastUsedAt: number | null;

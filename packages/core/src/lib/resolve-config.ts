@@ -95,6 +95,7 @@ function parseConfigInt(value: string, fallback: number): number {
 export function resolveConfig(
   env: Bindings,
   allSettings: Record<string, string>,
+  options?: { siteUrl?: string },
 ): AppConfig {
   const pageSize = parseConfigInt(resolve("PAGE_SIZE", allSettings, env), 50);
   const searchPageSize = parseConfigInt(
@@ -105,7 +106,7 @@ export function resolveConfig(
     resolve("ARCHIVE_PAGE_SIZE", allSettings, env),
     pageSize,
   );
-  const siteUrl = normalizeSiteUrl(getSiteUrl(env));
+  const siteUrl = normalizeSiteUrl(options?.siteUrl ?? getSiteUrl(env));
   const siteOrigin = getSiteOrigin(siteUrl);
   const sitePathPrefix = getSitePathPrefix(siteUrl);
   const storageDriver = getConfiguredStorageDriver(env);

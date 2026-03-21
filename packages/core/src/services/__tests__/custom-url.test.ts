@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { createCustomUrlService } from "../custom-url.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
@@ -12,8 +15,12 @@ describe("CustomUrlService", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    customUrlService = createCustomUrlService(db);
-    postService = createPostService(db, { slugIdLength: 5 });
+    customUrlService = createCustomUrlService(db, DEFAULT_TEST_SITE_ID);
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+    );
   });
 
   describe("create", () => {

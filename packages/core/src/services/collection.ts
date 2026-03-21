@@ -114,7 +114,8 @@ export interface CollectionService {
 
 export function createCollectionService(
   db: Database,
-  paths: PathService = createPathService(db),
+  siteId: string,
+  paths: PathService = createPathService(db, siteId),
 ): CollectionService {
   function normalizeCreateCollectionInput(
     data: CreateCollection,
@@ -160,6 +161,7 @@ export function createCollectionService(
   ): Collection {
     return {
       id: row.id,
+      siteId: row.siteId,
       slug,
       title: row.title,
       description: row.description,
@@ -172,6 +174,7 @@ export function createCollectionService(
   function toSidebarItem(row: typeof sidebarItems.$inferSelect): SidebarItem {
     return {
       id: row.id,
+      siteId: row.siteId,
       type: row.type as SidebarItemType,
       collectionId: row.collectionId,
       label: row.label,
@@ -190,6 +193,7 @@ export function createCollectionService(
     const rows = await db
       .select({ position: sidebarItems.position })
       .from(sidebarItems)
+      .where(eq(sidebarItems.siteId, siteId))
       .orderBy(sql`${sidebarItems.position} DESC`)
       .limit(1);
     return rows[0]?.position ?? null;
@@ -199,6 +203,7 @@ export function createCollectionService(
     const rows = await db
       .select({ id: sidebarItems.id, position: sidebarItems.position })
       .from(sidebarItems)
+      .where(eq(sidebarItems.siteId, siteId))
       .orderBy(asc(sidebarItems.position));
     return excludeId ? rows.filter((row) => row.id !== excludeId) : rows;
   }
@@ -212,7 +217,7 @@ export function createCollectionService(
     const rows = await db
       .select({ id: pathRegistry.id })
       .from(pathRegistry)
-      .where(eq(pathRegistry.path, path))
+      .where(and(eq(pathRegistry.siteId, siteId), eq(pathRegistry.path, path)))
       .limit(1);
     return rows.length > 0;
   }
@@ -272,7 +277,12 @@ export function createCollectionService(
     const rows = await db
       .select({ collectionId: postCollections.collectionId })
       .from(postCollections)
-      .where(eq(postCollections.postId, postId));
+      .where(
+        and(
+          eq(postCollections.siteId, siteId),
+          eq(postCollections.postId, postId),
+        ),
+      );
 
     return rows.map((row) => row.collectionId);
   }
@@ -309,9 +319,16 @@ export function createCollectionService(
       .from(collections)
       .leftJoin(
         postCollections,
-        eq(collections.id, postCollections.collectionId),
+        and(
+          eq(postCollections.siteId, siteId),
+          eq(collections.id, postCollections.collectionId),
+        ),
       )
-      .leftJoin(posts, eq(postCollections.postId, posts.id))
+      .leftJoin(
+        posts,
+        and(eq(posts.siteId, siteId), eq(postCollections.postId, posts.id)),
+      )
+      .where(eq(collections.siteId, siteId))
       .groupBy(collections.id)
       .orderBy(asc(collections.createdAt));
 
@@ -385,7 +402,7 @@ export function createCollectionService(
       const result = await db
         .select()
         .from(collections)
-        .where(eq(collections.id, id))
+        .where(and(eq(collections.siteId, siteId), eq(collections.id, id)))
         .limit(1);
       return hydrateCollection(result[0]);
     },
@@ -402,6 +419,7 @@ export function createCollectionService(
       const rows = await db
         .select()
         .from(collections)
+        .where(eq(collections.siteId, siteId))
         .orderBy(asc(collections.createdAt));
       return hydrateCollections(rows);
     },
@@ -428,8 +446,12 @@ export function createCollectionService(
         .from(collections)
         .leftJoin(
           postCollections,
-          eq(collections.id, postCollections.collectionId),
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(collections.id, postCollections.collectionId),
+          ),
         )
+        .where(eq(collections.siteId, siteId))
         .groupBy(collections.id)
         .orderBy(desc(sql`last_added_at`), desc(collections.createdAt));
       return hydrateCollections(rows.map((row) => row.collection));
@@ -447,6 +469,7 @@ export function createCollectionService(
           const writeQueries: BatchItem<"sqlite">[] = [
             db.insert(collections).values({
               id,
+              siteId,
               title: normalizedData.title,
               description: normalizedData.description ?? null,
               sortOrder: normalizedData.sortOrder ?? "newest",
@@ -455,6 +478,7 @@ export function createCollectionService(
             }),
             db.insert(pathRegistry).values({
               id: createEntityId("path"),
+              siteId,
               path: slugPath,
               kind: "slug",
               postId: null,
@@ -466,6 +490,7 @@ export function createCollectionService(
             }),
             db.insert(sidebarItems).values({
               id: createEntityId("collectionDirectoryItem"),
+              siteId,
               type: "collection",
               collectionId: id,
               position,
@@ -545,7 +570,7 @@ export function createCollectionService(
       const result = await db
         .update(collections)
         .set(updates)
-        .where(eq(collections.id, id))
+        .where(and(eq(collections.siteId, siteId), eq(collections.id, id)))
         .returning();
 
       return hydrateCollection(result[0]);
@@ -554,11 +579,23 @@ export function createCollectionService(
     async delete(id) {
       await db
         .delete(postCollections)
-        .where(eq(postCollections.collectionId, id));
-      await db.delete(sidebarItems).where(eq(sidebarItems.collectionId, id));
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.collectionId, id),
+          ),
+        );
+      await db
+        .delete(sidebarItems)
+        .where(
+          and(
+            eq(sidebarItems.siteId, siteId),
+            eq(sidebarItems.collectionId, id),
+          ),
+        );
       const result = await db
         .delete(collections)
-        .where(eq(collections.id, id))
+        .where(and(eq(collections.siteId, siteId), eq(collections.id, id)))
         .returning();
       return result.length > 0;
     },
@@ -567,6 +604,7 @@ export function createCollectionService(
       const rows = await db
         .select()
         .from(sidebarItems)
+        .where(eq(sidebarItems.siteId, siteId))
         .orderBy(asc(sidebarItems.position));
       return rows.map(toSidebarItem);
     },
@@ -583,6 +621,7 @@ export function createCollectionService(
             .insert(sidebarItems)
             .values({
               id,
+              siteId,
               type,
               collectionId: collectionId ?? null,
               label: normalizedLabel,
@@ -603,7 +642,12 @@ export function createCollectionService(
             const existing = await db
               .select({ id: sidebarItems.id })
               .from(sidebarItems)
-              .where(eq(sidebarItems.collectionId, collectionId))
+              .where(
+                and(
+                  eq(sidebarItems.siteId, siteId),
+                  eq(sidebarItems.collectionId, collectionId),
+                ),
+              )
               .limit(1);
             if (existing.length > 0) {
               throw new ConflictError("Collection is already in the sidebar.");
@@ -624,7 +668,7 @@ export function createCollectionService(
     async deleteSidebarItem(id) {
       const result = await db
         .delete(sidebarItems)
-        .where(eq(sidebarItems.id, id))
+        .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
         .returning();
       return result.length > 0;
     },
@@ -633,7 +677,7 @@ export function createCollectionService(
       const existing = await db
         .select()
         .from(sidebarItems)
-        .where(eq(sidebarItems.id, id))
+        .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
         .limit(1);
       const item = existing[0];
       if (!item) return null;
@@ -649,7 +693,7 @@ export function createCollectionService(
             item.type === "divider" ? normalizeSidebarLabel(data.label) : null,
           updatedAt: now(),
         })
-        .where(eq(sidebarItems.id, id))
+        .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
         .returning();
 
       return result[0] ? toSidebarItem(result[0]) : null;
@@ -659,7 +703,7 @@ export function createCollectionService(
       const items = await db
         .select()
         .from(sidebarItems)
-        .where(eq(sidebarItems.id, id))
+        .where(and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)))
         .limit(1);
       if (!items[0]) return null;
 
@@ -672,7 +716,9 @@ export function createCollectionService(
               position: await getSidebarMovePosition(id, afterId, beforeId),
               updatedAt: timestamp,
             })
-            .where(eq(sidebarItems.id, id))
+            .where(
+              and(eq(sidebarItems.siteId, siteId), eq(sidebarItems.id, id)),
+            )
             .returning();
 
           return result[0] ? toSidebarItem(result[0]) : null;
@@ -698,8 +744,9 @@ export function createCollectionService(
         .from(postCollections)
         .innerJoin(
           sql`post`,
-          sql`post.id = ${postCollections.postId} AND post.deleted_at IS NULL`,
+          sql`post.id = ${postCollections.postId} AND post.deleted_at IS NULL AND post.site_id = ${siteId}`,
         )
+        .where(eq(postCollections.siteId, siteId))
         .groupBy(postCollections.collectionId);
 
       const counts = new Map<string, number>();
@@ -712,7 +759,7 @@ export function createCollectionService(
     async addPost(collectionId, postId) {
       await db
         .insert(postCollections)
-        .values({ postId, collectionId, createdAt: now() })
+        .values({ siteId, postId, collectionId, createdAt: now() })
         .onConflictDoNothing();
     },
 
@@ -721,6 +768,7 @@ export function createCollectionService(
         .delete(postCollections)
         .where(
           and(
+            eq(postCollections.siteId, siteId),
             eq(postCollections.postId, postId),
             eq(postCollections.collectionId, collectionId),
           ),
@@ -735,7 +783,13 @@ export function createCollectionService(
           collections,
           eq(postCollections.collectionId, collections.id),
         )
-        .where(eq(postCollections.postId, postId))
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(collections.siteId, siteId),
+            eq(postCollections.postId, postId),
+          ),
+        )
         .orderBy(asc(collections.createdAt));
 
       return hydrateCollections(rows.map((row) => row.collection));
@@ -756,7 +810,13 @@ export function createCollectionService(
             collections,
             eq(postCollections.collectionId, collections.id),
           )
-          .where(inArray(postCollections.postId, chunk))
+          .where(
+            and(
+              eq(postCollections.siteId, siteId),
+              eq(collections.siteId, siteId),
+              inArray(postCollections.postId, chunk),
+            ),
+          )
           .orderBy(asc(collections.createdAt)),
       );
 
@@ -780,7 +840,12 @@ export function createCollectionService(
       const rows = await db
         .select({ postId: postCollections.postId })
         .from(postCollections)
-        .where(eq(postCollections.collectionId, collectionId));
+        .where(
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.collectionId, collectionId),
+          ),
+        );
 
       return rows.map((row) => row.postId);
     },
@@ -805,6 +870,7 @@ export function createCollectionService(
             .delete(postCollections)
             .where(
               and(
+                eq(postCollections.siteId, siteId),
                 eq(postCollections.postId, postId),
                 inArray(postCollections.collectionId, removedIds),
               ),
@@ -817,6 +883,7 @@ export function createCollectionService(
         writeQueries.push(
           db.insert(postCollections).values(
             addedIds.map((collectionId) => ({
+              siteId,
               postId,
               collectionId,
               createdAt: timestamp,

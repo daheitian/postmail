@@ -11,6 +11,8 @@ import { resolve } from "path";
 import { createNodeDatabase } from "../../db/index.js";
 
 const MIGRATIONS_DIR = resolve(import.meta.dirname, "../../db/migrations");
+export const DEFAULT_TEST_SITE_ID = "sit_test00000000000000000000000";
+export const DEFAULT_TEST_SITE_KEY = "default";
 
 /**
  * Applies a migration file, splitting on Drizzle statement breakpoints.
@@ -108,7 +110,7 @@ export function createTestDatabase(options?: { fts?: boolean }) {
     .sort();
 
   for (const file of allFiles) {
-    const isFts = file.startsWith("0001_");
+    const isFts = file.includes("fts");
     if (isFts && !options?.fts) continue;
 
     if (isFts) {
@@ -119,6 +121,16 @@ export function createTestDatabase(options?: { fts?: boolean }) {
   }
 
   const db = createNodeDatabase(sqlite);
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  sqlite
+    .prepare(
+      `
+        INSERT INTO site (id, key, status, created_at, updated_at)
+        VALUES (?, ?, 'active', ?, ?)
+      `,
+    )
+    .run(DEFAULT_TEST_SITE_ID, DEFAULT_TEST_SITE_KEY, timestamp, timestamp);
 
   return { db, sqlite };
 }

@@ -195,6 +195,20 @@ setupRoutes.post("/setup", async (c) => {
       );
     }
 
+    const ownerUserId = signUpResponse.user?.id;
+    if (!ownerUserId) {
+      return dsToast(
+        i18n._(
+          msg({
+            message:
+              "Couldn't create your account. Check the details and try again.",
+            comment: "@context: Error toast when account creation fails",
+          }),
+        ),
+        "error",
+      );
+    }
+
     let timeZone: string | undefined;
     if (browserTimezone) {
       const tz = mapIanaToTimezone(browserTimezone);
@@ -212,6 +226,7 @@ setupRoutes.post("/setup", async (c) => {
     }
 
     await c.var.services.bootstrap.completeInitialSetup({
+      ownerUserId,
       siteName,
       timeZone,
       siteLanguage,

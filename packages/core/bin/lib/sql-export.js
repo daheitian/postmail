@@ -1,9 +1,12 @@
 const TABLE_EXPORT_ORDER = [
-  "setting",
+  "site",
   "user",
   "account",
   "verification",
   "session",
+  "site_domain",
+  "site_setting",
+  "site_member",
   "collection",
   "nav_item",
   "collection_directory_item",

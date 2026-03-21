@@ -93,7 +93,10 @@ multipartUploadApiRoutes.post("/", async (c) => {
     throw new ValidationError(error);
   }
 
-  const { id, filename, storageKey } = generateStorageKey(data.filename);
+  const { id, filename, storageKey } = generateStorageKey(
+    c.var.currentSite.id,
+    data.filename,
+  );
 
   const upload = await storage.createMultipartUpload(storageKey, {
     contentType: data.contentType,
@@ -243,7 +246,7 @@ multipartUploadApiRoutes.put("/:id/poster", async (c) => {
     );
   }
 
-  const posterKey = getPosterStorageKey(id);
+  const posterKey = getPosterStorageKey(c.var.currentSite.id, id);
 
   await storage.put(posterKey, posterFile.stream(), {
     contentType: "image/webp",

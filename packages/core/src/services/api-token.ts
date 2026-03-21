@@ -5,7 +5,7 @@
  * Tokens are stored as SHA-256 hashes — the plaintext is shown only once at creation.
  */
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Database } from "../db/index.js";
 import { apiTokens } from "../db/schema.js";
 import { createEntityId } from "../lib/ids.js";
@@ -102,6 +102,7 @@ function randomHex(byteCount: number): string {
 function toApiToken(row: typeof apiTokens.$inferSelect): ApiToken {
   return {
     id: row.id,
+    siteId: row.siteId,
     name: row.name,
     prefix: row.prefix,
     lastUsedAt: row.lastUsedAt,
@@ -110,7 +111,10 @@ function toApiToken(row: typeof apiTokens.$inferSelect): ApiToken {
   };
 }
 
-export function createApiTokenService(db: Database): ApiTokenService {
+export function createApiTokenService(
+  db: Database,
+  siteId: string,
+): ApiTokenService {
   return {
     async create(name: string) {
       const id = createEntityId("apiToken");
@@ -124,6 +128,7 @@ export function createApiTokenService(db: Database): ApiTokenService {
         .insert(apiTokens)
         .values({
           id,
+          siteId,
           name,
           tokenHash,
           prefix,
@@ -141,6 +146,7 @@ export function createApiTokenService(db: Database): ApiTokenService {
       const rows = await db
         .select()
         .from(apiTokens)
+        .where(eq(apiTokens.siteId, siteId))
         .orderBy(apiTokens.createdAt);
       return rows.map(toApiToken);
     },
@@ -148,13 +154,16 @@ export function createApiTokenService(db: Database): ApiTokenService {
     async delete(id: string) {
       const result = await db
         .delete(apiTokens)
-        .where(eq(apiTokens.id, id))
+        .where(and(eq(apiTokens.siteId, siteId), eq(apiTokens.id, id)))
         .returning();
       return result.length > 0;
     },
 
     async deleteAll() {
-      const result = await db.delete(apiTokens).returning({ id: apiTokens.id });
+      const result = await db
+        .delete(apiTokens)
+        .where(eq(apiTokens.siteId, siteId))
+        .returning({ id: apiTokens.id });
       return result.length;
     },
 
@@ -165,7 +174,9 @@ export function createApiTokenService(db: Database): ApiTokenService {
       const rows = await db
         .select({ id: apiTokens.id })
         .from(apiTokens)
-        .where(eq(apiTokens.tokenHash, tokenHash))
+        .where(
+          and(eq(apiTokens.siteId, siteId), eq(apiTokens.tokenHash, tokenHash)),
+        )
         .limit(1);
 
       return rows[0]?.id ?? null;
@@ -175,7 +186,7 @@ export function createApiTokenService(db: Database): ApiTokenService {
       await db
         .update(apiTokens)
         .set({ lastUsedAt: now(), updatedAt: now() })
-        .where(eq(apiTokens.id, id));
+        .where(and(eq(apiTokens.siteId, siteId), eq(apiTokens.id, id)));
     },
   };
 }

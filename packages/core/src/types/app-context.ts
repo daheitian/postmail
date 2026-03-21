@@ -12,10 +12,13 @@ import type { Auth } from "../auth.js";
 import type { AppConfig } from "./config.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { Bindings } from "./bindings.js";
+import type { Site, SiteDomain } from "./entities.js";
 
 export interface AppVariables {
   services: Services;
   auth: Auth;
+  currentSite: Site;
+  currentSiteDomain: SiteDomain | null;
   appConfig: AppConfig;
   allSettings: Record<string, string>;
   themeStyle: string;

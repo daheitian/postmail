@@ -38,7 +38,8 @@ export interface CustomUrlService {
 
 export function createCustomUrlService(
   db: Database,
-  paths: PathService = createPathService(db),
+  siteId: string,
+  paths: PathService = createPathService(db, siteId),
 ): CustomUrlService {
   function toCustomUrl(row: typeof pathRegistry.$inferSelect): CustomUrl {
     return {
@@ -68,7 +69,11 @@ export function createCustomUrlService(
         .select()
         .from(pathRegistry)
         .where(
-          and(eq(pathRegistry.path, normalized), ne(pathRegistry.kind, "slug")),
+          and(
+            eq(pathRegistry.siteId, siteId),
+            eq(pathRegistry.path, normalized),
+            ne(pathRegistry.kind, "slug"),
+          ),
         )
         .limit(1);
       return result[0] ? toCustomUrl(result[0]) : null;
@@ -80,6 +85,7 @@ export function createCustomUrlService(
         .from(pathRegistry)
         .where(
           and(
+            eq(pathRegistry.siteId, siteId),
             eq(pathRegistry.kind, "alias"),
             targetType === "post"
               ? eq(pathRegistry.postId, targetId)
@@ -124,7 +130,12 @@ export function createCustomUrlService(
         const row = await db
           .select()
           .from(pathRegistry)
-          .where(eq(pathRegistry.id, record.id))
+          .where(
+            and(
+              eq(pathRegistry.siteId, siteId),
+              eq(pathRegistry.id, record.id),
+            ),
+          )
           .limit(1);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- freshly inserted row exists
         return toCustomUrl(row[0]!);
@@ -144,7 +155,9 @@ export function createCustomUrlService(
       const row = await db
         .select()
         .from(pathRegistry)
-        .where(eq(pathRegistry.id, record.id))
+        .where(
+          and(eq(pathRegistry.siteId, siteId), eq(pathRegistry.id, record.id)),
+        )
         .limit(1);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- freshly inserted row exists
       return toCustomUrl(row[0]!);
@@ -153,7 +166,13 @@ export function createCustomUrlService(
     async delete(id) {
       const result = await db
         .delete(pathRegistry)
-        .where(and(eq(pathRegistry.id, id), ne(pathRegistry.kind, "slug")))
+        .where(
+          and(
+            eq(pathRegistry.siteId, siteId),
+            eq(pathRegistry.id, id),
+            ne(pathRegistry.kind, "slug"),
+          ),
+        )
         .returning();
       return result.length > 0;
     },
@@ -162,7 +181,9 @@ export function createCustomUrlService(
       const result = await db
         .select({ count: sql<number>`count(*)`.as("count") })
         .from(pathRegistry)
-        .where(ne(pathRegistry.kind, "slug"));
+        .where(
+          and(eq(pathRegistry.siteId, siteId), ne(pathRegistry.kind, "slug")),
+        );
       return result[0]?.count ?? 0;
     },
 
@@ -170,7 +191,9 @@ export function createCustomUrlService(
       let q = db
         .select()
         .from(pathRegistry)
-        .where(ne(pathRegistry.kind, "slug"))
+        .where(
+          and(eq(pathRegistry.siteId, siteId), ne(pathRegistry.kind, "slug")),
+        )
         .orderBy(desc(pathRegistry.createdAt))
         .$dynamic();
       if (opts?.limit !== undefined) q = q.limit(opts.limit);

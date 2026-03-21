@@ -3,15 +3,18 @@ import { createDatabase, type Database } from "../db/index.js";
 import {
   getAuthSecret,
   getEnvString,
-  getSiteUrl,
   shouldUseSecureCookies,
 } from "../lib/env.js";
 import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
 import { createServices, type Services } from "../services/index.js";
 import type { Bindings } from "../types/bindings.js";
+import type { Site, SiteDomain } from "../types/entities.js";
+import { getResolvedSiteBaseUrl, resolveRequestSite } from "./site.js";
 
 export interface CloudflareRequestRuntime {
   auth: Auth;
+  currentSite: Site;
+  currentSiteDomain: SiteDomain | null;
   db: Database;
   services: Services;
   storage: StorageDriver | null;
@@ -23,10 +26,10 @@ export interface CloudflareRequestRuntime {
  * This isolates the Worker-specific database/session wiring so the app factory
  * can evolve toward runtime-agnostic composition.
  */
-export function createCloudflareRequestRuntime(
+export async function createCloudflareRequestRuntime(
   env: Bindings,
   publicRequestUrl: string,
-): CloudflareRequestRuntime {
+): Promise<CloudflareRequestRuntime> {
   if (!env.DB) {
     throw new Error("Cloudflare runtime requires a DB binding.");
   }
@@ -43,12 +46,20 @@ export function createCloudflareRequestRuntime(
   const db = createDatabase(session as unknown as D1Database);
   const slugIdLength =
     parseInt(getEnvString(env, "SLUG_ID_LENGTH") ?? "5", 10) || 5;
-  const requestUrl = new URL(publicRequestUrl);
-  const baseURL = getSiteUrl(env) || requestUrl.origin;
+  const siteLookup = await resolveRequestSite(db, env, publicRequestUrl);
+  const baseURL = getResolvedSiteBaseUrl(
+    env,
+    publicRequestUrl,
+    siteLookup.domain?.pathPrefix ?? null,
+  );
 
   return {
+    currentSite: siteLookup.site,
+    currentSiteDomain: siteLookup.domain,
     db,
-    services: createServices(db, session, { slugIdLength }),
+    services: createServices(db, session, siteLookup.site.id, {
+      slugIdLength,
+    }),
     storage: createStorageDriver(env),
     auth: createAuth(db, {
       secret: authSecret,

@@ -6,7 +6,10 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../../__tests__/helpers/db.js";
 import { createSettingsService } from "../../../services/settings.js";
 import {
   BUILTIN_FONT_THEMES,
@@ -22,7 +25,7 @@ describe("Font theme save & CSS generation", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    settings = createSettingsService(db);
+    settings = createSettingsService(db, DEFAULT_TEST_SITE_ID);
   });
 
   it("saves and reads FONT_THEME setting", async () => {

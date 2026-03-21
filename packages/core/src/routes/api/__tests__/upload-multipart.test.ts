@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { Hono } from "hono";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
-import { createTestDatabase } from "../../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../../__tests__/helpers/db.js";
 import { createMediaService } from "../../../services/media.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createPostService } from "../../../services/post.js";
@@ -146,17 +149,22 @@ function createTestAppWithStorage(options: {
   const sqlite = testDb.sqlite;
   const mockD1 = createMockD1(sqlite);
 
-  const settingsService = createSettingsService(db);
-  const pathService = createPathService(db);
+  const settingsService = createSettingsService(db, DEFAULT_TEST_SITE_ID);
+  const pathService = createPathService(db, DEFAULT_TEST_SITE_ID);
   const services = {
     paths: pathService,
-    posts: createPostService(db, { slugIdLength: 5 }, pathService),
+    posts: createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+      pathService,
+    ),
     settings: settingsService,
-    customUrls: createCustomUrlService(db, pathService),
-    media: createMediaService(db),
-    collections: createCollectionService(db, pathService),
-    search: createSearchService(mockD1),
-    navItems: createNavItemService(db),
+    customUrls: createCustomUrlService(db, DEFAULT_TEST_SITE_ID, pathService),
+    media: createMediaService(db, DEFAULT_TEST_SITE_ID),
+    collections: createCollectionService(db, DEFAULT_TEST_SITE_ID, pathService),
+    search: createSearchService(mockD1, DEFAULT_TEST_SITE_ID),
+    navItems: createNavItemService(db, DEFAULT_TEST_SITE_ID),
     auth: createAuthService(db, settingsService),
   };
 
@@ -169,6 +177,14 @@ function createTestAppWithStorage(options: {
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);
+    c.set("currentSite", {
+      id: DEFAULT_TEST_SITE_ID,
+      key: "default",
+      status: "active",
+      createdAt: 0,
+      updatedAt: 0,
+    });
+    c.set("currentSiteDomain", null);
     const allSettings = await services.settings.getAll();
     c.set("allSettings", allSettings);
     c.set("appConfig", resolveConfig(c.env, allSettings));
@@ -317,7 +333,7 @@ describe("multipart upload API routes", () => {
       const data = await res.json();
       expect(data.id).toBeDefined();
       expect(data.uploadId).toBeDefined();
-      expect(data.storageKey).toContain("media/");
+      expect(data.storageKey).toContain(`sites/${DEFAULT_TEST_SITE_ID}/media/`);
       expect(data.filename).toBeDefined();
       expect(data.originalName).toBe("big-video.mp4");
     });

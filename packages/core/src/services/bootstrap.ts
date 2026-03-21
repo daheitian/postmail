@@ -6,8 +6,10 @@
 
 import type { NavItemService } from "./navigation.js";
 import type { SettingsService } from "./settings.js";
+import type { SiteMemberService } from "./site-member.js";
 
 export interface CompleteInitialSetupData {
+  ownerUserId: string;
   siteName: string;
   siteLanguage?: string | null;
   timeZone?: string | null;
@@ -26,9 +28,12 @@ export interface BootstrapService {
 export function createBootstrapService(
   settings: SettingsService,
   navItems: NavItemService,
+  siteMembers: SiteMemberService,
+  siteId: string,
 ): BootstrapService {
   return {
     async completeInitialSetup(data) {
+      await siteMembers.ensure(siteId, data.ownerUserId, "owner");
       await navItems.ensureSystemDefaults();
       await settings.set("SITE_NAME", data.siteName.trim());
 

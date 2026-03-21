@@ -655,6 +655,8 @@ msgstr "无法复制，请重试。"
 
 #. @context: Error toast when account creation fails
 #. @context: Error toast when account creation fails
+#. @context: Error toast when account creation fails
+#: src/routes/auth/setup.tsx
 #: src/routes/auth/setup.tsx
 #: src/routes/auth/setup.tsx
 msgid "Couldn't create your account. Check the details and try again."

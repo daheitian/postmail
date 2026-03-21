@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { postCollections } from "../../db/schema.js";
 import { createPostService } from "../post.js";
 import { createCollectionService } from "../collection.js";
@@ -13,8 +16,12 @@ describe("PostService - Timeline features", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    postService = createPostService(db, { slugIdLength: 5 });
-    collectionService = createCollectionService(db);
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+    );
+    collectionService = createCollectionService(db, DEFAULT_TEST_SITE_ID);
   });
 
   describe("format filter", () => {
@@ -470,11 +477,13 @@ describe("PostService - Timeline features", () => {
 
       await db.insert(postCollections).values([
         {
+          siteId: DEFAULT_TEST_SITE_ID,
           postId: collectedReply.id,
           collectionId: collection.id,
           createdAt: 100,
         },
         {
+          siteId: DEFAULT_TEST_SITE_ID,
           postId: secondRoot.id,
           collectionId: collection.id,
           createdAt: 200,

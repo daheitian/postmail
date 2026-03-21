@@ -2,6 +2,8 @@ import { fromString, typeidUnboxed } from "typeid-js";
 import { z } from "zod";
 
 export const ID_PREFIX = {
+  site: "sit",
+  siteDomain: "sdm",
   post: "pst",
   media: "med",
   collection: "col",

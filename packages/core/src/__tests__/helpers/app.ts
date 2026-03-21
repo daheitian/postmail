@@ -7,24 +7,14 @@
 import { Hono } from "hono";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { createTestDatabase } from "./db.js";
-import { createPostService } from "../../services/post.js";
-import { createPathService } from "../../services/path.js";
-import { createSettingsService } from "../../services/settings.js";
-import { createCustomUrlService } from "../../services/custom-url.js";
-import { createMediaService } from "../../services/media.js";
-import { createCollectionService } from "../../services/collection.js";
-import { createSearchService } from "../../services/search.js";
-import { createNavItemService } from "../../services/navigation.js";
-import { createAuthService } from "../../services/auth.js";
-import { createApiTokenService } from "../../services/api-token.js";
-import { createBootstrapService } from "../../services/bootstrap.js";
+import { createTestDatabase, DEFAULT_TEST_SITE_ID } from "./db.js";
 import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
 import { createI18n } from "../../i18n/i18n.js";
 import { resolveConfig } from "../../lib/resolve-config.js";
 import type { StorageDriver } from "../../lib/storage.js";
+import { createServices } from "../../services/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -53,22 +43,9 @@ export function createTestApp(options: TestAppOptions = {}) {
   // Create a mock D1 for search service
   const mockD1 = createMockD1(sqlite);
 
-  const settingsService = createSettingsService(db);
-  const pathService = createPathService(db);
-  const navItemsService = createNavItemService(db);
-  const services = {
-    paths: pathService,
-    posts: createPostService(db, { slugIdLength: 5 }, pathService),
-    settings: settingsService,
-    customUrls: createCustomUrlService(db, pathService),
-    media: createMediaService(db),
-    collections: createCollectionService(db, pathService),
-    search: createSearchService(mockD1),
-    navItems: navItemsService,
-    auth: createAuthService(db, settingsService),
-    apiTokens: createApiTokenService(db),
-    bootstrap: createBootstrapService(settingsService, navItemsService),
-  };
+  const services = createServices(db, mockD1, DEFAULT_TEST_SITE_ID, {
+    slugIdLength: 5,
+  });
 
   const app = new Hono<Env>();
 
@@ -85,6 +62,14 @@ export function createTestApp(options: TestAppOptions = {}) {
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);
+    c.set("currentSite", {
+      id: DEFAULT_TEST_SITE_ID,
+      key: "default",
+      status: "active",
+      createdAt: 0,
+      updatedAt: 0,
+    });
+    c.set("currentSiteDomain", null);
     const allSettings = await services.settings.getAll();
     c.set("allSettings", allSettings);
     c.set("appConfig", resolveConfig(c.env, allSettings));

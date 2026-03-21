@@ -6,7 +6,7 @@ export const SNAPSHOT_VERSION = 1;
 export const SNAPSHOT_SCOPE = "content";
 
 export const SNAPSHOT_TABLES = [
-  "setting",
+  "site_setting",
   "collection",
   "nav_item",
   "collection_directory_item",
@@ -53,46 +53,58 @@ export const SNAPSHOT_STORAGE_SETTING_KEYS = [
   "SITE_FAVICON_APPLE_TOUCH",
 ];
 
+function escapeSqlString(value) {
+  return String(value).replaceAll("'", "''");
+}
+
 const SELECT_SQL_BY_TABLE = {
-  setting: `
+  site_setting: `
     SELECT *
-    FROM "setting"
-    WHERE "key" IN (${quoteList(SNAPSHOT_SETTING_KEYS)})
+    FROM "site_setting"
+    WHERE "site_id" = ?1
+      AND "key" IN (${quoteList(SNAPSHOT_SETTING_KEYS)})
     ORDER BY "key"
   `,
   collection: `
     SELECT *
     FROM "collection"
+    WHERE "site_id" = ?1
     ORDER BY "created_at", "id"
   `,
   nav_item: `
     SELECT *
     FROM "nav_item"
+    WHERE "site_id" = ?1
     ORDER BY "position", "id"
   `,
   collection_directory_item: `
     SELECT *
     FROM "collection_directory_item"
+    WHERE "site_id" = ?1
     ORDER BY "position", "id"
   `,
   post: `
     SELECT *
     FROM "post"
+    WHERE "site_id" = ?1
     ORDER BY "created_at", "id"
   `,
   post_collection: `
     SELECT *
     FROM "post_collection"
+    WHERE "site_id" = ?1
     ORDER BY "created_at", "post_id", "collection_id"
   `,
   path_registry: `
     SELECT *
     FROM "path_registry"
+    WHERE "site_id" = ?1
     ORDER BY "path", "id"
   `,
   media: `
     SELECT *
     FROM "media"
+    WHERE "site_id" = ?1
     ORDER BY "created_at", "id"
   `,
 };
@@ -103,15 +115,15 @@ export function quoteList(values) {
     .join(", ");
 }
 
-export function getSnapshotSelectSql(tableName) {
+export function getSnapshotSelectSql(tableName, siteId) {
   const statement = SELECT_SQL_BY_TABLE[tableName];
   if (!statement) {
     throw new Error(`Unsupported snapshot table: ${tableName}`);
   }
-  return statement.trim();
+  return statement.trim().replaceAll("?1", `'${escapeSqlString(siteId)}'`);
 }
 
-export function buildSnapshotStorageQuery() {
+export function buildSnapshotStorageQuery(siteId) {
   return `
     SELECT "key", "contentType"
     FROM (
@@ -120,6 +132,7 @@ export function buildSnapshotStorageQuery() {
         "mime_type" AS "contentType"
       FROM "media"
       WHERE "storage_key" IS NOT NULL
+        AND "site_id" = '${escapeSqlString(siteId)}'
         AND trim("storage_key") <> ''
 
       UNION ALL
@@ -129,6 +142,7 @@ export function buildSnapshotStorageQuery() {
         NULL AS "contentType"
       FROM "media"
       WHERE "poster_key" IS NOT NULL
+        AND "site_id" = '${escapeSqlString(siteId)}'
         AND trim("poster_key") <> ''
 
       UNION ALL
@@ -136,8 +150,9 @@ export function buildSnapshotStorageQuery() {
       SELECT
         "value" AS "key",
         NULL AS "contentType"
-      FROM "setting"
+      FROM "site_setting"
       WHERE "key" IN (${quoteList(SNAPSHOT_STORAGE_SETTING_KEYS)})
+        AND "site_id" = '${escapeSqlString(siteId)}'
         AND trim("value") <> ''
     )
     WHERE "key" IS NOT NULL
@@ -177,13 +192,17 @@ export function snapshotObjectPath(key) {
   return `objects/${key}`.replace(/\\/g, "/");
 }
 
-export function buildSnapshotMeta(source) {
+export function buildSnapshotMeta(source, site) {
   return {
     format: SNAPSHOT_FORMAT,
     version: SNAPSHOT_VERSION,
     scope: SNAPSHOT_SCOPE,
     createdAt: new Date().toISOString(),
     source,
+    site: {
+      id: site.id,
+      key: site.key,
+    },
     tables: SNAPSHOT_TABLES,
     settingKeys: SNAPSHOT_SETTING_KEYS,
   };
@@ -211,6 +230,16 @@ export function assertSnapshotMeta(meta) {
       `Unsupported snapshot scope: expected ${SNAPSHOT_SCOPE}, got ${String(meta.scope)}`,
     );
   }
+
+  if (
+    meta.site !== undefined &&
+    (!meta.site ||
+      typeof meta.site !== "object" ||
+      typeof meta.site.id !== "string" ||
+      typeof meta.site.key !== "string")
+  ) {
+    throw new Error("Snapshot meta site must contain string id and key.");
+  }
 }
 
 export function assertSnapshotManifest(manifest) {
@@ -229,15 +258,131 @@ export function assertSnapshotManifest(manifest) {
   }
 }
 
-export function buildReplaceSql() {
+export function isLegacySnapshotMeta(meta) {
+  const tables = Array.isArray(meta?.tables) ? meta.tables : [];
+  return !meta?.site || tables.includes("setting");
+}
+
+export function getSnapshotBootstrapSite(meta) {
+  if (isLegacySnapshotMeta(meta)) {
+    return undefined;
+  }
+
+  return {
+    id: meta.site.id,
+    key: meta.site.key,
+  };
+}
+
+export function validateSnapshotTargetSite(meta, site) {
+  if (isLegacySnapshotMeta(meta)) {
+    return;
+  }
+
+  if (meta.site.id !== site.id) {
+    throw new Error(
+      `Snapshot site "${meta.site.id}" does not match target site "${site.id}".`,
+    );
+  }
+}
+
+function prependSiteIdInsert(sql, tableName, siteId) {
+  const match = sql.match(
+    new RegExp(
+      `^INSERT INTO "?${tableName}"? \\(([^)]*)\\) VALUES\\(([\\s\\S]*)\\)$`,
+      "i",
+    ),
+  );
+  if (!match) {
+    return sql;
+  }
+
+  return `INSERT INTO "${tableName}" ("site_id", ${match[1]}) VALUES('${escapeSqlString(siteId)}', ${match[2]})`;
+}
+
+function splitSqlStatements(sql) {
+  const statements = [];
+  let current = "";
+  let inString = false;
+
+  for (let index = 0; index < sql.length; index += 1) {
+    const char = sql[index];
+    if (char === "'") {
+      current += char;
+      if (inString && sql[index + 1] === "'") {
+        current += "'";
+        index += 1;
+        continue;
+      }
+      inString = !inString;
+      continue;
+    }
+
+    if (char === ";" && !inString) {
+      const trimmed = current.trim();
+      if (trimmed) {
+        statements.push(trimmed);
+      }
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  const trimmed = current.trim();
+  if (trimmed) {
+    statements.push(trimmed);
+  }
+
+  return statements;
+}
+
+export function rewriteLegacySnapshotSql(sql, siteId) {
+  const uncommentedSql = sql
+    .split("\n")
+    .filter((line) => !line.trimStart().startsWith("--"))
+    .join("\n");
+
+  const rewrittenStatements = splitSqlStatements(uncommentedSql).map((statement) => {
+    const normalized = statement.trim();
+    const legacySettingMatch = normalized.match(
+      /^INSERT INTO "?setting"? \(([^)]*)\) VALUES\(([\s\S]*)\)$/i,
+    );
+    if (legacySettingMatch) {
+      return `INSERT INTO "site_setting" ("site_id", ${legacySettingMatch[1]}) VALUES('${escapeSqlString(siteId)}', ${legacySettingMatch[2]})`;
+    }
+
+    let rewritten = normalized;
+    for (const tableName of [
+      "collection",
+      "nav_item",
+      "collection_directory_item",
+      "post",
+      "post_collection",
+      "path_registry",
+      "media",
+    ]) {
+      rewritten = prependSiteIdInsert(rewritten, tableName, siteId);
+    }
+
+    return rewritten;
+  });
+
+  return `${rewrittenStatements.join(";\n")};\n`;
+}
+
+export function buildReplaceSql(siteId) {
   const statements = [];
 
   for (const tableName of SNAPSHOT_CLEAR_TABLES) {
-    statements.push(`DELETE FROM "${tableName}";`);
+    statements.push(
+      `DELETE FROM "${tableName}" WHERE "site_id" = '${escapeSqlString(siteId)}';`,
+    );
   }
 
   statements.push(
-    `DELETE FROM "setting" WHERE "key" IN (${quoteList(SNAPSHOT_SETTING_KEYS)});`,
+    `DELETE FROM "site_setting" WHERE "site_id" = '${escapeSqlString(siteId)}' AND "key" IN (${quoteList(SNAPSHOT_SETTING_KEYS)});`,
   );
 
   return statements.join("\n");

@@ -157,6 +157,8 @@ export function createApp(): App {
     c.set("services", runtime.services);
     c.set("storage", runtime.storage);
     c.set("auth", runtime.auth);
+    c.set("currentSite", runtime.currentSite);
+    c.set("currentSiteDomain", runtime.currentSiteDomain);
 
     await next();
   });

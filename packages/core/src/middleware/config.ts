@@ -10,6 +10,7 @@ import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { resolveConfig } from "../lib/resolve-config.js";
+import { getSiteResolutionMode } from "../lib/env.js";
 import { buildThemeStyle } from "../lib/theme.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
 import {
@@ -29,7 +30,13 @@ export function withConfig(): MiddlewareHandler<Env> {
   return async (c, next) => {
     const allSettings = await c.var.services.settings.getAll();
     c.set("allSettings", allSettings);
-    const appConfig = resolveConfig(c.env, allSettings);
+    const siteUrlOverride =
+      getSiteResolutionMode(c.env) === "host-based"
+        ? `${new URL(c.var.publicRequestUrl).origin}${c.var.currentSiteDomain?.pathPrefix ?? ""}`
+        : undefined;
+    const appConfig = resolveConfig(c.env, allSettings, {
+      siteUrl: siteUrlOverride,
+    });
     c.set("appConfig", appConfig);
 
     // Resolve active color theme

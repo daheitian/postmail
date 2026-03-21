@@ -370,7 +370,8 @@ function assertDraftPublishedAt(
 export function createPostService(
   db: Database,
   config: { slugIdLength: number },
-  paths: PathService = createPathService(db),
+  siteId: string,
+  paths: PathService = createPathService(db, siteId),
 ): PostService {
   const effectiveVisibilityExpr = sql<string>`coalesce(
     ${posts.visibility},
@@ -400,7 +401,12 @@ export function createPostService(
     const rows = await db
       .select({ id: pathRegistry.id })
       .from(pathRegistry)
-      .where(eq(pathRegistry.path, normalizePath(path)))
+      .where(
+        and(
+          eq(pathRegistry.siteId, siteId),
+          eq(pathRegistry.path, normalizePath(path)),
+        ),
+      )
       .limit(1);
     return rows.length > 0;
   }
@@ -413,23 +419,32 @@ export function createPostService(
         ),
       })
       .from(posts)
-      .where(and(eq(posts.threadId, rootId), isNull(posts.deletedAt)));
+      .where(
+        and(
+          eq(posts.siteId, siteId),
+          eq(posts.threadId, rootId),
+          isNull(posts.deletedAt),
+        ),
+      );
 
     const latestPublishedAt = rootRows[0]?.latestPublishedAt ?? null;
     const root = await db
       .select({ updatedAt: posts.updatedAt })
       .from(posts)
-      .where(eq(posts.id, rootId))
+      .where(and(eq(posts.siteId, siteId), eq(posts.id, rootId)))
       .limit(1);
 
     const lastActivityAt = latestPublishedAt ?? root[0]?.updatedAt ?? now();
 
-    await db.update(posts).set({ lastActivityAt }).where(eq(posts.id, rootId));
+    await db
+      .update(posts)
+      .set({ lastActivityAt })
+      .where(and(eq(posts.siteId, siteId), eq(posts.id, rootId)));
   }
 
   /** Build WHERE conditions from filters (shared by list and count) */
   function buildFilterConditions(filters: PostFilters) {
-    const conditions = [];
+    const conditions = [eq(posts.siteId, siteId)];
 
     if (filters.status) {
       conditions.push(eq(posts.status, filters.status));
@@ -463,7 +478,12 @@ export function createPostService(
     if (filters.collectionId !== undefined) {
       // Filter by collection via junction table
       conditions.push(
-        sql`${posts.id} IN (SELECT post_id FROM post_collection WHERE collection_id = ${filters.collectionId})`,
+        sql`${posts.id} IN (
+          SELECT post_id
+          FROM post_collection
+          WHERE site_id = ${siteId}
+            AND collection_id = ${filters.collectionId}
+        )`,
       );
     }
     if (filters.threadId) {
@@ -484,14 +504,27 @@ export function createPostService(
     if (filters.mediaKinds && filters.mediaKinds.length > 0) {
       const placeholders = filters.mediaKinds.map((k) => sql`${k}`);
       conditions.push(
-        sql`${posts.id} IN (SELECT post_id FROM media WHERE media_kind IN (${sql.join(placeholders, sql`, `)}))`,
+        sql`${posts.id} IN (
+          SELECT post_id
+          FROM media
+          WHERE site_id = ${siteId}
+            AND media_kind IN (${sql.join(placeholders, sql`, `)})
+        )`,
       );
     }
     if (filters.hasMedia !== undefined) {
       if (filters.hasMedia) {
-        conditions.push(sql`${posts.id} IN (SELECT post_id FROM media)`);
+        conditions.push(
+          sql`${posts.id} IN (
+            SELECT post_id FROM media WHERE site_id = ${siteId}
+          )`,
+        );
       } else {
-        conditions.push(sql`${posts.id} NOT IN (SELECT post_id FROM media)`);
+        conditions.push(
+          sql`${posts.id} NOT IN (
+            SELECT post_id FROM media WHERE site_id = ${siteId}
+          )`,
+        );
       }
     }
     if (filters.hasTitle !== undefined) {
@@ -547,7 +580,7 @@ export function createPostService(
     const cursorRow = await db
       .select()
       .from(posts)
-      .where(eq(posts.id, filters.cursor))
+      .where(and(eq(posts.siteId, siteId), eq(posts.id, filters.cursor)))
       .limit(1);
     const cursorPost = cursorRow[0];
 
@@ -656,6 +689,7 @@ export function createPostService(
   ): Post {
     return {
       id: row.id,
+      siteId: row.siteId,
       format: ensurePostFormat(row.format, Error),
       status: ensurePostStatus(row.status, Error),
       visibility: ensurePostVisibility(visibility, Error),
@@ -724,6 +758,7 @@ export function createPostService(
         .from(posts)
         .where(
           and(
+            eq(posts.siteId, siteId),
             inArray(posts.id, chunk),
             eq(posts.status, "published"),
             isNull(posts.deletedAt),
@@ -749,7 +784,7 @@ export function createPostService(
       db
         .select({ id: posts.id, visibility: posts.visibility })
         .from(posts)
-        .where(inArray(posts.id, chunk)),
+        .where(and(eq(posts.siteId, siteId), inArray(posts.id, chunk))),
     );
 
     for (const row of rows) {
@@ -848,7 +883,12 @@ export function createPostService(
     const rows = await db
       .select({ collectionId: postCollections.collectionId })
       .from(postCollections)
-      .where(eq(postCollections.postId, postId));
+      .where(
+        and(
+          eq(postCollections.siteId, siteId),
+          eq(postCollections.postId, postId),
+        ),
+      );
 
     return rows.map((row) => row.collectionId);
   }
@@ -879,7 +919,13 @@ export function createPostService(
       const result = await db
         .select()
         .from(posts)
-        .where(and(eq(posts.id, id), isNull(posts.deletedAt)))
+        .where(
+          and(
+            eq(posts.siteId, siteId),
+            eq(posts.id, id),
+            isNull(posts.deletedAt),
+          ),
+        )
         .limit(1);
       return hydratePost(result[0]);
     },
@@ -1129,6 +1175,7 @@ export function createPostService(
         const writeQueries: BatchItem<"sqlite">[] = [
           db.insert(posts).values({
             id,
+            siteId,
             format,
             status,
             visibility,
@@ -1151,6 +1198,7 @@ export function createPostService(
           }),
           db.insert(pathRegistry).values({
             id: createEntityId("path"),
+            siteId,
             path: normalizePath(slug),
             kind: "slug",
             postId: id,
@@ -1166,6 +1214,7 @@ export function createPostService(
           writeQueries.push(
             db.insert(pathRegistry).values({
               id: createEntityId("path"),
+              siteId,
               path: normalizePath(aliasPath),
               kind: "alias",
               postId: id,
@@ -1182,6 +1231,7 @@ export function createPostService(
           writeQueries.push(
             db.insert(postCollections).values(
               collectionIds.map((collectionId) => ({
+                siteId,
                 postId: id,
                 collectionId,
                 createdAt: timestamp,
@@ -1399,7 +1449,7 @@ export function createPostService(
         const result = await db
           .update(posts)
           .set(updates)
-          .where(eq(posts.id, id))
+          .where(and(eq(posts.siteId, siteId), eq(posts.id, id)))
           .returning();
         if (needsThreadActivityRecalc) {
           await recalculateThreadLastActivity(existing.threadId);
@@ -1427,7 +1477,13 @@ export function createPostService(
                   : timestamp,
               updatedAt: timestamp,
             })
-            .where(and(eq(posts.threadId, id), isNotNull(posts.replyToId))),
+            .where(
+              and(
+                eq(posts.siteId, siteId),
+                eq(posts.threadId, id),
+                isNotNull(posts.replyToId),
+              ),
+            ),
         );
       }
 
@@ -1436,14 +1492,24 @@ export function createPostService(
           db
             .update(posts)
             .set({ visibility: null, updatedAt: timestamp })
-            .where(and(eq(posts.threadId, id), isNotNull(posts.replyToId))),
+            .where(
+              and(
+                eq(posts.siteId, siteId),
+                eq(posts.threadId, id),
+                isNotNull(posts.replyToId),
+              ),
+            ),
         );
       }
 
       // Post update is always present; track its index for result extraction
       const updateIdx = writeQueries.length;
       writeQueries.push(
-        db.update(posts).set(updates).where(eq(posts.id, id)).returning(),
+        db
+          .update(posts)
+          .set(updates)
+          .where(and(eq(posts.siteId, siteId), eq(posts.id, id)))
+          .returning(),
       );
 
       if (needsCollectionSync) {
@@ -1462,6 +1528,7 @@ export function createPostService(
               .delete(postCollections)
               .where(
                 and(
+                  eq(postCollections.siteId, siteId),
                   eq(postCollections.postId, id),
                   inArray(postCollections.collectionId, removedIds),
                 ),
@@ -1474,6 +1541,7 @@ export function createPostService(
           writeQueries.push(
             db.insert(postCollections).values(
               addedIds.map((collectionId) => ({
+                siteId,
                 postId: id,
                 collectionId,
                 createdAt: collectionTimestamp,
@@ -1604,13 +1672,13 @@ export function createPostService(
         await db
           .update(posts)
           .set({ deletedAt: timestamp, updatedAt: timestamp })
-          .where(eq(posts.threadId, id));
+          .where(and(eq(posts.siteId, siteId), eq(posts.threadId, id)));
       } else {
         // Soft-delete the single reply
         await db
           .update(posts)
           .set({ deletedAt: timestamp, updatedAt: timestamp })
-          .where(eq(posts.id, id));
+          .where(and(eq(posts.siteId, siteId), eq(posts.id, id)));
         await recalculateThreadLastActivity(existing.threadId);
       }
 
@@ -1621,7 +1689,13 @@ export function createPostService(
       const rows = await db
         .select()
         .from(posts)
-        .where(and(eq(posts.threadId, rootId), isNull(posts.deletedAt)))
+        .where(
+          and(
+            eq(posts.siteId, siteId),
+            eq(posts.threadId, rootId),
+            isNull(posts.deletedAt),
+          ),
+        )
         .orderBy(posts.createdAt);
 
       return hydratePosts(rows);
@@ -1641,7 +1715,7 @@ export function createPostService(
             lastActivityAt: timestamp,
             updatedAt: timestamp,
           })
-          .where(eq(posts.id, rootId)),
+          .where(and(eq(posts.siteId, siteId), eq(posts.id, rootId))),
         db
           .update(posts)
           .set({
@@ -1651,7 +1725,13 @@ export function createPostService(
             lastActivityAt: timestamp,
             updatedAt: timestamp,
           })
-          .where(and(eq(posts.threadId, rootId), isNotNull(posts.replyToId))),
+          .where(
+            and(
+              eq(posts.siteId, siteId),
+              eq(posts.threadId, rootId),
+              isNotNull(posts.replyToId),
+            ),
+          ),
       ]);
       await recalculateThreadLastActivity(rootId);
     },
@@ -1667,6 +1747,7 @@ export function createPostService(
         .from(posts)
         .where(
           and(
+            eq(posts.siteId, siteId),
             inArray(posts.threadId, postIds),
             eq(posts.status, "published"),
             isNotNull(posts.replyToId),
@@ -1698,6 +1779,7 @@ export function createPostService(
         .from(posts)
         .where(
           and(
+            eq(posts.siteId, siteId),
             inArray(posts.threadId, rootIds),
             eq(posts.status, "published"),
             isNotNull(posts.replyToId),
@@ -1758,6 +1840,7 @@ export function createPostService(
         .from(posts)
         .where(
           and(
+            eq(posts.siteId, siteId),
             inArray(posts.threadId, rootIds),
             eq(posts.status, "published"),
             isNotNull(posts.replyToId),
@@ -1864,7 +1947,13 @@ export function createPostService(
           count: sql<number>`count(distinct ${posts.threadId})`.as("count"),
         })
         .from(posts)
-        .innerJoin(postCollections, eq(postCollections.postId, posts.id))
+        .innerJoin(
+          postCollections,
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, posts.id),
+          ),
+        )
         .where(and(...conditions));
 
       return rows[0]?.count ?? 0;
@@ -1898,7 +1987,13 @@ export function createPostService(
           ratingValue,
         })
         .from(posts)
-        .innerJoin(postCollections, eq(postCollections.postId, posts.id))
+        .innerJoin(
+          postCollections,
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, posts.id),
+          ),
+        )
         .where(and(...conditions))
         .groupBy(posts.threadId);
 
@@ -1940,7 +2035,13 @@ export function createPostService(
           collectedAt,
         })
         .from(posts)
-        .innerJoin(postCollections, eq(postCollections.postId, posts.id))
+        .innerJoin(
+          postCollections,
+          and(
+            eq(postCollections.siteId, siteId),
+            eq(postCollections.postId, posts.id),
+          ),
+        )
         .where(and(...conditions))
         .groupBy(posts.threadId)
         .orderBy(desc(collectedAt), desc(posts.threadId));
@@ -1971,6 +2072,7 @@ export function createPostService(
         .from(posts)
         .where(
           and(
+            eq(posts.siteId, siteId),
             inArray(posts.threadId, unique),
             eq(posts.status, "published"),
             isNull(posts.deletedAt),
@@ -2002,9 +2104,16 @@ export function createPostService(
             postId: posts.id,
           })
           .from(posts)
-          .innerJoin(postCollections, eq(postCollections.postId, posts.id))
+          .innerJoin(
+            postCollections,
+            and(
+              eq(postCollections.siteId, siteId),
+              eq(postCollections.postId, posts.id),
+            ),
+          )
           .where(
             and(
+              eq(posts.siteId, siteId),
               eq(postCollections.collectionId, collectionId),
               inArray(posts.threadId, chunk),
               eq(posts.status, "published"),
@@ -2039,6 +2148,7 @@ export function createPostService(
         .from(posts)
         .where(
           and(
+            eq(posts.siteId, siteId),
             inArray(posts.threadId, unique),
             eq(posts.status, "published"),
             isNull(posts.deletedAt),

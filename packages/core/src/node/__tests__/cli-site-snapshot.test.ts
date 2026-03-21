@@ -7,17 +7,23 @@ import { createLocalDriver } from "../../lib/storage.js";
 import { migrate } from "../runtime.js";
 import type { Bindings } from "../../types.js";
 
+const SNAPSHOT_SITE_ID = "sit_01jpyy00bc4w2h8r7m3q5t9kda";
+const SNAPSHOT_SITE_KEY = "default";
 const SNAPSHOT_COLLECTION_ID = "col_01jpyy08bc4w2h8r7m3q5t9kdn";
 const SNAPSHOT_NAV_ID = "nav_01jpyy0gqv4m7r2k8s5c1t9bdh";
 const SNAPSHOT_DIRECTORY_ITEM_ID = "cdi_01jpyy0r6s3m8v1k5t9q2b4gcn";
 const SNAPSHOT_POST_ID = "pst_01jpyy18fh4w2m7r8k3c5t9qdn";
 const SNAPSHOT_PATH_ID = "pth_01jpyy1k2v6m4s8r1t5c9b3qgh";
 const SNAPSHOT_MEDIA_ID = "med_01jpyy1vxh4m7s2k8r5c9t3qbn";
-const SNAPSHOT_MEDIA_KEY = `media/${SNAPSHOT_MEDIA_ID}.png`;
-const SNAPSHOT_POSTER_KEY = `media/${SNAPSHOT_MEDIA_ID}.poster.webp`;
+const SNAPSHOT_AVATAR_MEDIA_ID = "med_01jpyy1zs6m4v8r2k5t9c3b7qh";
+const SNAPSHOT_MEDIA_KEY = `sites/${SNAPSHOT_SITE_ID}/media/2026/03/${SNAPSHOT_MEDIA_ID}.png`;
+const SNAPSHOT_POSTER_KEY = `sites/${SNAPSHOT_SITE_ID}/media/${SNAPSHOT_MEDIA_ID}.poster.webp`;
+const SNAPSHOT_AVATAR_KEY = `sites/${SNAPSHOT_SITE_ID}/site-assets/avatar/${SNAPSHOT_AVATAR_MEDIA_ID}.png`;
+const SNAPSHOT_APPLE_TOUCH_KEY = `sites/${SNAPSHOT_SITE_ID}/site-assets/favicon/apple-touch-icon.png`;
 const SNAPSHOT_OLD_POST_ID = "pst_01jpyy2c4s7m8r1k5t9b3q6dgh";
 const SNAPSHOT_OLD_PATH_ID = "pth_01jpyy2pbh4m6s8r1k5t9c3qgn";
 const SNAPSHOT_OLD_MEDIA_ID = "med_01jpyy2z6v4m8r1k5t9c3b7qdh";
+const SNAPSHOT_OLD_MEDIA_KEY = `sites/${SNAPSHOT_SITE_ID}/media/2026/03/${SNAPSHOT_OLD_MEDIA_ID}.png`;
 
 describe("jant site snapshot export/import", () => {
   const tempDirs: string[] = [];
@@ -68,13 +74,15 @@ describe("jant site snapshot export/import", () => {
     await sourceStorage.put(SNAPSHOT_POSTER_KEY, new Uint8Array([9, 8, 7, 6]), {
       contentType: "image/webp",
     });
-    await sourceStorage.put("media/avatar.png", new Uint8Array([3, 3, 3]), {
+    await sourceStorage.put(SNAPSHOT_AVATAR_KEY, new Uint8Array([3, 3, 3]), {
       contentType: "image/png",
     });
     await sourceStorage.put(
-      "site/apple-touch-icon.png",
+      SNAPSHOT_APPLE_TOUCH_KEY,
       new Uint8Array([4, 4, 4]),
-      { contentType: "image/png" },
+      {
+        contentType: "image/png",
+      },
     );
 
     const sourceSqlite = new Database(sourceDbPath);
@@ -82,50 +90,53 @@ describe("jant site snapshot export/import", () => {
 
     try {
       sourceSqlite.exec(`
-        INSERT INTO "setting" ("key", "value", "updated_at") VALUES
-          ('SITE_NAME', 'Snapshot Source', 1774009200),
-          ('CUSTOM_CSS', 'body { color: red; }', 1774009201),
-          ('SITE_AVATAR', 'media/avatar.png', 1774009202),
-          ('SITE_FAVICON_APPLE_TOUCH', 'site/apple-touch-icon.png', 1774009203),
-          ('SITE_FAVICON_ICO', 'ZmFrZS1pY28=', 1774009204),
-          ('SITE_FAVICON_VERSION', '20260321010101', 1774009205),
-          ('ONBOARDING_STATUS', 'pending', 1774009206),
-          ('PASSWORD_RESET_TOKEN', 'source-reset-token', 1774009207);
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009100, 1774009100);
 
-        INSERT INTO "collection" ("id", "title", "description", "sort_order", "created_at", "updated_at")
-        VALUES ('${SNAPSHOT_COLLECTION_ID}', 'Walks', 'Morning routes', 'newest', 1774009200, 1774009200);
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES
+          ('${SNAPSHOT_SITE_ID}', 'SITE_NAME', 'Snapshot Source', 1774009200),
+          ('${SNAPSHOT_SITE_ID}', 'CUSTOM_CSS', 'body { color: red; }', 1774009201),
+          ('${SNAPSHOT_SITE_ID}', 'SITE_AVATAR', '${SNAPSHOT_AVATAR_KEY}', 1774009202),
+          ('${SNAPSHOT_SITE_ID}', 'SITE_FAVICON_APPLE_TOUCH', '${SNAPSHOT_APPLE_TOUCH_KEY}', 1774009203),
+          ('${SNAPSHOT_SITE_ID}', 'SITE_FAVICON_ICO', 'ZmFrZS1pY28=', 1774009204),
+          ('${SNAPSHOT_SITE_ID}', 'SITE_FAVICON_VERSION', '20260321010101', 1774009205),
+          ('${SNAPSHOT_SITE_ID}', 'ONBOARDING_STATUS', 'pending', 1774009206),
+          ('${SNAPSHOT_SITE_ID}', 'PASSWORD_RESET_TOKEN', 'source-reset-token', 1774009207);
 
-        INSERT INTO "nav_item" ("id", "type", "system_key", "label", "url", "position", "created_at", "updated_at")
-        VALUES ('${SNAPSHOT_NAV_ID}', 'link', NULL, 'Archive', '/archive', 'a0', 1774009200, 1774009200);
+        INSERT INTO "collection" ("id", "site_id", "title", "description", "sort_order", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_COLLECTION_ID}', '${SNAPSHOT_SITE_ID}', 'Walks', 'Morning routes', 'newest', 1774009200, 1774009200);
 
-        INSERT INTO "collection_directory_item" ("id", "type", "collection_id", "label", "position", "created_at", "updated_at")
-        VALUES ('${SNAPSHOT_DIRECTORY_ITEM_ID}', 'collection', '${SNAPSHOT_COLLECTION_ID}', NULL, 'a0', 1774009200, 1774009200);
+        INSERT INTO "nav_item" ("id", "site_id", "type", "system_key", "label", "url", "position", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_NAV_ID}', '${SNAPSHOT_SITE_ID}', 'link', NULL, 'Archive', '/archive', 'a0', 1774009200, 1774009200);
+
+        INSERT INTO "collection_directory_item" ("id", "site_id", "type", "collection_id", "label", "position", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_DIRECTORY_ITEM_ID}', '${SNAPSHOT_SITE_ID}', 'collection', '${SNAPSHOT_COLLECTION_ID}', NULL, 'a0', 1774009200, 1774009200);
 
         INSERT INTO "post" (
-          "id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
+          "id", "site_id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
           "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
         ) VALUES (
-          '${SNAPSHOT_POST_ID}', 'note', 'published', 'public',
+          '${SNAPSHOT_POST_ID}', '${SNAPSHOT_SITE_ID}', 'note', 'published', 'public',
           'Snapshot post', 'Hello snapshot', '<p>Hello snapshot</p>', 'Hello snapshot',
           '${SNAPSHOT_POST_ID}', 1774009200, 1774009200, 1774009200, 1774009200
         );
 
-        INSERT INTO "post_collection" ("post_id", "collection_id", "created_at")
-        VALUES ('${SNAPSHOT_POST_ID}', '${SNAPSHOT_COLLECTION_ID}', 1774009200);
+        INSERT INTO "post_collection" ("site_id", "post_id", "collection_id", "created_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_POST_ID}', '${SNAPSHOT_COLLECTION_ID}', 1774009200);
 
         INSERT INTO "path_registry" (
-          "id", "path", "kind", "post_id", "collection_id", "redirect_to_path", "redirect_type", "created_at", "updated_at"
+          "id", "site_id", "path", "kind", "post_id", "collection_id", "redirect_to_path", "redirect_type", "created_at", "updated_at"
         ) VALUES (
-          '${SNAPSHOT_PATH_ID}', 'snapshot-post', 'slug',
+          '${SNAPSHOT_PATH_ID}', '${SNAPSHOT_SITE_ID}', 'snapshot-post', 'slug',
           '${SNAPSHOT_POST_ID}', NULL, NULL, NULL, 1774009200, 1774009200
         );
 
         INSERT INTO "media" (
-          "id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
           "provider", "width", "height", "alt", "position", "poster_key", "media_kind",
           "created_at", "updated_at"
         ) VALUES (
-          '${SNAPSHOT_MEDIA_ID}', '${SNAPSHOT_POST_ID}',
+          '${SNAPSHOT_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', '${SNAPSHOT_POST_ID}',
           '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
           'local', 1, 1, 'Sample alt', 'a0', '${SNAPSHOT_POSTER_KEY}', 'image',
           1774009200, 1774009200
@@ -133,33 +144,36 @@ describe("jant site snapshot export/import", () => {
       `);
 
       targetSqlite.exec(`
-        INSERT INTO "setting" ("key", "value", "updated_at") VALUES
-          ('SITE_NAME', 'Old Target', 1774009100),
-          ('ONBOARDING_STATUS', 'completed', 1774009101),
-          ('PASSWORD_RESET_TOKEN', 'target-reset-token', 1774009102);
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009000, 1774009000);
+
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES
+          ('${SNAPSHOT_SITE_ID}', 'SITE_NAME', 'Old Target', 1774009100),
+          ('${SNAPSHOT_SITE_ID}', 'ONBOARDING_STATUS', 'completed', 1774009101),
+          ('${SNAPSHOT_SITE_ID}', 'PASSWORD_RESET_TOKEN', 'target-reset-token', 1774009102);
 
         INSERT INTO "post" (
-          "id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
+          "id", "site_id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
           "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
         ) VALUES (
-          '${SNAPSHOT_OLD_POST_ID}', 'note', 'published', 'public',
+          '${SNAPSHOT_OLD_POST_ID}', '${SNAPSHOT_SITE_ID}', 'note', 'published', 'public',
           'Old post', 'Old body', '<p>Old body</p>', 'Old body',
           '${SNAPSHOT_OLD_POST_ID}', 1774009100, 1774009100, 1774009100, 1774009100
         );
 
         INSERT INTO "path_registry" (
-          "id", "path", "kind", "post_id", "collection_id", "redirect_to_path", "redirect_type", "created_at", "updated_at"
+          "id", "site_id", "path", "kind", "post_id", "collection_id", "redirect_to_path", "redirect_type", "created_at", "updated_at"
         ) VALUES (
-          '${SNAPSHOT_OLD_PATH_ID}', 'old-post', 'slug',
+          '${SNAPSHOT_OLD_PATH_ID}', '${SNAPSHOT_SITE_ID}', 'old-post', 'slug',
           '${SNAPSHOT_OLD_POST_ID}', NULL, NULL, NULL, 1774009100, 1774009100
         );
 
         INSERT INTO "media" (
-          "id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
           "provider", "position", "media_kind", "created_at", "updated_at"
         ) VALUES (
-          '${SNAPSHOT_OLD_MEDIA_ID}', '${SNAPSHOT_OLD_POST_ID}',
-          '${SNAPSHOT_OLD_MEDIA_ID}.png', 'old.png', 'image/png', 3, 'media/old.png',
+          '${SNAPSHOT_OLD_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', '${SNAPSHOT_OLD_POST_ID}',
+          '${SNAPSHOT_OLD_MEDIA_ID}.png', 'old.png', 'image/png', 3, '${SNAPSHOT_OLD_MEDIA_KEY}',
           'local', 'a0', 'image', 1774009100, 1774009100
         );
       `);
@@ -168,7 +182,7 @@ describe("jant site snapshot export/import", () => {
       targetSqlite.close();
     }
 
-    await targetStorage.put("media/old.png", new Uint8Array([7, 7, 7]), {
+    await targetStorage.put(SNAPSHOT_OLD_MEDIA_KEY, new Uint8Array([7, 7, 7]), {
       contentType: "image/png",
     });
 
@@ -184,10 +198,10 @@ describe("jant site snapshot export/import", () => {
       await readFile(join(snapshotPath, "storage-manifest.json"), "utf-8"),
     );
     expect(manifest.objects.map((object) => object.key)).toEqual([
-      "media/avatar.png",
       SNAPSHOT_MEDIA_KEY,
       SNAPSHOT_POSTER_KEY,
-      "site/apple-touch-icon.png",
+      SNAPSHOT_AVATAR_KEY,
+      SNAPSHOT_APPLE_TOUCH_KEY,
     ]);
     expect(exportLogSpy).toHaveBeenCalledWith(
       `Exported Node SQLite snapshot to ${snapshotPath}`,
@@ -227,14 +241,16 @@ describe("jant site snapshot export/import", () => {
       });
 
       const siteName = verifySqlite
-        .prepare(`SELECT "value" FROM "setting" WHERE "key" = 'SITE_NAME'`)
+        .prepare(
+          `SELECT "value" FROM "site_setting" WHERE "site_id" = '${SNAPSHOT_SITE_ID}' AND "key" = 'SITE_NAME'`,
+        )
         .pluck()
         .get();
       expect(siteName).toBe("Snapshot Source");
 
       const onboardingStatus = verifySqlite
         .prepare(
-          `SELECT "value" FROM "setting" WHERE "key" = 'ONBOARDING_STATUS'`,
+          `SELECT "value" FROM "site_setting" WHERE "site_id" = '${SNAPSHOT_SITE_ID}' AND "key" = 'ONBOARDING_STATUS'`,
         )
         .pluck()
         .get();
@@ -242,7 +258,7 @@ describe("jant site snapshot export/import", () => {
 
       const resetToken = verifySqlite
         .prepare(
-          `SELECT "value" FROM "setting" WHERE "key" = 'PASSWORD_RESET_TOKEN'`,
+          `SELECT "value" FROM "site_setting" WHERE "site_id" = '${SNAPSHOT_SITE_ID}' AND "key" = 'PASSWORD_RESET_TOKEN'`,
         )
         .pluck()
         .get();
@@ -266,15 +282,15 @@ describe("jant site snapshot export/import", () => {
     const importedPoster = await targetStorage.get(SNAPSHOT_POSTER_KEY);
     expect(importedPoster?.contentType).toBe("image/webp");
 
-    const importedAvatar = await targetStorage.get("media/avatar.png");
+    const importedAvatar = await targetStorage.get(SNAPSHOT_AVATAR_KEY);
     expect(importedAvatar?.contentType).toBe("image/png");
 
     const importedAppleTouch = await targetStorage.get(
-      "site/apple-touch-icon.png",
+      SNAPSHOT_APPLE_TOUCH_KEY,
     );
     expect(importedAppleTouch?.contentType).toBe("image/png");
 
-    const removedOldObject = await targetStorage.get("media/old.png");
+    const removedOldObject = await targetStorage.get(SNAPSHOT_OLD_MEDIA_KEY);
     expect(removedOldObject).toBeNull();
 
     expect(importLogSpy).toHaveBeenCalledWith(

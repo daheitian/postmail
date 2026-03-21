@@ -16,7 +16,7 @@ import { getSitePathPrefix, toPublicPath } from "../lib/url.js";
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 /** In-memory cache — persists across requests within a Worker isolate */
-let onboardingComplete = false;
+const completedOnboardingSites = new Set<string>();
 
 /**
  * Middleware that redirects to /setup if onboarding is not complete.
@@ -27,7 +27,7 @@ export function requireOnboarding(): MiddlewareHandler<Env> {
   return async (c, next) => {
     const path = new URL(c.req.url).pathname;
 
-    if (onboardingComplete) {
+    if (completedOnboardingSites.has(c.var.currentSite.id)) {
       return next();
     }
 
@@ -37,7 +37,7 @@ export function requireOnboarding(): MiddlewareHandler<Env> {
 
     const isComplete = await c.var.services.settings.isOnboardingComplete();
     if (isComplete) {
-      onboardingComplete = true;
+      completedOnboardingSites.add(c.var.currentSite.id);
       return next();
     }
 
@@ -66,5 +66,5 @@ function shouldRedirect(path: string): boolean {
  * @internal
  */
 export function resetOnboardingCache() {
-  onboardingComplete = false;
+  completedOnboardingSites.clear();
 }

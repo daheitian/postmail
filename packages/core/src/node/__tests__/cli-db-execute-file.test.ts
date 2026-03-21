@@ -9,6 +9,7 @@ import type { Bindings } from "../../types.js";
 describe("jant db execute-file", () => {
   const tempDirs: string[] = [];
   const originalEnv = process.env.DATABASE_URL;
+  const siteId = "sit_01jpyz2pvf4m7s2k8r5c9t0qce";
 
   afterEach(async () => {
     if (originalEnv === undefined) {
@@ -38,8 +39,11 @@ describe("jant db execute-file", () => {
     await writeFile(
       sqlPath,
       `
-        INSERT INTO "setting" ("key", "value", "updated_at")
-        VALUES ('SITE_NAME', 'Imported Site', 1774009200);
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${siteId}', 'default', 'active', 1774009100, 1774009100);
+
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at")
+        VALUES ('${siteId}', 'SITE_NAME', 'Imported Site', 1774009200);
       `,
     );
 
@@ -51,7 +55,9 @@ describe("jant db execute-file", () => {
     const sqlite = new Database(databasePath, { readonly: true });
     try {
       const value = sqlite
-        .prepare(`SELECT "value" FROM "setting" WHERE "key" = 'SITE_NAME'`)
+        .prepare(
+          `SELECT "value" FROM "site_setting" WHERE "site_id" = '${siteId}' AND "key" = 'SITE_NAME'`,
+        )
         .pluck()
         .get();
       expect(value).toBe("Imported Site");

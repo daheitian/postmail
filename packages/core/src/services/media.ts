@@ -157,12 +157,12 @@ export interface CreateMediaData {
   mediaKind?: MediaKind;
 }
 
-export function createMediaService(db: Database): MediaService {
+export function createMediaService(db: Database, siteId: string): MediaService {
   async function getLastPosition(postId: string): Promise<string | null> {
     const rows = await db
       .select({ position: media.position })
       .from(media)
-      .where(eq(media.postId, postId))
+      .where(and(eq(media.siteId, siteId), eq(media.postId, postId)))
       .orderBy(sql`${media.position} DESC`)
       .limit(1);
     return rows[0]?.position ?? null;
@@ -183,6 +183,7 @@ export function createMediaService(db: Database): MediaService {
   function toMedia(row: typeof media.$inferSelect): Media {
     return {
       id: row.id,
+      siteId: row.siteId,
       postId: row.postId,
       filename: row.filename,
       originalName: row.originalName,
@@ -210,14 +211,17 @@ export function createMediaService(db: Database): MediaService {
       const result = await db
         .select()
         .from(media)
-        .where(eq(media.id, id))
+        .where(and(eq(media.siteId, siteId), eq(media.id, id)))
         .limit(1);
       return result[0] ? toMedia(result[0]) : null;
     },
 
     async getByIds(ids) {
       if (ids.length === 0) return [];
-      const rows = await db.select().from(media).where(inArray(media.id, ids));
+      const rows = await db
+        .select()
+        .from(media)
+        .where(and(eq(media.siteId, siteId), inArray(media.id, ids)));
       return rows.map(toMedia);
     },
 
@@ -225,7 +229,7 @@ export function createMediaService(db: Database): MediaService {
       const rows = await db
         .select()
         .from(media)
-        .where(eq(media.postId, postId))
+        .where(and(eq(media.siteId, siteId), eq(media.postId, postId)))
         .orderBy(asc(media.position));
       return rows.map(toMedia);
     },
@@ -237,7 +241,7 @@ export function createMediaService(db: Database): MediaService {
       const rows = await db
         .select()
         .from(media)
-        .where(inArray(media.postId, postIds))
+        .where(and(eq(media.siteId, siteId), inArray(media.postId, postIds)))
         .orderBy(asc(media.position));
 
       for (const row of rows) {
@@ -259,7 +263,11 @@ export function createMediaService(db: Database): MediaService {
         .select()
         .from(media)
         .where(
-          and(eq(media.storageKey, storageKey), eq(media.provider, provider)),
+          and(
+            eq(media.siteId, siteId),
+            eq(media.storageKey, storageKey),
+            eq(media.provider, provider),
+          ),
         )
         .limit(1);
       return result[0] ? toMedia(result[0]) : null;
@@ -267,7 +275,7 @@ export function createMediaService(db: Database): MediaService {
 
     async list(filters?: MediaFilters) {
       const limit = filters?.limit ?? 100;
-      const conditions = [];
+      const conditions = [eq(media.siteId, siteId)];
       if (filters?.mimePrefix) {
         conditions.push(
           sql`${media.mimeType} LIKE ${filters.mimePrefix + "%"}`,
@@ -315,6 +323,7 @@ export function createMediaService(db: Database): MediaService {
         .insert(media)
         .values({
           id,
+          siteId,
           postId: data.postId ?? null,
           filename: data.filename,
           originalName: data.originalName,
@@ -376,6 +385,7 @@ export function createMediaService(db: Database): MediaService {
       }
 
       const { id, filename, storageKey } = generateStorageKey(
+        siteId,
         ATTACHED_TEXT_FILENAME,
       );
       await deps.storage.put(storageKey, bytes, {
@@ -433,7 +443,7 @@ export function createMediaService(db: Database): MediaService {
           position: DEFAULT_MEDIA_POSITION,
           updatedAt: timestamp,
         })
-        .where(eq(media.postId, postId));
+        .where(and(eq(media.siteId, siteId), eq(media.postId, postId)));
 
       const validIds = mediaIds.filter((id): id is string => Boolean(id));
       if (validIds.length === 0) {
@@ -454,7 +464,7 @@ export function createMediaService(db: Database): MediaService {
         return db
           .update(media)
           .set({ postId, position, updatedAt: timestamp })
-          .where(eq(media.id, mediaId));
+          .where(and(eq(media.siteId, siteId), eq(media.id, mediaId)));
       });
       await db.batch([clearQuery, ...attachQueries] as [
         typeof clearQuery,
@@ -466,14 +476,14 @@ export function createMediaService(db: Database): MediaService {
       await db
         .update(media)
         .set({ postId: null, position: DEFAULT_MEDIA_POSITION })
-        .where(eq(media.postId, postId));
+        .where(and(eq(media.siteId, siteId), eq(media.postId, postId)));
     },
 
     async updateAlt(id, alt) {
       await db
         .update(media)
         .set({ alt, updatedAt: now() })
-        .where(eq(media.id, id));
+        .where(and(eq(media.siteId, siteId), eq(media.id, id)));
     },
 
     async delete(id, storage) {
@@ -493,7 +503,9 @@ export function createMediaService(db: Database): MediaService {
         }
       }
 
-      await db.delete(media).where(eq(media.id, id));
+      await db
+        .delete(media)
+        .where(and(eq(media.siteId, siteId), eq(media.id, id)));
       return true;
     },
 
@@ -515,7 +527,9 @@ export function createMediaService(db: Database): MediaService {
         );
       }
 
-      await db.delete(media).where(inArray(media.id, ids));
+      await db
+        .delete(media)
+        .where(and(eq(media.siteId, siteId), inArray(media.id, ids)));
     },
   };
 }

@@ -7,7 +7,10 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../../__tests__/helpers/db.js";
 import { createPostService } from "../../../services/post.js";
 import type { Database } from "../../../db/index.js";
 
@@ -18,7 +21,11 @@ describe("Featured Page - Data Logic", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    postService = createPostService(db, { slugIdLength: 5 });
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+    );
   });
 
   it("returns only featured published posts", async () => {

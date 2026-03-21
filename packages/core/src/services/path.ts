@@ -71,10 +71,11 @@ function isUniqueConstraintError(err: unknown): boolean {
   return false;
 }
 
-export function createPathService(db: Database): PathService {
+export function createPathService(db: Database, siteId: string): PathService {
   function toPathRecord(row: typeof pathRegistry.$inferSelect): PathRecord {
     return {
       id: row.id,
+      siteId: row.siteId,
       path: row.path,
       kind: row.kind as PathKind,
       postId: row.postId,
@@ -99,6 +100,7 @@ export function createPathService(db: Database): PathService {
         .insert(pathRegistry)
         .values({
           id: createEntityId("path"),
+          siteId,
           path: normalizedPath,
           kind: input.kind,
           postId: input.postId ?? null,
@@ -128,7 +130,12 @@ export function createPathService(db: Database): PathService {
       const result = await db
         .select()
         .from(pathRegistry)
-        .where(eq(pathRegistry.path, normalized))
+        .where(
+          and(
+            eq(pathRegistry.siteId, siteId),
+            eq(pathRegistry.path, normalized),
+          ),
+        )
         .limit(1);
       return result[0] ? toPathRecord(result[0]) : null;
     },
@@ -149,7 +156,10 @@ export function createPathService(db: Database): PathService {
 
     async isPathAvailable(path, excludeId) {
       const normalized = normalizeStoredPath(path);
-      const conditions = [eq(pathRegistry.path, normalized)];
+      const conditions = [
+        eq(pathRegistry.siteId, siteId),
+        eq(pathRegistry.path, normalized),
+      ];
       if (excludeId) conditions.push(ne(pathRegistry.id, excludeId));
 
       const result = await db
@@ -166,7 +176,11 @@ export function createPathService(db: Database): PathService {
         .select({ path: pathRegistry.path })
         .from(pathRegistry)
         .where(
-          and(eq(pathRegistry.postId, postId), eq(pathRegistry.kind, "slug")),
+          and(
+            eq(pathRegistry.siteId, siteId),
+            eq(pathRegistry.postId, postId),
+            eq(pathRegistry.kind, "slug"),
+          ),
         )
         .limit(1);
       return result[0]?.path ?? null;
@@ -178,6 +192,7 @@ export function createPathService(db: Database): PathService {
         .from(pathRegistry)
         .where(
           and(
+            eq(pathRegistry.siteId, siteId),
             eq(pathRegistry.collectionId, collectionId),
             eq(pathRegistry.kind, "slug"),
           ),
@@ -199,6 +214,7 @@ export function createPathService(db: Database): PathService {
           .from(pathRegistry)
           .where(
             and(
+              eq(pathRegistry.siteId, siteId),
               inArray(pathRegistry.postId, chunk),
               eq(pathRegistry.kind, "slug"),
               isNotNull(pathRegistry.postId),
@@ -225,6 +241,7 @@ export function createPathService(db: Database): PathService {
           .from(pathRegistry)
           .where(
             and(
+              eq(pathRegistry.siteId, siteId),
               inArray(pathRegistry.collectionId, chunk),
               eq(pathRegistry.kind, "slug"),
               isNotNull(pathRegistry.collectionId),
@@ -260,7 +277,11 @@ export function createPathService(db: Database): PathService {
             updatedAt: timestamp,
           })
           .where(
-            and(eq(pathRegistry.postId, postId), eq(pathRegistry.kind, "slug")),
+            and(
+              eq(pathRegistry.siteId, siteId),
+              eq(pathRegistry.postId, postId),
+              eq(pathRegistry.kind, "slug"),
+            ),
           );
       } catch (err) {
         if (isUniqueConstraintError(err)) {
@@ -291,6 +312,7 @@ export function createPathService(db: Database): PathService {
           })
           .where(
             and(
+              eq(pathRegistry.siteId, siteId),
               eq(pathRegistry.collectionId, collectionId),
               eq(pathRegistry.kind, "slug"),
             ),
@@ -304,7 +326,11 @@ export function createPathService(db: Database): PathService {
     },
 
     async deleteByPostId(postId) {
-      await db.delete(pathRegistry).where(eq(pathRegistry.postId, postId));
+      await db
+        .delete(pathRegistry)
+        .where(
+          and(eq(pathRegistry.siteId, siteId), eq(pathRegistry.postId, postId)),
+        );
     },
 
     async getPostAliases(postIds) {
@@ -320,6 +346,7 @@ export function createPathService(db: Database): PathService {
           .from(pathRegistry)
           .where(
             and(
+              eq(pathRegistry.siteId, siteId),
               inArray(pathRegistry.postId, chunk),
               inArray(pathRegistry.kind, ["alias", "redirect"]),
               isNotNull(pathRegistry.postId),

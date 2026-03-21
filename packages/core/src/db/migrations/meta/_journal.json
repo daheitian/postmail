@@ -15,6 +15,20 @@
       "when": 1773963784193,
       "tag": "0001_fts_setup",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1774113199099,
+      "tag": "0002_site_aware_core",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1774113200000,
+      "tag": "0003_fts_site_aware",
+      "breakpoints": true
     }
   ]
 }

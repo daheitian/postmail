@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { createNavItemService } from "../navigation.js";
 import type { Database } from "../../db/index.js";
 
@@ -10,7 +13,7 @@ describe("NavItemService", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    navItemService = createNavItemService(db);
+    navItemService = createNavItemService(db, DEFAULT_TEST_SITE_ID);
   });
 
   describe("create", () => {

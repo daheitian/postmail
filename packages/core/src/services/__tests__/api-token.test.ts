@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { createApiTokenService } from "../api-token.js";
 import type { Database } from "../../db/index.js";
 
@@ -10,7 +13,7 @@ describe("ApiTokenService", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    service = createApiTokenService(db);
+    service = createApiTokenService(db, DEFAULT_TEST_SITE_ID);
   });
 
   describe("create", () => {

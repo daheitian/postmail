@@ -62,6 +62,7 @@ export interface Bindings {
   // RSS feed
   RSS_FEED_LIMIT?: EnvBindingValue;
   DATABASE_URL?: string;
+  JANT_SITE_RESOLUTION_MODE?: EnvBindingValue;
   HOST?: string;
   PORT?: string;
 }

@@ -16,6 +16,9 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
+const SITE_STATUSES = ["active", "suspended"] as const;
+const SITE_DOMAIN_KINDS = ["primary", "alias"] as const;
+const SITE_MEMBER_ROLES = ["owner", "admin", "editor"] as const;
 const FORMATS = ["note", "link", "quote"] as const;
 const STATUSES = ["draft", "published"] as const;
 const VISIBILITIES = ["public", "latest_hidden", "private"] as const;
@@ -28,6 +31,89 @@ function sqlTextEnum(values: readonly string[]) {
 }
 
 // =============================================================================
+// Sites
+// =============================================================================
+
+export const sites = sqliteTable(
+  "site",
+  {
+    id: text("id").primaryKey(),
+    key: text("key").notNull(),
+    status: text("status", {
+      enum: SITE_STATUSES,
+    })
+      .notNull()
+      .default("active"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_site_key").on(table.key),
+    check(
+      "chk_site_status",
+      sql`${table.status} IN (${sqlTextEnum(SITE_STATUSES)})`,
+    ),
+  ],
+);
+
+export const siteDomains = sqliteTable(
+  "site_domain",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    host: text("host").notNull(),
+    pathPrefix: text("path_prefix"),
+    kind: text("kind", {
+      enum: SITE_DOMAIN_KINDS,
+    })
+      .notNull()
+      .default("primary"),
+    redirectToPrimary: integer("redirect_to_primary", {
+      mode: "boolean",
+    })
+      .notNull()
+      .default(true),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("uq_site_domain_host").on(table.host),
+    index("idx_site_domain_site_id").on(table.siteId),
+    check(
+      "chk_site_domain_kind",
+      sql`${table.kind} IN (${sqlTextEnum(SITE_DOMAIN_KINDS)})`,
+    ),
+  ],
+);
+
+export const siteMembers = sqliteTable(
+  "site_member",
+  {
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    role: text("role", {
+      enum: SITE_MEMBER_ROLES,
+    })
+      .notNull()
+      .default("editor"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.siteId, table.userId] }),
+    index("idx_site_member_user_id").on(table.userId),
+    check(
+      "chk_site_member_role",
+      sql`${table.role} IN (${sqlTextEnum(SITE_MEMBER_ROLES)})`,
+    ),
+  ],
+);
+
+// =============================================================================
 // Posts
 // =============================================================================
 
@@ -35,6 +121,9 @@ export const posts = sqliteTable(
   "post",
   {
     id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
     format: text("format", {
       enum: FORMATS,
     }).notNull(),
@@ -79,50 +168,48 @@ export const posts = sqliteTable(
         AND ${table.threadId} <> ${table.id}
       )`,
     ),
+    uniqueIndex("uq_post_site_id_id").on(table.siteId, table.id),
     foreignKey({
-      columns: [table.replyToId],
-      foreignColumns: [table.id],
+      columns: [table.siteId, table.replyToId],
+      foreignColumns: [table.siteId, table.id],
     }),
     foreignKey({
-      columns: [table.threadId],
-      foreignColumns: [table.id],
+      columns: [table.siteId, table.threadId],
+      foreignColumns: [table.siteId, table.id],
     }),
-    foreignKey({
-      columns: [table.replyToId, table.threadId],
-      foreignColumns: [table.id, table.threadId],
-    }),
-    uniqueIndex("uq_post_id_thread_id").on(table.id, table.threadId),
-    index("idx_post_thread_id").on(table.threadId),
-    index("idx_post_thread_live_created")
-      .on(table.threadId, table.createdAt, table.id)
+    index("idx_post_site_thread_id").on(table.siteId, table.threadId),
+    index("idx_post_site_thread_live_created")
+      .on(table.siteId, table.threadId, table.createdAt, table.id)
       .where(sql`${table.deletedAt} IS NULL`),
-    index("idx_post_status_deleted_published").on(
+    index("idx_post_site_status_deleted_published").on(
+      table.siteId,
       table.status,
       table.deletedAt,
       table.publishedAt,
     ),
-    index("idx_post_status_deleted_activity").on(
+    index("idx_post_site_status_deleted_activity").on(
+      table.siteId,
       table.status,
       table.deletedAt,
       table.lastActivityAt,
     ),
-    index("idx_post_root_live_published_activity")
-      .on(table.lastActivityAt, table.id)
+    index("idx_post_site_root_live_published_activity")
+      .on(table.siteId, table.lastActivityAt, table.id)
       .where(
         sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NULL AND ${table.status} = 'published'`,
       ),
-    index("idx_post_root_live_draft_updated")
-      .on(table.updatedAt, table.id)
+    index("idx_post_site_root_live_draft_updated")
+      .on(table.siteId, table.updatedAt, table.id)
       .where(
         sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NULL AND ${table.status} = 'draft'`,
       ),
-    index("idx_post_reply_live_thread_created")
-      .on(table.threadId, table.createdAt, table.id)
+    index("idx_post_site_reply_live_thread_created")
+      .on(table.siteId, table.threadId, table.createdAt, table.id)
       .where(
         sql`${table.deletedAt} IS NULL AND ${table.replyToId} IS NOT NULL AND ${table.status} = 'published'`,
       ),
-    index("idx_post_featured_live_featured_at")
-      .on(table.featuredAt, table.threadId, table.id)
+    index("idx_post_site_featured_live_featured_at")
+      .on(table.siteId, table.featuredAt, table.threadId, table.id)
       .where(
         sql`${table.deletedAt} IS NULL AND ${table.status} = 'published' AND ${table.featuredAt} IS NOT NULL`,
       ),
@@ -136,7 +223,10 @@ export const posts = sqliteTable(
 export const media = sqliteTable(
   "media",
   {
-    id: text("id").primaryKey(), // TypeID
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
     postId: text("post_id").references(() => posts.id, {
       onDelete: "set null",
     }),
@@ -174,15 +264,23 @@ export const media = sqliteTable(
       "chk_media_chars_nonnegative",
       sql`${table.chars} IS NULL OR ${table.chars} >= 0`,
     ),
-    index("idx_media_post_id_position").on(table.postId, table.position),
-    uniqueIndex("uq_media_post_position")
-      .on(table.postId, table.position)
+    index("idx_media_site_post_id_position").on(
+      table.siteId,
+      table.postId,
+      table.position,
+    ),
+    uniqueIndex("uq_media_site_post_position")
+      .on(table.siteId, table.postId, table.position)
       .where(sql`${table.postId} IS NOT NULL`),
     uniqueIndex("uq_media_provider_storage_key").on(
       table.provider,
       table.storageKey,
     ),
-    index("idx_media_media_kind_post_id").on(table.mediaKind, table.postId),
+    index("idx_media_site_media_kind_post_id").on(
+      table.siteId,
+      table.mediaKind,
+      table.postId,
+    ),
   ],
 );
 
@@ -194,6 +292,9 @@ export const collections = sqliteTable(
   "collection",
   {
     id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     description: text("description"),
     sortOrder: text("sort_order", {
@@ -209,6 +310,7 @@ export const collections = sqliteTable(
       "chk_collection_sort_order",
       sql`${table.sortOrder} IN (${sqlTextEnum(COLLECTION_SORT_ORDERS)})`,
     ),
+    index("idx_collection_site_created_at").on(table.siteId, table.createdAt),
   ],
 );
 
@@ -220,7 +322,10 @@ export const pathRegistry = sqliteTable(
   "path_registry",
   {
     id: text("id").primaryKey(),
-    path: text("path").notNull().unique(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
     kind: text("kind", {
       enum: ["slug", "alias", "redirect"],
     }).notNull(),
@@ -240,14 +345,18 @@ export const pathRegistry = sqliteTable(
       "chk_path_registry_kind",
       sql`${table.kind} IN ('slug', 'alias', 'redirect')`,
     ),
-    uniqueIndex("uq_path_registry_post_slug")
-      .on(table.postId)
+    uniqueIndex("uq_path_registry_site_path").on(table.siteId, table.path),
+    uniqueIndex("uq_path_registry_site_post_slug")
+      .on(table.siteId, table.postId)
       .where(sql`${table.kind} = 'slug' AND ${table.postId} IS NOT NULL`),
-    uniqueIndex("uq_path_registry_collection_slug")
-      .on(table.collectionId)
+    uniqueIndex("uq_path_registry_site_collection_slug")
+      .on(table.siteId, table.collectionId)
       .where(sql`${table.kind} = 'slug' AND ${table.collectionId} IS NOT NULL`),
-    index("idx_path_registry_post_id").on(table.postId),
-    index("idx_path_registry_collection_id").on(table.collectionId),
+    index("idx_path_registry_site_post_id").on(table.siteId, table.postId),
+    index("idx_path_registry_site_collection_id").on(
+      table.siteId,
+      table.collectionId,
+    ),
     check(
       "chk_path_registry_shape",
       sql`(
@@ -277,6 +386,9 @@ export const collectionDirectoryItems = sqliteTable(
   "collection_directory_item",
   {
     id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
     type: text("type", { enum: ["collection", "divider"] }).notNull(),
     collectionId: text("collection_id").references(() => collections.id, {
       onDelete: "cascade",
@@ -291,10 +403,16 @@ export const collectionDirectoryItems = sqliteTable(
       "chk_collection_directory_item_type",
       sql`${table.type} IN ('collection', 'divider')`,
     ),
-    index("idx_collection_directory_item_collection_id").on(table.collectionId),
-    uniqueIndex("uq_collection_directory_item_position").on(table.position),
-    uniqueIndex("uq_collection_directory_item_collection_once")
-      .on(table.collectionId)
+    index("idx_collection_directory_item_site_collection_id").on(
+      table.siteId,
+      table.collectionId,
+    ),
+    uniqueIndex("uq_collection_directory_item_site_position").on(
+      table.siteId,
+      table.position,
+    ),
+    uniqueIndex("uq_collection_directory_item_site_collection_once")
+      .on(table.siteId, table.collectionId)
       .where(
         sql`${table.type} = 'collection' AND ${table.collectionId} IS NOT NULL`,
       ),
@@ -320,6 +438,9 @@ export const collectionDirectoryItems = sqliteTable(
 export const postCollections = sqliteTable(
   "post_collection",
   {
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
     postId: text("post_id")
       .notNull()
       .references(() => posts.id, { onDelete: "cascade" }),
@@ -329,9 +450,13 @@ export const postCollections = sqliteTable(
     createdAt: integer("created_at").notNull(),
   },
   (table) => [
-    primaryKey({ columns: [table.postId, table.collectionId] }),
-    index("idx_post_collection_collection_id").on(table.collectionId),
-    index("idx_post_collection_collection_created_post").on(
+    primaryKey({ columns: [table.siteId, table.postId, table.collectionId] }),
+    index("idx_post_collection_site_collection_id").on(
+      table.siteId,
+      table.collectionId,
+    ),
+    index("idx_post_collection_site_collection_created_post").on(
+      table.siteId,
       table.collectionId,
       table.createdAt,
       table.postId,
@@ -347,6 +472,9 @@ export const navItems = sqliteTable(
   "nav_item",
   {
     id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
     type: text("type", {
       enum: NAV_ITEM_TYPES,
     })
@@ -380,36 +508,53 @@ export const navItems = sqliteTable(
         AND ${table.systemKey} IS NOT NULL
       )`,
     ),
-    uniqueIndex("uq_nav_item_position").on(table.position),
-    uniqueIndex("uq_nav_item_system_key")
-      .on(table.systemKey)
+    uniqueIndex("uq_nav_item_site_position").on(table.siteId, table.position),
+    uniqueIndex("uq_nav_item_site_system_key")
+      .on(table.siteId, table.systemKey)
       .where(sql`${table.systemKey} IS NOT NULL`),
   ],
 );
 
 // =============================================================================
-// Settings (Key-Value)
+// Settings (site-scoped key-value)
 // =============================================================================
 
-export const settings = sqliteTable("setting", {
-  key: text("key").primaryKey(),
-  value: text("value").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const settings = sqliteTable(
+  "site_setting",
+  {
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    value: text("value").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.siteId, table.key] }),
+    index("idx_site_setting_site_id").on(table.siteId),
+  ],
+);
 
 // =============================================================================
 // API Tokens
 // =============================================================================
 
-export const apiTokens = sqliteTable("api_token", {
-  id: text("id").primaryKey(), // TypeID
-  name: text("name").notNull(), // User-assigned label
-  tokenHash: text("token_hash").notNull().unique(), // SHA-256 hex
-  prefix: text("prefix").notNull(), // First 8 hex chars for display
-  lastUsedAt: integer("last_used_at"), // Unix seconds, null if never used
-  createdAt: integer("created_at").notNull(),
-  updatedAt: integer("updated_at").notNull(),
-});
+export const apiTokens = sqliteTable(
+  "api_token",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    prefix: text("prefix").notNull(),
+    lastUsedAt: integer("last_used_at"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [index("idx_api_token_site_id").on(table.siteId)],
+);
 
 // =============================================================================
 // better-auth tables

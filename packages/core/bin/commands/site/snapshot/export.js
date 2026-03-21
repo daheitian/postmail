@@ -28,6 +28,7 @@ import {
   SNAPSHOT_TABLES,
   snapshotObjectPath,
 } from "../../../lib/site-snapshot.js";
+import { resolveCliSite } from "../../../lib/site-selection.js";
 import { dumpDatabaseToSql } from "../../../lib/sql-export.js";
 import {
   getCliRuntimeLabel,
@@ -240,6 +241,10 @@ export async function run(argv) {
       await mkdir(scratchDir, { recursive: true });
     }
 
+    const { site } = await resolveCliSite(context, {
+      env: process.env,
+    });
+
     const dbSql = await dumpDatabaseToSql(
       {
         query(sql) {
@@ -252,13 +257,13 @@ export async function run(argv) {
         selectSqlByTable: Object.fromEntries(
           SNAPSHOT_TABLES.map((tableName) => [
             tableName,
-            getSnapshotSelectSql(tableName),
+            getSnapshotSelectSql(tableName, site.id),
           ]),
         ),
       },
     );
 
-    const objectRows = await context.query(buildSnapshotStorageQuery());
+    const objectRows = await context.query(buildSnapshotStorageQuery(site.id));
     const objects = collectSnapshotObjects(objectRows);
     const manifestObjects = [];
 
@@ -289,7 +294,7 @@ export async function run(argv) {
         buildSnapshotMeta({
           runtime,
           label: getCliRuntimeLabel(runtime),
-        }),
+        }, site),
         null,
         2,
       ) + "\n",

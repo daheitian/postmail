@@ -46,6 +46,14 @@ export function getSiteUrl(env: EnvSource): string {
   return getEnvString(env, "SITE_URL") ?? "";
 }
 
+export function getSiteResolutionMode(
+  env: EnvSource,
+): "single-site" | "host-based" {
+  return getEnvString(env, "JANT_SITE_RESOLUTION_MODE") === "host-based"
+    ? "host-based"
+    : "single-site";
+}
+
 export function getAuthSecret(env: EnvSource): string | undefined {
   return getEnvString(env, "AUTH_SECRET");
 }

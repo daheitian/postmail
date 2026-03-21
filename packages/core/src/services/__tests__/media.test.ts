@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Test assertions use ! for readability */
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { createMediaService } from "../media.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
@@ -46,8 +49,12 @@ describe("MediaService", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    mediaService = createMediaService(db);
-    postService = createPostService(db, { slugIdLength: 5 });
+    mediaService = createMediaService(db, DEFAULT_TEST_SITE_ID);
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+    );
   });
 
   const sampleMedia = {

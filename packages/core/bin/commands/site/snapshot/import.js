@@ -24,9 +24,13 @@ import {
   buildReplaceSql,
   buildSnapshotStorageQuery,
   collectSnapshotObjects,
+  getSnapshotBootstrapSite,
   normalizeD1Sql,
+  rewriteLegacySnapshotSql,
   sha256File,
+  validateSnapshotTargetSite,
 } from "../../../lib/site-snapshot.js";
+import { resolveCliSite } from "../../../lib/site-selection.js";
 import { resolveCliRuntime } from "../../../lib/runtime-target.js";
 
 function isZipPath(filePath) {
@@ -246,10 +250,19 @@ export async function run(argv) {
     assertSnapshotManifest(manifest);
     await validateManifestObjects(materialized.rootDir, manifest);
 
+    const { site: targetSite } = await resolveCliSite(context, {
+      env: process.env,
+      createIfMissing: true,
+      bootstrapSite: getSnapshotBootstrapSite(meta),
+    });
+    validateSnapshotTargetSite(meta, targetSite);
+
     const snapshotKeys = new Set(
       manifest.objects.map((object) => String(object.key)),
     );
-    const currentObjectRows = await context.query(buildSnapshotStorageQuery());
+    const currentObjectRows = await context.query(
+      buildSnapshotStorageQuery(targetSite.id),
+    );
     const currentKeys = new Set(
       collectSnapshotObjects(currentObjectRows).map((object) => object.key),
     );
@@ -262,8 +275,14 @@ export async function run(argv) {
       );
     }
 
-    const dbSql = await readFile(join(materialized.rootDir, "db.sql"), "utf-8");
-    await context.execute(`${buildReplaceSql()}\n${dbSql}`);
+    const rawDbSql = await readFile(
+      join(materialized.rootDir, "db.sql"),
+      "utf-8",
+    );
+    const dbSql = getSnapshotBootstrapSite(meta)
+      ? rawDbSql
+      : rewriteLegacySnapshotSql(rawDbSql, targetSite.id);
+    await context.execute(`${buildReplaceSql(targetSite.id)}\n${dbSql}`);
 
     const keysToDelete = [...currentKeys].filter((key) => !snapshotKeys.has(key));
     for (const key of keysToDelete) {

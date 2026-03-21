@@ -20,6 +20,7 @@ import { createNavItemService, type NavItemService } from "./navigation.js";
 import { createAuthService, type AuthService } from "./auth.js";
 import { createApiTokenService, type ApiTokenService } from "./api-token.js";
 import { createBootstrapService, type BootstrapService } from "./bootstrap.js";
+import { createSiteMemberService } from "./site-member.js";
 
 export interface Services {
   settings: SettingsService;
@@ -38,11 +39,13 @@ export interface Services {
 export function createServices(
   db: Database,
   rawQuery: RawQueryClient,
+  siteId: string,
   config?: { slugIdLength?: number },
 ): Services {
-  const settings = createSettingsService(db);
-  const paths = createPathService(db);
-  const navItems = createNavItemService(db);
+  const settings = createSettingsService(db, siteId);
+  const paths = createPathService(db, siteId);
+  const navItems = createNavItemService(db, siteId);
+  const siteMembers = createSiteMemberService(db);
   return {
     settings,
     paths,
@@ -51,16 +54,17 @@ export function createServices(
       {
         slugIdLength: config?.slugIdLength ?? 5,
       },
+      siteId,
       paths,
     ),
-    customUrls: createCustomUrlService(db, paths),
-    media: createMediaService(db),
-    collections: createCollectionService(db, paths),
-    search: createSearchService(rawQuery),
+    customUrls: createCustomUrlService(db, siteId, paths),
+    media: createMediaService(db, siteId),
+    collections: createCollectionService(db, siteId, paths),
+    search: createSearchService(rawQuery, siteId),
     navItems,
     auth: createAuthService(db, settings),
-    apiTokens: createApiTokenService(db),
-    bootstrap: createBootstrapService(settings, navItems),
+    apiTokens: createApiTokenService(db, siteId),
+    bootstrap: createBootstrapService(settings, navItems, siteMembers, siteId),
   };
 }
 

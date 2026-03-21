@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import {
   collections,
   collectionDirectoryItems as sidebarItems,
@@ -18,8 +21,12 @@ describe("CollectionService", () => {
   beforeEach(() => {
     const testDb = createTestDatabase();
     db = testDb.db as unknown as Database;
-    collectionService = createCollectionService(db);
-    postService = createPostService(db, { slugIdLength: 5 });
+    collectionService = createCollectionService(db, DEFAULT_TEST_SITE_ID);
+    postService = createPostService(
+      db,
+      { slugIdLength: 5 },
+      DEFAULT_TEST_SITE_ID,
+    );
   });
 
   describe("create", () => {
@@ -80,12 +87,16 @@ describe("CollectionService", () => {
         title: "Existing",
       });
 
-      const paths = createPathService(db);
+      const paths = createPathService(db, DEFAULT_TEST_SITE_ID);
       const raceyPaths = {
         ...paths,
         isPathAvailable: async () => true,
       };
-      const raceyCollectionService = createCollectionService(db, raceyPaths);
+      const raceyCollectionService = createCollectionService(
+        db,
+        DEFAULT_TEST_SITE_ID,
+        raceyPaths,
+      );
 
       await expect(
         raceyCollectionService.create({

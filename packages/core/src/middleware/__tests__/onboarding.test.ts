@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { requireOnboarding, resetOnboardingCache } from "../onboarding.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
+import { DEFAULT_TEST_SITE_ID } from "../../__tests__/helpers/db.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -25,6 +26,14 @@ function createApp(complete: boolean) {
 
   app.use("*", async (c, next) => {
     c.set("services", mock.services);
+    c.set("currentSite", {
+      id: DEFAULT_TEST_SITE_ID,
+      key: "default",
+      status: "active",
+      createdAt: 0,
+      updatedAt: 0,
+    });
+    c.set("currentSiteDomain", null);
     await next();
   });
   app.use("*", requireOnboarding());

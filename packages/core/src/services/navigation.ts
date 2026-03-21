@@ -5,7 +5,7 @@
  * with fractional indexing for efficient reordering.
  */
 
-import { eq, asc, sql } from "drizzle-orm";
+import { and, eq, asc, sql } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
 import type { Database } from "../db/index.js";
 import { navItems } from "../db/schema.js";
@@ -57,7 +57,10 @@ export interface NavItemService {
   ): Promise<NavItem | null>;
 }
 
-export function createNavItemService(db: Database): NavItemService {
+export function createNavItemService(
+  db: Database,
+  siteId: string,
+): NavItemService {
   const defaultSystemOrder = [
     "collections",
     "archive",
@@ -68,6 +71,7 @@ export function createNavItemService(db: Database): NavItemService {
   function toNavItem(row: typeof navItems.$inferSelect): NavItem {
     return {
       id: row.id,
+      siteId: row.siteId,
       type: row.type as NavItemType,
       systemKey: (row.systemKey as SystemNavKey | null) ?? undefined,
       label: row.label,
@@ -107,6 +111,7 @@ export function createNavItemService(db: Database): NavItemService {
     const rows = await db
       .select({ position: navItems.position })
       .from(navItems)
+      .where(eq(navItems.siteId, siteId))
       .orderBy(sql`${navItems.position} DESC`)
       .limit(1);
     return rows[0]?.position ?? null;
@@ -116,6 +121,7 @@ export function createNavItemService(db: Database): NavItemService {
     const rows = await db
       .select({ id: navItems.id, position: navItems.position })
       .from(navItems)
+      .where(eq(navItems.siteId, siteId))
       .orderBy(asc(navItems.position));
     return excludeId ? rows.filter((row) => row.id !== excludeId) : rows;
   }
@@ -159,6 +165,7 @@ export function createNavItemService(db: Database): NavItemService {
       const rows = await db
         .select()
         .from(navItems)
+        .where(eq(navItems.siteId, siteId))
         .orderBy(asc(navItems.position));
       return rows.map(toNavItem);
     },
@@ -167,7 +174,7 @@ export function createNavItemService(db: Database): NavItemService {
       const result = await db
         .select()
         .from(navItems)
-        .where(eq(navItems.id, id))
+        .where(and(eq(navItems.siteId, siteId), eq(navItems.id, id)))
         .limit(1);
       return result[0] ? toNavItem(result[0]) : null;
     },
@@ -181,7 +188,12 @@ export function createNavItemService(db: Database): NavItemService {
         const existingSystemItem = await db
           .select({ id: navItems.id })
           .from(navItems)
-          .where(eq(navItems.systemKey, normalized.systemKey))
+          .where(
+            and(
+              eq(navItems.siteId, siteId),
+              eq(navItems.systemKey, normalized.systemKey),
+            ),
+          )
           .limit(1);
 
         if (existingSystemItem[0]) {
@@ -194,6 +206,7 @@ export function createNavItemService(db: Database): NavItemService {
           .insert(navItems)
           .values({
             id,
+            siteId,
             type: normalized.type,
             systemKey: normalized.systemKey,
             label: normalized.label,
@@ -214,6 +227,7 @@ export function createNavItemService(db: Database): NavItemService {
             .insert(navItems)
             .values({
               id,
+              siteId,
               type: normalized.type,
               systemKey: normalized.systemKey,
               label: normalized.label,
@@ -243,7 +257,12 @@ export function createNavItemService(db: Database): NavItemService {
       const existingRows = await db
         .select({ systemKey: navItems.systemKey })
         .from(navItems)
-        .where(sql`${navItems.systemKey} IS NOT NULL`);
+        .where(
+          and(
+            eq(navItems.siteId, siteId),
+            sql`${navItems.systemKey} IS NOT NULL`,
+          ),
+        );
       const existing = new Set(
         existingRows.flatMap((row) =>
           row.systemKey ? [row.systemKey as SystemNavKey] : [],
@@ -278,7 +297,7 @@ export function createNavItemService(db: Database): NavItemService {
       const existing = await db
         .select()
         .from(navItems)
-        .where(eq(navItems.id, id))
+        .where(and(eq(navItems.siteId, siteId), eq(navItems.id, id)))
         .limit(1);
       if (!existing[0]) return null;
 
@@ -299,7 +318,7 @@ export function createNavItemService(db: Database): NavItemService {
           ...(data.position !== undefined && { position: data.position }),
           updatedAt: timestamp,
         })
-        .where(eq(navItems.id, id))
+        .where(and(eq(navItems.siteId, siteId), eq(navItems.id, id)))
         .returning();
 
       return result[0] ? toNavItem(result[0]) : null;
@@ -308,7 +327,7 @@ export function createNavItemService(db: Database): NavItemService {
     async delete(id) {
       const result = await db
         .delete(navItems)
-        .where(eq(navItems.id, id))
+        .where(and(eq(navItems.siteId, siteId), eq(navItems.id, id)))
         .returning();
       return result.length > 0;
     },
@@ -318,7 +337,7 @@ export function createNavItemService(db: Database): NavItemService {
       const items = await db
         .select()
         .from(navItems)
-        .where(eq(navItems.id, id))
+        .where(and(eq(navItems.siteId, siteId), eq(navItems.id, id)))
         .limit(1);
       if (!items[0]) return null;
 
@@ -331,7 +350,7 @@ export function createNavItemService(db: Database): NavItemService {
               position: await getMovePosition(id, afterId, beforeId),
               updatedAt: timestamp,
             })
-            .where(eq(navItems.id, id))
+            .where(and(eq(navItems.siteId, siteId), eq(navItems.id, id)))
             .returning();
 
           return result[0] ? toNavItem(result[0]) : null;
