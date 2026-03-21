@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
+import { createEntityId } from "../../../lib/ids.js";
 import { MAX_COLLECTION_SLUG_LENGTH } from "../../../types.js";
 import { collectionsApiRoutes } from "../collections.js";
 
@@ -135,10 +136,9 @@ describe("Collections API Routes", () => {
     it("returns 404 for non-existent collection", async () => {
       const { app } = createTestApp();
       app.route("/api/collections", collectionsApiRoutes);
+      const missingId = createEntityId("collection");
 
-      const res = await app.request(
-        `/api/collections/${"00000000-0000-0000-0000-000000009999"}`,
-      );
+      const res = await app.request(`/api/collections/${missingId}`);
       expect(res.status).toBe(404);
     });
   });
@@ -249,15 +249,13 @@ describe("Collections API Routes", () => {
     it("returns 404 for non-existent collection", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
+      const missingId = createEntityId("collection");
 
-      const res = await app.request(
-        `/api/collections/${"00000000-0000-0000-0000-000000009999"}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: "test" }),
-        },
-      );
+      const res = await app.request(`/api/collections/${missingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: "test" }),
+      });
 
       expect(res.status).toBe(404);
     });
@@ -304,11 +302,11 @@ describe("Collections API Routes", () => {
     it("returns 404 for non-existent collection", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
+      const missingId = createEntityId("collection");
 
-      const res = await app.request(
-        `/api/collections/${"00000000-0000-0000-0000-000000009999"}`,
-        { method: "DELETE" },
-      );
+      const res = await app.request(`/api/collections/${missingId}`, {
+        method: "DELETE",
+      });
 
       expect(res.status).toBe(404);
     });
@@ -437,20 +435,18 @@ describe("Collections API Routes", () => {
     it("returns 404 for non-existent collection", async () => {
       const { app, services } = createTestApp({ authenticated: true });
       app.route("/api/collections", collectionsApiRoutes);
+      const missingId = createEntityId("collection");
 
       const post = await services.posts.create({
         format: "note",
         bodyMarkdown: "test",
       });
 
-      const res = await app.request(
-        `/api/collections/${"00000000-0000-0000-0000-000000009999"}/posts`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ postId: post.id }),
-        },
-      );
+      const res = await app.request(`/api/collections/${missingId}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId: post.id }),
+      });
 
       expect(res.status).toBe(404);
     });

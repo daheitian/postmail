@@ -8,6 +8,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { CreateCustomUrlSchema, parseValidated } from "../../lib/schemas.js";
 import { parseIdParam, NotFoundError } from "../../lib/errors.js";
+import { ID_PREFIX } from "../../lib/ids.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -71,7 +72,7 @@ customUrlsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Delete custom URL (requires auth)
 customUrlsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.path);
 
   const success = await c.var.services.customUrls.delete(id);
   if (!success) throw new NotFoundError("Custom URL");

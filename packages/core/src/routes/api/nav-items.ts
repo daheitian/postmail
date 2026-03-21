@@ -9,18 +9,20 @@ import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import {
   CreateNavItemSchema,
+  NavItemIdSchema,
   UpdateNavItemSchema,
   parseValidated,
 } from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
+import { ID_PREFIX } from "../../lib/ids.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 export const navItemsApiRoutes = new Hono<Env>();
 
 const MoveSchema = z.object({
-  after: z.string().nullable().optional(),
-  before: z.string().nullable().optional(),
+  after: NavItemIdSchema.nullable().optional(),
+  before: NavItemIdSchema.nullable().optional(),
 });
 
 // List nav items
@@ -31,7 +33,7 @@ navItemsApiRoutes.get("/", async (c) => {
 
 // Move nav item (requires auth) — must be before /:id
 navItemsApiRoutes.put("/:id/move", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.navItem);
   const body = parseValidated(MoveSchema, await c.req.json());
 
   const item = assertFound(
@@ -66,7 +68,7 @@ navItemsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Update nav item (requires auth)
 navItemsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.navItem);
   const body = parseValidated(UpdateNavItemSchema, await c.req.json());
 
   const item = assertFound(
@@ -79,7 +81,7 @@ navItemsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
 // Delete nav item (requires auth)
 navItemsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.navItem);
 
   const success = await c.var.services.navItems.delete(id);
   if (!success) throw new NotFoundError("Nav item");

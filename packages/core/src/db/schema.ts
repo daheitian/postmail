@@ -136,7 +136,7 @@ export const posts = sqliteTable(
 export const media = sqliteTable(
   "media",
   {
-    id: text("id").primaryKey(), // UUIDv7
+    id: text("id").primaryKey(), // TypeID
     postId: text("post_id").references(() => posts.id, {
       onDelete: "set null",
     }),
@@ -402,7 +402,7 @@ export const settings = sqliteTable("setting", {
 // =============================================================================
 
 export const apiTokens = sqliteTable("api_token", {
-  id: text("id").primaryKey(), // UUIDv7
+  id: text("id").primaryKey(), // TypeID
   name: text("name").notNull(), // User-assigned label
   tokenHash: text("token_hash").notNull().unique(), // SHA-256 hex
   prefix: text("prefix").notNull(), // First 8 hex chars for display

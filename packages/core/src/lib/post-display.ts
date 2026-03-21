@@ -38,7 +38,7 @@ function canViewPost(post: Post, isAuthenticated: boolean): boolean {
  * Assembles a single post card view with thread metadata.
  *
  * @param c - Hono context (provides services + appConfig)
- * @param postId - UUID of the post to render
+ * @param postId - TypeID of the post to render
  * @param options - Auth state used to enforce private post visibility
  * @returns Render-ready post card view, or null when it should not be shown
  */
@@ -97,7 +97,7 @@ export async function assemblePostCardView(
  * Assembles the post permalink view, including the full thread when needed.
  *
  * @param c - Hono context (provides services + appConfig)
- * @param postOrId - UUID of the post or a preloaded post record
+ * @param postOrId - TypeID of the post or a preloaded post record
  * @param options - Auth state used to enforce private post visibility
  * @returns Render-ready permalink view data, or null when it should not be shown
  */

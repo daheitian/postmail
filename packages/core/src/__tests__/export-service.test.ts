@@ -199,7 +199,7 @@ describe("createExportService", () => {
       originalName: "attached-text.md",
       mimeType: "text/x-tiptap+json",
       size: 128,
-      storageKey: "media/2026/03/attached-text.json",
+      storageKey: "media/attached-text.json",
       provider: "local",
       width: null,
       height: null,
@@ -338,7 +338,7 @@ describe("createExportService", () => {
       showHeaderAvatar: true,
       siteAvatarUrl: "https://example.com/media/avatar.webp",
       faviconIcoBase64: Buffer.from(customFaviconBytes).toString("base64"),
-      appleTouchIconStorageKey: "favicon/apple-touch-icon.png",
+      appleTouchIconStorageKey: "site/apple-touch-icon.png",
       faviconVersion: "20260319",
       themeId: "paper",
       defaultThemeId: "paper",
@@ -351,7 +351,7 @@ describe("createExportService", () => {
     const zip = await createExportService(services, siteConfig, {
       storage: {
         get: async (key: string) =>
-          key === "favicon/apple-touch-icon.png"
+          key === "site/apple-touch-icon.png"
             ? ({
                 body: new Response(customAppleTouchBytes).body,
               } as never)

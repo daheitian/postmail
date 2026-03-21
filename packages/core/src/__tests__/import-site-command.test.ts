@@ -7,15 +7,15 @@ import { __test__ } from "../../bin/commands/import-site.js";
 describe("import-site command helpers", () => {
   it("resolves exported relative media URLs against base_url", () => {
     expect(
-      __test__.resolveImportUrl("/blog/media/2026/03/file.webp", {
+      __test__.resolveImportUrl("/blog/media/file.webp", {
         base_url: "https://example.com/blog",
       }),
-    ).toBe("https://example.com/blog/media/2026/03/file.webp");
+    ).toBe("https://example.com/blog/media/file.webp");
     expect(
-      __test__.resolveImportUrl("media/2026/03/file.webp", {
+      __test__.resolveImportUrl("media/file.webp", {
         base_url: "https://example.com/blog/",
       }),
-    ).toBe("https://example.com/blog/media/2026/03/file.webp");
+    ).toBe("https://example.com/blog/media/file.webp");
   });
 
   it("keeps data URLs unchanged", () => {

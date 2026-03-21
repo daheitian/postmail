@@ -8,7 +8,6 @@
 import { eq, asc, sql, and, inArray, desc } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { generateKeyBetween } from "fractional-indexing";
-import { uuidv7 } from "uuidv7";
 import { type Database, batchQueryRows } from "../db/index.js";
 import {
   collections,
@@ -17,6 +16,7 @@ import {
   postCollections,
   posts,
 } from "../db/schema.js";
+import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import type {
   Collection,
@@ -437,7 +437,7 @@ export function createCollectionService(
 
     async create(data) {
       const normalizedData = normalizeCreateCollectionInput(data);
-      const id = uuidv7();
+      const id = createEntityId("collection");
       const timestamp = now();
       const slugPath = toCollectionPath(normalizedData.slug);
 
@@ -454,7 +454,7 @@ export function createCollectionService(
               updatedAt: timestamp,
             }),
             db.insert(pathRegistry).values({
-              id: uuidv7(),
+              id: createEntityId("path"),
               path: slugPath,
               kind: "slug",
               postId: null,
@@ -465,7 +465,7 @@ export function createCollectionService(
               updatedAt: timestamp,
             }),
             db.insert(sidebarItems).values({
-              id: uuidv7(),
+              id: createEntityId("collectionDirectoryItem"),
               type: "collection",
               collectionId: id,
               position,
@@ -572,7 +572,7 @@ export function createCollectionService(
     },
 
     async createSidebarItem(type, collectionId, label) {
-      const id = uuidv7();
+      const id = createEntityId("collectionDirectoryItem");
       const timestamp = now();
       const normalizedLabel =
         type === "divider" ? normalizeSidebarLabel(label) : null;

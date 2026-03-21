@@ -19,7 +19,7 @@ export interface SlugOptions {
   title?: string;
   /** Length of random IDs */
   idLength: number;
-  /** Callback to check if a slug is available (checks posts.slug + custom_urls.path) */
+  /** Callback to check if a slug is available (checks post slugs + path_registry paths) */
   isAvailable: (slug: string) => Promise<boolean>;
 }
 

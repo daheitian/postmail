@@ -7,9 +7,9 @@
 
 import { eq, asc, sql } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
-import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { navItems } from "../db/schema.js";
+import { createEntityId } from "../lib/ids.js";
 import { ValidationError } from "../lib/errors.js";
 import { now } from "../lib/time.js";
 import type {
@@ -173,7 +173,7 @@ export function createNavItemService(db: Database): NavItemService {
     },
 
     async create(data) {
-      const id = uuidv7();
+      const id = createEntityId("navItem");
       const timestamp = now();
       const normalized = normalizeCreateData(data);
 

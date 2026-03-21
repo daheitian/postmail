@@ -7,6 +7,18 @@ import { createLocalDriver } from "../../lib/storage.js";
 import { migrate } from "../runtime.js";
 import type { Bindings } from "../../types.js";
 
+const SNAPSHOT_COLLECTION_ID = "col_01jpyy08bc4w2h8r7m3q5t9kdn";
+const SNAPSHOT_NAV_ID = "nav_01jpyy0gqv4m7r2k8s5c1t9bdh";
+const SNAPSHOT_DIRECTORY_ITEM_ID = "cdi_01jpyy0r6s3m8v1k5t9q2b4gcn";
+const SNAPSHOT_POST_ID = "pst_01jpyy18fh4w2m7r8k3c5t9qdn";
+const SNAPSHOT_PATH_ID = "pth_01jpyy1k2v6m4s8r1t5c9b3qgh";
+const SNAPSHOT_MEDIA_ID = "med_01jpyy1vxh4m7s2k8r5c9t3qbn";
+const SNAPSHOT_MEDIA_KEY = `media/${SNAPSHOT_MEDIA_ID}.png`;
+const SNAPSHOT_POSTER_KEY = `media/${SNAPSHOT_MEDIA_ID}.poster.webp`;
+const SNAPSHOT_OLD_POST_ID = "pst_01jpyy2c4s7m8r1k5t9b3q6dgh";
+const SNAPSHOT_OLD_PATH_ID = "pth_01jpyy2pbh4m6s8r1k5t9c3qgn";
+const SNAPSHOT_OLD_MEDIA_ID = "med_01jpyy2z6v4m8r1k5t9c3b7qdh";
+
 describe("jant site snapshot export/import", () => {
   const tempDirs: string[] = [];
   const originalEnv = {
@@ -50,21 +62,17 @@ describe("jant site snapshot export/import", () => {
     const sourceStorage = createLocalDriver({ rootPath: sourceStoragePath });
     const targetStorage = createLocalDriver({ rootPath: targetStoragePath });
 
-    await sourceStorage.put(
-      "media/2026/03/sample.png",
-      new Uint8Array([1, 2, 3, 4]),
-      { contentType: "image/png" },
-    );
-    await sourceStorage.put(
-      "media/2026/03/sample-poster.webp",
-      new Uint8Array([9, 8, 7, 6]),
-      { contentType: "image/webp" },
-    );
+    await sourceStorage.put(SNAPSHOT_MEDIA_KEY, new Uint8Array([1, 2, 3, 4]), {
+      contentType: "image/png",
+    });
+    await sourceStorage.put(SNAPSHOT_POSTER_KEY, new Uint8Array([9, 8, 7, 6]), {
+      contentType: "image/webp",
+    });
     await sourceStorage.put("media/avatar.png", new Uint8Array([3, 3, 3]), {
       contentType: "image/png",
     });
     await sourceStorage.put(
-      "favicon/apple-touch-icon.png",
+      "site/apple-touch-icon.png",
       new Uint8Array([4, 4, 4]),
       { contentType: "image/png" },
     );
@@ -78,38 +86,38 @@ describe("jant site snapshot export/import", () => {
           ('SITE_NAME', 'Snapshot Source', 1774009200),
           ('CUSTOM_CSS', 'body { color: red; }', 1774009201),
           ('SITE_AVATAR', 'media/avatar.png', 1774009202),
-          ('SITE_FAVICON_APPLE_TOUCH', 'favicon/apple-touch-icon.png', 1774009203),
+          ('SITE_FAVICON_APPLE_TOUCH', 'site/apple-touch-icon.png', 1774009203),
           ('SITE_FAVICON_ICO', 'ZmFrZS1pY28=', 1774009204),
           ('SITE_FAVICON_VERSION', '20260321010101', 1774009205),
           ('ONBOARDING_STATUS', 'pending', 1774009206),
           ('PASSWORD_RESET_TOKEN', 'source-reset-token', 1774009207);
 
         INSERT INTO "collection" ("id", "title", "description", "sort_order", "created_at", "updated_at")
-        VALUES ('019cfd70-0000-7000-8000-000000000001', 'Walks', 'Morning routes', 'newest', 1774009200, 1774009200);
+        VALUES ('${SNAPSHOT_COLLECTION_ID}', 'Walks', 'Morning routes', 'newest', 1774009200, 1774009200);
 
         INSERT INTO "nav_item" ("id", "type", "system_key", "label", "url", "position", "created_at", "updated_at")
-        VALUES ('019cfd70-0000-7000-8000-000000000002', 'link', NULL, 'Archive', '/archive', 'a0', 1774009200, 1774009200);
+        VALUES ('${SNAPSHOT_NAV_ID}', 'link', NULL, 'Archive', '/archive', 'a0', 1774009200, 1774009200);
 
         INSERT INTO "collection_directory_item" ("id", "type", "collection_id", "label", "position", "created_at", "updated_at")
-        VALUES ('019cfd70-0000-7000-8000-000000000003', 'collection', '019cfd70-0000-7000-8000-000000000001', NULL, 'a0', 1774009200, 1774009200);
+        VALUES ('${SNAPSHOT_DIRECTORY_ITEM_ID}', 'collection', '${SNAPSHOT_COLLECTION_ID}', NULL, 'a0', 1774009200, 1774009200);
 
         INSERT INTO "post" (
           "id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
           "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
         ) VALUES (
-          '019cfd70-0000-7000-8000-000000000010', 'note', 'published', 'public',
+          '${SNAPSHOT_POST_ID}', 'note', 'published', 'public',
           'Snapshot post', 'Hello snapshot', '<p>Hello snapshot</p>', 'Hello snapshot',
-          '019cfd70-0000-7000-8000-000000000010', 1774009200, 1774009200, 1774009200, 1774009200
+          '${SNAPSHOT_POST_ID}', 1774009200, 1774009200, 1774009200, 1774009200
         );
 
         INSERT INTO "post_collection" ("post_id", "collection_id", "created_at")
-        VALUES ('019cfd70-0000-7000-8000-000000000010', '019cfd70-0000-7000-8000-000000000001', 1774009200);
+        VALUES ('${SNAPSHOT_POST_ID}', '${SNAPSHOT_COLLECTION_ID}', 1774009200);
 
         INSERT INTO "path_registry" (
           "id", "path", "kind", "post_id", "collection_id", "redirect_to_path", "redirect_type", "created_at", "updated_at"
         ) VALUES (
-          '019cfd70-0000-7000-8000-000000000011', 'snapshot-post', 'slug',
-          '019cfd70-0000-7000-8000-000000000010', NULL, NULL, NULL, 1774009200, 1774009200
+          '${SNAPSHOT_PATH_ID}', 'snapshot-post', 'slug',
+          '${SNAPSHOT_POST_ID}', NULL, NULL, NULL, 1774009200, 1774009200
         );
 
         INSERT INTO "media" (
@@ -117,9 +125,9 @@ describe("jant site snapshot export/import", () => {
           "provider", "width", "height", "alt", "position", "poster_key", "media_kind",
           "created_at", "updated_at"
         ) VALUES (
-          '019cfd70-0000-7000-8000-000000000012', '019cfd70-0000-7000-8000-000000000010',
-          'sample.png', 'sample.png', 'image/png', 4, 'media/2026/03/sample.png',
-          'local', 1, 1, 'Sample alt', 'a0', 'media/2026/03/sample-poster.webp', 'image',
+          '${SNAPSHOT_MEDIA_ID}', '${SNAPSHOT_POST_ID}',
+          '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
+          'local', 1, 1, 'Sample alt', 'a0', '${SNAPSHOT_POSTER_KEY}', 'image',
           1774009200, 1774009200
         );
       `);
@@ -134,24 +142,24 @@ describe("jant site snapshot export/import", () => {
           "id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
           "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
         ) VALUES (
-          '019cfd70-0000-7000-8000-000000000099', 'note', 'published', 'public',
+          '${SNAPSHOT_OLD_POST_ID}', 'note', 'published', 'public',
           'Old post', 'Old body', '<p>Old body</p>', 'Old body',
-          '019cfd70-0000-7000-8000-000000000099', 1774009100, 1774009100, 1774009100, 1774009100
+          '${SNAPSHOT_OLD_POST_ID}', 1774009100, 1774009100, 1774009100, 1774009100
         );
 
         INSERT INTO "path_registry" (
           "id", "path", "kind", "post_id", "collection_id", "redirect_to_path", "redirect_type", "created_at", "updated_at"
         ) VALUES (
-          '019cfd70-0000-7000-8000-000000000098', 'old-post', 'slug',
-          '019cfd70-0000-7000-8000-000000000099', NULL, NULL, NULL, 1774009100, 1774009100
+          '${SNAPSHOT_OLD_PATH_ID}', 'old-post', 'slug',
+          '${SNAPSHOT_OLD_POST_ID}', NULL, NULL, NULL, 1774009100, 1774009100
         );
 
         INSERT INTO "media" (
           "id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
           "provider", "position", "media_kind", "created_at", "updated_at"
         ) VALUES (
-          '019cfd70-0000-7000-8000-000000000097', '019cfd70-0000-7000-8000-000000000099',
-          'old.png', 'old.png', 'image/png', 3, 'media/old.png',
+          '${SNAPSHOT_OLD_MEDIA_ID}', '${SNAPSHOT_OLD_POST_ID}',
+          '${SNAPSHOT_OLD_MEDIA_ID}.png', 'old.png', 'image/png', 3, 'media/old.png',
           'local', 'a0', 'image', 1774009100, 1774009100
         );
       `);
@@ -176,10 +184,10 @@ describe("jant site snapshot export/import", () => {
       await readFile(join(snapshotPath, "storage-manifest.json"), "utf-8"),
     );
     expect(manifest.objects.map((object) => object.key)).toEqual([
-      "favicon/apple-touch-icon.png",
-      "media/2026/03/sample-poster.webp",
-      "media/2026/03/sample.png",
       "media/avatar.png",
+      SNAPSHOT_MEDIA_KEY,
+      SNAPSHOT_POSTER_KEY,
+      "site/apple-touch-icon.png",
     ]);
     expect(exportLogSpy).toHaveBeenCalledWith(
       `Exported Node SQLite snapshot to ${snapshotPath}`,
@@ -200,7 +208,7 @@ describe("jant site snapshot export/import", () => {
           `
             SELECT "id", "post_id", "storage_key", "poster_key"
             FROM "media"
-            WHERE "id" = '019cfd70-0000-7000-8000-000000000012'
+            WHERE "id" = '${SNAPSHOT_MEDIA_ID}'
           `,
         )
         .get() as
@@ -212,10 +220,10 @@ describe("jant site snapshot export/import", () => {
           }
         | undefined;
       expect(mediaRow).toEqual({
-        id: "019cfd70-0000-7000-8000-000000000012",
-        post_id: "019cfd70-0000-7000-8000-000000000010",
-        storage_key: "media/2026/03/sample.png",
-        poster_key: "media/2026/03/sample-poster.webp",
+        id: SNAPSHOT_MEDIA_ID,
+        post_id: SNAPSHOT_POST_ID,
+        storage_key: SNAPSHOT_MEDIA_KEY,
+        poster_key: SNAPSHOT_POSTER_KEY,
       });
 
       const siteName = verifySqlite
@@ -242,7 +250,7 @@ describe("jant site snapshot export/import", () => {
 
       const oldMediaCount = verifySqlite
         .prepare(
-          `SELECT COUNT(*) FROM "media" WHERE "id" = '019cfd70-0000-7000-8000-000000000097'`,
+          `SELECT COUNT(*) FROM "media" WHERE "id" = '${SNAPSHOT_OLD_MEDIA_ID}'`,
         )
         .pluck()
         .get();
@@ -251,20 +259,18 @@ describe("jant site snapshot export/import", () => {
       verifySqlite.close();
     }
 
-    const importedMedia = await targetStorage.get("media/2026/03/sample.png");
+    const importedMedia = await targetStorage.get(SNAPSHOT_MEDIA_KEY);
     expect(importedMedia?.size).toBe(4);
     expect(importedMedia?.contentType).toBe("image/png");
 
-    const importedPoster = await targetStorage.get(
-      "media/2026/03/sample-poster.webp",
-    );
+    const importedPoster = await targetStorage.get(SNAPSHOT_POSTER_KEY);
     expect(importedPoster?.contentType).toBe("image/webp");
 
     const importedAvatar = await targetStorage.get("media/avatar.png");
     expect(importedAvatar?.contentType).toBe("image/png");
 
     const importedAppleTouch = await targetStorage.get(
-      "favicon/apple-touch-icon.png",
+      "site/apple-touch-icon.png",
     );
     expect(importedAppleTouch?.contentType).toBe("image/png");
 

@@ -5,6 +5,8 @@
  * Services throw these; the error handler middleware maps them to HTTP responses.
  */
 
+import { isTypeId, type IdPrefix } from "./ids.js";
+
 /**
  * Base class for all domain errors.
  * Each subclass maps to a specific HTTP status code.
@@ -104,22 +106,20 @@ export function assertFound<T>(
   return value;
 }
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /**
- * Validates a route parameter as a UUID.
+ * Validates a route parameter as a TypeID.
  * Throws ValidationError if the format is invalid.
  *
- * @param value - UUID string from the route
- * @returns The validated UUID string
+ * @param value - TypeID string from the route
+ * @param prefix - Optional prefix the TypeID must match
+ * @returns The validated TypeID string
  * @example
  * ```ts
- * const id = parseIdParam(c.req.param("id"));
+ * const id = parseIdParam(c.req.param("id"), ID_PREFIX.post);
  * ```
  */
-export function parseIdParam(value: string): string {
-  if (!UUID_RE.test(value)) {
+export function parseIdParam(value: string, prefix?: IdPrefix): string {
+  if (!isTypeId(value, prefix)) {
     throw new ValidationError("Invalid ID");
   }
   return value;

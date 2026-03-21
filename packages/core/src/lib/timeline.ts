@@ -349,7 +349,7 @@ export async function assembleTimeline(
  * page renders and partial updates stay in sync.
  *
  * @param c - Hono context (provides services + appConfig)
- * @param threadRootId - UUID of the thread root displayed in the timeline
+ * @param threadRootId - TypeID of the thread root displayed in the timeline
  * @param options - Auth state used to apply timeline visibility rules
  * @returns A render-ready timeline item, or null when it should not be shown
  */

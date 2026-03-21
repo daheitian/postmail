@@ -68,9 +68,7 @@ describe("PostService", () => {
       });
 
       expect(typeof post.id).toBe("string");
-      expect(post.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-      );
+      expect(post.id).toMatch(/^pst_[a-z0-9]{26}$/);
       expect(post.format).toBe("note");
       expect(post.body).toBe(body);
       expect(post.status).toBe("published"); // default
@@ -170,7 +168,7 @@ describe("PostService", () => {
       expect(post.publishedAt).toBe(customTime);
     });
 
-    it("creates unique UUIDv7 IDs that sort chronologically", async () => {
+    it("creates unique post TypeIDs that sort chronologically", async () => {
       const post1 = await postService.create({
         format: "note",
         bodyMarkdown: "first",
@@ -181,7 +179,6 @@ describe("PostService", () => {
       });
 
       expect(post1.id).not.toBe(post2.id);
-      // UUIDv7 strings sort chronologically
       expect(post2.id > post1.id).toBe(true);
     });
 
@@ -1281,7 +1278,7 @@ describe("PostService", () => {
         originalName: "original.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/original.jpg",
+        storageKey: "media/original.jpg",
         alt: "original alt",
       });
       const replacementAttachment = await mediaService.create({
@@ -1289,7 +1286,7 @@ describe("PostService", () => {
         originalName: "replacement.jpg",
         mimeType: "image/jpeg",
         size: 2048,
-        storageKey: "media/2025/01/replacement.jpg",
+        storageKey: "media/replacement.jpg",
       });
       await mediaService.attachToPost(post.id, [originalAttachment.id]);
 

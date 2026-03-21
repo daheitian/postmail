@@ -10,6 +10,7 @@ import {
   CreatePostApiSchema,
   UpdatePostApiSchema,
   FormatSchema,
+  PostIdSchema,
   StatusSchema,
   parseValidated,
 } from "../../lib/schemas.js";
@@ -20,6 +21,7 @@ import {
   getPublicUrlForProvider,
 } from "../../lib/image.js";
 import { assertFound, NotFoundError, parseIdParam } from "../../lib/errors.js";
+import { ID_PREFIX } from "../../lib/ids.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -135,12 +137,12 @@ const PostSlugQuerySchema = z.discriminatedUnion("mode", [
   z.object({
     mode: z.literal("suggest"),
     title: z.string().trim().max(300).optional(),
-    postId: z.string().uuid().optional(),
+    postId: PostIdSchema.optional(),
   }),
   z.object({
     mode: z.literal("check"),
     slug: z.string().trim().toLowerCase().min(1).max(200),
-    postId: z.string().uuid().optional(),
+    postId: PostIdSchema.optional(),
   }),
 ]);
 
@@ -214,7 +216,7 @@ postsApiRoutes.get("/slug", requireAuthApi(), async (c) => {
 
 // Get single post (requires auth)
 postsApiRoutes.get("/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.post);
 
   // Fetch post, media, and collections in parallel (all keyed by the same id)
   const [post, mediaList, postCollections] = await Promise.all([
@@ -316,7 +318,7 @@ postsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Update post (requires auth)
 postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.post);
 
   const body = parseValidated(UpdatePostApiSchema, await c.req.json());
 
@@ -381,7 +383,7 @@ postsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
 // Delete post (requires auth)
 postsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.post);
 
   const success = await c.var.services.posts.delete(id, {
     media: c.var.services.media,

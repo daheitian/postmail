@@ -9,6 +9,8 @@
 import {
   eq,
   and,
+  type SQL,
+  type SQLWrapper,
   isNull,
   desc,
   inArray,
@@ -18,9 +20,9 @@ import {
   lte,
 } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
-import { uuidv7 } from "uuidv7";
 import { type Database, batchQueryRows } from "../db/index.js";
 import { pathRegistry, posts, postCollections } from "../db/schema.js";
+import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import { renderTiptapJson } from "../lib/tiptap-render.js";
 import { extractSummary, extractBodyText } from "../lib/summary.js";
@@ -97,7 +99,7 @@ export interface PostFilters {
   /** Explicit result sort order */
   sortOrder?: SortOrder;
   limit?: number;
-  cursor?: string; // post id for cursor pagination (UUIDv7 sorts chronologically)
+  cursor?: string;
   offset?: number; // offset for page-based pagination
 }
 
@@ -116,6 +118,12 @@ interface ThreadRootPageOptions {
 
 interface CollectionThreadRootPageOptions extends ThreadRootPageOptions {
   sortOrder?: CollectionSortOrder;
+}
+
+interface CursorSortKey {
+  direction: "asc" | "desc";
+  expr: SQLWrapper;
+  value: number | string;
 }
 
 export interface CollectionFeedEntry {
@@ -369,7 +377,7 @@ export function createPostService(
     (SELECT root.visibility FROM post AS root WHERE root.id = ${posts.threadId})
   )`;
 
-  /** Check if a slug is available (not used by posts or custom_urls) */
+  /** Check if a slug is available (not used by posts or path_registry) */
   async function isSlugAvailable(slug: string): Promise<boolean> {
     return paths.isPathAvailable(slug);
   }
@@ -502,6 +510,143 @@ export function createPostService(
     }
 
     return conditions;
+  }
+
+  function getCursorSortTimestamp(row: typeof posts.$inferSelect): number {
+    return row.status === "draft" ? row.updatedAt : (row.lastActivityAt ?? -1);
+  }
+
+  function buildLexicographicCursorCondition(
+    keys: [CursorSortKey, ...CursorSortKey[]],
+  ): SQL<unknown> {
+    const [first, ...rest] = keys;
+    const comparison =
+      first.direction === "desc"
+        ? sql`${first.expr} < ${first.value}`
+        : sql`${first.expr} > ${first.value}`;
+
+    if (rest.length === 0) {
+      return comparison;
+    }
+
+    return sql`(
+      ${comparison}
+      OR (${first.expr} = ${first.value} AND ${buildLexicographicCursorCondition(
+        rest as [CursorSortKey, ...CursorSortKey[]],
+      )})
+    )`;
+  }
+
+  async function buildListCursorCondition(
+    filters: PostFilters,
+  ): Promise<SQL<unknown> | null> {
+    if (!filters.cursor) {
+      return null;
+    }
+
+    const cursorRow = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.id, filters.cursor))
+      .limit(1);
+    const cursorPost = cursorRow[0];
+
+    if (!cursorPost) {
+      return null;
+    }
+
+    const sortTimestampExpr =
+      filters.status === "draft"
+        ? posts.updatedAt
+        : filters.status === "published"
+          ? posts.lastActivityAt
+          : sql<number>`CASE
+              WHEN ${posts.status} = 'draft' THEN ${posts.updatedAt}
+              ELSE ${posts.lastActivityAt}
+            END`;
+    const pinnedSortExpr = sql<number>`coalesce(${posts.pinnedAt}, -1)`;
+    const featuredSortExpr = sql<number>`coalesce(${posts.featuredAt}, -1)`;
+    const sortTimestampSortExpr = sql<number>`coalesce(${sortTimestampExpr}, -1)`;
+    const ratingPresenceExpr = sql<number>`CASE
+      WHEN ${posts.rating} IS NULL THEN 0
+      ELSE 1
+    END`;
+    const ratingSortExpr = sql<number>`coalesce(${posts.rating}, -1)`;
+    const cursorPinnedAt = cursorPost.pinnedAt ?? -1;
+    const cursorFeaturedAt = cursorPost.featuredAt ?? -1;
+    const cursorSortTimestamp = getCursorSortTimestamp(cursorPost);
+    const cursorRatingPresence = cursorPost.rating === null ? 0 : 1;
+    const cursorRating = cursorPost.rating ?? -1;
+
+    if (filters.featured || filters.sortOrder === undefined) {
+      if (filters.featured) {
+        return buildLexicographicCursorCondition([
+          { direction: "desc", expr: pinnedSortExpr, value: cursorPinnedAt },
+          {
+            direction: "desc",
+            expr: featuredSortExpr,
+            value: cursorFeaturedAt,
+          },
+          { direction: "desc", expr: posts.id, value: cursorPost.id },
+        ]);
+      }
+
+      return buildLexicographicCursorCondition([
+        { direction: "desc", expr: pinnedSortExpr, value: cursorPinnedAt },
+        {
+          direction: "desc",
+          expr: sortTimestampSortExpr,
+          value: cursorSortTimestamp,
+        },
+        { direction: "desc", expr: posts.id, value: cursorPost.id },
+      ]);
+    }
+
+    if (filters.sortOrder === "oldest") {
+      return buildLexicographicCursorCondition([
+        { direction: "desc", expr: pinnedSortExpr, value: cursorPinnedAt },
+        {
+          direction: "asc",
+          expr: sortTimestampSortExpr,
+          value: cursorSortTimestamp,
+        },
+        { direction: "asc", expr: posts.id, value: cursorPost.id },
+      ]);
+    }
+
+    if (filters.sortOrder === "rating_desc") {
+      return buildLexicographicCursorCondition([
+        { direction: "desc", expr: pinnedSortExpr, value: cursorPinnedAt },
+        {
+          direction: "desc",
+          expr: ratingPresenceExpr,
+          value: cursorRatingPresence,
+        },
+        { direction: "desc", expr: ratingSortExpr, value: cursorRating },
+        {
+          direction: "desc",
+          expr: sortTimestampSortExpr,
+          value: cursorSortTimestamp,
+        },
+        { direction: "desc", expr: posts.id, value: cursorPost.id },
+      ]);
+    }
+
+    return buildLexicographicCursorCondition([
+      { direction: "desc", expr: pinnedSortExpr, value: cursorPinnedAt },
+      {
+        direction: "desc",
+        expr: ratingPresenceExpr,
+        value: cursorRatingPresence,
+      },
+      { direction: "asc", expr: ratingSortExpr, value: cursorRating },
+      {
+        direction: "desc",
+        expr: sortTimestampSortExpr,
+        value: cursorSortTimestamp,
+      },
+      { direction: "desc", expr: posts.id, value: cursorPost.id },
+    ]);
   }
 
   function toPost(
@@ -771,6 +916,10 @@ export function createPostService(
 
     async list(filters = {}) {
       const conditions = buildFilterConditions(filters);
+      const cursorCondition = await buildListCursorCondition(filters);
+      if (filters.cursor && !cursorCondition) {
+        return [];
+      }
       const sortTimestamp =
         filters.status === "draft"
           ? posts.updatedAt
@@ -781,8 +930,8 @@ export function createPostService(
                 ELSE ${posts.lastActivityAt}
               END`;
 
-      if (filters.cursor) {
-        conditions.push(sql`${posts.id} < ${filters.cursor}`);
+      if (cursorCondition) {
+        conditions.push(cursorCondition);
       }
 
       const ratingPresence = sql<number>`CASE
@@ -867,7 +1016,7 @@ export function createPostService(
     },
 
     async create(data, summaryConfig) {
-      const id = uuidv7();
+      const id = createEntityId("post");
       const timestamp = now();
       const format = ensurePostFormat(data.format);
       const requestedStatus =
@@ -1001,7 +1150,7 @@ export function createPostService(
             updatedAt: timestamp,
           }),
           db.insert(pathRegistry).values({
-            id: uuidv7(),
+            id: createEntityId("path"),
             path: normalizePath(slug),
             kind: "slug",
             postId: id,
@@ -1016,7 +1165,7 @@ export function createPostService(
         if (aliasPath) {
           writeQueries.push(
             db.insert(pathRegistry).values({
-              id: uuidv7(),
+              id: createEntityId("path"),
               path: normalizePath(aliasPath),
               kind: "alias",
               postId: id,

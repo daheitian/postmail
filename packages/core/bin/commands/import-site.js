@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/
 import { resolve, join, relative, extname, dirname, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { parseArgs } from "node:util";
-import { uuidv7 } from "uuidv7";
+import { typeidUnboxed } from "typeid-js";
 import { openNodeSqlite } from "../lib/node-sqlite.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 
@@ -496,16 +496,13 @@ function guessMimeType(filename) {
 }
 
 function generateImportedStorageKey(originalName) {
-  const id = uuidv7();
+  const id = typeidUnboxed("med");
   const extension = extname(originalName) || "";
-  const date = new Date();
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const filename = `${id}${extension}`;
   return {
     id,
     filename,
-    storageKey: `media/${year}/${month}/${filename}`,
+    storageKey: `media/${filename}`,
   };
 }
 

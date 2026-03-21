@@ -4,8 +4,11 @@
  * Shared file validation and storage key generation for upload routes.
  */
 
-import { uuidv7 } from "uuidv7";
 import type { MediaKind } from "../types/constants.js";
+import { createEntityId } from "./ids.js";
+
+const MEDIA_STORAGE_PREFIX = "media";
+const SITE_STORAGE_PREFIX = "site";
 
 /** MIME types — images */
 const IMAGE_MIME_TYPES = [
@@ -294,14 +297,14 @@ export function validateUploadFileMetadata(
 
 /**
  * Generates a unique storage key for an uploaded file.
- * Format: `media/YYYY/MM/uuid.ext`
+ * Format: `media/{typeid}.{ext}`
  *
  * @param originalFilename - Original filename to extract extension from
  * @returns Object with generated id, filename, and storageKey
  * @example
  * ```ts
  * const { id, filename, storageKey } = generateStorageKey("photo.jpg");
- * // { id: "0192...", filename: "0192....jpg", storageKey: "media/2025/01/0192....jpg" }
+ * // { id: "med_...", filename: "med_....jpg", storageKey: "media/med_....jpg" }
  * ```
  */
 export function generateStorageKey(originalFilename: string): {
@@ -310,11 +313,16 @@ export function generateStorageKey(originalFilename: string): {
   storageKey: string;
 } {
   const ext = originalFilename.split(".").pop() || "bin";
-  const id = uuidv7();
-  const date = new Date();
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const id = createEntityId("media");
   const filename = `${id}.${ext}`;
-  const storageKey = `media/${year}/${month}/${filename}`;
+  const storageKey = `${MEDIA_STORAGE_PREFIX}/${filename}`;
   return { id, filename, storageKey };
+}
+
+export function getPosterStorageKey(mediaId: string): string {
+  return `${MEDIA_STORAGE_PREFIX}/${mediaId}.poster.webp`;
+}
+
+export function getSiteStorageKey(filename: string): string {
+  return `${SITE_STORAGE_PREFIX}/${filename}`;
 }

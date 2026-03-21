@@ -55,7 +55,7 @@ describe("MediaService", () => {
     originalName: "photo.jpg",
     mimeType: "image/jpeg",
     size: 102400,
-    storageKey: "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
+    storageKey: "media/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
     width: 1920,
     height: 1080,
   };
@@ -64,13 +64,13 @@ describe("MediaService", () => {
     it("creates a media record with all fields", async () => {
       const media = await mediaService.create(sampleMedia);
 
-      expect(media.id).toBeTruthy(); // UUIDv7
+      expect(media.id).toBeTruthy(); // TypeID
       expect(media.filename).toBe("0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg");
       expect(media.originalName).toBe("photo.jpg");
       expect(media.mimeType).toBe("image/jpeg");
       expect(media.size).toBe(102400);
       expect(media.storageKey).toBe(
-        "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
+        "media/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
       );
       expect(media.provider).toBe("r2");
       expect(media.width).toBe(1920);
@@ -85,11 +85,11 @@ describe("MediaService", () => {
     it("creates media with posterKey", async () => {
       const media = await mediaService.create({
         ...sampleMedia,
-        storageKey: "media/2025/01/video.mp4",
-        posterKey: "media/2025/01/video-poster.webp",
+        storageKey: "media/video.mp4",
+        posterKey: "media/video.poster.webp",
       });
 
-      expect(media.posterKey).toBe("media/2025/01/video-poster.webp");
+      expect(media.posterKey).toBe("media/video.poster.webp");
     });
 
     it("creates media with optional alt text", async () => {
@@ -109,7 +109,7 @@ describe("MediaService", () => {
     it("accepts provider 's3'", async () => {
       const media = await mediaService.create({
         ...sampleMedia,
-        storageKey: "media/2025/01/s3-upload.jpg",
+        storageKey: "media/s3-upload.jpg",
         provider: "s3",
       });
       expect(media.provider).toBe("s3");
@@ -119,7 +119,7 @@ describe("MediaService", () => {
       await expect(
         mediaService.create({
           ...sampleMedia,
-          storageKey: "media/2025/01/bad-provider.jpg",
+          storageKey: "media/bad-provider.jpg",
           provider: "gcs" as never,
         }),
       ).rejects.toThrow("Storage provider must be r2, s3, or local.");
@@ -129,7 +129,7 @@ describe("MediaService", () => {
       await expect(
         mediaService.create({
           ...sampleMedia,
-          storageKey: "media/2025/01/bad-kind.jpg",
+          storageKey: "media/bad-kind.jpg",
           mediaKind: "binary" as never,
         }),
       ).rejects.toThrow(
@@ -161,27 +161,27 @@ describe("MediaService", () => {
       const media2 = await mediaService.create({
         ...sampleMedia,
         postId: post.id,
-        storageKey: "media/2025/01/second.jpg",
+        storageKey: "media/second.jpg",
       });
 
       expect(media1.position).toBe("a0");
       expect(media2.position).toBe("a1");
     });
 
-    it("generates UUIDv7 IDs", async () => {
+    it("generates sortable TypeIDs", async () => {
       const media1 = await mediaService.create(sampleMedia);
       const media2 = await mediaService.create({
         ...sampleMedia,
-        storageKey: "media/2025/01/other.jpg",
+        storageKey: "media/other.jpg",
       });
 
       expect(media1.id).not.toBe(media2.id);
-      // UUIDv7 should be sortable — later ID is lexicographically greater
+      // TypeIDs remain lexicographically sortable because they preserve time ordering.
       expect(media2.id > media1.id).toBe(true);
     });
 
     it("uses provided id when given", async () => {
-      const customId = "0192a9f1-a2b7-7c3d-8e4f-custom000001";
+      const customId = "med_01jpyxdk1m7w4v8s2r5c9b3qfh";
       const media = await mediaService.create({
         ...sampleMedia,
         id: customId,
@@ -193,21 +193,18 @@ describe("MediaService", () => {
     it("auto-generates id when not provided", async () => {
       const media = await mediaService.create({
         ...sampleMedia,
-        storageKey: "media/2025/01/auto.jpg",
+        storageKey: "media/auto.jpg",
       });
 
       expect(media.id).toBeTruthy();
-      // UUIDv7 format: 8-4-4-4-12 hex chars
-      expect(media.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
-      );
+      expect(media.id).toMatch(/^med_[a-z0-9]{26}$/);
     });
 
     it("rejects non-positive sizes at the database layer", async () => {
       await expect(
         mediaService.create({
           ...sampleMedia,
-          storageKey: "media/2025/01/invalid-size.jpg",
+          storageKey: "media/invalid-size.jpg",
           size: 0,
         }),
       ).rejects.toThrow();
@@ -217,7 +214,7 @@ describe("MediaService", () => {
       await expect(
         mediaService.create({
           ...sampleMedia,
-          storageKey: "media/2025/01/invalid-position.jpg",
+          storageKey: "media/invalid-position.jpg",
           position: "   ",
         }),
       ).rejects.toThrow();
@@ -227,7 +224,7 @@ describe("MediaService", () => {
       await expect(
         mediaService.create({
           ...sampleMedia,
-          storageKey: "media/2025/01/invalid-dimensions.jpg",
+          storageKey: "media/invalid-dimensions.jpg",
           width: 0,
         }),
       ).rejects.toThrow();
@@ -237,7 +234,7 @@ describe("MediaService", () => {
       await expect(
         mediaService.create({
           ...sampleMedia,
-          storageKey: "media/2025/01/invalid-chars.jpg",
+          storageKey: "media/invalid-chars.jpg",
           chars: -1,
         }),
       ).rejects.toThrow();
@@ -504,7 +501,7 @@ describe("MediaService", () => {
       await mediaService.create(sampleMedia);
 
       const found = await mediaService.getByStorageKey(
-        "media/2025/01/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
+        "media/0192a9f1-a2b7-7c3d-8e4f-5a6b7c8d9e0f.jpg",
         "r2",
       );
       expect(found).not.toBeNull();
@@ -686,8 +683,8 @@ describe("MediaService", () => {
     it("deletes poster from storage when posterKey exists", async () => {
       const media = await mediaService.create({
         ...sampleMedia,
-        storageKey: "media/2025/01/vid.mp4",
-        posterKey: "media/2025/01/vid-poster.webp",
+        storageKey: "media/vid.mp4",
+        posterKey: "media/vid.poster.webp",
       });
 
       const deletedKeys: string[] = [];
@@ -700,8 +697,8 @@ describe("MediaService", () => {
       };
 
       await mediaService.delete(media.id, mockStorage as never);
-      expect(deletedKeys).toContain("media/2025/01/vid.mp4");
-      expect(deletedKeys).toContain("media/2025/01/vid-poster.webp");
+      expect(deletedKeys).toContain("media/vid.mp4");
+      expect(deletedKeys).toContain("media/vid.poster.webp");
     });
   });
 

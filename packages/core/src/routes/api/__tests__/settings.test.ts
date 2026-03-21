@@ -435,7 +435,7 @@ describe("Settings API Routes", () => {
       expect(res.status).toBe(201);
       expect(await services.settings.get("SITE_AVATAR")).toContain("media/");
       expect(await services.settings.get("SITE_FAVICON_APPLE_TOUCH")).toBe(
-        "favicon/apple-touch-icon.png",
+        "site/apple-touch-icon.png",
       );
       expect(await services.settings.get("SITE_FAVICON_VERSION")).toMatch(
         /^\d{12}$/,
@@ -472,14 +472,11 @@ describe("Settings API Routes", () => {
       });
       app.route("/api/settings", settingsApiRoutes);
 
-      await services.settings.set(
-        "SITE_AVATAR" as never,
-        "media/2026/03/avatar.png",
-      );
+      await services.settings.set("SITE_AVATAR" as never, "media/avatar.png");
       await services.settings.set("SITE_FAVICON_ICO" as never, "ZmFrZQ==");
       await services.settings.set(
         "SITE_FAVICON_APPLE_TOUCH" as never,
-        "favicon/apple-touch-icon.png",
+        "site/apple-touch-icon.png",
       );
       await services.settings.set(
         "SITE_FAVICON_VERSION" as never,
@@ -499,9 +496,7 @@ describe("Settings API Routes", () => {
         await services.settings.get("SITE_FAVICON_APPLE_TOUCH"),
       ).toBeNull();
       expect(await services.settings.get("SITE_FAVICON_VERSION")).toBeNull();
-      expect(storage.delete).toHaveBeenCalledWith(
-        "favicon/apple-touch-icon.png",
-      );
+      expect(storage.delete).toHaveBeenCalledWith("site/apple-touch-icon.png");
     });
   });
 });

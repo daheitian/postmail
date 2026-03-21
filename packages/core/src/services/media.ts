@@ -6,9 +6,9 @@
 
 import { eq, desc, inArray, asc, sql, and } from "drizzle-orm";
 import { generateKeyBetween } from "fractional-indexing";
-import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { media } from "../db/schema.js";
+import { createEntityId } from "../lib/ids.js";
 import { markdownToTiptapJson } from "../lib/markdown-to-tiptap.js";
 import { extractBodyText } from "../lib/summary.js";
 import { now } from "../lib/time.js";
@@ -300,7 +300,7 @@ export function createMediaService(db: Database): MediaService {
     },
 
     async create(data) {
-      const id = data.id ?? uuidv7();
+      const id = data.id ?? createEntityId("media");
       const timestamp = now();
       const provider = ensureStorageProvider(data.provider ?? "r2");
       const mediaKind = ensureMediaKind(

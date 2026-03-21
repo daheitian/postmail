@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
+import { createEntityId } from "../../../lib/ids.js";
 import { navItemsApiRoutes } from "../nav-items.js";
 
 describe("Nav Items API Routes", () => {
@@ -180,15 +181,13 @@ describe("Nav Items API Routes", () => {
     it("returns 404 for non-existent item", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);
+      const missingId = createEntityId("navItem");
 
-      const res = await app.request(
-        `/api/nav-items/${"00000000-0000-0000-0000-000000009999"}/move`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ after: null, before: null }),
-        },
-      );
+      const res = await app.request(`/api/nav-items/${missingId}/move`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ after: null, before: null }),
+      });
 
       expect(res.status).toBe(404);
     });
@@ -219,15 +218,13 @@ describe("Nav Items API Routes", () => {
     it("returns 404 for non-existent item", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);
+      const missingId = createEntityId("navItem");
 
-      const res = await app.request(
-        `/api/nav-items/${"00000000-0000-0000-0000-000000009999"}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ label: "test" }),
-        },
-      );
+      const res = await app.request(`/api/nav-items/${missingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label: "test" }),
+      });
 
       expect(res.status).toBe(404);
     });
@@ -291,11 +288,11 @@ describe("Nav Items API Routes", () => {
     it("returns 404 for non-existent item", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/nav-items", navItemsApiRoutes);
+      const missingId = createEntityId("navItem");
 
-      const res = await app.request(
-        `/api/nav-items/${"00000000-0000-0000-0000-000000009999"}`,
-        { method: "DELETE" },
-      );
+      const res = await app.request(`/api/nav-items/${missingId}`, {
+        method: "DELETE",
+      });
 
       expect(res.status).toBe(404);
     });

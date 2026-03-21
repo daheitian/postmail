@@ -73,7 +73,7 @@ The `details` field is only present for validation errors and contains field-lev
 | `CONFIGURATION_ERROR`    | 500         | Missing or invalid server config      |
 | `EXTERNAL_SERVICE_ERROR` | 500         | Internal failure                      |
 
-All ID parameters must be valid UUIDs. Invalid IDs return `400`.
+All ID parameters must be valid TypeIDs with the expected prefix. Examples: posts use `pst_*`, media uses `med_*`, collections use `col_*`, path records use `pth_*`. Invalid IDs return `400`.
 
 ---
 
@@ -99,12 +99,12 @@ GET /api/posts
 
 **Query parameters:**
 
-| Parameter | Type                        | Default     | Description                                                      |
-| --------- | --------------------------- | ----------- | ---------------------------------------------------------------- |
-| `format`  | `note` \| `link` \| `quote` | all         | Filter by format                                                 |
-| `status`  | `draft` \| `published`      | `published` | Filter by status                                                 |
-| `cursor`  | string (UUID)               | —           | Cursor for pagination (pass `nextCursor` from previous response) |
-| `limit`   | integer                     | `100`       | Posts per page                                                   |
+| Parameter | Type                        | Default     | Description                                                                                           |
+| --------- | --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------- |
+| `format`  | `note` \| `link` \| `quote` | all         | Filter by format                                                                                      |
+| `status`  | `draft` \| `published`      | `published` | Filter by status                                                                                      |
+| `cursor`  | string                      | —           | Cursor for pagination. Pass `nextCursor` from the previous response unchanged and treat it as opaque. |
+| `limit`   | integer                     | `100`       | Posts per page                                                                                        |
 
 **Response (200):**
 
@@ -112,7 +112,7 @@ GET /api/posts
 {
   "posts": [
     {
-      "id": "019513a2-b3c4-7d5e-8f6a-1b2c3d4e5f6a",
+      "id": "pst_01jpyx3m7gw4w3h7m4bknq0v1d",
       "format": "note",
       "status": "published",
       "visibility": "public",
@@ -136,9 +136,9 @@ GET /api/posts
       "attachments": [
         {
           "type": "media",
-          "id": "019513a2-...",
-          "url": "/media/2025/01/019513a2.jpg",
-          "previewUrl": "/media/2025/01/019513a2.jpg",
+          "id": "med_01jpyx4g9m8b4y50a4gx3t7p1n",
+          "url": "/media/med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg",
+          "previewUrl": "/media/med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg",
           "posterUrl": null,
           "alt": null,
           "blurhash": null,
@@ -152,7 +152,7 @@ GET /api/posts
       ]
     }
   ],
-  "nextCursor": "019513a2-b3c4-7d5e-..."
+  "nextCursor": "pst_01jpyx3m7gw4w3h7m4bknq0v1d"
 }
 ```
 
@@ -172,9 +172,12 @@ GET /api/posts/:id
 
 ```json
 {
-  "id": "019513a2-...",
+  "id": "pst_01jpyx3m7gw4w3h7m4bknq0v1d",
   "format": "note",
-  "collectionIds": ["019513b1-...", "019513b2-..."],
+  "collectionIds": [
+    "col_01jpyx5qds8y79w2dd6sv4rznj",
+    "col_01jpyx5z8m7b7s8z1v8w9m1q2r"
+  ],
   "attachments": [],
   "...": "same fields as list"
 }
@@ -203,9 +206,9 @@ POST /api/posts
   "visibility": "public",
   "publishedAt": 1706000000,
   "slug": "from-marcus-aurelius",
-  "collectionIds": ["collection-uuid"],
+  "collectionIds": ["col_01jpyx5qds8y79w2dd6sv4rznj"],
   "attachments": [
-    { "type": "media", "mediaId": "media-uuid-1" },
+    { "type": "media", "mediaId": "med_01jpyx4g9m8b4y50a4gx3t7p1n" },
     {
       "type": "text",
       "contentFormat": "markdown",
@@ -234,8 +237,8 @@ POST /api/posts
 | `sourceUrl`     | string (URL)                             | no       | —           | Quote source URL (for `quote` format)                                                                                                                                                                        |
 | `quoteText`     | string                                   | no       | —           | Quoted text (for `quote` format)                                                                                                                                                                             |
 | `rating`        | integer (1–5)                            | no       | —           | Rating score                                                                                                                                                                                                 |
-| `collectionIds` | string[]                                 | no       | —           | Collection UUIDs to add the post to                                                                                                                                                                          |
-| `replyToId`     | string (UUID)                            | no       | —           | Create as a reply in a thread                                                                                                                                                                                |
+| `collectionIds` | string[]                                 | no       | —           | Collection TypeIDs to add the post to                                                                                                                                                                        |
+| `replyToId`     | string                                   | no       | —           | Parent post TypeID when creating a reply in a thread                                                                                                                                                         |
 | `publishedAt`   | integer                                  | no       | now         | Unix timestamp in seconds                                                                                                                                                                                    |
 | `attachments`   | attachment[]                             | no       | —           | Ordered attachments (max 20). Use `type: "media"` for uploaded files and `type: "text"` for inline text attachments                                                                                          |
 
@@ -305,7 +308,7 @@ GET /api/attachments/:id/content
 
 ```json
 {
-  "id": "019513a2-...",
+  "id": "med_01jpyx7c0s7y5v2m4b8g1f9qkr",
   "type": "text",
   "contentFormat": "markdown",
   "content": "# Attached note\n\nExtra context here.",
@@ -471,9 +474,9 @@ POST /api/upload
 
 ```json
 {
-  "id": "019513a2-b3c4-7d5e-8f6a-1b2c3d4e5f6a",
-  "filename": "019513a2.jpg",
-  "url": "/media/2025/01/019513a2.jpg",
+  "id": "med_01jpyx4g9m8b4y50a4gx3t7p1n",
+  "filename": "med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg",
+  "url": "/media/med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg",
   "mimeType": "image/jpeg",
   "size": 1024000
 }
@@ -489,7 +492,7 @@ curl -X POST https://your-site.com/api/upload \
   -H "Authorization: Bearer jnt_YOUR_TOKEN" \
   -F "file=@photo.jpg"
 
-# Response: {"id": "019513a2-...", "url": "/media/2025/01/019513a2.jpg", ...}
+# Response: {"id": "med_01jpyx4g9m8b4y50a4gx3t7p1n", "url": "/media/med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg", ...}
 ```
 
 ### List Files
@@ -506,9 +509,9 @@ GET /api/upload
 {
   "media": [
     {
-      "id": "019513a2-...",
-      "filename": "019513a2.jpg",
-      "url": "/media/2025/01/019513a2.jpg",
+      "id": "med_01jpyx4g9m8b4y50a4gx3t7p1n",
+      "filename": "med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg",
+      "url": "/media/med_01jpyx4g9m8b4y50a4gx3t7p1n.jpg",
       "mimeType": "image/jpeg",
       "size": 1024000,
       "createdAt": 1706000000
@@ -549,7 +552,7 @@ Public.
 {
   "collections": [
     {
-      "id": "019513b1-...",
+      "id": "col_01jpyx5qds8y79w2dd6sv4rznj",
       "slug": "reading",
       "title": "Reading",
       "description": "Books I've read",
@@ -562,16 +565,16 @@ Public.
   ],
   "sidebarItems": [
     {
-      "id": "019513c1-...",
+      "id": "cdi_01jpyx8r7s3v8m1q5c9k2f6gth",
       "type": "collection",
-      "collectionId": "019513b1-...",
+      "collectionId": "col_01jpyx5qds8y79w2dd6sv4rznj",
       "label": null,
       "position": "a0",
       "createdAt": 1706000000,
       "updatedAt": 1706000000
     },
     {
-      "id": "019513c2-...",
+      "id": "cdi_01jpyx93hw5m2s8b6r4v1t9kqn",
       "type": "divider",
       "collectionId": null,
       "label": "Essays",
@@ -673,8 +676,8 @@ PUT /api/collections/sidebar-items/:id/move
 
 ```json
 {
-  "after": "019513c1-...",
-  "before": "019513c3-..."
+  "after": "cdi_01jpyx8r7s3v8m1q5c9k2f6gth",
+  "before": "cdi_01jpyx9m4h7s2v6b1r8k3t5qc"
 }
 ```
 
@@ -701,7 +704,7 @@ POST /api/collections/:id/posts
 **Auth required.**
 
 ```json
-{ "postId": "019513a2-..." }
+{ "postId": "pst_01jpyx3m7gw4w3h7m4bknq0v1d" }
 ```
 
 **Response (201):** `{ "success": true }`
@@ -752,7 +755,7 @@ Requires auth. Results are sorted by creation date (newest first) and paginated 
 {
   "customUrls": [
     {
-      "id": "019513e1-...",
+      "id": "pth_01jpyxb27t6m4v9r2k8s5c1qfh",
       "path": "blog/old-post",
       "targetType": "redirect",
       "targetId": null,
@@ -761,10 +764,10 @@ Requires auth. Results are sorted by creation date (newest first) and paginated 
       "createdAt": 1706000000
     },
     {
-      "id": "019513e2-...",
+      "id": "pth_01jpyxbk8v4m2s7r9c5t1g6qdn",
       "path": "2024/01/hello",
       "targetType": "post",
-      "targetId": "019513a2-...",
+      "targetId": "pst_01jpyx3m7gw4w3h7m4bknq0v1d",
       "toPath": null,
       "redirectType": null,
       "createdAt": 1706000000
@@ -866,7 +869,7 @@ Public. Searches published posts by title and body text.
   "query": "hello",
   "results": [
     {
-      "id": "019513a2-...",
+      "id": "pst_01jpyx3m7gw4w3h7m4bknq0v1d",
       "format": "note",
       "title": "Hello World",
       "slug": "hello-world",
@@ -906,7 +909,7 @@ Public.
 {
   "navItems": [
     {
-      "id": "019513d1-...",
+      "id": "nav_01jpyxcv3m7w4b8k2r5s9t1qfh",
       "type": "link",
       "label": "GitHub",
       "url": "https://github.com/...",
@@ -1082,10 +1085,10 @@ curl -X POST https://your-site.com/api/posts \
     "slug": "my-old-blog-post",
     "status": "published",
     "publishedAt": 1609459200,
-    "collectionIds": ["collection-uuid"],
+    "collectionIds": ["col_01jpyx5qds8y79w2dd6sv4rznj"],
     "attachments": [
-      { "type": "media", "mediaId": "media-uuid-1" },
-      { "type": "media", "mediaId": "media-uuid-2" }
+      { "type": "media", "mediaId": "med_01jpyx4g9m8b4y50a4gx3t7p1n" },
+      { "type": "media", "mediaId": "med_01jpyxd8hs5m3v7r1k9c2t4qgn" }
     ]
   }'
 ```

@@ -15,7 +15,11 @@ import {
 } from "../lib/constants.js";
 import type { StorageDriver } from "../lib/storage.js";
 import type { MediaService } from "./media.js";
-import { validateUploadFile, generateStorageKey } from "../lib/upload.js";
+import {
+  validateUploadFile,
+  generateStorageKey,
+  getSiteStorageKey,
+} from "../lib/upload.js";
 import { arrayBufferToBase64 } from "../lib/favicon.js";
 import { ValidationError } from "../lib/errors.js";
 import { normalizeEditableSettingValue } from "../lib/schemas.js";
@@ -361,7 +365,7 @@ export function createSettingsService(db: Database): SettingsService {
 
       // Store apple-touch-icon in storage (high-resolution PNG, not tiny enough for base64)
       if (data.appleTouchIcon) {
-        const appleTouchKey = "favicon/apple-touch-icon.png";
+        const appleTouchKey = getSiteStorageKey("apple-touch-icon.png");
         await deps.storage.put(
           appleTouchKey,
           new Uint8Array(data.appleTouchIcon),

@@ -60,26 +60,26 @@ describe("getPublicUrlForProvider", () => {
 
 describe("getMediaUrl", () => {
   it("returns local proxy URL when no publicUrl provided", () => {
-    const result = getMediaUrl("media/2025/01/01902a9f-1a2b-7c3d.webp");
-    expect(result).toBe("/media/2025/01/01902a9f-1a2b-7c3d.webp");
+    const result = getMediaUrl("media/01902a9f-1a2b-7c3d.webp");
+    expect(result).toBe("/media/01902a9f-1a2b-7c3d.webp");
   });
 
   it("returns a prefixed local proxy URL when the site is mounted below root", () => {
     const result = getMediaUrl(
-      "media/2025/01/01902a9f-1a2b-7c3d.webp",
+      "media/01902a9f-1a2b-7c3d.webp",
       undefined,
       "/blog",
     );
-    expect(result).toBe("/blog/media/2025/01/01902a9f-1a2b-7c3d.webp");
+    expect(result).toBe("/blog/media/01902a9f-1a2b-7c3d.webp");
   });
 
   it("returns CDN URL when publicUrl is provided", () => {
     const result = getMediaUrl(
-      "media/2025/01/01902a9f-1a2b-7c3d.webp",
+      "media/01902a9f-1a2b-7c3d.webp",
       "https://cdn.example.com",
     );
     expect(result).toBe(
-      "https://cdn.example.com/media/2025/01/01902a9f-1a2b-7c3d.webp",
+      "https://cdn.example.com/media/01902a9f-1a2b-7c3d.webp",
     );
   });
 });
