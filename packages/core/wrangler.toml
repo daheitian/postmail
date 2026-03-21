@@ -39,7 +39,7 @@ main = "dev/preview-entry.js"
 directory = "dist/client"
 
 [env.preview.vars]
-SITE_URL = "https://preview.jant.me"
+SITE_URL = "https://preview.jant.me/blog"
 PAGE_SIZE = 50
 
 [[env.preview.d1_databases]]

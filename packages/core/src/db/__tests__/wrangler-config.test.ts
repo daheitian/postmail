@@ -2,7 +2,10 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { resolveWranglerVarString } from "../../../bin/lib/wrangler-config.js";
+import {
+  resolveWranglerAssetsDirectory,
+  resolveWranglerVarString,
+} from "../../../bin/lib/wrangler-config.js";
 
 const tempDirs: string[] = [];
 
@@ -52,5 +55,29 @@ R2_PUBLIC_URL = "https://preview.example.com"
         key: "R2_PUBLIC_URL",
       }),
     ).toBeUndefined();
+  });
+
+  it("reads the assets directory from the selected scope", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-wrangler-assets-"));
+    tempDirs.push(root);
+
+    const configPath = join(root, "wrangler.toml");
+    await writeFile(
+      configPath,
+      `
+[assets]
+directory = "./dist/client"
+
+[env.preview.assets]
+directory = "./dist/public"
+      `.trim(),
+    );
+
+    expect(
+      resolveWranglerAssetsDirectory({
+        configPath,
+        env: "preview",
+      }),
+    ).toBe("./dist/public");
   });
 });

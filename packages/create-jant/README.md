@@ -75,7 +75,7 @@ my-site/
 ```bash
 pnpm dev               # Start dev server (http://localhost:3000)
 pnpm build             # Build for production
-pnpm run deploy        # Apply migrations/backfills, prepare public assets, then deploy to Cloudflare Workers
+pnpm run deploy        # Apply migrations/backfills and deploy to Cloudflare Workers
 pnpm typecheck         # Run TypeScript checks
 pnpm lint              # Run ESLint
 pnpm format            # Format code with Prettier

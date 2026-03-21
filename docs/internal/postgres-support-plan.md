@@ -223,6 +223,28 @@ added without muddying the existing D1 commands.
 - `mise run check-tests`
 - `mise run check-lint`
 
+### Postgres CI smoke
+
+The first Postgres CI layer should stay intentionally small:
+
+- use a local GitHub Actions Postgres service container
+- do not depend on a remote managed Postgres service
+- run a focused HTTP smoke instead of the full test suite
+
+Current smoke contract:
+
+- reset the target database to a blank schema
+- run `jant migrate`
+- verify `GET /setup` does not create a site shell eagerly
+- verify `POST /setup` creates the shell
+- sign in over the real auth route
+- create a post over `POST /compose`
+- read it back over a public route such as `/archive`
+- update settings over `/api/settings`
+
+This gives us real Postgres engine coverage without taking on the maintenance
+cost of a full cross-dialect fixture matrix yet.
+
 ### Postgres-specific manual checks
 
 - `jant migrate` against a fresh Postgres database

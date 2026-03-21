@@ -15,7 +15,9 @@ function readWranglerScope(config, envName) {
 
   const scoped = config?.env?.[envName];
   if (!scoped || typeof scoped !== "object") {
-    throw new Error(`Environment "${envName}" was not found in ${config.name || "wrangler.toml"}.`);
+    throw new Error(
+      `Environment "${envName}" was not found in ${config.name || "wrangler.toml"}.`,
+    );
   }
 
   return {
@@ -46,6 +48,20 @@ export function resolveWranglerVarString(options = {}) {
   }
 
   const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+export function resolveWranglerAssetsDirectory(options = {}) {
+  const configPath = options.configPath || "wrangler.toml";
+  const config = readWranglerToml(configPath);
+  const scope = readWranglerScope(config, options.env);
+  const directory = scope?.assets?.directory;
+
+  if (typeof directory !== "string") {
+    return undefined;
+  }
+
+  const trimmed = directory.trim();
   return trimmed.length > 0 ? trimmed : undefined;
 }
 

@@ -6,6 +6,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { run } from "../../../bin/commands/reset-password.js";
 import { migrate } from "../runtime.js";
 import type { Bindings } from "../../types.js";
+import { createBootstrapService } from "../../services/bootstrap.js";
+import { createNodeDatabase } from "../../db/index.js";
 
 describe("jant reset-password", () => {
   const tempDirs: string[] = [];
@@ -33,13 +35,39 @@ describe("jant reset-password", () => {
     await migrate({ DATABASE_URL: `file:${databasePath}` } as Bindings);
     process.env.DATABASE_URL = `file:${databasePath}`;
 
+    const sqlite = new Database(databasePath);
+    try {
+      const bootstrap = createBootstrapService(createNodeDatabase(sqlite));
+      await sqlite
+        .prepare(
+          `
+            INSERT INTO "user" ("id", "email", "name", "email_verified", "created_at", "updated_at")
+            VALUES (?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          "usr_reset_password_test",
+          "owner@example.com",
+          "Owner",
+          1,
+          new Date().toISOString(),
+          new Date().toISOString(),
+        );
+      await bootstrap.completeInitialSetup({
+        ownerUserId: "usr_reset_password_test",
+        siteName: "Reset Password Test",
+      });
+    } finally {
+      sqlite.close();
+    }
+
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
     await run([]);
 
-    const sqlite = new Database(databasePath, { readonly: true });
+    const sqliteReadonly = new Database(databasePath, { readonly: true });
     try {
-      const stored = sqlite
+      const stored = sqliteReadonly
         .prepare(
           `
             SELECT value
@@ -52,7 +80,7 @@ describe("jant reset-password", () => {
 
       expect(stored).toMatch(/^[a-f0-9]{64}:\d{10}$/);
     } finally {
-      sqlite.close();
+      sqliteReadonly.close();
     }
 
     expect(logSpy).toHaveBeenCalledWith("Runtime: Node database");

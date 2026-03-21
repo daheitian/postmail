@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "jant migrate --local && wrangler dev",
-    "deploy": "node ../../scripts/demo-shared/run-with-env.mjs --site demo-source -- pnpm exec jant migrate --remote && pnpm exec jant assets prepare --output ./.jant/public-assets && node ../../scripts/demo-shared/run-with-env.mjs --site demo-source -- pnpm exec wrangler deploy --assets ./.jant/public-assets",
+    "deploy": "node ../../scripts/demo-shared/run-with-env.mjs --site demo-source -- pnpm exec jant deploy",
     "reset-password": "jant reset-password",
     "export-canonical": "node ../../scripts/demo-source/export-canonical.mjs"
   },

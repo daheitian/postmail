@@ -26,7 +26,7 @@ Deploy to Cloudflare instantly — no local setup required:
 3. If you set `SITE_URL` to a custom domain, add it in: Cloudflare dashboard → Workers & Pages → your worker → Settings → Domains & Routes → Add Custom Domain
 4. If you left `SITE_URL` empty, set it to your `*.workers.dev` URL: Cloudflare dashboard → Workers & Pages → your worker → Settings → Variables and Secrets
 
-If you deploy Jant under a subpath on Cloudflare, Jant will publish built assets under that same prefix, such as `/blog/_assets/*`. The deploy script prepares that directory automatically, so routing `/blog*` to the same Worker is enough.
+If you deploy Jant under a subpath on Cloudflare, Jant will publish built assets under that same prefix, such as `/blog/_assets/*`. `jant deploy` prepares `dist/public/blog/_assets/*` automatically, so routing `/blog*` to the same Worker is enough.
 
 ### Develop locally
 

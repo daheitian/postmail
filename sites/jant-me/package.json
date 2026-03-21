@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "jant migrate --local && wrangler dev",
-    "deploy": "jant migrate --remote && jant assets prepare --output ./.jant/public-assets && wrangler deploy --assets ./.jant/public-assets"
+    "deploy": "jant deploy"
   },
   "dependencies": {
     "@jant/core": "workspace:*"

@@ -15,6 +15,9 @@ run = """
 # Phase 1: Core checks
 mise run check-tests
 mise run i18n-check
+if [[ -n "${PG_SMOKE_DATABASE_URL:-}" ]]; then
+  mise run check-pg-smoke
+fi
 
 # Phase 2: Template integration
 mise run check-template
@@ -156,6 +159,13 @@ run = "pnpm --filter @jant/core test:watch"
 [tasks.check-tests-coverage]
 description = "Run tests with coverage report"
 run = "pnpm --filter @jant/core test:coverage"
+
+[tasks.check-pg-smoke]
+description = "Run the Postgres smoke test against PG_SMOKE_DATABASE_URL"
+run = """
+pnpm --filter @jant/core build:lib
+node ./packages/core/dev/scripts/pg-smoke.mjs
+"""
 
 # =============================================================================
 # Code Quality (uses @jant/core)
@@ -331,10 +341,8 @@ dir = "packages/core"
 run = """
 echo "Building @jant/core..."
 pnpm run build
-echo "Running migrations on preview D1..."
-node ./bin/jant.js migrate --remote --env preview
 echo "Deploying to preview..."
-pnpm exec wrangler deploy --env preview
+node ./bin/jant.js deploy --env preview
 """
 
 [tasks.db-preview-migrate]

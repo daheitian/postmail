@@ -103,15 +103,15 @@ async function main() {
 
   // 6. Verify public asset directory generation
   console.log("Step 6: Verifying public asset directory generation...");
-  run("pnpm exec jant assets prepare --output ./.jant/public-assets", {
+  run("pnpm exec jant assets prepare", {
     cwd: projectDir,
   });
-  const publicAssetDir = path.join(projectDir, ".jant/public-assets/_assets");
+  const publicAssetDir = path.join(projectDir, "dist/public/_assets");
   if (!(await fs.pathExists(path.join(publicAssetDir, "client.js")))) {
     console.error(`  prepared client.js not found at ${publicAssetDir}`);
     process.exit(1);
   }
-  console.log("  Public asset directory prepared at ./.jant/public-assets\n");
+  console.log("  Public asset directory prepared at dist/public\n");
 
   // 7. Verify wrangler.toml is valid
   console.log("Step 7: Verifying wrangler.toml...");

@@ -82,7 +82,7 @@ Edit `wrangler.toml`:
 >
 > **Note:** Changing `database_id` resets your local development database (local data is stored per database ID). If you've already started local development, you'll need to go through the setup wizard again to create your admin account.
 >
-> **Subpath deploys on Cloudflare:** If `SITE_URL` includes a path like `/blog`, Jant publishes built assets under `/blog/_assets/*`. `npm run deploy` prepares that static directory automatically, so routing `/blog*` to the same Worker is enough.
+> **Subpath deploys on Cloudflare:** If `SITE_URL` includes a path like `/blog`, Jant publishes built assets under `/blog/_assets/*`. `npm run deploy` detects that prefix and prepares `dist/public/blog/_assets/*` automatically, so routing `/blog*` to the same Worker is enough.
 
 #### 4. Set Production Secrets
 
@@ -102,7 +102,7 @@ wrangler secret put AUTH_SECRET
 #### 5. Deploy
 
 ```bash
-# Apply database migrations, prepare public assets, and deploy
+# Apply database migrations and deploy
 npm run deploy
 ```
 
@@ -166,12 +166,12 @@ The workflow is pre-configured to deploy on every push to `main`. After pushing 
 
 ## Commands
 
-| Command                  | Description                                                |
-| ------------------------ | ---------------------------------------------------------- |
-| `npm run dev`            | Start local dev server (auto-applies migrations)           |
-| `npm run deploy`         | Apply remote migrations, prepare public assets, and deploy |
-| `npm run reset-password` | Generate a password reset link if locked out               |
-| `npm run export`         | Export D1 database to a SQL file                           |
+| Command                  | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| `npm run dev`            | Start local dev server (auto-applies migrations) |
+| `npm run deploy`         | Apply remote migrations and deploy               |
+| `npm run reset-password` | Generate a password reset link if locked out     |
+| `npm run export`         | Export D1 database to a SQL file                 |
 
 > Use `--remote` to run commands against your production database (e.g. `npx jant reset-password --remote`).
 
