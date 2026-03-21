@@ -12,6 +12,7 @@ const __dirname = path.dirname(__filename);
 
 // @jant/core version - injected at build time by prepublish script
 const CORE_VERSION = "__JANT_CORE_VERSION__";
+const WRANGLER_VERSION = "__WRANGLER_VERSION__";
 
 // Template directory resolution:
 // - If template/ exists next to dist/ (after prepublish copy), use that
@@ -202,6 +203,9 @@ async function copyTemplate(config: ProjectConfig): Promise<void> {
     // Replace workspace:* with version injected at build time
     if (pkg.dependencies?.["@jant/core"] === "workspace:*") {
       pkg.dependencies["@jant/core"] = `^${CORE_VERSION}`;
+    }
+    if (pkg.devDependencies?.wrangler === "catalog:") {
+      pkg.devDependencies.wrangler = WRANGLER_VERSION;
     }
 
     // Adapt scripts for the detected package manager

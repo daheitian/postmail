@@ -12,16 +12,11 @@ pnpm = "10.28.2"
 alias = "ci"
 description = "Run all CI checks (test + build + i18n + template)"
 run = """
-# Phase 1: Build @jant/core once (Vite lib mode → single dist/index.js)
-# - test-template needs dist/
-pnpm --filter @jant/core build:lib
-
-# Phase 2: Checks (reuse built output, no redundant builds)
+# Phase 1: Core checks
 mise run check-tests
 mise run i18n-check
 
-# Phase 3: Build create-jant + integration test
-pnpm --filter create-jant prepublishOnly
+# Phase 2: Template integration
 mise run check-template
 """
 

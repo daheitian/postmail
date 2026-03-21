@@ -12,6 +12,6 @@
     "@jant/core": "workspace:*"
   },
   "devDependencies": {
-    "wrangler": "catalog:"
+    "wrangler": "^4.76.0"
   }
 }
