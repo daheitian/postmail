@@ -299,7 +299,7 @@ export function validateUploadFileMetadata(
 
 /**
  * Generates a unique storage key for an uploaded media object.
- * Format: `media/{siteId}/files/YYYY/MM/{typeid}.{ext}`
+ * Format: `media/{siteId}/files/{typeid}.{ext}`
  *
  * @param siteId - Owning site ID
  * @param originalFilename - Original filename to extract extension from
@@ -307,7 +307,7 @@ export function validateUploadFileMetadata(
  * @example
  * ```ts
  * const { id, filename, storageKey } = generateStorageKey("sit_...", "photo.jpg");
- * // { id: "med_...", filename: "med_....jpg", storageKey: "media/sit_.../files/2026/03/med_....jpg" }
+ * // { id: "med_...", filename: "med_....jpg", storageKey: "media/sit_.../files/med_....jpg" }
  * ```
  */
 export function generateStorageKey(
@@ -321,15 +321,10 @@ export function generateStorageKey(
   const ext = originalFilename.split(".").pop() || "bin";
   const id = createEntityId("media");
   const filename = `${id}.${ext}`;
-  const now = new Date();
-  const year = String(now.getUTCFullYear());
-  const month = String(now.getUTCMonth() + 1).padStart(2, "0");
   const storageKey = [
     MEDIA_ROOT_PREFIX,
     siteId,
     MEDIA_FILES_STORAGE_PREFIX,
-    year,
-    month,
     filename,
   ].join("/");
   return { id, filename, storageKey };

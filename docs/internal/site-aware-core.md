@@ -278,7 +278,7 @@ Storage should be shared per environment, not per site bucket by default.
 
 Recommended object key layout:
 
-- `media/{siteId}/files/YYYY/MM/{mediaId}.{ext}`
+- `media/{siteId}/files/{mediaId}.{ext}`
 - `media/{siteId}/posters/{mediaId}.webp`
 - `media/{siteId}/assets/avatar/{mediaId}.{ext}`
 - `media/{siteId}/assets/favicon/apple-touch-icon.png`

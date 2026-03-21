@@ -22,7 +22,7 @@ const LEGACY_SITE_STORAGE_SEGMENTS = ["media", "site-assets"] as const;
  * @example
  * ```ts
  * isPublicStorageKeyAllowed(
- *   "media/sit_123/files/2026/03/file.webp",
+ *   "media/sit_123/files/file.webp",
  *   "sit_123",
  * ); // true
  * ```

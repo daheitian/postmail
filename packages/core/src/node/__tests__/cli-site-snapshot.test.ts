@@ -16,14 +16,14 @@ const SNAPSHOT_POST_ID = "pst_01jpyy18fh4w2m7r8k3c5t9qdn";
 const SNAPSHOT_PATH_ID = "pth_01jpyy1k2v6m4s8r1t5c9b3qgh";
 const SNAPSHOT_MEDIA_ID = "med_01jpyy1vxh4m7s2k8r5c9t3qbn";
 const SNAPSHOT_AVATAR_MEDIA_ID = "med_01jpyy1zs6m4v8r2k5t9c3b7qh";
-const SNAPSHOT_MEDIA_KEY = `media/${SNAPSHOT_SITE_ID}/files/2026/03/${SNAPSHOT_MEDIA_ID}.png`;
+const SNAPSHOT_MEDIA_KEY = `media/${SNAPSHOT_SITE_ID}/files/${SNAPSHOT_MEDIA_ID}.png`;
 const SNAPSHOT_POSTER_KEY = `media/${SNAPSHOT_SITE_ID}/posters/${SNAPSHOT_MEDIA_ID}.webp`;
 const SNAPSHOT_AVATAR_KEY = `media/${SNAPSHOT_SITE_ID}/assets/avatar/${SNAPSHOT_AVATAR_MEDIA_ID}.png`;
 const SNAPSHOT_APPLE_TOUCH_KEY = `media/${SNAPSHOT_SITE_ID}/assets/favicon/apple-touch-icon.png`;
 const SNAPSHOT_OLD_POST_ID = "pst_01jpyy2c4s7m8r1k5t9b3q6dgh";
 const SNAPSHOT_OLD_PATH_ID = "pth_01jpyy2pbh4m6s8r1k5t9c3qgn";
 const SNAPSHOT_OLD_MEDIA_ID = "med_01jpyy2z6v4m8r1k5t9c3b7qdh";
-const SNAPSHOT_OLD_MEDIA_KEY = `media/${SNAPSHOT_SITE_ID}/files/2026/03/${SNAPSHOT_OLD_MEDIA_ID}.png`;
+const SNAPSHOT_OLD_MEDIA_KEY = `media/${SNAPSHOT_SITE_ID}/files/${SNAPSHOT_OLD_MEDIA_ID}.png`;
 
 describe("jant site snapshot export/import", () => {
   const tempDirs: string[] = [];

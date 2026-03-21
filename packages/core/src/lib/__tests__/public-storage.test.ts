@@ -7,10 +7,7 @@ const OTHER_SITE_ID = "sit_other000000000000000000000";
 describe("isPublicStorageKeyAllowed", () => {
   it("allows current-site file keys in the new media namespace", () => {
     expect(
-      isPublicStorageKeyAllowed(
-        `media/${SITE_ID}/files/2026/03/example.webp`,
-        SITE_ID,
-      ),
+      isPublicStorageKeyAllowed(`media/${SITE_ID}/files/example.webp`, SITE_ID),
     ).toBe(true);
   });
 
@@ -32,7 +29,7 @@ describe("isPublicStorageKeyAllowed", () => {
   it("rejects new media keys for a different site", () => {
     expect(
       isPublicStorageKeyAllowed(
-        `media/${OTHER_SITE_ID}/files/2026/03/example.webp`,
+        `media/${OTHER_SITE_ID}/files/example.webp`,
         SITE_ID,
       ),
     ).toBe(false);
