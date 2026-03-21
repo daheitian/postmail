@@ -249,6 +249,63 @@ After
     });
   });
 
+  it("detects incomplete remote setup from a /setup page response", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("<html>setup</html>", { status: 200 })),
+    );
+
+    try {
+      await expect(
+        __test__.detectRemoteSetupStatus("https://example.com/blog"),
+      ).resolves.toBe(false);
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        "https://example.com/blog/setup",
+        { redirect: "manual" },
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("detects completed remote setup from a /setup redirect", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(null, { status: 302 })),
+    );
+
+    try {
+      await expect(
+        __test__.detectRemoteSetupStatus("https://example.com/blog"),
+      ).resolves.toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("warns when importing into a target that has not completed setup", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const warned = await __test__.warnIfTargetSetupIncomplete(
+        {
+          getSetupStatus: async () => false,
+        },
+        "Local target site",
+      );
+
+      expect(warned).toBe(true);
+      expect(warnSpy).toHaveBeenNthCalledWith(1, "");
+      expect(warnSpy).toHaveBeenNthCalledWith(
+        2,
+        __test__.buildIncompleteSetupWarning("Local target site"),
+      );
+      expect(warnSpy).toHaveBeenNthCalledWith(3, "");
+    } finally {
+      warnSpy.mockRestore();
+    }
+  });
+
   it("reads exported root aliases from extra.jant.root_aliases", () => {
     expect(
       __test__.getExportedRootAliases({

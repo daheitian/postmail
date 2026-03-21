@@ -488,12 +488,10 @@ description = "Alias for demo-public-rebuild"
 run = "mise run demo-public-rebuild"
 
 [tasks.demo-nuke]
+alias = "db-demo-nuke"
 description = "Drop ALL tables in the public demo database (including migrations)"
 run = "node scripts/nuke-db.mjs sites/demo"
 
-[tasks.db-demo-nuke]
-description = "Alias for demo-nuke"
-run = "mise run demo-nuke"
 
 # =============================================================================
 # Official Site

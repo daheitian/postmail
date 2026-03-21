@@ -803,6 +803,46 @@ async function buildSiteAvatarImport(siteConfig, sourceRootDir) {
   };
 }
 
+function buildIncompleteSetupWarning(targetLabel) {
+  return [
+    `Warning: ${targetLabel} has not completed setup.`,
+    "Import will continue, but key pages will keep redirecting to /setup until onboarding is finished.",
+    "After the import, finish /setup to create the admin account. The values entered there can overwrite the imported site name, language, and time zone.",
+  ].join("\n");
+}
+
+async function detectRemoteSetupStatus(apiUrl) {
+  try {
+    const response = await fetch(`${apiUrl}/setup`, {
+      redirect: "manual",
+    });
+
+    if (response.status === 200) {
+      return false;
+    }
+
+    if (response.status >= 300 && response.status < 400) {
+      return true;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+async function warnIfTargetSetupIncomplete(target, targetLabel) {
+  const isSetupComplete = await target.getSetupStatus();
+  if (isSetupComplete !== false) {
+    return false;
+  }
+
+  console.warn("");
+  console.warn(buildIncompleteSetupWarning(targetLabel));
+  console.warn("");
+  return true;
+}
+
 function createUploadFile(name, type, bytes) {
   return {
     name,
@@ -877,6 +917,9 @@ function toRemotePostPayload(data) {
 function createRemoteTarget(apiUrl, token) {
   return {
     async close() {},
+    async getSetupStatus() {
+      return detectRemoteSetupStatus(apiUrl);
+    },
     async updateSettings(updates) {
       return apiCall("PUT", "/api/settings", apiUrl, token, updates);
     },
@@ -1018,6 +1061,9 @@ async function createLocalTarget(env = process.env) {
   return {
     async close() {
       sqlite.close();
+    },
+    async getSetupStatus() {
+      return runtime.services.settings.isOnboardingComplete();
     },
     async updateSettings(updates) {
       await runtime.services.settings.setMany(updates);
@@ -1260,6 +1306,9 @@ export const __test__ = {
   getExportedRootAliases,
   getRootAliasPathsForImport,
   toRemotePostPayload,
+  buildIncompleteSetupWarning,
+  detectRemoteSetupStatus,
+  warnIfTargetSetupIncomplete,
 };
 
 export async function run(argv) {
@@ -1389,6 +1438,13 @@ export async function run(argv) {
     console.log(
       `Found ${postFiles.length} posts and ${collectionFiles.length} collections`,
     );
+
+    if (target) {
+      await warnIfTargetSetupIncomplete(
+        target,
+        values.url ? `Target site at ${apiUrl}` : "Local target site",
+      );
+    }
 
     if (siteConfig) {
       const settingsUpdates = buildSettingsUpdatesFromConfig(
