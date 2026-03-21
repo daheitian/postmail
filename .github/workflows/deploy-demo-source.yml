@@ -1,0 +1,22 @@
+name: Deploy demo-source
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/core/**"
+      - "sites/demo-source/**"
+      - ".github/workflows/deploy.yml"
+      - ".github/workflows/deploy-demo-source.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to demo-source.jant.me
+    uses: ./.github/workflows/deploy.yml
+    with:
+      working_directory: sites/demo-source
+    secrets:
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}

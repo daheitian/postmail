@@ -50,6 +50,19 @@ mise run db-demo-source-migrate
 mise run demo-source-reset
 ```
 
+## GitHub Actions deploy
+
+`sites/demo-source` now auto-deploys from the repo root workflow
+[`deploy-demo-source.yml`](/Users/green/project/jant/1/.github/workflows/deploy-demo-source.yml).
+Pushes to `main` deploy when either `packages/core/**` or
+`sites/demo-source/**` changes. You can also run the workflow manually with
+`workflow_dispatch`.
+
+Configure these repository secrets before relying on CI deploys:
+
+- `CF_API_TOKEN`
+- `CF_ACCOUNT_ID`
+
 ## Environment Files for Repo Tasks
 
 The repo-level `mise` tasks and helper scripts now auto-load a small set of

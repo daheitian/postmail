@@ -47,6 +47,19 @@ mise run db-content-lab-export
 mise run db-content-lab-clean
 ```
 
+## GitHub Actions deploy
+
+`sites/content-lab` now auto-deploys from the repo root workflow
+[`deploy-content-lab.yml`](/Users/green/project/jant/1/.github/workflows/deploy-content-lab.yml).
+Pushes to `main` deploy when either `packages/core/**` or
+`sites/content-lab/**` changes. You can also run the workflow manually with
+`workflow_dispatch`.
+
+Configure these repository secrets before relying on CI deploys:
+
+- `CF_API_TOKEN`
+- `CF_ACCOUNT_ID`
+
 ## Snapshot Workflow
 
 1. Add or edit content in the content-lab Worker.
