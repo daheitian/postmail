@@ -257,7 +257,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 > URL 是产品的一部分。应该简洁、美观、有意义。
 
-帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义 URL 覆盖通过 `custom_urls` 表管理。合集使用 `/c/{slug}`。
+帖子使用 slug 作为 URL（如 `/{slug}`）。Slug 由标题自动生成（通过 `lib/slug.ts`），或生成随机字母数字 ID（通过 `lib/nanoid.ts`，长度由 `SLUG_ID_LENGTH` 环境变量控制，默认 5）。自定义路径覆盖通过 `path_registry` 表管理。合集使用 `/c/{slug}`。
 
 ### 5.2 前台路由
 
@@ -302,7 +302,7 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 - **自动**：Post 或合集修改 slug 时，系统自动为旧路径创建 301 重定向
 - **手动**：用户在后台（`/settings/custom-urls`）自行创建，用于短链接、旧站迁移等场景
 
-**自定义 URL**：`custom_urls` 表管理所有自定义路径，支持帖子别名、合集别名和重定向。确保 slug 在帖子和自定义 URL 之间不会冲突。
+**自定义 URL**：`path_registry` 表管理所有自定义路径，支持帖子别名、合集别名和重定向。确保 slug 在帖子和自定义路径之间不会冲突。
 
 ---
 

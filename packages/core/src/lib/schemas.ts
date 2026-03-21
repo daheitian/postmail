@@ -28,6 +28,7 @@ import {
   type ConfigKey,
 } from "../types.js";
 import { ValidationError } from "./errors.js";
+import { createTypeIdSchema, ID_PREFIX } from "./ids.js";
 import { normalizeSlug } from "./slug-format.js";
 import { sanitizeUrl, normalizePath } from "./url.js";
 
@@ -130,6 +131,15 @@ export const RatingSchema = z.coerce
   .or(z.literal("").transform(() => undefined))
   .transform((v) => (v === 0 ? undefined : v));
 
+const PostIdSchema = createTypeIdSchema(ID_PREFIX.post);
+const MediaIdSchema = createTypeIdSchema(ID_PREFIX.media);
+const CollectionIdSchema = createTypeIdSchema(ID_PREFIX.collection);
+const CollectionDirectoryItemIdSchema = createTypeIdSchema(
+  ID_PREFIX.collectionDirectoryItem,
+);
+const NavItemIdSchema = createTypeIdSchema(ID_PREFIX.navItem);
+const PathIdSchema = createTypeIdSchema(ID_PREFIX.path);
+
 /**
  * Base post fields (shared between create and update schemas)
  */
@@ -185,19 +195,19 @@ const PostFieldsSchema = z.object({
   quoteText: z.string().optional(),
   rating: RatingSchema,
   collectionIds: z
-    .array(z.string().min(1))
+    .array(CollectionIdSchema)
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  replyToId: z.string().optional(),
+  replyToId: PostIdSchema.optional(),
   publishedAt: z.number().int().positive().optional(),
-  mediaIds: z.array(z.string()).max(MAX_MEDIA_ATTACHMENTS).optional(),
-  mediaAlts: z.record(z.string(), z.string()).optional(),
+  mediaIds: z.array(MediaIdSchema).max(MAX_MEDIA_ATTACHMENTS).optional(),
+  mediaAlts: z.record(MediaIdSchema, z.string()).optional(),
 });
 
 const ApiMediaAttachmentInputSchema = z
   .object({
     type: z.literal("media"),
-    mediaId: z.string().min(1),
+    mediaId: MediaIdSchema,
     alt: z
       .string()
       .max(500)
@@ -430,6 +440,15 @@ export const UpdateNavItemSchema = z.object({
     })
     .optional(),
 });
+
+export {
+  CollectionDirectoryItemIdSchema,
+  CollectionIdSchema,
+  MediaIdSchema,
+  NavItemIdSchema,
+  PathIdSchema,
+  PostIdSchema,
+};
 
 /**
  * API request body schema for creating a collection

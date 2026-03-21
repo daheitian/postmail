@@ -129,7 +129,7 @@ describe("Settings - Avatar Upload Logic", () => {
       );
 
       const stored = await settingsService.get("SITE_FAVICON_APPLE_TOUCH");
-      expect(stored).toBe("favicon/apple-touch-icon.png");
+      expect(stored).toBe("site/apple-touch-icon.png");
       // storage.put should be called twice: avatar file + apple-touch-icon
       expect(storage.put).toHaveBeenCalledTimes(2);
     });
@@ -190,11 +190,11 @@ describe("Settings - Avatar Upload Logic", () => {
 
   describe("removeAvatar", () => {
     it("removes all favicon-related settings", async () => {
-      await settingsService.set("SITE_AVATAR", "media/2026/02/some-id.png");
+      await settingsService.set("SITE_AVATAR", "media/some-id.png");
       await settingsService.set("SITE_FAVICON_ICO", "base64data");
       await settingsService.set(
         "SITE_FAVICON_APPLE_TOUCH",
-        "favicon/apple-touch-icon.png",
+        "site/apple-touch-icon.png",
       );
       await settingsService.set("SITE_FAVICON_VERSION", "202602191430");
 
@@ -210,14 +210,12 @@ describe("Settings - Avatar Upload Logic", () => {
       const storage = createMockStorage();
       await settingsService.set(
         "SITE_FAVICON_APPLE_TOUCH",
-        "favicon/apple-touch-icon.png",
+        "site/apple-touch-icon.png",
       );
 
       await settingsService.removeAvatar(storage);
 
-      expect(storage.delete).toHaveBeenCalledWith(
-        "favicon/apple-touch-icon.png",
-      );
+      expect(storage.delete).toHaveBeenCalledWith("site/apple-touch-icon.png");
     });
 
     it("skips storage delete when no apple-touch-icon key exists", async () => {
@@ -229,10 +227,10 @@ describe("Settings - Avatar Upload Logic", () => {
     });
 
     it("handles null storage gracefully", async () => {
-      await settingsService.set("SITE_AVATAR", "media/2026/02/some-id.png");
+      await settingsService.set("SITE_AVATAR", "media/some-id.png");
       await settingsService.set(
         "SITE_FAVICON_APPLE_TOUCH",
-        "favicon/apple-touch-icon.png",
+        "site/apple-touch-icon.png",
       );
 
       await settingsService.removeAvatar(null);

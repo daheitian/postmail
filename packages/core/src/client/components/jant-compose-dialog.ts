@@ -522,9 +522,9 @@ export class JantComposeDialog extends LitElement {
   /**
    * Open compose dialog in reply mode.
    *
-   * @param id - UUID of the post being replied to
+   * @param id - TypeID of the post being replied to
    * @param replyData - Pre-captured content from the DOM (avoids API fetch)
-   * @param threadRootId - UUID of the thread root (used for in-place timeline refresh)
+   * @param threadRootId - TypeID of the thread root (used for in-place timeline refresh)
    * @param refreshTarget - Current view to patch after publishing the reply
    */
   async openReply(

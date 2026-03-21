@@ -17,7 +17,11 @@ import {
   getPublicUrlForProvider,
 } from "../../lib/image.js";
 import { sse } from "../../lib/sse.js";
-import { validateUploadFile, generateStorageKey } from "../../lib/upload.js";
+import {
+  validateUploadFile,
+  generateStorageKey,
+  getPosterStorageKey,
+} from "../../lib/upload.js";
 import { assertFound } from "../../lib/errors.js";
 import { getI18n } from "../../i18n/index.js";
 
@@ -167,7 +171,7 @@ uploadApiRoutes.post("/", async (c) => {
     return c.json({ error: uploadError }, 400);
   }
 
-  // Generate unique filename using UUIDv7
+  // Generate a media TypeID-backed filename and storage key
   const { id, filename, storageKey } = generateStorageKey(file.name);
 
   try {
@@ -236,10 +240,7 @@ uploadApiRoutes.post("/", async (c) => {
     let posterKey: string | undefined;
     const posterFile = formData.get("poster") as File | null;
     if (posterFile && file.type.startsWith("video/")) {
-      const date = new Date();
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-      posterKey = `media/${year}/${month}/${id}-poster.webp`;
+      posterKey = getPosterStorageKey(id);
       await storage.put(posterKey, posterFile.stream(), {
         contentType: "image/webp",
       });

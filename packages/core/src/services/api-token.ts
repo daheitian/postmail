@@ -6,9 +6,9 @@
  */
 
 import { eq } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
 import type { Database } from "../db/index.js";
 import { apiTokens } from "../db/schema.js";
+import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import type { ApiToken } from "../types/entities.js";
 
@@ -39,7 +39,7 @@ export interface ApiTokenService {
   /**
    * Deletes an API token by ID.
    *
-   * @param id - Token ID (UUIDv7)
+   * @param id - Token ID (TypeID)
    * @returns `true` if a token was deleted, `false` if not found
    */
   delete(id: string): Promise<boolean>;
@@ -66,7 +66,7 @@ export interface ApiTokenService {
    * Updates the last-used timestamp for a token.
    * Intended to be called fire-and-forget after successful verification.
    *
-   * @param id - Token ID (UUIDv7)
+   * @param id - Token ID (TypeID)
    */
   updateLastUsed(id: string): Promise<void>;
 }
@@ -113,7 +113,7 @@ function toApiToken(row: typeof apiTokens.$inferSelect): ApiToken {
 export function createApiTokenService(db: Database): ApiTokenService {
   return {
     async create(name: string) {
-      const id = uuidv7();
+      const id = createEntityId("apiToken");
       const timestamp = now();
       const hex = randomHex(32); // 64 hex chars
       const plaintext = `${TOKEN_PREFIX}${hex}`;

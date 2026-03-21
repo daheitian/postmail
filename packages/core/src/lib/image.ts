@@ -112,19 +112,19 @@ export function getPublicUrlForProvider(
  * Without a public URL, returns a root-relative path for the local proxy.
  * With a public URL, prefixes that domain.
  *
- * @param storageKey - The storage object key (e.g. `"media/2025/01/uuid.webp"`)
+ * @param storageKey - The storage object key (e.g. `"media/med_01jpx7gb2w4rcg9w82g5r8kkx3.webp"`)
  * @param publicUrl - Optional public URL base for direct CDN access
  * @returns The public URL for the media file
  *
  * @example
  * ```ts
  * // Without public URL - local proxy
- * getMediaUrl("media/2025/01/01902a9f-1a2b-7c3d.webp");
- * // Returns: "/media/2025/01/01902a9f-1a2b-7c3d.webp"
+ * getMediaUrl("media/med_01jpx7gb2w4rcg9w82g5r8kkx3.webp");
+ * // Returns: "/media/med_01jpx7gb2w4rcg9w82g5r8kkx3.webp"
  *
  * // With public URL - CDN
- * getMediaUrl("media/2025/01/01902a9f-1a2b-7c3d.webp", "https://cdn.example.com");
- * // Returns: "https://cdn.example.com/media/2025/01/01902a9f-1a2b-7c3d.webp"
+ * getMediaUrl("media/med_01jpx7gb2w4rcg9w82g5r8kkx3.webp", "https://cdn.example.com");
+ * // Returns: "https://cdn.example.com/media/med_01jpx7gb2w4rcg9w82g5r8kkx3.webp"
  * ```
  */
 export function getMediaUrl(

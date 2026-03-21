@@ -69,9 +69,9 @@ Non-negotiable regardless of context:
 - **Types**: public exports in `src/types.ts`; definitions in `src/types/`.
 - **Schemas**: shared domain schemas in `src/lib/schemas.ts`; route-specific schemas colocated with routes.
 - **Routes**: `xxxRoutes` suffix (`postsRoutes`, `settingsRoutes`).
-- **DB table names**: always singular (`post`, `collection`, `custom_url`), never plural.
+- **DB table names**: always singular or domain-specific (`post`, `collection`, `nav_item`, `api_token`, `path_registry`), never plural.
 - **Time**: Unix timestamps (seconds) via `lib/time.ts`.
-- **IDs**: UUIDv7 (text) everywhere — DB, API, URLs. **Post URLs**: slug-based (`/{slug}`). Slugs are auto-generated from title (via `lib/slug.ts`) or as random alphanumeric IDs (via `lib/nanoid.ts`). Custom URL overrides are managed through the `custom_urls` table. Collections use `/c/{slug}`. `SLUG_ID_LENGTH` env var controls random slug length (default: 5).
+- **IDs**: TypeID (text) everywhere — DB, API, auth tables, jobs, storage-backed entities. Store canonical TypeID strings directly; never convert them back to UUIDs in application code. Use the shared prefixes from `src/lib/ids.ts` (`pst`, `med`, `col`, `pth`, `cdi`, `nav`, `api`, `usr`, `ses`, `acc`, `vrf`). **Post URLs**: slug-based (`/{slug}`). Slugs are auto-generated from title (via `lib/slug.ts`) or as random alphanumeric IDs (via `lib/nanoid.ts`). Path overrides are managed through the `path_registry` table. Collections use `/c/{slug}`. `SLUG_ID_LENGTH` env var controls random slug length (default: 5).
 - **Soft delete**: posts use `deleted_at`.
 - **Library functions**: include JSDoc with `@param`, `@returns`, `@example`.
 

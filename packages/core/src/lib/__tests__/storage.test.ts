@@ -60,11 +60,11 @@ describe("createStorageDriver", () => {
 
       expect(driver).not.toBeNull();
       await driver!.put(
-        "media/2026/03/data-dir.txt",
+        "media/nested/data-dir.txt",
         new TextEncoder().encode("from data dir"),
       );
 
-      const object = await driver!.get("media/2026/03/data-dir.txt");
+      const object = await driver!.get("media/nested/data-dir.txt");
       expect(object).not.toBeNull();
       expect(await new Response(object!.body).text()).toBe("from data dir");
     } finally {
@@ -226,18 +226,18 @@ describe("local storage driver", () => {
 
       expect(driver).not.toBeNull();
       await driver!.put(
-        "media/2026/03/example.txt",
+        "media/nested/example.txt",
         new TextEncoder().encode("hello local storage"),
         { contentType: "text/plain" },
       );
 
-      const head = await driver!.head("media/2026/03/example.txt");
+      const head = await driver!.head("media/nested/example.txt");
       expect(head).toEqual({
         contentType: "text/plain",
         size: 19,
       });
 
-      const object = await driver!.get("media/2026/03/example.txt");
+      const object = await driver!.get("media/nested/example.txt");
       expect(object).not.toBeNull();
       expect(await new Response(object!.body).text()).toBe(
         "hello local storage",
@@ -263,7 +263,7 @@ describe("local storage driver", () => {
       }
 
       const upload = await driver.createMultipartUpload(
-        "media/2026/03/multipart.txt",
+        "media/nested/multipart.txt",
         { contentType: "text/plain" },
       );
       const part1 = await driver.uploadPart(

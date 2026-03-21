@@ -8,12 +8,15 @@ import type { Bindings, CollectionSortOrder } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import {
+  CollectionDirectoryItemIdSchema,
   CollectionDescriptionValueSchema,
   CollectionSortOrderSchema,
   CreateCollectionSchema,
+  PostIdSchema,
   parseValidated,
 } from "../../lib/schemas.js";
 import { assertFound, parseIdParam, NotFoundError } from "../../lib/errors.js";
+import { ID_PREFIX } from "../../lib/ids.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -26,12 +29,12 @@ const UpdateCollectionSchema = CreateCollectionSchema.partial().extend({
 });
 
 const PostAssignSchema = z.object({
-  postId: z.string().min(1),
+  postId: PostIdSchema,
 });
 
 const MoveSchema = z.object({
-  after: z.string().nullable().optional(),
-  before: z.string().nullable().optional(),
+  after: CollectionDirectoryItemIdSchema.nullable().optional(),
+  before: CollectionDirectoryItemIdSchema.nullable().optional(),
 });
 
 const UpdateSidebarItemSchema = z.object({
@@ -69,7 +72,7 @@ collectionsApiRoutes.post("/sidebar-items", requireAuthApi(), async (c) => {
 });
 
 collectionsApiRoutes.put("/sidebar-items/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.collectionDirectoryItem);
   const body = parseValidated(UpdateSidebarItemSchema, await c.req.json());
 
   const item = assertFound(
@@ -85,7 +88,10 @@ collectionsApiRoutes.put(
   "/sidebar-items/:id/move",
   requireAuthApi(),
   async (c) => {
-    const id = parseIdParam(c.req.param("id"));
+    const id = parseIdParam(
+      c.req.param("id"),
+      ID_PREFIX.collectionDirectoryItem,
+    );
     const body = parseValidated(MoveSchema, await c.req.json());
 
     const item = assertFound(
@@ -106,7 +112,10 @@ collectionsApiRoutes.delete(
   "/sidebar-items/:id",
   requireAuthApi(),
   async (c) => {
-    const id = parseIdParam(c.req.param("id"));
+    const id = parseIdParam(
+      c.req.param("id"),
+      ID_PREFIX.collectionDirectoryItem,
+    );
     await c.var.services.collections.deleteSidebarItem(id);
     return c.json({ success: true });
   },
@@ -114,7 +123,7 @@ collectionsApiRoutes.delete(
 
 // Get single collection
 collectionsApiRoutes.get("/:id", async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.collection);
   const collection = assertFound(
     await c.var.services.collections.getById(id),
     "Collection",
@@ -138,7 +147,7 @@ collectionsApiRoutes.post("/", requireAuthApi(), async (c) => {
 
 // Update collection (requires auth)
 collectionsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.collection);
   const body = parseValidated(UpdateCollectionSchema, await c.req.json());
 
   const collection = assertFound(
@@ -151,7 +160,7 @@ collectionsApiRoutes.put("/:id", requireAuthApi(), async (c) => {
 
 // Delete collection (requires auth)
 collectionsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.collection);
 
   const success = await c.var.services.collections.delete(id);
   if (!success) throw new NotFoundError("Collection");
@@ -161,7 +170,7 @@ collectionsApiRoutes.delete("/:id", requireAuthApi(), async (c) => {
 
 // Add a post to a collection (requires auth)
 collectionsApiRoutes.post("/:id/posts", requireAuthApi(), async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.collection);
   assertFound(await c.var.services.collections.getById(id), "Collection");
 
   const body = parseValidated(PostAssignSchema, await c.req.json());
@@ -177,8 +186,8 @@ collectionsApiRoutes.delete(
   "/:id/posts/:postId",
   requireAuthApi(),
   async (c) => {
-    const id = parseIdParam(c.req.param("id"));
-    const postId = parseIdParam(c.req.param("postId"));
+    const id = parseIdParam(c.req.param("id"), ID_PREFIX.collection);
+    const postId = parseIdParam(c.req.param("postId"), ID_PREFIX.post);
 
     await c.var.services.collections.removePost(id, postId);
 

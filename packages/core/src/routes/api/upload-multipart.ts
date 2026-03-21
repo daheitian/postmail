@@ -21,9 +21,11 @@ import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 import {
   validateUploadFileMetadata,
   generateStorageKey,
+  getPosterStorageKey,
 } from "../../lib/upload.js";
 import { supportsMultipart } from "../../lib/storage.js";
-import { ValidationError } from "../../lib/errors.js";
+import { ValidationError, parseIdParam } from "../../lib/errors.js";
+import { ID_PREFIX } from "../../lib/ids.js";
 import { parseValidated } from "../../lib/schemas.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -113,6 +115,8 @@ multipartUploadApiRoutes.put("/:id/part", async (c) => {
     return c.json({ error: "Storage doesn't support multipart uploads." }, 500);
   }
 
+  parseIdParam(c.req.param("id"), ID_PREFIX.media);
+
   const storageKey = c.req.query("storageKey");
   const uploadId = c.req.query("uploadId");
   if (!storageKey || !uploadId) {
@@ -144,7 +148,7 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     return c.json({ error: "Storage doesn't support multipart uploads." }, 500);
   }
 
-  const id = c.req.param("id");
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.media);
   const body = await c.req.json();
   const data = parseValidated(CompleteSchema, body);
 
@@ -209,6 +213,8 @@ multipartUploadApiRoutes.post("/:id/abort", async (c) => {
     return c.json({ error: "Storage doesn't support multipart uploads." }, 500);
   }
 
+  parseIdParam(c.req.param("id"), ID_PREFIX.media);
+
   const body = await c.req.json();
   const data = parseValidated(AbortSchema, body);
 
@@ -224,7 +230,7 @@ multipartUploadApiRoutes.put("/:id/poster", async (c) => {
     return c.json({ error: "Storage not configured." }, 500);
   }
 
-  const id = c.req.param("id");
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.media);
   const formData = await c.req.formData();
   const posterFile = formData.get("poster") as File | null;
   if (!posterFile) {
@@ -237,10 +243,7 @@ multipartUploadApiRoutes.put("/:id/poster", async (c) => {
     );
   }
 
-  const date = new Date();
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const posterKey = `media/${year}/${month}/${id}-poster.webp`;
+  const posterKey = getPosterStorageKey(id);
 
   await storage.put(posterKey, posterFile.stream(), {
     contentType: "image/webp",

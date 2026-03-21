@@ -427,14 +427,14 @@ describe("multipart upload API routes", () => {
           size: 200_000_000,
         }),
       });
-      const { uploadId, storageKey } = (await initRes.json()) as {
+      const { id, uploadId, storageKey } = (await initRes.json()) as {
         id: string;
         uploadId: string;
         storageKey: string;
       };
 
       // Abort
-      const abortRes = await app.request(`/api/upload/multipart/unused/abort`, {
+      const abortRes = await app.request(`/api/upload/multipart/${id}/abort`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ storageKey, uploadId }),

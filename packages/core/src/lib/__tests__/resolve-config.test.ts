@@ -127,12 +127,12 @@ describe("resolveConfig", () => {
         R2_PUBLIC_URL: "https://r2.example.com",
         STORAGE_DRIVER: "r2",
       }),
-      { SITE_AVATAR: "media/2024/01/avatar.jpg" },
+      { SITE_AVATAR: "media/avatar.jpg" },
     );
 
-    expect(config.siteAvatar).toBe("media/2024/01/avatar.jpg");
+    expect(config.siteAvatar).toBe("media/avatar.jpg");
     expect(config.siteAvatarUrl).toBe(
-      "https://r2.example.com/media/2024/01/avatar.jpg",
+      "https://r2.example.com/media/avatar.jpg",
     );
   });
 

@@ -26,7 +26,7 @@ const CTX_WITH_URLS: MediaContext = {
   imageTransformUrl: "https://example.com/cdn-cgi/image",
 };
 
-// UUIDv7 constants for test fixtures
+// TypeID-like constants for test fixtures
 const UUID_1 = "019cb943-b2c0-76e3-ade2-209415e74da5";
 const UUID_2 = "019cb943-b2c0-76e3-ade2-209415e74da6";
 const UUID_3 = "019cb943-b2c0-76e3-ade2-209415e74da7";
@@ -79,7 +79,7 @@ function makeMedia(overrides: Partial<Media> = {}): Media {
     originalName: "photo.jpg",
     mimeType: "image/webp",
     size: 12345,
-    storageKey: "media/2025/01/01902a9f-1a2b-7c3d.webp",
+    storageKey: "media/01902a9f-1a2b-7c3d.webp",
     provider: "r2",
     width: 1920,
     height: 1080,
@@ -392,15 +392,15 @@ describe("toMediaView", () => {
   it("generates local proxy URL without public URL", () => {
     const media = makeMedia();
     const view = toMediaView(media, EMPTY_CTX);
-    expect(view.url).toBe("/media/2025/01/01902a9f-1a2b-7c3d.webp");
-    expect(view.thumbnailUrl).toBe("/media/2025/01/01902a9f-1a2b-7c3d.webp");
+    expect(view.url).toBe("/media/01902a9f-1a2b-7c3d.webp");
+    expect(view.thumbnailUrl).toBe("/media/01902a9f-1a2b-7c3d.webp");
   });
 
   it("generates CDN URL with public URL", () => {
     const media = makeMedia();
     const view = toMediaView(media, CTX_WITH_URLS);
     expect(view.url).toBe(
-      "https://cdn.example.com/media/2025/01/01902a9f-1a2b-7c3d.webp",
+      "https://cdn.example.com/media/01902a9f-1a2b-7c3d.webp",
     );
     expect(view.thumbnailUrl).toContain("cdn-cgi/image");
   });
@@ -444,19 +444,19 @@ describe("toMediaView", () => {
 
   it("computes posterUrl from posterKey", () => {
     const media = makeMedia({
-      posterKey: "media/2025/01/abc-poster.webp",
+      posterKey: "media/abc-poster.webp",
     });
     const view = toMediaView(media, EMPTY_CTX);
-    expect(view.posterUrl).toBe("/media/2025/01/abc-poster.webp");
+    expect(view.posterUrl).toBe("/media/abc-poster.webp");
   });
 
   it("computes posterUrl with CDN public URL and image transform", () => {
     const media = makeMedia({
-      posterKey: "media/2025/01/abc-poster.webp",
+      posterKey: "media/abc-poster.webp",
     });
     const view = toMediaView(media, CTX_WITH_URLS);
     expect(view.posterUrl).toBe(
-      "https://example.com/cdn-cgi/image/width=640,quality=80,format=auto,fit=scale-down/https://cdn.example.com/media/2025/01/abc-poster.webp",
+      "https://example.com/cdn-cgi/image/width=640,quality=80,format=auto,fit=scale-down/https://cdn.example.com/media/abc-poster.webp",
     );
   });
 

@@ -7,9 +7,9 @@
  */
 
 import { and, eq, inArray, isNotNull, ne } from "drizzle-orm";
-import { uuidv7 } from "uuidv7";
 import { type Database, batchQuery } from "../db/index.js";
 import { pathRegistry } from "../db/schema.js";
+import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import { ConflictError } from "../lib/errors.js";
 import { normalizePath } from "../lib/url.js";
@@ -98,7 +98,7 @@ export function createPathService(db: Database): PathService {
       const result = await db
         .insert(pathRegistry)
         .values({
-          id: uuidv7(),
+          id: createEntityId("path"),
           path: normalizedPath,
           kind: input.kind,
           postId: input.postId ?? null,

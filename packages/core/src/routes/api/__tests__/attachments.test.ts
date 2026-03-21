@@ -83,7 +83,7 @@ describe("Attachments API Routes", () => {
       originalName: "photo.jpg",
       mimeType: "image/jpeg",
       size: 1024,
-      storageKey: "media/2025/01/photo.jpg",
+      storageKey: "media/photo.jpg",
     });
 
     const res = await app.request(`/api/attachments/${media.id}/content`);

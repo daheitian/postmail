@@ -177,7 +177,7 @@ describe("Compose Routes", () => {
         originalName: "test.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/test.jpg",
+        storageKey: "media/test.jpg",
         width: 800,
         height: 600,
       });

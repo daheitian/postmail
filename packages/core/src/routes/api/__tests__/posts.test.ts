@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTestApp } from "../../../__tests__/helpers/app.js";
+import { createEntityId } from "../../../lib/ids.js";
 import { postsApiRoutes } from "../posts.js";
 
 function createMockStorage() {
@@ -85,7 +86,7 @@ describe("Posts API Routes", () => {
         originalName: "test.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/test.jpg",
+        storageKey: "media/test.jpg",
         width: 800,
         height: 600,
       });
@@ -268,7 +269,7 @@ describe("Posts API Routes", () => {
         originalName: "test.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/test.jpg",
+        storageKey: "media/test.jpg",
       });
 
       await services.media.attachToPost(post.id, [media.id]);
@@ -313,10 +314,9 @@ describe("Posts API Routes", () => {
     it("returns 404 for non-existent post", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
+      const missingId = createEntityId("post");
 
-      const res = await app.request(
-        "/api/posts/00000000-0000-0000-0000-000000009999",
-      );
+      const res = await app.request(`/api/posts/${missingId}`);
       expect(res.status).toBe(404);
     });
   });
@@ -407,14 +407,14 @@ describe("Posts API Routes", () => {
         originalName: "a.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/a.jpg",
+        storageKey: "media/a.jpg",
       });
       const m2 = await services.media.create({
         filename: "b.jpg",
         originalName: "b.jpg",
         mimeType: "image/jpeg",
         size: 2048,
-        storageKey: "media/2025/01/b.jpg",
+        storageKey: "media/b.jpg",
       });
 
       const res = await app.request("/api/posts", {
@@ -529,6 +529,7 @@ describe("Posts API Routes", () => {
     it("returns 400 for invalid attachment media IDs", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
+      const missingMediaId = createEntityId("media");
 
       const res = await app.request("/api/posts", {
         method: "POST",
@@ -536,7 +537,7 @@ describe("Posts API Routes", () => {
         body: JSON.stringify({
           format: "note",
           bodyMarkdown: "test",
-          attachments: [{ type: "media", mediaId: "nonexistent-id" }],
+          attachments: [{ type: "media", mediaId: missingMediaId }],
         }),
       });
 
@@ -629,7 +630,7 @@ describe("Posts API Routes", () => {
         originalName: "a.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/a.jpg",
+        storageKey: "media/a.jpg",
       });
 
       await services.media.attachToPost(post.id, [m1.id]);
@@ -639,7 +640,7 @@ describe("Posts API Routes", () => {
         originalName: "b.jpg",
         mimeType: "image/jpeg",
         size: 2048,
-        storageKey: "media/2025/01/b.jpg",
+        storageKey: "media/b.jpg",
       });
 
       const res = await app.request(`/api/posts/${post.id}`, {
@@ -673,7 +674,7 @@ describe("Posts API Routes", () => {
         originalName: "a.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/a.jpg",
+        storageKey: "media/a.jpg",
       });
 
       await services.media.attachToPost(post.id, [m1.id]);
@@ -696,15 +697,13 @@ describe("Posts API Routes", () => {
     it("returns 404 for non-existent post", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
+      const missingId = createEntityId("post");
 
-      const res = await app.request(
-        "/api/posts/00000000-0000-0000-0000-000000009999",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bodyMarkdown: "test" }),
-        },
-      );
+      const res = await app.request(`/api/posts/${missingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bodyMarkdown: "test" }),
+      });
 
       expect(res.status).toBe(404);
     });
@@ -799,13 +798,11 @@ describe("Posts API Routes", () => {
     it("returns 404 for non-existent post", async () => {
       const { app } = createTestApp({ authenticated: true });
       app.route("/api/posts", postsApiRoutes);
+      const missingId = createEntityId("post");
 
-      const res = await app.request(
-        "/api/posts/00000000-0000-0000-0000-000000009999",
-        {
-          method: "DELETE",
-        },
-      );
+      const res = await app.request(`/api/posts/${missingId}`, {
+        method: "DELETE",
+      });
 
       expect(res.status).toBe(404);
     });
@@ -824,14 +821,14 @@ describe("Posts API Routes", () => {
         originalName: "a.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/a.jpg",
+        storageKey: "media/a.jpg",
       });
       const m2 = await services.media.create({
         filename: "b.jpg",
         originalName: "b.jpg",
         mimeType: "image/jpeg",
         size: 2048,
-        storageKey: "media/2025/01/b.jpg",
+        storageKey: "media/b.jpg",
       });
 
       await services.media.attachToPost(post.id, [m1.id, m2.id]);
@@ -866,14 +863,14 @@ describe("Posts API Routes", () => {
         originalName: "root.jpg",
         mimeType: "image/jpeg",
         size: 1024,
-        storageKey: "media/2025/01/root.jpg",
+        storageKey: "media/root.jpg",
       });
       const replyMedia = await services.media.create({
         filename: "reply.jpg",
         originalName: "reply.jpg",
         mimeType: "image/jpeg",
         size: 2048,
-        storageKey: "media/2025/01/reply.jpg",
+        storageKey: "media/reply.jpg",
       });
 
       await services.media.attachToPost(root.id, [rootMedia.id]);

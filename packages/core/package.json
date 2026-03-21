@@ -85,7 +85,7 @@
     "smol-toml": "^1.6.0",
     "sortablejs": "^1.15.7",
     "tiptap-markdown": "^0.9.0",
-    "uuidv7": "^1.1.0",
+    "typeid-js": "^1.2.0",
     "yaml": "^2.8.2",
     "zod": "^4.3.6"
   },

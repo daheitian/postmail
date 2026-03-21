@@ -28,7 +28,7 @@ export interface CollectionTagView {
  */
 export interface PostView {
   // Identity
-  /** UUIDv7 identifier */
+  /** TypeID identifier */
   id: string;
   /** Pre-computed permalink: "/{slug}" */
   permalink: string;
@@ -85,9 +85,9 @@ export interface PostView {
   collections: CollectionTagView[];
 
   // Thread context
-  /** UUIDv7 of the parent post */
+  /** TypeID of the parent post */
   replyToId?: string;
-  /** UUIDv7 of the thread root post */
+  /** TypeID of the thread root post */
   threadRootId?: string;
   /** Permalink of the thread root post for the "In thread" link. */
   threadRootPermalink?: string;
@@ -140,7 +140,7 @@ export interface MediaView {
  * Active/external state pre-computed.
  */
 export interface NavItemView {
-  /** UUIDv7 identifier */
+  /** TypeID identifier */
   id: string;
   type: NavItemType;
   systemKey?: SystemNavKey;

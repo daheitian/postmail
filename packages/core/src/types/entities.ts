@@ -39,7 +39,7 @@ export interface Post {
 }
 
 export interface Media {
-  id: string; // UUIDv7
+  id: string; // TypeID
   postId: string | null;
   filename: string;
   originalName: string;

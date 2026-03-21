@@ -11,6 +11,7 @@ import type { AppVariables } from "../../types/app-context.js";
 import { EmptyState } from "../../ui/dash/index.js";
 import { dsRedirect } from "../../lib/sse.js";
 import { parseIdParam } from "../../lib/errors.js";
+import { ID_PREFIX } from "../../lib/ids.js";
 import { CreateCustomUrlSchema, parseValidated } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { renderPublicPage } from "../../lib/render.js";
@@ -468,7 +469,7 @@ customUrlsRoutes.get("/", async (c) => {
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  // Resolve target UUIDs → slugs for display
+  // Resolve target TypeIDs → slugs for display
   const targetSlugs: Record<string, string> = {};
   for (const cu of customUrlsList) {
     if (!cu.targetId || cu.targetType === "redirect") continue;
@@ -582,7 +583,7 @@ customUrlsRoutes.post("/", async (c) => {
 
 // Delete custom URL
 customUrlsRoutes.post("/:id/delete", async (c) => {
-  const id = parseIdParam(c.req.param("id"));
+  const id = parseIdParam(c.req.param("id"), ID_PREFIX.path);
   await c.var.services.customUrls.delete(id);
 
   return dsRedirect(

@@ -6,6 +6,7 @@ import { betterAuth, APIError } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import type { Database } from "./db/index.js";
 import * as schema from "./db/schema.js";
+import { AUTH_ID_PREFIX, createTypeId } from "./lib/ids.js";
 import { hashPassword, verifyPassword } from "./lib/password.js";
 
 export function createAuth(
@@ -26,6 +27,22 @@ export function createAuth(
     baseURL: options.baseURL,
     advanced: {
       useSecureCookies: options.useSecureCookies,
+      database: {
+        generateId: ({ model }) => {
+          switch (model) {
+            case "user":
+              return createTypeId(AUTH_ID_PREFIX.user);
+            case "session":
+              return createTypeId(AUTH_ID_PREFIX.session);
+            case "account":
+              return createTypeId(AUTH_ID_PREFIX.account);
+            case "verification":
+              return createTypeId(AUTH_ID_PREFIX.verification);
+            default:
+              return false;
+          }
+        },
+      },
     },
     emailAndPassword: {
       enabled: true,

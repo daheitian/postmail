@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { createEntityId } from "../ids.js";
 import {
   FormatSchema,
   StatusSchema,
@@ -309,11 +310,12 @@ describe("CreatePostSchema", () => {
   });
 
   it("accepts valid mediaIds", () => {
+    const mediaIds = [createEntityId("media"), createEntityId("media")];
     const result = CreatePostSchema.parse({
       ...validPost,
-      mediaIds: ["id-1", "id-2"],
+      mediaIds,
     });
-    expect(result.mediaIds).toEqual(["id-1", "id-2"]);
+    expect(result.mediaIds).toEqual(mediaIds);
   });
 
   it("accepts empty mediaIds array", () => {
@@ -330,9 +332,8 @@ describe("CreatePostSchema", () => {
   });
 
   it("rejects mediaIds over MAX_MEDIA_ATTACHMENTS", () => {
-    const tooMany = Array.from(
-      { length: MAX_MEDIA_ATTACHMENTS + 1 },
-      (_, i) => `id-${i}`,
+    const tooMany = Array.from({ length: MAX_MEDIA_ATTACHMENTS + 1 }, () =>
+      createEntityId("media"),
     );
     expect(() =>
       CreatePostSchema.parse({ ...validPost, mediaIds: tooMany }),
@@ -501,11 +502,16 @@ describe("CreatePostSchema", () => {
   });
 
   it("accepts optional collectionIds as array of non-empty strings", () => {
+    const collectionIds = [
+      createEntityId("collection"),
+      createEntityId("collection"),
+      createEntityId("collection"),
+    ];
     const result = CreatePostSchema.parse({
       ...validPost,
-      collectionIds: ["col-1", "col-2", "col-3"],
+      collectionIds,
     });
-    expect(result.collectionIds).toEqual(["col-1", "col-2", "col-3"]);
+    expect(result.collectionIds).toEqual(collectionIds);
   });
 
   it("rejects collectionIds with empty strings", () => {
@@ -523,11 +529,12 @@ describe("CreatePostSchema", () => {
   });
 
   it("accepts optional replyToId", () => {
+    const replyToId = createEntityId("post");
     const result = CreatePostSchema.parse({
       ...validPost,
-      replyToId: "abc123",
+      replyToId,
     });
-    expect(result.replyToId).toBe("abc123");
+    expect(result.replyToId).toBe(replyToId);
   });
 
   it("only requires format field", () => {
@@ -588,10 +595,11 @@ describe("CreatePostApiSchema", () => {
   };
 
   it("accepts ordered attachment inputs", () => {
+    const mediaId = createEntityId("media");
     const result = CreatePostApiSchema.parse({
       ...validPost,
       attachments: [
-        { type: "media", mediaId: "media-1", alt: "" },
+        { type: "media", mediaId, alt: "" },
         {
           type: "text",
           contentFormat: "markdown",
@@ -602,7 +610,7 @@ describe("CreatePostApiSchema", () => {
     });
 
     expect(result.attachments).toEqual([
-      { type: "media", mediaId: "media-1", alt: "" },
+      { type: "media", mediaId, alt: "" },
       {
         type: "text",
         contentFormat: "markdown",
