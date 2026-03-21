@@ -272,7 +272,7 @@ export async function run(argv) {
     console.log(
       "  Local           No --url; exports from the local Node database runtime",
     );
-    console.log("  Remote          --url requires JANT_TOKEN or --token");
+    console.log("  Remote          --url requires API_TOKEN or --token");
     console.log("");
     console.log("Options:");
     console.log("  --url           Remote Jant site URL");
@@ -305,11 +305,11 @@ export async function run(argv) {
   const outputDirectory = values.directory
     ? resolve(process.cwd(), values.directory)
     : null;
-  const token = process.env.JANT_TOKEN || values.token;
+  const token = process.env.API_TOKEN || values.token;
   const localizeMedia = values["localize-media"] ?? !noLocalizeMedia;
 
   if (values.url && !token) {
-    console.error("Error: JANT_TOKEN env var is required for remote export");
+    console.error("Error: API_TOKEN env var is required for remote export");
     process.exit(1);
   }
 

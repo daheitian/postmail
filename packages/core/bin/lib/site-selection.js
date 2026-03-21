@@ -39,7 +39,7 @@ function toSite(row) {
 }
 
 export function getCliSiteResolutionMode(env = process.env) {
-  return env.JANT_SITE_RESOLUTION_MODE === "host-based"
+  return env.SITE_RESOLUTION_MODE === "host-based"
     ? "host-based"
     : "single-site";
 }

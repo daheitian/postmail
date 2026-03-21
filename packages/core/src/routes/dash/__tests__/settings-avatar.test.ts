@@ -71,7 +71,7 @@ describe("Settings - Avatar Upload Logic", () => {
       const avatarKey = await settingsService.get("SITE_AVATAR");
       expect(avatarKey).not.toBeNull();
       expect(avatarKey).toContain(
-        `sites/${DEFAULT_TEST_SITE_ID}/site-assets/avatar/`,
+        `media/${DEFAULT_TEST_SITE_ID}/assets/avatar/`,
       );
       expect(storage.put).toHaveBeenCalled();
     });
@@ -135,7 +135,7 @@ describe("Settings - Avatar Upload Logic", () => {
 
       const stored = await settingsService.get("SITE_FAVICON_APPLE_TOUCH");
       expect(stored).toBe(
-        `sites/${DEFAULT_TEST_SITE_ID}/site-assets/favicon/apple-touch-icon.png`,
+        `media/${DEFAULT_TEST_SITE_ID}/assets/favicon/apple-touch-icon.png`,
       );
       // storage.put should be called twice: avatar file + apple-touch-icon
       expect(storage.put).toHaveBeenCalledTimes(2);
@@ -199,12 +199,12 @@ describe("Settings - Avatar Upload Logic", () => {
     it("removes all favicon-related settings", async () => {
       await settingsService.set(
         "SITE_AVATAR",
-        `sites/${DEFAULT_TEST_SITE_ID}/site-assets/avatar/some-id.png`,
+        `media/${DEFAULT_TEST_SITE_ID}/assets/avatar/some-id.png`,
       );
       await settingsService.set("SITE_FAVICON_ICO", "base64data");
       await settingsService.set(
         "SITE_FAVICON_APPLE_TOUCH",
-        `sites/${DEFAULT_TEST_SITE_ID}/site-assets/favicon/apple-touch-icon.png`,
+        `media/${DEFAULT_TEST_SITE_ID}/assets/favicon/apple-touch-icon.png`,
       );
       await settingsService.set("SITE_FAVICON_VERSION", "202602191430");
 
@@ -220,13 +220,13 @@ describe("Settings - Avatar Upload Logic", () => {
       const storage = createMockStorage();
       await settingsService.set(
         "SITE_FAVICON_APPLE_TOUCH",
-        `sites/${DEFAULT_TEST_SITE_ID}/site-assets/favicon/apple-touch-icon.png`,
+        `media/${DEFAULT_TEST_SITE_ID}/assets/favicon/apple-touch-icon.png`,
       );
 
       await settingsService.removeAvatar(storage);
 
       expect(storage.delete).toHaveBeenCalledWith(
-        `sites/${DEFAULT_TEST_SITE_ID}/site-assets/favicon/apple-touch-icon.png`,
+        `media/${DEFAULT_TEST_SITE_ID}/assets/favicon/apple-touch-icon.png`,
       );
     });
 
@@ -241,11 +241,11 @@ describe("Settings - Avatar Upload Logic", () => {
     it("handles null storage gracefully", async () => {
       await settingsService.set(
         "SITE_AVATAR",
-        `sites/${DEFAULT_TEST_SITE_ID}/site-assets/avatar/some-id.png`,
+        `media/${DEFAULT_TEST_SITE_ID}/assets/avatar/some-id.png`,
       );
       await settingsService.set(
         "SITE_FAVICON_APPLE_TOUCH",
-        `sites/${DEFAULT_TEST_SITE_ID}/site-assets/favicon/apple-touch-icon.png`,
+        `media/${DEFAULT_TEST_SITE_ID}/assets/favicon/apple-touch-icon.png`,
       );
 
       await settingsService.removeAvatar(null);

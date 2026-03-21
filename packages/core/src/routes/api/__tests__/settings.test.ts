@@ -434,10 +434,10 @@ describe("Settings API Routes", () => {
 
       expect(res.status).toBe(201);
       expect(await services.settings.get("SITE_AVATAR")).toContain(
-        "site-assets/avatar/",
+        "assets/avatar/",
       );
       expect(await services.settings.get("SITE_FAVICON_APPLE_TOUCH")).toBe(
-        "sites/sit_test00000000000000000000000/site-assets/favicon/apple-touch-icon.png",
+        "media/sit_test00000000000000000000000/assets/favicon/apple-touch-icon.png",
       );
       expect(await services.settings.get("SITE_FAVICON_VERSION")).toMatch(
         /^\d{12}$/,
@@ -476,12 +476,12 @@ describe("Settings API Routes", () => {
 
       await services.settings.set(
         "SITE_AVATAR" as never,
-        "sites/sit_test00000000000000000000000/site-assets/avatar/avatar.png",
+        "media/sit_test00000000000000000000000/assets/avatar/avatar.png",
       );
       await services.settings.set("SITE_FAVICON_ICO" as never, "ZmFrZQ==");
       await services.settings.set(
         "SITE_FAVICON_APPLE_TOUCH" as never,
-        "sites/sit_test00000000000000000000000/site-assets/favicon/apple-touch-icon.png",
+        "media/sit_test00000000000000000000000/assets/favicon/apple-touch-icon.png",
       );
       await services.settings.set(
         "SITE_FAVICON_VERSION" as never,
@@ -502,7 +502,7 @@ describe("Settings API Routes", () => {
       ).toBeNull();
       expect(await services.settings.get("SITE_FAVICON_VERSION")).toBeNull();
       expect(storage.delete).toHaveBeenCalledWith(
-        "sites/sit_test00000000000000000000000/site-assets/favicon/apple-touch-icon.png",
+        "media/sit_test00000000000000000000000/assets/favicon/apple-touch-icon.png",
       );
     });
   });

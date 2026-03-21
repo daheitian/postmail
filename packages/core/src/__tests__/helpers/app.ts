@@ -12,6 +12,7 @@ import type { Database } from "../../db/index.js";
 import type BetterSqlite3 from "better-sqlite3";
 import { errorHandler } from "../../middleware/error-handler.js";
 import { createI18n } from "../../i18n/i18n.js";
+import { DEFAULT_APP_PORT } from "../../lib/env.js";
 import { resolveConfig } from "../../lib/resolve-config.js";
 import type { StorageDriver } from "../../lib/storage.js";
 import { createServices } from "../../services/index.js";
@@ -56,7 +57,7 @@ export function createTestApp(options: TestAppOptions = {}) {
   app.use("*", async (c, next) => {
     // Provide mock env bindings so c.env.* works in route handlers
     c.env = {
-      SITE_URL: "http://localhost:9020",
+      SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
       DEMO_MODE: options.demoMode ? "true" : "false",
       INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
     } as AppVariables["services"] extends never ? never : Bindings;

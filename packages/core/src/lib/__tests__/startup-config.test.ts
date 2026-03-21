@@ -17,8 +17,10 @@ describe("getStartupConfigurationErrorPage", () => {
     });
 
     expect(page).toContain("AUTH_SECRET is not set");
+    expect(page).toContain(
+      "Set <code>AUTH_SECRET=...</code> in the environment used to start Jant.",
+    );
     expect(page).toContain("wrangler secret put AUTH_SECRET");
-    expect(page).toContain(".dev.vars");
-    expect(page).not.toContain("wrangler.toml");
+    expect(page).toContain("Open configuration instructions");
   });
 });

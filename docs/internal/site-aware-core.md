@@ -254,10 +254,10 @@ Recommended app context additions:
 
 Recommended instance mode setting:
 
-- `JANT_SITE_RESOLUTION_MODE=single-site`
+- `SITE_RESOLUTION_MODE=single-site`
   - self-hosted default
   - requests always resolve to the only site in the instance
-- `JANT_SITE_RESOLUTION_MODE=host-based`
+- `SITE_RESOLUTION_MODE=host-based`
   - hosted / multi-site mode
   - requests resolve through `site_domain`
 
@@ -278,9 +278,10 @@ Storage should be shared per environment, not per site bucket by default.
 
 Recommended object key layout:
 
-- `sites/{siteId}/media/YYYY/MM/{mediaId}.{ext}`
-- `sites/{siteId}/site-assets/avatar/{mediaId}.{ext}`
-- `sites/{siteId}/site-assets/favicon/{mediaId}.{ext}`
+- `media/{siteId}/files/YYYY/MM/{mediaId}.{ext}`
+- `media/{siteId}/posters/{mediaId}.webp`
+- `media/{siteId}/assets/avatar/{mediaId}.{ext}`
+- `media/{siteId}/assets/favicon/apple-touch-icon.png`
 - `sites/{siteId}/exports/...`
 - `sites/{siteId}/snapshots/...`
 

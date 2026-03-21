@@ -45,7 +45,9 @@ cp .dev.vars.example .dev.vars
 pnpm dev
 ```
 
-Visit http://localhost:9020 to see your site.
+Visit http://localhost:3000 to see your site.
+
+Need another local port? Run `PORT=3030 pnpm dev`.
 
 ## Project Structure
 
@@ -71,7 +73,7 @@ my-site/
 ## Scripts
 
 ```bash
-pnpm dev               # Start dev server (http://localhost:9020)
+pnpm dev               # Start dev server (http://localhost:3000)
 pnpm build             # Build for production
 pnpm run deploy        # Apply migrations/backfills, then deploy to Cloudflare Workers
 pnpm typecheck         # Run TypeScript checks

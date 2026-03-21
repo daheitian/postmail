@@ -2,7 +2,7 @@
  * Jant App Factory
  */
 
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { i18nMiddleware } from "./i18n/index.js";
 import type { Bindings } from "./types.js";
 
@@ -71,6 +71,7 @@ import {
 } from "./lib/url.js";
 import { createRequestRuntime } from "./runtime/index.js";
 import { type AppVariables, type App } from "./types/app-context.js";
+import { isPublicStorageKeyAllowed } from "./lib/public-storage.js";
 
 export type { AppVariables, App };
 
@@ -107,6 +108,92 @@ function prepareRequestForRouting(
     publicPath,
   });
   return rewrittenRequest;
+}
+
+async function servePublicStorage(
+  c: Context<{ Bindings: Bindings; Variables: AppVariables }>,
+): Promise<Response> {
+  const storage = c.var.storage;
+  if (!storage) {
+    return c.notFound();
+  }
+
+  const storageKey = c.req.path.slice(1);
+  if (!isPublicStorageKeyAllowed(storageKey, c.var.currentSite.id)) {
+    return c.notFound();
+  }
+
+  const rangeHeader = c.req.header("Range");
+
+  if (rangeHeader) {
+    const meta = await storage.head(storageKey);
+    if (!meta) return c.notFound();
+
+    const totalSize = meta.size;
+    if (!totalSize) {
+      const full = await storage.get(storageKey);
+      if (!full) return c.notFound();
+      const headers = new Headers();
+      headers.set(
+        "Content-Type",
+        full.contentType || "application/octet-stream",
+      );
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      return new Response(full.body, { headers });
+    }
+
+    const match = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader);
+    if (!match) {
+      return new Response("Invalid Range", {
+        status: 416,
+        headers: { "Content-Range": `bytes */${totalSize}` },
+      });
+    }
+
+    const start = parseInt(match[1] ?? "0", 10);
+    const end = match[2]
+      ? Math.min(parseInt(match[2], 10), totalSize - 1)
+      : totalSize - 1;
+
+    if (start > end || start >= totalSize) {
+      return new Response("Range Not Satisfiable", {
+        status: 416,
+        headers: { "Content-Range": `bytes */${totalSize}` },
+      });
+    }
+
+    const rangeObj = await storage.get(storageKey, {
+      range: { offset: start, length: end - start + 1 },
+    });
+    if (!rangeObj) return c.notFound();
+
+    const headers = new Headers();
+    headers.set(
+      "Content-Type",
+      rangeObj.contentType || "application/octet-stream",
+    );
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    headers.set("Accept-Ranges", "bytes");
+    headers.set("Content-Range", `bytes ${start}-${end}/${totalSize}`);
+    headers.set("Content-Length", String(end - start + 1));
+
+    return new Response(rangeObj.body, { status: 206, headers });
+  }
+
+  const object = await storage.get(storageKey);
+  if (!object) {
+    return c.notFound();
+  }
+
+  const headers = new Headers();
+  headers.set("Content-Type", object.contentType || "application/octet-stream");
+  headers.set("Cache-Control", "public, max-age=31536000, immutable");
+  headers.set("Accept-Ranges", "bytes");
+  if (object.size) {
+    headers.set("Content-Length", String(object.size));
+  }
+
+  return new Response(object.body, { headers });
 }
 
 /**
@@ -202,98 +289,11 @@ export function createApp(): App {
     return new Response(object.body, { headers });
   });
 
-  // Media files from storage (path matches storage key: media/YYYY/MM/uuid.ext)
+  // Public storage proxy for the current `media/{siteId}/...` layout.
+  // `/sites/*` remains readable for older stored keys during migration.
   // Supports HTTP Range requests for seekable audio/video playback.
-  app.get("/media/*", async (c) => {
-    const storage = c.var.storage;
-    if (!storage) {
-      return c.notFound();
-    }
-
-    const storageKey = c.req.path.slice(1);
-    if (storageKey.includes("..") || !storageKey.startsWith("media/")) {
-      return c.notFound();
-    }
-
-    const rangeHeader = c.req.header("Range");
-
-    if (rangeHeader) {
-      // Use head() to get size without downloading the body
-      const meta = await storage.head(storageKey);
-      if (!meta) return c.notFound();
-
-      const totalSize = meta.size;
-      if (!totalSize) {
-        // Driver doesn't report size — fall back to full response
-        const full = await storage.get(storageKey);
-        if (!full) return c.notFound();
-        const headers = new Headers();
-        headers.set(
-          "Content-Type",
-          full.contentType || "application/octet-stream",
-        );
-        headers.set("Cache-Control", "public, max-age=31536000, immutable");
-        return new Response(full.body, { headers });
-      }
-
-      // Parse "bytes=START-END" (END is optional)
-      const match = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader);
-      if (!match) {
-        return new Response("Invalid Range", {
-          status: 416,
-          headers: { "Content-Range": `bytes */${totalSize}` },
-        });
-      }
-
-      const start = parseInt(match[1] ?? "0", 10);
-      const end = match[2]
-        ? Math.min(parseInt(match[2], 10), totalSize - 1)
-        : totalSize - 1;
-
-      if (start > end || start >= totalSize) {
-        return new Response("Range Not Satisfiable", {
-          status: 416,
-          headers: { "Content-Range": `bytes */${totalSize}` },
-        });
-      }
-
-      const rangeObj = await storage.get(storageKey, {
-        range: { offset: start, length: end - start + 1 },
-      });
-      if (!rangeObj) return c.notFound();
-
-      const headers = new Headers();
-      headers.set(
-        "Content-Type",
-        rangeObj.contentType || "application/octet-stream",
-      );
-      headers.set("Cache-Control", "public, max-age=31536000, immutable");
-      headers.set("Accept-Ranges", "bytes");
-      headers.set("Content-Range", `bytes ${start}-${end}/${totalSize}`);
-      headers.set("Content-Length", String(end - start + 1));
-
-      return new Response(rangeObj.body, { status: 206, headers });
-    }
-
-    // No Range header — serve full file
-    const object = await storage.get(storageKey);
-    if (!object) {
-      return c.notFound();
-    }
-
-    const headers = new Headers();
-    headers.set(
-      "Content-Type",
-      object.contentType || "application/octet-stream",
-    );
-    headers.set("Cache-Control", "public, max-age=31536000, immutable");
-    headers.set("Accept-Ranges", "bytes");
-    if (object.size) {
-      headers.set("Content-Length", String(object.size));
-    }
-
-    return new Response(object.body, { headers });
-  });
+  app.get("/media/*", servePublicStorage);
+  app.get("/sites/*", servePublicStorage);
 
   // better-auth handler
   app.all("/api/auth/*", async (c) => {

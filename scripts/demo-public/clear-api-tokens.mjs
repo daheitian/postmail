@@ -33,7 +33,7 @@ function formatFailure(status, bodyText) {
 
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
-const siteUrl = process.env.JANT_DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
+const siteUrl = process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
 const internalAdminToken = process.env.INTERNAL_ADMIN_TOKEN;
 const checkOnly = process.argv.includes("--check");
 

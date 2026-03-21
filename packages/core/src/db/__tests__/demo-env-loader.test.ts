@@ -11,8 +11,8 @@ const tempDirs: string[] = [];
 const originalEnv = {
   CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
   CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
-  JANT_DEMO_EMAIL: process.env.JANT_DEMO_EMAIL,
-  JANT_DEMO_PUBLIC_URL: process.env.JANT_DEMO_PUBLIC_URL,
+  DEMO_EMAIL: process.env.DEMO_EMAIL,
+  DEMO_PUBLIC_URL: process.env.DEMO_PUBLIC_URL,
 };
 
 afterEach(async () => {
@@ -58,19 +58,19 @@ describe("demo env loader", () => {
     await writeFile(
       join(root, "sites/demo/.env"),
       [
-        "JANT_DEMO_EMAIL=site-demo@example.com",
-        "JANT_DEMO_PUBLIC_URL=https://demo.example.com",
+        "DEMO_EMAIL=site-demo@example.com",
+        "DEMO_PUBLIC_URL=https://demo.example.com",
       ].join("\n"),
     );
     await writeFile(
       join(root, "sites/demo/.env.local"),
-      "JANT_DEMO_EMAIL=site-local-demo@example.com\n",
+      "DEMO_EMAIL=site-local-demo@example.com\n",
     );
 
     process.env.CLOUDFLARE_ACCOUNT_ID = "shell-account";
     delete process.env.CLOUDFLARE_API_TOKEN;
-    delete process.env.JANT_DEMO_EMAIL;
-    delete process.env.JANT_DEMO_PUBLIC_URL;
+    delete process.env.DEMO_EMAIL;
+    delete process.env.DEMO_PUBLIC_URL;
 
     const { loadedFiles } = loadDemoWorkflowEnv({
       rootDir: root,
@@ -82,8 +82,8 @@ describe("demo env loader", () => {
     );
     expect(process.env.CLOUDFLARE_API_TOKEN).toBe("repo-local-token");
     expect(process.env.CLOUDFLARE_ACCOUNT_ID).toBe("shell-account");
-    expect(process.env.JANT_DEMO_EMAIL).toBe("site-local-demo@example.com");
-    expect(process.env.JANT_DEMO_PUBLIC_URL).toBe("https://demo.example.com");
+    expect(process.env.DEMO_EMAIL).toBe("site-local-demo@example.com");
+    expect(process.env.DEMO_PUBLIC_URL).toBe("https://demo.example.com");
   });
 
   it("falls back to legacy root env files when repo env files are absent", async () => {

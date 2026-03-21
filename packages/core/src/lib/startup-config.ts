@@ -1,7 +1,11 @@
-import type { Bindings } from "../types.js";
 import { getAuthSecret } from "./env.js";
+import type { Bindings } from "../types.js";
 
-const AUTH_SECRET_ERROR_HTML = `<!DOCTYPE html>
+function getAuthSecretErrorHtml(): string {
+  const runtimeInstructions = `<p>Set <code>AUTH_SECRET=...</code> in the environment used to start Jant.</p>
+<p><strong>Cloudflare Workers:</strong> add <code>AUTH_SECRET</code> as a Worker secret in the dashboard under Variables and Secrets, or run <code>wrangler secret put AUTH_SECRET</code>.</p>`;
+
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -13,12 +17,12 @@ const AUTH_SECRET_ERROR_HTML = `<!DOCTYPE html>
 <div>
 <h1>AUTH_SECRET is not set</h1>
 <p>Jant needs a 32+ character auth secret to sign sessions.</p>
-<p><strong>Local development:</strong> add <code>AUTH_SECRET=...</code> to <code>.dev.vars</code>.</p>
-<p><strong>Cloudflare Workers:</strong> add <code>AUTH_SECRET</code> as a Worker secret in the dashboard under Variables and Secrets, or run <code>wrangler secret put AUTH_SECRET</code>.</p>
-<p><a href="https://github.com/jant-me/jant/blob/main/docs/deployment.md#configure-secrets" target="_blank" rel="noopener noreferrer">Open deployment instructions</a></p>
+${runtimeInstructions}
+<p><a href="https://github.com/jant-me/jant/blob/main/docs/configuration.md#required" target="_blank" rel="noopener noreferrer">Open configuration instructions</a></p>
 </div>
 </body>
 </html>`;
+}
 
 /**
  * Returns the startup configuration error page for invalid required env vars.
@@ -32,10 +36,18 @@ const AUTH_SECRET_ERROR_HTML = `<!DOCTYPE html>
  * ```
  */
 export function getStartupConfigurationErrorPage(
-  env: Pick<Bindings, "AUTH_SECRET" | "DEV_API_TOKEN">,
+  env: Pick<
+    Bindings,
+    | "AUTH_SECRET"
+    | "DEV_API_TOKEN"
+    | "NODE_DATABASE"
+    | "NODE_SQLITE"
+    | "DATABASE_URL"
+    | "DATA_DIR"
+  >,
 ): string | null {
   if (!getAuthSecret(env)) {
-    return AUTH_SECRET_ERROR_HTML;
+    return getAuthSecretErrorHtml();
   }
 
   return null;

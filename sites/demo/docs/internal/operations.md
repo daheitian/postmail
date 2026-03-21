@@ -35,7 +35,7 @@ Recommended split:
   Start from [/.env.repo.example](/Users/green/project/jant/main/.env.repo.example).
 - [`sites/demo/.env.example`](/Users/green/project/jant/main/sites/demo/.env.example):
   copy to `.env.local` for `INTERNAL_ADMIN_TOKEN`, plus any local
-  overrides such as `JANT_DEMO_PUBLIC_URL`, `DEMO_EMAIL`, or `DEMO_PASSWORD`
+  overrides such as `DEMO_PUBLIC_URL`, `DEMO_EMAIL`, or `DEMO_PASSWORD`
 
 ## Expected Flow
 

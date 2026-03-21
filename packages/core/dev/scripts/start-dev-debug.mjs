@@ -96,7 +96,7 @@ function runCommand(command, args, env = process.env) {
 
 async function main() {
   const debugPort = await findAvailablePort(DEFAULT_DEBUG_PORT);
-  const env = { ...process.env, JANT_DEBUG_PORT: String(debugPort) };
+  const env = { ...process.env, DEBUG_PORT: String(debugPort) };
 
   if (debugPort === DEFAULT_DEBUG_PORT) {
     console.log(`Using debug port ${debugPort}.`);

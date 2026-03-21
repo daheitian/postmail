@@ -7,9 +7,10 @@
 import type { MediaKind } from "../types/constants.js";
 import { createEntityId } from "./ids.js";
 
-const ROOT_STORAGE_PREFIX = "sites";
-const MEDIA_STORAGE_PREFIX = "media";
-const SITE_ASSET_STORAGE_PREFIX = "site-assets";
+const MEDIA_ROOT_PREFIX = "media";
+const MEDIA_FILES_STORAGE_PREFIX = "files";
+const MEDIA_POSTERS_STORAGE_PREFIX = "posters";
+const MEDIA_ASSET_STORAGE_PREFIX = "assets";
 
 /** MIME types — images */
 const IMAGE_MIME_TYPES = [
@@ -298,7 +299,7 @@ export function validateUploadFileMetadata(
 
 /**
  * Generates a unique storage key for an uploaded media object.
- * Format: `sites/{siteId}/media/YYYY/MM/{typeid}.{ext}`
+ * Format: `media/{siteId}/files/YYYY/MM/{typeid}.{ext}`
  *
  * @param siteId - Owning site ID
  * @param originalFilename - Original filename to extract extension from
@@ -306,7 +307,7 @@ export function validateUploadFileMetadata(
  * @example
  * ```ts
  * const { id, filename, storageKey } = generateStorageKey("sit_...", "photo.jpg");
- * // { id: "med_...", filename: "med_....jpg", storageKey: "sites/sit_.../media/2026/03/med_....jpg" }
+ * // { id: "med_...", filename: "med_....jpg", storageKey: "media/sit_.../files/2026/03/med_....jpg" }
  * ```
  */
 export function generateStorageKey(
@@ -324,9 +325,9 @@ export function generateStorageKey(
   const year = String(now.getUTCFullYear());
   const month = String(now.getUTCMonth() + 1).padStart(2, "0");
   const storageKey = [
-    ROOT_STORAGE_PREFIX,
+    MEDIA_ROOT_PREFIX,
     siteId,
-    MEDIA_STORAGE_PREFIX,
+    MEDIA_FILES_STORAGE_PREFIX,
     year,
     month,
     filename,
@@ -351,7 +352,7 @@ export function generateSiteAssetStorageKey(
 }
 
 export function getPosterStorageKey(siteId: string, mediaId: string): string {
-  return `${ROOT_STORAGE_PREFIX}/${siteId}/${MEDIA_STORAGE_PREFIX}/${mediaId}.poster.webp`;
+  return `${MEDIA_ROOT_PREFIX}/${siteId}/${MEDIA_POSTERS_STORAGE_PREFIX}/${mediaId}.webp`;
 }
 
 export function getSiteStorageKey(
@@ -359,5 +360,5 @@ export function getSiteStorageKey(
   assetKind: "avatar" | "favicon",
   filename: string,
 ): string {
-  return `${ROOT_STORAGE_PREFIX}/${siteId}/${SITE_ASSET_STORAGE_PREFIX}/${assetKind}/${filename}`;
+  return `${MEDIA_ROOT_PREFIX}/${siteId}/${MEDIA_ASSET_STORAGE_PREFIX}/${assetKind}/${filename}`;
 }

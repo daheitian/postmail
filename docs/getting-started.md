@@ -23,7 +23,13 @@ This scaffolds a new Jant project with everything configured.
 pnpm run dev
 ```
 
-Open [http://localhost:8787](http://localhost:8787). You'll see the setup page on first visit.
+Open [http://localhost:3000](http://localhost:3000). You'll see the setup page on first visit.
+
+To use a different local port:
+
+```bash
+PORT=3030 pnpm run dev
+```
 
 ## First-time Setup
 

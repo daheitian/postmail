@@ -144,7 +144,7 @@ npx jant site import --path ./jant-site-export.zip
 For a remote instance:
 
 ```bash
-export JANT_TOKEN=jnt_YOUR_TOKEN
+export API_TOKEN=jnt_YOUR_TOKEN
 npx jant site import --url https://your-site.com --path ./jant-site-export.zip
 ```
 

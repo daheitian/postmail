@@ -1330,7 +1330,7 @@ export async function run(argv) {
     console.log(
       "  Local           No --url; imports into the local Node database runtime",
     );
-    console.log("  Remote          --url requires JANT_TOKEN or --token");
+    console.log("  Remote          --url requires API_TOKEN or --token");
     console.log("");
     console.log("Options:");
     console.log("  --url         Target remote Jant instance URL");
@@ -1347,8 +1347,8 @@ export async function run(argv) {
     );
     console.log("");
     console.log("Authentication:");
-    console.log("  Set JANT_TOKEN env var (recommended):");
-    console.log("    export JANT_TOKEN=jnt_your_token");
+    console.log("  Set API_TOKEN env var (recommended):");
+    console.log("    export API_TOKEN=jnt_your_token");
     console.log("    jant site import --url https://your-site.com");
     console.log("");
     console.log("Examples:");
@@ -1359,13 +1359,13 @@ export async function run(argv) {
     process.exit(0);
   }
 
-  const token = process.env.JANT_TOKEN || values.token;
+  const token = process.env.API_TOKEN || values.token;
   if (values.url && !token && !values["dry-run"]) {
     console.error(
-      "Error: JANT_TOKEN env var is required for remote import (unless using --dry-run)",
+      "Error: API_TOKEN env var is required for remote import (unless using --dry-run)",
     );
     console.error("");
-    console.error("  export JANT_TOKEN=jnt_your_token");
+    console.error("  export API_TOKEN=jnt_your_token");
     process.exit(1);
   }
 

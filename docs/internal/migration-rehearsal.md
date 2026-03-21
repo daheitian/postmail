@@ -45,7 +45,7 @@ Local remote rehearsal reads these environment variables:
 - `CLOUDFLARE_API_TOKEN`
 - `CF_MIGRATION_REHEARSAL_DB_ID`
 - `CF_MIGRATION_REHEARSAL_DB_NAME`
-- Optional: `JANT_MIGRATION_REHEARSAL_FIXTURE`
+- Optional: `MIGRATION_REHEARSAL_FIXTURE`
 
 It loads `packages/core/.env` first, then `packages/core/.env.local`, and finally lets explicit shell environment variables override either file.
 

@@ -18,7 +18,7 @@ async function ensureOk(url, label) {
 
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
-const siteUrl = process.env.JANT_DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
+const siteUrl = process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
 const r2PublicUrl = readDemoPublicConfig("R2_PUBLIC_URL");
 const countsRow = queryDemoPublicRemote(
   `SELECT

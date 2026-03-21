@@ -59,7 +59,7 @@ const accountId = env.CLOUDFLARE_ACCOUNT_ID ?? env.CF_ACCOUNT_ID ?? "";
 const databaseId = env.CF_MIGRATION_REHEARSAL_DB_ID ?? "";
 const databaseName = env.CF_MIGRATION_REHEARSAL_DB_NAME ?? "";
 const fixturePath =
-  env.JANT_MIGRATION_REHEARSAL_FIXTURE ??
+  env.MIGRATION_REHEARSAL_FIXTURE ??
   "src/db/rehearsal-fixtures/demo-current.json";
 
 if (!accountId) {

@@ -84,7 +84,7 @@ Recommended split:
   Start from [`/.env.repo.example`](/Users/green/project/jant/main/.env.repo.example).
 - [`sites/demo-source/.env.example`](/Users/green/project/jant/main/sites/demo-source/.env.example):
   copy to `.env.local` only if you want local overrides such as
-  `JANT_DEMO_SOURCE_URL`
+  `DEMO_SOURCE_URL`
 
 ## Publishing Flow
 

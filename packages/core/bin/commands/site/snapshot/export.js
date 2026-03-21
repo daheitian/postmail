@@ -317,7 +317,7 @@ export async function run(argv) {
         level: 6,
       });
       await writeFile(outputPath, zipped);
-      if (process.env.JANT_SNAPSHOT_SUPPRESS_SUCCESS_LOG !== "true") {
+      if (process.env.SNAPSHOT_SUPPRESS_SUCCESS_LOG !== "true") {
         console.log(
           `Exported ${getCliRuntimeLabel(runtime)} snapshot to ${values.output}`,
         );
@@ -325,7 +325,7 @@ export async function run(argv) {
       return;
     }
 
-    if (process.env.JANT_SNAPSHOT_SUPPRESS_SUCCESS_LOG !== "true") {
+    if (process.env.SNAPSHOT_SUPPRESS_SUCCESS_LOG !== "true") {
       console.log(
         `Exported ${getCliRuntimeLabel(runtime)} snapshot to ${values.output}`,
       );

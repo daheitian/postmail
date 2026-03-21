@@ -36,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Visit http://localhost:8787. Changes pushed to `main` will auto-deploy.
+Visit http://localhost:3000. Changes pushed to `main` will auto-deploy.
 
 ## Option B: Create with CLI
 
@@ -48,7 +48,9 @@ cd my-site
 npm run dev
 ```
 
-Visit http://localhost:8787. When you're ready to go live, continue with [Deploy to Cloudflare](#deploy-to-cloudflare) below.
+Visit http://localhost:3000. When you're ready to go live, continue with [Deploy to Cloudflare](#deploy-to-cloudflare) below.
+
+Need another local port? Run `PORT=3030 npm run dev`.
 
 ### Deploy to Cloudflare
 

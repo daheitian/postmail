@@ -1,12 +1,13 @@
 services:
   jant:
-    image: ${JANT_IMAGE:-owenyoung/jant:latest}
+    image: ${IMAGE:-owenyoung/jant:latest}
     ports:
-      - "${JANT_PORT:-3000}:3000"
+      - "${HOST_PORT:-3000}:${PORT:-3000}"
     env_file:
       - .env
     environment:
       AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
+      PORT: ${PORT:-3000}
       TRUST_PROXY: ${TRUST_PROXY:-true}
     volumes:
       - ./data:/var/lib/jant
@@ -17,7 +18,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:3000/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))",
+          "fetch('http://127.0.0.1:' + (process.env.PORT || '3000') + '/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))",
         ]
       interval: 30s
       timeout: 5s

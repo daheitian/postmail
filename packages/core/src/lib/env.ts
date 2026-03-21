@@ -1,5 +1,7 @@
 type EnvSource = object | undefined | null;
 
+export const DEFAULT_APP_PORT = 3000;
+
 function toEnvRecord(env: EnvSource): Record<string, unknown> {
   return (env ?? {}) as Record<string, unknown>;
 }
@@ -42,6 +44,44 @@ export function getEnvString(
   return undefined;
 }
 
+/**
+ * Parse a TCP port from an environment value.
+ *
+ * @param rawPort - Raw environment value to parse
+ * @param fallback - Port to use when `rawPort` is empty
+ * @returns The parsed port number
+ * @example
+ * parsePortValue("3000");
+ */
+export function parsePortValue(
+  rawPort: string | undefined,
+  fallback = DEFAULT_APP_PORT,
+): number {
+  if (!rawPort) {
+    return fallback;
+  }
+
+  const port = Number.parseInt(rawPort, 10);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error("PORT must be an integer between 1 and 65535.");
+  }
+
+  return port;
+}
+
+/**
+ * Resolve the configured application port from environment bindings.
+ *
+ * @param env - Runtime environment bindings
+ * @param fallback - Port to use when `PORT` is not set
+ * @returns The resolved application port
+ * @example
+ * getPort({ PORT: "3000" });
+ */
+export function getPort(env: EnvSource, fallback = DEFAULT_APP_PORT): number {
+  return parsePortValue(getEnvString(env, "PORT"), fallback);
+}
+
 export function getSiteUrl(env: EnvSource): string {
   return getEnvString(env, "SITE_URL") ?? "";
 }
@@ -49,7 +89,7 @@ export function getSiteUrl(env: EnvSource): string {
 export function getSiteResolutionMode(
   env: EnvSource,
 ): "single-site" | "host-based" {
-  return getEnvString(env, "JANT_SITE_RESOLUTION_MODE") === "host-based"
+  return getEnvString(env, "SITE_RESOLUTION_MODE") === "host-based"
     ? "host-based"
     : "single-site";
 }

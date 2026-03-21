@@ -55,8 +55,8 @@ const password =
       arg !== process.argv[0] &&
       arg !== process.argv[1],
   ) || DEFAULT_DEV_PASSWORD;
-const debugPort = Number(process.env.JANT_DEBUG_PORT || "19020");
-const localPort = Number(process.env.PORT || "9020");
+const debugPort = Number(process.env.DEBUG_PORT || "19020");
+const localPort = Number(process.env.PORT || "3000");
 const localBaseUrl = `http://localhost:${localPort}`;
 const debugBaseUrl = `http://localhost:${debugPort}`;
 const localtestBaseUrl = `http://jant.localtest.me:${localPort}`;

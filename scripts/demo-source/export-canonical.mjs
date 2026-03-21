@@ -32,7 +32,7 @@ try {
     ],
     {
       cwd: demoSourceDir,
-      env: { ...process.env, JANT_SNAPSHOT_SUPPRESS_SUCCESS_LOG: "true" },
+      env: { ...process.env, SNAPSHOT_SUPPRESS_SUCCESS_LOG: "true" },
       stdio: "inherit",
     },
   );

@@ -122,7 +122,7 @@ run = "docker compose up -d"
 [tasks.docker-up-local]
 description = "Start the bundled Docker Compose stack with a local image tag"
 usage = 'arg "[image]" default="jant:local"'
-run = 'JANT_IMAGE="$usage_image" docker compose up -d'
+run = 'IMAGE="$usage_image" docker compose up -d'
 
 [tasks.docker-down]
 description = "Stop the bundled Docker Compose stack"

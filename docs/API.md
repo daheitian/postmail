@@ -1220,7 +1220,7 @@ curl -X POST https://your-site.com/api/export/zola \
 npx jant site export --output jant-export.zip
 
 # Export a remote site
-export JANT_TOKEN=jnt_YOUR_TOKEN
+export API_TOKEN=jnt_YOUR_TOKEN
 npx jant site export --url https://your-site.com --output jant-export.zip
 
 # Export directly to a directory for theme debugging
@@ -1272,15 +1272,15 @@ zola serve    # Preview at http://127.0.0.1:1111
 Restore an export ZIP into a Jant instance using the CLI:
 
 ```bash
-export JANT_TOKEN=jnt_YOUR_TOKEN
+export API_TOKEN=jnt_YOUR_TOKEN
 npx jant site import --url https://your-site.com --path ./export
 ```
 
-Without `--url`, `jant site import` imports into the local Node SQLite runtime. With `--url`, it imports into a remote site and requires `JANT_TOKEN` (unless using `--dry-run`). `jant import-site` remains available as a compatibility alias.
+Without `--url`, `jant site import` imports into the local Node SQLite runtime. With `--url`, it imports into a remote site and requires `API_TOKEN` (unless using `--dry-run`). `jant import-site` remains available as a compatibility alias.
 
 The importer is designed for strict restore into an empty target site. If a collection slug, post slug, reply slug, or alias is already in use, the import stops with a conflict instead of skipping records.
 
-**Authentication:** Set the `JANT_TOKEN` environment variable for remote imports. This avoids exposing the token in shell history or process lists.
+**Authentication:** Set the `API_TOKEN` environment variable for remote imports. This avoids exposing the token in shell history or process lists.
 
 **Options:**
 
@@ -1314,7 +1314,7 @@ npx jant site import \
 **Example — import from a directory:**
 
 ```bash
-export JANT_TOKEN=jnt_YOUR_TOKEN
+export API_TOKEN=jnt_YOUR_TOKEN
 
 # Unzip first, inspect content, then import
 unzip jant-export.zip -d jant-export
@@ -1326,7 +1326,7 @@ npx jant site import \
 **Example — import from a ZIP directly:**
 
 ```bash
-export JANT_TOKEN=jnt_YOUR_TOKEN
+export API_TOKEN=jnt_YOUR_TOKEN
 npx jant site import \
   --url https://new-site.com \
   --path jant-export.zip
@@ -1335,7 +1335,7 @@ npx jant site import \
 **Example — fast import without images:**
 
 ```bash
-export JANT_TOKEN=jnt_YOUR_TOKEN
+export API_TOKEN=jnt_YOUR_TOKEN
 npx jant site import \
   --url https://new-site.com \
   --skip-media

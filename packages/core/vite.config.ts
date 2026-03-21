@@ -8,24 +8,9 @@
 import { defineConfig } from "vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
+import { parsePortValue } from "./src/lib/env.js";
 import { pkg, clientBuildOptions, swcPlugin } from "./vite.shared";
 import { linguiAutoExtract, ssrReload } from "./vite.dev-plugins";
-
-const DEFAULT_DEV_PORT = 9020;
-
-function resolveDevPort(): number {
-  const rawPort = process.env.PORT;
-  if (!rawPort) {
-    return DEFAULT_DEV_PORT;
-  }
-
-  const port = Number.parseInt(rawPort, 10);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new Error("PORT must be an integer between 1 and 65535.");
-  }
-
-  return port;
-}
 
 export default defineConfig({
   // Vite 8 switched the default transform pipeline from esbuild to Oxc.
@@ -33,13 +18,13 @@ export default defineConfig({
   oxc: false,
 
   server: {
-    port: resolveDevPort(),
+    port: parsePortValue(process.env.PORT),
     host: true,
     allowedHosts: true,
   },
 
   preview: {
-    port: resolveDevPort(),
+    port: parsePortValue(process.env.PORT),
   },
 
   define: {

@@ -17,6 +17,7 @@ import { createNavItemService } from "../../../services/navigation.js";
 import { createAuthService } from "../../../services/auth.js";
 import { errorHandler } from "../../../middleware/error-handler.js";
 import { createI18n } from "../../../i18n/i18n.js";
+import { DEFAULT_APP_PORT } from "../../../lib/env.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
 import type { Database } from "../../../db/index.js";
 import type { StorageDriver, UploadedPart } from "../../../lib/storage.js";
@@ -173,7 +174,7 @@ function createTestAppWithStorage(options: {
 
   app.use("*", async (c, next) => {
     c.env = {
-      SITE_URL: "http://localhost:9020",
+      SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);
@@ -333,7 +334,7 @@ describe("multipart upload API routes", () => {
       const data = await res.json();
       expect(data.id).toBeDefined();
       expect(data.uploadId).toBeDefined();
-      expect(data.storageKey).toContain(`sites/${DEFAULT_TEST_SITE_ID}/media/`);
+      expect(data.storageKey).toContain(`media/${DEFAULT_TEST_SITE_ID}/files/`);
       expect(data.filename).toBeDefined();
       expect(data.originalName).toBe("big-video.mp4");
     });
@@ -508,7 +509,9 @@ describe("multipart upload API routes", () => {
       );
       expect(posterRes.status).toBe(200);
       const posterData = (await posterRes.json()) as { posterKey: string };
-      expect(posterData.posterKey).toContain("poster.webp");
+      expect(posterData.posterKey).toBe(
+        `media/${DEFAULT_TEST_SITE_ID}/posters/${id}.webp`,
+      );
 
       // Verify poster was stored
       expect(storage.files.has(posterData.posterKey)).toBe(true);
@@ -544,7 +547,9 @@ describe("multipart upload API routes", () => {
       const media = await services.media.getById(id);
       expect(media).not.toBeNull();
       expect(media).toHaveProperty("posterKey");
-      expect(String(media?.posterKey)).toContain("poster.webp");
+      expect(String(media?.posterKey)).toBe(
+        `media/${DEFAULT_TEST_SITE_ID}/posters/${id}.webp`,
+      );
     });
   });
 });

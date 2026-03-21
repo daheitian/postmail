@@ -22,12 +22,16 @@ import { pgSchemaBundle, sqliteSchemaBundle } from "../db/schema-bundle.js";
 import * as schema from "../db/schema.js";
 import { resolveDatabaseDialect } from "../db/dialect.js";
 import { ASSET_BASE_PATH } from "../lib/asset-path.js";
-import { getEnvString, getSiteUrl, shouldTrustProxy } from "../lib/env.js";
+import {
+  getEnvString,
+  getPort,
+  getSiteUrl,
+  shouldTrustProxy,
+} from "../lib/env.js";
 import type { App } from "../types/app-context.js";
 import type { Bindings } from "../types/bindings.js";
 
 const DEFAULT_HOST = "127.0.0.1";
-const DEFAULT_PORT = 3000;
 
 const MIME_TYPES: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
@@ -429,17 +433,7 @@ export function resolveHost(env: Bindings): string {
 }
 
 export function resolvePort(env: Bindings): number {
-  const rawPort = getEnvString(env, "PORT");
-  if (!rawPort) {
-    return DEFAULT_PORT;
-  }
-
-  const port = Number.parseInt(rawPort, 10);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new Error("PORT must be an integer between 1 and 65535.");
-  }
-
-  return port;
+  return getPort(env);
 }
 
 export function resolvePublicRequestUrl(

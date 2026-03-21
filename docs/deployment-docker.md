@@ -27,6 +27,19 @@ docker compose up -d
 
 Open `http://127.0.0.1:3000`.
 
+To publish Docker on a different host port, set:
+
+```env
+HOST_PORT=8080
+```
+
+If you also want the app inside the container to listen on a different port,
+set:
+
+```env
+PORT=8080
+```
+
 ## Required Configuration
 
 `AUTH_SECRET` is required. `SITE_URL` is strongly recommended when you
@@ -47,6 +60,8 @@ openssl rand -base64 32
 The bundled `compose.yml` already defaults the container to the recommended single-node layout:
 
 - `image: owenyoung/jant:latest`
+- `PORT=3000`
+- `HOST_PORT=3000`
 - `DATA_DIR=/var/lib/jant`
 - `TRUST_PROXY=true`
 - SQLite at `/var/lib/jant/jant.sqlite`
@@ -58,7 +73,7 @@ This keeps the SQLite file and uploaded media together under the host `./data/` 
 If you want to pin a version or test another tag, set:
 
 ```env
-JANT_IMAGE=owenyoung/jant:0.3.38
+IMAGE=owenyoung/jant:0.3.38
 ```
 
 Repo contributors can use `compose.dev.yml` instead. It builds the local checkout with the repo's `Dockerfile` and starts that image:
@@ -79,7 +94,7 @@ TRUST_PROXY=false
 
 Set `TRUST_PROXY=false` when the container is directly exposed to the
 internet. The reverse proxy should terminate TLS and forward requests to the
-container on port `3000`.
+container on the configured `PORT` (defaults to `3000`).
 
 ## Common Commands
 
@@ -106,7 +121,7 @@ Run the repo's Dockerfile locally instead of the published image:
 
 ```bash
 docker build -t jant:local .
-JANT_IMAGE=jant:local docker compose up -d
+IMAGE=jant:local docker compose up -d
 ```
 
 Or use the dedicated development compose file:

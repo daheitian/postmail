@@ -27,7 +27,7 @@ This phase will not:
 - `site.id` uses TypeID with `sit_` prefix
 - `site.key` remains `key`, not `slug`
 - self-hosted mode remains a single-site product experience
-- instance mode is controlled by `JANT_SITE_RESOLUTION_MODE`
+- instance mode is controlled by `SITE_RESOLUTION_MODE`
 - valid values are:
   - `single-site`
   - `host-based`
@@ -36,8 +36,9 @@ This phase will not:
   instance
 - object storage keys use `site.id`, not `site.key`
 - storage key prefixes are:
-  - `sites/{siteId}/media/...`
-  - `sites/{siteId}/site-assets/...`
+  - `media/{siteId}/files/...`
+  - `media/{siteId}/posters/...`
+  - `media/{siteId}/assets/...`
   - `sites/{siteId}/exports/...`
   - `sites/{siteId}/snapshots/...`
 - self-hosted default site is identified by being the only site in the
@@ -153,7 +154,7 @@ old global schema. The new schema should be the canonical model.
 
 Add a new env/config helper:
 
-- `JANT_SITE_RESOLUTION_MODE`
+- `SITE_RESOLUTION_MODE`
 
 Expected behavior:
 

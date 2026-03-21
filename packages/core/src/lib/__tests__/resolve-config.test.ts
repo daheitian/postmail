@@ -129,15 +129,15 @@ describe("resolveConfig", () => {
       }),
       {
         SITE_AVATAR:
-          "sites/sit_test00000000000000000000000/site-assets/avatar/avatar.jpg",
+          "media/sit_test00000000000000000000000/assets/avatar/avatar.jpg",
       },
     );
 
     expect(config.siteAvatar).toBe(
-      "sites/sit_test00000000000000000000000/site-assets/avatar/avatar.jpg",
+      "media/sit_test00000000000000000000000/assets/avatar/avatar.jpg",
     );
     expect(config.siteAvatarUrl).toBe(
-      "https://r2.example.com/sites/sit_test00000000000000000000000/site-assets/avatar/avatar.jpg",
+      "https://r2.example.com/media/sit_test00000000000000000000000/assets/avatar/avatar.jpg",
     );
   });
 

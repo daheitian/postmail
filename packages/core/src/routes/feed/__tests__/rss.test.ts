@@ -12,6 +12,7 @@ import { createPostService } from "../../../services/post.js";
 import { createPathService } from "../../../services/path.js";
 import { createSettingsService } from "../../../services/settings.js";
 import { createMediaService } from "../../../services/media.js";
+import { DEFAULT_APP_PORT } from "../../../lib/env.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
 import { rssRoutes } from "../rss.js";
 import type { Database } from "../../../db/index.js";
@@ -38,7 +39,7 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
 
   app.use("*", async (c, next) => {
     const env = {
-      SITE_URL: "http://localhost:9020",
+      SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
       ...envOverrides,
     } as Bindings;
     c.env = env;

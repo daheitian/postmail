@@ -5,8 +5,8 @@ Jant is configured through environment variables and settings.
 ## Environment Variables
 
 Use `wrangler.toml` for non-sensitive values such as `SITE_URL`.
-Use `.dev.vars` for local secrets and Cloudflare Worker secrets for production
-secrets such as `AUTH_SECRET`.
+Use runtime-specific secret storage for sensitive values such as
+`AUTH_SECRET`.
 
 ### Required
 
@@ -17,7 +17,8 @@ secrets such as `AUTH_SECRET`.
 
 `AUTH_SECRET` is sensitive. Keep it out of `wrangler.toml`.
 
-- Local development: put it in `.dev.vars`
+- Node and Docker deployments: set it in your `.env` file, another `.env*` file, or the process environment
+- Cloudflare local development: put it in `.dev.vars`
 - Cloudflare production: add it as a Worker secret with `wrangler secret put AUTH_SECRET` or the Cloudflare dashboard
 
 ### Feed Defaults (Optional)

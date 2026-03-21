@@ -15,7 +15,7 @@ const canonicalDir = resolve(
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
 const siteUrl =
-  process.env.JANT_DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
+  process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
 const checkOnly = process.argv.includes("--check");
 
 if (!existsSync(resolve(canonicalDir, "meta.json"))) {

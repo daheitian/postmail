@@ -77,7 +77,7 @@ export interface Bindings {
   // Node runtime database URL. SQLite uses file: URLs; Postgres will use
   // postgres:/postgresql: URLs once the Node Postgres runtime lands.
   DATABASE_URL?: string;
-  JANT_SITE_RESOLUTION_MODE?: EnvBindingValue;
+  SITE_RESOLUTION_MODE?: EnvBindingValue;
   HOST?: string;
   PORT?: string;
 }

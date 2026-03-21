@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { Hono } from "hono";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
+import { DEFAULT_APP_PORT } from "../../../lib/env.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
 import { sitemapRoutes } from "../sitemap.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
+const TEST_SITE_URL = `http://localhost:${DEFAULT_APP_PORT}`;
 
 function createSitemapTestApp(
   allSettings: Record<string, string> = {},
@@ -15,7 +17,7 @@ function createSitemapTestApp(
 
   app.use("*", async (c, next) => {
     const env = {
-      SITE_URL: "http://localhost:9020",
+      SITE_URL: TEST_SITE_URL,
       ...envOverrides,
     } as Bindings;
     c.env = env;
@@ -42,7 +44,7 @@ describe("Sitemap Routes", () => {
       expect(robots).toContain("User-agent: *");
       expect(robots).toContain("Allow: /");
       expect(robots).toContain("Disallow: /_/");
-      expect(robots).toContain("Sitemap: http://localhost:9020/sitemap.xml");
+      expect(robots).toContain(`Sitemap: ${TEST_SITE_URL}/sitemap.xml`);
     });
 
     it("disallows the entire site when global noindex is enabled", async () => {

@@ -8,10 +8,13 @@ import {
   hasValidLocalDevToken,
 } from "../auth.js";
 import { errorHandler } from "../error-handler.js";
+import { DEFAULT_APP_PORT } from "../../lib/env.js";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
+const LOCAL_API_URL = `http://localhost:${DEFAULT_APP_PORT}/api/data`;
+const LOCAL_HOST = `127.0.0.1:${DEFAULT_APP_PORT}`;
 
 function createMockAuth(authenticated: boolean) {
   return {
@@ -280,7 +283,7 @@ describe("requireAuthApi", () => {
     });
     app.get("/api/data", requireAuthApi(), (c) => c.json({ data: "secret" }));
 
-    const res = await app.request("http://localhost:9020/api/data", {
+    const res = await app.request(LOCAL_API_URL, {
       headers: { Authorization: `Bearer ${devToken}` },
     });
     expect(res.status).toBe(200);
@@ -360,7 +363,7 @@ describe("requireAuthApi", () => {
     const res = await app.request("https://jant.me/api/data", {
       headers: {
         Authorization: `Bearer ${devToken}`,
-        Host: "127.0.0.1:9020",
+        Host: LOCAL_HOST,
       },
     });
 
