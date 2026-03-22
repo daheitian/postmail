@@ -3,7 +3,7 @@ import { setSignedCookie } from "hono/cookie";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { getJantCloudSsoSecret } from "../../lib/env.js";
-import { NotFoundError } from "../../lib/errors.js";
+import { DomainError, NotFoundError } from "../../lib/errors.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -30,24 +30,35 @@ hostedSsoRoutes.get("/__sso", async (c) => {
     return c.text("Missing sign-in token.", 400);
   }
 
-  const result = await c.var.hostedHandoff.completeFromSignedToken({
-    currentSiteId: c.var.currentSite.id,
-    token,
-  });
+  try {
+    const result = await c.var.hostedHandoff.completeFromSignedToken({
+      currentSiteId: c.var.currentSite.id,
+      token,
+    });
 
-  const authContext = await c.var.auth.$context;
-  await setSignedCookie(
-    c,
-    authContext.authCookies.sessionToken.name,
-    result.sessionToken,
-    authContext.secret,
-    authContext.authCookies.sessionToken.attributes,
-  );
+    const authContext = await c.var.auth.$context;
+    await setSignedCookie(
+      c,
+      authContext.authCookies.sessionToken.name,
+      result.sessionToken,
+      authContext.secret,
+      authContext.authCookies.sessionToken.attributes,
+    );
 
-  return c.redirect(
-    toPublicPath(
-      normalizeRedirectPath(c.req.query("redirect")),
-      c.var.appConfig.sitePathPrefix,
-    ),
-  );
+    return c.redirect(
+      toPublicPath(
+        normalizeRedirectPath(c.req.query("redirect")),
+        c.var.appConfig.sitePathPrefix,
+      ),
+    );
+  } catch (error) {
+    if (error instanceof DomainError) {
+      return c.text(
+        error.message,
+        error.statusCode as 400 | 401 | 403 | 404 | 409 | 429 | 500,
+      );
+    }
+
+    throw error;
+  }
 });

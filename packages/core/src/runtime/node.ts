@@ -7,6 +7,7 @@ import {
   getAuthSecret,
   getEnvString,
   getJantCloudSsoSecret,
+  getSiteResolutionMode,
   shouldUseSecureCookies,
 } from "../lib/env.js";
 import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
@@ -89,6 +90,7 @@ export async function createNodeRequestRuntime(
   }
 
   const authSecret = getAuthSecret(env);
+  const jantCloudSsoSecret = getJantCloudSsoSecret(env);
   if (!authSecret) {
     throw new Error("AUTH_SECRET should be set after startup validation.");
   }
@@ -107,6 +109,9 @@ export async function createNodeRequestRuntime(
     siteLookup.domain?.pathPrefix ?? null,
   );
   const auth = createAuth(db, {
+    allowSystemUserProvisioning:
+      Boolean(jantCloudSsoSecret) &&
+      getSiteResolutionMode(env) === "host-based",
     secret: authSecret,
     baseURL,
     databaseDialect,
@@ -121,7 +126,7 @@ export async function createNodeRequestRuntime(
     db,
     hostedHandoff: createHostedHandoffService(db, auth, {
       schema: databaseSchema,
-      secret: getJantCloudSsoSecret(env),
+      secret: jantCloudSsoSecret,
     }),
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,

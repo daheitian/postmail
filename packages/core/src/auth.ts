@@ -13,6 +13,7 @@ import { hashPassword, verifyPassword } from "./lib/password.js";
 export function createAuth(
   db: Database,
   options: {
+    allowSystemUserProvisioning?: boolean;
     secret: string;
     baseURL: string;
     useSecureCookies: boolean;
@@ -21,6 +22,8 @@ export function createAuth(
   },
 ) {
   const schema = options.schema ?? sqliteSchemaBundle;
+  const allowSystemUserProvisioning =
+    options.allowSystemUserProvisioning ?? false;
 
   return betterAuth({
     database: drizzleAdapter(db, {
@@ -73,6 +76,15 @@ export function createAuth(
       user: {
         create: {
           before: async (userData) => {
+            const isSystemProvisionedMember =
+              allowSystemUserProvisioning &&
+              userData.role === "member" &&
+              userData.emailVerified === true;
+
+            if (isSystemProvisionedMember) {
+              return { data: userData };
+            }
+
             const existing = await db
               .select({ id: schema.user.id })
               .from(schema.user)

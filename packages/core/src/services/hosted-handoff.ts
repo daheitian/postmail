@@ -7,6 +7,7 @@ import {
 } from "../db/schema-bundle.js";
 import {
   ConflictError,
+  DomainError,
   ExternalServiceError,
   NotFoundError,
   UnauthorizedError,
@@ -55,8 +56,21 @@ export function createHostedHandoffService(
       let claims: HostedSsoClaims;
       try {
         claims = await verifyHostedSsoToken(options.secret, input.token);
-      } catch {
-        throw new UnauthorizedError("Invalid or expired sign-in link.");
+      } catch (error) {
+        if (error instanceof DomainError) {
+          throw error;
+        }
+
+        if (
+          error instanceof Error &&
+          error.message === "Hosted SSO token has expired."
+        ) {
+          throw new UnauthorizedError(
+            "This sign-in link has expired. Return to Jant Cloud and try again.",
+          );
+        }
+
+        throw new UnauthorizedError("Invalid sign-in link.");
       }
 
       if (claims.siteId !== input.currentSiteId) {

@@ -5,6 +5,7 @@ import {
   getAuthSecret,
   getEnvString,
   getJantCloudSsoSecret,
+  getSiteResolutionMode,
   shouldUseSecureCookies,
 } from "../lib/env.js";
 import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
@@ -45,6 +46,7 @@ export async function createCloudflareRequestRuntime(
     throw new Error("Cloudflare runtime requires a DB binding.");
   }
   const authSecret = getAuthSecret(env);
+  const jantCloudSsoSecret = getJantCloudSsoSecret(env);
   if (!authSecret) {
     throw new Error("AUTH_SECRET should be set after startup validation.");
   }
@@ -64,6 +66,9 @@ export async function createCloudflareRequestRuntime(
     siteLookup.domain?.pathPrefix ?? null,
   );
   const auth = createAuth(db, {
+    allowSystemUserProvisioning:
+      Boolean(jantCloudSsoSecret) &&
+      getSiteResolutionMode(env) === "host-based",
     secret: authSecret,
     baseURL,
     databaseDialect: "sqlite",
@@ -78,7 +83,7 @@ export async function createCloudflareRequestRuntime(
     db,
     hostedHandoff: createHostedHandoffService(db, auth, {
       schema: sqliteSchemaBundle,
-      secret: getJantCloudSsoSecret(env),
+      secret: jantCloudSsoSecret,
     }),
     services: createServices(db, session, siteLookup.site.id, {
       databaseDialect: "sqlite",

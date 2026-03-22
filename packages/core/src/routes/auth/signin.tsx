@@ -13,6 +13,7 @@ import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { SigninSchema } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { getI18n } from "../../i18n/index.js";
+import { getHostedCloudSigninUrl } from "../../lib/hosted-signin.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -110,6 +111,14 @@ const SigninContent: FC<{
 export const signinRoutes = new Hono<Env>();
 
 signinRoutes.get("/signin", async (c) => {
+  const hostedSigninUrl = getHostedCloudSigninUrl(
+    c.env,
+    c.var.publicRequestUrl,
+  );
+  if (hostedSigninUrl) {
+    return c.redirect(hostedSigninUrl);
+  }
+
   const i18n = getI18n(c);
   const isSetup = c.req.query("setup") !== undefined;
   const isReset = c.req.query("reset") !== undefined;

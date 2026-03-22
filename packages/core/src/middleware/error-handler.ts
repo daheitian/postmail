@@ -67,6 +67,9 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
     return c.notFound();
   }
 
+  // eslint-disable-next-line no-console -- Page-route error logging is intentional
+  console.error("[Jant] Unhandled page error:", err);
+
   // Everything else: re-throw for Hono's default handling
   throw err;
 };

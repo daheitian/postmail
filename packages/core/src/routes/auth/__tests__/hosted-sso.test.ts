@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { Hono } from "hono";
 import { errorHandler } from "../../../middleware/error-handler.js";
+import { UnauthorizedError } from "../../../lib/errors.js";
 import { hostedSsoRoutes } from "../hosted-sso.js";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
@@ -111,5 +112,25 @@ describe("hostedSsoRoutes", () => {
       currentSiteId: "sit_test",
       token: "test-token",
     });
+  });
+
+  it("surfaces handoff failures as route responses instead of blank 500s", async () => {
+    const app = createHostedSsoTestApp({
+      secret: "cloud-sso-secret-cloud-sso-secret",
+      hostedHandoff: {
+        async completeFromSignedToken() {
+          throw new UnauthorizedError(
+            "This sign-in link has expired. Return to Jant Cloud and try again.",
+          );
+        },
+      },
+    });
+
+    const response = await app.request("/__sso?token=test-token");
+
+    expect(response.status).toBe(401);
+    await expect(response.text()).resolves.toBe(
+      "This sign-in link has expired. Return to Jant Cloud and try again.",
+    );
   });
 });

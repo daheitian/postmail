@@ -47,6 +47,7 @@ export interface Bindings {
   DEMO_MODE?: EnvBindingValue;
   DEV_API_TOKEN?: EnvBindingValue;
   INTERNAL_ADMIN_TOKEN?: EnvBindingValue;
+  JANT_CLOUD_BASE_URL?: EnvBindingValue;
   JANT_CLOUD_SSO_SECRET?: EnvBindingValue;
   // Timeline
   PAGE_SIZE?: EnvBindingValue;

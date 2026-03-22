@@ -72,6 +72,7 @@ Hosted control-plane integration variables:
 
 | Variable                | Description                                                                                |
 | ----------------------- | ------------------------------------------------------------------------------------------ |
+| `JANT_CLOUD_BASE_URL`   | Cloud control-plane base URL used to redirect hosted `/signin` requests into `jant-cloud`  |
 | `INTERNAL_ADMIN_TOKEN`  | Shared bearer token for `POST /api/internal/sites` and other internal admin routes         |
 | `JANT_CLOUD_SSO_SECRET` | Shared 32+ character secret used to verify `jant-cloud`'s short-lived admin handoff tokens |
 
