@@ -15,6 +15,7 @@ import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { ResetPasswordSchema } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { getI18n } from "../../i18n/index.js";
+import { getHostedCloudResetUrl } from "../../lib/hosted-signin.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -145,6 +146,11 @@ const ResetErrorContent: FC = () => {
 export const resetRoutes = new Hono<Env>();
 
 resetRoutes.get("/reset", async (c) => {
+  const hostedResetUrl = getHostedCloudResetUrl(c.env, c.var.publicRequestUrl);
+  if (hostedResetUrl) {
+    return c.redirect(hostedResetUrl);
+  }
+
   const title = buildPageTitle("Reset Password", c.var.appConfig.siteName);
   const token = c.req.query("token");
   if (!token) {
