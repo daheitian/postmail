@@ -9,6 +9,8 @@ import type { Bindings } from "../../types.js";
 
 const SNAPSHOT_SITE_ID = "sit_01jpyy00bc4w2h8r7m3q5t9kda";
 const SNAPSHOT_SITE_KEY = "default";
+const REMAPPED_TARGET_SITE_ID = "sit_01jpyy9yqv4m7r2k8s5c1t9bdn";
+const REMAPPED_TARGET_SITE_KEY = "demo-public";
 const SNAPSHOT_COLLECTION_ID = "col_01jpyy08bc4w2h8r7m3q5t9kdn";
 const SNAPSHOT_NAV_ID = "nav_01jpyy0gqv4m7r2k8s5c1t9bdh";
 const SNAPSHOT_DIRECTORY_ITEM_ID = "cdi_01jpyy0r6s3m8v1k5t9q2b4gcn";
@@ -24,12 +26,17 @@ const SNAPSHOT_OLD_POST_ID = "pst_01jpyy2c4s7m8r1k5t9b3q6dgh";
 const SNAPSHOT_OLD_PATH_ID = "pth_01jpyy2pbh4m6s8r1k5t9c3qgn";
 const SNAPSHOT_OLD_MEDIA_ID = "med_01jpyy2z6v4m8r1k5t9c3b7qdh";
 const SNAPSHOT_OLD_MEDIA_KEY = `media/${SNAPSHOT_SITE_ID}/files/${SNAPSHOT_OLD_MEDIA_ID}.png`;
+const REMAPPED_MEDIA_KEY = `media/${REMAPPED_TARGET_SITE_ID}/files/${SNAPSHOT_MEDIA_ID}.png`;
+const REMAPPED_POSTER_KEY = `media/${REMAPPED_TARGET_SITE_ID}/posters/${SNAPSHOT_MEDIA_ID}.webp`;
+const REMAPPED_AVATAR_KEY = `media/${REMAPPED_TARGET_SITE_ID}/assets/avatar/${SNAPSHOT_AVATAR_MEDIA_ID}.png`;
+const REMAPPED_APPLE_TOUCH_KEY = `media/${REMAPPED_TARGET_SITE_ID}/assets/favicon/apple-touch-icon.png`;
 
 describe("jant site snapshot export/import", () => {
   const tempDirs: string[] = [];
   const originalEnv = {
     DATABASE_URL: process.env.DATABASE_URL,
     LOCAL_STORAGE_PATH: process.env.LOCAL_STORAGE_PATH,
+    SITE_RESOLUTION_MODE: process.env.SITE_RESOLUTION_MODE,
   };
 
   afterEach(async () => {
@@ -43,6 +50,12 @@ describe("jant site snapshot export/import", () => {
       delete process.env.LOCAL_STORAGE_PATH;
     } else {
       process.env.LOCAL_STORAGE_PATH = originalEnv.LOCAL_STORAGE_PATH;
+    }
+
+    if (originalEnv.SITE_RESOLUTION_MODE === undefined) {
+      delete process.env.SITE_RESOLUTION_MODE;
+    } else {
+      process.env.SITE_RESOLUTION_MODE = originalEnv.SITE_RESOLUTION_MODE;
     }
 
     await Promise.all(
@@ -334,5 +347,290 @@ describe("jant site snapshot export/import", () => {
     await expect(runImport(["--path", snapshotPath])).rejects.toThrow(
       "Snapshot import currently requires --replace to avoid partial merge semantics.",
     );
+  });
+
+  it("can remap a content snapshot into a different existing target site", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-site-snapshot-remap-"));
+    tempDirs.push(root);
+
+    const sourceDbPath = join(root, "source.sqlite");
+    const sourceStoragePath = join(root, "source-media");
+    const targetDbPath = join(root, "target.sqlite");
+    const targetStoragePath = join(root, "target-media");
+    const snapshotPath = join(root, "snapshot");
+
+    await migrate({ DATABASE_URL: `file:${sourceDbPath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${targetDbPath}` } as Bindings);
+
+    const sourceStorage = createLocalDriver({ rootPath: sourceStoragePath });
+    const targetStorage = createLocalDriver({ rootPath: targetStoragePath });
+
+    await sourceStorage.put(SNAPSHOT_MEDIA_KEY, new Uint8Array([1, 2, 3, 4]), {
+      contentType: "image/png",
+    });
+    await sourceStorage.put(SNAPSHOT_POSTER_KEY, new Uint8Array([9, 8, 7, 6]), {
+      contentType: "image/webp",
+    });
+    await sourceStorage.put(SNAPSHOT_AVATAR_KEY, new Uint8Array([3, 3, 3]), {
+      contentType: "image/png",
+    });
+    await sourceStorage.put(
+      SNAPSHOT_APPLE_TOUCH_KEY,
+      new Uint8Array([4, 4, 4]),
+      {
+        contentType: "image/png",
+      },
+    );
+
+    const sourceSqlite = new Database(sourceDbPath);
+    const targetSqlite = new Database(targetDbPath);
+
+    try {
+      sourceSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009100, 1774009100);
+
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES
+          ('${SNAPSHOT_SITE_ID}', 'SITE_NAME', 'Snapshot Source', 1774009200),
+          ('${SNAPSHOT_SITE_ID}', 'SITE_AVATAR', '${SNAPSHOT_AVATAR_KEY}', 1774009202),
+          ('${SNAPSHOT_SITE_ID}', 'SITE_FAVICON_APPLE_TOUCH', '${SNAPSHOT_APPLE_TOUCH_KEY}', 1774009203);
+
+        INSERT INTO "post" (
+          "id", "site_id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
+          "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_POST_ID}', '${SNAPSHOT_SITE_ID}', 'note', 'published', 'public',
+          'Snapshot post', 'Hello snapshot', '<p>Hello snapshot</p>', 'Hello snapshot',
+          '${SNAPSHOT_POST_ID}', 1774009200, 1774009200, 1774009200, 1774009200
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "width", "height", "alt", "position", "poster_key", "media_kind",
+          "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', '${SNAPSHOT_POST_ID}',
+          '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
+          'local', 1, 1, 'Sample alt', 'a0', '${SNAPSHOT_POSTER_KEY}', 'image',
+          1774009200, 1774009200
+        );
+      `);
+
+      targetSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${REMAPPED_TARGET_SITE_ID}', '${REMAPPED_TARGET_SITE_KEY}', 'active', 1774009000, 1774009000);
+      `);
+    } finally {
+      sourceSqlite.close();
+      targetSqlite.close();
+    }
+
+    process.env.DATABASE_URL = `file:${sourceDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = sourceStoragePath;
+
+    const { run: runExport } =
+      await import("../../../bin/commands/site/snapshot/export.js");
+    await runExport(["--output", snapshotPath]);
+
+    process.env.DATABASE_URL = `file:${targetDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = targetStoragePath;
+
+    const { run: runImport } =
+      await import("../../../bin/commands/site/snapshot/import.js");
+    await runImport([
+      "--path",
+      snapshotPath,
+      "--replace",
+      "--site",
+      REMAPPED_TARGET_SITE_ID,
+      "--remap-site",
+    ]);
+
+    const verifySqlite = new Database(targetDbPath, { readonly: true });
+    try {
+      const siteName = verifySqlite
+        .prepare(
+          `SELECT "value" FROM "site_setting" WHERE "site_id" = '${REMAPPED_TARGET_SITE_ID}' AND "key" = 'SITE_NAME'`,
+        )
+        .pluck()
+        .get();
+      expect(siteName).toBe("Snapshot Source");
+
+      const avatarKey = verifySqlite
+        .prepare(
+          `SELECT "value" FROM "site_setting" WHERE "site_id" = '${REMAPPED_TARGET_SITE_ID}' AND "key" = 'SITE_AVATAR'`,
+        )
+        .pluck()
+        .get();
+      expect(avatarKey).toBe(REMAPPED_AVATAR_KEY);
+
+      const mediaRow = verifySqlite
+        .prepare(
+          `
+            SELECT "site_id", "storage_key", "poster_key"
+            FROM "media"
+            WHERE "id" = '${SNAPSHOT_MEDIA_ID}'
+          `,
+        )
+        .get() as
+        | {
+            poster_key: string;
+            site_id: string;
+            storage_key: string;
+          }
+        | undefined;
+      expect(mediaRow).toEqual({
+        site_id: REMAPPED_TARGET_SITE_ID,
+        storage_key: REMAPPED_MEDIA_KEY,
+        poster_key: REMAPPED_POSTER_KEY,
+      });
+    } finally {
+      verifySqlite.close();
+    }
+
+    expect(await targetStorage.get(REMAPPED_MEDIA_KEY)).not.toBeNull();
+    expect(await targetStorage.get(REMAPPED_POSTER_KEY)).not.toBeNull();
+    expect(await targetStorage.get(REMAPPED_AVATAR_KEY)).not.toBeNull();
+    expect(await targetStorage.get(REMAPPED_APPLE_TOUCH_KEY)).not.toBeNull();
+    expect(await targetStorage.get(SNAPSHOT_MEDIA_KEY)).toBeNull();
+  });
+
+  it("auto-remaps a snapshot into the only initialized site in single-site mode", async () => {
+    const root = await mkdtemp(
+      join(tmpdir(), "jant-site-snapshot-single-site-remap-"),
+    );
+    tempDirs.push(root);
+
+    const sourceDbPath = join(root, "source.sqlite");
+    const sourceStoragePath = join(root, "source-media");
+    const targetDbPath = join(root, "target.sqlite");
+    const targetStoragePath = join(root, "target-media");
+    const snapshotPath = join(root, "snapshot");
+
+    await migrate({ DATABASE_URL: `file:${sourceDbPath}` } as Bindings);
+    await migrate({ DATABASE_URL: `file:${targetDbPath}` } as Bindings);
+
+    const sourceStorage = createLocalDriver({ rootPath: sourceStoragePath });
+    const targetStorage = createLocalDriver({ rootPath: targetStoragePath });
+
+    await sourceStorage.put(SNAPSHOT_MEDIA_KEY, new Uint8Array([1, 2, 3, 4]), {
+      contentType: "image/png",
+    });
+    await sourceStorage.put(SNAPSHOT_POSTER_KEY, new Uint8Array([9, 8, 7, 6]), {
+      contentType: "image/webp",
+    });
+    await sourceStorage.put(SNAPSHOT_AVATAR_KEY, new Uint8Array([3, 3, 3]), {
+      contentType: "image/png",
+    });
+    await sourceStorage.put(
+      SNAPSHOT_APPLE_TOUCH_KEY,
+      new Uint8Array([4, 4, 4]),
+      {
+        contentType: "image/png",
+      },
+    );
+
+    const sourceSqlite = new Database(sourceDbPath);
+    const targetSqlite = new Database(targetDbPath);
+
+    try {
+      sourceSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${SNAPSHOT_SITE_ID}', '${SNAPSHOT_SITE_KEY}', 'active', 1774009100, 1774009100);
+
+        INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at") VALUES
+          ('${SNAPSHOT_SITE_ID}', 'SITE_NAME', 'Snapshot Source', 1774009200),
+          ('${SNAPSHOT_SITE_ID}', 'SITE_AVATAR', '${SNAPSHOT_AVATAR_KEY}', 1774009202),
+          ('${SNAPSHOT_SITE_ID}', 'SITE_FAVICON_APPLE_TOUCH', '${SNAPSHOT_APPLE_TOUCH_KEY}', 1774009203);
+
+        INSERT INTO "post" (
+          "id", "site_id", "format", "status", "visibility", "title", "body", "body_html", "body_text",
+          "thread_id", "published_at", "last_activity_at", "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_POST_ID}', '${SNAPSHOT_SITE_ID}', 'note', 'published', 'public',
+          'Snapshot post', 'Hello snapshot', '<p>Hello snapshot</p>', 'Hello snapshot',
+          '${SNAPSHOT_POST_ID}', 1774009200, 1774009200, 1774009200, 1774009200
+        );
+
+        INSERT INTO "media" (
+          "id", "site_id", "post_id", "filename", "original_name", "mime_type", "size", "storage_key",
+          "provider", "width", "height", "alt", "position", "poster_key", "media_kind",
+          "created_at", "updated_at"
+        ) VALUES (
+          '${SNAPSHOT_MEDIA_ID}', '${SNAPSHOT_SITE_ID}', '${SNAPSHOT_POST_ID}',
+          '${SNAPSHOT_MEDIA_ID}.png', 'sample.png', 'image/png', 4, '${SNAPSHOT_MEDIA_KEY}',
+          'local', 1, 1, 'Sample alt', 'a0', '${SNAPSHOT_POSTER_KEY}', 'image',
+          1774009200, 1774009200
+        );
+      `);
+
+      targetSqlite.exec(`
+        INSERT INTO "site" ("id", "key", "status", "created_at", "updated_at")
+        VALUES ('${REMAPPED_TARGET_SITE_ID}', '${REMAPPED_TARGET_SITE_KEY}', 'active', 1774009000, 1774009000);
+      `);
+    } finally {
+      sourceSqlite.close();
+      targetSqlite.close();
+    }
+
+    process.env.DATABASE_URL = `file:${sourceDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = sourceStoragePath;
+    delete process.env.SITE_RESOLUTION_MODE;
+
+    const { run: runExport } =
+      await import("../../../bin/commands/site/snapshot/export.js");
+    await runExport(["--output", snapshotPath]);
+
+    process.env.DATABASE_URL = `file:${targetDbPath}`;
+    process.env.LOCAL_STORAGE_PATH = targetStoragePath;
+    delete process.env.SITE_RESOLUTION_MODE;
+
+    const importLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+    const { run: runImport } =
+      await import("../../../bin/commands/site/snapshot/import.js");
+    await runImport(["--path", snapshotPath, "--replace"]);
+
+    const verifySqlite = new Database(targetDbPath, { readonly: true });
+    try {
+      const siteName = verifySqlite
+        .prepare(
+          `SELECT "value" FROM "site_setting" WHERE "site_id" = '${REMAPPED_TARGET_SITE_ID}' AND "key" = 'SITE_NAME'`,
+        )
+        .pluck()
+        .get();
+      expect(siteName).toBe("Snapshot Source");
+
+      const mediaRow = verifySqlite
+        .prepare(
+          `
+            SELECT "site_id", "storage_key", "poster_key"
+            FROM "media"
+            WHERE "id" = '${SNAPSHOT_MEDIA_ID}'
+          `,
+        )
+        .get() as
+        | {
+            poster_key: string;
+            site_id: string;
+            storage_key: string;
+          }
+        | undefined;
+      expect(mediaRow).toEqual({
+        site_id: REMAPPED_TARGET_SITE_ID,
+        storage_key: REMAPPED_MEDIA_KEY,
+        poster_key: REMAPPED_POSTER_KEY,
+      });
+    } finally {
+      verifySqlite.close();
+    }
+
+    expect(importLogSpy).toHaveBeenCalledWith(
+      `single-site mode detected. Remapping snapshot site ${SNAPSHOT_SITE_ID} to ${REMAPPED_TARGET_SITE_ID}.`,
+    );
+    expect(await targetStorage.get(REMAPPED_MEDIA_KEY)).not.toBeNull();
+    expect(await targetStorage.get(REMAPPED_POSTER_KEY)).not.toBeNull();
+    expect(await targetStorage.get(REMAPPED_AVATAR_KEY)).not.toBeNull();
+    expect(await targetStorage.get(REMAPPED_APPLE_TOUCH_KEY)).not.toBeNull();
+    expect(await targetStorage.get(SNAPSHOT_MEDIA_KEY)).toBeNull();
   });
 });

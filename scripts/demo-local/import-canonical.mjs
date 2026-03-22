@@ -41,6 +41,7 @@ execFileSync(
     "--path",
     canonicalDir,
     "--replace",
+    "--remap-site",
   ],
   {
     cwd: coreDir,

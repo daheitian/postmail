@@ -26,11 +26,16 @@ import {
   collectSnapshotObjects,
   getSnapshotBootstrapSite,
   normalizeD1Sql,
+  remapSnapshotManifestObjects,
   rewriteLegacySnapshotSql,
+  rewriteSnapshotSiteIdentifiers,
   sha256File,
   validateSnapshotTargetSite,
 } from "../../../lib/site-snapshot.js";
-import { resolveCliSite } from "../../../lib/site-selection.js";
+import {
+  getCliSiteResolutionMode,
+  resolveCliSite,
+} from "../../../lib/site-selection.js";
 import { resolveCliRuntime } from "../../../lib/runtime-target.js";
 
 function isZipPath(filePath) {
@@ -177,12 +182,17 @@ export async function run(argv) {
       config: { type: "string" },
       database: { type: "string", default: "DB" },
       env: { type: "string" },
+      host: { type: "string" },
       help: { type: "boolean", short: "h" },
       local: { type: "boolean", default: false },
       path: { type: "string", default: "." },
+      "path-prefix": { type: "string" },
       "persist-to": { type: "string" },
       remote: { type: "boolean", default: false },
       replace: { type: "boolean", default: false },
+      "remap-site": { type: "boolean", default: false },
+      site: { type: "string" },
+      url: { type: "string" },
     },
   });
 
@@ -202,6 +212,10 @@ export async function run(argv) {
     console.log(
       "  --replace               Replace the current content scope before importing",
     );
+    console.log("  --site                  Target site id");
+    console.log("  --host                  Target site host");
+    console.log("  --url                   Target site URL");
+    console.log("  --path-prefix           Path prefix used with --host");
     console.log("  --local                 Force local D1 instead of DATABASE_URL");
     console.log("  --remote                Import into remote D1");
     console.log(
@@ -216,6 +230,13 @@ export async function run(argv) {
       "  --bucket-binding        Wrangler R2 binding to resolve (default: R2)",
     );
     console.log("  --persist-to            Local D1/R2 state directory override");
+    console.log(
+      "  --remap-site            Rewrite snapshot site_id and storage keys to the resolved target site",
+    );
+    console.log("");
+    console.log(
+      "In single-site mode, snapshot imports automatically remap to the only initialized site.",
+    );
     console.log("");
     console.log(
       "Snapshot import currently requires --replace. It preserves user/auth shell data outside the content scope.",
@@ -239,20 +260,57 @@ export async function run(argv) {
 
   try {
     const meta = await readSnapshotJson(materialized.rootDir, "meta.json");
-    const manifest = await readSnapshotJson(
+    const rawManifest = await readSnapshotJson(
       materialized.rootDir,
       "storage-manifest.json",
     );
     assertSnapshotMeta(meta);
-    assertSnapshotManifest(manifest);
-    await validateManifestObjects(materialized.rootDir, manifest);
+    const explicitRemap = values["remap-site"] === true;
+    const snapshotSite = getSnapshotBootstrapSite(meta);
+    const originalManifest = rawManifest;
+    assertSnapshotManifest(originalManifest);
+    await validateManifestObjects(materialized.rootDir, originalManifest);
+    const resolutionMode = getCliSiteResolutionMode(process.env);
 
     const { site: targetSite } = await resolveCliSite(context, {
       env: process.env,
-      createIfMissing: true,
-      bootstrapSite: getSnapshotBootstrapSite(meta),
+      createIfMissing: false,
+      host: values.host,
+      pathPrefix: values["path-prefix"],
+      site: values.site,
+      url: values.url,
     });
-    validateSnapshotTargetSite(meta, targetSite);
+
+    const autoRemapSingleSite =
+      !explicitRemap &&
+      resolutionMode === "single-site" &&
+      !!snapshotSite &&
+      snapshotSite.id !== targetSite.id;
+    const shouldRemapSite = explicitRemap || autoRemapSingleSite;
+
+    if (shouldRemapSite) {
+      if (!snapshotSite) {
+        throw new Error(
+          "--remap-site requires a snapshot with embedded site metadata.",
+        );
+      }
+    } else {
+      validateSnapshotTargetSite(meta, targetSite);
+    }
+
+    if (autoRemapSingleSite) {
+      console.log(
+        `single-site mode detected. Remapping snapshot site ${snapshotSite.id} to ${targetSite.id}.`,
+      );
+    }
+
+    const manifest = shouldRemapSite
+      ? remapSnapshotManifestObjects(
+          originalManifest,
+          snapshotSite?.id ?? "",
+          targetSite.id,
+        )
+      : originalManifest;
 
     const snapshotKeys = new Set(
       manifest.objects.map((object) => String(object.key)),
@@ -276,8 +334,10 @@ export async function run(argv) {
       join(materialized.rootDir, "db.sql"),
       "utf-8",
     );
-    const dbSql = getSnapshotBootstrapSite(meta)
-      ? rawDbSql
+    const dbSql = snapshotSite
+      ? shouldRemapSite
+        ? rewriteSnapshotSiteIdentifiers(rawDbSql, snapshotSite.id, targetSite.id)
+        : rawDbSql
       : rewriteLegacySnapshotSql(rawDbSql, targetSite.id);
     await context.execute(`${buildReplaceSql(targetSite.id)}\n${dbSql}`);
 

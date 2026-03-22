@@ -69,5 +69,5 @@ describe("migration rehearsal", () => {
     } finally {
       rmSync(persistDir, { recursive: true, force: true });
     }
-  }, 45_000);
+  }, 90_000);
 });

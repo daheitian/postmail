@@ -183,7 +183,7 @@ description = "Check code formatting"
 run = "npx prettier --check ."
 
 # =============================================================================
-# Database (Local D1 + Seed Workflows)
+# Database (Local D1 + Canonical Snapshot Workflows)
 # =============================================================================
 [tasks.db-schema-generate]
 description = "Generate SQLite/D1 Drizzle migrations from the current core schema"
@@ -207,17 +207,6 @@ run = "node ./bin/jant.js migrate --remote"
 alias ="clean"
 description = "Delete the local development D1 database state"
 run = "rm -rf packages/core/.wrangler"
-
-[tasks.db-local-export]
-description = "Export the current local development D1 database to seed-local.sql"
-dir = "packages/core"
-run = "node dev/scripts/export-seed.mjs"
-
-[tasks.db-local-import]
-description = "Import a SQL file into the current local development D1 database shell"
-usage = 'arg "<file>"'
-dir = "packages/core"
-run = 'node dev/scripts/import-local-seed.mjs "$usage_file"'
 
 [tasks.db-local-bootstrap-shell]
 description = "Ensure the local development shell (admin, onboarding, default nav, debug creds)"
@@ -446,7 +435,7 @@ mise run demo-public-bootstrap
 echo "Deleting currently referenced demo storage..."
 node scripts/demo-public/clear-storage.mjs
 echo "Clearing demo content..."
-node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- node ../../scripts/run-jant.mjs db execute-file --remote --file scripts/reset-demo.sql
+node scripts/demo-public/clear-content.mjs
 echo "Done! demo.jant.me content has been cleared."
 """
 
@@ -527,7 +516,7 @@ description = "Clear content-lab content without touching users or settings"
 dir = "sites/content-lab"
 run = """
 echo "Clearing content-lab data..."
-pnpm exec wrangler d1 execute DB --remote --file=scripts/reset-content-lab.sql
+node scripts/clear-content.mjs
 echo "Done! content-lab content has been cleared."
 """
 
@@ -549,7 +538,7 @@ run = """
 echo "Running remote migrations..."
 node ../../scripts/run-jant.mjs migrate --remote
 echo "Clearing jant.me data..."
-node ../../scripts/run-jant.mjs db execute-file --remote --file scripts/reset-site.sql
+node scripts/clear-content.mjs
 echo "Done! jant.me content has been cleared."
 """
 
@@ -811,16 +800,6 @@ pnpm install
 echo ""
 echo "Created: $DEST"
 echo "Next: mise run example-run $usage_name"
-"""
-
-[tasks.example-db-seed]
-description = "Seed an example's local database with dev data"
-usage = 'arg "<name>"'
-run = """
-cd "examples/$usage_name"
-node ../../scripts/run-jant.mjs migrate --local
-pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/reset-local.sql
-pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/seed-local.sql
 """
 
 [tasks.example-run]

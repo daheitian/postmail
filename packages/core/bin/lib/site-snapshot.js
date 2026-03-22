@@ -286,6 +286,34 @@ export function validateSnapshotTargetSite(meta, site) {
   }
 }
 
+export function rewriteSnapshotSiteIdentifiers(sql, sourceSiteId, targetSiteId) {
+  if (!sourceSiteId || sourceSiteId === targetSiteId) {
+    return sql;
+  }
+
+  const escapedSource = escapeSqlString(sourceSiteId);
+  const escapedTarget = escapeSqlString(targetSiteId);
+  return sql.replaceAll(escapedSource, escapedTarget);
+}
+
+export function remapSnapshotManifestObjects(
+  manifest,
+  sourceSiteId,
+  targetSiteId,
+) {
+  if (!sourceSiteId || sourceSiteId === targetSiteId) {
+    return manifest;
+  }
+
+  return {
+    ...manifest,
+    objects: manifest.objects.map((object) => ({
+      ...object,
+      key: String(object.key).replaceAll(sourceSiteId, targetSiteId),
+    })),
+  };
+}
+
 function prependSiteIdInsert(sql, tableName, siteId) {
   const match = sql.match(
     new RegExp(

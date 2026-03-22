@@ -58,7 +58,7 @@ This is different from `jant site export`:
 
 The current snapshot scope is intentionally limited to content and presentation data:
 
-- `setting` for site-facing keys
+- `site_setting` for site-facing keys
 - `collection`
 - `nav_item`
 - `collection_directory_item`
@@ -73,7 +73,7 @@ Snapshot import does **not** replace auth and shell state such as:
 - `account`
 - `session`
 - `api_token`
-- onboarding markers and reset tokens in `setting`
+- onboarding markers and reset tokens in `site_setting`
 
 That makes snapshot restore a good fit for workflows like:
 
@@ -171,6 +171,10 @@ Restore it into another initialized Jant environment:
 npx jant site snapshot import --path ./jant-site-snapshot --replace
 ```
 
+In `single-site` mode, Jant automatically remaps the snapshot to the only
+initialized site when the embedded `site_id` differs. Self-hosted restores do
+not need to preserve the old internal site ID.
+
 You can also use a ZIP artifact:
 
 ```bash
@@ -184,6 +188,18 @@ On Cloudflare, add `--remote` and point the command at the site's Wrangler confi
 npx jant site snapshot export --remote --config ./wrangler.toml --output ./jant-site-snapshot.zip
 npx jant site snapshot import --remote --config ./wrangler.toml --path ./jant-site-snapshot.zip --replace
 ```
+
+If you intentionally want to load a content snapshot from one site into a
+different existing site container, use the explicit remap mode:
+
+```bash
+npx jant site snapshot import --path ./jant-site-snapshot.zip --replace --remap-site
+```
+
+`--remap-site` rewrites the snapshot's `site_id` and referenced storage keys to
+match the resolved target site. Keep it for trusted, controlled workflows such
+as demo content publishing. In `host-based` mode, the default snapshot import
+path remains identity-preserving unless you opt into remapping explicitly.
 
 ### Restore on Cloudflare
 

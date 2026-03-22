@@ -170,7 +170,6 @@ mise run check-tests-coverage # Run tests with coverage report
 ```bash
 mise run db-schema-generate # Generate Drizzle migrations (from core schema)
 mise run db-local-migrate   # Apply migrations (local D1) — usually not needed, dev auto-runs this
-mise run db-local-export    # Export current local D1 data to seed-local.sql
 mise run db-local-load-demo-snapshot # Reload the canonical demo snapshot into the current local DB shell
 mise run db-local-rebuild-demo       # Recreate the local DB shell and load the canonical demo snapshot
 mise run db-local-clean     # Delete local D1 database (.wrangler)
@@ -424,21 +423,11 @@ mise run dev              # Migrations auto-apply on dev server start
 
 You rarely need to run `mise run db-local-migrate` manually — both `dev` and `dev-debug` auto-apply migrations.
 
-### Seeding (Development Data)
+### Local Development Data
 
-The project includes a workflow for maintaining development seed data:
+The local development workflow is intentionally simple:
 
-1. **Set up your data** in the running dev instance (create posts, pages, etc.).
-
-2. **Export the data:**
-
-   ```bash
-   mise run db-local-export
-   ```
-
-   This saves the current local D1 data to `packages/core/dev/scripts/seed-local.sql`.
-
-3. **Recreate the local demo dataset** (on a fresh clone or after reset):
+1. **Recreate the local database shell** when you want a clean slate:
 
    ```bash
    mise run db-local-rebuild-demo
@@ -446,11 +435,15 @@ The project includes a workflow for maintaining development seed data:
 
    This recreates the local database, runs migrations, bootstraps the local shell, and loads the canonical demo snapshot from `sites/demo-source/canonical/snapshot/`.
 
-4. **Import an arbitrary SQL export** when you need a one-off dataset:
+2. **Reload just the canonical demo snapshot** into the current local shell:
 
    ```bash
-   mise run db-local-import path/to/export.sql
+   mise run db-local-load-demo-snapshot
    ```
+
+The canonical snapshot is the content truth source for development data. The
+old local SQL export/import workflow was removed to keep the site-aware tool
+chain smaller and less ambiguous.
 
 ### Reset
 

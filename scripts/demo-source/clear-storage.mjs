@@ -1,23 +1,40 @@
 import {
+  DEMO_SOURCE_DIR,
   deleteDemoSourceObject,
-  queryDemoSourceRemote,
   readDemoSourceConfig,
 } from "./lib/runtime.mjs";
 import { loadDemoWorkflowEnv } from "../demo-shared/env.mjs";
+import {
+  escapeSqlString,
+  queryRemoteD1,
+  resolveSingleRemoteSite,
+} from "../lib/remote-site-ops.mjs";
 
 loadDemoWorkflowEnv({ sites: ["demo-source"] });
 
-const mediaRows = queryDemoSourceRemote(
-  `SELECT storage_key, poster_key
+const site = resolveSingleRemoteSite({
+  cwd: DEMO_SOURCE_DIR,
+  label: "demo-source",
+});
+const escapedSiteId = escapeSqlString(site.id);
+
+const mediaRows = queryRemoteD1({
+  cwd: DEMO_SOURCE_DIR,
+  sql: `
+   SELECT storage_key, poster_key
    FROM media
+   WHERE site_id = '${escapedSiteId}'
    ORDER BY created_at, id`,
-);
-const settingRows = queryDemoSourceRemote(
-  `SELECT value
-   FROM setting
-   WHERE key IN ('SITE_AVATAR', 'SITE_FAVICON_APPLE_TOUCH')
+});
+const settingRows = queryRemoteD1({
+  cwd: DEMO_SOURCE_DIR,
+  sql: `
+   SELECT value
+   FROM site_setting
+   WHERE site_id = '${escapedSiteId}'
+     AND key IN ('SITE_AVATAR', 'SITE_FAVICON_APPLE_TOUCH')
    ORDER BY key`,
-);
+});
 
 const keys = new Set();
 

@@ -15,8 +15,7 @@ const canonicalDir = resolve(
 
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
-const siteUrl =
-  process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
+const siteUrl = process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
 const checkOnly = process.argv.includes("--check");
 
 if (!existsSync(resolve(canonicalDir, "meta.json"))) {
@@ -48,7 +47,10 @@ execFileSync(
     "--remote",
     "--path",
     canonicalDir,
+    "--url",
+    siteUrl,
     "--replace",
+    "--remap-site",
   ],
   {
     cwd: demoPublicDir,

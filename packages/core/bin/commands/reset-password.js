@@ -16,9 +16,13 @@ export async function run(argv) {
       config: { type: "string" },
       database: { type: "string", default: "DB" },
       env: { type: "string" },
+      host: { type: "string" },
       local: { type: "boolean", default: false },
+      "path-prefix": { type: "string" },
       "persist-to": { type: "string" },
       remote: { type: "boolean", default: false },
+      site: { type: "string" },
+      url: { type: "string" },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -31,6 +35,10 @@ export async function run(argv) {
     console.log("Options:");
     console.log("  --local   Force local D1 instead of DATABASE_URL");
     console.log("  --remote  Run against remote D1 database (default: local)");
+    console.log("  --site    Target site id");
+    console.log("  --host    Target site host");
+    console.log("  --url     Target site URL");
+    console.log("  --path-prefix Path prefix used with --host");
     console.log("  --config  Wrangler config file (default: wrangler.toml)");
     console.log("  --env     Wrangler environment name");
     console.log("  --database D1 binding name (default: DB)");
@@ -81,6 +89,10 @@ export async function run(argv) {
       },
       {
         env: process.env,
+        host: values.host,
+        pathPrefix: values["path-prefix"],
+        site: values.site,
+        url: values.url,
       },
     );
 

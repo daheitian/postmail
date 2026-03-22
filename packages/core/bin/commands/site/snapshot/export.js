@@ -176,6 +176,7 @@ export async function run(argv) {
       database: { type: "string", default: "DB" },
       env: { type: "string" },
       force: { type: "boolean", default: false },
+      host: { type: "string" },
       help: { type: "boolean", short: "h" },
       local: { type: "boolean", default: false },
       output: {
@@ -183,8 +184,11 @@ export async function run(argv) {
         short: "o",
         default: "jant-site-snapshot",
       },
+      "path-prefix": { type: "string" },
       "persist-to": { type: "string" },
       remote: { type: "boolean", default: false },
+      site: { type: "string" },
+      url: { type: "string" },
     },
   });
 
@@ -203,6 +207,10 @@ export async function run(argv) {
     console.log(
       "  --output, -o           Output directory or .zip file (default: jant-site-snapshot)",
     );
+    console.log("  --site                  Target site id");
+    console.log("  --host                  Target site host");
+    console.log("  --url                   Target site URL");
+    console.log("  --path-prefix           Path prefix used with --host");
     console.log("  --force                 Overwrite an existing output path");
     console.log(
       "  --config                Wrangler config file (default: wrangler.toml)",
@@ -242,6 +250,10 @@ export async function run(argv) {
 
     const { site } = await resolveCliSite(context, {
       env: process.env,
+      host: values.host,
+      pathPrefix: values["path-prefix"],
+      site: values.site,
+      url: values.url,
     });
 
     const dbSql = await dumpDatabaseToSql(

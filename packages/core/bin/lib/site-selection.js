@@ -28,6 +28,101 @@ function getRequiredNumber(row, key) {
   throw new Error(`Site row is missing required ${key}.`);
 }
 
+function normalizePathPrefix(value) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed || trimmed === "/") {
+    return null;
+  }
+
+  const withLeadingSlash = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  const normalized = withLeadingSlash.replace(/\/+$/, "");
+  return normalized || null;
+}
+
+function resolveSelector(options = {}) {
+  if (typeof options.site === "string" && options.site.trim()) {
+    return {
+      kind: "site",
+      siteId: options.site.trim(),
+    };
+  }
+
+  if (typeof options.url === "string" && options.url.trim()) {
+    const parsed = new URL(options.url.trim());
+    return {
+      kind: "host",
+      host: parsed.host,
+      pathPrefix: normalizePathPrefix(parsed.pathname),
+    };
+  }
+
+  if (typeof options.host === "string" && options.host.trim()) {
+    return {
+      kind: "host",
+      host: options.host.trim(),
+      pathPrefix: normalizePathPrefix(options.pathPrefix),
+    };
+  }
+
+  return null;
+}
+
+async function resolveSiteById(queryRunner, siteId) {
+  const rows = await queryRunner.query(`
+    SELECT "id", "key", "status", "created_at", "updated_at"
+    FROM "site"
+    WHERE "id" = '${escapeSqlString(siteId)}'
+    LIMIT 1
+  `);
+
+  if (rows.length === 0) {
+    throw new Error(`No site found for --site ${siteId}.`);
+  }
+
+  return {
+    created: false,
+    site: toSite(rows[0]),
+  };
+}
+
+async function resolveSiteByHost(queryRunner, host, pathPrefix) {
+  const pathPrefixPredicate =
+    pathPrefix === null
+      ? `"site_domain"."path_prefix" IS NULL`
+      : `"site_domain"."path_prefix" = '${escapeSqlString(pathPrefix)}'`;
+  const rows = await queryRunner.query(`
+    SELECT
+      "site"."id",
+      "site"."key",
+      "site"."status",
+      "site"."created_at",
+      "site"."updated_at"
+    FROM "site_domain"
+    INNER JOIN "site" ON "site"."id" = "site_domain"."site_id"
+    WHERE "site_domain"."host" = '${escapeSqlString(host)}'
+      AND ${pathPrefixPredicate}
+    ORDER BY "site"."created_at", "site"."id"
+    LIMIT 2
+  `);
+
+  if (rows.length === 0) {
+    throw new Error(
+      `No site found for host "${host}"${pathPrefix ? ` and path prefix "${pathPrefix}"` : ""}.`,
+    );
+  }
+
+  if (rows.length > 1) {
+    throw new Error(
+      `Multiple sites matched host "${host}"${pathPrefix ? ` and path prefix "${pathPrefix}"` : ""}.`,
+    );
+  }
+
+  return {
+    created: false,
+    site: toSite(rows[0]),
+  };
+}
+
 function toSite(row) {
   return {
     id: getRequiredString(row, "id"),
@@ -46,6 +141,16 @@ export function getCliSiteResolutionMode(env = process.env) {
 
 export async function resolveCliSite(queryRunner, options = {}) {
   const resolutionMode = getCliSiteResolutionMode(options.env);
+  const selector = resolveSelector(options);
+
+  if (selector?.kind === "site") {
+    return resolveSiteById(queryRunner, selector.siteId);
+  }
+
+  if (selector?.kind === "host") {
+    return resolveSiteByHost(queryRunner, selector.host, selector.pathPrefix);
+  }
+
   const rows = await queryRunner.query(`
     SELECT "id", "key", "status", "created_at", "updated_at"
     FROM "site"
@@ -62,7 +167,7 @@ export async function resolveCliSite(queryRunner, options = {}) {
 
     if (!options.createIfMissing || typeof queryRunner.execute !== "function") {
       throw new Error(
-        "single-site mode requires an initialized site. Start Jant once or run a command that can bootstrap the default site.",
+        "single-site mode requires an initialized site. Complete /setup first or run a command that can bootstrap the site shell.",
       );
     }
 
@@ -97,7 +202,7 @@ export async function resolveCliSite(queryRunner, options = {}) {
     const message =
       resolutionMode === "single-site"
         ? "single-site mode requires exactly one site in the instance."
-        : "CLI site selection for host-based mode is not implemented yet. Run the command against a single-site instance.";
+        : "host-based mode requires --site, --host, or --url when the database contains multiple sites.";
     throw new Error(message);
   }
 

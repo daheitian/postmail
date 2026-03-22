@@ -49,11 +49,13 @@ Recommended split:
 
 - `demo-public-rebuild` is snapshot-based. It no longer imports the old static
   site export.
-- `demo-public-rebuild` now deletes only the storage objects referenced by the
-  current demo database before importing the canonical snapshot.
+- `demo-public-rebuild` keeps a standalone storage cleanup step before import.
+  That cleanup exists so demo maintenance can enforce its own storage policy
+  separately from the normal snapshot restore contract.
 - `demo-public-rebuild` also clears every user-created API token through
   `INTERNAL_ADMIN_TOKEN`, so demo tokens are disposable across nightly
   resets.
-- Orphaned objects that are already detached from the database are left alone.
+- The rebuild workflow still imports the canonical snapshot with an explicit
+  remap intent rather than relying on implicit single-site behavior.
 - `db-demo-reseed` remains as a compatibility alias for
   `mise run demo-public-rebuild`.

@@ -1,9 +1,15 @@
-import { execSync } from "child_process";
-import { readFileSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import {
+  buildSiteContentResetSql,
+  escapeSqlString,
+  queryRemoteD1,
+  resolveSingleRemoteSite,
+} from "../../../scripts/lib/remote-site-ops.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const siteDir = resolve(__dirname, "..");
 
 function sqlValue(v) {
   if (v === null) return "NULL";
@@ -15,37 +21,11 @@ function sqlIdentifier(name) {
   return `"${String(name).replaceAll('"', '""')}"`;
 }
 
-function queryRemote(sql) {
-  let stdout;
-  try {
-    stdout = execSync(
-      `pnpm exec wrangler d1 execute DB --remote --command "${sql}" --json`,
-      { encoding: "utf-8", cwd: process.cwd() },
-    );
-  } catch (err) {
-    const output = err.stdout || err.stderr || "";
-    try {
-      const errJson = JSON.parse(output.trim());
-      if (errJson.error?.text) {
-        console.error(`Wrangler error: ${errJson.error.text}`);
-        process.exit(1);
-      }
-    } catch {
-      // Not JSON, fall through
-    }
-    console.error(`Failed to query remote database: ${output || err.message}`);
-    process.exit(1);
-  }
-  const parsed = JSON.parse(stdout);
-  if (parsed.error?.text) {
-    console.error(`Wrangler error: ${parsed.error.text}`);
-    process.exit(1);
-  }
-  return parsed[0]?.results || [];
-}
-
 function dumpTable(name, query) {
-  const rows = queryRemote(query || `SELECT * FROM ${name}`);
+  const rows = queryRemoteD1({
+    cwd: siteDir,
+    sql: query || `SELECT * FROM ${name}`,
+  });
   return rows
     .map((row) => {
       const columns = Object.keys(row);
@@ -69,44 +49,61 @@ const header = `-- =============================================================
 -- =============================================================================
 `;
 
-// Read reset-site.sql and include it at the top
-const resetSql = readFileSync(resolve(__dirname, "reset-site.sql"), "utf-8");
+const site = resolveSingleRemoteSite({
+  cwd: siteDir,
+  label: "jant.me",
+});
+const escapedSiteId = escapeSqlString(site.id);
+const resetSql = buildSiteContentResetSql(site.id);
 
 const tables = [
-  // Managed shell/config data is preserved by reset-site.sql — export content only.
+  // Managed shell/config data is preserved by the generated site-scoped reset.
   [
     "post",
     `SELECT * FROM post
-     WHERE deleted_at IS NULL
+     WHERE site_id = '${escapedSiteId}'
+       AND deleted_at IS NULL
      ORDER BY CASE WHEN reply_to_id IS NULL THEN 0 ELSE 1 END, created_at, id`,
   ],
   [
     "post_collection",
     `SELECT pc.* FROM post_collection pc
      JOIN post p ON p.id = pc.post_id
-     WHERE p.deleted_at IS NULL
+     WHERE pc.site_id = '${escapedSiteId}'
+       AND p.deleted_at IS NULL
      ORDER BY pc.created_at, pc.collection_id, pc.post_id`,
   ],
-  ["collection", "SELECT * FROM collection ORDER BY created_at, id"],
+  [
+    "collection",
+    `SELECT * FROM collection
+     WHERE site_id = '${escapedSiteId}'
+     ORDER BY created_at, id`,
+  ],
   [
     "collection_directory_item",
-    "SELECT * FROM collection_directory_item ORDER BY position, id",
+    `SELECT * FROM collection_directory_item
+     WHERE site_id = '${escapedSiteId}'
+     ORDER BY position, id`,
   ],
   [
     "path_registry",
     `SELECT pr.* FROM path_registry pr
      LEFT JOIN post p ON p.id = pr.post_id
      LEFT JOIN collection c ON c.id = pr.collection_id
-     WHERE pr.kind = 'redirect'
+     WHERE pr.site_id = '${escapedSiteId}'
+       AND (
+         pr.kind = 'redirect'
         OR (pr.post_id IS NOT NULL AND p.deleted_at IS NULL)
         OR (pr.collection_id IS NOT NULL AND c.id IS NOT NULL)
+       )
      ORDER BY pr.path, pr.id`,
   ],
   [
     "media",
     `SELECT m.* FROM media m
      LEFT JOIN post p ON p.id = m.post_id
-     WHERE m.post_id IS NULL OR p.deleted_at IS NULL
+     WHERE m.site_id = '${escapedSiteId}'
+       AND (m.post_id IS NULL OR p.deleted_at IS NULL)
      ORDER BY m.created_at, m.id`,
   ],
 ];
