@@ -66,6 +66,7 @@ import {
   getDefaultJantFaviconIcoBytes,
 } from "./lib/jant-branding.js";
 import { isAssetPath } from "./lib/asset-path.js";
+import { getHostedCanonicalRedirect } from "./lib/hosted-domain.js";
 import {
   getSitePathPrefix,
   stripSitePathPrefix,
@@ -249,6 +250,20 @@ export function createApp(): App {
     c.set("auth", runtime.auth);
     c.set("currentSite", runtime.currentSite);
     c.set("currentSiteDomain", runtime.currentSiteDomain);
+
+    await next();
+  });
+
+  app.use("*", async (c, next) => {
+    const redirectUrl = await getHostedCanonicalRedirect({
+      currentSite: c.var.currentSite,
+      currentSiteDomain: c.var.currentSiteDomain,
+      publicRequestUrl: c.var.publicRequestUrl,
+      services: c.var.services,
+    });
+    if (redirectUrl) {
+      return c.redirect(redirectUrl, 308);
+    }
 
     await next();
   });

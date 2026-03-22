@@ -33,14 +33,32 @@ const CreateManagedSiteSchema = z.object({
   siteName: z.string().trim().min(1).max(120),
 });
 
+const ManagedSiteDomainSchema = z.object({
+  host: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1)
+    .max(255)
+    .regex(
+      /^(?=.{1,255}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/,
+      "Domain host must be a valid hostname.",
+    ),
+  makePrimary: z.boolean().optional(),
+});
+
 export const internalSitesRoutes = new Hono<Env>();
 
-internalSitesRoutes.post("/", requireInternalAdminApi(), async (c) => {
-  if (getSiteResolutionMode(c.env) !== "host-based") {
+function assertHostBasedMode(env: Bindings) {
+  if (getSiteResolutionMode(env) !== "host-based") {
     throw new ConflictError(
       "Site provisioning is only available in host-based mode.",
     );
   }
+}
+
+internalSitesRoutes.post("/", requireInternalAdminApi(), async (c) => {
+  assertHostBasedMode(c.env);
 
   const body = parseValidated(CreateManagedSiteSchema, await c.req.json());
   const result = await c.var.services.siteAdmin.createManagedSite(body);
@@ -56,11 +74,7 @@ internalSitesRoutes.post("/", requireInternalAdminApi(), async (c) => {
 });
 
 internalSitesRoutes.delete("/:siteId", requireInternalAdminApi(), async (c) => {
-  if (getSiteResolutionMode(c.env) !== "host-based") {
-    throw new ConflictError(
-      "Site provisioning is only available in host-based mode.",
-    );
-  }
+  assertHostBasedMode(c.env);
 
   await c.var.services.siteAdmin.deleteManagedSite(c.req.param("siteId"), {
     storage: c.var.storage,
@@ -68,3 +82,90 @@ internalSitesRoutes.delete("/:siteId", requireInternalAdminApi(), async (c) => {
 
   return c.body(null, 204);
 });
+
+internalSitesRoutes.get(
+  "/:siteId/domains",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+    const domains = await c.var.services.siteAdmin.listManagedSiteDomains(
+      c.req.param("siteId"),
+    );
+
+    return c.json({
+      domains: domains.map((domain) => ({
+        host: domain.host,
+        id: domain.id,
+        kind: domain.kind,
+        redirectToPrimary: domain.redirectToPrimary,
+      })),
+    });
+  },
+);
+
+internalSitesRoutes.post(
+  "/:siteId/domains",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+    const body = parseValidated(ManagedSiteDomainSchema, await c.req.json());
+    const domains = await c.var.services.siteAdmin.addManagedSiteDomain(
+      c.req.param("siteId"),
+      body,
+    );
+
+    return c.json(
+      {
+        domains: domains.map((domain) => ({
+          host: domain.host,
+          id: domain.id,
+          kind: domain.kind,
+          redirectToPrimary: domain.redirectToPrimary,
+        })),
+      },
+      201,
+    );
+  },
+);
+
+internalSitesRoutes.post(
+  "/:siteId/domains/:domainId/primary",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+    const domains = await c.var.services.siteAdmin.setManagedSitePrimaryDomain(
+      c.req.param("siteId"),
+      c.req.param("domainId"),
+    );
+
+    return c.json({
+      domains: domains.map((domain) => ({
+        host: domain.host,
+        id: domain.id,
+        kind: domain.kind,
+        redirectToPrimary: domain.redirectToPrimary,
+      })),
+    });
+  },
+);
+
+internalSitesRoutes.delete(
+  "/:siteId/domains/:domainId",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+    const domains = await c.var.services.siteAdmin.deleteManagedSiteDomain(
+      c.req.param("siteId"),
+      c.req.param("domainId"),
+    );
+
+    return c.json({
+      domains: domains.map((domain) => ({
+        host: domain.host,
+        id: domain.id,
+        kind: domain.kind,
+        redirectToPrimary: domain.redirectToPrimary,
+      })),
+    });
+  },
+);

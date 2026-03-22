@@ -36,12 +36,30 @@ export interface DeleteManagedSiteDeps {
   storage?: StorageDriver | null;
 }
 
+export interface ManageManagedSiteDomainInput {
+  host: string;
+  makePrimary?: boolean;
+}
+
 export interface SiteAdminService {
+  addManagedSiteDomain(
+    siteId: string,
+    input: ManageManagedSiteDomainInput,
+  ): Promise<SiteDomain[]>;
   createManagedSite(input: CreateManagedSiteInput): Promise<ManagedSiteResult>;
   deleteManagedSite(
     siteId: string,
     deps?: DeleteManagedSiteDeps,
   ): Promise<void>;
+  deleteManagedSiteDomain(
+    siteId: string,
+    domainId: string,
+  ): Promise<SiteDomain[]>;
+  listManagedSiteDomains(siteId: string): Promise<SiteDomain[]>;
+  setManagedSitePrimaryDomain(
+    siteId: string,
+    domainId: string,
+  ): Promise<SiteDomain[]>;
 }
 
 function toSite(row: typeof _sqliteSites.$inferSelect): Site {
@@ -277,7 +295,69 @@ export function createSiteAdminService(
     }
   }
 
+  async function requireSite(
+    targetDb: Database,
+    siteId: string,
+  ): Promise<void> {
+    const existingSite = await targetDb
+      .select({ id: sites.id })
+      .from(sites)
+      .where(eq(sites.id, siteId))
+      .limit(1);
+    if (!existingSite[0]) {
+      throw new NotFoundError("Site");
+    }
+  }
+
+  async function listSiteDomainRows(
+    targetDb: Database,
+    siteId: string,
+  ): Promise<(typeof siteDomains.$inferSelect)[]> {
+    return targetDb
+      .select()
+      .from(siteDomains)
+      .where(eq(siteDomains.siteId, siteId))
+      .orderBy(
+        sql`CASE WHEN ${siteDomains.kind} = 'primary' THEN 0 ELSE 1 END`,
+        siteDomains.createdAt,
+      );
+  }
+
+  async function listManagedSiteDomains(siteId: string): Promise<SiteDomain[]> {
+    const normalizedSiteId = siteId.trim();
+    if (!normalizedSiteId) {
+      throw new NotFoundError("Site");
+    }
+
+    await requireSite(db, normalizedSiteId);
+    const rows = await listSiteDomainRows(db, normalizedSiteId);
+    return rows.map(toSiteDomain);
+  }
+
+  async function mutateSiteDomains(
+    siteId: string,
+    mutate: (targetDb: Database, normalizedSiteId: string) => Promise<void>,
+  ): Promise<SiteDomain[]> {
+    const normalizedSiteId = siteId.trim();
+    if (!normalizedSiteId) {
+      throw new NotFoundError("Site");
+    }
+
+    if (supportsDrizzleTransaction(db, databaseDialect)) {
+      await db.transaction(async (tx) => {
+        await mutate(tx as unknown as Database, normalizedSiteId);
+      });
+    } else {
+      await mutate(db, normalizedSiteId);
+    }
+
+    return listManagedSiteDomains(normalizedSiteId);
+  }
+
   return {
+    async listManagedSiteDomains(siteId) {
+      return listManagedSiteDomains(siteId);
+    },
     async createManagedSite(input) {
       if (supportsDrizzleTransaction(db, databaseDialect)) {
         return db.transaction(async (tx) =>
@@ -310,6 +390,122 @@ export function createSiteAdminService(
 
       await db.transaction(async (tx) => {
         await deleteSiteRows(tx as unknown as Database, normalizedSiteId);
+      });
+    },
+    async addManagedSiteDomain(siteId, input) {
+      return mutateSiteDomains(siteId, async (targetDb, normalizedSiteId) => {
+        await requireSite(targetDb, normalizedSiteId);
+
+        const host = input.host.trim().toLowerCase();
+        if (!host) {
+          throw new ConflictError("Domain host is required.");
+        }
+
+        const existingHost = await targetDb
+          .select({ id: siteDomains.id, siteId: siteDomains.siteId })
+          .from(siteDomains)
+          .where(eq(siteDomains.host, host))
+          .limit(1);
+        if (existingHost[0]) {
+          if (existingHost[0].siteId === normalizedSiteId) {
+            throw new ConflictError(
+              "Domain is already connected to this site.",
+            );
+          }
+
+          throw new ConflictError("Domain is already in use.");
+        }
+
+        const timestamp = now();
+        if (input.makePrimary) {
+          await targetDb
+            .update(siteDomains)
+            .set({
+              kind: "alias",
+              redirectToPrimary: true,
+              updatedAt: timestamp,
+            })
+            .where(eq(siteDomains.siteId, normalizedSiteId));
+        }
+
+        await targetDb.insert(siteDomains).values({
+          id: createEntityId("siteDomain"),
+          siteId: normalizedSiteId,
+          host,
+          pathPrefix: null,
+          kind: input.makePrimary ? "primary" : "alias",
+          redirectToPrimary: true,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        });
+      });
+    },
+    async setManagedSitePrimaryDomain(siteId, domainId) {
+      return mutateSiteDomains(siteId, async (targetDb, normalizedSiteId) => {
+        await requireSite(targetDb, normalizedSiteId);
+
+        const normalizedDomainId = domainId.trim();
+        const current = await targetDb
+          .select()
+          .from(siteDomains)
+          .where(
+            sql`${siteDomains.id} = ${normalizedDomainId} AND ${siteDomains.siteId} = ${normalizedSiteId}`,
+          )
+          .limit(1);
+        const domainRow = current[0];
+        if (!domainRow) {
+          throw new NotFoundError("Site domain");
+        }
+
+        if (domainRow.kind === "primary") {
+          return;
+        }
+
+        const timestamp = now();
+        await targetDb
+          .update(siteDomains)
+          .set({
+            kind: "alias",
+            redirectToPrimary: true,
+            updatedAt: timestamp,
+          })
+          .where(eq(siteDomains.siteId, normalizedSiteId));
+        await targetDb
+          .update(siteDomains)
+          .set({
+            kind: "primary",
+            redirectToPrimary: true,
+            updatedAt: timestamp,
+          })
+          .where(eq(siteDomains.id, normalizedDomainId));
+      });
+    },
+    async deleteManagedSiteDomain(siteId, domainId) {
+      return mutateSiteDomains(siteId, async (targetDb, normalizedSiteId) => {
+        await requireSite(targetDb, normalizedSiteId);
+
+        const normalizedDomainId = domainId.trim();
+        const current = await targetDb
+          .select()
+          .from(siteDomains)
+          .where(
+            sql`${siteDomains.id} = ${normalizedDomainId} AND ${siteDomains.siteId} = ${normalizedSiteId}`,
+          )
+          .limit(1);
+        const domainRow = current[0];
+        if (!domainRow) {
+          throw new NotFoundError("Site domain");
+        }
+
+        if (domainRow.kind === "primary") {
+          throw new ConflictError(
+            "Set another primary domain before removing this one.",
+          );
+        }
+
+        await targetDb
+          .delete(siteDomains)
+          .where(eq(siteDomains.id, normalizedDomainId));
       });
     },
   };

@@ -184,4 +184,134 @@ describe("Internal site admin routes", () => {
     expect(deletedSettingsCount.count).toBe(0);
     expect(defaultSiteCount.count).toBe(1);
   });
+
+  it("manages site domains for a hosted site", async () => {
+    const { app } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const createRes = await app.request("/api/internal/sites", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer internal-secret",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: "domain-demo",
+        primaryHost: "domain-demo.example.com",
+        siteName: "Domain Demo",
+      }),
+    });
+
+    expect(createRes.status).toBe(201);
+    const created = (await createRes.json()) as { siteId: string };
+
+    const addRes = await app.request(
+      `/api/internal/sites/${created.siteId}/domains`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer internal-secret",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          host: "www.domain-demo.example.com",
+          makePrimary: false,
+        }),
+      },
+    );
+
+    expect(addRes.status).toBe(201);
+    const addedBody = (await addRes.json()) as {
+      domains: Array<{ host: string; id: string; kind: string }>;
+    };
+    expect(addedBody.domains.map((domain) => domain.host)).toEqual([
+      "domain-demo.example.com",
+      "www.domain-demo.example.com",
+    ]);
+    expect(addedBody.domains[1]?.kind).toBe("alias");
+
+    const aliasId = addedBody.domains[1]?.id;
+    expect(aliasId).toBeTruthy();
+
+    const setPrimaryRes = await app.request(
+      `/api/internal/sites/${created.siteId}/domains/${aliasId}/primary`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer internal-secret",
+        },
+      },
+    );
+
+    expect(setPrimaryRes.status).toBe(200);
+    const primaryBody = (await setPrimaryRes.json()) as {
+      domains: Array<{
+        host: string;
+        id: string;
+        kind: string;
+        redirectToPrimary: boolean;
+      }>;
+    };
+    expect(primaryBody.domains).toEqual([
+      {
+        host: "www.domain-demo.example.com",
+        id: aliasId,
+        kind: "primary",
+        redirectToPrimary: true,
+      },
+      {
+        host: "domain-demo.example.com",
+        id: expect.any(String),
+        kind: "alias",
+        redirectToPrimary: true,
+      },
+    ]);
+
+    const removeRes = await app.request(
+      `/api/internal/sites/${created.siteId}/domains/${aliasId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer internal-secret",
+        },
+      },
+    );
+
+    expect(removeRes.status).toBe(409);
+    expect(await removeRes.json()).toEqual({
+      error: "Set another primary domain before removing this one.",
+      code: "CONFLICT",
+    });
+
+    const listRes = await app.request(
+      `/api/internal/sites/${created.siteId}/domains`,
+      {
+        headers: {
+          Authorization: "Bearer internal-secret",
+        },
+      },
+    );
+
+    expect(listRes.status).toBe(200);
+    expect(await listRes.json()).toEqual({
+      domains: [
+        {
+          host: "www.domain-demo.example.com",
+          id: aliasId,
+          kind: "primary",
+          redirectToPrimary: true,
+        },
+        {
+          host: "domain-demo.example.com",
+          id: expect.any(String),
+          kind: "alias",
+          redirectToPrimary: true,
+        },
+      ],
+    });
+  });
 });

@@ -29,6 +29,7 @@ export interface ResolveSingleSiteOptions extends EnsureSingleSiteOptions {
 export interface SiteService {
   list(): Promise<Site[]>;
   getById(id: string): Promise<Site | null>;
+  getPrimaryDomainForSite(siteId: string): Promise<SiteDomain | null>;
   getOnlySite(): Promise<Site | null>;
   resolveSingleSite(
     options?: ResolveSingleSiteOptions,
@@ -112,6 +113,19 @@ export function createSiteService(
         .where(eq(sites.id, id))
         .limit(1);
       return rows[0] ? toSite(rows[0]) : null;
+    },
+
+    async getPrimaryDomainForSite(siteId) {
+      const rows = await db
+        .select()
+        .from(siteDomains)
+        .where(
+          and(eq(siteDomains.siteId, siteId), eq(siteDomains.kind, "primary")),
+        )
+        .orderBy(asc(siteDomains.createdAt))
+        .limit(1);
+
+      return rows[0] ? toSiteDomain(rows[0]) : null;
     },
 
     async getOnlySite() {
