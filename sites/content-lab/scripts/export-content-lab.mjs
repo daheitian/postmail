@@ -5,6 +5,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const runJantScript = resolve(__dirname, "../../../scripts/run-jant.mjs");
 
 function sqlValue(value) {
   if (value === null) {
@@ -93,8 +94,8 @@ function validateSnapshot(sql) {
 
   try {
     execFileSync(
-      "pnpm",
-      ["exec", "jant", "migrate", "--local", "--persist-to", persistDir],
+      process.execPath,
+      [runJantScript, "migrate", "--local", "--persist-to", persistDir],
       {
         cwd: process.cwd(),
         encoding: "utf-8",

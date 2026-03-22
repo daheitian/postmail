@@ -370,7 +370,7 @@ run = "node scripts/demo-source/export-canonical.mjs"
 
 [tasks.db-demo-source-migrate]
 description = "Run migrations on demo-source"
-run = "node scripts/demo-shared/run-with-env.mjs --site demo-source --cwd sites/demo-source -- pnpm exec jant migrate --remote"
+run = "node scripts/demo-shared/run-with-env.mjs --site demo-source --cwd sites/demo-source -- node ../../scripts/run-jant.mjs migrate --remote"
 
 [tasks.demo-source-clear-storage]
 description = "Delete demo-source storage objects currently referenced by the remote runtime"
@@ -402,9 +402,6 @@ echo "Done! demo-source is empty and migrated. Finish with /setup or site import
 description = "Alias for demo-source-reset"
 run = "mise run demo-source-reset"
 
-[tasks.db-demo-source-export-canonical]
-description = "Alias for demo-source-export-canonical"
-run = "mise run demo-source-export-canonical"
 
 # =============================================================================
 # Demo Public
@@ -423,13 +420,13 @@ node scripts/demo-shared/run-with-env.mjs --site demo -- pnpm --filter jant-demo
 
 [tasks.db-demo-migrate]
 description = "Run migrations on demo.jant.me"
-run = "node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- pnpm exec jant migrate --remote"
+run = "node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- node ../../scripts/run-jant.mjs migrate --remote"
 
 [tasks.demo-public-bootstrap]
 description = "Ensure demo.jant.me has its managed shell (admin, onboarding, default nav)"
 run = """
 echo "Running remote migrations..."
-node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- pnpm exec jant migrate --remote
+node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- node ../../scripts/run-jant.mjs migrate --remote
 echo "Bootstrapping managed demo shell..."
 node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- node scripts/bootstrap-demo.mjs
 """
@@ -449,7 +446,7 @@ mise run demo-public-bootstrap
 echo "Deleting currently referenced demo storage..."
 node scripts/demo-public/clear-storage.mjs
 echo "Clearing demo content..."
-node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- pnpm exec jant db execute-file --remote --file scripts/reset-demo.sql
+node scripts/demo-shared/run-with-env.mjs --site demo --cwd sites/demo -- node ../../scripts/run-jant.mjs db execute-file --remote --file scripts/reset-demo.sql
 echo "Done! demo.jant.me content has been cleared."
 """
 
@@ -554,9 +551,9 @@ description = "Clear jant.me content without reseeding (runs remote migrations f
 dir = "sites/jant-me"
 run = """
 echo "Running remote migrations..."
-pnpm exec jant migrate --remote
+node ../../scripts/run-jant.mjs migrate --remote
 echo "Clearing jant.me data..."
-pnpm exec jant db execute-file --remote --file scripts/reset-site.sql
+node ../../scripts/run-jant.mjs db execute-file --remote --file scripts/reset-site.sql
 echo "Done! jant.me content has been cleared."
 """
 
@@ -566,9 +563,9 @@ description = "Load scripts/seed-site.sql into jant.me (runs remote migrations f
 dir = "sites/jant-me"
 run = """
 echo "Running remote migrations..."
-pnpm exec jant migrate --remote
+node ../../scripts/run-jant.mjs migrate --remote
 echo "Loading seed data to jant.me..."
-pnpm exec jant db execute-file --remote --file scripts/seed-site.sql
+node ../../scripts/run-jant.mjs db execute-file --remote --file scripts/seed-site.sql
 echo "Done! jant.me has been seeded from seed-site.sql."
 """
 
@@ -825,7 +822,7 @@ description = "Seed an example's local database with dev data"
 usage = 'arg "<name>"'
 run = """
 cd "examples/$usage_name"
-pnpm exec jant migrate --local
+node ../../scripts/run-jant.mjs migrate --local
 pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/reset-local.sql
 pnpm exec wrangler d1 execute DB --local --file=../../packages/core/dev/scripts/seed-local.sql
 """

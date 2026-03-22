@@ -1,11 +1,36 @@
 import { spawnSync } from "node:child_process";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadDemoWorkflowEnv } from "./env.mjs";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const runJantScript = resolve(__dirname, "../run-jant.mjs");
 
 const args = [...process.argv.slice(2)];
 const sites = [];
 let cwd;
 let separatorIndex = -1;
+
+function resolveCommand(command, commandArgs) {
+  if (command === "jant") {
+    return {
+      command: process.execPath,
+      commandArgs: [runJantScript, ...commandArgs],
+    };
+  }
+
+  if (command === "pnpm") {
+    const execIndex = commandArgs.indexOf("exec");
+    if (execIndex !== -1 && commandArgs[execIndex + 1] === "jant") {
+      return {
+        command: process.execPath,
+        commandArgs: [runJantScript, ...commandArgs.slice(execIndex + 2)],
+      };
+    }
+  }
+
+  return { command, commandArgs };
+}
 
 for (let index = 0; index < args.length; index += 1) {
   const arg = args[index];
@@ -52,8 +77,9 @@ loadDemoWorkflowEnv({ sites });
 
 const command = args[separatorIndex + 1];
 const commandArgs = args.slice(separatorIndex + 2);
+const resolvedCommand = resolveCommand(command, commandArgs);
 
-const result = spawnSync(command, commandArgs, {
+const result = spawnSync(resolvedCommand.command, resolvedCommand.commandArgs, {
   cwd,
   env: process.env,
   stdio: "inherit",

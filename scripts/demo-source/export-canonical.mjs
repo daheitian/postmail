@@ -8,6 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const demoSourceDir = resolve(__dirname, "../../sites/demo-source");
 const outputDir = resolve(demoSourceDir, "canonical/snapshot");
 const canonicalDir = resolve(demoSourceDir, "canonical");
+const runJantScript = resolve(__dirname, "../run-jant.mjs");
 
 loadDemoWorkflowEnv({ sites: ["demo-source"] });
 
@@ -18,10 +19,9 @@ console.log("Exporting canonical demo snapshot from demo-source...");
 
 try {
   execFileSync(
-    "pnpm",
+    process.execPath,
     [
-      "exec",
-      "jant",
+      runJantScript,
       "site",
       "snapshot",
       "export",

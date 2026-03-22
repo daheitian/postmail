@@ -5,8 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const coreDir = resolve(__dirname, "../../packages/core");
-const nodeBin = process.execPath;
-const jantBin = resolve(coreDir, "bin/jant.js");
+const runJantScript = resolve(__dirname, "../run-jant.mjs");
 const canonicalDir = resolve(
   __dirname,
   "../../sites/demo-source/canonical/snapshot",
@@ -32,9 +31,9 @@ if (checkOnly) {
 console.log(`Importing canonical demo snapshot from ${canonicalDir}...`);
 
 execFileSync(
-  nodeBin,
+  process.execPath,
   [
-    jantBin,
+    runJantScript,
     "site",
     "snapshot",
     "import",

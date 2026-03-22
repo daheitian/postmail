@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "jant migrate --local && wrangler dev",
-    "deploy": "jant deploy"
+    "dev": "node ../../scripts/run-jant.mjs migrate --local && wrangler dev",
+    "deploy": "node ../../scripts/run-jant.mjs deploy"
   },
   "dependencies": {
     "@jant/core": "workspace:*"

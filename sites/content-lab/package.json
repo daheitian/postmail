@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "jant migrate --local && wrangler dev",
-    "deploy": "jant deploy",
-    "reset-password": "jant reset-password",
+    "dev": "node ../../scripts/run-jant.mjs migrate --local && wrangler dev",
+    "deploy": "node ../../scripts/run-jant.mjs deploy",
+    "reset-password": "node ../../scripts/run-jant.mjs reset-password",
     "export": "node scripts/export-content-lab.mjs"
   },
   "dependencies": {

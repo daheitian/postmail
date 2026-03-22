@@ -7,6 +7,7 @@ import { readDemoPublicConfig } from "./lib/runtime.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const demoPublicDir = resolve(__dirname, "../../sites/demo");
+const runJantScript = resolve(__dirname, "../run-jant.mjs");
 const canonicalDir = resolve(
   __dirname,
   "../../sites/demo-source/canonical/snapshot",
@@ -38,10 +39,9 @@ if (checkOnly) {
 console.log(`Importing canonical demo snapshot into ${siteUrl}...`);
 
 execFileSync(
-  "pnpm",
+  process.execPath,
   [
-    "exec",
-    "jant",
+    runJantScript,
     "site",
     "snapshot",
     "import",
