@@ -216,8 +216,7 @@ describe("SearchService", () => {
     // "自由" is 2 Chinese characters — below trigram minimum, uses LIKE
     const results = await searchService.search("自由");
     expect(results.length).toBeGreaterThanOrEqual(1);
-    // LIKE fallback returns no snippet
-    expect(results[0]?.snippet).toBeUndefined();
+    expect(results[0]?.snippet).toContain("<mark>自由</mark>");
   });
 
   it("does not match TipTap JSON structural tokens", async () => {
@@ -234,7 +233,7 @@ describe("SearchService", () => {
     expect(results).toHaveLength(0);
   });
 
-  it("uses ILIKE fallback for Postgres searches", async () => {
+  it("uses weighted FTS for Postgres searches with ts_headline snippets", async () => {
     const calls: { params: unknown[]; query: string }[] = [];
     const rawQuery: RawQueryClient = {
       prepare(query) {
@@ -262,9 +261,9 @@ describe("SearchService", () => {
 
     expect(results).toHaveLength(1);
     expect(calls).toHaveLength(1);
-    expect(calls[0]?.query).toContain("ILIKE");
-    expect(calls[0]?.query).not.toContain("post_fts");
-    expect(calls[0]?.params[0]).toBe("%jant%");
+    expect(calls[0]?.query).toContain("search_document @@");
+    expect(calls[0]?.query).toContain("ts_headline");
+    expect(calls[0]?.params[0]).toBe("jant:*");
   });
 
   it("keeps Postgres searches on the LIKE path for short queries", async () => {
@@ -291,6 +290,37 @@ describe("SearchService", () => {
     await searchService.search("自由");
 
     expect(calls).toHaveLength(1);
-    expect(calls[0]).toContain("ILIKE");
+    expect(calls[0]).toContain("search_text ILIKE");
+  });
+
+  it("builds fallback snippets for Postgres LIKE searches", async () => {
+    const rawQuery: RawQueryClient = {
+      prepare() {
+        return {
+          bind() {
+            return this;
+          },
+          async all() {
+            return {
+              results: [
+                createSearchRow({
+                  body_text: "Hello from the Postgres fallback path",
+                  snippet: null,
+                }),
+              ],
+            };
+          },
+        };
+      },
+    };
+
+    const searchService = createSearchService(
+      rawQuery,
+      DEFAULT_TEST_SITE_ID,
+      "pg",
+    );
+    const results = await searchService.search("Postgres");
+
+    expect(results[0]?.snippet).toContain("<mark>Postgres</mark>");
   });
 });

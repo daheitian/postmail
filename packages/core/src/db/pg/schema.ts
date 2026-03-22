@@ -16,6 +16,7 @@ import {
   unique,
   uniqueIndex,
   check,
+  customType,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -32,6 +33,12 @@ const SYSTEM_NAV_KEYS = ["rss", "settings", "collections", "archive"] as const;
 function sqlTextEnum(values: readonly string[]) {
   return sql.raw(values.map((value) => `'${value}'`).join(", "));
 }
+
+const tsvector = customType<{ data: string }>({
+  dataType() {
+    return "tsvector";
+  },
+});
 
 // =============================================================================
 // Sites
@@ -143,6 +150,15 @@ export const posts = pgTable(
     bodyText: text("body_text"),
     quoteText: text("quote_text"),
     summary: text("summary"),
+    searchText: text("search_text").generatedAlwaysAs(
+      sql`coalesce("title", '') || ' ' || coalesce("url", '') || ' ' || coalesce("quote_text", '') || ' ' || coalesce("body_text", '')`,
+    ),
+    searchDocument: tsvector("search_document").generatedAlwaysAs(
+      sql`setweight(to_tsvector('simple', coalesce("title", '')), 'A') ||
+          setweight(to_tsvector('simple', coalesce("url", '')), 'A') ||
+          setweight(to_tsvector('simple', coalesce("quote_text", '')), 'B') ||
+          setweight(to_tsvector('simple', coalesce("body_text", '')), 'C')`,
+    ),
     rating: integer("rating"),
     replyToId: text("reply_to_id"),
     threadId: text("thread_id").notNull(),
@@ -212,6 +228,12 @@ export const posts = pgTable(
       .where(
         sql`${table.deletedAt} IS NULL AND ${table.status} = 'published' AND ${table.featuredAt} IS NOT NULL`,
       ),
+    index("idx_post_search_document_live")
+      .using("gin", table.searchDocument)
+      .where(sql`${table.deletedAt} IS NULL`),
+    index("idx_post_search_text_trgm_live")
+      .using("gin", table.searchText.op("gin_trgm_ops"))
+      .where(sql`${table.deletedAt} IS NULL`),
   ],
 );
 

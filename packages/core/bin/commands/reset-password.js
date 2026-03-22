@@ -7,6 +7,7 @@ import {
   getCliRuntimeLabel,
   resolveCliRuntime,
 } from "../lib/runtime-target.js";
+import { resolveCliSite } from "../lib/site-selection.js";
 
 export async function run(argv) {
   const { values } = parseArgs({

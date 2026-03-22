@@ -103,30 +103,29 @@ The Node runtime must branch early on dialect selection:
 - migration path
 - raw query / search backend wiring
 
-### 4. Search becomes a backend abstraction
+### 4. Search uses a hybrid PostgreSQL strategy
 
-The current search stack is SQLite FTS5 + trigram tokenizer specific. Postgres
-support should not be blocked on exact parity.
+SQLite search is built on FTS5 with a trigram tokenizer, which gives Jant good
+substring behavior and strong CJK support. Postgres should keep that user
+experience as much as possible without pretending the engines are identical.
 
-Plan:
+Postgres strategy:
 
-- Introduce a small `SearchBackend` abstraction
-- Keep SQLite search as-is behind that abstraction
-- Start Postgres with a simpler implementation first
-- Upgrade to PostgreSQL full-text search once the Node runtime is stable
+- Add a generated `search_document` `tsvector` column with weighted fields:
+  - title, URL => high weight
+  - quote => medium weight
+  - body => lower weight
+- Add a generated `search_text` text column for substring fallback
+- Use a GIN index on `search_document`
+- Enable `pg_trgm` and use a GIN trigram index on `search_text`
+- Query in two stages:
+  - FTS first for ranked lexical matches and `ts_headline()` snippets
+  - trigram/`ILIKE` fallback when FTS returns nothing or the query is too short
+- Keep an application-layer snippet fallback so the UI can still render a
+  highlighted excerpt when the database does not return one
 
-Phase targets:
-
-### Phase 1
-
-- Site-scoped search works on Postgres
-- Ranking and highlighting may differ from SQLite
-
-### Phase 2
-
-- Improve ranking
-- Improve snippets/highlighting
-- Revisit indexes and generated search columns
+This keeps Postgres search production-ready while staying close to the current
+SQLite behavior.
 
 ### 5. better-auth provider must be explicit
 
@@ -176,14 +175,17 @@ Deliverable:
 
 ### Phase 3: Search support
 
-- Introduce `SearchBackend`
-- Wire SQLite search backend
-- Add minimal Postgres search backend
-- Ensure all search paths remain site-scoped
+- Keep the SQLite FTS path intact
+- Add Postgres generated search columns and indexes
+- Add ranked Postgres FTS queries with `ts_headline()`
+- Add trigram-backed fallback queries
+- Keep all search paths site-scoped
+- Keep snippets and highlights close to SQLite behavior
 
 Deliverable:
 
-- Search works on Postgres, even if result ranking differs from SQLite
+- Search works on Postgres with production-grade indexes and highlighted
+  snippets
 
 ### Phase 4: Verification and polish
 
@@ -239,6 +241,7 @@ Current smoke contract:
 - verify `POST /setup` creates the shell
 - sign in over the real auth route
 - create a post over `POST /compose`
+- verify `/search` returns a highlighted match for the created post
 - read it back over a public route such as `/archive`
 - update settings over `/api/settings`
 

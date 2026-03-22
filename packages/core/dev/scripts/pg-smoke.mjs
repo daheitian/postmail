@@ -225,6 +225,12 @@ async function main() {
     assert.equal(archivePage.status, 200);
     assert.match(await archivePage.text(), /Hello from Postgres smoke\./);
 
+    const searchPage = await handler.fetch(
+      new Request("http://127.0.0.1:3000/search?q=Postgres"),
+    );
+    assert.equal(searchPage.status, 200);
+    assert.match(await searchPage.text(), /<mark>Postgres<\/mark>/);
+
     const settingsResponse = await handler.fetch(
       new Request("http://127.0.0.1:3000/api/settings", {
         method: "PUT",

@@ -10,6 +10,10 @@ import type { Post, Status, Format, SearchResult } from "../types.js";
 import type { DatabaseDialect } from "../db/dialect.js";
 import type { RawQueryClient } from "../db/raw-query.js";
 import { escapeHtml } from "../lib/html.js";
+import {
+  buildSearchSnippet,
+  extractSearchTerms,
+} from "../lib/search-snippet.js";
 
 export type { SearchResult };
 
@@ -96,6 +100,56 @@ function mapRow(row: RawSearchRow): SearchResult {
   };
 }
 
+function withSnippetFallback(
+  results: SearchResult[],
+  query: string,
+): SearchResult[] {
+  return results.map((result) => {
+    if (result.snippet) return result;
+
+    const fallbackSnippet = buildSearchSnippet(
+      [
+        result.post.bodyText,
+        result.post.quoteText,
+        result.post.title,
+        result.post.url,
+      ],
+      query,
+    );
+
+    return fallbackSnippet
+      ? {
+          ...result,
+          snippet: fallbackSnippet,
+        }
+      : result;
+  });
+}
+
+function buildSqliteFtsQuery(query: string): string | null {
+  const terms = extractSearchTerms(query);
+  if (terms.length === 0) return null;
+
+  return terms.map((term) => `"${term.replace(/"/g, '""')}"*`).join(" ");
+}
+
+function buildPgPrefixTsQuery(query: string): string | null {
+  const terms = extractSearchTerms(query);
+  if (terms.length === 0) return null;
+
+  return terms.map((term) => `${term}:*`).join(" & ");
+}
+
+const PG_TS_HEADLINE_OPTIONS = [
+  "MaxWords=18",
+  "MinWords=6",
+  "ShortWord=2",
+  "MaxFragments=2",
+  "FragmentDelimiter= … ",
+  "StartSel=<mark>",
+  "StopSel=</mark>",
+].join(", ");
+
 export function createSearchService(
   rawQuery: RawQueryClient,
   siteId: string,
@@ -105,55 +159,120 @@ export function createSearchService(
     query: string,
     options: SearchOptions,
   ): Promise<SearchResult[]> {
-    if (databaseDialect !== "sqlite") {
-      return [];
-    }
-
     const limit = options.limit ?? 20;
     const offset = options.offset ?? 0;
     const status = options.status ?? ["published"];
-
-    const ftsQuery = query
-      .trim()
-      .split(/\s+/)
-      .filter((term) => term.length > 0)
-      .map((term) => `"${term.replace(/"/g, '""')}"*`)
-      .join(" ");
-
-    if (!ftsQuery) return [];
-
     const statusPlaceholders = status.map(() => "?").join(", ");
     const formatFilter = options.format ? "AND post.format = ?" : "";
     const formatParams = options.format ? [options.format] : [];
 
+    if (databaseDialect === "sqlite") {
+      const ftsQuery = buildSqliteFtsQuery(query);
+      if (!ftsQuery) return [];
+
+      const stmt = rawQuery.prepare(`
+        SELECT
+          post.*,
+          COALESCE(post.visibility, root_post.visibility) AS effective_visibility,
+          path_registry.path AS slug,
+          post_fts.rank AS rank,
+          snippet(post_fts, 1, char(2), char(3), '...', 32) AS snippet
+        FROM post_fts
+        JOIN post ON post.rowid = post_fts.rowid
+        JOIN post AS root_post ON root_post.id = post.thread_id
+        JOIN path_registry
+          ON path_registry.post_id = post.id
+         AND path_registry.site_id = post.site_id
+         AND path_registry.kind = 'slug'
+        WHERE post_fts MATCH ?
+          AND post.site_id = ?
+          AND post.deleted_at IS NULL
+          AND post.status IN (${statusPlaceholders})
+          ${formatFilter}
+        ORDER BY post_fts.rank
+        LIMIT ? OFFSET ?
+      `);
+
+      const { results } = await stmt
+        .bind(ftsQuery, siteId, ...status, ...formatParams, limit, offset)
+        .all<RawSearchRow>();
+
+      return withSnippetFallback((results || []).map(mapRow), query);
+    }
+
+    if (databaseDialect !== "pg") {
+      return [];
+    }
+
+    const tsQuery = buildPgPrefixTsQuery(query);
+    if (!tsQuery) return [];
+
     const stmt = rawQuery.prepare(`
+      WITH search_query AS (
+        SELECT to_tsquery('simple', ?) AS tsq
+      )
       SELECT
         post.*,
         COALESCE(post.visibility, root_post.visibility) AS effective_visibility,
         path_registry.path AS slug,
-        post_fts.rank AS rank,
-        snippet(post_fts, 1, char(2), char(3), '...', 32) AS snippet
-      FROM post_fts
-      JOIN post ON post.rowid = post_fts.rowid
+        ts_rank_cd(post.search_document, search_query.tsq, 32) AS rank,
+        NULLIF(
+          CASE
+            WHEN to_tsvector('simple', coalesce(post.body_text, '')) @@ search_query.tsq THEN
+              replace(
+                replace(
+                  ts_headline('simple', post.body_text, search_query.tsq, '${PG_TS_HEADLINE_OPTIONS}'),
+                  '<mark>',
+                  chr(2)
+                ),
+                '</mark>',
+                chr(3)
+              )
+            WHEN to_tsvector('simple', coalesce(post.quote_text, '')) @@ search_query.tsq THEN
+              replace(
+                replace(
+                  ts_headline('simple', post.quote_text, search_query.tsq, '${PG_TS_HEADLINE_OPTIONS}'),
+                  '<mark>',
+                  chr(2)
+                ),
+                '</mark>',
+                chr(3)
+              )
+            WHEN to_tsvector('simple', coalesce(post.title, '')) @@ search_query.tsq THEN
+              replace(
+                replace(
+                  ts_headline('simple', post.title, search_query.tsq, '${PG_TS_HEADLINE_OPTIONS}'),
+                  '<mark>',
+                  chr(2)
+                ),
+                '</mark>',
+                chr(3)
+              )
+            ELSE NULL
+          END,
+          ''
+        ) AS snippet
+      FROM post
+      CROSS JOIN search_query
       JOIN post AS root_post ON root_post.id = post.thread_id
       JOIN path_registry
         ON path_registry.post_id = post.id
        AND path_registry.site_id = post.site_id
        AND path_registry.kind = 'slug'
-      WHERE post_fts MATCH ?
+      WHERE post.search_document @@ search_query.tsq
         AND post.site_id = ?
         AND post.deleted_at IS NULL
         AND post.status IN (${statusPlaceholders})
         ${formatFilter}
-      ORDER BY post_fts.rank
+      ORDER BY rank DESC, post.published_at DESC NULLS LAST, post.id DESC
       LIMIT ? OFFSET ?
     `);
 
     const { results } = await stmt
-      .bind(ftsQuery, siteId, ...status, ...formatParams, limit, offset)
+      .bind(tsQuery, siteId, ...status, ...formatParams, limit, offset)
       .all<RawSearchRow>();
 
-    return (results || []).map(mapRow);
+    return withSnippetFallback((results || []).map(mapRow), query);
   }
 
   async function searchLike(
@@ -164,15 +283,58 @@ export function createSearchService(
     const offset = options.offset ?? 0;
     const status = options.status ?? ["published"];
     const like = `%${query}%`;
-    const likeOperator = databaseDialect === "pg" ? "ILIKE" : "LIKE";
-    const likeOrderBy =
-      databaseDialect === "pg"
-        ? "ORDER BY post.published_at DESC NULLS LAST"
-        : "ORDER BY post.published_at DESC";
-
     const statusPlaceholders = status.map(() => "?").join(", ");
     const formatFilter = options.format ? "AND post.format = ?" : "";
     const formatParams = options.format ? [options.format] : [];
+
+    if (databaseDialect === "pg") {
+      const stmt = rawQuery.prepare(`
+        SELECT
+          post.*,
+          COALESCE(post.visibility, root_post.visibility) AS effective_visibility,
+          path_registry.path AS slug,
+          GREATEST(
+            similarity(coalesce(post.title, ''), ?),
+            similarity(coalesce(post.body_text, ''), ?),
+            similarity(coalesce(post.quote_text, ''), ?),
+            similarity(coalesce(post.url, ''), ?)
+          ) AS rank,
+          NULL AS snippet
+        FROM post
+        JOIN post AS root_post ON root_post.id = post.thread_id
+        JOIN path_registry
+          ON path_registry.post_id = post.id
+         AND path_registry.site_id = post.site_id
+         AND path_registry.kind = 'slug'
+        WHERE post.search_text ILIKE ?
+          AND post.site_id = ?
+          AND post.deleted_at IS NULL
+          AND post.status IN (${statusPlaceholders})
+          ${formatFilter}
+        ORDER BY rank DESC, post.published_at DESC NULLS LAST, post.id DESC
+        LIMIT ? OFFSET ?
+      `);
+
+      const { results } = await stmt
+        .bind(
+          query,
+          query,
+          query,
+          query,
+          like,
+          siteId,
+          ...status,
+          ...formatParams,
+          limit,
+          offset,
+        )
+        .all<RawSearchRow>();
+
+      return withSnippetFallback((results || []).map(mapRow), query);
+    }
+
+    const likeOperator = "LIKE";
+    const likeOrderBy = "ORDER BY post.published_at DESC";
 
     const stmt = rawQuery.prepare(`
       SELECT
@@ -215,7 +377,7 @@ export function createSearchService(
       )
       .all<RawSearchRow>();
 
-    return (results || []).map(mapRow);
+    return withSnippetFallback((results || []).map(mapRow), query);
   }
 
   return {

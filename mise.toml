@@ -592,9 +592,9 @@ run = "npx tsx scripts/generate-icon-catalog.ts"
 # Utilities
 # =============================================================================
 [tasks.auth-reset-token]
-description = "Generate password reset token (local D1)"
+description = "Generate a password reset token for the current local runtime"
 dir = "packages/core"
-run = "npx jant reset-password"
+run = "bash -lc 'set -a; if [ -f .env.node ]; then source .env.node; fi; set +a; npx jant reset-password'"
 
 [tasks.clean-build]
 description = "Clean build artifacts"
