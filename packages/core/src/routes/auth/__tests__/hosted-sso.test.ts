@@ -17,7 +17,7 @@ function createHostedSsoTestApp(options?: {
   app.onError(errorHandler);
   app.use("*", async (c, next) => {
     c.env = {
-      JANT_CLOUD_SSO_SECRET: options?.secret,
+      HOSTED_AUTH_SSO_SECRET: options?.secret,
     } as Bindings;
     c.set("auth", {
       $context: Promise.resolve({
@@ -120,7 +120,7 @@ describe("hostedSsoRoutes", () => {
       hostedHandoff: {
         async completeFromSignedToken() {
           throw new UnauthorizedError(
-            "This sign-in link has expired. Return to Jant Cloud and try again.",
+            "This sign-in link has expired. Return to cloud-jant.localtest.me and try again.",
           );
         },
       },
@@ -130,7 +130,7 @@ describe("hostedSsoRoutes", () => {
 
     expect(response.status).toBe(401);
     await expect(response.text()).resolves.toBe(
-      "This sign-in link has expired. Return to Jant Cloud and try again.",
+      "This sign-in link has expired. Return to cloud-jant.localtest.me and try again.",
     );
   });
 });

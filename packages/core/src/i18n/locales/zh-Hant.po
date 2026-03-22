@@ -1389,6 +1389,11 @@ msgstr "供 iPhone 與 iPad 捷徑使用的主畫面圖示。"
 msgid "Home settings updated."
 msgstr "首頁設定已更新。"
 
+#. @context: Generic hosted auth provider label when no explicit provider name is configured
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Hosted account"
+msgstr ""
+
 #. @context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.
 #: src/ui/dash/settings/DeleteAccountContent.tsx
 msgid "I want to delete {siteName}"
@@ -1659,10 +1664,20 @@ msgstr "主 feed"
 msgid "Main RSS feed"
 msgstr "主 RSS feed"
 
+#. @context: Settings item description for hosted account management in the connected provider
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage password and hosted access in {providerLabel}"
+msgstr ""
+
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage sign-in security, exports, and irreversible actions."
 msgstr "管理登入安全, 匯出, 以及無法復原的操作."
+
+#. @context: Intro text on the hosted account settings menu page below the title
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}."
+msgstr ""
 
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -2741,6 +2756,11 @@ msgstr "此選集為空。請從編輯器新增貼文。"
 #: src/ui/dash/settings/GeneralContent.tsx
 msgid "This controls what /feed returns."
 msgstr "這會控制 /feed 要回傳哪一種 feed。"
+
+#. @context: Notice shown on hosted account settings explaining that password and hosted account controls live in the connected hosted auth provider
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "This hosted site signs in through {providerLabel}. Manage password and hosted access there."
+msgstr ""
 
 #. @context: Collection link help text
 #: src/ui/shared/collection-management-labels.ts

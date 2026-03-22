@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
-  getHostedCloudResetUrl,
-  getHostedCloudSigninUrl,
+  getHostedAuthAccountPasswordUrl,
+  getHostedAuthAccountUrl,
+  getHostedAuthDashboardUrl,
+  getHostedAuthProviderLabel,
+  getHostedAuthResetUrl,
+  getHostedAuthSigninUrl,
+  isHostedAuthEnabled,
 } from "../hosted-signin.js";
 
-describe("getHostedCloudSigninUrl", () => {
-  it("returns the cloud handoff URL for hosted sites", () => {
-    const url = getHostedCloudSigninUrl(
+describe("getHostedAuthSigninUrl", () => {
+  it("returns the hosted auth handoff URL for hosted sites", () => {
+    const url = getHostedAuthSigninUrl(
       {
-        JANT_CLOUD_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
         SITE_RESOLUTION_MODE: "host-based",
       },
       "https://site7.localtest.me/signin",
@@ -20,9 +25,9 @@ describe("getHostedCloudSigninUrl", () => {
   });
 
   it("returns null outside host-based mode", () => {
-    const url = getHostedCloudSigninUrl(
+    const url = getHostedAuthSigninUrl(
       {
-        JANT_CLOUD_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
         SITE_RESOLUTION_MODE: "single-site",
       },
       "https://site7.localtest.me/signin",
@@ -31,10 +36,10 @@ describe("getHostedCloudSigninUrl", () => {
     expect(url).toBeNull();
   });
 
-  it("returns the cloud reset URL for hosted sites", () => {
-    const url = getHostedCloudResetUrl(
+  it("returns the hosted auth reset URL for hosted sites", () => {
+    const url = getHostedAuthResetUrl(
       {
-        JANT_CLOUD_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
         SITE_RESOLUTION_MODE: "host-based",
       },
       "https://site7.localtest.me/reset",
@@ -43,5 +48,48 @@ describe("getHostedCloudSigninUrl", () => {
     expect(url).toBe(
       "https://cloud-jant.localtest.me/reset?next=%2Fauth%2Fhandoff%2Fstart%3Fhost%3Dsite7.localtest.me%26redirect%3D%252Fsettings",
     );
+  });
+
+  it("returns hosted dashboard and account URLs", () => {
+    const env = {
+      HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
+      SITE_RESOLUTION_MODE: "host-based",
+    };
+
+    expect(getHostedAuthDashboardUrl(env)).toBe(
+      "https://cloud-jant.localtest.me/sites",
+    );
+    expect(getHostedAuthAccountUrl(env)).toBe(
+      "https://cloud-jant.localtest.me/settings/account",
+    );
+    expect(getHostedAuthAccountPasswordUrl(env)).toBe(
+      "https://cloud-jant.localtest.me/settings/account/password",
+    );
+    expect(isHostedAuthEnabled(env)).toBe(true);
+  });
+
+  it("uses the configured provider name when available", () => {
+    expect(
+      getHostedAuthProviderLabel({
+        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_AUTH_PROVIDER_NAME: "Managed sign-in",
+      }),
+    ).toBe("Managed sign-in");
+  });
+
+  it("falls back to the provider host when no provider name is configured", () => {
+    expect(
+      getHostedAuthProviderLabel({
+        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
+      }),
+    ).toBe("cloud-jant.localtest.me");
+  });
+
+  it("disables hosted auth without a hosted auth base URL", () => {
+    expect(
+      isHostedAuthEnabled({
+        SITE_RESOLUTION_MODE: "host-based",
+      }),
+    ).toBe(false);
   });
 });

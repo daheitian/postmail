@@ -4,7 +4,8 @@ import { sqliteSchemaBundle } from "../db/schema-bundle.js";
 import {
   getAuthSecret,
   getEnvString,
-  getJantCloudSsoSecret,
+  getHostedAuthProviderLabel,
+  getHostedAuthSsoSecret,
   getSiteResolutionMode,
   shouldUseSecureCookies,
 } from "../lib/env.js";
@@ -46,7 +47,7 @@ export async function createCloudflareRequestRuntime(
     throw new Error("Cloudflare runtime requires a DB binding.");
   }
   const authSecret = getAuthSecret(env);
-  const jantCloudSsoSecret = getJantCloudSsoSecret(env);
+  const hostedAuthSsoSecret = getHostedAuthSsoSecret(env);
   if (!authSecret) {
     throw new Error("AUTH_SECRET should be set after startup validation.");
   }
@@ -67,7 +68,7 @@ export async function createCloudflareRequestRuntime(
   );
   const auth = createAuth(db, {
     allowSystemUserProvisioning:
-      Boolean(jantCloudSsoSecret) &&
+      Boolean(hostedAuthSsoSecret) &&
       getSiteResolutionMode(env) === "host-based",
     secret: authSecret,
     baseURL,
@@ -82,8 +83,9 @@ export async function createCloudflareRequestRuntime(
     currentSiteDomain: siteLookup.domain,
     db,
     hostedHandoff: createHostedHandoffService(db, auth, {
+      providerLabel: getHostedAuthProviderLabel(env),
       schema: sqliteSchemaBundle,
-      secret: jantCloudSsoSecret,
+      secret: hostedAuthSsoSecret,
     }),
     services: createServices(db, session, siteLookup.site.id, {
       databaseDialect: "sqlite",

@@ -39,6 +39,7 @@ export function createHostedHandoffService(
   db: Database,
   auth: Auth,
   options: {
+    providerLabel?: string;
     schema?: DatabaseSchema;
     secret?: string;
   },
@@ -46,6 +47,8 @@ export function createHostedHandoffService(
   const databaseSchema = options.schema ?? sqliteSchemaBundle;
   const { account } = databaseSchema;
   const siteMembers = createSiteMemberService(db, databaseSchema);
+  const providerLabel =
+    options.providerLabel?.trim() || "the connected hosted account provider";
 
   return {
     async completeFromSignedToken(input) {
@@ -66,7 +69,7 @@ export function createHostedHandoffService(
           error.message === "Hosted SSO token has expired."
         ) {
           throw new UnauthorizedError(
-            "This sign-in link has expired. Return to Jant Cloud and try again.",
+            `This sign-in link has expired. Return to ${providerLabel} and try again.`,
           );
         }
 
@@ -114,7 +117,7 @@ export function createHostedHandoffService(
 
           if (conflictingCloudLink) {
             throw new ConflictError(
-              "This email is already linked to another Jant Cloud account.",
+              `This email is already linked to another account in ${providerLabel}.`,
             );
           }
 

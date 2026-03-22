@@ -34,7 +34,7 @@ interface TestAppOptions {
   /** Optional site resolution mode override */
   siteResolutionMode?: "single-site" | "host-based";
   /** Optional hosted SSO secret binding */
-  jantCloudSsoSecret?: string;
+  hostedAuthSsoSecret?: string;
   /** Optional hosted handoff service override */
   hostedHandoff?: HostedHandoffService;
 }
@@ -67,7 +67,7 @@ export function createTestApp(options: TestAppOptions = {}) {
       SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
       DEMO_MODE: options.demoMode ? "true" : "false",
       INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
-      JANT_CLOUD_SSO_SECRET: options.jantCloudSsoSecret,
+      HOSTED_AUTH_SSO_SECRET: options.hostedAuthSsoSecret,
       SITE_RESOLUTION_MODE: options.siteResolutionMode,
     } as AppVariables["services"] extends never ? never : Bindings;
 

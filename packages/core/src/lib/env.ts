@@ -25,8 +25,8 @@ function normalizeEnvScalar(value: unknown): string | undefined {
 /**
  * Returns the first non-empty environment variable value from `keys`.
  *
- * Canonical keys should be listed first, followed by any temporary legacy
- * aliases that remain during the runtime migration.
+ * Callers may provide multiple keys when a single semantic value can be
+ * sourced from more than one binding at runtime.
  */
 export function getEnvString(
   env: EnvSource,
@@ -106,12 +106,30 @@ export function getInternalAdminToken(env: EnvSource): string | undefined {
   return getEnvString(env, "INTERNAL_ADMIN_TOKEN");
 }
 
-export function getJantCloudBaseUrl(env: EnvSource): string | undefined {
-  return getEnvString(env, "JANT_CLOUD_BASE_URL");
+export function getHostedAuthBaseUrl(env: EnvSource): string | undefined {
+  return getEnvString(env, "HOSTED_AUTH_BASE_URL");
 }
 
-export function getJantCloudSsoSecret(env: EnvSource): string | undefined {
-  return getEnvString(env, "JANT_CLOUD_SSO_SECRET");
+export function getHostedAuthProviderName(env: EnvSource): string | undefined {
+  return getEnvString(env, "HOSTED_AUTH_PROVIDER_NAME");
+}
+
+export function getHostedAuthProviderLabel(env: EnvSource): string | undefined {
+  const configuredName = getHostedAuthProviderName(env)?.trim();
+  if (configuredName) {
+    return configuredName;
+  }
+
+  const hostedAuthBaseUrl = getHostedAuthBaseUrl(env);
+  if (!hostedAuthBaseUrl) {
+    return undefined;
+  }
+
+  return new URL(hostedAuthBaseUrl).hostname;
+}
+
+export function getHostedAuthSsoSecret(env: EnvSource): string | undefined {
+  return getEnvString(env, "HOSTED_AUTH_SSO_SECRET");
 }
 
 export function getStorageDriverEnv(env: EnvSource): string | undefined {

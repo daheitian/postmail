@@ -40,6 +40,11 @@ import { ApiTokensContent } from "../../ui/dash/settings/ApiTokensContent.js";
 import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountContent.js";
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import { parseValidated, UpdateSiteSettingsSchema } from "../../lib/schemas.js";
+import {
+  getHostedAuthAccountPasswordUrl,
+  getHostedAuthAccountUrl,
+  getHostedAuthProviderLabel,
+} from "../../lib/hosted-signin.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -755,6 +760,8 @@ settingsRoutes.post("/custom-css", async (c) => {
 
 settingsRoutes.get("/account", async (c) => {
   const navData = await getNavigationData(c);
+  const hostedAuthAccountUrl = getHostedAuthAccountUrl(c.env);
+  const hostedAuthProviderLabel = getHostedAuthProviderLabel(c.env);
 
   return renderPublicPage(c, {
     title: buildPageTitle("Account", navData.siteName),
@@ -769,6 +776,8 @@ settingsRoutes.get("/account", async (c) => {
         <AccountMenuContent
           sitePathPrefix={c.var.appConfig.sitePathPrefix}
           demoMode={c.var.appConfig.demoMode}
+          hostedAuthAccountUrl={hostedAuthAccountUrl}
+          hostedAuthProviderLabel={hostedAuthProviderLabel}
         />
       </>
     ),
@@ -862,6 +871,11 @@ settingsRoutes.post("/account/sessions/:token/revoke", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account/password", async (c) => {
+  const hostedAuthAccountPasswordUrl = getHostedAuthAccountPasswordUrl(c.env);
+  if (hostedAuthAccountPasswordUrl) {
+    return c.redirect(hostedAuthAccountPasswordUrl);
+  }
+
   if (c.var.appConfig.demoMode) {
     return c.redirect(publicPath(c, "/settings/account"));
   }
@@ -885,6 +899,11 @@ settingsRoutes.get("/account/password", async (c) => {
 });
 
 settingsRoutes.post("/account/password", async (c) => {
+  const hostedAuthAccountPasswordUrl = getHostedAuthAccountPasswordUrl(c.env);
+  if (hostedAuthAccountPasswordUrl) {
+    return dsRedirect(hostedAuthAccountPasswordUrl);
+  }
+
   if (c.var.appConfig.demoMode) {
     return demoRestrictionResponse(c, getDemoRestrictionMessage(c, "password"));
   }
@@ -954,6 +973,11 @@ settingsRoutes.post("/account/password", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account/delete-account", async (c) => {
+  const hostedAuthAccountUrl = getHostedAuthAccountUrl(c.env);
+  if (hostedAuthAccountUrl) {
+    return c.redirect(hostedAuthAccountUrl);
+  }
+
   if (c.var.appConfig.demoMode) {
     return c.redirect(publicPath(c, "/settings/account"));
   }
@@ -982,6 +1006,11 @@ settingsRoutes.get("/account/delete-account", async (c) => {
 });
 
 settingsRoutes.post("/account/delete-account", async (c) => {
+  const hostedAuthAccountUrl = getHostedAuthAccountUrl(c.env);
+  if (hostedAuthAccountUrl) {
+    return dsRedirect(hostedAuthAccountUrl);
+  }
+
   if (c.var.appConfig.demoMode) {
     return demoRestrictionResponse(
       c,

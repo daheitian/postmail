@@ -16,6 +16,7 @@ const BACKUPS_DOCS_URL =
 const ICONS = {
   monitor: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>`,
   lock: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  user: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
   download: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>`,
   book: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18V5a2 2 0 0 1 2-2h6v18H5a2 2 0 0 1-2-2Z"/><path d="M21 18V5a2 2 0 0 0-2-2h-7v18h7a2 2 0 0 0 2-2Z"/></svg>`,
   trash: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`,
@@ -24,11 +25,23 @@ const ICONS = {
 export function AccountMenuContent({
   sitePathPrefix = "",
   demoMode = false,
+  hostedAuthAccountUrl,
+  hostedAuthProviderLabel,
 }: {
   sitePathPrefix?: string;
   demoMode?: boolean;
+  hostedAuthAccountUrl?: string | null;
+  hostedAuthProviderLabel?: string | null;
 }) {
   const { t } = useLingui();
+  const isHosted = Boolean(hostedAuthAccountUrl);
+  const providerLabel =
+    hostedAuthProviderLabel ??
+    t({
+      message: "Hosted account",
+      comment:
+        "@context: Generic hosted auth provider label when no explicit provider name is configured",
+    });
 
   return (
     <div class="settings-root">
@@ -40,14 +53,42 @@ export function AccountMenuContent({
           })}
         </h1>
         <p class="page-intro-description">
-          {t({
-            message:
-              "Manage sign-in security, exports, and irreversible actions.",
-            comment:
-              "@context: Intro text on the account settings menu page below the title",
-          })}
+          {isHosted
+            ? t({
+                message:
+                  "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}.",
+                comment:
+                  "@context: Intro text on the hosted account settings menu page below the title",
+                values: {
+                  providerLabel,
+                },
+              })
+            : t({
+                message:
+                  "Manage sign-in security, exports, and irreversible actions.",
+                comment:
+                  "@context: Intro text on the account settings menu page below the title",
+              })}
         </p>
       </header>
+
+      {isHosted && hostedAuthAccountUrl && (
+        <div class="alert" role="alert">
+          <section>
+            <p>
+              {t({
+                message:
+                  "This hosted site signs in through {providerLabel}. Manage password and hosted access there.",
+                comment:
+                  "@context: Notice shown on hosted account settings explaining that password and hosted account controls live in the connected hosted auth provider",
+                values: {
+                  providerLabel,
+                },
+              })}
+            </p>
+          </section>
+        </div>
+      )}
 
       {demoMode && (
         <div class="alert" role="alert">
@@ -85,20 +126,37 @@ export function AccountMenuContent({
               comment: "@context: Settings item description for sessions",
             })}
           />
-          <SettingsDirectoryLink
-            href={toPublicPath("/settings/account/password", sitePathPrefix)}
-            icon={ICONS.lock}
-            tone="subtle"
-            name={t({
-              message: "Password",
-              comment: "@context: Settings item — password settings",
-            })}
-            description={t({
-              message: "Update the password you use to sign in",
-              comment:
-                "@context: Settings item description for password change",
-            })}
-          />
+          {isHosted && hostedAuthAccountUrl ? (
+            <SettingsDirectoryLink
+              href={hostedAuthAccountUrl}
+              icon={ICONS.user}
+              tone="subtle"
+              name={providerLabel}
+              description={t({
+                message: "Manage password and hosted access in {providerLabel}",
+                comment:
+                  "@context: Settings item description for hosted account management in the connected provider",
+                values: {
+                  providerLabel,
+                },
+              })}
+            />
+          ) : (
+            <SettingsDirectoryLink
+              href={toPublicPath("/settings/account/password", sitePathPrefix)}
+              icon={ICONS.lock}
+              tone="subtle"
+              name={t({
+                message: "Password",
+                comment: "@context: Settings item — password settings",
+              })}
+              description={t({
+                message: "Update the password you use to sign in",
+                comment:
+                  "@context: Settings item description for password change",
+              })}
+            />
+          )}
         </SettingsDirectorySection>
       )}
 
@@ -154,7 +212,7 @@ export function AccountMenuContent({
         />
       </SettingsDirectorySection>
 
-      {!demoMode && (
+      {!demoMode && !isHosted && (
         <SettingsDirectorySection
           title={t({
             message: "Danger Zone",
