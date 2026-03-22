@@ -198,50 +198,51 @@ export function DeleteAccountContent({
           </div>
         </div>
 
-        <div class="delete-account-step-body">
-          <input
-            type="text"
-            class="input"
-            data-bind="_confirmText"
-            autocomplete="off"
-            spellcheck={false}
-            data-on:input={`$_confirmMatch = evt.target.value === '${confirmPhrase.replace(/'/g, "\\'")}'`}
-            placeholder={confirmPhrase}
-          />
-        </div>
-
-        <div class="delete-account-step-body" style="margin-top: 0.5rem">
-          <button
-            type="button"
-            class="btn-destructive"
-            data-attr:disabled="!$_confirmMatch || $_deleteLoading"
-            data-on:click__prevent={buildConfirmActionExpression(
-              `$_deleteLoading = true; @post('${toPublicPath("/settings/account/delete-account", sitePathPrefix)}', {headers: {'x-csrf-token': $_csrfToken}})`,
-              {
-                message: t({
-                  message:
-                    "Delete this blog permanently? This cannot be undone.",
-                  comment:
-                    "@context: Final browser confirm dialog before account deletion",
-                }),
-                confirmLabel: deleteAccountLabel,
-                cancelLabel: t({
-                  message: "Cancel",
-                  comment:
-                    "@context: Button label to dismiss a dialog or action",
-                }),
-                tone: "danger",
-              },
-            )}
-          >
-            <span
-              data-show="$_deleteLoading"
-              class="btn-spinner"
-              style="display:none"
+        <form
+          data-on:submit__prevent={buildConfirmActionExpression(
+            `$_deleteLoading = true; @post('${toPublicPath("/settings/account/delete-account", sitePathPrefix)}', {headers: {'x-csrf-token': $_csrfToken}})`,
+            {
+              message: t({
+                message: "Delete this blog permanently? This cannot be undone.",
+                comment:
+                  "@context: Final browser confirm dialog before account deletion",
+              }),
+              confirmLabel: deleteAccountLabel,
+              cancelLabel: t({
+                message: "Cancel",
+                comment: "@context: Button label to dismiss a dialog or action",
+              }),
+              tone: "danger",
+            },
+          )}
+        >
+          <div class="delete-account-step-body">
+            <input
+              type="text"
+              class="input"
+              data-bind="_confirmText"
+              autocomplete="off"
+              spellcheck={false}
+              data-on:input={`$_confirmMatch = evt.target.value === '${confirmPhrase.replace(/'/g, "\\'")}'`}
+              placeholder={confirmPhrase}
             />
-            {deleteAccountLabel}
-          </button>
-        </div>
+          </div>
+
+          <div class="delete-account-step-body" style="margin-top: 0.5rem">
+            <button
+              type="submit"
+              class="btn-destructive"
+              data-attr:disabled="!$_confirmMatch || $_deleteLoading"
+            >
+              <span
+                data-show="$_deleteLoading"
+                class="btn-spinner"
+                style="display:none"
+              />
+              {deleteAccountLabel}
+            </button>
+          </div>
+        </form>
       </div>
 
       <style>

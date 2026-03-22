@@ -8,6 +8,7 @@
 import "./vendor/datastar.js";
 import { installPrefixedFetch } from "./client/runtime-paths.js";
 import "./client/audio-player.js";
+import "./client/form-enter-submit.js";
 import "./client/components/jant-media-lightbox.js";
 import "./client/components/jant-text-preview.js";
 import "./client/toast.js";
