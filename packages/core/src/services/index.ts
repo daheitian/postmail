@@ -25,6 +25,7 @@ import { createNavItemService, type NavItemService } from "./navigation.js";
 import { createAuthService, type AuthService } from "./auth.js";
 import { createApiTokenService, type ApiTokenService } from "./api-token.js";
 import { createBootstrapService, type BootstrapService } from "./bootstrap.js";
+import { createSiteAdminService, type SiteAdminService } from "./site-admin.js";
 import type { EnsureSingleSiteOptions } from "./site.js";
 
 export interface Services {
@@ -39,6 +40,7 @@ export interface Services {
   auth: AuthService;
   apiTokens: ApiTokenService;
   bootstrap: BootstrapService;
+  siteAdmin: SiteAdminService;
 }
 
 export function createServices(
@@ -94,6 +96,7 @@ export function createServices(
       schema: databaseSchema,
       bootstrapSite: config?.bootstrapSite,
     }),
+    siteAdmin: createSiteAdminService(db, databaseSchema, dialect),
   };
 }
 
@@ -111,3 +114,8 @@ export type {
   BootstrapService,
   CompleteInitialSetupData,
 } from "./bootstrap.js";
+export type {
+  CreateManagedSiteInput,
+  ManagedSiteResult,
+  SiteAdminService,
+} from "./site-admin.js";

@@ -30,6 +30,8 @@ interface TestAppOptions {
   storage?: StorageDriver | null;
   /** Optional internal admin token for internal API route tests */
   internalAdminToken?: string;
+  /** Optional site resolution mode override */
+  siteResolutionMode?: "single-site" | "host-based";
 }
 
 /**
@@ -60,6 +62,7 @@ export function createTestApp(options: TestAppOptions = {}) {
       SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
       DEMO_MODE: options.demoMode ? "true" : "false",
       INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
+      SITE_RESOLUTION_MODE: options.siteResolutionMode,
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);

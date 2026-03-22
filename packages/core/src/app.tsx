@@ -42,6 +42,7 @@ import { searchApiRoutes } from "./routes/api/search.js";
 import { customUrlsApiRoutes } from "./routes/api/custom-urls.js";
 import { exportApiRoutes } from "./routes/api/export.js";
 import { internalApiTokensRoutes } from "./routes/api/internal/api-tokens.js";
+import { internalSitesRoutes } from "./routes/api/internal/sites.js";
 // Routes - Compose
 import { composeRoutes } from "./routes/compose.js";
 
@@ -260,6 +261,7 @@ export function createApp(): App {
 
   app.route("/api/attachments", attachmentsApiRoutes);
   app.route("/api/internal/api-tokens", internalApiTokensRoutes);
+  app.route("/api/internal/sites", internalSitesRoutes);
 
   // Fetch text media content by ID (same-origin proxy to avoid CORS with CDN URLs)
   app.get("/api/media/:id/content", async (c) => {

@@ -67,7 +67,7 @@ function toSiteDomain(row: typeof _sqliteSiteDomains.$inferSelect): SiteDomain {
 
 export const TRANSIENT_SINGLE_SITE_ID = "sit_pending";
 
-function createTransientSingleSite(key = "default"): Site {
+export function createTransientSite(key = "default"): Site {
   return {
     id: TRANSIENT_SINGLE_SITE_ID,
     key,
@@ -145,7 +145,7 @@ export function createSiteService(
 
       if (!created) {
         return {
-          site: createTransientSingleSite(options.key?.trim() || "default"),
+          site: createTransientSite(options.key?.trim() || "default"),
           domain: null,
         };
       }

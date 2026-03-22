@@ -7,6 +7,7 @@ import { getSiteResolutionMode, getSiteUrl } from "../lib/env.js";
 import { getSitePathPrefix, normalizeSiteUrl } from "../lib/url.js";
 import {
   createSiteService,
+  createTransientSite,
   type EnsureSingleSiteOptions,
   type SiteLookupResult,
   TRANSIENT_SINGLE_SITE_ID,
@@ -36,6 +37,7 @@ export async function resolveRequestSite(
 ): Promise<SiteLookupResult> {
   const siteService = createSiteService(db, databaseSchema);
   const resolutionMode = getSiteResolutionMode(env);
+  const requestUrl = new URL(publicRequestUrl);
 
   if (resolutionMode === "single-site") {
     return siteService.resolveSingleSite({
@@ -44,9 +46,14 @@ export async function resolveRequestSite(
     });
   }
 
-  const requestUrl = new URL(publicRequestUrl);
   const resolved = await siteService.resolveByHost(requestUrl.host);
   if (!resolved) {
+    if (requestUrl.pathname.startsWith("/api/internal/")) {
+      return {
+        site: createTransientSite("internal"),
+        domain: null,
+      };
+    }
     throw new Error(`No site configured for host "${requestUrl.host}".`);
   }
   return resolved;

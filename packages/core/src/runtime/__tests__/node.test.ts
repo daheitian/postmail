@@ -124,4 +124,26 @@ describe("createNodeRequestRuntime", () => {
     expect(runtime.currentSite.id).toBe(TRANSIENT_SINGLE_SITE_ID);
     expect(count.count).toBe(0);
   });
+
+  it("allows host-based internal admin requests before any site matches the host", async () => {
+    const { db, sqlite } = createTestDatabase();
+
+    const runtime = await createRequestRuntime(
+      {
+        NODE_DATABASE: {
+          db,
+          dialect: "sqlite",
+          rawQuery: createSqliteRawQuery(sqlite),
+          schema: sqliteSchemaBundle,
+        },
+        AUTH_SECRET: "test-secret-with-enough-entropy-for-node-runtime",
+        SITE_RESOLUTION_MODE: "host-based",
+      } as Bindings,
+      "http://internal-admin.local/api/internal/sites",
+    );
+
+    expect(runtime.currentSite.id).toBe(TRANSIENT_SINGLE_SITE_ID);
+    expect(runtime.currentSite.key).toBe("internal");
+    expect(runtime.services.siteAdmin).toBeDefined();
+  });
 });
