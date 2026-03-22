@@ -17,7 +17,7 @@ function createHostedSsoTestApp(options?: {
   app.onError(errorHandler);
   app.use("*", async (c, next) => {
     c.env = {
-      HOSTED_AUTH_SSO_SECRET: options?.secret,
+      HOSTED_CONTROL_PLANE_SSO_SECRET: options?.secret,
     } as Bindings;
     c.set("auth", {
       $context: Promise.resolve({

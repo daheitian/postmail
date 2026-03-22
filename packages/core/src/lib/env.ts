@@ -106,30 +106,53 @@ export function getInternalAdminToken(env: EnvSource): string | undefined {
   return getEnvString(env, "INTERNAL_ADMIN_TOKEN");
 }
 
-export function getHostedAuthBaseUrl(env: EnvSource): string | undefined {
-  return getEnvString(env, "HOSTED_AUTH_BASE_URL");
+export function getHostedControlPlaneBaseUrl(
+  env: EnvSource,
+): string | undefined {
+  return getEnvString(env, "HOSTED_CONTROL_PLANE_BASE_URL");
 }
 
-export function getHostedAuthProviderName(env: EnvSource): string | undefined {
-  return getEnvString(env, "HOSTED_AUTH_PROVIDER_NAME");
+export function getHostedControlPlaneInternalBaseUrl(
+  env: EnvSource,
+): string | undefined {
+  return (
+    getEnvString(env, "HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL") ??
+    getHostedControlPlaneBaseUrl(env)
+  );
 }
 
-export function getHostedAuthProviderLabel(env: EnvSource): string | undefined {
-  const configuredName = getHostedAuthProviderName(env)?.trim();
+export function getHostedControlPlaneProviderName(
+  env: EnvSource,
+): string | undefined {
+  return getEnvString(env, "HOSTED_CONTROL_PLANE_PROVIDER_NAME");
+}
+
+export function getHostedControlPlaneProviderLabel(
+  env: EnvSource,
+): string | undefined {
+  const configuredName = getHostedControlPlaneProviderName(env)?.trim();
   if (configuredName) {
     return configuredName;
   }
 
-  const hostedAuthBaseUrl = getHostedAuthBaseUrl(env);
-  if (!hostedAuthBaseUrl) {
+  const hostedControlPlaneBaseUrl = getHostedControlPlaneBaseUrl(env);
+  if (!hostedControlPlaneBaseUrl) {
     return undefined;
   }
 
-  return new URL(hostedAuthBaseUrl).hostname;
+  return new URL(hostedControlPlaneBaseUrl).hostname;
 }
 
-export function getHostedAuthSsoSecret(env: EnvSource): string | undefined {
-  return getEnvString(env, "HOSTED_AUTH_SSO_SECRET");
+export function getHostedControlPlaneSsoSecret(
+  env: EnvSource,
+): string | undefined {
+  return getEnvString(env, "HOSTED_CONTROL_PLANE_SSO_SECRET");
+}
+
+export function getHostedControlPlaneInternalToken(
+  env: EnvSource,
+): string | undefined {
+  return getEnvString(env, "HOSTED_CONTROL_PLANE_INTERNAL_TOKEN");
 }
 
 export function getStorageDriverEnv(env: EnvSource): string | undefined {

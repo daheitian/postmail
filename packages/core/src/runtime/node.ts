@@ -6,11 +6,12 @@ import { createAuth, type Auth } from "../auth.js";
 import {
   getAuthSecret,
   getEnvString,
-  getHostedAuthProviderLabel,
-  getHostedAuthSsoSecret,
+  getHostedControlPlaneProviderLabel,
+  getHostedControlPlaneSsoSecret,
   getSiteResolutionMode,
   shouldUseSecureCookies,
 } from "../lib/env.js";
+import { createHostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
 import {
   createHostedHandoffService,
@@ -91,7 +92,7 @@ export async function createNodeRequestRuntime(
   }
 
   const authSecret = getAuthSecret(env);
-  const hostedAuthSsoSecret = getHostedAuthSsoSecret(env);
+  const hostedControlPlaneSsoSecret = getHostedControlPlaneSsoSecret(env);
   if (!authSecret) {
     throw new Error("AUTH_SECRET should be set after startup validation.");
   }
@@ -111,7 +112,7 @@ export async function createNodeRequestRuntime(
   );
   const auth = createAuth(db, {
     allowSystemUserProvisioning:
-      Boolean(hostedAuthSsoSecret) &&
+      Boolean(hostedControlPlaneSsoSecret) &&
       getSiteResolutionMode(env) === "host-based",
     secret: authSecret,
     baseURL,
@@ -126,13 +127,14 @@ export async function createNodeRequestRuntime(
     currentSiteDomain: siteLookup.domain,
     db,
     hostedHandoff: createHostedHandoffService(db, auth, {
-      providerLabel: getHostedAuthProviderLabel(env),
+      providerLabel: getHostedControlPlaneProviderLabel(env),
       schema: databaseSchema,
-      secret: hostedAuthSsoSecret,
+      secret: hostedControlPlaneSsoSecret,
     }),
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,
       bootstrapSite: getSingleSiteBootstrapOptions(env),
+      hostedControlPlane: createHostedControlPlaneClient(env),
       slugIdLength,
       schema: databaseSchema,
     }),
@@ -172,6 +174,7 @@ export async function createNodeCliRuntime(
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,
       bootstrapSite: getSingleSiteBootstrapOptions(env),
+      hostedControlPlane: createHostedControlPlaneClient(env),
       slugIdLength,
       schema: databaseSchema,
     }),

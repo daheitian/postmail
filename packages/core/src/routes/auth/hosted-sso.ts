@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { setSignedCookie } from "hono/cookie";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { getHostedAuthSsoSecret } from "../../lib/env.js";
+import { getHostedControlPlaneSsoSecret } from "../../lib/env.js";
 import { DomainError, NotFoundError } from "../../lib/errors.js";
 import { toPublicPath } from "../../lib/url.js";
 
@@ -21,7 +21,7 @@ function normalizeRedirectPath(path?: string): string {
 export const hostedSsoRoutes = new Hono<Env>();
 
 hostedSsoRoutes.get("/__sso", async (c) => {
-  if (!getHostedAuthSsoSecret(c.env)) {
+  if (!getHostedControlPlaneSsoSecret(c.env)) {
     throw new NotFoundError("Hosted sign-in endpoint");
   }
 

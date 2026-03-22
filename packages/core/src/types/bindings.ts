@@ -47,9 +47,11 @@ export interface Bindings {
   DEMO_MODE?: EnvBindingValue;
   DEV_API_TOKEN?: EnvBindingValue;
   INTERNAL_ADMIN_TOKEN?: EnvBindingValue;
-  HOSTED_AUTH_BASE_URL?: EnvBindingValue;
-  HOSTED_AUTH_PROVIDER_NAME?: EnvBindingValue;
-  HOSTED_AUTH_SSO_SECRET?: EnvBindingValue;
+  HOSTED_CONTROL_PLANE_BASE_URL?: EnvBindingValue;
+  HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL?: EnvBindingValue;
+  HOSTED_CONTROL_PLANE_PROVIDER_NAME?: EnvBindingValue;
+  HOSTED_CONTROL_PLANE_SSO_SECRET?: EnvBindingValue;
+  HOSTED_CONTROL_PLANE_INTERNAL_TOKEN?: EnvBindingValue;
   // Timeline
   PAGE_SIZE?: EnvBindingValue;
   SEARCH_PAGE_SIZE?: EnvBindingValue;

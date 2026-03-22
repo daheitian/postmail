@@ -4,11 +4,12 @@ import { sqliteSchemaBundle } from "../db/schema-bundle.js";
 import {
   getAuthSecret,
   getEnvString,
-  getHostedAuthProviderLabel,
-  getHostedAuthSsoSecret,
+  getHostedControlPlaneProviderLabel,
+  getHostedControlPlaneSsoSecret,
   getSiteResolutionMode,
   shouldUseSecureCookies,
 } from "../lib/env.js";
+import { createHostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
 import {
   createHostedHandoffService,
@@ -47,7 +48,7 @@ export async function createCloudflareRequestRuntime(
     throw new Error("Cloudflare runtime requires a DB binding.");
   }
   const authSecret = getAuthSecret(env);
-  const hostedAuthSsoSecret = getHostedAuthSsoSecret(env);
+  const hostedControlPlaneSsoSecret = getHostedControlPlaneSsoSecret(env);
   if (!authSecret) {
     throw new Error("AUTH_SECRET should be set after startup validation.");
   }
@@ -68,7 +69,7 @@ export async function createCloudflareRequestRuntime(
   );
   const auth = createAuth(db, {
     allowSystemUserProvisioning:
-      Boolean(hostedAuthSsoSecret) &&
+      Boolean(hostedControlPlaneSsoSecret) &&
       getSiteResolutionMode(env) === "host-based",
     secret: authSecret,
     baseURL,
@@ -83,13 +84,14 @@ export async function createCloudflareRequestRuntime(
     currentSiteDomain: siteLookup.domain,
     db,
     hostedHandoff: createHostedHandoffService(db, auth, {
-      providerLabel: getHostedAuthProviderLabel(env),
+      providerLabel: getHostedControlPlaneProviderLabel(env),
       schema: sqliteSchemaBundle,
-      secret: hostedAuthSsoSecret,
+      secret: hostedControlPlaneSsoSecret,
     }),
     services: createServices(db, session, siteLookup.site.id, {
       databaseDialect: "sqlite",
       bootstrapSite: getSingleSiteBootstrapOptions(env),
+      hostedControlPlane: createHostedControlPlaneClient(env),
       slugIdLength,
       schema: sqliteSchemaBundle,
     }),

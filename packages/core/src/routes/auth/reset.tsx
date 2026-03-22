@@ -15,7 +15,7 @@ import { dsRedirect, dsToast } from "../../lib/sse.js";
 import { ResetPasswordSchema } from "../../lib/schemas.js";
 import { buildPageTitle } from "../../lib/page-title.js";
 import { getI18n } from "../../i18n/index.js";
-import { getHostedAuthResetUrl } from "../../lib/hosted-signin.js";
+import { getHostedControlPlaneResetUrl } from "../../lib/hosted-signin.js";
 import { toPublicPath } from "../../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -146,7 +146,10 @@ const ResetErrorContent: FC = () => {
 export const resetRoutes = new Hono<Env>();
 
 resetRoutes.get("/reset", async (c) => {
-  const hostedResetUrl = getHostedAuthResetUrl(c.env, c.var.publicRequestUrl);
+  const hostedResetUrl = getHostedControlPlaneResetUrl(
+    c.env,
+    c.var.publicRequestUrl,
+  );
   if (hostedResetUrl) {
     return c.redirect(hostedResetUrl);
   }

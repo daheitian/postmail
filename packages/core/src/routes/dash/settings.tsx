@@ -41,9 +41,9 @@ import { DeleteAccountContent } from "../../ui/dash/settings/DeleteAccountConten
 import { toAbsoluteSiteUrl, toPublicPath } from "../../lib/url.js";
 import { parseValidated, UpdateSiteSettingsSchema } from "../../lib/schemas.js";
 import {
-  getHostedAuthAccountPasswordUrl,
-  getHostedAuthAccountUrl,
-  getHostedAuthProviderLabel,
+  getHostedControlPlaneAccountPasswordUrl,
+  getHostedControlPlaneAccountUrl,
+  getHostedControlPlaneProviderLabel,
 } from "../../lib/hosted-signin.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -210,17 +210,24 @@ settingsRoutes.post("/general", async (c) => {
   );
 
   try {
-    const { displayName, siteNameChanged } =
-      await c.var.services.settings.updateSiteSettings(body, {
-        oldSiteName: c.var.allSettings["SITE_NAME"] ?? "",
-        fallbackSiteName: c.var.appConfig.fallbacks.siteName,
-      });
-
-    // Sync user.name with site name (better-auth requires this field)
-    await c.var.auth.api.updateUser({
-      body: { name: displayName },
-      headers: c.req.raw.headers,
-    });
+    const { siteNameChanged } =
+      await c.var.services.siteProfile.updateSiteSettings(
+        body,
+        {
+          oldSiteName: c.var.allSettings["SITE_NAME"] ?? "",
+          fallbackSiteName: c.var.appConfig.fallbacks.siteName,
+        },
+        {
+          // better-auth requires user.name to stay aligned with the active
+          // site display name for the current operator.
+          updateCurrentUserName: async (nextDisplayName) => {
+            await c.var.auth.api.updateUser({
+              body: { name: nextDisplayName },
+              headers: c.req.raw.headers,
+            });
+          },
+        },
+      );
 
     // ── JSON response mode (used by Lit settings bridge) ──────────────
     const wantsJson = c.req.header("accept")?.includes("application/json");
@@ -760,8 +767,10 @@ settingsRoutes.post("/custom-css", async (c) => {
 
 settingsRoutes.get("/account", async (c) => {
   const navData = await getNavigationData(c);
-  const hostedAuthAccountUrl = getHostedAuthAccountUrl(c.env);
-  const hostedAuthProviderLabel = getHostedAuthProviderLabel(c.env);
+  const hostedControlPlaneAccountUrl = getHostedControlPlaneAccountUrl(c.env);
+  const hostedControlPlaneProviderLabel = getHostedControlPlaneProviderLabel(
+    c.env,
+  );
 
   return renderPublicPage(c, {
     title: buildPageTitle("Account", navData.siteName),
@@ -776,8 +785,8 @@ settingsRoutes.get("/account", async (c) => {
         <AccountMenuContent
           sitePathPrefix={c.var.appConfig.sitePathPrefix}
           demoMode={c.var.appConfig.demoMode}
-          hostedAuthAccountUrl={hostedAuthAccountUrl}
-          hostedAuthProviderLabel={hostedAuthProviderLabel}
+          hostedControlPlaneAccountUrl={hostedControlPlaneAccountUrl}
+          hostedControlPlaneProviderLabel={hostedControlPlaneProviderLabel}
         />
       </>
     ),
@@ -871,9 +880,10 @@ settingsRoutes.post("/account/sessions/:token/revoke", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account/password", async (c) => {
-  const hostedAuthAccountPasswordUrl = getHostedAuthAccountPasswordUrl(c.env);
-  if (hostedAuthAccountPasswordUrl) {
-    return c.redirect(hostedAuthAccountPasswordUrl);
+  const hostedControlPlaneAccountPasswordUrl =
+    getHostedControlPlaneAccountPasswordUrl(c.env);
+  if (hostedControlPlaneAccountPasswordUrl) {
+    return c.redirect(hostedControlPlaneAccountPasswordUrl);
   }
 
   if (c.var.appConfig.demoMode) {
@@ -899,9 +909,10 @@ settingsRoutes.get("/account/password", async (c) => {
 });
 
 settingsRoutes.post("/account/password", async (c) => {
-  const hostedAuthAccountPasswordUrl = getHostedAuthAccountPasswordUrl(c.env);
-  if (hostedAuthAccountPasswordUrl) {
-    return dsRedirect(hostedAuthAccountPasswordUrl);
+  const hostedControlPlaneAccountPasswordUrl =
+    getHostedControlPlaneAccountPasswordUrl(c.env);
+  if (hostedControlPlaneAccountPasswordUrl) {
+    return dsRedirect(hostedControlPlaneAccountPasswordUrl);
   }
 
   if (c.var.appConfig.demoMode) {
@@ -973,9 +984,9 @@ settingsRoutes.post("/account/password", async (c) => {
 // ===========================================================================
 
 settingsRoutes.get("/account/delete-account", async (c) => {
-  const hostedAuthAccountUrl = getHostedAuthAccountUrl(c.env);
-  if (hostedAuthAccountUrl) {
-    return c.redirect(hostedAuthAccountUrl);
+  const hostedControlPlaneAccountUrl = getHostedControlPlaneAccountUrl(c.env);
+  if (hostedControlPlaneAccountUrl) {
+    return c.redirect(hostedControlPlaneAccountUrl);
   }
 
   if (c.var.appConfig.demoMode) {
@@ -1006,9 +1017,9 @@ settingsRoutes.get("/account/delete-account", async (c) => {
 });
 
 settingsRoutes.post("/account/delete-account", async (c) => {
-  const hostedAuthAccountUrl = getHostedAuthAccountUrl(c.env);
-  if (hostedAuthAccountUrl) {
-    return dsRedirect(hostedAuthAccountUrl);
+  const hostedControlPlaneAccountUrl = getHostedControlPlaneAccountUrl(c.env);
+  if (hostedControlPlaneAccountUrl) {
+    return dsRedirect(hostedControlPlaneAccountUrl);
   }
 
   if (c.var.appConfig.demoMode) {

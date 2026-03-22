@@ -30,6 +30,11 @@ import {
   createSiteMemberService,
   type SiteMemberService,
 } from "./site-member.js";
+import {
+  createSiteProfileService,
+  type SiteProfileService,
+} from "./site-profile.js";
+import type { HostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 import type { EnsureSingleSiteOptions } from "./site.js";
 
 export interface Services {
@@ -46,6 +51,7 @@ export interface Services {
   bootstrap: BootstrapService;
   siteAdmin: SiteAdminService;
   siteMembers: SiteMemberService;
+  siteProfile: SiteProfileService;
 }
 
 export function createServices(
@@ -57,6 +63,7 @@ export function createServices(
     schema?: DatabaseSchema;
     databaseDialect?: DatabaseDialect;
     bootstrapSite?: EnsureSingleSiteOptions;
+    hostedControlPlane?: HostedControlPlaneClient | null;
   },
 ): Services {
   const databaseSchema = config?.schema ?? sqliteSchemaBundle;
@@ -103,6 +110,18 @@ export function createServices(
     }),
     siteAdmin: createSiteAdminService(db, databaseSchema, dialect),
     siteMembers: createSiteMemberService(db, databaseSchema),
+    siteProfile: createSiteProfileService(settings, siteId, {
+      hostedControlPlane: config?.hostedControlPlane ?? null,
+      logSyncError: (error) => {
+        const message =
+          error instanceof Error
+            ? (error.stack ?? error.message)
+            : String(error);
+        process.stderr.write(
+          `[Jant] Hosted control plane metadata sync failed: ${message}\n`,
+        );
+      },
+    }),
   };
 }
 
@@ -121,6 +140,7 @@ export type {
   CompleteInitialSetupData,
 } from "./bootstrap.js";
 export type { SiteMemberService } from "./site-member.js";
+export type { SiteProfileService } from "./site-profile.js";
 export type {
   CreateManagedSiteInput,
   ManagedSiteResult,

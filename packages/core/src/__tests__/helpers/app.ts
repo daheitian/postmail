@@ -34,7 +34,7 @@ interface TestAppOptions {
   /** Optional site resolution mode override */
   siteResolutionMode?: "single-site" | "host-based";
   /** Optional hosted SSO secret binding */
-  hostedAuthSsoSecret?: string;
+  hostedControlPlaneSsoSecret?: string;
   /** Optional hosted handoff service override */
   hostedHandoff?: HostedHandoffService;
 }
@@ -67,7 +67,7 @@ export function createTestApp(options: TestAppOptions = {}) {
       SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
       DEMO_MODE: options.demoMode ? "true" : "false",
       INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
-      HOSTED_AUTH_SSO_SECRET: options.hostedAuthSsoSecret,
+      HOSTED_CONTROL_PLANE_SSO_SECRET: options.hostedControlPlaneSsoSecret,
       SITE_RESOLUTION_MODE: options.siteResolutionMode,
     } as AppVariables["services"] extends never ? never : Bindings;
 

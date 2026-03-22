@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
-  getHostedAuthAccountPasswordUrl,
-  getHostedAuthAccountUrl,
-  getHostedAuthDashboardUrl,
-  getHostedAuthProviderLabel,
-  getHostedAuthResetUrl,
-  getHostedAuthSigninUrl,
-  isHostedAuthEnabled,
+  getHostedControlPlaneAccountPasswordUrl,
+  getHostedControlPlaneAccountUrl,
+  getHostedControlPlaneDashboardUrl,
+  getHostedControlPlaneProviderLabel,
+  getHostedControlPlaneResetUrl,
+  getHostedControlPlaneSigninUrl,
+  isHostedControlPlaneEnabled,
 } from "../hosted-signin.js";
 
-describe("getHostedAuthSigninUrl", () => {
+describe("getHostedControlPlaneSigninUrl", () => {
   it("returns the hosted auth handoff URL for hosted sites", () => {
-    const url = getHostedAuthSigninUrl(
+    const url = getHostedControlPlaneSigninUrl(
       {
-        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
         SITE_RESOLUTION_MODE: "host-based",
       },
       "https://site7.localtest.me/signin",
@@ -25,9 +25,9 @@ describe("getHostedAuthSigninUrl", () => {
   });
 
   it("returns null outside host-based mode", () => {
-    const url = getHostedAuthSigninUrl(
+    const url = getHostedControlPlaneSigninUrl(
       {
-        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
         SITE_RESOLUTION_MODE: "single-site",
       },
       "https://site7.localtest.me/signin",
@@ -37,9 +37,9 @@ describe("getHostedAuthSigninUrl", () => {
   });
 
   it("returns the hosted auth reset URL for hosted sites", () => {
-    const url = getHostedAuthResetUrl(
+    const url = getHostedControlPlaneResetUrl(
       {
-        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
         SITE_RESOLUTION_MODE: "host-based",
       },
       "https://site7.localtest.me/reset",
@@ -52,42 +52,42 @@ describe("getHostedAuthSigninUrl", () => {
 
   it("returns hosted dashboard and account URLs", () => {
     const env = {
-      HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
+      HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
       SITE_RESOLUTION_MODE: "host-based",
     };
 
-    expect(getHostedAuthDashboardUrl(env)).toBe(
+    expect(getHostedControlPlaneDashboardUrl(env)).toBe(
       "https://cloud-jant.localtest.me/sites",
     );
-    expect(getHostedAuthAccountUrl(env)).toBe(
+    expect(getHostedControlPlaneAccountUrl(env)).toBe(
       "https://cloud-jant.localtest.me/settings/account",
     );
-    expect(getHostedAuthAccountPasswordUrl(env)).toBe(
+    expect(getHostedControlPlaneAccountPasswordUrl(env)).toBe(
       "https://cloud-jant.localtest.me/settings/account/password",
     );
-    expect(isHostedAuthEnabled(env)).toBe(true);
+    expect(isHostedControlPlaneEnabled(env)).toBe(true);
   });
 
   it("uses the configured provider name when available", () => {
     expect(
-      getHostedAuthProviderLabel({
-        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
-        HOSTED_AUTH_PROVIDER_NAME: "Managed sign-in",
+      getHostedControlPlaneProviderLabel({
+        HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
+        HOSTED_CONTROL_PLANE_PROVIDER_NAME: "Managed sign-in",
       }),
     ).toBe("Managed sign-in");
   });
 
   it("falls back to the provider host when no provider name is configured", () => {
     expect(
-      getHostedAuthProviderLabel({
-        HOSTED_AUTH_BASE_URL: "https://cloud-jant.localtest.me",
+      getHostedControlPlaneProviderLabel({
+        HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
       }),
     ).toBe("cloud-jant.localtest.me");
   });
 
   it("disables hosted auth without a hosted auth base URL", () => {
     expect(
-      isHostedAuthEnabled({
+      isHostedControlPlaneEnabled({
         SITE_RESOLUTION_MODE: "host-based",
       }),
     ).toBe(false);

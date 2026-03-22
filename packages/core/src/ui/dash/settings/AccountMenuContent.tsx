@@ -25,18 +25,18 @@ const ICONS = {
 export function AccountMenuContent({
   sitePathPrefix = "",
   demoMode = false,
-  hostedAuthAccountUrl,
-  hostedAuthProviderLabel,
+  hostedControlPlaneAccountUrl,
+  hostedControlPlaneProviderLabel,
 }: {
   sitePathPrefix?: string;
   demoMode?: boolean;
-  hostedAuthAccountUrl?: string | null;
-  hostedAuthProviderLabel?: string | null;
+  hostedControlPlaneAccountUrl?: string | null;
+  hostedControlPlaneProviderLabel?: string | null;
 }) {
   const { t } = useLingui();
-  const isHosted = Boolean(hostedAuthAccountUrl);
+  const isHosted = Boolean(hostedControlPlaneAccountUrl);
   const providerLabel =
-    hostedAuthProviderLabel ??
+    hostedControlPlaneProviderLabel ??
     t({
       message: "Hosted account",
       comment:
@@ -72,7 +72,7 @@ export function AccountMenuContent({
         </p>
       </header>
 
-      {isHosted && hostedAuthAccountUrl && (
+      {isHosted && hostedControlPlaneAccountUrl && (
         <div class="alert" role="alert">
           <section>
             <p>
@@ -126,9 +126,9 @@ export function AccountMenuContent({
               comment: "@context: Settings item description for sessions",
             })}
           />
-          {isHosted && hostedAuthAccountUrl ? (
+          {isHosted && hostedControlPlaneAccountUrl ? (
             <SettingsDirectoryLink
-              href={hostedAuthAccountUrl}
+              href={hostedControlPlaneAccountUrl}
               icon={ICONS.user}
               tone="subtle"
               name={providerLabel}
