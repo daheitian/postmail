@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createTestApp } from "../../../../__tests__/helpers/app.js";
+import { DEFAULT_TEST_SITE_ID } from "../../../../__tests__/helpers/db.js";
 import { internalSitesRoutes } from "../sites.js";
 
 describe("Internal site admin routes", () => {
@@ -96,5 +97,91 @@ describe("Internal site admin routes", () => {
       { key: "ONBOARDING_STATUS", value: "completed" },
       { key: "SITE_NAME", value: "Demo Cloud" },
     ]);
+  });
+
+  it("deletes a managed site without clearing other sites", async () => {
+    const { app, sqlite } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const createRes = await app.request("/api/internal/sites", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer internal-secret",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: "delete-demo",
+        primaryHost: "delete-demo.example.com",
+        siteName: "Delete Demo",
+      }),
+    });
+
+    expect(createRes.status).toBe(201);
+    const created = (await createRes.json()) as { siteId: string };
+    const siteId = created.siteId;
+
+    sqlite
+      .prepare(
+        `INSERT INTO "site_member" ("site_id", "user_id", "role", "created_at", "updated_at")
+         VALUES (?, 'member_1', 'owner', 1774200001, 1774200001)`,
+      )
+      .run(siteId);
+    sqlite
+      .prepare(
+        `INSERT INTO "post" ("id", "site_id", "format", "thread_id", "created_at", "updated_at")
+         VALUES ('pst_delete_1', ?, 'note', 'pst_delete_1', 1774200002, 1774200002)`,
+      )
+      .run(siteId);
+    sqlite
+      .prepare(
+        `INSERT INTO "site_setting" ("site_id", "key", "value", "updated_at")
+         VALUES (?, 'SITE_AVATAR', 'sites/${siteId}/avatar.webp', 1774200003)`,
+      )
+      .run(siteId);
+
+    const deleteRes = await app.request(`/api/internal/sites/${siteId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer internal-secret",
+      },
+    });
+
+    expect(deleteRes.status).toBe(204);
+
+    const deletedSiteCount = sqlite
+      .prepare('SELECT COUNT(*) AS count FROM "site" WHERE "id" = ?')
+      .get(siteId) as { count: number };
+    const deletedDomainCount = sqlite
+      .prepare(
+        'SELECT COUNT(*) AS count FROM "site_domain" WHERE "site_id" = ?',
+      )
+      .get(siteId) as { count: number };
+    const deletedMemberCount = sqlite
+      .prepare(
+        'SELECT COUNT(*) AS count FROM "site_member" WHERE "site_id" = ?',
+      )
+      .get(siteId) as { count: number };
+    const deletedPostCount = sqlite
+      .prepare('SELECT COUNT(*) AS count FROM "post" WHERE "site_id" = ?')
+      .get(siteId) as { count: number };
+    const deletedSettingsCount = sqlite
+      .prepare(
+        'SELECT COUNT(*) AS count FROM "site_setting" WHERE "site_id" = ?',
+      )
+      .get(siteId) as { count: number };
+    const defaultSiteCount = sqlite
+      .prepare('SELECT COUNT(*) AS count FROM "site" WHERE "id" = ?')
+      .get(DEFAULT_TEST_SITE_ID) as { count: number };
+
+    expect(deletedSiteCount.count).toBe(0);
+    expect(deletedDomainCount.count).toBe(0);
+    expect(deletedMemberCount.count).toBe(0);
+    expect(deletedPostCount.count).toBe(0);
+    expect(deletedSettingsCount.count).toBe(0);
+    expect(defaultSiteCount.count).toBe(1);
   });
 });

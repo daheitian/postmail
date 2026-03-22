@@ -27,11 +27,13 @@ export function AccountMenuContent({
   demoMode = false,
   hostedControlPlaneAccountUrl,
   hostedControlPlaneProviderLabel,
+  hostedControlPlaneSiteDeleteUrl,
 }: {
   sitePathPrefix?: string;
   demoMode?: boolean;
   hostedControlPlaneAccountUrl?: string | null;
   hostedControlPlaneProviderLabel?: string | null;
+  hostedControlPlaneSiteDeleteUrl?: string | null;
 }) {
   const { t } = useLingui();
   const isHosted = Boolean(hostedControlPlaneAccountUrl);
@@ -211,6 +213,37 @@ export function AccountMenuContent({
           })}
         />
       </SettingsDirectorySection>
+
+      {!demoMode && isHosted && hostedControlPlaneSiteDeleteUrl ? (
+        <SettingsDirectorySection
+          title={t({
+            message: "Danger Zone",
+            comment:
+              "@context: Settings group label for destructive account actions",
+          })}
+          tone="danger"
+        >
+          <SettingsDirectoryLink
+            href={hostedControlPlaneSiteDeleteUrl}
+            icon={ICONS.trash}
+            tone="danger"
+            name={t({
+              message: "Delete Hosted Site",
+              comment:
+                "@context: Settings item — open the hosted site danger zone in the control plane",
+            })}
+            description={t({
+              message:
+                "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site.",
+              comment:
+                "@context: Settings item description for the hosted delete-site entry in the account menu",
+              values: {
+                providerLabel,
+              },
+            })}
+          />
+        </SettingsDirectorySection>
+      ) : null}
 
       {!demoMode && !isHosted && (
         <SettingsDirectorySection

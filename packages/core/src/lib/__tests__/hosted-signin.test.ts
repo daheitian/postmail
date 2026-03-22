@@ -6,6 +6,8 @@ import {
   getHostedControlPlaneProviderLabel,
   getHostedControlPlaneResetUrl,
   getHostedControlPlaneSigninUrl,
+  getHostedControlPlaneSiteDeleteUrl,
+  getHostedControlPlaneSiteSettingsUrl,
   isHostedControlPlaneEnabled,
 } from "../hosted-signin.js";
 
@@ -64,6 +66,12 @@ describe("getHostedControlPlaneSigninUrl", () => {
     );
     expect(getHostedControlPlaneAccountPasswordUrl(env)).toBe(
       "https://cloud-jant.localtest.me/settings/account/password",
+    );
+    expect(getHostedControlPlaneSiteSettingsUrl(env, "sit_demo")).toBe(
+      "https://cloud-jant.localtest.me/sites/core/sit_demo/settings",
+    );
+    expect(getHostedControlPlaneSiteDeleteUrl(env, "sit_demo")).toBe(
+      "https://cloud-jant.localtest.me/sites/core/sit_demo/settings/delete",
     );
     expect(isHostedControlPlaneEnabled(env)).toBe(true);
   });

@@ -69,6 +69,36 @@ export function getHostedControlPlaneAccountPasswordUrl(
   return buildHostedControlPlaneUrl(env, "/settings/account/password");
 }
 
+export function getHostedControlPlaneSiteSettingsUrl(
+  env: object | undefined | null,
+  coreSiteId: string,
+): string | null {
+  const normalizedCoreSiteId = coreSiteId.trim();
+  if (!normalizedCoreSiteId) {
+    return null;
+  }
+
+  return buildHostedControlPlaneUrl(
+    env,
+    `/sites/core/${encodeURIComponent(normalizedCoreSiteId)}/settings`,
+  );
+}
+
+export function getHostedControlPlaneSiteDeleteUrl(
+  env: object | undefined | null,
+  coreSiteId: string,
+): string | null {
+  const normalizedCoreSiteId = coreSiteId.trim();
+  if (!normalizedCoreSiteId) {
+    return null;
+  }
+
+  return buildHostedControlPlaneUrl(
+    env,
+    `/sites/core/${encodeURIComponent(normalizedCoreSiteId)}/settings/delete`,
+  );
+}
+
 export function getHostedControlPlaneProviderLabel(
   env: object | undefined | null,
 ): string | null {

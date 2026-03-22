@@ -12,6 +12,7 @@ import {
   type SiteLookupResult,
   TRANSIENT_SINGLE_SITE_ID,
 } from "../services/site.js";
+import { NotFoundError } from "../lib/errors.js";
 import type { Bindings } from "../types/bindings.js";
 
 export function getSingleSiteBootstrapOptions(
@@ -54,7 +55,7 @@ export async function resolveRequestSite(
         domain: null,
       };
     }
-    throw new Error(`No site configured for host "${requestUrl.host}".`);
+    throw new NotFoundError("Site");
   }
   return resolved;
 }

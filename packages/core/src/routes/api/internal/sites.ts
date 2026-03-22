@@ -54,3 +54,17 @@ internalSitesRoutes.post("/", requireInternalAdminApi(), async (c) => {
     201,
   );
 });
+
+internalSitesRoutes.delete("/:siteId", requireInternalAdminApi(), async (c) => {
+  if (getSiteResolutionMode(c.env) !== "host-based") {
+    throw new ConflictError(
+      "Site provisioning is only available in host-based mode.",
+    );
+  }
+
+  await c.var.services.siteAdmin.deleteManagedSite(c.req.param("siteId"), {
+    storage: c.var.storage,
+  });
+
+  return c.body(null, 204);
+});

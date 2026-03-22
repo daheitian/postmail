@@ -5,6 +5,7 @@ import { createRequestRuntime } from "../index.js";
 import { createNodeRequestRuntime } from "../node.js";
 import type { Bindings } from "../../types.js";
 import { siteDomains, sites } from "../../db/schema.js";
+import { NotFoundError } from "../../lib/errors.js";
 import { TRANSIENT_SINGLE_SITE_ID } from "../../services/site.js";
 
 function createSqliteRawQuery(
@@ -145,5 +146,25 @@ describe("createNodeRequestRuntime", () => {
     expect(runtime.currentSite.id).toBe(TRANSIENT_SINGLE_SITE_ID);
     expect(runtime.currentSite.key).toBe("internal");
     expect(runtime.services.siteAdmin).toBeDefined();
+  });
+
+  it("treats unknown host-based public hosts as site not found", async () => {
+    const { db, sqlite } = createTestDatabase();
+
+    await expect(
+      createRequestRuntime(
+        {
+          NODE_DATABASE: {
+            db,
+            dialect: "sqlite",
+            rawQuery: createSqliteRawQuery(sqlite),
+            schema: sqliteSchemaBundle,
+          },
+          AUTH_SECRET: "test-secret-with-enough-entropy-for-node-runtime",
+          SITE_RESOLUTION_MODE: "host-based",
+        } as Bindings,
+        "http://missing.localtest.me/",
+      ),
+    ).rejects.toBeInstanceOf(NotFoundError);
   });
 });

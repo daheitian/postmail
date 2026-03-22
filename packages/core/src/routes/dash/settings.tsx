@@ -44,6 +44,7 @@ import {
   getHostedControlPlaneAccountPasswordUrl,
   getHostedControlPlaneAccountUrl,
   getHostedControlPlaneProviderLabel,
+  getHostedControlPlaneSiteDeleteUrl,
 } from "../../lib/hosted-signin.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -771,6 +772,10 @@ settingsRoutes.get("/account", async (c) => {
   const hostedControlPlaneProviderLabel = getHostedControlPlaneProviderLabel(
     c.env,
   );
+  const hostedControlPlaneSiteDeleteUrl = getHostedControlPlaneSiteDeleteUrl(
+    c.env,
+    c.var.currentSite.id,
+  );
 
   return renderPublicPage(c, {
     title: buildPageTitle("Account", navData.siteName),
@@ -787,6 +792,7 @@ settingsRoutes.get("/account", async (c) => {
           demoMode={c.var.appConfig.demoMode}
           hostedControlPlaneAccountUrl={hostedControlPlaneAccountUrl}
           hostedControlPlaneProviderLabel={hostedControlPlaneProviderLabel}
+          hostedControlPlaneSiteDeleteUrl={hostedControlPlaneSiteDeleteUrl}
         />
       </>
     ),
@@ -985,6 +991,13 @@ settingsRoutes.post("/account/password", async (c) => {
 
 settingsRoutes.get("/account/delete-account", async (c) => {
   const hostedControlPlaneAccountUrl = getHostedControlPlaneAccountUrl(c.env);
+  const hostedControlPlaneSiteDeleteUrl = getHostedControlPlaneSiteDeleteUrl(
+    c.env,
+    c.var.currentSite.id,
+  );
+  if (hostedControlPlaneSiteDeleteUrl) {
+    return c.redirect(hostedControlPlaneSiteDeleteUrl);
+  }
   if (hostedControlPlaneAccountUrl) {
     return c.redirect(hostedControlPlaneAccountUrl);
   }
@@ -1018,6 +1031,13 @@ settingsRoutes.get("/account/delete-account", async (c) => {
 
 settingsRoutes.post("/account/delete-account", async (c) => {
   const hostedControlPlaneAccountUrl = getHostedControlPlaneAccountUrl(c.env);
+  const hostedControlPlaneSiteDeleteUrl = getHostedControlPlaneSiteDeleteUrl(
+    c.env,
+    c.var.currentSite.id,
+  );
+  if (hostedControlPlaneSiteDeleteUrl) {
+    return dsRedirect(hostedControlPlaneSiteDeleteUrl);
+  }
   if (hostedControlPlaneAccountUrl) {
     return dsRedirect(hostedControlPlaneAccountUrl);
   }

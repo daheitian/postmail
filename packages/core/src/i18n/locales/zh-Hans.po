@@ -758,7 +758,9 @@ msgstr "危险"
 
 #. @context: Section heading for dangerous/destructive actions
 #. @context: Settings group label for destructive account actions
+#. @context: Settings group label for destructive account actions
 #: src/ui/dash/DangerZone.tsx
+#: src/ui/dash/settings/AccountMenuContent.tsx
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Danger Zone"
 msgstr "危险区"
@@ -831,6 +833,11 @@ msgstr "永久删除账号"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Delete Draft"
 msgstr "删除草稿"
+
+#. @context: Settings item — open the hosted site danger zone in the control plane
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Delete Hosted Site"
+msgstr "删除托管站点"
 
 #. @context: Final browser confirm dialog before account deletion
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1392,7 +1399,7 @@ msgstr "首页设置已更新。"
 #. @context: Generic hosted auth provider label when no explicit provider name is configured
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Hosted account"
-msgstr ""
+msgstr "托管账号"
 
 #. @context: Confirmation phrase the user must type to delete their account. {siteName} is the blog name.
 #: src/ui/dash/settings/DeleteAccountContent.tsx
@@ -1667,7 +1674,7 @@ msgstr "主 RSS feed"
 #. @context: Settings item description for hosted account management in the connected provider
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage password and hosted access in {providerLabel}"
-msgstr ""
+msgstr "在 {providerLabel} 中管理密码和托管站点访问权限"
 
 #. @context: Intro text on the account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
@@ -1677,7 +1684,7 @@ msgstr "管理登录安全、导出和不可逆操作."
 #. @context: Intro text on the hosted account settings menu page below the title
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "Manage this site's active sessions here. Password and hosted access are managed through {providerLabel}."
-msgstr ""
+msgstr "在这里管理这个站点的当前会话。密码和托管站点访问权限通过 {providerLabel} 管理。"
 
 #. @context: Color theme preview date label
 #: src/ui/dash/appearance/ColorThemeContent.tsx
@@ -1947,6 +1954,11 @@ msgstr "打开原始 PNG"
 #: src/ui/pages/BrandPage.tsx
 msgid "Open raw SVG"
 msgstr "打开原始 SVG"
+
+#. @context: Settings item description for the hosted delete-site entry in the account menu
+#: src/ui/dash/settings/AccountMenuContent.tsx
+msgid "Open the hosted site controls in {providerLabel} to cancel billing or permanently delete this site."
+msgstr ""
 
 #. @context: Menu action to organize collections
 #: src/ui/shared/CollectionsManager.tsx
@@ -2760,7 +2772,7 @@ msgstr "这会控制 /feed 返回哪一种 feed。"
 #. @context: Notice shown on hosted account settings explaining that password and hosted account controls live in the connected hosted auth provider
 #: src/ui/dash/settings/AccountMenuContent.tsx
 msgid "This hosted site signs in through {providerLabel}. Manage password and hosted access there."
-msgstr ""
+msgstr "这个托管站点通过 {providerLabel} 登录。在那里管理密码和托管站点访问权限。"
 
 #. @context: Collection link help text
 #: src/ui/shared/collection-management-labels.ts
