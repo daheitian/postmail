@@ -8,6 +8,7 @@
 
 import type { Hono } from "hono";
 import type { Services } from "../services/index.js";
+import type { HostedHandoffService } from "../services/hosted-handoff.js";
 import type { Auth } from "../auth.js";
 import type { AppConfig } from "./config.js";
 import type { StorageDriver } from "../lib/storage.js";
@@ -16,6 +17,7 @@ import type { Site, SiteDomain } from "./entities.js";
 
 export interface AppVariables {
   services: Services;
+  hostedHandoff: HostedHandoffService;
   auth: Auth;
   currentSite: Site;
   currentSiteDomain: SiteDomain | null;

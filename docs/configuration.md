@@ -68,6 +68,15 @@ Notes:
 - On Node, storage defaults to `local`.
 - On Node, `R2` is not supported. Use the default local storage or set `STORAGE_DRIVER="s3"`.
 
+Hosted control-plane integration variables:
+
+| Variable                | Description                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| `INTERNAL_ADMIN_TOKEN`  | Shared bearer token for `POST /api/internal/sites` and other internal admin routes         |
+| `JANT_CLOUD_SSO_SECRET` | Shared 32+ character secret used to verify `jant-cloud`'s short-lived admin handoff tokens |
+
+These variables are only needed when `jant-core` runs in `SITE_RESOLUTION_MODE=host-based` behind `jant-cloud`.
+
 ### Feed Defaults (Optional)
 
 | Variable        | Description                                                     |

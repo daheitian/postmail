@@ -101,6 +101,14 @@ export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
         return c.redirect(redirectTarget);
       }
 
+      const membership = await c.var.services.siteMembers.get(
+        c.var.currentSite.id,
+        session.user.id,
+      );
+      if (!membership) {
+        return c.redirect(redirectTarget);
+      }
+
       await next();
     } catch {
       return c.redirect(redirectTarget);
@@ -122,6 +130,14 @@ export function requireAuthApi(): MiddlewareHandler<Env> {
       });
 
       if (session?.user) {
+        const membership = await c.var.services.siteMembers.get(
+          c.var.currentSite.id,
+          session.user.id,
+        );
+        if (!membership) {
+          throw new UnauthorizedError();
+        }
+
         await next();
         return;
       }

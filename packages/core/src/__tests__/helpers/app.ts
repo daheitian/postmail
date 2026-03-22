@@ -15,6 +15,7 @@ import { createI18n } from "../../i18n/i18n.js";
 import { DEFAULT_APP_PORT } from "../../lib/env.js";
 import { resolveConfig } from "../../lib/resolve-config.js";
 import type { StorageDriver } from "../../lib/storage.js";
+import type { HostedHandoffService } from "../../services/hosted-handoff.js";
 import { createServices } from "../../services/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -32,6 +33,10 @@ interface TestAppOptions {
   internalAdminToken?: string;
   /** Optional site resolution mode override */
   siteResolutionMode?: "single-site" | "host-based";
+  /** Optional hosted SSO secret binding */
+  jantCloudSsoSecret?: string;
+  /** Optional hosted handoff service override */
+  hostedHandoff?: HostedHandoffService;
 }
 
 /**
@@ -62,10 +67,23 @@ export function createTestApp(options: TestAppOptions = {}) {
       SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
       DEMO_MODE: options.demoMode ? "true" : "false",
       INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
+      JANT_CLOUD_SSO_SECRET: options.jantCloudSsoSecret,
       SITE_RESOLUTION_MODE: options.siteResolutionMode,
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);
+    c.set(
+      "hostedHandoff",
+      options.hostedHandoff ??
+        ({
+          async completeFromSignedToken() {
+            return {
+              sessionToken: "test-session-token",
+              userId: "test-user",
+            };
+          },
+        } as HostedHandoffService),
+    );
     c.set("currentSite", {
       id: DEFAULT_TEST_SITE_ID,
       key: "default",
@@ -85,6 +103,11 @@ export function createTestApp(options: TestAppOptions = {}) {
     c.set("i18n", i18n);
 
     if (options.authenticated) {
+      await services.siteMembers.ensure(
+        DEFAULT_TEST_SITE_ID,
+        "test-user",
+        "owner",
+      );
       // Mock auth that always returns a session
       c.set("auth", {
         api: {

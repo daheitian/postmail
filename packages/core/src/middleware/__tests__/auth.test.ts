@@ -15,6 +15,22 @@ import type { AppVariables } from "../../types/app-context.js";
 type Env = { Bindings: Bindings; Variables: AppVariables };
 const LOCAL_API_URL = `http://localhost:${DEFAULT_APP_PORT}/api/data`;
 const LOCAL_HOST = `127.0.0.1:${DEFAULT_APP_PORT}`;
+const TEST_CURRENT_SITE = {
+  createdAt: 0,
+  id: "site-1",
+  key: "default",
+  status: "active",
+  updatedAt: 0,
+} as AppVariables["currentSite"];
+
+function createTestHonoApp() {
+  const app = new Hono<Env>();
+  app.use("*", async (c, next) => {
+    c.set("currentSite", TEST_CURRENT_SITE);
+    await next();
+  });
+  return app;
+}
 
 function createMockAuth(authenticated: boolean) {
   return {
@@ -39,6 +55,23 @@ function createMockApiTokenService(validToken?: string) {
     list: vi.fn(),
     delete: vi.fn(),
     deleteAll: vi.fn(async () => 0),
+  };
+}
+
+function createMockSiteMembers(hasMembership = true) {
+  return {
+    get: vi.fn(async () =>
+      hasMembership
+        ? {
+            createdAt: 0,
+            role: "owner",
+            siteId: "site-1",
+            updatedAt: 0,
+            userId: "user-1",
+          }
+        : null,
+    ),
+    ensure: vi.fn(),
   };
 }
 
@@ -94,9 +127,12 @@ describe("hasValidLocalDevToken", () => {
 
 describe("requireAuth", () => {
   it("allows authenticated requests", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(true));
+      c.set("services", {
+        siteMembers: createMockSiteMembers(),
+      } as AppVariables["services"]);
       await next();
     });
     app.get("/settings", requireAuth(), (c) => c.text("Settings"));
@@ -107,9 +143,12 @@ describe("requireAuth", () => {
   });
 
   it("redirects unauthenticated requests to /signin", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
+      c.set("services", {
+        siteMembers: createMockSiteMembers(),
+      } as AppVariables["services"]);
       await next();
     });
     app.get("/settings", requireAuth(), (c) => c.text("Settings"));
@@ -120,9 +159,12 @@ describe("requireAuth", () => {
   });
 
   it("redirects to custom path", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
+      c.set("services", {
+        siteMembers: createMockSiteMembers(),
+      } as AppVariables["services"]);
       await next();
     });
     app.get("/settings", requireAuth("/login"), (c) => c.text("Settings"));
@@ -135,12 +177,13 @@ describe("requireAuth", () => {
 
 describe("requireAuthApi", () => {
   it("allows authenticated requests via session", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(true));
       c.set("services", {
         apiTokens: createMockApiTokenService(),
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -154,12 +197,13 @@ describe("requireAuthApi", () => {
   });
 
   it("returns 401 for unauthenticated requests without Bearer token", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: createMockApiTokenService(),
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -174,7 +218,7 @@ describe("requireAuthApi", () => {
   });
 
   it("returns 401 when getSession throws", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", {
@@ -186,6 +230,7 @@ describe("requireAuthApi", () => {
       } as AppVariables["auth"]);
       c.set("services", {
         apiTokens: createMockApiTokenService(),
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -199,12 +244,13 @@ describe("requireAuthApi", () => {
     const validToken = "jnt_abc123";
     const mockApiTokens = createMockApiTokenService(validToken);
 
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: mockApiTokens,
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -225,12 +271,13 @@ describe("requireAuthApi", () => {
   it("returns 401 for invalid Bearer token", async () => {
     const mockApiTokens = createMockApiTokenService("jnt_valid");
 
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: mockApiTokens,
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -247,12 +294,13 @@ describe("requireAuthApi", () => {
   it("prefers session auth over Bearer token", async () => {
     const mockApiTokens = createMockApiTokenService("jnt_valid");
 
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(true));
       c.set("services", {
         apiTokens: mockApiTokens,
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -271,13 +319,14 @@ describe("requireAuthApi", () => {
     const devToken = "jnt_dev_test123";
     const mockApiTokens = createMockApiTokenService();
 
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.env = { ...c.env, DEV_API_TOKEN: devToken } as Bindings;
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: mockApiTokens,
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -296,13 +345,14 @@ describe("requireAuthApi", () => {
     const devToken = "jnt_dev_test123";
     const mockApiTokens = createMockApiTokenService();
 
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.env = { ...c.env, DEV_API_TOKEN: devToken } as Bindings;
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: mockApiTokens,
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -321,13 +371,14 @@ describe("requireAuthApi", () => {
     const devToken = "jnt_dev_test123";
     const mockApiTokens = createMockApiTokenService();
 
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.env = { ...c.env, DEV_API_TOKEN: devToken } as Bindings;
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: mockApiTokens,
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -344,7 +395,7 @@ describe("requireAuthApi", () => {
     const devToken = "jnt_dev_test123";
     const mockApiTokens = createMockApiTokenService();
 
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.env = {
@@ -355,6 +406,7 @@ describe("requireAuthApi", () => {
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: mockApiTokens,
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -374,12 +426,13 @@ describe("requireAuthApi", () => {
 
 describe("requireInternalAdminApi", () => {
   it("returns 404 when the internal admin token is not configured", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: createMockApiTokenService(),
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -392,7 +445,7 @@ describe("requireInternalAdminApi", () => {
   });
 
   it("returns 401 for an invalid internal admin token", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.env = {
@@ -402,6 +455,7 @@ describe("requireInternalAdminApi", () => {
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: createMockApiTokenService(),
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });
@@ -417,7 +471,7 @@ describe("requireInternalAdminApi", () => {
   });
 
   it("allows requests with the configured internal admin token", async () => {
-    const app = new Hono<Env>();
+    const app = createTestHonoApp();
     app.onError(errorHandler);
     app.use("*", async (c, next) => {
       c.env = {
@@ -427,6 +481,7 @@ describe("requireInternalAdminApi", () => {
       c.set("auth", createMockAuth(false));
       c.set("services", {
         apiTokens: createMockApiTokenService(),
+        siteMembers: createMockSiteMembers(),
       } as AppVariables["services"]);
       await next();
     });

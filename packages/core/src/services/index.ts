@@ -26,6 +26,10 @@ import { createAuthService, type AuthService } from "./auth.js";
 import { createApiTokenService, type ApiTokenService } from "./api-token.js";
 import { createBootstrapService, type BootstrapService } from "./bootstrap.js";
 import { createSiteAdminService, type SiteAdminService } from "./site-admin.js";
+import {
+  createSiteMemberService,
+  type SiteMemberService,
+} from "./site-member.js";
 import type { EnsureSingleSiteOptions } from "./site.js";
 
 export interface Services {
@@ -41,6 +45,7 @@ export interface Services {
   apiTokens: ApiTokenService;
   bootstrap: BootstrapService;
   siteAdmin: SiteAdminService;
+  siteMembers: SiteMemberService;
 }
 
 export function createServices(
@@ -97,6 +102,7 @@ export function createServices(
       bootstrapSite: config?.bootstrapSite,
     }),
     siteAdmin: createSiteAdminService(db, databaseSchema, dialect),
+    siteMembers: createSiteMemberService(db, databaseSchema),
   };
 }
 
@@ -114,6 +120,7 @@ export type {
   BootstrapService,
   CompleteInitialSetupData,
 } from "./bootstrap.js";
+export type { SiteMemberService } from "./site-member.js";
 export type {
   CreateManagedSiteInput,
   ManagedSiteResult,

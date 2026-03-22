@@ -11,6 +11,7 @@ import { setupRoutes } from "./routes/auth/setup.js";
 import { signinRoutes } from "./routes/auth/signin.js";
 import { resetRoutes } from "./routes/auth/reset.js";
 import { devAuthRoutes } from "./routes/auth/dev.js";
+import { hostedSsoRoutes } from "./routes/auth/hosted-sso.js";
 
 // Routes - Pages
 import { homeRoutes } from "./routes/pages/home.js";
@@ -243,6 +244,7 @@ export function createApp(): App {
     }
     const runtime = await createRequestRuntime(c.env, publicRequestUrl);
     c.set("services", runtime.services);
+    c.set("hostedHandoff", runtime.hostedHandoff);
     c.set("storage", runtime.storage);
     c.set("auth", runtime.auth);
     c.set("currentSite", runtime.currentSite);
@@ -407,6 +409,7 @@ export function createApp(): App {
   app.route("/", signinRoutes);
   app.route("/", resetRoutes);
   app.route("/", devAuthRoutes);
+  app.route("/", hostedSsoRoutes);
 
   // Settings routes (protected)
   app.use("/settings/*", requireAuth());

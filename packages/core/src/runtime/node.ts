@@ -6,9 +6,14 @@ import { createAuth, type Auth } from "../auth.js";
 import {
   getAuthSecret,
   getEnvString,
+  getJantCloudSsoSecret,
   shouldUseSecureCookies,
 } from "../lib/env.js";
 import { createStorageDriver, type StorageDriver } from "../lib/storage.js";
+import {
+  createHostedHandoffService,
+  type HostedHandoffService,
+} from "../services/hosted-handoff.js";
 import { createServices, type Services } from "../services/index.js";
 import type { Site, SiteDomain } from "../types/entities.js";
 import type { Bindings } from "../types/bindings.js";
@@ -24,6 +29,7 @@ export interface NodeRequestRuntime {
   currentSite: Site;
   currentSiteDomain: SiteDomain | null;
   db: Database;
+  hostedHandoff: HostedHandoffService;
   services: Services;
   storage: StorageDriver | null;
 }
@@ -100,11 +106,23 @@ export async function createNodeRequestRuntime(
     publicRequestUrl,
     siteLookup.domain?.pathPrefix ?? null,
   );
+  const auth = createAuth(db, {
+    secret: authSecret,
+    baseURL,
+    databaseDialect,
+    schema: databaseSchema,
+    useSecureCookies: shouldUseSecureCookies(env, publicRequestUrl),
+  });
 
   return {
+    auth,
     currentSite: siteLookup.site,
     currentSiteDomain: siteLookup.domain,
     db,
+    hostedHandoff: createHostedHandoffService(db, auth, {
+      schema: databaseSchema,
+      secret: getJantCloudSsoSecret(env),
+    }),
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,
       bootstrapSite: getSingleSiteBootstrapOptions(env),
@@ -112,13 +130,6 @@ export async function createNodeRequestRuntime(
       schema: databaseSchema,
     }),
     storage: createStorageDriver(env),
-    auth: createAuth(db, {
-      secret: authSecret,
-      baseURL,
-      databaseDialect,
-      schema: databaseSchema,
-      useSecureCookies: shouldUseSecureCookies(env, publicRequestUrl),
-    }),
   };
 }
 

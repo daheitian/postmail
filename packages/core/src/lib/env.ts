@@ -106,6 +106,10 @@ export function getInternalAdminToken(env: EnvSource): string | undefined {
   return getEnvString(env, "INTERNAL_ADMIN_TOKEN");
 }
 
+export function getJantCloudSsoSecret(env: EnvSource): string | undefined {
+  return getEnvString(env, "JANT_CLOUD_SSO_SECRET");
+}
+
 export function getStorageDriverEnv(env: EnvSource): string | undefined {
   return getEnvString(env, "STORAGE_DRIVER");
 }
