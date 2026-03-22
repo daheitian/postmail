@@ -492,10 +492,6 @@ mise run demo-public-verify
 echo "Done! demo.jant.me has been rebuilt from the canonical snapshot."
 """
 
-[tasks.db-demo-reseed]
-description = "Alias for demo-public-rebuild"
-run = "mise run demo-public-rebuild"
-
 [tasks.demo-nuke]
 alias = "db-demo-nuke"
 description = "Drop ALL tables in the public demo database (including migrations)"
