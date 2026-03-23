@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { unzipSync } from "fflate";
 import { createTestApp } from "../../../../__tests__/helpers/app.js";
 import { DEFAULT_TEST_SITE_ID } from "../../../../__tests__/helpers/db.js";
 import { internalSitesRoutes } from "../sites.js";
@@ -183,6 +184,54 @@ describe("Internal site admin routes", () => {
     expect(deletedPostCount.count).toBe(0);
     expect(deletedSettingsCount.count).toBe(0);
     expect(defaultSiteCount.count).toBe(1);
+  });
+
+  it("exports a managed site as a raw site archive", async () => {
+    const { app } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const createRes = await app.request("/api/internal/sites", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer internal-secret",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: "export-demo",
+        primaryHost: "export-demo.example.com",
+        siteName: "Export Demo",
+      }),
+    });
+
+    expect(createRes.status).toBe(201);
+    const created = (await createRes.json()) as { siteId: string };
+
+    const exportRes = await app.request(
+      `/api/internal/sites/${created.siteId}/export`,
+      {
+        headers: {
+          Authorization: "Bearer internal-secret",
+        },
+      },
+    );
+
+    expect(exportRes.status).toBe(200);
+    expect(exportRes.headers.get("content-type")).toBe("application/zip");
+    expect(exportRes.headers.get("content-disposition")).toContain(
+      'attachment; filename="export-demo-site-export.zip"',
+    );
+
+    const files = unzipSync(new Uint8Array(await exportRes.arrayBuffer()));
+    const configToml = new TextDecoder().decode(files["config.toml"]);
+
+    expect(configToml).toContain(
+      'base_url = "http://export-demo.example.com/"',
+    );
+    expect(configToml).toContain('title = "Export Demo"');
   });
 
   it("suspends and resumes a managed site", async () => {

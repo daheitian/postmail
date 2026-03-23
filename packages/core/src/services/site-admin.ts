@@ -9,13 +9,28 @@ import {
   sqliteSchemaBundle,
   type DatabaseSchema,
 } from "../db/schema-bundle.js";
+import type { Bindings } from "../types/bindings.js";
 import type { StorageDriver } from "../lib/storage.js";
 import { SETTINGS_KEYS } from "../lib/constants.js";
 import { ConflictError, NotFoundError } from "../lib/errors.js";
 import { createEntityId } from "../lib/ids.js";
+import { getSiteUrl } from "../lib/env.js";
+import { resolveConfig } from "../lib/resolve-config.js";
+import { buildThemeStyle } from "../lib/theme.js";
 import { now } from "../lib/time.js";
+import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
+import {
+  BUILTIN_FONT_THEMES,
+  getCjkSerifCssVariables,
+  getFontThemeCssVariables,
+} from "../ui/font-themes.js";
 import type { Site, SiteDomain } from "../types.js";
+import { createCollectionService } from "./collection.js";
+import { createExportService } from "./export.js";
+import { createMediaService } from "./media.js";
 import { createNavItemService } from "./navigation.js";
+import { createPathService } from "./path.js";
+import { createPostService } from "./post.js";
 import { createSettingsService } from "./settings.js";
 
 const { sites: _sqliteSites, siteDomains: _sqliteSiteDomains } =
@@ -41,12 +56,26 @@ export interface ManageManagedSiteDomainInput {
   makePrimary?: boolean;
 }
 
+export interface ExportManagedSiteDeps {
+  env: Bindings;
+  storage?: StorageDriver | null;
+}
+
+export interface ManagedSiteExportResult {
+  filename: string;
+  zip: Uint8Array;
+}
+
 export interface SiteAdminService {
   addManagedSiteDomain(
     siteId: string,
     input: ManageManagedSiteDomainInput,
   ): Promise<SiteDomain[]>;
   createManagedSite(input: CreateManagedSiteInput): Promise<ManagedSiteResult>;
+  exportManagedSite(
+    siteId: string,
+    deps: ExportManagedSiteDeps,
+  ): Promise<ManagedSiteExportResult>;
   suspendManagedSite(siteId: string): Promise<Site>;
   resumeManagedSite(siteId: string): Promise<Site>;
   deleteManagedSite(
@@ -115,6 +144,28 @@ export function createSiteAdminService(
     siteMembers,
     sites,
   } = databaseSchema;
+
+  function getManagedSiteBaseUrl(
+    env: Bindings,
+    domain: Pick<SiteDomain, "host" | "pathPrefix"> | null,
+  ): string | undefined {
+    if (!domain) {
+      return undefined;
+    }
+
+    let protocol = "https:";
+    const configuredSiteUrl = getSiteUrl(env);
+    if (configuredSiteUrl) {
+      try {
+        protocol = new URL(configuredSiteUrl).protocol || protocol;
+      } catch {
+        // Fall back to https for hosted exports.
+      }
+    }
+
+    const pathPrefix = domain.pathPrefix ?? "";
+    return `${protocol}//${domain.host}${pathPrefix}`;
+  }
 
   async function createWithDatabase(
     targetDb: Database,
@@ -409,6 +460,121 @@ export function createSiteAdminService(
       }
 
       return createWithDatabase(db, input);
+    },
+    async exportManagedSite(siteId, deps) {
+      const normalizedSiteId = siteId.trim();
+      if (!normalizedSiteId) {
+        throw new NotFoundError("Site");
+      }
+
+      const siteRow = await requireSiteRow(db, normalizedSiteId);
+      const domains = await listManagedSiteDomains(normalizedSiteId);
+      const primaryDomain =
+        domains.find((domain) => domain.kind === "primary") ?? null;
+
+      const settings = createSettingsService(
+        db,
+        normalizedSiteId,
+        databaseSchema,
+        databaseDialect,
+      );
+      const paths = createPathService(db, normalizedSiteId, databaseSchema);
+      const navItems = createNavItemService(
+        db,
+        normalizedSiteId,
+        databaseSchema,
+      );
+      const posts = createPostService(
+        db,
+        {
+          databaseDialect,
+          slugIdLength: 5,
+        },
+        normalizedSiteId,
+        paths,
+        databaseSchema,
+      );
+      const collections = createCollectionService(
+        db,
+        normalizedSiteId,
+        paths,
+        databaseSchema,
+        databaseDialect,
+      );
+      const mediaService = createMediaService(
+        db,
+        normalizedSiteId,
+        databaseSchema,
+        databaseDialect,
+      );
+
+      const allSettings = await settings.getAll();
+      const appConfig = resolveConfig(deps.env, allSettings, {
+        siteUrl: getManagedSiteBaseUrl(deps.env, primaryDomain) ?? undefined,
+      });
+      const activeTheme = BUILTIN_COLOR_THEMES.find(
+        (theme) => theme.id === (appConfig.themeId || appConfig.defaultThemeId),
+      );
+      const fontTheme = appConfig.fontThemeId
+        ? BUILTIN_FONT_THEMES.find(
+            (theme) => theme.id === appConfig.fontThemeId,
+          )
+        : undefined;
+      const fontOverrides = {
+        ...getCjkSerifCssVariables(appConfig.siteLanguage),
+        ...(fontTheme ? getFontThemeCssVariables(fontTheme) : {}),
+      };
+      const themeCss = buildThemeStyle(
+        activeTheme,
+        appConfig.themeMode,
+        fontOverrides,
+      );
+      const navItemList = await navItems.list();
+      const appleTouchKey = allSettings[SETTINGS_KEYS.SITE_FAVICON_APPLE_TOUCH];
+      const exportService = createExportService(
+        {
+          collections,
+          media: mediaService,
+          paths,
+          posts,
+        },
+        {
+          siteName: appConfig.siteName,
+          siteUrl: appConfig.siteUrl,
+          siteDescription: appConfig.siteDescription,
+          siteLanguage: appConfig.siteLanguage,
+          showJantBrandingOnHome: appConfig.showJantBrandingOnHome,
+          homeDefaultView: appConfig.homeDefaultView,
+          headerNavMaxVisible: appConfig.headerNavMaxVisible,
+          siteFooter: appConfig.siteFooter,
+          showHeaderAvatar: appConfig.showHeaderAvatar,
+          siteAvatarUrl: appConfig.siteAvatarUrl,
+          faviconIcoBase64: allSettings[SETTINGS_KEYS.SITE_FAVICON_ICO],
+          appleTouchIconStorageKey: appleTouchKey || undefined,
+          faviconVersion: appConfig.faviconVersion,
+          themeId: appConfig.themeId,
+          defaultThemeId: appConfig.defaultThemeId,
+          fontThemeId: appConfig.fontThemeId,
+          themeMode: appConfig.themeMode,
+          noindex: appConfig.noindex,
+          themeCss,
+          customCss: appConfig.customCSS,
+          r2PublicUrl: appConfig.r2PublicUrl,
+          s3PublicUrl: appConfig.s3PublicUrl,
+          localPublicUrl: appConfig.localPublicUrl,
+          imageTransformUrl: appConfig.imageTransformUrl,
+          sitePathPrefix: appConfig.sitePathPrefix,
+          navItems: navItemList,
+        },
+        {
+          storage: deps.storage ?? null,
+        },
+      );
+
+      return {
+        filename: `${siteRow.key}-site-export.zip`,
+        zip: await exportService.generateZolaSite(),
+      };
     },
     async suspendManagedSite(siteId) {
       const normalizedSiteId = siteId.trim();

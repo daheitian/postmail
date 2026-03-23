@@ -83,6 +83,30 @@ internalSitesRoutes.delete("/:siteId", requireInternalAdminApi(), async (c) => {
   return c.body(null, 204);
 });
 
+internalSitesRoutes.get(
+  "/:siteId/export",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+
+    const archive = await c.var.services.siteAdmin.exportManagedSite(
+      c.req.param("siteId"),
+      {
+        env: c.env,
+        storage: c.var.storage,
+      },
+    );
+
+    return new Response(archive.zip, {
+      headers: {
+        "Content-Disposition": `attachment; filename="${archive.filename}"`,
+        "Content-Length": String(archive.zip.byteLength),
+        "Content-Type": "application/zip",
+      },
+    });
+  },
+);
+
 internalSitesRoutes.post(
   "/:siteId/suspend",
   requireInternalAdminApi(),

@@ -17,6 +17,7 @@ import { resolveConfig } from "../../lib/resolve-config.js";
 import type { StorageDriver } from "../../lib/storage.js";
 import type { HostedHandoffService } from "../../services/hosted-handoff.js";
 import { createServices } from "../../services/index.js";
+import { sqliteSchemaBundle } from "../../db/schema-bundle.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -68,6 +69,12 @@ export function createTestApp(options: TestAppOptions = {}) {
       DEMO_MODE: options.demoMode ? "true" : "false",
       INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
       HOSTED_CONTROL_PLANE_SSO_SECRET: options.hostedControlPlaneSsoSecret,
+      NODE_DATABASE: {
+        db,
+        dialect: "sqlite",
+        rawQuery: mockD1,
+        schema: sqliteSchemaBundle,
+      },
       SITE_RESOLUTION_MODE: options.siteResolutionMode,
     } as AppVariables["services"] extends never ? never : Bindings;
 
