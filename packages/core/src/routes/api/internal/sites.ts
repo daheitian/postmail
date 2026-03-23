@@ -84,6 +84,20 @@ internalSitesRoutes.delete("/:siteId", requireInternalAdminApi(), async (c) => {
 });
 
 internalSitesRoutes.get(
+  "/:siteId/media-usage",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+
+    const usage = await c.var.services.siteAdmin.getManagedSiteMediaUsage(
+      c.req.param("siteId"),
+    );
+
+    return c.json(usage);
+  },
+);
+
+internalSitesRoutes.get(
   "/:siteId/export",
   requireInternalAdminApi(),
   async (c) => {

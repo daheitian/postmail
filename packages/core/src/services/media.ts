@@ -35,7 +35,13 @@ import {
   MEDIA_KINDS,
   STORAGE_DRIVERS,
 } from "../types.js";
-import { ConfigurationError, ValidationError } from "../lib/errors.js";
+import {
+  ConfigurationError,
+  ExternalServiceError,
+  MediaQuotaExceededError,
+  ValidationError,
+} from "../lib/errors.js";
+import type { HostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 
 const DEFAULT_MEDIA_POSITION = "a0";
 const ATTACHED_TEXT_MIME_TYPE = "text/x-tiptap+json";
@@ -97,6 +103,7 @@ export interface TextAttachmentDeps {
 }
 
 export interface MediaService {
+  assertCanWriteBytes(additionalBytes: number): Promise<void>;
   getById(id: string): Promise<Media | null>;
   getByIds(ids: string[]): Promise<Media[]>;
   getByPostId(postId: string): Promise<Media[]>;
@@ -166,6 +173,10 @@ export function createMediaService(
   siteId: string,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
   databaseDialect: DatabaseDialect = "sqlite",
+  deps?: {
+    enforceHostedQuota?: boolean;
+    hostedControlPlane?: HostedControlPlaneClient | null;
+  },
 ): MediaService {
   const { media } = databaseSchema;
 
@@ -217,7 +228,54 @@ export function createMediaService(
     };
   }
 
+  async function assertCanWriteBytes(additionalBytes: number): Promise<void> {
+    if (!Number.isFinite(additionalBytes) || additionalBytes < 0) {
+      throw new ValidationError(
+        "Media write checks require a non-negative byte count.",
+      );
+    }
+
+    if (additionalBytes === 0) {
+      return;
+    }
+
+    if (!deps?.enforceHostedQuota) {
+      return;
+    }
+
+    if (!deps.hostedControlPlane) {
+      throw new ConfigurationError(
+        "Hosted media quota checks require a configured control plane client.",
+      );
+    }
+
+    try {
+      const result = await deps.hostedControlPlane.checkMediaWriteQuota({
+        additionalBytes,
+        coreSiteId: siteId,
+      });
+
+      if (result.allowed) {
+        return;
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new ExternalServiceError(error.message);
+      }
+
+      throw new ExternalServiceError(
+        "Hosted media quota check failed before the upload could continue.",
+      );
+    }
+
+    throw new MediaQuotaExceededError();
+  }
+
   return {
+    async assertCanWriteBytes(additionalBytes) {
+      await assertCanWriteBytes(additionalBytes);
+    },
+
     async getById(id) {
       const result = await db
         .select()

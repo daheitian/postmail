@@ -16,6 +16,7 @@ import { createPostService, type PostService } from "./post.js";
 import { createCustomUrlService, type CustomUrlService } from "./custom-url.js";
 import { createPathService, type PathService } from "./path.js";
 import { createMediaService, type MediaService } from "./media.js";
+import { createSiteService, type SiteService } from "./site.js";
 import {
   createCollectionService,
   type CollectionService,
@@ -39,6 +40,7 @@ import type { EnsureSingleSiteOptions } from "./site.js";
 
 export interface Services {
   settings: SettingsService;
+  site: SiteService;
   paths: PathService;
   posts: PostService;
   customUrls: CustomUrlService;
@@ -63,16 +65,19 @@ export function createServices(
     schema?: DatabaseSchema;
     databaseDialect?: DatabaseDialect;
     bootstrapSite?: EnsureSingleSiteOptions;
+    enforceHostedMediaQuota?: boolean;
     hostedControlPlane?: HostedControlPlaneClient | null;
   },
 ): Services {
   const databaseSchema = config?.schema ?? sqliteSchemaBundle;
   const dialect = config?.databaseDialect ?? "sqlite";
+  const site = createSiteService(db, databaseSchema);
   const settings = createSettingsService(db, siteId, databaseSchema, dialect);
   const paths = createPathService(db, siteId, databaseSchema);
   const navItems = createNavItemService(db, siteId, databaseSchema);
   return {
     settings,
+    site,
     paths,
     posts: createPostService(
       db,
@@ -85,7 +90,10 @@ export function createServices(
       databaseSchema,
     ),
     customUrls: createCustomUrlService(db, siteId, paths, databaseSchema),
-    media: createMediaService(db, siteId, databaseSchema, dialect),
+    media: createMediaService(db, siteId, databaseSchema, dialect, {
+      enforceHostedQuota: config?.enforceHostedMediaQuota ?? false,
+      hostedControlPlane: config?.hostedControlPlane ?? null,
+    }),
     collections: createCollectionService(
       db,
       siteId,
@@ -126,6 +134,7 @@ export function createServices(
 }
 
 export type { SettingsService } from "./settings.js";
+export type { SiteService } from "./site.js";
 export type { PathService } from "./path.js";
 export type { PostService, PostFilters, PostDeleteDeps } from "./post.js";
 export type { CustomUrlService } from "./custom-url.js";

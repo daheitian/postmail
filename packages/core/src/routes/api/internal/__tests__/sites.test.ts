@@ -100,6 +100,45 @@ describe("Internal site admin routes", () => {
     ]);
   });
 
+  it("returns managed site media usage in host-based mode", async () => {
+    const { app, services } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    await services.media.create({
+      filename: "first.jpg",
+      mimeType: "image/jpeg",
+      originalName: "first.jpg",
+      size: 1024,
+      storageKey: "media/default/files/first.jpg",
+    });
+    await services.media.create({
+      filename: "second.jpg",
+      mimeType: "image/jpeg",
+      originalName: "second.jpg",
+      size: 2048,
+      storageKey: "media/default/files/second.jpg",
+    });
+
+    const res = await app.request(
+      `/api/internal/sites/${DEFAULT_TEST_SITE_ID}/media-usage`,
+      {
+        headers: {
+          Authorization: "Bearer internal-secret",
+        },
+      },
+    );
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({
+      mediaBytesUsed: 3072,
+      siteId: DEFAULT_TEST_SITE_ID,
+    });
+  });
+
   it("deletes a managed site without clearing other sites", async () => {
     const { app, sqlite } = createTestApp({
       authenticated: false,

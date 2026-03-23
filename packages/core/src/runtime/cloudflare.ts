@@ -91,6 +91,7 @@ export async function createCloudflareRequestRuntime(
     services: createServices(db, session, siteLookup.site.id, {
       databaseDialect: "sqlite",
       bootstrapSite: getSingleSiteBootstrapOptions(env),
+      enforceHostedMediaQuota: getSiteResolutionMode(env) === "host-based",
       hostedControlPlane: createHostedControlPlaneClient(env),
       slugIdLength,
       schema: sqliteSchemaBundle,

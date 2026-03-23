@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion -- Test assertions use ! for readability */
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   createTestDatabase,
   DEFAULT_TEST_SITE_ID,
@@ -7,6 +7,7 @@ import {
 import { createMediaService } from "../media.js";
 import { createPostService } from "../post.js";
 import type { Database } from "../../db/index.js";
+import { MediaQuotaExceededError } from "../../lib/errors.js";
 
 function createMockStorage() {
   const files = new Map<string, { body: Uint8Array; contentType?: string }>();
@@ -66,6 +67,71 @@ describe("MediaService", () => {
     width: 1920,
     height: 1080,
   };
+
+  describe("assertCanWriteBytes", () => {
+    it("is a no-op when hosted quota enforcement is disabled", async () => {
+      await expect(
+        mediaService.assertCanWriteBytes(1024),
+      ).resolves.toBeUndefined();
+    });
+
+    it("delegates hosted quota checks to the control plane when enabled", async () => {
+      const checkMediaWriteQuota = vi.fn(async () => ({
+        allowed: true,
+        limitBytes: 50_000,
+        remainingBytes: 40_000,
+        usedBytes: 10_000,
+      }));
+      const hostedQuotaService = createMediaService(
+        db,
+        DEFAULT_TEST_SITE_ID,
+        undefined,
+        undefined,
+        {
+          enforceHostedQuota: true,
+          hostedControlPlane: {
+            checkMediaWriteQuota,
+            async syncSiteMetadata() {},
+          },
+        },
+      );
+
+      await expect(
+        hostedQuotaService.assertCanWriteBytes(2048),
+      ).resolves.toBeUndefined();
+      expect(checkMediaWriteQuota).toHaveBeenCalledWith({
+        additionalBytes: 2048,
+        coreSiteId: DEFAULT_TEST_SITE_ID,
+      });
+    });
+
+    it("throws when a hosted upload would exceed the shared quota", async () => {
+      const hostedQuotaService = createMediaService(
+        db,
+        DEFAULT_TEST_SITE_ID,
+        undefined,
+        undefined,
+        {
+          enforceHostedQuota: true,
+          hostedControlPlane: {
+            async checkMediaWriteQuota() {
+              return {
+                allowed: false,
+                limitBytes: 50_000,
+                remainingBytes: 0,
+                usedBytes: 50_000,
+              };
+            },
+            async syncSiteMetadata() {},
+          },
+        },
+      );
+
+      await expect(
+        hostedQuotaService.assertCanWriteBytes(2048),
+      ).rejects.toBeInstanceOf(MediaQuotaExceededError);
+    });
+  });
 
   describe("create", () => {
     it("creates a media record with all fields", async () => {

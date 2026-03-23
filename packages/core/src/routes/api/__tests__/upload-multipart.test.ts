@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { Hono } from "hono";
 import type { Bindings } from "../../../types.js";
 import type { AppVariables } from "../../../types/app-context.js";
@@ -15,12 +15,14 @@ import { createCollectionService } from "../../../services/collection.js";
 import { createSearchService } from "../../../services/search.js";
 import { createNavItemService } from "../../../services/navigation.js";
 import { createAuthService } from "../../../services/auth.js";
+import { createSiteMemberService } from "../../../services/site-member.js";
 import { errorHandler } from "../../../middleware/error-handler.js";
 import { createI18n } from "../../../i18n/i18n.js";
 import { DEFAULT_APP_PORT } from "../../../lib/env.js";
 import { resolveConfig } from "../../../lib/resolve-config.js";
 import type { Database } from "../../../db/index.js";
 import type { StorageDriver, UploadedPart } from "../../../lib/storage.js";
+import { MediaQuotaExceededError } from "../../../lib/errors.js";
 import { multipartUploadApiRoutes } from "../upload-multipart.js";
 import type BetterSqlite3 from "better-sqlite3";
 
@@ -167,6 +169,7 @@ function createTestAppWithStorage(options: {
     search: createSearchService(mockD1, DEFAULT_TEST_SITE_ID),
     navItems: createNavItemService(db, DEFAULT_TEST_SITE_ID),
     auth: createAuthService(db, settingsService),
+    siteMembers: createSiteMemberService(db),
   };
 
   const app = new Hono<Env>();
@@ -196,6 +199,11 @@ function createTestAppWithStorage(options: {
     c.set("i18n", i18n);
 
     if (options.authenticated) {
+      await services.siteMembers.ensure(
+        DEFAULT_TEST_SITE_ID,
+        "test-user",
+        "owner",
+      );
       c.set("auth", {
         api: {
           getSession: async () => ({
@@ -337,6 +345,33 @@ describe("multipart upload API routes", () => {
       expect(data.storageKey).toContain(`media/${DEFAULT_TEST_SITE_ID}/files/`);
       expect(data.filename).toBeDefined();
       expect(data.originalName).toBe("big-video.mp4");
+    });
+
+    it("returns 409 when the shared hosted media quota would be exceeded", async () => {
+      const { app, services } = createTestAppWithStorage({
+        authenticated: true,
+        storage: createMockMultipartStorage(),
+      });
+      services.media.assertCanWriteBytes = vi.fn(async () => {
+        throw new MediaQuotaExceededError();
+      });
+      app.route("/api/upload/multipart", multipartUploadApiRoutes);
+
+      const res = await app.request("/api/upload/multipart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: "big-video.mp4",
+          contentType: "video/mp4",
+          size: 100_000_000,
+        }),
+      });
+
+      expect(res.status).toBe(409);
+      await expect(res.json()).resolves.toEqual({
+        error:
+          "This upload would exceed your shared hosted media limit. Remove files or upgrade storage to continue.",
+      });
     });
   });
 
@@ -550,6 +585,68 @@ describe("multipart upload API routes", () => {
       expect(String(media?.posterKey)).toBe(
         `media/${DEFAULT_TEST_SITE_ID}/posters/${id}.webp`,
       );
+    });
+
+    it("aborts the multipart upload when quota is exceeded during completion", async () => {
+      const initRes = await app.request("/api/upload/multipart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: "quota-hit.mp4",
+          contentType: "video/mp4",
+          size: 100_000_000,
+        }),
+      });
+      expect(initRes.status).toBe(200);
+      const { id, uploadId, storageKey, filename, originalName } =
+        (await initRes.json()) as {
+          id: string;
+          uploadId: string;
+          storageKey: string;
+          filename: string;
+          originalName: string;
+        };
+
+      const partRes = await app.request(
+        `/api/upload/multipart/${id}/part?partNumber=1&storageKey=${encodeURIComponent(storageKey)}&uploadId=${encodeURIComponent(uploadId)}`,
+        {
+          method: "PUT",
+          body: new Uint8Array(1024).fill(0xaa),
+        },
+      );
+      expect(partRes.status).toBe(200);
+      const partData = (await partRes.json()) as {
+        partNumber: number;
+        etag: string;
+      };
+
+      services.media.assertCanWriteBytes = vi.fn(async () => {
+        throw new MediaQuotaExceededError();
+      });
+
+      const completeRes = await app.request(
+        `/api/upload/multipart/${id}/complete`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            storageKey,
+            uploadId,
+            parts: [{ partNumber: partData.partNumber, etag: partData.etag }],
+            filename,
+            originalName,
+            contentType: "video/mp4",
+            size: 100_000_000,
+          }),
+        },
+      );
+
+      expect(completeRes.status).toBe(409);
+      await expect(completeRes.json()).resolves.toEqual({
+        error:
+          "This upload would exceed your shared hosted media limit. Remove files or upgrade storage to continue.",
+      });
+      expect(storage.aborted.has(uploadId)).toBe(true);
     });
   });
 });

@@ -577,4 +577,4 @@ For detailed release documentation, see [docs/RELEASING.md](docs/RELEASING.md).
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the AGPL-3.0 License.
+By contributing, you agree that your contributions will be licensed under the project's AGPL-3.0-or-later terms.

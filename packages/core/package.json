@@ -137,7 +137,7 @@
     "r2"
   ],
   "author": "Jant Contributors",
-  "license": "AGPL-3.0",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/jant-me/jant/issues"
   },

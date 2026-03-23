@@ -22,7 +22,7 @@ import {
   generateStorageKey,
   getPosterStorageKey,
 } from "../../lib/upload.js";
-import { assertFound } from "../../lib/errors.js";
+import { assertFound, MediaQuotaExceededError } from "../../lib/errors.js";
 import { getI18n } from "../../i18n/index.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -127,6 +127,17 @@ function sseUploadError(c: Context<Env>, message: string): Response {
   });
 }
 
+function getHostedMediaQuotaExceededText(c: Context<Env>): string {
+  return getI18n(c)._(
+    msg({
+      message:
+        "This upload would exceed your shared hosted media limit. Remove files or upgrade storage to continue.",
+      comment:
+        "@context: Error shown when a hosted upload would exceed the shared account media limit",
+    }),
+  );
+}
+
 // Upload a file
 uploadApiRoutes.post("/", async (c) => {
   const i18n = getI18n(c);
@@ -179,6 +190,8 @@ uploadApiRoutes.post("/", async (c) => {
 
   try {
     const sitePathPrefix = c.var.appConfig.sitePathPrefix;
+
+    await c.var.services.media.assertCanWriteBytes(file.size);
 
     // Read optional summary (provided for text attachments)
     let summary = (formData.get("summary") as string) || undefined;
@@ -321,19 +334,25 @@ uploadApiRoutes.post("/", async (c) => {
     // eslint-disable-next-line no-console -- Error logging is intentional
     console.error("Upload error:", err);
 
-    const errorText = i18n._(
-      msg({
-        message: "Upload didn't go through. Try again in a moment.",
-        comment: "@context: Error when file upload fails",
-      }),
-    );
+    const errorText =
+      err instanceof MediaQuotaExceededError
+        ? getHostedMediaQuotaExceededText(c)
+        : i18n._(
+            msg({
+              message: "Upload didn't go through. Try again in a moment.",
+              comment: "@context: Error when file upload fails",
+            }),
+          );
     if (wantsSSE(c)) {
       return sse(c, async (stream) => {
         await stream.remove("#upload-placeholder");
         await stream.toast(errorText, "error");
       });
     }
-    return c.json({ error: errorText }, 500);
+    return c.json(
+      { error: errorText },
+      err instanceof MediaQuotaExceededError ? 409 : 500,
+    );
   }
 });
 

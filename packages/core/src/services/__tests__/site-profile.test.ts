@@ -53,6 +53,14 @@ describe("SiteProfileService", () => {
       "sit_test",
       {
         hostedControlPlane: {
+          async checkMediaWriteQuota() {
+            return {
+              allowed: true,
+              limitBytes: 10,
+              remainingBytes: 10,
+              usedBytes: 0,
+            };
+          },
           syncSiteMetadata,
         } satisfies HostedControlPlaneClient,
       },
@@ -91,6 +99,14 @@ describe("SiteProfileService", () => {
       "sit_test",
       {
         hostedControlPlane: {
+          async checkMediaWriteQuota() {
+            return {
+              allowed: true,
+              limitBytes: 10,
+              remainingBytes: 10,
+              usedBytes: 0,
+            };
+          },
           syncSiteMetadata,
         } satisfies HostedControlPlaneClient,
       },
@@ -121,6 +137,14 @@ describe("SiteProfileService", () => {
       "sit_test",
       {
         hostedControlPlane: {
+          async checkMediaWriteQuota() {
+            return {
+              allowed: true,
+              limitBytes: 10,
+              remainingBytes: 10,
+              usedBytes: 0,
+            };
+          },
           syncSiteMetadata: vi.fn(async () => {
             throw new Error("sync failed");
           }),

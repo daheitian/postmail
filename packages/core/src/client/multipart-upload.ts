@@ -152,7 +152,10 @@ export async function uploadMultipart(
     });
 
     if (!completeRes.ok) {
-      throw new Error("Failed to complete upload");
+      const data = await readJsonObject(completeRes);
+      throw new Error(
+        getJsonString(data, "error") ?? "Failed to complete upload",
+      );
     }
 
     const completeData = await readJsonObject(completeRes);

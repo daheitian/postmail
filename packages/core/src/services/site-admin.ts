@@ -66,6 +66,11 @@ export interface ManagedSiteExportResult {
   zip: Uint8Array;
 }
 
+export interface ManagedSiteMediaUsageResult {
+  mediaBytesUsed: number;
+  siteId: string;
+}
+
 export interface SiteAdminService {
   addManagedSiteDomain(
     siteId: string,
@@ -76,6 +81,9 @@ export interface SiteAdminService {
     siteId: string,
     deps: ExportManagedSiteDeps,
   ): Promise<ManagedSiteExportResult>;
+  getManagedSiteMediaUsage(
+    siteId: string,
+  ): Promise<ManagedSiteMediaUsageResult>;
   suspendManagedSite(siteId: string): Promise<Site>;
   resumeManagedSite(siteId: string): Promise<Site>;
   deleteManagedSite(
@@ -209,6 +217,9 @@ export function createSiteAdminService(
         })
         .returning()
     )[0];
+    if (!siteRow) {
+      throw new Error("Creating the managed site did not return a site row.");
+    }
 
     const domainRow = (
       await targetDb
@@ -225,6 +236,11 @@ export function createSiteAdminService(
         })
         .returning()
     )[0];
+    if (!domainRow) {
+      throw new Error(
+        "Creating the managed site did not return a primary domain row.",
+      );
+    }
 
     await targetDb
       .insert(settings)
@@ -399,6 +415,9 @@ export function createSiteAdminService(
         .where(eq(sites.id, siteId))
         .returning()
     )[0];
+    if (!updatedSite) {
+      throw new NotFoundError("Site");
+    }
 
     return toSite(updatedSite);
   }
@@ -426,6 +445,28 @@ export function createSiteAdminService(
     await requireSite(db, normalizedSiteId);
     const rows = await listSiteDomainRows(db, normalizedSiteId);
     return rows.map(toSiteDomain);
+  }
+
+  async function getManagedSiteMediaUsage(
+    siteId: string,
+  ): Promise<ManagedSiteMediaUsageResult> {
+    const normalizedSiteId = siteId.trim();
+    if (!normalizedSiteId) {
+      throw new NotFoundError("Site");
+    }
+
+    await requireSite(db, normalizedSiteId);
+    const rows = await db
+      .select({
+        mediaBytesUsed: sql<number>`coalesce(sum(${media.size}), 0)`,
+      })
+      .from(media)
+      .where(eq(media.siteId, normalizedSiteId));
+
+    return {
+      mediaBytesUsed: rows[0]?.mediaBytesUsed ?? 0,
+      siteId: normalizedSiteId,
+    };
   }
 
   async function mutateSiteDomains(
@@ -460,6 +501,9 @@ export function createSiteAdminService(
       }
 
       return createWithDatabase(db, input);
+    },
+    async getManagedSiteMediaUsage(siteId) {
+      return getManagedSiteMediaUsage(siteId);
     },
     async exportManagedSite(siteId, deps) {
       const normalizedSiteId = siteId.trim();

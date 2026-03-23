@@ -2816,6 +2816,13 @@ msgstr "This reference is useful because it treats links and citations as part o
 msgid "This reset link is no longer valid. Request a new one to continue."
 msgstr "This reset link is no longer valid. Request a new one to continue."
 
+#. @context: Error shown when a hosted upload would exceed the shared account media limit
+#. @context: Error shown when a hosted upload would exceed the shared account media limit
+#: src/routes/api/upload-multipart.ts
+#: src/routes/api/upload.ts
+msgid "This upload would exceed your shared hosted media limit. Remove files or upgrade storage to continue."
+msgstr "This upload would exceed your shared hosted media limit. Remove files or upgrade storage to continue."
+
 #. @context: Helper text for the detail article sample on the theme sample page
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "This uses the real single-post detail rendering with a longer article, inline image, tables, lists, quotes, and code. The content column stays at the same width as the live site."

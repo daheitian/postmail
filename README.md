@@ -102,4 +102,4 @@ Jant is built on the idea that not everything needs to be optimized for engageme
 
 ## License
 
-AGPL-3.0
+AGPL-3.0-or-later

@@ -12,19 +12,25 @@
  *   5. PUT /:id/poster   — Upload poster frame (video thumbnails, small FormData)
  */
 
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { z } from "zod";
+import { msg } from "@lingui/core/macro";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
 import { requireAuthApi } from "../../middleware/auth.js";
 import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 import {
-  validateUploadFileMetadata,
   generateStorageKey,
   getPosterStorageKey,
+  validateUploadFileMetadata,
 } from "../../lib/upload.js";
 import { supportsMultipart } from "../../lib/storage.js";
-import { ValidationError, parseIdParam } from "../../lib/errors.js";
+import {
+  MediaQuotaExceededError,
+  ValidationError,
+  parseIdParam,
+} from "../../lib/errors.js";
+import { getI18n } from "../../i18n/index.js";
 import { ID_PREFIX } from "../../lib/ids.js";
 import { parseValidated } from "../../lib/schemas.js";
 
@@ -75,6 +81,17 @@ export const multipartUploadApiRoutes = new Hono<Env>();
 // Require auth for all multipart routes
 multipartUploadApiRoutes.use("*", requireAuthApi());
 
+function getHostedMediaQuotaExceededText(c: Context<Env>): string {
+  return getI18n(c)._(
+    msg({
+      message:
+        "This upload would exceed your shared hosted media limit. Remove files or upgrade storage to continue.",
+      comment:
+        "@context: Error shown when a hosted upload would exceed the shared account media limit",
+    }),
+  );
+}
+
 // POST / — Initiate a multipart upload
 multipartUploadApiRoutes.post("/", async (c) => {
   const storage = c.var.storage;
@@ -97,6 +114,16 @@ multipartUploadApiRoutes.post("/", async (c) => {
     c.var.currentSite.id,
     data.filename,
   );
+
+  try {
+    await c.var.services.media.assertCanWriteBytes(data.size);
+  } catch (error) {
+    if (error instanceof MediaQuotaExceededError) {
+      return c.json({ error: getHostedMediaQuotaExceededText(c) }, 409);
+    }
+
+    throw error;
+  }
 
   const upload = await storage.createMultipartUpload(storageKey, {
     contentType: data.contentType,
@@ -163,6 +190,17 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
   );
   if (validationError) {
     throw new ValidationError(validationError);
+  }
+
+  try {
+    await c.var.services.media.assertCanWriteBytes(data.size);
+  } catch (error) {
+    if (error instanceof MediaQuotaExceededError) {
+      await storage.abortMultipartUpload(data.storageKey, data.uploadId);
+      return c.json({ error: getHostedMediaQuotaExceededText(c) }, 409);
+    }
+
+    throw error;
   }
 
   // Complete the R2 multipart upload

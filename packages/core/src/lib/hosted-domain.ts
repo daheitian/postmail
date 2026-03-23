@@ -1,5 +1,5 @@
 import type { Site, SiteDomain } from "../types.js";
-import type { Services } from "../types/app-context.js";
+import type { Services } from "../services/index.js";
 
 const CANONICAL_REDIRECT_BYPASS_PREFIXES = [
   "/__dev",

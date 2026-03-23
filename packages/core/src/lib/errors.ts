@@ -60,6 +60,15 @@ export class ConflictError extends DomainError {
   }
 }
 
+/** Hosted media quota exceeded — 409 */
+export class MediaQuotaExceededError extends DomainError {
+  constructor(
+    message = "This upload would exceed the shared hosted media limit.",
+  ) {
+    super(message, 409, "MEDIA_QUOTA_EXCEEDED");
+  }
+}
+
 /** Too many requests — 429 */
 export class RateLimitError extends DomainError {
   constructor(message = "Too many requests") {

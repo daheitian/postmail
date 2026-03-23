@@ -134,6 +134,7 @@ export async function createNodeRequestRuntime(
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,
       bootstrapSite: getSingleSiteBootstrapOptions(env),
+      enforceHostedMediaQuota: getSiteResolutionMode(env) === "host-based",
       hostedControlPlane: createHostedControlPlaneClient(env),
       slugIdLength,
       schema: databaseSchema,
@@ -174,6 +175,7 @@ export async function createNodeCliRuntime(
     services: createServices(db, rawQuery, siteLookup.site.id, {
       databaseDialect,
       bootstrapSite: getSingleSiteBootstrapOptions(env),
+      enforceHostedMediaQuota: getSiteResolutionMode(env) === "host-based",
       hostedControlPlane: createHostedControlPlaneClient(env),
       slugIdLength,
       schema: databaseSchema,
