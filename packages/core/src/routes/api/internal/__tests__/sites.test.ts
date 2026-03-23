@@ -185,6 +185,73 @@ describe("Internal site admin routes", () => {
     expect(defaultSiteCount.count).toBe(1);
   });
 
+  it("suspends and resumes a managed site", async () => {
+    const { app, sqlite } = createTestApp({
+      authenticated: false,
+      internalAdminToken: "internal-secret",
+      siteResolutionMode: "host-based",
+    });
+    app.route("/api/internal/sites", internalSitesRoutes);
+
+    const createRes = await app.request("/api/internal/sites", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer internal-secret",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        key: "suspend-demo",
+        primaryHost: "suspend-demo.example.com",
+        siteName: "Suspend Demo",
+      }),
+    });
+
+    expect(createRes.status).toBe(201);
+    const created = (await createRes.json()) as { siteId: string };
+
+    const suspendRes = await app.request(
+      `/api/internal/sites/${created.siteId}/suspend`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer internal-secret",
+        },
+      },
+    );
+
+    expect(suspendRes.status).toBe(200);
+    expect(await suspendRes.json()).toEqual({
+      siteId: created.siteId,
+      status: "suspended",
+    });
+
+    const suspendedSite = sqlite
+      .prepare('SELECT "status" FROM "site" WHERE "id" = ?')
+      .get(created.siteId) as { status: string };
+    expect(suspendedSite.status).toBe("suspended");
+
+    const resumeRes = await app.request(
+      `/api/internal/sites/${created.siteId}/resume`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer internal-secret",
+        },
+      },
+    );
+
+    expect(resumeRes.status).toBe(200);
+    expect(await resumeRes.json()).toEqual({
+      siteId: created.siteId,
+      status: "active",
+    });
+
+    const resumedSite = sqlite
+      .prepare('SELECT "status" FROM "site" WHERE "id" = ?')
+      .get(created.siteId) as { status: string };
+    expect(resumedSite.status).toBe("active");
+  });
+
   it("manages site domains for a hosted site", async () => {
     const { app } = createTestApp({
       authenticated: false,

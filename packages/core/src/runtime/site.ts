@@ -57,6 +57,9 @@ export async function resolveRequestSite(
     }
     throw new NotFoundError("Site");
   }
+  if (resolved.site.status !== "active") {
+    throw new NotFoundError("Site");
+  }
   return resolved;
 }
 

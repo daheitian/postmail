@@ -83,6 +83,38 @@ internalSitesRoutes.delete("/:siteId", requireInternalAdminApi(), async (c) => {
   return c.body(null, 204);
 });
 
+internalSitesRoutes.post(
+  "/:siteId/suspend",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+    const site = await c.var.services.siteAdmin.suspendManagedSite(
+      c.req.param("siteId"),
+    );
+
+    return c.json({
+      siteId: site.id,
+      status: site.status,
+    });
+  },
+);
+
+internalSitesRoutes.post(
+  "/:siteId/resume",
+  requireInternalAdminApi(),
+  async (c) => {
+    assertHostBasedMode(c.env);
+    const site = await c.var.services.siteAdmin.resumeManagedSite(
+      c.req.param("siteId"),
+    );
+
+    return c.json({
+      siteId: site.id,
+      status: site.status,
+    });
+  },
+);
+
 internalSitesRoutes.get(
   "/:siteId/domains",
   requireInternalAdminApi(),

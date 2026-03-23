@@ -47,6 +47,8 @@ export interface SiteAdminService {
     input: ManageManagedSiteDomainInput,
   ): Promise<SiteDomain[]>;
   createManagedSite(input: CreateManagedSiteInput): Promise<ManagedSiteResult>;
+  suspendManagedSite(siteId: string): Promise<Site>;
+  resumeManagedSite(siteId: string): Promise<Site>;
   deleteManagedSite(
     siteId: string,
     deps?: DeleteManagedSiteDeps,
@@ -309,6 +311,47 @@ export function createSiteAdminService(
     }
   }
 
+  async function requireSiteRow(
+    targetDb: Database,
+    siteId: string,
+  ): Promise<typeof sites.$inferSelect> {
+    const existingSite = await targetDb
+      .select()
+      .from(sites)
+      .where(eq(sites.id, siteId))
+      .limit(1);
+    if (!existingSite[0]) {
+      throw new NotFoundError("Site");
+    }
+
+    return existingSite[0];
+  }
+
+  async function setManagedSiteStatus(
+    targetDb: Database,
+    siteId: string,
+    status: Site["status"],
+  ): Promise<Site> {
+    const siteRow = await requireSiteRow(targetDb, siteId);
+    if (siteRow.status === status) {
+      return toSite(siteRow);
+    }
+
+    const timestamp = now();
+    const updatedSite = (
+      await targetDb
+        .update(sites)
+        .set({
+          status,
+          updatedAt: timestamp,
+        })
+        .where(eq(sites.id, siteId))
+        .returning()
+    )[0];
+
+    return toSite(updatedSite);
+  }
+
   async function listSiteDomainRows(
     targetDb: Database,
     siteId: string,
@@ -366,6 +409,42 @@ export function createSiteAdminService(
       }
 
       return createWithDatabase(db, input);
+    },
+    async suspendManagedSite(siteId) {
+      const normalizedSiteId = siteId.trim();
+      if (!normalizedSiteId) {
+        throw new NotFoundError("Site");
+      }
+
+      if (!supportsDrizzleTransaction(db, databaseDialect)) {
+        return setManagedSiteStatus(db, normalizedSiteId, "suspended");
+      }
+
+      return db.transaction(async (tx) =>
+        setManagedSiteStatus(
+          tx as unknown as Database,
+          normalizedSiteId,
+          "suspended",
+        ),
+      );
+    },
+    async resumeManagedSite(siteId) {
+      const normalizedSiteId = siteId.trim();
+      if (!normalizedSiteId) {
+        throw new NotFoundError("Site");
+      }
+
+      if (!supportsDrizzleTransaction(db, databaseDialect)) {
+        return setManagedSiteStatus(db, normalizedSiteId, "active");
+      }
+
+      return db.transaction(async (tx) =>
+        setManagedSiteStatus(
+          tx as unknown as Database,
+          normalizedSiteId,
+          "active",
+        ),
+      );
     },
     async deleteManagedSite(siteId, deps) {
       const normalizedSiteId = siteId.trim();

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createTestDatabase } from "../../__tests__/helpers/db.js";
+import {
+  createTestDatabase,
+  DEFAULT_TEST_SITE_ID,
+} from "../../__tests__/helpers/db.js";
 import { sqliteSchemaBundle } from "../../db/schema-bundle.js";
 import { createRequestRuntime } from "../index.js";
 import { createNodeRequestRuntime } from "../node.js";
@@ -164,6 +167,39 @@ describe("createNodeRequestRuntime", () => {
           SITE_RESOLUTION_MODE: "host-based",
         } as Bindings,
         "http://missing.localtest.me/",
+      ),
+    ).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it("treats suspended host-based sites as not found", async () => {
+    const { db, sqlite } = createTestDatabase();
+
+    sqlite
+      .prepare(
+        `
+          INSERT INTO site_domain (id, site_id, host, path_prefix, kind, redirect_to_primary, created_at, updated_at)
+          VALUES ('std_suspended_1', ?, 'suspended.localtest.me', NULL, 'primary', 1, 1774200001, 1774200001)
+        `,
+      )
+      .run(DEFAULT_TEST_SITE_ID);
+
+    sqlite
+      .prepare(`UPDATE site SET status = 'suspended' WHERE id = ?`)
+      .run(DEFAULT_TEST_SITE_ID);
+
+    await expect(
+      createRequestRuntime(
+        {
+          NODE_DATABASE: {
+            db,
+            dialect: "sqlite",
+            rawQuery: createSqliteRawQuery(sqlite),
+            schema: sqliteSchemaBundle,
+          },
+          AUTH_SECRET: "test-secret-with-enough-entropy-for-node-runtime",
+          SITE_RESOLUTION_MODE: "host-based",
+        } as Bindings,
+        "http://suspended.localtest.me/",
       ),
     ).rejects.toBeInstanceOf(NotFoundError);
   });
