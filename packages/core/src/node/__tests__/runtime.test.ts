@@ -127,6 +127,38 @@ describe("resolveNodeAssetRoot", () => {
       await handler.close();
     }
   });
+
+  it("ignores SITE_URL path prefixes for host-based asset requests", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-node-assets-host-based-"));
+    tempDirs.push(root);
+    const assetRoot = join(root, "dist", "client", "_assets");
+    const databasePath = join(root, "data", "jant.sqlite");
+    await mkdir(assetRoot, { recursive: true });
+    await writeFile(join(assetRoot, "client.css"), "body{}");
+    await migrate({
+      DATABASE_URL: `file:${databasePath}`,
+    } as Bindings);
+
+    const handler = await createNodeRequestHandler({
+      assetRoot,
+      env: {
+        DATABASE_URL: `file:${databasePath}`,
+        SITE_RESOLUTION_MODE: "host-based",
+        SITE_URL: "https://legacy.example.com/blog",
+      } as Bindings,
+    });
+
+    try {
+      const response = await handler.fetch(
+        new Request("http://tenant.example.com/_assets/client.css"),
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("body{}");
+    } finally {
+      await handler.close();
+    }
+  });
 });
 
 describe("resolvePublicRequestUrl", () => {

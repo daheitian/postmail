@@ -15,9 +15,9 @@ import { CONFIG_FIELDS } from "../types/config.js";
 import { getPublicAssetBasePath } from "./asset-path.js";
 import {
   getAuthSecret,
+  getConfiguredSingleSiteUrl,
   getConfiguredStorageDriver,
   getEnvString,
-  getSiteUrl,
 } from "./env.js";
 import { getPublicUrlForProvider, getMediaUrl } from "./image.js";
 import { normalizeTimeZone } from "./timezones.js";
@@ -106,7 +106,9 @@ export function resolveConfig(
     resolve("ARCHIVE_PAGE_SIZE", allSettings, env),
     pageSize,
   );
-  const siteUrl = normalizeSiteUrl(options?.siteUrl ?? getSiteUrl(env));
+  const siteUrl = normalizeSiteUrl(
+    options?.siteUrl ?? getConfiguredSingleSiteUrl(env),
+  );
   const siteOrigin = getSiteOrigin(siteUrl);
   const sitePathPrefix = getSitePathPrefix(siteUrl);
   const storageDriver = getConfiguredStorageDriver(env);

@@ -173,6 +173,21 @@ describe("resolveConfig", () => {
     expect(prefixedConfig.assetBasePath).toBe("/blog/_assets");
   });
 
+  it("ignores SITE_URL by default in host-based mode", () => {
+    const config = resolveConfig(
+      makeEnv({
+        SITE_RESOLUTION_MODE: "host-based",
+        SITE_URL: "https://legacy.example.com/blog",
+      }),
+      {},
+    );
+
+    expect(config.siteUrl).toBe("");
+    expect(config.siteOrigin).toBe("");
+    expect(config.sitePathPrefix).toBe("");
+    expect(config.assetBasePath).toBe("/_assets");
+  });
+
   it("resolves boolean fields correctly", () => {
     const config = resolveConfig(makeEnv(), {
       NOINDEX: "true",

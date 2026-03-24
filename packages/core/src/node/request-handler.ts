@@ -23,10 +23,9 @@ import * as schema from "../db/schema.js";
 import { resolveDatabaseDialect } from "../db/dialect.js";
 import { getPublicAssetBasePath, isAssetPath } from "../lib/asset-path.js";
 import {
+  getConfiguredSingleSiteUrl,
   getEnvString,
   getPort,
-  getSiteResolutionMode,
-  getSiteUrl,
   shouldTrustProxy,
 } from "../lib/env.js";
 import { getSitePathPrefix } from "../lib/url.js";
@@ -443,10 +442,9 @@ export function resolvePublicRequestUrl(
   env: Bindings,
 ): string {
   const requestUrl = new URL(request.url);
-  const siteResolutionMode = getSiteResolutionMode(env);
-  const siteUrl = getSiteUrl(env);
+  const siteUrl = getConfiguredSingleSiteUrl(env);
 
-  if (siteUrl && siteResolutionMode !== "host-based") {
+  if (siteUrl) {
     const canonicalUrl = new URL(siteUrl);
     requestUrl.protocol = canonicalUrl.protocol;
     requestUrl.hostname = canonicalUrl.hostname;
@@ -599,7 +597,7 @@ export async function createNodeRequestHandler(options?: {
       ? resolveNodeAssetRoot()
       : options.assetRoot;
   const publicAssetBasePath = getPublicAssetBasePath(
-    getSitePathPrefix(getSiteUrl(bindings)),
+    getSitePathPrefix(getConfiguredSingleSiteUrl(bindings)),
   );
 
   let closed = false;

@@ -14,7 +14,7 @@ import type { StorageDriver } from "../lib/storage.js";
 import { SETTINGS_KEYS } from "../lib/constants.js";
 import { ConflictError, NotFoundError } from "../lib/errors.js";
 import { createEntityId } from "../lib/ids.js";
-import { getSiteUrl } from "../lib/env.js";
+import { getConfiguredSingleSiteUrl } from "../lib/env.js";
 import { resolveConfig } from "../lib/resolve-config.js";
 import { buildThemeStyle } from "../lib/theme.js";
 import { now } from "../lib/time.js";
@@ -162,7 +162,7 @@ export function createSiteAdminService(
     }
 
     let protocol = "https:";
-    const configuredSiteUrl = getSiteUrl(env);
+    const configuredSiteUrl = getConfiguredSingleSiteUrl(env);
     if (configuredSiteUrl) {
       try {
         protocol = new URL(configuredSiteUrl).protocol || protocol;
