@@ -1,0 +1,92 @@
+name: Deploy Jant via Build
+
+on:
+  push:
+    branches: [main]
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-jant-${{ github.head_ref || github.ref_name || 'manual' }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve deployment parameters
+        id: params
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_SHA: ${{ github.sha }}
+          GIT_REF_NAME: ${{ github.ref_name }}
+        run: |
+          STUDIO_REF="main"
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            SOURCE_REF="$PR_HEAD_REF"
+            SOURCE_SHA="$PR_HEAD_SHA"
+          else
+            SOURCE_REF="$GIT_REF_NAME"
+            SOURCE_SHA="$PUSH_SHA"
+          fi
+
+          DEPLOY_REF="$SOURCE_REF"
+          if [ "$DEPLOY_REF" = "main" ]; then
+            TARGET_ENV="prod"
+          else
+            TARGET_ENV="preview"
+          fi
+
+          echo "deploy_ref=$DEPLOY_REF" >> "$GITHUB_OUTPUT"
+          echo "source_ref=$SOURCE_REF" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "studio_ref=$STUDIO_REF" >> "$GITHUB_OUTPUT"
+          echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch to tonormal/build
+        env:
+          BUILD_REPO_TOKEN: ${{ secrets.BUILD_REPO_TOKEN }}
+          DEPLOY_REF: ${{ steps.params.outputs.deploy_ref }}
+          SOURCE_REF: ${{ steps.params.outputs.source_ref }}
+          SOURCE_SHA: ${{ steps.params.outputs.source_sha }}
+          STUDIO_REF: ${{ steps.params.outputs.studio_ref }}
+          TARGET_ENV: ${{ steps.params.outputs.target_env }}
+        run: |
+          curl -fsSL -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: token ${BUILD_REPO_TOKEN}" \
+            https://api.github.com/repos/tonormal/build/dispatches \
+            -d "$(jq -n \
+              --arg service "jant" \
+              --arg repository "${{ github.repository }}" \
+              --arg deploy_ref "$DEPLOY_REF" \
+              --arg source_repository "${{ github.repository }}" \
+              --arg source_ref "$SOURCE_REF" \
+              --arg source_sha "$SOURCE_SHA" \
+              --arg sha "$SOURCE_SHA" \
+              --arg studio_sha "$STUDIO_REF" \
+              '{
+                event_type: "deploy-external-app",
+                client_payload: {
+                  service: $service,
+                  repository: $repository,
+                  deploy_ref: $deploy_ref,
+                  source_repository: $source_repository,
+                  source_ref: $source_ref,
+                  source_sha: $source_sha,
+                  sha: $sha,
+                  studio_sha: $studio_sha
+                }
+              }')"
+
+          echo "Triggered $TARGET_ENV deploy for jant using source $SOURCE_REF@$SOURCE_SHA and studio ref $STUDIO_REF."
