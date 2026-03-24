@@ -231,6 +231,10 @@ export function createApp(): App {
   // Global error handler: maps DomainError → HTTP responses
   app.onError(errorHandler);
 
+  // Instance health checks must bypass hosted site resolution so container
+  // health probes keep working in host-based mode before any site matches.
+  app.get("/health", (c) => c.json({ status: "ok" }));
+
   // Lightweight init — no DB queries
   app.use("*", async (c, next) => {
     const publicMeta = publicRequestMeta.get(c.req.raw);
@@ -273,9 +277,6 @@ export function createApp(): App {
   app.use("*", secureHeadersMiddleware());
 
   // --- Routes that don't need config/theme ---
-
-  // Health check
-  app.get("/health", (c) => c.json({ status: "ok" }));
 
   app.route("/api/attachments", attachmentsApiRoutes);
   app.route("/api/internal/api-tokens", internalApiTokensRoutes);
