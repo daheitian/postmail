@@ -372,20 +372,20 @@ Link 格式的帖子，后端根据 URL 在 API 返回时计算渲染信息（�
 
 **环境配置**（`wrangler.toml` / `.dev.vars`）：
 
-| 字段                      | 说明                             |
-| ------------------------- | -------------------------------- |
-| `AUTH_SECRET`             | 认证密钥（必填）                 |
-| `SITE_URL`                | 站点 URL                         |
-| `MAIN_RSS_FEED`           | 主 RSS Feed（featured / latest） |
-| `PAGE_SIZE`               | 默认分页大小（默认 50）          |
-| `SEARCH_PAGE_SIZE`        | 搜索页分页覆盖                   |
-| `ARCHIVE_PAGE_SIZE`       | 归档页分页覆盖                   |
-| `R2_PUBLIC_URL`           | R2 公开 URL（CDN 直接访问）      |
-| `IMAGE_TRANSFORM_URL`     | 图片转换 URL                     |
-| `STORAGE_DRIVER`          | 存储驱动（r2 / s3）              |
-| `S3_*`                    | S3 兼容存储配置                  |
-| `SLUG_ID_LENGTH`          | 随机 slug 长度（默认 5）         |
-| `UPLOAD_MAX_FILE_SIZE_MB` | 上传文件大小上限（MB，默认 500） |
+| 字段                      | 说明                                        |
+| ------------------------- | ------------------------------------------- |
+| `AUTH_SECRET`             | 认证密钥（必填）                            |
+| `SITE_URL`                | 单站点模式下的站点 URL（host-based 下不用） |
+| `MAIN_RSS_FEED`           | 主 RSS Feed（featured / latest）            |
+| `PAGE_SIZE`               | 默认分页大小（默认 50）                     |
+| `SEARCH_PAGE_SIZE`        | 搜索页分页覆盖                              |
+| `ARCHIVE_PAGE_SIZE`       | 归档页分页覆盖                              |
+| `R2_PUBLIC_URL`           | R2 公开 URL（CDN 直接访问）                 |
+| `IMAGE_TRANSFORM_URL`     | 图片转换 URL                                |
+| `STORAGE_DRIVER`          | 存储驱动（r2 / s3）                         |
+| `S3_*`                    | S3 兼容存储配置                             |
+| `SLUG_ID_LENGTH`          | 随机 slug 长度（默认 5）                    |
+| `UPLOAD_MAX_FILE_SIZE_MB` | 上传文件大小上限（MB，默认 500）            |
 
 ## 9. 技术选型
 

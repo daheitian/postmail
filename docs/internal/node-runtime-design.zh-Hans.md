@@ -547,7 +547,8 @@ Node 运行时需要明确 `TRUST_PROXY` 语义：
 
 - 优先基于可信代理后的公开协议
 - 若无可信代理，基于直接请求
-- `SITE_URL` 仍然是公开基准 URL 的权威来源
+- `single-site` 下可继续使用 `SITE_URL` 作为固定公开基准 URL
+- `host-based` 下应以当前请求和匹配到的站点域名为准，不再把 `SITE_URL` 当作当前站点真相
 
 ## 10. CLI 与运维模型
 
