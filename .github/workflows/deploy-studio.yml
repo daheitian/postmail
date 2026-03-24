@@ -30,7 +30,8 @@ jobs:
           PUSH_SHA: ${{ github.sha }}
           GIT_REF_NAME: ${{ github.ref_name }}
         run: |
-          STUDIO_REF="main"
+          # Temporary: use studio/preview until the preview env fixes are merged to studio/main.
+          STUDIO_REF="preview"
 
           if [ "$EVENT_NAME" = "pull_request" ]; then
             SOURCE_REF="$PR_HEAD_REF"
