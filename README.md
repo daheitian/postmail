@@ -98,7 +98,7 @@ The most relevant options for our workflow are `--service`, `--serviceConfig`, `
 
 ## Philosophy
 
-Jant is built on the idea that not everything needs to be optimized for engagement. Write for yourself. Share if you want. No metrics, no pressure.
+Jant is built on the idea that not everything needs to be optimized for engagement. Write for yourself. Share if you want. No metrics, no pressure
 
 ## License
 
