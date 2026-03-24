@@ -16,18 +16,23 @@ Use runtime-specific secret storage for sensitive values such as
 
 ### Required
 
-All runtimes require these variables:
+All runtimes require this variable:
 
-| Variable      | Description                                                                       |
-| ------------- | --------------------------------------------------------------------------------- |
-| `SITE_URL`    | Your site's public URL (e.g., `https://myblog.com` or `https://example.com/blog`) |
-| `AUTH_SECRET` | Random string, 32+ characters. Used for session signing.                          |
+| Variable      | Description                                              |
+| ------------- | -------------------------------------------------------- |
+| `AUTH_SECRET` | Random string, 32+ characters. Used for session signing. |
 
 `AUTH_SECRET` is sensitive. Keep it out of `wrangler.toml`.
 
 - Node and Docker deployments: set it in your `.env` file, another `.env*` file, or the process environment
 - Cloudflare local development: put it in `.dev.vars`
 - Cloudflare production: add it as a Worker secret with `wrangler secret put AUTH_SECRET` or the Cloudflare dashboard
+
+`SITE_URL` is mode-specific:
+
+| Variable   | Description                                                                                                                                     |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SITE_URL` | Public base URL for `single-site` deployments, such as `https://myblog.com` or `https://example.com/blog`. Leave it unset in `host-based` mode. |
 
 ### Node and Docker
 
@@ -101,7 +106,7 @@ In `wrangler.toml`, numeric variables can be written as either TOML numbers (`PA
 
 ### Public URLs and Subpaths
 
-`SITE_URL` is the single source of truth for Jant's public base URL.
+In `single-site` mode, `SITE_URL` is the single source of truth for Jant's public base URL.
 
 - Root deployment: `SITE_URL="https://example.com"`
 - Subpath deployment: `SITE_URL="https://example.com/blog"`
@@ -113,6 +118,8 @@ When `SITE_URL` includes a path:
 
 On Cloudflare, the deploy script generates a static directory that already mirrors the final public URLs, so subpath deploys only need the site prefix itself to reach the Worker, such as `/blog*`.
 
+In `host-based` mode, Jant resolves the current public origin from the matched site domain and request host. `SITE_URL` is ignored in that mode.
+
 ### Site Resolution
 
 Jant supports two site resolution modes:
@@ -122,7 +129,7 @@ Jant supports two site resolution modes:
 | `SITE_RESOLUTION_MODE` | `single-site` or `host-based` | Controls how Jant resolves the current site at runtime |
 
 - `single-site` is the default for self-hosted Node and Docker deployments.
-- `host-based` is intended for future hosted / multi-site deployments.
+- `host-based` resolves the current site from the incoming host and does not use `SITE_URL`.
 
 Most self-hosted users should keep the default `single-site` mode.
 

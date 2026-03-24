@@ -8,13 +8,10 @@
 import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
-import {
-  getDevApiToken,
-  getInternalAdminToken,
-  getSiteUrl,
-} from "../lib/env.js";
+import { getDevApiToken, getInternalAdminToken } from "../lib/env.js";
 import { NotFoundError, UnauthorizedError } from "../lib/errors.js";
-import { getSitePathPrefix, toPublicHref } from "../lib/url.js";
+import { getRuntimeSitePathPrefix } from "../lib/site-resolution.js";
+import { toPublicHref } from "../lib/url.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -88,8 +85,11 @@ export function hasValidLocalDevToken(
  */
 export function requireAuth(redirectTo = "/signin"): MiddlewareHandler<Env> {
   return async (c, next) => {
-    const sitePathPrefix =
-      c.var.appConfig?.sitePathPrefix ?? getSitePathPrefix(getSiteUrl(c.env));
+    const sitePathPrefix = getRuntimeSitePathPrefix({
+      env: c.env,
+      appConfig: c.var.appConfig,
+      currentSiteDomain: c.var.currentSiteDomain,
+    });
     const redirectTarget = toPublicHref(redirectTo, sitePathPrefix);
 
     try {

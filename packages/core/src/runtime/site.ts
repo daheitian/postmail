@@ -3,7 +3,10 @@ import {
   sqliteSchemaBundle,
   type DatabaseSchema,
 } from "../db/schema-bundle.js";
-import { getSiteResolutionMode, getSiteUrl } from "../lib/env.js";
+import {
+  getConfiguredSingleSiteUrl,
+  getSiteResolutionMode,
+} from "../lib/env.js";
 import { getSitePathPrefix, normalizeSiteUrl } from "../lib/url.js";
 import {
   createSiteService,
@@ -48,7 +51,7 @@ function logHostedSiteResolutionFailure(input: {
 export function getSingleSiteBootstrapOptions(
   env: Bindings,
 ): EnsureSingleSiteOptions | undefined {
-  const configuredSiteUrl = getSiteUrl(env).trim();
+  const configuredSiteUrl = getConfiguredSingleSiteUrl(env).trim();
   if (!configuredSiteUrl) {
     return undefined;
   }
@@ -149,7 +152,7 @@ export function getResolvedSiteBaseUrl(
 ): string {
   const resolutionMode = getSiteResolutionMode(env);
   if (resolutionMode === "single-site") {
-    return getSiteUrl(env) || new URL(publicRequestUrl).origin;
+    return getConfiguredSingleSiteUrl(env) || new URL(publicRequestUrl).origin;
   }
 
   const requestUrl = new URL(publicRequestUrl);

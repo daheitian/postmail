@@ -86,6 +86,19 @@ export function getSiteUrl(env: EnvSource): string {
   return getEnvString(env, "SITE_URL") ?? "";
 }
 
+/**
+ * Returns the configured public site URL only when the instance runs in
+ * `single-site` mode.
+ *
+ * @param env - Runtime environment bindings
+ * @returns The configured `SITE_URL`, or an empty string in `host-based` mode
+ * @example
+ * getConfiguredSingleSiteUrl({ SITE_URL: "https://example.com" });
+ */
+export function getConfiguredSingleSiteUrl(env: EnvSource): string {
+  return getSiteResolutionMode(env) === "single-site" ? getSiteUrl(env) : "";
+}
+
 export function getSiteResolutionMode(
   env: EnvSource,
 ): "single-site" | "host-based" {
@@ -194,7 +207,7 @@ export function shouldUseSecureCookies(
   env: EnvSource,
   publicRequestUrl: string,
 ): boolean {
-  const siteUrl = getSiteUrl(env);
+  const siteUrl = getConfiguredSingleSiteUrl(env);
   if (siteUrl) {
     return new URL(siteUrl).protocol === "https:";
   }

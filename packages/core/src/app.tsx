@@ -58,7 +58,8 @@ import { errorHandler } from "./middleware/error-handler.js";
 import { withConfig } from "./middleware/config.js";
 import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
 
-import { getSiteUrl } from "./lib/env.js";
+import { getConfiguredSingleSiteUrl } from "./lib/env.js";
+import { getRuntimeSitePathPrefix } from "./lib/site-resolution.js";
 import { getStartupConfigurationErrorPage } from "./lib/startup-config.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
 import {
@@ -219,7 +220,7 @@ export function createApp(): App {
     const bindings = env as Bindings | undefined;
     const preparedRequest = prepareRequestForRouting(
       request,
-      getSitePathPrefix(getSiteUrl(bindings)),
+      getSitePathPrefix(getConfiguredSingleSiteUrl(bindings)),
     );
     if (preparedRequest instanceof Response) {
       return preparedRequest;
@@ -397,7 +398,13 @@ export function createApp(): App {
     const customUrl = await c.var.services.customUrls.getByPath(path.slice(1));
     if (customUrl?.targetType === "redirect" && customUrl.toPath) {
       return c.redirect(
-        toPublicHref(customUrl.toPath, getSitePathPrefix(getSiteUrl(c.env))),
+        toPublicHref(
+          customUrl.toPath,
+          getRuntimeSitePathPrefix({
+            env: c.env,
+            currentSiteDomain: c.var.currentSiteDomain,
+          }),
+        ),
         customUrl.redirectType ?? 301,
       );
     }

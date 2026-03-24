@@ -10,8 +10,16 @@ import { openNodeDatabase } from "../../lib/node-database.js";
 import { loadNodeRuntime } from "../../lib/load-node-runtime.js";
 import { localizeSiteExportZipBytes } from "../../lib/site-localize-media.js";
 
-function getSiteUrl(env = process.env) {
-  return env.SITE_URL || "http://localhost";
+function describeLocalExportSource(input) {
+  if (input.siteUrl) {
+    return input.siteUrl;
+  }
+
+  if (input.siteDomain?.host) {
+    return `https://${input.siteDomain.host}${input.siteDomain.pathPrefix || ""}`;
+  }
+
+  return `site "${input.site.key}"`;
 }
 
 async function exportRemoteSite(url, token) {
@@ -240,6 +248,11 @@ async function exportLocalSite(env = process.env) {
     return {
       zip: await exportService.generateZolaSite(),
       assetLoader: createLocalAssetLoader(runtime.storage, appConfig),
+      source: describeLocalExportSource({
+        site: runtime.currentSite,
+        siteDomain: runtime.currentSiteDomain,
+        siteUrl: appConfig.siteUrl,
+      }),
     };
   } finally {
     await nodeDatabase.close();
@@ -332,7 +345,11 @@ export async function run(argv) {
   );
 
   const exported = values.url
-    ? { zip: await exportRemoteSite(values.url, token), assetLoader: null }
+    ? {
+        zip: await exportRemoteSite(values.url, token),
+        assetLoader: null,
+        source: values.url,
+      }
     : await exportLocalSite(process.env);
   let zip = exported.zip;
   let localizeStats = null;
@@ -347,7 +364,7 @@ export async function run(argv) {
     localizeStats = localized.stats;
   }
 
-  const source = values.url ? values.url : getSiteUrl();
+  const source = exported.source;
   if (outputDirectory) {
     let existingEntries = [];
     try {
