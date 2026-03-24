@@ -216,7 +216,7 @@ describe("createNodeRequestRuntime", () => {
       ),
     ).rejects.toBeInstanceOf(NotFoundError);
     expect(consoleError).toHaveBeenCalledWith(
-      "[Jant] Hosted site resolution failed: host=suspended.localtest.me path=/ reason=site-not-active siteId=sit_test_1 siteKey=test-site siteStatus=suspended",
+      "[Jant] Hosted site resolution failed: host=suspended.localtest.me path=/ reason=site-not-active siteId=sit_test00000000000000000000000 siteKey=default siteStatus=suspended",
     );
   });
 });
