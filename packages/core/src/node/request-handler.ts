@@ -25,6 +25,7 @@ import { getPublicAssetBasePath, isAssetPath } from "../lib/asset-path.js";
 import {
   getEnvString,
   getPort,
+  getSiteResolutionMode,
   getSiteUrl,
   shouldTrustProxy,
 } from "../lib/env.js";
@@ -442,9 +443,10 @@ export function resolvePublicRequestUrl(
   env: Bindings,
 ): string {
   const requestUrl = new URL(request.url);
+  const siteResolutionMode = getSiteResolutionMode(env);
   const siteUrl = getSiteUrl(env);
 
-  if (siteUrl) {
+  if (siteUrl && siteResolutionMode !== "host-based") {
     const canonicalUrl = new URL(siteUrl);
     requestUrl.protocol = canonicalUrl.protocol;
     requestUrl.hostname = canonicalUrl.hostname;

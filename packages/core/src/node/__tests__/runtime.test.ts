@@ -141,6 +141,24 @@ describe("resolvePublicRequestUrl", () => {
     expect(url).toBe("https://blog.example.com/posts/test?draft=1");
   });
 
+  it("keeps the incoming host in host-based mode even when SITE_URL is set", () => {
+    const url = resolvePublicRequestUrl(
+      new Request("http://127.0.0.1:3000/posts/test", {
+        headers: {
+          "x-forwarded-host": "world2-preview-jant.forpreview.com",
+          "x-forwarded-proto": "https",
+        },
+      }),
+      {
+        SITE_RESOLUTION_MODE: "host-based",
+        SITE_URL: "https://preview-jant.forpreview.com",
+        TRUST_PROXY: "true",
+      } as Bindings,
+    );
+
+    expect(url).toBe("https://world2-preview-jant.forpreview.com/posts/test");
+  });
+
   it("uses trusted proxy headers when enabled", () => {
     const url = resolvePublicRequestUrl(
       new Request("http://127.0.0.1:3000/posts/test", {
