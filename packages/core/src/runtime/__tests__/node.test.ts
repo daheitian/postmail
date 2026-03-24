@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import {
   createTestDatabase,
   DEFAULT_TEST_SITE_ID,
@@ -10,6 +10,10 @@ import type { Bindings } from "../../types.js";
 import { siteDomains, sites } from "../../db/schema.js";
 import { NotFoundError } from "../../lib/errors.js";
 import { TRANSIENT_SINGLE_SITE_ID } from "../../services/site.js";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 function createSqliteRawQuery(
   sqlite: ReturnType<typeof createTestDatabase>["sqlite"],
@@ -153,6 +157,9 @@ describe("createNodeRequestRuntime", () => {
 
   it("treats unknown host-based public hosts as site not found", async () => {
     const { db, sqlite } = createTestDatabase();
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     await expect(
       createRequestRuntime(
@@ -169,10 +176,16 @@ describe("createNodeRequestRuntime", () => {
         "http://missing.localtest.me/",
       ),
     ).rejects.toBeInstanceOf(NotFoundError);
+    expect(consoleError).toHaveBeenCalledWith(
+      "[Jant] Hosted site resolution failed: host=missing.localtest.me path=/ reason=host-not-found",
+    );
   });
 
   it("treats suspended host-based sites as not found", async () => {
     const { db, sqlite } = createTestDatabase();
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     sqlite
       .prepare(
@@ -202,5 +215,8 @@ describe("createNodeRequestRuntime", () => {
         "http://suspended.localtest.me/",
       ),
     ).rejects.toBeInstanceOf(NotFoundError);
+    expect(consoleError).toHaveBeenCalledWith(
+      "[Jant] Hosted site resolution failed: host=suspended.localtest.me path=/ reason=site-not-active siteId=sit_test_1 siteKey=test-site siteStatus=suspended",
+    );
   });
 });

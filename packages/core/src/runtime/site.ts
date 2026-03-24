@@ -15,6 +15,36 @@ import {
 import { NotFoundError } from "../lib/errors.js";
 import type { Bindings } from "../types/bindings.js";
 
+function logHostedSiteResolutionFailure(input: {
+  host: string;
+  pathname: string;
+  reason: "host-not-found" | "site-not-active";
+  siteId?: string;
+  siteKey?: string;
+  siteStatus?: string;
+}): void {
+  const details = [
+    `host=${input.host}`,
+    `path=${input.pathname}`,
+    `reason=${input.reason}`,
+  ];
+
+  if (input.siteId) {
+    details.push(`siteId=${input.siteId}`);
+  }
+
+  if (input.siteKey) {
+    details.push(`siteKey=${input.siteKey}`);
+  }
+
+  if (input.siteStatus) {
+    details.push(`siteStatus=${input.siteStatus}`);
+  }
+
+  // eslint-disable-next-line no-console -- Hosted site routing misses must be visible in server logs.
+  console.error(`[Jant] Hosted site resolution failed: ${details.join(" ")}`);
+}
+
 export function getSingleSiteBootstrapOptions(
   env: Bindings,
 ): EnsureSingleSiteOptions | undefined {
@@ -55,9 +85,22 @@ export async function resolveRequestSite(
         domain: null,
       };
     }
+    logHostedSiteResolutionFailure({
+      host: requestUrl.host,
+      pathname: requestUrl.pathname,
+      reason: "host-not-found",
+    });
     throw new NotFoundError("Site");
   }
   if (resolved.site.status !== "active") {
+    logHostedSiteResolutionFailure({
+      host: requestUrl.host,
+      pathname: requestUrl.pathname,
+      reason: "site-not-active",
+      siteId: resolved.site.id,
+      siteKey: resolved.site.key,
+      siteStatus: resolved.site.status,
+    });
     throw new NotFoundError("Site");
   }
   return resolved;
