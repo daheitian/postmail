@@ -2,6 +2,7 @@ import type { Site, SiteDomain } from "../types.js";
 import type { Services } from "../services/index.js";
 
 const CANONICAL_REDIRECT_BYPASS_PREFIXES = [
+  "/.well-known/jant-domain-check",
   "/__dev",
   "/__sso",
   "/api/",

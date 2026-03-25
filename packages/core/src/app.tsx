@@ -12,6 +12,7 @@ import { signinRoutes } from "./routes/auth/signin.js";
 import { resetRoutes } from "./routes/auth/reset.js";
 import { devAuthRoutes } from "./routes/auth/dev.js";
 import { hostedSsoRoutes } from "./routes/auth/hosted-sso.js";
+import { hostedDomainCheckRoutes } from "./routes/hosted/domain-check.js";
 
 // Routes - Pages
 import { homeRoutes } from "./routes/pages/home.js";
@@ -278,6 +279,7 @@ export function createApp(): App {
 
   // --- Routes that don't need config/theme ---
 
+  app.route("/", hostedDomainCheckRoutes);
   app.route("/api/attachments", attachmentsApiRoutes);
   app.route("/api/internal/api-tokens", internalApiTokensRoutes);
   app.route("/api/internal/sites", internalSitesRoutes);
