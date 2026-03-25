@@ -117,6 +117,7 @@ export interface ComposeLabels {
   altPlaceholder: string;
   altHint: string;
   addMore: string;
+  removeAttachment: string;
   uploading: string;
   published: string;
   view: string;

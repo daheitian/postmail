@@ -2243,6 +2243,11 @@ msgstr "References"
 msgid "Remove"
 msgstr "Remove"
 
+#. @context: Button to remove an uploaded attachment in compose
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Remove attachment"
+msgstr "Remove attachment"
+
 #. @context: Tooltip for divider delete button
 #: src/ui/shared/CollectionsManager.tsx
 msgid "Remove Divider"

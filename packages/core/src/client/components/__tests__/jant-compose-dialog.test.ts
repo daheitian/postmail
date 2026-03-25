@@ -92,6 +92,7 @@ const labels: ComposeLabels = {
   altPlaceholder: "Describe this...",
   altHint: "Alt text improves accessibility",
   addMore: "Add",
+  removeAttachment: "Remove attachment",
   uploading: "Uploading...",
   published: "Published!",
   view: "View",

@@ -2784,9 +2784,10 @@ export class JantComposeDialog extends LitElement {
             stroke-linecap="round"
             stroke-linejoin="round"
           >
-            <path d="M6.1 9.9l3.8-3.8" />
-            <path d="M5.15 11a2.1 2.1 0 010-2.95L7 6.2a2.1 2.1 0 012.95 0" />
-            <path d="M10.85 5a2.1 2.1 0 010 2.95L9 9.8a2.1 2.1 0 01-2.95 0" />
+            <path
+              d="M2.15 8c1.45-2.42 3.7-3.75 5.85-3.75 2.18 0 4.42 1.33 5.85 3.75-1.43 2.42-3.67 3.75-5.85 3.75-2.15 0-4.4-1.33-5.85-3.75Z"
+            />
+            <path d="M4.1 11.35 11.9 4.65" />
           </svg>
         </span>
       `;
