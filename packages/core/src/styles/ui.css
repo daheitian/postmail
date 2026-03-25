@@ -4272,8 +4272,9 @@
 
   .compose-publish-panel-title {
     color: var(--site-text-primary);
-    font-size: 0.84rem;
-    font-weight: var(--fw-semibold);
+    font-size: 0.81rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.01em;
     line-height: 1.2;
   }
 
@@ -4295,9 +4296,14 @@
   }
 
   .compose-publish-section-label {
-    color: var(--site-text-primary);
-    font-size: 0.8rem;
-    font-weight: var(--fw-semibold);
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 84%,
+      var(--site-text-secondary)
+    );
+    font-size: 0.78rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.01em;
     line-height: 1.2;
   }
 
@@ -4367,7 +4373,7 @@
   .compose-publish-list {
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
+    gap: 0.25rem;
   }
 
   .compose-publish-option {
@@ -4375,20 +4381,28 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 10px;
-    padding: 9px 10px;
-    border-radius: 10px;
-    border: none;
+    gap: 11px;
+    padding: 10px 11px;
+    border-radius: 11px;
+    border: 1px solid transparent;
     background: transparent;
     cursor: pointer;
     text-align: left;
     transition:
       background-color 0.18s ease,
-      color 0.18s ease;
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      color 0.18s ease,
+      transform 0.18s ease;
   }
 
   .compose-publish-option:hover:not(:disabled) {
-    background-color: var(--site-nav-hover-bg);
+    background-color: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 58%,
+      var(--site-elevated-bg)
+    );
+    border-color: color-mix(in srgb, var(--site-text-primary) 8%, transparent);
   }
 
   .compose-publish-option:disabled {
@@ -4399,24 +4413,28 @@
   .compose-publish-option-selected {
     background-color: color-mix(
       in srgb,
-      var(--site-nav-hover-bg) 74%,
-      transparent
+      var(--site-nav-hover-bg) 46%,
+      var(--site-elevated-bg)
     );
+    border-color: color-mix(in srgb, var(--site-text-primary) 10%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--site-elevated-bg) 82%, transparent),
+      0 1px 2px rgba(0, 0, 0, 0.03);
   }
 
   .compose-publish-visibility-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 0.95rem;
-    height: 0.95rem;
+    width: 1rem;
+    height: 1rem;
     flex-shrink: 0;
     color: color-mix(
       in srgb,
-      var(--site-text-primary) 68%,
+      var(--site-text-primary) 54%,
       var(--site-text-secondary)
     );
-    margin-top: 0.18rem;
+    margin-top: 0.12rem;
   }
 
   .compose-publish-visibility-icon-toggle {
@@ -4424,15 +4442,27 @@
     height: 0.95rem;
   }
 
+  .compose-publish-visibility-icon svg {
+    width: 100%;
+    height: 100%;
+    --icon-stroke: 1.24;
+    stroke-width: var(--icon-stroke);
+  }
+
   .compose-publish-option-selected .compose-publish-visibility-icon {
-    color: var(--site-text-primary);
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 88%,
+      var(--site-text-secondary)
+    );
   }
 
   .compose-publish-row-label {
     color: var(--site-text-primary);
-    font-size: 0.84rem;
-    font-weight: var(--fw-semibold);
-    line-height: 1.2;
+    font-size: 0.81rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.005em;
+    line-height: 1.24;
   }
 
   .compose-publish-copy {
@@ -4440,20 +4470,27 @@
     min-width: 0;
     flex: 1;
     flex-direction: column;
-    gap: 0.18rem;
+    gap: 0.15rem;
   }
 
   .compose-publish-row-hint {
     color: var(--site-text-secondary);
-    font-size: 0.75rem;
-    line-height: 1.32;
+    font-size: 0.745rem;
+    line-height: 1.38;
     text-wrap: pretty;
   }
 
   .compose-publish-row-check {
     flex-shrink: 0;
-    flex-shrink: 0;
-    color: var(--site-text-primary);
+    width: 0.82rem;
+    height: 0.82rem;
+    margin-top: 0.08rem;
+    color: color-mix(
+      in srgb,
+      var(--site-text-primary) 80%,
+      var(--site-text-secondary)
+    );
+    stroke-width: 1.82;
   }
 
   /* --- Dropdowns ---------------------------------------------------------- */
