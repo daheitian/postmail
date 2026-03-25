@@ -4,6 +4,7 @@ import {
   sqliteSchemaBundle,
   type DatabaseSchema,
 } from "../db/schema-bundle.js";
+import { ConfigurationError } from "../lib/errors.js";
 import { createEntityId } from "../lib/ids.js";
 import { now } from "../lib/time.js";
 import type { Site, SiteDomain } from "../types.js";
@@ -78,6 +79,16 @@ export function createTransientSite(key = "default"): Site {
   };
 }
 
+function createSingleSiteModeConfigurationError(
+  rows: readonly Pick<typeof _sqliteSites.$inferSelect, "id" | "key">[],
+): ConfigurationError {
+  const siteSummary = rows.map((row) => `${row.key} (${row.id})`).join(", ");
+
+  return new ConfigurationError(
+    `single-site mode found multiple sites in the database: ${siteSummary}. Restore SITE_RESOLUTION_MODE=host-based for this database, or remove the extra sites before restarting in single-site mode.`,
+  );
+}
+
 export function createSiteService(
   db: Database,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
@@ -89,12 +100,10 @@ export function createSiteService(
       .select()
       .from(sites)
       .orderBy(asc(sites.createdAt))
-      .limit(2);
+      .limit(3);
 
     if (rows.length > 1) {
-      throw new Error(
-        "single-site mode requires exactly one site in the instance.",
-      );
+      throw createSingleSiteModeConfigurationError(rows);
     }
 
     return rows[0];

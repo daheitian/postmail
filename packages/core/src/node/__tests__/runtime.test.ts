@@ -159,6 +159,41 @@ describe("resolveNodeAssetRoot", () => {
       await handler.close();
     }
   });
+
+  it("fails fast when single-site mode points at a multi-site database", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-node-multisite-"));
+    tempDirs.push(root);
+    const databasePath = join(root, "data", "jant.sqlite");
+
+    await migrate({
+      DATABASE_URL: `file:${databasePath}`,
+    } as Bindings);
+
+    const sqlite = new Database(databasePath);
+    try {
+      sqlite
+        .prepare(
+          `
+            INSERT INTO site (id, key, status, created_at, updated_at)
+            VALUES
+              ('sit_primary00000000000000000000', 'primary', 'active', 1774200000, 1774200000),
+              ('sit_extra000000000000000000000', 'extra', 'active', 1774200001, 1774200001)
+          `,
+        )
+        .run();
+    } finally {
+      sqlite.close();
+    }
+
+    await expect(
+      createNodeRequestHandler({
+        assetRoot: null,
+        env: {
+          DATABASE_URL: `file:${databasePath}`,
+        } as Bindings,
+      }),
+    ).rejects.toThrow("single-site mode found multiple sites in the database:");
+  });
 });
 
 describe("resolvePublicRequestUrl", () => {

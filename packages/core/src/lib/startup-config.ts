@@ -1,10 +1,12 @@
+import { escapeHtml } from "./html.js";
 import { getAuthSecret } from "./env.js";
 import type { Bindings } from "../types.js";
 
-function getAuthSecretErrorHtml(): string {
-  const runtimeInstructions = `<p>Set <code>AUTH_SECRET=...</code> in the environment used to start Jant.</p>
-<p><strong>Cloudflare Workers:</strong> add <code>AUTH_SECRET</code> as a Worker secret in the dashboard under Variables and Secrets, or run <code>wrangler secret put AUTH_SECRET</code>.</p>`;
-
+function renderConfigurationErrorPage(input: {
+  title: string;
+  bodyHtml: string;
+  docsHref: string;
+}): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,13 +17,33 @@ function getAuthSecretErrorHtml(): string {
 </head>
 <body>
 <div>
-<h1>AUTH_SECRET is not set</h1>
-<p>Jant needs a 32+ character auth secret to sign sessions.</p>
-${runtimeInstructions}
-<p><a href="https://github.com/jant-me/jant/blob/main/docs/configuration.md#required" target="_blank" rel="noopener noreferrer">Open configuration instructions</a></p>
+<h1>${input.title}</h1>
+${input.bodyHtml}
+<p><a href="${input.docsHref}" target="_blank" rel="noopener noreferrer">Open configuration instructions</a></p>
 </div>
 </body>
 </html>`;
+}
+
+function getAuthSecretErrorHtml(): string {
+  const runtimeInstructions = `<p>Set <code>AUTH_SECRET=...</code> in the environment used to start Jant.</p>
+<p><strong>Cloudflare Workers:</strong> add <code>AUTH_SECRET</code> as a Worker secret in the dashboard under Variables and Secrets, or run <code>wrangler secret put AUTH_SECRET</code>.</p>`;
+
+  return renderConfigurationErrorPage({
+    title: "AUTH_SECRET is not set",
+    bodyHtml: `<p>Jant needs a 32+ character auth secret to sign sessions.</p>${runtimeInstructions}`,
+    docsHref:
+      "https://github.com/jant-me/jant/blob/main/docs/configuration.md#required",
+  });
+}
+
+export function getRuntimeConfigurationErrorPage(message: string): string {
+  return renderConfigurationErrorPage({
+    title: "Configuration Error",
+    bodyHtml: `<p>${escapeHtml(message)}</p><p>Update your environment or instance data, then restart Jant.</p>`,
+    docsHref:
+      "https://github.com/jant-me/jant/blob/main/docs/configuration.md#site-resolution",
+  });
 }
 
 /**

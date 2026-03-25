@@ -26,9 +26,11 @@ import {
   getConfiguredSingleSiteUrl,
   getEnvString,
   getPort,
+  getSiteResolutionMode,
   shouldTrustProxy,
 } from "../lib/env.js";
 import { getSitePathPrefix } from "../lib/url.js";
+import { createSiteService } from "../services/site.js";
 import type { App } from "../types/app-context.js";
 import type { Bindings } from "../types/bindings.js";
 
@@ -585,6 +587,22 @@ async function resolveApp(app: NodeAppResolver | undefined): Promise<App> {
   throw new Error("Node request handler requires an app instance or loader.");
 }
 
+async function assertNodeSiteResolutionReady(
+  bindings: Bindings,
+): Promise<void> {
+  if (getSiteResolutionMode(bindings) !== "single-site") {
+    return;
+  }
+
+  const nodeDatabase = bindings.NODE_DATABASE;
+  if (!nodeDatabase) {
+    return;
+  }
+
+  const siteService = createSiteService(nodeDatabase.db, nodeDatabase.schema);
+  await siteService.getOnlySite();
+}
+
 export async function createNodeRequestHandler(options?: {
   env?: Bindings;
   app?: NodeAppResolver;
@@ -592,45 +610,52 @@ export async function createNodeRequestHandler(options?: {
 }): Promise<NodeRequestHandler> {
   const env = options?.env ?? getProcessBindings();
   const { bindings, close } = await createNodeBindings(env);
-  const assetRoot =
-    options?.assetRoot === undefined
-      ? resolveNodeAssetRoot()
-      : options.assetRoot;
-  const publicAssetBasePath = getPublicAssetBasePath(
-    getSitePathPrefix(getConfiguredSingleSiteUrl(bindings)),
-  );
+  try {
+    await assertNodeSiteResolutionReady(bindings);
 
-  let closed = false;
+    const assetRoot =
+      options?.assetRoot === undefined
+        ? resolveNodeAssetRoot()
+        : options.assetRoot;
+    const publicAssetBasePath = getPublicAssetBasePath(
+      getSitePathPrefix(getConfiguredSingleSiteUrl(bindings)),
+    );
 
-  return {
-    async fetch(request: Request) {
-      const publicRequestUrl = resolvePublicRequestUrl(request, bindings);
-      const preparedRequest =
-        publicRequestUrl === request.url
-          ? request
-          : new Request(publicRequestUrl, request);
+    let closed = false;
 
-      if (assetRoot) {
-        const staticResponse = await serveStaticAsset(
-          preparedRequest,
-          assetRoot,
-          publicAssetBasePath,
-        );
-        if (staticResponse) {
-          return staticResponse;
+    return {
+      async fetch(request: Request) {
+        const publicRequestUrl = resolvePublicRequestUrl(request, bindings);
+        const preparedRequest =
+          publicRequestUrl === request.url
+            ? request
+            : new Request(publicRequestUrl, request);
+
+        if (assetRoot) {
+          const staticResponse = await serveStaticAsset(
+            preparedRequest,
+            assetRoot,
+            publicAssetBasePath,
+          );
+          if (staticResponse) {
+            return staticResponse;
+          }
         }
-      }
 
-      const app = await resolveApp(options?.app);
-      return app.fetch(preparedRequest, bindings);
-    },
-    async close() {
-      if (closed) {
-        return;
-      }
+        const app = await resolveApp(options?.app);
+        return app.fetch(preparedRequest, bindings);
+      },
+      async close() {
+        if (closed) {
+          return;
+        }
 
-      closed = true;
-      await close();
-    },
-  };
+        closed = true;
+        await close();
+      },
+    };
+  } catch (error) {
+    await close();
+    throw error;
+  }
 }

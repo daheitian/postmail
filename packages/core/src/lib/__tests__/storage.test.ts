@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it, expect, vi } from "vitest";
 import {
+  createS3Driver,
   createR2Driver,
   createStorageDriver,
   supportsMultipart,
@@ -161,6 +162,53 @@ describe("createStorageDriver", () => {
     } as unknown as Bindings;
     const driver = createStorageDriver(env);
     expect(driver).not.toBeNull();
+  });
+});
+
+describe("createS3Driver", () => {
+  it("signs the upload headers that the browser must send", async () => {
+    const driver = createS3Driver({
+      endpoint: "https://s3.example.com",
+      bucket: "jant-media",
+      accessKeyId: "access-key",
+      secretAccessKey: "secret-key",
+      region: "auto",
+    });
+
+    const presigned = await driver.presignPut?.("media/test.webp", {
+      contentType: "image/webp",
+      contentDisposition: "inline",
+      cacheControl: "public, max-age=31536000, immutable",
+      checksumSha256: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      expiresInSeconds: 900,
+    });
+
+    expect(presigned).toBeDefined();
+    if (!presigned) {
+      throw new Error("Expected presigned PUT target");
+    }
+
+    const signedHeaders = new URL(presigned.url).searchParams
+      .get("X-Amz-SignedHeaders")
+      ?.split(";")
+      .sort();
+
+    expect(signedHeaders).toEqual([
+      "cache-control",
+      "content-disposition",
+      "content-type",
+      "host",
+      "x-amz-checksum-sha256",
+    ]);
+    expect(
+      new URL(presigned.url).searchParams.has("x-amz-checksum-sha256"),
+    ).toBe(false);
+    expect(presigned.headers).toEqual({
+      "Content-Type": "image/webp",
+      "Content-Disposition": "inline",
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "x-amz-checksum-sha256": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    });
   });
 });
 

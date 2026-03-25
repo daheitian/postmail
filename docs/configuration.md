@@ -131,6 +131,7 @@ Jant supports two site resolution modes:
 
 - `single-site` is the default for self-hosted Node and Docker deployments.
 - `host-based` resolves the current site from the incoming host and does not use `SITE_URL`.
+- `single-site` expects exactly one site in the database. If the database contains multiple sites, Node startup fails until you switch back to `host-based` or remove the extra sites.
 
 Most self-hosted users should keep the default `single-site` mode.
 
@@ -182,6 +183,12 @@ R2 uses the `[[r2_buckets]]` binding in `wrangler.toml`. No additional configura
 > R2_PUBLIC_URL = "https://media.yourdomain.com"
 > ```
 
+**CORS note:** When you use Jant's default Cloudflare Workers `r2` driver, uploads are
+relayed through the Worker, so bucket CORS is not required for uploads. If you
+instead configure Cloudflare R2 through the S3-compatible `s3` driver to use
+browser direct uploads, configure bucket CORS as described in
+[Browser Direct Upload CORS](#browser-direct-upload-cors).
+
 #### S3-Compatible Storage
 
 Use any S3-compatible service (AWS S3, Backblaze B2, MinIO, DigitalOcean Spaces, etc.) as an alternative to R2 on Cloudflare or local storage on Node / Docker.
@@ -220,6 +227,81 @@ Use any S3-compatible service (AWS S3, Backblaze B2, MinIO, DigitalOcean Spaces,
 3. Remove the `[[r2_buckets]]` section from `wrangler.toml` — it's not needed with S3.
 
 > **Note:** When using `create-jant`, select "S3-compatible" during setup to have this configured automatically.
+
+### Browser Direct Upload CORS
+
+If you use browser direct uploads with `STORAGE_DRIVER="s3"`, the bucket must
+allow CORS for the exact site origin that initiates the upload. This applies to
+AWS S3 and to Cloudflare R2 when you configure it through the S3-compatible
+driver with `S3_ENDPOINT`.
+
+Jant signs upload requests with fixed headers such as `Content-Type`,
+`Content-Disposition`, and `x-amz-checksum-sha256`. Your bucket CORS rules must
+allow those request headers or the browser preflight request will fail.
+
+Jant now also adds the configured `S3_ENDPOINT` origin to CSP `connect-src`
+automatically, so the browser can reach the presigned upload URL.
+
+#### Cloudflare R2 via `S3_ENDPOINT`
+
+Use the bucket's S3 API endpoint for uploads, not the public/custom media URL.
+Cloudflare's docs note that browser uploads with presigned URLs require bucket
+CORS, and rule propagation can occasionally take up to about 30 seconds after a
+change.
+
+Recommended bucket CORS:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://your-site.example"],
+    "AllowedMethods": ["GET", "HEAD", "PUT"],
+    "AllowedHeaders": [
+      "Content-Type",
+      "Content-Disposition",
+      "Cache-Control",
+      "x-amz-checksum-sha256"
+    ],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+If you upload from multiple origins, list each explicit origin. Avoid `*`
+unless you intentionally want any origin to be able to use the bucket's browser
+upload CORS policy. `GET` and `HEAD` are included here as well because they are
+harmless for normal public media access and avoid future cross-origin fetch
+surprises if the browser or app reads object metadata or content directly.
+
+#### AWS S3
+
+AWS S3 evaluates the bucket CORS rules against the browser's preflight request.
+The `AllowedHeaders` list must cover every header the browser asks to send.
+
+Recommended bucket CORS:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://your-site.example"],
+    "AllowedMethods": ["GET", "HEAD", "PUT"],
+    "AllowedHeaders": [
+      "Content-Type",
+      "Content-Disposition",
+      "Cache-Control",
+      "x-amz-checksum-sha256"
+    ],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+If you use the standard AWS endpoint such as
+`https://s3.us-east-1.amazonaws.com`, Jant's CSP also allows the derived bucket
+host like `https://your-bucket.s3.us-east-1.amazonaws.com` for the presigned
+upload request.
 
 ### Image Transformations (Optional)
 

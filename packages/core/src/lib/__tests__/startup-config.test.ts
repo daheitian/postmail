@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { getStartupConfigurationErrorPage } from "../startup-config.js";
+import {
+  getRuntimeConfigurationErrorPage,
+  getStartupConfigurationErrorPage,
+} from "../startup-config.js";
 
 describe("getStartupConfigurationErrorPage", () => {
   it("does not block startup when AUTH_SECRET is present", () => {
@@ -22,5 +25,19 @@ describe("getStartupConfigurationErrorPage", () => {
     );
     expect(page).toContain("wrangler secret put AUTH_SECRET");
     expect(page).toContain("Open configuration instructions");
+  });
+
+  it("renders runtime configuration failures as a user-facing error page", () => {
+    const page = getRuntimeConfigurationErrorPage(
+      "single-site mode found multiple sites in the database.",
+    );
+
+    expect(page).toContain("Configuration Error");
+    expect(page).toContain(
+      "single-site mode found multiple sites in the database.",
+    );
+    expect(page).toContain(
+      "Update your environment or instance data, then restart Jant.",
+    );
   });
 });

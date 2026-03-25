@@ -108,4 +108,26 @@ describe("CLI site selection", () => {
       "host-based mode requires --site, --host, or --url when the database contains multiple sites.",
     );
   });
+
+  it("returns an actionable message for single-site multi-site instances", async () => {
+    const query = vi.fn(async () => [
+      createSiteRow("sit_one", "one"),
+      createSiteRow("sit_two", "two"),
+    ]);
+
+    await expect(
+      resolveCliSite(
+        {
+          query,
+        },
+        {
+          env: {
+            SITE_RESOLUTION_MODE: "single-site",
+          },
+        },
+      ),
+    ).rejects.toThrow(
+      "single-site mode found multiple sites in the database: one (sit_one), two (sit_two). Restore SITE_RESOLUTION_MODE=host-based for this database, or remove the extra sites before restarting in single-site mode.",
+    );
+  });
 });

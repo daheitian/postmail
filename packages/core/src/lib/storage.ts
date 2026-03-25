@@ -374,13 +374,19 @@ interface S3ListObjectsV2Output {
   NextContinuationToken?: string;
 }
 
+interface S3SignedUrlOptions {
+  expiresIn: number;
+  signableHeaders?: Set<string>;
+  unhoistableHeaders?: Set<string>;
+}
+
 /** Lazy-loaded S3 client bundle */
 interface S3ClientBundle {
   send: (command: unknown) => Promise<unknown>;
   getSignedUrl: (
     client: unknown,
     command: unknown,
-    options: { expiresIn: number },
+    options: S3SignedUrlOptions,
   ) => Promise<string>;
   client: unknown;
   PutObjectCommand: S3CommandCtor<PutObjectInput>;
@@ -420,13 +426,19 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
             secretAccessKey: config.secretAccessKey,
           },
           forcePathStyle,
+          // S3-compatible providers such as R2 can return whole-object checksum
+          // headers on ranged GET responses, which breaks the SDK's automatic
+          // response validation for partial reads. Jant already validates
+          // uploaded object checksums during finalize, so only enable response
+          // checksum verification when a request explicitly asks for it.
+          responseChecksumValidation: "WHEN_REQUIRED",
         });
         return {
           send: (cmd: unknown) => client.send(cmd as never),
           getSignedUrl: (
             awsClient: unknown,
             command: unknown,
-            options: { expiresIn: number },
+            options: S3SignedUrlOptions,
           ) =>
             presigner.getSignedUrl(
               awsClient as Parameters<typeof presigner.getSignedUrl>[0],
@@ -602,8 +614,22 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
         CacheControl: opts.cacheControl,
         ChecksumSHA256: opts.checksumSha256,
       });
+      const signableHeaders = new Set<string>();
+      if (opts.contentType) {
+        signableHeaders.add("content-type");
+      }
+      if (opts.contentDisposition) {
+        signableHeaders.add("content-disposition");
+      }
+      if (opts.cacheControl) {
+        signableHeaders.add("cache-control");
+      }
       const url = await s3.getSignedUrl(s3.client, command, {
         expiresIn: opts.expiresInSeconds,
+        signableHeaders: signableHeaders.size > 0 ? signableHeaders : undefined,
+        unhoistableHeaders: opts.checksumSha256
+          ? new Set(["x-amz-checksum-sha256"])
+          : undefined,
       });
       const headers: Record<string, string> = {};
       if (opts.contentType) headers["Content-Type"] = opts.contentType;

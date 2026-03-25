@@ -28,6 +28,49 @@ describe("secureHeadersMiddleware", () => {
     expect(csp).toContain("media-src 'self' data: blob: https: http:");
   });
 
+  it("allows the configured S3-compatible endpoint for browser direct uploads", async () => {
+    const app = new Hono<Env>();
+
+    app.use("*", async (_c, next) => {
+      await next();
+    });
+    app.use("*", secureHeadersMiddleware());
+    app.get("/", (c) => c.text("ok"));
+
+    const response = await app.request("/", undefined, {
+      STORAGE_DRIVER: "s3",
+      S3_ENDPOINT:
+        "https://03e7294bdb3750ed5a0d6afef6d770e4.r2.cloudflarestorage.com",
+      S3_BUCKET: "jant-cloud-media-dev",
+    } as Bindings);
+    const csp = response.headers.get("content-security-policy");
+
+    expect(csp).toContain(
+      "connect-src 'self' https://03e7294bdb3750ed5a0d6afef6d770e4.r2.cloudflarestorage.com",
+    );
+  });
+
+  it("allows the bucket hostname for AWS S3 direct uploads", async () => {
+    const app = new Hono<Env>();
+
+    app.use("*", async (_c, next) => {
+      await next();
+    });
+    app.use("*", secureHeadersMiddleware());
+    app.get("/", (c) => c.text("ok"));
+
+    const response = await app.request("/", undefined, {
+      STORAGE_DRIVER: "s3",
+      S3_ENDPOINT: "https://s3.us-east-1.amazonaws.com",
+      S3_BUCKET: "jant-media",
+    } as Bindings);
+    const csp = response.headers.get("content-security-policy");
+
+    expect(csp).toContain(
+      "connect-src 'self' https://s3.us-east-1.amazonaws.com https://jant-media.s3.us-east-1.amazonaws.com",
+    );
+  });
+
   it("keeps public pages embeddable with a smaller header set", async () => {
     const app = new Hono<Env>();
 

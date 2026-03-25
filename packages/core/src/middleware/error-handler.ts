@@ -9,8 +9,14 @@ import type { ErrorHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
-import { DomainError, NotFoundError, ValidationError } from "../lib/errors.js";
+import {
+  ConfigurationError,
+  DomainError,
+  NotFoundError,
+  ValidationError,
+} from "../lib/errors.js";
 import { dsToast } from "../lib/sse.js";
+import { getRuntimeConfigurationErrorPage } from "../lib/startup-config.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -65,6 +71,12 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
   // Non-API routes: map NotFoundError to Hono's built-in 404
   if (err instanceof NotFoundError) {
     return c.notFound();
+  }
+
+  if (err instanceof ConfigurationError) {
+    // eslint-disable-next-line no-console -- Configuration failures must stay visible in server logs.
+    console.error("[Jant] Configuration error:", err);
+    return c.html(getRuntimeConfigurationErrorPage(err.message), 500);
   }
 
   // eslint-disable-next-line no-console -- Page-route error logging is intentional

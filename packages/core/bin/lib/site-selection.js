@@ -133,6 +133,12 @@ function toSite(row) {
   };
 }
 
+function formatSiteSummary(rows) {
+  return rows
+    .map((row) => `${getRequiredString(row, "key")} (${getRequiredString(row, "id")})`)
+    .join(", ");
+}
+
 export function getCliSiteResolutionMode(env = process.env) {
   return env.SITE_RESOLUTION_MODE === "host-based"
     ? "host-based"
@@ -201,7 +207,7 @@ export async function resolveCliSite(queryRunner, options = {}) {
   if (rows.length > 1) {
     const message =
       resolutionMode === "single-site"
-        ? "single-site mode requires exactly one site in the instance."
+        ? `single-site mode found multiple sites in the database: ${formatSiteSummary(rows)}. Restore SITE_RESOLUTION_MODE=host-based for this database, or remove the extra sites before restarting in single-site mode.`
         : "host-based mode requires --site, --host, or --url when the database contains multiple sites.";
     throw new Error(message);
   }
