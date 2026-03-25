@@ -40,7 +40,7 @@
     "i18n:compile": "lingui compile --typescript",
     "i18n:build": "pnpm i18n:extract && pnpm i18n:compile",
     "dev": "pnpm db:migrate:local && vite dev",
-    "dev:node": "vite dev --config vite.config.node.ts --mode node",
+    "dev:node": "vite dev --config vite.config.node.ts --mode node --host 0.0.0.0",
     "dev:debug": "node dev/scripts/start-dev-debug.mjs",
     "db:migrate:local": "node ./bin/jant.js migrate --local",
     "db:migrate:remote": "node ./bin/jant.js migrate --remote",
