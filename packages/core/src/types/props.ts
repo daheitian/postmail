@@ -152,6 +152,7 @@ export type CardMode = "compact" | "feed" | "detail";
 
 export interface PostFooterDisplayOptions {
   hideActions?: boolean;
+  hideReply?: boolean;
   hideTimestamp?: boolean;
   hideThreadLink?: boolean;
 }

@@ -18,14 +18,14 @@ import {
 const ROOT_CONTEXT_DISPLAY = {
   hideRating: true,
   footer: {
-    hideActions: true,
+    hideReply: true,
   },
 } as const;
 
 const PARENT_CONTEXT_DISPLAY = {
   hideRating: true,
   footer: {
-    hideActions: true,
+    hideReply: true,
   },
 } as const;
 

@@ -1,7 +1,11 @@
 import type { Context } from "hono";
 import { renderToString } from "hono/jsx/dom/server";
 import { describe, expect, it } from "vitest";
-import type { CollectionTagView, PostView } from "../../../types.js";
+import type {
+  CollectionTagView,
+  PostFooterDisplayOptions,
+  PostView,
+} from "../../../types.js";
 import { I18nProvider } from "../../../i18n/context.js";
 import { createI18n } from "../../../i18n/i18n.js";
 import { PostFooter } from "../PostFooter.js";
@@ -44,6 +48,7 @@ function renderPostFooter(
   post: PostView,
   detail = false,
   locale: "en" | "zh-Hans" | "zh-Hant" = "en",
+  display?: PostFooterDisplayOptions,
 ): string {
   const i18n = createI18n(locale);
   const c = {
@@ -54,7 +59,7 @@ function renderPostFooter(
   } as unknown as Context;
 
   I18nProvider({ c, children: "" });
-  return renderToString(PostFooter({ post, detail }));
+  return renderToString(PostFooter({ post, detail, display }));
 }
 
 describe("PostFooter", () => {
@@ -104,5 +109,14 @@ describe("PostFooter", () => {
     expect(html.indexOf('class="post-footer-featured"')).toBeLessThan(
       html.indexOf('class="u-url post-footer-link"'),
     );
+  });
+
+  it("can hide reply without hiding the more menu", () => {
+    const html = renderPostFooter(createPostView(), false, "en", {
+      hideReply: true,
+    });
+
+    expect(html).not.toContain("data-reply-trigger");
+    expect(html).toContain("data-post-menu-trigger");
   });
 });
