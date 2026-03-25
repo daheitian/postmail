@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { MediaView, PostView } from "../../../types.js";
 import { I18nProvider } from "../../../i18n/context.js";
 import { createI18n } from "../../../i18n/i18n.js";
+import { NoteCard } from "../NoteCard.js";
 import { LinkCard } from "../LinkCard.js";
 import { QuoteCard } from "../QuoteCard.js";
 
@@ -44,7 +45,10 @@ function createPostView(overrides: Partial<PostView> = {}): PostView {
 }
 
 function renderWithI18n(
-  html: ReturnType<typeof LinkCard> | ReturnType<typeof QuoteCard>,
+  html:
+    | ReturnType<typeof NoteCard>
+    | ReturnType<typeof LinkCard>
+    | ReturnType<typeof QuoteCard>,
 ) {
   const i18n = createI18n("en");
   const c = {
@@ -96,5 +100,24 @@ describe("timeline cards", () => {
 
     expect(linkHtml).not.toContain("data-post-media");
     expect(quoteHtml).not.toContain("data-post-media");
+  });
+
+  it("can hide reply without hiding the more menu on note cards", () => {
+    const post = createPostView({ format: "note", isLastInThread: true });
+
+    const html = renderWithI18n(
+      NoteCard({
+        post,
+        mode: "feed",
+        display: {
+          footer: {
+            hideReply: true,
+          },
+        },
+      }),
+    );
+
+    expect(html).not.toContain("data-reply-trigger");
+    expect(html).toContain("data-post-menu-trigger");
   });
 });

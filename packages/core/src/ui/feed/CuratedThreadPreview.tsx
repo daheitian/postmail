@@ -6,7 +6,7 @@ import { TimelineItem, TimelineItemFromPost } from "./TimelineItem.js";
 const THREAD_CONTEXT_DISPLAY = {
   hideRating: true,
   footer: {
-    hideActions: true,
+    hideReply: true,
     hideThreadLink: true,
   },
 } as const;

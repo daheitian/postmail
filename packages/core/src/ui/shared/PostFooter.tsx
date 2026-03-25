@@ -112,6 +112,8 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
   const showTimestamp = !display?.hideTimestamp;
   const showThreadLink = !!post.threadRootPermalink && !display?.hideThreadLink;
   const hideActions = !!display?.hideActions;
+  const hideReply = !!display?.hideReply;
+  const showReply = !hideReply && post.isLastInThread;
   const showThreadSeparator =
     showThreadLink && (showTimestamp || !!safeExternalUrl || !!detail);
   const showCollectionSeparator =
@@ -205,7 +207,7 @@ export const PostFooter: FC<PostFooterProps> = ({ post, detail, display }) => {
       </div>
       {!hideActions && (
         <div class="post-menu-actions">
-          {post.isLastInThread && (
+          {showReply && (
             <button
               type="button"
               class="reply-trigger"
