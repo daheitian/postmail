@@ -1643,12 +1643,34 @@ export class JantComposeEditor extends LitElement {
             </button>
           `
         : nothing}
+      ${this._renderAttachmentRemoveButton((e: Event) => {
+        e.stopPropagation();
+        this._removeAttachment(index);
+      })}
+    `;
+  }
+
+  private _renderAttachmentRemoveButton(onClick: (e: Event) => void) {
+    return html`
       <button
         type="button"
         class="compose-attachment-remove"
-        @click=${() => this._removeAttachment(index)}
+        title=${this.labels.removeAttachment}
+        aria-label=${this.labels.removeAttachment}
+        @click=${onClick}
       >
-        ✕
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.9"
+          stroke-linecap="round"
+        >
+          <path d="M3.5 3.5 10.5 10.5" />
+          <path d="M10.5 3.5 3.5 10.5" />
+        </svg>
       </button>
     `;
   }
@@ -1679,16 +1701,10 @@ export class JantComposeEditor extends LitElement {
                 >`
               : nothing}
           </div>
-          <button
-            type="button"
-            class="compose-attachment-remove"
-            @click=${(e: Event) => {
-              e.stopPropagation();
-              this._removeAttachedText(index);
-            }}
-          >
-            ✕
-          </button>
+          ${this._renderAttachmentRemoveButton((e: Event) => {
+            e.stopPropagation();
+            this._removeAttachedText(index);
+          })}
         </div>
       </div>
     `;

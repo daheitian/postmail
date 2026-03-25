@@ -4875,31 +4875,49 @@
     position: absolute;
     top: 6px;
     right: 6px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: none;
-    background-color: rgba(0, 0, 0, 0.55);
-    color: white;
-    font-size: 11px;
-    line-height: 1;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, white 16%, transparent);
+    background-color: color-mix(in srgb, black 48%, transparent);
+    color: color-mix(in srgb, white 94%, transparent);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transition: opacity 0.15s ease;
+    box-shadow: 0 3px 10px oklch(0 0 0 / 0.16);
+    z-index: 2;
+    transition:
+      transform 0.18s ease,
+      background-color 0.18s ease,
+      color 0.18s ease,
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
   }
 
-  .compose-attachment-thumb:hover .compose-attachment-remove {
-    opacity: 1;
+  .compose-attachment-remove:hover {
+    transform: translateY(-0.5px);
+    background-color: color-mix(in srgb, black 58%, transparent);
+    border-color: color-mix(in srgb, white 22%, transparent);
+    color: white;
+    box-shadow: 0 6px 14px oklch(0 0 0 / 0.2);
   }
 
-  /* Always show on touch devices */
-  @media (hover: none) {
-    .compose-attachment-remove {
-      opacity: 1;
-    }
+  .compose-attachment-remove:active {
+    transform: translateY(0);
+  }
+
+  .compose-attachment-remove:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--site-accent) 36%, white);
+    outline-offset: 2px;
+  }
+
+  .compose-attachment-remove svg {
+    display: block;
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+    pointer-events: none;
   }
 
   .compose-attachment-alt {

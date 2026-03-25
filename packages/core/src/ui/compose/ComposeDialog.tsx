@@ -173,6 +173,10 @@ export const ComposeForm: FC<ComposeFormProps> = ({
       message: "Add",
       comment: "@context: Add more attachments button",
     }),
+    removeAttachment: t({
+      message: "Remove attachment",
+      comment: "@context: Button to remove an uploaded attachment in compose",
+    }),
     uploading: t({
       message: "Uploading...",
       comment: "@context: Toast shown during background upload",
