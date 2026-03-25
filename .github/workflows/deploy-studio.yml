@@ -30,9 +30,6 @@ jobs:
           PUSH_SHA: ${{ github.sha }}
           GIT_REF_NAME: ${{ github.ref_name }}
         run: |
-          # Temporary: use studio/preview until the preview env fixes are merged to studio/main.
-          STUDIO_REF="preview"
-
           if [ "$EVENT_NAME" = "pull_request" ]; then
             SOURCE_REF="$PR_HEAD_REF"
             SOURCE_SHA="$PR_HEAD_SHA"
@@ -51,16 +48,13 @@ jobs:
           echo "deploy_ref=$DEPLOY_REF" >> "$GITHUB_OUTPUT"
           echo "source_ref=$SOURCE_REF" >> "$GITHUB_OUTPUT"
           echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
-          echo "studio_ref=$STUDIO_REF" >> "$GITHUB_OUTPUT"
           echo "target_env=$TARGET_ENV" >> "$GITHUB_OUTPUT"
 
       - name: Dispatch to tonormal/build
         env:
           BUILD_REPO_TOKEN: ${{ secrets.BUILD_REPO_TOKEN }}
-          DEPLOY_REF: ${{ steps.params.outputs.deploy_ref }}
           SOURCE_REF: ${{ steps.params.outputs.source_ref }}
           SOURCE_SHA: ${{ steps.params.outputs.source_sha }}
-          STUDIO_REF: ${{ steps.params.outputs.studio_ref }}
           TARGET_ENV: ${{ steps.params.outputs.target_env }}
         run: |
           curl -fsSL -X POST \
@@ -69,25 +63,15 @@ jobs:
             https://api.github.com/repos/tonormal/build/dispatches \
             -d "$(jq -n \
               --arg service "jant" \
-              --arg repository "${{ github.repository }}" \
-              --arg deploy_ref "$DEPLOY_REF" \
-              --arg source_repository "${{ github.repository }}" \
               --arg source_ref "$SOURCE_REF" \
               --arg source_sha "$SOURCE_SHA" \
-              --arg sha "$SOURCE_SHA" \
-              --arg studio_sha "$STUDIO_REF" \
               '{
                 event_type: "deploy-external-app",
                 client_payload: {
                   service: $service,
-                  repository: $repository,
-                  deploy_ref: $deploy_ref,
-                  source_repository: $source_repository,
                   source_ref: $source_ref,
-                  source_sha: $source_sha,
-                  sha: $sha,
-                  studio_sha: $studio_sha
+                  source_sha: $source_sha
                 }
               }')"
 
-          echo "Triggered $TARGET_ENV deploy for jant using source $SOURCE_REF@$SOURCE_SHA and studio ref $STUDIO_REF."
+          echo "Triggered $TARGET_ENV deploy for jant using source $SOURCE_REF@$SOURCE_SHA."

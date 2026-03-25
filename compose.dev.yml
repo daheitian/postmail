@@ -1,4 +1,20 @@
 services:
+  jant-migrate:
+    image: ${DEV_IMAGE:-jant:local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
+      PORT: ${PORT:-3000}
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+    command: ["node", "bin/jant.js", "migrate"]
+    restart: "no"
+    profiles:
+      - migrate
+
   jant:
     image: ${DEV_IMAGE:-jant:local}
     build:

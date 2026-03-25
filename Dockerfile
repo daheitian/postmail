@@ -30,9 +30,6 @@ RUN mkdir -p /app /var/lib/jant /usr/local/bin \
   && chown -R node:node /app /var/lib/jant /usr/local/bin
 
 COPY --from=build --chown=node:node /app /app
-COPY --chown=node:node scripts/docker-entrypoint.sh /usr/local/bin/jant-docker-entrypoint
-
-RUN chmod +x /usr/local/bin/jant-docker-entrypoint
 
 USER node
 
@@ -43,4 +40,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT || '3000') + '/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))"
 
-ENTRYPOINT ["jant-docker-entrypoint"]
+CMD ["node", "bin/jant.js", "start"]

@@ -1,4 +1,17 @@
 services:
+  jant-migrate:
+    image: ${IMAGE:-owenyoung/jant:latest}
+    env_file:
+      - .env
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
+      PORT: ${PORT:-3000}
+      TRUST_PROXY: ${TRUST_PROXY:-true}
+    command: ["node", "bin/jant.js", "migrate"]
+    restart: "no"
+    profiles:
+      - migrate
+
   jant:
     image: ${IMAGE:-owenyoung/jant:latest}
     ports:
