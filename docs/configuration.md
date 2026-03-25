@@ -75,14 +75,15 @@ Notes:
 
 Hosted control-plane integration variables:
 
-| Variable                                 | Description                                                                                                        |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `HOSTED_CONTROL_PLANE_BASE_URL`          | Public hosted control-plane base URL used for hosted `/signin`, `/reset`, and account redirects                    |
-| `HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL` | Optional internal control-plane base URL for server-to-server calls; falls back to `HOSTED_CONTROL_PLANE_BASE_URL` |
-| `HOSTED_CONTROL_PLANE_PROVIDER_NAME`     | Optional hosted control-plane label shown in hosted account UI; falls back to the control-plane host when omitted  |
-| `HOSTED_CONTROL_PLANE_INTERNAL_TOKEN`    | Shared bearer token used by `jant-core` when calling hosted control-plane internal APIs                            |
-| `INTERNAL_ADMIN_TOKEN`                   | Shared bearer token for `POST /api/internal/sites` and other internal admin routes                                 |
-| `HOSTED_CONTROL_PLANE_SSO_SECRET`        | Shared 32+ character secret used to verify the hosted control plane's short-lived admin handoff tokens             |
+| Variable                                   | Description                                                                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| `HOSTED_CONTROL_PLANE_BASE_URL`            | Public hosted control-plane base URL used for hosted `/signin`, `/reset`, and account redirects                    |
+| `HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL`   | Optional internal control-plane base URL for server-to-server calls; falls back to `HOSTED_CONTROL_PLANE_BASE_URL` |
+| `HOSTED_CONTROL_PLANE_PROVIDER_NAME`       | Optional hosted control-plane label shown in hosted account UI; falls back to the control-plane host when omitted  |
+| `HOSTED_CONTROL_PLANE_INTERNAL_TOKEN`      | Shared bearer token used by `jant-core` when calling hosted control-plane internal APIs                            |
+| `INTERNAL_ADMIN_TOKEN`                     | Shared bearer token for `POST /api/internal/sites` and other internal admin routes                                 |
+| `HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET` | Shared 32+ character secret used to sign `/.well-known/jant-domain-check` responses for custom-domain verification |
+| `HOSTED_CONTROL_PLANE_SSO_SECRET`          | Shared 32+ character secret used to verify the hosted control plane's short-lived admin handoff tokens             |
 
 These variables are only needed when `jant-core` runs in `SITE_RESOLUTION_MODE=host-based` behind `jant-cloud`.
 

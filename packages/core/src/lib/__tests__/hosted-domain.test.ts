@@ -26,6 +26,9 @@ const aliasDomain: SiteDomain = {
 
 describe("hosted canonical redirects", () => {
   it("bypasses hosted redirects for admin and auth paths", () => {
+    expect(
+      shouldBypassHostedCanonicalRedirect("/.well-known/jant-domain-check"),
+    ).toBe(true);
     expect(shouldBypassHostedCanonicalRedirect("/signin")).toBe(true);
     expect(shouldBypassHostedCanonicalRedirect("/settings/account")).toBe(true);
     expect(shouldBypassHostedCanonicalRedirect("/api/posts")).toBe(true);

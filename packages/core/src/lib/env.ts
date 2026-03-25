@@ -125,6 +125,12 @@ export function getHostedControlPlaneBaseUrl(
   return getEnvString(env, "HOSTED_CONTROL_PLANE_BASE_URL");
 }
 
+export function getHostedControlPlaneDomainCheckSecret(
+  env: EnvSource,
+): string | undefined {
+  return getEnvString(env, "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET");
+}
+
 export function getHostedControlPlaneInternalBaseUrl(
   env: EnvSource,
 ): string | undefined {
