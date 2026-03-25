@@ -74,7 +74,7 @@ describe("jant-branding", () => {
   });
 
   it("renders raw svg markup with the baked-in variant color", () => {
-    expect(buildJantLogoSvgMarkup("positive")).toContain('fill="#3A5A40"');
+    expect(buildJantLogoSvgMarkup("positive")).toContain('fill="#144931"');
     expect(buildJantLogoSvgMarkup("negative")).toContain('fill="#FFFFFF"');
     expect(buildJantLogoSvgMarkup("positive")).toContain(
       'viewBox="0 0 100 100"',
@@ -83,7 +83,7 @@ describe("jant-branding", () => {
 
   it("renders the filled app icon svg markup", () => {
     expect(buildJantAppIconSvgMarkup()).toContain('rect width="100"');
-    expect(buildJantAppIconSvgMarkup()).toContain('fill="#3A5A40"');
+    expect(buildJantAppIconSvgMarkup()).toContain('fill="#144931"');
     expect(buildJantAppIconSvgMarkup()).toContain('fill="#FFFFFF"');
     expect(buildJantSquareTileSvgMarkup()).toContain('rx="0"');
     expect(buildJantCircleTileSvgMarkup()).toContain("<circle");

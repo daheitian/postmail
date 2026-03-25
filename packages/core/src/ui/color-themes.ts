@@ -159,9 +159,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     light: {
       bg: "oklch(0.975 0.015 92)",
       fg: "oklch(0.29 0.01 70)",
-      primary: "oklch(0.4347 0.0569 149.44)",
+      primary: "oklch(0.3633 0.0697 159.95)",
       primaryFg: "oklch(0.985 0.008 92)",
-      siteAccent: "oklch(0.512 0.044 145)",
+      siteAccent: "oklch(0.4406 0.0568 159.95)",
       muted: "oklch(0.942 0.014 96)",
       mutedFg: "oklch(0.52 0.008 70)",
       border: "oklch(0.892 0.014 98)",
@@ -172,9 +172,9 @@ export const BUILTIN_COLOR_THEMES: ColorTheme[] = [
     dark: {
       bg: "oklch(0.182 0.003 95)",
       fg: "oklch(0.895 0.006 88)",
-      primary: "oklch(0.768 0.04 149)",
+      primary: "oklch(0.6966 0.0528 159.95)",
       primaryFg: "oklch(0.17 0.003 95)",
-      siteAccent: "oklch(0.802 0.035 145)",
+      siteAccent: "oklch(0.7306 0.0478 159.95)",
       muted: "oklch(0.238 0.003 95)",
       mutedFg: "oklch(0.67 0.005 88)",
       border: "oklch(0.305 0.003 95)",

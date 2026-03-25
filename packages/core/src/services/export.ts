@@ -1527,13 +1527,13 @@ const STYLE_CSS = `/* Jant Export Theme */
   --background: oklch(0.975 0.015 92);
   --foreground: oklch(0.29 0.01 70);
   --card: oklch(0.975 0.015 92);
-  --primary: oklch(0.4347 0.0569 149.44);
+  --primary: oklch(0.3633 0.0697 159.95);
   --primary-foreground: oklch(0.985 0.008 92);
   --muted: oklch(0.942 0.014 96);
   --muted-foreground: oklch(0.52 0.008 70);
   --accent: oklch(0.942 0.014 96);
   --border: oklch(0.892 0.014 98);
-  --site-accent: var(--primary);
+  --site-accent: oklch(0.4406 0.0568 159.95);
   --site-accent-text: var(--primary-foreground);
   --site-page-bg: var(--background);
   --site-elevated-bg: var(--background);
@@ -1570,12 +1570,13 @@ const STYLE_CSS = `/* Jant Export Theme */
     --background: oklch(0.182 0.003 95);
     --foreground: oklch(0.895 0.006 88);
     --card: oklch(0.182 0.003 95);
-    --primary: oklch(0.768 0.04 149);
+    --primary: oklch(0.6966 0.0528 159.95);
     --primary-foreground: oklch(0.17 0.003 95);
     --muted: oklch(0.238 0.003 95);
     --muted-foreground: oklch(0.67 0.005 88);
     --accent: oklch(0.238 0.003 95);
     --border: oklch(0.305 0.003 95);
+    --site-accent: oklch(0.7306 0.0478 159.95);
   }
 }
 
