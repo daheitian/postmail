@@ -10,6 +10,29 @@ import {
   getEnvString,
   getLocalStoragePath,
 } from "./env.js";
+import { now } from "./time.js";
+
+export interface StorageObjectOptions {
+  contentType?: string;
+  contentDisposition?: string;
+  cacheControl?: string;
+}
+
+export interface StorageObjectInfo extends StorageObjectOptions {
+  size?: number;
+}
+
+export interface PresignedPutOptions extends StorageObjectOptions {
+  checksumSha256?: string;
+  expiresInSeconds: number;
+}
+
+export interface PresignedPutTarget {
+  url: string;
+  method: "PUT";
+  headers: Record<string, string>;
+  expiresAt: number;
+}
 
 /** Tracks an in-progress multipart upload */
 export interface MultipartUploadSession {
@@ -34,21 +57,17 @@ export interface StorageDriver {
   put(
     key: string,
     body: ReadableStream | Uint8Array,
-    opts?: { contentType?: string },
+    opts?: StorageObjectOptions,
   ): Promise<void>;
 
   /** Retrieve a file (or byte range) from storage. Returns null if not found. */
   get(
     key: string,
     opts?: { range?: { offset: number; length: number } },
-  ): Promise<{
-    body: ReadableStream;
-    contentType?: string;
-    size?: number;
-  } | null>;
+  ): Promise<({ body: ReadableStream } & StorageObjectInfo) | null>;
 
   /** Retrieve file metadata without downloading the body. Returns null if not found. */
-  head(key: string): Promise<{ contentType?: string; size?: number } | null>;
+  head(key: string): Promise<StorageObjectInfo | null>;
 
   /** Delete a file from storage */
   delete(key: string): Promise<void>;
@@ -56,10 +75,23 @@ export interface StorageDriver {
   /** List all object keys in storage. Used by admin maintenance tasks. */
   listAllKeys?(prefix?: string): Promise<string[]>;
 
+  /** Copy a file within the same storage backend. */
+  copy?(
+    sourceKey: string,
+    destKey: string,
+    opts?: StorageObjectOptions,
+  ): Promise<void>;
+
+  /** Create a browser-usable signed PUT target. */
+  presignPut?(
+    key: string,
+    opts: PresignedPutOptions,
+  ): Promise<PresignedPutTarget>;
+
   /** Start a multipart upload (optional — R2 only) */
   createMultipartUpload?(
     key: string,
-    opts?: { contentType?: string },
+    opts?: StorageObjectOptions,
   ): Promise<MultipartUploadSession>;
 
   /** Upload a single part of a multipart upload */
@@ -137,6 +169,18 @@ export function supportsMultipart(
   );
 }
 
+export function supportsPresignedPut(
+  driver: StorageDriver,
+): driver is StorageDriver & Required<Pick<StorageDriver, "presignPut">> {
+  return typeof driver.presignPut === "function";
+}
+
+export function supportsCopy(
+  driver: StorageDriver,
+): driver is StorageDriver & Required<Pick<StorageDriver, "copy">> {
+  return typeof driver.copy === "function";
+}
+
 /**
  * Creates an R2 storage driver that delegates to a Cloudflare R2 bucket binding.
  *
@@ -147,9 +191,14 @@ export function createR2Driver(r2: R2Bucket): StorageDriver {
   return {
     async put(key, body, opts) {
       await r2.put(key, body, {
-        httpMetadata: opts?.contentType
-          ? { contentType: opts.contentType }
-          : undefined,
+        httpMetadata:
+          opts?.contentType || opts?.contentDisposition || opts?.cacheControl
+            ? {
+                contentType: opts?.contentType,
+                contentDisposition: opts?.contentDisposition,
+                cacheControl: opts?.cacheControl,
+              }
+            : undefined,
       });
     },
 
@@ -162,6 +211,9 @@ export function createR2Driver(r2: R2Bucket): StorageDriver {
       return {
         body: object.body,
         contentType: object.httpMetadata?.contentType ?? undefined,
+        contentDisposition:
+          object.httpMetadata?.contentDisposition ?? undefined,
+        cacheControl: object.httpMetadata?.cacheControl ?? undefined,
         size: object.size,
       };
     },
@@ -171,6 +223,9 @@ export function createR2Driver(r2: R2Bucket): StorageDriver {
       if (!object) return null;
       return {
         contentType: object.httpMetadata?.contentType ?? undefined,
+        contentDisposition:
+          object.httpMetadata?.contentDisposition ?? undefined,
+        cacheControl: object.httpMetadata?.cacheControl ?? undefined,
         size: object.size,
       };
     },
@@ -199,9 +254,14 @@ export function createR2Driver(r2: R2Bucket): StorageDriver {
 
     async createMultipartUpload(key, opts) {
       const upload = await r2.createMultipartUpload(key, {
-        httpMetadata: opts?.contentType
-          ? { contentType: opts.contentType }
-          : undefined,
+        httpMetadata:
+          opts?.contentType || opts?.contentDisposition || opts?.cacheControl
+            ? {
+                contentType: opts?.contentType,
+                contentDisposition: opts?.contentDisposition,
+                cacheControl: opts?.cacheControl,
+              }
+            : undefined,
       });
       return { uploadId: upload.uploadId, key: upload.key };
     },
@@ -248,8 +308,11 @@ interface S3CommandCtor<TInput> {
 interface PutObjectInput {
   Bucket: string;
   Key: string;
-  Body: Uint8Array;
+  Body?: Uint8Array;
   ContentType?: string;
+  ContentDisposition?: string;
+  CacheControl?: string;
+  ChecksumSHA256?: string;
 }
 
 /** Input for GetObject */
@@ -269,6 +332,8 @@ interface ObjectKeyInput {
 interface S3GetObjectOutput {
   Body?: { transformToWebStream(): ReadableStream };
   ContentType?: string;
+  ContentDisposition?: string;
+  CacheControl?: string;
   ContentLength?: number;
 }
 
@@ -281,7 +346,19 @@ interface HeadObjectInput {
 /** Subset of HeadObjectOutput used by the S3 driver */
 interface S3HeadObjectOutput {
   ContentType?: string;
+  ContentDisposition?: string;
+  CacheControl?: string;
   ContentLength?: number;
+}
+
+interface CopyObjectInput {
+  Bucket: string;
+  Key: string;
+  CopySource: string;
+  MetadataDirective?: "COPY" | "REPLACE";
+  ContentType?: string;
+  ContentDisposition?: string;
+  CacheControl?: string;
 }
 
 interface ListObjectsV2Input {
@@ -300,11 +377,18 @@ interface S3ListObjectsV2Output {
 /** Lazy-loaded S3 client bundle */
 interface S3ClientBundle {
   send: (command: unknown) => Promise<unknown>;
+  getSignedUrl: (
+    client: unknown,
+    command: unknown,
+    options: { expiresIn: number },
+  ) => Promise<string>;
+  client: unknown;
   PutObjectCommand: S3CommandCtor<PutObjectInput>;
   GetObjectCommand: S3CommandCtor<GetObjectInput>;
   DeleteObjectCommand: S3CommandCtor<ObjectKeyInput>;
   HeadObjectCommand: S3CommandCtor<HeadObjectInput>;
   ListObjectsV2Command: S3CommandCtor<ListObjectsV2Input>;
+  CopyObjectCommand: S3CommandCtor<CopyObjectInput>;
   bucket: string;
 }
 
@@ -321,9 +405,12 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
   // Lazy-load the AWS SDK to avoid bundling it when using R2
   let clientPromise: Promise<S3ClientBundle> | null = null;
 
-  function getClient() {
+  function getClient(): Promise<S3ClientBundle> {
     if (!clientPromise) {
-      clientPromise = import("@aws-sdk/client-s3").then((sdk) => {
+      clientPromise = Promise.all([
+        import("@aws-sdk/client-s3"),
+        import("@aws-sdk/s3-request-presigner"),
+      ]).then(([sdk, presigner]) => {
         const forcePathStyle = !config.endpoint.includes("amazonaws.com");
         const client = new sdk.S3Client({
           endpoint: config.endpoint,
@@ -336,11 +423,23 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
         });
         return {
           send: (cmd: unknown) => client.send(cmd as never),
+          getSignedUrl: (
+            awsClient: unknown,
+            command: unknown,
+            options: { expiresIn: number },
+          ) =>
+            presigner.getSignedUrl(
+              awsClient as Parameters<typeof presigner.getSignedUrl>[0],
+              command as Parameters<typeof presigner.getSignedUrl>[1],
+              options,
+            ),
+          client,
           PutObjectCommand: sdk.PutObjectCommand,
           GetObjectCommand: sdk.GetObjectCommand,
           DeleteObjectCommand: sdk.DeleteObjectCommand,
           HeadObjectCommand: sdk.HeadObjectCommand,
           ListObjectsV2Command: sdk.ListObjectsV2Command,
+          CopyObjectCommand: sdk.CopyObjectCommand,
           bucket: config.bucket,
         };
       });
@@ -379,6 +478,8 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
         Key: key,
         Body: bodyBytes,
         ContentType: opts?.contentType,
+        ContentDisposition: opts?.contentDisposition,
+        CacheControl: opts?.cacheControl,
       });
       await s3.send(command);
     },
@@ -398,6 +499,8 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
         return {
           body: response.Body.transformToWebStream(),
           contentType: response.ContentType ?? undefined,
+          contentDisposition: response.ContentDisposition ?? undefined,
+          cacheControl: response.CacheControl ?? undefined,
           size: response.ContentLength ?? undefined,
         };
       } catch (err: unknown) {
@@ -422,6 +525,8 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
         const response = (await s3.send(command)) as S3HeadObjectOutput;
         return {
           contentType: response.ContentType ?? undefined,
+          contentDisposition: response.ContentDisposition ?? undefined,
+          cacheControl: response.CacheControl ?? undefined,
           size: response.ContentLength ?? undefined,
         };
       } catch (err: unknown) {
@@ -469,16 +574,67 @@ export function createS3Driver(config: S3DriverConfig): StorageDriver {
         continuationToken = response.NextContinuationToken;
       }
     },
+
+    async copy(sourceKey, destKey, opts) {
+      const s3 = await getClient();
+      const command = new s3.CopyObjectCommand({
+        Bucket: s3.bucket,
+        Key: destKey,
+        CopySource: `${s3.bucket}/${sourceKey.split("/").map(encodeURIComponent).join("/")}`,
+        MetadataDirective:
+          opts?.contentType || opts?.contentDisposition || opts?.cacheControl
+            ? "REPLACE"
+            : "COPY",
+        ContentType: opts?.contentType,
+        ContentDisposition: opts?.contentDisposition,
+        CacheControl: opts?.cacheControl,
+      });
+      await s3.send(command);
+    },
+
+    async presignPut(key, opts) {
+      const s3 = await getClient();
+      const command = new s3.PutObjectCommand({
+        Bucket: s3.bucket,
+        Key: key,
+        ContentType: opts.contentType,
+        ContentDisposition: opts.contentDisposition,
+        CacheControl: opts.cacheControl,
+        ChecksumSHA256: opts.checksumSha256,
+      });
+      const url = await s3.getSignedUrl(s3.client, command, {
+        expiresIn: opts.expiresInSeconds,
+      });
+      const headers: Record<string, string> = {};
+      if (opts.contentType) headers["Content-Type"] = opts.contentType;
+      if (opts.contentDisposition) {
+        headers["Content-Disposition"] = opts.contentDisposition;
+      }
+      if (opts.cacheControl) headers["Cache-Control"] = opts.cacheControl;
+      if (opts.checksumSha256) {
+        headers["x-amz-checksum-sha256"] = opts.checksumSha256;
+      }
+      return {
+        url,
+        method: "PUT",
+        headers,
+        expiresAt: now() + opts.expiresInSeconds,
+      };
+    },
   };
 }
 
 interface LocalMultipartState {
   contentType?: string;
+  contentDisposition?: string;
+  cacheControl?: string;
   key: string;
 }
 
 interface LocalMetaFile {
   contentType?: string;
+  contentDisposition?: string;
+  cacheControl?: string;
 }
 
 interface NodeFsBundle {
@@ -645,7 +801,11 @@ export function createLocalDriver(config: LocalDriverConfig): StorageDriver {
     async put(key, body, opts) {
       const filePath = await resolveLocalPath(config.rootPath, key);
       await writeLocalBody(filePath, body);
-      await writeLocalMeta(filePath, { contentType: opts?.contentType });
+      await writeLocalMeta(filePath, {
+        contentType: opts?.contentType,
+        contentDisposition: opts?.contentDisposition,
+        cacheControl: opts?.cacheControl,
+      });
     },
 
     async get(key, opts) {
@@ -663,6 +823,8 @@ export function createLocalDriver(config: LocalDriverConfig): StorageDriver {
         return {
           body: node.Readable.toWeb(stream),
           contentType: meta?.contentType,
+          contentDisposition: meta?.contentDisposition,
+          cacheControl: meta?.cacheControl,
           size: stat.size,
         };
       } catch {
@@ -678,6 +840,8 @@ export function createLocalDriver(config: LocalDriverConfig): StorageDriver {
         const meta = await readLocalMeta(filePath);
         return {
           contentType: meta?.contentType,
+          contentDisposition: meta?.contentDisposition,
+          cacheControl: meta?.cacheControl,
           size: stat.size,
         };
       } catch {
@@ -745,6 +909,8 @@ export function createLocalDriver(config: LocalDriverConfig): StorageDriver {
         JSON.stringify({
           key,
           contentType: opts?.contentType,
+          contentDisposition: opts?.contentDisposition,
+          cacheControl: opts?.cacheControl,
         } satisfies LocalMultipartState),
       );
       return { uploadId, key };
@@ -793,7 +959,11 @@ export function createLocalDriver(config: LocalDriverConfig): StorageDriver {
       }
 
       await node.rename(tempPath, finalPath);
-      await writeLocalMeta(finalPath, { contentType: state.contentType });
+      await writeLocalMeta(finalPath, {
+        contentType: state.contentType,
+        contentDisposition: state.contentDisposition,
+        cacheControl: state.cacheControl,
+      });
       await node.rm(await getMultipartDir(uploadId), {
         force: true,
         recursive: true,

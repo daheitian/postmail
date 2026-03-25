@@ -29,6 +29,14 @@ const VISIBILITIES = ["public", "latest_hidden", "private"] as const;
 const COLLECTION_SORT_ORDERS = ["newest", "oldest", "rating_desc"] as const;
 const NAV_ITEM_TYPES = ["link", "system"] as const;
 const SYSTEM_NAV_KEYS = ["rss", "settings", "collections", "archive"] as const;
+const UPLOAD_SESSION_STATES = [
+  "pending",
+  "uploaded",
+  "completed",
+  "aborted",
+  "failed",
+] as const;
+const CONTENT_DISPOSITIONS = ["inline", "attachment"] as const;
 
 function sqlTextEnum(values: readonly string[]) {
   return sql.raw(values.map((value) => `'${value}'`).join(", "));
@@ -301,6 +309,63 @@ export const media = pgTable(
       table.siteId,
       table.mediaKind,
       table.postId,
+    ),
+  ],
+);
+
+export const uploadSessions = pgTable(
+  "upload_session",
+  {
+    id: text("id").primaryKey(),
+    siteId: text("site_id")
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    mediaId: text("media_id").notNull(),
+    originalName: text("original_name").notNull(),
+    filename: text("filename").notNull(),
+    provider: text("provider").notNull(),
+    expectedContentType: text("expected_content_type").notNull(),
+    expectedSize: integer("expected_size").notNull(),
+    expectedChecksumSha256: text("expected_checksum_sha256"),
+    contentDisposition: text("content_disposition", {
+      enum: CONTENT_DISPOSITIONS,
+    })
+      .notNull()
+      .default("inline"),
+    tempStorageKey: text("temp_storage_key").notNull(),
+    finalStorageKey: text("final_storage_key").notNull(),
+    multipartUploadId: text("multipart_upload_id"),
+    state: text("state", {
+      enum: UPLOAD_SESSION_STATES,
+    })
+      .notNull()
+      .default("pending"),
+    expiresAt: integer("expires_at").notNull(),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    check(
+      "chk_upload_session_expected_size_positive",
+      sql`${table.expectedSize} > 0`,
+    ),
+    check(
+      "chk_upload_session_state",
+      sql`${table.state} IN (${sqlTextEnum(UPLOAD_SESSION_STATES)})`,
+    ),
+    check(
+      "chk_upload_session_content_disposition",
+      sql`${table.contentDisposition} IN (${sqlTextEnum(CONTENT_DISPOSITIONS)})`,
+    ),
+    uniqueIndex("uq_upload_session_media_id").on(table.mediaId),
+    uniqueIndex("uq_upload_session_temp_storage_key").on(table.tempStorageKey),
+    uniqueIndex("uq_upload_session_final_storage_key").on(
+      table.finalStorageKey,
+    ),
+    index("idx_upload_session_site_state").on(table.siteId, table.state),
+    index("idx_upload_session_site_expires_at").on(
+      table.siteId,
+      table.expiresAt,
     ),
   ],
 );

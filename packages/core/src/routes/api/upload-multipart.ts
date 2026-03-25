@@ -2,12 +2,12 @@
  * Multipart Upload API Routes
  *
  * Handles chunked file uploads for files that exceed the Cloudflare Workers
- * 100MB request body limit. Uses R2's native multipart upload API.
+ * 100MB request body limit. Uses the storage driver's multipart API.
  *
  * Protocol:
- *   1. POST /            — Initiate: validate metadata, start R2 multipart upload
+ *   1. POST /            — Initiate: validate metadata, start multipart upload
  *   2. PUT /:id/part     — Upload a single chunk (raw body, not FormData)
- *   3. POST /:id/complete — Finalize: combine parts in R2, create DB record
+ *   3. POST /:id/complete — Finalize: combine parts, create DB record
  *   4. POST /:id/abort   — Cancel: discard uploaded parts
  *   5. PUT /:id/poster   — Upload poster frame (video thumbnails, small FormData)
  */
@@ -21,8 +21,11 @@ import { requireAuthApi } from "../../middleware/auth.js";
 import { getMediaUrl, getPublicUrlForProvider } from "../../lib/image.js";
 import {
   generateStorageKey,
+  getStoredUploadPolicy,
+  getStoredUploadSignaturePeekLength,
   getPosterStorageKey,
-  validateUploadFileMetadata,
+  validateStoredUploadMetadata,
+  validateStoredUploadSignature,
 } from "../../lib/upload.js";
 import { supportsMultipart } from "../../lib/storage.js";
 import {
@@ -103,11 +106,17 @@ multipartUploadApiRoutes.post("/", async (c) => {
   const data = parseValidated(InitiateSchema, body);
 
   // Validate file type and size
-  const error = validateUploadFileMetadata(data.contentType, data.size, {
+  const error = validateStoredUploadMetadata(data.contentType, data.size, {
     maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
   });
   if (error) {
     throw new ValidationError(error);
+  }
+  const uploadPolicy = getStoredUploadPolicy(data.contentType);
+  if (!uploadPolicy) {
+    throw new ValidationError(
+      `File type "${data.contentType}" is not supported.`,
+    );
   }
 
   const { id, filename, storageKey } = generateStorageKey(
@@ -127,6 +136,8 @@ multipartUploadApiRoutes.post("/", async (c) => {
 
   const upload = await storage.createMultipartUpload(storageKey, {
     contentType: data.contentType,
+    contentDisposition: uploadPolicy.contentDisposition,
+    cacheControl: "public, max-age=31536000, immutable",
   });
 
   return c.json({
@@ -183,13 +194,19 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
   const data = parseValidated(CompleteSchema, body);
 
   // Validate file type and size
-  const validationError = validateUploadFileMetadata(
+  const validationError = validateStoredUploadMetadata(
     data.contentType,
     data.size,
     { maxFileSizeMB: c.var.appConfig.uploadMaxFileSize },
   );
   if (validationError) {
     throw new ValidationError(validationError);
+  }
+  const uploadPolicy = getStoredUploadPolicy(data.contentType);
+  if (!uploadPolicy) {
+    throw new ValidationError(
+      `File type "${data.contentType}" is not supported.`,
+    );
   }
 
   try {
@@ -210,6 +227,28 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     data.parts,
   );
 
+  const peekLength = getStoredUploadSignaturePeekLength(data.contentType);
+  if (peekLength > 0) {
+    const object = await storage.get(data.storageKey, {
+      range: { offset: 0, length: peekLength },
+    });
+    if (!object) {
+      throw new ValidationError("The uploaded file could not be found.");
+    }
+    const bytes = new Uint8Array(await new Response(object.body).arrayBuffer());
+    const signatureError = validateStoredUploadSignature(
+      data.contentType,
+      bytes,
+    );
+    if (signatureError) {
+      await storage.delete(data.storageKey).catch(() => {});
+      if (data.posterKey) {
+        await storage.delete(data.posterKey).catch(() => {});
+      }
+      throw new ValidationError(signatureError);
+    }
+  }
+
   // Create the DB record
   const media = await c.var.services.media.create({
     id,
@@ -224,6 +263,7 @@ multipartUploadApiRoutes.post("/:id/complete", async (c) => {
     blurhash: data.blurhash,
     waveform: data.waveform,
     posterKey: data.posterKey,
+    mediaKind: uploadPolicy.mediaKind,
   });
 
   const mediaPublicUrl = getPublicUrlForProvider(

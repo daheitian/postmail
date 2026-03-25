@@ -35,6 +35,10 @@ import {
   createSiteProfileService,
   type SiteProfileService,
 } from "./site-profile.js";
+import {
+  createUploadSessionService,
+  type UploadSessionService,
+} from "./upload-session.js";
 import type { HostedControlPlaneClient } from "../lib/hosted-control-plane.js";
 import type { EnsureSingleSiteOptions } from "./site.js";
 
@@ -45,6 +49,7 @@ export interface Services {
   posts: PostService;
   customUrls: CustomUrlService;
   media: MediaService;
+  uploads: UploadSessionService;
   collections: CollectionService;
   search: SearchService;
   navItems: NavItemService;
@@ -75,6 +80,11 @@ export function createServices(
   const settings = createSettingsService(db, siteId, databaseSchema, dialect);
   const paths = createPathService(db, siteId, databaseSchema);
   const navItems = createNavItemService(db, siteId, databaseSchema);
+  const media = createMediaService(db, siteId, databaseSchema, dialect, {
+    enforceHostedQuota: config?.enforceHostedMediaQuota ?? false,
+    hostedControlPlane: config?.hostedControlPlane ?? null,
+  });
+
   return {
     settings,
     site,
@@ -90,10 +100,8 @@ export function createServices(
       databaseSchema,
     ),
     customUrls: createCustomUrlService(db, siteId, paths, databaseSchema),
-    media: createMediaService(db, siteId, databaseSchema, dialect, {
-      enforceHostedQuota: config?.enforceHostedMediaQuota ?? false,
-      hostedControlPlane: config?.hostedControlPlane ?? null,
-    }),
+    media,
+    uploads: createUploadSessionService(db, siteId, media, databaseSchema),
     collections: createCollectionService(
       db,
       siteId,
@@ -139,6 +147,7 @@ export type { PathService } from "./path.js";
 export type { PostService, PostFilters, PostDeleteDeps } from "./post.js";
 export type { CustomUrlService } from "./custom-url.js";
 export type { MediaService, MediaFilters } from "./media.js";
+export type { UploadSessionService } from "./upload-session.js";
 export type { CollectionService } from "./collection.js";
 export type { SearchService, SearchResult, SearchOptions } from "./search.js";
 export type { NavItemService } from "./navigation.js";

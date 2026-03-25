@@ -26,7 +26,7 @@ import {
 } from "./toast.js";
 import { openReplyForArticle } from "./compose-launch.js";
 import { getJsonString, readJsonObject } from "./json.js";
-import { MULTIPART_THRESHOLD, uploadMultipart } from "./multipart-upload.js";
+import { uploadViaSession } from "./upload-session.js";
 import { publicPath } from "./runtime-paths.js";
 import { setupThreadContexts } from "./thread-context.js";
 import { tiptapJsonToMarkdown } from "../lib/tiptap-to-markdown.js";
@@ -173,7 +173,8 @@ const uploadPromises = new Map<string, Promise<string | null>>();
 const removedClientIds = new Set<string>();
 
 /**
- * Upload a single file: process with ImageProcessor, then POST to /api/upload.
+ * Upload a single file: process locally, then send it through the upload
+ * session API so the backend can choose relay vs direct transport.
  * Returns the mediaId on success, null on failure.
  */
 async function uploadFile(
@@ -282,68 +283,78 @@ async function uploadFile(
       poster ??= meta.poster;
     }
 
-    // Large files: use multipart upload to avoid Worker body size limit
-    if (toUpload.size >= MULTIPART_THRESHOLD) {
-      const result = await uploadMultipart({
-        file: toUpload,
-        metadata: { width, height, blurhash, waveform, poster },
-        onProgress: (p) => editor?.updateAttachmentProgress(clientId, p),
-      });
-      editor?.updateAttachmentStatus(clientId, "done", result.id, null);
-      return result.id;
-    }
-
-    // For text-category files, read content and include summary
+    // Text attachments keep summary/chars in the media record.
     let summary: string | undefined;
+    let chars: number | undefined;
     const category = getMediaCategory(file.type);
     if (category === "text" && file.type !== "text/x-tiptap+json") {
       try {
-        const textContent = await file.text();
+        const textContent = await toUpload.text();
         const trimmed = textContent.replace(/\s+/g, " ").trim();
+        chars = textContent.length;
         summary =
           trimmed.length <= 100 ? trimmed : trimmed.slice(0, 100) + "\u2026";
       } catch {
         // Ignore — summary is optional
       }
+    } else if (file.type === "text/x-tiptap+json") {
+      try {
+        chars = extractTiptapAttachmentChars(await toUpload.text());
+      } catch {
+        // Char count is best-effort
+      }
     }
 
-    // Small files: existing single-request upload
-    const formData = new FormData();
-    formData.append("file", toUpload);
-    if (width) formData.append("width", String(width));
-    if (height) formData.append("height", String(height));
-    if (blurhash) formData.append("blurhash", blurhash);
-    if (waveform) formData.append("waveform", waveform);
-    if (poster) formData.append("poster", poster, "poster.webp");
-    if (summary) formData.append("summary", summary);
+    const result = await uploadViaSession(
+      toUpload,
+      {
+        width,
+        height,
+        blurhash,
+        waveform,
+        poster,
+        summary,
+        chars,
+      },
+      (progress) => {
+        editor?.updateAttachmentProgress(clientId, progress);
+      },
+    );
 
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const data = await readJsonObject(res);
-      const error = getJsonString(data, "error") ?? "Upload failed";
-      editor?.updateAttachmentStatus(clientId, "error", null, error);
-      showToast(error, "error");
-      return null;
-    }
-
-    const data = await readJsonObject(res);
-    const mediaId = getJsonString(data, "id");
-    if (!mediaId) {
-      editor?.updateAttachmentStatus(clientId, "error", null, "Upload failed");
-      showToast("Upload failed", "error");
-      return null;
-    }
-    editor?.updateAttachmentStatus(clientId, "done", mediaId, null);
-    return mediaId;
-  } catch {
-    editor?.updateAttachmentStatus(clientId, "error", null, "Upload failed");
-    showToast("Upload failed", "error");
+    editor?.updateAttachmentStatus(clientId, "done", result.id, null);
+    return result.id;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Upload failed";
+    editor?.updateAttachmentStatus(clientId, "error", null, message);
+    showToast(message, "error");
     return null;
   }
+}
+
+function extractTiptapAttachmentChars(raw: string): number | undefined {
+  const envelope = JSON.parse(raw) as {
+    json?: { content?: unknown[] };
+  };
+  if (!envelope.json) {
+    return undefined;
+  }
+
+  let text = "";
+  const walk = (node: Record<string, unknown>) => {
+    if (typeof node.text === "string") {
+      text += node.text;
+    }
+    if (Array.isArray(node.content)) {
+      for (const child of node.content) {
+        if (child && typeof child === "object") {
+          walk(child as Record<string, unknown>);
+        }
+      }
+    }
+  };
+
+  walk(envelope.json as Record<string, unknown>);
+  return text.length;
 }
 
 // ── Attachment removal handler ───────────────────────────────────────

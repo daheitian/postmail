@@ -263,7 +263,55 @@ When enabled, the settings page displays optimized thumbnails instead of full im
 - Metadata stripped (GPS, device info removed)
 - Converted to WebP at 85% quality
 
-Video, audio, and PDF files are uploaded as-is without processing.
+Video and audio files uploaded through the compose UI are transcoded client-side
+before upload. PDFs and other non-preview files are uploaded as-is.
+
+The server validates the final uploaded format. In the current release that
+means:
+
+- Images must arrive as WebP
+- Videos must arrive as MP4
+- Audio must arrive as MP4/M4A
+- PDFs are allowed for browser-native viewing
+
+### Temporary Upload Cleanup
+
+Jant stores in-progress uploads under a temporary storage prefix:
+
+```text
+media/{siteId}/tmp/{uploadId}/...
+```
+
+Those temporary objects are cleaned up in two ways:
+
+- Opportunistically during `POST /api/uploads/init`. Each new upload request
+  schedules a small background cleanup pass for expired upload sessions.
+- Manually through the internal admin endpoint:
+
+  ```bash
+  curl -X POST https://your-site.example/api/internal/uploads/cleanup \
+    -H "Authorization: Bearer $INTERNAL_ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"limit": 50}'
+  ```
+
+- Through the CLI wrapper:
+
+  ```bash
+  export INTERNAL_ADMIN_TOKEN=your-internal-admin-token
+  jant uploads cleanup --url https://your-site.example --limit 50
+  ```
+
+The cleanup endpoint removes expired temporary upload sessions for the current
+site and current storage provider, aborts stale multipart uploads when needed,
+and deletes their temporary objects. `limit` is optional and defaults to a
+small batch size.
+
+If you run Jant behind external automation, this endpoint is the recommended
+manual fallback when you do not have a built-in scheduled task mechanism. The
+CLI command calls the same endpoint. In `single-site` mode it can reuse
+`SITE_URL` from the environment or `wrangler.toml`; in `host-based` mode pass
+`--url` for the managed site's public URL.
 
 ### Slugs (Optional)
 

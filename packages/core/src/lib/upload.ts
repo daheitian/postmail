@@ -169,6 +169,27 @@ export type MediaCategory =
   | "3d"
   | "code";
 
+export type UploadContentDisposition = "inline" | "attachment";
+
+export interface StoredUploadPolicy {
+  contentDisposition: UploadContentDisposition;
+  mediaKind: MediaKind;
+  requiresSignatureCheck: boolean;
+}
+
+const ATTACHMENT_ONLY_MIME_TYPES = new Set([
+  "text/html",
+  "text/javascript",
+  "application/javascript",
+]);
+
+const INLINE_SIGNATURE_MIME_TYPES = new Set([
+  "image/webp",
+  "video/mp4",
+  "audio/mp4",
+  "application/pdf",
+]);
+
 /**
  * Returns the media category for a given MIME type.
  * Unrecognized types default to "archive".
@@ -298,6 +319,120 @@ export function validateUploadFileMetadata(
 }
 
 /**
+ * Resolve the serving policy for an uploaded object after client-side
+ * processing has already produced the final file.
+ *
+ * Image, video, and audio uploads are intentionally strict in v1 so the
+ * backend only accepts the concrete formats Jant knows how to serve today.
+ * Non-preview documents remain broadly allowed and default to attachment
+ * delivery, except PDFs which stay inline so browsers can render them.
+ */
+export function getStoredUploadPolicy(
+  contentType: string,
+): StoredUploadPolicy | null {
+  if (contentType.startsWith("image/")) {
+    if (contentType !== "image/webp") return null;
+    return {
+      contentDisposition: "inline",
+      mediaKind: "image",
+      requiresSignatureCheck: true,
+    };
+  }
+
+  if (contentType.startsWith("video/")) {
+    if (contentType !== "video/mp4") return null;
+    return {
+      contentDisposition: "inline",
+      mediaKind: "video",
+      requiresSignatureCheck: true,
+    };
+  }
+
+  if (contentType.startsWith("audio/")) {
+    if (contentType !== "audio/mp4") return null;
+    return {
+      contentDisposition: "inline",
+      mediaKind: "audio",
+      requiresSignatureCheck: true,
+    };
+  }
+
+  if (contentType === "application/pdf") {
+    return {
+      contentDisposition: "inline",
+      mediaKind: "document",
+      requiresSignatureCheck: true,
+    };
+  }
+
+  if (ATTACHMENT_ONLY_MIME_TYPES.has(contentType)) {
+    return {
+      contentDisposition: "attachment",
+      mediaKind: "text",
+      requiresSignatureCheck: false,
+    };
+  }
+
+  return {
+    contentDisposition: "attachment",
+    mediaKind: toMediaKind(contentType),
+    requiresSignatureCheck: false,
+  };
+}
+
+export function validateStoredUploadMetadata(
+  contentType: string,
+  size: number,
+  options: ValidateUploadOptions,
+): string | null {
+  const basicError = validateUploadFileMetadata(contentType, size, options);
+  if (basicError) {
+    return basicError;
+  }
+
+  if (!getStoredUploadPolicy(contentType)) {
+    return `File type "${contentType}" is not supported.`;
+  }
+
+  return null;
+}
+
+export function getStoredUploadSignaturePeekLength(
+  contentType: string,
+): number {
+  return INLINE_SIGNATURE_MIME_TYPES.has(contentType) ? 64 : 0;
+}
+
+export function validateStoredUploadSignature(
+  contentType: string,
+  bytes: Uint8Array,
+): string | null {
+  switch (contentType) {
+    case "image/webp":
+      return bytes.length >= 12 &&
+        readAscii(bytes, 0, 4) === "RIFF" &&
+        readAscii(bytes, 8, 4) === "WEBP"
+        ? null
+        : "Only WebP images are supported.";
+    case "video/mp4":
+    case "audio/mp4":
+      return bytes.length >= 12 && readAscii(bytes, 4, 4) === "ftyp"
+        ? null
+        : "Only MP4 uploads are supported.";
+    case "application/pdf":
+      return bytes.length >= 5 && readAscii(bytes, 0, 5) === "%PDF-"
+        ? null
+        : "Only PDF documents are supported.";
+    default:
+      return null;
+  }
+}
+
+function readAscii(bytes: Uint8Array, start: number, length: number): string {
+  return new TextDecoder("ascii").decode(bytes.slice(start, start + length));
+}
+
+/**
  * Generates a unique storage key for an uploaded media object.
  * Format: `media/{siteId}/files/{typeid}.{ext}`
  *
@@ -320,14 +455,29 @@ export function generateStorageKey(
 } {
   const ext = originalFilename.split(".").pop() || "bin";
   const id = createEntityId("media");
-  const filename = `${id}.${ext}`;
+  return generateStorageKeyForId(siteId, id, ext);
+}
+
+export function generateStorageKeyForId(
+  siteId: string,
+  mediaId: string,
+  originalFilenameOrExtension: string,
+): {
+  id: string;
+  filename: string;
+  storageKey: string;
+} {
+  const ext = originalFilenameOrExtension.includes(".")
+    ? originalFilenameOrExtension.split(".").pop() || "bin"
+    : originalFilenameOrExtension;
+  const filename = `${mediaId}.${ext}`;
   const storageKey = [
     MEDIA_ROOT_PREFIX,
     siteId,
     MEDIA_FILES_STORAGE_PREFIX,
     filename,
   ].join("/");
-  return { id, filename, storageKey };
+  return { id: mediaId, filename, storageKey };
 }
 
 export function generateSiteAssetStorageKey(
@@ -348,6 +498,22 @@ export function generateSiteAssetStorageKey(
 
 export function getPosterStorageKey(siteId: string, mediaId: string): string {
   return `${MEDIA_ROOT_PREFIX}/${siteId}/${MEDIA_POSTERS_STORAGE_PREFIX}/${mediaId}.webp`;
+}
+
+export function getTemporaryUploadStorageKey(
+  siteId: string,
+  uploadSessionId: string,
+  originalFilename: string,
+): string {
+  const ext = originalFilename.split(".").pop() || "bin";
+  return `${MEDIA_ROOT_PREFIX}/${siteId}/tmp/${uploadSessionId}/source.${ext}`;
+}
+
+export function getTemporaryPosterStorageKey(
+  siteId: string,
+  uploadSessionId: string,
+): string {
+  return `${MEDIA_ROOT_PREFIX}/${siteId}/tmp/${uploadSessionId}/poster.webp`;
 }
 
 export function getSiteStorageKey(

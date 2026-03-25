@@ -39,12 +39,14 @@ import { navItemsApiRoutes } from "./routes/api/nav-items.js";
 import { collectionsApiRoutes } from "./routes/api/collections.js";
 import { settingsApiRoutes } from "./routes/api/settings.js";
 import { uploadApiRoutes } from "./routes/api/upload.js";
+import { uploadsApiRoutes } from "./routes/api/uploads.js";
 import { multipartUploadApiRoutes } from "./routes/api/upload-multipart.js";
 import { searchApiRoutes } from "./routes/api/search.js";
 import { customUrlsApiRoutes } from "./routes/api/custom-urls.js";
 import { exportApiRoutes } from "./routes/api/export.js";
 import { internalApiTokensRoutes } from "./routes/api/internal/api-tokens.js";
 import { internalSitesRoutes } from "./routes/api/internal/sites.js";
+import { internalUploadsRoutes } from "./routes/api/internal/uploads.js";
 // Routes - Compose
 import { composeRoutes } from "./routes/compose.js";
 
@@ -143,7 +145,16 @@ async function servePublicStorage(
         "Content-Type",
         full.contentType || "application/octet-stream",
       );
-      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      headers.set(
+        "Cache-Control",
+        full.cacheControl || "public, max-age=31536000, immutable",
+      );
+      if (full.contentDisposition) {
+        headers.set("Content-Disposition", full.contentDisposition);
+      }
+      if (full.contentDisposition === "attachment") {
+        headers.set("X-Content-Type-Options", "nosniff");
+      }
       return new Response(full.body, { headers });
     }
 
@@ -177,7 +188,16 @@ async function servePublicStorage(
       "Content-Type",
       rangeObj.contentType || "application/octet-stream",
     );
-    headers.set("Cache-Control", "public, max-age=31536000, immutable");
+    headers.set(
+      "Cache-Control",
+      rangeObj.cacheControl || "public, max-age=31536000, immutable",
+    );
+    if (rangeObj.contentDisposition) {
+      headers.set("Content-Disposition", rangeObj.contentDisposition);
+    }
+    if (rangeObj.contentDisposition === "attachment") {
+      headers.set("X-Content-Type-Options", "nosniff");
+    }
     headers.set("Accept-Ranges", "bytes");
     headers.set("Content-Range", `bytes ${start}-${end}/${totalSize}`);
     headers.set("Content-Length", String(end - start + 1));
@@ -192,7 +212,16 @@ async function servePublicStorage(
 
   const headers = new Headers();
   headers.set("Content-Type", object.contentType || "application/octet-stream");
-  headers.set("Cache-Control", "public, max-age=31536000, immutable");
+  headers.set(
+    "Cache-Control",
+    object.cacheControl || "public, max-age=31536000, immutable",
+  );
+  if (object.contentDisposition) {
+    headers.set("Content-Disposition", object.contentDisposition);
+  }
+  if (object.contentDisposition === "attachment") {
+    headers.set("X-Content-Type-Options", "nosniff");
+  }
   headers.set("Accept-Ranges", "bytes");
   if (object.size) {
     headers.set("Content-Length", String(object.size));
@@ -283,6 +312,7 @@ export function createApp(): App {
   app.route("/api/attachments", attachmentsApiRoutes);
   app.route("/api/internal/api-tokens", internalApiTokensRoutes);
   app.route("/api/internal/sites", internalSitesRoutes);
+  app.route("/api/internal/uploads", internalUploadsRoutes);
 
   // Fetch text media content by ID (same-origin proxy to avoid CORS with CDN URLs)
   app.get("/api/media/:id/content", async (c) => {
@@ -445,6 +475,7 @@ export function createApp(): App {
   // Protected API routes (multipart must be registered before base upload)
   app.route("/api/upload/multipart", multipartUploadApiRoutes);
   app.route("/api/upload", uploadApiRoutes);
+  app.route("/api/uploads", uploadsApiRoutes);
   app.route("/api/search", searchApiRoutes);
 
   // Compose route (auth enforced in route middleware)

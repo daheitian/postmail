@@ -8,6 +8,7 @@
 
 import { ImageProcessor } from "./image-processor.js";
 import { extractImageMetadata } from "./media-metadata.js";
+import { uploadViaSession } from "./upload-session.js";
 
 /**
  * Process an image file and upload it with dimension/blurhash metadata.
@@ -33,22 +34,14 @@ export async function uploadWithMetadata(
     // Blurhash extraction failed — upload without it
   }
 
-  const formData = new FormData();
-  formData.append("file", processed);
-  formData.append("width", String(width));
-  formData.append("height", String(height));
-  if (blurhash) {
-    formData.append("blurhash", blurhash);
-  }
-
-  const response = await fetch("/api/upload", {
-    method: "POST",
-    body: formData,
+  const result = await uploadViaSession(processed, {
+    width,
+    height,
+    blurhash,
   });
 
-  if (!response.ok) {
-    throw new Error(`Upload failed: ${response.status}`);
-  }
-
-  return (await response.json()) as { url: string; id: string };
+  return {
+    url: result.url,
+    id: result.id,
+  };
 }

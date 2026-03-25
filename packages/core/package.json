@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1012.0",
+    "@aws-sdk/s3-request-presigner": "^3.1016.0",
     "@emoji-mart/data": "^1.2.1",
     "@fontsource-variable/literata": "^5.2.8",
     "@fontsource-variable/newsreader": "^5.2.10",

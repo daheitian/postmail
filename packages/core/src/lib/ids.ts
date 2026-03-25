@@ -6,6 +6,7 @@ export const ID_PREFIX = {
   siteDomain: "sdm",
   post: "pst",
   media: "med",
+  uploadSession: "upl",
   collection: "col",
   path: "pth",
   collectionDirectoryItem: "cdi",

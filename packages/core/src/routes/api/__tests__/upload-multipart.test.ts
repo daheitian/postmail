@@ -30,14 +30,25 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 /** Creates a mock storage driver that supports multipart uploads */
 function createMockMultipartStorage(): StorageDriver & {
-  uploads: Map<string, { key: string; parts: Map<number, ArrayBuffer> }>;
+  uploads: Map<
+    string,
+    {
+      key: string;
+      contentType?: string;
+      parts: Map<number, ArrayBuffer>;
+    }
+  >;
   completed: Map<string, UploadedPart[]>;
   aborted: Set<string>;
   files: Map<string, { body: Uint8Array; contentType?: string }>;
 } {
   const uploads = new Map<
     string,
-    { key: string; parts: Map<number, ArrayBuffer> }
+    {
+      key: string;
+      contentType?: string;
+      parts: Map<number, ArrayBuffer>;
+    }
   >();
   const completed = new Map<string, UploadedPart[]>();
   const aborted = new Set<string>();
@@ -74,25 +85,47 @@ function createMockMultipartStorage(): StorageDriver & {
       files.set(key, { body: bytes, contentType: opts?.contentType });
     },
 
-    async get(key) {
+    async get(key, opts) {
       const file = files.get(key);
       if (!file) return null;
+      const start = opts?.range?.offset ?? 0;
+      const end = opts?.range
+        ? start + opts.range.length
+        : file.body.byteLength;
+      const slice = file.body.slice(start, end);
       const stream = new ReadableStream({
         start(controller) {
-          controller.enqueue(file.body);
+          controller.enqueue(slice);
           controller.close();
         },
       });
-      return { body: stream, contentType: file.contentType };
+      return {
+        body: stream,
+        contentType: file.contentType,
+        size: file.body.byteLength,
+      };
+    },
+
+    async head(key) {
+      const file = files.get(key);
+      if (!file) return null;
+      return {
+        contentType: file.contentType,
+        size: file.body.byteLength,
+      };
     },
 
     async delete(key) {
       files.delete(key);
     },
 
-    async createMultipartUpload(key, _opts) {
+    async createMultipartUpload(key, opts) {
       const uploadId = `upload-${++uploadCounter}`;
-      uploads.set(uploadId, { key, parts: new Map() });
+      uploads.set(uploadId, {
+        key,
+        contentType: opts?.contentType,
+        parts: new Map(),
+      });
       return { uploadId, key };
     },
 
@@ -113,7 +146,37 @@ function createMockMultipartStorage(): StorageDriver & {
       return { partNumber, etag };
     },
 
-    async completeMultipartUpload(_key, uploadId, parts) {
+    async completeMultipartUpload(key, uploadId, parts) {
+      const upload = uploads.get(uploadId);
+      if (!upload || upload.key !== key) {
+        throw new Error(`No upload with id ${uploadId}`);
+      }
+
+      const orderedParts = [...parts].sort(
+        (a, b) => a.partNumber - b.partNumber,
+      );
+      const buffers = orderedParts.map((part) => {
+        const chunk = upload.parts.get(part.partNumber);
+        if (!chunk) {
+          throw new Error(`Missing upload part ${part.partNumber}`);
+        }
+        return new Uint8Array(chunk);
+      });
+      const totalLength = buffers.reduce(
+        (sum, chunk) => sum + chunk.byteLength,
+        0,
+      );
+      const body = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const chunk of buffers) {
+        body.set(chunk, offset);
+        offset += chunk.byteLength;
+      }
+
+      files.set(key, {
+        body,
+        contentType: upload.contentType,
+      });
       completed.set(uploadId, parts);
       uploads.delete(uploadId);
     },
@@ -141,6 +204,14 @@ function createMockD1(sqliteDb: BetterSqlite3.Database) {
       };
     },
   } as unknown as D1Database;
+}
+
+function createFakeMp4Bytes(length = 1024): Uint8Array {
+  const bytes = new Uint8Array(length);
+  bytes.set([
+    0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d,
+  ]);
+  return bytes;
 }
 
 function createTestAppWithStorage(options: {
@@ -413,7 +484,7 @@ describe("multipart upload API routes", () => {
         };
 
       // Upload a part
-      const partBody = new Uint8Array(1024).fill(0xaa);
+      const partBody = createFakeMp4Bytes();
       const partRes = await app.request(
         `/api/upload/multipart/${id}/part?partNumber=1&storageKey=${encodeURIComponent(storageKey)}&uploadId=${encodeURIComponent(uploadId)}`,
         {
@@ -556,7 +627,7 @@ describe("multipart upload API routes", () => {
         `/api/upload/multipart/${id}/part?partNumber=1&storageKey=${encodeURIComponent(storageKey)}&uploadId=${encodeURIComponent(uploadId)}`,
         {
           method: "PUT",
-          body: new Uint8Array(1024),
+          body: createFakeMp4Bytes(),
         },
       );
       const partData = (await partRes.json()) as {
@@ -611,7 +682,7 @@ describe("multipart upload API routes", () => {
         `/api/upload/multipart/${id}/part?partNumber=1&storageKey=${encodeURIComponent(storageKey)}&uploadId=${encodeURIComponent(uploadId)}`,
         {
           method: "PUT",
-          body: new Uint8Array(1024).fill(0xaa),
+          body: createFakeMp4Bytes(),
         },
       );
       expect(partRes.status).toBe(200);

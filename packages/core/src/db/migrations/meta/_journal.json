@@ -29,6 +29,13 @@
       "when": 1774113200000,
       "tag": "0003_fts_site_aware",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1774449718456,
+      "tag": "0004_perpetual_eternity",
+      "breakpoints": true
     }
   ]
 }

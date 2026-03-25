@@ -1,7 +1,7 @@
 /**
  * Upload API Routes
  *
- * Handles file uploads to R2 storage.
+ * Handles single-request uploads through the legacy relay endpoint.
  * Supports both JSON and SSE (Datastar) responses.
  */
 
@@ -18,9 +18,12 @@ import {
 } from "../../lib/image.js";
 import { sse } from "../../lib/sse.js";
 import {
-  validateUploadFile,
+  getStoredUploadPolicy,
+  getStoredUploadSignaturePeekLength,
   generateStorageKey,
   getPosterStorageKey,
+  validateStoredUploadMetadata,
+  validateStoredUploadSignature,
 } from "../../lib/upload.js";
 import { assertFound, MediaQuotaExceededError } from "../../lib/errors.js";
 import { getI18n } from "../../i18n/index.js";
@@ -172,7 +175,7 @@ uploadApiRoutes.post("/", async (c) => {
   }
 
   // Validate file type and size
-  const uploadError = validateUploadFile(file, {
+  const uploadError = validateStoredUploadMetadata(file.type, file.size, {
     maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
   });
   if (uploadError) {
@@ -187,11 +190,36 @@ uploadApiRoutes.post("/", async (c) => {
     c.var.currentSite.id,
     file.name,
   );
+  const uploadPolicy = getStoredUploadPolicy(file.type);
+  if (!uploadPolicy) {
+    const errorText = `File type "${file.type}" is not supported.`;
+    if (wantsSSE(c)) {
+      return sseUploadError(c, errorText);
+    }
+    return c.json({ error: errorText }, 400);
+  }
 
   try {
     const sitePathPrefix = c.var.appConfig.sitePathPrefix;
 
     await c.var.services.media.assertCanWriteBytes(file.size);
+
+    const peekLength = getStoredUploadSignaturePeekLength(file.type);
+    if (peekLength > 0) {
+      const signatureBytes = new Uint8Array(
+        await file.slice(0, peekLength).arrayBuffer(),
+      );
+      const signatureError = validateStoredUploadSignature(
+        file.type,
+        signatureBytes,
+      );
+      if (signatureError) {
+        if (wantsSSE(c)) {
+          return sseUploadError(c, signatureError);
+        }
+        return c.json({ error: signatureError }, 400);
+      }
+    }
 
     // Read optional summary (provided for text attachments)
     let summary = (formData.get("summary") as string) || undefined;
@@ -243,6 +271,8 @@ uploadApiRoutes.post("/", async (c) => {
     // Upload to storage — use buffered bytes for text files (stream may be consumed)
     await storage.put(storageKey, textBuffer ?? file.stream(), {
       contentType: file.type,
+      contentDisposition: uploadPolicy.contentDisposition,
+      cacheControl: "public, max-age=31536000, immutable",
     });
 
     // Read optional client-side metadata
@@ -281,6 +311,7 @@ uploadApiRoutes.post("/", async (c) => {
       posterKey,
       summary,
       chars,
+      mediaKind: uploadPolicy.mediaKind,
     });
 
     // SSE response for Datastar
