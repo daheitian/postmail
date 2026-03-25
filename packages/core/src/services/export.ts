@@ -1381,7 +1381,7 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
 
 {% macro link_card(page, detail=false) %}
 <article
-  class="h-entry post-menu-target {% if detail %}post-detail-shell post-detail-link{% else %}feed-card feed-card-link{% endif %}"
+  class="h-entry post-menu-target {% if detail %}post-detail-shell post-detail-link{% else %}feed-link-post{% endif %}"
   {% if detail %}data-page="post"{% endif %}
   data-post
   data-format="link"
@@ -1391,6 +1391,9 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% if page.extra.featured %}data-post-featured{% endif %}
   data-post-visibility="{{ page.extra.visibility | default(value='public') }}"
 >
+  {% if not detail %}
+  <div class="feed-card feed-card-link">
+  {% endif %}
   {{ self::post_status_badges() }}
   {% if page.extra.link_url %}
   <a href="{{ page.extra.link_url }}" class="feed-link-domain" rel="noopener noreferrer" target="_blank">
@@ -1419,6 +1422,9 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   <div class="e-content prose feed-link-summary" data-post-body>{{ page.content | safe }}</div>
   {% endif %}
   {{ self::post_rating(page=page) }}
+  {% if not detail %}
+  </div>
+  {% endif %}
   {{ self::post_footer(page=page, detail=detail) }}
 </article>
 {% endmacro %}
@@ -1840,6 +1846,19 @@ img {
 
 .feed-card-link {
   border-radius: 14px;
+}
+
+.feed-link-post {
+  --feed-link-post-footer-inset: 0.65rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.feed-link-post > .post-menu-footer {
+  margin-top: 0.5rem;
+  padding-inline: 0;
+  padding-inline-start: var(--feed-link-post-footer-inset);
+  padding-inline-end: 0.15rem;
 }
 
 .feed-link-domain {

@@ -1,7 +1,8 @@
 /**
  * Link Card
  *
- * Compact link preview box — date is shown at the feed level as a group header.
+ * Feed mode renders the preview as an inner card so post chrome can sit just
+ * outside the card while still belonging to the same post article.
  */
 
 import type { FC } from "hono/jsx";
@@ -19,24 +20,13 @@ export const LinkCard: FC<TimelineCardProps> = ({
 }) => {
   const isCompact = mode === "compact";
   const isDetail = mode === "detail";
-  const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-card feed-card-link"}`;
+  const detachFooter = !isCompact && !isDetail;
+  const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-link-post"}`;
 
   const safeUrl = post.url ? sanitizeUrl(post.url) : "";
   const domain = safeUrl ? extractDisplayDomain(safeUrl) : null;
-
-  return (
-    <article
-      class={articleClass}
-      {...(isDetail ? { "data-page": "post" } : {})}
-      data-post
-      data-format="link"
-      data-post-id={post.id}
-      data-thread-root-id={post.threadRootId ?? post.id}
-      {...(post.pinned ? { "data-post-pinned": "" } : {})}
-      {...(post.featured ? { "data-post-featured": "" } : {})}
-      data-post-visibility={post.visibility}
-      {...(!isDetail && post.threadRootId ? { "data-post-reply": "" } : {})}
-    >
+  const cardContent = (
+    <>
       {!isCompact && !display?.hideStatusBadges && <PostStatusBadges />}
       {domain &&
         (safeUrl ? (
@@ -113,6 +103,27 @@ export const LinkCard: FC<TimelineCardProps> = ({
       )}
       {!isCompact && !display?.hideRating && (
         <StarRating rating={post.rating} />
+      )}
+    </>
+  );
+
+  return (
+    <article
+      class={articleClass}
+      {...(isDetail ? { "data-page": "post" } : {})}
+      data-post
+      data-format="link"
+      data-post-id={post.id}
+      data-thread-root-id={post.threadRootId ?? post.id}
+      {...(post.pinned ? { "data-post-pinned": "" } : {})}
+      {...(post.featured ? { "data-post-featured": "" } : {})}
+      data-post-visibility={post.visibility}
+      {...(!isDetail && post.threadRootId ? { "data-post-reply": "" } : {})}
+    >
+      {detachFooter ? (
+        <div class="feed-card feed-card-link">{cardContent}</div>
+      ) : (
+        cardContent
       )}
       <PostFooter post={post} detail={isDetail} display={display?.footer} />
     </article>

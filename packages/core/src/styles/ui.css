@@ -1380,6 +1380,19 @@
     );
   }
 
+  .feed-link-post {
+    --feed-link-post-footer-inset: 0.65rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feed-link-post > .post-menu-footer {
+    margin-top: 0.5rem;
+    padding-inline: 0;
+    padding-inline-start: var(--feed-link-post-footer-inset);
+    padding-inline-end: 0.15rem;
+  }
+
   .feed-link-domain {
     display: inline-flex;
     align-items: center;

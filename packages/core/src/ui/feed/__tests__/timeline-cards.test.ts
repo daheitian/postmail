@@ -71,6 +71,18 @@ describe("timeline cards", () => {
     expect(detailHtml).toContain('href="/media/full.jpg"');
   });
 
+  it("renders the link footer outside the feed card shell", () => {
+    const post = createPostView({ format: "link" });
+
+    const feedHtml = renderWithI18n(LinkCard({ post, mode: "feed" }));
+    const detailHtml = renderWithI18n(LinkCard({ post, mode: "detail" }));
+
+    expect(feedHtml).toMatch(
+      /<article[^>]*class="h-entry post-menu-target feed-link-post"[\s\S]*<div class="feed-card feed-card-link">[\s\S]*<\/div><footer class="post-menu-footer"/,
+    );
+    expect(detailHtml).not.toContain("feed-link-post");
+  });
+
   it("renders quote attachments in feed and detail modes", () => {
     const post = createPostView({ format: "quote" });
 
