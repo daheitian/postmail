@@ -469,6 +469,77 @@ function paragraphHasMeaningfulText(children) {
   );
 }
 
+function getNodeSourceRange(node) {
+  const location = node?.sourceCodeLocation;
+  if (!location || typeof location.startOffset !== "number") {
+    return null;
+  }
+
+  if (typeof location.endOffset === "number") {
+    return {
+      start: location.startOffset,
+      end: location.endOffset,
+    };
+  }
+
+  if (typeof location.startTag?.endOffset === "number") {
+    return {
+      start: location.startOffset,
+      end: location.startTag.endOffset,
+    };
+  }
+
+  return null;
+}
+
+function getOriginalNodeSource(source, node) {
+  const range = getNodeSourceRange(node);
+  if (range) {
+    return source.slice(range.start, range.end);
+  }
+
+  return node?.nodeName === "#text" && typeof node.value === "string"
+    ? node.value
+    : "";
+}
+
+function normalizeParagraphHtmlContent(paragraphSource) {
+  const fragment = parseHtmlFragment(paragraphSource);
+  const attachments = [];
+  const parts = [];
+  let changed = false;
+
+  for (const node of fragment.childNodes || []) {
+    const attachment = extractGenericAttachmentSpec(node);
+    if (attachment) {
+      attachments.push(attachment);
+      changed = true;
+      continue;
+    }
+
+    const image = extractGenericImageSpec(node);
+    if (image) {
+      parts.push(renderMarkdownImage(image));
+      changed = true;
+      continue;
+    }
+
+    parts.push(getOriginalNodeSource(paragraphSource, node));
+  }
+
+  if (!changed) {
+    return null;
+  }
+
+  return {
+    markdown: parts
+      .join("")
+      .replace(/[ \t]{2,}/g, " ")
+      .trim(),
+    attachments,
+  };
+}
+
 function getReferencedImageDefinitionIds(tree) {
   const ids = new Set();
 
@@ -837,6 +908,21 @@ export function normalizeImportedBody(markdown) {
         typeof endOffset === "number"
       ) {
         const normalized = normalizeStandaloneHtmlFragment(
+          markdown.slice(startOffset, endOffset),
+        );
+        if (normalized) {
+          attachments.push(...normalized.attachments);
+          patches.push({
+            start: startOffset,
+            end: endOffset,
+            replacement: normalized.markdown,
+          });
+          return SKIP;
+        }
+      }
+
+      if (typeof startOffset === "number" && typeof endOffset === "number") {
+        const normalized = normalizeParagraphHtmlContent(
           markdown.slice(startOffset, endOffset),
         );
         if (normalized) {

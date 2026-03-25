@@ -193,4 +193,24 @@ Intro
       ],
     });
   });
+
+  it("extracts mixed inline audio and video html into attachments while keeping text", () => {
+    const result = normalizeImportedBody(
+      'Before <video controls><source src="/media/video.mp4" type="video/mp4"></video> middle <audio controls src="/media/audio.mp3"></audio> after',
+    );
+
+    expect(result).toEqual({
+      markdown: "Before middle after",
+      attachments: [
+        {
+          kind: "video",
+          src: "/media/video.mp4",
+        },
+        {
+          kind: "audio",
+          src: "/media/audio.mp3",
+        },
+      ],
+    });
+  });
 });
