@@ -2,7 +2,7 @@ import { fromMarkdown } from "mdast-util-from-markdown";
 import { gfm } from "micromark-extension-gfm";
 import { gfmFromMarkdown } from "mdast-util-gfm";
 import { parseFragment } from "parse5";
-import { visit } from "unist-util-visit";
+import { visit, SKIP } from "unist-util-visit";
 
 const URL_SCHEMES_TO_SKIP = ["data:", "mailto:", "tel:", "javascript:", "#"];
 const MEDIA_FILE_EXTENSIONS = new Set([
@@ -64,6 +64,22 @@ function getHtmlChildText(node) {
     .join("");
 }
 
+function getHtmlTextContent(node) {
+  if (!node) {
+    return "";
+  }
+
+  if (node.nodeName === "#text" && typeof node.value === "string") {
+    return node.value;
+  }
+
+  if (!Array.isArray(node.childNodes)) {
+    return "";
+  }
+
+  return node.childNodes.map((child) => getHtmlTextContent(child)).join("");
+}
+
 function isWhitespaceHtmlNode(node) {
   return node.nodeName === "#text" && typeof node.value === "string"
     ? node.value.trim() === ""
@@ -118,6 +134,19 @@ function uniqueStrings(values) {
   return [...new Set(values)];
 }
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeMarkdownText(value) {
+  return String(value).replace(/\\/g, "\\\\").replace(/\]/g, "\\]");
+}
+
 export function isSkippableUrl(value) {
   if (typeof value !== "string") {
     return true;
@@ -156,6 +185,288 @@ function isProbablyMediaUrl(value) {
   }
 
   return false;
+}
+
+function getNonWhitespaceHtmlNodes(nodes) {
+  return (nodes || []).filter((node) => !isWhitespaceHtmlNode(node));
+}
+
+function findHtmlNode(node, predicate) {
+  if (!node) {
+    return null;
+  }
+
+  if (predicate(node)) {
+    return node;
+  }
+
+  if (!Array.isArray(node.childNodes)) {
+    return null;
+  }
+
+  for (const child of node.childNodes) {
+    const match = findHtmlNode(child, predicate);
+    if (match) {
+      return match;
+    }
+  }
+
+  return null;
+}
+
+function getPrimarySrcsetUrl(value) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const candidate = value
+    .split(",")
+    .map((entry) => entry.trim())
+    .find(Boolean);
+  if (!candidate) {
+    return null;
+  }
+
+  const [url] = candidate.split(/\s+/, 1);
+  return typeof url === "string" && url.trim() !== "" ? url : null;
+}
+
+function getImageSourceFromNode(node) {
+  if (!node) {
+    return null;
+  }
+
+  if (node.tagName === "img") {
+    return getAttribute(node, "src") || getPrimarySrcsetUrl(getAttribute(node, "srcset"));
+  }
+
+  if (node.tagName === "picture") {
+    const imgNode = findHtmlNode(node, (child) => child.tagName === "img");
+    if (imgNode) {
+      return getImageSourceFromNode(imgNode);
+    }
+
+    const sourceNode = findHtmlNode(node, (child) => child.tagName === "source");
+    if (sourceNode) {
+      return (
+        getAttribute(sourceNode, "src") ||
+        getPrimarySrcsetUrl(getAttribute(sourceNode, "srcset"))
+      );
+    }
+  }
+
+  return null;
+}
+
+function extractImageDetails(node) {
+  const imgNode = node?.tagName === "img"
+    ? node
+    : findHtmlNode(node, (child) => child.tagName === "img");
+  const pictureNode = node?.tagName === "picture"
+    ? node
+    : findHtmlNode(node, (child) => child.tagName === "picture");
+  const sourceNode = pictureNode || imgNode;
+  const src = getImageSourceFromNode(sourceNode);
+  if (!src || isSkippableUrl(src)) {
+    return null;
+  }
+
+  return {
+    src,
+    alt: typeof getAttribute(imgNode, "alt") === "string" ? getAttribute(imgNode, "alt") : "",
+    title:
+      typeof getAttribute(imgNode, "title") === "string"
+        ? getAttribute(imgNode, "title")
+        : "",
+  };
+}
+
+function getFigureCaption(node) {
+  if (node?.tagName !== "figure") {
+    return "";
+  }
+
+  const captionNode = getNonWhitespaceHtmlNodes(node.childNodes).find(
+    (child) => child.tagName === "figcaption",
+  );
+  if (!captionNode) {
+    return "";
+  }
+
+  return getHtmlTextContent(captionNode).trim();
+}
+
+function extractGenericImageSpec(rootNode) {
+  if (!rootNode || isAttachmentRoot(rootNode) || isAttachmentFigure(rootNode)) {
+    return null;
+  }
+
+  if (
+    rootNode.tagName === "figure" &&
+    getAttribute(rootNode, "data-jant-node") === "image"
+  ) {
+    return null;
+  }
+
+  if (findHtmlNode(rootNode, (child) => child.tagName === "video" || child.tagName === "audio")) {
+    return null;
+  }
+
+  const image = extractImageDetails(rootNode);
+  if (!image) {
+    return null;
+  }
+
+  let href = "";
+  if (rootNode.tagName === "a") {
+    href = getAttribute(rootNode, "href") || "";
+  } else {
+    const anchorNode = findHtmlNode(
+      rootNode,
+      (child) => child.tagName === "a" && Boolean(extractImageDetails(child)),
+    );
+    href = getAttribute(anchorNode, "href") || "";
+  }
+
+  return {
+    ...image,
+    href: !isSkippableUrl(href) ? href : "",
+    caption: getFigureCaption(rootNode),
+  };
+}
+
+function getMediaSourceFromNode(node) {
+  if (!node) {
+    return null;
+  }
+
+  const directSrc = getAttribute(node, "src");
+  if (typeof directSrc === "string" && directSrc.trim() !== "") {
+    return directSrc;
+  }
+
+  const sourceNode = findHtmlNode(node, (child) => child.tagName === "source");
+  if (!sourceNode) {
+    return null;
+  }
+
+  return (
+    getAttribute(sourceNode, "src") ||
+    getPrimarySrcsetUrl(getAttribute(sourceNode, "srcset"))
+  );
+}
+
+function extractGenericAttachmentSpec(rootNode) {
+  if (!rootNode || isAttachmentRoot(rootNode) || isAttachmentFigure(rootNode)) {
+    return null;
+  }
+
+  const mediaNode =
+    rootNode.tagName === "video" || rootNode.tagName === "audio"
+      ? rootNode
+      : findHtmlNode(
+          rootNode,
+          (child) => child.tagName === "video" || child.tagName === "audio",
+        );
+  if (!mediaNode) {
+    return null;
+  }
+
+  const src = getMediaSourceFromNode(mediaNode);
+  if (!src || isSkippableUrl(src)) {
+    return null;
+  }
+
+  const poster =
+    mediaNode.tagName === "video" ? getAttribute(mediaNode, "poster") || "" : "";
+  const summary = getFigureCaption(rootNode);
+
+  return {
+    kind: mediaNode.tagName === "video" ? "video" : "audio",
+    src,
+    ...(poster && !isSkippableUrl(poster) ? { poster } : {}),
+    ...(summary ? { summary } : {}),
+  };
+}
+
+function renderJantImageHtml(image) {
+  const imgAttrs = [`src="${escapeHtml(image.src)}"`];
+  if (image.alt) {
+    imgAttrs.push(`alt="${escapeHtml(image.alt)}"`);
+  }
+  if (image.title) {
+    imgAttrs.push(`title="${escapeHtml(image.title)}"`);
+  }
+
+  const imgTag = `<img ${imgAttrs.join(" ")}>`;
+  const content = image.href
+    ? `<a href="${escapeHtml(image.href)}">${imgTag}</a>`
+    : imgTag;
+  const figcaption = image.caption
+    ? `<figcaption>${escapeHtml(image.caption)}</figcaption>`
+    : "";
+
+  return `<figure data-jant-node="image">${content}${figcaption}</figure>`;
+}
+
+function renderMarkdownImage(image) {
+  const alt = escapeMarkdownText(image.alt || "");
+  const title = image.title
+    ? ` "${String(image.title).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`
+    : "";
+  return `![${alt}](${image.src}${title})`;
+}
+
+function normalizeStandaloneHtmlFragment(html) {
+  const fragment = parseHtmlFragment(html);
+  const rootNodes = getNonWhitespaceHtmlNodes(fragment.childNodes);
+  if (rootNodes.length !== 1) {
+    return null;
+  }
+
+  const [rootNode] = rootNodes;
+  const attachment = extractGenericAttachmentSpec(rootNode);
+  if (attachment) {
+    return {
+      markdown: "",
+      attachments: [attachment],
+    };
+  }
+
+  const image = extractGenericImageSpec(rootNode);
+  if (!image) {
+    return null;
+  }
+
+  return {
+    markdown: renderJantImageHtml(image),
+    attachments: [],
+  };
+}
+
+function normalizeInlineHtmlFragment(html) {
+  const fragment = parseHtmlFragment(html);
+  const rootNodes = getNonWhitespaceHtmlNodes(fragment.childNodes);
+  if (rootNodes.length !== 1) {
+    return null;
+  }
+
+  const [rootNode] = rootNodes;
+  const image = extractGenericImageSpec(rootNode);
+  if (!image) {
+    return null;
+  }
+
+  return renderMarkdownImage(image);
+}
+
+function paragraphHasMeaningfulText(children) {
+  return (children || []).some(
+    (child) =>
+      child.type !== "html" &&
+      typeof child.value === "string" &&
+      child.value.trim() !== "",
+  );
 }
 
 function getReferencedImageDefinitionIds(tree) {
@@ -509,6 +820,77 @@ export function rewriteMediaReferences(content, replacements) {
   });
 
   return applyPatches(content, patches);
+}
+
+export function normalizeImportedBody(markdown) {
+  const tree = parseMarkdown(markdown);
+  const attachments = [];
+  const patches = [];
+
+  visit(tree, (node, _index, parent) => {
+    if (node.type === "paragraph" && Array.isArray(node.children)) {
+      const startOffset = getStartOffset(node);
+      const endOffset = getEndOffset(node);
+      if (
+        !paragraphHasMeaningfulText(node.children) &&
+        typeof startOffset === "number" &&
+        typeof endOffset === "number"
+      ) {
+        const normalized = normalizeStandaloneHtmlFragment(
+          markdown.slice(startOffset, endOffset),
+        );
+        if (normalized) {
+          attachments.push(...normalized.attachments);
+          patches.push({
+            start: startOffset,
+            end: endOffset,
+            replacement: normalized.markdown,
+          });
+          return SKIP;
+        }
+      }
+      return;
+    }
+
+    if (node.type !== "html" || typeof node.value !== "string") {
+      return;
+    }
+
+    const startOffset = getStartOffset(node);
+    const endOffset = getEndOffset(node);
+    if (typeof startOffset !== "number" || typeof endOffset !== "number") {
+      return;
+    }
+
+    if (parent?.type !== "paragraph") {
+      const normalizedBlock = normalizeStandaloneHtmlFragment(node.value);
+      if (normalizedBlock) {
+        attachments.push(...normalizedBlock.attachments);
+        patches.push({
+          start: startOffset,
+          end: endOffset,
+          replacement: normalizedBlock.markdown,
+        });
+        return;
+      }
+    }
+
+    const normalizedInline = normalizeInlineHtmlFragment(node.value);
+    if (!normalizedInline) {
+      return;
+    }
+
+    patches.push({
+      start: startOffset,
+      end: endOffset,
+      replacement: normalizedInline,
+    });
+  });
+
+  return {
+    markdown: applyPatches(markdown, patches).replace(/\n{3,}/g, "\n\n").trim(),
+    attachments,
+  };
 }
 
 export function findImageUrls(content) {

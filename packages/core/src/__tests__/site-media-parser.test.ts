@@ -3,6 +3,7 @@ import {
   collectMediaReferences,
   extractAttachmentBlocks,
   findImageUrls,
+  normalizeImportedBody,
   rewriteMediaReferences,
 } from "../../bin/lib/site-media-parser.js";
 
@@ -128,5 +129,68 @@ After
         content: "# Attached note\n\nHello import",
       },
     ]);
+  });
+
+  it("normalizes standalone image html into Jant image markup", () => {
+    const result = normalizeImportedBody(`
+Before
+
+<figure>
+  <a href="https://example.com/source">
+    <img src="/media/photo.webp" alt="Photo" title="Title">
+  </a>
+  <figcaption>Caption</figcaption>
+</figure>
+
+After
+`);
+
+    expect(result).toEqual({
+      markdown:
+        'Before\n\n<figure data-jant-node="image"><a href="https://example.com/source"><img src="/media/photo.webp" alt="Photo" title="Title"></a><figcaption>Caption</figcaption></figure>\n\nAfter',
+      attachments: [],
+    });
+  });
+
+  it("normalizes inline html images into markdown images", () => {
+    const result = normalizeImportedBody(
+      'Before <img src="/media/photo.webp" alt="Photo" title="Title"> after',
+    );
+
+    expect(result).toEqual({
+      markdown: 'Before ![Photo](/media/photo.webp "Title") after',
+      attachments: [],
+    });
+  });
+
+  it("converts standalone audio and video html into imported attachments", () => {
+    const result = normalizeImportedBody(`
+Intro
+
+<figure>
+  <video controls poster="/media/video-poster.webp">
+    <source src="/media/video.mp4" type="video/mp4">
+  </video>
+  <figcaption>Video caption</figcaption>
+</figure>
+
+<audio controls src="/media/audio.mp3"></audio>
+`);
+
+    expect(result).toEqual({
+      markdown: "Intro",
+      attachments: [
+        {
+          kind: "video",
+          src: "/media/video.mp4",
+          poster: "/media/video-poster.webp",
+          summary: "Video caption",
+        },
+        {
+          kind: "audio",
+          src: "/media/audio.mp3",
+        },
+      ],
+    });
   });
 });

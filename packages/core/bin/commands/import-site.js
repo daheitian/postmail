@@ -10,6 +10,8 @@ import {
 import {
   extractAttachmentBlocks,
   findImageUrls,
+  normalizeImportedBody,
+  rewriteMediaReferences,
 } from "../lib/site-media-parser.js";
 import { openNodeDatabase } from "../lib/node-database.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
@@ -460,15 +462,14 @@ function getMediaPublicUrl(storageKey, provider, appConfig) {
   return `${prefix}/${storageKey}`.replace(/\/{2,}/g, "/");
 }
 
-/**
- * Replace image URLs in markdown with newly uploaded URLs.
- */
-function replaceImageUrls(markdown, urlMap) {
-  let result = markdown;
-  for (const [oldUrl, newUrl] of urlMap) {
-    result = result.replaceAll(oldUrl, newUrl);
-  }
-  return result;
+function normalizeImportedBodySegment(markdown) {
+  const extracted = extractAttachmentBlocks(markdown);
+  const normalized = normalizeImportedBody(extracted.markdown);
+
+  return {
+    markdown: normalized.markdown,
+    attachments: [...extracted.attachments, ...normalized.attachments],
+  };
 }
 
 async function normalizeMediaSpec(spec, siteConfig, sourceRootDir) {
@@ -1546,11 +1547,8 @@ export async function run(argv) {
 
     // Process images in root body
     let rootBody = rootSegment?.body || "";
-    const {
-      markdown: rootBodyWithoutAttachments,
-      attachments: rootAttachments,
-    } = extractAttachmentBlocks(rootBody);
-    rootBody = rootBodyWithoutAttachments;
+    const normalizedRootBody = normalizeImportedBodySegment(rootBody);
+    rootBody = normalizedRootBody.markdown;
     let importedAttachments = [];
 
     if (!skipMedia && !dryRun) {
@@ -1564,12 +1562,12 @@ export async function run(argv) {
       mediaUploaded += uploadResult.uploaded;
 
       if (uploadResult.urlMap.size > 0) {
-        rootBody = replaceImageUrls(rootBody, uploadResult.urlMap);
+        rootBody = rewriteMediaReferences(rootBody, uploadResult.urlMap);
       }
     }
     if (!dryRun) {
       const attachmentResult = await buildImportedAttachments(
-        rootAttachments,
+        normalizedRootBody.attachments,
         target,
         siteConfig,
         sourceRootDir,
@@ -1658,11 +1656,8 @@ export async function run(argv) {
         );
       }
       let replyBody = replySegment.body || "";
-      const {
-        markdown: replyBodyWithoutAttachments,
-        attachments: replyAttachmentSpecs,
-      } = extractAttachmentBlocks(replyBody);
-      replyBody = replyBodyWithoutAttachments;
+      const normalizedReplyBody = normalizeImportedBodySegment(replyBody);
+      replyBody = normalizedReplyBody.markdown;
       let replyAttachments = [];
 
       if (!skipMedia && !dryRun) {
@@ -1676,12 +1671,12 @@ export async function run(argv) {
         mediaUploaded += uploadResult.uploaded;
 
         if (uploadResult.urlMap.size > 0) {
-          replyBody = replaceImageUrls(replyBody, uploadResult.urlMap);
+          replyBody = rewriteMediaReferences(replyBody, uploadResult.urlMap);
         }
       }
       if (!dryRun) {
         const attachmentResult = await buildImportedAttachments(
-          replyAttachmentSpecs,
+          normalizedReplyBody.attachments,
           target,
           siteConfig,
           sourceRootDir,
