@@ -12,22 +12,11 @@ import { tmpdir } from "node:os";
 import { basename, dirname, extname, join, relative } from "node:path";
 import { unzipSync, zipSync } from "fflate";
 import { parse, stringify } from "smol-toml";
-
-const MARKDOWN_IMAGE_REGEX = /!\[[^\]]*\]\(([^)\s]+)/g;
-const HTML_IMAGE_REGEX = /<img\b[^>]*\bsrc=["']([^"']+)["']/g;
-const HTML_AUDIO_REGEX = /<audio\b[^>]*\bsrc=["']([^"']+)["']/g;
-const HTML_SOURCE_REGEX = /<source\b[^>]*\bsrc=["']([^"']+)["']/g;
-const HTML_VIDEO_POSTER_REGEX = /<video\b[^>]*\bposter=["']([^"']+)["']/g;
-const ATTACHMENT_META_REGEX =
-  /<script\b[^>]*data-jant-meta[^>]*>([\s\S]*?)<\/script>/g;
-const URL_SCHEMES_TO_SKIP = ["data:", "mailto:", "tel:", "javascript:", "#"];
-
-function isSkippableUrl(value) {
-  if (typeof value !== "string") return true;
-  const trimmed = value.trim();
-  if (!trimmed) return true;
-  return URL_SCHEMES_TO_SKIP.some((scheme) => trimmed.startsWith(scheme));
-}
+import {
+  collectMediaReferences as collectParsedMediaReferences,
+  isSkippableUrl,
+  rewriteMediaReferences,
+} from "./site-media-parser.js";
 
 export function getSitePathPrefix(baseUrl) {
   if (typeof baseUrl !== "string" || baseUrl.trim() === "") {
@@ -180,48 +169,8 @@ async function readMarkdownFiles(rootDir) {
   return files.filter((filePath) => filePath.endsWith(".md"));
 }
 
-function collectMatches(content, regex, refs) {
-  let match;
-  while ((match = regex.exec(content)) !== null) {
-    refs.add(match[1]);
-  }
-  regex.lastIndex = 0;
-}
-
 export function collectMediaReferences(content) {
-  const refs = new Set();
-
-  collectMatches(content, MARKDOWN_IMAGE_REGEX, refs);
-  collectMatches(content, HTML_IMAGE_REGEX, refs);
-  collectMatches(content, HTML_AUDIO_REGEX, refs);
-  collectMatches(content, HTML_SOURCE_REGEX, refs);
-  collectMatches(content, HTML_VIDEO_POSTER_REGEX, refs);
-
-  let match;
-  while ((match = ATTACHMENT_META_REGEX.exec(content)) !== null) {
-    try {
-      const meta = JSON.parse(match[1].trim());
-      if (typeof meta.src === "string") {
-        refs.add(meta.src);
-      }
-      if (typeof meta.poster === "string") {
-        refs.add(meta.poster);
-      }
-    } catch {
-      // Ignore malformed attachment metadata and keep localizing other refs.
-    }
-  }
-  ATTACHMENT_META_REGEX.lastIndex = 0;
-
-  return [...refs].filter((ref) => !isSkippableUrl(ref));
-}
-
-function replaceUrls(text, replacements) {
-  let result = text;
-  for (const [from, to] of replacements) {
-    result = result.replaceAll(from, to);
-  }
-  return result;
+  return collectParsedMediaReferences(content);
 }
 
 function getConfigMediaUrls(siteConfig) {
@@ -443,7 +392,7 @@ export async function localizeSiteExportDirectory(rootDir, options = {}) {
 
   for (const filePath of markdownFiles) {
     const content = await readFile(filePath, "utf-8");
-    const updatedContent = replaceUrls(content, rewrites);
+    const updatedContent = rewriteMediaReferences(content, rewrites);
     if (updatedContent !== content) {
       await writeFile(filePath, updatedContent);
       stats.filesUpdated += 1;

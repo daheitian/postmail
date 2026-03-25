@@ -35,9 +35,9 @@ describe("site-localize-media helpers", () => {
     expect(collectMediaReferences(content)).toEqual([
       "/media/hero.webp",
       "https://example.com/inline.png",
-      "/media/memo.mp3",
-      "/media/clip.mp4",
       "/media/poster.webp",
+      "/media/clip.mp4",
+      "/media/memo.mp3",
       "/media/doc.pdf",
       "/media/doc-poster.webp",
     ]);

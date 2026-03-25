@@ -68,6 +68,34 @@ describe("import-site command helpers", () => {
     }
   });
 
+  it("reads normalized media from a local file before falling back to fetch", async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), "jant-import-asset-"));
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+
+    try {
+      const filePath = join(rootDir, "photo.webp");
+      await writeFile(filePath, "photo");
+
+      const asset = await __test__.readMediaSpecAsset({
+        src: "https://example.com/blog/media/photo.webp",
+        srcFilePath: filePath,
+        mimeType: "image/webp",
+        originalName: "photo.webp",
+      });
+
+      expect(asset).toMatchObject({
+        filename: "photo.webp",
+        contentType: "image/webp",
+      });
+      expect(new TextDecoder().decode(asset?.bytes)).toBe("photo");
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+      await rm(rootDir, { recursive: true, force: true });
+    }
+  });
+
   it("extracts text attachment payloads and ignores preview markup", () => {
     const result = __test__.extractAttachmentBlocks(`
 Before

@@ -7,6 +7,10 @@ import {
   CLI_API_TOKEN_ENV_VAR,
   getCliApiToken,
 } from "../lib/cli-api-token.js";
+import {
+  extractAttachmentBlocks,
+  findImageUrls,
+} from "../lib/site-media-parser.js";
 import { openNodeDatabase } from "../lib/node-database.js";
 import { loadNodeRuntime } from "../lib/load-node-runtime.js";
 
@@ -195,6 +199,22 @@ function toArrayBuffer(bytes) {
   );
 }
 
+async function readMediaSpecAsset(media, field = "src") {
+  if (field === "poster") {
+    return readImportAsset({
+      sourceUrl: media.poster,
+      sourceFilePath: media.posterFilePath,
+    });
+  }
+
+  return readImportAsset({
+    sourceUrl: media.src,
+    sourceFilePath: media.srcFilePath,
+    mimeType: media.mimeType,
+    originalName: media.originalName,
+  });
+}
+
 /**
  * Parse reply markers from post body.
  * Returns array of { attrs, body } segments where the first is the root.
@@ -321,95 +341,12 @@ async function assertImportSlugAvailable(target, slug, label, kind) {
 }
 
 /**
- * Find image URLs in markdown and return them.
- */
-function findImageUrls(markdown) {
-  const urls = new Set();
-  const regex = /!\[[^\]]*\]\(([^)\s]+)/g;
-  let match;
-  while ((match = regex.exec(markdown)) !== null) {
-    urls.add(match[1]);
-  }
-  const htmlRegex = /<img\b[^>]*src="([^"]+)"/g;
-  while ((match = htmlRegex.exec(markdown)) !== null) {
-    urls.add(match[1]);
-  }
-  return [...urls];
-}
-
-/**
- * Remove exported Jant attachment blocks from markdown and return their metadata.
- */
-function extractAttachmentBlocks(markdown) {
-  const attachments = [];
-  const blockStartRegex = /<div\s+data-jant-node="attachments">/g;
-  const figureRegex =
-    /<figure\b[^>]*data-jant-node="attachment"[\s\S]*?<script\b[^>]*data-jant-meta[^>]*>([\s\S]*?)<\/script>[\s\S]*?<\/figure>/g;
-  const tagRegex = /<div\b[^>]*>|<\/div>/gi;
-
-  let stripped = "";
-  let cursor = 0;
-  let match;
-  while ((match = blockStartRegex.exec(markdown)) !== null) {
-    const blockStart = match.index;
-    const contentStart = blockStartRegex.lastIndex;
-    tagRegex.lastIndex = contentStart;
-
-    let depth = 1;
-    let blockEnd = -1;
-    let tagMatch;
-    while ((tagMatch = tagRegex.exec(markdown)) !== null) {
-      if (tagMatch[0].startsWith("</div")) {
-        depth -= 1;
-      } else {
-        depth += 1;
-      }
-
-      if (depth === 0) {
-        blockEnd = tagRegex.lastIndex;
-        break;
-      }
-    }
-
-    if (blockEnd === -1) {
-      continue;
-    }
-
-    stripped += markdown.slice(cursor, blockStart);
-    const block = markdown.slice(blockStart, blockEnd);
-    let figureMatch;
-    while ((figureMatch = figureRegex.exec(block)) !== null) {
-      try {
-        attachments.push(JSON.parse(figureMatch[1].trim()));
-      } catch {
-        // Ignore malformed attachment metadata and keep importing the rest.
-      }
-    }
-    figureRegex.lastIndex = 0;
-    cursor = blockEnd;
-    blockStartRegex.lastIndex = blockEnd;
-  }
-
-  stripped += markdown.slice(cursor);
-
-  return {
-    markdown: stripped.replace(/\n{3,}/g, "\n\n").trim(),
-    attachments,
-  };
-}
-
-/**
  * Download a media file and upload it to the Jant API.
  * Returns the new URL, or null on failure.
  */
 async function uploadRemoteMedia(media, apiUrl, token) {
   try {
-    const asset = await readImportAsset({
-      sourceUrl: media.src,
-      sourceFilePath: media.srcFilePath,
-      mimeType: media.mimeType,
-      originalName: media.originalName,
-    });
+    const asset = await readMediaSpecAsset(media);
     if (!asset) return null;
 
     const blob = new Blob([asset.bytes], { type: asset.contentType });
@@ -424,10 +361,7 @@ async function uploadRemoteMedia(media, apiUrl, token) {
     if (media.waveform) formData.append("waveform", media.waveform);
 
     if (media.poster) {
-      const posterAsset = await readImportAsset({
-        sourceUrl: media.poster,
-        sourceFilePath: media.posterFilePath,
-      });
+      const posterAsset = await readMediaSpecAsset(media, "poster");
       if (posterAsset) {
         formData.append(
           "poster",
@@ -1182,34 +1116,31 @@ async function createLocalTarget(env = process.env) {
         throw new Error("Local import requires configured storage.");
       }
 
-      const response = await fetch(mediaSpec.src);
-      if (!response.ok) return null;
+      const asset = await readMediaSpecAsset(mediaSpec);
+      if (!asset) return null;
 
       const originalName =
-        mediaSpec.originalName || getFilenameFromUrl(mediaSpec.src) || "file";
-      const bytes = new Uint8Array(await response.arrayBuffer());
+        mediaSpec.originalName || asset.filename || getFilenameFromUrl(mediaSpec.src) || "file";
+      const bytes = asset.bytes;
       const { id, filename, storageKey } =
         generateImportedStorageKey(originalName);
       const mimeType =
         mediaSpec.mimeType ||
-        response.headers.get("content-type")?.split(";")[0] ||
+        asset.contentType ||
         guessMimeType(originalName);
       let posterKey;
 
       if (mediaSpec.poster) {
-        const posterResponse = await fetch(mediaSpec.poster);
-        if (posterResponse.ok) {
-          const posterName =
-            getFilenameFromUrl(mediaSpec.poster) || "poster.webp";
+        const posterAsset = await readMediaSpecAsset(mediaSpec, "poster");
+        if (posterAsset) {
+          const posterName = posterAsset.filename || "poster.webp";
           const posterExt = extname(posterName) || ".webp";
           posterKey = storageKey.replace(/(\.[^.]+)?$/, `-poster${posterExt}`);
           await runtime.storage.put(
             posterKey,
-            new Uint8Array(await posterResponse.arrayBuffer()),
+            posterAsset.bytes,
             {
-              contentType:
-                posterResponse.headers.get("content-type")?.split(";")[0] ||
-                guessMimeType(posterName),
+              contentType: posterAsset.contentType || guessMimeType(posterName),
             },
           );
         }
@@ -1296,6 +1227,7 @@ async function walkContent(rootDir, postFiles, collectionFiles) {
 
 export const __test__ = {
   resolveImportUrl,
+  readMediaSpecAsset,
   normalizeMediaSpec,
   normalizeTextAttachmentSpec,
   extractAttachmentBlocks,
