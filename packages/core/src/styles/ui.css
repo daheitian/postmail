@@ -1518,6 +1518,16 @@
     line-height: 1.35;
   }
 
+  .thread-group,
+  .compose-thread-layout {
+    --site-thread-marker-size: 10px;
+    --site-thread-marker-border-width: 2px;
+    --site-thread-marker-ring-width: 2px;
+    --site-thread-marker-hero-size: 14px;
+    --site-thread-marker-hero-border-width: 3px;
+    --site-thread-marker-surface: var(--site-page-bg);
+  }
+
   /* Thread group: timeline layout — vertical line with dot markers */
   .thread-group {
     --site-thread-rail-indent: 24px;
@@ -1591,11 +1601,13 @@
 
   .thread-group-preview .thread-item::before,
   .thread-group-detail .thread-item::before {
-    width: 10px;
-    height: 10px;
-    border: 2px solid var(--site-page-bg);
+    width: var(--site-thread-marker-size);
+    height: var(--site-thread-marker-size);
+    border: var(--site-thread-marker-border-width) solid
+      var(--site-thread-marker-surface);
     background-color: var(--site-threadline);
-    box-shadow: 0 0 0 2px var(--site-thread-dot-ring);
+    box-shadow: 0 0 0 var(--site-thread-marker-ring-width)
+      var(--site-thread-dot-ring);
   }
 
   .thread-context-shell {
@@ -1641,22 +1653,27 @@
     padding-top: 0.95rem;
   }
 
-  .thread-group-preview .thread-item-hero::before {
+  .thread-group-preview .thread-item-hero::before,
+  .compose-editor-row .compose-thread-dot {
     left: calc(var(--site-thread-rail-dot-left) - 2px);
-    width: 14px;
-    height: 14px;
-    border: 3px solid var(--site-page-bg);
+    width: var(--site-thread-marker-hero-size);
+    height: var(--site-thread-marker-hero-size);
+    border: var(--site-thread-marker-hero-border-width) solid
+      var(--site-thread-marker-surface);
     background-color: var(--site-accent);
-    box-shadow: 0 0 0 2px var(--site-thread-dot-ring);
+    box-shadow: 0 0 0 var(--site-thread-marker-ring-width)
+      var(--site-thread-dot-ring);
   }
 
   .thread-group-curated .thread-item-curated::before {
     left: calc(var(--site-thread-rail-dot-left) - 2px);
-    width: 14px;
-    height: 14px;
-    border: 3px solid var(--site-page-bg);
+    width: var(--site-thread-marker-hero-size);
+    height: var(--site-thread-marker-hero-size);
+    border: var(--site-thread-marker-hero-border-width) solid
+      var(--site-thread-marker-surface);
     background-color: var(--site-accent);
-    box-shadow: 0 0 0 2px var(--site-thread-dot-ring);
+    box-shadow: 0 0 0 var(--site-thread-marker-ring-width)
+      var(--site-thread-dot-ring);
   }
 
   /* Compact text for thread replies */
@@ -1735,8 +1752,18 @@
   .thread-group-detail .thread-item-current::before {
     background-color: var(--site-accent);
     box-shadow:
-      0 0 0 2px var(--site-page-bg),
-      0 0 0 4px color-mix(in srgb, var(--site-accent) 18%, var(--site-page-bg));
+      0 0 0 var(--site-thread-marker-border-width)
+        var(--site-thread-marker-surface),
+      0 0 0
+        calc(
+          var(--site-thread-marker-border-width) +
+            var(--site-thread-marker-ring-width)
+        )
+        color-mix(
+          in srgb,
+          var(--site-accent) 18%,
+          var(--site-thread-marker-surface)
+        );
   }
 
   /* Quote block styling */
@@ -3148,11 +3175,9 @@
       background-color: inherit;
     }
 
-    .compose-page-shell .compose-dialog-inner-page .compose-thread-layout,
-    .compose-page-shell .compose-dialog-inner-page .compose-editor-row,
-    .compose-page-shell .compose-dialog-inner-page .compose-reply-row,
-    .compose-page-shell .compose-dialog-inner-page .compose-reply-meta {
-      padding-inline: 0;
+    .compose-page-shell .compose-dialog-inner-page .compose-thread-layout {
+      --compose-thread-padding-left: 0px;
+      --compose-thread-padding-right: 0px;
     }
 
     .compose-page-shell .compose-dialog-inner-page .collection-quick-dialog,
@@ -3379,10 +3404,9 @@
       padding-left: calc(20px + env(safe-area-inset-left));
     }
 
-    .compose-reply-row,
-    .compose-editor-row {
-      padding-right: calc(16px + env(safe-area-inset-right));
-      padding-left: calc(16px + env(safe-area-inset-left));
+    .compose-thread-layout {
+      --compose-thread-padding-right: calc(16px + env(safe-area-inset-right));
+      --compose-thread-padding-left: calc(16px + env(safe-area-inset-left));
     }
 
     .compose-action-row {
@@ -3812,6 +3836,14 @@
     align-items: center;
     gap: 1px;
     background-color: var(--site-elevated-bg);
+  }
+
+  .compose-thread-layout .compose-tools-row {
+    padding-inline-start: 0;
+  }
+
+  .compose-thread-layout .compose-tools-row .compose-tool-btn:first-child {
+    margin-inline-start: -10px;
   }
 
   @media (min-width: 700px) {
@@ -5064,6 +5096,11 @@
 
   /* Thread layout: wraps reply context + editor with a continuous thread line */
   .compose-thread-layout {
+    --compose-thread-padding-left: 16px;
+    --compose-thread-padding-right: 16px;
+    --compose-thread-gap: 12px;
+    --compose-thread-rail-left: calc(var(--compose-thread-padding-left) + 5px);
+    --site-thread-marker-surface: var(--site-elevated-bg);
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -5076,26 +5113,35 @@
   .compose-thread-layout::before {
     content: "";
     position: absolute;
-    left: 21px; /* 16px padding + 5px to center in 12px dot */
+    left: var(--compose-thread-rail-left);
     top: 0;
     bottom: 0;
-    width: 2px;
-    background-color: var(--site-threadline);
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent 0,
+      color-mix(in srgb, var(--site-threadline) 85%, transparent) 8%,
+      color-mix(in srgb, var(--site-threadline) 55%, transparent) 100%
+    );
     z-index: 0;
   }
 
   /* Row containing dot + reply context */
   .compose-reply-row {
     display: flex;
-    gap: 12px;
-    padding: 0 16px;
+    align-items: flex-start;
+    gap: var(--compose-thread-gap);
+    padding-right: var(--compose-thread-padding-right);
+    padding-left: var(--compose-thread-padding-left);
   }
 
   /* Row containing dot + editor */
   .compose-editor-row {
     display: flex;
-    gap: 12px;
-    padding: 0 16px;
+    align-items: flex-start;
+    gap: var(--compose-thread-gap);
+    padding-right: var(--compose-thread-padding-right);
+    padding-left: var(--compose-thread-padding-left);
     flex: 1;
     min-height: 0;
     overflow: hidden;
@@ -5117,13 +5163,25 @@
 
   /* Dot marker for thread positions */
   .compose-thread-dot {
-    width: 12px;
-    height: 12px;
+    width: var(--site-thread-marker-size);
+    height: var(--site-thread-marker-size);
+    margin-top: 0.65rem;
     border-radius: 50%;
+    border: var(--site-thread-marker-border-width) solid
+      var(--site-thread-marker-surface);
     background-color: var(--site-threadline);
     flex-shrink: 0;
-    align-self: center;
+    align-self: flex-start;
+    box-shadow: 0 0 0 var(--site-thread-marker-ring-width)
+      var(--site-thread-dot-ring);
     z-index: 1;
+  }
+
+  .compose-editor-row .compose-thread-dot {
+    margin-top: 1rem;
+    margin-left: calc(
+      (var(--site-thread-marker-size) - var(--site-thread-marker-hero-size)) / 2
+    );
   }
 
   .compose-reply-context {
@@ -5132,6 +5190,7 @@
     max-height: 140px;
     overflow: hidden;
     position: relative;
+    padding: 0.08rem 0 0.18rem;
     transition: max-height 0.3s ease;
   }
 
@@ -5144,6 +5203,14 @@
     font-size: var(--text-xs);
     color: var(--site-text-secondary);
     line-height: 1.5;
+  }
+
+  .compose-reply-context-body > :first-child {
+    margin-top: 0;
+  }
+
+  .compose-reply-context-body > :last-child {
+    margin-bottom: 0;
   }
 
   /* Scale down cloned card content to be smaller than the compose editor */
@@ -5181,7 +5248,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 4px 16px 0 40px;
+    padding-top: 4px;
+    padding-right: var(--compose-thread-padding-right);
+    padding-left: calc(
+      var(--compose-thread-padding-left) + var(--compose-thread-gap) + 10px
+    );
     font-size: var(--text-xs);
     color: var(--site-text-secondary);
   }
