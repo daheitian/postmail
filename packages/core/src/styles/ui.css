@@ -7060,66 +7060,249 @@
   .tiptap-slash-menu {
     position: fixed;
     z-index: 10000;
-    background: var(--site-elevated-bg);
-    border: 1px solid var(--site-divider);
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    padding: 4px;
-    min-width: 220px;
-    max-height: 320px;
+    display: flex;
+    flex-direction: column;
+    width: min(17.5rem, calc(100vw - 20px));
+    min-width: min(15.5rem, calc(100vw - 20px));
+    max-width: calc(100vw - 20px);
+    background: linear-gradient(
+      180deg,
+      color-mix(
+          in srgb,
+          var(--site-elevated-bg) 95%,
+          var(--site-nav-hover-bg) 5%
+        )
+        0%,
+      color-mix(in srgb, var(--site-elevated-bg) 98%, var(--site-page-bg) 2%)
+        100%
+    );
+    border: 1px solid color-mix(in srgb, var(--site-divider) 56%, transparent);
+    border-radius: 13px;
+    box-shadow:
+      0 14px 28px oklch(from var(--site-text-primary) l c h / 0.07),
+      0 2px 6px oklch(from var(--site-text-primary) l c h / 0.035);
+    overflow: hidden;
+  }
+
+  .tiptap-slash-menu-scroll {
+    min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    padding: 6px;
+  }
+
+  .tiptap-slash-menu-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .tiptap-slash-menu-scroll::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--site-divider) 82%, transparent);
+    border-radius: 999px;
+  }
+
+  .tiptap-slash-group {
+    display: grid;
+    gap: 2px;
+  }
+
+  .tiptap-slash-group + .tiptap-slash-group {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid
+      color-mix(in srgb, var(--site-divider) 44%, transparent);
+  }
+
+  .tiptap-slash-group-label {
+    margin: 0;
+    padding: 0 8px 1px;
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 84%,
+      var(--site-elevated-bg)
+    );
+    font-size: 0.62rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .tiptap-slash-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: 10px;
-    padding: 6px 10px;
-    border-radius: 6px;
+    width: 100%;
+    min-height: 2.3rem;
+    padding: 7px 10px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 0.875rem;
+    text-align: left;
     color: var(--site-text-primary);
-    transition: background 0.1s;
+    transition:
+      background-color 0.16s ease,
+      box-shadow 0.16s ease;
   }
 
   .tiptap-slash-item:hover,
+  .tiptap-slash-item:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 76%,
+      var(--site-elevated-bg) 24%
+    );
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, var(--site-divider) 48%, transparent);
+  }
+
   .tiptap-slash-item.is-selected {
-    background: var(--site-nav-hover-bg);
+    background: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 76%,
+      var(--site-accent) 24%
+    );
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--site-accent) 18%, transparent),
+      0 4px 10px oklch(from var(--site-text-primary) l c h / 0.024);
   }
 
   .tiptap-slash-item-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    background: var(--site-nav-hover-bg);
-    color: var(--site-text-secondary);
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 8px;
+    background: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 72%,
+      var(--site-elevated-bg) 28%
+    );
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, var(--site-divider) 34%, transparent);
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 82%,
+      var(--site-text-primary)
+    );
     flex-shrink: 0;
+    transition:
+      background-color 0.16s ease,
+      box-shadow 0.16s ease,
+      color 0.16s ease;
   }
 
   .tiptap-slash-item-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
 
   .tiptap-slash-item.is-selected .tiptap-slash-item-icon,
+  .tiptap-slash-item:focus-visible .tiptap-slash-item-icon,
   .tiptap-slash-item:hover .tiptap-slash-item-icon {
-    background: var(--site-divider);
+    background: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 82%,
+      var(--site-accent) 18%
+    );
+    box-shadow: inset 0 0 0 1px
+      color-mix(in srgb, var(--site-accent) 20%, transparent);
     color: var(--site-text-primary);
   }
 
   .tiptap-slash-item-label {
-    flex: 1;
+    display: block;
+    min-width: 0;
+    font-size: 0.86rem;
+    font-weight: var(--fw-medium);
+    line-height: 1.25;
   }
 
   .tiptap-slash-empty {
-    padding: 10px 12px;
+    padding: 0;
     color: var(--site-text-secondary);
     font-size: 0.875rem;
     line-height: 1.45;
+  }
+
+  .tiptap-slash-empty-shell {
+    padding: 14px 12px 10px;
+  }
+
+  .tiptap-slash-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px 9px;
+    border-top: 1px solid
+      color-mix(in srgb, var(--site-divider) 44%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--site-nav-hover-bg) 44%,
+      var(--site-elevated-bg) 56%
+    );
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 86%,
+      var(--site-elevated-bg)
+    );
+    font-size: 0.68rem;
+    line-height: 1;
+  }
+
+  .tiptap-slash-footer-description {
+    min-width: 0;
+    flex: 1;
+    color: color-mix(
+      in srgb,
+      var(--site-text-secondary) 88%,
+      var(--site-elevated-bg)
+    );
+    font-size: 0.68rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tiptap-slash-footer-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .tiptap-slash-footer-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+
+  .tiptap-slash-footer-separator {
+    width: 4px;
+    height: 4px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--site-divider) 74%, transparent);
+  }
+
+  .tiptap-slash-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.95rem;
+    padding: 0.18rem 0.4rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--site-divider) 50%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--site-elevated-bg) 84%,
+      var(--site-nav-hover-bg) 16%
+    );
+    color: var(--site-text-primary);
+    font-size: 0.64rem;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.03em;
   }
 
   /* Bubble menu — floating toolbar on text selection */

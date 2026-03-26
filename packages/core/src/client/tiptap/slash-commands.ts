@@ -12,6 +12,7 @@ import Suggestion, {
   type SuggestionKeyDownProps,
 } from "@tiptap/suggestion";
 import type { Editor, Range } from "@tiptap/core";
+import { escapeHtml } from "../../lib/html.js";
 import {
   getFixedFloatingContainerRect,
   getFloatingPosition,
@@ -32,17 +33,43 @@ const ICONS = {
   h3: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2"/><path d="M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2"/></svg>`,
 } as const;
 
+type SlashCommandGroup = "media" | "structure" | "formatting" | "headings";
+
 interface SlashCommandItem {
   label: string;
+  description: string;
+  group: SlashCommandGroup;
+  keywords: string[];
   icon: string;
   command: (editor: Editor, range: Range) => void;
 }
 
+const SLASH_GROUP_LABELS: Record<SlashCommandGroup, string> = {
+  media: "Media",
+  structure: "Structure",
+  formatting: "Formatting",
+  headings: "Headings",
+};
+
+const SLASH_GROUP_ORDER: SlashCommandGroup[] = [
+  "media",
+  "structure",
+  "formatting",
+  "headings",
+];
+
 const SLASH_EMPTY_MESSAGE = "No matches. Try another command.";
+const SLASH_FOOTER_LABELS = {
+  insert: "Insert",
+  close: "Close",
+} as const;
 
 const SLASH_COMMANDS: SlashCommandItem[] = [
   {
     label: "Media",
+    description: "Upload an image or video.",
+    group: "media",
+    keywords: ["image", "video", "photo", "upload", "embed"],
     icon: ICONS.image,
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).run();
@@ -53,6 +80,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Divider",
+    description: "Separate one thought from the next.",
+    group: "structure",
+    keywords: ["line", "rule", "separator", "break", "hr"],
     icon: ICONS.divider,
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).setHorizontalRule().run();
@@ -60,6 +90,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Read More",
+    description: "Collapse the rest of a longer post.",
+    group: "structure",
+    keywords: ["excerpt", "continue", "teaser", "more", "break"],
     icon: ICONS.readMore,
     command: (editor, range) => {
       editor
@@ -72,6 +105,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Table",
+    description: "Insert a 3 by 3 table.",
+    group: "structure",
+    keywords: ["grid", "rows", "columns", "spreadsheet"],
     icon: ICONS.table,
     command: (editor, range) => {
       editor
@@ -84,6 +120,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Code Block",
+    description: "Format a block of code or monospace text.",
+    group: "formatting",
+    keywords: ["code", "snippet", "pre", "monospace"],
     icon: ICONS.code,
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleCodeBlock().run();
@@ -91,6 +130,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Blockquote",
+    description: "Set off quoted text or a pull quote.",
+    group: "formatting",
+    keywords: ["quote", "citation", "excerpt", "callout"],
     icon: ICONS.blockquote,
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleBlockquote().run();
@@ -98,6 +140,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Bullet List",
+    description: "Start an unordered list.",
+    group: "formatting",
+    keywords: ["list", "bullets", "unordered", "ul"],
     icon: ICONS.bulletList,
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleBulletList().run();
@@ -105,6 +150,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Ordered List",
+    description: "Start a numbered list.",
+    group: "formatting",
+    keywords: ["list", "numbered", "ordered", "ol"],
     icon: ICONS.orderedList,
     command: (editor, range) => {
       editor.chain().focus().deleteRange(range).toggleOrderedList().run();
@@ -112,6 +160,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Heading 1",
+    description: "Insert the largest section heading.",
+    group: "headings",
+    keywords: ["title", "h1", "large heading", "section title"],
     icon: ICONS.h1,
     command: (editor, range) => {
       editor
@@ -124,6 +175,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Heading 2",
+    description: "Insert a medium section heading.",
+    group: "headings",
+    keywords: ["subtitle", "h2", "section heading"],
     icon: ICONS.h2,
     command: (editor, range) => {
       editor
@@ -136,6 +190,9 @@ const SLASH_COMMANDS: SlashCommandItem[] = [
   },
   {
     label: "Heading 3",
+    description: "Insert a small section heading.",
+    group: "headings",
+    keywords: ["subheading", "h3", "small heading"],
     icon: ICONS.h3,
     command: (editor, range) => {
       editor
@@ -181,6 +238,13 @@ let editorRef: Editor | null = null;
 let currentRange: Range | null = null;
 let outsideClickHandler: ((e: MouseEvent) => void) | null = null;
 
+function getPopupScrollBody(): HTMLElement | null {
+  if (!popupEl) return null;
+  return (
+    popupEl.querySelector<HTMLElement>(".tiptap-slash-menu-scroll") ?? popupEl
+  );
+}
+
 function createPopup(): HTMLElement {
   const el = document.createElement("div");
   el.className = "tiptap-slash-menu";
@@ -192,29 +256,74 @@ function createPopup(): HTMLElement {
 /** Scroll the selected item into view within the popup only (no ancestor scroll) */
 function scrollSelectedIntoView() {
   if (!popupEl) return;
+  const scrollBody = getPopupScrollBody();
+  if (!scrollBody) return;
   const selected = popupEl.querySelector(
     ".tiptap-slash-item.is-selected",
   ) as HTMLElement | null;
   if (!selected) return;
-  const itemTop = selected.offsetTop;
+  const itemTop = selected.offsetTop - scrollBody.offsetTop;
   const itemBottom = itemTop + selected.offsetHeight;
-  const scrollTop = popupEl.scrollTop;
-  const viewBottom = scrollTop + popupEl.clientHeight;
+  const scrollTop = scrollBody.scrollTop;
+  const viewBottom = scrollTop + scrollBody.clientHeight;
   if (itemTop < scrollTop) {
-    popupEl.scrollTop = itemTop;
+    scrollBody.scrollTop = itemTop;
   } else if (itemBottom > viewBottom) {
-    popupEl.scrollTop = itemBottom - popupEl.clientHeight;
+    scrollBody.scrollTop = itemBottom - scrollBody.clientHeight;
   }
 }
 
 /** Update selection highlight and scroll into view */
 function updateSelection() {
-  popupEl
-    ?.querySelectorAll(".tiptap-slash-item")
-    .forEach((item, i) =>
-      item.classList.toggle("is-selected", i === selectedIndex),
-    );
+  popupEl?.querySelectorAll(".tiptap-slash-item").forEach((item, i) => {
+    const isSelected = i === selectedIndex;
+    item.classList.toggle("is-selected", isSelected);
+    item.setAttribute("aria-selected", isSelected ? "true" : "false");
+  });
+  updateFooterDescription();
   scrollSelectedIntoView();
+}
+
+function getSelectedItem(): SlashCommandItem | null {
+  return filteredItems[selectedIndex] ?? null;
+}
+
+function updateFooterDescription() {
+  const descriptionEl = popupEl?.querySelector<HTMLElement>(
+    ".tiptap-slash-footer-description",
+  );
+  if (!descriptionEl) return;
+  descriptionEl.textContent = getSelectedItem()?.description ?? "";
+}
+
+function renderFooterMarkup(selectedItem: SlashCommandItem | null): string {
+  return `<div class="tiptap-slash-footer">
+    <span class="tiptap-slash-footer-description">${escapeHtml(selectedItem?.description ?? "")}</span>
+    <span class="tiptap-slash-footer-actions" aria-hidden="true">
+      <span class="tiptap-slash-footer-note">
+        <span class="tiptap-slash-kbd">Enter</span>
+        <span>${escapeHtml(SLASH_FOOTER_LABELS.insert)}</span>
+      </span>
+      <span class="tiptap-slash-footer-separator"></span>
+      <span class="tiptap-slash-footer-note">
+        <span class="tiptap-slash-kbd">Esc</span>
+        <span>${escapeHtml(SLASH_FOOTER_LABELS.close)}</span>
+      </span>
+    </span>
+  </div>`;
+}
+
+function renderItemMarkup(item: SlashCommandItem, index: number): string {
+  const isSelected = index === selectedIndex;
+  return `<div
+      class="tiptap-slash-item${isSelected ? " is-selected" : ""}"
+      data-index="${index}"
+      role="option"
+      aria-selected="${isSelected ? "true" : "false"}"
+    >
+      <span class="tiptap-slash-item-icon" aria-hidden="true">${item.icon}</span>
+      <span class="tiptap-slash-item-label">${escapeHtml(item.label)}</span>
+    </div>`;
 }
 
 function renderPopup(
@@ -227,8 +336,14 @@ function renderPopup(
   if (items.length === 0) {
     selectedIndex = 0;
     popupEl.dataset.empty = "true";
-    popupEl.innerHTML = `<div class="tiptap-slash-empty" role="status" aria-live="polite">${SLASH_EMPTY_MESSAGE}</div>`;
-    popupEl.scrollTop = 0;
+    popupEl.innerHTML = `<div class="tiptap-slash-menu-scroll">
+        <div class="tiptap-slash-empty-shell">
+          <div class="tiptap-slash-empty" role="status" aria-live="polite">${escapeHtml(SLASH_EMPTY_MESSAGE)}</div>
+        </div>
+      </div>
+      ${renderFooterMarkup(null)}`;
+    const scrollBody = getPopupScrollBody();
+    if (scrollBody) scrollBody.scrollTop = 0;
     return;
   }
 
@@ -237,15 +352,24 @@ function renderPopup(
     selectedIndex = 0;
   }
 
-  popupEl.innerHTML = items
-    .map(
-      (item, i) =>
-        `<div class="tiptap-slash-item${i === selectedIndex ? " is-selected" : ""}" data-index="${i}">
-          <span class="tiptap-slash-item-icon">${item.icon}</span>
-          <span class="tiptap-slash-item-label">${item.label}</span>
-        </div>`,
-    )
-    .join("");
+  const groupedMarkup = SLASH_GROUP_ORDER.map((group) => {
+    const groupItems = items
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => item.group === group);
+    if (groupItems.length === 0) return "";
+
+    return `<section class="tiptap-slash-group" data-group="${group}">
+        <p class="tiptap-slash-group-label">${escapeHtml(SLASH_GROUP_LABELS[group])}</p>
+        ${groupItems
+          .map(({ item, index }) => renderItemMarkup(item, index))
+          .join("")}
+      </section>`;
+  }).join("");
+
+  popupEl.innerHTML = `<div class="tiptap-slash-menu-scroll">
+      ${groupedMarkup}
+    </div>
+    ${renderFooterMarkup(getSelectedItem())}`;
 
   // Click handlers
   popupEl.querySelectorAll<HTMLElement>(".tiptap-slash-item").forEach((el) => {
@@ -259,6 +383,8 @@ function renderPopup(
       updateSelection();
     });
   });
+  const scrollBody = getPopupScrollBody();
+  if (scrollBody) scrollBody.scrollTop = 0;
 }
 
 function destroyPopup() {
@@ -289,6 +415,10 @@ function positionPopup(
 
   // Reset inline max-height so offsetHeight reflects the natural size
   popupEl.style.maxHeight = "";
+  const viewportRect = getFixedFloatingContainerRect(null);
+  const containerRect = container
+    ? getFixedFloatingContainerRect(container)
+    : viewportRect;
   const layout = getFloatingPosition({
     anchorRect: {
       left: rect.left,
@@ -296,17 +426,17 @@ function positionPopup(
       top: rect.top,
       bottom: rect.bottom,
     },
-    containerRect: getFixedFloatingContainerRect(container),
+    containerRect: viewportRect,
     floatingWidth: popupEl.offsetWidth,
     floatingHeight: popupEl.offsetHeight,
     preferredPlacement: "bottom",
     fallbackPlacement: "top",
     align: "start",
-    gap: 4,
+    gap: 6,
   });
 
-  popupEl.style.left = `${layout.left}px`;
-  popupEl.style.top = `${layout.top}px`;
+  popupEl.style.left = `${layout.left - containerRect.left}px`;
+  popupEl.style.top = `${layout.top - containerRect.top}px`;
   popupEl.style.maxHeight =
     layout.maxHeight !== null ? `${layout.maxHeight}px` : "";
 }
@@ -339,7 +469,10 @@ export const SlashCommands = Extension.create({
         items: ({ query, editor }: { query: string; editor: Editor }) => {
           const q = query.toLowerCase();
           return getSlashCommands(editor).filter((item) =>
-            item.label.toLowerCase().includes(q),
+            [item.label, item.description, ...item.keywords]
+              .join(" ")
+              .toLowerCase()
+              .includes(q),
           );
         },
         render: () => {
