@@ -2038,12 +2038,10 @@ msgid "Pinned"
 msgstr "已釘選"
 
 #. @context: Compose button - publish post
-#. @context: Compose publish button for posts hidden from Latest
 #. @context: Custom URL target type badge for a post
 #. @context: Custom URL type option
 #: src/routes/dash/custom-urls.tsx
 #: src/routes/dash/custom-urls.tsx
-#: src/ui/compose/ComposeDialog.tsx
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post"
 msgstr "發佈"
@@ -2052,6 +2050,11 @@ msgstr "發佈"
 #: src/ui/compose/ComposeDialog.tsx
 msgid "Post as Private"
 msgstr "以私密方式發佈"
+
+#. @context: Compose publish button for posts hidden from Latest
+#: src/ui/compose/ComposeDialog.tsx
+msgid "Post hidden"
+msgstr ""
 
 #. @context: Compose publish button for private visibility
 #: src/ui/compose/ComposeDialog.tsx

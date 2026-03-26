@@ -2759,6 +2759,9 @@ export class JantComposeDialog extends LitElement {
   private _getSubmitLabel(): string {
     if (this._editPostId) return this.labels.update;
     if (this._replyToId) return this.labels.reply;
+    if (this._visibility === "latest_hidden") {
+      return this.labels.postHiddenFromLatest;
+    }
     if (this._visibility === "private") return this.labels.postPrivately;
     return this.labels.post;
   }
@@ -3058,11 +3061,6 @@ export class JantComposeDialog extends LitElement {
         aria-label=${this.labels.publishSettings}
         data-compose-publish-panel
       >
-        <div class="compose-publish-panel-header">
-          <p class="compose-publish-panel-title">
-            ${this.labels.publishSettings}
-          </p>
-        </div>
         ${this._visibilityLocked
           ? nothing
           : html`

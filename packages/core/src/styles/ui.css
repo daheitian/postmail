@@ -2095,6 +2095,8 @@
     color: var(--site-text-secondary);
     font-size: 13px;
     text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .post-footer-link:hover {
@@ -2119,6 +2121,7 @@
     color: var(--site-text-secondary);
     text-decoration: none;
     transition: color 0.18s ease;
+    flex-shrink: 0;
   }
 
   .post-footer-external-link:hover {
@@ -2141,7 +2144,7 @@
   }
 
   .post-menu-footer:not(.post-footer-detail) .post-collection-tags {
-    flex: 0 1 auto;
+    flex: 1 1 auto;
   }
 
   .post-footer-detail .post-collection-tags {
@@ -4176,7 +4179,7 @@
   }
 
   .compose-collection-popover {
-    padding: 0.44rem;
+    padding: 0.56rem 0.62rem 0.5rem;
     border-radius: 1.08rem;
     border: 1px solid
       color-mix(in srgb, var(--site-text-primary) 8%, transparent);
@@ -4192,7 +4195,7 @@
   }
 
   .compose-collection-popover-header {
-    padding: 0.14rem 0.12rem 0.54rem;
+    padding: 0.24rem 0 0.6rem;
   }
 
   .compose-collection-search-shell {
@@ -4261,19 +4264,22 @@
     padding: 0.08rem;
   }
 
-  .compose-collection-option {
+  .compose-collection-popover [role="option"].compose-collection-option {
     width: 100%;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     min-width: 0;
     min-height: 3rem;
-    padding: 0 0.8rem;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 0.8rem !important;
+    padding-right: 0.46rem !important;
     border: none;
     border-radius: 0.88rem;
     background: transparent;
     background-image: none !important;
-    cursor: pointer;
+    cursor: pointer !important;
     text-align: left;
     color: var(--site-text-primary);
     font-size: var(--text-sm);
@@ -4283,14 +4289,16 @@
       color 0.16s ease;
   }
 
-  .compose-collection-option:hover,
-  .compose-collection-option:focus-visible {
+  .compose-collection-popover [role="option"].compose-collection-option:hover,
+  .compose-collection-popover
+    [role="option"].compose-collection-option:focus-visible {
     outline: none;
     background: color-mix(in srgb, var(--site-nav-hover-bg) 78%, white 22%);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, white 22%, transparent);
   }
 
-  .compose-collection-option-selected {
+  .compose-collection-popover
+    [role="option"].compose-collection-option-selected {
     background: transparent;
   }
 
@@ -4342,8 +4350,11 @@
     );
   }
 
-  .compose-collection-option:hover .compose-collection-option-marker-add,
-  .compose-collection-option:focus-visible
+  .compose-collection-popover
+    .compose-collection-option:hover
+    .compose-collection-option-marker-add,
+  .compose-collection-popover
+    .compose-collection-option:focus-visible
     .compose-collection-option-marker-add {
     color: color-mix(
       in srgb,
@@ -4645,18 +4656,6 @@
       0 1px 3px rgba(0, 0, 0, 0.05);
     z-index: 120;
     animation: compose-fade-up 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-
-  .compose-publish-panel-header {
-    margin-bottom: 0.75rem;
-  }
-
-  .compose-publish-panel-title {
-    color: var(--site-text-primary);
-    font-size: 0.81rem;
-    font-weight: var(--fw-medium);
-    letter-spacing: 0.01em;
-    line-height: 1.2;
   }
 
   .compose-publish-section {

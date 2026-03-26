@@ -222,7 +222,7 @@ const labels: ComposeLabels = {
   publishSlugTaken: "This link is already in use. Choose something else.",
   publishSlugInvalid: "Use lowercase letters, numbers, and hyphens only.",
   publishSlugReserved: "This link is reserved. Choose something else.",
-  postHiddenFromLatest: "Post",
+  postHiddenFromLatest: "Post hidden",
   postPrivately: "Post privately",
   showMore: "Show more",
   showLess: "Show less",

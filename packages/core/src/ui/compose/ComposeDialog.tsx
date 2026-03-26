@@ -395,7 +395,7 @@ export const ComposeForm: FC<ComposeFormProps> = ({
         "@context: Compose custom slug validation error for reserved paths",
     }),
     postHiddenFromLatest: t({
-      message: "Post",
+      message: "Post hidden",
       comment: "@context: Compose publish button for posts hidden from Latest",
     }),
     postPrivately: t({

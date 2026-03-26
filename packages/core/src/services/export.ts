@@ -2287,12 +2287,15 @@ article[data-post-featured] .post-footer-featured {
   gap: 5px;
   flex-wrap: wrap;
   line-height: 1.35;
+  min-width: 0;
 }
 
 .post-date-link {
   color: var(--site-text-secondary);
   text-decoration: none;
   font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .post-date-link:hover {
@@ -2311,6 +2314,7 @@ article[data-post-featured] .post-footer-featured {
   width: 0.9rem;
   height: 0.9rem;
   color: var(--site-text-secondary);
+  flex-shrink: 0;
 }
 
 .post-footer-external-link svg {
@@ -2323,6 +2327,9 @@ article[data-post-featured] .post-footer-featured {
   align-items: center;
   gap: 4px;
   font-size: 13px;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 auto;
 }
 
 .post-collection-sep {
@@ -2330,8 +2337,14 @@ article[data-post-featured] .post-footer-featured {
 }
 
 .post-collection-tag {
+  display: inline-block;
   color: var(--site-text-secondary);
   text-decoration: none;
+  min-width: 0;
+  max-width: min(100%, 22ch);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .post-collection-tag:hover {
@@ -2343,6 +2356,7 @@ article[data-post-featured] .post-footer-featured {
   position: relative;
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .post-collection-more-wrap::after {

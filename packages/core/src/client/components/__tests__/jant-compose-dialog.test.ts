@@ -146,7 +146,7 @@ const labels: ComposeLabels = {
   publishSlugTaken: "This link is already in use. Choose something else.",
   publishSlugInvalid: "Use lowercase letters, numbers, and hyphens only.",
   publishSlugReserved: "This link is reserved. Choose something else.",
-  postHiddenFromLatest: "Post",
+  postHiddenFromLatest: "Post hidden",
   postPrivately: "Post privately",
   showMore: "Show more",
   showLess: "Show less",
@@ -431,7 +431,7 @@ describe("JantComposeDialog", () => {
         el.querySelector<HTMLButtonElement>(".compose-publish-main"),
         "expected publish button",
       ).textContent?.trim(),
-    ).toBe("Post");
+    ).toBe("Post hidden");
 
     let receivedDetail: ComposeSubmitDetail | null = null;
     el.addEventListener("jant:compose-submit-deferred", (event) => {
@@ -474,6 +474,30 @@ describe("JantComposeDialog", () => {
         "expected publish button",
       ).textContent?.trim(),
     ).toBe("Post privately");
+  });
+
+  it("updates the publish button label for hidden visibility", async () => {
+    const el = await createElement();
+
+    requireElement(
+      el.querySelector<HTMLButtonElement>(".compose-publish-toggle"),
+      "expected publish settings toggle",
+    ).click();
+    await el.updateComplete;
+
+    const options = el.querySelectorAll<HTMLButtonElement>(
+      ".compose-publish-option[role='radio']",
+    );
+    expect(options).toHaveLength(3);
+    options[1]?.click();
+    await el.updateComplete;
+
+    expect(
+      requireElement(
+        el.querySelector<HTMLButtonElement>(".compose-publish-main"),
+        "expected publish button",
+      ).textContent?.trim(),
+    ).toBe("Post hidden");
   });
 
   it("opens a new post with the requested collection and keeps the last visibility until refresh", async () => {
@@ -768,7 +792,7 @@ describe("JantComposeDialog", () => {
       el.querySelector<HTMLElement>("[data-compose-publish-panel]"),
       "expected publish settings panel",
     );
-    expect(panel.textContent).toContain("Publish settings");
+    expect(panel.textContent).not.toContain("Publish settings");
     expect(panel.textContent).toContain("Visibility");
     expect(panel.textContent).toContain("Custom link");
     expect(panel.textContent).not.toContain("Save as draft");
