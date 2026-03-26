@@ -1103,6 +1103,12 @@ export class JantPostMenu extends LitElement {
         @click=${(event: Event) => event.stopPropagation()}
       >
         <div class="collection-quick-dialog-header">
+          <div class="collection-quick-dialog-title-block">
+            <h2 class="collection-quick-dialog-title">
+              ${this.#getAddCollectionLabel()}
+            </h2>
+            <p class="collection-quick-dialog-note">${labels.quickHint}</p>
+          </div>
           <button
             type="button"
             class="collection-quick-dialog-cancel"
@@ -1110,9 +1116,6 @@ export class JantPostMenu extends LitElement {
           >
             ${labels.cancelLabel}
           </button>
-          <h2 class="collection-quick-dialog-title">
-            ${this.#getAddCollectionLabel()}
-          </h2>
         </div>
         <div class="collection-quick-dialog-body">
           <jant-collection-form
@@ -1124,7 +1127,6 @@ export class JantPostMenu extends LitElement {
             @jant:collection-submit=${(e: Event) =>
               this.#handleAddCollectionSubmit(e)}
           ></jant-collection-form>
-          <p class="collection-quick-dialog-note">${labels.quickHint}</p>
         </div>
         <div class="collection-quick-dialog-footer">
           <button

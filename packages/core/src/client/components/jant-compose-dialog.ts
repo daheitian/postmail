@@ -160,6 +160,29 @@ const COMPOSE_PUBLISH_ACTION_ICONS = {
   `,
 } as const;
 
+const COMPOSE_COLLECTION_PICKER_ICONS = {
+  collection: `
+    <rect x="3" y="5.05" width="10" height="8.15" rx="2.2" />
+    <path d="M5.1 5.05V4.2a1.1 1.1 0 0 1 1.1-1.1h3.6a1.1 1.1 0 0 1 1.1 1.1v.85" />
+  `,
+  search: `
+    <circle cx="7.1" cy="7.1" r="3.65" />
+    <path d="m10.1 10.1 2.45 2.45" />
+  `,
+  plus: `
+    <path d="M8 3.5v9" />
+    <path d="M3.5 8h9" />
+  `,
+  plusCircle: `
+    <circle cx="8" cy="8" r="5.7" />
+    <path d="M8 5.55v4.9" />
+    <path d="M5.55 8h4.9" />
+  `,
+  chevron: `
+    <path d="M5.1 6.45 8 9.3l2.9-2.85" />
+  `,
+} as const;
+
 function renderComposeHeaderIcon(
   icon: (typeof COMPOSE_DIALOG_HEADER_ICONS)[keyof typeof COMPOSE_DIALOG_HEADER_ICONS],
 ) {
@@ -195,6 +218,26 @@ function renderComposePublishVisibilityIcon(icon: string, classes: string) {
       ${unsafeSVG(icon)}
     </svg>
   </span>`;
+}
+
+function renderComposeCollectionPickerIcon(
+  icon: (typeof COMPOSE_COLLECTION_PICKER_ICONS)[keyof typeof COMPOSE_COLLECTION_PICKER_ICONS],
+  classes: string,
+) {
+  return html`<svg
+    class=${classes}
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.35"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    ${unsafeSVG(icon)}
+  </svg>`;
 }
 
 function renderComposePublishActionIcon(
@@ -2239,6 +2282,13 @@ export class JantComposeDialog extends LitElement {
       ? collections.filter((c) => c.title.toLowerCase().includes(search))
       : collections;
     const selectedCount = this._collectionIds.length;
+    const selectedLabel =
+      selectedCount > 0
+        ? this._selectedCollectionLabel(collections)
+        : this.labels.collection;
+    const emptyLabel = search
+      ? this.labels.noCollections
+      : this.labels.emptyCollections;
 
     return html`
       <div class="flex-1 min-w-0">
@@ -2255,6 +2305,10 @@ export class JantComposeDialog extends LitElement {
           <button
             type="button"
             class="compose-collection-trigger"
+            aria-haspopup="listbox"
+            aria-expanded=${this._showCollection ? "true" : "false"}
+            data-open=${this._showCollection ? "true" : nothing}
+            data-selected=${selectedCount > 0 ? "true" : nothing}
             @click=${() => {
               this._showPublishPanel = false;
               this._showCollection = !this._showCollection;
@@ -2263,124 +2317,133 @@ export class JantComposeDialog extends LitElement {
               }
             }}
           >
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="shrink-0 icon-fine"
-            >
-              <rect x="3" y="5" width="12" height="10" rx="2" />
-              <path d="M6 5V4a1 1 0 011-1h4a1 1 0 011 1v1" />
-            </svg>
-            ${selectedCount > 0
-              ? html`<span class="compose-collection-label"
-                  >${this._selectedCollectionLabel(collections)}</span
-                >`
-              : html`<span class="compose-collection-label"
-                  >${this.labels.collection}</span
-                >`}
-            <svg
-              width="10"
-              height="10"
-              viewBox="0 0 10 10"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="shrink-0 opacity-50 icon-fine"
-            >
-              <path d="M3 4l2 2 2-2" />
-            </svg>
+            <span class="compose-collection-trigger-icon">
+              ${renderComposeCollectionPickerIcon(
+                COMPOSE_COLLECTION_PICKER_ICONS.collection,
+                "compose-collection-trigger-svg",
+              )}
+            </span>
+            <span class="compose-collection-label">${selectedLabel}</span>
+            ${renderComposeCollectionPickerIcon(
+              COMPOSE_COLLECTION_PICKER_ICONS.chevron,
+              "compose-collection-chevron",
+            )}
           </button>
           <div
+            class="compose-collection-popover"
             data-popover
             data-side="bottom"
             aria-hidden=${this._showCollection ? "false" : "true"}
           >
             ${collections.length > 0
-              ? html`<header>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.3-4.3" />
-                  </svg>
-                  <input
-                    type="text"
-                    role="combobox"
-                    placeholder=${this.labels.searchCollections}
-                    autocomplete="off"
-                    autocorrect="off"
-                    spellcheck="false"
-                    .value=${this._collectionSearch}
-                    @input=${(e: Event) => {
-                      this._collectionSearch = (
-                        e.target as HTMLInputElement
-                      ).value;
-                    }}
-                  />
-                </header>`
+              ? html`<div class="compose-collection-popover-header">
+                  <label class="compose-collection-search-shell">
+                    ${renderComposeCollectionPickerIcon(
+                      COMPOSE_COLLECTION_PICKER_ICONS.search,
+                      "compose-collection-search-icon",
+                    )}
+                    <input
+                      type="text"
+                      role="combobox"
+                      class="compose-collection-search-input"
+                      placeholder=${this.labels.searchCollections}
+                      autocomplete="off"
+                      autocorrect="off"
+                      spellcheck="false"
+                      .value=${this._collectionSearch}
+                      @input=${(e: Event) => {
+                        this._collectionSearch = (
+                          e.target as HTMLInputElement
+                        ).value;
+                      }}
+                    />
+                  </label>
+                </div>`
               : nothing}
             <div
               role="listbox"
+              class="compose-collection-options"
               aria-multiselectable="true"
-              data-empty=${filtered.length === 0
-                ? search
-                  ? this.labels.noCollections
-                  : this.labels.emptyCollections
-                : nothing}
             >
-              ${filtered.map(
-                (col) => html`
-                  <div
-                    role="option"
-                    data-value=${col.id}
-                    aria-selected=${this._collectionIds.includes(col.id)
-                      ? "true"
-                      : nothing}
-                    @click=${() => this._toggleCollection(col.id)}
-                  >
-                    <span class="compose-collection-option-label"
-                      >${col.title}</span
-                    >
-                  </div>
-                `,
-              )}
+              ${filtered.length > 0
+                ? filtered.map((col) => {
+                    const selected = this._collectionIds.includes(col.id);
+
+                    return html`
+                      <button
+                        type="button"
+                        class=${classMap({
+                          "compose-collection-option": true,
+                          "compose-collection-option-selected": selected,
+                        })}
+                        role="option"
+                        data-value=${col.id}
+                        aria-selected=${selected ? "true" : "false"}
+                        @click=${() => this._toggleCollection(col.id)}
+                      >
+                        <span class="compose-collection-option-label"
+                          >${col.title}</span
+                        >
+                        <span
+                          class=${classMap({
+                            "compose-collection-option-marker": true,
+                            "compose-collection-option-marker-selected":
+                              selected,
+                            "compose-collection-option-marker-add": !selected,
+                          })}
+                        >
+                          ${selected
+                            ? html`<svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="compose-collection-option-check-circle"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                aria-hidden="true"
+                              >
+                                <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  fill="currentColor"
+                                />
+                                <path
+                                  d="M8 12.5 10.7 15.2 16.4 9.5"
+                                  stroke="var(--site-page-bg)"
+                                  stroke-width="2.3"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                />
+                              </svg>`
+                            : renderComposeCollectionPickerIcon(
+                                COMPOSE_COLLECTION_PICKER_ICONS.plusCircle,
+                                "compose-collection-option-plus-circle",
+                              )}
+                        </span>
+                      </button>
+                    `;
+                  })
+                : html`<div class="compose-collection-empty">
+                    ${emptyLabel}
+                  </div>`}
             </div>
-            <div
-              class="compose-collection-add-action"
-              @click=${() => {
-                this._showCollection = false;
-                this._collectionSearch = "";
-                this._addCollectionPanelOpen = true;
-              }}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
+            <div class="compose-collection-footer">
+              <button
+                type="button"
+                class="compose-collection-add-action"
+                @click=${() => {
+                  this._showCollection = false;
+                  this._collectionSearch = "";
+                  this._addCollectionPanelOpen = true;
+                }}
               >
-                <path d="M8 3v10M3 8h10" />
-              </svg>
-              ${this.labels.addCollection}
+                <span class="compose-collection-add-icon">
+                  ${renderComposeCollectionPickerIcon(
+                    COMPOSE_COLLECTION_PICKER_ICONS.plus,
+                    "compose-collection-add-svg",
+                  )}
+                </span>
+                ${this.labels.addCollection}
+              </button>
             </div>
           </div>
         </div>
@@ -2488,6 +2551,14 @@ export class JantComposeDialog extends LitElement {
         @click=${(event: Event) => event.stopPropagation()}
       >
         <div class="collection-quick-dialog-header">
+          <div class="collection-quick-dialog-title-block">
+            <h2 class="collection-quick-dialog-title">
+              ${this.labels.addCollection}
+            </h2>
+            <p class="collection-quick-dialog-note">
+              ${this.labels.collectionFormLabels.quickHint}
+            </p>
+          </div>
           <button
             type="button"
             class="collection-quick-dialog-cancel"
@@ -2495,9 +2566,6 @@ export class JantComposeDialog extends LitElement {
           >
             ${this.labels.collectionFormLabels.cancelLabel}
           </button>
-          <h2 class="collection-quick-dialog-title">
-            ${this.labels.addCollection}
-          </h2>
         </div>
         <div class="collection-quick-dialog-body">
           <jant-collection-form
@@ -2509,9 +2577,6 @@ export class JantComposeDialog extends LitElement {
             @jant:collection-submit=${(e: Event) =>
               this._handleAddCollectionSubmit(e)}
           ></jant-collection-form>
-          <p class="collection-quick-dialog-note">
-            ${this.labels.collectionFormLabels.quickHint}
-          </p>
         </div>
         <div class="collection-quick-dialog-footer">
           <button
