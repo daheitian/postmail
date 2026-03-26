@@ -42,13 +42,15 @@ PORT=8080
 
 ## Required Configuration
 
-`AUTH_SECRET` is required. `SITE_URL` is strongly recommended when you
-want a fixed public origin, subpath deployment, correct RSS/sitemap absolute
-URLs, or proxy-aware canonical URLs.
+`AUTH_SECRET` is required. `SITE_ORIGIN` is optional when you want a fixed
+public origin for canonical URLs, RSS, sitemaps, exports, or proxy-aware
+absolute URLs. `SITE_PATH_PREFIX` is only needed when you mount Jant under a
+subpath.
 
 ```env
 AUTH_SECRET=replace-with-a-long-random-secret
-# SITE_URL=https://your-jant.example
+# SITE_ORIGIN=https://your-jant.example
+# SITE_PATH_PREFIX=/blog
 ```
 
 Generate a secret with:

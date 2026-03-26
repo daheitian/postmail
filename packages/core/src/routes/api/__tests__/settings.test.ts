@@ -63,7 +63,8 @@ describe("Settings API Routes", () => {
 
       // Env-only keys should not be in the response
       expect(body.settings.AUTH_SECRET).toBeUndefined();
-      expect(body.settings.SITE_URL).toBeUndefined();
+      expect(body.settings.SITE_ORIGIN).toBeUndefined();
+      expect(body.settings.SITE_PATH_PREFIX).toBeUndefined();
     });
 
     it("does not include internal settings", async () => {

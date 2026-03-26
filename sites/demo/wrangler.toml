@@ -22,9 +22,11 @@ port = 3000
 # Full details: https://github.com/jant-me/jant/blob/main/docs/configuration.md
 
 [vars]
-# Required: Your site's public URL (e.g. https://my-blog.example.com)
-# https://github.com/jant-me/jant/blob/main/docs/configuration.md#required
-SITE_URL = "https://demo.jant.me" # @create-jant: "https://example.com"
+# Optional: Pin your site's public origin (e.g. https://my-blog.example.com)
+# https://github.com/jant-me/jant/blob/main/docs/configuration.md#public-urls-and-subpaths
+SITE_ORIGIN = "https://demo.jant.me" # @create-jant: "https://example.com"
+# Optional: Mount the site under a subpath such as /blog
+# SITE_PATH_PREFIX = "/blog"
 
 # Optional: Site configuration
 # You can also set these in the dashboard UI at /dash/settings

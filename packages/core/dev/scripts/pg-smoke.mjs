@@ -126,7 +126,7 @@ async function main() {
         AUTH_SECRET: "test-secret-with-enough-entropy-for-pg-smoke",
         DATA_DIR: dataDir,
         SITE_RESOLUTION_MODE: "single-site",
-        SITE_URL: "http://127.0.0.1:3000",
+        SITE_ORIGIN: "http://127.0.0.1:3000",
       },
       app: createApp(),
       assetRoot: null,

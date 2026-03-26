@@ -1009,7 +1009,7 @@ Environment-only config keys (like `AUTH_SECRET`) are silently rejected. If all 
 ```json
 {
   "settings": { "...": "updated values" },
-  "rejectedKeys": ["SITE_URL"]
+  "rejectedKeys": ["SITE_ORIGIN", "SITE_PATH_PREFIX"]
 }
 ```
 

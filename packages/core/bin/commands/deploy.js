@@ -7,7 +7,7 @@ import {
   preparePublicAssets,
   resolvePackageClientRoot,
 } from "../lib/public-assets.js";
-import { normalizeSitePathPrefix, resolveSiteUrl } from "../lib/site-url.js";
+import { resolveSitePathPrefix } from "../lib/site-url.js";
 import { resolveWranglerAssetsDirectory } from "../lib/wrangler-config.js";
 
 function splitArgs(argv) {
@@ -23,19 +23,17 @@ function splitArgs(argv) {
 }
 
 function resolveDeployPlan(options) {
-  const siteUrl = resolveSiteUrl({
+  const sitePathPrefix = resolveSitePathPrefix({
     config: options.config,
     env: options.env,
-    siteUrl: options.siteUrl,
+    sitePathPrefix: options.sitePathPrefix,
   });
-  const sitePathPrefix = normalizeSitePathPrefix(siteUrl);
 
   if (sitePathPrefix) {
     return {
       assetsDir: resolve(process.cwd(), options.output),
       needsPrepare: true,
       sitePathPrefix,
-      siteUrl,
     };
   }
 
@@ -50,7 +48,6 @@ function resolveDeployPlan(options) {
       : resolvePackageClientRoot(import.meta.url),
     needsPrepare: false,
     sitePathPrefix,
-    siteUrl,
   };
 }
 
@@ -64,7 +61,7 @@ export async function run(argv) {
       config: { type: "string", short: "c", default: "wrangler.toml" },
       env: { type: "string", short: "e" },
       output: { type: "string", short: "o", default: DEFAULT_PUBLISH_DIR },
-      "site-url": { type: "string" },
+      "site-path-prefix": { type: "string" },
       database: { type: "string", default: "DB" },
       "skip-migrate": { type: "boolean", default: false },
     },
@@ -86,7 +83,7 @@ export async function run(argv) {
       `  -o, --output <path>     Publish directory for prefixed asset deploys (default: ${DEFAULT_PUBLISH_DIR})`,
     );
     console.log(
-      "      --site-url <url>    Override SITE_URL instead of reading config",
+      "      --site-path-prefix <path> Override SITE_PATH_PREFIX instead of reading config",
     );
     console.log(
       "      --database <name>   D1 binding name for migrations (default: DB)",
@@ -106,7 +103,7 @@ export async function run(argv) {
     config: values.config,
     env: values.env,
     output: values.output,
-    siteUrl: values["site-url"],
+    sitePathPrefix: values["site-path-prefix"],
   });
 
   if (!values["skip-migrate"]) {
@@ -124,7 +121,7 @@ export async function run(argv) {
   let assetsDir = plan.assetsDir;
   if (plan.needsPrepare) {
     console.log(
-      `Preparing static assets for ${plan.sitePathPrefix || "/"} from ${plan.siteUrl || "SITE_URL"}...`,
+      `Preparing static assets for ${plan.sitePathPrefix || "/"}...`,
     );
     const prepared = await preparePublicAssets({
       outputDir: values.output,

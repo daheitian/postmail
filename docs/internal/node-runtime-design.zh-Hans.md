@@ -177,7 +177,8 @@ Node / Docker 路线采用 env-only 模式。
 
 Jant 专属变量：
 
-- `SITE_URL`
+- `SITE_ORIGIN`
+- `SITE_PATH_PREFIX`
 - `AUTH_SECRET`
 - `R2_PUBLIC_URL`
 - `DEFAULT_THEME`
@@ -208,7 +209,7 @@ Jant 专属变量：
 这样做的原因：
 
 - `PORT`、`NODE_ENV`、`DATABASE_URL` 这类变量本来就是 Node / PaaS / 容器生态的事实标准
-- Jant 主要面向单应用、自部署场景，直接使用 `SITE_URL`、`AUTH_SECRET`、`PAGE_SIZE` 这类名字更顺手
+- Jant 主要面向单应用、自部署场景，直接使用 `SITE_ORIGIN`、`SITE_PATH_PREFIX`、`AUTH_SECRET`、`PAGE_SIZE` 这类名字更顺手
 - 当前仓库同时支持 Cloudflare 与 Node 路线，统一无前缀能减少配置表、示例和调试说明之间的认知切换
 
 结论：
@@ -541,14 +542,14 @@ Node 运行时需要明确 `TRUST_PROXY` 语义：
 - 正确决定 secure cookie
 - 正确生成绝对 URL 与重定向地址
 
-### 9.4 Cookie 与 `SITE_URL`
+### 9.4 Cookie 与 `SITE_ORIGIN`
 
 当前 secure cookie 与请求协议关联。Node 路线应改为更稳的策略：
 
 - 优先基于可信代理后的公开协议
 - 若无可信代理，基于直接请求
-- `single-site` 下可继续使用 `SITE_URL` 作为固定公开基准 URL
-- `host-based` 下应以当前请求和匹配到的站点域名为准，不再把 `SITE_URL` 当作当前站点真相
+- `single-site` 下可继续使用 `SITE_ORIGIN` 作为固定公开基准 URL，并用 `SITE_PATH_PREFIX` 表达子路径部署
+- `host-based` 下应以当前请求和匹配到的站点域名为准，不再把 `SITE_ORIGIN` 当作当前站点真相
 
 ## 10. CLI 与运维模型
 

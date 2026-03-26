@@ -3,7 +3,8 @@ import { run } from "../../../bin/commands/uploads/cleanup.js";
 
 const originalEnv = {
   INTERNAL_ADMIN_TOKEN: process.env.INTERNAL_ADMIN_TOKEN,
-  SITE_URL: process.env.SITE_URL,
+  SITE_ORIGIN: process.env.SITE_ORIGIN,
+  SITE_PATH_PREFIX: process.env.SITE_PATH_PREFIX,
 };
 
 afterEach(() => {
@@ -13,10 +14,16 @@ afterEach(() => {
     process.env.INTERNAL_ADMIN_TOKEN = originalEnv.INTERNAL_ADMIN_TOKEN;
   }
 
-  if (originalEnv.SITE_URL === undefined) {
-    delete process.env.SITE_URL;
+  if (originalEnv.SITE_ORIGIN === undefined) {
+    delete process.env.SITE_ORIGIN;
   } else {
-    process.env.SITE_URL = originalEnv.SITE_URL;
+    process.env.SITE_ORIGIN = originalEnv.SITE_ORIGIN;
+  }
+
+  if (originalEnv.SITE_PATH_PREFIX === undefined) {
+    delete process.env.SITE_PATH_PREFIX;
+  } else {
+    process.env.SITE_PATH_PREFIX = originalEnv.SITE_PATH_PREFIX;
   }
 
   vi.restoreAllMocks();
@@ -25,7 +32,8 @@ afterEach(() => {
 
 describe("jant uploads cleanup", () => {
   it("calls the internal uploads cleanup endpoint", async () => {
-    process.env.SITE_URL = "https://example.com/blog";
+    process.env.SITE_ORIGIN = "https://example.com";
+    process.env.SITE_PATH_PREFIX = "/blog";
     process.env.INTERNAL_ADMIN_TOKEN = "internal-secret";
 
     const fetchMock = vi.fn().mockResolvedValue(

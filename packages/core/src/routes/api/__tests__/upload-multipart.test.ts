@@ -248,7 +248,8 @@ function createTestAppWithStorage(options: {
 
   app.use("*", async (c, next) => {
     c.env = {
-      SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
+      SITE_ORIGIN: `http://localhost:${DEFAULT_APP_PORT}`,
+      SITE_PATH_PREFIX: "",
     } as AppVariables["services"] extends never ? never : Bindings;
 
     c.set("services", services as AppVariables["services"]);

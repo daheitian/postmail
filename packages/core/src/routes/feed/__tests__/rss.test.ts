@@ -39,7 +39,8 @@ function createFeedTestApp(envOverrides: Partial<Bindings> = {}) {
 
   app.use("*", async (c, next) => {
     const env = {
-      SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
+      SITE_ORIGIN: `http://localhost:${DEFAULT_APP_PORT}`,
+      SITE_PATH_PREFIX: "",
       ...envOverrides,
     } as Bindings;
     c.env = env;

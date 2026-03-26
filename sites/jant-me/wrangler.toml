@@ -16,8 +16,10 @@ directory = "./node_modules/@jant/core/dist/client"
 # See docs/configuration.md for full details
 
 [vars]
-# Required: Your site's public URL (e.g. https://my-blog.example.com)
-SITE_URL = "https://jant.me"
+# Optional: Pin your site's public origin (e.g. https://my-blog.example.com)
+SITE_ORIGIN = "https://jant.me"
+# Optional: Mount the site under a subpath such as /blog
+# SITE_PATH_PREFIX = "/blog"
 
 # Optional: Site configuration
 # These can be overridden in dashboard settings (/dash/settings)

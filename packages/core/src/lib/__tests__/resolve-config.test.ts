@@ -7,7 +7,8 @@ function makeEnv(overrides: Partial<Bindings> = {}): Bindings {
     DB: {} as D1Database,
     R2: undefined as unknown as R2Bucket,
     AUTH_SECRET: "",
-    SITE_URL: "https://example.com",
+    SITE_ORIGIN: "https://example.com",
+    SITE_PATH_PREFIX: "",
     R2_PUBLIC_URL: "",
     IMAGE_TRANSFORM_URL: "",
     S3_PUBLIC_URL: "",
@@ -165,7 +166,7 @@ describe("resolveConfig", () => {
   it("derives the public asset base path from the site path prefix", () => {
     const rootConfig = resolveConfig(makeEnv(), {});
     const prefixedConfig = resolveConfig(
-      makeEnv({ SITE_URL: "https://example.com/blog" }),
+      makeEnv({ SITE_PATH_PREFIX: "/blog" }),
       {},
     );
 
@@ -173,11 +174,12 @@ describe("resolveConfig", () => {
     expect(prefixedConfig.assetBasePath).toBe("/blog/_assets");
   });
 
-  it("ignores SITE_URL by default in host-based mode", () => {
+  it("ignores SITE_ORIGIN and SITE_PATH_PREFIX by default in host-based mode", () => {
     const config = resolveConfig(
       makeEnv({
         SITE_RESOLUTION_MODE: "host-based",
-        SITE_URL: "https://legacy.example.com/blog",
+        SITE_ORIGIN: "https://legacy.example.com",
+        SITE_PATH_PREFIX: "/blog",
       }),
       {},
     );
@@ -315,7 +317,8 @@ describe("resolveConfig", () => {
   it("uses unprefixed env names across the config surface", () => {
     const config = resolveConfig(
       makeEnv({
-        SITE_URL: "https://legacy.example.com",
+        SITE_ORIGIN: "https://canonical.example.com",
+        SITE_PATH_PREFIX: "/blog",
         AUTH_SECRET: "legacy-secret",
         STORAGE_DRIVER: "s3",
         S3_PUBLIC_URL: "https://legacy-s3.example.com",
@@ -323,7 +326,9 @@ describe("resolveConfig", () => {
       {},
     );
 
-    expect(config.siteUrl).toBe("https://legacy.example.com/");
+    expect(config.siteUrl).toBe("https://canonical.example.com/blog");
+    expect(config.siteOrigin).toBe("https://canonical.example.com");
+    expect(config.sitePathPrefix).toBe("/blog");
     expect(config.authConfigured).toBe(true);
     expect(config.storageDriver).toBe("s3");
     expect(config.s3PublicUrl).toBe("https://legacy-s3.example.com");

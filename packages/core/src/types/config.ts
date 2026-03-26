@@ -63,10 +63,15 @@ export const CONFIG_FIELDS = {
     envOnly: true,
     envKeys: ["DEFAULT_THEME"],
   },
-  SITE_URL: {
+  SITE_ORIGIN: {
     defaultValue: "",
     envOnly: true,
-    envKeys: ["SITE_URL"],
+    envKeys: ["SITE_ORIGIN"],
+  },
+  SITE_PATH_PREFIX: {
+    defaultValue: "",
+    envOnly: true,
+    envKeys: ["SITE_PATH_PREFIX"],
   },
   AUTH_SECRET: {
     defaultValue: "",

@@ -44,7 +44,8 @@ export function isReservedPath(path: string): boolean {
  * Settings keys - derived from CONFIG_FIELDS (Single Source of Truth)
  *
  * Only non-envOnly fields and internal fields are stored in DB settings.
- * Environment-only fields (SITE_URL, AUTH_SECRET, etc.) are never in the DB.
+ * Environment-only fields (SITE_ORIGIN, SITE_PATH_PREFIX, AUTH_SECRET, etc.)
+ * are never in the DB.
  */
 import { CONFIG_FIELDS, type ConfigKey } from "../types.js";
 

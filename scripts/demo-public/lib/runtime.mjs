@@ -29,6 +29,32 @@ export function readDemoPublicConfig(key) {
   return readWranglerString(DEMO_PUBLIC_WRANGLER_PATH, key);
 }
 
+export function resolveDemoPublicSiteUrl() {
+  const explicitSiteUrl = process.env.DEMO_PUBLIC_URL?.trim();
+  if (explicitSiteUrl) {
+    const parsed = new URL(explicitSiteUrl);
+    const explicitPrefix =
+      parsed.pathname && parsed.pathname !== "/"
+        ? parsed.pathname.replace(/\/+$/, "")
+        : "";
+    return `${parsed.origin}${explicitPrefix}`;
+  }
+
+  const configuredOrigin = readDemoPublicConfig("SITE_ORIGIN");
+  if (configuredOrigin) {
+    const configuredPrefix = readDemoPublicConfig("SITE_PATH_PREFIX") || "";
+    const origin = new URL(configuredOrigin).origin;
+    const normalizedPrefix =
+      configuredPrefix && configuredPrefix !== "/"
+        ? configuredPrefix.replace(/\/+$/, "").replace(/^([^/])/, "/$1")
+        : "";
+    return `${origin}${normalizedPrefix}`;
+  }
+  throw new Error(
+    "demo-public requires DEMO_PUBLIC_URL or SITE_ORIGIN in sites/demo/wrangler.toml.",
+  );
+}
+
 export function queryDemoPublicRemote(sql) {
   let stdout;
 

@@ -1,3 +1,5 @@
+import { buildSiteUrl, normalizeSitePathPrefix } from "./url.js";
+
 type EnvSource = object | undefined | null;
 
 export const DEFAULT_APP_PORT = 3000;
@@ -82,8 +84,28 @@ export function getPort(env: EnvSource, fallback = DEFAULT_APP_PORT): number {
   return parsePortValue(getEnvString(env, "PORT"), fallback);
 }
 
+export function getSiteOrigin(env: EnvSource): string {
+  const configuredOrigin = getEnvString(env, "SITE_ORIGIN");
+  return configuredOrigin ? new URL(configuredOrigin).origin : "";
+}
+
+export function getSitePathPrefix(env: EnvSource): string {
+  const configuredPrefix = getEnvString(env, "SITE_PATH_PREFIX");
+  return configuredPrefix ? normalizeSitePathPrefix(configuredPrefix) : "";
+}
+
 export function getSiteUrl(env: EnvSource): string {
-  return getEnvString(env, "SITE_URL") ?? "";
+  return buildSiteUrl(getSiteOrigin(env), getSitePathPrefix(env));
+}
+
+export function getConfiguredSingleSiteOrigin(env: EnvSource): string {
+  return getSiteResolutionMode(env) === "single-site" ? getSiteOrigin(env) : "";
+}
+
+export function getConfiguredSingleSitePathPrefix(env: EnvSource): string {
+  return getSiteResolutionMode(env) === "single-site"
+    ? getSitePathPrefix(env)
+    : "";
 }
 
 /**
@@ -91,9 +113,10 @@ export function getSiteUrl(env: EnvSource): string {
  * `single-site` mode.
  *
  * @param env - Runtime environment bindings
- * @returns The configured `SITE_URL`, or an empty string in `host-based` mode
+ * @returns The configured `SITE_ORIGIN` + `SITE_PATH_PREFIX`, or an empty
+ * string in `host-based` mode
  * @example
- * getConfiguredSingleSiteUrl({ SITE_URL: "https://example.com" });
+ * getConfiguredSingleSiteUrl({ SITE_ORIGIN: "https://example.com" });
  */
 export function getConfiguredSingleSiteUrl(env: EnvSource): string {
   return getSiteResolutionMode(env) === "single-site" ? getSiteUrl(env) : "";
@@ -213,9 +236,9 @@ export function shouldUseSecureCookies(
   env: EnvSource,
   publicRequestUrl: string,
 ): boolean {
-  const siteUrl = getConfiguredSingleSiteUrl(env);
-  if (siteUrl) {
-    return new URL(siteUrl).protocol === "https:";
+  const siteOrigin = getConfiguredSingleSiteOrigin(env);
+  if (siteOrigin) {
+    return new URL(siteOrigin).protocol === "https:";
   }
 
   return new URL(publicRequestUrl).protocol === "https:";

@@ -22,6 +22,9 @@ export const LinkCard: FC<TimelineCardProps> = ({
   const isDetail = mode === "detail";
   const detachFooter = !isCompact && !isDetail;
   const articleClass = `h-entry post-menu-target${isCompact ? " feed-compact" : isDetail ? " py-6" : " feed-link-post"}`;
+  const hasVisibleRating =
+    !!post.rating && post.rating > 0 && !display?.hideRating;
+  const showHeaderRating = isDetail && !!post.title && hasVisibleRating;
 
   const safeUrl = post.url ? sanitizeUrl(post.url) : "";
   const domain = safeUrl ? extractDisplayDomain(safeUrl) : null;
@@ -65,16 +68,19 @@ export const LinkCard: FC<TimelineCardProps> = ({
         ))}
       {post.title &&
         (isDetail ? (
-          <h1 class="p-name feed-link-title text-2xl font-semibold mb-4">
-            <a
-              href={safeUrl || post.permalink}
-              class="u-url feed-link-title-link"
-              target={safeUrl ? "_blank" : undefined}
-              rel={safeUrl ? "noopener noreferrer" : undefined}
-            >
-              {post.title}
-            </a>
-          </h1>
+          <div class="post-header-block">
+            <h1 class="p-name feed-link-title text-2xl font-semibold">
+              <a
+                href={safeUrl || post.permalink}
+                class="u-url feed-link-title-link"
+                target={safeUrl ? "_blank" : undefined}
+                rel={safeUrl ? "noopener noreferrer" : undefined}
+              >
+                {post.title}
+              </a>
+            </h1>
+            {showHeaderRating && <StarRating rating={post.rating} />}
+          </div>
         ) : (
           <h2
             class={`p-name feed-link-title font-semibold ${isCompact ? "text-sm" : ""} mb-1`}
@@ -101,7 +107,7 @@ export const LinkCard: FC<TimelineCardProps> = ({
           <MediaGallery attachments={post.media} />
         </div>
       )}
-      {!isCompact && !display?.hideRating && (
+      {!isCompact && !showHeaderRating && !display?.hideRating && (
         <StarRating rating={post.rating} />
       )}
     </>

@@ -11,7 +11,7 @@ directory = "./node_modules/@jant/core/dist/client"
 port = 9030
 
 [vars]
-SITE_URL = "https://demo-source.jant.me"
+SITE_ORIGIN = "https://demo-source.jant.me"
 R2_PUBLIC_URL = "https://demo-source-media.jant.me"
 IMAGE_TRANSFORM_URL = "https://demo-source-media.jant.me/cdn-cgi/image"
 

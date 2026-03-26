@@ -10,7 +10,11 @@ import type { MiddlewareHandler } from "hono";
 import type { Bindings } from "../types.js";
 import type { AppVariables } from "../types/app-context.js";
 import { resolveConfig } from "../lib/resolve-config.js";
-import { getSiteResolutionMode } from "../lib/env.js";
+import {
+  getConfiguredSingleSitePathPrefix,
+  getConfiguredSingleSiteUrl,
+  getSiteResolutionMode,
+} from "../lib/env.js";
 import { buildThemeStyle } from "../lib/theme.js";
 import { BUILTIN_COLOR_THEMES } from "../ui/color-themes.js";
 import {
@@ -30,10 +34,12 @@ export function withConfig(): MiddlewareHandler<Env> {
   return async (c, next) => {
     const allSettings = await c.var.services.settings.getAll();
     c.set("allSettings", allSettings);
+    const publicRequestOrigin = new URL(c.var.publicRequestUrl).origin;
     const siteUrlOverride =
       getSiteResolutionMode(c.env) === "host-based"
-        ? `${new URL(c.var.publicRequestUrl).origin}${c.var.currentSiteDomain?.pathPrefix ?? ""}`
-        : undefined;
+        ? `${publicRequestOrigin}${c.var.currentSiteDomain?.pathPrefix ?? ""}`
+        : getConfiguredSingleSiteUrl(c.env) ||
+          `${publicRequestOrigin}${getConfiguredSingleSitePathPrefix(c.env)}`;
     const appConfig = resolveConfig(c.env, allSettings, {
       siteUrl: siteUrlOverride,
     });

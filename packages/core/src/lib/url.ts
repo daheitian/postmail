@@ -11,6 +11,16 @@ function normalizeSitePathname(pathname: string): string {
 }
 
 /**
+ * Normalize a configured public site path prefix.
+ *
+ * @param sitePathPrefix - Prefix such as `/blog` or `blog`
+ * @returns Normalized prefix like `/blog`, or an empty string when rooted
+ */
+export function normalizeSitePathPrefix(sitePathPrefix: string): string {
+  return normalizeSitePathname(sitePathPrefix);
+}
+
+/**
  * Extracts the hostname (domain) from a URL string.
  *
  * Parses a full URL and returns just the hostname portion (e.g., "example.com" from
@@ -229,6 +239,22 @@ export function getSitePathPrefix(siteUrl: string): string {
 export function getSiteOrigin(siteUrl: string): string {
   if (!siteUrl.trim()) return "";
   return new URL(siteUrl).origin;
+}
+
+/**
+ * Build a normalized public site URL from an origin and optional path prefix.
+ *
+ * @param siteOrigin - Public site origin, such as `https://example.com`
+ * @param sitePathPrefix - Public site path prefix, such as `/blog`
+ * @returns Normalized site URL, or an empty string when no origin is configured
+ */
+export function buildSiteUrl(siteOrigin: string, sitePathPrefix = ""): string {
+  const trimmedOrigin = siteOrigin.trim();
+  if (!trimmedOrigin) return "";
+
+  const origin = new URL(trimmedOrigin).origin;
+  const normalizedPrefix = normalizeSitePathPrefix(sitePathPrefix);
+  return normalizeSiteUrl(`${origin}${normalizedPrefix || "/"}`);
 }
 
 /**

@@ -112,7 +112,7 @@ describe("resolveNodeAssetRoot", () => {
       assetRoot,
       env: {
         DATABASE_URL: `file:${databasePath}`,
-        SITE_URL: "https://example.com/blog",
+        SITE_PATH_PREFIX: "/blog",
       } as Bindings,
     });
 
@@ -128,7 +128,7 @@ describe("resolveNodeAssetRoot", () => {
     }
   });
 
-  it("ignores SITE_URL path prefixes for host-based asset requests", async () => {
+  it("ignores SITE_PATH_PREFIX for host-based asset requests", async () => {
     const root = await mkdtemp(join(tmpdir(), "jant-node-assets-host-based-"));
     tempDirs.push(root);
     const assetRoot = join(root, "dist", "client", "_assets");
@@ -144,7 +144,7 @@ describe("resolveNodeAssetRoot", () => {
       env: {
         DATABASE_URL: `file:${databasePath}`,
         SITE_RESOLUTION_MODE: "host-based",
-        SITE_URL: "https://legacy.example.com/blog",
+        SITE_PATH_PREFIX: "/blog",
       } as Bindings,
     });
 
@@ -197,18 +197,18 @@ describe("resolveNodeAssetRoot", () => {
 });
 
 describe("resolvePublicRequestUrl", () => {
-  it("uses SITE_URL as the canonical host and protocol", () => {
+  it("uses SITE_ORIGIN as the canonical host and protocol", () => {
     const url = resolvePublicRequestUrl(
       new Request("http://127.0.0.1:3000/posts/test?draft=1"),
       {
-        SITE_URL: "https://blog.example.com",
+        SITE_ORIGIN: "https://blog.example.com",
       } as Bindings,
     );
 
     expect(url).toBe("https://blog.example.com/posts/test?draft=1");
   });
 
-  it("keeps the incoming host in host-based mode even when SITE_URL is set", () => {
+  it("keeps the incoming host in host-based mode even when SITE_ORIGIN is set", () => {
     const url = resolvePublicRequestUrl(
       new Request("http://127.0.0.1:3000/posts/test", {
         headers: {
@@ -218,7 +218,7 @@ describe("resolvePublicRequestUrl", () => {
       }),
       {
         SITE_RESOLUTION_MODE: "host-based",
-        SITE_URL: "https://preview-jant.forpreview.com",
+        SITE_ORIGIN: "https://preview-jant.forpreview.com",
         TRUST_PROXY: "true",
       } as Bindings,
     );

@@ -66,7 +66,8 @@ export function createTestApp(options: TestAppOptions = {}) {
   app.use("*", async (c, next) => {
     // Provide mock env bindings so c.env.* works in route handlers
     c.env = {
-      SITE_URL: `http://localhost:${DEFAULT_APP_PORT}`,
+      SITE_ORIGIN: `http://localhost:${DEFAULT_APP_PORT}`,
+      SITE_PATH_PREFIX: "",
       DEMO_MODE: options.demoMode ? "true" : "false",
       INTERNAL_ADMIN_TOKEN: options.internalAdminToken,
       HOSTED_CONTROL_PLANE_SSO_SECRET: options.hostedControlPlaneSsoSecret,

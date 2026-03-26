@@ -26,9 +26,6 @@ describe("jant deploy", () => {
       `
 [assets]
 directory = "./static-assets"
-
-[vars]
-SITE_URL = "https://example.com"
       `.trim(),
     );
 
@@ -84,7 +81,7 @@ SITE_URL = "https://example.com"
 directory = "./static-assets"
 
 [vars]
-SITE_URL = "https://example.com/blog"
+SITE_PATH_PREFIX = "/blog"
       `.trim(),
     );
 

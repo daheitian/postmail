@@ -1360,7 +1360,10 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {{ self::post_status_badges() }}
   {% if page.title %}
     {% if detail %}
-    <h1 class="p-name detail-title">{{ page.title }}</h1>
+    <div class="post-header-block">
+      <h1 class="p-name detail-title">{{ page.title }}</h1>
+      {{ self::post_rating(page=page) }}
+    </div>
     {% else %}
     <h2 class="p-name feed-note-title">
       <a href="{{ page.permalink }}" class="u-url post-title-link">{{ page.title }}</a>
@@ -1374,7 +1377,9 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% elif page.content %}
   <div class="e-content prose {% if page.title and not detail %}post-body-summary{% endif %}" data-post-body>{{ page.content | safe }}</div>
   {% endif %}
+  {% if not detail or not page.title %}
   {{ self::post_rating(page=page) }}
+  {% endif %}
   {{ self::post_footer(page=page, detail=detail) }}
 </article>
 {% endmacro %}
@@ -1405,9 +1410,12 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% endif %}
   {% if page.title %}
     {% if detail %}
-    <h1 class="p-name detail-title feed-link-title">
-      <a href="{{ page.extra.link_url | default(value=page.permalink) }}" class="u-url feed-link-title-link" {% if page.extra.link_url %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ page.title }}</a>
-    </h1>
+    <div class="post-header-block">
+      <h1 class="p-name detail-title feed-link-title">
+        <a href="{{ page.extra.link_url | default(value=page.permalink) }}" class="u-url feed-link-title-link" {% if page.extra.link_url %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ page.title }}</a>
+      </h1>
+      {{ self::post_rating(page=page) }}
+    </div>
     {% else %}
     <h2 class="p-name feed-link-title">
       <a href="{{ page.extra.link_url | default(value=page.permalink) }}" class="u-url feed-link-title-link" {% if page.extra.link_url %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ page.title }}</a>
@@ -1421,7 +1429,9 @@ const TEMPLATE_MACROS = `{% macro post_status_badges() %}
   {% elif page.content %}
   <div class="e-content prose feed-link-summary" data-post-body>{{ page.content | safe }}</div>
   {% endif %}
+  {% if not detail or not page.title %}
   {{ self::post_rating(page=page) }}
+  {% endif %}
   {% if not detail %}
   </div>
   {% endif %}
@@ -1918,6 +1928,20 @@ img {
   line-height: var(--feed-note-title-leading);
   letter-spacing: var(--type-heading-tracking);
   text-wrap: pretty;
+}
+
+.post-header-block {
+  margin-bottom: 1rem;
+}
+
+.post-header-block .feed-link-title,
+.post-header-block .feed-note-title,
+.post-header-block .detail-title {
+  margin-bottom: 0;
+}
+
+.post-header-block .post-rating {
+  margin-top: 0.45rem;
 }
 
 .detail-title {

@@ -61,7 +61,7 @@ import { errorHandler } from "./middleware/error-handler.js";
 import { withConfig } from "./middleware/config.js";
 import { secureHeadersMiddleware } from "./middleware/secure-headers.js";
 
-import { getConfiguredSingleSiteUrl } from "./lib/env.js";
+import { getConfiguredSingleSitePathPrefix } from "./lib/env.js";
 import { getRuntimeSitePathPrefix } from "./lib/site-resolution.js";
 import { getStartupConfigurationErrorPage } from "./lib/startup-config.js";
 import { base64ToUint8Array } from "./lib/favicon.js";
@@ -71,11 +71,7 @@ import {
 } from "./lib/jant-branding.js";
 import { isAssetPath } from "./lib/asset-path.js";
 import { getHostedCanonicalRedirect } from "./lib/hosted-domain.js";
-import {
-  getSitePathPrefix,
-  stripSitePathPrefix,
-  toPublicHref,
-} from "./lib/url.js";
+import { stripSitePathPrefix, toPublicHref } from "./lib/url.js";
 import { createRequestRuntime } from "./runtime/index.js";
 import { type AppVariables, type App } from "./types/app-context.js";
 import { isPublicStorageKeyAllowed } from "./lib/public-storage.js";
@@ -250,7 +246,7 @@ export function createApp(): App {
     const bindings = env as Bindings | undefined;
     const preparedRequest = prepareRequestForRouting(
       request,
-      getSitePathPrefix(getConfiguredSingleSiteUrl(bindings)),
+      getConfiguredSingleSitePathPrefix(bindings),
     );
     if (preparedRequest instanceof Response) {
       return preparedRequest;

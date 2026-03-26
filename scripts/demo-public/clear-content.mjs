@@ -1,5 +1,5 @@
 import { loadDemoWorkflowEnv } from "../demo-shared/env.mjs";
-import { DEMO_PUBLIC_DIR, readDemoPublicConfig } from "./lib/runtime.mjs";
+import { DEMO_PUBLIC_DIR, resolveDemoPublicSiteUrl } from "./lib/runtime.mjs";
 import {
   buildSiteContentResetSql,
   executeRemoteD1,
@@ -8,7 +8,7 @@ import {
 
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
-const siteUrl = process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
+const siteUrl = resolveDemoPublicSiteUrl();
 const site = resolveSingleRemoteSite({
   cwd: DEMO_PUBLIC_DIR,
   label: "demo-public",

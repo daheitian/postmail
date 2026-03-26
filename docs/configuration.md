@@ -10,7 +10,8 @@ Some configuration depends on the runtime:
 
 ## Environment Variables
 
-Use `wrangler.toml` for non-sensitive values such as `SITE_URL`.
+Use `wrangler.toml` for non-sensitive values such as `SITE_ORIGIN` and
+`SITE_PATH_PREFIX`.
 Use runtime-specific secret storage for sensitive values such as
 `AUTH_SECRET`.
 
@@ -28,11 +29,12 @@ All runtimes require this variable:
 - Cloudflare local development: put it in `.dev.vars`
 - Cloudflare production: add it as a Worker secret with `wrangler secret put AUTH_SECRET` or the Cloudflare dashboard
 
-`SITE_URL` is mode-specific:
+Public URL variables are mode-specific:
 
-| Variable   | Description                                                                                                                                     |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SITE_URL` | Public base URL for `single-site` deployments, such as `https://myblog.com` or `https://example.com/blog`. Leave it unset in `host-based` mode. |
+| Variable           | Description                                                                                                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SITE_ORIGIN`      | Optional public origin override for `single-site` deployments, such as `https://myblog.com`. Leave it unset to use the current request origin. Ignored in `host-based`. |
+| `SITE_PATH_PREFIX` | Optional public path prefix for `single-site` deployments, such as `/blog`. Required only when the site is mounted under a subpath. Ignored in `host-based`.            |
 
 ### Node and Docker
 
@@ -46,7 +48,7 @@ Minimal Node / Docker config with Postgres:
 ```bash
 DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
 AUTH_SECRET=your-32-plus-character-secret-here
-SITE_URL=https://myblog.com
+SITE_ORIGIN=https://myblog.com
 ```
 
 Minimal Node / Docker config with SQLite:
@@ -54,7 +56,7 @@ Minimal Node / Docker config with SQLite:
 ```bash
 DATABASE_URL=file:./data/jant.sqlite
 AUTH_SECRET=your-32-plus-character-secret-here
-SITE_URL=https://myblog.com
+SITE_ORIGIN=https://myblog.com
 ```
 
 Optional Node / Docker variables:
@@ -107,19 +109,22 @@ In `wrangler.toml`, numeric variables can be written as either TOML numbers (`PA
 
 ### Public URLs and Subpaths
 
-In `single-site` mode, `SITE_URL` is the single source of truth for Jant's public base URL.
+In `single-site` mode, Jant separates the public origin from the deployment prefix:
 
-- Root deployment: `SITE_URL="https://example.com"`
-- Subpath deployment: `SITE_URL="https://example.com/blog"`
+- Root deployment with request-derived origin: leave both variables unset
+- Root deployment with a fixed preferred host: `SITE_ORIGIN="https://example.com"`
+- Subpath deployment: `SITE_PATH_PREFIX="/blog"`
+- Fixed host + subpath deployment: `SITE_ORIGIN="https://example.com"` and `SITE_PATH_PREFIX="/blog"`
 
-When `SITE_URL` includes a path:
+`SITE_ORIGIN` only affects absolute URLs such as RSS, sitemap, robots, exports,
+and auth callbacks. `SITE_PATH_PREFIX` affects routing and built assets:
 
 - Public pages, app routes, and built assets move under that prefix, such as `/blog`, `/blog/signin`, `/blog/c/notes`, and `/blog/_assets/client.js`
 - `/_assets` is reserved for Jant within each site's public prefix
 
 On Cloudflare, the deploy script generates a static directory that already mirrors the final public URLs, so subpath deploys only need the site prefix itself to reach the Worker, such as `/blog*`.
 
-In `host-based` mode, Jant resolves the current public origin from the matched site domain and request host. `SITE_URL` is ignored in that mode.
+In `host-based` mode, Jant resolves the current public origin from the matched site domain and request host. `SITE_ORIGIN` and `SITE_PATH_PREFIX` are ignored in that mode.
 
 ### Site Resolution
 
@@ -130,7 +135,7 @@ Jant supports two site resolution modes:
 | `SITE_RESOLUTION_MODE` | `single-site` or `host-based` | Controls how Jant resolves the current site at runtime |
 
 - `single-site` is the default for self-hosted Node and Docker deployments.
-- `host-based` resolves the current site from the incoming host and does not use `SITE_URL`.
+- `host-based` resolves the current site from the incoming host and does not use `SITE_ORIGIN` or `SITE_PATH_PREFIX`.
 - `single-site` expects exactly one site in the database. If the database contains multiple sites, Node startup fails until you switch back to `host-based` or remove the extra sites.
 
 Most self-hosted users should keep the default `single-site` mode.
@@ -392,8 +397,8 @@ small batch size.
 If you run Jant behind external automation, this endpoint is the recommended
 manual fallback when you do not have a built-in scheduled task mechanism. The
 CLI command calls the same endpoint. In `single-site` mode it can reuse
-`SITE_URL` from the environment or `wrangler.toml`; in `host-based` mode pass
-`--url` for the managed site's public URL.
+`SITE_ORIGIN` + `SITE_PATH_PREFIX` from the environment or `wrangler.toml`; in
+`host-based` mode pass `--url` for the managed site's public URL.
 
 ### Slugs (Optional)
 
@@ -449,9 +454,9 @@ main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
 [vars]
-SITE_URL = "https://myblog.com"
+SITE_ORIGIN = "https://myblog.com"
 # Or mount Jant under a subpath:
-# SITE_URL = "https://example.com/blog"
+# SITE_PATH_PREFIX = "/blog"
 
 # Optional: Site configuration (can be overridden in settings)
 # SITE_NAME = "My Blog"
@@ -491,7 +496,8 @@ Node and Docker deployments usually set configuration through `.env`, `.env.node
 
 ```bash
 AUTH_SECRET=your-32-plus-character-secret-here
-SITE_URL=http://127.0.0.1:3000
+SITE_ORIGIN=http://127.0.0.1:3000
+# SITE_PATH_PREFIX=/blog
 
 # SQLite
 # DATABASE_URL=file:./data/jant.sqlite

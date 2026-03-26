@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadDemoWorkflowEnv } from "../demo-shared/env.mjs";
-import { readDemoPublicConfig } from "./lib/runtime.mjs";
+import { resolveDemoPublicSiteUrl } from "./lib/runtime.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const demoPublicDir = resolve(__dirname, "../../sites/demo");
@@ -15,7 +15,7 @@ const canonicalDir = resolve(
 
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
-const siteUrl = process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
+const siteUrl = resolveDemoPublicSiteUrl();
 const checkOnly = process.argv.includes("--check");
 
 if (!existsSync(resolve(canonicalDir, "meta.json"))) {

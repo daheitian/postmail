@@ -3,7 +3,7 @@ import {
   DEFAULT_PUBLISH_DIR,
   preparePublicAssets,
 } from "../../lib/public-assets.js";
-import { normalizeSitePathPrefix, resolveSiteUrl } from "../../lib/site-url.js";
+import { resolveSitePathPrefix } from "../../lib/site-url.js";
 
 const DEFAULT_CONFIG_PATH = "wrangler.toml";
 
@@ -15,7 +15,7 @@ export async function run(argv) {
       config: { type: "string", short: "c", default: DEFAULT_CONFIG_PATH },
       env: { type: "string", short: "e" },
       output: { type: "string", short: "o", default: DEFAULT_PUBLISH_DIR },
-      "site-url": { type: "string" },
+      "site-path-prefix": { type: "string" },
     },
   });
 
@@ -35,17 +35,16 @@ export async function run(argv) {
       `  -o, --output <path>     Output directory (default: ${DEFAULT_PUBLISH_DIR})`,
     );
     console.log(
-      "      --site-url <url>    Override SITE_URL instead of reading config",
+      "      --site-path-prefix <path> Override SITE_PATH_PREFIX instead of reading config",
     );
     process.exit(0);
   }
 
-  const siteUrl = resolveSiteUrl({
+  const sitePathPrefix = resolveSitePathPrefix({
     config: values.config,
     env: values.env,
-    siteUrl: values["site-url"],
+    sitePathPrefix: values["site-path-prefix"],
   });
-  const sitePathPrefix = normalizeSitePathPrefix(siteUrl);
   const prepared = await preparePublicAssets({
     outputDir: values.output,
     sitePathPrefix,

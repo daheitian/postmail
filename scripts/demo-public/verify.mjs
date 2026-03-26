@@ -1,6 +1,7 @@
 import {
   DEMO_PUBLIC_DIR,
   readDemoPublicConfig,
+  resolveDemoPublicSiteUrl,
 } from "./lib/runtime.mjs";
 import { loadDemoWorkflowEnv } from "../demo-shared/env.mjs";
 import {
@@ -26,7 +27,7 @@ async function ensureOk(url, label) {
 
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
-const siteUrl = process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
+const siteUrl = resolveDemoPublicSiteUrl();
 const r2PublicUrl = readDemoPublicConfig("R2_PUBLIC_URL");
 const site = resolveSingleRemoteSite({
   cwd: DEMO_PUBLIC_DIR,

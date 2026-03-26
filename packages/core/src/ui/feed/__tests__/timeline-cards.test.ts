@@ -114,6 +114,43 @@ describe("timeline cards", () => {
     expect(quoteHtml).not.toContain("data-post-media");
   });
 
+  it("keeps rated note feed cards bottom-weighted while moving detail ratings under the title", () => {
+    const post = createPostView({
+      format: "note",
+      rating: 4,
+      summaryHtml: "<p>Summary</p>",
+    });
+
+    const feedHtml = renderWithI18n(NoteCard({ post, mode: "feed" }));
+    const detailHtml = renderWithI18n(NoteCard({ post, mode: "detail" }));
+
+    expect(feedHtml.indexOf("data-post-body")).toBeLessThan(
+      feedHtml.indexOf('class="post-rating"'),
+    );
+    expect(detailHtml).toContain('class="post-header-block"');
+    expect(detailHtml.indexOf('class="post-rating"')).toBeLessThan(
+      detailHtml.indexOf("data-post-body"),
+    );
+  });
+
+  it("moves rated link detail cards into the title block without changing feed ordering", () => {
+    const post = createPostView({
+      format: "link",
+      rating: 5,
+    });
+
+    const feedHtml = renderWithI18n(LinkCard({ post, mode: "feed" }));
+    const detailHtml = renderWithI18n(LinkCard({ post, mode: "detail" }));
+
+    expect(feedHtml.indexOf("data-post-body")).toBeLessThan(
+      feedHtml.indexOf('class="post-rating"'),
+    );
+    expect(detailHtml).toContain('class="post-header-block"');
+    expect(detailHtml.indexOf('class="post-rating"')).toBeLessThan(
+      detailHtml.indexOf("data-post-body"),
+    );
+  });
+
   it("can hide reply without hiding the more menu on note cards", () => {
     const post = createPostView({ format: "note", isLastInThread: true });
 

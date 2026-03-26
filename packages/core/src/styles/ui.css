@@ -1445,6 +1445,19 @@
     text-wrap: pretty;
   }
 
+  .post-header-block {
+    margin-bottom: 1rem;
+  }
+
+  .post-header-block .feed-link-title,
+  .post-header-block .feed-note-title {
+    margin-bottom: 0;
+  }
+
+  .post-header-block .post-rating {
+    margin-top: 0.45rem;
+  }
+
   .feed-link-summary {
     margin-top: 0.75rem;
   }
@@ -3704,6 +3717,12 @@
     );
     box-shadow: inset 0 0 0 1px
       color-mix(in srgb, var(--destructive) 18%, transparent);
+  }
+
+  .compose-link-url-wrap .compose-url-input,
+  .compose-link-url-wrap .compose-url-input:focus,
+  .compose-link-url-wrap .compose-url-input[aria-invalid="true"] {
+    border-bottom-color: transparent;
   }
 
   .compose-link-title {

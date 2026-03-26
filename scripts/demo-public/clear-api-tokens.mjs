@@ -1,5 +1,5 @@
 import { loadDemoWorkflowEnv } from "../demo-shared/env.mjs";
-import { readDemoPublicConfig } from "./lib/runtime.mjs";
+import { resolveDemoPublicSiteUrl } from "./lib/runtime.mjs";
 
 function toSiteScopedUrl(siteUrl, path) {
   const url = new URL(siteUrl);
@@ -33,7 +33,7 @@ function formatFailure(status, bodyText) {
 
 loadDemoWorkflowEnv({ sites: ["demo"] });
 
-const siteUrl = process.env.DEMO_PUBLIC_URL || readDemoPublicConfig("SITE_URL");
+const siteUrl = resolveDemoPublicSiteUrl();
 const internalAdminToken = process.env.INTERNAL_ADMIN_TOKEN;
 const checkOnly = process.argv.includes("--check");
 

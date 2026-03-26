@@ -4,10 +4,12 @@ import {
   type DatabaseSchema,
 } from "../db/schema-bundle.js";
 import {
+  getConfiguredSingleSiteOrigin,
+  getConfiguredSingleSitePathPrefix,
   getConfiguredSingleSiteUrl,
   getSiteResolutionMode,
 } from "../lib/env.js";
-import { getSitePathPrefix, normalizeSiteUrl } from "../lib/url.js";
+import { buildSiteUrl, normalizeSiteUrl } from "../lib/url.js";
 import {
   createSiteService,
   createTransientSite,
@@ -51,15 +53,15 @@ function logHostedSiteResolutionFailure(input: {
 export function getSingleSiteBootstrapOptions(
   env: Bindings,
 ): EnsureSingleSiteOptions | undefined {
-  const configuredSiteUrl = getConfiguredSingleSiteUrl(env).trim();
-  if (!configuredSiteUrl) {
+  const configuredSiteOrigin = getConfiguredSingleSiteOrigin(env).trim();
+  if (!configuredSiteOrigin) {
     return undefined;
   }
 
-  const parsed = new URL(normalizeSiteUrl(configuredSiteUrl));
+  const parsed = new URL(normalizeSiteUrl(configuredSiteOrigin));
   return {
     host: parsed.host,
-    pathPrefix: getSitePathPrefix(parsed.toString()) || null,
+    pathPrefix: getConfiguredSingleSitePathPrefix(env) || null,
   };
 }
 
@@ -152,7 +154,13 @@ export function getResolvedSiteBaseUrl(
 ): string {
   const resolutionMode = getSiteResolutionMode(env);
   if (resolutionMode === "single-site") {
-    return getConfiguredSingleSiteUrl(env) || new URL(publicRequestUrl).origin;
+    return (
+      getConfiguredSingleSiteUrl(env) ||
+      buildSiteUrl(
+        new URL(publicRequestUrl).origin,
+        getConfiguredSingleSitePathPrefix(env),
+      )
+    );
   }
 
   const requestUrl = new URL(publicRequestUrl);

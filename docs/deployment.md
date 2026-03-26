@@ -99,22 +99,27 @@ Your site is now live at `https://your-worker.workers.dev`.
 
 ## Environment Variables
 
-Set non-sensitive values such as `SITE_URL` in `wrangler.toml` under `[vars]`:
+Set non-sensitive values such as `SITE_ORIGIN` and `SITE_PATH_PREFIX` in `wrangler.toml` under `[vars]`:
 
 ```toml
 [vars]
-SITE_URL = "https://yourdomain.com"
+SITE_ORIGIN = "https://yourdomain.com"
 ```
 
-`SITE_URL` can also include a subpath, such as `https://example.com/blog`.
+For subpath deploys, set:
+
+```toml
+[vars]
+SITE_PATH_PREFIX = "/blog"
+```
 
 ## Deploy Under a Subpath
 
-To serve Jant from a subpath, set `SITE_URL` to the full public base URL:
+To serve Jant from a subpath, set `SITE_PATH_PREFIX` to the public mount path:
 
 ```toml
 [vars]
-SITE_URL = "https://example.com/blog"
+SITE_PATH_PREFIX = "/blog"
 ```
 
 Jant will then use:
@@ -124,7 +129,7 @@ Jant will then use:
 
 Jant also keeps fonts under `/_assets/*` as regular files rather than inline `data:` URLs, so the default `font-src 'self'` CSP stays sufficient.
 
-On Cloudflare, `npm run deploy` detects that `SITE_URL` has a path prefix and prepares a publishable `dist/public` directory before calling Wrangler, so the generated asset paths already live inside the site prefix. Route the site prefix itself to the Worker:
+On Cloudflare, `npm run deploy` detects that `SITE_PATH_PREFIX` is set and prepares a publishable `dist/public` directory before calling Wrangler, so the generated asset paths already live inside the site prefix. Route the site prefix itself to the Worker:
 
 - `/blog*`
 

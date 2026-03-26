@@ -23,13 +23,13 @@ import * as schema from "../db/schema.js";
 import { resolveDatabaseDialect } from "../db/dialect.js";
 import { getPublicAssetBasePath, isAssetPath } from "../lib/asset-path.js";
 import {
-  getConfiguredSingleSiteUrl,
+  getConfiguredSingleSiteOrigin,
+  getConfiguredSingleSitePathPrefix,
   getEnvString,
   getPort,
   getSiteResolutionMode,
   shouldTrustProxy,
 } from "../lib/env.js";
-import { getSitePathPrefix } from "../lib/url.js";
 import { createSiteService } from "../services/site.js";
 import type { App } from "../types/app-context.js";
 import type { Bindings } from "../types/bindings.js";
@@ -444,10 +444,10 @@ export function resolvePublicRequestUrl(
   env: Bindings,
 ): string {
   const requestUrl = new URL(request.url);
-  const siteUrl = getConfiguredSingleSiteUrl(env);
+  const siteOrigin = getConfiguredSingleSiteOrigin(env);
 
-  if (siteUrl) {
-    const canonicalUrl = new URL(siteUrl);
+  if (siteOrigin) {
+    const canonicalUrl = new URL(siteOrigin);
     requestUrl.protocol = canonicalUrl.protocol;
     requestUrl.hostname = canonicalUrl.hostname;
     requestUrl.port = canonicalUrl.port;
@@ -618,7 +618,7 @@ export async function createNodeRequestHandler(options?: {
         ? resolveNodeAssetRoot()
         : options.assetRoot;
     const publicAssetBasePath = getPublicAssetBasePath(
-      getSitePathPrefix(getConfiguredSingleSiteUrl(bindings)),
+      getConfiguredSingleSitePathPrefix(bindings),
     );
 
     let closed = false;

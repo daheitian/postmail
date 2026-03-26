@@ -21,6 +21,9 @@ export const NoteCard: FC<TimelineCardProps> = ({
   const isDetail = mode === "detail";
   const isArticle = !!post.title;
   const displayHtml = isDetail || !isArticle ? post.bodyHtml : post.summaryHtml;
+  const hasVisibleRating =
+    !!post.rating && post.rating > 0 && !display?.hideRating;
+  const showHeaderRating = isDetail && isArticle && hasVisibleRating;
 
   return (
     <article
@@ -38,7 +41,10 @@ export const NoteCard: FC<TimelineCardProps> = ({
       {!isCompact && !display?.hideStatusBadges && <PostStatusBadges />}
       {isArticle &&
         (isDetail ? (
-          <h1 class="p-name text-2xl font-semibold mb-4">{post.title}</h1>
+          <div class="post-header-block">
+            <h1 class="p-name text-2xl font-semibold">{post.title}</h1>
+            {showHeaderRating && <StarRating rating={post.rating} />}
+          </div>
         ) : (
           <h2
             class={`p-name font-semibold ${isCompact ? "text-sm mb-1" : "feed-note-title mb-2"}`}
@@ -68,7 +74,7 @@ export const NoteCard: FC<TimelineCardProps> = ({
           Continue →
         </a>
       )}
-      {!isCompact && !display?.hideRating && (
+      {!isCompact && !showHeaderRating && !display?.hideRating && (
         <StarRating rating={post.rating} />
       )}
       <PostFooter post={post} detail={isDetail} display={display?.footer} />

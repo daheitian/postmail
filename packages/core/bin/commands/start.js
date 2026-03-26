@@ -16,7 +16,7 @@ export async function run(argv) {
     console.log("");
     console.log("Required:");
     console.log("  AUTH_SECRET=your-secret");
-    console.log("  SITE_URL=https://your-site.example");
+    console.log("  SITE_ORIGIN=https://your-site.example");
     console.log("");
     console.log("Database:");
     console.log("  DATABASE_URL=file:<data-dir>/jant.sqlite");
@@ -25,6 +25,7 @@ export async function run(argv) {
     console.log("Node defaults:");
     console.log("  DATA_DIR=./data");
     console.log("  LOCAL_STORAGE_PATH=<data-dir>/media");
+    console.log("  SITE_PATH_PREFIX=");
     console.log("  SITE_RESOLUTION_MODE=single-site");
     console.log("  STORAGE_DRIVER defaults to local on Node");
     process.exit(0);

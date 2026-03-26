@@ -28,7 +28,8 @@ export interface Bindings {
   R2?: R2Bucket;
   NODE_DATABASE?: NodeDatabaseBinding;
   NODE_SQLITE?: BetterSqlite3.Database;
-  SITE_URL?: EnvBindingValue;
+  SITE_ORIGIN?: EnvBindingValue;
+  SITE_PATH_PREFIX?: EnvBindingValue;
   DEFAULT_THEME?: EnvBindingValue;
   AUTH_SECRET?: EnvBindingValue;
   SITE_NAME?: EnvBindingValue;

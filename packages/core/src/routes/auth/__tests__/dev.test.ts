@@ -29,7 +29,8 @@ function createApp(options?: {
 
   app.use("*", async (c, next) => {
     c.env = {
-      SITE_URL: "http://localhost:19020",
+      SITE_ORIGIN: "http://localhost:19020",
+      SITE_PATH_PREFIX: "",
       DEV_API_TOKEN: options?.devToken ?? "jnt_dev_test123",
     } as Bindings;
 

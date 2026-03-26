@@ -192,7 +192,9 @@ Do not mix up:
 - site routing resolution
 - storage public URL base
 
-`SITE_URL` should no longer be treated as the live truth for the current site.
+`SITE_ORIGIN` should no longer be treated as the live truth for the current site,
+and `SITE_PATH_PREFIX` should remain deploy-time configuration rather than site
+identity.
 
 ## Phase 3: Service Layer Refactor
 

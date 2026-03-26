@@ -47,7 +47,10 @@ R2_PUBLIC_URL = "https://preview.example.com"
     tempDirs.push(root);
 
     const configPath = join(root, "wrangler.toml");
-    await writeFile(configPath, '[vars]\nSITE_URL = "https://example.com"\n');
+    await writeFile(
+      configPath,
+      '[vars]\nSITE_ORIGIN = "https://example.com"\nSITE_PATH_PREFIX = ""\n',
+    );
 
     expect(
       resolveWranglerVarString({

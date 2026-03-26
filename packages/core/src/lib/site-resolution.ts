@@ -1,5 +1,7 @@
-import { getConfiguredSingleSiteUrl, getSiteResolutionMode } from "./env.js";
-import { getSitePathPrefix } from "./url.js";
+import {
+  getConfiguredSingleSitePathPrefix,
+  getSiteResolutionMode,
+} from "./env.js";
 
 /**
  * Resolves the active public path prefix for the current request.
@@ -7,7 +9,7 @@ import { getSitePathPrefix } from "./url.js";
  * @param input - Current runtime env plus any already-resolved site metadata
  * @returns The public path prefix for the active site, or an empty string
  * @example
- * getRuntimeSitePathPrefix({ env: { SITE_URL: "https://example.com/blog" } });
+ * getRuntimeSitePathPrefix({ env: { SITE_PATH_PREFIX: "/blog" } });
  */
 export function getRuntimeSitePathPrefix(input: {
   env: object | undefined | null;
@@ -22,5 +24,5 @@ export function getRuntimeSitePathPrefix(input: {
     return input.currentSiteDomain?.pathPrefix?.trim() || "";
   }
 
-  return getSitePathPrefix(getConfiguredSingleSiteUrl(input.env));
+  return getConfiguredSingleSitePathPrefix(input.env);
 }

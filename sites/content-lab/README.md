@@ -16,7 +16,8 @@ It is not the publishing source for the public demo. That role belongs to
 
 Before deploying, replace the placeholder values in `sites/content-lab/wrangler.toml`:
 
-- `SITE_URL`
+- `SITE_ORIGIN`
+- `SITE_PATH_PREFIX` if you want a subpath deploy
 - `database_id`
 - `bucket_name` if you want a different R2 bucket name
 - Optional: `R2_PUBLIC_URL`

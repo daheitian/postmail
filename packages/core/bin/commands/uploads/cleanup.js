@@ -85,19 +85,19 @@ export async function run(argv) {
     );
     console.log("");
     console.log(
-      "If --url is omitted, the command uses SITE_URL from the environment or wrangler.toml.",
+      "If --url is omitted, the command uses SITE_ORIGIN + SITE_PATH_PREFIX from the environment or wrangler.toml.",
     );
     process.exit(0);
   }
 
   const siteUrl = resolveSiteUrl({
-    siteUrl: values.url,
+    url: values.url,
     config: values.config,
     env: values.env,
   });
   if (!siteUrl) {
     console.error(
-      "Error: upload cleanup requires --url or SITE_URL in the environment or wrangler.toml.",
+      "Error: upload cleanup requires --url or SITE_ORIGIN in the environment or wrangler.toml.",
     );
     process.exit(1);
   }

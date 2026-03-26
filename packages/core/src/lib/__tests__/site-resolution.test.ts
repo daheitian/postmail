@@ -7,7 +7,7 @@ describe("getRuntimeSitePathPrefix", () => {
       getRuntimeSitePathPrefix({
         env: {
           SITE_RESOLUTION_MODE: "host-based",
-          SITE_URL: "https://legacy.example.com/legacy",
+          SITE_PATH_PREFIX: "/legacy",
         },
         appConfig: { sitePathPrefix: "/tenant" },
         currentSiteDomain: { pathPrefix: "/ignored" },
@@ -20,18 +20,18 @@ describe("getRuntimeSitePathPrefix", () => {
       getRuntimeSitePathPrefix({
         env: {
           SITE_RESOLUTION_MODE: "host-based",
-          SITE_URL: "https://legacy.example.com/legacy",
+          SITE_PATH_PREFIX: "/legacy",
         },
         currentSiteDomain: { pathPrefix: "/tenant" },
       }),
     ).toBe("/tenant");
   });
 
-  it("uses SITE_URL only in single-site mode", () => {
+  it("uses SITE_PATH_PREFIX only in single-site mode", () => {
     expect(
       getRuntimeSitePathPrefix({
         env: {
-          SITE_URL: "https://example.com/blog",
+          SITE_PATH_PREFIX: "/blog",
         },
       }),
     ).toBe("/blog");

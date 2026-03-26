@@ -20,7 +20,8 @@ as the starter template source. The operational docs live with each site.
 
 Before deploying, replace the placeholder values in `sites/demo-source/wrangler.toml`:
 
-- `SITE_URL`
+- `SITE_ORIGIN`
+- `SITE_PATH_PREFIX` if you want a subpath deploy
 - `database_id`
 - `bucket_name` if you want a different R2 bucket name
 - Optional: `R2_PUBLIC_URL`
