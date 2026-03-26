@@ -8,7 +8,7 @@ import { createRequestRuntime } from "../index.js";
 import { createNodeRequestRuntime } from "../node.js";
 import type { Bindings } from "../../types.js";
 import { siteDomains, sites } from "../../db/schema.js";
-import { NotFoundError } from "../../lib/errors.js";
+import { ConflictError, NotFoundError } from "../../lib/errors.js";
 import { TRANSIENT_SINGLE_SITE_ID } from "../../services/site.js";
 
 afterEach(() => {
@@ -131,6 +131,42 @@ describe("createNodeRequestRuntime", () => {
 
     expect(runtime.currentSite.id).toBe(TRANSIENT_SINGLE_SITE_ID);
     expect(count.count).toBe(0);
+  });
+
+  it("disables managed site creation in single-site mode", async () => {
+    const { db, sqlite } = createTestDatabase();
+
+    const runtime = await createRequestRuntime(
+      {
+        NODE_DATABASE: {
+          db,
+          dialect: "sqlite",
+          rawQuery: createSqliteRawQuery(sqlite),
+          schema: sqliteSchemaBundle,
+        },
+        AUTH_SECRET: "test-secret-with-enough-entropy-for-node-runtime",
+        SITE_URL: "http://localhost:3000",
+      } as Bindings,
+      "http://localhost:3000/api/internal/sites",
+    );
+
+    await expect(
+      runtime.services.siteAdmin.createManagedSite({
+        key: "demo-cloud",
+        primaryHost: "demo-cloud.example.com",
+        siteName: "Demo Cloud",
+      }),
+    ).rejects.toEqual(
+      new ConflictError(
+        "Managed site operations are only available in host-based mode.",
+      ),
+    );
+
+    const count = sqlite
+      .prepare('SELECT COUNT(*) as count FROM "site"')
+      .get() as { count: number };
+
+    expect(count.count).toBe(1);
   });
 
   it("allows host-based internal admin requests before any site matches the host", async () => {

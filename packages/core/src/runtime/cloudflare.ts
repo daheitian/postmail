@@ -93,6 +93,7 @@ export async function createCloudflareRequestRuntime(
       bootstrapSite: getSingleSiteBootstrapOptions(env),
       enforceHostedMediaQuota: getSiteResolutionMode(env) === "host-based",
       hostedControlPlane: createHostedControlPlaneClient(env),
+      siteResolutionMode: getSiteResolutionMode(env),
       slugIdLength,
       schema: sqliteSchemaBundle,
     }),

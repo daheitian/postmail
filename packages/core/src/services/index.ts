@@ -70,6 +70,7 @@ export function createServices(
     schema?: DatabaseSchema;
     databaseDialect?: DatabaseDialect;
     bootstrapSite?: EnsureSingleSiteOptions;
+    siteResolutionMode?: "single-site" | "host-based";
     enforceHostedMediaQuota?: boolean;
     hostedControlPlane?: HostedControlPlaneClient | null;
   },
@@ -124,7 +125,9 @@ export function createServices(
       schema: databaseSchema,
       bootstrapSite: config?.bootstrapSite,
     }),
-    siteAdmin: createSiteAdminService(db, databaseSchema, dialect),
+    siteAdmin: createSiteAdminService(db, databaseSchema, dialect, {
+      siteResolutionMode: config?.siteResolutionMode,
+    }),
     siteMembers: createSiteMemberService(db, databaseSchema),
     siteProfile: createSiteProfileService(settings, siteId, {
       hostedControlPlane: config?.hostedControlPlane ?? null,

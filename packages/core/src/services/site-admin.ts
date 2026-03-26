@@ -101,6 +101,10 @@ export interface SiteAdminService {
   ): Promise<SiteDomain[]>;
 }
 
+export interface SiteAdminServiceConfig {
+  siteResolutionMode?: "single-site" | "host-based";
+}
+
 function toSite(row: typeof _sqliteSites.$inferSelect): Site {
   return {
     id: row.id,
@@ -137,6 +141,7 @@ export function createSiteAdminService(
   db: Database,
   databaseSchema: DatabaseSchema = sqliteSchemaBundle,
   databaseDialect: DatabaseDialect = "sqlite",
+  config: SiteAdminServiceConfig = {},
 ): SiteAdminService {
   const {
     apiTokens,
@@ -152,6 +157,15 @@ export function createSiteAdminService(
     siteMembers,
     sites,
   } = databaseSchema;
+  const siteResolutionMode = config.siteResolutionMode ?? "single-site";
+
+  function assertManagedSiteOperationsEnabled(): void {
+    if (siteResolutionMode !== "host-based") {
+      throw new ConflictError(
+        "Managed site operations are only available in host-based mode.",
+      );
+    }
+  }
 
   function getManagedSiteBaseUrl(
     env: Bindings,
@@ -491,9 +505,11 @@ export function createSiteAdminService(
 
   return {
     async listManagedSiteDomains(siteId) {
+      assertManagedSiteOperationsEnabled();
       return listManagedSiteDomains(siteId);
     },
     async createManagedSite(input) {
+      assertManagedSiteOperationsEnabled();
       if (supportsDrizzleTransaction(db, databaseDialect)) {
         return db.transaction(async (tx) =>
           createWithDatabase(tx as unknown as Database, input),
@@ -503,9 +519,11 @@ export function createSiteAdminService(
       return createWithDatabase(db, input);
     },
     async getManagedSiteMediaUsage(siteId) {
+      assertManagedSiteOperationsEnabled();
       return getManagedSiteMediaUsage(siteId);
     },
     async exportManagedSite(siteId, deps) {
+      assertManagedSiteOperationsEnabled();
       const normalizedSiteId = siteId.trim();
       if (!normalizedSiteId) {
         throw new NotFoundError("Site");
@@ -621,6 +639,7 @@ export function createSiteAdminService(
       };
     },
     async suspendManagedSite(siteId) {
+      assertManagedSiteOperationsEnabled();
       const normalizedSiteId = siteId.trim();
       if (!normalizedSiteId) {
         throw new NotFoundError("Site");
@@ -639,6 +658,7 @@ export function createSiteAdminService(
       );
     },
     async resumeManagedSite(siteId) {
+      assertManagedSiteOperationsEnabled();
       const normalizedSiteId = siteId.trim();
       if (!normalizedSiteId) {
         throw new NotFoundError("Site");
@@ -657,6 +677,7 @@ export function createSiteAdminService(
       );
     },
     async deleteManagedSite(siteId, deps) {
+      assertManagedSiteOperationsEnabled();
       const normalizedSiteId = siteId.trim();
       if (!normalizedSiteId) {
         throw new NotFoundError("Site");
@@ -682,6 +703,7 @@ export function createSiteAdminService(
       });
     },
     async addManagedSiteDomain(siteId, input) {
+      assertManagedSiteOperationsEnabled();
       return mutateSiteDomains(siteId, async (targetDb, normalizedSiteId) => {
         await requireSite(targetDb, normalizedSiteId);
 
@@ -730,6 +752,7 @@ export function createSiteAdminService(
       });
     },
     async setManagedSitePrimaryDomain(siteId, domainId) {
+      assertManagedSiteOperationsEnabled();
       return mutateSiteDomains(siteId, async (targetDb, normalizedSiteId) => {
         await requireSite(targetDb, normalizedSiteId);
 
@@ -770,6 +793,7 @@ export function createSiteAdminService(
       });
     },
     async deleteManagedSiteDomain(siteId, domainId) {
+      assertManagedSiteOperationsEnabled();
       return mutateSiteDomains(siteId, async (targetDb, normalizedSiteId) => {
         await requireSite(targetDb, normalizedSiteId);
 

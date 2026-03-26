@@ -54,6 +54,7 @@ export function createTestApp(options: TestAppOptions = {}) {
 
   const services = createServices(db, mockD1, DEFAULT_TEST_SITE_ID, {
     slugIdLength: 5,
+    siteResolutionMode: options.siteResolutionMode ?? "single-site",
   });
 
   const app = new Hono<Env>();
