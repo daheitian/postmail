@@ -43,6 +43,93 @@ interface ComposeFilePickerCloseDetail {
   cancelled: boolean;
 }
 
+const COMPOSE_TOOLBAR_ICONS = {
+  media: `
+    <rect x="2.75" y="3" width="12.5" height="11.25" rx="3" />
+    <circle cx="6.15" cy="6.85" r="0.85" fill="currentColor" stroke="none" />
+    <path d="M3.6 11.95 6.75 8.8c.42-.42 1.11-.42 1.53 0l1.4 1.4" />
+    <path d="m8.95 10.2 1.38-1.38c.46-.46 1.21-.46 1.67 0l2.4 2.4" />
+  `,
+  attachedText: `
+    <rect x="3" y="2.75" width="12" height="12.5" rx="3.1" />
+    <path d="M5.85 6.35h6.3" />
+    <path d="M5.85 9h6.3" />
+    <path d="M5.85 11.65h4.35" />
+  `,
+  emoji: `
+    <circle cx="9" cy="9" r="6.8" />
+    <path d="M6.2 10.55c.52 1.08 1.46 1.8 2.8 1.8s2.28-.72 2.8-1.8" />
+    <circle cx="6.5" cy="7.15" r="0.7" fill="currentColor" stroke="none" />
+    <circle cx="11.5" cy="7.15" r="0.7" fill="currentColor" stroke="none" />
+  `,
+  rate: `
+    <path
+      d="m9 1.95 2.08 4.21 4.65.67-3.36 3.29.8 4.63L9 12.55l-4.17 2.2.8-4.63-3.36-3.29 4.65-.67z"
+      fill="currentColor"
+      fill-opacity="0.12"
+      stroke="none"
+    />
+    <path
+      d="m9 1.95 2.08 4.21 4.65.67-3.36 3.29.8 4.63L9 12.55l-4.17 2.2.8-4.63-3.36-3.29 4.65-.67z"
+      stroke-width="1.75"
+    />
+  `,
+  title: `
+    <rect
+      x="3.35"
+      y="3.2"
+      width="11.3"
+      height="2.05"
+      rx="0.68"
+      fill="currentColor"
+      stroke="none"
+    />
+    <rect
+      x="7.8"
+      y="4.6"
+      width="2.4"
+      height="9.45"
+      rx="0.78"
+      fill="currentColor"
+      stroke="none"
+    />
+    <rect
+      x="6.75"
+      y="13.15"
+      width="4.5"
+      height="1.12"
+      rx="0.56"
+      fill="currentColor"
+      stroke="none"
+    />
+  `,
+  fullscreen: `
+    <path d="M5.85 3H3v2.85" stroke-width="1.65" />
+    <path d="M12.15 3H15v2.85" stroke-width="1.65" />
+    <path d="M3 12.15V15h2.85" stroke-width="1.65" />
+    <path d="M15 12.15V15h-2.85" stroke-width="1.65" />
+  `,
+} as const;
+
+function renderComposeToolbarIcon(
+  icon: (typeof COMPOSE_TOOLBAR_ICONS)[keyof typeof COMPOSE_TOOLBAR_ICONS],
+) {
+  return html`<svg
+    class="compose-tool-icon"
+    width="18"
+    height="18"
+    viewBox="0 0 18 18"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.55"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    ${unsafeSVG(icon)}
+  </svg>`;
+}
+
 export class JantComposeEditor extends LitElement {
   static properties = {
     format: { type: String },
@@ -1849,22 +1936,7 @@ export class JantComposeEditor extends LitElement {
           title=${this._attachments.length > 0 ? "" : this.labels.media}
           @click=${() => this._openFilePicker()}
         >
-          <svg
-            class="icon-fine"
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="2" y="3" width="14" height="12" rx="2.5" />
-            <circle cx="6.5" cy="7.5" r="1.5" />
-            <path d="M2 13l4-4c.6-.6 1.4-.6 2 0l4 4" />
-            <path d="M11 11l1.5-1.5c.6-.6 1.4-.6 2 0L16 11" />
-          </svg>
+          ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.media)}
           ${this._attachments.length > 0
             ? html`<span class="compose-tool-label"
                 >${this.labels.addMore}</span
@@ -1881,21 +1953,7 @@ export class JantComposeEditor extends LitElement {
           title=${hasAttached ? "" : this.labels.attachedText}
           @click=${() => this._openAttachedText()}
         >
-          <svg
-            class="icon-fine"
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.3"
-            stroke-linecap="round"
-          >
-            <rect x="3" y="2" width="12" height="14" rx="2" />
-            <line x1="6" y1="6" x2="12" y2="6" />
-            <line x1="6" y1="9" x2="12" y2="9" />
-            <line x1="6" y1="12" x2="9.5" y2="12" />
-          </svg>
+          ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.attachedText)}
           ${hasAttached
             ? html`<span class="compose-tool-label"
                 >${this.labels.addMore}</span
@@ -1913,28 +1971,7 @@ export class JantComposeEditor extends LitElement {
           title=${this.labels.emoji}
           @click=${() => this._toggleEmojiPicker()}
         >
-          <svg
-            class="icon-fine"
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="9" cy="9" r="7" />
-            <path d="M6 10.5c.5 1.2 1.5 2 3 2s2.5-.8 3-2" />
-            <circle cx="6.5" cy="7" r="0.5" fill="currentColor" stroke="none" />
-            <circle
-              cx="11.5"
-              cy="7"
-              r="0.5"
-              fill="currentColor"
-              stroke="none"
-            />
-          </svg>
+          ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.emoji)}
         </button>
 
         <div class="compose-tool-sep"></div>
@@ -1950,32 +1987,7 @@ export class JantComposeEditor extends LitElement {
             this._showRating = !this._showRating;
           }}
         >
-          <svg
-            class="icon-fine"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <defs>
-              <clipPath id="half-left">
-                <rect x="0" y="0" width="12" height="24" />
-              </clipPath>
-            </defs>
-            <polygon
-              points="12 2 14.8 9.2 22.5 9.7 16.8 14.8 18.8 22.3 12 18.2 5.2 22.3 7.2 14.8 1.5 9.7 9.2 9.2"
-              fill="currentColor"
-              opacity="0.45"
-              clip-path="url(#half-left)"
-            />
-            <polygon
-              points="12 2 14.8 9.2 22.5 9.7 16.8 14.8 18.8 22.3 12 18.2 5.2 22.3 7.2 14.8 1.5 9.7 9.2 9.2"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linejoin="round"
-            />
-          </svg>
+          ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.rate)}
         </button>
 
         ${this.format === "note"
@@ -1999,18 +2011,7 @@ export class JantComposeEditor extends LitElement {
                   }
                 }}
               >
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <text
-                    x="3.5"
-                    y="14"
-                    font-family="serif"
-                    font-size="14"
-                    font-weight="400"
-                    fill="currentColor"
-                  >
-                    T
-                  </text>
-                </svg>
+                ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.title)}
               </button>
             `
           : nothing}
@@ -2023,22 +2024,7 @@ export class JantComposeEditor extends LitElement {
             aria-label=${this.labels.fullscreen}
             @click=${() => this.openFullscreen()}
           >
-            <svg
-              class="icon-fine"
-              width="15"
-              height="15"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.3"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <polyline points="6 2 2 2 2 6" />
-              <polyline points="12 16 16 16 16 12" />
-              <line x1="2" y1="2" x2="7" y2="7" />
-              <line x1="16" y1="16" x2="11" y2="11" />
-            </svg>
+            ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.fullscreen)}
           </button>
         </div>
       </div>

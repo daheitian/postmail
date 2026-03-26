@@ -10,6 +10,7 @@
 import { LitElement, html, nothing } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
 import type { Editor, JSONContent } from "@tiptap/core";
 import type {
   ComposeFormat,
@@ -110,6 +111,110 @@ const EDITOR_FLOATING_UI_SELECTOR = "[data-editor-floating-ui]";
 
 interface ComposeFilePickerCloseDetail {
   cancelled?: boolean;
+}
+
+const COMPOSE_DIALOG_HEADER_ICONS = {
+  drafts: `
+    <rect x="3.85" y="3.45" width="7.85" height="8.35" rx="2.35" />
+    <rect
+      x="6.15"
+      y="5.75"
+      width="7.85"
+      height="8.35"
+      rx="2.35"
+      fill="var(--compose-dialog-icon-paper-fill)"
+      stroke="none"
+    />
+    <rect x="6.15" y="5.75" width="7.85" height="8.35" rx="2.35" />
+    <path d="M8.55 8.55h3.2" stroke-width="1.2" />
+    <path d="M8.55 10.8h3.95" stroke-width="1.2" />
+    <path d="M8.55 13.05h2.45" stroke-width="1.2" />
+  `,
+} as const;
+
+const COMPOSE_PUBLISH_VISIBILITY_ICONS: Record<ComposeVisibility, string> = {
+  public: `
+    <circle cx="8" cy="8" r="5.15" />
+    <path d="M3.85 8h8.3" />
+    <path d="M8 2.85c1.22 1.32 1.95 3.08 1.95 5.15S9.22 11.83 8 13.15" />
+    <path d="M8 2.85C6.78 4.17 6.05 5.93 6.05 8S6.78 11.83 8 13.15" />
+  `,
+  latest_hidden: `
+    <path
+      d="M2.55 8c1.38-2.18 3.44-3.4 5.45-3.4S12.07 5.82 13.45 8c-1.38 2.18-3.44 3.4-5.45 3.4S3.93 10.18 2.55 8Z"
+    />
+    <path d="M4.35 11.1 11.65 4.9" />
+  `,
+  private: `
+    <rect x="4.05" y="7.05" width="7.9" height="5.4" rx="1.75" />
+    <path d="M5.95 7.05V5.9A2.05 2.05 0 0 1 8 3.85a2.05 2.05 0 0 1 2.05 2.05v1.15" />
+  `,
+};
+
+const COMPOSE_PUBLISH_ACTION_ICONS = {
+  check: `
+    <path d="M4.35 8.2 6.9 10.7 11.65 5.95" />
+  `,
+  chevron: `
+    <path d="M5.1 6.45 8 9.3l2.9-2.85" />
+  `,
+} as const;
+
+function renderComposeHeaderIcon(
+  icon: (typeof COMPOSE_DIALOG_HEADER_ICONS)[keyof typeof COMPOSE_DIALOG_HEADER_ICONS],
+) {
+  return html`<svg
+    class="compose-dialog-header-icon"
+    width="24"
+    height="24"
+    viewBox="0 0 18 18"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.25"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    ${unsafeSVG(icon)}
+  </svg>`;
+}
+
+function renderComposePublishVisibilityIcon(icon: string, classes: string) {
+  return html`<span class=${classes} aria-hidden="true">
+    <svg
+      class="compose-publish-visibility-svg"
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.35"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      ${unsafeSVG(icon)}
+    </svg>
+  </span>`;
+}
+
+function renderComposePublishActionIcon(
+  icon: (typeof COMPOSE_PUBLISH_ACTION_ICONS)[keyof typeof COMPOSE_PUBLISH_ACTION_ICONS],
+  classes: string,
+) {
+  return html`<svg
+    class=${classes}
+    width="14"
+    height="14"
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.55"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    ${unsafeSVG(icon)}
+  </svg>`;
 }
 
 function toComposeCollections(value: unknown): ComposeCollection[] {
@@ -2120,28 +2225,7 @@ export class JantComposeDialog extends LitElement {
                 ?disabled=${this._loading}
                 @click=${() => this._handleDraftButtonClick()}
               >
-                <svg
-                  class="icon-fine"
-                  width="19"
-                  height="19"
-                  viewBox="0 0 18 18"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.35"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect
-                    x="3.35"
-                    y="3.15"
-                    width="10.75"
-                    height="10.75"
-                    rx="2.35"
-                  />
-                  <path d="M10.75 3.15v2.7a1.5 1.5 0 001.5 1.5h1.85" />
-                  <path d="M6.1 8.35h5.85" />
-                  <path d="M6.1 11h4.6" />
-                </svg>
+                ${renderComposeHeaderIcon(COMPOSE_DIALOG_HEADER_ICONS.drafts)}
               </button>`}
         </div>
       </header>
@@ -2748,71 +2832,10 @@ export class JantComposeDialog extends LitElement {
         visibility === "latest_hidden",
       "compose-publish-visibility-icon-private": visibility === "private",
     });
-
-    if (visibility === "private") {
-      return html`
-        <span class=${iconClasses} aria-hidden="true">
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.45"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="4.25" y="7" width="7.5" height="5.75" rx="1.5" />
-            <path
-              d="M5.75 7V5.7A2.25 2.25 0 018 3.45a2.25 2.25 0 012.25 2.25V7"
-            />
-          </svg>
-        </span>
-      `;
-    }
-
-    if (visibility === "latest_hidden") {
-      return html`
-        <span class=${iconClasses} aria-hidden="true">
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.45"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path
-              d="M2.15 8c1.45-2.42 3.7-3.75 5.85-3.75 2.18 0 4.42 1.33 5.85 3.75-1.43 2.42-3.67 3.75-5.85 3.75-2.15 0-4.4-1.33-5.85-3.75Z"
-            />
-            <path d="M4.1 11.35 11.9 4.65" />
-          </svg>
-        </span>
-      `;
-    }
-
-    return html`
-      <span class=${iconClasses} aria-hidden="true">
-        <svg
-          width="15"
-          height="15"
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.45"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="8" cy="8" r="5.25" />
-          <path d="M2.75 8h10.5" />
-          <path
-            d="M8 2.75c1.45 1.35 2.3 3.24 2.3 5.25S9.45 11.9 8 13.25C6.55 11.9 5.7 10.01 5.7 8S6.55 4.1 8 2.75"
-          />
-        </svg>
-      </span>
-    `;
+    return renderComposePublishVisibilityIcon(
+      COMPOSE_PUBLISH_VISIBILITY_ICONS[visibility],
+      iconClasses,
+    );
   }
 
   private _renderPublishVisibilityOption(
@@ -2840,20 +2863,10 @@ export class JantComposeDialog extends LitElement {
           <span class="compose-publish-row-hint">${hint}</span>
         </span>
         ${selected
-          ? html`<svg
-              class="compose-publish-row-check"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.1"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M20 6 9 17l-5-5" />
-            </svg>`
+          ? renderComposePublishActionIcon(
+              COMPOSE_PUBLISH_ACTION_ICONS.check,
+              "compose-publish-row-check",
+            )
           : nothing}
       </button>
     `;
@@ -3083,19 +3096,10 @@ export class JantComposeDialog extends LitElement {
             title=${this.labels.publishSettings}
             @click=${() => this._togglePublishPanel()}
           >
-            <svg
-              class="compose-publish-toggle-chevron"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.1"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
+            ${renderComposePublishActionIcon(
+              COMPOSE_PUBLISH_ACTION_ICONS.chevron,
+              "compose-publish-toggle-chevron",
+            )}
           </button>
         </div>
         ${this._renderPublishPanel()}

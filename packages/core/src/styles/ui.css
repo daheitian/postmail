@@ -3316,6 +3316,8 @@
   }
 
   .compose-dialog-header-btn {
+    --compose-dialog-icon-paper-fill: var(--site-elevated-bg);
+
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3332,6 +3334,7 @@
   }
 
   .compose-dialog-header-btn:hover {
+    --compose-dialog-icon-paper-fill: var(--site-nav-hover-bg);
     color: var(--site-text-primary);
     background-color: var(--site-nav-hover-bg);
   }
@@ -3339,13 +3342,18 @@
   .compose-dialog-draft-btn {
     color: color-mix(
       in srgb,
-      var(--site-text-primary) 58%,
+      var(--site-text-primary) 48%,
       var(--site-text-secondary)
     );
   }
 
-  .compose-dialog-draft-btn svg {
-    transform: scale(1.04);
+  .compose-dialog-header-icon {
+    display: block;
+    width: 24px;
+    height: 24px;
+    --icon-stroke: 1.32;
+    flex-shrink: 0;
+    overflow: visible;
   }
 
   .compose-dialog-draft-btn:hover {
@@ -3869,6 +3877,14 @@
     color: var(--site-text-secondary);
   }
 
+  .compose-tool-icon {
+    display: block;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    overflow: visible;
+  }
+
   .compose-tool-btn:hover {
     background-color: var(--site-nav-hover-bg);
   }
@@ -3906,14 +3922,10 @@
   }
 
   .compose-tool-btn-view {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    color: color-mix(
-      in oklab,
-      var(--site-text-secondary) 88%,
-      var(--site-text-primary)
-    );
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    color: var(--site-text-secondary);
   }
 
   .compose-tool-btn-view:hover,
@@ -4208,6 +4220,12 @@
 
   .compose-publish-toggle-chevron {
     opacity: 0.78;
+    display: block;
+    width: 0.84rem;
+    height: 0.84rem;
+    overflow: visible;
+    --icon-stroke: 1.46;
+    stroke-width: var(--icon-stroke);
   }
 
   .compose-publish-single:focus-visible,
@@ -4426,26 +4444,28 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1rem;
-    height: 1rem;
+    width: 1.04rem;
+    height: 1.04rem;
     flex-shrink: 0;
     color: color-mix(
       in srgb,
       var(--site-text-primary) 54%,
       var(--site-text-secondary)
     );
-    margin-top: 0.12rem;
+    margin-top: 0.08rem;
   }
 
   .compose-publish-visibility-icon-toggle {
-    width: 0.95rem;
-    height: 0.95rem;
+    width: 1rem;
+    height: 1rem;
   }
 
   .compose-publish-visibility-icon svg {
     width: 100%;
     height: 100%;
-    --icon-stroke: 1.24;
+    display: block;
+    overflow: visible;
+    --icon-stroke: 1.28;
     stroke-width: var(--icon-stroke);
   }
 
@@ -4484,13 +4504,16 @@
     flex-shrink: 0;
     width: 0.82rem;
     height: 0.82rem;
+    display: block;
+    overflow: visible;
     margin-top: 0.08rem;
     color: color-mix(
       in srgb,
       var(--site-text-primary) 80%,
       var(--site-text-secondary)
     );
-    stroke-width: 1.82;
+    --icon-stroke: 1.48;
+    stroke-width: var(--icon-stroke);
   }
 
   /* --- Dropdowns ---------------------------------------------------------- */
