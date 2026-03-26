@@ -1,0 +1,298 @@
+// @vitest-environment happy-dom
+
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type {
+  ComposeFullscreenCloseDetail,
+  ComposeLabels,
+} from "../compose-types.js";
+import "../jant-compose-fullscreen.js";
+import type { JantComposeFullscreen } from "../jant-compose-fullscreen.js";
+
+const labels = {
+  note: "Note",
+  fullscreen: "Fullscreen",
+  done: "Done",
+  title: "Title",
+  titlePlaceholder: "Title",
+  bodyPlaceholder: "What's on your mind...",
+  showMore: "Show more",
+  showLess: "Show less",
+} as ComposeLabels;
+
+async function flush(el?: JantComposeFullscreen) {
+  await Promise.resolve();
+  await Promise.resolve();
+  if (el) {
+    await el.updateComplete;
+  }
+}
+
+describe("JantComposeFullscreen", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    document.body.innerHTML = "";
+
+    if (!HTMLDialogElement.prototype.showModal) {
+      HTMLDialogElement.prototype.showModal = function () {
+        this.setAttribute("open", "");
+      };
+    }
+
+    if (!HTMLDialogElement.prototype.close) {
+      HTMLDialogElement.prototype.close = function () {
+        this.removeAttribute("open");
+      };
+    }
+  });
+
+  it("opens in body-first mode when the title is hidden", async () => {
+    const el = document.createElement(
+      "jant-compose-fullscreen",
+    ) as JantComposeFullscreen;
+    el.labels = labels;
+    document.body.appendChild(el);
+    await flush(el);
+
+    document.dispatchEvent(
+      new CustomEvent("jant:fullscreen-open", {
+        detail: {
+          json: null,
+          title: "",
+          showTitle: false,
+          labels,
+        },
+      }),
+    );
+    await flush(el);
+
+    expect(el.querySelector(".compose-fullscreen-title")).toBeNull();
+    expect(
+      el.querySelector(".compose-fullscreen-title-placeholder"),
+    ).not.toBeNull();
+    expect(el.textContent).not.toContain("Fullscreen");
+    expect(
+      el.querySelector(
+        ".compose-fullscreen-toolbar .compose-fullscreen-title-placeholder",
+      ),
+    ).toBeNull();
+  });
+
+  it("reveals the title on demand and returns its visibility on close", async () => {
+    const el = document.createElement(
+      "jant-compose-fullscreen",
+    ) as JantComposeFullscreen;
+    el.labels = labels;
+    document.body.appendChild(el);
+    await flush(el);
+
+    document.dispatchEvent(
+      new CustomEvent("jant:fullscreen-open", {
+        detail: {
+          json: null,
+          title: "",
+          showTitle: false,
+          labels,
+        },
+      }),
+    );
+    await flush(el);
+
+    const toggle = el.querySelector<HTMLButtonElement>(
+      ".compose-fullscreen-title-placeholder",
+    );
+    expect(toggle).not.toBeNull();
+    toggle?.click();
+    await flush(el);
+
+    const input = el.querySelector<HTMLInputElement>(
+      ".compose-fullscreen-title",
+    );
+    expect(input).not.toBeNull();
+    if (!input) {
+      throw new Error("expected fullscreen title input");
+    }
+    input.value = "Desk Notes";
+    input.dispatchEvent(new Event("input"));
+
+    let detail: ComposeFullscreenCloseDetail | null = null;
+    document.addEventListener(
+      "jant:fullscreen-close",
+      (event) => {
+        detail = (event as CustomEvent<ComposeFullscreenCloseDetail>).detail;
+      },
+      { once: true },
+    );
+
+    el.querySelector<HTMLButtonElement>(".compose-fullscreen-done")?.click();
+
+    expect(detail).toEqual({
+      json: {
+        type: "doc",
+        content: [{ type: "paragraph" }],
+      },
+      title: "Desk Notes",
+      showTitle: true,
+      replyExpanded: false,
+    });
+  });
+
+  it("renders reply context when provided", async () => {
+    const el = document.createElement(
+      "jant-compose-fullscreen",
+    ) as JantComposeFullscreen;
+    el.labels = labels;
+    document.body.appendChild(el);
+    await flush(el);
+
+    document.dispatchEvent(
+      new CustomEvent("jant:fullscreen-open", {
+        detail: {
+          json: null,
+          title: "",
+          showTitle: false,
+          labels,
+          replyContext: {
+            contentHtml: "<p>A quiet sentence worth answering.</p>",
+            dateText: "Mar 10, 2026",
+            expanded: false,
+          },
+        },
+      }),
+    );
+    await flush(el);
+
+    expect(el.textContent).toContain("A quiet sentence worth answering.");
+    expect(el.textContent).toContain("Mar 10, 2026");
+    expect(el.textContent).toContain("Show more");
+    expect(
+      el.querySelector(
+        ".compose-fullscreen-editor-row .compose-fullscreen-title-placeholder-reply",
+      ),
+    ).not.toBeNull();
+  });
+
+  it("renders reply titles inside the current reply node instead of the toolbar", async () => {
+    const el = document.createElement(
+      "jant-compose-fullscreen",
+    ) as JantComposeFullscreen;
+    el.labels = labels;
+    document.body.appendChild(el);
+    await flush(el);
+
+    document.dispatchEvent(
+      new CustomEvent("jant:fullscreen-open", {
+        detail: {
+          json: null,
+          title: "Follow-up",
+          showTitle: true,
+          labels,
+          replyContext: {
+            contentHtml: "<p>Thread seed.</p>",
+            dateText: "Mar 12, 2026",
+            expanded: false,
+          },
+        },
+      }),
+    );
+    await flush(el);
+
+    expect(
+      el.querySelector(
+        ".compose-fullscreen-editor-row .compose-fullscreen-title-reply",
+      ),
+    ).not.toBeNull();
+    expect(
+      el.querySelector(
+        ".compose-fullscreen-toolbar .compose-fullscreen-title-reply",
+      ),
+    ).toBeNull();
+  });
+
+  it("preserves reply expansion state on close", async () => {
+    const el = document.createElement(
+      "jant-compose-fullscreen",
+    ) as JantComposeFullscreen;
+    el.labels = labels;
+    document.body.appendChild(el);
+    await flush(el);
+
+    document.dispatchEvent(
+      new CustomEvent("jant:fullscreen-open", {
+        detail: {
+          json: null,
+          title: "",
+          showTitle: false,
+          labels,
+          replyContext: {
+            contentHtml: "<p>One more thread preview.</p>",
+            dateText: "Mar 11, 2026",
+            expanded: false,
+          },
+        },
+      }),
+    );
+    await flush(el);
+
+    el.querySelector<HTMLButtonElement>(".compose-reply-toggle")?.click();
+    await flush(el);
+
+    let detail: ComposeFullscreenCloseDetail | null = null;
+    document.addEventListener(
+      "jant:fullscreen-close",
+      (event) => {
+        detail = (event as CustomEvent<ComposeFullscreenCloseDetail>).detail;
+      },
+      { once: true },
+    );
+
+    el.querySelector<HTMLButtonElement>(".compose-fullscreen-done")?.click();
+
+    if (!detail) {
+      throw new Error("expected fullscreen close detail");
+    }
+    const closeDetail = detail as ComposeFullscreenCloseDetail;
+    expect(closeDetail.replyExpanded).toBe(true);
+  });
+
+  it("closes on Escape when no editor overlay is open", async () => {
+    const el = document.createElement(
+      "jant-compose-fullscreen",
+    ) as JantComposeFullscreen;
+    el.labels = labels;
+    document.body.appendChild(el);
+    await flush(el);
+
+    document.dispatchEvent(
+      new CustomEvent("jant:fullscreen-open", {
+        detail: {
+          json: null,
+          title: "",
+          showTitle: false,
+          labels,
+        },
+      }),
+    );
+    await flush(el);
+
+    let detail: ComposeFullscreenCloseDetail | null = null;
+    document.addEventListener(
+      "jant:fullscreen-close",
+      (event) => {
+        detail = (event as CustomEvent<ComposeFullscreenCloseDetail>).detail;
+      },
+      { once: true },
+    );
+
+    el.querySelector(".compose-fullscreen-dialog")?.dispatchEvent(
+      new globalThis.KeyboardEvent("keydown", {
+        key: "Escape",
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+    await flush(el);
+
+    expect(detail).not.toBeNull();
+    expect(el.querySelector(".compose-fullscreen-dialog")).toBeNull();
+  });
+});

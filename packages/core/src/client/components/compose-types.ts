@@ -176,6 +176,27 @@ export interface ComposeLabels {
   collectionFormLabels: CollectionFormLabels;
 }
 
+export interface ComposeFullscreenReplyContext {
+  contentHtml: string;
+  dateText: string;
+  expanded: boolean;
+}
+
+export interface ComposeFullscreenOpenDetail {
+  json: JSONContent | null;
+  title: string;
+  showTitle: boolean;
+  labels?: ComposeLabels;
+  replyContext?: ComposeFullscreenReplyContext | null;
+}
+
+export interface ComposeFullscreenCloseDetail {
+  json: JSONContent | null;
+  title: string;
+  showTitle: boolean;
+  replyExpanded: boolean;
+}
+
 export type ComposeVisibility = "public" | "latest_hidden" | "private";
 
 export type ComposeSubmitAttachment =

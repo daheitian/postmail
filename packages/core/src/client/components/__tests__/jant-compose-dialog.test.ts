@@ -246,6 +246,31 @@ describe("JantComposeDialog", () => {
     ).not.toBeNull();
   });
 
+  it("focuses the main editor body after fullscreen closes", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const focusSpy = vi.spyOn(editor, "focusInput");
+
+    document.dispatchEvent(
+      new CustomEvent("jant:fullscreen-close", {
+        detail: {
+          json: null,
+          title: "",
+          showTitle: false,
+          replyExpanded: false,
+        },
+      }),
+    );
+
+    await flushUpdates(el);
+    await flushUpdates(el);
+
+    expect(focusSpy).toHaveBeenCalledWith("end");
+  });
+
   it("opens publish settings even when publish is disabled", async () => {
     const el = await createElement();
 
@@ -325,6 +350,9 @@ describe("JantComposeDialog", () => {
     expect(noteBtn.classList.contains("compose-segmented-item-active")).toBe(
       false,
     );
+    expect(
+      el.querySelector('.compose-tool-btn-view[aria-label="Fullscreen"]'),
+    ).toBeNull();
   });
 
   it("submit dispatches jant:compose-submit-deferred with correct payload", async () => {

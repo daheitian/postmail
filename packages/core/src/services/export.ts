@@ -1502,6 +1502,10 @@ const STYLE_CSS = `/* Jant Export Theme */
     "New York Small", "New York", "Iowan Old Style", Charter,
     "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
     var(--font-cjk-serif-fallback), ui-serif, serif;
+  --font-site-title:
+    "New York Small", "New York", "Iowan Old Style", Charter,
+    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+    var(--font-cjk-serif-fallback), ui-serif, serif;
   --font-serif:
     var(--font-cjk-serif-fallback), ui-serif, "New York Small", "New York",
     "Iowan Old Style", Charter, Georgia, "Times New Roman", Times, serif;
@@ -1681,7 +1685,7 @@ img {
   padding: 0.15rem 0;
   font-size: clamp(1.18rem, 1.08rem + 0.45vw, 1.34rem);
   font-weight: var(--fw-medium);
-  font-family: var(--font-heading);
+  font-family: var(--font-site-title);
   letter-spacing: -0.03em;
   color: var(--site-text-primary);
   text-decoration: none;

@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { strToU8, zipSync } from "fflate";
 import sharp from "sharp";
 import { encodeIco, FAVICON_SIZES } from "../../src/lib/favicon.ts";
 
@@ -11,6 +12,22 @@ const sourceSvgPath = resolve(
   "src/assets/branding/jant-logo-positive.svg",
 );
 const outputPath = resolve(packageRoot, "src/lib/jant-branding-generated.ts");
+const DEFAULT_EXPORT_DIR = "packages/core/src/assets/branding/generated";
+const EXPORTED_ASSET_FILENAMES = {
+  positiveLogoSvg: "jant-logo-positive.svg",
+  negativeLogoSvg: "jant-logo-negative.svg",
+  positiveLogoPng: "jant-logo-positive-512.png",
+  brandTileSvg: "jant-brand-tile.svg",
+  brandTilePng: "jant-brand-tile-512.png",
+  squareTileSvg: "jant-square-tile.svg",
+  squareTilePng: "jant-square-tile-512.png",
+  circleTileSvg: "jant-circle-tile.svg",
+  circleTilePng: "jant-circle-tile-512.png",
+  favicon: "jant-favicon.ico",
+  appleTouch: "jant-apple-touch-icon.png",
+  socialImage: "jant-social-preview.png",
+  brandPack: "jant-brand-assets.zip",
+} as const;
 
 const NEGATIVE_FILL = "#FFFFFF";
 const APP_ICON_CORNER_RADIUS = 22;
@@ -35,6 +52,11 @@ interface BrandAssetBundle {
   faviconIco: ArrayBuffer;
   appleTouchPng: ArrayBuffer;
   socialImagePng: ArrayBuffer;
+}
+
+interface CliOptions {
+  exportDir: string | null;
+  exportOnly: boolean;
 }
 
 function fail(message: string): never {
@@ -150,6 +172,81 @@ function formatBase64Export(name: string, value: string): string {
   return `export const ${name} = [\n${chunks}\n].join("");\n`;
 }
 
+function buildBrandPackReadme(): string {
+  return [
+    "Jant Brand Assets",
+    "",
+    "Included files:",
+    `- ${EXPORTED_ASSET_FILENAMES.positiveLogoSvg}`,
+    `- ${EXPORTED_ASSET_FILENAMES.negativeLogoSvg}`,
+    `- ${EXPORTED_ASSET_FILENAMES.positiveLogoPng}`,
+    `- ${EXPORTED_ASSET_FILENAMES.brandTileSvg}`,
+    `- ${EXPORTED_ASSET_FILENAMES.brandTilePng}`,
+    `- ${EXPORTED_ASSET_FILENAMES.squareTileSvg}`,
+    `- ${EXPORTED_ASSET_FILENAMES.squareTilePng}`,
+    `- ${EXPORTED_ASSET_FILENAMES.circleTileSvg}`,
+    `- ${EXPORTED_ASSET_FILENAMES.circleTilePng}`,
+    `- ${EXPORTED_ASSET_FILENAMES.favicon}`,
+    `- ${EXPORTED_ASSET_FILENAMES.appleTouch}`,
+    `- ${EXPORTED_ASSET_FILENAMES.socialImage}`,
+  ].join("\n");
+}
+
+function printHelp(): void {
+  console.log(`Usage: tsx dev/scripts/generate-brand-assets.ts [options]
+
+Options:
+  --export-dir <path>  Write generated logo/icon assets to a local directory
+  --export-only        Skip updating src/lib/jant-branding-generated.ts
+  --help               Show this help message
+
+Examples:
+  tsx dev/scripts/generate-brand-assets.ts
+  tsx dev/scripts/generate-brand-assets.ts --export-dir ${DEFAULT_EXPORT_DIR} --export-only`);
+}
+
+function parseArgs(argv: string[]): CliOptions {
+  let exportDir: string | null = null;
+  let exportOnly = false;
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+
+    if (arg === "--help" || arg === "-h") {
+      printHelp();
+      process.exit(0);
+    }
+
+    if (arg === "--export-only") {
+      exportOnly = true;
+      continue;
+    }
+
+    if (arg === "--export-dir") {
+      const value = argv[index + 1];
+      if (!value) {
+        fail("Missing value for --export-dir");
+      }
+      exportDir = value;
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--export-dir=")) {
+      const value = arg.slice("--export-dir=".length);
+      if (!value) {
+        fail("Missing value for --export-dir");
+      }
+      exportDir = value;
+      continue;
+    }
+
+    fail(`Unknown argument: ${arg}`);
+  }
+
+  return { exportDir, exportOnly };
+}
+
 async function buildAssetBundle({
   viewBox,
   pathData,
@@ -223,16 +320,79 @@ async function buildAssetBundle({
   };
 }
 
-async function main(): Promise<void> {
-  const sourceSvg = normalizeSvg(await readFile(sourceSvgPath, "utf8"));
-  const viewBox = extractSvgAttribute(sourceSvg, "viewBox");
-  const pathData = extractPathData(sourceSvg);
-  const defaultBundle = await buildAssetBundle({
-    viewBox,
-    pathData,
-    positiveFill: extractFill(sourceSvg),
-  });
+async function writeAssetFile(
+  filePath: string,
+  content: string | ArrayBuffer,
+): Promise<void> {
+  await mkdir(dirname(filePath), { recursive: true });
 
+  if (typeof content === "string") {
+    await writeFile(filePath, content, "utf8");
+    return;
+  }
+
+  await writeFile(filePath, Buffer.from(content));
+}
+
+async function exportBrandAssets(
+  exportDir: string,
+  bundle: BrandAssetBundle,
+): Promise<void> {
+  const resolvedExportDir = resolve(process.cwd(), exportDir);
+  const files: Array<[string, string | ArrayBuffer]> = [
+    [EXPORTED_ASSET_FILENAMES.positiveLogoSvg, bundle.positiveSvg],
+    [EXPORTED_ASSET_FILENAMES.negativeLogoSvg, bundle.negativeSvg],
+    [EXPORTED_ASSET_FILENAMES.positiveLogoPng, bundle.positiveLogoPng],
+    [EXPORTED_ASSET_FILENAMES.brandTileSvg, bundle.roundedTileSvg],
+    [EXPORTED_ASSET_FILENAMES.brandTilePng, bundle.brandTilePng],
+    [EXPORTED_ASSET_FILENAMES.squareTileSvg, bundle.squareTileSvg],
+    [EXPORTED_ASSET_FILENAMES.squareTilePng, bundle.squareTilePng],
+    [EXPORTED_ASSET_FILENAMES.circleTileSvg, bundle.circleTileSvg],
+    [EXPORTED_ASSET_FILENAMES.circleTilePng, bundle.circleTilePng],
+    [EXPORTED_ASSET_FILENAMES.favicon, bundle.faviconIco],
+    [EXPORTED_ASSET_FILENAMES.appleTouch, bundle.appleTouchPng],
+    [EXPORTED_ASSET_FILENAMES.socialImage, bundle.socialImagePng],
+  ];
+  const archive = zipSync(
+    Object.fromEntries(
+      files.map(([filename, content]) => [
+        filename,
+        typeof content === "string"
+          ? strToU8(content)
+          : new Uint8Array(content),
+      ]),
+    ),
+    { level: 0 },
+  );
+
+  for (const [filename, content] of files) {
+    await writeAssetFile(resolve(resolvedExportDir, filename), content);
+  }
+
+  await writeAssetFile(
+    resolve(resolvedExportDir, EXPORTED_ASSET_FILENAMES.brandPack),
+    archive.buffer.slice(
+      archive.byteOffset,
+      archive.byteOffset + archive.byteLength,
+    ),
+  );
+  await writeAssetFile(
+    resolve(resolvedExportDir, "README.txt"),
+    buildBrandPackReadme(),
+  );
+
+  console.log(`Exported brand assets to ${resolvedExportDir}`);
+}
+
+async function writeGeneratedModule({
+  viewBox,
+  pathData,
+  defaultBundle,
+}: {
+  viewBox: string;
+  pathData: string;
+  defaultBundle: BrandAssetBundle;
+}): Promise<void> {
   const file = `// Generated by dev/scripts/generate-brand-assets.ts.
 // Do not edit this file directly.
 
@@ -289,6 +449,26 @@ ${formatStringExport("JANT_LOGO_VIEW_BOX", viewBox)}${formatStringExport(
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, file);
   console.log(`Generated ${outputPath}`);
+}
+
+async function main(): Promise<void> {
+  const options = parseArgs(process.argv.slice(2));
+  const sourceSvg = normalizeSvg(await readFile(sourceSvgPath, "utf8"));
+  const viewBox = extractSvgAttribute(sourceSvg, "viewBox");
+  const pathData = extractPathData(sourceSvg);
+  const defaultBundle = await buildAssetBundle({
+    viewBox,
+    pathData,
+    positiveFill: extractFill(sourceSvg),
+  });
+
+  if (options.exportDir) {
+    await exportBrandAssets(options.exportDir, defaultBundle);
+  }
+
+  if (!options.exportOnly) {
+    await writeGeneratedModule({ viewBox, pathData, defaultBundle });
+  }
 }
 
 await main();

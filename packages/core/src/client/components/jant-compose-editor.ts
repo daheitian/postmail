@@ -27,6 +27,7 @@ import type {
   ComposeLabels,
   ComposeAttachment,
   AttachedTextItem,
+  ComposeFullscreenOpenDetail,
 } from "./compose-types.js";
 import {
   UPLOAD_ACCEPT,
@@ -71,7 +72,7 @@ const COMPOSE_TOOLBAR_ICONS = {
     />
     <path
       d="m9 1.95 2.08 4.21 4.65.67-3.36 3.29.8 4.63L9 12.55l-4.17 2.2.8-4.63-3.36-3.29 4.65-.67z"
-      stroke-width="1.75"
+      stroke-width="1.6"
     />
   `,
   title: `
@@ -104,10 +105,10 @@ const COMPOSE_TOOLBAR_ICONS = {
     />
   `,
   fullscreen: `
-    <path d="M5.85 3H3v2.85" stroke-width="1.65" />
-    <path d="M12.15 3H15v2.85" stroke-width="1.65" />
-    <path d="M3 12.15V15h2.85" stroke-width="1.65" />
-    <path d="M15 12.15V15h-2.85" stroke-width="1.65" />
+    <path d="M5.85 3H3v2.85" stroke-width="1.48" />
+    <path d="M12.15 3H15v2.85" stroke-width="1.48" />
+    <path d="M3 12.15V15h2.85" stroke-width="1.48" />
+    <path d="M15 12.15V15h-2.85" stroke-width="1.48" />
   `,
 } as const;
 
@@ -791,15 +792,19 @@ export class JantComposeEditor extends LitElement {
   }
 
   /** Updates editor content and title from fullscreen close */
-  setEditorState(json: JSONContent | null, title: string) {
+  setEditorState(json: JSONContent | null, title: string, showTitle: boolean) {
     this._bodyJson = json;
     this._title = title;
-    // Show the title field if user typed a title in fullscreen
-    if (title && this.format === "note") {
-      this._showTitle = true;
+    if (this.format === "note") {
+      this._showTitle = showTitle || title.length > 0;
     }
-    if (this._editor && json) {
-      this._editor.commands.setContent(json);
+    if (this._editor) {
+      this._editor.commands.setContent(
+        json ?? {
+          type: "doc",
+          content: [{ type: "paragraph" }],
+        },
+      );
     }
   }
 
@@ -2015,26 +2020,30 @@ export class JantComposeEditor extends LitElement {
               </button>
             `
           : nothing}
-
-        <div class="compose-tool-view-group">
-          <button
-            type="button"
-            class="compose-tool-btn compose-tool-btn-view"
-            title=${this.labels.fullscreen}
-            aria-label=${this.labels.fullscreen}
-            @click=${() => this.openFullscreen()}
-          >
-            ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.fullscreen)}
-          </button>
-        </div>
+        ${this.format === "note"
+          ? html`
+              <div class="compose-tool-view-group">
+                <button
+                  type="button"
+                  class="compose-tool-btn compose-tool-btn-view"
+                  title=${this.labels.fullscreen}
+                  aria-label=${this.labels.fullscreen}
+                  @click=${() => this.openFullscreen()}
+                >
+                  ${renderComposeToolbarIcon(COMPOSE_TOOLBAR_ICONS.fullscreen)}
+                </button>
+              </div>
+            `
+          : nothing}
       </div>
     `;
   }
 
   openFullscreen() {
+    if (this.format !== "note") return;
     const state = this.getEditorState();
     this.dispatchEvent(
-      new CustomEvent("jant:fullscreen-open", {
+      new CustomEvent<ComposeFullscreenOpenDetail>("jant:fullscreen-open", {
         bubbles: true,
         detail: { ...state, labels: this.labels },
       }),

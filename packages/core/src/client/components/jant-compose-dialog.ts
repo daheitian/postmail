@@ -22,6 +22,9 @@ import type {
   ComposeAttachment,
   DraftItem,
   LocalDraft,
+  ComposeFullscreenOpenDetail,
+  ComposeFullscreenReplyContext,
+  ComposeFullscreenCloseDetail,
 } from "./compose-types.js";
 import type { CollectionSubmitDetail } from "./collection-types.js";
 import { showToast } from "../toast.js";
@@ -202,7 +205,10 @@ function renderComposeHeaderIcon(
   </svg>`;
 }
 
-function renderComposePublishVisibilityIcon(icon: string, classes: string) {
+function renderComposePublishVisibilityIcon(
+  icon: string,
+  classes: string | ReturnType<typeof classMap>,
+) {
   return html`<span class=${classes} aria-hidden="true">
     <svg
       class="compose-publish-visibility-svg"
@@ -1320,6 +1326,10 @@ export class JantComposeDialog extends LitElement {
       "jant:file-picker-close",
       this._handleFilePickerClose as EventListener,
     );
+    this.addEventListener(
+      "jant:fullscreen-open",
+      this._handleFullscreenOpen as EventListener,
+    );
     this.addEventListener("pointerdown", this._handlePointerDown);
     // Listen on document — fullscreen element lives on document.body, outside the dialog
     document.addEventListener(
@@ -1362,6 +1372,10 @@ export class JantComposeDialog extends LitElement {
     this.removeEventListener(
       "jant:file-picker-close",
       this._handleFilePickerClose as EventListener,
+    );
+    this.removeEventListener(
+      "jant:fullscreen-open",
+      this._handleFullscreenOpen as EventListener,
     );
     this.removeEventListener("pointerdown", this._handlePointerDown);
     document.removeEventListener(
@@ -1533,15 +1547,34 @@ export class JantComposeDialog extends LitElement {
   }
 
   private _handleFullscreenClose = (
-    e: CustomEvent<{ json: unknown; title: string }>,
+    e: CustomEvent<ComposeFullscreenCloseDetail>,
   ) => {
     const editor = this._editor;
     if (editor) {
       editor.setEditorState(
         e.detail.json as import("@tiptap/core").JSONContent,
         e.detail.title,
+        e.detail.showTitle,
       );
+      this.updateComplete.then(() => editor.focusInput("end"));
     }
+    this._replyExpanded = e.detail.replyExpanded;
+  };
+
+  private _buildFullscreenReplyContext(): ComposeFullscreenReplyContext | null {
+    if (!this._replyToId || !this._replyToData) return null;
+
+    return {
+      contentHtml: this._replyToData.contentHtml,
+      dateText: this._replyToData.dateText,
+      expanded: this._replyExpanded,
+    };
+  }
+
+  private _handleFullscreenOpen = (
+    e: CustomEvent<ComposeFullscreenOpenDetail>,
+  ) => {
+    e.detail.replyContext = this._buildFullscreenReplyContext();
   };
 
   private _handleAttachedPanelOpen = (e: Event) => {

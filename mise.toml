@@ -58,6 +58,11 @@ run = 'node dev/scripts/setup-dev-auth.mjs "$usage_password"'
 description = "Build @jant/core (lib + client assets)"
 run = "pnpm --filter @jant/core build"
 
+[tasks.brand-export]
+description = "Export the default Jant brand assets to a local directory"
+usage = 'arg "[path]" default="packages/core/src/assets/branding/generated"'
+run = 'pnpm exec tsx packages/core/dev/scripts/generate-brand-assets.ts --export-dir "$usage_path" --export-only'
+
 [tasks.build-packages]
 description = "Build all publishable packages"
 run = """

@@ -569,6 +569,23 @@ describe("JantComposeEditor", () => {
     ).not.toBeNull();
   });
 
+  it("shows fullscreen only in note mode", async () => {
+    const note = await createElement("note");
+    expect(
+      note.querySelector('.compose-tool-btn-view[aria-label="Fullscreen"]'),
+    ).not.toBeNull();
+
+    const link = await createElement("link");
+    expect(
+      link.querySelector('.compose-tool-btn-view[aria-label="Fullscreen"]'),
+    ).toBeNull();
+
+    const quote = await createElement("quote");
+    expect(
+      quote.querySelector('.compose-tool-btn-view[aria-label="Fullscreen"]'),
+    ).toBeNull();
+  });
+
   it("getData returns current field values", async () => {
     const el = await createElement("note");
     el._title = "Test Title";

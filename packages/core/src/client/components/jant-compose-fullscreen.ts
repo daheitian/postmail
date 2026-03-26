@@ -9,10 +9,19 @@
  */
 
 import { LitElement, html, nothing } from "lit";
+import { classMap } from "lit/directives/class-map.js";
+import { unsafeHTML } from "lit/directives/unsafe-html.js";
 import type { Editor, JSONContent } from "@tiptap/core";
-import type { ComposeLabels } from "./compose-types.js";
+import type {
+  ComposeLabels,
+  ComposeFullscreenCloseDetail,
+  ComposeFullscreenOpenDetail,
+  ComposeFullscreenReplyContext,
+} from "./compose-types.js";
 import { createTiptapEditor } from "../tiptap/create-editor.js";
 import { uploadAndInsertInlineImage } from "../tiptap/inline-image-upload.js";
+
+const ESCAPE_OVERLAY_SELECTOR = ".tiptap-slash-menu, .tiptap-link-input";
 
 export class JantComposeFullscreen extends LitElement {
   static properties = {
@@ -20,12 +29,16 @@ export class JantComposeFullscreen extends LitElement {
     _open: { state: true },
     _title: { state: true },
     _showTitle: { state: true },
+    _replyContext: { state: true },
+    _replyExpanded: { state: true },
   };
 
   declare labels: ComposeLabels;
   declare _open: boolean;
   declare _title: string;
   declare _showTitle: boolean;
+  declare _replyContext: ComposeFullscreenReplyContext | null;
+  declare _replyExpanded: boolean;
 
   private _editor: Editor | null = null;
   private _content: JSONContent | null = null;
@@ -41,6 +54,8 @@ export class JantComposeFullscreen extends LitElement {
     this._open = false;
     this._title = "";
     this._showTitle = false;
+    this._replyContext = null;
+    this._replyExpanded = false;
   }
 
   connectedCallback() {
@@ -50,6 +65,7 @@ export class JantComposeFullscreen extends LitElement {
       this._onOpen as EventListener,
     );
     document.addEventListener("jant:slash-image", this._onSlashImage);
+    document.addEventListener("keydown", this._onDocumentKeydown, true);
   }
 
   disconnectedCallback() {
@@ -59,6 +75,7 @@ export class JantComposeFullscreen extends LitElement {
       this._onOpen as EventListener,
     );
     document.removeEventListener("jant:slash-image", this._onSlashImage);
+    document.removeEventListener("keydown", this._onDocumentKeydown, true);
     this._fileInput?.remove();
     this._destroyEditor();
   }
@@ -92,24 +109,16 @@ export class JantComposeFullscreen extends LitElement {
     void uploadAndInsertInlineImage(editor, file);
   }
 
-  private _onOpen = (
-    e: CustomEvent<{
-      json: JSONContent | null;
-      title: string;
-      showTitle: boolean;
-      format?: string;
-      labels?: ComposeLabels;
-    }>,
-  ) => {
+  private _onOpen = (e: CustomEvent<ComposeFullscreenOpenDetail>) => {
     this._content = e.detail.json;
     this._title = e.detail.title;
     if (e.detail.labels) {
       this.labels = e.detail.labels;
     }
-    // Always show title in fullscreen — it's the primary editing surface
-    this._showTitle = true;
+    this._showTitle = e.detail.showTitle || e.detail.title.trim().length > 0;
+    this._replyContext = e.detail.replyContext ?? null;
+    this._replyExpanded = e.detail.replyContext?.expanded ?? false;
     this._open = true;
-    // Show as modal (top layer) and init editor after render
     this.updateComplete.then(() => {
       const dialog = this.querySelector<HTMLDialogElement>(
         ".compose-fullscreen-dialog",
@@ -139,6 +148,8 @@ export class JantComposeFullscreen extends LitElement {
         shouldInsertInline: (file) => file.type.startsWith("image/"),
       },
     });
+
+    this._editor.commands.focus("end");
   }
 
   private _destroyEditor() {
@@ -152,6 +163,26 @@ export class JantComposeFullscreen extends LitElement {
     this._close();
   };
 
+  private _onDocumentKeydown = (e: globalThis.KeyboardEvent) => {
+    if (!this._open || e.key !== "Escape") return;
+    if (this._hasActiveEscapeOverlay()) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    this._close();
+  };
+
+  private _hasActiveEscapeOverlay(): boolean {
+    const dialog = this.querySelector<HTMLDialogElement>(
+      ".compose-fullscreen-dialog[open]",
+    );
+    if (!dialog) return false;
+
+    return Array.from(
+      dialog.querySelectorAll<HTMLElement>(ESCAPE_OVERLAY_SELECTOR),
+    ).some((el) => getComputedStyle(el).display !== "none");
+  }
+
   private _close() {
     const json = this._editor?.getJSON() ?? this._content;
     this._destroyEditor();
@@ -162,78 +193,157 @@ export class JantComposeFullscreen extends LitElement {
     );
     dialog?.close();
     this._open = false;
+    this._replyContext = null;
 
     // Dispatch on document so the compose dialog (a separate subtree) receives it
     document.dispatchEvent(
-      new CustomEvent("jant:fullscreen-close", {
+      new CustomEvent<ComposeFullscreenCloseDetail>("jant:fullscreen-close", {
         bubbles: true,
-        detail: { json, title: this._title },
+        detail: {
+          json,
+          title: this._title,
+          showTitle: this._showTitle || this._title.trim().length > 0,
+          replyExpanded: this._replyExpanded,
+        },
       }),
     );
   }
 
-  /** Insert "/" at cursor to trigger the slash command popup */
-  private _insertSlash() {
-    if (!this._editor) return;
-    this._editor.chain().focus().insertContent("/").run();
+  private _revealTitle() {
+    this._showTitle = true;
+    this.updateComplete.then(() => {
+      this.querySelector<HTMLInputElement>(
+        ".compose-fullscreen-title",
+      )?.focus();
+    });
+  }
+
+  private _renderTitleField(variant: "note" | "reply") {
+    const titleClasses = classMap({
+      "compose-fullscreen-title": true,
+      "compose-fullscreen-title-reply": variant === "reply",
+    });
+    const placeholderClasses = classMap({
+      "compose-fullscreen-title-placeholder": true,
+      "compose-fullscreen-title-placeholder-reply": variant === "reply",
+    });
+
+    return this._showTitle
+      ? html`
+          <div class="compose-fullscreen-title-shell">
+            <input
+              type="text"
+              .value=${this._title}
+              @input=${(e: Event) => {
+                this._title = (e.target as HTMLInputElement).value;
+              }}
+              @keydown=${(e: globalThis.KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  this._editor?.commands.focus("start");
+                }
+              }}
+              class=${titleClasses}
+              placeholder=${this.labels.titlePlaceholder ?? "Title"}
+            />
+          </div>
+        `
+      : html`
+          <button
+            type="button"
+            class=${placeholderClasses}
+            @click=${() => this._revealTitle()}
+          >
+            ${variant === "reply"
+              ? this.labels.titlePlaceholder || this.labels.title || "Title"
+              : this.labels.title || "Title"}
+          </button>
+        `;
   }
 
   render() {
     if (!this._open) return nothing;
 
+    const replyContext = this._replyContext;
+    const editorSurface = (variant: "note" | "reply") => html`
+      <div
+        class=${classMap({
+          "compose-fullscreen-editor-surface": true,
+          "compose-fullscreen-editor-surface-reply": variant === "reply",
+        })}
+      >
+        ${this._renderTitleField(variant)}
+        <div class="compose-tiptap-body"></div>
+      </div>
+    `;
+
     return html`
-      <dialog class="compose-fullscreen-dialog" @cancel=${this._onDialogCancel}>
+      <dialog
+        class="compose-fullscreen-dialog"
+        aria-label=${this.labels.fullscreen || this.labels.note || "Fullscreen"}
+        @cancel=${this._onDialogCancel}
+      >
         <div class="compose-fullscreen">
-          <div class="compose-fullscreen-toolbar">
-            <button
-              type="button"
-              class="compose-tool-btn"
-              @click=${() => this._insertSlash()}
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
+          <header class="compose-fullscreen-toolbar">
+            <div class="compose-fullscreen-toolbar-inner">
+              <button
+                type="button"
+                class="compose-fullscreen-done"
+                @click=${() => this._close()}
               >
-                <line x1="9" y1="3" x2="9" y2="15" />
-                <line x1="3" y1="9" x2="15" y2="9" />
-              </svg>
-            </button>
-            <div class="flex-1"></div>
-            <button
-              type="button"
-              class="compose-tool-btn"
-              @click=${() => this._close()}
-            >
-              ${this.labels.done || "Done"}
-            </button>
-          </div>
+                ${this.labels.done || "Done"}
+              </button>
+            </div>
+          </header>
           <div class="compose-fullscreen-content">
             <div class="compose-fullscreen-inner">
-              ${this._showTitle
+              ${replyContext
                 ? html`
-                    <input
-                      type="text"
-                      .value=${this._title}
-                      @input=${(e: Event) => {
-                        this._title = (e.target as HTMLInputElement).value;
-                      }}
-                      @keydown=${(e: globalThis.KeyboardEvent) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          this._editor?.commands.focus("start");
-                        }
-                      }}
-                      class="compose-fullscreen-title"
-                      placeholder=${this.labels.titlePlaceholder ?? "Title"}
-                    />
+                    <div
+                      class="compose-thread-layout compose-fullscreen-thread-layout"
+                    >
+                      <div class="compose-reply-row">
+                        <div class="compose-thread-dot"></div>
+                        <div
+                          class=${classMap({
+                            "compose-reply-context": true,
+                            expanded: this._replyExpanded,
+                          })}
+                        >
+                          <div class="compose-reply-context-body">
+                            ${unsafeHTML(replyContext.contentHtml)}
+                          </div>
+                          ${!this._replyExpanded
+                            ? html`<div class="compose-reply-fade"></div>`
+                            : nothing}
+                        </div>
+                      </div>
+                      <div class="compose-reply-meta">
+                        ${replyContext.dateText
+                          ? html`<span>${replyContext.dateText}</span
+                              ><span>·</span>`
+                          : nothing}
+                        <button
+                          type="button"
+                          class="compose-reply-toggle"
+                          @click=${() => {
+                            this._replyExpanded = !this._replyExpanded;
+                          }}
+                        >
+                          ${this._replyExpanded
+                            ? this.labels.showLess
+                            : this.labels.showMore}
+                        </button>
+                      </div>
+                      <div
+                        class="compose-editor-row compose-fullscreen-editor-row"
+                      >
+                        <div class="compose-thread-dot"></div>
+                        ${editorSurface("reply")}
+                      </div>
+                    </div>
                   `
-                : nothing}
-              <div class="compose-tiptap-body"></div>
+                : editorSurface("note")}
             </div>
           </div>
         </div>

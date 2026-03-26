@@ -20,6 +20,10 @@
     "New York Small", "New York", "Iowan Old Style", Charter,
     "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
     var(--font-cjk-serif-fallback), ui-serif, serif;
+  --font-site-title:
+    "New York Small", "New York", "Iowan Old Style", Charter,
+    "Bitstream Charter", "Source Serif 4", Cambria, "Sitka Text", Georgia,
+    var(--font-cjk-serif-fallback), ui-serif, serif;
   --font-serif:
     var(--font-cjk-serif-fallback), ui-serif, "New York Small", "New York",
     "Iowan Old Style", Charter, Georgia, "Times New Roman", Times, serif;
