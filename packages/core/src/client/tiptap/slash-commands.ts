@@ -38,6 +38,8 @@ interface SlashCommandItem {
   command: (editor: Editor, range: Range) => void;
 }
 
+const SLASH_EMPTY_MESSAGE = "No matches. Try another command.";
+
 const SLASH_COMMANDS: SlashCommandItem[] = [
   {
     label: "Media",
@@ -222,7 +224,18 @@ function renderPopup(
   if (!popupEl) return;
 
   filteredItems = items;
-  if (selectedIndex >= items.length) selectedIndex = 0;
+  if (items.length === 0) {
+    selectedIndex = 0;
+    popupEl.dataset.empty = "true";
+    popupEl.innerHTML = `<div class="tiptap-slash-empty" role="status" aria-live="polite">${SLASH_EMPTY_MESSAGE}</div>`;
+    popupEl.scrollTop = 0;
+    return;
+  }
+
+  delete popupEl.dataset.empty;
+  if (selectedIndex >= items.length || Number.isNaN(selectedIndex)) {
+    selectedIndex = 0;
+  }
 
   popupEl.innerHTML = items
     .map(
@@ -372,15 +385,21 @@ export const SlashCommands = Extension.create({
               }
             },
             onKeyDown: (props: SuggestionKeyDownProps) => {
-              const { event } = props;
+              const { event, view, range } = props;
               if (event.key === "ArrowDown") {
                 event.preventDefault();
+                if (filteredItems.length === 0) {
+                  return true;
+                }
                 selectedIndex = (selectedIndex + 1) % filteredItems.length;
                 updateSelection();
                 return true;
               }
               if (event.key === "ArrowUp") {
                 event.preventDefault();
+                if (filteredItems.length === 0) {
+                  return true;
+                }
                 selectedIndex =
                   (selectedIndex - 1 + filteredItems.length) %
                   filteredItems.length;
@@ -389,14 +408,18 @@ export const SlashCommands = Extension.create({
               }
               if (event.key === "Enter") {
                 event.preventDefault();
+                if (filteredItems.length === 0) {
+                  return true;
+                }
                 commandFn?.({ index: selectedIndex });
                 return true;
               }
               if (event.key === "Escape") {
-                // Stop propagation to prevent parent dialog from closing
+                // Match click-outside cancel behavior: remove the slash query so
+                // the suggestion exits instead of leaving an active hidden state.
                 event.stopPropagation();
                 event.preventDefault();
-                destroyPopup();
+                view.dispatch(view.state.tr.delete(range.from, range.to));
                 return true;
               }
               return false;

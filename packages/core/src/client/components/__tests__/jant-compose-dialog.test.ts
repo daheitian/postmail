@@ -1,6 +1,7 @@
 // @vitest-environment happy-dom
 
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import type { Editor } from "@tiptap/core";
 
 import type {
   ComposeLabels,
@@ -20,6 +21,14 @@ function requireElement<T extends globalThis.Element>(
     throw new Error(message);
   }
   return element;
+}
+
+function requireEditor(el: JantComposeEditor): Editor {
+  const editor = (el as unknown as { _editor?: Editor | null })._editor;
+  if (!editor) {
+    throw new Error("expected compose editor instance");
+  }
+  return editor;
 }
 
 async function flushUpdates(el?: JantComposeDialog) {
@@ -2245,6 +2254,75 @@ describe("JantComposeDialog", () => {
     await el.updateComplete;
 
     expect(el._confirmPanelOpen).toBe(true);
+  });
+
+  it("Escape cancels slash commands without opening the close confirmation", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const tiptap = requireEditor(editor);
+
+    tiptap.commands.focus("end");
+    tiptap.commands.insertContent("/");
+    await flushUpdates(el);
+
+    expect(document.querySelector(".tiptap-slash-menu")).not.toBeNull();
+
+    const requestCloseSpy = vi.spyOn(el, "requestClose");
+    const escapeEvent = new globalThis.KeyboardEvent("keydown", {
+      key: "Escape",
+      bubbles: true,
+      cancelable: true,
+    });
+    tiptap.view.dom.dispatchEvent(escapeEvent);
+    await flushUpdates(el);
+
+    expect(escapeEvent.defaultPrevented).toBe(true);
+    expect(requestCloseSpy).not.toHaveBeenCalled();
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(document.querySelector(".tiptap-slash-menu")).toBeNull();
+    expect(tiptap.getText()).toBe("");
+  });
+
+  it("shows a clear empty state when slash commands have no matches", async () => {
+    const el = await createElement();
+    const editor = requireElement(
+      el.querySelector<JantComposeEditor>("jant-compose-editor"),
+      "expected compose editor",
+    );
+    const tiptap = requireEditor(editor);
+
+    tiptap.commands.focus("end");
+    tiptap.commands.insertContent("/zzz");
+    await flushUpdates(el);
+
+    const menu = requireElement(
+      document.querySelector<HTMLElement>(".tiptap-slash-menu"),
+      "expected slash menu",
+    );
+    expect(menu.querySelectorAll(".tiptap-slash-item")).toHaveLength(0);
+    expect(
+      requireElement(
+        menu.querySelector<HTMLElement>(".tiptap-slash-empty"),
+        "expected slash empty state",
+      ).textContent,
+    ).toContain("No matches. Try another command.");
+
+    const requestCloseSpy = vi.spyOn(el, "requestClose");
+    const enterEvent = new globalThis.KeyboardEvent("keydown", {
+      key: "Enter",
+      bubbles: true,
+      cancelable: true,
+    });
+    tiptap.view.dom.dispatchEvent(enterEvent);
+    await flushUpdates(el);
+
+    expect(enterEvent.defaultPrevented).toBe(true);
+    expect(requestCloseSpy).not.toHaveBeenCalled();
+    expect(el._confirmPanelOpen).toBe(false);
+    expect(tiptap.getText()).toBe("/zzz");
   });
 
   it("dialog cancel closes the emoji picker before prompting to save", async () => {

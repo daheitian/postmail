@@ -7115,6 +7115,13 @@
     flex: 1;
   }
 
+  .tiptap-slash-empty {
+    padding: 10px 12px;
+    color: var(--site-text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+
   /* Bubble menu — floating toolbar on text selection */
   .tiptap-bubble-menu {
     position: fixed;
