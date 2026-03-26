@@ -311,27 +311,35 @@ After
     }
   });
 
-  it("warns when importing into a target that has not completed setup", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    try {
-      const warned = await __test__.warnIfTargetSetupIncomplete(
+  it("blocks imports when the target site has not completed setup", async () => {
+    await expect(
+      __test__.getIncompleteSetupError(
         {
           getSetupStatus: async () => false,
         },
         "Local target site",
-      );
+      ),
+    ).resolves.toBe(__test__.buildIncompleteSetupError("Local target site"));
+  });
 
-      expect(warned).toBe(true);
-      expect(warnSpy).toHaveBeenNthCalledWith(1, "");
-      expect(warnSpy).toHaveBeenNthCalledWith(
-        2,
-        __test__.buildIncompleteSetupWarning("Local target site"),
-      );
-      expect(warnSpy).toHaveBeenNthCalledWith(3, "");
-    } finally {
-      warnSpy.mockRestore();
-    }
+  it("allows imports to continue when setup state is complete or unknown", async () => {
+    await expect(
+      __test__.getIncompleteSetupError(
+        {
+          getSetupStatus: async () => true,
+        },
+        "Local target site",
+      ),
+    ).resolves.toBeNull();
+
+    await expect(
+      __test__.getIncompleteSetupError(
+        {
+          getSetupStatus: async () => null,
+        },
+        "Local target site",
+      ),
+    ).resolves.toBeNull();
   });
 
   it("reads exported root aliases from extra.jant.root_aliases", () => {

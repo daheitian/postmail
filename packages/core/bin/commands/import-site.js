@@ -742,11 +742,11 @@ async function buildSiteAvatarImport(siteConfig, sourceRootDir) {
   };
 }
 
-function buildIncompleteSetupWarning(targetLabel) {
+function buildIncompleteSetupError(targetLabel) {
   return [
-    `Warning: ${targetLabel} has not completed setup.`,
-    "Import will continue, but key pages will keep redirecting to /setup until onboarding is finished.",
-    "After the import, finish /setup to create the admin account. The values entered there can overwrite the imported site name, language, and time zone.",
+    `${targetLabel} has not completed setup.`,
+    "Finish /setup first to create the site and admin account, then run the import again.",
+    "Until setup is finished, imports cannot write site settings, navigation, collections, or posts.",
   ].join("\n");
 }
 
@@ -770,16 +770,13 @@ async function detectRemoteSetupStatus(apiUrl) {
   return null;
 }
 
-async function warnIfTargetSetupIncomplete(target, targetLabel) {
+async function getIncompleteSetupError(target, targetLabel) {
   const isSetupComplete = await target.getSetupStatus();
   if (isSetupComplete !== false) {
-    return false;
+    return null;
   }
 
-  console.warn("");
-  console.warn(buildIncompleteSetupWarning(targetLabel));
-  console.warn("");
-  return true;
+  return buildIncompleteSetupError(targetLabel);
 }
 
 function createUploadFile(name, type, bytes) {
@@ -1240,9 +1237,9 @@ export const __test__ = {
   getExportedRootAliases,
   getRootAliasPathsForImport,
   toRemotePostPayload,
-  buildIncompleteSetupWarning,
+  buildIncompleteSetupError,
   detectRemoteSetupStatus,
-  warnIfTargetSetupIncomplete,
+  getIncompleteSetupError,
 };
 
 export async function run(argv) {
@@ -1376,10 +1373,16 @@ export async function run(argv) {
     );
 
     if (target) {
-      await warnIfTargetSetupIncomplete(
+      const setupError = await getIncompleteSetupError(
         target,
         values.url ? `Target site at ${apiUrl}` : "Local target site",
       );
+      if (setupError) {
+        console.error("");
+        console.error(setupError);
+        console.error("");
+        process.exit(1);
+      }
     }
 
     if (siteConfig) {
