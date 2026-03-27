@@ -26,6 +26,7 @@ describe("createHostedControlPlaneClient", () => {
 
     expect(client).not.toBeNull();
     await client?.syncSiteMetadata({
+      avatarUrl: "https://assets.example.com/site-avatar.webp",
       coreSiteId: "sit_123",
       displayName: "Updated Site",
     });
@@ -34,6 +35,7 @@ describe("createHostedControlPlaneClient", () => {
       "http://127.0.0.1:3300/api/internal/core-sites/sit_123/metadata",
       expect.objectContaining({
         body: JSON.stringify({
+          avatarUrl: "https://assets.example.com/site-avatar.webp",
           coreSiteId: "sit_123",
           displayName: "Updated Site",
         }),

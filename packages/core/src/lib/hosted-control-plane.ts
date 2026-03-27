@@ -5,6 +5,7 @@ import {
 } from "./env.js";
 
 export interface HostedControlPlaneSiteMetadataInput {
+  avatarUrl?: string | null;
   coreSiteId: string;
   displayName?: string;
   primaryHost?: string;

@@ -12,6 +12,7 @@ import { now } from "../../lib/time.js";
 import { SETTINGS_KEYS } from "../../lib/constants.js";
 import { parseValidated } from "../../lib/schemas.js";
 import { ValidationError } from "../../lib/errors.js";
+import { syncHostedControlPlaneSiteAvatar } from "../../lib/hosted-control-plane-sync.js";
 import { normalizeTimeZone } from "../../lib/timezones.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
@@ -160,6 +161,19 @@ settingsApiRoutes.post("/avatar", requireAuthApi(), async (c) => {
         maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
       },
     );
+    try {
+      await syncHostedControlPlaneSiteAvatar({
+        appConfig: c.var.appConfig,
+        env: c.env,
+        settings: c.var.services.settings,
+        siteId: c.var.currentSite.id,
+      });
+    } catch (error) {
+      console.error(
+        "[Jant] Failed to sync hosted control plane avatar metadata:",
+        error,
+      );
+    }
 
     return c.json({ success: true }, 201);
   } catch (error) {
@@ -176,5 +190,18 @@ settingsApiRoutes.post("/avatar", requireAuthApi(), async (c) => {
 // Remove site avatar (requires auth)
 settingsApiRoutes.delete("/avatar", requireAuthApi(), async (c) => {
   await c.var.services.settings.removeAvatar(c.var.storage);
+  try {
+    await syncHostedControlPlaneSiteAvatar({
+      appConfig: c.var.appConfig,
+      env: c.env,
+      settings: c.var.services.settings,
+      siteId: c.var.currentSite.id,
+    });
+  } catch (error) {
+    console.error(
+      "[Jant] Failed to sync hosted control plane avatar metadata:",
+      error,
+    );
+  }
   return c.json({ success: true });
 });

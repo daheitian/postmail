@@ -46,6 +46,7 @@ import {
   getHostedControlPlaneProviderLabel,
   getHostedControlPlaneSiteDeleteUrl,
 } from "../../lib/hosted-signin.js";
+import { syncHostedControlPlaneSiteAvatar } from "../../lib/hosted-control-plane-sync.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
@@ -446,6 +447,19 @@ settingsRoutes.post("/avatar", async (c) => {
         maxFileSizeMB: c.var.appConfig.uploadMaxFileSize,
       },
     );
+    try {
+      await syncHostedControlPlaneSiteAvatar({
+        appConfig: c.var.appConfig,
+        env: c.env,
+        settings: c.var.services.settings,
+        siteId: c.var.currentSite.id,
+      });
+    } catch (error) {
+      console.error(
+        "[Jant] Failed to sync hosted control plane avatar metadata:",
+        error,
+      );
+    }
 
     return dsRedirect(publicPath(c, "/settings/avatar?saved"));
   } catch (e) {
@@ -466,6 +480,19 @@ settingsRoutes.post("/avatar", async (c) => {
 
 settingsRoutes.post("/avatar/remove", async (c) => {
   await c.var.services.settings.removeAvatar(c.var.storage);
+  try {
+    await syncHostedControlPlaneSiteAvatar({
+      appConfig: c.var.appConfig,
+      env: c.env,
+      settings: c.var.services.settings,
+      siteId: c.var.currentSite.id,
+    });
+  } catch (error) {
+    console.error(
+      "[Jant] Failed to sync hosted control plane avatar metadata:",
+      error,
+    );
+  }
 
   // ── JSON response mode (used by Lit settings bridge) ──────────────
   const wantsJson = c.req.header("accept")?.includes("application/json");
