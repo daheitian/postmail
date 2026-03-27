@@ -873,7 +873,8 @@ pnpm --filter create-jant test-template
 # =============================================================================
 # Release & Publishing (Changesets)
 # =============================================================================
-[tasks.release-changeset-create]
+[tasks.changeset]
+alias = "release-changeset-create"
 description = "Create a new changeset for your changes"
 run = "pnpm changeset"
 
