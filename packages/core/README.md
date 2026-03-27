@@ -53,6 +53,7 @@ pnpm add @jant/core
 
 - [Getting Started](https://github.com/jant-me/jant/blob/main/docs/getting-started.md)
 - [Deployment](https://github.com/jant-me/jant/blob/main/docs/deployment.md)
+- [Official Docker Image](https://hub.docker.com/r/owenyoung/jant)
 - [Docker Deployment](https://github.com/jant-me/jant/blob/main/docs/deployment-docker.md)
 - [Configuration](https://github.com/jant-me/jant/blob/main/docs/configuration.md)
 - [Theming](https://github.com/jant-me/jant/blob/main/docs/theming.md)

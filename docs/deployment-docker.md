@@ -1,6 +1,10 @@
 # Docker Deployment
 
-Jant's published Docker image runs the Node runtime. The container entrypoint applies SQLite schema migrations and data backfills, then starts `jant start`.
+The official Docker image is `owenyoung/jant`.
+
+It runs the Node runtime, applies SQLite schema migrations and data backfills, and then starts `jant start`.
+
+Docker Hub: <https://hub.docker.com/r/owenyoung/jant>
 
 ## Prerequisites
 
@@ -10,6 +14,8 @@ Jant's published Docker image runs the Node runtime. The container entrypoint ap
 4. A long random auth secret
 
 ## Quick Start
+
+### Docker Compose
 
 Download the official files:
 
@@ -26,6 +32,22 @@ docker compose up -d
 ```
 
 Open `http://127.0.0.1:3000`.
+
+### Docker Run
+
+Use the official image directly when you want one container without Compose:
+
+```bash
+docker run -d \
+  --name jant \
+  -p 3000:3000 \
+  -e AUTH_SECRET=replace-with-a-long-random-secret \
+  -e TRUST_PROXY=false \
+  -v "$(pwd)/data:/var/lib/jant" \
+  owenyoung/jant:latest
+```
+
+Set `TRUST_PROXY=true` when the container is behind Caddy, Nginx, Traefik, or another reverse proxy you control.
 
 To publish Docker on a different host port, set:
 
@@ -59,7 +81,7 @@ Generate a secret with:
 openssl rand -base64 32
 ```
 
-The bundled `compose.yml` already defaults the container to the recommended single-node layout:
+The bundled `compose.yml` already defaults the official image to the recommended single-node layout:
 
 - `image: owenyoung/jant:latest`
 - `PORT=3000`
@@ -72,10 +94,10 @@ The bundled `compose.yml` already defaults the container to the recommended sing
 
 This keeps the SQLite file and uploaded media together under the host `./data/` directory.
 
-If you want to pin a version or test another tag, set:
+If you want to pin a version or test another official tag, set:
 
 ```env
-IMAGE=owenyoung/jant:0.3.38
+IMAGE=owenyoung/jant:<version>
 ```
 
 Repo contributors can use `compose.dev.yml` instead. It builds the local checkout with the repo's `Dockerfile` and starts that image:

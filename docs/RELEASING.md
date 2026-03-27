@@ -42,6 +42,7 @@ When PRs with changesets are merged:
 3. Merge the Release PR
 4. Packages are automatically published to npm
 5. When `@jant/core` is published, the Release workflow also calls `.github/workflows/docker-publish.yml` to publish `owenyoung/jant:<version>` and `owenyoung/jant:latest` to Docker Hub
+6. The same workflow updates the Docker Hub overview from `docs/docker-hub-overview.md`
 
 ## Commands
 
@@ -69,6 +70,7 @@ The official Docker image lives at `owenyoung/jant`.
 - Automatic publish happens after a successful package release that includes `@jant/core`
 - The pushed tags are the exact package version, such as `owenyoung/jant:0.3.38`, and `owenyoung/jant:latest`
 - Maintainers can manually backfill or republish the current `main` version from the **Docker Publish** workflow using `workflow_dispatch`
+- The workflow also syncs the Docker Hub overview from `docs/docker-hub-overview.md`
 
 ### Docker Hub setup
 
@@ -76,9 +78,9 @@ Configure this repository secret before expecting Docker pushes to work:
 
 - `DOCKERHUB_TOKEN`: Docker Hub access token with permission to push that repository
 
-The workflow hardcodes the Docker Hub owner as `owenyoung`. If ownership moves later, update [`.github/workflows/docker-publish.yml`](/Users/green/project/jant/main/.github/workflows/docker-publish.yml) in the same change.
+The workflow hardcodes the Docker Hub owner as `owenyoung`. If ownership moves later, update `.github/workflows/docker-publish.yml` in the same change.
 
-If `DOCKERHUB_TOKEN` is missing, package release still works, but the Docker publish workflow will fail at the login step.
+If `DOCKERHUB_TOKEN` is missing, package release still works, but the Docker image push and overview sync will fail at the Docker Hub steps.
 
 ---
 

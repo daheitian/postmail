@@ -40,6 +40,7 @@ npm run dev
 
 ## Documentation
 
+- Official Docker image: [`owenyoung/jant`](https://hub.docker.com/r/owenyoung/jant)
 - [Getting Started](docs/getting-started.md)
 - [Backups & Recovery](docs/backups.md)
 - [Deployment](docs/deployment.md)
