@@ -1,6 +1,7 @@
 import type { FC } from "hono/jsx";
 import { useLingui } from "@lingui/react/macro";
 import type { CollectionDirectoryItem } from "../../types.js";
+import { getDividerCollectionGroup } from "../../lib/collection-groups.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import { toPublicPath } from "../../lib/url.js";
 
@@ -39,9 +40,10 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
 
   return (
     <div class="collection-directory">
-      {items.map((item) => {
+      {items.map((item, index) => {
         if (item.type === "divider" || !item.collection) {
           const hasLabel = !!item.label;
+          const group = getDividerCollectionGroup(items, index);
           return (
             <div key={item.id} class="collection-directory-divider">
               <div
@@ -50,9 +52,21 @@ export const CollectionDirectory: FC<CollectionDirectoryProps> = ({
               >
                 {hasLabel ? (
                   <>
-                    <span class="collection-directory-divider-text">
-                      {item.label}
-                    </span>
+                    {group ? (
+                      <a
+                        href={toPublicPath(
+                          `/c/${group.slugExpression}`,
+                          sitePathPrefix,
+                        )}
+                        class="collection-directory-divider-link collection-directory-divider-text"
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <span class="collection-directory-divider-text">
+                        {item.label}
+                      </span>
+                    )}
                     <hr class="collection-directory-divider-line" />
                   </>
                 ) : (

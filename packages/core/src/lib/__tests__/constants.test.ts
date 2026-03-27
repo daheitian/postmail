@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { RESERVED_PATHS, isReservedPath } from "../constants.js";
+import {
+  RESERVED_COLLECTION_SLUGS,
+  RESERVED_PATHS,
+  isReservedCollectionSlug,
+  isReservedPath,
+} from "../constants.js";
 
 describe("RESERVED_PATHS", () => {
   it("contains expected critical paths", () => {
@@ -40,5 +45,22 @@ describe("isReservedPath", () => {
 
   it("returns false for empty string", () => {
     expect(isReservedPath("")).toBe(false);
+  });
+});
+
+describe("RESERVED_COLLECTION_SLUGS", () => {
+  it("contains collection route collisions", () => {
+    expect(RESERVED_COLLECTION_SLUGS).toContain("new");
+  });
+});
+
+describe("isReservedCollectionSlug", () => {
+  it("returns true for reserved collection slugs", () => {
+    expect(isReservedCollectionSlug("new")).toBe(true);
+    expect(isReservedCollectionSlug("NEW")).toBe(true);
+  });
+
+  it("returns false for non-reserved collection slugs", () => {
+    expect(isReservedCollectionSlug("reading")).toBe(false);
   });
 });

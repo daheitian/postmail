@@ -102,12 +102,56 @@ const items: CollectionManagerItem[] = [
   },
 ];
 
+const groupedItems: CollectionManagerItem[] = [
+  {
+    id: "divider-1",
+    type: "divider",
+    label: "Reading group",
+    position: "a0",
+  },
+  ...items,
+  {
+    id: "divider-2",
+    type: "divider",
+    label: "Solo group",
+    position: "a9",
+  },
+  {
+    id: "sidebar-3",
+    type: "collection",
+    collectionId: "collection-3",
+    position: "b0",
+    collection: {
+      id: "collection-3",
+      slug: "solo",
+      title: "Solo",
+      description: null,
+      sortOrder: "newest",
+      postCount: 1,
+      recentActivityAt: 1_763_619_300,
+    },
+  },
+];
+
 async function createElement(): Promise<JantCollectionsManager> {
   const el = document.createElement(
     "jant-collections-manager",
   ) as JantCollectionsManager;
   el.labels = labels;
   el.items = items;
+  document.body.appendChild(el);
+  await el.updateComplete;
+  return el;
+}
+
+async function createElementWithItems(
+  customItems: CollectionManagerItem[],
+): Promise<JantCollectionsManager> {
+  const el = document.createElement(
+    "jant-collections-manager",
+  ) as JantCollectionsManager;
+  el.labels = labels;
+  el.items = customItems;
   document.body.appendChild(el);
   await el.updateComplete;
   return el;
@@ -246,5 +290,17 @@ describe("JantCollectionsManager", () => {
 
     expect(count?.hidden).toBe(false);
     expect(count?.textContent).toBe("0 collections");
+  });
+
+  it("renders divider labels as aggregate links when followed by a grouped section", async () => {
+    const el = await createElementWithItems(groupedItems);
+
+    const links = el.querySelectorAll<HTMLAnchorElement>(
+      ".collection-directory-divider-link",
+    );
+
+    expect(links).toHaveLength(1);
+    expect(links[0]?.textContent?.trim()).toBe("Reading group");
+    expect(links[0]?.getAttribute("href")).toBe("/c/reading+tools");
   });
 });

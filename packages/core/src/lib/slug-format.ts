@@ -15,6 +15,7 @@ export type SlugValidationIssue = "invalid" | "reserved" | "too_long";
 
 interface SlugValidationOptions {
   maxLength?: number;
+  additionalReservedValues?: readonly string[];
 }
 
 /**
@@ -67,6 +68,13 @@ export function getSlugValidationIssue(
   if (options.maxLength && slug.length > options.maxLength) return "too_long";
   if (!SLUG_PATTERN.test(slug)) return "invalid";
   if (isReservedPath(slug)) return "reserved";
+  if (
+    options.additionalReservedValues?.some(
+      (value) => value.toLowerCase() === slug.toLowerCase(),
+    )
+  ) {
+    return "reserved";
+  }
   return null;
 }
 

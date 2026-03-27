@@ -83,6 +83,7 @@ export interface PostFilters {
   pinned?: boolean;
   featured?: boolean;
   collectionId?: string;
+  collectionIds?: string[];
   /** Exclude posts that are replies (have replyToId set) */
   excludeReplies?: boolean;
   /** Exclude posts hidden from Latest from results */
@@ -150,6 +151,8 @@ export interface PostService {
   list(filters?: PostFilters): Promise<Post[]>;
   /** Count posts matching filters (ignores cursor, offset, limit) */
   count(filters?: PostFilters): Promise<number>;
+  /** Count posts matching filters up to a fixed limit (ignores cursor, offset, limit) */
+  countUpTo(filters: PostFilters | undefined, limit: number): Promise<number>;
   /** Count posts grouped by published year-month (YYYY-MM) */
   countByYearMonth(
     filters?: PostFilters,
@@ -207,9 +210,19 @@ export interface PostService {
     collectionId: string,
     options?: ThreadRootPageOptions,
   ): Promise<number>;
+  /** Count distinct thread roots that contain published posts in any of the given collections */
+  countCollectionThreadRootsForCollections(
+    collectionIds: string[],
+    options?: ThreadRootPageOptions,
+  ): Promise<number>;
   /** List collection thread root IDs ordered by collected-at or rating semantics */
   listCollectionThreadRootIds(
     collectionId: string,
+    options?: CollectionThreadRootPageOptions,
+  ): Promise<string[]>;
+  /** List collection thread root IDs for a union of collections */
+  listCollectionThreadRootIdsForCollections(
+    collectionIds: string[],
     options?: CollectionThreadRootPageOptions,
   ): Promise<string[]>;
   /** List collection feed entries ordered by latest added-at timestamp */
@@ -217,11 +230,21 @@ export interface PostService {
     collectionId: string,
     options?: ThreadRootPageOptions,
   ): Promise<CollectionFeedEntry[]>;
+  /** List collection feed entries for a union of collections */
+  listCollectionFeedEntriesForCollections(
+    collectionIds: string[],
+    options?: ThreadRootPageOptions,
+  ): Promise<CollectionFeedEntry[]>;
   /** Fetch all published, non-deleted posts for each requested thread root */
   getPublishedThreads(rootIds: string[]): Promise<Map<string, Post[]>>;
   /** For each thread, return post IDs that belong to the given collection */
   getCollectionPostIdsByThread(
     collectionId: string,
+    threadIds: string[],
+  ): Promise<Map<string, string[]>>;
+  /** For each thread, return post IDs that belong to any of the given collections */
+  getCollectionPostIdsByThreadForCollections(
+    collectionIds: string[],
     threadIds: string[],
   ): Promise<Map<string, string[]>>;
   /** Get distinct years that have published posts */
@@ -470,6 +493,43 @@ export function createPostService(
       .where(and(eq(posts.siteId, siteId), eq(posts.id, rootId)));
   }
 
+  function normalizeCollectionIds(collectionIds: readonly string[]): string[] {
+    return [...new Set(collectionIds)];
+  }
+
+  function buildCollectionMembershipCondition(
+    collectionIds: readonly string[],
+  ): SQL<unknown> {
+    const uniqueCollectionIds = normalizeCollectionIds(collectionIds);
+    const firstCollectionId = uniqueCollectionIds[0];
+    if (!firstCollectionId) {
+      return sql`0 = 1`;
+    }
+
+    return uniqueCollectionIds.length === 1
+      ? eq(postCollections.collectionId, firstCollectionId)
+      : inArray(postCollections.collectionId, uniqueCollectionIds);
+  }
+
+  function buildPostCollectionSubqueryCondition(
+    collectionIds: readonly string[],
+  ): SQL<unknown> {
+    const uniqueCollectionIds = normalizeCollectionIds(collectionIds);
+    if (uniqueCollectionIds.length === 0) {
+      return sql`0 = 1`;
+    }
+
+    const placeholders = uniqueCollectionIds.map(
+      (collectionId) => sql`${collectionId}`,
+    );
+    return sql`${posts.id} IN (
+      SELECT post_id
+      FROM post_collection
+      WHERE site_id = ${siteId}
+        AND collection_id IN (${sql.join(placeholders, sql`, `)})
+    )`;
+  }
+
   /** Build WHERE conditions from filters (shared by list and count) */
   function buildFilterConditions(filters: PostFilters) {
     const conditions = [eq(posts.siteId, siteId)];
@@ -503,15 +563,13 @@ export function createPostService(
     if (filters.format) {
       conditions.push(eq(posts.format, filters.format));
     }
-    if (filters.collectionId !== undefined) {
-      // Filter by collection via junction table
+    if (filters.collectionIds !== undefined) {
       conditions.push(
-        sql`${posts.id} IN (
-          SELECT post_id
-          FROM post_collection
-          WHERE site_id = ${siteId}
-            AND collection_id = ${filters.collectionId}
-        )`,
+        buildPostCollectionSubqueryCondition(filters.collectionIds),
+      );
+    } else if (filters.collectionId !== undefined) {
+      conditions.push(
+        buildPostCollectionSubqueryCondition([filters.collectionId]),
       );
     }
     if (filters.threadId) {
@@ -1067,6 +1125,22 @@ export function createPostService(
         .where(conditions.length > 0 ? and(...conditions) : undefined);
 
       return result[0]?.count ?? 0;
+    },
+
+    async countUpTo(filters = {}, limit) {
+      const normalizedLimit = Math.max(0, Math.trunc(limit));
+      if (normalizedLimit === 0) {
+        return 0;
+      }
+
+      const conditions = buildFilterConditions(filters);
+      const rows = await db
+        .select({ id: posts.id })
+        .from(posts)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .limit(normalizedLimit);
+
+      return rows.length;
     },
 
     async countByYearMonth(filters = {}) {
@@ -2150,9 +2224,19 @@ export function createPostService(
     },
 
     async countCollectionThreadRoots(collectionId, options = {}) {
+      return this.countCollectionThreadRootsForCollections(
+        [collectionId],
+        options,
+      );
+    },
+
+    async countCollectionThreadRootsForCollections(
+      collectionIds,
+      options = {},
+    ) {
       const conditions = [
         ...buildThreadRootPageConditions(options),
-        eq(postCollections.collectionId, collectionId),
+        buildCollectionMembershipCondition(collectionIds),
       ];
 
       const rows = await db
@@ -2173,9 +2257,19 @@ export function createPostService(
     },
 
     async listCollectionThreadRootIds(collectionId, options = {}) {
+      return this.listCollectionThreadRootIdsForCollections(
+        [collectionId],
+        options,
+      );
+    },
+
+    async listCollectionThreadRootIdsForCollections(
+      collectionIds,
+      options = {},
+    ) {
       const conditions = [
         ...buildThreadRootPageConditions(options),
-        eq(postCollections.collectionId, collectionId),
+        buildCollectionMembershipCondition(collectionIds),
       ];
       const sortOrder = options.sortOrder ?? "newest";
       const collectedAt =
@@ -2234,9 +2328,16 @@ export function createPostService(
     },
 
     async listCollectionFeedEntries(collectionId, options = {}) {
+      return this.listCollectionFeedEntriesForCollections(
+        [collectionId],
+        options,
+      );
+    },
+
+    async listCollectionFeedEntriesForCollections(collectionIds, options = {}) {
       const conditions = [
         ...buildThreadRootPageConditions(options),
-        eq(postCollections.collectionId, collectionId),
+        buildCollectionMembershipCondition(collectionIds),
       ];
       const collectedAt = sql<number>`MAX(${postCollections.createdAt})`.as(
         "collected_at",
@@ -2306,6 +2407,13 @@ export function createPostService(
     },
 
     async getCollectionPostIdsByThread(collectionId, threadIds) {
+      return this.getCollectionPostIdsByThreadForCollections(
+        [collectionId],
+        threadIds,
+      );
+    },
+
+    async getCollectionPostIdsByThreadForCollections(collectionIds, threadIds) {
       const result = new Map<string, string[]>();
       if (threadIds.length === 0) return result;
 
@@ -2327,12 +2435,13 @@ export function createPostService(
           .where(
             and(
               eq(posts.siteId, siteId),
-              eq(postCollections.collectionId, collectionId),
+              buildCollectionMembershipCondition(collectionIds),
               inArray(posts.threadId, chunk),
               eq(posts.status, "published"),
               isNull(posts.deletedAt),
             ),
           )
+          .groupBy(posts.threadId, posts.id)
           .orderBy(posts.threadId, posts.createdAt, posts.id),
       );
 

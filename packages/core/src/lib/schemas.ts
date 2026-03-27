@@ -30,6 +30,7 @@ import {
 import { ValidationError } from "./errors.js";
 import { createTypeIdSchema, ID_PREFIX } from "./ids.js";
 import { normalizeSlug } from "./slug-format.js";
+import { isReservedCollectionSlug } from "./constants.js";
 import { sanitizeUrl, normalizePath } from "./url.js";
 
 // =============================================================================
@@ -459,6 +460,9 @@ export const CollectionSlugSchema = z
   .max(MAX_COLLECTION_SLUG_LENGTH, {
     message: `Keep this link under ${MAX_COLLECTION_SLUG_LENGTH} characters.`,
   })
+  .refine((value) => !value.includes("+"), {
+    message: "Use lowercase letters, numbers, and hyphens only.",
+  })
   .transform(normalizeSlug)
   .pipe(
     z
@@ -467,7 +471,10 @@ export const CollectionSlugSchema = z
       .max(MAX_COLLECTION_SLUG_LENGTH, {
         message: `Keep this link under ${MAX_COLLECTION_SLUG_LENGTH} characters.`,
       })
-      .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/),
+      .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/)
+      .refine((value) => !isReservedCollectionSlug(value), {
+        message: "This link is reserved. Choose something else.",
+      }),
   );
 
 export const CollectionTitleSchema = sanitizeText(

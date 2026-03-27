@@ -87,11 +87,12 @@ export interface SearchPageProps {
 
 /** Props for the single collection page component */
 export interface CollectionPageProps {
-  collection: Collection;
+  collections: Collection[];
   items: TimelineItemView[];
   totalThreadCount: number;
   currentPage: number;
   totalPages: number;
+  pagePath: string;
   baseUrl: string;
   currentSort: CollectionSortOrder;
   defaultSort: CollectionSortOrder;

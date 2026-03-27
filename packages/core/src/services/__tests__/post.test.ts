@@ -4,7 +4,7 @@ import {
   createTestDatabase,
   DEFAULT_TEST_SITE_ID,
 } from "../../__tests__/helpers/db.js";
-import { posts } from "../../db/schema.js";
+import { postCollections, posts } from "../../db/schema.js";
 import { createPostService } from "../post.js";
 import { createMediaService } from "../media.js";
 import { createCollectionService } from "../collection.js";
@@ -902,6 +902,40 @@ describe("PostService", () => {
 
       const count = await postService.count({ excludeReplies: true });
       expect(count).toBe(1);
+    });
+
+    it("can stop counting after a small limit", async () => {
+      const collection = await collectionService.create({
+        slug: "rated",
+        title: "Rated",
+      });
+
+      for (let i = 0; i < 3; i++) {
+        const post = await postService.create({
+          format: "link",
+          title: `rated ${i}`,
+          url: `https://example.com/${i}`,
+          rating: i + 1,
+        });
+
+        await db.insert(postCollections).values({
+          siteId: DEFAULT_TEST_SITE_ID,
+          postId: post.id,
+          collectionId: collection.id,
+          createdAt: 100 + i,
+        });
+      }
+
+      const count = await postService.countUpTo(
+        {
+          collectionIds: [collection.id],
+          status: "published",
+          hasRating: true,
+        },
+        2,
+      );
+
+      expect(count).toBe(2);
     });
   });
 

@@ -28,6 +28,14 @@ describe("slug-format", () => {
     expect(isValidSlug("compose")).toBe(false);
   });
 
+  it("flags additional reserved values", () => {
+    expect(
+      getSlugValidationIssue("new", {
+        additionalReservedValues: ["new"],
+      }),
+    ).toBe("reserved");
+  });
+
   it("flags slugs that exceed a configured maximum length", () => {
     expect(getSlugValidationIssue("a".repeat(121), { maxLength: 120 })).toBe(
       "too_long",

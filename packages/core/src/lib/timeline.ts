@@ -26,6 +26,7 @@ export interface TimelineResult {
   items: TimelineItemView[];
   currentPage: number;
   totalPages: number;
+  totalCount: number;
 }
 
 type CuratedThreadSelectionMap = Map<string, Set<string>>;
@@ -299,8 +300,8 @@ async function buildCuratedThreadItems(
  *
  * @example
  * ```ts
- * const { items, currentPage, totalPages } = await assembleTimeline(c);
- * const { items, currentPage, totalPages } = await assembleTimeline(c, { page: 2 });
+ * const { items, currentPage, totalPages, totalCount } = await assembleTimeline(c);
+ * const { items, currentPage, totalPages, totalCount } = await assembleTimeline(c, { page: 2 });
  * ```
  */
 export async function assembleTimeline(
@@ -334,12 +335,12 @@ export async function assembleTimeline(
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   if (posts.length === 0) {
-    return { items: [], currentPage: page, totalPages };
+    return { items: [], currentPage: page, totalPages, totalCount };
   }
 
   const items = await buildTimelineItems(c, posts);
 
-  return { items, currentPage: page, totalPages };
+  return { items, currentPage: page, totalPages, totalCount };
 }
 
 /**
@@ -407,7 +408,7 @@ export async function assembleFeaturedTimeline(
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   if (rootIds.length === 0) {
-    return { items: [], currentPage: page, totalPages };
+    return { items: [], currentPage: page, totalPages, totalCount };
   }
 
   const threadsByRootId =
@@ -431,7 +432,7 @@ export async function assembleFeaturedTimeline(
     selectedPostIdsByThread,
   );
 
-  return { items, currentPage: page, totalPages };
+  return { items, currentPage: page, totalPages, totalCount };
 }
 
 /**
@@ -442,13 +443,13 @@ export async function assembleFeaturedTimeline(
  * expanded and intervening non-collected posts collapse into hidden-count gaps.
  *
  * @param c - Hono context (provides services + appConfig)
- * @param options - Collection ID, optional page number, auth state, and sort
+ * @param options - Collection IDs, optional page number, auth state, and sort
  * @returns Collection timeline items with pagination info
  */
 export async function assembleCollectionTimeline(
   c: Context<Env>,
   options: {
-    collectionId: string;
+    collectionIds: string[];
     page?: number;
     isAuthenticated?: boolean;
     sortOrder?: CollectionSortOrder;
@@ -460,29 +461,35 @@ export async function assembleCollectionTimeline(
   const excludePrivate = !(options.isAuthenticated ?? false);
 
   const [totalCount, rootIds] = await Promise.all([
-    c.var.services.posts.countCollectionThreadRoots(options.collectionId, {
-      status: "published",
-      excludePrivate,
-    }),
-    c.var.services.posts.listCollectionThreadRootIds(options.collectionId, {
-      status: "published",
-      excludePrivate,
-      sortOrder: options.sortOrder,
-      limit: pageSize,
-      offset,
-    }),
+    c.var.services.posts.countCollectionThreadRootsForCollections(
+      options.collectionIds,
+      {
+        status: "published",
+        excludePrivate,
+      },
+    ),
+    c.var.services.posts.listCollectionThreadRootIdsForCollections(
+      options.collectionIds,
+      {
+        status: "published",
+        excludePrivate,
+        sortOrder: options.sortOrder,
+        limit: pageSize,
+        offset,
+      },
+    ),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   if (rootIds.length === 0) {
-    return { items: [], currentPage: page, totalPages };
+    return { items: [], currentPage: page, totalPages, totalCount };
   }
 
   const [threadsByRootId, collectedPostIdsByThread] = await Promise.all([
     c.var.services.posts.getPublishedThreads(rootIds),
-    c.var.services.posts.getCollectionPostIdsByThread(
-      options.collectionId,
+    c.var.services.posts.getCollectionPostIdsByThreadForCollections(
+      options.collectionIds,
       rootIds,
     ),
   ]);
@@ -499,5 +506,5 @@ export async function assembleCollectionTimeline(
     selectedPostIdsByThread,
   );
 
-  return { items, currentPage: page, totalPages };
+  return { items, currentPage: page, totalPages, totalCount };
 }

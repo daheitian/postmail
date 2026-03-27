@@ -16,11 +16,12 @@ const escapeJson = (data: unknown) =>
   JSON.stringify(data).replace(/</g, "\\u003c");
 
 export const CollectionPage: FC<CollectionPageProps> = ({
-  collection,
+  collections,
   items,
   totalThreadCount,
   currentPage,
   totalPages,
+  pagePath,
   baseUrl,
   currentSort,
   defaultSort,
@@ -28,14 +29,24 @@ export const CollectionPage: FC<CollectionPageProps> = ({
   isAuthenticated,
   sitePathPrefix = "",
 }) => {
+  const primaryCollection = collections[0];
+  if (!primaryCollection) return null;
+
   const { t } = useLingui();
-  const collectionUrl = toPublicPath(`/c/${collection.slug}`, sitePathPrefix);
+  const isAggregate = collections.length > 1;
+  const selectionTitle = collections
+    .map((collection) => collection.title)
+    .join(" + ");
+  const collectionUrl = toPublicPath(pagePath, sitePathPrefix);
   const editCollectionUrl = toPublicPath(
-    `/c/${collection.slug}/edit?returnTo=${encodeURIComponent(collectionUrl)}`,
+    `/c/${primaryCollection.slug}/edit?returnTo=${encodeURIComponent(collectionUrl)}`,
     sitePathPrefix,
   );
-  const sortTriggerId = `collection-sort-trigger-${collection.id}`;
-  const sortPopoverId = `collection-sort-popover-${collection.id}`;
+  const sortUiId = isAggregate
+    ? collections.map((collection) => collection.slug).join("-")
+    : primaryCollection.id;
+  const sortTriggerId = `collection-sort-trigger-${sortUiId}`;
+  const sortPopoverId = `collection-sort-popover-${sortUiId}`;
   const pageLabel =
     currentPage > 1 ? formatPageLabel(currentPage, totalPages) : null;
   const mutationLabels = getCollectionMutationLabels(t);
@@ -125,7 +136,15 @@ export const CollectionPage: FC<CollectionPageProps> = ({
     sortOptions[0].label;
 
   return (
-    <div class="py-6" data-page="collection" data-collection-id={collection.id}>
+    <div
+      class="py-6"
+      data-page="collection"
+      data-collection-mode={isAggregate ? "aggregate" : "single"}
+      data-collection-id={isAggregate ? undefined : primaryCollection.id}
+      data-collection-slugs={collections
+        .map((collection) => collection.slug)
+        .join(",")}
+    >
       <header class="collection-page-header">
         <div class="collection-page-topbar">
           <nav
@@ -160,7 +179,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
                 </svg>
               </li>
               <li>
-                <span>{collection.title}</span>
+                <span>{selectionTitle}</span>
               </li>
             </ol>
           </nav>
@@ -168,16 +187,56 @@ export const CollectionPage: FC<CollectionPageProps> = ({
 
         <div class="collection-page-title-block">
           <h1 class="collection-page-title">
-            <span>{collection.title}</span>
+            <span>{selectionTitle}</span>
           </h1>
-          {collection.description ? (
-            <p class="collection-page-description">{collection.description}</p>
+          {!isAggregate && primaryCollection.description ? (
+            <p class="collection-page-description">
+              {primaryCollection.description}
+            </p>
+          ) : null}
+          {isAggregate ? (
+            <div class="collection-page-meta">
+              <span>
+                {t({
+                  message: "Includes",
+                  comment:
+                    "@context: Label above the included collections list on an aggregate collection page",
+                })}
+              </span>{" "}
+              {collections.map((collection, index) => (
+                <span key={collection.id}>
+                  {index > 0 ? <span>, </span> : null}
+                  <a
+                    href={toPublicPath(`/c/${collection.slug}`, sitePathPrefix)}
+                  >
+                    {collection.title}
+                  </a>
+                </span>
+              ))}
+            </div>
           ) : null}
         </div>
 
         <div class="collection-page-subhead">
           <div class="collection-page-meta-row">
             <p class="collection-page-meta">
+              {isAggregate ? (
+                <>
+                  {collections.length}{" "}
+                  {collections.length === 1
+                    ? t({
+                        message: "collection",
+                        comment:
+                          "@context: Singular collection count label on an aggregate collection page",
+                      })
+                    : t({
+                        message: "collections",
+                        comment:
+                          "@context: Plural collection count label on an aggregate collection page",
+                      })}
+                  <span> / </span>
+                </>
+              ) : null}
               {totalThreadCount}{" "}
               {totalThreadCount === 1
                 ? t({
@@ -291,14 +350,14 @@ export const CollectionPage: FC<CollectionPageProps> = ({
             </div>
           </div>
 
-          {isAuthenticated ? (
+          {isAuthenticated && !isAggregate ? (
             <div class="collection-page-owner-tools">
               <button
                 type="button"
                 class="collection-page-compose-trigger"
                 aria-label={newPostLabel}
                 title={newPostLabel}
-                data-on:click={`document.getElementById('compose-dialog')?.querySelector('jant-compose-dialog')?.openNew(${escapeJson({ collectionId: collection.id })})`}
+                data-on:click={`document.getElementById('compose-dialog')?.querySelector('jant-compose-dialog')?.openNew(${escapeJson({ collectionId: primaryCollection.id })})`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -320,7 +379,7 @@ export const CollectionPage: FC<CollectionPageProps> = ({
               <div
                 class="collection-page-manage"
                 data-collection-page-actions
-                data-collection-id={collection.id}
+                data-collection-id={primaryCollection.id}
                 data-collection-page-labels={escapeJson(mutationLabels)}
                 data-collection-page-redirect-url={toPublicPath(
                   "/c",
@@ -424,10 +483,18 @@ export const CollectionPage: FC<CollectionPageProps> = ({
       <main>
         {items.length === 0 ? (
           <p class="text-muted-foreground">
-            {t({
-              message: "This collection is empty. Add posts from the editor.",
-              comment: "@context: Empty state message",
-            })}
+            {isAggregate
+              ? t({
+                  message:
+                    "Nothing here yet. Add posts to one of these collections to fill this view.",
+                  comment:
+                    "@context: Empty state message on an aggregate collection page",
+                })
+              : t({
+                  message:
+                    "This collection is empty. Add posts from the editor.",
+                  comment: "@context: Empty state message",
+                })}
           </p>
         ) : (
           <TimelineFeed

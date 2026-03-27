@@ -64,9 +64,39 @@ function isUniqueConstraintError(err: unknown): boolean {
   return false;
 }
 
+export interface ResolvedCollectionSelection {
+  collections: Collection[];
+  slugs: string[];
+  slugExpression: string;
+}
+
+function parseCollectionSelectionSlugs(
+  slugExpression: string,
+): string[] | null {
+  const parts = slugExpression.split("+");
+  if (parts.length === 0) return null;
+
+  const seen = new Set<string>();
+  const slugs: string[] = [];
+
+  for (const part of parts) {
+    const slug = part.trim();
+    if (!slug) return null;
+    if (seen.has(slug)) continue;
+    seen.add(slug);
+    slugs.push(slug);
+  }
+
+  return slugs.length > 0 ? slugs : null;
+}
+
 export interface CollectionService {
   getById(id: string): Promise<Collection | null>;
   getBySlug(slug: string): Promise<Collection | null>;
+  getBySlugs(slugs: string[]): Promise<Collection[]>;
+  resolveSelection(
+    slugExpression: string,
+  ): Promise<ResolvedCollectionSelection | null>;
   list(): Promise<Collection[]>;
   listDirectoryData(): Promise<CollectionsDirectoryData>;
   /** List collections sorted by most recent post addition (for compose dialog) */
@@ -428,6 +458,31 @@ export function createCollectionService(
         return null;
       }
       return this.getById(resolved.collectionId);
+    },
+
+    async getBySlugs(slugs) {
+      if (slugs.length === 0) return [];
+
+      const collections = await Promise.all(
+        slugs.map((slug) => this.getBySlug(slug)),
+      );
+      return collections.filter(
+        (collection): collection is Collection => collection !== null,
+      );
+    },
+
+    async resolveSelection(slugExpression) {
+      const slugs = parseCollectionSelectionSlugs(slugExpression);
+      if (!slugs) return null;
+
+      const collections = await this.getBySlugs(slugs);
+      if (collections.length !== slugs.length) return null;
+
+      return {
+        collections,
+        slugs,
+        slugExpression: slugs.join("+"),
+      };
     },
 
     async list() {

@@ -18,6 +18,7 @@ import {
   type CollectionSortOrder,
 } from "../../types.js";
 import { getSlugValidationIssue, truncateSlug } from "../../lib/slug-format.js";
+import { RESERVED_COLLECTION_SLUGS } from "../../lib/constants.js";
 import { slugify } from "../lazy-slugify.js";
 import { publicPath } from "../runtime-paths.js";
 import type {
@@ -151,6 +152,7 @@ export class JantCollectionForm extends LitElement {
   #getSlugValidationMessage(): string | null {
     const issue = getSlugValidationIssue(this._slug, {
       maxLength: MAX_COLLECTION_SLUG_LENGTH,
+      additionalReservedValues: RESERVED_COLLECTION_SLUGS,
     });
     if (issue === "too_long") {
       return (

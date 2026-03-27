@@ -33,11 +33,31 @@ export const RESERVED_PATHS = [
 export type ReservedPath = (typeof RESERVED_PATHS)[number];
 
 /**
+ * Reserved collection slugs within the `/c/*` namespace.
+ *
+ * These values are valid top-level paths elsewhere but are unavailable as
+ * collection slugs because they collide with dedicated collection routes.
+ */
+export const RESERVED_COLLECTION_SLUGS = ["new"] as const;
+
+export type ReservedCollectionSlug = (typeof RESERVED_COLLECTION_SLUGS)[number];
+
+/**
  * Check if a path is reserved
  */
 export function isReservedPath(path: string): boolean {
   const firstSegment = path.split("/")[0]?.toLowerCase();
   return RESERVED_PATHS.includes(firstSegment as ReservedPath);
+}
+
+/**
+ * Check if a collection slug is reserved within the collection namespace.
+ */
+export function isReservedCollectionSlug(slug: string): boolean {
+  const normalized = slug.trim().toLowerCase();
+  return RESERVED_COLLECTION_SLUGS.includes(
+    normalized as ReservedCollectionSlug,
+  );
 }
 
 /**

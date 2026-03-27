@@ -517,6 +517,8 @@ msgstr "Clear filter"
 #. @context: Singular collection count label
 #. @context: Singular collection count label
 #. @context: Singular collection count label
+#. @context: Singular collection count label on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
 #: src/ui/shared/CollectionsManager.tsx
@@ -560,6 +562,8 @@ msgstr "Collection saved."
 #. @context: Plural collection count label
 #. @context: Plural collection count label
 #. @context: Plural collection count label
+#. @context: Plural collection count label on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
 #: src/ui/shared/CollectionsManager.tsx
@@ -1436,6 +1440,11 @@ msgstr "In thread →"
 msgid "Included assets"
 msgstr "Included assets"
 
+#. @context: Label above the included collections list on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Includes"
+msgstr "Includes"
+
 #. @context: Site accent sample badge
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Inline emphasis"
@@ -1912,6 +1921,11 @@ msgstr "Notes"
 #: src/ui/pages/HomePage.tsx
 msgid "Nothing here yet."
 msgstr "Nothing here yet."
+
+#. @context: Empty state message on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Nothing here yet. Add posts to one of these collections to fill this view."
+msgstr "Nothing here yet. Add posts to one of these collections to fill this view."
 
 #. @context: Empty state message on featured page
 #: src/ui/pages/FeaturedPage.tsx

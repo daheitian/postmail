@@ -754,6 +754,23 @@
     color: var(--site-text-secondary);
   }
 
+  .collection-directory-divider-link {
+    color: inherit;
+    text-decoration: none;
+    transition:
+      color 160ms ease,
+      text-decoration-color 160ms ease;
+    text-decoration-color: transparent;
+  }
+
+  .collection-directory-divider-link:hover,
+  .collection-directory-divider-link:focus-visible {
+    color: var(--foreground);
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-underline-offset: 0.18em;
+  }
+
   .collection-directory-divider-line {
     flex: 1;
     height: 1px;

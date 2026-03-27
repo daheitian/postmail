@@ -139,6 +139,24 @@ describe("CreateCollectionSchema", () => {
       }),
     ).toThrow();
   });
+
+  it("rejects plus-delimited aggregate syntax as a collection slug", () => {
+    expect(() =>
+      CreateCollectionSchema.parse({
+        slug: "smart+movies",
+        title: "Smart Movies",
+      }),
+    ).toThrow("Use lowercase letters, numbers, and hyphens only.");
+  });
+
+  it("rejects collection namespace reserved slugs", () => {
+    expect(() =>
+      CreateCollectionSchema.parse({
+        slug: "new",
+        title: "New",
+      }),
+    ).toThrow("This link is reserved. Choose something else.");
+  });
 });
 
 describe("UpdateSiteSettingsSchema", () => {

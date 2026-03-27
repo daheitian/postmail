@@ -26,6 +26,7 @@ import {
 import { showConfirmDialog } from "../confirm.js";
 import { publicPath } from "../runtime-paths.js";
 import { showToast } from "../toast.js";
+import { getDividerCollectionGroup } from "../../lib/collection-groups.js";
 import { formatRelativeAge, toISOString } from "../../lib/time.js";
 import type {
   CollectionManagerItem,
@@ -678,7 +679,7 @@ export class JantCollectionsManager extends LitElement {
     `;
   }
 
-  #renderDividerItem(item: CollectionManagerItem) {
+  #renderDividerItem(item: CollectionManagerItem, index: number) {
     if (this._reorderMode) {
       return html`
         <div
@@ -759,6 +760,7 @@ export class JantCollectionsManager extends LitElement {
     }
 
     const hasLabel = !!item.label;
+    const group = getDividerCollectionGroup(this._items, index);
     return html`
       <div class="collection-directory-divider">
         <div
@@ -767,9 +769,20 @@ export class JantCollectionsManager extends LitElement {
         >
           ${hasLabel
             ? html`
-                <span class="collection-directory-divider-text">
-                  ${item.label}
-                </span>
+                ${group
+                  ? html`
+                      <a
+                        href=${publicPath(`/c/${group.slugExpression}`)}
+                        class="collection-directory-divider-link collection-directory-divider-text"
+                      >
+                        ${item.label}
+                      </a>
+                    `
+                  : html`
+                      <span class="collection-directory-divider-text">
+                        ${item.label}
+                      </span>
+                    `}
                 <hr class="collection-directory-divider-line" />
               `
             : html`<hr class="collection-directory-divider-line" />`}
@@ -785,12 +798,12 @@ export class JantCollectionsManager extends LitElement {
             <div id="collections-manager-list" class="collection-directory">
               ${(() => {
                 let collectionIndex = 0;
-                return this._items.map((item) => {
+                return this._items.map((item, index) => {
                   if (item.type === "collection") {
                     collectionIndex += 1;
                     return this.#renderCollectionItem(item, collectionIndex);
                   }
-                  return this.#renderDividerItem(item);
+                  return this.#renderDividerItem(item, index);
                 });
               })()}
             </div>

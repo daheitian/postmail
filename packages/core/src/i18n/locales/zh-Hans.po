@@ -517,6 +517,8 @@ msgstr "清除筛选"
 #. @context: Singular collection count label
 #. @context: Singular collection count label
 #. @context: Singular collection count label
+#. @context: Singular collection count label on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
 #: src/ui/shared/CollectionsManager.tsx
@@ -560,6 +562,8 @@ msgstr "合集已保存。"
 #. @context: Plural collection count label
 #. @context: Plural collection count label
 #. @context: Plural collection count label
+#. @context: Plural collection count label on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
 #: src/ui/pages/CollectionsPage.tsx
 #: src/ui/shared/CollectionsManager.tsx
 #: src/ui/shared/CollectionsManager.tsx
@@ -1436,6 +1440,11 @@ msgstr "在线程中 →"
 msgid "Included assets"
 msgstr "包含资源"
 
+#. @context: Label above the included collections list on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Includes"
+msgstr ""
+
 #. @context: Site accent sample badge
 #: src/ui/pages/ThemeSamplePage.tsx
 msgid "Inline emphasis"
@@ -1912,6 +1921,11 @@ msgstr "笔记"
 #: src/ui/pages/HomePage.tsx
 msgid "Nothing here yet."
 msgstr "这里还没有内容。"
+
+#. @context: Empty state message on an aggregate collection page
+#: src/ui/pages/CollectionPage.tsx
+msgid "Nothing here yet. Add posts to one of these collections to fill this view."
+msgstr ""
 
 #. @context: Empty state message on featured page
 #: src/ui/pages/FeaturedPage.tsx

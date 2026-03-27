@@ -503,5 +503,63 @@ describe("PostService - Timeline features", () => {
       expect(entries[1]?.post.id).toBe(firstRoot.id);
       expect(entries[1]?.collectedAt).toBe(100);
     });
+
+    it("dedupes shared threads across multiple collections", async () => {
+      const smart = await collectionService.create({
+        slug: "smart",
+        title: "Smart",
+      });
+      const movies = await collectionService.create({
+        slug: "movies",
+        title: "Movies",
+      });
+      const sharedRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Shared root",
+      });
+      const sharedReply = await postService.create({
+        format: "note",
+        bodyMarkdown: "Shared reply",
+        replyToId: sharedRoot.id,
+      });
+      const secondRoot = await postService.create({
+        format: "note",
+        bodyMarkdown: "Second root",
+      });
+
+      await db.insert(postCollections).values([
+        {
+          siteId: DEFAULT_TEST_SITE_ID,
+          postId: sharedRoot.id,
+          collectionId: smart.id,
+          createdAt: 100,
+        },
+        {
+          siteId: DEFAULT_TEST_SITE_ID,
+          postId: sharedReply.id,
+          collectionId: movies.id,
+          createdAt: 300,
+        },
+        {
+          siteId: DEFAULT_TEST_SITE_ID,
+          postId: secondRoot.id,
+          collectionId: movies.id,
+          createdAt: 200,
+        },
+      ]);
+
+      const entries = await postService.listCollectionFeedEntriesForCollections(
+        [smart.id, movies.id],
+        {
+          status: "published",
+        },
+      );
+
+      expect(entries).toHaveLength(2);
+      expect(entries[0]?.post.id).toBe(sharedRoot.id);
+      expect(entries[0]?.collectedAt).toBe(300);
+      expect(entries[1]?.post.id).toBe(secondRoot.id);
+      expect(entries[1]?.collectedAt).toBe(200);
+    });
   });
 });

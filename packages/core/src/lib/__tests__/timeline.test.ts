@@ -561,7 +561,7 @@ describe("Timeline data assembly", () => {
     ]);
 
     const result = await assembleCollectionTimeline(createTimelineContext(), {
-      collectionId: collection.id,
+      collectionIds: [collection.id],
       isAuthenticated: true,
       sortOrder: "newest",
     });
@@ -611,7 +611,7 @@ describe("Timeline data assembly", () => {
     });
 
     const result = await assembleCollectionTimeline(createTimelineContext(), {
-      collectionId: collection.id,
+      collectionIds: [collection.id],
       isAuthenticated: true,
       sortOrder: "newest",
     });
@@ -633,6 +633,88 @@ describe("Timeline data assembly", () => {
     expect(result.items[0]?.post.threadRootPermalink).toBe(
       result.items[0]?.post.permalink,
     );
+  });
+
+  it("highlights the union of collected posts across multiple collections", async () => {
+    const smart = await collectionService.create({
+      slug: "smart",
+      title: "Smart",
+    });
+    const movies = await collectionService.create({
+      slug: "movies",
+      title: "Movies",
+    });
+    const firstRoot = await postService.create({
+      format: "note",
+      bodyMarkdown: "Thread root",
+    });
+    const smartReply = await postService.create({
+      format: "note",
+      bodyMarkdown: "Smart reply",
+      replyToId: firstRoot.id,
+    });
+    await postService.create({
+      format: "note",
+      bodyMarkdown: "Hidden middle reply",
+      replyToId: firstRoot.id,
+    });
+    const movieReply = await postService.create({
+      format: "note",
+      bodyMarkdown: "Movie reply",
+      replyToId: firstRoot.id,
+    });
+    const secondRoot = await postService.create({
+      format: "note",
+      bodyMarkdown: "Second thread root",
+    });
+
+    await db.insert(postCollections).values([
+      {
+        siteId: DEFAULT_TEST_SITE_ID,
+        postId: smartReply.id,
+        collectionId: smart.id,
+        createdAt: 100,
+      },
+      {
+        siteId: DEFAULT_TEST_SITE_ID,
+        postId: movieReply.id,
+        collectionId: movies.id,
+        createdAt: 200,
+      },
+      {
+        siteId: DEFAULT_TEST_SITE_ID,
+        postId: secondRoot.id,
+        collectionId: movies.id,
+        createdAt: 300,
+      },
+    ]);
+
+    const result = await assembleCollectionTimeline(createTimelineContext(), {
+      collectionIds: [smart.id, movies.id],
+      isAuthenticated: true,
+      sortOrder: "newest",
+    });
+
+    expect(result.items).toHaveLength(2);
+    expect(result.items[0]?.post.id).toBe(secondRoot.id);
+    expect(result.items[1]?.post.id).toBe(firstRoot.id);
+    expect(result.items[1]?.curatedThread?.segments).toEqual([
+      expect.objectContaining({
+        post: expect.objectContaining({ id: firstRoot.id }),
+        hiddenBeforeCount: 0,
+        highlighted: false,
+      }),
+      expect.objectContaining({
+        post: expect.objectContaining({ id: smartReply.id }),
+        hiddenBeforeCount: 0,
+        highlighted: true,
+      }),
+      expect.objectContaining({
+        post: expect.objectContaining({ id: movieReply.id }),
+        hiddenBeforeCount: 1,
+        highlighted: true,
+      }),
+    ]);
   });
 
   it("omits private timeline items from unauthenticated partial refreshes", async () => {

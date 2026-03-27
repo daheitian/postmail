@@ -117,6 +117,24 @@ describe("CollectionService", () => {
         }),
       ).rejects.toThrow();
     });
+
+    it("rejects aggregate syntax in collection slugs", async () => {
+      await expect(
+        collectionService.create({
+          slug: "smart+movies",
+          title: "Smart + Movies",
+        }),
+      ).rejects.toThrow("Use lowercase letters, numbers, and hyphens only.");
+    });
+
+    it("rejects slugs reserved by the collection namespace", async () => {
+      await expect(
+        collectionService.create({
+          slug: "new",
+          title: "New",
+        }),
+      ).rejects.toThrow("This link is reserved. Choose something else.");
+    });
   });
 
   describe("getById", () => {
@@ -153,6 +171,33 @@ describe("CollectionService", () => {
     it("returns null for non-existent slug", async () => {
       const found = await collectionService.getBySlug("nonexistent");
       expect(found).toBeNull();
+    });
+  });
+
+  describe("resolveSelection", () => {
+    it("resolves, dedupes, and preserves slug order", async () => {
+      await collectionService.create({ slug: "smart", title: "Smart" });
+      await collectionService.create({ slug: "movies", title: "Movies" });
+
+      const selection =
+        await collectionService.resolveSelection("smart+movies+smart");
+
+      expect(selection?.slugs).toEqual(["smart", "movies"]);
+      expect(selection?.slugExpression).toBe("smart+movies");
+      expect(
+        selection?.collections.map((collection) => collection.slug),
+      ).toEqual(["smart", "movies"]);
+    });
+
+    it("returns null when any slug is missing or the expression is malformed", async () => {
+      await collectionService.create({ slug: "smart", title: "Smart" });
+
+      await expect(
+        collectionService.resolveSelection("smart++movies"),
+      ).resolves.toBeNull();
+      await expect(
+        collectionService.resolveSelection("smart+missing"),
+      ).resolves.toBeNull();
     });
   });
 
