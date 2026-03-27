@@ -16,6 +16,8 @@ export async function run(argv) {
     console.log("");
     console.log("Required:");
     console.log("  AUTH_SECRET=your-secret");
+    console.log("");
+    console.log("Single-site mode usually also sets:");
     console.log("  SITE_ORIGIN=https://your-site.example");
     console.log("");
     console.log("Database:");
@@ -28,6 +30,13 @@ export async function run(argv) {
     console.log("  SITE_PATH_PREFIX=");
     console.log("  SITE_RESOLUTION_MODE=single-site");
     console.log("  STORAGE_DRIVER defaults to local on Node");
+    console.log("");
+    console.log("Host-based mode also requires:");
+    console.log("  HOSTED_CONTROL_PLANE_BASE_URL=https://cloud.example");
+    console.log("  HOSTED_CONTROL_PLANE_INTERNAL_TOKEN=...");
+    console.log("  INTERNAL_ADMIN_TOKEN=...");
+    console.log("  HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET=32+ chars");
+    console.log("  HOSTED_CONTROL_PLANE_SSO_SECRET=32+ chars");
     process.exit(0);
   }
 

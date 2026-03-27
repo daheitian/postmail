@@ -4,6 +4,17 @@ import {
   getStartupConfigurationErrorPage,
 } from "../startup-config.js";
 
+const VALID_HOST_BASED_ENV = {
+  AUTH_SECRET: "test-secret-with-enough-entropy-for-startup-checks",
+  HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
+  HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET:
+    "cloud-domain-check-secret-cloud-domain-check-secret",
+  HOSTED_CONTROL_PLANE_INTERNAL_TOKEN: "internal-token-123456",
+  HOSTED_CONTROL_PLANE_SSO_SECRET: "cloud-sso-secret-cloud-sso-secret",
+  INTERNAL_ADMIN_TOKEN: "internal-admin-token-123456",
+  SITE_RESOLUTION_MODE: "host-based" as const,
+};
+
 describe("getStartupConfigurationErrorPage", () => {
   it("does not block startup when AUTH_SECRET is present", () => {
     expect(
@@ -25,6 +36,39 @@ describe("getStartupConfigurationErrorPage", () => {
     );
     expect(page).toContain("wrangler secret put AUTH_SECRET");
     expect(page).toContain("Open configuration instructions");
+  });
+
+  it("does not block startup when host-based required variables are present", () => {
+    expect(getStartupConfigurationErrorPage(VALID_HOST_BASED_ENV)).toBeNull();
+  });
+
+  it("returns an error page when host-based required variables are missing", () => {
+    const page = getStartupConfigurationErrorPage({
+      AUTH_SECRET: "test-secret-with-enough-entropy-for-startup-checks",
+      SITE_RESOLUTION_MODE: "host-based",
+    });
+
+    expect(page).toContain("Hosted configuration is incomplete");
+    expect(page).toContain("HOSTED_CONTROL_PLANE_BASE_URL");
+    expect(page).toContain("HOSTED_CONTROL_PLANE_INTERNAL_TOKEN");
+    expect(page).toContain("INTERNAL_ADMIN_TOKEN");
+    expect(page).toContain("HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET");
+    expect(page).toContain("HOSTED_CONTROL_PLANE_SSO_SECRET");
+  });
+
+  it("returns an error page when host-based shared secrets are too short", () => {
+    const page = getStartupConfigurationErrorPage({
+      ...VALID_HOST_BASED_ENV,
+      HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET: "too-short",
+      HOSTED_CONTROL_PLANE_SSO_SECRET: "also-too-short",
+    });
+
+    expect(page).toContain(
+      "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET must be at least 32 characters in host-based mode.",
+    );
+    expect(page).toContain(
+      "HOSTED_CONTROL_PLANE_SSO_SECRET must be at least 32 characters in host-based mode.",
+    );
   });
 
   it("renders runtime configuration failures as a user-facing error page", () => {

@@ -50,7 +50,9 @@ if (!internalAdminToken) {
 
 const endpoint = toSiteScopedUrl(
   siteUrl,
-  checkOnly ? "/api/internal/api-tokens/health" : "/api/internal/api-tokens/purge",
+  checkOnly
+    ? "/api/internal/api-tokens/health"
+    : "/api/internal/api-tokens/purge",
 );
 const response = await fetch(endpoint, {
   method: checkOnly ? "GET" : "POST",

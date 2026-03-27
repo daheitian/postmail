@@ -135,12 +135,11 @@ function createD1ExportContext(runtime, values) {
     env: values.env,
     persistTo: values["persist-to"],
   };
-  const publicUrl =
-    resolveWranglerVarString({
-      configPath: values.config,
-      env: values.env,
-      key: "R2_PUBLIC_URL",
-    });
+  const publicUrl = resolveWranglerVarString({
+    configPath: values.config,
+    env: values.env,
+    key: "R2_PUBLIC_URL",
+  });
 
   return {
     dialect: "sqlite",
@@ -202,7 +201,9 @@ export async function run(argv) {
     );
     console.log("");
     console.log("Options:");
-    console.log("  --local                 Force local D1 instead of DATABASE_URL");
+    console.log(
+      "  --local                 Force local D1 instead of DATABASE_URL",
+    );
     console.log("  --remote                Export from remote D1");
     console.log(
       "  --output, -o           Output directory or .zip file (default: jant-site-snapshot)",
@@ -223,7 +224,9 @@ export async function run(argv) {
     console.log(
       "  --bucket-binding        Wrangler R2 binding to resolve (default: R2)",
     );
-    console.log("  --persist-to            Local D1/R2 state directory override");
+    console.log(
+      "  --persist-to            Local D1/R2 state directory override",
+    );
     console.log("");
     console.log(
       "If DATABASE_URL or DATA_DIR is set and no runtime flag is passed, this command uses the Node database runtime and the configured storage driver.",
@@ -303,10 +306,13 @@ export async function run(argv) {
     await writeFile(
       join(scratchDir, "meta.json"),
       JSON.stringify(
-        buildSnapshotMeta({
-          runtime,
-          label: getCliRuntimeLabel(runtime),
-        }, site),
+        buildSnapshotMeta(
+          {
+            runtime,
+            label: getCliRuntimeLabel(runtime),
+          },
+          site,
+        ),
         null,
         2,
       ) + "\n",

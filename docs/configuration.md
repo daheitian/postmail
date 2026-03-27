@@ -87,7 +87,10 @@ Hosted control-plane integration variables:
 | `HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET` | Shared 32+ character secret used to sign `/.well-known/jant-domain-check` responses for custom-domain verification |
 | `HOSTED_CONTROL_PLANE_SSO_SECRET`          | Shared 32+ character secret used to verify the hosted control plane's short-lived admin handoff tokens             |
 
-These variables are only needed when `jant-core` runs in `SITE_RESOLUTION_MODE=host-based` behind `jant-cloud`.
+When `jant-core` runs in `SITE_RESOLUTION_MODE=host-based`, these variables are required at startup except `HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL` and `HOSTED_CONTROL_PLANE_PROVIDER_NAME`, which remain optional.
+
+- Missing required host-based variables block startup instead of leaving hosted endpoints partially disabled.
+- `HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET` and `HOSTED_CONTROL_PLANE_SSO_SECRET` must each be at least 32 characters.
 
 ### Feed Defaults (Optional)
 

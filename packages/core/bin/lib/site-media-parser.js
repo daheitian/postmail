@@ -59,7 +59,9 @@ function getHtmlChildText(node) {
   }
 
   return node.childNodes
-    .filter((child) => child.nodeName === "#text" && typeof child.value === "string")
+    .filter(
+      (child) => child.nodeName === "#text" && typeof child.value === "string",
+    )
     .map((child) => child.value)
     .join("");
 }
@@ -102,7 +104,11 @@ function isAttachmentFigure(node) {
 
 function hasDataJantMetaAttribute(node) {
   return Array.isArray(node?.attrs)
-    ? node.attrs.some((attr) => attr.name === "data-jant-meta" || attr.name.startsWith("data-jant-meta"))
+    ? node.attrs.some(
+        (attr) =>
+          attr.name === "data-jant-meta" ||
+          attr.name.startsWith("data-jant-meta"),
+      )
     : false;
 }
 
@@ -166,7 +172,10 @@ function isProbablyMediaUrl(value) {
   }
 
   try {
-    const pathname = new URL(value, "https://jant.invalid").pathname.toLowerCase();
+    const pathname = new URL(
+      value,
+      "https://jant.invalid",
+    ).pathname.toLowerCase();
     if (
       pathname.includes("/media/") ||
       pathname.endsWith("/favicon.ico") ||
@@ -237,7 +246,10 @@ function getImageSourceFromNode(node) {
   }
 
   if (node.tagName === "img") {
-    return getAttribute(node, "src") || getPrimarySrcsetUrl(getAttribute(node, "srcset"));
+    return (
+      getAttribute(node, "src") ||
+      getPrimarySrcsetUrl(getAttribute(node, "srcset"))
+    );
   }
 
   if (node.tagName === "picture") {
@@ -246,7 +258,10 @@ function getImageSourceFromNode(node) {
       return getImageSourceFromNode(imgNode);
     }
 
-    const sourceNode = findHtmlNode(node, (child) => child.tagName === "source");
+    const sourceNode = findHtmlNode(
+      node,
+      (child) => child.tagName === "source",
+    );
     if (sourceNode) {
       return (
         getAttribute(sourceNode, "src") ||
@@ -259,12 +274,14 @@ function getImageSourceFromNode(node) {
 }
 
 function extractImageDetails(node) {
-  const imgNode = node?.tagName === "img"
-    ? node
-    : findHtmlNode(node, (child) => child.tagName === "img");
-  const pictureNode = node?.tagName === "picture"
-    ? node
-    : findHtmlNode(node, (child) => child.tagName === "picture");
+  const imgNode =
+    node?.tagName === "img"
+      ? node
+      : findHtmlNode(node, (child) => child.tagName === "img");
+  const pictureNode =
+    node?.tagName === "picture"
+      ? node
+      : findHtmlNode(node, (child) => child.tagName === "picture");
   const sourceNode = pictureNode || imgNode;
   const src = getImageSourceFromNode(sourceNode);
   if (!src || isSkippableUrl(src)) {
@@ -273,7 +290,10 @@ function extractImageDetails(node) {
 
   return {
     src,
-    alt: typeof getAttribute(imgNode, "alt") === "string" ? getAttribute(imgNode, "alt") : "",
+    alt:
+      typeof getAttribute(imgNode, "alt") === "string"
+        ? getAttribute(imgNode, "alt")
+        : "",
     title:
       typeof getAttribute(imgNode, "title") === "string"
         ? getAttribute(imgNode, "title")
@@ -308,7 +328,12 @@ function extractGenericImageSpec(rootNode) {
     return null;
   }
 
-  if (findHtmlNode(rootNode, (child) => child.tagName === "video" || child.tagName === "audio")) {
+  if (
+    findHtmlNode(
+      rootNode,
+      (child) => child.tagName === "video" || child.tagName === "audio",
+    )
+  ) {
     return null;
   }
 
@@ -378,7 +403,9 @@ function extractGenericAttachmentSpec(rootNode) {
   }
 
   const poster =
-    mediaNode.tagName === "video" ? getAttribute(mediaNode, "poster") || "" : "";
+    mediaNode.tagName === "video"
+      ? getAttribute(mediaNode, "poster") || ""
+      : "";
   const summary = getFigureCaption(rootNode);
 
   return {
@@ -557,7 +584,10 @@ function getHtmlAttrValueRange(html, attrLocation) {
     return null;
   }
 
-  const attrSource = html.slice(attrLocation.startOffset, attrLocation.endOffset);
+  const attrSource = html.slice(
+    attrLocation.startOffset,
+    attrLocation.endOffset,
+  );
   const eqIndex = attrSource.indexOf("=");
   if (eqIndex === -1) {
     return null;
@@ -606,7 +636,9 @@ function applyPatches(source, patches) {
 
   for (const patch of sorted) {
     result =
-      result.slice(0, patch.start) + patch.replacement + result.slice(patch.end);
+      result.slice(0, patch.start) +
+      patch.replacement +
+      result.slice(patch.end);
   }
 
   return result;
@@ -671,7 +703,8 @@ function collectHtmlMediaReferences(html) {
 
     if (
       node.tagName === "a" &&
-      (state.inAttachmentFigure || isProbablyMediaUrl(getAttribute(node, "href")))
+      (state.inAttachmentFigure ||
+        isProbablyMediaUrl(getAttribute(node, "href")))
     ) {
       const value = getAttribute(node, "href");
       if (typeof value === "string" && !isSkippableUrl(value)) {
@@ -725,7 +758,11 @@ function rewriteHtmlMediaReferences(html, replacements) {
     }
 
     const attrCandidates = [];
-    if (node.tagName === "img" || node.tagName === "audio" || node.tagName === "source") {
+    if (
+      node.tagName === "img" ||
+      node.tagName === "audio" ||
+      node.tagName === "source"
+    ) {
       attrCandidates.push("src");
     }
     if (node.tagName === "video") {
@@ -733,14 +770,16 @@ function rewriteHtmlMediaReferences(html, replacements) {
     }
     if (
       node.tagName === "a" &&
-      (state.inAttachmentFigure || isProbablyMediaUrl(getAttribute(node, "href")))
+      (state.inAttachmentFigure ||
+        isProbablyMediaUrl(getAttribute(node, "href")))
     ) {
       attrCandidates.push("href");
     }
 
     for (const attrName of attrCandidates) {
       const value = getAttribute(node, attrName);
-      const nextValue = typeof value === "string" ? replacements.get(value) : null;
+      const nextValue =
+        typeof value === "string" ? replacements.get(value) : null;
       if (!nextValue || nextValue === value) {
         continue;
       }
@@ -764,7 +803,13 @@ function rewriteHtmlMediaReferences(html, replacements) {
   return applyPatches(html, patches);
 }
 
-function buildMarkdownUrlPatch(content, node, currentUrl, nextUrl, mode = "inline") {
+function buildMarkdownUrlPatch(
+  content,
+  node,
+  currentUrl,
+  nextUrl,
+  mode = "inline",
+) {
   if (!nextUrl || nextUrl === currentUrl) {
     return null;
   }
@@ -807,7 +852,11 @@ export function collectMediaReferences(content) {
   const refs = [];
 
   visit(tree, (node) => {
-    if (node.type === "image" && typeof node.url === "string" && !isSkippableUrl(node.url)) {
+    if (
+      node.type === "image" &&
+      typeof node.url === "string" &&
+      !isSkippableUrl(node.url)
+    ) {
       refs.push(node.url);
       return;
     }
@@ -974,7 +1023,9 @@ export function normalizeImportedBody(markdown) {
   });
 
   return {
-    markdown: applyPatches(markdown, patches).replace(/\n{3,}/g, "\n\n").trim(),
+    markdown: applyPatches(markdown, patches)
+      .replace(/\n{3,}/g, "\n\n")
+      .trim(),
     attachments,
   };
 }
@@ -985,7 +1036,11 @@ export function findImageUrls(content) {
   const refs = [];
 
   visit(tree, (node) => {
-    if (node.type === "image" && typeof node.url === "string" && !isSkippableUrl(node.url)) {
+    if (
+      node.type === "image" &&
+      typeof node.url === "string" &&
+      !isSkippableUrl(node.url)
+    ) {
       refs.push(node.url);
       return;
     }
@@ -1038,8 +1093,7 @@ function parseAttachmentBlockHtml(html) {
     const script = Array.isArray(node.childNodes)
       ? node.childNodes.find(
           (child) =>
-            child.tagName === "script" &&
-            hasDataJantMetaAttribute(child),
+            child.tagName === "script" && hasDataJantMetaAttribute(child),
         )
       : null;
     if (!script) {

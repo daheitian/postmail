@@ -207,10 +207,14 @@ export function createD1SqlRunner(runtime, options) {
         return;
       }
 
-      executeD1(`\n${readNormalizedSqlFile(filePath)}\n${trackingSql}`, runtime, {
-        ...options,
-        quiet: true,
-      });
+      executeD1(
+        `\n${readNormalizedSqlFile(filePath)}\n${trackingSql}`,
+        runtime,
+        {
+          ...options,
+          quiet: true,
+        },
+      );
     },
     query(sql) {
       return queryD1(sql, runtime, options);

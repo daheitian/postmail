@@ -15,6 +15,15 @@ import {
 import type { Bindings } from "../../types.js";
 
 const tempDirs: string[] = [];
+const VALID_HOST_BASED_NODE_ENV = {
+  HOSTED_CONTROL_PLANE_BASE_URL: "https://cloud-jant.localtest.me",
+  HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET:
+    "cloud-domain-check-secret-cloud-domain-check-secret",
+  HOSTED_CONTROL_PLANE_INTERNAL_TOKEN: "internal-token-123456",
+  HOSTED_CONTROL_PLANE_SSO_SECRET: "cloud-sso-secret-cloud-sso-secret",
+  INTERNAL_ADMIN_TOKEN: "internal-admin-token-123456",
+  SITE_RESOLUTION_MODE: "host-based" as const,
+};
 
 afterEach(async () => {
   await Promise.all(
@@ -143,8 +152,8 @@ describe("resolveNodeAssetRoot", () => {
       assetRoot,
       env: {
         DATABASE_URL: `file:${databasePath}`,
-        SITE_RESOLUTION_MODE: "host-based",
         SITE_PATH_PREFIX: "/blog",
+        ...VALID_HOST_BASED_NODE_ENV,
       } as Bindings,
     });
 
@@ -193,6 +202,28 @@ describe("resolveNodeAssetRoot", () => {
         } as Bindings,
       }),
     ).rejects.toThrow("single-site mode found multiple sites in the database:");
+  });
+
+  it("fails fast when host-based mode is missing hosted control-plane config", async () => {
+    const root = await mkdtemp(join(tmpdir(), "jant-node-host-based-config-"));
+    tempDirs.push(root);
+    const databasePath = join(root, "data", "jant.sqlite");
+
+    await migrate({
+      DATABASE_URL: `file:${databasePath}`,
+    } as Bindings);
+
+    await expect(
+      createNodeRequestHandler({
+        assetRoot: null,
+        env: {
+          DATABASE_URL: `file:${databasePath}`,
+          SITE_RESOLUTION_MODE: "host-based",
+        } as Bindings,
+      }),
+    ).rejects.toThrow(
+      "HOSTED_CONTROL_PLANE_BASE_URL must be set when SITE_RESOLUTION_MODE=host-based.",
+    );
   });
 });
 

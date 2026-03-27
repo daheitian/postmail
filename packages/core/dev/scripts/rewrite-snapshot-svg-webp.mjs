@@ -130,7 +130,10 @@ function findColumnIndex(columns, columnName) {
 }
 
 function isSvgManifestObject(object) {
-  if (typeof object?.contentType === "string" && object.contentType === "image/svg+xml") {
+  if (
+    typeof object?.contentType === "string" &&
+    object.contentType === "image/svg+xml"
+  ) {
     return true;
   }
 
@@ -197,7 +200,9 @@ async function main() {
 
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
   if (!Array.isArray(manifest.objects)) {
-    throw new Error("Snapshot storage-manifest.json must contain an objects array.");
+    throw new Error(
+      "Snapshot storage-manifest.json must contain an objects array.",
+    );
   }
 
   const dbSqlOriginal = await readFile(dbSqlPath, "utf8");
@@ -299,14 +304,20 @@ async function main() {
     }
 
     const filenameIndex = findColumnIndex(statement.columns, "filename");
-    if (filenameIndex !== -1 && typeof statement.values[filenameIndex] === "string") {
+    if (
+      filenameIndex !== -1 &&
+      typeof statement.values[filenameIndex] === "string"
+    ) {
       statement.values[filenameIndex] = replaceExtension(
         statement.values[filenameIndex],
         ".webp",
       );
     }
 
-    const originalNameIndex = findColumnIndex(statement.columns, "original_name");
+    const originalNameIndex = findColumnIndex(
+      statement.columns,
+      "original_name",
+    );
     if (
       originalNameIndex !== -1 &&
       typeof statement.values[originalNameIndex] === "string" &&

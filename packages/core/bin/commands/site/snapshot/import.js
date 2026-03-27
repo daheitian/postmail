@@ -14,10 +14,7 @@ import { unzipSync } from "fflate";
 import { executeD1, queryD1 } from "../../../lib/d1-query.js";
 import { loadNodeRuntime } from "../../../lib/load-node-runtime.js";
 import { openNodeDatabase } from "../../../lib/node-database.js";
-import {
-  deleteR2Object,
-  uploadR2Object,
-} from "../../../lib/r2-query.js";
+import { deleteR2Object, uploadR2Object } from "../../../lib/r2-query.js";
 import {
   assertSnapshotManifest,
   assertSnapshotMeta,
@@ -125,7 +122,9 @@ async function materializeSnapshotInput(inputPath) {
   if (!isZipPath(inputPath)) {
     const fileStat = await stat(inputPath);
     if (!fileStat.isDirectory()) {
-      throw new Error(`Snapshot path must be a directory or .zip: ${inputPath}`);
+      throw new Error(
+        `Snapshot path must be a directory or .zip: ${inputPath}`,
+      );
     }
     return {
       cleanup: async () => {},
@@ -216,7 +215,9 @@ export async function run(argv) {
     console.log("  --host                  Target site host");
     console.log("  --url                   Target site URL");
     console.log("  --path-prefix           Path prefix used with --host");
-    console.log("  --local                 Force local D1 instead of DATABASE_URL");
+    console.log(
+      "  --local                 Force local D1 instead of DATABASE_URL",
+    );
     console.log("  --remote                Import into remote D1");
     console.log(
       "  --config                Wrangler config file (default: wrangler.toml)",
@@ -229,7 +230,9 @@ export async function run(argv) {
     console.log(
       "  --bucket-binding        Wrangler R2 binding to resolve (default: R2)",
     );
-    console.log("  --persist-to            Local D1/R2 state directory override");
+    console.log(
+      "  --persist-to            Local D1/R2 state directory override",
+    );
     console.log(
       "  --remap-site            Rewrite snapshot site_id and storage keys to the resolved target site",
     );
@@ -336,12 +339,18 @@ export async function run(argv) {
     );
     const dbSql = snapshotSite
       ? shouldRemapSite
-        ? rewriteSnapshotSiteIdentifiers(rawDbSql, snapshotSite.id, targetSite.id)
+        ? rewriteSnapshotSiteIdentifiers(
+            rawDbSql,
+            snapshotSite.id,
+            targetSite.id,
+          )
         : rawDbSql
       : rewriteLegacySnapshotSql(rawDbSql, targetSite.id);
     await context.execute(`${buildReplaceSql(targetSite.id)}\n${dbSql}`);
 
-    const keysToDelete = [...currentKeys].filter((key) => !snapshotKeys.has(key));
+    const keysToDelete = [...currentKeys].filter(
+      (key) => !snapshotKeys.has(key),
+    );
     for (const key of keysToDelete) {
       await context.deleteObject(key);
     }

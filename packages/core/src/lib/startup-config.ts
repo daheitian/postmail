@@ -1,6 +1,22 @@
 import { escapeHtml } from "./html.js";
-import { getAuthSecret } from "./env.js";
+import {
+  getAuthSecret,
+  getHostedControlPlaneBaseUrl,
+  getHostedControlPlaneDomainCheckSecret,
+  getHostedControlPlaneInternalBaseUrl,
+  getHostedControlPlaneInternalToken,
+  getHostedControlPlaneSsoSecret,
+  getInternalAdminToken,
+  getSiteResolutionMode,
+} from "./env.js";
 import type { Bindings } from "../types.js";
+
+const HOSTED_SHARED_SECRET_MIN_LENGTH = 32;
+
+interface StartupConfigurationIssue {
+  message: string;
+  variable: string;
+}
 
 function renderConfigurationErrorPage(input: {
   title: string;
@@ -37,6 +53,146 @@ function getAuthSecretErrorHtml(): string {
   });
 }
 
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function collectHostBasedStartupConfigurationIssues(
+  env: Pick<
+    Bindings,
+    | "HOSTED_CONTROL_PLANE_BASE_URL"
+    | "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET"
+    | "HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL"
+    | "HOSTED_CONTROL_PLANE_INTERNAL_TOKEN"
+    | "HOSTED_CONTROL_PLANE_SSO_SECRET"
+    | "INTERNAL_ADMIN_TOKEN"
+    | "SITE_RESOLUTION_MODE"
+  >,
+): StartupConfigurationIssue[] {
+  if (getSiteResolutionMode(env) !== "host-based") {
+    return [];
+  }
+
+  const issues: StartupConfigurationIssue[] = [];
+  const hostedControlPlaneBaseUrl = getHostedControlPlaneBaseUrl(env);
+  const hostedControlPlaneInternalBaseUrl =
+    getHostedControlPlaneInternalBaseUrl(env);
+  const hostedControlPlaneInternalToken =
+    getHostedControlPlaneInternalToken(env);
+  const internalAdminToken = getInternalAdminToken(env);
+  const domainCheckSecret = getHostedControlPlaneDomainCheckSecret(env);
+  const hostedSsoSecret = getHostedControlPlaneSsoSecret(env);
+
+  if (!hostedControlPlaneBaseUrl) {
+    issues.push({
+      message:
+        "HOSTED_CONTROL_PLANE_BASE_URL must be set when SITE_RESOLUTION_MODE=host-based.",
+      variable: "HOSTED_CONTROL_PLANE_BASE_URL",
+    });
+  } else if (!isValidHttpUrl(hostedControlPlaneBaseUrl)) {
+    issues.push({
+      message:
+        "HOSTED_CONTROL_PLANE_BASE_URL must be a valid http:// or https:// URL.",
+      variable: "HOSTED_CONTROL_PLANE_BASE_URL",
+    });
+  }
+
+  if (
+    hostedControlPlaneInternalBaseUrl &&
+    !isValidHttpUrl(hostedControlPlaneInternalBaseUrl)
+  ) {
+    issues.push({
+      message:
+        "HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL must be a valid http:// or https:// URL when set.",
+      variable: "HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL",
+    });
+  }
+
+  if (!hostedControlPlaneInternalToken) {
+    issues.push({
+      message:
+        "HOSTED_CONTROL_PLANE_INTERNAL_TOKEN must be set when SITE_RESOLUTION_MODE=host-based.",
+      variable: "HOSTED_CONTROL_PLANE_INTERNAL_TOKEN",
+    });
+  }
+
+  if (!internalAdminToken) {
+    issues.push({
+      message:
+        "INTERNAL_ADMIN_TOKEN must be set when SITE_RESOLUTION_MODE=host-based.",
+      variable: "INTERNAL_ADMIN_TOKEN",
+    });
+  }
+
+  if (!domainCheckSecret) {
+    issues.push({
+      message:
+        "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET must be set when SITE_RESOLUTION_MODE=host-based.",
+      variable: "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET",
+    });
+  } else if (domainCheckSecret.length < HOSTED_SHARED_SECRET_MIN_LENGTH) {
+    issues.push({
+      message:
+        "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET must be at least 32 characters in host-based mode.",
+      variable: "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET",
+    });
+  }
+
+  if (!hostedSsoSecret) {
+    issues.push({
+      message:
+        "HOSTED_CONTROL_PLANE_SSO_SECRET must be set when SITE_RESOLUTION_MODE=host-based.",
+      variable: "HOSTED_CONTROL_PLANE_SSO_SECRET",
+    });
+  } else if (hostedSsoSecret.length < HOSTED_SHARED_SECRET_MIN_LENGTH) {
+    issues.push({
+      message:
+        "HOSTED_CONTROL_PLANE_SSO_SECRET must be at least 32 characters in host-based mode.",
+      variable: "HOSTED_CONTROL_PLANE_SSO_SECRET",
+    });
+  }
+
+  return issues;
+}
+
+function getHostBasedConfigurationErrorHtml(
+  issues: readonly StartupConfigurationIssue[],
+): string {
+  const itemsHtml = issues
+    .map(
+      (issue) =>
+        `<li><code>${escapeHtml(issue.variable)}</code>: ${escapeHtml(issue.message)}</li>`,
+    )
+    .join("");
+
+  return renderConfigurationErrorPage({
+    title: "Hosted configuration is incomplete",
+    bodyHtml: `<p>Jant is running with <code>SITE_RESOLUTION_MODE=host-based</code>, so hosted control-plane integration must be configured before the instance can serve requests.</p><ul>${itemsHtml}</ul>`,
+    docsHref:
+      "https://github.com/jant-me/jant/blob/main/docs/configuration.md#hosted-control-plane-integration-variables",
+  });
+}
+
+export function getHostBasedStartupConfigurationIssues(
+  env: Pick<
+    Bindings,
+    | "HOSTED_CONTROL_PLANE_BASE_URL"
+    | "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET"
+    | "HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL"
+    | "HOSTED_CONTROL_PLANE_INTERNAL_TOKEN"
+    | "HOSTED_CONTROL_PLANE_SSO_SECRET"
+    | "INTERNAL_ADMIN_TOKEN"
+    | "SITE_RESOLUTION_MODE"
+  >,
+): StartupConfigurationIssue[] {
+  return collectHostBasedStartupConfigurationIssues(env);
+}
+
 export function getRuntimeConfigurationErrorPage(message: string): string {
   return renderConfigurationErrorPage({
     title: "Configuration Error",
@@ -66,10 +222,22 @@ export function getStartupConfigurationErrorPage(
     | "NODE_SQLITE"
     | "DATABASE_URL"
     | "DATA_DIR"
+    | "HOSTED_CONTROL_PLANE_BASE_URL"
+    | "HOSTED_CONTROL_PLANE_DOMAIN_CHECK_SECRET"
+    | "HOSTED_CONTROL_PLANE_INTERNAL_BASE_URL"
+    | "HOSTED_CONTROL_PLANE_INTERNAL_TOKEN"
+    | "HOSTED_CONTROL_PLANE_SSO_SECRET"
+    | "INTERNAL_ADMIN_TOKEN"
+    | "SITE_RESOLUTION_MODE"
   >,
 ): string | null {
   if (!getAuthSecret(env)) {
     return getAuthSecretErrorHtml();
+  }
+
+  const hostBasedIssues = collectHostBasedStartupConfigurationIssues(env);
+  if (hostBasedIssues.length > 0) {
+    return getHostBasedConfigurationErrorHtml(hostBasedIssues);
   }
 
   return null;

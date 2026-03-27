@@ -1,12 +1,17 @@
-import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
 import { resolve, join, relative, extname, dirname, basename } from "node:path";
 import { tmpdir } from "node:os";
 import { parseArgs } from "node:util";
 import { typeidUnboxed } from "typeid-js";
-import {
-  CLI_API_TOKEN_ENV_VAR,
-  getCliApiToken,
-} from "../lib/cli-api-token.js";
+import { CLI_API_TOKEN_ENV_VAR, getCliApiToken } from "../lib/cli-api-token.js";
 import {
   extractAttachmentBlocks,
   findImageUrls,
@@ -154,12 +159,7 @@ async function resolveImportLocalAssetPath(rawUrl, siteConfig, sourceRootDir) {
 }
 
 async function readImportAsset(options) {
-  const {
-    sourceUrl,
-    sourceFilePath,
-    mimeType,
-    originalName,
-  } = options;
+  const { sourceUrl, sourceFilePath, mimeType, originalName } = options;
 
   if (sourceFilePath) {
     const bytes = new Uint8Array(await readFile(sourceFilePath));
@@ -182,8 +182,7 @@ async function readImportAsset(options) {
   }
 
   const bytes = new Uint8Array(await response.arrayBuffer());
-  const filename =
-    originalName || getFilenameFromUrl(sourceUrl) || "file";
+  const filename = originalName || getFilenameFromUrl(sourceUrl) || "file";
   return {
     bytes,
     filename,
@@ -274,7 +273,10 @@ function normalizeImportPathKey(value) {
     return null;
   }
 
-  return trimmed.toLowerCase().replace(/^\/+|\/+$/g, "").replace(/\/+/g, "/");
+  return trimmed
+    .toLowerCase()
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/\/+/g, "/");
 }
 
 function normalizeImportAliasPath(value) {
@@ -706,7 +708,7 @@ async function buildSiteAvatarImport(siteConfig, sourceRootDir) {
   const appleTouchRawUrl =
     appleTouchMode === "custom"
       ? typeof jant.apple_touch_icon_url === "string" &&
-          jant.apple_touch_icon_url.trim()
+        jant.apple_touch_icon_url.trim()
         ? jant.apple_touch_icon_url
         : "/apple-touch-icon.png"
       : null;
@@ -843,9 +845,7 @@ function toRemotePostPayload(data) {
   const { title, url, ...rest } = data;
   return {
     ...rest,
-    ...(typeof title === "string" && title.trim()
-      ? { sourceName: title }
-      : {}),
+    ...(typeof title === "string" && title.trim() ? { sourceName: title } : {}),
     ...(typeof url === "string" && url.trim() ? { sourceUrl: url } : {}),
   };
 }
@@ -1118,14 +1118,15 @@ async function createLocalTarget(env = process.env) {
       if (!asset) return null;
 
       const originalName =
-        mediaSpec.originalName || asset.filename || getFilenameFromUrl(mediaSpec.src) || "file";
+        mediaSpec.originalName ||
+        asset.filename ||
+        getFilenameFromUrl(mediaSpec.src) ||
+        "file";
       const bytes = asset.bytes;
       const { id, filename, storageKey } =
         generateImportedStorageKey(originalName);
       const mimeType =
-        mediaSpec.mimeType ||
-        asset.contentType ||
-        guessMimeType(originalName);
+        mediaSpec.mimeType || asset.contentType || guessMimeType(originalName);
       let posterKey;
 
       if (mediaSpec.poster) {
@@ -1134,13 +1135,9 @@ async function createLocalTarget(env = process.env) {
           const posterName = posterAsset.filename || "poster.webp";
           const posterExt = extname(posterName) || ".webp";
           posterKey = storageKey.replace(/(\.[^.]+)?$/, `-poster${posterExt}`);
-          await runtime.storage.put(
-            posterKey,
-            posterAsset.bytes,
-            {
-              contentType: posterAsset.contentType || guessMimeType(posterName),
-            },
-          );
+          await runtime.storage.put(posterKey, posterAsset.bytes, {
+            contentType: posterAsset.contentType || guessMimeType(posterName),
+          });
         }
       }
 
@@ -1391,7 +1388,10 @@ export async function run(argv) {
         customCss,
       );
       const importedNav = normalizeImportedNavItems(siteConfig);
-      const avatarImport = await buildSiteAvatarImport(siteConfig, sourceRootDir);
+      const avatarImport = await buildSiteAvatarImport(
+        siteConfig,
+        sourceRootDir,
+      );
 
       if (dryRun) {
         console.log("[dry-run] Would apply exported site settings");
@@ -1416,7 +1416,9 @@ export async function run(argv) {
             );
           }
         } catch (err) {
-          console.error(`Error applying exported site settings: ${err.message}`);
+          console.error(
+            `Error applying exported site settings: ${err.message}`,
+          );
           process.exit(1);
         }
 
@@ -1464,42 +1466,44 @@ export async function run(argv) {
     }
 
     for (const { path, content } of collectionFiles) {
-    const { frontMatter } = await parseFrontMatter(content);
-    const slug = path
-      .replace("content/jant-collections/", "")
-      .replace("content/c/", "")
-      .replace("/_index.md", "");
+      const { frontMatter } = await parseFrontMatter(content);
+      const slug = path
+        .replace("content/jant-collections/", "")
+        .replace("content/c/", "")
+        .replace("/_index.md", "");
 
-    if (collectionSlugToId.has(slug)) {
-      console.error(
-        `Import conflict: collection slug "${slug}" is already in use. Import into an empty site or remove the existing collection first.`,
-      );
-      process.exit(1);
-    }
+      if (collectionSlugToId.has(slug)) {
+        console.error(
+          `Import conflict: collection slug "${slug}" is already in use. Import into an empty site or remove the existing collection first.`,
+        );
+        process.exit(1);
+      }
 
-    if (dryRun) {
-      console.log(
-        `[dry-run] Would create collection: ${frontMatter.title || slug}`,
-      );
-      collectionSlugToId.set(slug, `dry-run-${slug}`);
-      continue;
-    }
+      if (dryRun) {
+        console.log(
+          `[dry-run] Would create collection: ${frontMatter.title || slug}`,
+        );
+        collectionSlugToId.set(slug, `dry-run-${slug}`);
+        continue;
+      }
 
-    try {
-      const collectionExtra = frontMatter.extra || {};
-      const result = await target.createCollection({
-        title: frontMatter.title || slug,
-        slug,
-        description: frontMatter.description || null,
-        sortOrder:
-          collectionExtra.sort_order || collectionExtra.sortOrder || undefined,
-      });
-      collectionSlugToId.set(slug, result.id);
-      console.log(`Created collection: ${frontMatter.title || slug}`);
-    } catch (err) {
-      console.error(`Error creating collection "${slug}": ${err.message}`);
-      process.exit(1);
-    }
+      try {
+        const collectionExtra = frontMatter.extra || {};
+        const result = await target.createCollection({
+          title: frontMatter.title || slug,
+          slug,
+          description: frontMatter.description || null,
+          sortOrder:
+            collectionExtra.sort_order ||
+            collectionExtra.sortOrder ||
+            undefined,
+        });
+        collectionSlugToId.set(slug, result.id);
+        console.log(`Created collection: ${frontMatter.title || slug}`);
+      } catch (err) {
+        console.error(`Error creating collection "${slug}": ${err.message}`);
+        process.exit(1);
+      }
     }
 
     // 4. Process posts
@@ -1509,162 +1513,53 @@ export async function run(argv) {
     let aliasesCreated = 0;
 
     for (const { path, content } of postFiles) {
-    const { frontMatter, body } = await parseFrontMatter(content);
+      const { frontMatter, body } = await parseFrontMatter(content);
 
-    const segments = splitReplies(body);
-    const rootSegment = segments[0];
-    const replySegments = segments.slice(1);
-    const replySlugPaths = collectReplySlugPaths(replySegments);
+      const segments = splitReplies(body);
+      const rootSegment = segments[0];
+      const replySegments = segments.slice(1);
+      const replySlugPaths = collectReplySlugPaths(replySegments);
 
-    // Resolve collection IDs from taxonomy slugs
-    const collectionIds = [];
-    const taxonomyCollections =
-      frontMatter.taxonomies?.c || frontMatter.taxonomies?.collections || [];
-    for (const colSlug of taxonomyCollections) {
-      const id = collectionSlugToId.get(colSlug);
-      if (id) collectionIds.push(id);
-    }
-
-    const extra = frontMatter.extra || {};
-    const format = extra.format || "note";
-    const postSlug =
-      frontMatter.slug != null ? String(frontMatter.slug) : undefined;
-    const postStatus =
-      extra.status === "draft" || extra.status === "published"
-        ? extra.status
-        : frontMatter.draft
-          ? "draft"
-          : "published";
-    const postVisibility =
-      extra.visibility === "unlisted" || extra.visibility === "private"
-        ? extra.visibility
-        : undefined;
-    const postLabel =
-      (format === "quote" ? extra.source_name : frontMatter.title) ||
-      postSlug ||
-      "(untitled)";
-
-    if (!dryRun && postSlug) {
-      await assertImportSlugAvailable(target, postSlug, postLabel, "post");
-    }
-
-    // Process images in root body
-    let rootBody = rootSegment?.body || "";
-    const normalizedRootBody = normalizeImportedBodySegment(rootBody);
-    rootBody = normalizedRootBody.markdown;
-    let importedAttachments = [];
-
-    if (!skipMedia && !dryRun) {
-      const imageMedia = findImageUrls(rootBody).map((src) => ({ src }));
-      const uploadResult = await uploadMediaList(
-        imageMedia,
-        target,
-        siteConfig,
-        sourceRootDir,
-      );
-      mediaUploaded += uploadResult.uploaded;
-
-      if (uploadResult.urlMap.size > 0) {
-        rootBody = rewriteMediaReferences(rootBody, uploadResult.urlMap);
+      // Resolve collection IDs from taxonomy slugs
+      const collectionIds = [];
+      const taxonomyCollections =
+        frontMatter.taxonomies?.c || frontMatter.taxonomies?.collections || [];
+      for (const colSlug of taxonomyCollections) {
+        const id = collectionSlugToId.get(colSlug);
+        if (id) collectionIds.push(id);
       }
-    }
-    if (!dryRun) {
-      const attachmentResult = await buildImportedAttachments(
-        normalizedRootBody.attachments,
-        target,
-        siteConfig,
-        sourceRootDir,
-        { skipUploads: skipMedia },
-      );
-      importedAttachments = attachmentResult.attachments;
-      mediaUploaded += attachmentResult.uploaded;
-    }
 
-    const postData = {
-      format,
-      title:
-        format === "quote"
-          ? typeof extra.source_name === "string"
-            ? extra.source_name
-            : undefined
-          : frontMatter.title != null
-            ? String(frontMatter.title)
-            : undefined,
-      bodyMarkdown: rootBody || undefined,
-      slug: postSlug,
-      path: frontMatter.path != null ? String(frontMatter.path) : undefined,
-      status: postStatus,
-      visibility: postVisibility,
-      collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
-      attachments:
-        importedAttachments.length > 0 ? importedAttachments : undefined,
-      publishedAt:
-        postStatus === "published" && frontMatter.date
-          ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
-          : undefined,
-      pinned: extra.pinned || undefined,
-      featured: extra.featured || undefined,
-      rating: extra.rating || undefined,
-    };
+      const extra = frontMatter.extra || {};
+      const format = extra.format || "note";
+      const postSlug =
+        frontMatter.slug != null ? String(frontMatter.slug) : undefined;
+      const postStatus =
+        extra.status === "draft" || extra.status === "published"
+          ? extra.status
+          : frontMatter.draft
+            ? "draft"
+            : "published";
+      const postVisibility =
+        extra.visibility === "unlisted" || extra.visibility === "private"
+          ? extra.visibility
+          : undefined;
+      const postLabel =
+        (format === "quote" ? extra.source_name : frontMatter.title) ||
+        postSlug ||
+        "(untitled)";
 
-    if (format === "link" && extra.link_url) {
-      postData.url = extra.link_url;
-    }
-    if (format === "quote" && extra.quote_text) {
-      postData.quoteText = extra.quote_text;
-      if (typeof extra.source_url === "string" && extra.source_url.trim()) {
-        postData.url = extra.source_url;
+      if (!dryRun && postSlug) {
+        await assertImportSlugAvailable(target, postSlug, postLabel, "post");
       }
-    }
 
-    if (dryRun) {
-      console.log(
-        `[dry-run] Would create post: ${postLabel} (${format})`,
-      );
-      if (replySegments.length > 0) {
-        console.log(`  [dry-run] With ${replySegments.length} replies`);
-      }
-      postsCreated++;
-      repliesCreated += replySegments.length;
-      continue;
-    }
-
-    const progress = `[${postsCreated + 1}/${postFiles.length}]`;
-
-    let post;
-    try {
-      post = await target.createPost(postData);
-      postsCreated++;
-      const replyInfo =
-        replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
-      console.log(`${progress} Created: ${postLabel}${replyInfo}`);
-    } catch (err) {
-      console.error(`Error creating post "${postLabel}": ${err.message}`);
-      process.exit(1);
-    }
-
-    // Create replies before aliases so reply slugs can claim their own paths.
-    if (!post) continue;
-    for (const replySegment of replySegments) {
-      const replyAttrs = replySegment.attrs || {};
-      const replySlug = replyAttrs.slug || undefined;
-      const replyLabel =
-        replyAttrs.source_name || replyAttrs.title || replySlug || "(untitled reply)";
-      if (!dryRun && replySlug) {
-        await assertImportSlugAvailable(
-          target,
-          replySlug,
-          `${replyLabel} in ${postLabel}`,
-          "reply",
-        );
-      }
-      let replyBody = replySegment.body || "";
-      const normalizedReplyBody = normalizeImportedBodySegment(replyBody);
-      replyBody = normalizedReplyBody.markdown;
-      let replyAttachments = [];
+      // Process images in root body
+      let rootBody = rootSegment?.body || "";
+      const normalizedRootBody = normalizeImportedBodySegment(rootBody);
+      rootBody = normalizedRootBody.markdown;
+      let importedAttachments = [];
 
       if (!skipMedia && !dryRun) {
-        const imageMedia = findImageUrls(replyBody).map((src) => ({ src }));
+        const imageMedia = findImageUrls(rootBody).map((src) => ({ src }));
         const uploadResult = await uploadMediaList(
           imageMedia,
           target,
@@ -1674,93 +1569,206 @@ export async function run(argv) {
         mediaUploaded += uploadResult.uploaded;
 
         if (uploadResult.urlMap.size > 0) {
-          replyBody = rewriteMediaReferences(replyBody, uploadResult.urlMap);
+          rootBody = rewriteMediaReferences(rootBody, uploadResult.urlMap);
         }
       }
       if (!dryRun) {
         const attachmentResult = await buildImportedAttachments(
-          normalizedReplyBody.attachments,
+          normalizedRootBody.attachments,
           target,
           siteConfig,
           sourceRootDir,
           { skipUploads: skipMedia },
         );
-        replyAttachments = attachmentResult.attachments;
+        importedAttachments = attachmentResult.attachments;
         mediaUploaded += attachmentResult.uploaded;
       }
 
-      const replyFormat = replyAttrs.format || "note";
-      const replyStatus =
-        replyAttrs.status === "draft" || replyAttrs.status === "published"
-          ? replyAttrs.status
-          : "published";
-      const replyVisibility =
-        replyAttrs.visibility === "unlisted" ||
-        replyAttrs.visibility === "private"
-          ? replyAttrs.visibility
-          : undefined;
-      const replyData = {
-        format: replyFormat,
-        status: replyStatus,
+      const postData = {
+        format,
         title:
-          replyFormat === "quote"
-            ? replyAttrs.source_name || undefined
-            : replyAttrs.title || undefined,
-        bodyMarkdown: replyBody || undefined,
-        replyToId: post.id,
-        slug: replySlug,
-        visibility: replyVisibility,
-        attachments: replyAttachments.length > 0 ? replyAttachments : undefined,
-        publishedAt: replyAttrs.date
-          ? Math.floor(new Date(replyAttrs.date).getTime() / 1000)
-          : undefined,
-        rating: replyAttrs.rating ? Number(replyAttrs.rating) : undefined,
+          format === "quote"
+            ? typeof extra.source_name === "string"
+              ? extra.source_name
+              : undefined
+            : frontMatter.title != null
+              ? String(frontMatter.title)
+              : undefined,
+        bodyMarkdown: rootBody || undefined,
+        slug: postSlug,
+        path: frontMatter.path != null ? String(frontMatter.path) : undefined,
+        status: postStatus,
+        visibility: postVisibility,
+        collectionIds: collectionIds.length > 0 ? collectionIds : undefined,
+        attachments:
+          importedAttachments.length > 0 ? importedAttachments : undefined,
+        publishedAt:
+          postStatus === "published" && frontMatter.date
+            ? Math.floor(new Date(frontMatter.date).getTime() / 1000)
+            : undefined,
+        pinned: extra.pinned || undefined,
+        featured: extra.featured || undefined,
+        rating: extra.rating || undefined,
       };
 
-      if (replyFormat === "link" && replyAttrs.url) {
-        replyData.url = replyAttrs.url;
+      if (format === "link" && extra.link_url) {
+        postData.url = extra.link_url;
       }
-      if (replyFormat === "quote" && replyAttrs.quote_text) {
-        replyData.quoteText = decodeURIComponent(replyAttrs.quote_text);
-        if (replyAttrs.source_url) {
-          replyData.url = replyAttrs.source_url;
+      if (format === "quote" && extra.quote_text) {
+        postData.quoteText = extra.quote_text;
+        if (typeof extra.source_url === "string" && extra.source_url.trim()) {
+          postData.url = extra.source_url;
         }
       }
 
+      if (dryRun) {
+        console.log(`[dry-run] Would create post: ${postLabel} (${format})`);
+        if (replySegments.length > 0) {
+          console.log(`  [dry-run] With ${replySegments.length} replies`);
+        }
+        postsCreated++;
+        repliesCreated += replySegments.length;
+        continue;
+      }
+
+      const progress = `[${postsCreated + 1}/${postFiles.length}]`;
+
+      let post;
       try {
-        await target.createPost(replyData);
-        repliesCreated++;
+        post = await target.createPost(postData);
+        postsCreated++;
+        const replyInfo =
+          replySegments.length > 0 ? ` (+${replySegments.length} replies)` : "";
+        console.log(`${progress} Created: ${postLabel}${replyInfo}`);
       } catch (err) {
-        console.error(`  Error creating reply: ${err.message}`);
+        console.error(`Error creating post "${postLabel}": ${err.message}`);
         process.exit(1);
       }
-    }
 
-    // Create exported root aliases after replies. Reply slugs are handled by
-    // the thread markers; only true root aliases round-trip back into Jant.
-    const rootTargetSlug = postSlug || post.slug;
-    let aliasPaths;
-    try {
-      aliasPaths = getRootAliasPathsForImport(
-        getExportedRootAliases(frontMatter),
-        rootTargetSlug,
-        replySlugPaths,
-      );
-    } catch (err) {
-      console.error(`Error importing aliases for "${postLabel}": ${err.message}`);
-      process.exit(1);
-    }
-    for (const aliasPath of aliasPaths) {
+      // Create replies before aliases so reply slugs can claim their own paths.
+      if (!post) continue;
+      for (const replySegment of replySegments) {
+        const replyAttrs = replySegment.attrs || {};
+        const replySlug = replyAttrs.slug || undefined;
+        const replyLabel =
+          replyAttrs.source_name ||
+          replyAttrs.title ||
+          replySlug ||
+          "(untitled reply)";
+        if (!dryRun && replySlug) {
+          await assertImportSlugAvailable(
+            target,
+            replySlug,
+            `${replyLabel} in ${postLabel}`,
+            "reply",
+          );
+        }
+        let replyBody = replySegment.body || "";
+        const normalizedReplyBody = normalizeImportedBodySegment(replyBody);
+        replyBody = normalizedReplyBody.markdown;
+        let replyAttachments = [];
+
+        if (!skipMedia && !dryRun) {
+          const imageMedia = findImageUrls(replyBody).map((src) => ({ src }));
+          const uploadResult = await uploadMediaList(
+            imageMedia,
+            target,
+            siteConfig,
+            sourceRootDir,
+          );
+          mediaUploaded += uploadResult.uploaded;
+
+          if (uploadResult.urlMap.size > 0) {
+            replyBody = rewriteMediaReferences(replyBody, uploadResult.urlMap);
+          }
+        }
+        if (!dryRun) {
+          const attachmentResult = await buildImportedAttachments(
+            normalizedReplyBody.attachments,
+            target,
+            siteConfig,
+            sourceRootDir,
+            { skipUploads: skipMedia },
+          );
+          replyAttachments = attachmentResult.attachments;
+          mediaUploaded += attachmentResult.uploaded;
+        }
+
+        const replyFormat = replyAttrs.format || "note";
+        const replyStatus =
+          replyAttrs.status === "draft" || replyAttrs.status === "published"
+            ? replyAttrs.status
+            : "published";
+        const replyVisibility =
+          replyAttrs.visibility === "unlisted" ||
+          replyAttrs.visibility === "private"
+            ? replyAttrs.visibility
+            : undefined;
+        const replyData = {
+          format: replyFormat,
+          status: replyStatus,
+          title:
+            replyFormat === "quote"
+              ? replyAttrs.source_name || undefined
+              : replyAttrs.title || undefined,
+          bodyMarkdown: replyBody || undefined,
+          replyToId: post.id,
+          slug: replySlug,
+          visibility: replyVisibility,
+          attachments:
+            replyAttachments.length > 0 ? replyAttachments : undefined,
+          publishedAt: replyAttrs.date
+            ? Math.floor(new Date(replyAttrs.date).getTime() / 1000)
+            : undefined,
+          rating: replyAttrs.rating ? Number(replyAttrs.rating) : undefined,
+        };
+
+        if (replyFormat === "link" && replyAttrs.url) {
+          replyData.url = replyAttrs.url;
+        }
+        if (replyFormat === "quote" && replyAttrs.quote_text) {
+          replyData.quoteText = decodeURIComponent(replyAttrs.quote_text);
+          if (replyAttrs.source_url) {
+            replyData.url = replyAttrs.source_url;
+          }
+        }
+
+        try {
+          await target.createPost(replyData);
+          repliesCreated++;
+        } catch (err) {
+          console.error(`  Error creating reply: ${err.message}`);
+          process.exit(1);
+        }
+      }
+
+      // Create exported root aliases after replies. Reply slugs are handled by
+      // the thread markers; only true root aliases round-trip back into Jant.
+      const rootTargetSlug = postSlug || post.slug;
+      let aliasPaths;
       try {
-        await target.createAlias(aliasPath, rootTargetSlug);
-        aliasesCreated++;
+        aliasPaths = getRootAliasPathsForImport(
+          getExportedRootAliases(frontMatter),
+          rootTargetSlug,
+          replySlugPaths,
+        );
       } catch (err) {
         console.error(
-          `Error creating alias "${aliasPath}" for "${postLabel}": ${err.message}`,
+          `Error importing aliases for "${postLabel}": ${err.message}`,
         );
         process.exit(1);
       }
-    }
+      for (const aliasPath of aliasPaths) {
+        try {
+          await target.createAlias(aliasPath, rootTargetSlug);
+          aliasesCreated++;
+        } catch (err) {
+          console.error(
+            `Error creating alias "${aliasPath}" for "${postLabel}": ${err.message}`,
+          );
+          process.exit(1);
+        }
+      }
     }
 
     await target?.close();

@@ -20,7 +20,9 @@ function formatUsage() {
   console.log("  --file             SQL file to execute");
   console.log("  --local            Force local D1 instead of DATABASE_URL");
   console.log("  --remote           Run against remote D1");
-  console.log("  --config           Wrangler config file (default: wrangler.toml)");
+  console.log(
+    "  --config           Wrangler config file (default: wrangler.toml)",
+  );
   console.log("  --env              Wrangler environment name");
   console.log("  --database         D1 binding name (default: DB)");
   console.log("  --persist-to       Local D1 state directory override");
@@ -90,7 +92,9 @@ export async function run(argv) {
 
   const d1Sql = normalizeD1Sql(sql);
   if (!d1Sql) {
-    throw new Error(`SQL file has no executable statements for D1: ${values.file}`);
+    throw new Error(
+      `SQL file has no executable statements for D1: ${values.file}`,
+    );
   }
 
   const statements = executeD1(d1Sql, runtime, {

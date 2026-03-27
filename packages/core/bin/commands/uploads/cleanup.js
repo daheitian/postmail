@@ -67,9 +67,7 @@ export async function run(argv) {
     console.log("");
     console.log("Options:");
     console.log("  --url           Target site URL");
-    console.log(
-      "  --limit         Cleanup batch size (default: 20, max: 500)",
-    );
+    console.log("  --limit         Cleanup batch size (default: 20, max: 500)");
     console.log("  --token         Internal admin token");
     console.log(
       "  --config        Wrangler config file (default: wrangler.toml)",
@@ -117,7 +115,5 @@ export async function run(argv) {
   console.log(`Cleaning expired uploads for ${siteUrl}...`);
   const result = await requestCleanup(cleanupUrl, token, limit);
   console.log(`Deleted sessions: ${result.deletedSessions}`);
-  console.log(
-    `Aborted multipart uploads: ${result.abortedMultipartUploads}`,
-  );
+  console.log(`Aborted multipart uploads: ${result.abortedMultipartUploads}`);
 }

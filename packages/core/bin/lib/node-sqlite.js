@@ -18,10 +18,7 @@ export function resolveDatabaseDialect(databaseUrl) {
 
   try {
     const parsed = new URL(databaseUrl);
-    if (
-      parsed.protocol === "postgres:" ||
-      parsed.protocol === "postgresql:"
-    ) {
+    if (parsed.protocol === "postgres:" || parsed.protocol === "postgresql:") {
       return "pg";
     }
   } catch {

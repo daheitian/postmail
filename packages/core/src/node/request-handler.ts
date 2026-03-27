@@ -30,6 +30,7 @@ import {
   getSiteResolutionMode,
   shouldTrustProxy,
 } from "../lib/env.js";
+import { getHostBasedStartupConfigurationIssues } from "../lib/startup-config.js";
 import { createSiteService } from "../services/site.js";
 import type { App } from "../types/app-context.js";
 import type { Bindings } from "../types/bindings.js";
@@ -609,6 +610,12 @@ export async function createNodeRequestHandler(options?: {
   assetRoot?: string | null;
 }): Promise<NodeRequestHandler> {
   const env = options?.env ?? getProcessBindings();
+  const hostBasedStartupIssues = getHostBasedStartupConfigurationIssues(env);
+  if (hostBasedStartupIssues.length > 0) {
+    throw new Error(
+      `Host-based startup configuration is invalid:\n- ${hostBasedStartupIssues.map((issue) => issue.message).join("\n- ")}`,
+    );
+  }
   const { bindings, close } = await createNodeBindings(env);
   try {
     await assertNodeSiteResolutionReady(bindings);

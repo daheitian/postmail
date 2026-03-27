@@ -79,7 +79,10 @@ function validateSnapshot(sql) {
       },
     );
   } catch (error) {
-    const output = [error.stdout, error.stderr].filter(Boolean).join("\n").trim();
+    const output = [error.stdout, error.stderr]
+      .filter(Boolean)
+      .join("\n")
+      .trim();
     console.error(output || error.message);
     process.exit(1);
   } finally {
@@ -183,4 +186,6 @@ validateSnapshot(sql);
 
 const outputPath = resolve(__dirname, "content-lab-snapshot.sql");
 writeFileSync(outputPath, sql);
-console.log("Exported content-lab database to scripts/content-lab-snapshot.sql");
+console.log(
+  "Exported content-lab database to scripts/content-lab-snapshot.sql",
+);

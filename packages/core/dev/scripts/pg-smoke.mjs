@@ -54,7 +54,9 @@ async function recreateDatabase(adminDatabaseUrl, databaseName) {
       `,
       [databaseName],
     );
-    await adminPool.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`);
+    await adminPool.query(
+      `DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`,
+    );
     await adminPool.query(`CREATE DATABASE ${quoteIdentifier(databaseName)}`);
   } finally {
     await adminPool.end();
@@ -76,7 +78,9 @@ async function dropDatabase(adminDatabaseUrl, databaseName) {
       `,
       [databaseName],
     );
-    await adminPool.query(`DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`);
+    await adminPool.query(
+      `DROP DATABASE IF EXISTS ${quoteIdentifier(databaseName)}`,
+    );
   } finally {
     await adminPool.end();
   }

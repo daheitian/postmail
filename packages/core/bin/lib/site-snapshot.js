@@ -254,7 +254,9 @@ export function assertSnapshotManifest(manifest) {
   }
 
   if (!Array.isArray(manifest.objects)) {
-    throw new Error("Snapshot storage-manifest.json must contain an objects array.");
+    throw new Error(
+      "Snapshot storage-manifest.json must contain an objects array.",
+    );
   }
 }
 
@@ -286,7 +288,11 @@ export function validateSnapshotTargetSite(meta, site) {
   }
 }
 
-export function rewriteSnapshotSiteIdentifiers(sql, sourceSiteId, targetSiteId) {
+export function rewriteSnapshotSiteIdentifiers(
+  sql,
+  sourceSiteId,
+  targetSiteId,
+) {
   if (!sourceSiteId || sourceSiteId === targetSiteId) {
     return sql;
   }
@@ -372,30 +378,32 @@ export function rewriteLegacySnapshotSql(sql, siteId) {
     .filter((line) => !line.trimStart().startsWith("--"))
     .join("\n");
 
-  const rewrittenStatements = splitSqlStatements(uncommentedSql).map((statement) => {
-    const normalized = statement.trim();
-    const legacySettingMatch = normalized.match(
-      /^INSERT INTO "?setting"? \(([^)]*)\) VALUES\(([\s\S]*)\)$/i,
-    );
-    if (legacySettingMatch) {
-      return `INSERT INTO "site_setting" ("site_id", ${legacySettingMatch[1]}) VALUES('${escapeSqlString(siteId)}', ${legacySettingMatch[2]})`;
-    }
+  const rewrittenStatements = splitSqlStatements(uncommentedSql).map(
+    (statement) => {
+      const normalized = statement.trim();
+      const legacySettingMatch = normalized.match(
+        /^INSERT INTO "?setting"? \(([^)]*)\) VALUES\(([\s\S]*)\)$/i,
+      );
+      if (legacySettingMatch) {
+        return `INSERT INTO "site_setting" ("site_id", ${legacySettingMatch[1]}) VALUES('${escapeSqlString(siteId)}', ${legacySettingMatch[2]})`;
+      }
 
-    let rewritten = normalized;
-    for (const tableName of [
-      "collection",
-      "nav_item",
-      "collection_directory_item",
-      "post",
-      "post_collection",
-      "path_registry",
-      "media",
-    ]) {
-      rewritten = prependSiteIdInsert(rewritten, tableName, siteId);
-    }
+      let rewritten = normalized;
+      for (const tableName of [
+        "collection",
+        "nav_item",
+        "collection_directory_item",
+        "post",
+        "post_collection",
+        "path_registry",
+        "media",
+      ]) {
+        rewritten = prependSiteIdInsert(rewritten, tableName, siteId);
+      }
 
-    return rewritten;
-  });
+      return rewritten;
+    },
+  );
 
   return `${rewrittenStatements.join(";\n")};\n`;
 }

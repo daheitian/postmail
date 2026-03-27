@@ -120,9 +120,7 @@ export async function run(argv) {
 
   let assetsDir = plan.assetsDir;
   if (plan.needsPrepare) {
-    console.log(
-      `Preparing static assets for ${plan.sitePathPrefix || "/"}...`,
-    );
+    console.log(`Preparing static assets for ${plan.sitePathPrefix || "/"}...`);
     const prepared = await preparePublicAssets({
       outputDir: values.output,
       sitePathPrefix: plan.sitePathPrefix,

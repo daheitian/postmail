@@ -135,7 +135,10 @@ function toSite(row) {
 
 function formatSiteSummary(rows) {
   return rows
-    .map((row) => `${getRequiredString(row, "key")} (${getRequiredString(row, "id")})`)
+    .map(
+      (row) =>
+        `${getRequiredString(row, "key")} (${getRequiredString(row, "id")})`,
+    )
     .join(", ");
 }
 

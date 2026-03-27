@@ -52,7 +52,9 @@ function readFixtureFile(fixturePath) {
     );
   }
 
-  const assertions = Array.isArray(fixture.assertions) ? fixture.assertions : [];
+  const assertions = Array.isArray(fixture.assertions)
+    ? fixture.assertions
+    : [];
 
   return {
     name:
@@ -66,7 +68,9 @@ function readFixtureFile(fixturePath) {
 }
 
 function selectBaselineMigrations(migrations, baseMigrationTag) {
-  const endIndex = migrations.findIndex((file) => file.tag === baseMigrationTag);
+  const endIndex = migrations.findIndex(
+    (file) => file.tag === baseMigrationTag,
+  );
 
   if (endIndex === -1) {
     throw new Error(
@@ -109,7 +113,9 @@ function buildDropStatements(objects) {
         continue;
       }
 
-      drops.push(`${typeOrder[type]} IF EXISTS ${quoteIdentifier(object.name)};`);
+      drops.push(
+        `${typeOrder[type]} IF EXISTS ${quoteIdentifier(object.name)};`,
+      );
     }
   }
 
@@ -142,7 +148,9 @@ function resetD1Database(runtime, runnerOptions) {
     }
 
     if (pass === 1) {
-      console.log(`Resetting rehearsal database (${objects.length} objects)...`);
+      console.log(
+        `Resetting rehearsal database (${objects.length} objects)...`,
+      );
     }
 
     const drops = buildDropStatements(objects);
@@ -157,7 +165,9 @@ function resetD1Database(runtime, runnerOptions) {
       }
     }
 
-    console.log(`Reset pass ${pass}: ${dropped}/${drops.length} objects dropped.`);
+    console.log(
+      `Reset pass ${pass}: ${dropped}/${drops.length} objects dropped.`,
+    );
   }
 
   const remaining = queryD1(
@@ -305,7 +315,9 @@ async function executeRemoteD1SqlBatch(sql, config) {
       .map((item) => item?.message)
       .filter((message) => typeof message === "string" && message.length > 0)
       .join(" | ");
-    throw new Error(detail || `Cloudflare D1 API request failed (${response.status}).`);
+    throw new Error(
+      detail || `Cloudflare D1 API request failed (${response.status}).`,
+    );
   }
 
   const results = Array.isArray(payload?.result) ? payload.result : [];
@@ -315,7 +327,12 @@ async function executeRemoteD1SqlBatch(sql, config) {
   }
 }
 
-async function executeRehearsalSqlFile(filePath, runtime, runnerOptions, config) {
+async function executeRehearsalSqlFile(
+  filePath,
+  runtime,
+  runnerOptions,
+  config,
+) {
   if (runtime !== "d1-remote") {
     executeD1File(filePath, runtime, {
       ...runnerOptions,
@@ -393,7 +410,12 @@ export async function rehearseD1Migrations(runtime, options = {}) {
   });
 
   console.log(`Importing fixture seed: ${fixture.seedPath}`);
-  await executeRehearsalSqlFile(fixture.seedPath, runtime, runnerOptions, config);
+  await executeRehearsalSqlFile(
+    fixture.seedPath,
+    runtime,
+    runnerOptions,
+    config,
+  );
 
   applyTrackedSqlFiles(rehearsalRunner, {
     files: listSchemaMigrationFiles(config.migrationsDir),
