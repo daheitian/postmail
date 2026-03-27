@@ -72,12 +72,13 @@ The official Docker image lives at `owenyoung/jant`.
 
 ### Docker Hub setup
 
-Configure these repository secrets before expecting Docker pushes to work:
+Configure this repository secret before expecting Docker pushes to work:
 
-- `DOCKERHUB_USERNAME`: Docker Hub account name that owns `owenyoung/jant`
 - `DOCKERHUB_TOKEN`: Docker Hub access token with permission to push that repository
 
-If these secrets are missing, package release still works, but the Docker publish workflow will fail at the login step.
+The workflow hardcodes the Docker Hub owner as `owenyoung`. If ownership moves later, update [`.github/workflows/docker-publish.yml`](/Users/green/project/jant/main/.github/workflows/docker-publish.yml) in the same change.
+
+If `DOCKERHUB_TOKEN` is missing, package release still works, but the Docker publish workflow will fail at the login step.
 
 ---
 
