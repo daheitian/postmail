@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       published: ${{ steps.changesets.outputs.published }}
+      core_published: ${{ steps.release-meta.outputs.core_published }}
+      release_version: ${{ steps.release-meta.outputs.version }}
     permissions:
       contents: write
       pull-requests: write
@@ -66,12 +68,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
+      - name: Derive release metadata
+        if: steps.changesets.outputs.published == 'true'
+        id: release-meta
+        env:
+          PUBLISHED_PACKAGES: ${{ steps.changesets.outputs.publishedPackages }}
+        run: |
+          node - <<'EOF' >> "$GITHUB_OUTPUT"
+          const packages = JSON.parse(process.env.PUBLISHED_PACKAGES || "[]");
+          const core = packages.find((pkg) => pkg.name === "@jant/core");
+          const version = core?.version ?? packages[0]?.version ?? "";
+
+          console.log(`core_published=${core ? "true" : "false"}`);
+          console.log(`version=${version}`);
+          EOF
+
       - name: Create GitHub Release
         if: steps.changesets.outputs.published == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
-          name: v${{ fromJson(steps.changesets.outputs.publishedPackages)[0].version }}
+          tag_name: v${{ steps.release-meta.outputs.version }}
+          name: v${{ steps.release-meta.outputs.version }}
           body: |
             ## Published Packages
 
@@ -96,3 +113,12 @@ jobs:
     uses: ./.github/workflows/sync-starter.yml
     secrets:
       PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+
+  docker-publish:
+    needs: release
+    if: needs.release.outputs.published == 'true' && needs.release.outputs.core_published == 'true'
+    uses: ./.github/workflows/docker-publish.yml
+    with:
+      version: ${{ needs.release.outputs.release_version }}
+      push_latest: true
+    secrets: inherit

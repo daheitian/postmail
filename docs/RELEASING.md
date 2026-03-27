@@ -1,6 +1,6 @@
-# Releasing Jant Packages
+# Releasing Jant
 
-This project uses [Changesets](https://github.com/changesets/changesets) for version management and npm's [Trusted Publishing](https://docs.npmjs.com/generating-provenance-statements) for secure automated releases.
+This project uses [Changesets](https://github.com/changesets/changesets) for version management, npm's [Trusted Publishing](https://docs.npmjs.com/generating-provenance-statements) for package releases, and GitHub Actions to publish the official Docker image.
 
 ## Versioning (SemVer)
 
@@ -41,6 +41,7 @@ When PRs with changesets are merged:
 2. Review the version bumps and changelog
 3. Merge the Release PR
 4. Packages are automatically published to npm
+5. When `@jant/core` is published, the Release workflow also calls `.github/workflows/docker-publish.yml` to publish `owenyoung/jant:<version>` and `owenyoung/jant:latest` to Docker Hub
 
 ## Commands
 
@@ -60,6 +61,23 @@ mise run release-publish-dry
 # Publish (usually done by CI)
 mise run release-publish
 ```
+
+## Docker image publishing
+
+The official Docker image lives at `owenyoung/jant`.
+
+- Automatic publish happens after a successful package release that includes `@jant/core`
+- The pushed tags are the exact package version, such as `owenyoung/jant:0.3.38`, and `owenyoung/jant:latest`
+- Maintainers can manually backfill or republish the current `main` version from the **Docker Publish** workflow using `workflow_dispatch`
+
+### Docker Hub setup
+
+Configure these repository secrets before expecting Docker pushes to work:
+
+- `DOCKERHUB_USERNAME`: Docker Hub account name that owns `owenyoung/jant`
+- `DOCKERHUB_TOKEN`: Docker Hub access token with permission to push that repository
+
+If these secrets are missing, package release still works, but the Docker publish workflow will fail at the login step.
 
 ---
 
