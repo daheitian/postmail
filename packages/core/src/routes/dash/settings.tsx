@@ -402,30 +402,37 @@ settingsRoutes.get("/avatar", async (c) => {
 settingsRoutes.post("/avatar", async (c) => {
   const i18n = getI18n(c);
   const storage = c.var.storage;
+  const wantsJson = c.req.header("accept")?.includes("application/json");
   if (!storage) {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "File storage isn't set up. Check your server config.",
-          comment: "@context: Error toast when file storage is not set up",
-        }),
-      ),
-      "error",
+    const message = i18n._(
+      msg({
+        message: "File storage isn't set up. Check your server config.",
+        comment: "@context: Error toast when file storage is not set up",
+      }),
     );
+
+    if (wantsJson) {
+      return c.json({ error: message }, 500);
+    }
+
+    return dsToast(message, "error");
   }
 
   const formData = await c.req.formData();
   const file = formData.get("file") as File | null;
   if (!file) {
-    return dsToast(
-      i18n._(
-        msg({
-          message: "No file selected. Choose a file to upload.",
-          comment: "@context: Error toast when no file was selected for upload",
-        }),
-      ),
-      "error",
+    const message = i18n._(
+      msg({
+        message: "No file selected. Choose a file to upload.",
+        comment: "@context: Error toast when no file was selected for upload",
+      }),
     );
+
+    if (wantsJson) {
+      return c.json({ error: message }, 400);
+    }
+
+    return dsToast(message, "error");
   }
 
   const faviconFile = formData.get("favicon") as File | null;
@@ -455,26 +462,42 @@ settingsRoutes.post("/avatar", async (c) => {
         siteId: c.var.currentSite.id,
       });
     } catch (error) {
+      // eslint-disable-next-line no-console -- Error logging is intentional
       console.error(
         "[Jant] Failed to sync hosted control plane avatar metadata:",
         error,
       );
     }
 
+    if (wantsJson) {
+      return c.json({
+        status: "redirect" as const,
+        url: publicPath(c, "/settings/avatar?saved"),
+      });
+    }
+
     return dsRedirect(publicPath(c, "/settings/avatar?saved"));
   } catch (e) {
     if (e instanceof ValidationError) {
+      if (wantsJson) {
+        return c.json({ error: e.message, code: e.code }, 400);
+      }
+
       return dsToast(e.message, "error");
     }
-    return dsToast(
-      i18n._(
-        msg({
-          message: "Upload didn't go through. Try again in a moment.",
-          comment: "@context: Error toast when avatar upload fails",
-        }),
-      ),
-      "error",
+
+    const message = i18n._(
+      msg({
+        message: "Upload didn't go through. Try again in a moment.",
+        comment: "@context: Error toast when avatar upload fails",
+      }),
     );
+
+    if (wantsJson) {
+      return c.json({ error: message }, 500);
+    }
+
+    return dsToast(message, "error");
   }
 });
 
@@ -488,6 +511,7 @@ settingsRoutes.post("/avatar/remove", async (c) => {
       siteId: c.var.currentSite.id,
     });
   } catch (error) {
+    // eslint-disable-next-line no-console -- Error logging is intentional
     console.error(
       "[Jant] Failed to sync hosted control plane avatar metadata:",
       error,

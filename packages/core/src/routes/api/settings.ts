@@ -169,6 +169,7 @@ settingsApiRoutes.post("/avatar", requireAuthApi(), async (c) => {
         siteId: c.var.currentSite.id,
       });
     } catch (error) {
+      // eslint-disable-next-line no-console -- Error logging is intentional
       console.error(
         "[Jant] Failed to sync hosted control plane avatar metadata:",
         error,
@@ -198,6 +199,7 @@ settingsApiRoutes.delete("/avatar", requireAuthApi(), async (c) => {
       siteId: c.var.currentSite.id,
     });
   } catch (error) {
+    // eslint-disable-next-line no-console -- Error logging is intentional
     console.error(
       "[Jant] Failed to sync hosted control plane avatar metadata:",
       error,

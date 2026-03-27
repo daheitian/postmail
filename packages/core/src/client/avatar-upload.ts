@@ -10,7 +10,9 @@
  */
 
 import { encodeIco, FAVICON_SIZES } from "../lib/favicon.js";
+import { getJsonString, readJsonObject } from "./json.js";
 import { publicPath } from "./runtime-paths.js";
+import { showToast } from "./toast.js";
 
 const MIN_APPLE_TOUCH_SOURCE_SIZE = 180;
 
@@ -145,35 +147,49 @@ async function handleAvatarUpload(
     formData.append("appleTouch", appleTouchBlob, "apple-touch-icon.png");
 
     // Upload
-    const response = await fetch("/settings/avatar", {
+    const response = await fetch(publicPath("/settings/avatar"), {
       method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error("Upload failed");
+      let message =
+        input.dataset.textError || "Upload failed. Please try again.";
+      try {
+        const json = await readJsonObject(response);
+        message =
+          getJsonString(json, "error") ??
+          getJsonString(json, "message") ??
+          message;
+      } catch {
+        // Ignore JSON parse failure and keep the fallback copy.
+      }
+      throw new Error(message);
     }
 
-    // Redirect on success
+    const json = await readJsonObject(response);
+    const status = getJsonString(json, "status");
+    const url = getJsonString(json, "url");
+
+    if (status === "redirect" && url) {
+      window.location.href = url;
+      return;
+    }
+
+    // Fallback for older success responses that don't return JSON redirect data.
     window.location.href = publicPath("/settings/avatar?saved");
-  } catch {
+  } catch (error) {
     // Restore button text on error
     if (label) label.textContent = originalText;
-    // Show error toast
-    const errorMsg =
-      input.dataset.textError || "Upload failed. Please try again.";
-    const container = document.getElementById("toast-container");
-    if (container) {
-      if (!container.matches(":popover-open")) container.showPopover();
-      const toast = document.createElement("div");
-      toast.className = "toast toast-error";
-      toast.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/></svg><span>${errorMsg}</span>`;
-      container.appendChild(toast);
-      setTimeout(() => {
-        toast.classList.add("toast-out");
-        toast.addEventListener("animationend", () => toast.remove());
-      }, 3000);
-    }
+    showToast(
+      error instanceof Error && error.message
+        ? error.message
+        : input.dataset.textError || "Upload failed. Please try again.",
+      "error",
+    );
   }
 
   // Reset file input so the same file can be re-selected
