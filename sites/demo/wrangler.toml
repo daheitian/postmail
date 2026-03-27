@@ -24,7 +24,7 @@ port = 3000
 [vars]
 # Optional: Pin your site's public origin (e.g. https://my-blog.example.com)
 # https://github.com/jant-me/jant/blob/main/docs/configuration.md#public-urls-and-subpaths
-SITE_ORIGIN = "https://demo.jant.me" # @create-jant: "https://example.com"
+# SITE_ORIGIN = "https://demo.jant.me"
 # Optional: Mount the site under a subpath such as /blog
 # SITE_PATH_PREFIX = "/blog"
 
