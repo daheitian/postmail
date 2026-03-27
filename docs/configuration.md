@@ -497,6 +497,9 @@ bucket_name = "jant-media"
 
 Node and Docker deployments usually set configuration through `.env`, `.env.node`, or process environment variables:
 
+- Full Docker/Node template: [/.env.example](/Users/green/project/jant/main/.env.example)
+- Package-local Node template: [packages/core/.env.node.example](/Users/green/project/jant/main/packages/core/.env.node.example)
+
 ```bash
 AUTH_SECRET=your-32-plus-character-secret-here
 SITE_ORIGIN=http://127.0.0.1:3000
@@ -517,6 +520,8 @@ DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
 ### .dev.vars (Local Development)
 
 Sensitive secrets are stored in `.dev.vars` (NOT committed to git):
+
+- Package-local example: [packages/core/.dev.vars.example](/Users/green/project/jant/main/packages/core/.dev.vars.example)
 
 ```bash
 # .dev.vars
