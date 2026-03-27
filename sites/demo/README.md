@@ -121,6 +121,8 @@ Your site is now live at `https://<your-project>.<your-subdomain>.workers.dev`!
 A workflow file is included at `.github/workflows/deploy.yml`. Complete the [deployment](#deploy-to-cloudflare) first, then set up CI for automatic deployments.
 
 > Runtime secrets (`AUTH_SECRET`, S3 keys, etc.) are already stored in Cloudflare from the manual deployment step. CI only needs deployment credentials.
+>
+> Until you replace the placeholder D1 `database_id` in `wrangler.toml` and add `CF_API_TOKEN` and `CF_ACCOUNT_ID`, the workflow exits early with a skip message instead of failing.
 
 #### 1. Push to GitHub
 
