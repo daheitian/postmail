@@ -73,6 +73,7 @@ import { isAssetPath } from "./lib/asset-path.js";
 import { getHostedCanonicalRedirect } from "./lib/hosted-domain.js";
 import { stripSitePathPrefix, toPublicHref } from "./lib/url.js";
 import { createRequestRuntime } from "./runtime/index.js";
+import { getInstanceReadiness } from "./runtime/readiness.js";
 import { type AppVariables, type App } from "./types/app-context.js";
 import { isPublicStorageKeyAllowed } from "./lib/public-storage.js";
 
@@ -260,6 +261,10 @@ export function createApp(): App {
   // Instance health checks must bypass hosted site resolution so container
   // health probes keep working in host-based mode before any site matches.
   app.get("/health", (c) => c.json({ status: "ok" }));
+  app.get("/readyz", async (c) => {
+    const readiness = await getInstanceReadiness(c.env);
+    return c.json(readiness, readiness.status === "ok" ? 200 : 503);
+  });
 
   // Lightweight init — no DB queries
   app.use("*", async (c, next) => {

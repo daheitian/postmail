@@ -1022,6 +1022,7 @@ Environment-only config keys (like `AUTH_SECRET`) are silently rejected. If all 
 | Endpoint                      | Auth | Description                                                     |
 | ----------------------------- | ---- | --------------------------------------------------------------- |
 | `GET /health`                 | No   | Returns `{ "status": "ok" }`                                    |
+| `GET /readyz`                 | No   | Returns readiness status for startup config and database access |
 | `GET /feed`                   | No   | RSS 2.0 canonical site feed (Featured by default, configurable) |
 | `GET /feed/atom.xml`          | No   | Atom canonical site feed (Featured by default, configurable)    |
 | `GET /feed/latest`            | No   | RSS 2.0 latest public posts feed (supports `?format=` filter)   |
