@@ -2,13 +2,19 @@ import { Hono } from "hono";
 import { setSignedCookie } from "hono/cookie";
 import type { Bindings } from "../../types.js";
 import type { AppVariables } from "../../types/app-context.js";
-import { getHostedControlPlaneSsoSecret } from "../../lib/env.js";
+import {
+  getHostedControlPlaneBaseUrl,
+  getHostedControlPlaneProviderLabel,
+  getHostedControlPlaneSsoSecret,
+} from "../../lib/env.js";
 import { DomainError, NotFoundError } from "../../lib/errors.js";
 import { toPublicPath } from "../../lib/url.js";
+import { renderHostedSsoExpiredPage } from "./hosted-sso-expired-page.js";
 
 type Env = { Bindings: Bindings; Variables: AppVariables };
 
 const DEFAULT_REDIRECT_PATH = "/settings";
+const EXPIRED_SIGNIN_LINK_MESSAGE = "This sign-in link has expired.";
 
 function normalizeRedirectPath(path?: string): string {
   if (!path || !path.startsWith("/") || path.startsWith("//")) {
@@ -16,6 +22,27 @@ function normalizeRedirectPath(path?: string): string {
   }
 
   return path;
+}
+
+function getHostedControlPlaneReturnTarget(env: object | undefined | null): {
+  providerLabel: string;
+  providerUrl: string;
+} | null {
+  const providerUrl = getHostedControlPlaneBaseUrl(env);
+  if (!providerUrl) {
+    return null;
+  }
+
+  try {
+    return {
+      providerLabel:
+        getHostedControlPlaneProviderLabel(env) ??
+        new URL(providerUrl).hostname,
+      providerUrl,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export const hostedSsoRoutes = new Hono<Env>();
@@ -53,6 +80,20 @@ hostedSsoRoutes.get("/__sso", async (c) => {
     );
   } catch (error) {
     if (error instanceof DomainError) {
+      if (
+        error.statusCode === 401 &&
+        error.message.startsWith(EXPIRED_SIGNIN_LINK_MESSAGE)
+      ) {
+        const returnTarget = getHostedControlPlaneReturnTarget(c.env);
+
+        if (returnTarget) {
+          return c.html(
+            renderHostedSsoExpiredPage(c, returnTarget),
+            error.statusCode,
+          );
+        }
+      }
+
       return c.text(
         error.message,
         error.statusCode as 400 | 401 | 403 | 404 | 409 | 429 | 500,

@@ -11,12 +11,17 @@ type Env = { Bindings: Bindings; Variables: AppVariables };
 
 function createHostedSsoTestApp(options?: {
   hostedHandoff?: HostedHandoffService;
+  hostedControlPlaneBaseUrl?: string;
+  hostedControlPlaneProviderName?: string;
   secret?: string;
 }) {
   const app = new Hono<Env>();
   app.onError(errorHandler);
   app.use("*", async (c, next) => {
     c.env = {
+      HOSTED_CONTROL_PLANE_BASE_URL: options?.hostedControlPlaneBaseUrl,
+      HOSTED_CONTROL_PLANE_PROVIDER_NAME:
+        options?.hostedControlPlaneProviderName,
       HOSTED_CONTROL_PLANE_SSO_SECRET: options?.secret,
     } as Bindings;
     c.set("auth", {
@@ -132,5 +137,29 @@ describe("hostedSsoRoutes", () => {
     await expect(response.text()).resolves.toBe(
       "This sign-in link has expired. Return to cloud-jant.localtest.me and try again.",
     );
+  });
+
+  it("renders an expired-link page with a clickable hosted control-plane link when available", async () => {
+    const app = createHostedSsoTestApp({
+      hostedControlPlaneBaseUrl: "https://cloud-jant.localtest.me",
+      secret: "cloud-sso-secret-cloud-sso-secret",
+      hostedHandoff: {
+        async completeFromSignedToken() {
+          throw new UnauthorizedError(
+            "This sign-in link has expired. Return to cloud-jant.localtest.me and try again.",
+          );
+        },
+      },
+    });
+
+    const response = await app.request("/__sso?token=test-token");
+
+    expect(response.status).toBe(401);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    const html = await response.text();
+    expect(html).toContain("This Link Has Expired");
+    expect(html).toContain("This sign-in link has expired. Return to");
+    expect(html).toContain('href="https://cloud-jant.localtest.me"');
+    expect(html).toContain(">cloud-jant.localtest.me<");
   });
 });

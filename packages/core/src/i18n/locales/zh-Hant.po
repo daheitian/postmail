@@ -13,6 +13,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. @context: Hosted SSO expired link message segment shown after the hosted control-plane link
+#: src/routes/auth/hosted-sso-expired-page.tsx
+msgid " and try again."
+msgstr " 後再試一次。"
+
 #. @context: Link showing count of hidden thread posts between curated posts
 #. placeholder {0}: segment.hiddenBeforeCount
 #. placeholder {1}: segment.hiddenBeforeCount === 1 ? "post" : "posts"
@@ -2882,7 +2887,11 @@ msgstr "這會用於你的 favicon 和 apple-touch-icon。為達最佳效果，�
 msgid "This is useful as a color check because it puts the accent next to quotation styling, metadata, and a quieter explanatory paragraph. Compare it back to the"
 msgstr "這在檢查顏色時很有用，因為它把重點色放在引文樣式、摘要資料和較為低調的解釋段落旁。將它和原先的比較"
 
+#. @context: Hosted SSO expired link page heading
+#. @context: Hosted SSO expired link page title
 #. @context: Password reset error heading
+#: src/routes/auth/hosted-sso-expired-page.tsx
+#: src/routes/auth/hosted-sso-expired-page.tsx
 #: src/routes/auth/reset.tsx
 msgid "This Link Has Expired"
 msgstr "此連結已過期"
@@ -2908,6 +2917,11 @@ msgstr "此參考很有用，因為它將連結與引文視為閱讀節奏的一
 #: src/routes/auth/reset.tsx
 msgid "This reset link is no longer valid. Request a new one to continue."
 msgstr "此重設連結已不再有效。請申請新的連結以繼續。"
+
+#. @context: Hosted SSO expired link message segment shown before the hosted control-plane link
+#: src/routes/auth/hosted-sso-expired-page.tsx
+msgid "This sign-in link has expired. Return to "
+msgstr "這個登入連結已失效。返回 "
 
 #. @context: Error shown when a hosted upload would exceed the shared account media limit
 #. @context: Error shown when a hosted upload would exceed the shared account media limit
